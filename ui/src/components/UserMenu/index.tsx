@@ -42,12 +42,12 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           >
             {theme === "dark" ? (
               <>
-                <Sun className="mr-2 h-4 w-4" />
+                <Sun className="mr-2 size-4" />
                 {t("components.userMenu.switchToLight")}
               </>
             ) : (
               <>
-                <Moon className="mr-2 h-4 w-4" />
+                <Moon className="mr-2 size-4" />
                 {t("components.userMenu.switchToDark")}
               </>
             )}
@@ -62,7 +62,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
               rel="noopener noreferrer"
               className="cursor-pointer"
             >
-              <BookOpen className="mr-2 h-4 w-4" />
+              <BookOpen className="mr-2 size-4" />
               {t("components.userMenu.docs")}
             </a>
           </DropdownMenuItem>
@@ -74,7 +74,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
               rel="noopener noreferrer"
               className="cursor-pointer"
             >
-              <Slack className="mr-2 h-4 w-4" />
+              <Slack className="mr-2 size-4" />
               {t("components.userMenu.supportChannelOnSlack")}
             </a>
           </DropdownMenuItem>

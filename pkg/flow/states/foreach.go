@@ -7,11 +7,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/senseyeio/duration"
 )
 
@@ -273,7 +275,13 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}
 	logic.AddAttribute("loop-index", fmt.Sprintf("%d", idx))
-	logic.Log(ctx, log.Info, "Child '%s' returned.", id)
+	ctx = tracing.AddBranch(ctx, idx)
+	ctx, end, err := tracing.NewSpan(ctx, "processing action results")
+	if err != nil {
+		slog.Debug("tracing.NewSpan failed in processActionResults", "error", "err")
+	}
+	defer end()
+	logic.Log(ctx, log.Debug, "Child '%s' returned.", id)
 
 	if results.ErrorCode != "" {
 		logic.Log(ctx, log.Error, "[%v] Action raised catchable error '%s': %s.", idx, results.ErrorCode, results.ErrorMessage)

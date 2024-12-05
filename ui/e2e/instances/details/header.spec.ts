@@ -109,7 +109,7 @@ test("the header of the instance page shows the relevant data for the workflow",
   ).toBeVisible();
 
   await expect(
-    header.getByRole("button").locator("svg.lucide-xcircle"),
+    header.getByTestId("cancel-workflow"),
     "the button for cancelling the workflow is disabled"
   ).toBeDisabled();
 

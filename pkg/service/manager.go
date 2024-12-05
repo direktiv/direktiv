@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -12,7 +13,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/reconcile"
 	"github.com/direktiv/direktiv/pkg/tracing"
-	"github.com/pkg/errors"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"knative.dev/serving/pkg/client/clientset/versioned"
@@ -72,7 +72,6 @@ func (m *manager) runCycle() []error {
 	if !m.servicesListHasBeenSet {
 		return nil
 	}
-
 	// clone the list
 	src := make([]reconcile.Item, len(m.list))
 	for i, v := range m.list {
@@ -97,10 +96,18 @@ func (m *manager) runCycle() []error {
 	// slog.Debug("services reconcile", "src", len(src), "target", len(target))
 
 	result := reconcile.Calculate(src, target)
+	tracingHelper := func(v *core.ServiceFileData) context.Context {
+		ctx := context.Background()
+		ctx = tracing.AddNamespace(ctx, v.Namespace)
+		ctx = tracing.WithTrack(ctx, tracing.BuildNamespaceTrack(v.Namespace))
 
+		return ctx
+	}
 	errs := []error{}
 	for _, id := range result.Deletes {
+		slog.DebugContext(context.Background(), fmt.Sprintf("deleting service with ID %s", id))
 		if err := m.runtimeClient.deleteService(id); err != nil {
+			slog.ErrorContext(context.Background(), fmt.Sprintf("failed to delete service with ID %s", id), "error", err)
 			errs = append(errs, fmt.Errorf("delete service id: %s %w", id, err))
 		}
 	}
@@ -109,7 +116,9 @@ func (m *manager) runCycle() []error {
 		v := searchSrc[id]
 		v.Error = nil
 		// v is passed un-cloned.
+		slog.DebugContext(tracingHelper(v), fmt.Sprintf("creating service %s with ID %s, type %s", v.FilePath, v.ID, v.Typ))
 		if err := m.runtimeClient.createService(v); err != nil {
+			slog.ErrorContext(tracingHelper(v), fmt.Sprintf("failed to create service %s with ID %s, type %s", v.FilePath, v.ID, v.Typ), "error", err)
 			errs = append(errs, fmt.Errorf("create service id: %s %w", id, err))
 			errStr := err.Error()
 			v.Error = &errStr
@@ -120,7 +129,9 @@ func (m *manager) runCycle() []error {
 		v := searchSrc[id]
 		v.Error = nil
 		// v is passed un-cloned.
+		slog.DebugContext(tracingHelper(v), fmt.Sprintf("updating service %s with ID %s, type %s", v.FilePath, v.ID, v.Typ))
 		if err := m.runtimeClient.updateService(v); err != nil {
+			slog.ErrorContext(tracingHelper(v), fmt.Sprintf("failed to update service %s with ID %s, type %s", v.FilePath, v.ID, v.Typ), "error", err)
 			errs = append(errs, fmt.Errorf("update service id: %s %w", id, err))
 			errStr := err.Error()
 			v.Error = &errStr
@@ -132,10 +143,7 @@ func (m *manager) runCycle() []error {
 
 func (m *manager) Run(circuit *core.Circuit) error {
 	cycleTime := m.cfg.GetFunctionsReconcileInterval()
-	cycleFails := 0
-
 	for {
-		// Pull circuit status.
 		if circuit.IsDone() {
 			return nil
 		}
@@ -144,16 +152,6 @@ func (m *manager) Run(circuit *core.Circuit) error {
 		m.lock.Unlock()
 		for _, err := range errs {
 			slog.Error("run cycle", "err", err)
-		}
-
-		// Evaluate errors rate.
-		if len(errs) > 0 {
-			cycleFails++
-		} else {
-			cycleFails = 0
-		}
-		if cycleFails > 5 {
-			return errors.New("too many cycle fails")
 		}
 
 		time.Sleep(cycleTime)
@@ -293,13 +291,13 @@ func (m *manager) Rebuild(namespace string, serviceID string) error {
 
 func (m *manager) setServiceDefaults(sv *core.ServiceFileData) {
 	// empty size string defaults to medium
-	nsLogger := tracing.NewNamespaceLogger(sv.Namespace)
+	ctx := tracing.AddNamespace(context.Background(), sv.Namespace)
 	if sv.Size == "" {
-		nsLogger.Warn("empty service size, defaulting to medium", "service_file", sv.FilePath)
+		slog.WarnContext(ctx, "empty service size, defaulting to medium", "service_file", sv.FilePath)
 		sv.Size = "medium"
 	}
 	if sv.Scale > m.cfg.KnativeMaxScale {
-		nsLogger.Warn("service_scale is bigger than allowed max_scale, defaulting to max_scale",
+		slog.WarnContext(ctx, "service_scale is bigger than allowed max_scale, defaulting to max_scale",
 			"service_scale", sv.Scale,
 			"max_scale", m.cfg.KnativeMaxScale,
 			"service_file", sv.FilePath)

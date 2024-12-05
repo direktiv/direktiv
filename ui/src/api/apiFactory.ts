@@ -85,7 +85,7 @@ export const apiFactory =
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     THeaders = any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    TUrlParams = any
+    TUrlParams = any,
   >({
     url,
     method,

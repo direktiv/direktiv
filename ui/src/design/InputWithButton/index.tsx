@@ -21,7 +21,7 @@ export const InputWithButton: React.FC<HTMLAttributes<HTMLDivElement>> = ({
       {firstChild}
       <div
         className={twMergeClsx(
-          "absolute right-1 flex h-9 items-center justify-center [&_button]:h-8 [&_button]:w-8"
+          "absolute right-1 flex h-9 items-center justify-center [&_button]:size-8"
         )}
       >
         {secondChild}

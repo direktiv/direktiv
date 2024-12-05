@@ -25,9 +25,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/mirror"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
-	"github.com/direktiv/direktiv/pkg/utils"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
+	"github.com/nats-io/nats.go"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -56,6 +57,7 @@ type server struct {
 
 	flow   *flow
 	events *events
+	nats   *nats.Conn
 }
 
 func Run(circuit *core.Circuit) error {
@@ -66,6 +68,7 @@ func Run(circuit *core.Circuit) error {
 	if err := config.Init(); err != nil {
 		return fmt.Errorf("init config, err: %w", err)
 	}
+	initSLog(config)
 
 	slog.Info("initialize db connection")
 	db, err := initDB(config)
@@ -144,19 +147,19 @@ func Run(circuit *core.Circuit) error {
 type mirrorProcessLogger struct{}
 
 func (log *mirrorProcessLogger) Debug(pid uuid.UUID, msg string, kv ...interface{}) {
-	slog.Debug(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity."+pid.String())
+	slog.Debug(fmt.Sprintf(msg, kv...), "activity", pid, string(core.LogTrackKey), "activity."+pid.String())
 }
 
 func (log *mirrorProcessLogger) Info(pid uuid.UUID, msg string, kv ...interface{}) {
-	slog.Info(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity."+pid.String())
+	slog.Info(fmt.Sprintf(msg, kv...), "activity", pid, string(core.LogTrackKey), "activity."+pid.String())
 }
 
 func (log *mirrorProcessLogger) Warn(pid uuid.UUID, msg string, kv ...interface{}) {
-	slog.Warn(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity"+"."+pid.String())
+	slog.Warn(fmt.Sprintf(msg, kv...), "activity", pid, string(core.LogTrackKey), "activity"+"."+pid.String())
 }
 
 func (log *mirrorProcessLogger) Error(pid uuid.UUID, msg string, kv ...interface{}) {
-	slog.Error(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity"+"."+pid.String())
+	slog.Error(fmt.Sprintf(msg, kv...), "activity", pid, string(core.LogTrackKey), "activity"+"."+pid.String())
 }
 
 var _ mirror.ProcessLogger = &mirrorProcessLogger{}
@@ -200,9 +203,9 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	var err error
 	slog.Debug("starting Flow server")
 	slog.Debug("initializing telemetry.")
-	telEnd, err := utils.InitTelemetry(srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
+	telEnd, err := tracing.InitTelemetry(circuit.Context(), srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Telemetry init failed: %w", err)
 	}
 	slog.Info("Telemetry initialized successfully.")
 
@@ -268,10 +271,10 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	slog.Debug("initializing mirror manager.")
 	slog.Debug("mirror manager was started.")
 
-	slog.Debug("Initializing events.")
+	slog.Debug("initializing events.")
 	srv.events = initEvents(srv, dbManager.DataStore().StagingEvents().Append)
 
-	slog.Debug("Initializing EventWorkers.")
+	slog.Debug("initializing EventWorkers.")
 
 	interval := 1 * time.Second // TODO: Adjust the polling interval
 	eventWorker := eventsstore.NewEventWorker(dbManager.DataStore().StagingEvents(), interval, srv.events.handleEvent)
@@ -281,7 +284,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 
 		return nil
 	})
-	slog.Info("Events-engine was started.")
+	slog.Info("events-engine was started.")
 
 	cc := func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
 		err = srv.flow.configureWorkflowStarts(ctx, dbManager, nsID, nsName, file)
@@ -291,7 +294,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 
 		err = srv.flow.placeholdSecrets(ctx, dbManager, nsName, file)
 		if err != nil {
-			slog.Debug("Error setting up placeholder secrets", "error", err, "track", "namespace."+nsName, "namespace", nsName, "file", file.Path)
+			slog.Debug("failed setting up placeholder secrets", "error", err, string(core.LogTrackKey), "namespace."+nsName, "namespace", nsName, "file", file.Path)
 		}
 
 		return nil
@@ -318,9 +321,36 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 		telEnd()
 		srv.cleanup(srv.pubsub.Close)
 		srv.cleanup(srv.timers.Close)
+		if srv.nats != nil {
+			srv.nats.Close()
+			slog.Info("NATS connection closed")
+		}
 
 		return nil
 	})
+
+	slog.Info("Initialize NATS connection")
+	if config.NatsInstalled {
+		var err error
+		slog.Info("conecting to NATS")
+		for i := range 10 {
+			err = srv.initNATS(config)
+			if err == nil {
+				slog.Info("NATS connection established successfully")
+				break
+			}
+			slog.Error("Failed to connect to NATS, retrying...", "attempt", i+1, "error", err)
+			time.Sleep(time.Duration(i+2) * time.Second)
+		}
+
+		if err != nil {
+			return nil, fmt.Errorf("initialize NATS connection, err: %w", err)
+		}
+
+		if err := srv.publishDemoMessage("test", "test-connection"); err != nil {
+			return nil, fmt.Errorf("testing NATS connection, err: %w", err)
+		}
+	}
 
 	return srv, nil
 }
@@ -555,4 +585,56 @@ func (srv *server) runSQLTx(ctx context.Context, fun func(tx *database.SQLStore)
 	}
 
 	return tx.Commit(ctx)
+}
+
+func initSLog(cfg *core.Config) {
+	lvl := new(slog.LevelVar)
+	lvl.Set(slog.LevelInfo)
+
+	logDebug := cfg.LogDebug
+	if logDebug {
+		slog.Info("logging is set to debug")
+		lvl.Set(slog.LevelDebug)
+	}
+	handlers := tracing.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+		Level: lvl,
+	}))
+	slogger := slog.New(
+		tracing.TeeHandler{
+			handlers,
+			tracing.EventHandler{},
+		})
+
+	slog.SetDefault(slogger)
+}
+
+// Initialize NATS connection using environment variables.
+func (srv *server) initNATS(config *core.Config) error {
+	natsURL := config.NatsHost
+	if natsURL == "" {
+		return fmt.Errorf("NATS URL not set in environment")
+	}
+
+	// Connect to NATS
+	nc, err := nats.Connect(natsURL)
+	if err != nil {
+		return fmt.Errorf("failed to connect to NATS, err: %w", err)
+	}
+
+	// Store the NATS connection in the server struct
+	srv.nats = nc
+	slog.Info("Successfully connected to NATS")
+
+	return nil
+}
+
+// Example of publishing a message to NATS.
+func (srv *server) publishDemoMessage(subject, msg string) error {
+	err := srv.nats.Publish(subject, []byte(msg))
+	if err != nil {
+		return fmt.Errorf("failed to publish message, err: %w", err)
+	}
+	slog.Info("Message published", "subject", subject, "msg", msg)
+
+	return nil
 }

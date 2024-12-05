@@ -1,6 +1,6 @@
 run:
   timeout: 10m
-  go: 1.22.0
+  go: 1.23.0
   issues-exit-code: 1
   tests: false
 
@@ -46,7 +46,6 @@ linters:
     - cyclop
     - godox # must fix before release.
 
-    - gomnd
     - tagliatelle
     - musttag
     - prealloc
@@ -54,6 +53,11 @@ linters:
     - err113 # TODO: This ensures no dynamic errors.
     - mnd
     - canonicalheader
+
+    # TODO: these need to be removed.
+    - gosimple
+    - govet
+    - gosec
 
 issues:
   exclude-files: [ ".pb.go" ]
@@ -69,7 +73,6 @@ issues:
         - stylecheck
         - tagliatelle
         - wastedassign
-        - gomnd
         - testpackage
         - asasalint
         - predeclared

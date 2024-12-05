@@ -49,11 +49,14 @@
             "rename": "Rename"
           },
           "empty": {
-            "title": "this directory is empty",
+            "title": "This directory is empty",
             "createWorkflow": "Create Workflow",
             "createService": "Create Service",
             "createEndpoint": "Create Endpoint",
             "createDirectory": "Create Directory"
+          },
+          "noSearchResults": {
+            "title": "No file matches your search"
           }
         },
         "rename": {
@@ -523,7 +526,6 @@
     "monitoring": {
       "title": "Monitoring",
       "instances": {
-        "openWorkflowTooltip": "click to open workflow {{name}}",
         "successfulExecutions": {
           "title": "Successful Executions",
           "empty": "There are no recent successful executions."
@@ -560,8 +562,7 @@
         },
         "tableRow": {
           "realtiveTime": "{{relativeTime}} ago",
-          "stillRunning": "still running",
-          "openWorkflowTooltip": "click to open workflow {{name}}"
+          "stillRunning": "still running"
         },
         "filter": {
           "filterButton": "Filter",

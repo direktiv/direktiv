@@ -79,7 +79,7 @@ const FilepickerListItem: FC<FilepickerProps> = ({
       >
         <div className="flex items-center px-2">
           <div className="w-max">
-            <Icon className="h-4 w-4" aria-hidden="true" />
+            <Icon className="size-4" aria-hidden="true" />
           </div>
           <div className="whitespace-nowrap px-3 py-2 text-sm">{children}</div>
         </div>

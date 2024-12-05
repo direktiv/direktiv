@@ -81,13 +81,13 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 	if len(list) != 2 {
 		t.Errorf("unexpected GetProcessesByConfig() length: got: %v, want %v", len(list), 2)
 	}
-
 	if list[0].ID != newProcess.ID {
 		t.Errorf("unexpected GetProcess().ID, want: %v, got %v", list[0].ID, newProcess.ID)
 	}
 	if list[1].ID != secondProcess.ID {
 		t.Errorf("unexpected GetProcess().ID, want: %v, got %v", list[1].ID, secondProcess.ID)
 	}
+
 }
 
 func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {

@@ -41,3 +41,10 @@ Installs DB, Knative, Direktiv
 ```
 make -C ../ k3s-install
 ```
+
+**Additional Monitoring**
+
+Installs DB, Knative, Direktiv with Grafana and Tempo
+```
+make -C ../ k3s-monitoring-install
+```

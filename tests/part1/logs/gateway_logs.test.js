@@ -31,7 +31,6 @@ describe('Test gateway api calls', () => {
 		const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs?route=%2Ftest`)
 		expect(logRes.statusCode).toEqual(200)
 
-		console.log(logRes.body.data)
 		// TODO: check logs, we just disabled the info logging for the plugins
 	})
 })

@@ -93,6 +93,7 @@ const Header = () => {
                   variant="destructive"
                   onClick={onCancelInstanceClick}
                   type="button"
+                  data-testid="cancel-workflow"
                 >
                   <XCircle />
                 </Button>

@@ -62,7 +62,7 @@ const Header = ({ serviceId }: { serviceId: string }) => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
-                  <HelpCircle className="ml-1 h-4 w-4" />
+                  <HelpCircle className="ml-1 size-4" />
                 </TooltipTrigger>
                 <TooltipContent>
                   {t("pages.services.list.tableHeader.tooltip")}

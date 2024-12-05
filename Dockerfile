@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.22 as builder
+FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.23.0 as builder
 
 ARG VERSION=dev
 
@@ -10,20 +10,41 @@ COPY pkg src/pkg/
 COPY cmd src/cmd/
 
 RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
-    CGO_ENABLED=false GOOS=linux GOARCH=$TARGETARCH go build -tags osusergo,netgo -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$VERSION" -o /direktiv cmd/direktiv/*.go;
+    CGO_ENABLED=false GOOS=linux GOARCH=$TARGETARCH go build -tags osusergo,netgo -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$VERSION" -o /direktiv cmd/*.go;
 
+#########################################################################################
+FROM --platform=$BUILDPLATFORM node:20-slim as ui-builder
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
-# Remove pkg folder so that the direktiv-cmd binary doesn't include logic.
-RUN rm -rf pkg
-RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
-    CGO_ENABLED=false GOOS=linux GOARCH=$TARGETARCH go build -tags osusergo,netgo -o /direktiv-cmd cmd/cmd-exec/*.go;
+WORKDIR /app
 
+COPY ui/package.json .
+COPY ui/pnpm-lock.yaml .
 
+RUN pnpm install
+
+COPY ui/.eslintrc.js .
+COPY ui/.prettierrc.mjs .
+COPY ui/index.html .
+COPY ui/postcss.config.cjs .
+COPY ui/tailwind.config.cjs .
+COPY ui/tsconfig.json .
+COPY ui/vite.config.mts .
+COPY ui/assets assets
+COPY ui/public public
+COPY ui/src src
+COPY ui/test test
+
+RUN pnpm run build
+
+########################################################################################
 FROM  gcr.io/distroless/static
 USER nonroot:nonroot
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=builder /direktiv /bin/direktiv
-COPY --from=builder /direktiv-cmd /bin/direktiv-cmd
+COPY --from=builder /direktiv /app/direktiv
+COPY --from=ui-builder /app/dist /app/ui
 
-CMD ["/bin/direktiv"]
+CMD ["/app/direktiv"]

@@ -26,6 +26,10 @@ module.exports = {
         extensions: [".js", ".jsx", ".ts", ".tsx"],
       },
     },
+    tailwindcss: {
+      callees: ["clsx", "cn", "twMerge", "twMergeClsx"],
+      config: "tailwind.config.cjs",
+    },
   },
   env: {
     browser: true,
@@ -37,6 +41,8 @@ module.exports = {
     "dist/",
     ".eslintrc.js",
     "env.d.ts",
+    "test-results",
+    "storybook-static",
     "playwright-report/",
   ],
   rules: {
@@ -68,14 +74,6 @@ module.exports = {
     // It's save to import React when using vite
     "react/react-in-jsx-scope": "off",
 
-    // overwriting the default to use tailwind.config.cjs instead of tailwind.config.js
-    "tailwindcss/no-custom-classname": [
-      "error",
-      {
-        config: "tailwind.config.cjs",
-      },
-    ],
-
     // there seems to be a missmatch between the order
     // of the classes from the linting rule vs the prettier plugin
     // since prettier is part of the dev environment, we can disable
@@ -94,12 +92,8 @@ module.exports = {
     // a parameter but does not use it
     "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
 
-    // REMOVE WHEN 100 % TYPESCRIPT IS ACHIEVED
-
     // we will use TypeScript's types for component props instead)
     "react/prop-types": "off",
-    // this is the default in typescript and we want to enforce it in JavaScript as well
-    "prefer-const": "error",
   },
   overrides: [
     {

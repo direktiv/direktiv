@@ -45,7 +45,7 @@ func (lw *seeWorker) start(ctx context.Context) {
 						return
 					}
 
-					slog.Error("TODO: should we quit with an error?", "err", err)
+					slog.Error("TODO: should we quit with an error?", "err", err) // TODO: we should pushish a "message-error" via SSE here
 
 					continue
 				}

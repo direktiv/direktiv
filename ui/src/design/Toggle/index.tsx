@@ -18,7 +18,7 @@ const Toggle = React.forwardRef<
       "data-[state=on]:bg-gray-3",
       "dark:text-gray-dark-12 dark:hover:bg-gray-dark-2 dark:focus:ring-gray-dark-4 dark:focus:ring-offset-gray-dark-1",
       "dark:data-[state=on]:bg-gray-dark-3",
-      "border border-gray-4 hover:bg-gray-2 dark:border-gray-dark-4 dark:hover:bg-gray-dark-2",
+      "border border-gray-4 dark:border-gray-dark-4",
       size === "sm" && "h-6 px-2.5 [&>svg]:h-4",
       !size && "h-9 px-3 [&>svg]:h-5",
       size === "lg" && "h-11 px-5 [&>svg]:h-6",

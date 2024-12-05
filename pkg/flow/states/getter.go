@@ -101,7 +101,7 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 
 		case utils.VarScopeSystem:
 
-			value, err := valueForSystem(key, logic.Instance)
+			value, err := valueForSystem(ctx, key, logic.Instance)
 			if err != nil {
 				return nil, derrors.NewInternalError(err)
 			}
@@ -147,7 +147,7 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 	}, nil
 }
 
-func valueForSystem(key string, instance Instance) (interface{}, error) {
+func valueForSystem(ctx context.Context, key string, instance Instance) (interface{}, error) {
 	var ret interface{}
 
 	switch key {
@@ -157,6 +157,8 @@ func valueForSystem(key string, instance Instance) (interface{}, error) {
 		ret = uuid.New().String()
 	case "epoch":
 		ret = time.Now().UTC().Unix()
+	case "trace":
+		ret = instance.GetTraceID(ctx)
 	default:
 		return nil, fmt.Errorf("unknown system key %s", key)
 	}

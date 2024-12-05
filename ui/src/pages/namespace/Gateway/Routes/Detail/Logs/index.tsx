@@ -58,9 +58,9 @@ const LogsPanel = ({ path }: LogsPanelProps) => {
       </div>
       <ScrollContainer path={path} />
       <div className="flex items-center justify-center pt-2 text-sm text-gray-11 dark:text-gray-dark-11">
-        <span className="relative mr-2 flex h-3 w-3">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-11 opacity-75 dark:bg-gray-dark-11"></span>
-          <span className="relative inline-flex h-3 w-3 rounded-full bg-gray-11 dark:bg-gray-dark-11"></span>
+        <span className="relative mr-2 flex size-3">
+          <span className="absolute inline-flex size-full animate-ping rounded-full bg-gray-11 opacity-75 dark:bg-gray-dark-11"></span>
+          <span className="relative inline-flex size-3 rounded-full bg-gray-11 dark:bg-gray-dark-11"></span>
         </span>
         {t("components.logs.logsCount", { count: numberOfLogLines })}
       </div>

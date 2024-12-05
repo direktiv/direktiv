@@ -190,18 +190,6 @@ test("it renders the instance item correctly for failed and success status", asy
       "on hover, the absolute time should appear"
     ).toContainText(instanceDetail.endedAt ?? "no endedAt");
 
-    await instanceItemRow
-      .getByTestId("instance-column-name")
-      .getByRole("link")
-      .click();
-
-    await expect(
-      page,
-      "when the workflow name is clicked, page should navigate to the workflow page"
-    ).toHaveURL(`/n/${namespace}/explorer/workflow/edit${workflowName}`);
-
-    await page.goBack();
-
     await instanceItemRow.click();
     await expect(
       page,

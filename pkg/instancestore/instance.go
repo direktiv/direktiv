@@ -19,6 +19,8 @@ var (
 )
 
 // InstanceStatus enum allows us to perform arithmetic comparisons on the database.
+//
+//nolint:recvcheck
 type InstanceStatus int
 
 const (

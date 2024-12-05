@@ -70,7 +70,7 @@ test("it is possible to create and delete secrets", async ({ page }) => {
   await page.getByTestId("secret-create").click();
   const newSecret = {
     name: faker.internet.domainWord(),
-    value: faker.random.alphaNumeric(20),
+    value: faker.string.alphanumeric(20),
   };
 
   await page.getByPlaceholder("secret-name").type(firstSecretName);

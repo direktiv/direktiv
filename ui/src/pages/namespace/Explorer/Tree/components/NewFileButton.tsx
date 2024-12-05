@@ -62,7 +62,7 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
           }}
         >
           <DropdownMenuItem>
-            <Folder className="mr-2 h-4 w-4" />{" "}
+            <Folder className="mr-2 size-4" />{" "}
             {t("pages.explorer.tree.newFileButton.items.directory")}
           </DropdownMenuItem>
         </DialogTrigger>
@@ -76,7 +76,7 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
             }}
           >
             <DropdownMenuItem>
-              <Play className="mr-2 h-4 w-4" />{" "}
+              <Play className="mr-2 size-4" />{" "}
               {t("pages.explorer.tree.newFileButton.items.workflow")}
             </DropdownMenuItem>
           </DialogTrigger>
@@ -87,13 +87,13 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
             }}
           >
             <DropdownMenuItem>
-              <Layers className="mr-2 h-4 w-4" />{" "}
+              <Layers className="mr-2 size-4" />{" "}
               {t("pages.explorer.tree.newFileButton.items.service")}
             </DropdownMenuItem>
           </DialogTrigger>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
-              <Network className="mr-2 h-4 w-4" />
+              <Network className="mr-2 size-4" />
               {t("pages.explorer.tree.newFileButton.items.gateway.label")}
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
@@ -105,7 +105,7 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
                   }}
                 >
                   <DropdownMenuItem>
-                    <Workflow className="mr-2 h-4 w-4" />
+                    <Workflow className="mr-2 size-4" />
                     {t("pages.explorer.tree.newFileButton.items.gateway.route")}
                   </DropdownMenuItem>
                 </DialogTrigger>
@@ -116,7 +116,7 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
                   }}
                 >
                   <DropdownMenuItem>
-                    <Users className="mr-2 h-4 w-4" />
+                    <Users className="mr-2 size-4" />
                     {t(
                       "pages.explorer.tree.newFileButton.items.gateway.consumer"
                     )}

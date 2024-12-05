@@ -18,8 +18,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type muxStart struct {
@@ -163,14 +163,21 @@ func (flow *flow) cronHandler(data []byte) {
 
 		return
 	}
-
-	span := trace.SpanFromContext(ctx)
+	ctx = tracing.AddNamespace(ctx, ns.Name)
+	ctx, end, err := tracing.NewSpan(ctx, "starting cron handler")
+	if err != nil {
+		slog.Debug("cronhandler failed to start span", "error", err)
+	}
+	defer end()
 
 	x, _ := json.Marshal([]string{ns.Name, file.Path, t.String()}) //nolint
 	unique := string(x)
 	md5sum := md5.Sum([]byte(unique))
 	hash := base64.StdEncoding.EncodeToString(md5sum[:])
-
+	traceParent, err := tracing.ExtractTraceParent(ctx)
+	if err != nil {
+		slog.Debug("cronhandler failed to init telemetry", "error", err)
+	}
 	args := &newInstanceArgs{
 		tx:        tx,
 		ID:        uuid.New(),
@@ -179,8 +186,7 @@ func (flow *flow) cronHandler(data []byte) {
 		Input:     make([]byte, 0),
 		Invoker:   "cron",
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
-			TraceID:       span.SpanContext().TraceID().String(),
-			SpanID:        span.SpanContext().SpanID().String(),
+			TraceParent:   traceParent,
 			NamespaceName: ns.Name,
 		},
 		SyncHash: &hash,
@@ -189,13 +195,13 @@ func (flow *flow) cronHandler(data []byte) {
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate") {
-			slog.Debug("Instance creation clash detected, likely due to parallel execution. This is not an error.")
+			slog.DebugContext(ctx, "Instance creation clash detected, likely due to parallel execution. This is not an error.")
 			// this happens on a attempt to create an instance clashed with another server
 
 			return
 		}
 
-		slog.Error("Failed to create new instance from cron job.", "workflow_path", file.Path, "error", err)
+		slog.ErrorContext(ctx, "Failed to create new instance from cron job.", "workflow_path", file.Path, "error", err)
 
 		return
 	}

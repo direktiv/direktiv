@@ -15,11 +15,6 @@ spec:
       {{- include "direktiv.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      annotations:
-        prometheus.io/port: "2112"
-        prometheus.io/path: "/metrics"
-        prometheus.io/scrape: "true"
-        prometheus.io/scheme: "http"
       labels:
         {{- include "direktiv.selectorLabels" . | nindent 8 }}
         app: {{ include "direktiv.fullname" . }}-flow
@@ -58,12 +53,12 @@ spec:
             allowPrivilegeEscalation: false
           resources:
             requests:
-              memory: "128Mi"
+              memory: "256Mi"
             limits:
-              memory: "2048Mi"
+              memory: "4048Mi"
           image: "{{ .Values.registry }}/{{ .Values.image }}:{{ .Values.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
-          command: ["/bin/direktiv", "server"]
+          command: ["/app/direktiv", "start", "api"]
           volumeMounts:
           {{- if .Values.flow.extraVolumeMounts -}}
           {{ toYaml .Values.flow.extraVolumeMounts | nindent 10 }}
@@ -71,9 +66,6 @@ spec:
           ports:
             - name: flow-api
               containerPort: 6665
-              protocol: TCP
-            - name: internal
-              containerPort: 7777
               protocol: TCP
           env:
           - name: DIREKTIV_DEBUG
@@ -110,12 +102,6 @@ spec:
                 key: db
           - name: DIREKTIV_FUNCTIONS_TIMEOUT
             value: {{ .Values.requestTimeout | quote }}
-          - name: DIREKTIV_PROMETHEUS_BACKEND
-          {{- if .Values.prometheus.install }}
-            value: {{ include "direktiv.fullname" . }}-prometheus-server.{{ .Release.Namespace }}
-          {{- else }}
-            value: {{ .Values.prometheus.backendName | quote }}
-          {{- end }}
           - name: DIREKTIV_OPEN_TELEMETRY_BACKEND
             value: {{ include "direktiv.opentelemetry-backend" . }}
           - name: DIREKTIV_KNATIVE_SERVICE_ACCOUNT
@@ -177,6 +163,19 @@ spec:
             value: "{{ .Values.functions.limits.cpu.large }}"
           - name: DIREKTIV_KNATIVE_SIZE_DISK_LARGE
             value: "{{ .Values.functions.limits.disk.large }}"
+          # NATS Configuration
+          - name: DIREKTIV_NATS_INSTALLED
+            value: "{{ .Values.nats.install }}"
+          - name: DIREKTIV_NATS_HOST
+            value: "direktiv-nats.{{ .Release.Namespace }}.svc.cluster.local"          
+          - name: DIREKTIV_NATS_PORT
+            value: "{{ .Values.nats.config.port }}"
+          - name: DIREKTIV_NATS_TLS
+            value: "{{ .Values.nats.config.tls.enabled }}"
+          - name: DIREKTIV_NATS_USERNAME
+            value: "{{ .Values.nats.config.routeURLs.user }}"
+          - name: DIREKTIV_NATS_PASSWORD
+            value: "{{ .Values.nats.config.routeURLs.password }}"
 
       volumes:
 {{- if .Values.opentelemetry.enabled }}

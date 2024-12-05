@@ -27,7 +27,7 @@ function Datepicker({
           "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2  focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ",
           "border border-gray-4 hover:bg-gray-2",
           "dark:border-gray-dark-4 dark:hover:bg-gray-dark-2",
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          "size-7 bg-transparent p-0 opacity-50 hover:opacity-100"
         ),
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
@@ -42,7 +42,7 @@ function Datepicker({
           "bg-transparent data-[state=open]:bg-transparent",
           "hover:bg-gray-3",
           "dark:hover:bg-gray-dark-3",
-          "h-9 w-9 p-0 font-medium aria-selected:opacity-100 aria-selected:bg-gray-12 dark:aria-selected:bg-gray-dark-12"
+          "size-9 p-0 font-medium aria-selected:opacity-100 aria-selected:bg-gray-12 dark:aria-selected:bg-gray-dark-12"
         ),
         day_selected: twMergeClsx(
           "bg-gray-8 hover:bg-gray-12 focus:bg-gray-12 text-gray-1 hover:text-gray-1 focus:text-gray-1",
@@ -57,8 +57,8 @@ function Datepicker({
         ...classNames,
       }}
       components={{
-        IconLeft: () => <ChevronLeft className="h-4 w-4" />,
-        IconRight: () => <ChevronRight className="h-4 w-4" />,
+        IconLeft: () => <ChevronLeft className="size-4" />,
+        IconRight: () => <ChevronRight className="size-4" />,
       }}
       {...props}
     />

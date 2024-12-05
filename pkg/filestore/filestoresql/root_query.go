@@ -64,6 +64,7 @@ func (q *RootQuery) ListDirektivFilesWithData(ctx context.Context) ([]*filestore
 						SELECT *, length(data) AS size
 						FROM filesystem_files 
 						WHERE root_id=? AND typ <> 'directory' AND typ <> 'file'
+						ORDER BY path ASC
 						`, q.rootID).Find(&list)
 	if res.Error != nil {
 		return nil, res.Error
