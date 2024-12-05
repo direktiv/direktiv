@@ -78,8 +78,8 @@ cluster-direktiv-delete: ## Deletes direktiv from cluster
 
 .PHONY: cluster-direktiv
 cluster-direktiv: ## Installs direktiv in cluster
-	kubectl wait -n ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller 
-	kubectl wait -n ingress-nginx --for=condition=complete job --selector=app.kubernetes.io/component=admission-webhook
+	kubectl wait -n ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=60s
+	kubectl wait -n ingress-nginx --for=condition=complete job --selector=app.kubernetes.io/component=admission-webhook --timeout=60s
 	helm install --set database.host=postgres.default.svc \
 	--set database.port=5432 \
 	--set database.user=admin \
