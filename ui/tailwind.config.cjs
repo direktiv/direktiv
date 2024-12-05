@@ -19,7 +19,7 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx}",
     "./node_modules/@tremor/**/*.{js,ts,jsx,tsx}",
   ],
-  plugins: [require("tailwindcss-animate"), require("@headlessui/tailwindcss")],
+  plugins: [require("tailwindcss-animate")],
   darkMode: ["class", '[data-theme="dark"]'],
   theme: {
     transparent: "transparent",

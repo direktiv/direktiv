@@ -78,7 +78,7 @@ const FileRow = ({
               }}
             >
               <DropdownMenuItem>
-                <Trash className="mr-2 h-4 w-4" />
+                <Trash className="mr-2 size-4" />
                 {t("pages.explorer.tree.list.contextMenu.delete")}
               </DropdownMenuItem>
             </DialogTrigger>
@@ -90,7 +90,7 @@ const FileRow = ({
               }}
             >
               <DropdownMenuItem>
-                <TextCursorInput className="mr-2 h-4 w-4" />
+                <TextCursorInput className="mr-2 size-4" />
                 {t("pages.explorer.tree.list.contextMenu.rename")}
               </DropdownMenuItem>
             </DialogTrigger>

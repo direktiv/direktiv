@@ -134,7 +134,7 @@ const Layout = () => {
             <li key={itemIdx}>
               <div className="group relative flex items-start space-x-3 py-4">
                 <div className="shrink-0">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg">
+                  <span className="inline-flex size-10 items-center justify-center rounded-lg">
                     {item.icon}
                   </span>
                 </div>

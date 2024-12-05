@@ -59,7 +59,7 @@ const ItemRow = <ItemType,>({
                 onClick={onEdit}
               >
                 <DropdownMenuItem>
-                  <Pencil className="mr-2 h-4 w-4" />
+                  <Pencil className="mr-2 size-4" />
                   {t("pages.settings.generic.contextMenu.edit")}
                 </DropdownMenuItem>
               </DialogTrigger>
@@ -73,7 +73,7 @@ const ItemRow = <ItemType,>({
                 onClick={onDownload}
               >
                 <DropdownMenuItem>
-                  <DownloadCloud className="mr-2 h-4 w-4" />
+                  <DownloadCloud className="mr-2 size-4" />
                   {t("pages.settings.generic.contextMenu.download")}
                 </DropdownMenuItem>
               </div>
@@ -85,7 +85,7 @@ const ItemRow = <ItemType,>({
               onClick={() => onDelete(item)}
             >
               <DropdownMenuItem>
-                <Trash className="mr-2 h-4 w-4" />
+                <Trash className="mr-2 size-4" />
                 {t("pages.settings.generic.contextMenu.delete")}
               </DropdownMenuItem>
             </DialogTrigger>

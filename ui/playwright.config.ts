@@ -82,7 +82,7 @@ export default defineConfig({
     process.env.PLAYWRIGHT_USE_VITE === "TRUE"
       ? {
           timeout: 60000,
-          command: `yarn run vite --port ${baseURL.port}`,
+          command: `pnpm exec vite --port ${baseURL.port}`,
           url: baseURL.toString(),
           reuseExistingServer: !process.env.PLAYWRIGHT_CI,
         }

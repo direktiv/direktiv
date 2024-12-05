@@ -1,7 +1,6 @@
-import "rapidoc";
 import "./styles/RapiDoc.css";
 
-import exampleSpec from "~/design/RapiDoc/example.yaml";
+import exampleSpec from "~/design/RapiDoc/example.json";
 import { useEffect } from "react";
 
 export function RapiDoc() {

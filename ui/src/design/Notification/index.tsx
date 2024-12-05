@@ -33,7 +33,7 @@ const NotificationLoading: FC<PropsWithChildren> = ({ children }) => (
   <div className="flex flex-col focus:bg-gray-3 dark:focus:bg-gray-dark-3">
     <div className="flex items-center px-2">
       <div className="w-max">
-        <Loader2 className="h-4 w-4 animate-spin text-gray-11 dark:text-gray-dark-11" />
+        <Loader2 className="size-4 animate-spin text-gray-11 dark:text-gray-dark-11" />
       </div>
       <NotificationText>{children}</NotificationText>
     </div>
@@ -54,7 +54,7 @@ const NotificationMessage = ({
     <div className="flex items-center px-2">
       <div className="w-max">
         <Icon
-          className="h-4 w-4 text-gray-11 dark:text-gray-dark-11"
+          className="size-4 text-gray-11 dark:text-gray-dark-11"
           aria-hidden="true"
         />
       </div>
@@ -82,7 +82,7 @@ const Notification: FC<NotificationPropsType> = ({
           role="button"
           data-testid="notification-bell"
         >
-          <div className="relative h-6 w-6">
+          <div className="relative size-6">
             <Bell className="relative" />
             {showIndicator && (
               <div

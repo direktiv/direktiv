@@ -56,7 +56,7 @@ export const GitButtonBar = () => (
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem>
-            <Undo className="mr-2 h-4 w-4" />
+            <Undo className="mr-2 size-4" />
             Revert to Previous
           </DropdownMenuItem>
         </DropdownMenuContent>

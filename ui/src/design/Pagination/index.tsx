@@ -50,9 +50,9 @@ export const PaginationLink = React.forwardRef<
       )}
     >
       {icon === "left" ? (
-        <RxChevronLeft className="h-5 w-5" aria-hidden="true" />
+        <RxChevronLeft className="size-5" aria-hidden="true" />
       ) : (
-        <RxChevronRight className="h-5 w-5" aria-hidden="true" />
+        <RxChevronRight className="size-5" aria-hidden="true" />
       )}
     </button>
   ) : (

@@ -19,7 +19,7 @@ type UseMutationParam<TData, TError, TVariables> = UseMutationOptions<
 const useMutationWithPermissions = <
   TData = unknown,
   TError = QueryErrorType,
-  TVariables = void
+  TVariables = void,
 >(
   useMutationParams: UseMutationParam<TData, TError, TVariables>
 ) => {
