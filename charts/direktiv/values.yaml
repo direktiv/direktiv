@@ -182,16 +182,6 @@ fluent-bit:
           database                ${PG_DB_NAME}
           host                    ${PG_HOST}
           password                ${PG_PASSWORD}
-      [OUTPUT]
-          name                    http
-          match                   *
-          host                    ${DATA_PREPPER_HOST}
-          port                    2021
-          URI                     /log/ingest
-          Format                  json
-          tls                     off
-          HTTP_User               admin
-          HTTP_Passwd             admin
     filters: |
       [FILTER]
           Name                    rewrite_tag
