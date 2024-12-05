@@ -61,6 +61,13 @@ type Config struct {
 	NatsTLS       bool   `env:"DIREKTIV_NATS_TLS"       envDefault:"false"`
 	NatsUsername  string `env:"DIREKTIV_NATS_USERNAME"`
 	NatsPassword  string `env:"DIREKTIV_NATS_PASSWORD"`
+
+	OpenSearchInstalled bool   `env:"DIREKTIV_OPENSEARCH_INSTALLED"`
+	OpenSearchProtocol  string `env:"DIREKTIV_OPENSEARCH_PROTOCOL"`
+	OpenSearchHost      string `env:"DIREKTIV_OPENSEARCH_HOST"`
+	OpenSearchPort      int    `env:"DIREKTIV_OPENSEARCH_PORT"`
+	OpenSearchUsername  string `env:"DIREKTIV_OPENSEARCH_USERNAME"`
+	OpenSearchPassword  string `env:"DIREKTIV_OPENSEARCH_PASSWORD"`
 }
 
 func (conf *Config) GetFunctionsTimeout() time.Duration {

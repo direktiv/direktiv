@@ -37,3 +37,7 @@ dependencies:
     repository: "https://nats-io.github.io/k8s/helm/charts"
     version: "1.2.6"
     condition: nats.install
+  - name: opensearch
+    repository: "https://opensearch-project.github.io/helm-charts/"
+    version: "2.27.1"
+    condition: opensearch.install
