@@ -351,9 +351,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 			return nil, fmt.Errorf("initialize NATS connection, err: %w", err)
 		}
 
-		if err := srv.publishDemoMessage("test", "test-connection"); err != nil {
-			return nil, fmt.Errorf("testing NATS connection, err: %w", err)
-		}
 		slog.Info("connected to NATS")
 	}
 
@@ -639,17 +636,6 @@ func (srv *server) initNATS(config *core.Config) error {
 	// Store the NATS connection in the server struct
 	srv.nats = nc
 	slog.Info("successfully connected to NATS")
-
-	return nil
-}
-
-// Example of publishing a message to NATS.
-func (srv *server) publishDemoMessage(subject, msg string) error {
-	err := srv.nats.Publish(subject, []byte(msg))
-	if err != nil {
-		return fmt.Errorf("failed to publish message, err: %w", err)
-	}
-	slog.Info("message published", "subject", subject, "msg", msg)
 
 	return nil
 }
