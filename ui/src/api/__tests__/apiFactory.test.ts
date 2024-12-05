@@ -1,5 +1,4 @@
-import "cross-fetch/polyfill";
-
+import { HttpResponse, http } from "msw";
 import { ResponseParser, apiFactory } from "../apiFactory";
 import {
   afterAll,
@@ -15,7 +14,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { ApiErrorSchema } from "../errorHandling";
 import { UseQueryWrapper } from "../../../test/utils";
-import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { z } from "zod";
 
@@ -31,52 +29,52 @@ const apiEndpointHeaders = "http://localhost/headers";
 const apiEndpointTextResponseWithHeaders = "http://localhost/text-and-headers";
 
 const testApi = setupServer(
-  rest.get(apiEndpoint, (req, res, ctx) =>
-    req?.headers?.get("direktiv-token") === API_KEY
-      ? res(
-          ctx.json({
-            response: "this works",
-          })
-        )
-      : res(ctx.status(401))
+  http.get(apiEndpoint, ({ request }) =>
+    request?.headers?.get("direktiv-token") === API_KEY
+      ? HttpResponse.json({
+          response: "this works",
+        })
+      : new HttpResponse(null, { status: 401 })
   ),
-  rest.get(apiEndpointWithDynamicSegment, (req, res, ctx) =>
-    req?.headers?.get("direktiv-token") === API_KEY
-      ? res(
-          ctx.json({
-            response: "dynamic segment this works",
-          })
-        )
-      : res(ctx.status(401))
+  http.get(apiEndpointWithDynamicSegment, ({ request }) =>
+    request?.headers?.get("direktiv-token") === API_KEY
+      ? HttpResponse.json({
+          response: "dynamic segment this works",
+        })
+      : new HttpResponse(null, { status: 401 })
   ),
-  rest.get(apiEndpoint404, (_req, res, ctx) => res(ctx.status(404))),
-  rest.get(apiEndpointJSONError, (_req, res, ctx) =>
-    res(
-      ctx.status(422),
-      ctx.json({ error: { code: 422, message: "error message" } })
+  http.get(apiEndpoint404, () => new HttpResponse(null, { status: 404 })),
+  http.get(apiEndpointJSONError, () =>
+    HttpResponse.json(
+      {
+        error: { code: 422, message: "error message" },
+      },
+      {
+        status: 422,
+      }
     )
   ),
-  rest.get(apiEndpointEmptyResponse, (_req, res, ctx) => res(ctx.status(204))),
-  rest.get(apiEndpointTextResponse, (_req, res, ctx) =>
-    res(ctx.body("this is a text response"))
+  http.get(
+    apiEndpointEmptyResponse,
+    () => new HttpResponse(null, { status: 204 })
   ),
-  rest.get(apiEndpointTextResponseWithHeaders, (_req, res, ctx) =>
-    res(
-      ctx.set("custom-header", "mock-value"),
-      ctx.body("this is a text response with headers")
-    )
+  http.get(apiEndpointTextResponse, () =>
+    HttpResponse.text("this is a text response")
   ),
-  rest.post(apiEndpointPost, async (req, res, ctx) => {
-    const body = await req.text();
-    return res(
-      ctx.json({
-        body,
-      })
-    );
+  http.get(apiEndpointTextResponseWithHeaders, () =>
+    HttpResponse.text("this is a text response with headers", {
+      headers: {
+        "custom-header": "mock-value",
+      },
+    })
+  ),
+  http.post(apiEndpointPost, async ({ request }) => {
+    const body = await request.text();
+    return HttpResponse.json({ body });
   }),
   // this api endpoint returns the headers that were sent to it as a response
-  rest.post(apiEndpointHeaders, (req, res, ctx) =>
-    res(ctx.json(Object.fromEntries(req?.headers.entries())))
+  http.post(apiEndpointHeaders, ({ request }) =>
+    HttpResponse.json(Object.fromEntries(request?.headers.entries()))
   )
 );
 

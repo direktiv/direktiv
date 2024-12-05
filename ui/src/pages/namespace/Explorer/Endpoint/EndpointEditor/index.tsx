@@ -71,7 +71,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
                           "pages.explorer.endpoint.editor.form.serialisationError"
                         )}
                       </Alert>
-                      <ScrollArea className="h-full w-full whitespace-nowrap">
+                      <ScrollArea className="size-full whitespace-nowrap">
                         <pre className="grow text-sm text-primary-500">
                           {JSON.stringify(endpointConfigError, null, 2)}
                         </pre>

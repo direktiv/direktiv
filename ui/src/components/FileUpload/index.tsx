@@ -50,7 +50,7 @@ const FileUpload = ({ onChange }: FileUploadProps) => {
       </label>
       <InputWithButton>
         <Input id="file-upload" type="file" onChange={onFilepickerChange} />
-        {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {isUploading && <Loader2 className="mr-2 size-4 animate-spin" />}
       </InputWithButton>
     </fieldset>
   );
