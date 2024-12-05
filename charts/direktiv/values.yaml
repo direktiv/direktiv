@@ -67,6 +67,7 @@ flow:
   
   # -- Knative max scale
   max_scale: 5
+  sidecar: 
 
 database:
   # -- database host
