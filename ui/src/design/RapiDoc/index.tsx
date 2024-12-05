@@ -11,8 +11,6 @@ export function RapiDoc() {
     }
   }, []);
 
-  Hello;
-
   return (
     <div style={{ height: "100%", width: "100%", overflow: "auto" }}>
       <rapi-doc
