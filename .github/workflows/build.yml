@@ -180,7 +180,7 @@ jobs:
         run: |
           kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.12.2/operator.yaml
           kubectl create ns knative-serving
-          kubectl apply -f https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/kubernetes/install/knative/basic.yaml
+          kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/knative/basic.yaml
           kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.11.1/contour.yaml
           kubectl delete namespace contour-external
 
