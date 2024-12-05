@@ -4,14 +4,9 @@ KIND_CONFIG ?= kind-config.yaml
 cluster-setup: cluster-create cluster-prep cluster-direktiv
 
 .PHONY: cluster-create
-cluster-create: cluster-build
+cluster-create: 
 	kind delete clusters --all
 	kind create cluster --config ${KIND_CONFIG}
-
-	if ! docker inspect kind-registry >/dev/null 2>&1; then \
-		docker run -d -p "127.0.0.1:5001:5000" --network bridge --name kind-registry --restart=always registry:2; \
-		docker network connect kind kind-registry; \
-	fi
 
 	if ! docker inspect proxy-docker-hub >/dev/null 2>&1; then \
 		docker run -d --name proxy-docker-hub --restart=always \
@@ -19,6 +14,13 @@ cluster-create: cluster-build
 		-e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io \
 		registry:2;\
 	fi
+
+	if ! docker inspect kind-registry >/dev/null 2>&1; then \
+		docker run -d -p "127.0.0.1:5001:5000" --network bridge --name kind-registry --restart=always registry:2; \
+		docker network connect kind kind-registry; \
+	fi
+
+	DOCKER_BUILDKIT=1 docker build --push -t localhost:5001/direktiv:dev .
 
 	if ! docker inspect proxy-quay >/dev/null 2>&1; then \
 		docker run -d --name proxy-quay --restart=always \
@@ -56,7 +58,7 @@ cluster-create: cluster-build
 	fi
 
 .PHONY: cluster-prep
-cluster-prep: cluster-prep
+cluster-prep: 
 	kubectl apply -f kind/postgres.yaml
 	kubectl apply -f kind/deploy-ingress-nginx.yaml
 	kubectl apply -f kind/svc-configmap.yaml
@@ -78,8 +80,8 @@ cluster-direktiv-delete: ## Deletes direktiv from cluster
 
 .PHONY: cluster-direktiv
 cluster-direktiv: ## Installs direktiv in cluster
-	kubectl wait -n ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=60s
-	kubectl wait -n ingress-nginx --for=condition=complete job --selector=app.kubernetes.io/component=admission-webhook --timeout=60s
+	kubectl wait -n ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
+	kubectl wait -n ingress-nginx --for=condition=complete job --selector=app.kubernetes.io/component=admission-webhook --timeout=120s
 	helm install --set database.host=postgres.default.svc \
 	--set database.port=5432 \
 	--set database.user=admin \
