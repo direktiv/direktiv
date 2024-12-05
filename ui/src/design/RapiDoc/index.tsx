@@ -10,7 +10,6 @@ export function RapiDoc() {
       docEl.loadSpec(exampleSpec);
     }
   }, []);
-
   return (
     <div style={{ height: "100%", width: "100%", overflow: "auto" }}>
       <rapi-doc
