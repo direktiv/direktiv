@@ -24,7 +24,7 @@ This repository contains the user interface for [direktiv](https://github.com/di
   - when the required nvm version is not installed on your machine yet, you have to run nvm install once to do so
 - this project uses [pnpm](https://pnpm.io/) as a package manager, make sure to install it via [`corepack`](https://pnpm.io/installation#using-corepack)
 
-# Setup development environment
+# Setup development environment 1
 
 - run `pnpm` to install all dependencies
 - create a `.env` file, copy the content from `.env.example` and change the variables to your needs
