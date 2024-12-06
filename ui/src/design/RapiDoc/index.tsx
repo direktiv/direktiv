@@ -1,28 +1,20 @@
 import "./styles/RapiDoc.css";
 import "rapidoc";
 
-import { useEffect } from "react";
+import { twMergeClsx } from "~/util/helpers";
+
+// import { useEffect } from "react";
 
 interface RapiDocProps {
-  spec: string | object;
+  spec: object;
   className?: string;
 }
 
 export function RapiDoc({ spec, className }: RapiDocProps) {
-  useEffect(() => {
-    const docEl = document.getElementById("rapidoc") as RapiDocElement;
-    if (docEl) {
-      if (typeof spec === "string") {
-        docEl.setAttribute("spec-url", spec);
-      } else {
-        docEl.loadSpec(spec);
-      }
-    }
-  }, [spec]);
-
   return (
-    <div className={`${className} size-full overflow-scroll`}>
+    <div className={twMergeClsx("size-full overflow-scroll", className)}>
       <rapi-doc
+        ref={(rapiDocElement) => rapiDocElement?.loadSpec(spec)}
         id="rapidoc"
         render-style="read"
         allow-try="false"
