@@ -16,5 +16,6 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     spec: OpenApiSpec,
+    className: "h-[80vh]",
   },
 };
