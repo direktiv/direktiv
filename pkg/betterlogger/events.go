@@ -16,8 +16,8 @@ type CloudEventBusAttributes struct {
 	Namespace string // Namespace of the event bus
 }
 
-// LogCloudEventDebug logs a debug message with cloud event bus attributes.
-func LogCloudEventDebug(ctx context.Context, attr CloudEventBusAttributes, msg string, sAttr ...slog.Attr) {
+// buildCloudEventAttributes constructs the base attributes for cloud event logging.
+func buildCloudEventAttributes(attr CloudEventBusAttributes, additionalAttrs ...slog.Attr) []slog.Attr {
 	baseAttrs := []slog.Attr{
 		slog.String("event_id", attr.EventID),
 		slog.String("source", attr.Source),
@@ -25,42 +25,27 @@ func LogCloudEventDebug(ctx context.Context, attr CloudEventBusAttributes, msg s
 		slog.String("event_type", attr.EventType),
 		slog.String("namespace", attr.Namespace),
 	}
-	internal.LogWithAttributes(ctx, slog.LevelDebug, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
+
+	return internal.MergeAttributes(baseAttrs, additionalAttrs...)
+}
+
+// LogCloudEventDebug logs a debug message with cloud event bus attributes.
+func LogCloudEventDebug(ctx context.Context, attr CloudEventBusAttributes, msg string, sAttr ...slog.Attr) {
+	internal.LogWithAttributes(ctx, slog.LevelDebug, msg, buildCloudEventAttributes(attr, sAttr...)...)
 }
 
 // LogCloudEventInfo logs an info message with cloud event bus attributes.
 func LogCloudEventInfo(ctx context.Context, attr CloudEventBusAttributes, msg string, sAttr ...slog.Attr) {
-	baseAttrs := []slog.Attr{
-		slog.String("event_id", attr.EventID),
-		slog.String("source", attr.Source),
-		slog.String("subject", attr.Subject),
-		slog.String("event_type", attr.EventType),
-		slog.String("namespace", attr.Namespace),
-	}
-	internal.LogWithAttributes(ctx, slog.LevelInfo, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
+	internal.LogWithAttributes(ctx, slog.LevelInfo, msg, buildCloudEventAttributes(attr, sAttr...)...)
 }
 
 // LogCloudEventWarn logs a warning message with cloud event bus attributes.
 func LogCloudEventWarn(ctx context.Context, attr CloudEventBusAttributes, msg string, sAttr ...slog.Attr) {
-	baseAttrs := []slog.Attr{
-		slog.String("event_id", attr.EventID),
-		slog.String("source", attr.Source),
-		slog.String("subject", attr.Subject),
-		slog.String("event_type", attr.EventType),
-		slog.String("namespace", attr.Namespace),
-	}
-	internal.LogWithAttributes(ctx, slog.LevelWarn, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
+	internal.LogWithAttributes(ctx, slog.LevelWarn, msg, buildCloudEventAttributes(attr, sAttr...)...)
 }
 
 // LogCloudEventError logs an error message with cloud event bus attributes.
 func LogCloudEventError(ctx context.Context, attr CloudEventBusAttributes, msg string, err error, sAttr ...slog.Attr) {
-	baseAttrs := []slog.Attr{
-		slog.String("event_id", attr.EventID),
-		slog.String("source", attr.Source),
-		slog.String("subject", attr.Subject),
-		slog.String("event_type", attr.EventType),
-		slog.String("namespace", attr.Namespace),
-		slog.String("error", err.Error()),
-	}
-	internal.LogWithAttributes(ctx, slog.LevelError, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
+	errorAttr := slog.String("error", err.Error())
+	internal.LogWithAttributes(ctx, slog.LevelError, msg, buildCloudEventAttributes(attr, append(sAttr, errorAttr)...)...)
 }

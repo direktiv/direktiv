@@ -20,54 +20,47 @@ type InstanceMemoryAttributes struct {
 	State string // Memory state of the instance
 }
 
-// LogInstanceDebug logs a debug message with instance attributes.
-func LogInstanceDebug(ctx context.Context, attr InstanceAttributes, msg string, sAttr ...slog.Attr) {
+// buildInstanceAttributes constructs the base attributes for instance logging.
+func buildInstanceAttributes(attr InstanceAttributes, additionalAttrs ...slog.Attr) []slog.Attr {
 	baseAttrs := []slog.Attr{
 		slog.String("namespace", attr.Namespace),
 		slog.String("instance", attr.InstanceID),
 		slog.String("workflow", attr.WorkflowPath),
 	}
-	internal.LogWithAttributes(ctx, slog.LevelDebug, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
+
+	return internal.MergeAttributes(baseAttrs, additionalAttrs...)
+}
+
+// buildInstanceMemoryAttributes constructs the base attributes for instance memory logging.
+func buildInstanceMemoryAttributes(attr InstanceMemoryAttributes, additionalAttrs ...slog.Attr) []slog.Attr {
+	baseAttrs := buildInstanceAttributes(attr.InstanceAttributes)
+	memoryAttr := slog.String("state", attr.State)
+
+	return internal.MergeAttributes(baseAttrs, append(additionalAttrs, memoryAttr)...)
+}
+
+// LogInstanceDebug logs a debug message with instance attributes.
+func LogInstanceDebug(ctx context.Context, attr InstanceAttributes, msg string, sAttr ...slog.Attr) {
+	internal.LogWithAttributes(ctx, slog.LevelDebug, msg, buildInstanceAttributes(attr, sAttr...)...)
 }
 
 // LogInstanceInfo logs an info message with instance attributes.
 func LogInstanceInfo(ctx context.Context, attr InstanceAttributes, msg string, sAttr ...slog.Attr) {
-	baseAttrs := []slog.Attr{
-		slog.String("namespace", attr.Namespace),
-		slog.String("instance", attr.InstanceID),
-		slog.String("workflow", attr.WorkflowPath),
-	}
-	internal.LogWithAttributes(ctx, slog.LevelInfo, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
+	internal.LogWithAttributes(ctx, slog.LevelInfo, msg, buildInstanceAttributes(attr, sAttr...)...)
 }
 
 // LogInstanceWarn logs a warning message with instance attributes.
 func LogInstanceWarn(ctx context.Context, attr InstanceAttributes, msg string, sAttr ...slog.Attr) {
-	baseAttrs := []slog.Attr{
-		slog.String("namespace", attr.Namespace),
-		slog.String("instance", attr.InstanceID),
-		slog.String("workflow", attr.WorkflowPath),
-	}
-	internal.LogWithAttributes(ctx, slog.LevelWarn, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
+	internal.LogWithAttributes(ctx, slog.LevelWarn, msg, buildInstanceAttributes(attr, sAttr...)...)
 }
 
 // LogInstanceError logs an error message with instance attributes.
 func LogInstanceError(ctx context.Context, attr InstanceAttributes, msg string, err error, sAttr ...slog.Attr) {
-	baseAttrs := []slog.Attr{
-		slog.String("namespace", attr.Namespace),
-		slog.String("instance", attr.InstanceID),
-		slog.String("workflow", attr.WorkflowPath),
-		slog.String("error", err.Error()),
-	}
-	internal.LogWithAttributes(ctx, slog.LevelError, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
+	errorAttr := slog.String("error", err.Error())
+	internal.LogWithAttributes(ctx, slog.LevelError, msg, buildInstanceAttributes(attr, append(sAttr, errorAttr)...)...)
 }
 
 // LogInstanceMemoryDebug logs a debug message with instance memory attributes.
 func LogInstanceMemoryDebug(ctx context.Context, attr InstanceMemoryAttributes, msg string, sAttr ...slog.Attr) {
-	baseAttrs := []slog.Attr{
-		slog.String("namespace", attr.Namespace),
-		slog.String("instance", attr.InstanceID),
-		slog.String("workflow", attr.WorkflowPath),
-		slog.String("state", attr.State),
-	}
-	internal.LogWithAttributes(ctx, slog.LevelDebug, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
+	internal.LogWithAttributes(ctx, slog.LevelDebug, msg, buildInstanceMemoryAttributes(attr, sAttr...)...)
 }
