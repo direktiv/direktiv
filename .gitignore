@@ -60,7 +60,6 @@ issuer.*
 build/docker/all/kubernetes
 build/docker/all/*.tar
 build/docker/all/*.tar.gz
-deploy*.yaml
 
 kubernetes/charts/knative/charts
 kubernetes/charts/knative/Chart.lock
