@@ -67,6 +67,7 @@ flow:
   
   # -- Knative max scale
   max_scale: 5
+  sidecar: 
 
 database:
   # -- database host
@@ -298,3 +299,35 @@ nats:
       port: 4222
       tls:
         enabled: false
+
+opensearch:
+  install: false
+  clusterName: "direktiv-opensearch-cluster"
+  persistence:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    size: 8Gi
+    storageClassName: "local-path"
+  services:
+    enviroment:
+  extraEnvs: 
+    - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
+      value: direktivTr0&3
+    - name: "ES_JAVA_OPTS"
+      value: "Xms750m -Xmx750m"
+  plugins:
+    security:
+      ssl_cert_reload_enabled: true
+      ssl:
+        transport:
+          pemcert_filepath: esnode.pem
+          pemkey_filepath: esnode-key.pem
+          pemtrustedcas_filepath: root-ca.pem
+          enforce_hostname_verification: false
+        http:
+          enabled: false
+      allow_unsafe_democertificates: true
+
+  protocol: https
+  httpPort: 9200

@@ -22,7 +22,9 @@ export const Default = () => (
     </div>
     <DrawerContent>
       <Logo className="mx-2 mb-5 mt-1 h-8 w-auto" />
-      This is the <code>DrawerMenu</code> component. Menu content goes here.
+      This is the <code>
+        DrawerMenu
+      </code> component. Menu content goes here.
     </DrawerContent>
   </Drawer>
 );

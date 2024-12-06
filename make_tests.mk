@@ -7,17 +7,16 @@ tests-scan-ui: direktiv-ui
 	trivy image --exit-code 1 --ignore-unfixed localhost:5000/frontend
 
 
-DIREKTIV_HOST := $(shell kubectl -n direktiv get services direktiv-ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
-.PHONY: tests-k3s
-tests-k3s: k3s-wait
-tests-k3s: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test-k3s [JEST_PREFIX=/tests/namespaces]	
+# DIREKTIV_HOST := $(shell kubectl -n direktiv get services direktiv-ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
+.PHONY: tests-api
+tests-api: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test-k3s [JEST_PREFIX=/tests/namespaces]	
+	kubectl wait --for=condition=ready pod -l "app=direktiv-flow"
 	docker run -it --rm \
 	-v `pwd`/tests:/tests \
-	-e 'DIREKTIV_HOST=${DIREKTIV_HOST}' \
+	-e 'DIREKTIV_HOST=http://${DIREKTIV_HOST}' \
 	-e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
+	--network=host \
 	node:lts-alpine3.18 npm --prefix "/tests" run jest -- ${JEST_PREFIX}/ --runInBand
-
-
 
 TEST_PACKAGES := $(shell find . -type f -name '*_test.go' | sed -e 's/^\.\///g' | sed -r 's|/[^/]+$$||'  |sort |uniq)
 UNITTEST_PACKAGES := $(shell echo ${TEST_PACKAGES} | sed 's/ /\n/g' | awk '{print "github.com/direktiv/direktiv/" $$0}')

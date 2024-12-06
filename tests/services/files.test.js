@@ -87,7 +87,7 @@ states:
 
 	it(`should invoke the '/a.yaml' workflow on a fresh namespace`, async () => {
 		helpers.sleep(10)
-		const req = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${namespaceName}/instances?path=a.yaml&wait=true`)
+		const req = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=a.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			var: {
@@ -98,7 +98,6 @@ states:
 				e: null,
 			},
 		})
-		console.log(req.body.return.bash)
 
 		expect(req.body.return.bash[0]).toMatchObject({
 			result: '',
@@ -132,7 +131,7 @@ states:
     result: x`))
 
 	it(`should invoke the '/a.yaml' workflow on a non-fresh namespace`, async () => {
-		const req = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${namespaceName}/instances?path=a.yaml&wait=true`)
+		const req = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=a.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			var: {
@@ -143,7 +142,6 @@ states:
 				e: 'CnN0YXRlczoKLSBpZDogYQogIHR5cGU6IG5vb3AKICB0cmFuc2Zvcm06CiAgICByZXN1bHQ6IHg=',
 			},
 		})
-		console.log(req.body.return.bash)
 		expect(req.body.return.bash[0]).toMatchObject({
 			result: 5,
 			success: true,

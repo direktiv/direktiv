@@ -34,10 +34,10 @@ const Slider = React.forwardRef<
     </SliderPrimitive.Track>
     <SliderPrimitive.Thumb
       className={twMergeClsx(
-        "block h-5 w-5 rounded-full ",
+        "block size-5 rounded-full ",
         "transition-colors focus:outline-none",
         "border-2 focus:ring-2 focus:ring-offset-2",
-        "border-gray-12 bg-gray-1 focus:ring-gray-7 dark:focus:ring-offset-gray-1",
+        "border-gray-12 bg-gray-1 focus:ring-gray-7 focus:ring-offset-gray-1",
         "dark:border-gray-dark-12 dark:bg-gray-dark-1 dark:focus:ring-gray-dark-7 dark:focus:ring-offset-gray-dark-1"
       )}
     />

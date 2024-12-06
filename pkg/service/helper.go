@@ -36,18 +36,13 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 		initContainers = append(initContainers, corev1.Container{
 			Name:  "init",
 			Image: c.KnativeSidecar,
-			Env: []corev1.EnvVar{
-				{
-					Name:  "DIREKTIV_APP",
-					Value: "init",
-				},
-			},
 			VolumeMounts: []corev1.VolumeMount{
 				{
 					Name:      "bindir",
 					MountPath: "/usr/share/direktiv/",
 				},
 			},
+			Command: []string{"/app/direktiv", "start", "dinit"},
 		})
 	}
 
@@ -217,6 +212,7 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 			},
 		},
 		SecurityContext: secContext,
+		Command:         []string{"/app/direktiv", "start", "sidecar"},
 	}
 
 	return []corev1.Container{uc, sc}, nil
@@ -340,11 +336,6 @@ func buildEnvVars(forSidecar bool, c *core.Config, sv *core.ServiceFileData) []c
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 			Name:  direktivFlowEndpoint,
 			Value: fmt.Sprintf("direktiv-flow.%s", namespace),
-		})
-
-		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  "DIREKTIV_APP",
-			Value: "sidecar",
 		})
 	} else {
 		for _, v := range sv.Envs {

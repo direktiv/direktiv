@@ -4,7 +4,8 @@ import { headers } from "./testutils";
 
 const apiUrl = process.env.PLAYWRIGHT_UI_BASE_URL;
 
-export const createNamespaceName = () => `playwright-${faker.git.shortSha()}`;
+export const createNamespaceName = () =>
+  `playwright-${faker.git.commitSha({ length: 7 })}`;
 
 export const createNamespace = (name: string = createNamespaceName()) =>
   new Promise<string>((resolve, reject) => {

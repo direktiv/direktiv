@@ -62,8 +62,6 @@ jobs:
       - name: Run unit tests
         run: |
           go test ./... -coverprofile coverage.out -covermode count
-        env:
-          DIREKTIV_APP: flow
 
   build:
     needs: [backend-license, backend-lint, backend-test]
@@ -171,11 +169,12 @@ jobs:
       - name: Create namespace for the DB
         run: kubectl create ns postgres
 
-      - name: Install Postgres using Percona Operator
+      - name: Install Postgres
         run: |
-          helm repo add percona https://percona.github.io/percona-helm-charts/
-          helm install --create-namespace -n postgres pg-operator percona/pg-operator --version 2.4.2 --wait
-          kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/db/basic.yaml
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm install postgres bitnami/postgresql \
+            --namespace postgres \
+            --set primary.persistence.enabled=false
 
       - name: Install Knative
         run: |
@@ -188,15 +187,15 @@ jobs:
       - name: Wait for Direktiv pods to be ready
         run: |
           sleep 1
-          kubectl wait -n postgres --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv-cluster --timeout=120s
+          kubectl wait --namespace postgres --for=condition=Ready pod --selector=app.kubernetes.io/name=postgresql --timeout=120s
 
       - name: Generate dev.yaml file with database credentials
         run: |
-          DB_HOST=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode)
-          DB_PORT=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "port"}}' | base64 --decode)
-          DB_USER=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "user"}}' | base64 --decode)
-          DB_PASSWORD=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode)
-          DB_NAME=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "dbname"}}' | base64 --decode)
+          DB_HOST=postgres-postgresql.postgres.svc
+          DB_PORT=5432
+          DB_USER=postgres
+          DB_PASSWORD=$(kubectl get secret --namespace postgres postgres-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
+          DB_NAME=postgres
 
           cat <<EOF > dev.yaml
           pullPolicy: IfNotPresent
@@ -211,7 +210,7 @@ jobs:
             user: "$DB_USER"
             password: "$DB_PASSWORD"
             name: "$DB_NAME"
-            sslmode: require
+            sslmode: disable
           EOF
           cat dev.yaml
       - name: Install Direktiv chart

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   typescript: {
     check: false,
     checkOptions: {},
@@ -12,24 +12,18 @@ module.exports = {
   stories: [
     "../src/design/**/*.mdx",
     "../src/design/**/*.stories.@(js|jsx|ts|tsx)",
-    "../src/componentsNext/**/*.mdx",
-    "../src/componentsNext/**/*.stories.@(js|jsx|ts|tsx)",
-    "../src/hooksNext/**/*.mdx",
-    "../src/hooksNext/**/*.stories.@(js|jsx|ts|tsx)",
   ],
 
   addons: [
     "@storybook/addon-essentials",
     "@storybook/addon-interactions",
-    "storybook-addon-react-router-v6",
+    "@chromatic-com/storybook",
   ],
   framework: {
     name: "@storybook/react-vite",
     options: {},
   },
-  docs: {
-    autodocs: true,
-  },
+  docs: {},
   // https://github.com/chromaui/chromatic-cli/issues/550#issuecomment-1326856720
   viteFinal: (config) => ({
     ...config,
