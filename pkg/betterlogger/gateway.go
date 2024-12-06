@@ -22,7 +22,7 @@ func buildGatewayAttributes(attr GatewayAttributes, additionalAttrs ...slog.Attr
 		slog.String("gateway_plugin", attr.Plugin),
 		slog.String("namespace", attr.Namespace),
 		slog.String("route", attr.Route),
-		slog.String("route", fmt.Sprintf("%v.%v", "route", attr.Route)),
+		slog.String("track", fmt.Sprintf("%v.%v", "route", attr.Route)),
 	}
 
 	return internal.MergeAttributes(baseAttrs, additionalAttrs...)
