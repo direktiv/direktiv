@@ -2,13 +2,16 @@ package flow
 
 import (
 	"context"
+	"crypto/tls"
 	"database/sql"
 	"errors"
 	"fmt"
 	"log"
 	"log/slog"
+	"net/http"
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -29,6 +32,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"github.com/nats-io/nats.go"
+	"github.com/opensearch-project/opensearch-go"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -55,9 +59,10 @@ type server struct {
 
 	mirrorManager *mirror.Manager
 
-	flow   *flow
-	events *events
-	nats   *nats.Conn
+	flow             *flow
+	events           *events
+	nats             *nats.Conn
+	openSearchClient *opensearch.Client
 }
 
 func Run(circuit *core.Circuit) error {
@@ -329,17 +334,16 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 		return nil
 	})
 
-	slog.Info("Initialize NATS connection")
 	if config.NatsInstalled {
 		var err error
-		slog.Info("conecting to NATS")
-		for i := range 10 {
+		slog.Info("conecting to NATS", "config.NatsHost", config.NatsHost, "config.NatsPort", config.NatsPort)
+		for i := range 12 {
 			err = srv.initNATS(config)
 			if err == nil {
 				slog.Info("NATS connection established successfully")
 				break
 			}
-			slog.Error("Failed to connect to NATS, retrying...", "attempt", i+1, "error", err)
+			slog.Error("failed to connect to NATS, retrying...", "attempt", i+1, "error", err)
 			time.Sleep(time.Duration(i+2) * time.Second)
 		}
 
@@ -350,6 +354,17 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 		if err := srv.publishDemoMessage("test", "test-connection"); err != nil {
 			return nil, fmt.Errorf("testing NATS connection, err: %w", err)
 		}
+		slog.Info("connected to NATS")
+	}
+
+	if config.OpenSearchInstalled {
+		slog.Info("initialize OpenSearch", "config.OpenSearchHost", config.OpenSearchHost, "config.OpenSearchPort", config.OpenSearchPort, "config.OpenSearchProtocol", config.OpenSearchProtocol)
+		var err error
+		srv.openSearchClient, err = initOpenSearch(config)
+		if err != nil {
+			return nil, fmt.Errorf("initialize OpenSearch client, err: %w", err)
+		}
+		slog.Info("connected to OpenSearch")
 	}
 
 	return srv, nil
@@ -623,7 +638,7 @@ func (srv *server) initNATS(config *core.Config) error {
 
 	// Store the NATS connection in the server struct
 	srv.nats = nc
-	slog.Info("Successfully connected to NATS")
+	slog.Info("successfully connected to NATS")
 
 	return nil
 }
@@ -634,7 +649,48 @@ func (srv *server) publishDemoMessage(subject, msg string) error {
 	if err != nil {
 		return fmt.Errorf("failed to publish message, err: %w", err)
 	}
-	slog.Info("Message published", "subject", subject, "msg", msg)
+	slog.Info("message published", "subject", subject, "msg", msg)
 
 	return nil
+}
+
+func initOpenSearch(cfg *core.Config) (*opensearch.Client, error) {
+	retries := 12
+	addr := cfg.OpenSearchProtocol + "://" + cfg.OpenSearchHost + ":" + strconv.Itoa(cfg.OpenSearchPort)
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+
+	config := opensearch.Config{
+		Addresses: []string{addr},
+		Username:  cfg.OpenSearchUsername,
+		Password:  cfg.OpenSearchPassword,
+		Transport: transport,
+		RetryBackoff: func(attempt int) time.Duration {
+			return time.Second + time.Duration(attempt)
+		},
+		DisableRetry: false,
+		MaxRetries:   retries,
+	}
+
+	client, err := opensearch.NewClient(config)
+	if err != nil {
+		slog.Info("connect to OpenSearch", "addr", addr, "error", err)
+		return nil, fmt.Errorf("failed to create OpenSearch client: %w", err)
+	}
+	slog.Debug("connect to OpenSearch", "addr", addr)
+
+	// Test the connection
+	res, err := client.Info()
+	if err != nil {
+		slog.Info("OpenSearch connection test failed", "addr", addr, "error", err)
+		return nil, fmt.Errorf("OpenSearch connection test failed: %w", err)
+	}
+	defer res.Body.Close()
+
+	slog.Info("Connected to OpenSearch", "info", res.String())
+
+	return client, nil
 }

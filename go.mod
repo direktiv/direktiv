@@ -6,9 +6,9 @@ require (
 	github.com/bbuck/go-lexer v1.0.0
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/cloudevents/sdk-go/v2 v2.15.2
-	github.com/docker/docker v27.3.1+incompatible
-	github.com/dop251/goja v0.0.0-20241024094426-79f3a7efcdbd
-	github.com/gabriel-vasile/mimetype v1.4.7
+	github.com/docker/docker v27.2.0+incompatible
+	github.com/dop251/goja v0.0.0-20240828124009-016eb7256539
+	github.com/gabriel-vasile/mimetype v1.4.5
 	github.com/glebarez/sqlite v1.11.0
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-git/go-git/v5 v5.12.0
@@ -21,6 +21,7 @@ require (
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/nats.go v1.37.0
+	github.com/opensearch-project/opensearch-go v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/psanford/memfs v0.0.0-20230130182539-4dbf7e3e865e
 	github.com/qri-io/jsonschema v0.2.1
