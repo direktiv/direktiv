@@ -15,6 +15,7 @@ var _ slog.Handler = TeeHandler{}
 // logs to a remote server) without duplicating the log calls.
 //
 // By chaining multiple handlers together, it ensures that the same log record can be written to different destinations.
+// Deprecated: Use the logging system provided in betterlogger instead.
 type TeeHandler []slog.Handler
 
 // Enabled implements slog.Handler.

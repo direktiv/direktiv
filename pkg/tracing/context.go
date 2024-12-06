@@ -60,21 +60,25 @@ const (
 )
 
 // AddNamespace adds the namespace to the context for tracing and structured logging.
+// Deprecated: Use the logging system provided in betterlogger instead.
 func AddNamespace(ctx context.Context, namespaceName string) context.Context {
 	return context.WithValue(ctx, NamespaceKey, namespaceName)
 }
 
 // AddActionID adds an action identifier to the context, useful for tracing specific operations.
+// Deprecated: Use the logging system provided in betterlogger instead.
 func AddActionID(ctx context.Context, action string) context.Context {
 	return context.WithValue(ctx, ActionKey, action)
 }
 
 // AddBranch adds the branch identifier to the context for workflows with conditional branches.
+// Deprecated: Use the logging system provided in betterlogger instead.
 func AddBranch(ctx context.Context, branch int) context.Context {
 	return context.WithValue(ctx, BranchKey, branch)
 }
 
 // InstanceAttributes holds common metadata for an instance, which is helpful for logging.
+// Deprecated: Use the logging system provided in betterlogger instead.
 type InstanceAttributes struct {
 	Namespace    string         // Namespace where the instance belongs
 	InstanceID   string         // Unique identifier for the instance
@@ -85,6 +89,7 @@ type InstanceAttributes struct {
 }
 
 // AddInstanceMemoryAttr adds instance-specific attributes and state information to the context for logging.
+// Deprecated: Use the logging system provided in betterlogger instead.
 func AddInstanceMemoryAttr(ctx context.Context, attrs InstanceAttributes, state string) context.Context {
 	ctx = AddInstanceAttr(ctx, attrs)
 	ctx = AddStateAttr(ctx, state)
@@ -94,6 +99,7 @@ func AddInstanceMemoryAttr(ctx context.Context, attrs InstanceAttributes, state 
 }
 
 // AddInstanceAttr adds the core instance attributes to the context for logging.
+// Deprecated: Use the logging system provided in betterlogger instead.
 func AddInstanceAttr(ctx context.Context, attrs InstanceAttributes) context.Context {
 	ctx = AddNamespace(ctx, attrs.Namespace)
 	ctx = context.WithValue(ctx, InstanceKey, attrs.InstanceID)
@@ -105,26 +111,31 @@ func AddInstanceAttr(ctx context.Context, attrs InstanceAttributes) context.Cont
 }
 
 // AddStateAttr adds the state information of the instance to the context.
+// Deprecated: Use the logging system provided in betterlogger instead.
 func AddStateAttr(ctx context.Context, state string) context.Context {
 	return context.WithValue(ctx, StateKey, state)
 }
 
 // AddLoseInstanceIDAttr adds a new instance ID to the context.
+// Deprecated: Use the logging system provided in betterlogger instead.
 func AddLoseInstanceIDAttr(ctx context.Context, instanceID string) context.Context {
 	return context.WithValue(ctx, InstanceKey, instanceID)
 }
 
 // AddStatus adds the status of the instance to the context, indicating the current state.
+// Deprecated: Use the logging system provided in betterlogger instead.
 func AddStatus(ctx context.Context, status core.LogStatus) context.Context {
 	return context.WithValue(ctx, StatusKey, status)
 }
 
 // WithTrack adds a unique tracking identifier to the context, useful for correlating logs.
+// Deprecated: Use the logging system provided in betterlogger instead.
 func WithTrack(ctx context.Context, track string) context.Context {
 	return context.WithValue(ctx, LogTrackKey, track)
 }
 
 // GetCoreAttributes retrieves the core attributes from the context for structured logging.
+// Deprecated: Use the logging system provided in betterlogger instead.
 func GetCoreAttributes(ctx context.Context) map[string]interface{} {
 	tags := make(map[string]interface{})
 
@@ -164,6 +175,7 @@ func GetCoreAttributes(ctx context.Context) map[string]interface{} {
 }
 
 // GetAttributes retrieves both core attributes and trace-specific information (trace and span IDs) from the context.
+// Deprecated: Use the logging system provided in betterlogger instead.
 func GetAttributes(ctx context.Context) map[string]interface{} {
 	tags := GetCoreAttributes(ctx)
 
@@ -177,6 +189,7 @@ func GetAttributes(ctx context.Context) map[string]interface{} {
 	return tags
 }
 
+// Deprecated: Use the logging system provided in betterlogger instead.
 func GetStatus(ctx context.Context) core.LogStatus {
 	if status, ok := ctx.Value(StatusKey).(core.LogStatus); ok {
 		return status
@@ -186,6 +199,7 @@ func GetStatus(ctx context.Context) core.LogStatus {
 }
 
 // GetRawLogEntryWithStatus creates a log entry containing the status, level, and message, enriched with context attributes.
+// Deprecated: Use the logging system provided in betterlogger instead.
 func GetRawLogEntryWithStatus(ctx context.Context, level LogLevel, msg string, status core.LogStatus) map[string]interface{} {
 	tags := GetAttributes(ctx)
 	tags["status"] = status
@@ -196,11 +210,13 @@ func GetRawLogEntryWithStatus(ctx context.Context, level LogLevel, msg string, s
 }
 
 // BuildNamespaceTrack constructs a unique track identifier for the namespace.
+// Deprecated: Use the logging system provided in betterlogger instead.
 func BuildNamespaceTrack(namespace string) string {
 	return fmt.Sprintf("%v.%v", "namespace", namespace)
 }
 
 // BuildInstanceTrack constructs a unique track identifier for the instance.
+// Deprecated: Use the logging system provided in betterlogger instead.
 func BuildInstanceTrack(instance *engine.Instance) string {
 	callpath := instance.Instance.ID.String()
 	if instance.DescentInfo == nil {
@@ -214,11 +230,13 @@ func BuildInstanceTrack(instance *engine.Instance) string {
 }
 
 // BuildInstanceTrackViaCallpath constructs a unique track identifier using the callpath.
+// Deprecated: Use the logging system provided in betterlogger instead.
 func BuildInstanceTrackViaCallpath(callpath string) string {
 	return fmt.Sprintf("%v.%v", "instance", callpath)
 }
 
 // CreateCallpath constructs a callpath string based on an instance's descent information.
+// Deprecated: Use the logging system provided in betterlogger instead.
 func CreateCallpath(instance *engine.Instance) string {
 	callpath := ""
 	for _, v := range instance.DescentInfo.Descent {

@@ -6,6 +6,7 @@ import (
 )
 
 // ContextHandler wraps a slog.Handler (e.g., JSON handler) and processes slogFields from the context.
+// Deprecated: Use the logging system provided in betterlogger instead.
 type ContextHandler struct {
 	innerHandler slog.Handler
 }

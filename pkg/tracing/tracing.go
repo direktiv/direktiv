@@ -4,7 +4,7 @@ including integration with OpenTelemetry and context-aware logging.
 
 # Initialization
 
-To initialize telemetry and logging:
+To initialize telemetry:
 
 1. **Telemetry**:
 
@@ -15,45 +15,18 @@ To initialize telemetry and logging:
 	} // call telEnd() on systems shutdown signal
 	```
 
-2. **Logging**:
-
-	```go
-	handlers := tracing.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
-		Level: slog.LevelInfo,
-	}))
-	slogger := slog.New(
-		tracing.TeeHandler{
-			handlers,
-			tracing.EventHandler{},
-		},
-	)
-
-	slog.SetDefault(slogger)
-	```
+> **Note**: The logging section is deprecated and will be removed in future versions.
 
 # Usage
 
 ## Workflow
 
-1. Add metadata to a context using helpers like `AddInstanceAttr`.
-2. Start a new trace span with `NewSpan`.
-3. Add the "track" to the context using the helpers.
-4. Use `slog` to log within the span's context.
+1. Start a new trace span with `NewSpan`.
+2. Use the `betterlogger` system to log within the span's context.
 
 ## Example Usage
 
 	```go
-	// Add attributes to the context
-	ctx = tracing.AddInstanceAttr(ctx, tracing.InstanceAttributes{
-		Namespace:    args.Namespace.Name,
-		InstanceID:   args.ID.String(),
-		Invoker:      args.Invoker,
-		Callpath:     args.TelemetryInfo.CallPath,
-		WorkflowPath: args.CalledAs,
-		Status:       core.LogRunningStatus,
-	})
-	// use "track" for log correlation without a trace provider
-	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(args.TelemetryInfo.CallPath))
 	// Start a new span
 	ctx, cleanup, err := tracing.NewSpan(ctx, "creating a new Instance: "+args.ID.String()+", workflow: "+args.CalledAs)
 	if err != nil {
@@ -82,22 +55,5 @@ The `SetSpanError` method allows you to mark a span as an error and provide addi
 
 	// Continue execution or handle the error accordingly
 	```
-
-The `SetSpanError` method ensures that:
-
-1. The span's status is set to `Error`.
-2. Metadata such as `error.message` and a custom `error.description` are attached as attributes.
-3. An event with error details is recorded for richer tracing.
-
-slog will internally ensure that the log-entry is properly ingested and redirected to the proper stream/track.
-It also internally ingests proper telemetry information and metrics.
-
-# Notes
-
-  - "track" represents a flat unique identifier for a chain of logs associated with a resource call,
-    including its nested dependencies, like workflow instances. The track ties together logs from different parts
-    of the workflow, whereas spans track individual operations or tasks.
-  - "track" and "traceID"-"spanID" serve the same purpose, yet using "track"
-    allows the system to function without a proper-tracing-provider.
 */
 package tracing
