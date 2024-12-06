@@ -2,6 +2,7 @@ package betterlogger
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/betterlogger/internal"
@@ -18,6 +19,7 @@ func LogSyncDebug(ctx context.Context, attr SyncAttributes, msg string, sAttr ..
 	baseAttrs := []slog.Attr{
 		slog.String("activity", attr.SyncID),
 		slog.String("namespace", attr.Namespace),
+		slog.String("track", fmt.Sprintf("%v.%v", "activity", attr.SyncID)),
 	}
 	internal.LogWithTraceAndAttributes(ctx, slog.LevelDebug, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
 }

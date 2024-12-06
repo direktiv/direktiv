@@ -2,6 +2,7 @@ package betterlogger
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/betterlogger/internal"
@@ -9,8 +10,9 @@ import (
 
 // GatewayAttributes holds metadata specific to a gateway component, helpful for logging.
 type GatewayAttributes struct {
-	Plugin    string // Name for the gateway-plugin
+	Plugin    string // Optional. Name for the gateway-plugin
 	Namespace string // Namespace of the gateway
+	Route     string // Endpoint of the gateway
 }
 
 // buildGatewayAttributes constructs the base attributes for gateway logging.
@@ -19,6 +21,8 @@ func buildGatewayAttributes(attr GatewayAttributes, additionalAttrs ...slog.Attr
 		slog.String("component", "gateway"),
 		slog.String("gateway_plugin", attr.Plugin),
 		slog.String("namespace", attr.Namespace),
+		slog.String("route", attr.Route),
+		slog.String("route", fmt.Sprintf("%v.%v", "route", attr.Route)),
 	}
 
 	return internal.MergeAttributes(baseAttrs, additionalAttrs...)

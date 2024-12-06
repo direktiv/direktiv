@@ -2,6 +2,7 @@ package betterlogger
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/betterlogger/internal"
@@ -24,6 +25,7 @@ func buildCloudEventAttributes(attr CloudEventBusAttributes, additionalAttrs ...
 		slog.String("subject", attr.Subject),
 		slog.String("event_type", attr.EventType),
 		slog.String("namespace", attr.Namespace),
+		slog.String("track", fmt.Sprintf("%v.%v", "namespace", attr.Namespace)),
 	}
 
 	return internal.MergeAttributes(baseAttrs, additionalAttrs...)

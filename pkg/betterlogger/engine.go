@@ -2,6 +2,7 @@ package betterlogger
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/betterlogger/internal"
@@ -12,6 +13,7 @@ type InstanceAttributes struct {
 	Namespace    string // Namespace where the instance belongs
 	InstanceID   string // Unique identifier for the instance
 	WorkflowPath string // Path of the workflow the instance belongs to
+	CallPath     string // Identifies the log-stream, legacy feature from the old engine
 }
 
 // InstanceMemoryAttributes holds common metadata for an instance, which is helpful for logging.
@@ -26,6 +28,7 @@ func buildInstanceAttributes(attr InstanceAttributes, additionalAttrs ...slog.At
 		slog.String("namespace", attr.Namespace),
 		slog.String("instance", attr.InstanceID),
 		slog.String("workflow", attr.WorkflowPath),
+		slog.String("track", fmt.Sprintf("%v.%v", "instance", attr.CallPath)),
 	}
 
 	return internal.MergeAttributes(baseAttrs, additionalAttrs...)
