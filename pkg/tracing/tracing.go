@@ -12,7 +12,7 @@ To initialize telemetry and logging:
 	telEnd, err := tracing.InitTelemetry(context.Background(), srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
 		return nil, fmt.Errorf("Telemetry init failed: %w", err)
-	}
+	} // call telEnd() on systems shutdown signal
 	```
 
 2. **Logging**:
