@@ -31,21 +31,21 @@ func buildCloudEventAttributes(attr CloudEventBusAttributes, additionalAttrs ...
 
 // LogCloudEventDebug logs a debug message with cloud event bus attributes.
 func LogCloudEventDebug(ctx context.Context, attr CloudEventBusAttributes, msg string, sAttr ...slog.Attr) {
-	internal.LogWithAttributes(ctx, slog.LevelDebug, msg, buildCloudEventAttributes(attr, sAttr...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelDebug, msg, buildCloudEventAttributes(attr, sAttr...)...)
 }
 
 // LogCloudEventInfo logs an info message with cloud event bus attributes.
 func LogCloudEventInfo(ctx context.Context, attr CloudEventBusAttributes, msg string, sAttr ...slog.Attr) {
-	internal.LogWithAttributes(ctx, slog.LevelInfo, msg, buildCloudEventAttributes(attr, sAttr...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelInfo, msg, buildCloudEventAttributes(attr, sAttr...)...)
 }
 
 // LogCloudEventWarn logs a warning message with cloud event bus attributes.
 func LogCloudEventWarn(ctx context.Context, attr CloudEventBusAttributes, msg string, sAttr ...slog.Attr) {
-	internal.LogWithAttributes(ctx, slog.LevelWarn, msg, buildCloudEventAttributes(attr, sAttr...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelWarn, msg, buildCloudEventAttributes(attr, sAttr...)...)
 }
 
 // LogCloudEventError logs an error message with cloud event bus attributes.
 func LogCloudEventError(ctx context.Context, attr CloudEventBusAttributes, msg string, err error, sAttr ...slog.Attr) {
 	errorAttr := slog.String("error", err.Error())
-	internal.LogWithAttributes(ctx, slog.LevelError, msg, buildCloudEventAttributes(attr, append(sAttr, errorAttr)...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelError, msg, buildCloudEventAttributes(attr, append(sAttr, errorAttr)...)...)
 }

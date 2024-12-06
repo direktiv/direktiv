@@ -41,26 +41,26 @@ func buildInstanceMemoryAttributes(attr InstanceMemoryAttributes, additionalAttr
 
 // LogInstanceDebug logs a debug message with instance attributes.
 func LogInstanceDebug(ctx context.Context, attr InstanceAttributes, msg string, sAttr ...slog.Attr) {
-	internal.LogWithAttributes(ctx, slog.LevelDebug, msg, buildInstanceAttributes(attr, sAttr...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelDebug, msg, buildInstanceAttributes(attr, sAttr...)...)
 }
 
 // LogInstanceInfo logs an info message with instance attributes.
 func LogInstanceInfo(ctx context.Context, attr InstanceAttributes, msg string, sAttr ...slog.Attr) {
-	internal.LogWithAttributes(ctx, slog.LevelInfo, msg, buildInstanceAttributes(attr, sAttr...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelInfo, msg, buildInstanceAttributes(attr, sAttr...)...)
 }
 
 // LogInstanceWarn logs a warning message with instance attributes.
 func LogInstanceWarn(ctx context.Context, attr InstanceAttributes, msg string, sAttr ...slog.Attr) {
-	internal.LogWithAttributes(ctx, slog.LevelWarn, msg, buildInstanceAttributes(attr, sAttr...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelWarn, msg, buildInstanceAttributes(attr, sAttr...)...)
 }
 
 // LogInstanceError logs an error message with instance attributes.
 func LogInstanceError(ctx context.Context, attr InstanceAttributes, msg string, err error, sAttr ...slog.Attr) {
 	errorAttr := slog.String("error", err.Error())
-	internal.LogWithAttributes(ctx, slog.LevelError, msg, buildInstanceAttributes(attr, append(sAttr, errorAttr)...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelError, msg, buildInstanceAttributes(attr, append(sAttr, errorAttr)...)...)
 }
 
 // LogInstanceMemoryDebug logs a debug message with instance memory attributes.
 func LogInstanceMemoryDebug(ctx context.Context, attr InstanceMemoryAttributes, msg string, sAttr ...slog.Attr) {
-	internal.LogWithAttributes(ctx, slog.LevelDebug, msg, buildInstanceMemoryAttributes(attr, sAttr...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelDebug, msg, buildInstanceMemoryAttributes(attr, sAttr...)...)
 }

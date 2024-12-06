@@ -25,8 +25,8 @@ func AddEvent(ctx context.Context, msg string, attrs ...slog.Attr) {
 	}
 }
 
-// LogWithAttributes is an internal helper to call slog with consistent formatting.
-func LogWithAttributes(ctx context.Context, level slog.Level, msg string, attrs ...slog.Attr) {
+// LogWithTraceAndAttributes is an internal helper to call slog with consistent formatting.
+func LogWithTraceAndAttributes(ctx context.Context, level slog.Level, msg string, attrs ...slog.Attr) {
 	// Add tracing information
 	attrs = AddTraceID(ctx, attrs)
 

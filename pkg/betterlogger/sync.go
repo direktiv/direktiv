@@ -19,7 +19,7 @@ func LogSyncDebug(ctx context.Context, attr SyncAttributes, msg string, sAttr ..
 		slog.String("activity", attr.SyncID),
 		slog.String("namespace", attr.Namespace),
 	}
-	internal.LogWithAttributes(ctx, slog.LevelDebug, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelDebug, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
 }
 
 // LogSyncInfo logs an info message with Sync attributes.
@@ -28,7 +28,7 @@ func LogSyncInfo(ctx context.Context, attr SyncAttributes, msg string, sAttr ...
 		slog.String("activity", attr.SyncID),
 		slog.String("namespace", attr.Namespace),
 	}
-	internal.LogWithAttributes(ctx, slog.LevelInfo, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelInfo, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
 }
 
 // LogSyncWarn logs a warning message with Sync attributes.
@@ -37,7 +37,7 @@ func LogSyncWarn(ctx context.Context, attr SyncAttributes, msg string, sAttr ...
 		slog.String("activity", attr.SyncID),
 		slog.String("namespace", attr.Namespace),
 	}
-	internal.LogWithAttributes(ctx, slog.LevelWarn, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelWarn, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
 }
 
 // LogSyncError logs an error message with Sync attributes.
@@ -47,5 +47,5 @@ func LogSyncError(ctx context.Context, attr SyncAttributes, msg string, err erro
 		slog.String("namespace", attr.Namespace),
 		slog.String("error", err.Error()),
 	}
-	internal.LogWithAttributes(ctx, slog.LevelError, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelError, msg, internal.MergeAttributes(baseAttrs, sAttr...)...)
 }

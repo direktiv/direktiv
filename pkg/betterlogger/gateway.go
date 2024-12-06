@@ -26,21 +26,21 @@ func buildGatewayAttributes(attr GatewayAttributes, additionalAttrs ...slog.Attr
 
 // LogGatewayDebug logs a debug message with gateway attributes.
 func LogGatewayDebug(ctx context.Context, attr GatewayAttributes, msg string, sAttr ...slog.Attr) {
-	internal.LogWithAttributes(ctx, slog.LevelDebug, msg, buildGatewayAttributes(attr, sAttr...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelDebug, msg, buildGatewayAttributes(attr, sAttr...)...)
 }
 
 // LogGatewayInfo logs an info message with gateway attributes.
 func LogGatewayInfo(ctx context.Context, attr GatewayAttributes, msg string, sAttr ...slog.Attr) {
-	internal.LogWithAttributes(ctx, slog.LevelInfo, msg, buildGatewayAttributes(attr, sAttr...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelInfo, msg, buildGatewayAttributes(attr, sAttr...)...)
 }
 
 // LogGatewayWarn logs a warning message with gateway attributes.
 func LogGatewayWarn(ctx context.Context, attr GatewayAttributes, msg string, sAttr ...slog.Attr) {
-	internal.LogWithAttributes(ctx, slog.LevelWarn, msg, buildGatewayAttributes(attr, sAttr...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelWarn, msg, buildGatewayAttributes(attr, sAttr...)...)
 }
 
 // LogGatewayError logs an error message with gateway attributes.
 func LogGatewayError(ctx context.Context, attr GatewayAttributes, msg string, err error, sAttr ...slog.Attr) {
 	errorAttr := slog.String("error", err.Error())
-	internal.LogWithAttributes(ctx, slog.LevelError, msg, buildGatewayAttributes(attr, append(sAttr, errorAttr)...)...)
+	internal.LogWithTraceAndAttributes(ctx, slog.LevelError, msg, buildGatewayAttributes(attr, append(sAttr, errorAttr)...)...)
 }
