@@ -14,7 +14,9 @@ import {
 import {
   Folder,
   Layers,
+  LayoutTemplate,
   Network,
+  PanelTop,
   Play,
   PlusCircle,
   Users,
@@ -32,6 +34,7 @@ export type FileTypeSelection =
   | "new-workflow"
   | "new-service"
   | "new-route"
+  | "new-page"
   | "new-consumer";
 
 type NewFileButtonProps = {
@@ -120,6 +123,27 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
                     {t(
                       "pages.explorer.tree.newFileButton.items.gateway.consumer"
                     )}
+                  </DropdownMenuItem>
+                </DialogTrigger>
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <LayoutTemplate className="mr-2 size-4" />
+              UI Builder
+            </DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent className="w-40">
+                <DialogTrigger
+                  className="w-full"
+                  onClick={() => {
+                    setSelectedDialog("new-page");
+                  }}
+                >
+                  <DropdownMenuItem>
+                    <PanelTop className="mr-2 size-4" />
+                    New Page
                   </DropdownMenuItem>
                 </DialogTrigger>
               </DropdownMenuSubContent>
