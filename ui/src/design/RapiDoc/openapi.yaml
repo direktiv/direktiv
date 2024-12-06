@@ -1,0 +1,131 @@
+openapi: 3.1.0
+servers:
+  - url: 'https://direktiv.io'
+
+info:
+  version: 0.1.0
+  title: Direktiv APIv2 Reference
+  x-logo:
+    altText: Direktiv logo
+
+  description: |
+    Welcome to the Direktiv API documentation. Our API is based on the principle of REST.
+
+    # Introduction
+    All request and response bodies are `application/json` format.
+    
+    # Methods
+    We use the following http methods:
+    | value | description |
+    |-----------|-------|
+    | `GET` | Get one object or a list of objects |
+    | `DELETE` | Delete one object  |
+    | `POST` | Create one object |
+    | `PUT` | Update(replace) one object |
+    Requests with methods `GET` and `DELETE` should have empty bodies.
+    For other methods, request body cannot be empty.
+    
+    # Responses
+    For successful requests processing, the API will response with http status code `200` ⟶ `OK`.
+    Successful response always have a json body with field `data`.
+    Field `data` could be an `object`, or an `array`.
+    
+    # Errors
+    If the API couldn't process the request for any reason, the response body will be a json object with a single field `error`.
+
+    ### Error Body
+
+    ```json
+    {
+      "error": {
+          "code": "internal",
+          "message": "server is currently under maintenance",
+        }
+    }
+    
+    // Example with validation error
+    {
+      "error": {
+          "code": "request_data_invalid",
+          "message": "request data has invalid fields",
+          validation: { 
+            gitRef: 'field is required', 
+            url: 'field is required' 
+          }
+    }
+    ```
+    
+    Field error.validation is only set when validation errors occur. Field error.code is one of the following values:
+
+    | value | description |
+    |-----------|-------|
+    | `internal` | some internal server error  |
+    | `request_path_not_found` | request path is not recognized (not found)  |
+    | `request_method_not_allowed` | method is not allowed for the used path  |
+    | `request_body_not_json` | request body is not valid json  |
+    | `request_body_bad_json_schema` | request body has invalid json schema |
+    | `resource_not_found` | requested resource id (namespace for example) not found |
+    | `resource_already_exists` | trying to insert a resource with duplicated id |
+    | `resource_id_invalid` | requested resource id (namespace for example) is invalid |
+    | `request_data_invalid` | body is valid json but has validation errors |
+
+
+    Http response codes for error responses could be one of the following: 
+    | value | description |
+    |-----------|-------|
+    | `400` | invalid user input (in path, in method, in body)  |
+    | `404` | resource not found  |
+    | `403` | access denied for something wrong with the token |
+    | `500` | something went wrong with the server |
+
+tags:
+  - name: server
+    description: Miscellaneous server endpoints
+  - name: namespaces
+    description: Endpoints for managing namespaces
+  - name: instances
+    description: Endpoints for managing workflow instances
+  - name: syncs
+    description: Endpoints for managing namespace mirror syncs
+  - name: services
+    description: Endpoints for managing services
+  - name: variables
+    description: Endpoints for managing direktiv variables
+  - name: secrets
+    description: Endpoints for managing direktiv secrets
+  - name: registries
+    description: Endpoints for managing registries
+  - name: gateway
+    description: Endpoints for fetchig API gateway information
+  - name: files
+    description: Endpoints reading and changing filesystem tree nodes
+  - name: plattformlogs
+    description: Endpoints to access logs that are exposed by the components
+  - name: notifications
+    description: Endpoints for managing notifications
+  - name: metrics
+    description: Endpoints for viewing metrics
+x-tagGroups:
+  - name: Endpoints
+    tags:
+      - server
+      - namespaces
+      - instances
+      - syncs
+      - files
+      - services
+      - variables
+      - secrets
+      - registries
+      - gateway
+      - plattformlogs
+      - events
+      - metrics
+      - notifications
+components:
+  parameters:
+    $ref: "./parameters.yaml"
+  schemas:
+    $ref: "./objects.yaml"
+paths:
+  $ref: "./paths/paths.yaml"

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import OpenApiSpec from "./openapi.yaml";
 import { RapiDoc } from "./index";
-import exampleSpec from "./example.yaml";
 
 const meta = {
   title: "Components/RapiDoc",
@@ -15,18 +15,6 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    spec: exampleSpec,
-  },
-};
-
-export const DarkTheme: Story = {
-  args: {
-    spec: exampleSpec,
-  },
-  parameters: {
-    backgrounds: {
-      default: "dark",
-    },
-    darkMode: true,
+    spec: OpenApiSpec,
   },
 };
