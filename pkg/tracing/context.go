@@ -177,6 +177,14 @@ func GetAttributes(ctx context.Context) map[string]interface{} {
 	return tags
 }
 
+func GetStatus(ctx context.Context) core.LogStatus {
+	if status, ok := ctx.Value(StatusKey).(core.LogStatus); ok {
+		return status
+	}
+
+	return core.LogUnknownStatus
+}
+
 // GetRawLogEntryWithStatus creates a log entry containing the status, level, and message, enriched with context attributes.
 func GetRawLogEntryWithStatus(ctx context.Context, level LogLevel, msg string, status core.LogStatus) map[string]interface{} {
 	tags := GetAttributes(ctx)

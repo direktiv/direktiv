@@ -4,6 +4,8 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/direktiv/direktiv/pkg/core"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -36,6 +38,10 @@ func (e EventHandler) WithGroup(name string) slog.Handler {
 func addEvent(ctx context.Context, msg string) {
 	span := trace.SpanFromContext(ctx)
 	if span.IsRecording() {
+		status := GetStatus(ctx)
+		if status == core.LogErrStatus || status == core.LogFailedStatus {
+			span.SetStatus(codes.Error, msg)
+		}
 		span.AddEvent(msg)
 	}
 }

@@ -66,13 +66,38 @@ To initialize telemetry and logging:
 	slog.DebugContext(ctx, "Initializing new instance creation.")
 	```
 
-slog will internally ensure that the log-entry is properly ingested and redirected to the proper stream/track.
-also internally slog will ingest proper telemetry information and metrics.
+## Setting Span Error
 
-// Note: "track" represents a flat unique identifier for a chain of logs associated with a resource call,
-// including its nested dependencies, like workflow instances. The track ties together logs from different parts
-// of the workflow, whereas spans track individual operations or tasks.
-// "track" and "traceID"-"spanID" serve the same purpose, yet using "track"
-// allows the system to function without a proper-tracing-provider.
+The `SetSpanError` method allows you to mark a span as an error and provide additional context with an error message and description.
+
+### Example Usage:
+
+	```go
+	ctx, cleanup, _ := tracing.NewSpan(ctx, "example-operation")
+	defer cleanup()
+
+	// Simulate an error
+	err := fmt.Errorf("operation failed")
+	tracing.SetSpanError(ctx, err, "An error occurred during example operation")
+
+	// Continue execution or handle the error accordingly
+	```
+
+The `SetSpanError` method ensures that:
+
+1. The span's status is set to `Error`.
+2. Metadata such as `error.message` and a custom `error.description` are attached as attributes.
+3. An event with error details is recorded for richer tracing.
+
+slog will internally ensure that the log-entry is properly ingested and redirected to the proper stream/track.
+It also internally ingests proper telemetry information and metrics.
+
+# Notes
+
+  - "track" represents a flat unique identifier for a chain of logs associated with a resource call,
+    including its nested dependencies, like workflow instances. The track ties together logs from different parts
+    of the workflow, whereas spans track individual operations or tasks.
+  - "track" and "traceID"-"spanID" serve the same purpose, yet using "track"
+    allows the system to function without a proper-tracing-provider.
 */
 package tracing

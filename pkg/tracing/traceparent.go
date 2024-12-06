@@ -6,6 +6,7 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -97,4 +98,20 @@ func NewSpan(ctx context.Context, name string) (context.Context, func(), error) 
 	span.SetAttributes(kv...)
 
 	return ctx, endSpan, nil
+}
+
+// SetSpanError sets the current span's status to Error and adds an optional error message.
+func SetSpanError(ctx context.Context, err error, message string) {
+	span := trace.SpanFromContext(ctx)
+	if span.IsRecording() {
+		span.SetStatus(codes.Error, message)
+		span.SetAttributes(
+			attribute.String("error.message", err.Error()),
+			attribute.String("error.description", message),
+		)
+		span.AddEvent("Error", trace.WithAttributes(
+			attribute.String("error.message", err.Error()),
+			attribute.String("error.description", message),
+		))
+	}
 }
