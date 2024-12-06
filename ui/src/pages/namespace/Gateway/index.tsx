@@ -1,14 +1,9 @@
-import { BookOpen, Users, Workflow, X } from "lucide-react";
-import { Dialog, DialogContent } from "~/design/Dialog";
 import { Link, Outlet } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
+import { Users, Workflow } from "lucide-react";
 
-import Button from "~/design/Button";
-import { RapiDoc } from "~/design/RapiDoc";
-import exampleSpec from "~/design/RapiDoc/example.json";
 import { useNamespace } from "~/util/store/namespace";
 import { usePages } from "~/util/router/pages";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const GatewayPage = () => {
@@ -20,11 +15,6 @@ const GatewayPage = () => {
     isGatewayConsumerPage,
     isGatewayRoutesDetailPage,
   } = pages.gateway.useParams();
-
-  // const spec = "http://localhost:8888/openapi.yaml";
-  const spec = exampleSpec;
-
-  const [showDocs, setShowDocs] = useState(false);
 
   if (!namespace) return null;
 
@@ -53,16 +43,7 @@ const GatewayPage = () => {
   return (
     <>
       {!isGatewayRoutesDetailPage && (
-        <div className="space-y-5 border-b border-gray-5  p-5 pb-0 ">
-          <Button
-            onClick={() => setShowDocs(!showDocs)}
-            className="absolute right-5 whitespace-nowrap"
-            icon
-            variant="primary"
-          >
-            <BookOpen className="mr-2 size-4" />
-            API Documentation
-          </Button>
+        <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 pb-0 dark:border-gray-dark-5 dark:bg-gray-dark-1">
           <Tabs value={tabs.find((tab) => tab.active)?.value}>
             <TabsList>
               {tabs.map((tab) => (
@@ -77,21 +58,6 @@ const GatewayPage = () => {
           </Tabs>
         </div>
       )}
-
-      <Dialog open={showDocs} onOpenChange={setShowDocs}>
-        <DialogContent className="h-[90vh] min-w-[90vw]  pt-10">
-          <Button
-            onClick={() => setShowDocs(false)}
-            className="absolute right-4 top-4"
-            variant="ghost"
-            size="sm"
-          >
-            <X className="size-4" />
-          </Button>
-          <RapiDoc />
-        </DialogContent>
-      </Dialog>
-
       <Outlet />
     </>
   );

@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig, loadEnv } from "vite";
 
+import ViteYaml from "vite-plugin-yaml2";
 import { envVariablesSchema } from "./src/config/env/schema";
 import react from "@vitejs/plugin-react";
 import viteTsconfigPaths from "vite-tsconfig-paths";
@@ -57,7 +58,7 @@ export default ({ mode }) => {
         },
       },
     },
-    plugins: [react(), viteTsconfigPaths()],
+    plugins: [react(), viteTsconfigPaths(), ViteYaml()],
     test: {
       globals: true,
       environment: "jsdom",

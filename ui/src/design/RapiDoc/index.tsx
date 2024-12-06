@@ -1,18 +1,27 @@
 import "./styles/RapiDoc.css";
+import "rapidoc";
 
-import exampleSpec from "~/design/RapiDoc/example.json";
 import { useEffect } from "react";
 
-export function RapiDoc() {
+interface RapiDocProps {
+  spec: string | object;
+  className?: string;
+}
+
+export function RapiDoc({ spec, className }: RapiDocProps) {
   useEffect(() => {
     const docEl = document.getElementById("rapidoc") as RapiDocElement;
     if (docEl) {
-      docEl.loadSpec(exampleSpec);
+      if (typeof spec === "string") {
+        docEl.setAttribute("spec-url", spec);
+      } else {
+        docEl.loadSpec(spec);
+      }
     }
-  }, []);
+  }, [spec]);
 
   return (
-    <div style={{ height: "100%", width: "100%", overflow: "auto" }}>
+    <div className={`${className} size-full overflow-scroll`}>
       <rapi-doc
         id="rapidoc"
         render-style="read"

@@ -38,7 +38,6 @@
     "@tremor/react": "^3.6.6",
     "@types/event-source-polyfill": "^1.0.1",
     "@types/jest": "^28.1.2",
-    "@types/js-yaml": "^4.0.5",
     "@types/node": "^18.0.0",
     "@types/react-virtualized-auto-sizer": "^1.0.1",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
@@ -148,6 +147,7 @@
     "@tanstack/eslint-plugin-query": "^5.28.11",
     "@types/dagre": "^0.7.48",
     "@types/drawflow": "^0.0.4",
+    "@types/js-yaml": "^4.0.5",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@types/react-virtualized": "^9.21.21",
@@ -163,6 +163,7 @@
     "storybook": "^8.4.6",
     "tailwindcss": "^3.4.15",
     "vite": "^5.4.3",
+    "vite-plugin-yaml2": "^1.1.5",
     "vite-tsconfig-paths": "^4.2.1",
     "vitest": "^0.34.6"
   }

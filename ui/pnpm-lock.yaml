@@ -114,9 +114,6 @@ importers:
       '@types/jest':
         specifier: ^28.1.2
         version: 28.1.8
-      '@types/js-yaml':
-        specifier: ^4.0.5
-        version: 4.0.5
       '@types/node':
         specifier: ^18.0.0
         version: 18.7.18
@@ -322,6 +319,9 @@ importers:
       '@types/drawflow':
         specifier: ^0.0.4
         version: 0.0.4
+      '@types/js-yaml':
+        specifier: ^4.0.5
+        version: 4.0.5
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.12
@@ -367,6 +367,9 @@ importers:
       vite:
         specifier: ^5.4.3
         version: 5.4.11(@types/node@18.7.18)(terser@5.36.0)
+      vite-plugin-yaml2:
+        specifier: ^1.1.5
+        version: 1.1.5
       vite-tsconfig-paths:
         specifier: ^4.2.1
         version: 4.3.2(typescript@5.7.2)(vite@5.4.11(@types/node@18.7.18)(terser@5.36.0))
@@ -6253,6 +6256,9 @@ packages:
     resolution: {integrity: sha512-nlBMJ9x6n7/Amaz6F3zJ97EBwR2FkzhBRxF5e+jE6LA3yi6Wtc2lyTij1OnDMIr34v5g/tVQtsVAzhT0jc5ygA==}
     engines: {node: '>=v14.18.0'}
     hasBin: true
+
+  vite-plugin-yaml2@1.1.5:
+    resolution: {integrity: sha512-98PPEBWmyS+t2KcvGXfvnX83+QRGedpyPkDwluUAzCyCquwJzYsUNqfNzJHDk2/52d8uoCmJTZJpnQMls7LNtw==}
 
   vite-tsconfig-paths@4.3.2:
     resolution: {integrity: sha512-0Vd/a6po6Q+86rPlntHye7F31zA2URZMbH8M3saAZ/xR9QoGN/L21bxEGfXdWmFdNkqPpRdxFT7nmNe12e9/uA==}
@@ -13645,6 +13651,8 @@ snapshots:
       - sugarss
       - supports-color
       - terser
+
+  vite-plugin-yaml2@1.1.5: {}
 
   vite-tsconfig-paths@4.3.2(typescript@5.7.2)(vite@5.4.11(@types/node@18.7.18)(terser@5.36.0)):
     dependencies:

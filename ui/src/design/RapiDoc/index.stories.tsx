@@ -24,15 +24,9 @@ export const DarkTheme: Story = {
     spec: exampleSpec,
   },
   parameters: {
-    themes: {
+    backgrounds: {
       default: "dark",
     },
-  },
-};
-
-export const WithCustomStyles: Story = {
-  args: {
-    spec: exampleSpec,
-    className: "custom-theme",
+    darkMode: true,
   },
 };
