@@ -6,3 +6,5 @@ export const Text = z.object({
     label: z.string().min(1),
   }),
 });
+
+export type TextType = z.infer<typeof Text>;

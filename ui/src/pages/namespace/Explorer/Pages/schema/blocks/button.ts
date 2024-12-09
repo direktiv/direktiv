@@ -8,3 +8,5 @@ export const Button = z.object({
     submit: Mutation,
   }),
 });
+
+export type ButtonType = z.infer<typeof Button>;

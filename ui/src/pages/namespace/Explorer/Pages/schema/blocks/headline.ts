@@ -7,3 +7,5 @@ export const Headline = z.object({
     description: z.string().optional(),
   }),
 });
+
+export type HeadlineType = z.infer<typeof Headline>;

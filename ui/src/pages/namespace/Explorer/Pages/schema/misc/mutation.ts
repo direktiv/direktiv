@@ -5,5 +5,5 @@ const Methods = ["POST", "PUT", "PATCH", "DELETE"] as const;
 export const Mutation = z.object({
   method: z.enum(Methods),
   endpoint: z.string().min(1),
-  // TODO: add the rest
+  // TODO: finish
 });
