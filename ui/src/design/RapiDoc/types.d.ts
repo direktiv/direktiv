@@ -12,10 +12,3 @@ declare namespace JSX {
     };
   }
 }
-
-// This declaration is needed when importing YAML files
-// js-yaml /  @types/js-yaml  / vite-plugin-yaml
-declare module "*.yaml" {
-  const content: Record<string, unknown>;
-  export default content;
-}
