@@ -1,4 +1,4 @@
-package tracing
+package betterlogger
 
 import (
 	"context"

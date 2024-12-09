@@ -1,12 +1,14 @@
-package tracing
+package betterlogger
 
 import (
 	"context"
 	"log/slog"
+
+	"github.com/direktiv/direktiv/pkg/tracing"
 )
 
 // ContextHandler wraps a slog.Handler (e.g., JSON handler) and processes slogFields from the context.
-// Deprecated: Use the logging system provided in betterlogger instead.
+// Deprecated: Use the logging system provided in tracing instead.
 type ContextHandler struct {
 	innerHandler slog.Handler
 }
@@ -24,7 +26,7 @@ func (h *ContextHandler) Enabled(ctx context.Context, level slog.Level) bool {
 
 // Handle implements slog.Handler.
 func (h *ContextHandler) Handle(ctx context.Context, rec slog.Record) error {
-	if attrs := GetAttributes(ctx); len(attrs) > 0 {
+	if attrs := tracing.GetAttributes(ctx); len(attrs) > 0 {
 		res := make([]slog.Attr, 0, len(attrs)*2)
 		for k, v := range attrs {
 			res = append(res, slog.Attr{Key: k, Value: slog.AnyValue(v)})

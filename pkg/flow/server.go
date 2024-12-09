@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/env/v10"
+	"github.com/direktiv/direktiv/pkg/betterlogger"
 	"github.com/direktiv/direktiv/pkg/cmd"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
@@ -611,13 +612,13 @@ func initSLog(cfg *core.Config) {
 		slog.Info("logging is set to debug")
 		lvl.Set(slog.LevelDebug)
 	}
-	handlers := tracing.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+	handlers := betterlogger.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
 		Level: lvl,
 	}))
 	slogger := slog.New(
-		tracing.TeeHandler{
+		betterlogger.TeeHandler{
 			handlers,
-			tracing.EventHandler{},
+			betterlogger.EventHandler{},
 		})
 
 	slog.SetDefault(slogger)

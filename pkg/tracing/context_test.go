@@ -99,7 +99,7 @@ func TestGetRawLogEntryWithStatus(t *testing.T) {
 	ctx = tracing.AddInstanceMemoryAttr(ctx, attrs, "state1")
 	ctx = tracing.WithTrack(ctx, "track1")
 
-	logEntry := tracing.GetRawLogEntryWithStatus(ctx, tracing.LevelInfo, "message", core.LogStatus("ok"))
+	logEntry := tracing.GetRawLogEntryWithStatus(ctx, core.LevelInfo, "message", core.LogStatus("ok"))
 	assert.Equal(t, "namespace1", logEntry["namespace"])
 	assert.Equal(t, "INFO", logEntry["level"].(string))
 	assert.Equal(t, "message", logEntry["msg"])
@@ -142,12 +142,12 @@ func TestBuildInstanceTrackViaCallpath(t *testing.T) {
 
 // TestLogLevelString tests the String method of LogLevel
 func TestLogLevelString(t *testing.T) {
-	assert.Equal(t, "DEBUG", tracing.LevelDebug.String())
-	assert.Equal(t, "INFO", tracing.LevelInfo.String())
-	assert.Equal(t, "WARN", tracing.LevelWarn.String())
-	assert.Equal(t, "ERROR", tracing.LevelError.String())
+	assert.Equal(t, "DEBUG", core.LevelDebug.String())
+	assert.Equal(t, "INFO", core.LevelInfo.String())
+	assert.Equal(t, "WARN", core.LevelWarn.String())
+	assert.Equal(t, "ERROR", core.LevelError.String())
 
 	// Testing an invalid log level, should return default "DEBUG"
-	var invalidLevel tracing.LogLevel = 999
+	var invalidLevel core.LogLevel = 999
 	assert.Equal(t, "DEBUG", invalidLevel.String(), "Expected 'DEBUG' for invalid log level")
 }

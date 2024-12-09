@@ -1,4 +1,4 @@
-package tracing_test
+package betterlogger_test
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/betterlogger"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/stretchr/testify/assert"
@@ -15,7 +16,7 @@ import (
 
 // Helper function to set up a logger with a JSON handler
 func setupLogger(buf *bytes.Buffer) *slog.Logger {
-	return slog.New(tracing.NewContextHandler(slog.NewJSONHandler(buf, &slog.HandlerOptions{})))
+	return slog.New(betterlogger.NewContextHandler(slog.NewJSONHandler(buf, &slog.HandlerOptions{})))
 }
 
 // Helper function to count occurrences of a substring in a string

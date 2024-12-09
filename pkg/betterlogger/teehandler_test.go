@@ -1,4 +1,4 @@
-package tracing_test
+package betterlogger_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/tracing"
+	"github.com/direktiv/direktiv/pkg/betterlogger"
 )
 
 // mockHandler is a mock implementation of slog.Handler for testing purposes.
@@ -50,7 +50,7 @@ func TestTeeHandler(t *testing.T) {
 	mock2 := &mockHandler{enabled: true}
 
 	// Create TeeHandler with the mock handlers
-	tee := tracing.TeeHandler{mock1, mock2}
+	tee := betterlogger.TeeHandler{mock1, mock2}
 
 	// Test Enabled - should return true if first handler is enabled
 	if !tee.Enabled(ctx, slog.LevelInfo) {
@@ -79,7 +79,7 @@ func TestTeeHandler(t *testing.T) {
 
 	// Test WithAttrs - should propagate attrs to all handlers
 	attrs := []slog.Attr{{Key: "key", Value: slog.StringValue("value")}}
-	teeWithAttrs := tee.WithAttrs(attrs).(tracing.TeeHandler)
+	teeWithAttrs := tee.WithAttrs(attrs).(betterlogger.TeeHandler)
 
 	for i, logger := range teeWithAttrs {
 		if l, _ := logger.(*mockHandler); !l.withAttrs[0].Equal(attrs[0]) {
@@ -89,7 +89,7 @@ func TestTeeHandler(t *testing.T) {
 
 	// Test WithGroup - should propagate group name to all handlers
 	groupName := "group"
-	teeWithGroup, _ := tee.WithGroup(groupName).(tracing.TeeHandler)
+	teeWithGroup, _ := tee.WithGroup(groupName).(betterlogger.TeeHandler)
 
 	for i, logger := range teeWithGroup {
 		if logger.(*mockHandler).withGroup != groupName {

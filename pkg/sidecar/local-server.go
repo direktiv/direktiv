@@ -188,7 +188,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	entry := tracing.GetRawLogEntryWithStatus(ctx, tracing.LevelInfo, msg, core.LogRunningStatus)
+	entry := tracing.GetRawLogEntryWithStatus(ctx, core.LevelInfo, msg, core.LogRunningStatus)
 	d, err := json.Marshal(entry)
 	if err != nil {
 		slog.Error("Failed to marshal log entry.", "action", actionId, "error", err)

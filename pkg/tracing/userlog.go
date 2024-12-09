@@ -1,104 +1,91 @@
-// Package betterlogger provides a structured userlog system.
+package tracing
+
+// Package tracing provides a structured userlog system.
 //
 // Usage Example:
 //
-//	logger, err := betterlogger.WithNamespace(coreNamespaceAttributes{Namespace: "example-namespace"}).ShowInNamespaceView()
+//	logger, err := tracing.WithNamespace(coreNamespaceAttributes{Namespace: "example-namespace"}).ShowInNamespaceView()
 //	if err != nil {
 //		panic(error.Error())
 //	}
 //	logger.InfoContext(ctx, "Namespace log entry", "key", "value")
-package betterlogger
-
 import (
 	"context"
 	"fmt"
 	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/tracing"
 )
 
 // WithNamespace initializes a TrackAble logger with namespace-specific attributes.
-//
-// Parameters:
-// - attr: Attributes associated with the namespace.
-//
-// Returns:
-// - A TrackAble logger configured with the provided namespace attributes.
-func WithNamespace(attr coreNamespaceAttributes) TrackAble {
-	return newLogUtil(logUtil{coreNamespaceAttributes: attr})
+func WithNamespace(namespace string) TrackAble {
+	return newLogUtil(logUtil{
+		Namespace: namespace,
+	})
 }
 
 // WithInstance initializes a TrackAble logger for an instance.
-//
-// Parameters:
-// - attr: Attributes specific to an instance.
-//
-// Returns:
-// - A TrackAble logger configured with the provided instance attributes.
 func WithInstance(attr InstanceAttributes) TrackAble {
-	return newLogUtil(logUtil{}, attr.coreInstanceAttr, attr.coreNamespaceAttributes)
+	return newLogUtil(logUtil{
+		Namespace:    attr.Namespace,
+		InstanceID:   attr.InstanceID,
+		WorkflowPath: attr.WorkflowPath,
+		CallPath:     attr.Callpath,
+	})
 }
 
 // WithInstanceMemory initializes a TrackAble logger for an instance memory context.
-//
-// Parameters:
-// - attr: Attributes specific to instance memory.
-//
-// Returns:
-// - A TrackAble logger configured with the provided memory attributes.
 func WithInstanceMemory(attr InstanceMemoryAttributes) TrackAble {
-	return newLogUtil(logUtil{}, attr.coreInstanceMemoryAttributes, attr.coreInstanceAttr, attr.coreNamespaceAttributes)
+	return newLogUtil(logUtil{
+		Namespace:    attr.Namespace,
+		InstanceID:   attr.InstanceID,
+		WorkflowPath: attr.WorkflowPath,
+		CallPath:     attr.Callpath,
+		State:        attr.State,
+	})
 }
 
 // WithInstanceAction initializes a TrackAble logger for an instance action context.
-//
-// Parameters:
-// - attr: Attributes specific to an instance action.
-//
-// Returns:
-// - A TrackAble logger configured with the provided action attributes.
 func WithInstanceAction(attr InstanceActionAttributes) TrackAble {
-	return newLogUtil(logUtil{}, attr.coreInstanceActionAttr, attr.coreInstanceMemoryAttributes, attr.coreInstanceAttr, attr.coreNamespaceAttributes)
+	return newLogUtil(logUtil{
+		Namespace:    attr.Namespace,
+		InstanceID:   attr.InstanceID,
+		WorkflowPath: attr.WorkflowPath,
+		CallPath:     attr.Callpath,
+		State:        attr.State,
+		ActionID:     attr.ActionID,
+	})
 }
 
 // WithMirror initializes a TrackAble logger for a Cloud Event Bus context.
-//
-// Parameters:
-// - attr: Attributes specific to the Cloud Event Bus.
-//
-// Returns:
-// - A TrackAble logger configured with the provided event bus attributes.
 func WithMirror(attr CloudEventBusAttributes) TrackAble {
-	return newLogUtil(logUtil{}, attr.coreCloudEventBusAttributes, attr.coreNamespaceAttributes)
+	return newLogUtil(logUtil{
+		Namespace: attr.Namespace,
+		EventID:   attr.EventID,
+		Source:    attr.Source,
+		Subject:   attr.Subject,
+		EventType: attr.EventType,
+	})
 }
 
 // WithGatewayRoutes initializes a TrackAble logger for a gateway route context.
-//
-// Parameters:
-// - attr: Attributes specific to the gateway routes.
-//
-// Returns:
-// - A TrackAble logger configured with the provided gateway attributes.
 func WithGatewayRoutes(attr GatewayAttributes) TrackAble {
-	return newLogUtil(logUtil{}, attr.coreGatewayAttributes, attr.coreNamespaceAttributes)
+	return newLogUtil(logUtil{
+		Namespace: attr.Namespace,
+		Plugin:    attr.Plugin,
+		Route:     attr.Route,
+	})
 }
 
 // WithEventProcessing initializes a TrackAble logger for event processing.
-//
-// Parameters:
-// - attr: Attributes specific to event synchronization.
-//
-// Returns:
-// - A TrackAble logger configured with the provided synchronization attributes.
 func WithEventProcessing(attr SyncAttributes) TrackAble {
-	return newLogUtil(logUtil{}, attr.coreSyncAttributes, attr.coreNamespaceAttributes)
+	return newLogUtil(logUtil{
+		Namespace: attr.Namespace,
+		SyncID:    attr.SyncID,
+	})
 }
 
 // TODO creates a default UserLogger with no specific attributes.
-//
-// Returns:
-// - A UserLogger instance for general-purpose logging.
 func TODO() UserLogger {
 	return &logUtilWithTrack{logUtil: &logUtil{}}
 }
@@ -108,13 +95,19 @@ var _ UserLogger = &logUtilWithTrack{}
 var _ TrackAble = &logUtil{}
 
 type logUtil struct {
-	coreNamespaceAttributes
-	coreInstanceAttr
-	coreInstanceMemoryAttributes
-	coreCloudEventBusAttributes
-	coreGatewayAttributes
-	coreSyncAttributes
-	coreInstanceActionAttr
+	Namespace    string
+	InstanceID   string
+	WorkflowPath string
+	CallPath     string
+	State        string
+	EventID      string
+	Source       string
+	Subject      string
+	EventType    string
+	Plugin       string
+	Route        string
+	SyncID       string
+	ActionID     string
 }
 
 type logUtilWithTrack struct {
@@ -122,54 +115,35 @@ type logUtilWithTrack struct {
 	track string
 }
 
-func newLogUtil(base logUtil, additionalAttributes ...any) *logUtil {
-	// Create a new instance of logUtil and apply any additional attributes
-	newLogger := base
-	for _, attr := range additionalAttributes {
-		switch v := attr.(type) {
-		case coreInstanceAttr:
-			newLogger.coreInstanceAttr = v
-		case coreInstanceMemoryAttributes:
-			newLogger.coreInstanceMemoryAttributes = v
-		case coreCloudEventBusAttributes:
-			newLogger.coreCloudEventBusAttributes = v
-		case coreGatewayAttributes:
-			newLogger.coreGatewayAttributes = v
-		case coreSyncAttributes:
-			newLogger.coreSyncAttributes = v
-		case coreInstanceActionAttr:
-			newLogger.coreInstanceActionAttr = v
-		}
-	}
-
-	return &newLogger
+func newLogUtil(base logUtil) *logUtil {
+	return &base
 }
 
 // DebugContext implements logger.
 func (l *logUtilWithTrack) DebugContext(ctx context.Context, msg string, args ...any) {
 	ctx = l.ctxBuilder(ctx)
-	ctx = tracing.WithTrack(ctx, l.track)
+	ctx = WithTrack(ctx, l.track)
 	slog.DebugContext(ctx, msg, args...)
 }
 
 // ErrorContext implements logger.
 func (l *logUtilWithTrack) ErrorContext(ctx context.Context, msg string, args ...any) {
 	ctx = l.ctxBuilder(ctx)
-	ctx = tracing.WithTrack(ctx, l.track)
+	ctx = WithTrack(ctx, l.track)
 	slog.ErrorContext(ctx, msg, args...)
 }
 
 // InfoContext implements logger.
 func (l *logUtilWithTrack) InfoContext(ctx context.Context, msg string, args ...any) {
 	ctx = l.ctxBuilder(ctx)
-	ctx = tracing.WithTrack(ctx, l.track)
+	ctx = WithTrack(ctx, l.track)
 	slog.InfoContext(ctx, msg, args...)
 }
 
 // WarnContext implements logger.
 func (l *logUtilWithTrack) WarnContext(ctx context.Context, msg string, args ...any) {
 	ctx = l.ctxBuilder(ctx)
-	ctx = tracing.WithTrack(ctx, l.track)
+	ctx = WithTrack(ctx, l.track)
 	slog.WarnContext(ctx, msg, args...)
 }
 
@@ -226,7 +200,7 @@ func (l *logUtil) ConsoleLogs() (UserLogger, error) {
 
 func (l *logUtil) ctxBuilder(ctx context.Context) context.Context {
 	if len(l.State) != 0 {
-		ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		ctx = AddInstanceMemoryAttr(ctx, InstanceAttributes{
 			Namespace:    l.Namespace,
 			InstanceID:   l.InstanceID,
 			Invoker:      "todo_dummy_value",
@@ -235,19 +209,18 @@ func (l *logUtil) ctxBuilder(ctx context.Context) context.Context {
 			Callpath:     l.CallPath,
 		}, l.State)
 	} else if len(l.CallPath) != 0 {
-		ctx = tracing.AddInstanceAttr(ctx, tracing.InstanceAttributes{
-			Namespace:    l.Namespace,
-			InstanceID:   l.InstanceID,
-			Invoker:      "todo_dummy_value",
+		ctx = AddInstanceAttr(ctx, InstanceAttributes{
+			Namespace:  l.Namespace,
+			InstanceID: l.InstanceID,
+			// Invoker:      "todo_dummy_value",
 			WorkflowPath: l.WorkflowPath,
-			Status:       core.LogUnknownStatus,
 			Callpath:     l.CallPath,
 		})
 	} else if len(l.Namespace) != 0 {
-		ctx = tracing.AddNamespace(ctx, l.Namespace)
+		ctx = AddNamespace(ctx, l.Namespace)
 	}
 	if len(l.ActionID) != 0 {
-		ctx = tracing.AddActionID(ctx, l.ActionID)
+		ctx = AddActionID(ctx, l.ActionID)
 	}
 
 	return ctx

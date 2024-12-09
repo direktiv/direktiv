@@ -15,7 +15,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -94,15 +93,15 @@ func (m *logController) mountRouter(r chi.Router) {
 		}
 
 		slogF := slog.Info
-		if v, ok := logEntry["level"].(tracing.LogLevel); ok {
+		if v, ok := logEntry["level"].(core.LogLevel); ok {
 			switch v {
-			case tracing.LevelDebug:
+			case core.LevelDebug:
 				slogF = slog.Debug
-			case tracing.LevelInfo:
+			case core.LevelInfo:
 				slogF = slog.Info
-			case tracing.LevelWarn:
+			case core.LevelWarn:
 				slogF = slog.Warn
-			case tracing.LevelError:
+			case core.LevelError:
 				slogF = slog.Error
 			}
 		}
