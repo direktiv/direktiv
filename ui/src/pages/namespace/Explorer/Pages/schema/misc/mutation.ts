@@ -2,8 +2,10 @@ import { z } from "zod";
 
 const Methods = ["POST", "PUT", "PATCH", "DELETE"] as const;
 
+const MutationMethod = z.enum(Methods);
+
 export const Mutation = z.object({
-  method: z.enum(Methods),
+  method: MutationMethod,
   endpoint: z.string().min(1),
   // TODO: finish
 });
