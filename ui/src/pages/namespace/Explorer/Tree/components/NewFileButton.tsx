@@ -131,7 +131,7 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
               <LayoutTemplate className="mr-2 size-4" />
-              UI Builder
+              {t("pages.explorer.tree.newFileButton.items.uibuilder.label")}
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
               <DropdownMenuSubContent className="w-40">
@@ -143,7 +143,9 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
                 >
                   <DropdownMenuItem>
                     <PanelTop className="mr-2 size-4" />
-                    New Page
+                    {t(
+                      "pages.explorer.tree.newFileButton.items.uibuilder.page"
+                    )}
                   </DropdownMenuItem>
                 </DialogTrigger>
               </DropdownMenuSubContent>
