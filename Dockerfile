@@ -23,7 +23,7 @@ WORKDIR /app
 COPY ui/package.json .
 COPY ui/pnpm-lock.yaml .
 
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 
 COPY ui/.eslintrc.js .
 COPY ui/.prettierrc.mjs .
