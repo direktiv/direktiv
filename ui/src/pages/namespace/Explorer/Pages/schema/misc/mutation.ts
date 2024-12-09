@@ -7,3 +7,5 @@ export const Mutation = z.object({
   endpoint: z.string().min(1),
   // TODO: finish
 });
+
+export type MutationType = z.infer<typeof Mutation>;

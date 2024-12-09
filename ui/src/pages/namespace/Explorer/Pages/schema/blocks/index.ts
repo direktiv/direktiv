@@ -1,4 +1,5 @@
 import { Button, ButtonType } from "./button";
+import { Form, FormType } from "./form";
 import { Headline, HeadlineType } from "./headline";
 import { Modal, ModalType } from "./modal";
 import { Text, TextType } from "./text";
@@ -6,18 +7,23 @@ import { Text, TextType } from "./text";
 import { z } from "zod";
 
 /**
- * ⚠️ NOTE: The AllBlocks unions and the AllBlocks schema must always be kept in sync to
- * ensure 100% tyoe safety. It is currently possible to extend the AllBlocks union type
- * but not implement the schema for the new type.
+ * ⚠️ NOTE: The AllBlocksType and the allBlocks schema must always be kept in sync
+ * to ensure 100% tyoe safety. It is currently possible to extend the AllBlocksType
+ * but not implement the schema.
  *
- * The allBlocks need to get the AllBlocksType union type as input to avoid ciuclar
+ * The allBlocks need to get the AllBlocksType as a type input to avoid ciuclar
  * dependencies.
  */
-type AllBlocksType = HeadlineType | ButtonType | TextType | ModalType;
+type AllBlocksType =
+  | HeadlineType
+  | ButtonType
+  | TextType
+  | FormType
+  | ModalType;
 
 export const allBlocks: z.ZodType<AllBlocksType> = z.discriminatedUnion(
   "type",
-  [Headline, Button, Text, Modal]
+  [Headline, Button, Text, Form, Modal]
 );
 
 export const Blocks = {
