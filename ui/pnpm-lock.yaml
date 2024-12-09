@@ -177,9 +177,6 @@ importers:
       js-base64:
         specifier: ^3.7.6
         version: 3.7.6
-      js-yaml:
-        specifier: ^4.1.0
-        version: 4.1.0
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -319,9 +316,6 @@ importers:
       '@types/drawflow':
         specifier: ^0.0.4
         version: 0.0.4
-      '@types/js-yaml':
-        specifier: ^4.0.5
-        version: 4.0.5
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.12
@@ -367,9 +361,6 @@ importers:
       vite:
         specifier: ^5.4.3
         version: 5.4.11(@types/node@18.7.18)(terser@5.36.0)
-      vite-plugin-yaml2:
-        specifier: ^1.1.5
-        version: 1.1.5
       vite-tsconfig-paths:
         specifier: ^4.2.1
         version: 4.3.2(typescript@5.7.2)(vite@5.4.11(@types/node@18.7.18)(terser@5.36.0))
@@ -2361,9 +2352,6 @@ packages:
 
   '@types/jest@29.0.2':
     resolution: {integrity: sha512-TaklkwSEtvwJpleiKBHgEBySIQlcZ08gYP/s5wdtdLnjz9uxjnDd7U+Y0JWACebkqBc+jtbol2PEtEW0wQV2zQ==}
-
-  '@types/js-yaml@4.0.5':
-    resolution: {integrity: sha512-FhpRzf927MNQdRZP0J5DLIdTXhjLYzeUTmLAu69mnVksLH9CJY3IuSeEgbKUki7GQZm0WqDkGzyxju2EZGD2wA==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -6257,9 +6245,6 @@ packages:
     engines: {node: '>=v14.18.0'}
     hasBin: true
 
-  vite-plugin-yaml2@1.1.5:
-    resolution: {integrity: sha512-98PPEBWmyS+t2KcvGXfvnX83+QRGedpyPkDwluUAzCyCquwJzYsUNqfNzJHDk2/52d8uoCmJTZJpnQMls7LNtw==}
-
   vite-tsconfig-paths@4.3.2:
     resolution: {integrity: sha512-0Vd/a6po6Q+86rPlntHye7F31zA2URZMbH8M3saAZ/xR9QoGN/L21bxEGfXdWmFdNkqPpRdxFT7nmNe12e9/uA==}
     peerDependencies:
@@ -9301,8 +9286,6 @@ snapshots:
     dependencies:
       expect: 29.4.0
       pretty-format: 29.4.0
-
-  '@types/js-yaml@4.0.5': {}
 
   '@types/json-schema@7.0.15': {}
 
@@ -13651,8 +13634,6 @@ snapshots:
       - sugarss
       - supports-color
       - terser
-
-  vite-plugin-yaml2@1.1.5: {}
 
   vite-tsconfig-paths@4.3.2(typescript@5.7.2)(vite@5.4.11(@types/node@18.7.18)(terser@5.36.0)):
     dependencies:
