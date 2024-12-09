@@ -13,6 +13,30 @@ import (
 	"github.com/opensearch-project/opensearch-go/opensearchapi"
 )
 
+// NewOpenSearchLogStore creates a new OpenSearchLogStore with the specified settings.
+func NewOpenSearchLogStore(client *opensearch.Client, co config) *LogStore {
+	return &LogStore{
+		client:      client,
+		logIndex:    co.LogIndex,
+		deleteAfter: co.LogDeleteAfter,
+	}
+}
+
+// Init ensures the index and lifecycle policies are created.
+func (store *LogStore) Init(ctx context.Context) error {
+	// Ensure the index exists
+	if err := store.ensureIndex(ctx); err != nil {
+		return fmt.Errorf("failed to ensure index: %w", err)
+	}
+
+	// Ensure lifecycle policies
+	if err := store.ensureDeletionPolicy(ctx); err != nil {
+		return fmt.Errorf("failed to ensure deletion policy: %w", err)
+	}
+
+	return nil
+}
+
 type LogStore struct {
 	client      *opensearch.Client
 	logIndex    string
@@ -140,30 +164,6 @@ func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOption
 }
 
 var _ metastore.LogStore = &LogStore{}
-
-// NewOpenSearchLogStore creates a new OpenSearchLogStore with the specified settings.
-func NewOpenSearchLogStore(client *opensearch.Client, logIndex string, deleteAfter string) *LogStore {
-	return &LogStore{
-		client:      client,
-		logIndex:    logIndex,
-		deleteAfter: deleteAfter,
-	}
-}
-
-// Init ensures the index and lifecycle policies are created.
-func (store *LogStore) Init(ctx context.Context) error {
-	// Ensure the index exists
-	if err := store.ensureIndex(ctx); err != nil {
-		return fmt.Errorf("failed to ensure index: %w", err)
-	}
-
-	// Ensure lifecycle policies
-	if err := store.ensureDeletionPolicy(ctx); err != nil {
-		return fmt.Errorf("failed to ensure deletion policy: %w", err)
-	}
-
-	return nil
-}
 
 func (store *LogStore) ensureIndex(ctx context.Context) error {
 	// Check if the index exists

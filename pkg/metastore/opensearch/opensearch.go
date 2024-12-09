@@ -12,6 +12,17 @@ import (
 
 type opensearchMetaStore struct {
 	client *opensearch.Client
+	co     config
+}
+
+// LogStore implements metastore.Store.
+func (o *opensearchMetaStore) LogStore() metastore.LogStore {
+	return NewOpenSearchLogStore(o.client, o.co)
+}
+
+type config struct {
+	LogIndex       string
+	LogDeleteAfter string
 }
 
 func NewTestDataStore(t *testing.T) (metastore.Store, func(), error) {
@@ -48,5 +59,6 @@ func NewTestDataStore(t *testing.T) (metastore.Store, func(), error) {
 
 	return &opensearchMetaStore{
 		client: client,
+		co:     config{},
 	}, cleanup, nil
 }

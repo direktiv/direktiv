@@ -1,5 +1,5 @@
 package metastore
 
 type Store interface {
-	// LogStore
+	LogStore() LogStore
 }
