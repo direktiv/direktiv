@@ -146,6 +146,7 @@
     "@storybook/react-vite": "^8.4.6",
     "@storybook/test": "^8.4.6",
     "@tanstack/eslint-plugin-query": "^5.28.11",
+    "@tanstack/router-plugin": "^1.86.0",
     "@types/dagre": "^0.7.48",
     "@types/drawflow": "^0.0.4",
     "@types/react": "^18.3.12",
