@@ -22,7 +22,7 @@ To initialize telemetry:
 ## Workflow
 
 1. Start a new trace span with `NewSpan`.
-2. Use the `betterlogger` system to log within the span's context.
+2. Use the `userlogs` system to log within the span's context.
 
 ## Example Usage
 

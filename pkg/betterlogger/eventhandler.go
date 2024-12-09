@@ -12,7 +12,6 @@ var _ slog.Handler = &EventHandler{}
 type EventHandler struct{}
 
 // Enabled implements slog.Handler.
-// Deprecated: Use the logging system provided in betterlogger instead.
 func (e EventHandler) Enabled(ctx context.Context, level slog.Level) bool {
 	return slog.Default().Enabled(ctx, level)
 }
