@@ -7,12 +7,10 @@ import { Text, TextType } from "./text";
 import { z } from "zod";
 
 /**
- * ⚠️ NOTE: The AllBlocksType and the allBlocks schema must always be kept in sync
- * to ensure 100% tyoe safety. It is currently possible to extend the AllBlocksType
- * but not implement the schema.
- *
- * The allBlocks need to get the AllBlocksType as a type input to avoid ciuclar
- * dependencies.
+ * ⚠️ NOTE:
+ * The type and the schema must be kept in sync to ensure 100% type safety.
+ * It is currently possible to extend the type without updating the schema.
+ * The schema needs to get the type input to avoid circular dependencies.
  */
 type AllBlocksType =
   | HeadlineType
