@@ -112,3 +112,74 @@ func MergeAttributes(base []slog.Attr, extra ...slog.Attr) []slog.Attr {
 
 	return attrs
 }
+
+// // buildInstanceAttributes constructs the base attributes for instance logging.
+// func buildInstanceAttributes(attr InstanceAttributes, additionalAttrs ...slog.Attr) []slog.Attr {
+// 	baseAttrs := []slog.Attr{
+// 		slog.String("namespace", attr.Namespace),
+// 		slog.String("instance", attr.InstanceID),
+// 		slog.String("workflow", attr.WorkflowPath),
+// 		slog.String("track", fmt.Sprintf("%v.%v", "instance", attr.CallPath)),
+// 	}
+
+// 	return internal.MergeAttributes(baseAttrs, additionalAttrs...)
+// }
+
+// // buildInstanceMemoryAttributes constructs the base attributes for instance memory logging.
+// func buildInstanceMemoryAttributes(attr InstanceMemoryAttributes, additionalAttrs ...slog.Attr) []slog.Attr {
+// 	baseAttrs := buildInstanceAttributes(InstanceAttributes{
+// 		coreInstanceAttr:        attr.coreInstanceAttr,
+// 		coreNamespaceAttributes: attr.coreNamespaceAttributes,
+// 	})
+// 	memoryAttr := slog.String("state", attr.State)
+
+// 	return internal.MergeAttributes(baseAttrs, append(additionalAttrs, memoryAttr)...)
+// }
+
+// // buildCloudEventAttributes constructs the base attributes for cloud event logging.
+// func buildCloudEventAttributes(attr CloudEventBusAttributes, additionalAttrs ...slog.Attr) []slog.Attr {
+// 	baseAttrs := []slog.Attr{
+// 		slog.String("event_id", attr.EventID),
+// 		slog.String("source", attr.Source),
+// 		slog.String("subject", attr.Subject),
+// 		slog.String("event_type", attr.EventType),
+// 		slog.String("namespace", attr.Namespace),
+// 		slog.String("track", fmt.Sprintf("%v.%v", "namespace", attr.Namespace)),
+// 	}
+
+// 	return internal.MergeAttributes(baseAttrs, additionalAttrs...)
+// }
+
+// // buildGatewayAttributes constructs the base attributes for gateway logging.
+// func buildGatewayAttributes(attr GatewayAttributes, additionalAttrs ...slog.Attr) []slog.Attr {
+// 	baseAttrs := []slog.Attr{
+// 		slog.String("component", "gateway"),
+// 		slog.String("gateway_plugin", attr.Plugin),
+// 		slog.String("namespace", attr.Namespace),
+// 		slog.String("route", attr.Route),
+// 		slog.String("track", fmt.Sprintf("%v.%v", "route", attr.Route)),
+// 	}
+
+// 	return internal.MergeAttributes(baseAttrs, additionalAttrs...)
+// }
+
+// // buildGatewayAttributes constructs the base attributes for gateway logging.
+// func buildNamespaceAttributes(namespace string, additionalAttrs ...slog.Attr) []slog.Attr {
+// 	baseAttrs := []slog.Attr{
+// 		slog.String("namespace", namespace),
+// 		slog.String("track", fmt.Sprintf("%v.%v", "namespace", namespace)),
+// 	}
+
+// 	return internal.MergeAttributes(baseAttrs, additionalAttrs...)
+// }
+
+// // buildSyncAttributes constructs the base attributes for mirror logging.
+// func buildSyncAttributes(attr SyncAttributes, additionalAttrs ...slog.Attr) []slog.Attr {
+// 	baseAttrs := []slog.Attr{
+// 		slog.String("activity", attr.SyncID),
+// 		slog.String("namespace", attr.Namespace),
+// 		slog.String("track", fmt.Sprintf("%v.%v", "activity", attr.SyncID)),
+// 	}
+
+// 	return internal.MergeAttributes(baseAttrs, additionalAttrs...)
+// }

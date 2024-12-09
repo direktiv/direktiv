@@ -5,8 +5,17 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/direktiv/direktiv/pkg/betterlogger/internal"
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/tracing"
 )
+
+type TrackAble interface {
+	ShowInInstanceView() UserLogger
+	ShowInNamespaceView() UserLogger
+	ShowInGatewayView() UserLogger
+	ShowInMirrorView() UserLogger
+	ConsoleLogs() UserLogger
+}
 
 type UserLogger interface {
 	DebugContext(ctx context.Context, msg string, args ...any)
@@ -15,20 +24,20 @@ type UserLogger interface {
 	WarnContext(ctx context.Context, msg string, args ...any)
 }
 
-func ForNamespace(attr coreNamespaceAttributes) UserLogger {
+func WithNamespace(attr coreNamespaceAttributes) TrackAble {
 	return &logUtil{
 		coreNamespaceAttributes: attr,
 	}
 }
 
-func ForInstance(attr InstanceAttributes) UserLogger {
+func WithInstance(attr InstanceAttributes) TrackAble {
 	return &logUtil{
 		coreInstanceAttr:        attr.coreInstanceAttr,
 		coreNamespaceAttributes: attr.coreNamespaceAttributes,
 	}
 }
 
-func ForInstanceMemory(attr InstanceMemoryAttributes) UserLogger {
+func WithInstanceMemory(attr InstanceMemoryAttributes) TrackAble {
 	return &logUtil{
 		coreInstanceMemoryAttributes: attr.coreInstanceMemoryAttributes,
 		coreInstanceAttr:             attr.coreInstanceAttr,
@@ -36,28 +45,42 @@ func ForInstanceMemory(attr InstanceMemoryAttributes) UserLogger {
 	}
 }
 
-func ForMirror(attr CloudEventBusAttributes) UserLogger {
+func WithInstanceAction(attr InstanceMemoryAttributes) TrackAble {
+	return &logUtil{
+		coreInstanceMemoryAttributes: attr.coreInstanceMemoryAttributes,
+		coreInstanceAttr:             attr.coreInstanceAttr,
+		coreNamespaceAttributes:      attr.coreNamespaceAttributes,
+	}
+}
+
+func WithMirror(attr CloudEventBusAttributes) TrackAble {
 	return &logUtil{
 		coreCloudEventBusAttributes: attr.coreCloudEventBusAttributes,
 		coreNamespaceAttributes:     attr.coreNamespaceAttributes,
 	}
 }
 
-func ForGatewayRoutes(attr GatewayAttributes) UserLogger {
+func WithGatewayRoutes(attr GatewayAttributes) TrackAble {
 	return &logUtil{
 		coreNamespaceAttributes: attr.coreNamespaceAttributes,
 		coreGatewayAttributes:   attr.coreGatewayAttributes,
 	}
 }
 
-func ForEvenProcessing(attr SyncAttributes) UserLogger {
+func WithEventProcessing(attr SyncAttributes) TrackAble {
 	return &logUtil{
 		coreNamespaceAttributes: attr.coreNamespaceAttributes,
 		coreSyncAttributes:      attr.coreSyncAttributes,
 	}
 }
 
-var _ UserLogger = logUtil{}
+func TODO() UserLogger {
+	return &logUtil{}
+}
+
+var _ UserLogger = &logUtil{}
+
+var _ TrackAble = &logUtil{}
 
 type logUtil struct {
 	coreNamespaceAttributes
@@ -66,27 +89,90 @@ type logUtil struct {
 	coreCloudEventBusAttributes
 	coreGatewayAttributes
 	coreSyncAttributes
-	track string
+	coreInstanceActionAttr
+	track string // TODO: ensure thread safe handling when building the logger
 }
 
 // DebugContext implements logger.
-func (l logUtil) DebugContext(ctx context.Context, msg string, args ...any) {
-	panic("unimplemented")
+func (l *logUtil) DebugContext(ctx context.Context, msg string, args ...any) {
+	ctx = l.ctxBuilder(ctx)
+	slog.DebugContext(ctx, msg, args...)
 }
 
 // ErrorContext implements logger.
-func (l logUtil) ErrorContext(ctx context.Context, msg string, args ...any) {
-	panic("unimplemented")
+func (l *logUtil) ErrorContext(ctx context.Context, msg string, args ...any) {
+	ctx = l.ctxBuilder(ctx)
+	slog.ErrorContext(ctx, msg, args...)
 }
 
 // InfoContext implements logger.
-func (l logUtil) InfoContext(ctx context.Context, msg string, args ...any) {
-	panic("unimplemented")
+func (l *logUtil) InfoContext(ctx context.Context, msg string, args ...any) {
+	ctx = l.ctxBuilder(ctx)
+	slog.InfoContext(ctx, msg, args...)
 }
 
 // WarnContext implements logger.
-func (l logUtil) WarnContext(ctx context.Context, msg string, args ...any) {
-	panic("unimplemented")
+func (l *logUtil) WarnContext(ctx context.Context, msg string, args ...any) {
+	ctx = l.ctxBuilder(ctx)
+	slog.WarnContext(ctx, msg, args...)
+}
+
+// ShowInGatewayView implements TrackAble.
+func (l *logUtil) ShowInGatewayView() UserLogger {
+	l.track = fmt.Sprintf("%v.%v", "route", l.Route)
+	return l
+}
+
+// ShowInMirrorView implements TrackAble.
+func (l *logUtil) ShowInMirrorView() UserLogger {
+	l.track = fmt.Sprintf("%v.%v", "activity", l.SyncID)
+	return l
+}
+
+// ShowInInstanceView implements TrackAble.
+func (l *logUtil) ShowInInstanceView() UserLogger {
+	l.track = fmt.Sprintf("%v.%v", "instance", l.CallPath)
+	return l
+}
+
+// ShowInNamespaceView implements TrackAble.
+func (l *logUtil) ShowInNamespaceView() UserLogger {
+	l.track = fmt.Sprintf("%v.%v", "namespace", l.Namespace)
+	return l
+}
+
+// ConsoleLogs implements TrackAble.
+func (l *logUtil) ConsoleLogs() UserLogger {
+	return l
+}
+
+func (l *logUtil) ctxBuilder(ctx context.Context) context.Context {
+	if len(l.State) != 0 {
+		ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+			Namespace:    l.Namespace,
+			InstanceID:   l.InstanceID,
+			Invoker:      "todo_dummy_value",
+			WorkflowPath: l.WorkflowPath,
+			Status:       core.LogUnknownStatus,
+			Callpath:     l.CallPath,
+		}, l.State)
+	} else if len(l.CallPath) != 0 {
+		ctx = tracing.AddInstanceAttr(ctx, tracing.InstanceAttributes{
+			Namespace:    l.Namespace,
+			InstanceID:   l.InstanceID,
+			Invoker:      "todo_dummy_value",
+			WorkflowPath: l.WorkflowPath,
+			Status:       core.LogUnknownStatus,
+			Callpath:     l.CallPath,
+		})
+	} else if len(l.Namespace) != 0 {
+		ctx = tracing.AddNamespace(ctx, l.Namespace)
+	}
+	if len(l.ActionID) != 0 {
+		ctx = tracing.AddActionID(ctx, l.ActionID)
+	}
+
+	return ctx
 }
 
 type coreNamespaceAttributes struct {
@@ -124,6 +210,13 @@ type InstanceMemoryAttributes struct {
 	coreInstanceMemoryAttributes
 }
 
+type InstanceActionAttributes struct {
+	coreNamespaceAttributes
+	coreInstanceAttr
+	coreInstanceMemoryAttributes
+	coreInstanceActionAttr
+}
+
 // InstanceAttributes holds common metadata for an instance, which is helpful for logging.
 type InstanceAttributes struct {
 	coreNamespaceAttributes
@@ -136,19 +229,12 @@ type coreInstanceAttr struct {
 	CallPath     string // Identifies the log-stream, legacy feature from the old engine
 }
 
-type coreInstanceMemoryAttributes struct {
-	State string // Memory state of the instance
+type coreInstanceActionAttr struct {
+	ActionID string // Unique identifier for the instance action
 }
 
-// buildSyncAttributes constructs the base attributes for mirror logging.
-func buildSyncAttributes(attr SyncAttributes, additionalAttrs ...slog.Attr) []slog.Attr {
-	baseAttrs := []slog.Attr{
-		slog.String("activity", attr.SyncID),
-		slog.String("namespace", attr.Namespace),
-		slog.String("track", fmt.Sprintf("%v.%v", "activity", attr.SyncID)),
-	}
-
-	return internal.MergeAttributes(baseAttrs, additionalAttrs...)
+type coreInstanceMemoryAttributes struct {
+	State string // Memory state of the instance
 }
 
 // SyncAttributes holds metadata specific to a Sync component, helpful for logging.
@@ -160,64 +246,4 @@ type SyncAttributes struct {
 // SyncAttributes holds metadata specific to a Sync component, helpful for logging.
 type coreSyncAttributes struct {
 	SyncID string // Unique identifier for the Sync
-}
-
-// buildInstanceAttributes constructs the base attributes for instance logging.
-func buildInstanceAttributes(attr InstanceAttributes, additionalAttrs ...slog.Attr) []slog.Attr {
-	baseAttrs := []slog.Attr{
-		slog.String("namespace", attr.Namespace),
-		slog.String("instance", attr.InstanceID),
-		slog.String("workflow", attr.WorkflowPath),
-		slog.String("track", fmt.Sprintf("%v.%v", "instance", attr.CallPath)),
-	}
-
-	return internal.MergeAttributes(baseAttrs, additionalAttrs...)
-}
-
-// buildInstanceMemoryAttributes constructs the base attributes for instance memory logging.
-func buildInstanceMemoryAttributes(attr InstanceMemoryAttributes, additionalAttrs ...slog.Attr) []slog.Attr {
-	baseAttrs := buildInstanceAttributes(InstanceAttributes{
-		coreInstanceAttr:        attr.coreInstanceAttr,
-		coreNamespaceAttributes: attr.coreNamespaceAttributes,
-	})
-	memoryAttr := slog.String("state", attr.State)
-
-	return internal.MergeAttributes(baseAttrs, append(additionalAttrs, memoryAttr)...)
-}
-
-// buildCloudEventAttributes constructs the base attributes for cloud event logging.
-func buildCloudEventAttributes(attr CloudEventBusAttributes, additionalAttrs ...slog.Attr) []slog.Attr {
-	baseAttrs := []slog.Attr{
-		slog.String("event_id", attr.EventID),
-		slog.String("source", attr.Source),
-		slog.String("subject", attr.Subject),
-		slog.String("event_type", attr.EventType),
-		slog.String("namespace", attr.Namespace),
-		slog.String("track", fmt.Sprintf("%v.%v", "namespace", attr.Namespace)),
-	}
-
-	return internal.MergeAttributes(baseAttrs, additionalAttrs...)
-}
-
-// buildGatewayAttributes constructs the base attributes for gateway logging.
-func buildGatewayAttributes(attr GatewayAttributes, additionalAttrs ...slog.Attr) []slog.Attr {
-	baseAttrs := []slog.Attr{
-		slog.String("component", "gateway"),
-		slog.String("gateway_plugin", attr.Plugin),
-		slog.String("namespace", attr.Namespace),
-		slog.String("route", attr.Route),
-		slog.String("track", fmt.Sprintf("%v.%v", "route", attr.Route)),
-	}
-
-	return internal.MergeAttributes(baseAttrs, additionalAttrs...)
-}
-
-// buildGatewayAttributes constructs the base attributes for gateway logging.
-func buildNamespaceAttributes(namespace string, additionalAttrs ...slog.Attr) []slog.Attr {
-	baseAttrs := []slog.Attr{
-		slog.String("namespace", namespace),
-		slog.String("track", fmt.Sprintf("%v.%v", "namespace", namespace)),
-	}
-
-	return internal.MergeAttributes(baseAttrs, additionalAttrs...)
 }
