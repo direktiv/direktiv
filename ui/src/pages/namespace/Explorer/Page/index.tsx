@@ -7,7 +7,6 @@ import { analyzePath } from "~/util/router/utils";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
 import { usePages } from "~/util/router/pages";
-import { useTranslation } from "react-i18next";
 
 const UIPage: FC = () => {
   const pages = usePages();
@@ -15,7 +14,6 @@ const UIPage: FC = () => {
   const namespace = useNamespace();
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];
-  const { t } = useTranslation();
 
   const {
     isAllowed,
