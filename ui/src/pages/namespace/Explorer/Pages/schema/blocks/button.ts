@@ -1,0 +1,10 @@
+import { Mutation } from "../misc/mutation";
+import { z } from "zod";
+
+export const Button = z.object({
+  type: z.literal("button"),
+  data: z.object({
+    label: z.string().min(1),
+    submit: Mutation,
+  }),
+});
