@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import OpenApiSpec from "./openapi.yaml";
+import OpenApiSpec from "./example.json";
 import { RapiDoc } from "./index";
 
 const meta = {
