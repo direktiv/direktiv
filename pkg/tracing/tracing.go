@@ -15,8 +15,6 @@ To initialize telemetry:
 	} // call telEnd() on systems shutdown signal
 	```
 
-> **Note**: The logging section is deprecated and will be removed in future versions.
-
 # Usage
 
 ## Workflow
