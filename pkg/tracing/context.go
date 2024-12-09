@@ -64,7 +64,7 @@ func AddInstanceMemoryAttr(ctx context.Context, attrs InstanceAttributes, state 
 		Callpath:     attrs.Callpath,
 	})
 	ctx = AddStateAttr(ctx, state)
-	// ctx = AddStatus(ctx, attrs.Status)
+	ctx = AddStatus(ctx, attrs.Status)
 
 	return ctx
 }
@@ -73,7 +73,7 @@ func AddInstanceMemoryAttr(ctx context.Context, attrs InstanceAttributes, state 
 func AddInstanceAttr(ctx context.Context, attrs InstanceAttributes) context.Context {
 	ctx = AddNamespace(ctx, attrs.Namespace)
 	ctx = context.WithValue(ctx, InstanceKey, attrs.InstanceID)
-	// ctx = context.WithValue(ctx, InvokerKey, attrs.Invoker)
+	ctx = context.WithValue(ctx, InvokerKey, attrs.Invoker)
 	ctx = context.WithValue(ctx, CallpathKey, attrs.Callpath)
 	ctx = context.WithValue(ctx, WorkflowKey, attrs.WorkflowPath)
 
