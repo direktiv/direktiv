@@ -9,27 +9,27 @@ type TrackAble interface {
 	//
 	// Returns:
 	// - A UserLogger with tracking information for instance logs.
-	ShowInInstanceView() UserLogger
+	ShowInInstanceView() (UserLogger, error)
 	// ShowInNamespaceView configures the logger to focus on namespace-related logs.
 	//
 	// Returns:
 	// - A UserLogger with tracking information for namespace logs.
-	ShowInNamespaceView() UserLogger
+	ShowInNamespaceView() (UserLogger, error)
 	// ShowInGatewayView configures the logger to focus on gateway-related logs.
 	//
 	// Returns:
 	// - A UserLogger with tracking information for gateway logs.
-	ShowInGatewayView() UserLogger
+	ShowInGatewayView() (UserLogger, error)
 	// ShowInMirrorView configures the logger to focus on mirror-related logs.
 	//
 	// Returns:
 	// - A UserLogger with tracking information for mirror logs.
-	ShowInMirrorView() UserLogger
+	ShowInMirrorView() (UserLogger, error)
 	// ConsoleLogs configures the logger for console-specific logging.
 	//
 	// Returns:
 	// - A UserLogger for console logs.
-	ConsoleLogs() UserLogger
+	ConsoleLogs() (UserLogger, error)
 }
 
 type UserLogger interface {

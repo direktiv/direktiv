@@ -2,7 +2,10 @@
 //
 // Usage Example:
 //
-//	logger := betterlogger.WithNamespace(coreNamespaceAttributes{Namespace: "example-namespace"}).ShowInNamespaceView()
+//	logger, err := betterlogger.WithNamespace(coreNamespaceAttributes{Namespace: "example-namespace"}).ShowInNamespaceView()
+//	if err != nil {
+//		panic(error.Error())
+//	}
 //	logger.InfoContext(ctx, "Namespace log entry", "key", "value")
 package betterlogger
 
@@ -171,42 +174,54 @@ func (l *logUtilWithTrack) WarnContext(ctx context.Context, msg string, args ...
 }
 
 // ShowInGatewayView implements TrackAble.
-func (l *logUtil) ShowInGatewayView() UserLogger {
+func (l *logUtil) ShowInGatewayView() (UserLogger, error) {
 	return &logUtilWithTrack{
 		track:   fmt.Sprintf("%v.%v", "route", l.Route),
 		logUtil: l,
-	}
+	}, nil
 }
 
 // ShowInMirrorView implements TrackAble.
-func (l *logUtil) ShowInMirrorView() UserLogger {
+func (l *logUtil) ShowInMirrorView() (UserLogger, error) {
+	if len(l.SyncID) == 0 {
+		return nil, fmt.Errorf("failed to build logger")
+	}
+
 	return &logUtilWithTrack{
 		track:   fmt.Sprintf("%v.%v", "activity", l.SyncID),
 		logUtil: l,
-	}
+	}, nil
 }
 
 // ShowInInstanceView implements TrackAble.
-func (l *logUtil) ShowInInstanceView() UserLogger {
+func (l *logUtil) ShowInInstanceView() (UserLogger, error) {
+	if len(l.CallPath) == 0 {
+		return nil, fmt.Errorf("failed to build logger")
+	}
+
 	return &logUtilWithTrack{
 		track:   fmt.Sprintf("%v.%v", "instance", l.CallPath),
 		logUtil: l,
-	}
+	}, nil
 }
 
 // ShowInNamespaceView implements TrackAble.
-func (l *logUtil) ShowInNamespaceView() UserLogger {
+func (l *logUtil) ShowInNamespaceView() (UserLogger, error) {
+	if len(l.Namespace) == 0 {
+		return nil, fmt.Errorf("failed to build logger")
+	}
+
 	return &logUtilWithTrack{
 		track:   fmt.Sprintf("%v.%v", "namespace", l.Namespace),
 		logUtil: l,
-	}
+	}, nil
 }
 
 // ConsoleLogs implements TrackAble.
-func (l *logUtil) ConsoleLogs() UserLogger {
+func (l *logUtil) ConsoleLogs() (UserLogger, error) {
 	return &logUtilWithTrack{
 		logUtil: l,
-	}
+	}, nil
 }
 
 func (l *logUtil) ctxBuilder(ctx context.Context) context.Context {
