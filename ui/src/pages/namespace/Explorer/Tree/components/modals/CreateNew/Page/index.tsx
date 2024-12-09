@@ -11,6 +11,9 @@ import Button from "~/design/Button";
 import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
+import { addYamlFileExtension } from "../../../../utils";
+import { defaultEndpointFileYaml } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/utils";
+import { encode } from "js-base64";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormInput = {
   name: string;
+  fileContent: string;
 };
 
 const NewPage = ({
@@ -39,13 +43,18 @@ const NewPage = ({
 
   const resolver = zodResolver(
     z.object({
-      name: FileNameSchema.and(
-        z
-          .string()
-          .refine((name) => !(unallowedNames ?? []).some((n) => n === name), {
-            message: t("pages.explorer.tree.newDirectory.nameAlreadyExists"),
-          })
+      name: FileNameSchema.transform((enteredName) =>
+        addYamlFileExtension(enteredName)
+      ).refine(
+        (nameWithExtension) =>
+          !(unallowedNames ?? []).some(
+            (unallowedName) => unallowedName === nameWithExtension
+          ),
+        {
+          message: t("pages.explorer.tree.newPage.nameAlreadyExists"),
+        }
       ),
+      fileContent: z.string(),
     })
   );
 
@@ -55,32 +64,54 @@ const NewPage = ({
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver,
+    defaultValues: {
+      fileContent: defaultEndpointFileYaml,
+    },
   });
 
-  const { mutate: createDirectory, isPending } = useCreateFile({
+  const { mutate: createFile, isPending } = useCreateFile({
     onSuccess: (data) => {
+      /** To Do:
+       * check if we need to update the Notification Bell for the type = page too?
+       *
+       * creating a new workflow might introduce an uninitialized secret.
+       * We need to update the notification bell, to see potential new messages.
+       */
+      // updateNotificationBell();
       namespace &&
         navigate(
-          pages.explorer.createHref({ namespace, path: data.data.path })
+          pages.explorer.createHref({
+            namespace,
+            path: data.data.path,
+            subpage: "page",
+          })
         );
       close();
     },
   });
 
-  const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
-    createDirectory({ path, payload: { name, type: "directory" } });
+  const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
+    createFile({
+      path,
+      payload: {
+        name,
+        data: encode(fileContent),
+        type: "endpoint",
+        mimeType: "application/yaml",
+      },
+    });
   };
 
   // you can not submit if the form has not changed or if there are any errors and
   // you have already submitted the form (errors will first show up after submit)
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
-  const formId = `new-dir-${path}`;
+  const formId = `new-page-${path}`;
   return (
     <>
       <DialogHeader>
         <DialogTitle>
-          <PanelTop /> Create a new page
+          <PanelTop /> {t("pages.explorer.tree.newPage.title")}
         </DialogTitle>
       </DialogHeader>
 
@@ -89,7 +120,7 @@ const NewPage = ({
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[14px]" htmlFor="name">
-              {t("pages.explorer.tree.newDirectory.nameLabel")}
+              {t("pages.explorer.tree.newPage.nameLabel")}
             </label>
             <Input id="name" placeholder="page-name" {...register("name")} />
           </fieldset>
@@ -98,7 +129,7 @@ const NewPage = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.explorer.tree.newDirectory.cancelBtn")}
+            {t("pages.explorer.tree.newPage.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
@@ -108,7 +139,7 @@ const NewPage = ({
           form={formId}
         >
           {!isPending && <PlusCircle />}
-          {t("pages.explorer.tree.newDirectory.createBtn")}
+          {t("pages.explorer.tree.newPage.createBtn")}
         </Button>
       </DialogFooter>
     </>
