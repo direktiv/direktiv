@@ -105,6 +105,7 @@
     "check:lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0 --report-unused-disable-directives --cache",
     "check:types": "tsc --tsBuildInfoFile .tsbuildinfo --incremental",
     "check:prettier": "prettier --check './{src,test,e2e}/**/*.{js,jsx,ts,tsx,json,scss,css}' --cache",
+    "check:deps": "pnpm install --frozen-lockfile --prefer-offline",
     "check:test": "vitest run",
     "e2e:headless": "pnpm exec playwright test --project \"chromium\" --project \"firefox\"",
     "e2e:headless-chromium-only": "pnpm exec playwright test --project \"chromium\"  --reporter=line",
