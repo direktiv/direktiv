@@ -1,0 +1,212 @@
+rapi-doc {
+  @apply h-full w-full p-2.5;
+  @apply text-gray-12;
+
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans",
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    "Noto Color Emoji";
+}
+
+html[data-theme="dark"] rapi-doc {
+  @apply bg-gray-dark-1 text-gray-dark-12;
+}
+
+rapi-doc::part(section-navbar) {
+  @apply bg-gray-1;
+  @apply text-gray-12;
+  @apply border-r-2 border-r-gray-5;
+  @apply hover:text-gray-12;
+  @apply h-screen;
+}
+
+html[data-theme="dark"] rapi-doc::part(section-navbar) {
+  @apply bg-gray-dark-7;
+  @apply text-gray-dark-12;
+}
+
+rapi-doc::part(section-navbar-search) {
+  @apply bg-gray-1;
+  @apply text-gray-12;
+  @apply border-gray-5 text-gray-12;
+  @apply placeholder:text-gray-8;
+  @apply selection:bg-gray-3 focus:outline-none focus:ring-2 focus:ring-gray-4 focus:ring-offset-2 focus:ring-offset-gray-1;
+  @apply rounded-none py-2 pr-0 pl-0;
+  @apply w-full;
+  @apply h-14;
+}
+
+html[data-theme="dark"] rapi-doc::part(section-navbar-search) {
+  @apply bg-gray-dark-1;
+  @apply text-gray-dark-12;
+  @apply border-gray-dark-5 text-gray-dark-12;
+  @apply placeholder:text-gray-dark-8;
+  @apply rounded-none;
+}
+
+rapi-doc::part(section-navbar-item) {
+  @apply bg-gray-1;
+  @apply text-gray-12;
+  @apply hover:bg-gray-2;
+  @apply text-xs;
+  @apply rounded-none;
+}
+
+html[data-theme="dark"] rapi-doc::part(section-navbar-item) {
+  @apply bg-gray-dark-1;
+  @apply text-gray-dark-11;
+  @apply hover:bg-gray-dark-2;
+  @apply rounded-none;
+}
+
+rapi-doc::part(section-overview) {
+  @apply text-gray-12;
+  @apply text-sm;
+}
+
+rapi-doc::part(link-overview) {
+  @apply active:text-gray-12;
+  @apply hover:text-gray-12;
+  @apply text-gray-12;
+  @apply text-sm;
+}
+
+html[data-theme="dark"] rapi-doc::part(section-overview) {
+  @apply bg-gray-dark-1;
+  @apply text-gray-dark-12;
+}
+
+html[data-theme="dark"] rapi-doc::part(code) {
+  @apply bg-gray-dark-1;
+  @apply text-gray-dark-12;
+}
+
+rapi-doc::part(section-navbar-active-item) {
+  @apply bg-gray-3;
+  @apply text-gray-12;
+  @apply border-l-2 border-gray-5;
+  @apply hover:bg-gray-3;
+  @apply focus:text-gray-12;
+  @apply rounded-none;
+}
+
+html[data-theme="dark"] rapi-doc::part(section-navbar-active-item) {
+  @apply bg-gray-dark-3;
+  @apply text-gray-dark-12;
+  @apply border-none;
+  @apply rounded-none;
+}
+
+rapi-doc::part(btn) {
+  @apply h-10 rounded-md  bg-primary-500 text-gray-1 hover:bg-primary-600 dark:hover:bg-gray-dark-3;
+}
+
+rapi-doc::part(btn-fill) {
+  @apply border;
+}
+
+html[data-theme="dark"] rapi-doc::part(btn-fill) {
+  @apply border-gray-dark-5;
+}
+
+rapi-doc::part(btn-search) {
+  @apply border-none;
+}
+
+html[data-theme="dark"] rapi-doc::part(btn-search) {
+  @apply border-none;
+}
+
+rapi-doc::part(btn-try) {
+  @apply border-none;
+}
+
+html[data-theme="dark"] rapi-doc::part(btn-try) {
+  @apply border-none;
+}
+
+rapi-doc::part(btn-outline) {
+  @apply h-10 rounded-md  border-gray-5 bg-white text-gray-12 shadow-none hover:bg-gray-2;
+}
+
+html[data-theme="dark"] rapi-doc::part(btn-outline) {
+  @apply bg-gray-dark-1 text-gray-dark-12 hover:bg-gray-dark-2;
+}
+
+rapi-doc::part(tab-btn) {
+  @apply rounded-none px-2.5 py-0 focus:text-primary-500;
+}
+
+rapi-doc::part(tab-content) {
+  @apply mb-2.5 border-2 border-gray-5 text-gray-12;
+}
+
+html[data-theme="dark"] rapi-doc::part(tab-content) {
+  @apply mb-2.5 border-2 border-gray-dark-5;
+}
+
+rapi-doc::part(tab-btn-row) {
+  @apply mb-2.5 border-none text-gray-12;
+}
+
+rapi-doc::part(textbox) {
+  @apply rounded-md border-gray-5 bg-white pl-2.5 text-gray-12 focus:border-gray-12;
+}
+
+html[data-theme="dark"] rapi-doc::part(textbox) {
+  @apply bg-gray-dark-1 text-gray-dark-12 focus:border-gray-dark-12;
+}
+
+rapi-doc::part(active-item) {
+  @apply border-b-2 border-b-primary-500 text-primary-500;
+}
+
+rapi-doc::part(textarea-param) {
+  @apply rounded-md border border-l-gray-5 bg-white text-gray-12;
+}
+
+html[data-theme="dark"] rapi-doc::part(textarea-param) {
+  @apply bg-gray-dark-1;
+}
+
+rapi-doc::part(section-tag) {
+  @apply border-2 border-gray-5 pt-20 text-xs font-normal text-gray-12;
+}
+
+html[data-theme="dark"] rapi-doc::part(section-tag) {
+  @apply text-gray-dark-12;
+  @apply bg-gray-dark-1;
+}
+
+rapi-doc::part(.m-markdown th) {
+  @apply bg-gray-3 p-2.5 text-left text-gray-12;
+}
+
+html[data-theme="dark"] rapi-doc::part(.m-markdown th) {
+  @apply bg-gray-dark-3;
+}
+rapi-doc::part(section-servers) {
+  @apply bg-gray-3;
+  @apply text-gray-12;
+  @apply p-2.5;
+  @apply rounded-md;
+  @apply mx-10;
+  @apply px-10;
+}
+
+html[data-theme="dark"] rapi-doc::part(section-servers) {
+  @apply bg-gray-dark-3;
+  @apply text-gray-dark-12;
+}
