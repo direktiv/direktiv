@@ -3,8 +3,6 @@ import "rapidoc";
 
 import { twMergeClsx } from "~/util/helpers";
 
-// import { useEffect } from "react";
-
 interface RapiDocProps {
   spec: object;
   className?: string;
