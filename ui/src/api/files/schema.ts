@@ -56,6 +56,7 @@ export const fileTypes = [
   "file",
   "service",
   "workflow",
+  "page",
 ] as const;
 
 const FileTypeSchema = z.enum(fileTypes);
@@ -88,7 +89,7 @@ const CreateDirectorySchema = z.object({
 });
 
 const CreateYamlFileSchema = z.object({
-  type: z.enum(["consumer", "endpoint", "service", "workflow"]),
+  type: z.enum(["consumer", "endpoint", "service", "workflow", "page"]),
   name: z.string().nonempty(),
   mimeType: z.literal("application/yaml"),
   data: z.string(), // base64 encoded file body
@@ -110,12 +111,17 @@ const CreateWorkflowSchema = CreateYamlFileSchema.extend({
   type: z.literal("workflow"),
 });
 
+const CreatePageSchema = CreateYamlFileSchema.extend({
+  type: z.literal("page"),
+});
+
 const CreateFileSchema = z.discriminatedUnion("type", [
   CreateDirectorySchema,
   CreateConsumerSchema,
   CreateEndpointSchema,
   CreateServiceSchema,
   CreateWorkflowSchema,
+  CreatePageSchema,
 ]);
 
 const RenameFileSchema = z.object({

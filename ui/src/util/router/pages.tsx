@@ -43,6 +43,7 @@ import ServicesPage from "~/pages/namespace/Services";
 import SettingsPage from "~/pages/namespace/Settings";
 import TokensPage from "~/pages/namespace/Permissions/Tokens";
 import TreePage from "~/pages/namespace/Explorer/Tree";
+import UIPage from "~/pages/namespace/Explorer/Page";
 import WorkflowPage from "~/pages/namespace/Explorer/Workflow";
 import WorkflowPageActive from "~/pages/namespace/Explorer/Workflow/Edit";
 import WorkflowPageOverview from "~/pages/namespace/Explorer/Workflow/Overview";
@@ -72,7 +73,8 @@ export type ExplorerSubpages =
   | "workflow-services"
   | "service"
   | "endpoint"
-  | "consumer";
+  | "consumer"
+  | "page";
 
 type ExplorerSubpagesParams =
   | {
@@ -106,6 +108,7 @@ type ExplorerPageSetup = Record<
       isServicePage: boolean;
       isEndpointPage: boolean;
       isConsumerPage: boolean;
+      isUIPage: boolean;
       serviceId: string | undefined;
     };
   }
@@ -334,6 +337,7 @@ export const usePages = (): PageType & EnterprisePageType => {
           endpoint: "endpoint",
           consumer: "consumer",
           service: "service",
+          page: "page",
         };
 
         let searchParamsObj;
@@ -367,12 +371,15 @@ export const usePages = (): PageType & EnterprisePageType => {
         const isServicePage = checkHandler(thirdLvl, "isServicePage");
         const isEndpointPage = checkHandler(thirdLvl, "isEndpointPage");
         const isConsumerPage = checkHandler(thirdLvl, "isConsumerPage");
+        const isUIPage = checkHandler(thirdLvl, "isUIPage");
+
         const isExplorerPage =
           isTreePage ||
           isWorkflowPage ||
           isServicePage ||
           isEndpointPage ||
-          isConsumerPage;
+          isConsumerPage ||
+          isUIPage;
         const isWorkflowEditorPage = checkHandler(fourthLvl, "isEditorPage");
         const isWorkflowOverviewPage = checkHandler(
           fourthLvl,
@@ -400,6 +407,7 @@ export const usePages = (): PageType & EnterprisePageType => {
           isServicePage,
           isEndpointPage,
           isConsumerPage,
+          isUIPage,
           serviceId: searchParams.get("serviceId") ?? undefined,
         };
       },
@@ -455,6 +463,11 @@ export const usePages = (): PageType & EnterprisePageType => {
             path: "consumer/*",
             element: <ConsumerEditorPage />,
             handle: { isConsumerPage: true },
+          },
+          {
+            path: "page/*",
+            element: <UIPage />,
+            handle: { isUIPage: true },
           },
         ],
       },
