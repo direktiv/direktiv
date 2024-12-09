@@ -2,18 +2,33 @@ package betterlogger
 
 import (
 	"context"
-	"fmt"
-	"log/slog"
-
-	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/tracing"
 )
 
 type TrackAble interface {
+	// ShowInInstanceView configures the logger to focus on instance-related logs.
+	//
+	// Returns:
+	// - A UserLogger with tracking information for instance logs.
 	ShowInInstanceView() UserLogger
+	// ShowInNamespaceView configures the logger to focus on namespace-related logs.
+	//
+	// Returns:
+	// - A UserLogger with tracking information for namespace logs.
 	ShowInNamespaceView() UserLogger
+	// ShowInGatewayView configures the logger to focus on gateway-related logs.
+	//
+	// Returns:
+	// - A UserLogger with tracking information for gateway logs.
 	ShowInGatewayView() UserLogger
+	// ShowInMirrorView configures the logger to focus on mirror-related logs.
+	//
+	// Returns:
+	// - A UserLogger with tracking information for mirror logs.
 	ShowInMirrorView() UserLogger
+	// ConsoleLogs configures the logger for console-specific logging.
+	//
+	// Returns:
+	// - A UserLogger for console logs.
 	ConsoleLogs() UserLogger
 }
 
@@ -22,157 +37,6 @@ type UserLogger interface {
 	ErrorContext(ctx context.Context, msg string, args ...any)
 	InfoContext(ctx context.Context, msg string, args ...any)
 	WarnContext(ctx context.Context, msg string, args ...any)
-}
-
-func WithNamespace(attr coreNamespaceAttributes) TrackAble {
-	return &logUtil{
-		coreNamespaceAttributes: attr,
-	}
-}
-
-func WithInstance(attr InstanceAttributes) TrackAble {
-	return &logUtil{
-		coreInstanceAttr:        attr.coreInstanceAttr,
-		coreNamespaceAttributes: attr.coreNamespaceAttributes,
-	}
-}
-
-func WithInstanceMemory(attr InstanceMemoryAttributes) TrackAble {
-	return &logUtil{
-		coreInstanceMemoryAttributes: attr.coreInstanceMemoryAttributes,
-		coreInstanceAttr:             attr.coreInstanceAttr,
-		coreNamespaceAttributes:      attr.coreNamespaceAttributes,
-	}
-}
-
-func WithInstanceAction(attr InstanceMemoryAttributes) TrackAble {
-	return &logUtil{
-		coreInstanceMemoryAttributes: attr.coreInstanceMemoryAttributes,
-		coreInstanceAttr:             attr.coreInstanceAttr,
-		coreNamespaceAttributes:      attr.coreNamespaceAttributes,
-	}
-}
-
-func WithMirror(attr CloudEventBusAttributes) TrackAble {
-	return &logUtil{
-		coreCloudEventBusAttributes: attr.coreCloudEventBusAttributes,
-		coreNamespaceAttributes:     attr.coreNamespaceAttributes,
-	}
-}
-
-func WithGatewayRoutes(attr GatewayAttributes) TrackAble {
-	return &logUtil{
-		coreNamespaceAttributes: attr.coreNamespaceAttributes,
-		coreGatewayAttributes:   attr.coreGatewayAttributes,
-	}
-}
-
-func WithEventProcessing(attr SyncAttributes) TrackAble {
-	return &logUtil{
-		coreNamespaceAttributes: attr.coreNamespaceAttributes,
-		coreSyncAttributes:      attr.coreSyncAttributes,
-	}
-}
-
-func TODO() UserLogger {
-	return &logUtil{}
-}
-
-var _ UserLogger = &logUtil{}
-
-var _ TrackAble = &logUtil{}
-
-type logUtil struct {
-	coreNamespaceAttributes
-	coreInstanceAttr
-	coreInstanceMemoryAttributes
-	coreCloudEventBusAttributes
-	coreGatewayAttributes
-	coreSyncAttributes
-	coreInstanceActionAttr
-	track string // TODO: ensure thread safe handling when building the logger
-}
-
-// DebugContext implements logger.
-func (l *logUtil) DebugContext(ctx context.Context, msg string, args ...any) {
-	ctx = l.ctxBuilder(ctx)
-	slog.DebugContext(ctx, msg, args...)
-}
-
-// ErrorContext implements logger.
-func (l *logUtil) ErrorContext(ctx context.Context, msg string, args ...any) {
-	ctx = l.ctxBuilder(ctx)
-	slog.ErrorContext(ctx, msg, args...)
-}
-
-// InfoContext implements logger.
-func (l *logUtil) InfoContext(ctx context.Context, msg string, args ...any) {
-	ctx = l.ctxBuilder(ctx)
-	slog.InfoContext(ctx, msg, args...)
-}
-
-// WarnContext implements logger.
-func (l *logUtil) WarnContext(ctx context.Context, msg string, args ...any) {
-	ctx = l.ctxBuilder(ctx)
-	slog.WarnContext(ctx, msg, args...)
-}
-
-// ShowInGatewayView implements TrackAble.
-func (l *logUtil) ShowInGatewayView() UserLogger {
-	l.track = fmt.Sprintf("%v.%v", "route", l.Route)
-	return l
-}
-
-// ShowInMirrorView implements TrackAble.
-func (l *logUtil) ShowInMirrorView() UserLogger {
-	l.track = fmt.Sprintf("%v.%v", "activity", l.SyncID)
-	return l
-}
-
-// ShowInInstanceView implements TrackAble.
-func (l *logUtil) ShowInInstanceView() UserLogger {
-	l.track = fmt.Sprintf("%v.%v", "instance", l.CallPath)
-	return l
-}
-
-// ShowInNamespaceView implements TrackAble.
-func (l *logUtil) ShowInNamespaceView() UserLogger {
-	l.track = fmt.Sprintf("%v.%v", "namespace", l.Namespace)
-	return l
-}
-
-// ConsoleLogs implements TrackAble.
-func (l *logUtil) ConsoleLogs() UserLogger {
-	return l
-}
-
-func (l *logUtil) ctxBuilder(ctx context.Context) context.Context {
-	if len(l.State) != 0 {
-		ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
-			Namespace:    l.Namespace,
-			InstanceID:   l.InstanceID,
-			Invoker:      "todo_dummy_value",
-			WorkflowPath: l.WorkflowPath,
-			Status:       core.LogUnknownStatus,
-			Callpath:     l.CallPath,
-		}, l.State)
-	} else if len(l.CallPath) != 0 {
-		ctx = tracing.AddInstanceAttr(ctx, tracing.InstanceAttributes{
-			Namespace:    l.Namespace,
-			InstanceID:   l.InstanceID,
-			Invoker:      "todo_dummy_value",
-			WorkflowPath: l.WorkflowPath,
-			Status:       core.LogUnknownStatus,
-			Callpath:     l.CallPath,
-		})
-	} else if len(l.Namespace) != 0 {
-		ctx = tracing.AddNamespace(ctx, l.Namespace)
-	}
-	if len(l.ActionID) != 0 {
-		ctx = tracing.AddActionID(ctx, l.ActionID)
-	}
-
-	return ctx
 }
 
 type coreNamespaceAttributes struct {
