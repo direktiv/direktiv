@@ -16,27 +16,35 @@ type opensearchMetaStore struct {
 
 func NewTestDataStore(t *testing.T) (metastore.Store, func(), error) {
 	t.Helper()
-	ctx := context.Background()
 
+	ctx := context.TODO()
+	t.Log("Starting OpenSearch container...")
 	ctr, err := tcopensearch.Run(ctx, "opensearchproject/opensearch:2.11.1")
 	if err != nil {
-		panic(err.Error())
+		return nil, nil, err
 	}
 	cleanup := func() {
+		t.Log("Cleaning up container...")
 		testcontainers.CleanupContainer(t, ctr)
 	}
 	address, err := ctr.Address(ctx)
 	if err != nil {
-		panic(err.Error())
+		cleanup()
+		return nil, nil, err
 	}
+	t.Logf("OpenSearch container address: %s", address)
+
 	client, err := opensearch.NewClient(opensearch.Config{
 		Addresses: []string{
 			address,
 		},
 	})
 	if err != nil {
-		panic(err.Error())
+		cleanup()
+		return nil, nil, err
 	}
+
+	t.Log("OpenSearch client created successfully.")
 
 	return &opensearchMetaStore{
 		client: client,
