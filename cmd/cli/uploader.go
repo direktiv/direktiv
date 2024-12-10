@@ -1,5 +1,5 @@
 // nolint
-package main
+package cli
 
 import (
 	"bufio"

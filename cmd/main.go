@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/direktiv/direktiv/cmd/cli"
 	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/auth"
 	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/inbound"
 	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/outbound"
@@ -8,5 +9,5 @@ import (
 )
 
 func main() {
-	runApplication()
+	cli.Run()
 }

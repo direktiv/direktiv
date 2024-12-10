@@ -1,5 +1,5 @@
 // nolint:forbidigo
-package main
+package cli
 
 import (
 	"context"
@@ -20,7 +20,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func runApplication() {
+func Run() {
 	if strings.Contains(os.Args[0], "direktiv-cmd") {
 		cmdserver.Start()
 
