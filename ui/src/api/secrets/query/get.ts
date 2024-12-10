@@ -39,5 +39,9 @@ export const useSecrets = () => {
     }),
     queryFn: fetchSecrets,
     enabled: !!namespace,
+    select: (response) => ({
+      ...response,
+      data: [...response.data].sort((a, b) => a.name.localeCompare(b.name)),
+    }),
   });
 };
