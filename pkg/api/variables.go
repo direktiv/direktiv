@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/database"
@@ -25,6 +26,8 @@ func (e *varController) mountRouter(r chi.Router) {
 
 	r.Get("/", e.list)
 	r.Post("/", e.create)
+	r.Delete("/", e.deleteMultiple)
+
 }
 
 func (e *varController) get(w http.ResponseWriter, r *http.Request) {
@@ -128,6 +131,56 @@ func (e *varController) delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeDataStoreError(w, err)
 		return
+	}
+
+	err = db.Commit(r.Context())
+	if err != nil {
+		writeInternalError(w, err)
+		return
+	}
+
+	writeOk(w)
+}
+
+func (e *varController) deleteMultiple(w http.ResponseWriter, r *http.Request) {
+	idsString := r.URL.Query().Get("ids")
+	if idsString == "" {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "missing or empty query parameter `ids`",
+		})
+		return
+	}
+
+	ids := strings.Split(idsString, ",")
+	var uuids []uuid.UUID
+	for _, idStr := range ids {
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			writeError(w, &Error{
+				Code:    "request_data_invalid",
+				Message: "query parameter `ids` has wrong format",
+			})
+
+			return
+		}
+		uuids = append(uuids, id)
+	}
+
+	db, err := e.db.BeginTx(r.Context())
+	if err != nil {
+		writeInternalError(w, err)
+		return
+	}
+	defer db.Rollback()
+	dStore := db.DataStore()
+
+	for _, id := range uuids {
+		err = dStore.RuntimeVariables().Delete(r.Context(), id)
+		if err != nil {
+			writeDataStoreError(w, err)
+			return
+		}
 	}
 
 	err = db.Commit(r.Context())

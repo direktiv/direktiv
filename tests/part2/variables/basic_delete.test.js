@@ -11,9 +11,8 @@ describe('Test variable delete calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	let createRes
-	it(`should create a new variable`, async () => {
-		createRes = await request(config.getDirektivHost())
+	it(`should create and delete one var`, async () => {
+		const createRes = await request(config.getDirektivHost())
 			.post(`/api/v2/namespaces/${ namespace }/variables`)
 			.send({
 				name: 'foo',
@@ -21,14 +20,40 @@ describe('Test variable delete calls', () => {
 				mimeType: 'mime',
 			})
 		expect(createRes.statusCode).toEqual(200)
-	})
 
-	it(`should delete a variable`, async () => {
 		const varId = createRes.body.data.id
 		const res = await request(config.getDirektivHost())
 			.delete(`/api/v2/namespaces/${ namespace }/variables/${ varId }`)
 		expect(res.statusCode).toEqual(200)
 	})
+
+	it(`should create two vars and delete them with multiple delete endpoint`, async () => {
+		const createRes1 = await request(config.getDirektivHost())
+			.post(`/api/v2/namespaces/${ namespace }/variables`)
+			.send({
+				name: 'foo',
+				data: btoa('bar'),
+				mimeType: 'mime',
+			})
+		expect(createRes1.statusCode).toEqual(200)
+
+		const createRes2 = await request(config.getDirektivHost())
+			.post(`/api/v2/namespaces/${ namespace }/variables`)
+			.send({
+				name: 'foo1',
+				data: btoa('bar'),
+				mimeType: 'mime',
+			})
+		expect(createRes2.statusCode).toEqual(200)
+
+		const varId1 = createRes1.body.data.id
+		const varId2 = createRes2.body.data.id
+
+		const res = await request(config.getDirektivHost())
+			.delete(`/api/v2/namespaces/${ namespace }/variables?ids=${varId1},${varId2}`)
+		expect(res.statusCode).toEqual(200)
+	})
+
 })
 
 describe('Test invalid variable delete calls', () => {
