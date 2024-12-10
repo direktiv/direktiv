@@ -16,7 +16,6 @@ import {
   Layers,
   LayoutTemplate,
   Network,
-  PanelTop,
   Play,
   PlusCircle,
   Users,
@@ -128,29 +127,17 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
+          <DialogTrigger
+            className="w-full"
+            onClick={() => {
+              setSelectedDialog("new-page");
+            }}
+          >
+            <DropdownMenuItem>
               <LayoutTemplate className="mr-2 size-4" />
-              {t("pages.explorer.tree.newFileButton.items.uibuilder.label")}
-            </DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent className="w-40">
-                <DialogTrigger
-                  className="w-full"
-                  onClick={() => {
-                    setSelectedDialog("new-page");
-                  }}
-                >
-                  <DropdownMenuItem>
-                    <PanelTop className="mr-2 size-4" />
-                    {t(
-                      "pages.explorer.tree.newFileButton.items.uibuilder.page"
-                    )}
-                  </DropdownMenuItem>
-                </DialogTrigger>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub>
+              {t("pages.explorer.tree.newFileButton.items.uibuilder.page")}
+            </DropdownMenuItem>
+          </DialogTrigger>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
