@@ -43,9 +43,9 @@ export const Droppable = ({
   <HoverContainer>
     <div
       className={twMergeClsx(
-        isOver && "border-primary border-4 border-dashed",
+        isOver && "border-4 border-dashed",
         !isOver && "border",
-        "border-primary flex h-24 w-full items-center justify-center bg-slate-50"
+        "flex h-24 w-full items-center justify-center bg-slate-50"
       )}
     >
       <HoverElement className="bg-white opacity-100" variant="alwaysVisible">

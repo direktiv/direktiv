@@ -1,6 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react";
-
 import { HoverContainer, HoverElement } from ".";
+import type { Meta, StoryObj } from "@storybook/react";
 import { Card } from "../Card";
 
 const meta = {

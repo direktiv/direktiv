@@ -104,6 +104,11 @@ export const DragAndDropEditor: FC = () => {
   const [header, setHeader] = useState<ReactNode>(<div></div>);
   const [footer, setFooter] = useState<ReactNode>(<div></div>);
 
+  if (!header) {
+    header !== "<div>" ? setHeader(<div></div>) : setHeader(<div></div>);
+    footer !== "<div>" ? setFooter(<div></div>) : setFooter(<div></div>);
+  }
+
   const onMove = (element: string, target: string) => {
     if (target) {
       const elementComponent = getElementComponent(element);
