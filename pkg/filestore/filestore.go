@@ -21,6 +21,7 @@ var (
 	ErrPathAlreadyExists    = errors.New("ErrPathAlreadyExists")
 	ErrNoParentDirectory    = errors.New("ErrNoParentDirectory")
 	ErrInvalidPathParameter = errors.New("ErrInvalidPathParameter")
+	ErrInvalidTypeParameter = errors.New("ErrInvalidTypeParameter")
 )
 
 // FileStore manages different operations on files and roots.
