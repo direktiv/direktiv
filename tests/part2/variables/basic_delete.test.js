@@ -50,10 +50,9 @@ describe('Test variable delete calls', () => {
 		const varId2 = createRes2.body.data.id
 
 		const res = await request(config.getDirektivHost())
-			.delete(`/api/v2/namespaces/${ namespace }/variables?ids=${varId1},${varId2}`)
+			.delete(`/api/v2/namespaces/${ namespace }/variables?ids=${ varId1 },${ varId2 }`)
 		expect(res.statusCode).toEqual(200)
 	})
-
 })
 
 describe('Test invalid variable delete calls', () => {
