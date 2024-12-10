@@ -32,16 +32,15 @@ func NewTestDataStore(t *testing.T) (metastore.Store, func(), error) {
 	t.Log("Starting OpenSearch container...")
 	ctr, err := tcopensearch.Run(ctx, "opensearchproject/opensearch:2.11.1")
 	if err != nil {
-		return nil, nil, err
+		return nil, func() {}, err
 	}
 	cleanup := func() {
-		t.Log("Cleaning up container...")
+		// t.Log("Cleaning up container...")
 		testcontainers.CleanupContainer(t, ctr)
 	}
 	address, err := ctr.Address(ctx)
 	if err != nil {
-		cleanup()
-		return nil, nil, err
+		return nil, cleanup, err
 	}
 	t.Logf("OpenSearch container address: %s", address)
 
@@ -51,14 +50,21 @@ func NewTestDataStore(t *testing.T) (metastore.Store, func(), error) {
 		},
 	})
 	if err != nil {
-		cleanup()
-		return nil, nil, err
+		return nil, cleanup, err
 	}
 
 	t.Log("OpenSearch client created successfully.")
+	co := config{
+		LogIndex:       "test-logging",
+		LogDeleteAfter: "7d",
+	}
+	err = NewOpenSearchLogStore(client, co).Init(ctx)
+	if err != nil {
+		return nil, cleanup, err
+	}
 
 	return &opensearchMetaStore{
 		client: client,
-		co:     config{},
+		co:     co,
 	}, cleanup, nil
 }

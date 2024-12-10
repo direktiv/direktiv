@@ -5,8 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log/slog"
 	"net/http"
-	"strings"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/metastore"
 	"github.com/opensearch-project/opensearch-go"
@@ -48,11 +50,12 @@ func (store *LogStore) Append(ctx context.Context, log metastore.LogEntry) error
 		return fmt.Errorf("log entry ID is required")
 	}
 
-	if log.Timestamp.IsZero() {
-		return fmt.Errorf("log entry timestamp is required")
+	parsedTime, err := time.Parse(time.RFC3339, log.Timestamp)
+	if err != nil {
+		return fmt.Errorf("log entry timestamp is not in RFC3339 format: %w", err)
 	}
+	log.Timestamp = fmt.Sprintf("%d", parsedTime.UTC().UnixMilli()) // Convert to epoch milliseconds
 
-	// Serialize log entry
 	body, err := json.Marshal(log)
 	if err != nil {
 		return fmt.Errorf("failed to marshal log entry: %w", err)
@@ -81,67 +84,66 @@ func (store *LogStore) Append(ctx context.Context, log metastore.LogEntry) error
 // Get implements metastore.LogStore.
 func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOptions) ([]metastore.LogEntry, error) {
 	// Construct the query
+
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
-			"bool": map[string]interface{}{
-				"must": []map[string]interface{}{
-					{
-						"range": map[string]interface{}{
-							"timestamp": map[string]interface{}{
-								"gte": options.StartTime.Format("2006-01-02T15:04:05.000Z"),
-								"lte": options.EndTime.Format("2006-01-02T15:04:05.000Z"),
-							},
-						},
-					},
-				},
-			},
+			"match_all": map[string]interface{}{},
 		},
 	}
+	// query := map[string]interface{}{
+	// 	"query": map[string]interface{}{
+	// 		"range": map[string]interface{}{
+	// 			"timestamp": map[string]interface{}{
+	// 				"gt": options.StartTime.UTC().UnixMilli(),
+	// 				"lt": options.EndTime.UTC().UnixMilli(),
+	// 			},
+	// 		},
+	// 	},
+	// }
 
-	if len(options.Levels) > 0 {
-		queryMap, ok := query["query"].(map[string]interface{})
-		if !ok {
-			return nil, fmt.Errorf("invalid type for 'query', expected map[string]interface{}")
-		}
-		boolMap, ok := queryMap["bool"].(map[string]interface{})
-		if !ok {
-			return nil, fmt.Errorf("invalid type for 'bool', expected map[string]interface{}")
-		}
-		mustSlice, ok := boolMap["must"].([]map[string]interface{})
-		if !ok {
-			return nil, fmt.Errorf("invalid type for 'must', expected []map[string]interface{}")
-		}
-		mustSlice = append(mustSlice, map[string]interface{}{
-			"terms": map[string]interface{}{
-				"level": options.Levels, // Add array of levels
-			},
-		})
-		boolMap["must"] = mustSlice
-	}
+	// // Add level filters if provided
+	// if len(options.Levels) > 0 {
+	// 	queryMap, ok := query["query"].(map[string]interface{})
+	// 	if !ok {
+	// 		return nil, fmt.Errorf("invalid type for 'query', expected map[string]interface{}")
+	// 	}
+	// 	boolMap, ok := queryMap["bool"].(map[string]interface{})
+	// 	if !ok {
+	// 		return nil, fmt.Errorf("invalid type for 'bool', expected map[string]interface{}")
+	// 	}
+	// 	mustSlice, ok := boolMap["must"].([]map[string]interface{})
+	// 	if !ok {
+	// 		return nil, fmt.Errorf("invalid type for 'must', expected []map[string]interface{}")
+	// 	}
+	// 	mustSlice = append(mustSlice, map[string]interface{}{
+	// 		"terms": map[string]interface{}{
+	// 			"level": options.Levels, // Add array of levels
+	// 		},
+	// 	})
+	// 	boolMap["must"] = mustSlice
+	// }
 
-	body, err := json.Marshal(query)
+	// Create the search request using the OpenSearch client
+	searchRes, err := store.client.Search(
+		store.client.Search.WithContext(ctx),
+		store.client.Search.WithIndex(store.logIndex),
+		store.client.Search.WithBody(bytes.NewReader(mustJSON(query))),
+		store.client.Search.WithTrackTotalHits(true),
+	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal query: %w", err)
+		return nil, fmt.Errorf("failed to execute search query: %w", err)
 	}
+	defer searchRes.Body.Close()
 
-	// Generate the search request
-	req := opensearchapi.SearchRequest{
-		Index: []string{store.logIndex},
-		Body:  bytes.NewReader(body),
+	// Check if the search was successful
+	if searchRes.IsError() {
+		responseBody, _ := io.ReadAll(searchRes.Body)
+		return nil, fmt.Errorf("error executing search: %s, response: %s", searchRes.Status(), string(responseBody))
 	}
+	// responseBody, _ := io.ReadAll(searchRes.Body)
+	// panic(string(responseBody))
 
-	// Execute the search request
-	res, err := req.Do(ctx, store.client)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute search: %w", err)
-	}
-	defer res.Body.Close()
-
-	if res.IsError() {
-		return nil, fmt.Errorf("error executing search: %s", res.String())
-	}
-
-	// Parse the response
+	// Parse the response body
 	var searchResult struct {
 		Hits struct {
 			Hits []struct {
@@ -150,17 +152,26 @@ func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOption
 		} `json:"hits"`
 	}
 
-	if err := json.NewDecoder(res.Body).Decode(&searchResult); err != nil {
+	if err := json.NewDecoder(searchRes.Body).Decode(&searchResult); err != nil {
 		return nil, fmt.Errorf("failed to decode search response: %w", err)
 	}
-
-	// Extract log entries
-	logs := make([]metastore.LogEntry, len(searchResult.Hits.Hits))
-	for i, hit := range searchResult.Hits.Hits {
-		logs[i] = hit.Source
+	// Extract log entries from the search result
+	logs := make([]metastore.LogEntry, 0, len(searchResult.Hits.Hits))
+	for _, hit := range searchResult.Hits.Hits {
+		logs = append(logs, hit.Source)
 	}
 
 	return logs, nil
+}
+
+// mustJSON is a utility function to safely marshal the query to JSON, panicking if it fails
+func mustJSON(v interface{}) []byte {
+	body, err := json.Marshal(v)
+	if err != nil {
+		panic(fmt.Sprintf("failed to marshal query to JSON: %v", err))
+	}
+
+	return body
 }
 
 var _ metastore.LogStore = &LogStore{}
@@ -184,13 +195,17 @@ func (store *LogStore) ensureIndex(ctx context.Context) error {
 		"settings": map[string]interface{}{
 			"number_of_shards":   1,
 			"number_of_replicas": 1,
+			"refresh_interval":   "1s", // TODO: tune & adjust refresh interval
 		},
 		"mappings": map[string]interface{}{
 			"properties": map[string]interface{}{
-				"timestamp": map[string]interface{}{"type": "date"},
-				"level":     map[string]interface{}{"type": "keyword"},
-				"message":   map[string]interface{}{"type": "text"},
-				"metadata":  map[string]interface{}{"type": "object"},
+				"timestamp": map[string]interface{}{
+					"type":   "date",
+					"format": "epoch_millis", // Handles Unix time in milliseconds
+				},
+				"level":    map[string]interface{}{"type": "keyword"},
+				"message":  map[string]interface{}{"type": "text"},
+				"metadata": map[string]interface{}{"type": "object"},
 			},
 		},
 	}
@@ -213,69 +228,84 @@ func (store *LogStore) ensureIndex(ctx context.Context) error {
 	defer createRes.Body.Close()
 
 	if createRes.IsError() {
-		return fmt.Errorf("error creating index: %s", createRes.String())
+		// Log the response for debugging
+		responseBody, _ := io.ReadAll(createRes.Body)
+		return fmt.Errorf("error creating index: %s, response: %s", createRes.String(), string(responseBody))
 	}
 
 	return nil
 }
 
 func (store *LogStore) ensureDeletionPolicy(ctx context.Context) error {
-	// Define a policy for automatic log deletion
+	slog.Debug("define the ISM policy")
 	policy := map[string]interface{}{
 		"policy": map[string]interface{}{
-			"description": "Log retention policy",
-			"phases": map[string]interface{}{
-				"delete": map[string]interface{}{
-					"min_age": store.deleteAfter,
-					"actions": map[string]interface{}{
-						"delete": map[string]interface{}{},
+			"description":   "Log retention policy",
+			"default_state": "delete",
+			"states": []map[string]interface{}{
+				{
+					"name": "delete",
+					"actions": []map[string]interface{}{
+						{
+							"delete": map[string]interface{}{},
+						},
 					},
+					"transitions": []map[string]interface{}{},
 				},
 			},
 		},
 	}
 
+	slog.Debug("marshal the policy to JSON")
 	body, err := json.Marshal(policy)
 	if err != nil {
-		return fmt.Errorf("failed to marshal policy: %w", err)
+		return fmt.Errorf("failed to marshal ISM policy: %w", err)
 	}
 
-	// Construct the HTTP request
-	endpoint := fmt.Sprintf("/_ilm/policy/%s_policy", store.logIndex)
+	slog.Debug("apply the ISM policy")
+	endpoint := fmt.Sprintf("/_plugins/_ism/policies/%s_policy", store.logIndex)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPut, endpoint, bytes.NewReader(body))
 	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
+		return fmt.Errorf("failed to create ISM policy request: %w", err)
 	}
-
-	// Set necessary headers
 	req.Header.Set("Content-Type", "application/json")
 
-	// Use the client's transport to execute the request
 	res, err := store.client.Transport.Perform(req)
 	if err != nil {
-		return fmt.Errorf("failed to execute ILM request: %w", err)
+		return fmt.Errorf("failed to execute ISM policy request: %w", err)
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode >= http.StatusOK {
-		return fmt.Errorf("error applying lifecycle policy: %s", res.Status)
+	bodyBytes, _ := io.ReadAll(res.Body)
+	if res.StatusCode >= http.StatusBadRequest {
+		return fmt.Errorf("error applying ISM policy: %s, response: %s", res.Status, string(bodyBytes))
 	}
 
-	// Attach the policy to the index
-	attachPolicyBody := fmt.Sprintf(`{"index.lifecycle.name": "%s_policy"}`, store.logIndex)
-	attachReq := opensearchapi.IndicesPutSettingsRequest{
-		Index: []string{store.logIndex},
-		Body:  strings.NewReader(attachPolicyBody),
+	slog.Debug("attach the ISM policy to the index")
+	attachPolicyBody := map[string]interface{}{
+		"policy_id": fmt.Sprintf("%s_policy", store.logIndex),
 	}
-
-	attachRes, err := attachReq.Do(ctx, store.client)
+	attachBody, err := json.Marshal(attachPolicyBody)
 	if err != nil {
-		return fmt.Errorf("failed to attach lifecycle policy: %w", err)
+		return fmt.Errorf("failed to marshal attach policy body: %w", err)
+	}
+
+	attachEndpoint := fmt.Sprintf("/_plugins/_ism/add/%s", store.logIndex)
+	attachReq, err := http.NewRequestWithContext(ctx, http.MethodPost, attachEndpoint, bytes.NewReader(attachBody))
+	if err != nil {
+		return fmt.Errorf("failed to create attach policy request: %w", err)
+	}
+	attachReq.Header.Set("Content-Type", "application/json")
+
+	attachRes, err := store.client.Transport.Perform(attachReq)
+	if err != nil {
+		return fmt.Errorf("failed to execute attach policy request: %w", err)
 	}
 	defer attachRes.Body.Close()
 
-	if attachRes.IsError() {
-		return fmt.Errorf("error attaching lifecycle policy: %s", attachRes.String())
+	attachBodyBytes, _ := io.ReadAll(attachRes.Body)
+	if attachRes.StatusCode >= http.StatusBadRequest {
+		return fmt.Errorf("error attaching ISM policy: %s, response: %s", attachRes.Status, string(attachBodyBytes))
 	}
 
 	return nil

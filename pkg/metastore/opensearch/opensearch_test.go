@@ -10,6 +10,6 @@ import (
 func TestOpenSearchMetaStore(t *testing.T) {
 	// Create a new test data store
 	_, cleanup, err := opensearch.NewTestDataStore(t)
-	require.NoError(t, err)
 	defer cleanup()
+	require.NoError(t, err)
 }
