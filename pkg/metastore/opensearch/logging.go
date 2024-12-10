@@ -78,47 +78,38 @@ func (store *LogStore) Append(ctx context.Context, log metastore.LogEntry) error
 func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOptions) ([]metastore.LogEntry, error) {
 	// Construct the query
 
-	query := map[string]interface{}{
-		"query": map[string]interface{}{
-			"match_all": map[string]interface{}{},
+	// query := map[string]interface{}{
+	// 	"query": map[string]interface{}{
+	// 		"match_all": map[string]interface{}{},
+	// 	},
+	// }
+	ran := map[string]interface{}{
+		"range": map[string]interface{}{
+			"Timestamp": map[string]interface{}{ // case sensitive !!
+				"gte": options.StartTime.UTC().UnixMilli(),
+				"lte": options.EndTime.UTC().UnixMilli(),
+			},
 		},
 	}
 
-	// query := map[string]interface{}{
-	// 	"query": map[string]interface{}{
-	// 		// "range": map[string]interface{}{
-	// 		// 	"timestamp": map[string]interface{}{
-	// 		// 		"gt": options.StartTime.UTC().UnixMilli(),
-	// 		// 		"lt": options.EndTime.UTC().UnixMilli(),
-	// 		// 	},
-	// 		// },
-	// 		"term": map[string]interface{}{
-	// 			"level": options.Levels[0],
-	// 		},
-	// 	},
-	// }
+	filters := []map[string]interface{}{}
+	filters = append(filters, ran)
+	// Add level filters if provided
+	for _, level := range options.Levels {
+		filters = append(filters, map[string]interface{}{
+			"term": map[string]interface{}{
+				"Level": level,
+			},
+		})
+	}
 
-	// // Add level filters if provided
-	// if len(options.Levels) > 0 {
-	// 	queryMap, ok := query["query"].(map[string]interface{})
-	// 	if !ok {
-	// 		return nil, fmt.Errorf("invalid type for 'query', expected map[string]interface{}")
-	// 	}
-	// 	boolMap, ok := queryMap["bool"].(map[string]interface{})
-	// 	if !ok {
-	// 		return nil, fmt.Errorf("invalid type for 'bool', expected map[string]interface{}")
-	// 	}
-	// 	mustSlice, ok := boolMap["must"].([]map[string]interface{})
-	// 	if !ok {
-	// 		return nil, fmt.Errorf("invalid type for 'must', expected []map[string]interface{}")
-	// 	}
-	// 	mustSlice = append(mustSlice, map[string]interface{}{
-	// 		"terms": map[string]interface{}{
-	// 			"level": options.Levels, // Add array of levels
-	// 		},
-	// 	})
-	// 	boolMap["must"] = mustSlice
-	// }
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{
+				"filter": filters,
+			},
+		},
+	}
 
 	// Create the search request using the OpenSearch client
 	searchRes, err := store.client.Search(
@@ -168,7 +159,6 @@ func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOption
 	return logs, nil
 }
 
-// mustJSON is a utility function to safely marshal the query to JSON, panicking if it fails
 func mustJSON(v interface{}) []byte {
 	body, err := json.Marshal(v)
 	if err != nil {
@@ -203,13 +193,13 @@ func (store *LogStore) ensureIndex(ctx context.Context) error {
 		},
 		"mappings": map[string]interface{}{
 			"properties": map[string]interface{}{
-				"timestamp": map[string]interface{}{
+				"Timestamp": map[string]interface{}{
 					"type":   "date",
 					"format": "epoch_millis", // Handles Unix time in milliseconds
 				},
-				"level":    map[string]interface{}{"type": "text"},
-				"message":  map[string]interface{}{"type": "text"},
-				"metadata": map[string]interface{}{"type": "object"},
+				"Level":    map[string]interface{}{"type": "text"},
+				"Message":  map[string]interface{}{"type": "text"},
+				"Metadata": map[string]interface{}{"type": "object"},
 			},
 		},
 	}
