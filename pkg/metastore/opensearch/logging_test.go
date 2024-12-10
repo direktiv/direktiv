@@ -26,9 +26,11 @@ func TestOpenSearchLogsStore(t *testing.T) {
 		Message:   "test log message",
 	})
 	require.NoError(t, err)
+	time.Sleep(time.Second * 2)
 	logs, err := store.LogStore().Get(context.Background(), metastore.LogQueryOptions{
 		StartTime: now.Add(-time.Hour),
 		EndTime:   now.Add(time.Hour),
+		Levels:    []string{"ERROR"},
 	})
 
 	require.Len(t, logs, 1)

@@ -90,13 +90,17 @@ func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOption
 			"match_all": map[string]interface{}{},
 		},
 	}
+
 	// query := map[string]interface{}{
 	// 	"query": map[string]interface{}{
-	// 		"range": map[string]interface{}{
-	// 			"timestamp": map[string]interface{}{
-	// 				"gt": options.StartTime.UTC().UnixMilli(),
-	// 				"lt": options.EndTime.UTC().UnixMilli(),
-	// 			},
+	// 		// "range": map[string]interface{}{
+	// 		// 	"timestamp": map[string]interface{}{
+	// 		// 		"gt": options.StartTime.UTC().UnixMilli(),
+	// 		// 		"lt": options.EndTime.UTC().UnixMilli(),
+	// 		// 	},
+	// 		// },
+	// 		"term": map[string]interface{}{
+	// 			"level": options.Levels[0],
 	// 		},
 	// 	},
 	// }
@@ -127,14 +131,21 @@ func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOption
 	searchRes, err := store.client.Search(
 		store.client.Search.WithContext(ctx),
 		store.client.Search.WithIndex(store.logIndex),
+		// store.client.Search.WithQuery(),
 		store.client.Search.WithBody(bytes.NewReader(mustJSON(query))),
 		store.client.Search.WithTrackTotalHits(true),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute search query: %w", err)
 	}
-	defer searchRes.Body.Close()
+	if searchRes.IsError() {
+		responseBody, _ := io.ReadAll(searchRes.Body)
+		slog.Error("Search failed", "status", searchRes.Status(), "response", string(responseBody))
 
+		return nil, fmt.Errorf("error executing search: %s, response: %s", searchRes.Status(), string(responseBody))
+	}
+	defer searchRes.Body.Close()
+	slog.Error(string(mustJSON(query)))
 	// Check if the search was successful
 	if searchRes.IsError() {
 		responseBody, _ := io.ReadAll(searchRes.Body)
@@ -203,7 +214,7 @@ func (store *LogStore) ensureIndex(ctx context.Context) error {
 					"type":   "date",
 					"format": "epoch_millis", // Handles Unix time in milliseconds
 				},
-				"level":    map[string]interface{}{"type": "keyword"},
+				"level":    map[string]interface{}{"type": "text"},
 				"message":  map[string]interface{}{"type": "text"},
 				"metadata": map[string]interface{}{"type": "object"},
 			},
