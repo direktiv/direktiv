@@ -96,7 +96,7 @@ const NewPage = ({
       payload: {
         name,
         data: encode(fileContent),
-        type: "endpoint",
+        type: "page",
         mimeType: "application/yaml",
       },
     });
