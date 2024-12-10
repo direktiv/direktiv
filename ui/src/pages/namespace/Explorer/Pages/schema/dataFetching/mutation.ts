@@ -6,6 +6,7 @@ import { SearchParms } from "./request/searchParams";
 import { z } from "zod";
 
 export const Mutation = z.object({
+  id: z.string().min(1),
   method: MutationMethod,
   endpoint: DynamicString,
   searchParms: SearchParms,
