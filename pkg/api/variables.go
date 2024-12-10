@@ -27,7 +27,6 @@ func (e *varController) mountRouter(r chi.Router) {
 	r.Get("/", e.list)
 	r.Post("/", e.create)
 	r.Delete("/", e.deleteMultiple)
-
 }
 
 func (e *varController) get(w http.ResponseWriter, r *http.Request) {
@@ -149,6 +148,7 @@ func (e *varController) deleteMultiple(w http.ResponseWriter, r *http.Request) {
 			Code:    "request_data_invalid",
 			Message: "missing or empty query parameter `ids`",
 		})
+
 		return
 	}
 
