@@ -1,3 +1,4 @@
+import { DynamicString } from "../primitives/dynamicString";
 import { MutationMethod } from "./request/methods";
 import { RequestBody } from "./request/requestBody";
 import { RequestHeaders } from "./request/requestHeaders";
@@ -6,7 +7,7 @@ import { z } from "zod";
 
 export const Mutation = z.object({
   method: MutationMethod,
-  endpoint: z.string().min(1),
+  endpoint: DynamicString,
   searchParms: SearchParms,
   headers: RequestHeaders,
   body: RequestBody,

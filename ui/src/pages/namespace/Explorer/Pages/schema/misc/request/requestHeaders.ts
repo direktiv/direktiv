@@ -1,4 +1,3 @@
-import { z } from "zod";
+import { KeyValue } from "../../primitives/keyValue";
 
-// TODO: finish schema
-export const RequestHeaders = z.unknown();
+export const RequestHeaders = KeyValue;

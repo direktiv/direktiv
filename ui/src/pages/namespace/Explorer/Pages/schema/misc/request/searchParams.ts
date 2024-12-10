@@ -1,4 +1,3 @@
-import { z } from "zod";
+import { KeyValue } from "../../primitives/keyValue";
 
-// TODO: finish schema
-export const SearchParms = z.unknown();
+export const SearchParms = KeyValue;
