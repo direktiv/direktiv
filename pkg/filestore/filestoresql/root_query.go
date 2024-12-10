@@ -109,7 +109,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 	// check if file type is allowed.
 	if !slices.Contains(filestore.AllFileTypes, typ) {
 		return nil, fmt.Errorf("%w: %w",
-			filestore.ErrInvalidPathParameter,
+			filestore.ErrInvalidTypeParameter,
 			fmt.Errorf("file type: %s is not allowed", typ))
 	}
 
