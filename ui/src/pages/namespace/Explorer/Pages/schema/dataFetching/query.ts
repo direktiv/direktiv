@@ -7,3 +7,5 @@ export const Query = z.object({
   endpoint: DynamicString,
   searchParms: SearchParms,
 });
+
+export type QueryType = z.infer<typeof Query>;
