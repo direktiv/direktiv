@@ -30,7 +30,7 @@ func TestOpenSearchLogsStore(t *testing.T) {
 	logs, err := store.LogStore().Get(context.Background(), metastore.LogQueryOptions{
 		StartTime: now.Add(-time.Hour),
 		EndTime:   now.Add(time.Hour),
-		//Levels:    []string{"ERROR"},
+		Levels:    []string{"ERROR"},
 	})
 
 	require.Len(t, logs, 1)

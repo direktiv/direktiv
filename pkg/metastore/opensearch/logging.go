@@ -58,7 +58,7 @@ func (store *LogStore) Append(ctx context.Context, log metastore.LogEntry) error
 		Index:      store.logIndex,
 		DocumentID: log.ID,
 		Body:       bytes.NewReader(body),
-		Refresh:    "true",
+		Refresh:    "true", // todo: for logs we should avoid flushung the index in append
 	}
 
 	res, err := req.Do(ctx, store.client)
@@ -94,7 +94,7 @@ func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOption
 
 	filters := []map[string]interface{}{}
 	filters = append(filters, ran)
-	// Add level filters if provided
+
 	for _, level := range options.Levels {
 		filters = append(filters, map[string]interface{}{
 			"term": map[string]interface{}{
@@ -110,12 +110,10 @@ func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOption
 			},
 		},
 	}
-
-	// Create the search request using the OpenSearch client
+	slog.Debug("create the search request using the OpenSearch client")
 	searchRes, err := store.client.Search(
 		store.client.Search.WithContext(ctx),
 		store.client.Search.WithIndex(store.logIndex),
-		// store.client.Search.WithQuery(),
 		store.client.Search.WithBody(bytes.NewReader(mustJSON(query))),
 		store.client.Search.WithTrackTotalHits(true),
 	)
@@ -129,16 +127,11 @@ func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOption
 		return nil, fmt.Errorf("error executing search: %s, response: %s", searchRes.Status(), string(responseBody))
 	}
 	defer searchRes.Body.Close()
-	slog.Error(string(mustJSON(query)))
-	// Check if the search was successful
 	if searchRes.IsError() {
 		responseBody, _ := io.ReadAll(searchRes.Body)
 		return nil, fmt.Errorf("error executing search: %s, response: %s", searchRes.Status(), string(responseBody))
 	}
-	// responseBody, _ := io.ReadAll(searchRes.Body)
-	// panic(string(responseBody))
 
-	// Parse the response body
 	var searchResult struct {
 		Hits struct {
 			Hits []struct {
@@ -150,7 +143,7 @@ func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOption
 	if err := json.NewDecoder(searchRes.Body).Decode(&searchResult); err != nil {
 		return nil, fmt.Errorf("failed to decode search response: %w", err)
 	}
-	// Extract log entries from the search result
+
 	logs := make([]metastore.LogEntry, 0, len(searchResult.Hits.Hits))
 	for _, hit := range searchResult.Hits.Hits {
 		logs = append(logs, hit.Source)
@@ -197,7 +190,7 @@ func (store *LogStore) ensureIndex(ctx context.Context) error {
 					"type":   "date",
 					"format": "epoch_millis", // Handles Unix time in milliseconds
 				},
-				"Level":    map[string]interface{}{"type": "text"},
+				"Level":    map[string]interface{}{"type": "keyword"},
 				"Message":  map[string]interface{}{"type": "text"},
 				"Metadata": map[string]interface{}{"type": "object"},
 			},
