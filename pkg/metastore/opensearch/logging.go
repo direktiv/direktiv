@@ -8,7 +8,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"time"
 
 	"github.com/direktiv/direktiv/pkg/metastore"
 	"github.com/opensearch-project/opensearch-go"
@@ -49,12 +48,6 @@ func (store *LogStore) Append(ctx context.Context, log metastore.LogEntry) error
 	if log.ID == "" {
 		return fmt.Errorf("log entry ID is required")
 	}
-
-	parsedTime, err := time.Parse(time.RFC3339, log.Timestamp)
-	if err != nil {
-		return fmt.Errorf("log entry timestamp is not in RFC3339 format: %w", err)
-	}
-	log.Timestamp = fmt.Sprintf("%d", parsedTime.UTC().UnixMilli()) // Convert to epoch milliseconds
 
 	body, err := json.Marshal(log)
 	if err != nil {

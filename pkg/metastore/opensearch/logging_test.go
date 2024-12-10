@@ -18,10 +18,10 @@ func TestOpenSearchLogsStore(t *testing.T) {
 	require.NoError(t, err)
 
 	now := time.Now()
-
+	id := uuid.NewString()
 	err = store.LogStore().Append(context.Background(), metastore.LogEntry{
-		ID:        uuid.NewString(),
-		Timestamp: now.Format(time.RFC3339),
+		ID:        id,
+		Timestamp: now.UnixMilli(),
 		Level:     "ERROR",
 		Message:   "test log message",
 	})
@@ -35,4 +35,10 @@ func TestOpenSearchLogsStore(t *testing.T) {
 
 	require.Len(t, logs, 1)
 
+	require.ElementsMatch(t, []metastore.LogEntry{{
+		ID:        id,
+		Timestamp: now.UnixMilli(),
+		Level:     "ERROR",
+		Message:   "test log message",
+	}}, logs)
 }
