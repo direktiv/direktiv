@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/cmdserver"
@@ -20,6 +21,11 @@ import (
 )
 
 func runApplication() {
+	if strings.Contains(os.Args[0], "direktiv-cmd") {
+		cmdserver.Start()
+
+		return
+	}
 	startCmd := &cobra.Command{
 		Use:   "start SERVICE_NAME",
 		Short: "Starts the specified direktiv service",
