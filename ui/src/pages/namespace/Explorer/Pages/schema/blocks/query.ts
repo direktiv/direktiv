@@ -2,7 +2,7 @@ import { Blocks, BlocksType } from ".";
 import {
   Query as DataQuery,
   QueryType as DataQueryType,
-} from "../dataFetching/query";
+} from "../procedures/query";
 
 import { z } from "zod";
 

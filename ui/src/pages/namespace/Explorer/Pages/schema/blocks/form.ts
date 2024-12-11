@@ -1,6 +1,6 @@
 import { Blocks, BlocksType } from ".";
 
-import { Mutation, MutationType } from "../dataFetching/mutation";
+import { Mutation, MutationType } from "../procedures/mutation";
 import { z } from "zod";
 
 /**

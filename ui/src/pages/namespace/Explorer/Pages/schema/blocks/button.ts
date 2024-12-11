@@ -1,4 +1,4 @@
-import { Mutation } from "../dataFetching/mutation";
+import { Mutation } from "../procedures/mutation";
 import { z } from "zod";
 
 export const Button = z.object({
