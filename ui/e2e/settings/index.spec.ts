@@ -131,8 +131,7 @@ test("secrets are displayed in alphabetical order", async ({ page }) => {
   const displayedNames = await secretElements.allTextContents();
 
   // And check if the names are in alphabetical order
-  const sortedNames = [...secretNames].sort();
-  expect(displayedNames).toEqual(sortedNames);
+  expect(displayedNames).toEqual(["01", "A", "T", "X"]);
 });
 
 test("it is possible to create and delete registries", async ({ page }) => {
