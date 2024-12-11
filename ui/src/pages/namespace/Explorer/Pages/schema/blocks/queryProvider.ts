@@ -11,18 +11,14 @@ import { z } from "zod";
  */
 export type QueryProviderType = {
   type: "query";
-  data: {
-    id: string;
-    query: QueryType;
-    blocks: BlocksType["all"][];
-  };
+  id: string;
+  query: QueryType;
+  blocks: BlocksType["all"][];
 };
 
 export const QueryProvider = z.object({
   type: z.literal("query"),
-  data: z.object({
-    id: z.string().min(1),
-    query: Query,
-    blocks: z.array(Blocks.all),
-  }),
+  id: z.string().min(1),
+  query: Query,
+  blocks: z.array(Blocks.all),
 }) satisfies z.ZodType<QueryProviderType>;
