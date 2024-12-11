@@ -2,7 +2,7 @@ import { Button, ButtonType } from "./button";
 import { Form, FormType } from "./form";
 import { Headline, HeadlineType } from "./headline";
 import { Modal, ModalType } from "./modal";
-import { Query, QueryType } from "./query";
+import { QueryProvider, QueryProviderType } from "./queryProvider";
 import { Text, TextType } from "./text";
 
 import { z } from "zod";
@@ -18,12 +18,12 @@ type AllBlocksType =
   | ButtonType
   | TextType
   | FormType
-  | QueryType
+  | QueryProviderType
   | ModalType;
 
 export const allBlocks: z.ZodType<AllBlocksType> = z.discriminatedUnion(
   "type",
-  [Headline, Button, Text, Form, Query, Modal]
+  [Headline, Button, Text, Form, QueryProvider, Modal]
 );
 
 export const Blocks = {

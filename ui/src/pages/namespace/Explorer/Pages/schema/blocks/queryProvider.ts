@@ -1,8 +1,5 @@
 import { Blocks, BlocksType } from ".";
-import {
-  Query as DataQuery,
-  QueryType as DataQueryType,
-} from "../procedures/query";
+import { Query, QueryType } from "../procedures/query";
 
 import { z } from "zod";
 
@@ -12,20 +9,20 @@ import { z } from "zod";
  * It is currently possible to extend the schema without updating the type.
  * The schema needs to get the type input to avoid circular dependencies.
  */
-export type QueryType = {
+export type QueryProviderType = {
   type: "query";
   data: {
     id: string;
-    query: DataQueryType;
+    query: QueryType;
     blocks: BlocksType["all"][];
   };
 };
 
-export const Query = z.object({
+export const QueryProvider = z.object({
   type: z.literal("query"),
   data: z.object({
     id: z.string().min(1),
-    query: DataQuery,
+    query: Query,
     blocks: z.array(Blocks.all),
   }),
-}) satisfies z.ZodType<QueryType>;
+}) satisfies z.ZodType<QueryProviderType>;

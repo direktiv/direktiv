@@ -5,7 +5,7 @@ import { z } from "zod";
 export const Query = z.object({
   id: z.string().min(1),
   endpoint: DynamicString,
-  searchParms: KeyValue,
+  queryParams: KeyValue,
 });
 
 export type QueryType = z.infer<typeof Query>;
