@@ -10,6 +10,8 @@ import {
 
 import { BaseFileSchemaType } from "~/api/files/schema";
 import { Card } from "~/design/Card";
+import { Checkbox } from "~/design/Checkbox";
+import { ChevronDown } from "lucide-react";
 import Delete from "./components/modals/Delete";
 import EmptyDirectory from "./EmptyDirectory";
 import ExplorerHeader from "./Header";
@@ -22,6 +24,7 @@ import { SearchBar } from "./SearchBar";
 import { analyzePath } from "~/util/router/utils";
 import { getFilenameFromPath } from "~/api/files/utils";
 import { twMergeClsx } from "~/util/helpers";
+// import { useDeleteMultipleFiles } from "~/api/files/mutate/deleteMultipleFiles";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
 import { usePages } from "~/util/router/pages";
@@ -37,6 +40,8 @@ const ExplorerPage: FC = () => {
 
   const { parent, isRoot } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<BaseFileSchemaType[]>([]);
+  // const [deleteMultipleFiles] = useDeleteMultipleFiles();
 
   // we only want to use one dialog component for the whole list,
   // so when the user clicks on the delete button in the list, we
@@ -52,6 +57,14 @@ const ExplorerPage: FC = () => {
     () => (data?.type === "directory" && data?.children) || [],
     [data]
   );
+
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log(
+      "Selected Files:",
+      selectedFiles.map((file) => file.path)
+    );
+  }, [selectedFiles]);
 
   const filteredFiles = useMemo(
     () =>
@@ -90,6 +103,27 @@ const ExplorerPage: FC = () => {
   const wideOverlay = !!previewNode;
   const existingNames = children?.map((file) => getFilenameFromPath(file.path));
 
+  const handleCheckboxChange = (path: string) => {
+    setSelectedFiles((prev) => {
+      if (prev.find((file) => file.path === path)) {
+        return prev.filter((file) => file.path !== path);
+      }
+      const fileToAdd = children.find((file) => file.path === path);
+      if (fileToAdd) {
+        return [...prev, fileToAdd];
+      }
+      return prev;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedFiles.length === children.length) {
+      setSelectedFiles([]);
+    } else {
+      setSelectedFiles(children);
+    }
+  };
+
   return (
     <>
       <ExplorerHeader />
@@ -98,14 +132,22 @@ const ExplorerPage: FC = () => {
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <Table>
               <TableBody>
-                {!isEmptyDirectory && (
-                  <SearchBar
-                    query={query}
-                    onChange={(newQuery) => {
-                      setQuery(newQuery);
-                    }}
+                <div className="flex items-center">
+                  <Checkbox
+                    className="ml-3"
+                    onCheckedChange={handleSelectAll}
+                    checked={selectedFiles.length === children.length}
                   />
-                )}
+                  <ChevronDown className="ml-1 mr-2 size-4" />
+                  {!isEmptyDirectory && (
+                    <SearchBar
+                      query={query}
+                      onChange={(newQuery) => {
+                        setQuery(newQuery);
+                      }}
+                    />
+                  )}
+                </div>
                 {!isRoot && (
                   <LevelUpNavigation
                     namespace={namespace}
@@ -127,6 +169,8 @@ const ExplorerPage: FC = () => {
                     onDeleteClicked={setDeleteNode}
                     onRenameClicked={setRenameNode}
                     onPreviewClicked={setPreviewNode}
+                    handleCheckboxChange={handleCheckboxChange}
+                    selectedFiles={selectedFiles}
                   />
                 ))}
               </TableBody>

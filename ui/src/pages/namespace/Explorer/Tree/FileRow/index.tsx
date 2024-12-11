@@ -12,6 +12,7 @@ import { fileTypeToIcon, getFilenameFromPath } from "~/api/files/utils";
 
 import { BaseFileSchemaType } from "~/api/files/schema";
 import Button from "~/design/Button";
+import { Checkbox } from "~/design/Checkbox";
 import { ConditionalLink } from "./ConditionalLink";
 import { DialogTrigger } from "~/design/Dialog";
 import moment from "moment";
@@ -23,12 +24,16 @@ const FileRow = ({
   onRenameClicked,
   onDeleteClicked,
   onPreviewClicked,
+  handleCheckboxChange,
+  selectedFiles,
 }: {
   file: BaseFileSchemaType;
   namespace: string;
   onRenameClicked: (file: BaseFileSchemaType) => void;
   onDeleteClicked: (file: BaseFileSchemaType) => void;
   onPreviewClicked: (file: BaseFileSchemaType) => void;
+  handleCheckboxChange: (value: string) => void;
+  selectedFiles: BaseFileSchemaType[];
 }) => {
   const { t } = useTranslation();
   const Icon = fileTypeToIcon(file.type);
@@ -38,7 +43,11 @@ const FileRow = ({
   return (
     <TableRow data-testid={`explorer-item-${filename}`}>
       <TableCell>
-        <div className="flex space-x-3">
+        <div className="flex space-x-3 items-center">
+          <Checkbox
+            onCheckedChange={() => handleCheckboxChange(file.path)}
+            checked={selectedFiles.some((f) => f.path === file.path)}
+          />
           <Icon className="h-5" />
           <ConditionalLink
             file={file}
