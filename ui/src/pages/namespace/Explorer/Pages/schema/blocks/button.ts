@@ -5,7 +5,7 @@ export const Button = z.object({
   type: z.literal("button"),
   data: z.object({
     label: z.string().min(1),
-    submit: Mutation,
+    submit: Mutation.optional(),
   }),
 });
 
