@@ -14,7 +14,7 @@ import { z } from "zod";
  * It is currently possible to extend the type without updating the schema.
  * The schema needs to get the type input to avoid circular dependencies.
  */
-type AllBlocksType =
+export type AllBlocksType =
   | ButtonType
   | FormType
   | HeadlineType
@@ -23,17 +23,11 @@ type AllBlocksType =
   | TextType
   | TwoColumnsType;
 
-export const allBlocks: z.ZodType<AllBlocksType> = z.discriminatedUnion(
+export const AllBlocks: z.ZodType<AllBlocksType> = z.discriminatedUnion(
   "type",
   [Button, Form, Headline, Modal, QueryProvider, Text, TwoColumns]
 );
 
-export const Blocks = {
-  all: allBlocks,
-  trigger: z.discriminatedUnion("type", [Button]),
-};
+export const TriggerBlocks = z.discriminatedUnion("type", [Button]);
 
-export type BlocksType = {
-  all: z.infer<typeof Blocks.all>;
-  trigger: z.infer<typeof Blocks.trigger>;
-};
+export type TriggerBlocksType = z.infer<typeof TriggerBlocks>;

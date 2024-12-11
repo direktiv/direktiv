@@ -1,4 +1,4 @@
-import { Blocks, BlocksType } from ".";
+import { AllBlocks, AllBlocksType } from ".";
 
 import { z } from "zod";
 
@@ -10,12 +10,12 @@ import { z } from "zod";
  */
 export type TwoColumnsType = {
   type: "two-columns";
-  leftBlocks: BlocksType["all"][];
-  rightBlocks: BlocksType["all"][];
+  leftBlocks: AllBlocksType[];
+  rightBlocks: AllBlocksType[];
 };
 
 export const TwoColumns = z.object({
   type: z.literal("two-columns"),
-  leftBlocks: z.array(Blocks.all),
-  rightBlocks: z.array(Blocks.all),
+  leftBlocks: z.array(AllBlocks),
+  rightBlocks: z.array(AllBlocks),
 }) satisfies z.ZodType<TwoColumnsType>;

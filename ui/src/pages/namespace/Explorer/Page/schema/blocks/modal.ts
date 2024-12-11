@@ -1,4 +1,4 @@
-import { Blocks, BlocksType } from ".";
+import { AllBlocks, AllBlocksType, TriggerBlocks, TriggerBlocksType } from ".";
 
 import { z } from "zod";
 
@@ -10,13 +10,12 @@ import { z } from "zod";
  */
 export type ModalType = {
   type: "modal";
-
-  trigger: BlocksType["trigger"];
-  blocks: BlocksType["all"][];
+  trigger: TriggerBlocksType;
+  blocks: AllBlocksType[];
 };
 
 export const Modal = z.object({
   type: z.literal("modal"),
-  trigger: Blocks.trigger,
-  blocks: z.array(Blocks.all),
+  trigger: TriggerBlocks,
+  blocks: z.array(AllBlocks),
 }) satisfies z.ZodType<ModalType>;

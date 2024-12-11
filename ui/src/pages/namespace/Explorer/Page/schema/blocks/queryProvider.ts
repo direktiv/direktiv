@@ -1,4 +1,5 @@
-import { Blocks, BlocksType } from ".";
+import { AllBlocks, AllBlocksType } from ".";
+
 import { Query, QueryType } from "../procedures/query";
 
 import { z } from "zod";
@@ -12,11 +13,11 @@ import { z } from "zod";
 export type QueryProviderType = {
   type: "queryProvider";
   query: QueryType;
-  blocks: BlocksType["all"][];
+  blocks: AllBlocksType[];
 };
 
 export const QueryProvider = z.object({
   type: z.literal("queryProvider"),
   query: Query,
-  blocks: z.array(Blocks.all),
+  blocks: z.array(AllBlocks),
 }) satisfies z.ZodType<QueryProviderType>;
