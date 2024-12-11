@@ -110,6 +110,30 @@ test("it is possible to create and delete secrets", async ({ page }) => {
   ).toBeHidden();
 });
 
+test("secrets are displayed in alphabetical order", async ({ page }) => {
+  await page.goto(`/n/${namespace}/settings`);
+
+  // Firt Create secrets in non-alphabetical order
+  const secretNames = ["X", "T", "A", "01"];
+
+  for (const name of secretNames) {
+    await page.getByTestId("secret-create").click();
+    await page.getByPlaceholder("secret-name").type(name);
+    await page.locator("textarea").type("test-value");
+    await page.getByRole("button", { name: "Create" }).click();
+    await waitForSuccessToast(page);
+  }
+
+  // Then get all secret names in the list
+  const secretElements = page
+    .getByTestId("secrets-section")
+    .getByTestId("item-name");
+  const displayedNames = await secretElements.allTextContents();
+
+  // And check if the names are in alphabetical order
+  expect(displayedNames).toEqual(["01", "A", "T", "X"]);
+});
+
 test("it is possible to create and delete registries", async ({ page }) => {
   const registries = await createRegistries(namespace, 3);
   const registryToDelete = registries[2];
