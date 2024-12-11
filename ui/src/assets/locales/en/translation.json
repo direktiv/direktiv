@@ -97,9 +97,8 @@
               "route": "New Route",
               "consumer": "New Consumer"
             },
-            "uibuilder": {
-              "label": "UI Builder",
-              "page": "New Page"
+            "page": {
+              "label": "New Page"
             }
           }
         },

@@ -14,8 +14,8 @@ import {
 import {
   Folder,
   Layers,
-  LayoutTemplate,
   Network,
+  PanelTop,
   Play,
   PlusCircle,
   Users,
@@ -134,8 +134,8 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
             }}
           >
             <DropdownMenuItem>
-              <LayoutTemplate className="mr-2 size-4" />
-              {t("pages.explorer.tree.newFileButton.items.uibuilder.page")}
+              <PanelTop className="mr-2 size-4" />
+              {t("pages.explorer.tree.newFileButton.items.page.label")}
             </DropdownMenuItem>
           </DialogTrigger>
         </DropdownMenuGroup>

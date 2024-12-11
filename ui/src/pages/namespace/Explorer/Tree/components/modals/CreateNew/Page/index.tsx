@@ -71,13 +71,6 @@ const NewPage = ({
 
   const { mutate: createFile, isPending } = useCreateFile({
     onSuccess: (data) => {
-      /** To Do:
-       * check if we need to update the Notification Bell for the type = page too?
-       *
-       * creating a new workflow might introduce an uninitialized secret.
-       * We need to update the notification bell, to see potential new messages.
-       */
-      // updateNotificationBell();
       namespace &&
         navigate(
           pages.explorer.createHref({
