@@ -4,6 +4,7 @@ import { Headline, HeadlineType } from "./headline";
 import { Modal, ModalType } from "./modal";
 import { QueryProvider, QueryProviderType } from "./queryProvider";
 import { Text, TextType } from "./text";
+import { TwoColumns, TwoColumnsType } from "./twoColumns";
 
 import { z } from "zod";
 
@@ -14,16 +15,17 @@ import { z } from "zod";
  * The schema needs to get the type input to avoid circular dependencies.
  */
 type AllBlocksType =
-  | HeadlineType
   | ButtonType
-  | TextType
   | FormType
+  | HeadlineType
+  | ModalType
   | QueryProviderType
-  | ModalType;
+  | TextType
+  | TwoColumnsType;
 
 export const allBlocks: z.ZodType<AllBlocksType> = z.discriminatedUnion(
   "type",
-  [Headline, Button, Text, Form, QueryProvider, Modal]
+  [Button, Form, Headline, Modal, QueryProvider, Text, TwoColumns]
 );
 
 export const Blocks = {

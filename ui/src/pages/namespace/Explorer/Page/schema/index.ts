@@ -8,4 +8,4 @@ export const DirektivPagesSchema = z.object({
   blocks: z.array(Blocks.all),
 });
 
-// add some basic form input blocks
+export type DirektivPagesType = z.infer<typeof DirektivPagesSchema>;

@@ -10,15 +10,13 @@ import { z } from "zod";
  * The schema needs to get the type input to avoid circular dependencies.
  */
 export type QueryProviderType = {
-  type: "query";
-  id: string;
+  type: "queryProvider";
   query: QueryType;
   blocks: BlocksType["all"][];
 };
 
 export const QueryProvider = z.object({
-  type: z.literal("query"),
-  id: z.string().min(1),
+  type: z.literal("queryProvider"),
   query: Query,
   blocks: z.array(Blocks.all),
 }) satisfies z.ZodType<QueryProviderType>;

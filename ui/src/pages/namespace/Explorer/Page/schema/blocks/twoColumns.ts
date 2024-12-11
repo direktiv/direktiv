@@ -1,0 +1,21 @@
+import { Blocks, BlocksType } from ".";
+
+import { z } from "zod";
+
+/**
+ * ⚠️ NOTE:
+ * The type and the schema must be kept in sync to ensure 100% type safety.
+ * It is currently possible to extend the schema without updating the type.
+ * The schema needs to get the type input to avoid circular dependencies.
+ */
+export type TwoColumnsType = {
+  type: "two-columns";
+  leftBlocks: BlocksType["all"][];
+  rightBlocks: BlocksType["all"][];
+};
+
+export const TwoColumns = z.object({
+  type: z.literal("two-columns"),
+  leftBlocks: z.array(Blocks.all),
+  rightBlocks: z.array(Blocks.all),
+}) satisfies z.ZodType<TwoColumnsType>;
