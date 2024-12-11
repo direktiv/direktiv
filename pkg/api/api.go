@@ -123,11 +123,12 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Route("/namespaces", func(r chi.Router) {
+			r.Use(mw.checkAPIKey)
 			nsCtr.mountRouter(r)
 		})
 
 		r.Group(func(r chi.Router) {
-			r.Use(mw.injectNamespace)
+			r.Use(mw.checkAPIKey, mw.injectNamespace)
 
 			r.Route("/namespaces/{namespace}/instances", func(r chi.Router) {
 				instCtr.mountRouter(r)

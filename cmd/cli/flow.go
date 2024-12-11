@@ -1,5 +1,5 @@
 // nolint:forbidigo
-package main
+package cli
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/cmdserver"
@@ -19,7 +20,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func runApplication() {
+func Run() {
+	if strings.Contains(os.Args[0], "direktiv-cmd") {
+		cmdserver.Start()
+
+		return
+	}
 	startCmd := &cobra.Command{
 		Use:   "start SERVICE_NAME",
 		Short: "Starts the specified direktiv service",

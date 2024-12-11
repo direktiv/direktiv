@@ -64,7 +64,6 @@ jobs:
           go test ./... -coverprofile coverage.out -covermode count
 
   build:
-    needs: [backend-license, backend-lint, backend-test]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -117,7 +116,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
   e2e:
-    needs: [build]
+    needs: [build, backend-license, backend-lint, backend-test]
     runs-on: ubuntu-latest
 
     timeout-minutes: 18

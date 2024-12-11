@@ -194,6 +194,14 @@ func writeFileStoreError(w http.ResponseWriter, err error) {
 
 		return
 	}
+	if errors.Is(err, filestore.ErrInvalidTypeParameter) {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "filesystem type is invalid",
+		})
+
+		return
+	}
 
 	writeInternalError(w, err)
 }
