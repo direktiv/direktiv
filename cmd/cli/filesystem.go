@@ -1,5 +1,5 @@
 // nolint:forbidigo
-package main
+package cli
 
 import (
 	"bytes"

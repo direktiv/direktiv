@@ -96,6 +96,9 @@
               "label": "Gateway",
               "route": "New Route",
               "consumer": "New Consumer"
+            },
+            "page": {
+              "label": "New Page"
             }
           }
         },
@@ -128,6 +131,14 @@
           "title": "Create a new consumer",
           "nameLabel": "Name",
           "namePlaceholder": "consumer-name.yaml",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
+        },
+        "newPage": {
+          "title": "Create a new page",
+          "nameLabel": "Name",
+          "namePlaceholder": "page-name.yaml",
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
           "createBtn": "Create"
