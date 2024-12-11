@@ -44,3 +44,18 @@ tests-lint: ## Runs very strict linting on the project.
 	-w /app \
 	-e GOLANGCI_LINT_CACHE=/app/.cache/golangci-lint \
 	golangci/golangci-lint:${VERSION} golangci-lint run --verbose
+
+.PHONY: docker-playwright
+docker-e2e-playwright:
+docker-e2e-playwright: ## Perform ui e2e tests with playwright platform.
+	docker run \
+	-v $$PWD/ui:/app/ui \
+	-e NODE_TLS_REJECT_UNAUTHORIZED=0 \
+    -e PLAYWRIGHT_USE_VITE=FALSE \
+    -e PLAYWRIGHT_UI_BASE_URL=http://127.0.0.1 \
+    -e PLAYWRIGHT_SHARD=1/1 \
+    -e PLAYWRIGHT_CI=TRUE \
+	-w /app/ui \
+	--net=host \
+	node:20-slim \
+	bash -c "corepack enable && pnpm install && pnpm exec playwright install --with-deps chromium && pnpm exec playwright test --shard=${PLAYWRIGHT_SHARD} --project \"chromium\"  --reporter=line"

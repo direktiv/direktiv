@@ -41,6 +41,7 @@ This repository contains the user interface for [direktiv](https://github.com/di
   - `pnpm run check:types` checks all types
   - `pnpm run check:test` runs the tests in ci mode
   - `pnpm run check:prettier` checks if all prettier formatting was applied (`pnpm run prettier`)
+  - `pnpm run check:deps` checks if all dependencies are up to date
 - `pnpm run e2e:headless` runs all Playwright e2e tests in headless mode
 - `pnpm run e2e:ui` runs all Playwright e2e tests in ui mode
 - `pnpm run preview` locally preview the production build (requires you to run `pnpm build` first)

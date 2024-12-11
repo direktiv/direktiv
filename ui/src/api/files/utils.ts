@@ -1,4 +1,12 @@
-import { File, Folder, Layers, Play, Users, Workflow } from "lucide-react";
+import {
+  File,
+  Folder,
+  Layers,
+  PanelTop,
+  Play,
+  Users,
+  Workflow,
+} from "lucide-react";
 
 import { BaseFileSchemaType } from "./schema";
 import { ExplorerSubpages } from "~/util/router/pages";
@@ -72,6 +80,8 @@ export const fileTypeToIcon = (type: BaseFileSchemaType["type"]) => {
       return Workflow;
     case "consumer":
       return Users;
+    case "page":
+      return PanelTop;
     default:
       return File;
   }
@@ -89,6 +99,8 @@ export const fileTypeToExplorerSubpage = (
       return "endpoint";
     case "consumer":
       return "consumer";
+    case "page":
+      return "page";
     default:
       return undefined;
   }

@@ -22,7 +22,7 @@ RELEASE_VERSION := ${RELEASE}-${GIT_HASH}${GIT_DIRTY}
 
 DIREKTIV_HOST ?= localhost:9090
 
-include make_direktiv.mk make_tests.mk make_composer.mk make_cluster.mk
+include make_direktiv.mk make_tests.mk make_cluster.mk
 
 .PHONY: help
 help: ## Prints usage information.
