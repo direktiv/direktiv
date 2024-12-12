@@ -16,6 +16,6 @@ export type ModalType = {
 
 export const Modal = z.object({
   type: z.literal("modal"),
-  trigger: TriggerBlocks,
-  blocks: z.array(AllBlocks),
+  trigger: z.lazy(() => TriggerBlocks),
+  blocks: z.array(z.lazy(() => AllBlocks)),
 }) satisfies z.ZodType<ModalType>;

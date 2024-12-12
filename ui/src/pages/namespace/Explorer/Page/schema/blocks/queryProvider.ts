@@ -18,5 +18,5 @@ export type QueryProviderType = {
 export const QueryProvider = z.object({
   type: z.literal("query-provider"),
   query: Query,
-  blocks: z.array(AllBlocks),
+  blocks: z.array(z.lazy(() => AllBlocks)),
 }) satisfies z.ZodType<QueryProviderType>;
