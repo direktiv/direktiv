@@ -11,9 +11,9 @@ export const Mutation = z.object({
   id: Id,
   method: MutationMethod,
   endpoint: DynamicString,
-  queryParms: KeyValue.optional(),
-  requestHeaders: KeyValue.optional(),
-  requestBody: KeyValue.optional(),
+  queryParams: z.array(KeyValue).optional(),
+  requestHeaders: z.array(KeyValue).optional(),
+  requestBody: z.array(KeyValue).optional(),
 });
 
 export type MutationType = z.infer<typeof Mutation>;
