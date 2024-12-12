@@ -59,18 +59,18 @@ const Delete = ({
         />
       );
     } else if (isSingleFile) {
-      if (file.type === "directory") {
+      if (file?.type === "directory") {
         return (
           <Trans
             i18nKey="pages.explorer.tree.delete.directoryMsg"
-            values={{ name: getFilenameFromPath(file.path) }}
+            values={{ name: getFilenameFromPath(file?.path || "") }}
           />
         );
       } else {
         return (
           <Trans
             i18nKey="pages.explorer.tree.delete.fileMsg"
-            values={{ name: getFilenameFromPath(file.path) }}
+            values={{ name: getFilenameFromPath(file?.path || "") }}
           />
         );
       }

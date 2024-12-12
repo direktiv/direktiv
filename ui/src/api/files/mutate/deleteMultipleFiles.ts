@@ -1,9 +1,5 @@
 import { BaseFileSchemaType, FileDeletedSchema } from "../schema";
-import {
-  forceLeadingSlash,
-  getFilenameFromPath,
-  getParentFromPath,
-} from "~/api/files/utils";
+import { getFilenameFromPath, getParentFromPath } from "~/api/files/utils";
 
 import { apiFactory } from "~/api/apiFactory";
 import { fileKeys } from "..";
@@ -24,8 +20,8 @@ export const deleteMultipleFiles = apiFactory({
     namespace: string;
     paths: string[];
   }) =>
-    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/files${forceLeadingSlash(
-      paths.join(",")
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/files?ids=${paths.join(
+      ","
     )}`,
   method: "DELETE",
   schema: FileDeletedSchema,
