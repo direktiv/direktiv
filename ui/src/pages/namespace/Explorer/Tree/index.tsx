@@ -1,3 +1,4 @@
+import { ChevronDown, Trash } from "lucide-react";
 import { Dialog, DialogContent } from "~/design/Dialog";
 import { FC, useEffect, useMemo, useState } from "react";
 import {
@@ -12,7 +13,6 @@ import { BaseFileSchemaType } from "~/api/files/schema";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { Checkbox } from "~/design/Checkbox";
-import { ChevronDown } from "lucide-react";
 import Delete from "./components/modals/Delete";
 import EmptyDirectory from "./EmptyDirectory";
 import ExplorerHeader from "./Header";
@@ -137,16 +137,19 @@ const ExplorerPage: FC = () => {
                       }}
                     />
                   )}
-                  <Button
-                    variant="destructive"
-                    disabled={deleteNodes.length === 0}
-                    onClick={() => {
-                      setDeleteNodes(deleteNodes);
-                      setDialogOpen(true);
-                    }}
-                  >
-                    Delete Selected
-                  </Button>
+                  <div className="ml-auto">
+                    <Button
+                      variant="destructive"
+                      disabled={deleteNodes.length === 0}
+                      onClick={() => {
+                        setDeleteNodes(deleteNodes);
+                        setDialogOpen(true);
+                      }}
+                    >
+                      Delete Selected
+                      <Trash className="ml-2 size-4" />
+                    </Button>
+                  </div>
                 </div>
                 {!isRoot && (
                   <LevelUpNavigation
@@ -166,10 +169,6 @@ const ExplorerPage: FC = () => {
                     key={item.path}
                     namespace={namespace}
                     file={item}
-                    onDeleteClicked={(file) => {
-                      setDeleteNodes([file]);
-                      setDialogOpen(true);
-                    }}
                     onRenameClicked={setRenameNode}
                     onPreviewClicked={setPreviewNode}
                     handleCheckboxChange={handleCheckboxChange}

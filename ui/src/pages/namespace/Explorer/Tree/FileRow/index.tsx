@@ -6,7 +6,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
-import { MoreVertical, TextCursorInput, Trash } from "lucide-react";
+import { MoreVertical, TextCursorInput } from "lucide-react";
 import { TableCell, TableRow } from "~/design/Table";
 import { fileTypeToIcon, getFilenameFromPath } from "~/api/files/utils";
 
@@ -22,7 +22,6 @@ const FileRow = ({
   file,
   namespace,
   onRenameClicked,
-  onDeleteClicked,
   onPreviewClicked,
   handleCheckboxChange,
   selectedFiles,
@@ -30,7 +29,6 @@ const FileRow = ({
   file: BaseFileSchemaType;
   namespace: string;
   onRenameClicked: (file: BaseFileSchemaType) => void;
-  onDeleteClicked: (file: BaseFileSchemaType) => void;
   onPreviewClicked: (file: BaseFileSchemaType) => void;
   handleCheckboxChange: (value: string) => void;
   selectedFiles: BaseFileSchemaType[];
@@ -79,18 +77,7 @@ const FileRow = ({
               {t("pages.explorer.tree.list.contextMenu.title")}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DialogTrigger
-              className="w-full"
-              data-testid="node-actions-delete"
-              onClick={() => {
-                onDeleteClicked(file);
-              }}
-            >
-              <DropdownMenuItem>
-                <Trash className="mr-2 size-4" />
-                {t("pages.explorer.tree.list.contextMenu.delete")}
-              </DropdownMenuItem>
-            </DialogTrigger>
+
             <DialogTrigger
               className="w-full"
               data-testid="node-actions-rename"

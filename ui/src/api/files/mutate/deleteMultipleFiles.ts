@@ -20,9 +20,9 @@ export const deleteMultipleFiles = apiFactory({
     namespace: string;
     paths: string[];
   }) =>
-    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/files?ids=${paths.join(
-      ","
-    )}`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/files?ids=${paths
+      .map((path) => encodeURIComponent(path))
+      .join(",")}`,
   method: "DELETE",
   schema: FileDeletedSchema,
 });
