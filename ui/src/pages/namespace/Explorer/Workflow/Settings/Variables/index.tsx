@@ -35,7 +35,7 @@ const VariablesList = ({ path }: { path: string }) => {
 
   const { data: variables, isFetched } = useVars({ workflowPath: path });
 
-  const { mutate: deleteWorkflowVariable } = useDeleteVar({
+  const { mutate: deleteWorkflowVar } = useDeleteVar({
     onSuccess: () => {
       setDialogOpen(false);
       setSelectedItems([]);
@@ -108,6 +108,7 @@ const VariablesList = ({ path }: { path: string }) => {
                 <Checkbox
                   className="ml-3"
                   onCheckedChange={handleSelectAll}
+                  disabled={filteredItems.length === 0}
                   checked={
                     selectedItems.length === filteredItems.length &&
                     filteredItems.length > 0
@@ -221,7 +222,7 @@ const VariablesList = ({ path }: { path: string }) => {
           items={selectedItems}
           totalItems={(variables?.data || []).length}
           onConfirm={() => {
-            deleteWorkflowVariable({ variables: selectedItems });
+            deleteWorkflowVar({ variables: selectedItems });
             setSelectedItems([]);
             setDialogOpen(false);
           }}
