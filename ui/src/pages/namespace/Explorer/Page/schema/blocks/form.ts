@@ -1,5 +1,5 @@
-import { AllBlocks, TriggerBlocks } from ".";
-import { AllBlocksType, TriggerBlocksType } from "./types";
+import { AllBlocks, AllBlocksType, TriggerBlocks, TriggerBlocksType } from ".";
+
 import { Mutation, MutationType } from "../procedures/mutation";
 import { z } from "zod";
 

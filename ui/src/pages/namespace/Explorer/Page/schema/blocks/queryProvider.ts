@@ -1,6 +1,5 @@
+import { AllBlocks, AllBlocksType } from ".";
 import { Query, QueryType } from "../procedures/query";
-import { AllBlocks } from ".";
-import { AllBlocksType } from "./types";
 import { z } from "zod";
 
 /**

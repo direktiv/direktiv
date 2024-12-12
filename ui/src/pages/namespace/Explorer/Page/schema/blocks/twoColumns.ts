@@ -1,5 +1,4 @@
-import { AllBlocks } from ".";
-import { AllBlocksType } from "./types";
+import { AllBlocks, AllBlocksType } from ".";
 import { z } from "zod";
 
 /**
