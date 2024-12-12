@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - cycle*
+      - releases/*
   pull_request:
 
 jobs:
