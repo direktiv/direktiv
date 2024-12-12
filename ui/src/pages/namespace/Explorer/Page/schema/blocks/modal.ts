@@ -1,6 +1,5 @@
 import { AllBlocks, TriggerBlocks } from ".";
 import { AllBlocksType, TriggerBlocksType } from "./types";
-import { Mutation, MutationType } from "../procedures/mutation";
 import { z } from "zod";
 
 /**
@@ -9,16 +8,14 @@ import { z } from "zod";
  * It is currently possible to extend the schema without updating the type.
  * The schema needs to get the type input to avoid circular dependencies.
  */
-export type FormType = {
-  type: "form";
+export type ModalType = {
+  type: "modal";
   trigger: TriggerBlocksType;
-  mutation: MutationType;
   blocks: AllBlocksType[];
 };
 
-export const Form = z.object({
-  type: z.literal("form"),
+export const Modal = z.object({
+  type: z.literal("modal"),
   trigger: TriggerBlocks,
-  mutation: Mutation,
   blocks: z.array(AllBlocks),
-}) satisfies z.ZodType<FormType>;
+}) satisfies z.ZodType<ModalType>;
