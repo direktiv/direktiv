@@ -29,5 +29,18 @@ export default {
         },
       ],
     },
+    {
+      type: "form",
+      trigger: {
+        type: "button",
+        label: "Some text goes here",
+      },
+      mutation: {
+        id: "my-delete",
+        endpoint: "/api/delete/",
+        method: "DELETE",
+      },
+      blocks: [],
+    },
   ],
 } satisfies DirektivPagesType;

@@ -18,7 +18,7 @@ export type FormType = {
 
 export const Form = z.object({
   type: z.literal("form"),
-  trigger: TriggerBlocks,
+  trigger: z.lazy(() => TriggerBlocks),
   mutation: Mutation,
-  blocks: z.array(AllBlocks),
+  blocks: z.array(z.lazy(() => AllBlocks)),
 }) satisfies z.ZodType<FormType>;
