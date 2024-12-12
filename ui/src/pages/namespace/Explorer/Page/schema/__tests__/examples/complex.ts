@@ -24,37 +24,39 @@ export default {
       ],
       rightBlocks: [
         {
-          type: "text",
-          label: "Some text goes here",
-        },
-      ],
-    },
-    {
-      type: "query-provider",
-      query: {
-        id: "fetching-resources",
-        endpoint: "/api/get/resources",
-      },
-      blocks: [
-        {
-          type: "modal",
-          trigger: {
-            type: "button",
-            label: "open modal",
+          type: "query-provider",
+          query: {
+            id: "fetching-resources",
+            endpoint: "/api/get/resources",
+            queryParams: [
+              {
+                key: "query",
+                value: "my-search-query",
+              },
+            ],
           },
           blocks: [
             {
-              type: "form",
+              type: "modal",
               trigger: {
                 type: "button",
-                label: "delte",
+                label: "open modal",
               },
-              mutation: {
-                id: "my-delete",
-                endpoint: "/api/delete/",
-                method: "DELETE",
-              },
-              blocks: [],
+              blocks: [
+                {
+                  type: "form",
+                  trigger: {
+                    type: "button",
+                    label: "delte",
+                  },
+                  mutation: {
+                    id: "my-delete",
+                    endpoint: "/api/delete/",
+                    method: "DELETE",
+                  },
+                  blocks: [],
+                },
+              ],
             },
           ],
         },
