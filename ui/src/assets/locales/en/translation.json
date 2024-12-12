@@ -82,6 +82,8 @@
           "title": "Delete",
           "fileMsg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
           "directoryMsg": "Are you sure you want to delete <b>{{name}}</b>? All content of this directory will be deleted as well.",
+          "multipleFilesMsg": "Are you sure you want to delete <b>{{count}}</b> files? This cannot be undone.",
+          "allFilesMsg": "Are you sure you want to delete all files? This cannot be undone.",
           "cancelBtn": "Cancel",
           "deleteBtn": "Delete"
         },

@@ -9,6 +9,7 @@ import {
 } from "~/design/Table";
 
 import { BaseFileSchemaType } from "~/api/files/schema";
+import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { Checkbox } from "~/design/Checkbox";
 import { ChevronDown } from "lucide-react";
@@ -40,13 +41,11 @@ const ExplorerPage: FC = () => {
 
   const { parent, isRoot } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState<BaseFileSchemaType[]>([]);
-  // const [deleteMultipleFiles] = useDeleteMultipleFiles();
-
   // we only want to use one dialog component for the whole list,
   // so when the user clicks on the delete button in the list, we
   // set the pointer to that node for the dialog
-  const [deleteNode, setDeleteNode] = useState<BaseFileSchemaType>();
+  const [deleteNodes, setDeleteNodes] = useState<BaseFileSchemaType[]>([]);
+
   const [renameFile, setRenameNode] = useState<BaseFileSchemaType>();
   const [previewNode, setPreviewNode] = useState<BaseFileSchemaType>();
 
@@ -57,14 +56,6 @@ const ExplorerPage: FC = () => {
     () => (data?.type === "directory" && data?.children) || [],
     [data]
   );
-
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log(
-      "Selected Files:",
-      selectedFiles.map((file) => file.path)
-    );
-  }, [selectedFiles]);
 
   const filteredFiles = useMemo(
     () =>
@@ -80,7 +71,7 @@ const ExplorerPage: FC = () => {
 
   useEffect(() => {
     if (dialogOpen === false) {
-      setDeleteNode(undefined);
+      setDeleteNodes([]);
       setRenameNode(undefined);
       setPreviewNode(undefined);
     }
@@ -104,23 +95,22 @@ const ExplorerPage: FC = () => {
   const existingNames = children?.map((file) => getFilenameFromPath(file.path));
 
   const handleCheckboxChange = (path: string) => {
-    setSelectedFiles((prev) => {
-      if (prev.find((file) => file.path === path)) {
+    setDeleteNodes((prev) => {
+      const isSelected = prev.some((file) => file.path === path);
+      if (isSelected) {
         return prev.filter((file) => file.path !== path);
       }
+
       const fileToAdd = children.find((file) => file.path === path);
-      if (fileToAdd) {
-        return [...prev, fileToAdd];
-      }
-      return prev;
+      return fileToAdd ? [...prev, fileToAdd] : prev;
     });
   };
 
   const handleSelectAll = () => {
-    if (selectedFiles.length === children.length) {
-      setSelectedFiles([]);
+    if (deleteNodes.length === children.length) {
+      setDeleteNodes([]);
     } else {
-      setSelectedFiles(children);
+      setDeleteNodes(children);
     }
   };
 
@@ -136,7 +126,7 @@ const ExplorerPage: FC = () => {
                   <Checkbox
                     className="ml-3"
                     onCheckedChange={handleSelectAll}
-                    checked={selectedFiles.length === children.length}
+                    checked={deleteNodes.length === children.length}
                   />
                   <ChevronDown className="ml-1 mr-2 size-4" />
                   {!isEmptyDirectory && (
@@ -147,6 +137,16 @@ const ExplorerPage: FC = () => {
                       }}
                     />
                   )}
+                  <Button
+                    variant="destructive"
+                    disabled={deleteNodes.length === 0}
+                    onClick={() => {
+                      setDeleteNodes(deleteNodes);
+                      setDialogOpen(true);
+                    }}
+                  >
+                    Delete Selected
+                  </Button>
                 </div>
                 {!isRoot && (
                   <LevelUpNavigation
@@ -166,11 +166,14 @@ const ExplorerPage: FC = () => {
                     key={item.path}
                     namespace={namespace}
                     file={item}
-                    onDeleteClicked={setDeleteNode}
+                    onDeleteClicked={(file) => {
+                      setDeleteNodes([file]);
+                      setDialogOpen(true);
+                    }}
                     onRenameClicked={setRenameNode}
                     onPreviewClicked={setPreviewNode}
                     handleCheckboxChange={handleCheckboxChange}
-                    selectedFiles={selectedFiles}
+                    selectedFiles={deleteNodes}
                   />
                 ))}
               </TableBody>
@@ -181,11 +184,13 @@ const ExplorerPage: FC = () => {
               )}
             >
               {previewNode && <FileViewer file={previewNode} />}
-              {deleteNode && (
+              {deleteNodes.length > 0 && (
                 <Delete
-                  file={deleteNode}
+                  files={deleteNodes}
+                  totalFiles={children.length}
                   close={() => {
                     setDialogOpen(false);
+                    setDeleteNodes([]);
                   }}
                 />
               )}
