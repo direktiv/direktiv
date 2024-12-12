@@ -2,7 +2,7 @@
 
 direktiv helm chart
 
-![Version: 0.1.28](https://img.shields.io/badge/Version-0.1.28-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.8.8](https://img.shields.io/badge/AppVersion-v0.8.8-informational?style=flat-square)
+![Version: 0.1.30](https://img.shields.io/badge/Version-0.1.30-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.8.10](https://img.shields.io/badge/AppVersion-v0.8.10-informational?style=flat-square)
 
 ## Additional Information
 
@@ -105,6 +105,7 @@ $ helm install direktiv direktiv/direktiv
 |------------|------|---------|
 | https://fluent.github.io/helm-charts | fluent-bit | 0.46.7 |
 | https://kubernetes.github.io/ingress-nginx | ingress-nginx | 4.9.0 |
+| https://nats-io.github.io/k8s/helm/charts | nats | 1.2.6 |
 
 ## Values
 
@@ -130,24 +131,11 @@ $ helm install direktiv direktiv/direktiv
 | flow.extraVolumes | string | `nil` | extra volumes in flow pod |
 | flow.max_scale | int | `5` | Knative max scale |
 | flow.replicas | int | `1` | number of flow replicas |
-| fluent-bit | object | `{"config":{"filters":"[FILTER]\n    Name                    rewrite_tag\n    Match                   input\n    Rule                    $log ^.*\"track\":\"([^\"]*).*$ flow.$1 true\n[FILTER]\n    Name parser\n    Match *\n    Parser json\n    Key_Name log\n    Reserve_Data on\n","inputs":"[INPUT]\n    Name                    tail\n    Path                    /var/log/containers/*flow*.log,/var/log/containers/*direktiv-sidecar*.log\n    Mem_Buf_Limit           5MB\n    Skip_Long_Lines         Off\n    Tag                     input\n    multiline.parser        cri, docker\n    Refresh_Interval        1\n    Buffer_Max_Size         64k\n","outputs":"[OUTPUT]\n    name                    pgsql\n    match                   flow.*\n    port                    ${PG_PORT}\n    table                   fluentbit\n    user                    ${PG_USER}\n    database                ${PG_DB_NAME}\n    host                    ${PG_HOST}\n    password                ${PG_PASSWORD}\n"},"envFrom":[{"secretRef":{"name":"direktiv-fluentbit"}}],"install":true}` | fluentbit configuration |
-| fluentbit.extraConfig | string | `""` | postgres for direktiv services Append extra output to fluentbit configuration. There are two log types: application (system), functions (workflows) these can be matched to new outputs. |
-| frontend | object | `{"additionalAnnotations":{},"additionalLabels":{},"additionalSecEnvs":{},"backend":{"skip-verify":false,"url":null},"certificate":null,"command":"","extraConfig":null,"extraVariables":[],"image":"direktiv/frontend","logging":{"debug":true,"json":true},"logos":{"favicon":null,"icon-dark":null,"icon-light":null,"logo-dark":null,"logo-light":null},"replicas":1,"resources":{"limits":{"memory":"512Mi"},"requests":{"memory":"128Mi"}},"tag":""}` | Frontend configuration |
-| frontend.additionalAnnotations | object | `{}` | Additional Annotations for frontend |
-| frontend.additionalLabels | object | `{}` | Additional Labels for frontend |
-| frontend.additionalSecEnvs | object | `{}` | Additional secret environment variables |
-| frontend.backend | object | `{"skip-verify":false,"url":null}` | Backend configuration for the workflow engine |
-| frontend.backend.skip-verify | bool | `false` | Skip verifing TLS certificate if TLS is configured |
-| frontend.backend.url | string | `nil` | Defaults to engine in the same namespace |
-| frontend.certificate | string | `nil` | certificate secret for frontend |
-| frontend.logging | object | `{"debug":true,"json":true}` | Logging setting for the UI |
-| frontend.logging.debug | bool | `true` | Enable/Disable debug mode |
-| frontend.logging.json | bool | `true` | Logging in JSON or console format |
-| frontend.logos.favicon | string | `nil` | Path to favicon |
-| frontend.logos.icon-dark | string | `nil` | Path to small, dark icon |
-| frontend.logos.icon-light | string | `nil` | Path to small, light icon |
-| frontend.logos.logo-dark | string | `nil` | Path to dark logo |
-| frontend.logos.logo-light | string | `nil` | Path to light logo |
+| fluent-bit.config.filters | string | `"[FILTER]\n    Name                    rewrite_tag\n    Match                   input\n    Rule                    $log ^.*\"track\":\"([^\"]*).*$ flow.$1 true\n[FILTER]\n    Name parser\n    Match *\n    Parser json\n    Key_Name log\n    Reserve_Data on\n"` |  |
+| fluent-bit.config.inputs | string | `"[INPUT]\n    Name                    tail\n    Path                    /var/log/containers/*flow*.log,/var/log/containers/*direktiv-sidecar*.log\n    Mem_Buf_Limit           5MB\n    Skip_Long_Lines         Off\n    Tag                     input\n    multiline.parser        cri, docker\n    Refresh_Interval        1\n    Buffer_Max_Size         64k\n"` |  |
+| fluent-bit.config.outputs | string | `"[OUTPUT]\n    name                    pgsql\n    match                   flow.*\n    port                    ${PG_PORT}\n    table                   fluentbit\n    user                    ${PG_USER}\n    database                ${PG_DB_NAME}\n    host                    ${PG_HOST}\n    password                ${PG_PASSWORD}\n"` |  |
+| fluent-bit.envFrom[0].secretRef.name | string | `"direktiv-fluentbit"` |  |
+| fluent-bit.install | bool | `true` |  |
 | functions.affinity | object | `{}` |  |
 | functions.extraContainers | list | `[]` | extra containers for tasks and knative pods |
 | functions.extraContainersPod | list | `[]` | extra containers for function controller, e.g. database containers for google cloud or logging |
@@ -170,22 +158,26 @@ $ helm install direktiv direktiv/direktiv
 | ingress.class | string | `"nginx"` | Ingress class |
 | ingress.enabled | bool | `true` |  |
 | ingress.host | string | `nil` | Host for external services, only required for TLS |
+| nats.config.cluster.enabled | bool | `true` |  |
+| nats.config.cluster.port | int | `6222` |  |
+| nats.config.cluster.replicas | int | `3` |  |
+| nats.config.nats.port | int | `4222` |  |
+| nats.config.nats.tls.enabled | bool | `false` |  |
+| nats.config.routeURLs.k8sClusterDomain | string | `"cluster.local"` |  |
+| nats.config.routeURLs.password | string | `"direktiv"` |  |
+| nats.config.routeURLs.useFQDN | bool | `false` |  |
+| nats.config.routeURLs.user | string | `"direktiv"` |  |
+| nats.config.tls.cert | string | `"tls.crt"` |  |
+| nats.config.tls.dir | string | `"/etc/nats-certs/cluster"` |  |
+| nats.config.tls.enabled | bool | `false` |  |
+| nats.config.tls.key | string | `"tls.key"` |  |
+| nats.config.tls.secretName | string | `nil` |  |
+| nats.install | bool | `false` |  |
 | no_proxy | string | `""` | no proxy proxy settings |
 | nodeSelector | object | `{}` |  |
 | opentelemetry.agentconfig | string | `"receivers:\n  otlp:\n    protocols:\n      grpc:\n      http:\nexporters:\n  otlp:\n    endpoint: \"tempo.grafana.svc:4317\" # otel receivers grpc port for expl. tempo \n    insecure: true\n    sending_queue:\n      num_consumers: 4\n      queue_size: 100\n    retry_on_failure:\n      enabled: true\n  logging:\n    loglevel: debug\nprocessors:\n  batch:\n  memory_limiter:\n    # Same as --mem-ballast-size-mib CLI argument\n    ballast_size_mib: 165\n    # 80% of maximum memory up to 2G\n    limit_mib: 400\n    # 25% of limit up to 2G\n    spike_limit_mib: 100\n    check_interval: 5s\nextensions:\n  zpages: {}\nservice:\n  extensions: [zpages]\n  pipelines:\n    traces:\n      receivers: [otlp]\n      processors: [memory_limiter, batch]\n      exporters: [logging, otlp]\n"` | config for sidecar agent |
 | opentelemetry.enabled | bool | `false` | installs opentelemtry agent as sidecar in flow |
 | opentelemetry.image | string | `"otel/opentelemetry-collector-dev:latest"` |  |
-| prometheus.alertmanager.enabled | bool | `false` |  |
-| prometheus.backendName | string | `"prom-backend-server"` |  |
-| prometheus.global.evaluation_interval | string | `"1m"` |  |
-| prometheus.global.scrape_interval | string | `"1m"` |  |
-| prometheus.install | bool | `true` |  |
-| prometheus.kube-state-metrics.enabled | bool | `false` |  |
-| prometheus.prometheus-node-exporter.enabled | bool | `false` |  |
-| prometheus.prometheus-pushgateway.enabled | bool | `false` |  |
-| prometheus.server.persistentVolume.enabled | bool | `false` |  |
-| prometheus.server.retention | string | `"96h"` |  |
-| prometheus.serviceAccounts.server.create | bool | `true` |  |
 | pullPolicy | string | `"Always"` | Container pull policy. |
 | registry | string | `"docker.io"` | Container registry from which to pull direktiv. |
 | requestTimeout | int | `7200` | max request timeouts in seconds. Used in Knative and the ingress controller if enabled. |
