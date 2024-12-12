@@ -167,14 +167,11 @@ const VariablesList = ({ path }: { path: string }) => {
                         onEdit={() => setEditItem(item)}
                         onDownload={() => downloadVar(item.id)}
                         onDelete={() => undefined}
+                        onSelect={() => handleCheckboxChange(item)}
+                        isSelected={selectedItems.some(
+                          (selected) => selected.id === item.id
+                        )}
                       >
-                        <Checkbox
-                          className="mr-2"
-                          checked={selectedItems.some(
-                            (selected) => selected.id === item.id
-                          )}
-                          onCheckedChange={() => handleCheckboxChange(item)}
-                        />
                         {item.name}
                       </ItemRow>
                     ))}
