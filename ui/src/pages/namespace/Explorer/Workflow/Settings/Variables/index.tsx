@@ -30,7 +30,7 @@ const VariablesList = ({ path }: { path: string }) => {
   const [editItem, setEditItem] = useState<VarSchemaType>();
   const [createItem, setCreateItem] = useState(false);
   const [search, setSearch] = useState("");
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [selectedItems, setSelectedItems] = useState<VarSchemaType[]>([]);
   const isSearch = search.length > 0;
 
   const { data: variables, isFetched } = useVars({ workflowPath: path });
@@ -73,11 +73,11 @@ const VariablesList = ({ path }: { path: string }) => {
 
   if (!isFetched) return null;
 
-  const handleCheckboxChange = (id: string) => {
+  const handleCheckboxChange = (item: VarSchemaType) => {
     setSelectedItems((prevSelected) =>
-      prevSelected.includes(id)
-        ? prevSelected.filter((itemId) => itemId !== id)
-        : [...prevSelected, id]
+      prevSelected.some((selected) => selected.id === item.id)
+        ? prevSelected.filter((selected) => selected.id !== item.id)
+        : [...prevSelected, item]
     );
   };
 
@@ -85,7 +85,7 @@ const VariablesList = ({ path }: { path: string }) => {
     if (selectedItems.length === filteredItems.length) {
       setSelectedItems([]);
     } else {
-      setSelectedItems(filteredItems.map((item) => item.id));
+      setSelectedItems(filteredItems);
     }
   };
 
@@ -169,8 +169,10 @@ const VariablesList = ({ path }: { path: string }) => {
                       >
                         <Checkbox
                           className="mr-2"
-                          checked={selectedItems.includes(item.id)}
-                          onCheckedChange={() => handleCheckboxChange(item.id)}
+                          checked={selectedItems.some(
+                            (selected) => selected.id === item.id
+                          )}
+                          onCheckedChange={() => handleCheckboxChange(item)}
                         />
                         {item.name}
                       </ItemRow>
@@ -216,20 +218,12 @@ const VariablesList = ({ path }: { path: string }) => {
 
       {selectedItems.length > 0 && path && (
         <Delete
-          name={
-            variables?.data?.find((v) => v.id === selectedItems[0])?.name || ""
-          }
-          items={selectedItems.map((id) => {
-            const variable = variables?.data?.find((v) => v.id === id);
-            return variable?.name || "";
-          })}
-          totalItems={selectedItems.length}
+          items={selectedItems}
+          totalItems={(variables?.data || []).length}
           onConfirm={() => {
-            const selectedVariables =
-              variables?.data?.filter((v) => selectedItems.includes(v.id)) ||
-              [];
-
-            deleteWorkflowVariable({ variables: selectedVariables });
+            deleteWorkflowVariable({ variables: selectedItems });
+            setSelectedItems([]);
+            setDialogOpen(false);
           }}
         />
       )}
