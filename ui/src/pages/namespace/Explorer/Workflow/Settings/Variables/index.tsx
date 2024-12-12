@@ -1,14 +1,16 @@
+import { ChevronDown, FileJson, Trash } from "lucide-react";
 import { NoResult, Table, TableBody } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
 import { useEffect, useMemo, useState } from "react";
 
+import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import { Checkbox } from "~/design/Checkbox";
 import Create from "./Create";
 import CreateItemButton from "~/pages/namespace/Settings/components/CreateItemButton";
 import Delete from "~/pages/namespace/Settings/Variables/Delete";
 import { Dialog } from "~/design/Dialog";
 import Edit from "./Edit";
-import { FileJson } from "lucide-react";
 import Input from "~/design/Input";
 import ItemRow from "~/pages/namespace/Settings/components/ItemRow";
 import PaginationProvider from "~/components/PaginationProvider";
@@ -25,10 +27,10 @@ const VariablesList = ({ path }: { path: string }) => {
   const { t } = useTranslation();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteItem, setDeleteItem] = useState<VarSchemaType>();
   const [editItem, setEditItem] = useState<VarSchemaType>();
   const [createItem, setCreateItem] = useState(false);
   const [search, setSearch] = useState("");
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const isSearch = search.length > 0;
 
   const { data: variables, isFetched } = useVars({ workflowPath: path });
@@ -36,6 +38,7 @@ const VariablesList = ({ path }: { path: string }) => {
   const { mutate: deleteWorkflowVariable } = useDeleteVar({
     onSuccess: () => {
       setDialogOpen(false);
+      setSelectedItems([]);
     },
   });
 
@@ -62,13 +65,29 @@ const VariablesList = ({ path }: { path: string }) => {
 
   useEffect(() => {
     if (dialogOpen === false) {
-      setDeleteItem(undefined);
+      setSelectedItems([]);
       setCreateItem(false);
       setEditItem(undefined);
     }
   }, [dialogOpen]);
 
   if (!isFetched) return null;
+
+  const handleCheckboxChange = (id: string) => {
+    setSelectedItems((prevSelected) =>
+      prevSelected.includes(id)
+        ? prevSelected.filter((itemId) => itemId !== id)
+        : [...prevSelected, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedItems.length === filteredItems.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(filteredItems.map((item) => item.id));
+    }
+  };
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -84,7 +103,18 @@ const VariablesList = ({ path }: { path: string }) => {
           totalPages,
         }) => (
           <>
-            <div className="mb-4 flex flex-col gap-4 sm:flex-row">
+            <div className="mb-4 flex flex-col gap-4 sm:flex-row items-center">
+              <div className="flex items-center">
+                <Checkbox
+                  className="ml-3"
+                  onCheckedChange={handleSelectAll}
+                  checked={
+                    selectedItems.length === filteredItems.length &&
+                    filteredItems.length > 0
+                  }
+                />
+                <ChevronDown className=" mr-2 ml-1 size-4" />
+              </div>
               <h3 className="flex grow items-center gap-x-2 pb-2 pt-1 font-bold">
                 <FileJson className="h-5" />
                 {t(
@@ -110,6 +140,20 @@ const VariablesList = ({ path }: { path: string }) => {
                   "pages.explorer.tree.workflow.settings.variables.list.createBtn"
                 )}
               </CreateItemButton>
+              <div className="ml-auto">
+                <Button
+                  variant="destructive"
+                  disabled={selectedItems.length === 0}
+                  onClick={() => {
+                    setDialogOpen(true);
+                  }}
+                >
+                  {t(
+                    "pages.explorer.tree.workflow.settings.variables.list.deleteSelected"
+                  )}
+                  <Trash className="ml-2 size-4" />
+                </Button>
+              </div>
             </div>
             <Card className="mb-4">
               {currentItems.length ? (
@@ -119,10 +163,15 @@ const VariablesList = ({ path }: { path: string }) => {
                       <ItemRow
                         item={item}
                         key={i}
-                        onDelete={setDeleteItem}
                         onEdit={() => setEditItem(item)}
                         onDownload={() => downloadVar(item.id)}
+                        onDelete={() => undefined}
                       >
+                        <Checkbox
+                          className="mr-2"
+                          checked={selectedItems.includes(item.id)}
+                          onCheckedChange={() => handleCheckboxChange(item.id)}
+                        />
                         {item.name}
                       </ItemRow>
                     ))}
@@ -165,14 +214,22 @@ const VariablesList = ({ path }: { path: string }) => {
         )}
       </PaginationProvider>
 
-      {deleteItem && path && (
+      {selectedItems.length > 0 && path && (
         <Delete
-          name={deleteItem.name}
+          name={
+            variables?.data?.find((v) => v.id === selectedItems[0])?.name || ""
+          }
+          items={selectedItems.map((id) => {
+            const variable = variables?.data?.find((v) => v.id === id);
+            return variable?.name || "";
+          })}
+          totalItems={selectedItems.length}
           onConfirm={() => {
-            deleteWorkflowVariable({
-              variable: deleteItem,
-            });
-            setDeleteItem(undefined);
+            const selectedVariables =
+              variables?.data?.filter((v) => selectedItems.includes(v.id)) ||
+              [];
+
+            deleteWorkflowVariable({ variables: selectedVariables });
           }}
         />
       )}

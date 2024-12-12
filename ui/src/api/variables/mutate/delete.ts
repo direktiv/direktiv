@@ -10,17 +10,29 @@ import { useTranslation } from "react-i18next";
 import { varKeys } from "..";
 
 const deleteVar = apiFactory({
-  url: ({ namespace, variableID }: { namespace: string; variableID: string }) =>
-    `/api/v2/namespaces/${namespace}/variables/${variableID}`,
+  url: ({
+    namespace,
+    variableID,
+    variableIDs,
+  }: {
+    namespace: string;
+    variableID?: string;
+    variableIDs?: string[];
+  }) =>
+    variableIDs
+      ? `/api/v2/namespaces/${namespace}/variables?ids=${variableIDs.join(",")}`
+      : `/api/v2/namespaces/${namespace}/variables/${variableID}`,
   method: "DELETE",
   schema: VarDeletedSchema,
 });
 
+type DeleteVarInput =
+  | { variable: VarSchemaType }
+  | { variables: VarSchemaType[] };
+
 export const useDeleteVar = ({
   onSuccess,
-}: {
-  onSuccess?: () => void;
-} = {}) => {
+}: { onSuccess?: () => void } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -31,24 +43,40 @@ export const useDeleteVar = ({
     throw new Error("namespace is undefined");
   }
 
-  const mutationFn = ({ variable }: { variable: VarSchemaType }) =>
-    deleteVar({
-      apiKey: apiKey ?? undefined,
-      urlParams: {
-        namespace,
-        variableID: variable.id,
-      },
-    });
+  const mutationFn = (input: DeleteVarInput) => {
+    if ("variable" in input) {
+      return deleteVar({
+        apiKey: apiKey ?? undefined,
+        urlParams: {
+          namespace,
+          variableID: input.variable.id,
+        },
+      });
+    } else {
+      if (!input.variables?.length) {
+        throw new Error("No variables provided for deletion");
+      }
+      return deleteVar({
+        apiKey: apiKey ?? undefined,
+        urlParams: {
+          namespace,
+          variableIDs: input.variables.map((v) => v.id),
+        },
+      });
+    }
+  };
 
   return useMutationWithPermissions({
     mutationFn,
-    onSuccess: (_, variables) => {
+    onSuccess: (_, input) => {
+      const variables =
+        "variable" in input ? [input.variable] : input.variables;
       queryClient.invalidateQueries({
         queryKey: varKeys.varList(namespace, {
           apiKey: apiKey ?? undefined,
           workflowPath:
-            variables.variable.type === "workflow-variable"
-              ? variables.variable.reference
+            variables[0]?.type === "workflow-variable"
+              ? variables[0].reference
               : undefined,
         }),
       });
@@ -56,7 +84,12 @@ export const useDeleteVar = ({
         title: t("api.variables.mutate.deleteVariable.success.title"),
         description: t(
           "api.variables.mutate.deleteVariable.success.description",
-          { name: variables.variable.name }
+          {
+            name:
+              variables.length > 1
+                ? `${variables.length} variables`
+                : variables[0]?.name || "",
+          }
         ),
         variant: "success",
       });
