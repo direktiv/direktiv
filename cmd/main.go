@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/direktiv/direktiv/cmd/cli"
+	_ "github.com/direktiv/direktiv/pkg/ee"
 	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/auth"
 	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/inbound"
 	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/outbound"
