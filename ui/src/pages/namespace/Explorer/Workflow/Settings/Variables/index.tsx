@@ -1,4 +1,4 @@
-import { ChevronDown, FileJson, Trash } from "lucide-react";
+import { FileJson, Trash } from "lucide-react";
 import { NoResult, Table, TableBody } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
 import { useEffect, useMemo, useState } from "react";
@@ -104,59 +104,60 @@ const VariablesList = ({ path }: { path: string }) => {
         }) => (
           <>
             <div className="mb-4 flex flex-col gap-4 sm:flex-row items-center">
-              <div className="flex items-center">
-                <Checkbox
-                  className="ml-3"
-                  onCheckedChange={handleSelectAll}
-                  disabled={filteredItems.length === 0}
-                  checked={
-                    selectedItems.length === filteredItems.length &&
-                    filteredItems.length > 0
-                  }
-                />
-                <ChevronDown className=" mr-2 ml-1 size-4" />
-              </div>
               <h3 className="flex grow items-center gap-x-2 pb-2 pt-1 font-bold">
                 <FileJson className="h-5" />
                 {t(
                   "pages.explorer.tree.workflow.settings.variables.list.title"
                 )}
               </h3>
-              <Input
-                className="sm:w-60"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  goToFirstPage();
-                }}
-                placeholder={t(
-                  "pages.settings.variables.list.searchPlaceholder"
-                )}
-              />
-              <CreateItemButton
-                data-testid="variable-create"
-                onClick={() => setCreateItem(true)}
-              >
-                {t(
-                  "pages.explorer.tree.workflow.settings.variables.list.createBtn"
-                )}
-              </CreateItemButton>
-              <div className="ml-auto">
-                <Button
-                  variant="destructive"
-                  disabled={selectedItems.length === 0}
-                  onClick={() => {
-                    setDialogOpen(true);
-                  }}
-                >
-                  {t(
-                    "pages.explorer.tree.workflow.settings.variables.list.deleteSelected"
-                  )}
-                  <Trash className="ml-2 size-4" />
-                </Button>
-              </div>
             </div>
             <Card className="mb-4">
+              <div className="flex justify-between gap-5 p-2 border-b border-gray-5 dark:border-gray-dark-5">
+                <div className="flex items-center">
+                  <Checkbox
+                    className="ml-1"
+                    onCheckedChange={handleSelectAll}
+                    disabled={filteredItems.length === 0}
+                    checked={
+                      selectedItems.length === filteredItems.length &&
+                      filteredItems.length > 0
+                    }
+                  />
+                </div>
+                <div className="mr-auto">
+                  <Button
+                    variant="destructive"
+                    disabled={selectedItems.length === 0}
+                    onClick={() => {
+                      setDialogOpen(true);
+                    }}
+                  >
+                    {t(
+                      "pages.explorer.tree.workflow.settings.variables.list.deleteSelected"
+                    )}
+                    <Trash className="ml-2 size-4" />
+                  </Button>
+                </div>
+                <Input
+                  className="sm:w-60"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    goToFirstPage();
+                  }}
+                  placeholder={t(
+                    "pages.settings.variables.list.searchPlaceholder"
+                  )}
+                />
+                <CreateItemButton
+                  data-testid="variable-create"
+                  onClick={() => setCreateItem(true)}
+                >
+                  {t(
+                    "pages.explorer.tree.workflow.settings.variables.list.createBtn"
+                  )}
+                </CreateItemButton>
+              </div>
               {currentItems.length ? (
                 <Table>
                   <TableBody>
