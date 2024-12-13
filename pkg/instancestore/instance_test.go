@@ -190,7 +190,7 @@ func assertInstanceStoreCorrectInstanceDataCreation(t *testing.T, is instancesto
 func Test_sqlInstanceStore_CreateInstanceData(t *testing.T) {
 	server := uuid.New()
 
-	db, err := database.NewTestDataStore(t)
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
@@ -203,7 +203,7 @@ func Test_sqlInstanceStore_CreateInstanceData(t *testing.T) {
 		name: "validCase",
 		args: &instancestore.CreateInstanceDataArgs{
 			ID:             id,
-			NamespaceID:    uuid.New(),
+			NamespaceID:    ns.ID,
 			RootInstanceID: id,
 			Server:         server,
 			Invoker:        "api",
