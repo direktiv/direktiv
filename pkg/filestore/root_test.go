@@ -13,9 +13,9 @@ import (
 )
 
 func TestRoot_CreateFile(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 
@@ -121,9 +121,9 @@ func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, rootID uu
 }
 
 func TestRoot_CorrectReadDirectory(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 
@@ -184,9 +184,9 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 }
 
 func TestRoot_RenamePath(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 

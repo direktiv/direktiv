@@ -67,9 +67,9 @@ func assertFileStoreCorrectRootDeletion(t *testing.T, fs filestore.FileStore, id
 }
 
 func Test_sqlFileStore_CreateRoot(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 
@@ -89,9 +89,9 @@ func Test_sqlFileStore_CreateRoot(t *testing.T) {
 }
 
 func Test_sqlFileStore_ListingAfterCreate(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 

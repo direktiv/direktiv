@@ -12,9 +12,9 @@ import (
 )
 
 func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 
@@ -91,9 +91,9 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 }
 
 func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 

@@ -15,9 +15,9 @@ import (
 )
 
 func setupEventHistoryStore(t *testing.T) (datastore.EventHistoryStore, uuid.UUID, string) {
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unexpected NewMockGorm() error: %v", err)
+		t.Fatalf("unexpected NewTestDataStore() error: %v", err)
 	}
 
 	ns := uuid.New()

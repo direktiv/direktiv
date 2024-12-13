@@ -38,9 +38,9 @@ func assertInstanceStoreCorrectGetMost(t *testing.T, is instancestore.Store, arg
 func TestInstanceDataQuery_sqlInstanceStore_GetMost(t *testing.T) {
 	server := uuid.New()
 
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	instances := instancestoresql.NewSQLInstanceStore(db)
 
@@ -109,9 +109,9 @@ func assertInstanceStoreCorrectGetSummary(t *testing.T, is instancestore.Store, 
 func TestInstanceDataQuery_sqlInstanceStore_GetSummary(t *testing.T) {
 	server := uuid.New()
 
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	instances := instancestoresql.NewSQLInstanceStore(db)
 

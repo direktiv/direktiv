@@ -11,9 +11,9 @@ import (
 )
 
 func Test_CorrectSetPath(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 
@@ -178,9 +178,9 @@ func assertAllPathsInRoot(t *testing.T, fs filestore.FileStore, rootID uuid.UUID
 }
 
 func Test_UpdateFile(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 

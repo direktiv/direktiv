@@ -10,9 +10,9 @@ import (
 )
 
 func Test_Secrets(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 	err = ds.Secrets().Set(context.Background(), &datastore.Secret{

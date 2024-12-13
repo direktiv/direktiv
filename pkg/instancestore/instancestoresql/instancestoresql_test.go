@@ -13,7 +13,7 @@ import (
 )
 
 func Test_NewSQLInstanceStore(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
 		t.Fatal(err)
 	}

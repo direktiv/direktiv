@@ -13,9 +13,9 @@ import (
 
 func Test_TopicAddGet(t *testing.T) {
 	// Create a mock database
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unexpected NewMockGorm() error: %v", err)
+		t.Fatalf("unexpected NewTestDataStore() error: %v", err)
 	}
 
 	// Create a new SQL data store

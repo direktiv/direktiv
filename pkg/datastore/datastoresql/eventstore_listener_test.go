@@ -52,9 +52,9 @@ func testUpdate(t *testing.T) {
 
 func testPaginationAndBoundaryCheck(t *testing.T) {
 	ns := uuid.New()
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unexpected NewMockGorm() error = %v", err)
+		t.Fatalf("unexpected NewTestDataStore() error = %v", err)
 	}
 	store := datastoresql.NewSQLStore(db, "some key")
 	listeners := store.EventListener()
@@ -123,9 +123,9 @@ func testDeleteByWorkflow(t *testing.T) {
 	ns := uuid.New()
 	eID := uuid.New()
 	wf := uuid.New()
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unexpected NewMockGorm() error = %v", err)
+		t.Fatalf("unexpected NewTestDataStore() error = %v", err)
 	}
 	store := datastoresql.NewSQLStore(db, "some key")
 	listeners := store.EventListener()
@@ -161,9 +161,9 @@ func testDeleteByWorkflow(t *testing.T) {
 func setupTest(t *testing.T) (datastore.EventListenerStore, *datastore.EventListener, uuid.UUID, string) {
 	ns := uuid.New()
 	nsName := ns.String()
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unexpected NewMockGorm() error = %v", err)
+		t.Fatalf("unexpected NewTestDataStore() error = %v", err)
 	}
 	listenerStore := datastoresql.NewSQLStore(db, "some key").EventListener()
 
