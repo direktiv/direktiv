@@ -136,3 +136,101 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 		EndpointFile: *res,
 	}
 }
+
+// TODO test convert here.
+func ParseOpenAPIPathFile(ns string, filePath string, data []byte) Endpoint {
+	res := &PathItem{}
+	err := yaml.Unmarshal(data, res)
+	if err != nil {
+		return Endpoint{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{err.Error()},
+		}
+	}
+	if filePath != "" {
+		filePath = path.Clean("/" + filePath)
+	}
+	apiVersion, _ := res.Extensions["direktiv"].(string)
+	if !strings.HasPrefix(apiVersion, "api_path/v1") {
+		return Endpoint{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{"invalid api path version"},
+		}
+	}
+	plugins, ok := res.Extensions["plugins"].(PluginsConfig)
+	if !ok {
+		return Endpoint{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{"missing plugin entry"},
+		}
+	}
+	if plugins.Target.Typ == "" {
+		return Endpoint{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{"no target plugin found"},
+		}
+	}
+	allowAnonymous, _ := res.Extensions["allow-anonymous"].(bool)
+	if !allowAnonymous && len(plugins.Auth) == 0 {
+		return Endpoint{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{"no auth plugin configured but 'allow_anonymous' set true"},
+		}
+	}
+
+	timeout, _ := res.Extensions["timeout"].(int)
+	if !allowAnonymous && len(plugins.Auth) == 0 {
+		return Endpoint{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{"no auth plugin configured but 'allow_anonymous' set true"},
+		}
+	}
+
+	methods := []string{}
+	if res.Delete != nil {
+		methods = append(methods, "delete")
+	}
+	if res.Connect != nil {
+		methods = append(methods, "connect")
+	}
+	if res.Get != nil {
+		methods = append(methods, "get")
+	}
+	if res.Head != nil {
+		methods = append(methods, "head")
+	}
+	if res.Options != nil {
+		methods = append(methods, "options")
+	}
+	if res.Patch != nil {
+		methods = append(methods, "patch")
+	}
+	if res.Post != nil {
+		methods = append(methods, "post")
+	}
+	if res.Put != nil {
+		methods = append(methods, "put")
+	}
+	if res.Trace != nil {
+		methods = append(methods, "trace")
+	}
+
+	return Endpoint{
+		Namespace: ns,
+		FilePath:  filePath,
+		EndpointFile: EndpointFile{
+			DirektivAPI:    apiVersion,
+			Path:           filePath,
+			PluginsConfig:  plugins,
+			AllowAnonymous: allowAnonymous,
+			Methods:        methods,
+			Timeout:        timeout, // TODO: timeout via spec?
+		},
+	}
+}
