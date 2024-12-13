@@ -149,7 +149,8 @@
                 "title": "Workflow variables",
                 "createBtn": "Add variable",
                 "emptySearch": "No variable matches your search",
-                "empty": "No variable found"
+                "empty": "No variable found",
+                "deleteSelected": "Delete selected"
               }
             }
           },
@@ -1442,9 +1443,13 @@
           }
         },
         "deleteVariable": {
+          "allItemsMsg": "Are you sure you want to delete <b>all</b> variables?",
+          "multipleItemsMsg": "Are you sure you want to delete <b>{{count}}</b> variables?",
+          "singleItemMsg": "Are you sure you want to delete variable <b>'{{name}}'</b>?",
           "success": {
             "title": "Variable deleted",
-            "description": "Variable {{name}} was deleted."
+            "description": "{{count}} variables have been deleted.",
+            "description_one": "{{count}} variable has been deleted."
           },
           "error": {
             "description": "Could not delete variable 😢"

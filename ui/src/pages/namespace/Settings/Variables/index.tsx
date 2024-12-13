@@ -172,9 +172,10 @@ const VariablesList: FC = () => {
 
       {deleteItem && (
         <Delete
-          name={deleteItem.name}
+          items={[deleteItem]}
+          totalItems={variables?.data?.length ?? 0}
           onConfirm={() => {
-            deleteVar({ variable: deleteItem });
+            deleteVar([deleteItem]);
           }}
         />
       )}
