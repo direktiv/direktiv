@@ -5,6 +5,11 @@ const EnterpriseUserInfo = () => {
   const auth = useAuth();
   const { t } = useTranslation();
   const username = auth?.user?.profile?.preferred_username ?? "";
+
+  if (!username) {
+    return <>{t("components.userMenu.loggedIn")}</>;
+  }
+
   return <>{t("components.userMenu.loggedInAs", { username })}</>;
 };
 
