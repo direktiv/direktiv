@@ -13,13 +13,13 @@ import (
 )
 
 func TestRoot_CreateFile(t *testing.T) {
-	db, err := database.NewTestDataStore(t)
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), "ns1")
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -121,13 +121,13 @@ func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, rootID uu
 }
 
 func TestRoot_CorrectReadDirectory(t *testing.T) {
-	db, err := database.NewTestDataStore(t)
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), "ns1")
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -184,13 +184,13 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 }
 
 func TestRoot_RenamePath(t *testing.T) {
-	db, err := database.NewTestDataStore(t)
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), "ns1")
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}

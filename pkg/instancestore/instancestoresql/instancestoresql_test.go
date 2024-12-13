@@ -13,11 +13,10 @@ import (
 )
 
 func Test_NewSQLInstanceStore(t *testing.T) {
-	db, err := database.NewTestDataStore(t)
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatal(err)
 	}
-	ns := uuid.New()
 	server := uuid.New()
 
 	store := instancestoresql.NewSQLInstanceStore(db)
@@ -36,7 +35,7 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 
 	_, err = store.CreateInstanceData(context.Background(), &instancestore.CreateInstanceDataArgs{
 		ID:             uuid.New(),
-		NamespaceID:    ns,
+		NamespaceID:    ns.ID,
 		RootInstanceID: uuid.New(),
 		Server:         server,
 		Invoker:        "api",
@@ -64,7 +63,7 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 			},
 		},
 	}
-	res, err := store.GetNamespaceInstances(context.Background(), ns, opts)
+	res, err := store.GetNamespaceInstances(context.Background(), ns.ID, opts)
 	if err != nil {
 		t.Error(err)
 		return

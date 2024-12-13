@@ -38,7 +38,7 @@ func assertInstanceStoreCorrectGetMost(t *testing.T, is instancestore.Store, arg
 func TestInstanceDataQuery_sqlInstanceStore_GetMost(t *testing.T) {
 	server := uuid.New()
 
-	db, err := database.NewTestDataStore(t)
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
@@ -51,7 +51,7 @@ func TestInstanceDataQuery_sqlInstanceStore_GetMost(t *testing.T) {
 		name: "validCase",
 		args: &instancestore.CreateInstanceDataArgs{
 			ID:             id,
-			NamespaceID:    uuid.New(),
+			NamespaceID:    ns.ID,
 			RootInstanceID: id,
 			Server:         server,
 			Invoker:        "api",
@@ -109,7 +109,7 @@ func assertInstanceStoreCorrectGetSummary(t *testing.T, is instancestore.Store, 
 func TestInstanceDataQuery_sqlInstanceStore_GetSummary(t *testing.T) {
 	server := uuid.New()
 
-	db, err := database.NewTestDataStore(t)
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
@@ -122,7 +122,7 @@ func TestInstanceDataQuery_sqlInstanceStore_GetSummary(t *testing.T) {
 		name: "validCase",
 		args: &instancestore.CreateInstanceDataArgs{
 			ID:             id,
-			NamespaceID:    uuid.New(),
+			NamespaceID:    ns.ID,
 			RootInstanceID: id,
 			Server:         server,
 			Invoker:        "api",

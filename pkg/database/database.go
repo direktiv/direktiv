@@ -129,3 +129,18 @@ func newTestPostgres(dsn string) (*gorm.DB, error) {
 
 	return db, nil
 }
+
+func NewTestDataStoreWithNamespace(t *testing.T, namespace string) (*gorm.DB, *datastore.Namespace, error) {
+	db, err := NewTestDataStore(t)
+	if err != nil {
+		return nil, nil, err
+	}
+	ns, err := datastoresql.NewSQLStore(db, "some_secret_key_").Namespaces().Create(context.Background(), &datastore.Namespace{
+		Name: namespace,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return db, ns, nil
+}

@@ -15,15 +15,12 @@ import (
 )
 
 func setupEventHistoryStore(t *testing.T) (datastore.EventHistoryStore, uuid.UUID, string) {
-	db, err := database.NewTestDataStore(t)
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unexpected NewTestDataStore() error: %v", err)
+		t.Fatalf("unexpected NewTestDataStoreWithNamespace() error: %v", err)
 	}
 
-	ns := uuid.New()
-	nsName := ns.String()
-
-	return datastoresql.NewSQLStore(db, "some key").EventHistory(), ns, nsName
+	return datastoresql.NewSQLStore(db, "some_secret_key_").EventHistory(), ns.ID, ns.Name
 }
 
 // func Test_EventStoreAddGet(t *testing.T) {
