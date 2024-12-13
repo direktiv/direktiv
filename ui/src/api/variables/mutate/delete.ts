@@ -61,10 +61,10 @@ export const useDeleteVar = ({
       toast({
         title: t("api.variables.mutate.deleteVariable.success.title"),
         description: t(
-          input.length === 1
-            ? "api.variables.mutate.deleteVariable.success.description_one"
-            : "api.variables.mutate.deleteVariable.success.description",
-          { count: input.length }
+          "api.variables.mutate.deleteVariable.success.description",
+          {
+            count: input.length,
+          }
         ),
         variant: "success",
       });

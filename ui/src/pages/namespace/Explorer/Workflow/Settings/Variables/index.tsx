@@ -125,7 +125,7 @@ const VariablesList = ({ path }: { path: string }) => {
                   />
                 </div>
                 <div className="mr-auto">
-                  {selectedItems.length > 0 && (
+                  {selectedItems.length > 0 && !dialogOpen && (
                     <Button
                       variant="destructive"
                       disabled={selectedItems.length === 0}
