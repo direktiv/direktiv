@@ -223,6 +223,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	isDirektivFile := req.Typ != filestore.FileTypeDirectory && req.Typ != filestore.FileTypeFile
 	var data struct{}
 	if err = yaml.Unmarshal(decodedBytes, &data); err != nil && isDirektivFile {
+		slog.Error("ERROR!", "isDirektivFile", isDirektivFile, "err", err)
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
 			Message: "file data has invalid yaml string",

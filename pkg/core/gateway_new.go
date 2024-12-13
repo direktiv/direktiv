@@ -34,11 +34,11 @@ type PathItem struct {
 }
 
 type Operation struct {
-	Summary     string              `json:"summary,omitempty"      yaml:"summary,omitempty"`
-	Description string              `json:"description,omitempty"  yaml:"description,omitempty"`
-	Parameters  []Parameter         `json:"parameters,omitempty"   yaml:"parameters,omitempty"`
-	RequestBody *RequestBody        `json:"requestBody,omitempty"  yaml:"requestBody,omitempty"`
-	Responses   map[string]Response `json:"responses"              yaml:"responses"`
+	Summary     string              `json:"summary,omitempty"     yaml:"summary,omitempty"`
+	Description string              `json:"description,omitempty" yaml:"description,omitempty"`
+	Parameters  []Parameter         `json:"parameters,omitempty"  yaml:"parameters,omitempty"`
+	RequestBody *RequestBody        `json:"requestBody,omitempty" yaml:"requestBody,omitempty"`
+	Responses   map[string]Response `json:"responses"             yaml:"responses"`
 	// Extensions  map[string]any      `json:"x-extensions,omitempty" yaml:"x-extensions,omitempty"` not supported
 }
 

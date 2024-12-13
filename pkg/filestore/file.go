@@ -26,6 +26,7 @@ var AllFileTypes = []FileType{
 	FileTypeWorkflow,
 	FileTypeEndpoint,
 	FileTypeConsumer,
+	FileTypeApiPath,
 	FileTypeService,
 	FileTypeFile,
 	FileTypeDirectory,

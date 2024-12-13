@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"net/http"
 	"path"
 	"strings"
@@ -152,14 +153,17 @@ func ParseOpenAPIPathFile(ns string, filePath string, data []byte) Endpoint {
 		filePath = path.Clean("/" + filePath)
 	}
 	apiVersion, _ := res.Extensions["direktiv"].(string)
-	if !strings.HasPrefix(apiVersion, "api_path/v1") {
+	if !strings.HasPrefix(apiVersion, "api_path") {
 		return Endpoint{
 			Namespace: ns,
 			FilePath:  filePath,
 			Errors:    []string{"invalid api path version"},
 		}
 	}
-	plugins, ok := res.Extensions["plugins"].(PluginsConfig)
+	fmt.Printf("Plugins field: %+v\n", res.Extensions["plugins"])
+
+	// Retrieve the plugins data (you've already parsed it into a map)
+	pluginsRaw, ok := res.Extensions["plugins"].(map[string]any)
 	if !ok {
 		return Endpoint{
 			Namespace: ns,
@@ -167,30 +171,67 @@ func ParseOpenAPIPathFile(ns string, filePath string, data []byte) Endpoint {
 			Errors:    []string{"missing plugin entry"},
 		}
 	}
-	if plugins.Target.Typ == "" {
-		return Endpoint{
-			Namespace: ns,
-			FilePath:  filePath,
-			Errors:    []string{"no target plugin found"},
+
+	// Initialize PluginsConfig (struct to hold the processed plugins)
+	plugins := PluginsConfig{}
+
+	// Handle 'auth' field
+	if authRaw, exists := pluginsRaw["auth"]; exists {
+		authList, ok := authRaw.([]any)
+		if ok {
+			for _, item := range authList {
+				pluginConfig, ok := item.(map[string]any)
+				if ok {
+					plugins.Auth = append(plugins.Auth, PluginConfig{Config: pluginConfig})
+				}
+			}
 		}
 	}
+
+	// Handle 'inbound' field
+	if inboundRaw, exists := pluginsRaw["inbound"]; exists {
+		inboundList, ok := inboundRaw.([]any)
+		if ok {
+			for _, item := range inboundList {
+				pluginConfig, ok := item.(map[string]any)
+				if ok {
+					plugins.Inbound = append(plugins.Inbound, PluginConfig{Config: pluginConfig})
+				}
+			}
+		}
+	}
+
+	// Handle 'outbound' field
+	if outboundRaw, exists := pluginsRaw["outbound"]; exists {
+		outboundList, ok := outboundRaw.([]any)
+		if ok {
+			for _, item := range outboundList {
+				pluginConfig, ok := item.(map[string]any)
+				if ok {
+					plugins.Outbound = append(plugins.Outbound, PluginConfig{Config: pluginConfig})
+				}
+			}
+		}
+	}
+
+	// Handle 'target' field separately (it’s a single map and needs to be unmarshalled)
+	if targetRaw, exists := pluginsRaw["target"]; exists {
+		targetMap, ok := targetRaw.(map[string]any)
+		if ok {
+			plugins.Target = PluginConfig{Config: targetMap} // Just assign the map for 'target'
+		}
+	}
+
 	allowAnonymous, _ := res.Extensions["allow-anonymous"].(bool)
 	if !allowAnonymous && len(plugins.Auth) == 0 {
 		return Endpoint{
 			Namespace: ns,
 			FilePath:  filePath,
-			Errors:    []string{"no auth plugin configured but 'allow_anonymous' set true"},
+			Errors:    []string{"authentication plugin required but 'allow-anonymous' is false"},
 		}
 	}
 
 	timeout, _ := res.Extensions["timeout"].(int)
-	if !allowAnonymous && len(plugins.Auth) == 0 {
-		return Endpoint{
-			Namespace: ns,
-			FilePath:  filePath,
-			Errors:    []string{"no auth plugin configured but 'allow_anonymous' set true"},
-		}
-	}
 
 	methods := []string{}
 	if res.Delete != nil {

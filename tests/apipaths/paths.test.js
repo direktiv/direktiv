@@ -1,0 +1,524 @@
+import { beforeAll, describe, expect, it } from "@jest/globals";
+
+import common from "../common";
+import request from "../common/request";
+import { retry10 } from "../common/retry";
+
+const testNamespace = "system";
+
+const endpoint1 = `
+get:
+    summary: "Fetch endpoint details"
+    description: "Retrieves example details."
+    responses:
+    "200":
+        description: "Successful response"
+x-extensions:
+    direktiv: "api_path/v1"
+    allow-anonymous: true
+    timeout: 30
+    plugins:
+        auth: []
+        inbound: []
+        target:
+            type: "instant-response"
+            configuration:
+                status_code: 201
+                status_message: "TEST1"
+        outbound: []
+`;
+
+// const endpoint2 = `
+// get:
+//       summary: "Fetch endpoint details"
+//       description: "Retrieves example details."
+//       responses:
+//         '200':
+//           description: "Successful response"
+//       x-extensions:
+//         direktiv: "endpoint/v1"
+//         allow-anonymous: true
+//         plugins:
+//           auth:
+//             - type: "basic-auth"
+//             - type: "key-auth"
+//               configuration:
+//                 key_name: "secret"
+//           target:
+//             type: "instant-response"
+//             configuration:
+//               status_code: 202
+//               status_message: "TEST2"
+// `;
+
+// const endpoint3 = `
+// get:
+//       summary: "Fetch endpoint details"
+//       description: "Retrieves example details."
+//       responses:
+//         '200':
+//           description: "Successful response"
+//       x-extensions:
+//         direktiv: "endpoint/v1"
+//         plugins:
+//           auth:
+//             - type: "key-auth"
+//               configuration:
+//                 key_name: "secret"
+//           target:
+//             type: "instant-response"
+//             configuration:
+//               status_code: 201
+//               status_message: "TEST1"`;
+
+// const endpoint4 = `
+// get:
+//       summary: "Fetch endpoint details"
+//       description: "Retrieves example details."
+//       responses:
+//         '200':
+//           description: "Successful response"
+//       parameters:
+//         - name: "id"
+//           in: "path"
+//           required: true
+//           schema:
+//             type: "string"
+//       x-extensions:
+//         direktiv: "endpoint/v1"
+//         plugins:
+//           auth:
+//             - type: "key-auth"
+//               configuration:
+//                 key_name: "secret"
+//           target:
+//             type: "instant-response"
+//             configuration:
+//               status_code: 201
+//               status_message: "TEST1"`;
+
+// const consumer1 = `
+// direktiv_api: "consumer/v1"
+// username: consumer1
+// password: pwd
+// api_key: key1
+// tags:
+// - tag1
+// groups:
+// - group1`;
+
+// const consumer2 = `
+// direktiv_api: "consumer/v1"
+// username: consumer2
+// password: pwd
+// api_key: key2
+// tags:
+// - tag2
+// groups:
+// - group2`;
+
+describe("Test gateway endpoints on create", () => {
+  beforeAll(common.helpers.deleteAllNamespaces);
+
+  common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+  retry10(`should list all endpoints`, async () => {
+    const listRes = await request(common.config.getDirektivHost()).get(
+      `/api/v2/namespaces/${testNamespace}/gateway/routes`
+    );
+    expect(listRes.statusCode).toEqual(200);
+    expect(listRes.body.data.length).toEqual(0);
+    expect(listRes.body.data).toEqual(expect.arrayContaining([]));
+  });
+});
+
+describe("Test gateway get single endpoint", () => {
+  beforeAll(common.helpers.deleteAllNamespaces);
+
+  common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+  common.helpers.itShouldCreateYamlFile(
+    it,
+    expect,
+    testNamespace,
+    "/",
+    "endpoint1.yaml",
+    "api_path",
+    endpoint1
+  );
+
+  //   common.helpers.itShouldCreateYamlFile(
+  //     it,
+  //     expect,
+  //     testNamespace,
+  //     "/",
+  //     "endpoint2.yaml",
+  //     "api_path",
+  //     endpoint2
+  //   );
+
+  //   common.helpers.itShouldCreateYamlFile(
+  //     it,
+  //     expect,
+  //     testNamespace,
+  //     "/",
+  //     "endpoint3.yaml",
+  //     "api_path",
+  //     endpoint3
+  //   );
+
+  //   common.helpers.itShouldCreateYamlFile(
+  //     it,
+  //     expect,
+  //     testNamespace,
+  //     "/",
+  //     "endpoint4.yaml",
+  //     "api_path",
+  //     endpoint4
+  //   );
+
+  retry10(`should list simple endpoint`, async () => {
+    const listRes = await request(common.config.getDirektivHost()).get(
+      `/api/v2/namespaces/${testNamespace}/gateway/routes?path=/endpoint1`
+    );
+    expect(listRes.statusCode).toEqual(200);
+    expect(listRes.body.data.length).toEqual(1);
+    expect(listRes.body.data[0]).toEqual({
+      allow_anonymous: false,
+      errors: [],
+      warnings: [],
+      server_path: "/ns/system/endpoint1",
+      file_path: "/endpoint1.yaml",
+      methods: ["GET"],
+      path: "/endpoint1",
+      plugins: {
+        auth: [
+          {
+            configuration: { key_name: "secret" },
+            type: "key-auth",
+          },
+        ],
+        target: {
+          configuration: {
+            status_code: 201,
+            status_message: "TEST1",
+          },
+          type: "instant-response",
+        },
+      },
+      timeout: 0,
+    });
+  });
+
+  //   retry10(`should list long path endpoint`, async () => {
+  //     const listRes = await request(common.config.getDirektivHost()).get(
+  //       `/api/v2/namespaces/${testNamespace}/gateway/routes?path=/endpoint3/longer/path`
+  //     );
+  //     expect(listRes.statusCode).toEqual(200);
+  //     expect(listRes.body.data.length).toEqual(1);
+  //     expect(listRes.body.data[0]).toEqual({
+  //       allow_anonymous: false,
+  //       errors: [],
+  //       warnings: [],
+  //       server_path: "/ns/system/endpoint3/longer/path",
+  //       file_path: "/endpoint3.yaml",
+  //       methods: ["GET"],
+  //       path: "/endpoint3/longer/path",
+  //       plugins: {
+  //         auth: [
+  //           {
+  //             configuration: { key_name: "secret" },
+  //             type: "key-auth",
+  //           },
+  //         ],
+  //         target: {
+  //           configuration: {
+  //             status_code: 201,
+  //             status_message: "TEST1",
+  //           },
+  //           type: "instant-response",
+  //         },
+  //       },
+  //       timeout: 0,
+  //     });
+  //   });
+
+  //   retry10(`should list long path endpoint with var`, async () => {
+  //     const listRes = await request(common.config.getDirektivHost()).get(
+  //       `/api/v2/namespaces/${testNamespace}/gateway/routes?path=/endpoint4/longer/path/{id}`
+  //     );
+  //     expect(listRes.statusCode).toEqual(200);
+  //     expect(listRes.body.data.length).toEqual(1);
+  //     expect(listRes.body.data[0]).toEqual({
+  //       allow_anonymous: false,
+  //       errors: [],
+  //       warnings: [],
+  //       server_path: "/ns/system/endpoint4/longer/path/{id}",
+  //       file_path: "/endpoint4.yaml",
+  //       methods: ["GET"],
+  //       path: "/endpoint4/longer/path/{id}",
+  //       plugins: {
+  //         auth: [
+  //           {
+  //             configuration: { key_name: "secret" },
+  //             type: "key-auth",
+  //           },
+  //         ],
+  //         target: {
+  //           configuration: {
+  //             status_code: 201,
+  //             status_message: "TEST1",
+  //           },
+  //           type: "instant-response",
+  //         },
+  //       },
+  //       timeout: 0,
+  //     });
+  //   });
+});
+
+// describe("Test gateway endpoints crud operations", () => {
+//   beforeAll(common.helpers.deleteAllNamespaces);
+
+//   common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+//   common.helpers.itShouldCreateYamlFile(
+//     it,
+//     expect,
+//     testNamespace,
+//     "/",
+//     "endpoint1.yaml",
+//     "api_path",
+//     endpoint1
+//   );
+
+//   common.helpers.itShouldCreateYamlFile(
+//     it,
+//     expect,
+//     testNamespace,
+//     "/",
+//     "endpoint2.yaml",
+//     "api_path",
+//     endpoint2
+//   );
+
+//   common.helpers.itShouldCreateYamlFile(
+//     it,
+//     expect,
+//     testNamespace,
+//     "/",
+//     "consumer1.yaml",
+//     "consumer",
+//     consumer1
+//   );
+
+//   common.helpers.itShouldCreateYamlFile(
+//     it,
+//     expect,
+//     testNamespace,
+//     "/",
+//     "consumer2.yaml",
+//     "consumer",
+//     consumer2
+//   );
+
+//   retry10(`should list all endpoints`, async () => {
+//     const listRes = await request(common.config.getDirektivHost()).get(
+//       `/api/v2/namespaces/${testNamespace}/gateway/routes`
+//     );
+//     expect(listRes.statusCode).toEqual(200);
+//     expect(listRes.body.data.length).toEqual(2);
+//     expect(listRes.body.data).toEqual([
+//       {
+//         allow_anonymous: false,
+//         errors: [],
+//         warnings: [],
+//         server_path: "/ns/system/endpoint1",
+//         file_path: "/endpoint1.yaml",
+//         methods: ["GET"],
+//         path: "/endpoint1",
+//         plugins: {
+//           auth: [
+//             {
+//               configuration: { key_name: "secret" },
+//               type: "key-auth",
+//             },
+//           ],
+//           target: {
+//             configuration: {
+//               status_code: 201,
+//               status_message: "TEST1",
+//             },
+//             type: "instant-response",
+//           },
+//         },
+//         timeout: 0,
+//       },
+//       {
+//         allow_anonymous: true,
+//         errors: [],
+//         warnings: [],
+//         server_path: "/ns/system/endpoint2",
+//         file_path: "/endpoint2.yaml",
+//         methods: ["GET"],
+//         path: "/endpoint2",
+//         plugins: {
+//           auth: [
+//             { type: "basic-auth" },
+//             {
+//               configuration: { key_name: "secret" },
+//               type: "key-auth",
+//             },
+//           ],
+//           target: {
+//             configuration: {
+//               status_code: 202,
+//               status_message: "TEST2",
+//             },
+//             type: "instant-response",
+//           },
+//         },
+//         timeout: 0,
+//       },
+//     ]);
+//   });
+
+//   retry10(`should list all consumers`, async () => {
+//     const listRes = await request(common.config.getDirektivHost()).get(
+//       `/api/v2/namespaces/${testNamespace}/gateway/consumers`
+//     );
+//     expect(listRes.statusCode).toEqual(200);
+//     expect(listRes.body.data.length).toEqual(2);
+
+//     const comp = (a, b) => (a.file_path < b.file_path ? -1 : 1);
+//     expect(listRes.body.data.sort(comp)).toEqual(
+//       [
+//         {
+//           file_path: "/consumer2.yaml",
+//           errors: [],
+//           api_key: "key2",
+//           groups: ["group2"],
+//           password: "pwd",
+//           tags: ["tag2"],
+//           username: "consumer2",
+//         },
+
+//         {
+//           file_path: "/consumer1.yaml",
+//           errors: [],
+//           api_key: "key1",
+//           groups: ["group1"],
+//           password: "pwd",
+//           tags: ["tag1"],
+//           username: "consumer1",
+//         },
+//       ].sort(comp)
+//     );
+//   });
+
+//   common.helpers.itShouldDeleteFile(
+//     it,
+//     expect,
+//     testNamespace,
+//     "/endpoint1.yaml"
+//   );
+//   common.helpers.itShouldDeleteFile(
+//     it,
+//     expect,
+//     testNamespace,
+//     "/consumer1.yaml"
+//   );
+
+//   retry10(`should list one route after delete`, async () => {
+//     const listRes = await request(common.config.getDirektivHost()).get(
+//       `/api/v2/namespaces/${testNamespace}/gateway/routes`
+//     );
+//     expect(listRes.statusCode).toEqual(200);
+//     expect(listRes.body.data.length).toEqual(1);
+//   });
+
+//   retry10(`should list one consumer after delete`, async () => {
+//     const listRes = await request(common.config.getDirektivHost()).get(
+//       `/api/v2/namespaces/${testNamespace}/gateway/consumers`
+//     );
+//     expect(listRes.statusCode).toEqual(200);
+//     expect(listRes.body.data.length).toEqual(1);
+//   });
+// });
+
+// describe("Test availability of gateway endpoints", () => {
+//   beforeAll(common.helpers.deleteAllNamespaces);
+
+//   common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+//   common.helpers.itShouldCreateYamlFile(
+//     it,
+//     expect,
+//     testNamespace,
+//     "/",
+//     "endpoint1.yaml",
+//     "api_path",
+//     endpoint1
+//   );
+
+//   common.helpers.itShouldCreateYamlFile(
+//     it,
+//     expect,
+//     testNamespace,
+//     "/",
+//     "endpoint2.yaml",
+//     "api_path",
+//     endpoint2
+//   );
+
+//   common.helpers.itShouldCreateYamlFile(
+//     it,
+//     expect,
+//     testNamespace,
+//     "/",
+//     "consumer1.yaml",
+//     "consumer",
+//     consumer1
+//   );
+
+//   common.helpers.itShouldCreateYamlFile(
+//     it,
+//     expect,
+//     testNamespace,
+//     "/",
+//     "consumer2.yaml",
+//     "consumer",
+//     consumer2
+//   );
+
+//   retry10(`should not run endpoint without authentication`, async () => {
+//     const req = await request(common.config.getDirektivHost()).get(
+//       `/ns/system/endpoint1`
+//     );
+//     expect(req.statusCode).toEqual(403);
+//   });
+
+//   retry10(
+//     `should run endpoint without authentication but allow anonymous`,
+//     async () => {
+//       const req = await request(common.config.getDirektivHost()).get(
+//         `/ns/system/endpoint2`
+//       );
+//       expect(req.statusCode).toEqual(202);
+//     }
+//   );
+
+//   retry10(`should run endpoint with key authentication`, async () => {
+//     const req = await request(common.config.getDirektivHost())
+//       .get(`/ns/system/endpoint1`)
+//       .set("secret", "key2");
+//     expect(req.statusCode).toEqual(201);
+//   });
+
+//   retry10(`should run endpoint with basic authentication`, async () => {
+//     const req = await request(common.config.getDirektivHost())
+//       .get(`/ns/system/endpoint2`)
+//       .auth("consumer1", "pwd");
+//     expect(req.statusCode).toEqual(202);
+//   });
+// });
