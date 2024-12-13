@@ -10,6 +10,7 @@ import {
 import { TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
+import { Checkbox } from "~/design/Checkbox";
 import { DialogTrigger } from "~/design/Dialog";
 import { useTranslation } from "react-i18next";
 
@@ -18,6 +19,8 @@ type ItemRowProps<TItem> = {
   onDelete: (item: TItem) => void;
   onEdit?: () => void;
   onDownload?: () => void;
+  onSelect?: (checked: boolean) => void;
+  isSelected?: boolean;
   children?: React.ReactNode;
 };
 
@@ -26,13 +29,25 @@ const ItemRow = <ItemType,>({
   onDelete,
   onDownload,
   onEdit,
+  onSelect,
+  isSelected,
   children,
 }: ItemRowProps<ItemType & { name: string }>) => {
   const { t } = useTranslation();
 
   return (
     <TableRow data-testid="variable-row">
-      <TableCell data-testid="item-name">{children}</TableCell>
+      <TableCell data-testid="item-name" className="flex items-center">
+        {onSelect && (
+          <Checkbox
+            className="mr-3"
+            data-testid="variable-checkbox"
+            checked={isSelected}
+            onCheckedChange={onSelect}
+          />
+        )}
+        {children}
+      </TableCell>
       <TableCell className="w-0">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
