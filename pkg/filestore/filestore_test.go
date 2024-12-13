@@ -2,6 +2,9 @@ package filestore_test
 
 import (
 	"context"
+	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
+	"gorm.io/gorm"
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/database"
@@ -10,10 +13,17 @@ import (
 	"github.com/google/uuid"
 )
 
-func assertFileStoreCorrectRootCreation(t *testing.T, fs filestore.FileStore, ns string) {
+func assertFileStoreCorrectRootCreation(t *testing.T, db *gorm.DB, fs filestore.FileStore, namespace string) {
 	t.Helper()
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns)
+	ns, err := datastoresql.NewSQLStore(db, "some_secret_key_").Namespaces().Create(context.Background(), &datastore.Namespace{
+		Name: namespace,
+	})
+	if err != nil {
+		t.Fatalf("unexpected CreateRoot() error: %v", err)
+	}
+
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
 	if err != nil {
 		t.Errorf("unexpected CreateRoot() error: %v", err)
 
@@ -24,8 +34,8 @@ func assertFileStoreCorrectRootCreation(t *testing.T, fs filestore.FileStore, ns
 
 		return
 	}
-	if root.Namespace != ns {
-		t.Errorf("unexpected root.Namespace, got: >%s<, want: >%s<", root.Namespace, ns)
+	if root.Namespace != ns.Name {
+		t.Errorf("unexpected root.Namespace, got: >%s<, want: >%s<", root.Namespace, ns.Name)
 
 		return
 	}
@@ -67,9 +77,9 @@ func assertFileStoreCorrectRootDeletion(t *testing.T, fs filestore.FileStore, id
 }
 
 func Test_sqlFileStore_CreateRoot(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 
@@ -83,15 +93,15 @@ func Test_sqlFileStore_CreateRoot(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assertFileStoreCorrectRootCreation(t, fs, tt.id)
+			assertFileStoreCorrectRootCreation(t, db, fs, tt.id)
 		})
 	}
 }
 
 func Test_sqlFileStore_ListingAfterCreate(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
 	}
 	fs := filestoresql.NewSQLFileStore(db)
 
@@ -103,14 +113,14 @@ func Test_sqlFileStore_ListingAfterCreate(t *testing.T) {
 	assertFileStoreHasRoot(t, fs)
 
 	// create two roots:
-	assertFileStoreCorrectRootCreation(t, fs, myNamespace1)
-	assertFileStoreCorrectRootCreation(t, fs, myNamespace2)
+	assertFileStoreCorrectRootCreation(t, db, fs, myNamespace1)
+	assertFileStoreCorrectRootCreation(t, db, fs, myNamespace2)
 
 	// assert existence.
 	assertFileStoreHasRoot(t, fs, myNamespace1, myNamespace2)
 
 	// add a third one:
-	assertFileStoreCorrectRootCreation(t, fs, myNamespace3)
+	assertFileStoreCorrectRootCreation(t, db, fs, myNamespace3)
 
 	// assert existence:
 	assertFileStoreHasRoot(t, fs, myNamespace1, myNamespace2, myNamespace3)
