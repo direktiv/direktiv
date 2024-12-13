@@ -72,6 +72,10 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 		startWorkflow: startByEvents,
 	}
 
+	gatewayDocsCtr := gatewayDocsController{
+		store: db.DataStore(),
+	}
+
 	jxCtr := jxController{}
 
 	mw := &appMiddlewares{dStore: db.DataStore()}
@@ -170,6 +174,9 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 				eventsCtr.mountBroadcast(r)
 			})
 			r.Handle("/namespaces/{namespace}/gateway/*", app.GatewayManager)
+			r.Route("/namespaces/{namespace}/docs", func(r chi.Router) {
+				gatewayDocsCtr.mountRouter(r)
+			})
 		})
 
 		r.Route("/jx", func(r chi.Router) {
