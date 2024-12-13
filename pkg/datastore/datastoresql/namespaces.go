@@ -80,9 +80,9 @@ func (s *sqlNamespacesStore) Delete(ctx context.Context, name string) error {
 }
 
 func (s *sqlNamespacesStore) Create(ctx context.Context, namespace *datastore.Namespace) (*datastore.Namespace, error) {
-	//const nameRegex = `^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$`
-	//matched, _ := regexp.MatchString(nameRegex, namespace.Name)
-	//if !matched {
+	// const nameRegex = `^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$`
+	// matched, _ := regexp.MatchString(nameRegex, namespace.Name)
+	// if !matched {
 	//	return nil, datastore.ErrInvalidNamespaceName
 	//}
 

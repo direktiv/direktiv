@@ -5,10 +5,6 @@ import (
 	"database/sql"
 	_ "embed"
 	"fmt"
-	"github.com/stretchr/testify/require"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
-	"gorm.io/driver/postgres"
 	"log"
 	"os"
 	"testing"
@@ -20,7 +16,11 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/instancestore/instancestoresql"
+	"github.com/stretchr/testify/require"
+	"github.com/testcontainers/testcontainers-go"
 	tsPostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
+	"github.com/testcontainers/testcontainers-go/wait"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -131,6 +131,8 @@ func newTestPostgres(dsn string) (*gorm.DB, error) {
 }
 
 func NewTestDataStoreWithNamespace(t *testing.T, namespace string) (*gorm.DB, *datastore.Namespace, error) {
+	t.Helper()
+
 	db, err := NewTestDataStore(t)
 	if err != nil {
 		return nil, nil, err
