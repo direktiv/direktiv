@@ -126,16 +126,17 @@ const VariablesList = ({ path }: { path: string }) => {
                 </div>
                 <div className="mr-auto">
                   <Button
-                    variant="destructive"
+                    className="hover:bg-red-500 hover:text-white"
+                    variant="outline"
                     disabled={selectedItems.length === 0}
                     onClick={() => {
                       setDialogOpen(true);
                     }}
                   >
+                    <Trash className=" size-4" />
                     {t(
                       "pages.explorer.tree.workflow.settings.variables.list.deleteSelected"
                     )}
-                    <Trash className="ml-2 size-4" />
                   </Button>
                 </div>
                 <Input
