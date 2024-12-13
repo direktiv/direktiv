@@ -20,10 +20,10 @@ type DeleteProps = {
 const Delete = ({ items, totalItems, onConfirm }: DeleteProps) => {
   const { t } = useTranslation();
 
-  const isSingleItem = items.length === 1;
-  const isAllItems = totalItems > 1 && items.length === totalItems;
-
   const deleteMessage = () => {
+    const isSingleItem = items.length === 1;
+    const isAllItems = totalItems > 1 && items.length === totalItems;
+
     if (isSingleItem) {
       return (
         <Trans

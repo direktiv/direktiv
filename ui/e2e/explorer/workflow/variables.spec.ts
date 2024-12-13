@@ -26,7 +26,7 @@ test.afterEach(async () => {
 
 test("bulk delete workflow variables", async ({ page }) => {
   // Create 3 test variables
-  await createWorkflowVariables(namespace, workflow, 3);
+  await createWorkflowVariables(namespace, workflow, 4);
 
   await page.goto(`/n/${namespace}/explorer/workflow/settings/${workflow}`);
 
@@ -36,7 +36,9 @@ test("bulk delete workflow variables", async ({ page }) => {
   await expect(
     page.getByText(`Are you sure you want to delete variable`, { exact: false })
   ).toBeVisible();
-  await page.getByRole("button", { name: "Cancel" }).click();
+  await page.getByRole("button", { name: "Delete" }).click();
+  await waitForSuccessToast(page);
+  await expect(page.getByTestId("item-name")).toHaveCount(3);
 
   // Check second checkbox and click delete
   await page.getByTestId("item-name").getByRole("checkbox").nth(0).check();

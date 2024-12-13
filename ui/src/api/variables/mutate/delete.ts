@@ -12,23 +12,17 @@ import { varKeys } from "..";
 const deleteVar = apiFactory({
   url: ({
     namespace,
-    variableID,
     variableIDs,
   }: {
     namespace: string;
-    variableID?: string;
-    variableIDs?: string[];
+    variableIDs: string[];
   }) =>
-    variableIDs
-      ? `/api/v2/namespaces/${namespace}/variables?ids=${variableIDs.join(",")}`
-      : `/api/v2/namespaces/${namespace}/variables/${variableID}`,
+    variableIDs.length === 0
+      ? `/api/v2/namespaces/${namespace}/variables/${variableIDs[0]}`
+      : `/api/v2/namespaces/${namespace}/variables?ids=${variableIDs.join(",")}`,
   method: "DELETE",
   schema: VarDeletedSchema,
 });
-
-type DeleteVarInput =
-  | { variable: VarSchemaType }
-  | { variables: VarSchemaType[] };
 
 export const useDeleteVar = ({
   onSuccess,
@@ -43,53 +37,34 @@ export const useDeleteVar = ({
     throw new Error("namespace is undefined");
   }
 
-  const mutationFn = (input: DeleteVarInput) => {
-    if ("variable" in input) {
-      return deleteVar({
-        apiKey: apiKey ?? undefined,
-        urlParams: {
-          namespace,
-          variableID: input.variable.id,
-        },
-      });
-    } else {
-      if (!input.variables?.length) {
-        throw new Error("No variables provided for deletion");
-      }
-      return deleteVar({
-        apiKey: apiKey ?? undefined,
-        urlParams: {
-          namespace,
-          variableIDs: input.variables.map((v) => v.id),
-        },
-      });
-    }
-  };
+  const mutationFn = (variables: VarSchemaType[]) =>
+    deleteVar({
+      apiKey: apiKey ?? undefined,
+      urlParams: {
+        namespace,
+        variableIDs: variables.map((v) => v.id),
+      },
+    });
 
   return useMutationWithPermissions({
     mutationFn,
     onSuccess: (_, input) => {
-      const variables =
-        "variable" in input ? [input.variable] : input.variables;
       queryClient.invalidateQueries({
         queryKey: varKeys.varList(namespace, {
           apiKey: apiKey ?? undefined,
           workflowPath:
-            variables[0]?.type === "workflow-variable"
-              ? variables[0].reference
+            input[0]?.type === "workflow-variable"
+              ? input[0].reference
               : undefined,
         }),
       });
       toast({
         title: t("api.variables.mutate.deleteVariable.success.title"),
         description: t(
-          "api.variables.mutate.deleteVariable.success.description",
-          {
-            name:
-              variables.length > 1
-                ? `${variables.length} variables`
-                : variables[0]?.name || "",
-          }
+          input.length === 1
+            ? "api.variables.mutate.deleteVariable.success.description_one"
+            : "api.variables.mutate.deleteVariable.success.description",
+          { count: input.length }
         ),
         variant: "success",
       });

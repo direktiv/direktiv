@@ -222,7 +222,7 @@ const VariablesList = ({ path }: { path: string }) => {
           items={selectedItems}
           totalItems={(variables?.data || []).length}
           onConfirm={() => {
-            deleteWorkflowVar({ variables: selectedItems });
+            deleteWorkflowVar(selectedItems);
             setSelectedItems([]);
             setDialogOpen(false);
           }}

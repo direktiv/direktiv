@@ -1448,7 +1448,8 @@
           "singleItemMsg": "Are you sure you want to delete variable <b>'{{name}}'</b>?",
           "success": {
             "title": "Variable deleted",
-            "description": "Variable {{name}} was deleted."
+            "description": "{{count}} variables have been deleted.",
+            "description_one": "{{count}} variable has been deleted."
           },
           "error": {
             "description": "Could not delete variable 😢"

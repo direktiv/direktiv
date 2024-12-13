@@ -175,7 +175,7 @@ const VariablesList: FC = () => {
           items={[deleteItem]}
           totalItems={variables?.data?.length ?? 0}
           onConfirm={() => {
-            deleteVar({ variable: deleteItem });
+            deleteVar([deleteItem]);
           }}
         />
       )}
