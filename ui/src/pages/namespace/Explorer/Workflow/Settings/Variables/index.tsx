@@ -166,7 +166,7 @@ const VariablesList = ({ path }: { path: string }) => {
                         key={i}
                         onEdit={() => setEditItem(item)}
                         onDownload={() => downloadVar(item.id)}
-                        onDelete={() => undefined}
+                        onDelete={() => handleCheckboxChange(item)}
                         onSelect={() => handleCheckboxChange(item)}
                         isSelected={selectedItems.some(
                           (selected) => selected.id === item.id
