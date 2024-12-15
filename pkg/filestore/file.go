@@ -15,7 +15,7 @@ const (
 	// FileTypeWorkflow is special file type as we handle workflow differently.
 	FileTypeWorkflow  FileType = "workflow"
 	FileTypeEndpoint  FileType = "endpoint"
-	FileTypeApiPath   FileType = "api_path"
+	FileTypeAPIPath   FileType = "api_path"
 	FileTypeConsumer  FileType = "consumer"
 	FileTypeService   FileType = "service"
 	FileTypeFile      FileType = "file"
@@ -26,7 +26,7 @@ var AllFileTypes = []FileType{
 	FileTypeWorkflow,
 	FileTypeEndpoint,
 	FileTypeConsumer,
-	FileTypeApiPath,
+	FileTypeAPIPath,
 	FileTypeService,
 	FileTypeFile,
 	FileTypeDirectory,

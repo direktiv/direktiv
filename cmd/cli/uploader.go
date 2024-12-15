@@ -112,7 +112,7 @@ func (u *uploader) createFile(path, filePath string) error {
 		case *core.EndpointFile:
 			obj.Typ = string(filestore.FileTypeEndpoint)
 		case *core.PathItem:
-			obj.Typ = string(filestore.FileTypeApiPath)
+			obj.Typ = string(filestore.FileTypeAPIPath)
 		case *core.ConsumerFile:
 			obj.Typ = string(filestore.FileTypeConsumer)
 		case *core.ServiceFile:

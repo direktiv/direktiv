@@ -15,6 +15,7 @@ get:
         description: "Successful response"
 x-extensions:
     direktiv: "api_path/v1"
+    path: "endpoint1"
     allow-anonymous: true
     timeout: 30
     plugins:
@@ -184,7 +185,7 @@ describe("Test gateway get single endpoint", () => {
     expect(listRes.statusCode).toEqual(200);
     expect(listRes.body.data.length).toEqual(1);
     expect(listRes.body.data[0]).toEqual({
-      allow_anonymous: false,
+      allow_anonymous: true,
       errors: [],
       warnings: [],
       server_path: "/ns/system/endpoint1",
@@ -192,12 +193,6 @@ describe("Test gateway get single endpoint", () => {
       methods: ["GET"],
       path: "/endpoint1",
       plugins: {
-        auth: [
-          {
-            configuration: { key_name: "secret" },
-            type: "key-auth",
-          },
-        ],
         target: {
           configuration: {
             status_code: 201,
@@ -206,7 +201,7 @@ describe("Test gateway get single endpoint", () => {
           type: "instant-response",
         },
       },
-      timeout: 0,
+      timeout: 30,
     });
   });
 

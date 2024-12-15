@@ -38,7 +38,7 @@ func RenderGatewayFiles(db *database.SQLStore, manager core.GatewayManager) {
 				consumers = append(consumers, core.ParseConsumerFile(ns.Name, file.Path, file.Data))
 			} else if file.Typ == filestore.FileTypeEndpoint {
 				endpoints = append(endpoints, core.ParseEndpointFile(ns.Name, file.Path, file.Data))
-			} else if file.Typ == filestore.FileTypeApiPath {
+			} else if file.Typ == filestore.FileTypeAPIPath {
 				endpoints = append(endpoints, core.ParseOpenAPIPathFile(ns.Name, file.Path, file.Data))
 			}
 		}
