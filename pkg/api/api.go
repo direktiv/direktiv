@@ -73,7 +73,7 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 	}
 
 	gatewayDocsCtr := gatewayDocsController{
-		store: db.DataStore(),
+		fstore: db.FileStore(),
 	}
 
 	jxCtr := jxController{}
@@ -174,7 +174,7 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 				eventsCtr.mountBroadcast(r)
 			})
 			r.Handle("/namespaces/{namespace}/gateway/*", app.GatewayManager)
-			r.Route("/namespaces/{namespace}/docs", func(r chi.Router) {
+			r.Route("/namespaces/{namespace}/doc", func(r chi.Router) {
 				gatewayDocsCtr.mountRouter(r)
 			})
 		})

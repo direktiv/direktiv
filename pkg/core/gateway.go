@@ -148,7 +148,7 @@ func ParseOpenAPIPathFile(ns string, filePath string, data []byte) Endpoint {
 		}
 	}
 
-	serverPath := getCleanPath(res.Extensions["path"])
+	serverPath := ExtractAPIPath(res)
 	apiVersion, _ := res.Extensions["direktiv"].(string)
 	if !strings.HasPrefix(apiVersion, "api_path") {
 		return Endpoint{
@@ -192,6 +192,12 @@ func ParseOpenAPIPathFile(ns string, filePath string, data []byte) Endpoint {
 		},
 		Errors: []string{},
 	}
+}
+
+func ExtractAPIPath(res *PathItem) string {
+	serverPath := getCleanPath(res.Extensions["path"])
+
+	return serverPath
 }
 
 func getCleanPath(rawPath any) string {
