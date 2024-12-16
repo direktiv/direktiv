@@ -113,17 +113,18 @@ const VariablesList = ({ path }: { path: string }) => {
             </div>
             <Card className="mb-4">
               <div className="flex justify-between gap-5 p-2 border-b border-gray-5 dark:border-gray-dark-5">
-                <div className="flex items-center">
-                  <Checkbox
-                    className="ml-1"
-                    onCheckedChange={handleSelectAll}
-                    disabled={filteredItems.length === 0}
-                    checked={
-                      selectedItems.length === filteredItems.length &&
-                      filteredItems.length > 0
-                    }
-                  />
-                </div>
+                {currentItems.length > 0 && (
+                  <div className="flex items-center">
+                    <Checkbox
+                      className="ml-1"
+                      onCheckedChange={handleSelectAll}
+                      checked={
+                        selectedItems.length === filteredItems.length &&
+                        filteredItems.length > 0
+                      }
+                    />
+                  </div>
+                )}
                 <div className="mr-auto">
                   {selectedItems.length > 0 && !dialogOpen && (
                     <Button
