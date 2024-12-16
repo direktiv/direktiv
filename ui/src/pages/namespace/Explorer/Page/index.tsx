@@ -18,13 +18,13 @@ const UIPage: FC = () => {
   const {
     isAllowed,
     noPermissionMessage,
-    data: endpointData,
+    data: pageData,
     isFetched: isPermissionCheckFetched,
   } = useFile({ path });
 
   if (!namespace) return null;
   if (!path) return null;
-  if (endpointData?.type !== "endpoint") return null;
+  if (pageData?.type !== "page") return null;
   if (!isPermissionCheckFetched) return null;
 
   if (isAllowed === false)
@@ -45,7 +45,7 @@ const UIPage: FC = () => {
         </div>
       </div>
 
-      <PageEditor data={endpointData} />
+      <PageEditor data={pageData} />
     </>
   );
 };

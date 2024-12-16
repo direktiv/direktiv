@@ -12,7 +12,7 @@ import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { addYamlFileExtension } from "../../../../utils";
-import { defaultEndpointFileYaml } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/utils";
+import { defaultPageFileYaml } from "~/pages/namespace/Explorer/Page/PageEditor/utils";
 import { encode } from "js-base64";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
@@ -65,7 +65,7 @@ const NewPage = ({
   } = useForm<FormInput>({
     resolver,
     defaultValues: {
-      fileContent: defaultEndpointFileYaml,
+      fileContent: defaultPageFileYaml,
     },
   });
 

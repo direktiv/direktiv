@@ -2,7 +2,7 @@ import { DndContext as DndKitContext, DragEndEvent } from "@dnd-kit/core";
 import { FC, PropsWithChildren } from "react";
 
 type DndContextProps = PropsWithChildren & {
-  onMove?: (draggableName: string, droppableName: string) => void;
+  onMove: (draggableName: string, droppableName: string) => void;
 };
 
 export const DndContext: FC<DndContextProps> = ({ children, onMove }) => {

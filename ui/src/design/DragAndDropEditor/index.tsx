@@ -35,8 +35,8 @@ import { Draggable } from "./DraggableElement";
 import Input from "../Input";
 import { twMergeClsx } from "~/util/helpers";
 
-const RenderLayout: FC<PropsWithChildren> = ({ children }) => (
-  <div className={twMergeClsx("h-24 w-full bg-slate-100 p-4")}>{children}</div>
+export const DragAndDropPreview: FC<PropsWithChildren> = ({ children }) => (
+  <div className={twMergeClsx("size-full bg-slate-100 p-4")}>{children}</div>
 );
 
 type person = {
@@ -169,7 +169,7 @@ export const DragAndDropEditor: FC = () => {
                   />
                   <DroppableElement
                     onClick={() => setDialogOpen(true)}
-                    position="1"
+                    droppedElementName="1"
                   />
 
                   <Placeholder
@@ -180,9 +180,9 @@ export const DragAndDropEditor: FC = () => {
               </div>
               <div className="w-1/3 flex-col">
                 <Card className="h-full bg-gray-1 p-4">
-                  <RenderLayout>{header}</RenderLayout>
-                  <RenderLayout>{component}</RenderLayout>
-                  <RenderLayout>{footer}</RenderLayout>
+                  <DragAndDropPreview>{header}</DragAndDropPreview>
+                  <DragAndDropPreview>{component}</DragAndDropPreview>
+                  <DragAndDropPreview>{footer}</DragAndDropPreview>
                 </Card>
               </div>
             </div>

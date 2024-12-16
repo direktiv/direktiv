@@ -9,16 +9,16 @@ import { twMergeClsx } from "~/util/helpers";
 import { useDroppable } from "@dnd-kit/core";
 
 type DroppableProps = PropsWithChildren & {
-  position: string;
-  onClick: () => void;
+  droppedElementName: string;
+  onClick?: () => void;
 };
 
 export const DroppableElement: FC<DroppableProps> = ({
-  position,
+  droppedElementName,
   children,
   onClick,
 }) => {
-  const id = position;
+  const id = droppedElementName;
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
@@ -38,7 +38,7 @@ export const Droppable = ({
 }: {
   id: string;
   isOver: boolean;
-  onClick: () => void;
+  onClick?: () => void;
 }) => (
   <HoverContainer>
     <div
@@ -54,7 +54,7 @@ export const Droppable = ({
         </Button>
       </HoverElement>
       <div className="flex flex-col">
-        <Badge variant="outline">{id}</Badge>
+        <Badge variant="outline">{!id ? "empty" : id}</Badge>
       </div>
     </div>
   </HoverContainer>
@@ -62,15 +62,16 @@ export const Droppable = ({
 
 type PlaceholderProps = PropsWithChildren & {
   name: string;
-  onClick: () => void;
+  onClick?: () => void;
 };
 
 export const Placeholder: FC<PlaceholderProps> = ({ name, onClick }) => (
   <div aria-label={name} className="relative">
     <HoverContainer>
       <Card
+        noShadow
         className={twMergeClsx(
-          "flex h-24 w-full items-center justify-center bg-white"
+          "flex h-24 w-full items-center border-transparent justify-center bg-white"
         )}
       >
         <HoverElement className="bg-white opacity-100" variant="alwaysVisible">
