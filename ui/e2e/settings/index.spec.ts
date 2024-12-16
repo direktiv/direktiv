@@ -1,9 +1,9 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
+import { createVariables, createWorkflowVariables } from "../utils/variables";
 import { expect, test } from "@playwright/test";
 
 import { createRegistries } from "../utils/registries";
 import { createSecrets } from "../utils/secrets";
-import { createVariables } from "../utils/variables";
 import { decode } from "js-base64";
 import { faker } from "@faker-js/faker";
 import { radixClick } from "../utils/testutils";
@@ -256,6 +256,54 @@ test("it is possible to create and delete variables", async ({
     page.getByTestId("item-name").filter({ hasText: "awesome-variable" }),
     "the new variable is still in the list"
   ).toHaveCount(1);
+});
+
+test("bulk delete variables", async ({ page }) => {
+  /* set up test data */
+  const variables = await createVariables(namespace, 4);
+  const variableToDelete = variables[3];
+
+  if (!variableToDelete) throw "error setting up test data";
+
+  await page.goto(`/n/${namespace}/settings`);
+
+  // Check first checkbox and click delete
+  await page.getByTestId("item-name").getByRole("checkbox").first().check();
+  await page.getByRole("button", { name: "Delete selected" }).click();
+  await expect(
+    page.getByText(`Are you sure you want to delete variable`, { exact: false })
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Delete" }).click();
+  await waitForSuccessToast(page);
+  await expect(page.getByTestId("item-name")).toHaveCount(3);
+
+  // Check second checkbox and click delete
+  await page.getByTestId("item-name").getByRole("checkbox").nth(0).check();
+  await page.getByTestId("item-name").getByRole("checkbox").nth(1).check();
+  await page.getByRole("button", { name: "Delete selected" }).click();
+  await expect(
+    page.getByText("Are you sure you want to delete 2 variables?", {
+      exact: true,
+    })
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Cancel" }).click();
+
+  // Check third checkbox and click delete
+  await page.getByTestId("item-name").getByRole("checkbox").nth(0).check();
+  await page.getByTestId("item-name").getByRole("checkbox").nth(1).check();
+  await page.getByTestId("item-name").getByRole("checkbox").nth(2).check();
+  await page.getByRole("button", { name: "Delete selected" }).click();
+  await expect(
+    page.getByText("Are you sure you want to delete all variables?", {
+      exact: true,
+    })
+  ).toBeVisible();
+
+  // Confirm deletion
+  await page.getByRole("button", { name: "Delete" }).click();
+  await waitForSuccessToast(page);
+
+  await expect(page.getByTestId("item-name")).toHaveCount(0);
 });
 
 test("it is possible to edit variables", async ({ page }) => {
