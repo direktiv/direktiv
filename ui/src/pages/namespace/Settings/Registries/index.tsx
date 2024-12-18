@@ -72,25 +72,27 @@ const RegistriesList: FC = () => {
                 <Container className="h-5" />
                 {t("pages.settings.registries.list.title")}
               </h3>
-              <Input
-                className="sm:w-60"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  goToFirstPage();
-                }}
-                placeholder={t(
-                  "pages.settings.registries.list.searchPlaceholder"
-                )}
-              />
-              <CreateItemButton
-                onClick={() => setCreateRegistry(true)}
-                data-testid="registry-create"
-              >
-                {t("pages.settings.registries.list.createBtn")}
-              </CreateItemButton>
             </div>
             <Card className="mb-4">
+              <div className="flex justify-end gap-5 p-2 border-b border-gray-5 dark:border-gray-dark-5">
+                <Input
+                  className="sm:w-60"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    goToFirstPage();
+                  }}
+                  placeholder={t(
+                    "pages.settings.registries.list.searchPlaceholder"
+                  )}
+                />
+                <CreateItemButton
+                  onClick={() => setCreateRegistry(true)}
+                  data-testid="registry-create"
+                >
+                  {t("pages.settings.registries.list.createBtn")}
+                </CreateItemButton>
+              </div>
               {isAllowed ? (
                 <>
                   {currentItems.length ? (
