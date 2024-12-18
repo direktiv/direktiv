@@ -115,44 +115,11 @@ const VariablesList: FC = () => {
                 <FileJson className="h-5" />
                 {t("pages.settings.variables.list.title")}
               </h3>
-              <div className="mr-auto">
-                {selectedItems.length > 0 && !dialogOpen && (
-                  <Button
-                    variant="destructive"
-                    disabled={selectedItems.length === 0}
-                    onClick={() => {
-                      setDialogOpen(true);
-                    }}
-                  >
-                    <Trash className=" size-4" />
-                    {t(
-                      "pages.explorer.tree.workflow.settings.variables.list.deleteSelected"
-                    )}
-                  </Button>
-                )}
-              </div>
-              <Input
-                className="sm:w-60"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  goToFirstPage();
-                }}
-                placeholder={t(
-                  "pages.settings.variables.list.searchPlaceholder"
-                )}
-              />
-              <CreateItemButton
-                data-testid="variable-create"
-                onClick={() => setCreateItem(true)}
-              >
-                {t("pages.settings.variables.list.createBtn")}
-              </CreateItemButton>
             </div>
             <Card className="mb-4">
-              {currentItems.length > 0 && (
-                <div className="flex justify-between gap-5 p-2 border-b border-gray-5 dark:border-gray-dark-5">
-                  <div className="flex items-center">
+              <div className="flex justify-between gap-5 p-2 border-b border-gray-5 dark:border-gray-dark-5">
+                <div className="flex items-center">
+                  {currentItems.length > 0 && (
                     <Checkbox
                       className="ml-1"
                       onCheckedChange={handleSelectAll}
@@ -161,9 +128,43 @@ const VariablesList: FC = () => {
                         filteredItems.length > 0
                       }
                     />
-                  </div>
+                  )}
                 </div>
-              )}
+                <div className="mr-auto">
+                  {selectedItems.length > 0 && !dialogOpen && (
+                    <Button
+                      variant="destructive"
+                      disabled={selectedItems.length === 0}
+                      onClick={() => {
+                        setDialogOpen(true);
+                      }}
+                    >
+                      <Trash className=" size-4" />
+                      {t(
+                        "pages.explorer.tree.workflow.settings.variables.list.deleteSelected"
+                      )}
+                    </Button>
+                  )}
+                </div>
+                <Input
+                  className="sm:w-60"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    goToFirstPage();
+                  }}
+                  placeholder={t(
+                    "pages.settings.variables.list.searchPlaceholder"
+                  )}
+                />
+                <CreateItemButton
+                  data-testid="variable-create"
+                  onClick={() => setCreateItem(true)}
+                >
+                  {t("pages.settings.variables.list.createBtn")}
+                </CreateItemButton>
+              </div>
+
               {isAllowed ? (
                 <>
                   {currentItems.length ? (

@@ -1,9 +1,9 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
-import { createVariables, createWorkflowVariables } from "../utils/variables";
 import { expect, test } from "@playwright/test";
 
 import { createRegistries } from "../utils/registries";
 import { createSecrets } from "../utils/secrets";
+import { createVariables } from "../utils/variables";
 import { decode } from "js-base64";
 import { faker } from "@faker-js/faker";
 import { radixClick } from "../utils/testutils";
