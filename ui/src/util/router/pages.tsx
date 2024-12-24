@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
+import ApiPathPage from "~/pages/namespace/Explorer/ApiPath";
 import ConsumerEditorPage from "~/pages/namespace/Explorer/Consumer";
 import EndpointEditorPage from "~/pages/namespace/Explorer/Endpoint";
 import ErrorPage from "./ErrorPage";
@@ -73,7 +74,8 @@ export type ExplorerSubpages =
   | "workflow-services"
   | "service"
   | "endpoint"
-  | "consumer";
+  | "consumer"
+  | "api_path";
 
 type ExplorerSubpagesParams =
   | {
@@ -339,6 +341,7 @@ export const usePages = (): PageType & EnterprisePageType => {
           endpoint: "endpoint",
           consumer: "consumer",
           service: "service",
+          api_path: "api_path",
         };
 
         let searchParamsObj;
@@ -372,12 +375,14 @@ export const usePages = (): PageType & EnterprisePageType => {
         const isServicePage = checkHandler(thirdLvl, "isServicePage");
         const isEndpointPage = checkHandler(thirdLvl, "isEndpointPage");
         const isConsumerPage = checkHandler(thirdLvl, "isConsumerPage");
+        const isApiPathPage = checkHandler(thirdLvl, "isApiPathPage");
         const isExplorerPage =
           isTreePage ||
           isWorkflowPage ||
           isServicePage ||
           isEndpointPage ||
-          isConsumerPage;
+          isConsumerPage ||
+          isApiPathPage;
         const isWorkflowEditorPage = checkHandler(fourthLvl, "isEditorPage");
         const isWorkflowOverviewPage = checkHandler(
           fourthLvl,
@@ -460,6 +465,11 @@ export const usePages = (): PageType & EnterprisePageType => {
             path: "consumer/*",
             element: <ConsumerEditorPage />,
             handle: { isConsumerPage: true },
+          },
+          {
+            path: "api_path/*",
+            element: <ApiPathPage />,
+            handle: { isApiPathPage: true },
           },
         ],
       },

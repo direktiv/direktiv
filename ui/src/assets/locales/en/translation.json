@@ -255,6 +255,9 @@
           }
         }
       },
+      "docs": {
+        "goToDocs": "Open Documentation"
+      },
       "endpoint": {
         "openRouteLogs": "Open Logs",
         "editor": {
