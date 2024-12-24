@@ -2,6 +2,7 @@ import { Link, Outlet } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import { Users, Workflow } from "lucide-react";
 
+import { BookOpen } from "lucide-react";
 import { useNamespace } from "~/util/store/namespace";
 import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
@@ -42,7 +43,7 @@ const GatewayPage = () => {
     {
       value: "docs",
       active: isGatewayDocsPage,
-      icon: <Users aria-hidden="true" />,
+      icon: <BookOpen aria-hidden="true" />,
       title: t("pages.gateway.tabs.docs"),
       link: pages.gateway.createHref({
         namespace,
