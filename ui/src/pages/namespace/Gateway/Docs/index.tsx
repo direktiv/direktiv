@@ -1,10 +1,9 @@
 import { Card } from "~/design/Card";
 import { RapiDoc } from "~/design/RapiDoc";
 import { useDocs } from "~/api/gateway/query/getDocs";
-import { useTranslation } from "react-i18next";
 
 const GatewayDocsPage = () => {
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
   const { data, isError } = useDocs();
 
   if (isError) {
