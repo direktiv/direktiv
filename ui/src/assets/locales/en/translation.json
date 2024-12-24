@@ -955,7 +955,8 @@
     "gateway": {
       "tabs": {
         "routes": "Routes",
-        "consumers": "Consumers"
+        "consumers": "Consumers",
+        "docs": "Documentation"
       },
       "routes": {
         "columns": {

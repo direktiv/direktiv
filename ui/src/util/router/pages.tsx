@@ -19,6 +19,7 @@ import ErrorPage from "./ErrorPage";
 import EventsPage from "~/pages/namespace/Events";
 import ExplorerPage from "~/pages/namespace/Explorer";
 import GatewayConsumersPage from "~/pages/namespace/Gateway/Consumers";
+import GatewayDocsPage from "~/pages/namespace/Gateway/Docs";
 import GatewayPage from "~/pages/namespace/Gateway";
 import GatewayRoutesPage from "~/pages/namespace/Gateway/Routes";
 import GroupsPage from "~/pages/namespace/Permissions/Groups";
@@ -199,6 +200,9 @@ type GatewayPageSetup = Record<
       params: { namespace: string } & (
         | { subpage?: "consumers" }
         | {
+            subpage?: "docs";
+          }
+        | {
             subpage: "routeDetail";
             routePath: string;
           }
@@ -209,6 +213,7 @@ type GatewayPageSetup = Record<
       isGatewayRoutesPage: boolean;
       isGatewayRoutesDetailPage: boolean;
       isGatewayConsumerPage: boolean;
+      isGatewayDocsPage: boolean;
       routePath?: string;
     };
   }
@@ -568,6 +573,9 @@ export const usePages = (): PageType & EnterprisePageType => {
         if (params.subpage === "consumers") {
           subpage = "consumers";
         }
+        if (params.subpage === "docs") {
+          subpage = "docs";
+        }
         return `/n/${params.namespace}/gateway/${subpage}`;
       },
       useParams: () => {
@@ -582,7 +590,7 @@ export const usePages = (): PageType & EnterprisePageType => {
           thirdLevel,
           "isGatewayConsumerPage"
         );
-
+        const isGatewayDocsPage = checkHandler(thirdLevel, "isGatewayDocsPage");
         const isGatewayRoutesDetailPage = checkHandler(
           thirdLevel,
           "isGatewayRoutesDetailPage"
@@ -591,6 +599,7 @@ export const usePages = (): PageType & EnterprisePageType => {
           isGatewayPage,
           isGatewayRoutesPage,
           isGatewayConsumerPage,
+          isGatewayDocsPage,
           isGatewayRoutesDetailPage,
           routePath: isGatewayRoutesDetailPage ? path : undefined,
         };
@@ -614,6 +623,11 @@ export const usePages = (): PageType & EnterprisePageType => {
             path: "consumers",
             element: <GatewayConsumersPage />,
             handle: { isGatewayConsumerPage: true },
+          },
+          {
+            path: "docs",
+            element: <GatewayDocsPage />,
+            handle: { isGatewayDocsPage: true },
           },
         ],
       },

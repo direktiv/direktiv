@@ -15,4 +15,12 @@ export const gatewayKeys = {
         namespace,
       },
     ] as const,
+  docs: (namespace: string, { apiKey }: { apiKey?: string }) =>
+    [
+      {
+        scope: "docs",
+        apiKey,
+        namespace,
+      },
+    ] as const,
 };

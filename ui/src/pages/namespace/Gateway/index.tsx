@@ -14,6 +14,7 @@ const GatewayPage = () => {
     isGatewayRoutesPage,
     isGatewayConsumerPage,
     isGatewayRoutesDetailPage,
+    isGatewayDocsPage,
   } = pages.gateway.useParams();
 
   if (!namespace) return null;
@@ -36,6 +37,16 @@ const GatewayPage = () => {
       link: pages.gateway.createHref({
         namespace,
         subpage: "consumers",
+      }),
+    },
+    {
+      value: "docs",
+      active: isGatewayDocsPage,
+      icon: <Users aria-hidden="true" />,
+      title: t("pages.gateway.tabs.docs"),
+      link: pages.gateway.createHref({
+        namespace,
+        subpage: "docs",
       }),
     },
   ] as const;

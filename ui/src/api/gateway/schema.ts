@@ -130,3 +130,52 @@ export type ConsumerSchemaType = z.infer<typeof ConsumerSchema>;
 export const ConsumersListSchema = z.object({
   data: z.array(ConsumerSchema),
 });
+
+// OpenAPI Info Schema
+const OpenAPIInfoSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  version: z.string(),
+});
+
+// OpenAPI Server Schema
+const OpenAPIServerSchema = z.object({
+  url: z.string(),
+  description: z.string(),
+});
+
+// OpenAPI Response Schema
+const ResponseSchema = z.object({
+  description: z.string(),
+});
+
+// OpenAPI Method Schema (GET, POST, etc.)
+const OpenAPIMethodSchema = z.object({
+  summary: z.string().optional(),
+  description: z.string().optional(),
+  responses: z.record(ResponseSchema), // A record of HTTP status codes and responses
+});
+
+// OpenAPI Path Item Schema
+const PathItemSchema = z.record(
+  z.string(),
+  z.union([
+    OpenAPIMethodSchema, // GET, POST, etc.
+    z.object({}), // For cases where there are no methods defined
+  ])
+);
+
+// OpenAPI Paths Schema
+const PathsSchema = z.record(z.string(), PathItemSchema);
+
+// Full OpenAPI Spec Schema
+export const DocsSchema = z.object({
+  data: z.object({
+    openapi: z.string(),
+    info: OpenAPIInfoSchema,
+    servers: z.array(OpenAPIServerSchema),
+    paths: PathsSchema,
+  }),
+});
+
+export type DocsSchemaType = z.infer<typeof DocsSchema>;
