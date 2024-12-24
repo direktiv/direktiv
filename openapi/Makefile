@@ -22,7 +22,7 @@ build:
 	@echo '🎉🎉🎉🎉 done'
 
 run: build
-	docker run -it --rm -v `pwd`:`pwd` -w `pwd` -p 8888:80 \
+	docker run -it --rm -v `pwd`:`pwd` -w `pwd` -p 8889:80 \
 	-v `pwd`/output/openapi.yaml:/usr/share/nginx/html/openapi.yaml \
 	-e SPEC_URL=openapi.yaml \
 	redocly/redoc

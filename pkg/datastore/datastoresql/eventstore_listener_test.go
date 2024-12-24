@@ -51,12 +51,11 @@ func testUpdate(t *testing.T) {
 }
 
 func testPaginationAndBoundaryCheck(t *testing.T) {
-	ns := uuid.New()
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unexpected NewMockGorm() error = %v", err)
+		t.Fatalf("unexpected NewTestDataStoreWithNamespace() error = %v", err)
 	}
-	store := datastoresql.NewSQLStore(db, "some key")
+	store := datastoresql.NewSQLStore(db, "some_secret_key_")
 	listeners := store.EventListener()
 
 	// Adding 11 entries
@@ -68,7 +67,7 @@ func testPaginationAndBoundaryCheck(t *testing.T) {
 			CreatedAt:                   time.Now().UTC(),
 			UpdatedAt:                   time.Now().UTC(),
 			Deleted:                     false,
-			NamespaceID:                 ns,
+			NamespaceID:                 ns.ID,
 			ListeningForEventTypes:      []string{"a"},
 			ReceivedEventsForAndTrigger: make([]*datastore.Event, 0),
 			LifespanOfReceivedEvents:    10000,
@@ -82,7 +81,7 @@ func testPaginationAndBoundaryCheck(t *testing.T) {
 
 	offset := 5
 	limit := 3
-	got, count, err := listeners.Get(context.Background(), ns, limit, offset)
+	got, count, err := listeners.Get(context.Background(), ns.ID, limit, offset)
 	if err != nil {
 		t.Error(err)
 	}
@@ -95,7 +94,7 @@ func testPaginationAndBoundaryCheck(t *testing.T) {
 
 	offset = 10
 	limit = 10
-	got, count, err = listeners.Get(context.Background(), ns, offset, limit)
+	got, count, err = listeners.Get(context.Background(), ns.ID, offset, limit)
 	if err != nil {
 		t.Error(err)
 	}
@@ -120,21 +119,20 @@ func testPaginationAndBoundaryCheck(t *testing.T) {
 }
 
 func testDeleteByWorkflow(t *testing.T) {
-	ns := uuid.New()
 	eID := uuid.New()
 	wf := uuid.New()
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unexpected NewMockGorm() error = %v", err)
+		t.Fatalf("unexpected NewTestDataStoreWithNamespace() error = %v", err)
 	}
-	store := datastoresql.NewSQLStore(db, "some key")
+	store := datastoresql.NewSQLStore(db, "some_secret_key_")
 	listeners := store.EventListener()
 	err = listeners.Append(context.Background(), &datastore.EventListener{
 		ID:                          eID,
 		CreatedAt:                   time.Now().UTC(),
 		UpdatedAt:                   time.Now().UTC(),
 		Deleted:                     false,
-		NamespaceID:                 ns,
+		NamespaceID:                 ns.ID,
 		ListeningForEventTypes:      []string{"a"},
 		ReceivedEventsForAndTrigger: make([]*datastore.Event, 0),
 		LifespanOfReceivedEvents:    10000,
@@ -159,17 +157,15 @@ func testDeleteByWorkflow(t *testing.T) {
 }
 
 func setupTest(t *testing.T) (datastore.EventListenerStore, *datastore.EventListener, uuid.UUID, string) {
-	ns := uuid.New()
-	nsName := ns.String()
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unexpected NewMockGorm() error = %v", err)
+		t.Fatalf("unexpected NewTestDataStoreWithNamespace() error = %v", err)
 	}
-	listenerStore := datastoresql.NewSQLStore(db, "some key").EventListener()
+	listenerStore := datastoresql.NewSQLStore(db, "some_secret_key_").EventListener()
 
-	listener := createTestEventListener(ns)
+	listener := createTestEventListener(ns.ID)
 
-	return listenerStore, listener, ns, nsName
+	return listenerStore, listener, ns.ID, ns.Name
 }
 
 func createTestEventListener(ns uuid.UUID) *datastore.EventListener {

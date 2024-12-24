@@ -13,29 +13,26 @@ import (
 
 func Test_TopicAddGet(t *testing.T) {
 	// Create a mock database
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unexpected NewMockGorm() error: %v", err)
+		t.Fatalf("unexpected NewTestDataStoreWithNamespace() error: %v", err)
 	}
 
 	// Create a new SQL data store
-	store := datastoresql.NewSQLStore(db, "some key")
+	store := datastoresql.NewSQLStore(db, "some_secret_key_")
 
-	// Generate test data
-	ns := uuid.New()
-	nsName := ns.String()
 	eID := uuid.New()
 	listeningForEventType := "a"
-	topicName := ns.String() + "-" + listeningForEventType
+	topicName := ns.Name + "-" + listeningForEventType
 
 	// Add event listener
-	err = addEventListener(t, store.EventListener(), eID, ns)
+	err = addEventListener(t, store.EventListener(), eID, ns.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Add topic
-	err = addTopic(t, store.EventListenerTopics(), ns, nsName, eID, topicName, "")
+	err = addTopic(t, store.EventListenerTopics(), ns.ID, ns.Name, eID, topicName, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,7 +44,7 @@ func Test_TopicAddGet(t *testing.T) {
 	}
 
 	// Assert results
-	assertListeners(t, res, ns)
+	assertListeners(t, res, ns.ID)
 }
 
 func addEventListener(t *testing.T, listenerStore datastore.EventListenerStore, eID uuid.UUID, ns uuid.UUID) error {
