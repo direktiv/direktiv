@@ -23,6 +23,7 @@ func (c *gatewayDocsController) get(w http.ResponseWriter, r *http.Request) {
 	files, err := c.fstore.ForNamespace(ns.Name).ListDirektivFilesWithData(r.Context())
 	if err != nil {
 		writeDataStoreError(w, err)
+		return
 	}
 	for _, file := range files {
 		if file.Typ == filestore.FileTypeAPIPath {
@@ -30,6 +31,7 @@ func (c *gatewayDocsController) get(w http.ResponseWriter, r *http.Request) {
 			err := yaml.Unmarshal(file.Data, &p)
 			if err != nil {
 				writeDataStoreError(w, err)
+				return
 			}
 			paths["/api/v2/namespaces/"+ns.Name+core.ExtractAPIPath(&p)] = p
 		}
