@@ -255,6 +255,9 @@
           }
         }
       },
+      "docs": {
+        "goToDocs": "Open Documentation"
+      },
       "endpoint": {
         "openRouteLogs": "Open Logs",
         "editor": {
@@ -955,7 +958,8 @@
     "gateway": {
       "tabs": {
         "routes": "Routes",
-        "consumers": "Consumers"
+        "consumers": "Consumers",
+        "docs": "Documentation"
       },
       "routes": {
         "columns": {

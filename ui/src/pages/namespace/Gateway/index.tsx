@@ -1,6 +1,6 @@
+import { BookOpen, Users, Workflow } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
-import { Users, Workflow } from "lucide-react";
 
 import { useNamespace } from "~/util/store/namespace";
 import { usePages } from "~/util/router/pages";
@@ -14,6 +14,7 @@ const GatewayPage = () => {
     isGatewayRoutesPage,
     isGatewayConsumerPage,
     isGatewayRoutesDetailPage,
+    isGatewayDocsPage,
   } = pages.gateway.useParams();
 
   if (!namespace) return null;
@@ -36,6 +37,16 @@ const GatewayPage = () => {
       link: pages.gateway.createHref({
         namespace,
         subpage: "consumers",
+      }),
+    },
+    {
+      value: "docs",
+      active: isGatewayDocsPage,
+      icon: <BookOpen aria-hidden="true" />,
+      title: t("pages.gateway.tabs.docs"),
+      link: pages.gateway.createHref({
+        namespace,
+        subpage: "docs",
       }),
     },
   ] as const;

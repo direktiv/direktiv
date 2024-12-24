@@ -36,6 +36,10 @@ const (
 )
 
 const (
+	APIPathAPIV1 = "api_path/v1"
+)
+
+const (
 	ConsumerAPIV1 = "consumer/v1"
 )
 
@@ -94,6 +98,17 @@ func LoadResource(data []byte) (interface{}, error) {
 
 	case EndpointAPIV1:
 		ef := new(core.EndpointFile)
+		err = yaml.Unmarshal(data, &ef)
+		if err != nil {
+			return &core.EndpointFile{
+				DirektivAPI: s,
+			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
+		}
+
+		return ef, nil
+
+	case APIPathAPIV1:
+		ef := new(core.PathItem) // TODO convert from spec here
 		err = yaml.Unmarshal(data, &ef)
 		if err != nil {
 			return &core.EndpointFile{

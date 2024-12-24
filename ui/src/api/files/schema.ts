@@ -56,6 +56,7 @@ export const fileTypes = [
   "file",
   "service",
   "workflow",
+  "api_path",
 ] as const;
 
 const FileTypeSchema = z.enum(fileTypes);
