@@ -1,5 +1,3 @@
-import {  } from "lucide-react";
-
 import { BookOpen, Users, Workflow } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
