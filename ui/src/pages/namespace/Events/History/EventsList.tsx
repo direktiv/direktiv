@@ -57,7 +57,6 @@ const EventsList = ({
             goToPreviousPage,
             currentPage,
             pagesList,
-            totalPages,
           }) => (
             <>
               <Card>
@@ -112,29 +111,27 @@ const EventsList = ({
               </Card>
               <div className="flex items-center justify-end gap-2">
                 <SelectPageSize onChange={() => goToPage(1)} />
-                {totalPages > 1 && (
-                  <Pagination>
+                <Pagination>
+                  <PaginationLink
+                    data-testid="pagination-btn-left"
+                    icon="left"
+                    onClick={() => goToPreviousPage()}
+                  />
+                  {pagesList.map((page) => (
                     <PaginationLink
-                      data-testid="pagination-btn-left"
-                      icon="left"
-                      onClick={() => goToPreviousPage()}
-                    />
-                    {pagesList.map((page) => (
-                      <PaginationLink
-                        active={currentPage === page}
-                        key={`${page}`}
-                        onClick={() => goToPage(page)}
-                      >
-                        {page}
-                      </PaginationLink>
-                    ))}
-                    <PaginationLink
-                      data-testid="pagination-btn-right"
-                      icon="right"
-                      onClick={() => goToNextPage()}
-                    />
-                  </Pagination>
-                )}
+                      active={currentPage === page}
+                      key={`${page}`}
+                      onClick={() => goToPage(page)}
+                    >
+                      {page}
+                    </PaginationLink>
+                  ))}
+                  <PaginationLink
+                    data-testid="pagination-btn-right"
+                    icon="right"
+                    onClick={() => goToNextPage()}
+                  />
+                </Pagination>
               </div>
             </>
           )}
