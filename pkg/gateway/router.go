@@ -20,12 +20,14 @@ type router struct {
 	serveMux  *http.ServeMux
 	endpoints []core.Endpoint
 	consumers []core.Consumer
+	gateways  []core.Gateway
 }
 
 // buildRouter compiles a new gateway router from endpoints and consumers lists.
 //
 //nolint:gocognit
-func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer) *router {
+func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
+	gateways []core.Gateway) *router {
 	serveMux := http.NewServeMux()
 
 	checkUniqueGatewayPaths := map[string]string{}
@@ -167,6 +169,7 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer) *router {
 		serveMux:  serveMux,
 		endpoints: endpoints,
 		consumers: consumers,
+		gateways:  gateways,
 	}
 }
 
