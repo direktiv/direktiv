@@ -73,14 +73,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if strings.HasSuffix(r.URL.Path, "/gateway") {
-		ns := chi.URLParam(r, "namespace")
-		if ns != "" {
-
-		}
-	}
-
-	// JENS route for gateway info -> add error for multiple gateway files
+	// gateway info endpoint
 	if strings.HasSuffix(r.URL.Path, "/info") {
 		ns := chi.URLParam(r, "namespace")
 		if ns != "" {
@@ -94,7 +87,8 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // SetEndpoints compiles a new router and atomically swaps the old one. No ongoing requests should be effected.
 func (m *manager) SetEndpoints(list []core.Endpoint, cList []core.Consumer,
-	glist []core.Gateway) error {
+	glist []core.Gateway,
+) error {
 	cList = slices.Clone(cList)
 
 	err := m.interpolateConsumersList(cList)
@@ -193,6 +187,13 @@ func gatewayForAPI(gateways []core.Gateway, ns string) any {
 
 		if gw.Spec.Info == nil {
 			gw.Spec.Info = &openapi3.Info{}
+		}
+
+		if gw.Spec.Info.Title == "" {
+			gw.Spec.Info.Title = ns
+		}
+		if gw.Spec.Info.Version == "" {
+			gw.Spec.Info.Version = "1.0"
 		}
 	}
 

@@ -27,7 +27,8 @@ type router struct {
 //
 //nolint:gocognit
 func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
-	gateways []core.Gateway) *router {
+	gateways []core.Gateway,
+) *router {
 	serveMux := http.NewServeMux()
 
 	checkUniqueGatewayPaths := map[string]string{}
