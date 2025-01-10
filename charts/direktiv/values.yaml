@@ -7,7 +7,6 @@ pullPolicy: Always
 # -- Container registry secrets.
 imagePullSecrets: []
 
-
 # -- image for main direktiv binary
 image: "direktiv/direktiv"
 
@@ -31,9 +30,10 @@ flow:
   encryptionKey:
   # -- number of flow replicas
   replicas: 1
-  # -- extra environment variables in flow pod 
-  extraVariables: []
-    # - name: 
+  # -- extra environment variables in flow pod
+  extraVariables:
+    []
+    # - name:
     #   value:
   # -- extra container in flow pod
   extraContainers: []
@@ -47,7 +47,8 @@ flow:
     #   configMap:
     #     name: service-template
   # -- affinity for flow pods
-  affinity: {}
+  affinity:
+    {}
     # podAntiAffinity:
     #   requiredDuringSchedulingIgnoredDuringExecution:
     #   - labelSelector:
@@ -64,10 +65,10 @@ flow:
           memory: "128Mi"
         limits:
           memory: "512Mi"
-  
+
   # -- Knative max scale
   max_scale: 5
-  sidecar: 
+  sidecar:
 
 database:
   # -- database host
@@ -129,7 +130,7 @@ opentelemetry:
           exporters: [logging, otlp]
 
 ingress:
-  # -- 
+  # --
   enabled: true
   # -- Host for external services, only required for TLS
   host:
@@ -141,7 +142,6 @@ ingress:
   additionalAnnotations: {}
   # -- Additional Labels
   additionalLabels: {}
-
 
 # -- nginx ingress controller configuration
 ingress-nginx:
@@ -160,8 +160,8 @@ ingress-nginx:
 fluent-bit:
   install: true
   envFrom:
-  - secretRef:
-      name: direktiv-fluentbit
+    - secretRef:
+        name: direktiv-fluentbit
   config:
     inputs: |
       [INPUT]
@@ -195,8 +195,8 @@ fluent-bit:
           Key_Name log
           Reserve_Data on
 
-# -- service account for components. If preconfigured serviceaccounts are used the name ise the base 
-# and two additional service accounts are needed, e.g. service account name is myaccount then another two 
+# -- service account for components. If preconfigured serviceaccounts are used the name ise the base
+# and two additional service accounts are needed, e.g. service account name is myaccount then another two
 # acounts are needed: myaccount-functions and myaccount-functions-pod
 serviceAccount:
   annotations: {}
@@ -214,8 +214,7 @@ https_proxy: ""
 no_proxy: ""
 
 functions:
-
-  # -- knative service limits 
+  # -- knative service limits
   limits:
     memory:
       small: 512
@@ -238,10 +237,10 @@ functions:
   replicas: 1
 
   # -- Egress/Ingress network limit for functions if supported by network
-  netShape: 
+  netShape:
 
   # -- Cleaning up tasks, Kubernetes < 1.20 does not clean finished tasks
-  podCleaner: true  # deprecated
+  podCleaner: true # deprecated
 
   # -- runtime to use, e.g. gvisor on GCP
   runtime: "default"
@@ -252,8 +251,7 @@ functions:
   extraContainersPod: []
 
   # -- extra volumes for tasks and knative pods
-  extraVolumes:
-    []
+  extraVolumes: []
   #   - configMap:
   #   name: otel-agent-conf
   #   items:
@@ -285,11 +283,11 @@ nats:
       port: 6222
       replicas: 3
     tls:
-        enabled: false
-        secretName:
-        dir: /etc/nats-certs/cluster
-        cert: tls.crt
-        key: tls.key
+      enabled: false
+      secretName:
+      dir: /etc/nats-certs/cluster
+      cert: tls.crt
+      key: tls.key
     routeURLs:
       user: direktiv
       password: direktiv
@@ -311,7 +309,7 @@ opensearch:
     storageClassName: "local-path"
   services:
     enviroment:
-  extraEnvs: 
+  extraEnvs:
     - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
       value: direktivTr0&3
     - name: "ES_JAVA_OPTS"

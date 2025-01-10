@@ -1,4 +1,4 @@
-package opensearch
+package opensearchstore
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ import (
 )
 
 // NewOpenSearchLogStore creates a new OpenSearchLogStore with the specified settings.
-func NewOpenSearchLogStore(client *opensearch.Client, co config) *LogStore {
+func NewOpenSearchLogStore(client *opensearch.Client, co Config) *LogStore {
 	return &LogStore{
 		client:      client,
 		logIndex:    co.LogIndex,
@@ -190,7 +190,7 @@ func (store *LogStore) ensureIndex(ctx context.Context) error {
 					"type":   "date",
 					"format": "epoch_millis", // Handles Unix time in milliseconds
 				},
-				"Level":    map[string]interface{}{"type": "keyword"},
+				"Level":    map[string]interface{}{"type": "integer"},
 				"Message":  map[string]interface{}{"type": "text"},
 				"Metadata": map[string]interface{}{"type": "object"},
 			},

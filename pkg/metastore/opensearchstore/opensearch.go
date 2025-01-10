@@ -1,4 +1,4 @@
-package opensearch
+package opensearchstore
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 
 type opensearchMetaStore struct {
 	client *opensearch.Client
-	co     config
+	co     Config
 }
 
 // LogStore implements metastore.Store.
@@ -20,7 +20,7 @@ func (o *opensearchMetaStore) LogStore() metastore.LogStore {
 	return NewOpenSearchLogStore(o.client, o.co)
 }
 
-type config struct {
+type Config struct {
 	LogIndex       string
 	LogDeleteAfter string
 }
@@ -54,7 +54,7 @@ func NewTestDataStore(t *testing.T) (metastore.Store, func(), error) {
 	}
 
 	t.Log("OpenSearch client created successfully.")
-	co := config{
+	co := Config{
 		LogIndex:       "test-logging",
 		LogDeleteAfter: "7d",
 	}
