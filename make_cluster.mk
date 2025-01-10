@@ -88,11 +88,11 @@ cluster-direktiv: ## Installs direktiv in cluster
 	--set database.password=password \
 	--set database.name=direktiv \
 	--set database.sslmode=disable \
+	--set pullPolicy=Always \
 	--set ingress-nginx.install=false \
 	--set image=direktiv \
 	--set registry=localhost:5001 \
 	--set tag=dev \
-	--set pullPolicy=IfNotPresent \
 	--set flow.sidecar=localhost:5001/direktiv:dev \
 	direktiv charts/direktiv
 

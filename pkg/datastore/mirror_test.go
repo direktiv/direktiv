@@ -12,15 +12,15 @@ import (
 )
 
 func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 
 	newProcess := &datastore.MirrorProcess{
 		ID:        uuid.New(),
-		Namespace: uuid.New().String(),
+		Namespace: ns.Name,
 		Status:    "new",
 	}
 
@@ -91,16 +91,16 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 }
 
 func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 
 	// test create.
 
 	newConfig := &datastore.MirrorConfig{
-		Namespace: uuid.New().String(),
+		Namespace: ns.Name,
 		URL:       "some_url",
 		GitRef:    "123",
 		AuthType:  "public",
@@ -115,8 +115,16 @@ func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
 	if newConfig.URL != config.URL {
 		t.Errorf("unexpected CreateConfig().Status, want: %v, got %v", newConfig.URL, config.URL)
 	}
+
+	ns2, err := ds.Namespaces().Create(context.Background(), &datastore.Namespace{
+		Name: uuid.New().String(),
+	})
+	if err != nil {
+		t.Fatalf("unexpected Create() error: %v", err)
+	}
+
 	secondConfig := &datastore.MirrorConfig{
-		Namespace: uuid.New().String(),
+		Namespace: ns2.Name,
 		URL:       "some_url",
 		GitRef:    "123",
 		AuthType:  "public",

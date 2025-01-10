@@ -9,9 +9,12 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/instancestore/instancestoresql"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func checksum(data []byte) string {
@@ -190,9 +193,9 @@ func assertInstanceStoreCorrectInstanceDataCreation(t *testing.T, is instancesto
 func Test_sqlInstanceStore_CreateInstanceData(t *testing.T) {
 	server := uuid.New()
 
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	instances := instancestoresql.NewSQLInstanceStore(db)
 
@@ -203,7 +206,7 @@ func Test_sqlInstanceStore_CreateInstanceData(t *testing.T) {
 		name: "validCase",
 		args: &instancestore.CreateInstanceDataArgs{
 			ID:             id,
-			NamespaceID:    uuid.New(),
+			NamespaceID:    ns.ID,
 			RootInstanceID: id,
 			Server:         server,
 			Invoker:        "api",
@@ -320,16 +323,21 @@ func assertInstanceDataIsSummary(t *testing.T, idata *instancestore.InstanceData
 }
 
 type assertInstanceStoreCorrectGetNamespaceInstancesTest struct {
-	name string
-	args *instancestore.CreateInstanceDataArgs
-	nsID uuid.UUID
-	ids  []uuid.UUID
+	name      string
+	args      *instancestore.CreateInstanceDataArgs
+	namespace string
+	ids       []uuid.UUID
 }
 
-func assertInstanceStoreCorrectGetNamespaceInstances(t *testing.T, is instancestore.Store, args *instancestore.CreateInstanceDataArgs, nsID uuid.UUID, ids []uuid.UUID) {
+func assertInstanceStoreCorrectGetNamespaceInstances(t *testing.T, db *gorm.DB, is instancestore.Store, args *instancestore.CreateInstanceDataArgs, namespace string, ids []uuid.UUID) {
 	t.Helper()
 
-	args.NamespaceID = nsID
+	ns, err := datastoresql.NewSQLStore(db, "some_secret_key_").Namespaces().Create(context.Background(), &datastore.Namespace{
+		Name: namespace,
+	})
+
+	args.NamespaceID = ns.ID
+
 	for _, id := range ids {
 		args.ID = id
 		assertInstanceStoreCorrectInstanceDataCreation(t, is, args)
@@ -338,7 +346,14 @@ func assertInstanceStoreCorrectGetNamespaceInstances(t *testing.T, is instancest
 		}
 	}
 
-	results, err := is.GetNamespaceInstances(context.Background(), nsID, nil)
+	results, err := is.GetNamespaceInstances(context.Background(), ns.ID, &instancestore.ListOpts{
+		Orders: []instancestore.Order{
+			{
+				Field:      instancestore.FieldCreatedAt,
+				Descending: false,
+			},
+		},
+	})
 	if err != nil {
 		t.Errorf("unexpected GetNamespaceInstances() error: %v", err)
 
@@ -375,13 +390,12 @@ func assertInstanceStoreCorrectGetNamespaceInstances(t *testing.T, is instancest
 	}
 }
 
-// nolint
 func Test_sqlInstanceStore_GetNamespaceInstances(t *testing.T) {
 	server := uuid.New()
 
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	instances := instancestoresql.NewSQLInstanceStore(db)
 
@@ -406,41 +420,48 @@ type: noop
 	}
 
 	tests = append(tests, assertInstanceStoreCorrectGetNamespaceInstancesTest{
-		name: "validCase",
-		args: args,
-		nsID: uuid.New(),
-		ids:  []uuid.UUID{},
+		name:      "validCase",
+		args:      args,
+		namespace: uuid.New().String(),
+		ids:       []uuid.UUID{},
 	})
 
 	tests = append(tests, assertInstanceStoreCorrectGetNamespaceInstancesTest{
-		name: "validCase",
-		args: args,
-		nsID: uuid.New(),
-		ids:  []uuid.UUID{uuid.New()},
+		name:      "validCase",
+		args:      args,
+		namespace: uuid.New().String(),
+		ids:       []uuid.UUID{uuid.New()},
 	})
 
-	nsID := uuid.New()
+	namespace := uuid.New().String()
 	tests = append(tests, assertInstanceStoreCorrectGetNamespaceInstancesTest{
-		name: "validCase",
-		args: args,
-		nsID: nsID,
-		ids:  []uuid.UUID{uuid.New(), uuid.New(), uuid.New()},
+		name:      "validCase",
+		args:      args,
+		namespace: namespace,
+		ids:       []uuid.UUID{uuid.New(), uuid.New(), uuid.New()},
 	})
 
 	tests = append(tests, assertInstanceStoreCorrectGetNamespaceInstancesTest{
-		name: "validCase",
-		args: args,
-		nsID: uuid.New(),
-		ids:  []uuid.UUID{},
+		name:      "validCase",
+		args:      args,
+		namespace: uuid.New().String(),
+		ids:       []uuid.UUID{},
 	})
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assertInstanceStoreCorrectGetNamespaceInstances(t, instances, tt.args, tt.nsID, tt.ids)
+			assertInstanceStoreCorrectGetNamespaceInstances(t, db, instances, tt.args, tt.namespace, tt.ids)
 		})
 	}
 
-	res, err := instances.GetNamespaceInstances(context.Background(), nsID, nil)
+	ns, err := datastoresql.NewSQLStore(db, "some_secret_key_").Namespaces().GetByName(context.Background(), namespace)
+	if err != nil {
+		t.Errorf("unexpected Namespaces().GetByName() error: %v", err)
+
+		return
+	}
+
+	res, err := instances.GetNamespaceInstances(context.Background(), ns.ID, nil)
 	if err != nil {
 		t.Errorf("unexpected GetNamespaceInstances() error: %v", err)
 
@@ -466,7 +487,7 @@ type: noop
 
 	idata := res.Results[1]
 
-	res, err = instances.GetNamespaceInstances(context.Background(), nsID, &instancestore.ListOpts{
+	res, err = instances.GetNamespaceInstances(context.Background(), ns.ID, &instancestore.ListOpts{
 		Limit:  1,
 		Offset: 1,
 	})
@@ -487,10 +508,21 @@ type: noop
 func Test_sqlInstanceStore_GetHangingInstances(t *testing.T) {
 	server := uuid.New()
 
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
+
+	ns, err := datastoresql.NewSQLStore(db, "some_secret_key_").Namespaces().Create(context.Background(), &datastore.Namespace{
+		ID:   uuid.New(),
+		Name: uuid.New().String(),
+	})
+	if err != nil {
+		t.Errorf("unexpected Namespaces().Create() error: %v", err)
+
+		return
+	}
+
 	instances := instancestoresql.NewSQLInstanceStore(db)
 
 	idatas, err := instances.GetHangingInstances(context.Background())
@@ -510,6 +542,7 @@ func Test_sqlInstanceStore_GetHangingInstances(t *testing.T) {
 
 	args := &instancestore.CreateInstanceDataArgs{
 		ID:           id,
+		NamespaceID:  ns.ID,
 		Server:       server,
 		Invoker:      "cron",
 		WorkflowPath: "/test.yaml",
@@ -622,10 +655,21 @@ type: noop
 func Test_sqlInstanceStore_DeleteOldInstances(t *testing.T) {
 	server := uuid.New()
 
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
+
+	ns, err := datastoresql.NewSQLStore(db, "some_secret_key_").Namespaces().Create(context.Background(), &datastore.Namespace{
+		ID:   uuid.New(),
+		Name: uuid.New().String(),
+	})
+	if err != nil {
+		t.Errorf("unexpected Namespaces().Create() error: %v", err)
+
+		return
+	}
+
 	instances := instancestoresql.NewSQLInstanceStore(db)
 
 	err = instances.DeleteOldInstances(context.Background(), time.Now())
@@ -639,6 +683,7 @@ func Test_sqlInstanceStore_DeleteOldInstances(t *testing.T) {
 
 	args := &instancestore.CreateInstanceDataArgs{
 		ID:           id,
+		NamespaceID:  ns.ID,
 		Server:       server,
 		Invoker:      "cron",
 		WorkflowPath: "/test.yaml",
@@ -717,9 +762,9 @@ type: noop
 func Test_sqlInstanceStore_GetNamespaceInstanceCounts(t *testing.T) {
 	server := uuid.New()
 
-	db, err := database.NewMockGorm()
+	db, err := database.NewTestDataStore(t)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 	instances := instancestoresql.NewSQLInstanceStore(db)
 
@@ -746,37 +791,37 @@ type: noop
 	}
 
 	tests = append(tests, assertInstanceStoreCorrectGetNamespaceInstancesTest{
-		name: "validCase",
-		args: args,
-		nsID: uuid.New(),
-		ids:  []uuid.UUID{},
+		name:      "validCase",
+		args:      args,
+		namespace: uuid.New().String(),
+		ids:       []uuid.UUID{},
 	})
 
 	tests = append(tests, assertInstanceStoreCorrectGetNamespaceInstancesTest{
-		name: "validCase",
-		args: args,
-		nsID: uuid.New(),
-		ids:  []uuid.UUID{uuid.New()},
+		name:      "validCase",
+		args:      args,
+		namespace: uuid.New().String(),
+		ids:       []uuid.UUID{uuid.New()},
 	})
 
-	nsID := uuid.New()
+	namespace := uuid.New().String()
 	tests = append(tests, assertInstanceStoreCorrectGetNamespaceInstancesTest{
-		name: "validCase",
-		args: args,
-		nsID: nsID,
-		ids:  []uuid.UUID{uuid.New(), uuid.New(), uuid.New()},
+		name:      "validCase",
+		args:      args,
+		namespace: namespace,
+		ids:       []uuid.UUID{uuid.New(), uuid.New(), uuid.New()},
 	})
 
 	tests = append(tests, assertInstanceStoreCorrectGetNamespaceInstancesTest{
-		name: "validCase",
-		args: args,
-		nsID: uuid.New(),
-		ids:  []uuid.UUID{},
+		name:      "validCase",
+		args:      args,
+		namespace: uuid.New().String(),
+		ids:       []uuid.UUID{},
 	})
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assertInstanceStoreCorrectGetNamespaceInstances(t, instances, tt.args, tt.nsID, tt.ids)
+			assertInstanceStoreCorrectGetNamespaceInstances(t, db, instances, tt.args, tt.namespace, tt.ids)
 		})
 	}
 
@@ -794,7 +839,14 @@ type: noop
 		return
 	}
 
-	res, err := instances.GetNamespaceInstanceCounts(context.Background(), nsID, wfPath)
+	ns, err := datastoresql.NewSQLStore(db, "some_secret_key_").Namespaces().GetByName(context.Background(), namespace)
+	if err != nil {
+		t.Errorf("unexpected Namespaces().GetByName() error: %v", err)
+
+		return
+	}
+
+	res, err := instances.GetNamespaceInstanceCounts(context.Background(), ns.ID, wfPath)
 	if err != nil {
 		t.Errorf("unexpected GetNamespaceInstances() error: %v", err)
 

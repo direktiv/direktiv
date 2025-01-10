@@ -24,6 +24,7 @@ func RenderGatewayFiles(db *database.SQLStore, manager core.GatewayManager) {
 
 	var consumers []core.Consumer
 	var endpoints []core.Endpoint
+	var gateways []core.Gateway
 
 	for _, ns := range nsList {
 		slog = slog.With("namespace", ns.Name)
@@ -38,10 +39,12 @@ func RenderGatewayFiles(db *database.SQLStore, manager core.GatewayManager) {
 				consumers = append(consumers, core.ParseConsumerFile(ns.Name, file.Path, file.Data))
 			} else if file.Typ == filestore.FileTypeEndpoint {
 				endpoints = append(endpoints, core.ParseEndpointFile(ns.Name, file.Path, file.Data))
+			} else if file.Typ == filestore.FileTypeGateway {
+				gateways = append(gateways, core.ParseGatewayFile(ns.Name, file.Path, file.Data))
 			}
 		}
 	}
-	err = manager.SetEndpoints(endpoints, consumers)
+	err = manager.SetEndpoints(endpoints, consumers, gateways)
 	if err != nil {
 		slog.Error("render gateway files", "err", err)
 	}

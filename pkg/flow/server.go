@@ -21,6 +21,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	eventsstore "github.com/direktiv/direktiv/pkg/events"
+	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
@@ -409,6 +410,14 @@ func initDB(config *core.Config) (*gorm.DB, error) {
 		return nil, fmt.Errorf("provisioning schema, err: %w", res.Error)
 	}
 	slog.Info("Schema provisioned successfully")
+
+	if extensions.AdditionalSchema != nil {
+		res = db.Exec(extensions.AdditionalSchema())
+		if res.Error != nil {
+			return nil, fmt.Errorf("provisioning additional schema, err: %w", res.Error)
+		}
+		slog.Info("Additional schema provisioned successfully")
+	}
 
 	gdb, err := db.DB()
 	if err != nil {

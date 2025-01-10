@@ -2,6 +2,7 @@ package datastoresql_test
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/database"
@@ -10,20 +11,21 @@ import (
 )
 
 func Test_Secrets(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
 	}
 	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 	err = ds.Secrets().Set(context.Background(), &datastore.Secret{
 		Name:      "test",
-		Namespace: "ns",
+		Namespace: ns.Name,
 		Data:      []byte("value"),
 	})
 	if err != nil {
 		t.Errorf("error: %v", err)
 	}
-	res, err := ds.Secrets().Get(context.Background(), "ns", "test")
+
+	res, err := ds.Secrets().Get(context.Background(), ns.Name, "test")
 	if err != nil {
 		t.Errorf("error: %v", err)
 	}

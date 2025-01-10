@@ -124,6 +124,21 @@
                       type: string
                       description: timestamp of last updating date
 
+  delete:
+    tags:
+      - variables
+    summary: Removes multiple direktiv variables
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - in: query
+        name: ids
+        schema:
+          type: string
+        description: Comma separated string of variables ids
+    responses:
+      "200":
+        description:  objects deleted successfully
+
 /api/v2/namespaces/{namespace}/variables/{variableID}:
   get:
     tags:

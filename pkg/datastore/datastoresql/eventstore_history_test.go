@@ -15,15 +15,12 @@ import (
 )
 
 func setupEventHistoryStore(t *testing.T) (datastore.EventHistoryStore, uuid.UUID, string) {
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unexpected NewMockGorm() error: %v", err)
+		t.Fatalf("unexpected NewTestDataStoreWithNamespace() error: %v", err)
 	}
 
-	ns := uuid.New()
-	nsName := ns.String()
-
-	return datastoresql.NewSQLStore(db, "some key").EventHistory(), ns, nsName
+	return datastoresql.NewSQLStore(db, "some_secret_key_").EventHistory(), ns.ID, ns.Name
 }
 
 // func Test_EventStoreAddGet(t *testing.T) {
@@ -73,7 +70,7 @@ func Test_EventStoreAddGetNew(t *testing.T) {
 	assertEventsAdded(t, hist, ns)
 
 	// Test GetOld() method
-	testGetOld(t, hist, ns)
+	testGetOld(t, hist, ns, nsName)
 }
 
 func Test_DeleteOldEvents(t *testing.T) {
@@ -157,9 +154,9 @@ func assertEventsAdded(t *testing.T, hist datastore.EventHistoryStore, ns uuid.U
 	}
 }
 
-func testGetOld(t *testing.T, hist datastore.EventHistoryStore, ns uuid.UUID) {
+func testGetOld(t *testing.T, hist datastore.EventHistoryStore, ns uuid.UUID, nsName string) {
 	// Test GetOld() method
-	res, err := hist.GetOld(context.Background(), ns.String(), time.Now().UTC())
+	res, err := hist.GetOld(context.Background(), nsName, time.Now().UTC())
 	if err != nil {
 		t.Error(err)
 		return
