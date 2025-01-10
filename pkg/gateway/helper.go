@@ -18,6 +18,17 @@ func isAuthPlugin(p core.Plugin) bool {
 	return strings.Contains(p.Type(), "-auth") || strings.Contains(p.Type(), "auth-")
 }
 
+func filterNamespacedGateways(gateways []core.Gateway, namespace string) []core.Gateway {
+	list := []core.Gateway{}
+	for _, item := range gateways {
+		if item.Namespace == namespace {
+			list = append(list, item)
+		}
+	}
+
+	return list
+}
+
 func filterNamespacedConsumers(consumers []core.Consumer, namespace string) []core.Consumer {
 	list := []core.Consumer{}
 	for _, item := range consumers {
