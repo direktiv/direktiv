@@ -1,7 +1,6 @@
 package core
 
 import (
-	"context"
 	"net/http"
 	"net/url"
 	"path"
@@ -130,12 +129,6 @@ func ParseGatewayFile(ns string, filePath string, data []byte) Gateway {
 	base.Paths = openapi3.NewPaths()
 	base.Servers = openapi3.Servers{}
 	gw.RenderedBase = *base
-
-	err = base.Validate(context.Background())
-	if err != nil {
-		gw.Errors = append(gw.Errors, err.Error())
-		return gw
-	}
 
 	return gw
 }

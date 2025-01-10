@@ -77,6 +77,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.URL.Path, "/info") {
 		ns := chi.URLParam(r, "namespace")
 		if ns != "" {
+			//nolint:contextcheck
 			WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns))
 			return
 		}
@@ -189,11 +190,9 @@ func gatewayForAPI(gateways []core.Gateway, ns string) any {
 			gw.Spec.Info = &openapi3.Info{}
 		}
 
-		if gw.Spec.Info.Title == "" {
-			gw.Spec.Info.Title = ns
-		}
-		if gw.Spec.Info.Version == "" {
-			gw.Spec.Info.Version = "1.0"
+		err := gw.Spec.Validate(context.TODO())
+		if err != nil {
+			gw.Errors = append(gw.Errors, err.Error())
 		}
 	}
 
@@ -205,7 +204,7 @@ func gatewayForAPI(gateways []core.Gateway, ns string) any {
 		}
 
 		gw.Errors = append(gw.Errors,
-			fmt.Sprintf("multiple gateway specifications found: %s", strings.Join(f, ", ")))
+			fmt.Sprintf("multiple gateway specifications found: %s but using %s.", strings.Join(f, ", "), gw.FilePath))
 	}
 
 	return gw

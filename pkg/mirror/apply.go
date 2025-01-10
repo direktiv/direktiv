@@ -309,7 +309,8 @@ func (o *DirektivApplyer) copyGatewayIntoRoot(ctx context.Context) error {
 
 	for _, path := range paths {
 		data := o.parser.Gateways[path]
-		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeGateway, "application/yaml", data)
+		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path,
+			filestore.FileTypeGateway, "application/yaml", data)
 		if err != nil {
 			return err
 		}
