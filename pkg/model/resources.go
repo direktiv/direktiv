@@ -134,34 +134,7 @@ func LoadResource(data []byte) (interface{}, error) {
 		return base, nil
 
 	case EndpointAPIV2:
-		// loader := openapi3.NewLoader()
-		// loader.IsExternalRefsAllowed = true
-
-		// // don't follow any ref in this doc
-		// loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
-		// 	return nil, nil
-		// }
-
-		// route, err := loader.LoadFromData(data)
-		// if err != nil {
-
-		// }
-
-		// actual, err := route.MarshalYAML()
-		// if err != nil {
-		// 	return nil, fmt.Errorf("marshall one")
-		// }
-
-		// cc, err := yaml.Marshal(actual)
-		// if err != nil {
-		// 	return nil, fmt.Errorf("marshall two")
-		// }
-
-		// fmt.Println(string(cc))
-
-		// fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!123")
-		// fmt.Println(err)
-		// fmt.Println(reflect.TypeOf(route))
+		// TODO:
 		fallthrough
 	default:
 		return nil, fmt.Errorf("error parsing direktiv resource: invalid 'direktiv_api': \"%s\"", s)
