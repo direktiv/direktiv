@@ -14,7 +14,7 @@ import { SelectPageSize } from "./components/SelectPageSize";
 import SendEvent from "./SendEvent";
 import ViewEvent from "./ViewEvent";
 import { useEvents } from "~/api/events/query/get";
-import { useEventsPageSize } from "~/util/store/events";
+import { useEventsPageSize } from "~/util/store/pagesizes/events";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
