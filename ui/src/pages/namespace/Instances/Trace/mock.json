@@ -1,7 +1,7 @@
 {
   "meta": {
     "traceID": "0HQJiNTMQ19MoeHx/5OdlA==",
-    "totalDurationNano": 20000000000,
+    "totalDurationNano": 600000000000,
     "totalIterations": 4,
     "status": "completed",
     "workflow": "foreach-wf.yaml",
@@ -12,8 +12,8 @@
     {
       "spanId": "cN96V7Xge98=",
       "name": "Creating a new instance",
-      "startTimeUnixNano": "1734005381462114393",
-      "endTimeUnixNano": "1734005381464035060",
+      "startTimeUnixNano": "0",
+      "endTimeUnixNano": "620000000000",
       "details": {
         "workflow": "foreach-wf.yaml",
         "instance": "a1c9a9a6-1bec-477b-b52f-6098f4333748",
@@ -24,8 +24,8 @@
         {
           "spanId": "6nyTA0A+sYM=",
           "name": "Preparing foreach loop state",
-          "startTimeUnixNano": "1734005381467519937",
-          "endTimeUnixNano": "1734005381469956403",
+          "startTimeUnixNano": "110000000000",
+          "endTimeUnixNano": "600000000000",
           "details": {
             "workflow": "foreach-wf.yaml",
             "state": "solve",
@@ -36,8 +36,8 @@
             {
               "spanId": "DhmC4vGcRvw=",
               "name": "Executing knative request for object 1",
-              "startTimeUnixNano": "1734005381468004980",
-              "endTimeUnixNano": "1734005386739583394",
+              "startTimeUnixNano": "210000000000",
+              "endTimeUnixNano": "320000000000",
               "details": {
                 "workflow": "foreach-wf.yaml",
                 "state": "solve",
@@ -49,8 +49,8 @@
                 {
                   "spanId": "nRoakFbP6dw=",
                   "name": "Processing action result for object 1",
-                  "startTimeUnixNano": "1734005386743850737",
-                  "endTimeUnixNano": "1734005386744213218",
+                  "startTimeUnixNano": "310000000000",
+                  "endTimeUnixNano": "320000000000",
                   "details": {
                     "workflow": "foreach-wf.yaml",
                     "state": "solve",
@@ -62,8 +62,8 @@
             {
               "spanId": "SZAyGl8SZf4=",
               "name": "Executing knative request for object 2",
-              "startTimeUnixNano": "1734005386744288026",
-              "endTimeUnixNano": "1734005386751184845",
+              "startTimeUnixNano": "330000000000",
+              "endTimeUnixNano": "400000000000",
               "details": {
                 "workflow": "foreach-wf.yaml",
                 "state": "solve",
@@ -75,8 +75,8 @@
                 {
                   "spanId": "/x+ZEaW+4BU=",
                   "name": "Processing action result for object 2",
-                  "startTimeUnixNano": "1734005386748177635",
-                  "endTimeUnixNano": "1734005386748251552",
+                  "startTimeUnixNano": "410000000000",
+                  "endTimeUnixNano": "420000000000",
                   "details": {
                     "workflow": "foreach-wf.yaml",
                     "state": "solve",
@@ -88,8 +88,8 @@
             {
               "spanId": "sMHAqjg6FG8=",
               "name": "Executing knative request for object 3",
-              "startTimeUnixNano": "1734005386745964991",
-              "endTimeUnixNano": "1734005386756727574",
+              "startTimeUnixNano": "430000000000",
+              "endTimeUnixNano": "520000000000",
               "details": {
                 "workflow": "foreach-wf.yaml",
                 "state": "solve",
@@ -101,8 +101,8 @@
                 {
                   "spanId": "ttEC73gWvhX=",
                   "name": "Processing action result for object 3",
-                  "startTimeUnixNano": "1734005386743823456",
-                  "endTimeUnixNano": "1734005386744889840",
+                  "startTimeUnixNano": "510000000000",
+                  "endTimeUnixNano": "520000000000",
                   "details": {
                     "workflow": "foreach-wf.yaml",
                     "state": "solve",
@@ -114,8 +114,8 @@
             {
               "spanId": "ttEC73gWvhZ=",
               "name": "Executing knative request for object 4",
-              "startTimeUnixNano": "1734005386746789005",
-              "endTimeUnixNano": "1734005386754789893",
+              "startTimeUnixNano": "530000000000",
+              "endTimeUnixNano": "600000000000",
               "details": {
                 "workflow": "foreach-wf.yaml",
                 "state": "solve",
@@ -127,8 +127,8 @@
                 {
                   "spanId": "ttEC73gWvhY=",
                   "name": "Processing action result for object 4",
-                  "startTimeUnixNano": "1734005386746889644",
-                  "endTimeUnixNano": "1734005386749876544",
+                  "startTimeUnixNano": "590000000000",
+                  "endTimeUnixNano": "600000000000",
                   "details": {
                     "workflow": "foreach-wf.yaml",
                     "state": "solve",
@@ -142,8 +142,8 @@
         {
           "spanId": "Vnp1ctxPN5E=",
           "name": "Workflow completed",
-          "startTimeUnixNano": "1734005386754976623",
-          "endTimeUnixNano": "1734005386758330684",
+          "startTimeUnixNano": "610000000000",
+          "endTimeUnixNano": "620000000000",
           "details": {
             "workflow": "foreach-wf.yaml",
             "instance": "a1c9a9a6-1bec-477b-b52f-6098f4333748",
