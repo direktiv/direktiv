@@ -23,7 +23,7 @@ export const Pagination = ({
     (pageNumber - 1) * itemsPerPage;
 
   const numberOfItems = totalItems ?? 0;
-  const pages = Math.ceil(numberOfItems / itemsPerPage);
+  const pages = Math.max(1, Math.ceil(numberOfItems / itemsPerPage));
   const currentPage = Math.ceil(offset / itemsPerPage) + 1;
   const isFirstPage = currentPage === 1;
   const isLastPage = currentPage === pages;
