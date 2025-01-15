@@ -1131,7 +1131,8 @@
         "passphrase": "Passphrase to decrypt keys (optional).",
         "privateKey": "Private SSH key used for authentication via git@ url.",
         "publicKey": "Public SSH key used for authenticating via git@ url.",
-        "insecure": "This will skip all checks for TLS certificate validity (only relevant for https and ssh, has no effect on http)"
+        "insecure": "This will skip all checks for TLS certificate validity (only relevant for https and ssh, has no effect on http)",
+        "systemNamespaceTooltip": "Using the name 'system' will create a privileged namespace with special system-wide impacts"
       }
     },
     "button": {
@@ -1173,7 +1174,7 @@
       "placeholder": "Select Namespace",
       "loading": "loading...",
       "optionDoesNotExist": "{{namespace}} (does not exist)",
-      "systemNamespaceTooltip": "This scope is a utility to make miscellaneous information accessible to an instance."
+      "systemNamespaceTooltip": "A privileged namespace with special system-wide impacts"
     },
     "variableForm": {
       "title": {

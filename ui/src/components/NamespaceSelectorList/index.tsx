@@ -1,11 +1,4 @@
-import {
-  Check,
-  Circle,
-  CircleHelp,
-  Loader2,
-  Square,
-  Wrench,
-} from "lucide-react";
+import { Check, Circle, Loader2, Square } from "lucide-react";
 import {
   CommandEmpty,
   CommandGroup,
@@ -14,13 +7,8 @@ import {
   CommandList,
   CommandStaticItem,
 } from "~/design/Command";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/design/Tooltip";
 
+import InfoTooltip from "../NamespaceEdit/InfoTooltip";
 import { twMergeClsx } from "~/util/helpers";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNamespace } from "~/util/store/namespace";
@@ -85,20 +73,11 @@ export const NamespaceSelectorList = ({
                       {ns.name}
                       {ns.isSystemNamespace ? (
                         <>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger className="underline font-normal text-gray-400">
-                                System
-                              </TooltipTrigger>
-                              <TooltipContent className="w-[300px]">
-                                <p>
-                                  {t(
-                                    "components.namespaceSelector.systemNamespaceTooltip"
-                                  )}
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                          <InfoTooltip>
+                            {t(
+                              "components.namespaceSelector.systemNamespaceTooltip"
+                            )}
+                          </InfoTooltip>
                         </>
                       ) : (
                         ""
