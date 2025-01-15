@@ -15,6 +15,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 )
 
@@ -29,6 +30,7 @@ type Parser struct {
 	Services  map[string][]byte
 	Endpoints map[string][]byte
 	Consumers map[string][]byte
+	Gateways  map[string][]byte
 
 	DeprecatedNamespaceVars map[string][]byte
 	DeprecatedWorkflowVars  map[string]map[string][]byte
@@ -52,6 +54,7 @@ func NewParser(log FormatLogger, src Source) (*Parser, error) {
 		Services:  make(map[string][]byte),
 		Endpoints: make(map[string][]byte),
 		Consumers: make(map[string][]byte),
+		Gateways:  make(map[string][]byte),
 
 		DeprecatedNamespaceVars: make(map[string][]byte),
 		DeprecatedWorkflowVars:  make(map[string]map[string][]byte),
@@ -294,6 +297,11 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		if err != nil {
 			return err
 		}
+	case *openapi3.T:
+		err = p.handleGateway(path, data)
+		if err != nil {
+			return err
+		}
 	default:
 		panic(typ)
 	}
@@ -383,6 +391,14 @@ func (p *Parser) handleService(path string, data []byte) error {
 	p.log.Infof("Direktiv resource file containing a service definition found at '%s'", path)
 
 	p.Services[path] = data
+
+	return nil
+}
+
+func (p *Parser) handleGateway(path string, data []byte) error {
+	p.log.Infof("Direktiv resource file containing a gateway definition found at '%s'", path)
+
+	p.Gateways[path] = data
 
 	return nil
 }
