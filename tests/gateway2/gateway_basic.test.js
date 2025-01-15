@@ -12,68 +12,68 @@ import { retry10 } from '../common/retry'
 
 const namespace = basename(__filename)
 
-// describe('Test gateway no basic file', () => {
-// 	beforeAll(helpers.deleteAllNamespaces)
-// 	helpers.itShouldCreateNamespace(it, expect, namespace)
+describe('Test gateway no basic file', () => {
+	beforeAll(helpers.deleteAllNamespaces)
+	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-// 	retry10(`should  get virtual config file`, async () => {
-// 		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
-// 			.send({})
-// 		expect(res.statusCode).toEqual(200)
-// 		expect(res.body.data.file_path).toEqual('virtual')
-// 		expect(res.body.data.spec.paths).toEqual({})
-// 	})
-// })
+	retry10(`should  get virtual config file`, async () => {
+		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
+			.send({})
+		expect(res.statusCode).toEqual(200)
+		expect(res.body.data.file_path).toEqual('virtual')
+		expect(res.body.data.spec.paths).toEqual({})
+	})
+})
 
-// describe('Test gateway basic file', () => {
-// 	beforeAll(helpers.deleteAllNamespaces)
-// 	helpers.itShouldCreateNamespace(it, expect, namespace)
+describe('Test gateway basic file', () => {
+	beforeAll(helpers.deleteAllNamespaces)
+	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-// 	helpers.itShouldCreateYamlFile(it, expect, namespace,
-// 		'/', 'gw.yaml', 'gateway', `
-// openapi: 3.0.0
-// x-direktiv-api: gateway/v1
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
+		'/', 'gw.yaml', 'gateway', `
+openapi: 3.0.0
+x-direktiv-api: gateway/v1
 
-// info:
-//    title: mytitle
-//    version: myversion
-// `)
+info:
+   title: mytitle
+   version: myversion
+`)
 
-// 	retry10(`should  get virtual config file`, async () => {
-// 		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
-// 			.send({})
-// 		expect(res.statusCode).toEqual(200)
-// 		expect(res.body.data.file_path).toEqual('/gw.yaml')
-// 		expect(res.body.data.spec.info.title).toEqual("mytitle")
-// 		expect(res.body.data.spec.info.version).toEqual("myversion")
-// 	})
+	retry10(`should  get virtual config file`, async () => {
+		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
+			.send({})
+		expect(res.statusCode).toEqual(200)
+		expect(res.body.data.file_path).toEqual('/gw.yaml')
+		expect(res.body.data.spec.info.title).toEqual("mytitle")
+		expect(res.body.data.spec.info.version).toEqual("myversion")
+	})
 
-// })
+})
 
-// describe('Test gateway broken basic file', () => {
-// 	beforeAll(helpers.deleteAllNamespaces)
-// 	helpers.itShouldCreateNamespace(it, expect, namespace)
+describe('Test gateway broken basic file', () => {
+	beforeAll(helpers.deleteAllNamespaces)
+	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-// 	helpers.itShouldCreateYamlFile(it, expect, namespace,
-// 		'/', 'gw.yaml', 'gateway', `
-// openapi: 3.0.0
-// x-direktiv-api: gateway/v1
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
+		'/', 'gw.yaml', 'gateway', `
+openapi: 3.0.0
+x-direktiv-api: gateway/v1
 
-// info:
-//    title: mytitle
-//    version: myversion
+info:
+   title: mytitle
+   version: myversion
 
-// additional:
-//    key: value
-// `)
+additional:
+   key: value
+`)
 
-// 	retry10(`should  get virtual config file`, async () => {
-// 		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
-// 			.send({})
-// 		expect(res.statusCode).toEqual(200)
-// 		expect(res.body.data.errors.length).toEqual(1)
-// 	})
-// })
+	retry10(`should  get virtual config file`, async () => {
+		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
+			.send({})
+		expect(res.statusCode).toEqual(200)
+		expect(res.body.data.errors.length).toEqual(1)
+	})
+})
 
 
 describe('Test gateway with multiple basic files', () => {
@@ -109,3 +109,5 @@ info:
 	})
 
 })
+
+// TODO: test broken spec

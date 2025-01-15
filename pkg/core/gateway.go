@@ -1,8 +1,9 @@
 package core
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
-	"net/url"
 	"path"
 	"strings"
 
@@ -13,11 +14,10 @@ import (
 type GatewayManager interface {
 	http.Handler
 
-	SetEndpoints(list []Endpoint, cList []Consumer, baseDefs []Gateway) error
+	SetEndpoints(list []Endpoint, cList []Consumer, gList []Gateway) error
 }
 
-type EndpointFile struct {
-	DirektivAPI    string        `yaml:"direktiv_api"`
+type EndpointConfig struct {
 	Methods        []string      `yaml:"methods"`
 	Path           string        `yaml:"path"`
 	AllowAnonymous bool          `yaml:"allow_anonymous"`
@@ -64,7 +64,9 @@ type Gateway struct {
 }
 
 type Endpoint struct {
-	EndpointFile
+	RenderedPathItem openapi3.PathItem
+
+	Config EndpointConfig
 
 	Namespace string
 	FilePath  string
@@ -113,13 +115,22 @@ func ParseGatewayFile(ns string, filePath string, data []byte) Gateway {
 		Errors:    make([]string, 0),
 	}
 
-	loader := openapi3.NewLoader()
-	loader.IsExternalRefsAllowed = true
-	loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
-		return nil, nil
+	var docMap map[string]interface{}
+	err := yaml.Unmarshal(data, &docMap)
+	if err != nil {
+		gw.Errors = append(gw.Errors, err.Error())
+		return gw
 	}
 
-	base, err := loader.LoadFromData(data)
+	// convert to JSON for openapi library
+	b, err := json.Marshal(docMap)
+	if err != nil {
+		gw.Errors = append(gw.Errors, err.Error())
+		return gw
+	}
+
+	base := &openapi3.T{}
+	err = base.UnmarshalJSON(b)
 	if err != nil {
 		gw.Errors = append(gw.Errors, err.Error())
 		return gw
@@ -130,47 +141,124 @@ func ParseGatewayFile(ns string, filePath string, data []byte) Gateway {
 	base.Servers = openapi3.Servers{}
 	gw.RenderedBase = *base
 
+	// check for gateway spec api
+	api, ok := gw.RenderedBase.Extensions["x-direktiv-api"]
+	if !ok || api != "gateway/v1" {
+		gw.Errors = append(gw.Errors, "invalid gateway api version")
+	}
+
 	return gw
 }
 
 func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
-	res := &EndpointFile{}
-	err := yaml.Unmarshal(data, res)
-	if err != nil {
-		return Endpoint{
-			Namespace: ns,
-			FilePath:  filePath,
-			Errors:    []string{err.Error()},
-		}
-	}
-	if res.Path != "" {
-		res.Path = path.Clean("/" + res.Path)
-	}
-	if !strings.HasPrefix(res.DirektivAPI, "endpoint/v1") {
-		return Endpoint{
-			Namespace: ns,
-			FilePath:  filePath,
-			Errors:    []string{"invalid endpoint api version"},
-		}
-	}
-	if res.PluginsConfig.Target.Typ == "" {
-		return Endpoint{
-			Namespace: ns,
-			FilePath:  filePath,
-			Errors:    []string{"no target plugin found"},
-		}
-	}
-	if !res.AllowAnonymous && len(res.PluginsConfig.Auth) == 0 {
-		return Endpoint{
-			Namespace: ns,
-			FilePath:  filePath,
-			Errors:    []string{"no auth plugin configured but 'allow_anonymous' set false"},
-		}
+	ep := Endpoint{
+		Namespace: ns,
+		FilePath:  filePath,
+		Errors:    make([]string, 0),
 	}
 
-	return Endpoint{
-		Namespace:    ns,
-		FilePath:     filePath,
-		EndpointFile: *res,
+	var pathItemMap map[string]interface{}
+	err := yaml.Unmarshal(data, &pathItemMap)
+	if err != nil {
+		ep.Errors = append(ep.Errors, err.Error())
+		return ep
 	}
+
+	// convert to JSON for openapi library
+	b, err := json.Marshal(pathItemMap)
+	if err != nil {
+		ep.Errors = append(ep.Errors, err.Error())
+		return ep
+	}
+
+	var pathItem openapi3.PathItem
+	err = pathItem.UnmarshalJSON(b)
+	if err != nil {
+		ep.Errors = append(ep.Errors, err.Error())
+		return ep
+	}
+
+	api, ok := pathItem.Extensions["x-direktiv-api"]
+	if !ok || api != "endpoint/v2" {
+		ep.Errors = append(ep.Errors, "invalid endpoint api version")
+		return ep
+	}
+
+	config, err := parseConfig(&pathItem)
+	if err != nil {
+		ep.Errors = append(ep.Errors, err.Error())
+		return ep
+	}
+
+	// add methods
+	config.Methods = extractMethods(&pathItem)
+
+	// check for other errors
+	if config.Path != "" {
+		config.Path = path.Clean("/" + config.Path)
+	}
+
+	if config.PluginsConfig.Target.Typ == "" {
+		ep.Errors = append(ep.Errors, "no target plugin found")
+		return ep
+	}
+
+	if !config.AllowAnonymous && len(config.PluginsConfig.Auth) == 0 {
+		ep.Errors = append(ep.Errors, "no auth plugin configured but 'allow_anonymous' set false")
+		return ep
+	}
+
+	ep.Config = config
+	ep.RenderedPathItem = pathItem
+
+	return ep
+}
+
+func extractMethods(pathItem *openapi3.PathItem) []string {
+	methods := make([]string, 0)
+
+	// add methods
+	if pathItem.Get != nil {
+		methods = append(methods, http.MethodGet)
+	}
+	if pathItem.Put != nil {
+		methods = append(methods, http.MethodPut)
+	}
+	if pathItem.Post != nil {
+		methods = append(methods, http.MethodPost)
+	}
+	if pathItem.Delete != nil {
+		methods = append(methods, http.MethodDelete)
+	}
+	if pathItem.Options != nil {
+		methods = append(methods, http.MethodOptions)
+	}
+	if pathItem.Head != nil {
+		methods = append(methods, http.MethodHead)
+	}
+	if pathItem.Patch != nil {
+		methods = append(methods, http.MethodPatch)
+	}
+	if pathItem.Trace != nil {
+		methods = append(methods, http.MethodTrace)
+	}
+
+	return methods
+}
+
+func parseConfig(pathItem *openapi3.PathItem) (EndpointConfig, error) {
+	var config EndpointConfig
+
+	c, ok := pathItem.Extensions["x-direktiv-config"]
+	if !ok {
+		return config, fmt.Errorf("no endpoint configuration found")
+	}
+
+	ct, err := yaml.Marshal(c)
+	if err != nil {
+		return config, err
+	}
+
+	err = yaml.Unmarshal(ct, &config)
+	return config, err
 }

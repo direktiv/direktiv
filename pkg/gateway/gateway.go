@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"path"
+	"path/filepath"
 	"slices"
 	"strings"
 	"sync/atomic"
@@ -12,6 +14,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
 	"github.com/pkg/errors"
@@ -60,7 +63,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.URL.Path, "/routes") {
 		ns := chi.URLParam(r, "namespace")
 		if ns != "" {
-			WriteJSON(w, endpointsForAPI(filterNamespacedEndpoints(inner.endpoints, ns, r.URL.Query().Get("path"))))
+			WriteJSON(w, endpointsForAPI(filterNamespacedEndpoints(inner.endpoints, ns, r.URL.Query().Get("path")), ns, m.db.FileStore()))
 			return
 		}
 	}
@@ -78,7 +81,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		ns := chi.URLParam(r, "namespace")
 		if ns != "" {
 			//nolint:contextcheck
-			WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns))
+			WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns, m.db.FileStore(), inner.endpoints))
 			return
 		}
 	}
@@ -158,24 +161,26 @@ func consumersForAPI(consumers []core.Consumer) any {
 	return result
 }
 
-func gatewayForAPI(gateways []core.Gateway, ns string) any {
+func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileStore, endpoints []core.Endpoint) any {
 	type output struct {
 		Spec     openapi3.T `json:"spec"`
 		FilePath string     `json:"file_path"`
 		Errors   []string   `json:"errors"`
 	}
 
+	defaultSpec := openapi3.T{
+		OpenAPI: "3.0.0",
+		Info: &openapi3.Info{
+			Title:   ns,
+			Version: "1.0",
+		},
+		Paths: openapi3.NewPaths(),
+	}
+
 	gw := output{
 		FilePath: "virtual",
 		Errors:   make([]string, 0),
-		Spec: openapi3.T{
-			OpenAPI: "3.0.0",
-			Info: &openapi3.Info{
-				Title:   ns,
-				Version: "1.0",
-			},
-			Paths: openapi3.NewPaths(),
-		},
+		Spec:     defaultSpec,
 	}
 
 	// we always take the first one, even if there are more
@@ -190,10 +195,59 @@ func gatewayForAPI(gateways []core.Gateway, ns string) any {
 			gw.Spec.Info = &openapi3.Info{}
 		}
 
-		err := gw.Spec.Validate(context.TODO())
+		loader := openapi3.NewLoader()
+		loader.IsExternalRefsAllowed = true
+		loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
+			// check if the refs exist
+			path := url.String()
+
+			// if not absolute we need to calculate path
+			if !filepath.IsAbs(url.String()) {
+				p, err := filepath.Rel(filepath.Dir(g.FilePath),
+					filepath.Join(filepath.Dir(g.FilePath), url.String()))
+				if err != nil {
+					return nil, err
+				}
+				path = p
+			}
+
+			_, err := fileStore.ForNamespace(ns).GetFile(context.Background(), path)
+			if err != nil {
+				return nil, err
+			}
+
+			return nil, err
+		}
+
+		// the marshal/unmarshall panics in openapi library
+		// change it to default for that
+		err := loader.ResolveRefsIn(&gw.Spec, nil)
 		if err != nil {
+			gw.Spec = defaultSpec
 			gw.Errors = append(gw.Errors, err.Error())
 		}
+
+		err = gw.Spec.Validate(context.Background())
+		if err != nil {
+			gw.Spec = defaultSpec
+			gw.Errors = append(gw.Errors, err.Error())
+		}
+
+		// add routes
+		paths := make([]openapi3.NewPathsOption, 0)
+		for _, item := range endpoints {
+			if len(item.Errors) == 0 {
+				rel, err := filepath.Rel(filepath.Dir(g.FilePath), item.FilePath)
+				if err != nil {
+					rel = item.FilePath
+				}
+				paths = append(paths, openapi3.WithPath(item.Config.Path, &openapi3.PathItem{
+					Ref: rel,
+				}))
+			}
+		}
+
+		gw.Spec.Paths = openapi3.NewPaths(paths...)
 	}
 
 	// if there are more, it is an error
@@ -210,47 +264,78 @@ func gatewayForAPI(gateways []core.Gateway, ns string) any {
 	return gw
 }
 
-func endpointsForAPI(endpoints []core.Endpoint) any {
+func endpointsForAPI(endpoints []core.Endpoint, ns string, fileStore filestore.FileStore) any {
 	type output struct {
-		Methods        []string `json:"methods"`
-		Path           string   `json:"path,omitempty"`
-		AllowAnonymous bool     `json:"allow_anonymous"`
-		PluginsConfig  struct {
-			Auth     []core.PluginConfig `json:"auth,omitempty"`
-			Inbound  []core.PluginConfig `json:"inbound,omitempty"`
-			Target   core.PluginConfig   `json:"target,omitempty"`
-			Outbound []core.PluginConfig `json:"outbound,omitempty"`
-		} `json:"plugins"`
-		Timeout    int      `json:"timeout"`
-		FilePath   string   `json:"file_path"`
-		Errors     []string `json:"errors"`
-		ServerPath string   `json:"server_path"`
-		Warnings   []string `json:"warnings"`
+		PathItem   openapi3.PathItem `json:"path_item"`
+		FilePath   string            `json:"file_path"`
+		Errors     []string          `json:"errors"`
+		ServerPath string            `json:"server_path"`
+		Warnings   []string          `json:"warnings"`
 	}
 
 	result := []any{}
+
+	l := openapi3.NewLoader()
+	l.IsExternalRefsAllowed = true
+
 	for _, item := range endpoints {
 		newItem := output{
-			Methods:        item.Methods,
-			Path:           item.Path,
-			AllowAnonymous: item.AllowAnonymous,
-			Timeout:        item.Timeout,
-			FilePath:       item.FilePath,
-			Errors:         item.Errors,
+			FilePath: item.FilePath,
+			Errors:   item.Errors,
+			PathItem: item.RenderedPathItem,
 		}
-		newItem.PluginsConfig.Auth = item.PluginsConfig.Auth
-		newItem.PluginsConfig.Inbound = item.PluginsConfig.Inbound
-		newItem.PluginsConfig.Target = item.PluginsConfig.Target
-		newItem.PluginsConfig.Outbound = item.PluginsConfig.Outbound
 
 		newItem.Warnings = []string{}
 		if newItem.Errors == nil {
 			newItem.Errors = []string{}
 		}
+
+		// create fake doc for validation
+		doc := &openapi3.T{
+			Paths:   openapi3.NewPaths(openapi3.WithPath(item.FilePath, &item.RenderedPathItem)),
+			OpenAPI: "3.0.0",
+			Info: &openapi3.Info{
+				Title:   "dummy",
+				Version: "1.0.0",
+			},
+		}
+
+		l.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
+			path := url.String()
+
+			// if not absolute we need to calculate path
+			if !filepath.IsAbs(url.String()) {
+				p, err := filepath.Rel(filepath.Dir(item.FilePath),
+					filepath.Join(filepath.Dir(item.FilePath), url.String()))
+				if err != nil {
+					return nil, err
+				}
+				path = p
+			}
+
+			file, err := fileStore.ForNamespace(ns).GetFile(context.Background(), path)
+			if err != nil {
+				return nil, err
+			}
+
+			return fileStore.ForFile(file).GetData(context.Background())
+		}
+
+		err := l.ResolveRefsIn(doc, nil)
+		if err != nil {
+			newItem.Errors = append(newItem.Errors, err.Error())
+		}
+
+		// validate the whole thing
+		err = newItem.PathItem.Validate(context.Background())
+		if err != nil {
+			newItem.Errors = append(newItem.Errors, err.Error())
+		}
+
 		// set server_path
 		// TODO: remove this useless field
-		if item.Path != "" {
-			newItem.ServerPath = path.Clean(fmt.Sprintf("/ns/%s/%s", item.Namespace, item.Path))
+		if item.Config.Path != "" {
+			newItem.ServerPath = path.Clean(fmt.Sprintf("/ns/%s/%s", item.Namespace, item.Config.Path))
 		}
 		result = append(result, newItem)
 	}

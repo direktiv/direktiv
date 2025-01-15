@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -92,16 +93,7 @@ func LoadResource(data []byte) (interface{}, error) {
 		return sf, nil
 
 	case EndpointAPIV1:
-		ef := new(core.EndpointFile)
-		err = yaml.Unmarshal(data, &ef)
-		if err != nil {
-			return &core.EndpointFile{
-				DirektivAPI: s,
-			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
-		}
-
-		return ef, nil
-
+		return &core.EndpointConfig{}, fmt.Errorf("envpoint/v1 not supported anymore (%s)", s)
 	case ConsumerAPIV1:
 		ef := new(core.ConsumerFile)
 		err = yaml.Unmarshal(data, &ef)
@@ -122,7 +114,10 @@ func LoadResource(data []byte) (interface{}, error) {
 			return nil, nil
 		}
 
-		base, err := loader.LoadFromData(data)
+		// it is specified as openapi file, no validation here
+		doc := &openapi3.T{}
+		err = yaml.Unmarshal(data, &doc)
+
 		if err != nil {
 			return &openapi3.T{
 				Extensions: map[string]any{
@@ -131,11 +126,29 @@ func LoadResource(data []byte) (interface{}, error) {
 			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
 		}
 
-		return base, nil
+		return doc, nil
 
 	case EndpointAPIV2:
-		// TODO:
-		fallthrough
+		var pathItemMap map[string]interface{}
+		err = yaml.Unmarshal(data, &pathItemMap)
+		if err != nil {
+			return &core.EndpointConfig{}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
+		}
+
+		// convert to JSON for openapi library
+		b, err := json.Marshal(pathItemMap)
+		if err != nil {
+			return &core.EndpointConfig{}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
+		}
+
+		// source item
+		var pathItem openapi3.PathItem
+		err = pathItem.UnmarshalJSON(b)
+		if err != nil {
+			return &core.EndpointConfig{}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
+		}
+
+		return &pathItem, nil
 	default:
 		return nil, fmt.Errorf("error parsing direktiv resource: invalid 'direktiv_api': \"%s\"", s)
 	}

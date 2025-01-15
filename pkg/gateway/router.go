@@ -39,22 +39,22 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 			continue
 		}
 
-		if _, ok := checkUniqueGatewayPaths[item.Namespace+item.Path]; ok {
-			item.Errors = append(item.Errors, fmt.Sprintf("duplicate gateway path: %s", item.Path))
+		if _, ok := checkUniqueGatewayPaths[item.Namespace+item.Config.Path]; ok {
+			item.Errors = append(item.Errors, fmt.Sprintf("duplicate gateway path: %s", item.Config.Path))
 			endpoints[i] = item
 
 			continue
 		}
-		checkUniqueGatewayPaths[item.Namespace+item.Path] = item.Path
+		checkUniqueGatewayPaths[item.Namespace+item.Config.Path] = item.Config.Path
 
 		// concat plugins configs into one list.
 		pConfigs := []core.PluginConfig{}
-		pConfigs = append(pConfigs, item.PluginsConfig.Auth...)
-		pConfigs = append(pConfigs, item.PluginsConfig.Inbound...)
-		pConfigs = append(pConfigs, item.PluginsConfig.Target)
-		pConfigs = append(pConfigs, item.PluginsConfig.Outbound...)
+		pConfigs = append(pConfigs, item.Config.PluginsConfig.Auth...)
+		pConfigs = append(pConfigs, item.Config.PluginsConfig.Inbound...)
+		pConfigs = append(pConfigs, item.Config.PluginsConfig.Target)
+		pConfigs = append(pConfigs, item.Config.PluginsConfig.Outbound...)
 
-		hasOutboundConfigured := len(item.PluginsConfig.Outbound) > 0
+		hasOutboundConfigured := len(item.Config.PluginsConfig.Outbound) > 0
 
 		// build plugins chain.
 		pChain := []core.Plugin{}
@@ -65,7 +65,7 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 			}
 			pChain = append(pChain, p)
 		}
-		if len(item.PluginsConfig.Auth) == 0 && !item.AllowAnonymous {
+		if len(item.Config.PluginsConfig.Auth) == 0 && !item.Config.AllowAnonymous {
 			item.Errors = append(item.Errors, "AllowAnonymous is false but zero auth plugin configured")
 		}
 		endpoints[i] = item
@@ -75,7 +75,7 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 			continue
 		}
 
-		cleanPath := strings.Trim(item.Path, " /")
+		cleanPath := strings.Trim(item.Config.Path, " /")
 
 		for _, pattern := range []string{
 			fmt.Sprintf("/api/v2/namespaces/%s/gateway/%s", item.Namespace, cleanPath),
@@ -83,7 +83,7 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 		} {
 			serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 				// Check if correct method.
-				if !slices.Contains(item.Methods, r.Method) {
+				if !slices.Contains(item.Config.Methods, r.Method) {
 					WriteJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
 						fmt.Sprintf("method:%s is not allowed with this endpoint", r.Method))
 
@@ -110,7 +110,7 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 					if !isAuthPlugin(p) {
 						// Case where auth is required but request is not authenticated (consumers doesn't match).
 						hasActiveConsumer := ExtractContextActiveConsumer(r) != nil
-						if !item.AllowAnonymous && !hasActiveConsumer {
+						if !item.Config.AllowAnonymous && !hasActiveConsumer {
 							WriteJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
 
 							break
