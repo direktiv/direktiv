@@ -166,8 +166,6 @@ test("it renders, filters, and paginates events", async ({ page }) => {
     "when filtering by event type, it shows the correct number of events"
   ).toHaveCount(7);
 
-  await expect(page.getByTestId("pagination-wrapper")).not.toBeVisible();
-
   /**
    * Additionally filter by content, expect a smaller subset of results.
    * The content filter will search everywhere in the event, so in this case,

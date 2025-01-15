@@ -129,6 +129,41 @@ test("it paginates event listeners", async ({ page }) => {
     page.getByRole("cell", { name: "start workflow" }),
     "it navigates to page 1 and renders the expected number of items"
   ).toHaveCount(10);
+
+  /**
+   * Test the select options for page size
+   */
+
+  const selectPagesize = page.getByRole("combobox");
+  await expect(selectPagesize).toBeVisible();
+  expect(selectPagesize).toHaveText("Show 10 rows");
+
+  selectPagesize.click();
+  page.getByLabel("Show 30 rows").click();
+
+  await expect(
+    page.getByRole("cell", { name: "start workflow" }),
+    "it renders the expected number of items"
+  ).toHaveCount(13);
+
+  selectPagesize.click();
+  page.getByLabel("Show 10 rows").click();
+  await paginationWrapper.getByRole("button", { name: "2" }).click();
+
+  await expect(
+    page.getByRole("cell", { name: "start workflow" }),
+    "it navigates to page 2 and renders the expected number of items"
+  ).toHaveCount(3);
+
+  selectPagesize.click();
+  page.getByLabel("Show 20 rows").click();
+
+  await expect(
+    paginationWrapper.getByRole("button", { name: "1" })
+  ).toBeVisible();
+  await expect(
+    paginationWrapper.getByRole("button", { name: "2" })
+  ).not.toBeVisible();
 });
 
 test("it renders event context filters", async ({ page }) => {
