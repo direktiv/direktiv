@@ -236,7 +236,8 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 		// add routes
 		paths := make([]openapi3.NewPathsOption, 0)
 		for _, item := range endpoints {
-			if len(item.Errors) == 0 {
+			verr := validateEndpoint(item, ns, fileStore)
+			if len(verr) == 0 {
 				rel, err := filepath.Rel(filepath.Dir(g.FilePath), item.FilePath)
 				if err != nil {
 					rel = item.FilePath
@@ -244,6 +245,8 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 				paths = append(paths, openapi3.WithPath(item.Config.Path, &openapi3.PathItem{
 					Ref: rel,
 				}))
+			} else {
+				gw.Errors = append(gw.Errors, fmt.Sprintf("route %v had errors", item.FilePath))
 			}
 		}
 
@@ -290,47 +293,48 @@ func endpointsForAPI(endpoints []core.Endpoint, ns string, fileStore filestore.F
 			newItem.Errors = []string{}
 		}
 
-		// create fake doc for validation
-		doc := &openapi3.T{
-			Paths:   openapi3.NewPaths(openapi3.WithPath(item.FilePath, &item.RenderedPathItem)),
-			OpenAPI: "3.0.0",
-			Info: &openapi3.Info{
-				Title:   "dummy",
-				Version: "1.0.0",
-			},
-		}
+		newItem.Errors = append(newItem.Errors, validateEndpoint(item, ns, fileStore)...)
+		// // create fake doc for validation
+		// doc := &openapi3.T{
+		// 	Paths:   openapi3.NewPaths(openapi3.WithPath(item.FilePath, &item.RenderedPathItem)),
+		// 	OpenAPI: "3.0.0",
+		// 	Info: &openapi3.Info{
+		// 		Title:   "dummy",
+		// 		Version: "1.0.0",
+		// 	},
+		// }
 
-		l.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
-			path := url.String()
+		// l.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
+		// 	path := url.String()
 
-			// if not absolute we need to calculate path
-			if !filepath.IsAbs(url.String()) {
-				p, err := filepath.Rel(filepath.Dir(item.FilePath),
-					filepath.Join(filepath.Dir(item.FilePath), url.String()))
-				if err != nil {
-					return nil, err
-				}
-				path = p
-			}
+		// 	// if not absolute we need to calculate path
+		// 	if !filepath.IsAbs(url.String()) {
+		// 		p, err := filepath.Rel(filepath.Dir(item.FilePath),
+		// 			filepath.Join(filepath.Dir(item.FilePath), url.String()))
+		// 		if err != nil {
+		// 			return nil, err
+		// 		}
+		// 		path = p
+		// 	}
 
-			file, err := fileStore.ForNamespace(ns).GetFile(context.Background(), path)
-			if err != nil {
-				return nil, err
-			}
+		// 	file, err := fileStore.ForNamespace(ns).GetFile(context.Background(), path)
+		// 	if err != nil {
+		// 		return nil, err
+		// 	}
 
-			return fileStore.ForFile(file).GetData(context.Background())
-		}
+		// 	return fileStore.ForFile(file).GetData(context.Background())
+		// }
 
-		err := l.ResolveRefsIn(doc, nil)
-		if err != nil {
-			newItem.Errors = append(newItem.Errors, err.Error())
-		}
+		// err := l.ResolveRefsIn(doc, nil)
+		// if err != nil {
+		// 	newItem.Errors = append(newItem.Errors, err.Error())
+		// }
 
-		// validate the whole thing
-		err = newItem.PathItem.Validate(context.Background())
-		if err != nil {
-			newItem.Errors = append(newItem.Errors, err.Error())
-		}
+		// // validate the whole thing
+		// err = newItem.PathItem.Validate(context.Background())
+		// if err != nil {
+		// 	newItem.Errors = append(newItem.Errors, err.Error())
+		// }
 
 		// set server_path
 		// TODO: remove this useless field
@@ -341,4 +345,56 @@ func endpointsForAPI(endpoints []core.Endpoint, ns string, fileStore filestore.F
 	}
 
 	return result
+}
+
+func validateEndpoint(item core.Endpoint, ns string, fileStore filestore.FileStore) []string {
+
+	validationErrors := make([]string, 0)
+
+	l := openapi3.NewLoader()
+	l.IsExternalRefsAllowed = true
+
+	// create fake doc for validation
+	doc := &openapi3.T{
+		Paths:   openapi3.NewPaths(openapi3.WithPath(item.FilePath, &item.RenderedPathItem)),
+		OpenAPI: "3.0.0",
+		Info: &openapi3.Info{
+			Title:   "dummy",
+			Version: "1.0.0",
+		},
+	}
+
+	l.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
+		path := url.String()
+
+		// if not absolute we need to calculate path
+		if !filepath.IsAbs(url.String()) {
+			p, err := filepath.Rel(filepath.Dir(item.FilePath),
+				filepath.Join(filepath.Dir(item.FilePath), url.String()))
+			if err != nil {
+				return nil, err
+			}
+			path = p
+		}
+
+		file, err := fileStore.ForNamespace(ns).GetFile(context.Background(), path)
+		if err != nil {
+			return nil, err
+		}
+
+		return fileStore.ForFile(file).GetData(context.Background())
+	}
+
+	err := l.ResolveRefsIn(doc, nil)
+	if err != nil {
+		validationErrors = append(validationErrors, err.Error())
+	}
+
+	// validate the whole thing
+	err = item.RenderedPathItem.Validate(context.Background())
+	if err != nil {
+		validationErrors = append(validationErrors, err.Error())
+	}
+
+	return validationErrors
 }
