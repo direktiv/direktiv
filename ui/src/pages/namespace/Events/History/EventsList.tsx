@@ -2,9 +2,9 @@ import { Dialog, DialogContent } from "~/design/Dialog";
 import { NoPermissions, NoResult, TableCell, TableRow } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
 import {
-  usePageSize,
-  usePageSizeActions,
-} from "~/util/store/pagesizes/pagesize";
+  useEventsPageSize,
+  useEventsPageSizeActions,
+} from "~/util/store/pagesizes/events";
 
 import { Card } from "~/design/Card";
 import { EventSchemaType } from "~/api/events/schema";
@@ -28,8 +28,8 @@ const EventsList = ({
   filters: FiltersSchemaType;
   setFilters: (filters: FiltersSchemaType) => void;
 }) => {
-  const pageSize = usePageSize("events");
-  const { setPageSize } = usePageSizeActions("events");
+  const pageSize = useEventsPageSize();
+  const { setEventsPageSize } = useEventsPageSizeActions();
   const [eventDialog, setEventDialog] = useState<EventSchemaType | null>();
 
   const { data, isFetched, isAllowed, noPermissionMessage } = useEvents({
@@ -118,7 +118,7 @@ const EventsList = ({
                 <SelectPageSize
                   initialPageSize={pageSize}
                   onSelect={(selectedSize) => {
-                    setPageSize(selectedSize);
+                    setEventsPageSize(selectedSize);
                     goToFirstPage();
                   }}
                 />

@@ -1,8 +1,8 @@
 import { NoPermissions, NoResult, TableCell, TableRow } from "~/design/Table";
 import {
-  usePageSize,
-  usePageSizeActions,
-} from "~/util/store/pagesizes/pagesize";
+  useEventListenersPageSize,
+  useEventListenersPageSizeActions,
+} from "~/util/store/pagesizes/eventListeners";
 
 import { Antenna } from "lucide-react";
 import { Card } from "~/design/Card";
@@ -16,8 +16,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const ListenersList = () => {
-  const pageSize = usePageSize("eventlisteners");
-  const { setPageSize } = usePageSizeActions("eventlisteners");
+  const pageSize = useEventListenersPageSize();
+  const { setEventListenersPageSize } = useEventListenersPageSizeActions();
   const [offset, setOffset] = useState(0);
   const { data, isFetched, isAllowed, noPermissionMessage } = useEventListeners(
     { limit: parseInt(pageSize), offset }
@@ -71,7 +71,7 @@ const ListenersList = () => {
               <SelectPageSize
                 initialPageSize={pageSize}
                 onSelect={(selectedSize) => {
-                  setPageSize(selectedSize);
+                  setEventListenersPageSize(selectedSize);
                   goToFirstPage();
                 }}
               />
