@@ -182,7 +182,7 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 	case "transition":
 		return engine.handleTransitionMessage(ctx, im, data)
 	default:
-		slog.Error("Encountered unrecognized instance message type.", "msgType", msgType, "instance", im.ID(), "namespace", im.Namespace())
+		slog.Error("Encountered unrecognized instance message type.", "msgType", msgType, "instance", im.ID(), "namespace", im.Namespace().Name)
 
 		panic(fmt.Sprintf("unrecognized instance message type: %s", msgType))
 	}

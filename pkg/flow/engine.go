@@ -658,7 +658,7 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, transition *states.Transition) *states.Transition {
 	e := im.flushUpdates(ctx)
 	if e != nil {
-		slog.Error("Failed to flush updates for instance.", "instance", im.ID(), "namespace", im.Namespace(), "error", e)
+		slog.Error("Failed to flush updates for instance.", "instance", im.ID(), "namespace", im.Namespace().Name, "error", e)
 		engine.CrashInstance(ctx, im, e)
 
 		return nil
