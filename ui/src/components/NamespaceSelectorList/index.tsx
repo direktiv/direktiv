@@ -71,16 +71,12 @@ export const NamespaceSelectorList = ({
                     />
                     <span className="flex items-center gap-1 w-full">
                       {ns.name}
-                      {ns.isSystemNamespace ? (
-                        <>
-                          <InfoTooltip>
-                            {t(
-                              "components.namespaceSelector.systemNamespaceTooltip"
-                            )}
-                          </InfoTooltip>
-                        </>
-                      ) : (
-                        ""
+                      {ns.isSystemNamespace && (
+                        <InfoTooltip>
+                          {t(
+                            "components.namespaceSelector.systemNamespaceTooltip"
+                          )}
+                        </InfoTooltip>
                       )}
                     </span>
                   </>
