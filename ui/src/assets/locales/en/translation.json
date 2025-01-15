@@ -1048,7 +1048,8 @@
       "services": "Services",
       "settings": "Settings",
       "jqPlayground": "jq Playground",
-      "mirror": "Mirror"
+      "mirror": "Mirror",
+      "trace": "Trace"
     },
     "breadcrumb": {
       "searchPlaceholder": "Search namespace...",
