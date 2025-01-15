@@ -8,14 +8,14 @@ type SpanType = {
   children?: SpanType[];
 };
 
-const flattenSpans = (spans: SpanType[]): SpanType[] =>
-  spans.reduce<SpanType[]>((acc, span) => {
-    acc.push(span);
-    if (span.children) {
-      acc.push(...flattenSpans(span.children));
-    }
-    return acc;
-  }, []);
+// const flattenSpans = (spans: SpanType[]): SpanType[] =>
+//   spans.reduce<SpanType[]>((acc, span) => {
+//     acc.push(span);
+//     if (span.children) {
+//       acc.push(...flattenSpans(span.children));
+//     }
+//     return acc;
+//   }, []);
 
 type SpanRowProps = { span: SpanType; scale: number; start: number };
 
@@ -34,26 +34,50 @@ const SpanRow: FC<SpanRowProps> = ({ span, scale, start }) => {
         className="text-gray-500 absolute px-1"
         style={{ left: `${left + width}px` }}
       >
-        {Math.round(width * 100) / 100}
+        {span.spanId} {Math.round(width * 100) / 100}
       </div>
     </div>
   );
 };
 
-type SpansTableProps = { spans: SpanType[]; containerWidth?: number };
+type SpanViewerProps = { spans: SpanType[]; containerWidth?: number };
 
-const SpansTable: FC<SpansTableProps> = ({ spans, containerWidth = 1000 }) => {
+const SpanViewer: FC<SpanViewerProps> = ({ spans }) => {
+  const flattenedSpans: SpanType[] = [];
+
+  const getSubTree = (spans: SpanType[]) =>
+    spans.map((span) => {
+      flattenedSpans.push(span);
+      return (
+        <div key={span.spanId} className="ml-2">
+          <div>{span.spanId}</div>
+          {span.children && getSubTree(span.children)}
+        </div>
+      );
+    });
+
+  return (
+    <div className="flex flex-row">
+      <div>{getSubTree(spans)}</div>
+      <TimeLine spans={flattenedSpans} />
+    </div>
+  );
+};
+
+type TimeLineProps = { spans: SpanType[]; containerWidth?: number };
+
+const TimeLine: FC<TimeLineProps> = ({ spans, containerWidth = 1000 }) => {
   if (spans.length === 0) {
     return <div className="text-gray-500">No spans to display</div>;
   }
 
-  const allSpans = flattenSpans(spans);
+  // const allSpans = flattenSpans(spans);
 
   const timelineStart = Math.min(
-    ...allSpans.map((span) => Number(span.startTimeUnixNano))
+    ...spans.map((span) => Number(span.startTimeUnixNano))
   );
   const timelineEnd = Math.max(
-    ...allSpans.map((span) => Number(span.endTimeUnixNano))
+    ...spans.map((span) => Number(span.endTimeUnixNano))
   );
 
   // Scale factor: pixels per millisecond
@@ -62,7 +86,7 @@ const SpansTable: FC<SpansTableProps> = ({ spans, containerWidth = 1000 }) => {
   return (
     <div className="space-y-2 p-1">
       {/* Add vertical spacing between rows */}
-      {allSpans.map((span) => (
+      {spans.map((span) => (
         <SpanRow
           key={span.spanId}
           span={span}
@@ -79,7 +103,7 @@ const SpansTable: FC<SpansTableProps> = ({ spans, containerWidth = 1000 }) => {
 const TracePage: FC = () => (
   <div>
     <h1>Mock data:</h1>
-    <SpansTable spans={mock.timeline} />
+    <SpanViewer spans={mock.timeline}></SpanViewer>
   </div>
 );
 
