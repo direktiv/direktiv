@@ -39,7 +39,6 @@ const InstancesListPage = () => {
   const instances = data?.data ?? [];
   const numberOfInstances = data?.meta?.total ?? 0;
   const noResults = isSuccess && instances.length === 0;
-  const showPagination = numberOfInstances > instancesPerPage;
   const hasFilters = !!Object.keys(filters).length;
 
   return (
@@ -108,14 +107,12 @@ const InstancesListPage = () => {
           </TableBody>
         </Table>
       </Card>
-      {showPagination && (
-        <Pagination
-          itemsPerPage={instancesPerPage}
-          offset={offset}
-          setOffset={setOffset}
-          totalItems={numberOfInstances}
-        />
-      )}
+      <Pagination
+        itemsPerPage={instancesPerPage}
+        offset={offset}
+        setOffset={setOffset}
+        totalItems={numberOfInstances}
+      />
     </div>
   );
 };

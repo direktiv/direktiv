@@ -132,24 +132,28 @@ const RegistriesList: FC = () => {
                 <NoPermissions>{noPermissionMessage}</NoPermissions>
               )}
             </Card>
-            {totalPages > 1 && (
-              <Pagination>
+            <Pagination>
+              <PaginationLink
+                disabled={totalPages === 1}
+                icon="left"
+                onClick={() => goToPreviousPage()}
+              />
+              {pagesList.map((page) => (
                 <PaginationLink
-                  icon="left"
-                  onClick={() => goToPreviousPage()}
-                />
-                {pagesList.map((page) => (
-                  <PaginationLink
-                    active={currentPage === page}
-                    key={`${page}`}
-                    onClick={() => goToPage(page)}
-                  >
-                    {page}
-                  </PaginationLink>
-                ))}
-                <PaginationLink icon="right" onClick={() => goToNextPage()} />
-              </Pagination>
-            )}
+                  disabled={totalPages === 1}
+                  active={currentPage === page}
+                  key={`${page}`}
+                  onClick={() => goToPage(page)}
+                >
+                  {page}
+                </PaginationLink>
+              ))}
+              <PaginationLink
+                disabled={totalPages === 1}
+                icon="right"
+                onClick={() => goToNextPage()}
+              />
+            </Pagination>
           </>
         )}
       </PaginationProvider>

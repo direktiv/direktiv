@@ -24,7 +24,7 @@ const PaginationProvider = <TArrayItem,>({
   const firstPage = 1;
   const [currentPage, setCurrentPage] = useState(firstPage);
   const pageSize = pageSizeProp || 10;
-  const totalPages = Math.ceil(items.length / pageSize);
+  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
   const isLastPage = currentPage === totalPages;
   const isFirstPage = currentPage === firstPage;
 

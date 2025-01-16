@@ -23,7 +23,6 @@ const ListenersList = () => {
 
   const numberOfResults = data?.meta?.total ?? 0;
   const noResults = isFetched && numberOfResults === 0;
-  const showPagination = numberOfResults > pageSize;
 
   return (
     <div className="flex grow flex-col gap-y-3 p-5">
@@ -59,14 +58,12 @@ const ListenersList = () => {
           )}
         </ListenersTable>
       </Card>
-      {showPagination && (
-        <Pagination
-          itemsPerPage={pageSize}
-          offset={offset}
-          setOffset={(value) => setOffset(value)}
-          totalItems={numberOfResults}
-        />
-      )}
+      <Pagination
+        itemsPerPage={pageSize}
+        offset={offset}
+        setOffset={(value) => setOffset(value)}
+        totalItems={numberOfResults}
+      />
     </div>
   );
 };
