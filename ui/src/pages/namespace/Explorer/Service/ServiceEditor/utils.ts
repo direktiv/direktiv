@@ -3,6 +3,20 @@ import { jsonToYaml, yamlToJsonOrNull } from "../../utils";
 
 import { ZodError } from "zod";
 
+export const omitEmptyFields = (obj: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(obj).filter(
+      ([_, value]) =>
+        value !== "" &&
+        !(Array.isArray(value) && value.length === 0) &&
+        !(
+          typeof value === "object" &&
+          value !== null &&
+          Object.keys(value).length === 0
+        )
+    )
+  );
+
 type SerializeReturnType =
   | [ServiceFormSchemaType, undefined]
   | [undefined, ZodError<ServiceFormSchemaType>];

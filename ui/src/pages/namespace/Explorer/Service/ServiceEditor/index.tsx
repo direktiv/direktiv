@@ -1,4 +1,5 @@
 import { decode, encode } from "js-base64";
+import { omitEmptyFields, serializeServiceFile } from "./utils";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
@@ -13,7 +14,6 @@ import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { ServiceFormSchemaType } from "./schema";
 import { jsonToYaml } from "../../utils";
-import { serializeServiceFile } from "./utils";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
@@ -52,7 +52,8 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
         formMarkup,
         values,
       }) => {
-        const preview = jsonToYaml(values);
+        const cleanedValues = omitEmptyFields(values);
+        const preview = jsonToYaml(cleanedValues);
         const parsedOriginal = serviceConfig && jsonToYaml(serviceConfig);
         const filehasChanged = preview !== parsedOriginal;
         const isDirty = !serviceConfigError && filehasChanged;
