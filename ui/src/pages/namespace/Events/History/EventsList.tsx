@@ -113,12 +113,14 @@ const EventsList = ({
                 <SelectPageSize onChange={() => goToPage(1)} />
                 <Pagination>
                   <PaginationLink
+                    disabled={pagesList.length === 1}
                     data-testid="pagination-btn-left"
                     icon="left"
                     onClick={() => goToPreviousPage()}
                   />
                   {pagesList.map((page) => (
                     <PaginationLink
+                      disabled={pagesList.length === 1}
                       active={currentPage === page}
                       key={`${page}`}
                       onClick={() => goToPage(page)}
@@ -127,6 +129,7 @@ const EventsList = ({
                     </PaginationLink>
                   ))}
                   <PaginationLink
+                    disabled={pagesList.length === 1}
                     data-testid="pagination-btn-right"
                     icon="right"
                     onClick={() => goToNextPage()}
