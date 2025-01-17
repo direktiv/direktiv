@@ -35,7 +35,8 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
   const { mutate: updateService, isPending } = useUpdateFile({});
 
   const save = (value: ServiceFormSchemaType) => {
-    const toSave = jsonToYaml(value);
+    const cleanedValues = omitEmptyFields(value);
+    const toSave = jsonToYaml(cleanedValues);
     updateService({
       path: data.path,
       payload: { data: encode(toSave) },
