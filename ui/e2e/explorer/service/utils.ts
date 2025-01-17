@@ -36,13 +36,26 @@ export const createServiceYaml = ({
   cmd,
   patches,
   envs,
-}: Service) => `direktiv_api: service/v1
+}: Service) => {
+  let yaml = `direktiv_api: service/v1
 image: ${image}
 scale: ${scale}
-size: ${size}
-cmd: ${cmd}
-patches: ${createPatchesYaml(patches)}
-envs: ${createEnvsYaml(envs)}`;
+size: ${size}`;
+
+  if (cmd) {
+    yaml += `\ncmd: ${cmd}`;
+  }
+
+  if (patches && patches.length > 0) {
+    yaml += `\npatches: ${createPatchesYaml(patches)}`;
+  }
+
+  if (envs && envs.length > 0) {
+    yaml += `\nenvs: ${createEnvsYaml(envs)}`;
+  }
+
+  return yaml;
+};
 
 export const createService = async (namespace: string, service: Service) => {
   const yaml = createServiceYaml(service);
@@ -54,3 +67,7 @@ export const createService = async (namespace: string, service: Service) => {
     yaml,
   });
 };
+
+export function normalizeWhitespace(str: string): string {
+  return str.replace(/\s+/g, " ").trim();
+}
