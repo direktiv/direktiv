@@ -175,8 +175,6 @@ test("it paginates event listeners", async ({ page }) => {
   await expect(
     paginationWrapper.getByRole("button", { name: "2" })
   ).not.toBeVisible();
-
-  // page reload
 });
 
 test("it renders event context filters", async ({ page }) => {
