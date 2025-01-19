@@ -1,8 +1,8 @@
 import { NoPermissions, NoResult, TableCell, TableRow } from "~/design/Table";
 import {
   useEventListenersPageSize,
-  useEventListenersPageSizeActions,
-} from "~/util/store/pagesizes/eventListeners";
+  usePageSizeActions,
+} from "~/util/store/pagesizes/pagesize";
 
 import { Antenna } from "lucide-react";
 import { Card } from "~/design/Card";
@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 
 const ListenersList = () => {
   const pageSize = useEventListenersPageSize();
-  const { setEventListenersPageSize } = useEventListenersPageSizeActions();
+  const { setEventListenersPageSize } = usePageSizeActions();
   const [offset, setOffset] = useState(0);
   const { data, isFetched, isAllowed, noPermissionMessage } = useEventListeners(
     { limit: parseInt(pageSize), offset }

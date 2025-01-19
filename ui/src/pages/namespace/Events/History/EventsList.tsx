@@ -3,8 +3,8 @@ import { NoPermissions, NoResult, TableCell, TableRow } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
 import {
   useEventsPageSize,
-  useEventsPageSizeActions,
-} from "~/util/store/pagesizes/events";
+  usePageSizeActions,
+} from "~/util/store/pagesizes/pagesize";
 
 import { Card } from "~/design/Card";
 import { EventSchemaType } from "~/api/events/schema";
@@ -29,7 +29,7 @@ const EventsList = ({
   setFilters: (filters: FiltersSchemaType) => void;
 }) => {
   const pageSize = useEventsPageSize();
-  const { setEventsPageSize } = useEventsPageSizeActions();
+  const { setEventsPageSize } = usePageSizeActions();
   const [eventDialog, setEventDialog] = useState<EventSchemaType | null>();
 
   const { data, isFetched, isAllowed, noPermissionMessage } = useEvents({
