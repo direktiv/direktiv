@@ -55,7 +55,7 @@ export const Pagination = ({
                 !isActive &&
                 setOffset(setOffsetByPageNumber(page));
             }}
-            disabled={isEllipsis}
+            disabled={(isFirstPage && isLastPage) || isEllipsis}
             data-testid={`pagination-btn-page-${page}`}
           >
             {page}
