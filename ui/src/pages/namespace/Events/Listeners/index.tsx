@@ -8,7 +8,6 @@ import { Antenna } from "lucide-react";
 import { Card } from "~/design/Card";
 import ListenersTable from "./Table";
 import { Pagination } from "~/components/Pagination";
-import PaginationProvider from "~/components/PaginationProvider";
 import Row from "./Row";
 import { SelectPageSize } from "../History/components/SelectPageSize";
 import { useEventListeners } from "~/api/eventListeners/query/get";
@@ -32,59 +31,53 @@ const ListenersList = () => {
 
   return (
     <div className="flex grow flex-col gap-y-3 p-5">
-      <PaginationProvider items={data.data} pageSize={parseInt(pageSize)}>
-        {({ goToFirstPage }) => (
-          <>
-            <Card>
-              <ListenersTable>
-                {isAllowed ? (
-                  <>
-                    {noResults ? (
-                      <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                        <TableCell colSpan={6}>
-                          <NoResult icon={Antenna}>
-                            {t("pages.events.listeners.empty.noResults")}
-                          </NoResult>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      data.data.map((listener, i) => (
-                        <Row
-                          listener={listener}
-                          key={i}
-                          namespace={listener.namespace}
-                          data-testid={`listener-row-${i}`}
-                        />
-                      ))
-                    )}
-                  </>
-                ) : (
-                  <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                    <TableCell colSpan={6}>
-                      <NoPermissions>{noPermissionMessage}</NoPermissions>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </ListenersTable>
-            </Card>
-            <div className="flex items-center justify-end gap-2">
-              <SelectPageSize
-                initialPageSize={pageSize}
-                onSelect={(selectedSize) => {
-                  setEventListenersPageSize(selectedSize);
-                  goToFirstPage();
-                }}
-              />
-              <Pagination
-                itemsPerPage={parseInt(pageSize)}
-                offset={offset}
-                setOffset={(value) => setOffset(value)}
-                totalItems={numberOfResults}
-              />
-            </div>
-          </>
-        )}
-      </PaginationProvider>
+      <Card>
+        <ListenersTable>
+          {isAllowed ? (
+            <>
+              {noResults ? (
+                <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                  <TableCell colSpan={6}>
+                    <NoResult icon={Antenna}>
+                      {t("pages.events.listeners.empty.noResults")}
+                    </NoResult>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                data.data.map((listener, i) => (
+                  <Row
+                    listener={listener}
+                    key={i}
+                    namespace={listener.namespace}
+                    data-testid={`listener-row-${i}`}
+                  />
+                ))
+              )}
+            </>
+          ) : (
+            <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+              <TableCell colSpan={6}>
+                <NoPermissions>{noPermissionMessage}</NoPermissions>
+              </TableCell>
+            </TableRow>
+          )}
+        </ListenersTable>
+      </Card>
+      <div className="flex items-center justify-end gap-2">
+        <SelectPageSize
+          initialPageSize={pageSize}
+          onSelect={(selectedSize) => {
+            setEventListenersPageSize(selectedSize);
+            setOffset(0);
+          }}
+        />
+        <Pagination
+          itemsPerPage={parseInt(pageSize)}
+          offset={offset}
+          setOffset={(value) => setOffset(value)}
+          totalItems={numberOfResults}
+        />
+      </div>
     </div>
   );
 };
