@@ -146,6 +146,17 @@ test("it paginates event listeners", async ({ page }) => {
     "it renders the expected number of items"
   ).toHaveCount(13);
 
+  /* visit different page and check if pagesize there has a different setting */
+  await page.goto(`/n/${namespace}/events/history`);
+  const selectHistoryPagesize = page.getByRole("combobox");
+  await expect(selectHistoryPagesize).toBeVisible();
+  expect(selectHistoryPagesize).toHaveText("Show 10 rows");
+
+  /* reload the page and check if pagesize was remembered */
+  await page.goto(`/n/${namespace}/events/listeners`);
+  await expect(selectPagesize).toBeVisible();
+  expect(selectPagesize).toHaveText("Show 30 rows");
+
   selectPagesize.click();
   page.getByLabel("Show 10 rows").click();
   await paginationWrapper.getByRole("button", { name: "2" }).click();
@@ -164,6 +175,8 @@ test("it paginates event listeners", async ({ page }) => {
   await expect(
     paginationWrapper.getByRole("button", { name: "2" })
   ).not.toBeVisible();
+
+  // page reload
 });
 
 test("it renders event context filters", async ({ page }) => {
