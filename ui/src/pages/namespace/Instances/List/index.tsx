@@ -11,7 +11,7 @@ import {
 import {
   useInstancesPageSize,
   usePageSizeActions,
-} from "~/util/store/pagesizes/pagesize";
+} from "~/util/store/pagesize";
 
 import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
@@ -19,7 +19,7 @@ import Filters from "../components/Filters";
 import { FiltersObj } from "~/api/instances/query/utils";
 import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
-import { SelectPageSize } from "../../Events/History/components/SelectPageSize";
+import { SelectPageSize } from "../../../../components/SelectPageSize";
 import { useInstances } from "~/api/instances/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";

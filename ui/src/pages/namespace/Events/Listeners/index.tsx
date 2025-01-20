@@ -2,14 +2,14 @@ import { NoPermissions, NoResult, TableCell, TableRow } from "~/design/Table";
 import {
   useEventListenersPageSize,
   usePageSizeActions,
-} from "~/util/store/pagesizes/pagesize";
+} from "~/util/store/pagesize";
 
 import { Antenna } from "lucide-react";
 import { Card } from "~/design/Card";
 import ListenersTable from "./Table";
 import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
-import { SelectPageSize } from "../History/components/SelectPageSize";
+import { SelectPageSize } from "../../../../components/SelectPageSize";
 import { useEventListeners } from "~/api/eventListeners/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
