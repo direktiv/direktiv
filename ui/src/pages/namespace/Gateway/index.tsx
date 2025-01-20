@@ -1,6 +1,6 @@
+import { Info, Users, Workflow } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
-import { Users, Workflow } from "lucide-react";
 
 import { useNamespace } from "~/util/store/namespace";
 import { usePages } from "~/util/router/pages";
@@ -14,11 +14,22 @@ const GatewayPage = () => {
     isGatewayRoutesPage,
     isGatewayConsumerPage,
     isGatewayRoutesDetailPage,
+    isGatewayInfoPage,
   } = pages.gateway.useParams();
 
   if (!namespace) return null;
 
   const tabs = [
+    {
+      value: "info",
+      active: isGatewayInfoPage,
+      icon: <Info aria-hidden="true" />,
+      title: "Info",
+      link: pages.gateway.createHref({
+        namespace,
+        subpage: "GatewayInfoPage",
+      }),
+    },
     {
       value: "endpoints",
       active: isGatewayRoutesPage,
