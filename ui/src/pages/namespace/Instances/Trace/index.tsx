@@ -40,21 +40,31 @@ const SpanRow: FC<SpanRowProps> = ({ span, scale, start }) => {
   );
 };
 
-type SpanViewerProps = { spans: SpanType[]; containerWidth?: number };
+type SpanViewerProps = { spans: SpanType[]; timeLineWidth?: number };
 
-const SpanViewer: FC<SpanViewerProps> = ({ spans }) => {
+const SpanViewer: FC<SpanViewerProps> = ({ spans, timeLineWidth = 700 }) => {
   const flattenedSpans: SpanType[] = [];
 
+  const timelineStart = Math.min(
+    ...spans.map((span) => Number(span.startTimeUnixNano))
+  );
+  const timelineEnd = Math.max(
+    ...spans.map((span) => Number(span.endTimeUnixNano))
+  );
+
+  // Scale factor: pixels per millisecond
+  const scale = timeLineWidth / (timelineEnd - timelineStart);
+
   const getSubTree = (spans: SpanType[]) =>
-    spans.map((span) => {
-      flattenedSpans.push(span);
-      return (
-        <div key={span.spanId} className="ml-2">
+    spans.map((span) => (
+      <div key={span.spanId} className="pl-2">
+        <div className="flex flex-row">
           <div>{span.spanId}</div>
-          {span.children && getSubTree(span.children)}
+          <SpanRow span={span} scale={scale} start={timelineStart} />
         </div>
-      );
-    });
+        {span.children && getSubTree(span.children)}
+      </div>
+    ));
 
   return (
     <div className="flex flex-row">
