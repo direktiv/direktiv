@@ -24,8 +24,6 @@ import { useInstances } from "~/api/instances/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-const instancesPerPage = 15;
-
 const InstancesListPage = () => {
   const pageSize = useInstancesPageSize();
   const { setInstancesPageSize } = usePageSizeActions();
@@ -33,7 +31,7 @@ const InstancesListPage = () => {
   const [filters, setFilters] = useState<FiltersObj>({});
   const { t } = useTranslation();
   const { data, isSuccess, isAllowed, noPermissionMessage } = useInstances({
-    limit: instancesPerPage,
+    limit: parseInt(pageSize),
     offset,
     filters,
   });
@@ -123,7 +121,7 @@ const InstancesListPage = () => {
           }}
         />
         <Pagination
-          itemsPerPage={instancesPerPage}
+          itemsPerPage={parseInt(pageSize)}
           offset={offset}
           setOffset={setOffset}
           totalItems={numberOfInstances}

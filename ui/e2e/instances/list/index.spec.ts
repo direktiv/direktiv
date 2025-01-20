@@ -235,9 +235,9 @@ test("it will treat the status and finish date of pending instances accordingly"
   ).toContainText("complete");
 });
 
-test("it provides a proper pagination", async ({ page }) => {
+test("it paginates instances", async ({ page }) => {
   const totalCount = 35;
-  const pageSize = 15;
+  const pageSize = 10;
 
   const parentWorkflow = faker.system.commonFileName("yaml");
 
@@ -301,8 +301,8 @@ test("it provides a proper pagination", async ({ page }) => {
   ).toBeEnabled();
 
   // go to page 3 by clicking number 3
-  const btnNumber3 = page.getByTestId(`pagination-btn-page-3`);
-  await btnNumber3.click();
+  const btnNumber4 = page.getByTestId(`pagination-btn-page-4`);
+  await btnNumber4.click();
 
   // check with api response
   const instancesListPage3 = await getInstances({
@@ -310,7 +310,7 @@ test("it provides a proper pagination", async ({ page }) => {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
       limit: pageSize,
-      offset: 2 * pageSize,
+      offset: 3 * pageSize,
     },
     headers,
   });
@@ -324,6 +324,25 @@ test("it provides a proper pagination", async ({ page }) => {
     instanceItemRow.getByTestId("instance-column-id"),
     "the first row on page 3 should should be same as the api response"
   ).toContainText(firstInstance.id.slice(0, 8));
+
+  /**
+   * Test the select options for page size
+   */
+
+  const selectPagesize = page.getByRole("combobox");
+  await expect(selectPagesize).toBeVisible();
+  expect(selectPagesize).toHaveText("Show 10 rows");
+
+  selectPagesize.click();
+  page.getByLabel("Show 50 rows").click();
+
+  const rows = page.locator("tr");
+  await expect(rows).toHaveCount(36);
+
+  /* reload the page and check if pagesize was remembered */
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(selectPagesize).toBeVisible();
+  expect(selectPagesize).toHaveText("Show 50 rows");
 });
 
 test("It will display child instances as well", async ({ page }) => {
