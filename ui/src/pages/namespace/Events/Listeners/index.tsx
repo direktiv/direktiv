@@ -1,20 +1,25 @@
 import { NoPermissions, NoResult, TableCell, TableRow } from "~/design/Table";
+import {
+  useEventListenersPageSize,
+  usePageSizeActions,
+} from "~/util/store/pagesizes/pagesize";
 
 import { Antenna } from "lucide-react";
 import { Card } from "~/design/Card";
 import ListenersTable from "./Table";
 import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
+import { SelectPageSize } from "../History/components/SelectPageSize";
 import { useEventListeners } from "~/api/eventListeners/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-const pageSize = 10;
-
 const ListenersList = () => {
+  const pageSize = useEventListenersPageSize();
+  const { setEventListenersPageSize } = usePageSizeActions();
   const [offset, setOffset] = useState(0);
   const { data, isFetched, isAllowed, noPermissionMessage } = useEventListeners(
-    { limit: pageSize, offset }
+    { limit: parseInt(pageSize), offset }
   );
 
   const { t } = useTranslation();
@@ -58,12 +63,21 @@ const ListenersList = () => {
           )}
         </ListenersTable>
       </Card>
-      <Pagination
-        itemsPerPage={pageSize}
-        offset={offset}
-        setOffset={(value) => setOffset(value)}
-        totalItems={numberOfResults}
-      />
+      <div className="flex items-center justify-end gap-2">
+        <SelectPageSize
+          initialPageSize={pageSize}
+          onSelect={(selectedSize) => {
+            setEventListenersPageSize(selectedSize);
+            setOffset(0);
+          }}
+        />
+        <Pagination
+          itemsPerPage={parseInt(pageSize)}
+          offset={offset}
+          setOffset={(value) => setOffset(value)}
+          totalItems={numberOfResults}
+        />
+      </div>
     </div>
   );
 };
