@@ -124,58 +124,14 @@ func ParseGatewayFile(ns string, filePath string, data []byte) Gateway {
 		AllowRemoteReferences: false,
 	}
 
+	// remove paths and servers
+
 	document, err := libopenapi.NewDocumentWithConfiguration(data, &config)
 	if err != nil {
-		fmt.Println("ERORORORROORROORORO 11111")
-		fmt.Println(err)
-		// can not fail here, so we ignoring the error
-		// doc, _ := libopenapi.NewDocument([]byte(fmt.Sprintf("openapi: 3.0.0\nx-direktiv-api: %s", s)))
-		// return doc, err
+		gw.Errors = append(gw.Errors, err.Error())
 	}
 
-	// doc, err2 := document.BuildV3Model()
-	// fmt.Println("ERORORORROORROORORO 22222")
-	// fmt.Println(err2)
-
-	// remove paths
-
-	// remove server
-
-	// check for gateway/v1
-
 	gw.Base = document
-
-	// var docMap map[string]interface{}
-	// err := yaml.Unmarshal(data, &docMap)
-	// if err != nil {
-	// 	gw.Errors = append(gw.Errors, err.Error())
-	// 	return gw
-	// }
-
-	// // convert to JSON for openapi library
-	// b, err := json.Marshal(docMap)
-	// if err != nil {
-	// 	gw.Errors = append(gw.Errors, err.Error())
-	// 	return gw
-	// }
-
-	// base := &openapi3.T{}
-	// err = base.UnmarshalJSON(b)
-	// if err != nil {
-	// 	gw.Errors = append(gw.Errors, err.Error())
-	// 	return gw
-	// }
-
-	// // remove paths and server because it will be generated
-	// base.Paths = openapi3.NewPaths()
-	// base.Servers = openapi3.Servers{}
-	// gw.RenderedBase = *base
-
-	// // check for gateway spec api
-	// api, ok := gw.RenderedBase.Extensions["x-direktiv-api"]
-	// if !ok || api != "gateway/v1" {
-	// 	gw.Errors = append(gw.Errors, "invalid gateway api version")
-	// }
 
 	return gw
 }

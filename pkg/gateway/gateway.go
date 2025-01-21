@@ -17,9 +17,12 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
+	"github.com/pb33f/libopenapi"
 	validator "github.com/pb33f/libopenapi-validator"
 	"github.com/pb33f/libopenapi/datamodel"
+	basehigh "github.com/pb33f/libopenapi/datamodel/high/base"
 	v3high "github.com/pb33f/libopenapi/datamodel/high/v3"
+	"github.com/pb33f/libopenapi/orderedmap"
 	"github.com/pkg/errors"
 )
 
@@ -195,32 +198,53 @@ func consumersForAPI(consumers []core.Consumer) any {
 	return result
 }
 
-func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileStore, endpoints []core.Endpoint) any {
-	type output struct {
-		Spec     v3high.Document `json:"spec"`
-		FilePath string          `json:"file_path"`
-		Errors   []string        `json:"errors"`
-		// Node     *yaml.Node      `json:"spec2"`
+func defaultGateway(ns string) (libopenapi.Document, error) {
+	defaultSpecHigh := &v3high.Document{
+		Version: "3.0.0",
+		Info: &basehigh.Info{
+			Title:   ns,
+			Version: "1.0",
+		},
 	}
 
-	// defaultSpec := openapi3.T{
-	// 	OpenAPI: "3.0.0",
-	// 	Info: &openapi3.Info{
-	// 		Title:   ns,
-	// 		Version: "1.0",
-	// 	},
-	// 	Paths: openapi3.NewPaths(),
-	// }
+	// render the document to YAML.
+	yamlSpec, err := defaultSpecHigh.Render()
+	if err != nil {
+		return nil, err
+	}
+
+	return libopenapi.NewDocument(yamlSpec)
+}
+
+func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileStore, endpoints []core.Endpoint) any {
+	type output struct {
+		Spec     map[string]interface{}
+		FilePath string   `json:"file_path"`
+		Errors   []string `json:"errors"`
+	}
 
 	gw := output{
 		FilePath: "virtual",
 		Errors:   make([]string, 0),
-		// Spec:     defaultSpec,
 	}
 
-	// // we always take the first one, even if there are more
+	doc, err := defaultGateway(ns)
+	if err != nil {
+		gw.Errors = append(gw.Errors, err.Error())
+		return gw
+	}
+
+	// set default spec
+	gw.Spec = *doc.GetSpecInfo().SpecJSON
+
+	// TODO: add paths
+
+	// we always take the first one, even if there are more
 	if len(gateways) > 0 {
 		g := gateways[0]
+
+		// set file path
+		gw.FilePath = g.FilePath
 
 		g.Base.SetConfiguration(&datamodel.DocumentConfiguration{
 			LocalFS: &DirektivOpenAPIFS{
@@ -232,45 +256,54 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 			ExtractRefsSequentially: true,
 		})
 
-		// indexConfig := &index.SpecIndexConfig{
-		// 	AllowRemoteLookup:           false,
-		// 	AllowFileLookup:             true,
-		// 	AvoidCircularReferenceCheck: true,
-		// }
+		// check base errors
+		model, errs := g.Base.BuildV3Model()
+		if len(errs) > 0 {
+			for i := range errs {
+				gw.Errors = append(gw.Errors, errs[i].Error())
+			}
+			return gw
+		}
 
-		// g.Base.SetConfiguration()
-		// rolodex := index.NewRolodex(indexConfig)
-		// rolodex.SetRootNode(g.Base)
-		// doc.Rolodex = rolodex
+		// reset servers and paths
+		model.Model.Paths.PathItems = &orderedmap.Map[string, *v3high.PathItem]{}
+		model.Model.Servers = []*v3high.Server{}
 
-		// g.Base.BuildV2Model()
-		// indexConfig := &index.SpecIndexConfig{
-		// 	AllowRemoteLookup:           false,
-		// 	AllowFileLookup:             true,
-		// 	AvoidCircularReferenceCheck: true,
-		// }
+		g2, _ := g.Base.Serialize()
+		fmt.Println(string(g2))
 
-		// rolodex := index.NewRolodex(indexConfig)
+		_, rendered, _, renderErrs := g.Base.RenderAndReload()
+		if len(renderErrs) > 0 {
+			for i := range renderErrs {
+				gw.Errors = append(gw.Errors, renderErrs[i].Error())
+			}
+			return gw
+		}
 
-		// gw.Node = g.Base.GetSpecInfo().RootNode
+		g2, _ = rendered.Serialize()
+		fmt.Println(string(g2))
 
-		// remove paths
-		// remove server info
+		// g.Base = rendered
+		// gw.Spec = *g.Base.GetSpecInfo().SpecJSON
 
-		hh, err := g.Base.Serialize()
-		fmt.Printf("%v %v\n", string(hh), err)
+		// high level validation
+		hlValidator, valErrors := validator.NewValidator(g.Base)
+		if len(valErrors) > 0 {
+			for i := range valErrors {
+				gw.Errors = append(gw.Errors, valErrors[i].Error())
+			}
+			return gw
+		}
 
-		do, errs := g.Base.BuildV3Model()
-		fmt.Printf("ERROR %v\n", errs)
-		// fmt.Printf("%v %v\n", do, errs)
+		_, errsDoc := hlValidator.ValidateDocument()
+		if len(errsDoc) > 0 {
+			for i := range errsDoc {
+				gw.Errors = append(gw.Errors, errsDoc[i].Error())
+			}
+			return gw
+		}
 
-		highLevelValidator, validatorErrs := validator.NewValidator(g.Base)
-		fmt.Printf("VALERR1 %v\n", validatorErrs)
-
-		_, errs2 := highLevelValidator.ValidateDocument()
-		fmt.Printf("VALERR2 %v\n", errs2)
-
-		gw.Spec = do.Model
+		// gw.Spec = do.Model
 
 		// fmt.Println(do.Model.Paths)
 
