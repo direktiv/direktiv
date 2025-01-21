@@ -9,13 +9,19 @@ type SpanType = {
   children?: SpanType[];
 };
 
-type SpanRowProps = { span: SpanType; start: number; end: number };
+type TreeElementProps = { span: SpanType };
 
-const SpanRow: FC<SpanRowProps> = ({ span, start, end }) => (
-  <div className="relative h-8">
+const TreeElement: FC<TreeElementProps> = ({ span }) => (
+  <div className="h-8">{span.spanId}</div>
+);
+
+type TimelineElementProps = { span: SpanType; start: number; end: number };
+
+const TimelineElement: FC<TimelineElementProps> = ({ span, start, end }) => (
+  <div className="h-8 flex flex-row">
     <div className="bg-blue-400 rounded h-5 absolute overflow-x-visible text-nowrap"></div>
     <div className="text-gray-500 absolute px-1">
-      {span.spanId} {start} {end}{" "}
+      {start} {end}
     </div>
   </div>
 );
@@ -55,8 +61,8 @@ const SpanViewer: FC = () => {
       );
 
       acc.push({
-        tree: <div>{span.spanId}</div>,
-        timeline: <SpanRow span={span} start={start} end={end} />,
+        tree: <TreeElement span={span} />,
+        timeline: <TimelineElement span={span} start={start} end={end} />,
       });
 
       if (span.children && span.children.length > 0) {
