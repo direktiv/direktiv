@@ -17,6 +17,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
+	"github.com/pb33f/libopenapi"
 )
 
 type Parser struct {
@@ -297,7 +298,7 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		if err != nil {
 			return err
 		}
-	case *openapi3.T:
+	case libopenapi.Document:
 		err = p.handleGateway(path, data)
 		if err != nil {
 			return err

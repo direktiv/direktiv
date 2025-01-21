@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/pb33f/libopenapi"
+	"github.com/pb33f/libopenapi/datamodel"
 	"gopkg.in/yaml.v3"
 )
 
@@ -55,7 +57,7 @@ type Plugin interface {
 }
 
 type Gateway struct {
-	RenderedBase openapi3.T
+	Base libopenapi.Document
 
 	Namespace string
 	FilePath  string
@@ -109,43 +111,71 @@ func ParseConsumerFile(ns string, filePath string, data []byte) Consumer {
 }
 
 func ParseGatewayFile(ns string, filePath string, data []byte) Gateway {
+	fmt.Println("PARSE GATEWAY!!!!")
 	gw := Gateway{
 		Namespace: ns,
 		FilePath:  filePath,
 		Errors:    make([]string, 0),
 	}
 
-	var docMap map[string]interface{}
-	err := yaml.Unmarshal(data, &docMap)
+	config := datamodel.DocumentConfiguration{
+		AvoidIndexBuild:       true,
+		AllowFileReferences:   true,
+		AllowRemoteReferences: false,
+	}
+
+	document, err := libopenapi.NewDocumentWithConfiguration(data, &config)
 	if err != nil {
-		gw.Errors = append(gw.Errors, err.Error())
-		return gw
+		fmt.Println("ERORORORROORROORORO 11111")
+		fmt.Println(err)
+		// can not fail here, so we ignoring the error
+		// doc, _ := libopenapi.NewDocument([]byte(fmt.Sprintf("openapi: 3.0.0\nx-direktiv-api: %s", s)))
+		// return doc, err
 	}
 
-	// convert to JSON for openapi library
-	b, err := json.Marshal(docMap)
-	if err != nil {
-		gw.Errors = append(gw.Errors, err.Error())
-		return gw
-	}
+	// doc, err2 := document.BuildV3Model()
+	// fmt.Println("ERORORORROORROORORO 22222")
+	// fmt.Println(err2)
 
-	base := &openapi3.T{}
-	err = base.UnmarshalJSON(b)
-	if err != nil {
-		gw.Errors = append(gw.Errors, err.Error())
-		return gw
-	}
+	// remove paths
 
-	// remove paths and server because it will be generated
-	base.Paths = openapi3.NewPaths()
-	base.Servers = openapi3.Servers{}
-	gw.RenderedBase = *base
+	// remove server
 
-	// check for gateway spec api
-	api, ok := gw.RenderedBase.Extensions["x-direktiv-api"]
-	if !ok || api != "gateway/v1" {
-		gw.Errors = append(gw.Errors, "invalid gateway api version")
-	}
+	// check for gateway/v1
+
+	gw.Base = document
+
+	// var docMap map[string]interface{}
+	// err := yaml.Unmarshal(data, &docMap)
+	// if err != nil {
+	// 	gw.Errors = append(gw.Errors, err.Error())
+	// 	return gw
+	// }
+
+	// // convert to JSON for openapi library
+	// b, err := json.Marshal(docMap)
+	// if err != nil {
+	// 	gw.Errors = append(gw.Errors, err.Error())
+	// 	return gw
+	// }
+
+	// base := &openapi3.T{}
+	// err = base.UnmarshalJSON(b)
+	// if err != nil {
+	// 	gw.Errors = append(gw.Errors, err.Error())
+	// 	return gw
+	// }
+
+	// // remove paths and server because it will be generated
+	// base.Paths = openapi3.NewPaths()
+	// base.Servers = openapi3.Servers{}
+	// gw.RenderedBase = *base
+
+	// // check for gateway spec api
+	// api, ok := gw.RenderedBase.Extensions["x-direktiv-api"]
+	// if !ok || api != "gateway/v1" {
+	// 	gw.Errors = append(gw.Errors, "invalid gateway api version")
+	// }
 
 	return gw
 }

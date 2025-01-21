@@ -17,6 +17,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
+	validator "github.com/pb33f/libopenapi-validator"
+	"github.com/pb33f/libopenapi/datamodel"
+	v3high "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pkg/errors"
 )
 
@@ -48,6 +51,37 @@ func NewManager(db *database.SQLStore) core.GatewayManager {
 	return &manager{
 		db: db,
 	}
+}
+
+type openAPIResolver struct {
+	path, ns  string
+	fileStore filestore.FileStore
+}
+
+func (r *openAPIResolver) resolveDirektivPath(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
+	path := url.String()
+
+	fmt.Printf("RESOLVING %v\n", url)
+
+	// if not absolute we need to calculate path
+	if !filepath.IsAbs(url.String()) {
+		p, err := filepath.Rel(filepath.Dir(path),
+			filepath.Join(filepath.Dir(path), url.String()))
+		if err != nil {
+			return nil, err
+		}
+		path = p
+	}
+
+	fmt.Printf("RESOLVING2 %v\n", path)
+
+	file, err := r.fileStore.ForNamespace(r.ns).GetFile(context.Background(), path)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.fileStore.ForFile(file).GetData(context.Background())
+	// return nil, err
 }
 
 // ServeHTTP makes this manager serves http requests.
@@ -163,106 +197,211 @@ func consumersForAPI(consumers []core.Consumer) any {
 
 func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileStore, endpoints []core.Endpoint) any {
 	type output struct {
-		Spec     openapi3.T `json:"spec"`
-		FilePath string     `json:"file_path"`
-		Errors   []string   `json:"errors"`
+		Spec     v3high.Document `json:"spec"`
+		FilePath string          `json:"file_path"`
+		Errors   []string        `json:"errors"`
+		// Node     *yaml.Node      `json:"spec2"`
 	}
 
-	defaultSpec := openapi3.T{
-		OpenAPI: "3.0.0",
-		Info: &openapi3.Info{
-			Title:   ns,
-			Version: "1.0",
-		},
-		Paths: openapi3.NewPaths(),
-	}
+	// defaultSpec := openapi3.T{
+	// 	OpenAPI: "3.0.0",
+	// 	Info: &openapi3.Info{
+	// 		Title:   ns,
+	// 		Version: "1.0",
+	// 	},
+	// 	Paths: openapi3.NewPaths(),
+	// }
 
 	gw := output{
 		FilePath: "virtual",
 		Errors:   make([]string, 0),
-		Spec:     defaultSpec,
+		// Spec:     defaultSpec,
 	}
 
-	// we always take the first one, even if there are more
+	// // we always take the first one, even if there are more
 	if len(gateways) > 0 {
 		g := gateways[0]
 
-		gw.Errors = g.Errors
-		gw.FilePath = g.FilePath
-		gw.Spec = g.RenderedBase
+		g.Base.SetConfiguration(&datamodel.DocumentConfiguration{
+			LocalFS: &DirektivOpenAPIFS{
+				fileStore: fileStore,
+				ns:        ns,
+			},
+			AllowFileReferences:     true,
+			AllowRemoteReferences:   false,
+			ExtractRefsSequentially: true,
+		})
 
-		if gw.Spec.Info == nil {
-			gw.Spec.Info = &openapi3.Info{}
-		}
+		// indexConfig := &index.SpecIndexConfig{
+		// 	AllowRemoteLookup:           false,
+		// 	AllowFileLookup:             true,
+		// 	AvoidCircularReferenceCheck: true,
+		// }
 
-		loader := openapi3.NewLoader()
-		loader.IsExternalRefsAllowed = true
-		loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
-			// check if the refs exist
-			path := url.String()
+		// g.Base.SetConfiguration()
+		// rolodex := index.NewRolodex(indexConfig)
+		// rolodex.SetRootNode(g.Base)
+		// doc.Rolodex = rolodex
 
-			// if not absolute we need to calculate path
-			if !filepath.IsAbs(url.String()) {
-				p, err := filepath.Rel(filepath.Dir(g.FilePath),
-					filepath.Join(filepath.Dir(g.FilePath), url.String()))
-				if err != nil {
-					return nil, err
-				}
-				path = p
-			}
+		// g.Base.BuildV2Model()
+		// indexConfig := &index.SpecIndexConfig{
+		// 	AllowRemoteLookup:           false,
+		// 	AllowFileLookup:             true,
+		// 	AvoidCircularReferenceCheck: true,
+		// }
 
-			_, err := fileStore.ForNamespace(ns).GetFile(context.Background(), path)
-			if err != nil {
-				return nil, err
-			}
+		// rolodex := index.NewRolodex(indexConfig)
 
-			return nil, err
-		}
+		// gw.Node = g.Base.GetSpecInfo().RootNode
 
-		// the marshal/unmarshall panics in openapi library
-		// change it to default for that
-		err := loader.ResolveRefsIn(&gw.Spec, nil)
-		if err != nil {
-			gw.Spec = defaultSpec
-			gw.Errors = append(gw.Errors, err.Error())
-		}
+		// remove paths
+		// remove server info
 
-		err = gw.Spec.Validate(context.Background())
-		if err != nil {
-			gw.Spec = defaultSpec
-			gw.Errors = append(gw.Errors, err.Error())
-		}
+		hh, err := g.Base.Serialize()
+		fmt.Printf("%v %v\n", string(hh), err)
 
-		// add routes
-		paths := make([]openapi3.NewPathsOption, 0)
-		for _, item := range endpoints {
-			verr := validateEndpoint(item, ns, fileStore)
-			if len(verr) == 0 {
-				rel, err := filepath.Rel(filepath.Dir(g.FilePath), item.FilePath)
-				if err != nil {
-					rel = item.FilePath
-				}
-				paths = append(paths, openapi3.WithPath(item.Config.Path, &openapi3.PathItem{
-					Ref: rel,
-				}))
-			} else {
-				gw.Errors = append(gw.Errors, fmt.Sprintf("route %v had errors", item.FilePath))
-			}
-		}
+		do, errs := g.Base.BuildV3Model()
+		fmt.Printf("ERROR %v\n", errs)
+		// fmt.Printf("%v %v\n", do, errs)
 
-		gw.Spec.Paths = openapi3.NewPaths(paths...)
+		highLevelValidator, validatorErrs := validator.NewValidator(g.Base)
+		fmt.Printf("VALERR1 %v\n", validatorErrs)
+
+		_, errs2 := highLevelValidator.ValidateDocument()
+		fmt.Printf("VALERR2 %v\n", errs2)
+
+		gw.Spec = do.Model
+
+		// fmt.Println(do.Model.Paths)
+
+		// c := orderedmap.Iterate(context.Background(), do.Model.Paths.PathItems)
+		// for pair := range c {
+		// 	fmt.Println(pair.Key())
+		// 	fmt.Println(pair.Value())
+		// }
+		// gg, err := do.Model.MarshalYAML()
+
+		// o, err := yaml.Marshal(gg)
+		// fmt.Printf("%v %v\n", string(o), err)
+
+		// bb, err := bundler.BundleDocument(&do.Model)
+		// fmt.Printf("%v %v\n", err, string(bb))
+
+		// model, err := g.Base.BuildV3Model()
+
+		// 	gw.Errors = g.Errors
+		// 	gw.FilePath = g.FilePath
+		// gw.Spec = g.RenderedBase
+
+		// 	if gw.Spec.Info == nil {
+		// 		gw.Spec.Info = &openapi3.Info{}
+		// 	}
+
+		// 	resolver := openAPIResolver{
+		// 		path:      g.FilePath,
+		// 		fileStore: fileStore,
+		// 		ns:        ns,
+		// 	}
+
+		// 	loader := openapi3.NewLoader()
+		// 	loader.IsExternalRefsAllowed = true
+		// 	loader.ReadFromURIFunc = resolver.resolveDirektivPath
+
+		// 	// if there is an error we set the default spec to avoid panics in unmarshal
+		// 	err := loader.ResolveRefsIn(&gw.Spec, nil)
+		// 	if err != nil {
+		// 		fmt.Println("1")
+		// 		fmt.Println(err)
+		// 		gw.Spec = defaultSpec
+		// 		gw.Errors = append(gw.Errors, err.Error())
+		// 	}
+
+		// 	err = gw.Spec.Validate(context.Background())
+		// 	if err != nil {
+		// 		fmt.Println("2")
+		// 		fmt.Println(err)
+		// 		gw.Spec = defaultSpec
+		// 		gw.Errors = append(gw.Errors, err.Error())
+		// 	}
+
+		// 	// add routes
+		// 	gw.Spec.Paths = openapi3.NewPathsWithCapacity(0)
+		// 	for _, item := range endpoints {
+		// 		verr := validateEndpoint(item, ns, fileStore)
+		// 		if len(verr) == 0 {
+		// 			rel, err := filepath.Rel(filepath.Dir(g.FilePath), item.FilePath)
+		// 			if err != nil {
+		// 				rel = item.FilePath
+		// 			}
+		// 			gw.Spec.Paths.Set(item.Config.Path, &openapi3.PathItem{
+		// 				Ref: rel,
+		// 			})
+
+		// 			// b, err := resolver.resolveDirektivPath(loader, &url.URL{
+		// 			// 	Path: rel,
+		// 			// })
+
+		// 			// fmt.Printf("PATH %v >%v<\n", err, string(b))
+
+		// 		} else {
+		// 			gw.Errors = append(gw.Errors, fmt.Sprintf("route %v had errors", item.FilePath))
+		// 		}
+		// 	}
+
+		// 	err = loader.ResolveRefsIn(&gw.Spec, nil)
+
+		// 	fmt.Printf("FINAL %v %v\n", err, gw.Spec.Paths.Find("/testme"))
+
+		// 	b, err := gw.Spec.MarshalJSON()
+		// 	fmt.Printf("FINAL2 %v\n", string(b))
+		// if err != nil {
+		// 	gw.Spec = defaultSpec
+		// 	gw.Errors = append(gw.Errors, err.Error())
+		// }
+
+		// gw.Spec.Paths = openapi3.NewPaths(paths...)
+		// gw.Spec.Paths = openapi3.NewPaths(openapi3.WithPath("/jsjjs", &openapi3.PathItem{
+		// 	Ref: "whatveer",
+		// }))
+
+		// fmt.Printf("%+v\n", gw.Spec.Paths.Len())
+		// fmt.Printf("%+v\n", gw.Spec.Paths.Value("/testme"))
+		// fmt.Printf("THIRD %+v\n", gw.Spec.Paths.Map()["/testme"])
+		// b, err := gw.Spec.Paths.MarshalJSON()
+		// // o, err := yaml.Marshal(b)
+		// fmt.Printf("TOVALUE %v %v\n", string(b), err)
+		// // err = loader.ResolveRefsIn(&gw.Spec, nil)
+
+		// gw.Spec.InternalizeRefs(context.Background(), func(t *openapi3.T, cr openapi3.ComponentRef) string {
+		// 	fmt.Printf("DEFREF %v\n", cr)
+		// 	return ""
+		// })
+
+		// gw.Spec.InternalizeRefs(context.Background(), func(t *openapi3.T, cr openapi3.ComponentRef) string {
+		// 	fmt.Printf("DEFREF %v\n", cr)
+		// 	return ""
+		// })
+
+		// b, err = gw.Spec.MarshalJSON()
+		// fmt.Printf("%v %v\n", err, string(b))
+		// // fmt.Printf("MAPVALUE %+v\n", gw.Spec.Paths.Map()["/testme"])
+
+		// dummyDeleteme(gw.Spec, gw.Spec.Paths.Map(), func(t *openapi3.T, cr openapi3.ComponentRef) string {
+		// 	fmt.Printf("DEFREF %v\n", cr)
+		// 	return ""
+		// })
 	}
 
 	// if there are more, it is an error
-	if len(gateways) > 1 {
-		f := make([]string, 0)
-		for i := range gateways {
-			f = append(f, gateways[i].FilePath)
-		}
+	// if len(gateways) > 1 {
+	// 	f := make([]string, 0)
+	// 	for i := range gateways {
+	// 		f = append(f, gateways[i].FilePath)
+	// 	}
 
-		gw.Errors = append(gw.Errors,
-			fmt.Sprintf("multiple gateway specifications found: %s but using %s.", strings.Join(f, ", "), gw.FilePath))
-	}
+	// 	gw.Errors = append(gw.Errors,
+	// 		fmt.Sprintf("multiple gateway specifications found: %s but using %s.", strings.Join(f, ", "), gw.FilePath))
+	// }
 
 	return gw
 }

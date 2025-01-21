@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/pb33f/libopenapi"
+	"github.com/pb33f/libopenapi/datamodel"
 	"gopkg.in/yaml.v3"
 )
 
@@ -106,27 +107,21 @@ func LoadResource(data []byte) (interface{}, error) {
 		return ef, nil
 
 	case GatewayAPIV1:
-		loader := openapi3.NewLoader()
-		loader.IsExternalRefsAllowed = true
-
-		// don't follow any ref in this doc
-		loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
-			return nil, nil
-		}
-
 		// it is specified as openapi file, no validation here
-		doc := &openapi3.T{}
-		err = yaml.Unmarshal(data, &doc)
-
-		if err != nil {
-			return &openapi3.T{
-				Extensions: map[string]any{
-					"x-direktiv-api": s,
-				},
-			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
+		config := datamodel.DocumentConfiguration{
+			AvoidIndexBuild:       true,
+			AllowFileReferences:   true,
+			AllowRemoteReferences: false,
 		}
 
-		return doc, nil
+		document, err := libopenapi.NewDocumentWithConfiguration(data, &config)
+		if err != nil {
+			// can not fail here, so we ignoring the error
+			doc, _ := libopenapi.NewDocument([]byte(fmt.Sprintf("openapi: 3.0.0\nx-direktiv-api: %s", s)))
+			return doc, err
+		}
+
+		return document, nil
 
 	case EndpointAPIV2:
 		var pathItemMap map[string]interface{}
