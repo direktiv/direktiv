@@ -647,6 +647,13 @@
         }
       }
     },
+    "trace": {
+      "title": "Trace viewer",
+      "tableHeader": {
+        "spanId": "span id",
+        "timeline": "timeline"
+      }
+    },
     "mirror": {
       "header": {
         "ref": "ref",
