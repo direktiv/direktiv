@@ -1,3 +1,5 @@
+import { FC, useState } from "react";
+import { SpanType, processSpans } from "./utils";
 import {
   Table,
   TableCell,
@@ -7,18 +9,15 @@ import {
 } from "~/design/Table";
 
 import { Card } from "~/design/Card";
-import { FC } from "react";
 import { SquareGanttChartIcon } from "lucide-react";
 import { TableBody } from "@tremor/react";
 import mock from "./mock.json";
 import moment from "moment";
-import { processSpans } from "./utils";
 import { useTranslation } from "react-i18next";
 
 const TraceViewer: FC = () => {
   const { t } = useTranslation();
-  const { timeline: spans } = mock;
-
+  const [spans, setSpans] = useState<SpanType[]>(mock.timeline);
   const legendFormat = "YYYY-MM-DD, hh:mm:ss.SSS";
 
   const timelineStart = Math.min(
@@ -28,7 +27,18 @@ const TraceViewer: FC = () => {
     ...spans.map((span) => Number(span.endTimeUnixNano))
   );
 
-  const spanElements = processSpans({ spans, timelineStart, timelineEnd });
+  // Todo: find a better solution to the prop drilling below. Maybe use context provider.
+
+  const applyFilter = (newSpans: SpanType[]) => {
+    setSpans(newSpans);
+  };
+
+  const spanElements = processSpans({
+    spans,
+    timelineStart,
+    timelineEnd,
+    onFilter: applyFilter,
+  });
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">

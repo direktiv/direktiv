@@ -2,7 +2,7 @@ import { ReactElement } from "react";
 import TimelineElement from "./components/TimelineElement";
 import TreeElement from "./components/TreeElement";
 
-type SpanType = {
+export type SpanType = {
   spanId: string;
   startTimeUnixNano: string;
   endTimeUnixNano: string;
@@ -20,6 +20,7 @@ type Options = {
   depth?: number;
   timelineStart: number;
   timelineEnd: number;
+  onFilter?: (spans: SpanType[]) => void;
 };
 
 export const processSpans = ({
@@ -27,6 +28,7 @@ export const processSpans = ({
   depth = 0,
   timelineStart,
   timelineEnd,
+  onFilter,
 }: Options): SpanElement[] =>
   spans.reduce<SpanElement[]>((acc, span) => {
     const spanStart = Number(span.startTimeUnixNano);
@@ -46,8 +48,8 @@ export const processSpans = ({
     const labelUnit = timelineLength < 100 ? "ms" : "s";
     const label = `${Math.round(spanLength / labelDivider) / 100} ${labelUnit}`;
 
-    const handleFilter = () => {
-      console.log(span.spanId);
+    const handleFilter = (newSpans: SpanType[]) => {
+      onFilter && onFilter(newSpans);
     };
 
     acc.push({
@@ -57,7 +59,7 @@ export const processSpans = ({
           id={span.spanId}
           label={span.spanId}
           depth={depth}
-          onFilter={() => handleFilter()}
+          onFilter={() => handleFilter([span])}
         />
       ),
       timeline: <TimelineElement start={start} end={end} label={label} />,
@@ -70,6 +72,7 @@ export const processSpans = ({
           depth: depth + 1,
           timelineStart,
           timelineEnd,
+          onFilter,
         })
       );
     }
