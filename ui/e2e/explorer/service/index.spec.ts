@@ -4,7 +4,7 @@ import {
   PatchSchemaType,
 } from "~/pages/namespace/Explorer/Service/ServiceEditor/schema";
 import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
-import { createService, createServiceYaml, normalizeWhitespace } from "./utils";
+import { createService, createServiceYaml } from "./utils";
 import { expect, test } from "@playwright/test";
 
 import { EnvVarSchemaType } from "~/api/services/schema/services";
@@ -46,14 +46,11 @@ test("it is possible to create a service", async ({ page }) => {
     scale: 2,
     size: "medium",
     cmd: "hello",
-    patches,
     envs,
+    patches,
   };
 
   const expectedYaml = createServiceYaml(service);
-
-  /* Normalize whitespace for comparison */
-  const normalizedExpectedYaml = normalizeWhitespace(expectedYaml);
 
   /* visit page */
   await page.goto(`/n/${namespace}/explorer/tree`, {
@@ -121,13 +118,11 @@ test("it is possible to create a service", async ({ page }) => {
    * this will fail if the document gets too long.
    */
   const editor = page.locator(".lines-content");
-  const editorContent = await editor.innerText();
-  const normalizedEditorContent = normalizeWhitespace(editorContent);
 
   await expect(
-    normalizedEditorContent,
+    editor,
     "all entered data is represented in the editor preview"
-  ).toBe(normalizedExpectedYaml);
+  ).toContainText(expectedYaml, { useInnerText: true });
 
   await expect(
     page.getByTestId("unsaved-note"),
@@ -285,6 +280,7 @@ test("it is possible to edit patches", async ({ page }) => {
     });
 
   await editorTarget.click();
+  // await page.locator("textarea").last().fill(updatedPatch.value);
   await page.keyboard.press("Control+a");
   await page.keyboard.press("Delete");
   await page.keyboard.type(updatedPatch.value);
@@ -317,7 +313,7 @@ test("it is possible to edit patches", async ({ page }) => {
 
   const expectedYaml = createServiceYaml(updatedService);
 
-  const editor = page.locator(".lines-content");
+  const editor = page.locator(".lines-content").first();
 
   await expect(
     editor,
