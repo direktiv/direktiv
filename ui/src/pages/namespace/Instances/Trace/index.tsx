@@ -1,6 +1,7 @@
 import { FC, ReactElement } from "react";
 
 import mock from "./mock.json";
+import { twMergeClsx } from "~/util/helpers";
 
 type SpanType = {
   spanId: string;
@@ -12,27 +13,49 @@ type SpanType = {
 type TreeElementProps = { span: SpanType };
 
 const TreeElement: FC<TreeElementProps> = ({ span }) => (
-  <div className="h-8">{span.spanId}</div>
+  <div className="h-8 w-full">{span.spanId}</div>
 );
 
 type TimelineElementProps = { span: SpanType; start: number; end: number };
 
 const TimelineElement: FC<TimelineElementProps> = ({ span, start, end }) => (
-  <div className="h-8 flex flex-row">
-    <div className="bg-blue-400 rounded h-5 absolute overflow-x-visible text-nowrap"></div>
-    <div className="text-gray-500 absolute px-1">
-      {start} {end}
+  <div
+    className="relative h-8 flex flex-row w-full"
+    style={{ paddingLeft: `${start}%`, paddingRight: `${end}%` }}
+  >
+    <div
+      className={twMergeClsx(
+        "bg-primary-400/75 rounded h-5",
+        "overflow-x-visible text-nowrap min-w-px w-full max-w-full"
+      )}
+      style={start > 50 ? { direction: "rtl" } : {}}
+    >
+      <div style={{ direction: "ltr", display: "inline-block" }}>
+        {start} {end}
+      </div>
     </div>
   </div>
+  // <div className="relative w-full h-8 bg-gray-200">
+  //   <div
+  //     className="whitespace-nowrap absolute left-[48%] right-[48%] bg-blue-400 rounded h-5 text-white text-sm flex items-center overflow-visible"
+  //     style={start > 50 ? { direction: "rtl" } : {}}
+  //   >
+  //     Some text
+  //   </div>
+  // </div>
 );
 
 type TreeProps = { elements: ReactElement[] };
 
-const Tree: FC<TreeProps> = ({ elements }) => <div>{...elements}</div>;
+const Tree: FC<TreeProps> = ({ elements }) => (
+  <div className="w-3/12">{...elements}</div>
+);
 
 type TimelineProps = { elements: ReactElement[] };
 
-const Timeline: FC<TimelineProps> = ({ elements }) => <div>{...elements}</div>;
+const Timeline: FC<TimelineProps> = ({ elements }) => (
+  <div className="w-9/12">{...elements}</div>
+);
 
 const SpanViewer: FC = () => {
   const { timeline: spans } = mock;
@@ -57,7 +80,7 @@ const SpanViewer: FC = () => {
         (Number(span.startTimeUnixNano) / duration - timelineStart) * 100
       );
       const end = Math.round(
-        (Number(span.endTimeUnixNano) / duration - timelineStart) * 100
+        (1 - (Number(span.endTimeUnixNano) - timelineStart) / duration) * 100
       );
 
       acc.push({
@@ -74,7 +97,7 @@ const SpanViewer: FC = () => {
   const spanElements = processSpans(spans);
 
   return (
-    <div className="flex flex-row">
+    <div className="flex flex-row w-full">
       <Tree elements={spanElements.map((item) => item.tree)} />
       <Timeline elements={spanElements.map((item) => item.timeline)} />
     </div>
