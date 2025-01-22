@@ -25,14 +25,14 @@ import (
 
 type NewMainArgs struct {
 	Config                       *core.Config
-	Database                     *database.SQLStore
+	Database                     *database.DB
 	PubSubBus                    *pubsub.Bus
 	ConfigureWorkflow            func(event *pubsub.FileSystemChangeEvent) error
 	InstanceManager              *instancestore.InstanceManager
 	WakeInstanceByEvent          events.WakeEventsWaiter
 	WorkflowStart                events.WorkflowStart
 	SyncNamespace                core.SyncNamespace
-	RenderAllStartEventListeners func(ctx context.Context, tx *database.SQLStore) error
+	RenderAllStartEventListeners func(ctx context.Context, tx *database.DB) error
 }
 
 func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
@@ -137,7 +137,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	return nil
 }
 
-func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceManager) {
+func renderServiceManager(db *database.DB, serviceManager core.ServiceManager) {
 	ctx := context.Background()
 	slog := slog.With("subscriber", "services file watcher")
 

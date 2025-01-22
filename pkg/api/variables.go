@@ -16,7 +16,7 @@ import (
 )
 
 type varController struct {
-	db *database.SQLStore
+	db *database.DB
 }
 
 func (e *varController) mountRouter(r chi.Router) {

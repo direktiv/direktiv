@@ -104,7 +104,7 @@ func marshalForAPI(ctx context.Context, data *instancestore.InstanceData) *Insta
 }
 
 type instController struct {
-	db      *database.SQLStore
+	db      *database.DB
 	manager *instancestore.InstanceManager
 }
 

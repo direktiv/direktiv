@@ -64,5 +64,6 @@ func DecryptData(key, data []byte) ([]byte, error) {
 
 	nonce := data[:gcm.NonceSize()]
 	data = data[gcm.NonceSize():]
+
 	return gcm.Open(nil, nonce, data, nil)
 }
