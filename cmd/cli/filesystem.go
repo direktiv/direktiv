@@ -104,7 +104,7 @@ var instancesExecCmd = &cobra.Command{
 				return err
 			}
 
-			return fmt.Errorf(errJSON.Error.Message)
+			return fmt.Errorf("%s", errJSON.Error.Message)
 		}
 
 		id, err := handleResponse(resp, p)

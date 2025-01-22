@@ -54,9 +54,6 @@ linters:
     - mnd
     - canonicalheader
 
-    # TODO: these need to be removed.
-    - govet
-
 issues:
   exclude-rules:
     - path: '(pkg)\/(model|sidecar|utils|jqer|flow)\/.*'
