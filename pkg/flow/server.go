@@ -81,6 +81,7 @@ func Run(circuit *core.Circuit) error {
 	if err != nil {
 		return fmt.Errorf("initialize db, err: %w", err)
 	}
+	datastore.SymmetricEncryptionKey = config.SecretKey
 	// TODO: yassir, use the new db to refactor old code.
 	dbManager := database.NewDB(db)
 
