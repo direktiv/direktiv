@@ -7,16 +7,15 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 
 	"github.com/direktiv/direktiv/pkg/database"
-	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
 	"github.com/google/uuid"
 )
 
 func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
+		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
-	ds := datastoresql.NewSQLStore(db)
+	ds := db.DataStore()
 
 	newProcess := &datastore.MirrorProcess{
 		ID:        uuid.New(),
@@ -91,11 +90,11 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 }
 
 func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
+		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
-	ds := datastoresql.NewSQLStore(db)
+	ds := db.DataStore()
 
 	// test create.
 

@@ -32,9 +32,9 @@ type DB struct {
 	db *gorm.DB
 }
 
-func NewDB(gormDB *gorm.DB) *DB {
+func NewDB(db *gorm.DB) *DB {
 	return &DB{
-		db: gormDB,
+		db: db,
 	}
 }
 
@@ -69,7 +69,7 @@ func (tx *DB) BeginTx(ctx context.Context, opts ...*sql.TxOptions) (*DB, error) 
 	}, nil
 }
 
-func NewTestDataStore(t *testing.T) (*gorm.DB, error) {
+func NewTestDB(t *testing.T) (*DB, error) {
 	t.Helper()
 	ctx := context.Background()
 
@@ -96,7 +96,7 @@ func NewTestDataStore(t *testing.T) (*gorm.DB, error) {
 	return newTestPostgres(connStr)
 }
 
-func newTestPostgres(dsn string) (*gorm.DB, error) {
+func newTestPostgres(dsn string) (*DB, error) {
 	gormConf := &gorm.Config{
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
@@ -124,17 +124,17 @@ func newTestPostgres(dsn string) (*gorm.DB, error) {
 		return nil, fmt.Errorf("delete namespaces, err: %w", res.Error)
 	}
 
-	return db, nil
+	return NewDB(db), nil
 }
 
-func NewTestDataStoreWithNamespace(t *testing.T, namespace string) (*gorm.DB, *datastore.Namespace, error) {
+func NewTestDBWithNamespace(t *testing.T, namespace string) (*DB, *datastore.Namespace, error) {
 	t.Helper()
 
-	db, err := NewTestDataStore(t)
+	db, err := NewTestDB(t)
 	if err != nil {
 		return nil, nil, err
 	}
-	ns, err := datastoresql.NewSQLStore(db).Namespaces().Create(context.Background(), &datastore.Namespace{
+	ns, err := db.DataStore().Namespaces().Create(context.Background(), &datastore.Namespace{
 		Name: namespace,
 	})
 	if err != nil {

@@ -3,20 +3,17 @@ package filestore_test
 import (
 	"context"
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
-	"gorm.io/gorm"
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/filestore/filestoresql"
 	"github.com/google/uuid"
 )
 
-func assertFileStoreCorrectRootCreation(t *testing.T, db *gorm.DB, fs filestore.FileStore, namespace string) {
+func assertFileStoreCorrectRootCreation(t *testing.T, db *database.DB, fs filestore.FileStore, namespace string) {
 	t.Helper()
 
-	ns, err := datastoresql.NewSQLStore(db).Namespaces().Create(context.Background(), &datastore.Namespace{
+	ns, err := db.DataStore().Namespaces().Create(context.Background(), &datastore.Namespace{
 		Name: namespace,
 	})
 	if err != nil {
@@ -77,11 +74,11 @@ func assertFileStoreCorrectRootDeletion(t *testing.T, fs filestore.FileStore, id
 }
 
 func Test_sqlFileStore_CreateRoot(t *testing.T) {
-	db, err := database.NewTestDataStore(t)
+	db, err := database.NewTestDB(t)
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
+		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
-	fs := filestoresql.NewSQLFileStore(db)
+	fs := db.FileStore()
 
 	tests := []struct {
 		name string
@@ -99,11 +96,11 @@ func Test_sqlFileStore_CreateRoot(t *testing.T) {
 }
 
 func Test_sqlFileStore_ListingAfterCreate(t *testing.T) {
-	db, err := database.NewTestDataStore(t)
+	db, err := database.NewTestDB(t)
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
+		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
-	fs := filestoresql.NewSQLFileStore(db)
+	fs := db.FileStore()
 
 	myNamespace1 := "ns1"
 	myNamespace2 := "ns2"

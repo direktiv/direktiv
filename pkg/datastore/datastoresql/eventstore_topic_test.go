@@ -7,19 +7,18 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
 	"github.com/google/uuid"
 )
 
 func Test_TopicAddGet(t *testing.T) {
 	// Create a mock database
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unexpected NewTestDataStoreWithNamespace() error: %v", err)
+		t.Fatalf("unexpected NewTestDBWithNamespace() error: %v", err)
 	}
 
 	// Create a new SQL data store
-	store := datastoresql.NewSQLStore(db)
+	store := db.DataStore()
 
 	eID := uuid.New()
 	listeningForEventType := "a"

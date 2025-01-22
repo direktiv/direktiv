@@ -7,7 +7,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
 	"github.com/google/uuid"
 )
 
@@ -51,11 +50,12 @@ func testUpdate(t *testing.T) {
 }
 
 func testPaginationAndBoundaryCheck(t *testing.T) {
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unexpected NewTestDataStoreWithNamespace() error = %v", err)
+		t.Fatalf("unexpected NewTestDBWithNamespace() error = %v", err)
 	}
-	store := datastoresql.NewSQLStore(db)
+	store := db.DataStore()
+
 	listeners := store.EventListener()
 
 	// Adding 11 entries
@@ -121,11 +121,11 @@ func testPaginationAndBoundaryCheck(t *testing.T) {
 func testDeleteByWorkflow(t *testing.T) {
 	eID := uuid.New()
 	wf := uuid.New()
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unexpected NewTestDataStoreWithNamespace() error = %v", err)
+		t.Fatalf("unexpected NewTestDBWithNamespace() error = %v", err)
 	}
-	store := datastoresql.NewSQLStore(db)
+	store := db.DataStore()
 	listeners := store.EventListener()
 	err = listeners.Append(context.Background(), &datastore.EventListener{
 		ID:                          eID,
@@ -157,11 +157,11 @@ func testDeleteByWorkflow(t *testing.T) {
 }
 
 func setupTest(t *testing.T) (datastore.EventListenerStore, *datastore.EventListener, uuid.UUID, string) {
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unexpected NewTestDataStoreWithNamespace() error = %v", err)
+		t.Fatalf("unexpected NewTestDBWithNamespace() error = %v", err)
 	}
-	listenerStore := datastoresql.NewSQLStore(db).EventListener()
+	listenerStore := db.DataStore().EventListener()
 
 	listener := createTestEventListener(ns.ID)
 
