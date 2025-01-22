@@ -10,10 +10,12 @@ type SpanType = {
   children?: SpanType[];
 };
 
-type TreeElementProps = { span: SpanType };
+type TreeElementProps = { span: SpanType; depth?: number };
 
-const TreeElement: FC<TreeElementProps> = ({ span }) => (
-  <div className="h-8 w-full">{span.spanId}</div>
+const TreeElement: FC<TreeElementProps> = ({ span, depth = 0 }) => (
+  <div className="h-8 w-full" style={{ paddingLeft: `${depth * 12}px` }}>
+    {span.spanId}
+  </div>
 );
 
 type TimelineElementProps = { start: number; end: number };
@@ -25,7 +27,7 @@ const TimelineElement: FC<TimelineElementProps> = ({ start, end }) => (
   >
     <div
       className={twMergeClsx(
-        "bg-primary-400/75 rounded h-5",
+        "bg-primary-200 dark:bg-primary-700 rounded-sm h-5",
         "overflow-x-visible text-nowrap min-w-px w-full max-w-full"
       )}
       style={start > 50 ? { direction: "rtl" } : {}}
@@ -74,7 +76,7 @@ const SpanViewer: FC = () => {
     timeline: ReactElement;
   };
 
-  const processSpans = (spans: SpanType[]): SpanElement[] =>
+  const processSpans = (spans: SpanType[], depth = 0): SpanElement[] =>
     spans.reduce<SpanElement[]>((acc, span) => {
       const start = Math.round(
         (Number(span.startTimeUnixNano) / duration - timelineStart) * 100
@@ -84,12 +86,12 @@ const SpanViewer: FC = () => {
       );
 
       acc.push({
-        tree: <TreeElement span={span} />,
+        tree: <TreeElement span={span} depth={depth} />,
         timeline: <TimelineElement start={start} end={end} />,
       });
 
       if (span.children && span.children.length > 0) {
-        acc.push(...processSpans(span.children));
+        acc.push(...processSpans(span.children, depth + 1));
       }
       return acc;
     }, []);
