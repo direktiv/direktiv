@@ -15,9 +15,9 @@ interface PageSizeState {
   actions: {
     setEventsPageSize: (EventsPageSize: PageSizeState["events"]) => void;
     setEventListenersPageSize: (
-      EventsPageSize: PageSizeState["events"]
+      EventsPageSize: PageSizeState["eventListeners"]
     ) => void;
-    setInstancesPageSize: (EventsPageSize: PageSizeState["events"]) => void;
+    setInstancesPageSize: (EventsPageSize: PageSizeState["instances"]) => void;
   };
 }
 
