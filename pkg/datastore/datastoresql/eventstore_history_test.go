@@ -10,17 +10,16 @@ import (
 	"github.com/cloudevents/sdk-go/v2/types"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
 	"github.com/google/uuid"
 )
 
 func setupEventHistoryStore(t *testing.T) (datastore.EventHistoryStore, uuid.UUID, string) {
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unexpected NewTestDataStoreWithNamespace() error: %v", err)
+		t.Fatalf("unexpected NewTestDBWithNamespace() error: %v", err)
 	}
 
-	return datastoresql.NewSQLStore(db, "some_secret_key_").EventHistory(), ns.ID, ns.Name
+	return db.DataStore().EventHistory(), ns.ID, ns.Name
 }
 
 // func Test_EventStoreAddGet(t *testing.T) {

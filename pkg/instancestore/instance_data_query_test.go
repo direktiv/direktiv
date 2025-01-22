@@ -6,7 +6,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/instancestore"
-	"github.com/direktiv/direktiv/pkg/instancestore/instancestoresql"
 	"github.com/google/uuid"
 )
 
@@ -38,11 +37,11 @@ func assertInstanceStoreCorrectGetMost(t *testing.T, is instancestore.Store, arg
 func TestInstanceDataQuery_sqlInstanceStore_GetMost(t *testing.T) {
 	server := uuid.New()
 
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	instances := instancestoresql.NewSQLInstanceStore(db)
+	instances := db.InstanceStore()
 
 	var tests []assertInstanceStoreCorrectInstanceDataCreationTest
 
@@ -109,11 +108,11 @@ func assertInstanceStoreCorrectGetSummary(t *testing.T, is instancestore.Store, 
 func TestInstanceDataQuery_sqlInstanceStore_GetSummary(t *testing.T) {
 	server := uuid.New()
 
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	instances := instancestoresql.NewSQLInstanceStore(db)
+	instances := db.InstanceStore()
 
 	var tests []assertInstanceStoreCorrectInstanceDataCreationTest
 

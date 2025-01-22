@@ -11,14 +11,13 @@ import (
 )
 
 type sqlSecretsStore struct {
-	db        *gorm.DB
-	secretKey string
+	db *gorm.DB
 }
 
 func (s sqlSecretsStore) Update(ctx context.Context, secret *datastore.Secret) error {
 	if secret.Data != nil {
 		var err error
-		secret.Data, err = utils.EncryptData([]byte(s.secretKey), secret.Data)
+		secret.Data, err = utils.EncryptData([]byte(datastore.SymmetricEncryptionKey), secret.Data)
 		if err != nil {
 			return err
 		}
@@ -66,7 +65,7 @@ func (s sqlSecretsStore) Get(ctx context.Context, namespace string, name string)
 	}
 	if secret.Data != nil {
 		var err error
-		secret.Data, err = utils.DecryptData([]byte(s.secretKey), secret.Data)
+		secret.Data, err = utils.DecryptData([]byte(datastore.SymmetricEncryptionKey), secret.Data)
 		if err != nil {
 			return nil, err
 		}
@@ -86,7 +85,7 @@ func (s sqlSecretsStore) Set(ctx context.Context, secret *datastore.Secret) erro
 				`, secret.Namespace, secret.Name)
 		} else {
 			var err error
-			secret.Data, err = utils.EncryptData([]byte(s.secretKey), secret.Data)
+			secret.Data, err = utils.EncryptData([]byte(datastore.SymmetricEncryptionKey), secret.Data)
 			if err != nil {
 				return err
 			}
@@ -103,7 +102,7 @@ func (s sqlSecretsStore) Set(ctx context.Context, secret *datastore.Secret) erro
 				`, x.Namespace, x.Name)
 		} else {
 			var err error
-			secret.Data, err = utils.EncryptData([]byte(s.secretKey), secret.Data)
+			secret.Data, err = utils.EncryptData([]byte(datastore.SymmetricEncryptionKey), secret.Data)
 			if err != nil {
 				return err
 			}
@@ -133,7 +132,7 @@ func (s sqlSecretsStore) GetAll(ctx context.Context, namespace string) ([]*datas
 	for _, secret := range secrets {
 		if secret.Data != nil {
 			var err error
-			secret.Data, err = utils.DecryptData([]byte(s.secretKey), secret.Data)
+			secret.Data, err = utils.DecryptData([]byte(datastore.SymmetricEncryptionKey), secret.Data)
 			if err != nil {
 				return nil, err
 			}
