@@ -15,11 +15,12 @@ func (o *EventsAndStart) GetEvents() []StartEventDefinition {
 	if o != nil && o.Events != nil {
 		events = append(events, o.Events...)
 	}
+
 	return events
 }
 
 func (o *EventsAndStart) Validate() error {
-	if o.Events == nil || len(o.Events) == 0 {
+	if len(o.Events) == 0 {
 		return errors.New("events required")
 	}
 
