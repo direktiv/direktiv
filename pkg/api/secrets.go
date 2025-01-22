@@ -11,7 +11,7 @@ import (
 )
 
 type secretsController struct {
-	db *database.SQLStore
+	db *database.DB
 }
 
 func (e *secretsController) mountRouter(r chi.Router) {

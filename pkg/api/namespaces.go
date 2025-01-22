@@ -16,7 +16,7 @@ import (
 )
 
 type nsController struct {
-	db              *database.SQLStore
+	db              *database.DB
 	registryManager core.RegistryManager
 	bus             *pubsub.Bus
 }

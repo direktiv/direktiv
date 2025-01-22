@@ -18,6 +18,6 @@ type RouteController interface {
 }
 
 type App struct {
-	DB  *database.SQLStore
+	DB  *database.DB
 	Bus *pubsub.Bus
 }

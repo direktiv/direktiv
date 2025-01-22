@@ -28,45 +28,45 @@ import (
 //go:embed db_schema.sql
 var Schema string
 
-type SQLStore struct {
+type DB struct {
 	db        *gorm.DB
 	secretKey string
 }
 
-func NewSQLStore(gormDB *gorm.DB, secretKey string) *SQLStore {
-	return &SQLStore{
+func NewDB(gormDB *gorm.DB, secretKey string) *DB {
+	return &DB{
 		db:        gormDB,
 		secretKey: secretKey,
 	}
 }
 
-func (tx *SQLStore) FileStore() filestore.FileStore {
+func (tx *DB) FileStore() filestore.FileStore {
 	return filestoresql.NewSQLFileStore(tx.db)
 }
 
-func (tx *SQLStore) DataStore() datastore.Store {
+func (tx *DB) DataStore() datastore.Store {
 	return datastoresql.NewSQLStore(tx.db, tx.secretKey)
 }
 
-func (tx *SQLStore) InstanceStore() instancestore.Store {
+func (tx *DB) InstanceStore() instancestore.Store {
 	return instancestoresql.NewSQLInstanceStore(tx.db)
 }
 
-func (tx *SQLStore) Commit(ctx context.Context) error {
+func (tx *DB) Commit(ctx context.Context) error {
 	return tx.db.WithContext(ctx).Commit().Error
 }
 
-func (tx *SQLStore) Rollback() error {
+func (tx *DB) Rollback() error {
 	return tx.db.Rollback().Error
 }
 
-func (tx *SQLStore) BeginTx(ctx context.Context, opts ...*sql.TxOptions) (*SQLStore, error) {
+func (tx *DB) BeginTx(ctx context.Context, opts ...*sql.TxOptions) (*DB, error) {
 	res := tx.db.WithContext(ctx).Begin(opts...)
 	if res.Error != nil {
 		return nil, res.Error
 	}
 
-	return &SQLStore{
+	return &DB{
 		db:        res,
 		secretKey: tx.secretKey,
 	}, nil
@@ -112,7 +112,7 @@ func newTestPostgres(dsn string) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
-		// Conn:                 edb.SQLStore(),
+		// Conn:                 edb.DB(),
 	}), gormConf)
 	if err != nil {
 		return nil, fmt.Errorf("connecting to db, err: %w", err)

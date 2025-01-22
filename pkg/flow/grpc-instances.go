@@ -52,7 +52,7 @@ func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string,
 	var err error
 	var ns *datastore.Namespace
 
-	err = engine.runSQLTx(ctx, func(tx *database.SQLStore) error {
+	err = engine.runSQLTx(ctx, func(tx *database.DB) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
 		return err
 	})
