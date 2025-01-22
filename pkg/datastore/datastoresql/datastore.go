@@ -8,8 +8,6 @@ import (
 type sqlStore struct {
 	// database connection.
 	db *gorm.DB
-	// symmetric encryption key to encrypt and decrypt mirror data.
-	mirrorConfigEncryptionKey string
 }
 
 var _ datastore.Store = &sqlStore{}
@@ -20,18 +18,16 @@ var _ datastore.Store = &sqlStore{}
 // can start a transaction and pass it as Param `db`. After calling different operations on the store, the caller can
 // either commit or rollback the connection.
 
-func NewSQLStore(db *gorm.DB, mirrorConfigEncryptionKey string) datastore.Store {
+func NewSQLStore(db *gorm.DB) datastore.Store {
 	return &sqlStore{
-		db:                        db,
-		mirrorConfigEncryptionKey: mirrorConfigEncryptionKey,
+		db: db,
 	}
 }
 
 // Mirror returns mirror store.
 func (s *sqlStore) Mirror() datastore.MirrorStore {
 	return &sqlMirrorStore{
-		db:                  s.db,
-		configEncryptionKey: s.mirrorConfigEncryptionKey,
+		db: s.db,
 	}
 }
 
@@ -45,8 +41,7 @@ func (s *sqlStore) NewLogs() datastore.LogStore {
 // Secrets returns secrets store.
 func (s *sqlStore) Secrets() datastore.SecretsStore {
 	return &sqlSecretsStore{
-		db:        s.db,
-		secretKey: s.mirrorConfigEncryptionKey,
+		db: s.db,
 	}
 }
 

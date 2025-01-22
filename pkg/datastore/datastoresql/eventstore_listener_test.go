@@ -55,7 +55,7 @@ func testPaginationAndBoundaryCheck(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected NewTestDataStoreWithNamespace() error = %v", err)
 	}
-	store := datastoresql.NewSQLStore(db, "some_secret_key_")
+	store := datastoresql.NewSQLStore(db)
 	listeners := store.EventListener()
 
 	// Adding 11 entries
@@ -125,7 +125,7 @@ func testDeleteByWorkflow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected NewTestDataStoreWithNamespace() error = %v", err)
 	}
-	store := datastoresql.NewSQLStore(db, "some_secret_key_")
+	store := datastoresql.NewSQLStore(db)
 	listeners := store.EventListener()
 	err = listeners.Append(context.Background(), &datastore.EventListener{
 		ID:                          eID,
@@ -161,7 +161,7 @@ func setupTest(t *testing.T) (datastore.EventListenerStore, *datastore.EventList
 	if err != nil {
 		t.Fatalf("unexpected NewTestDataStoreWithNamespace() error = %v", err)
 	}
-	listenerStore := datastoresql.NewSQLStore(db, "some_secret_key_").EventListener()
+	listenerStore := datastoresql.NewSQLStore(db).EventListener()
 
 	listener := createTestEventListener(ns.ID)
 

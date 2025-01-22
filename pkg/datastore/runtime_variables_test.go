@@ -20,7 +20,7 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
 	}
 
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	ds := datastoresql.NewSQLStore(db)
 	fs := filestoresql.NewSQLFileStore(db)
 	file := createFile(t, fs, ns.Name)
 
@@ -101,7 +101,7 @@ func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
 		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
 	}
 
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	ds := datastoresql.NewSQLStore(db)
 
 	testVar := &datastore.RuntimeVariable{
 		Namespace: ns.Name,
@@ -165,7 +165,7 @@ func Test_sqlRuntimeVariablesStore_InvalidName(t *testing.T) {
 		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
 	}
 
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	ds := datastoresql.NewSQLStore(db)
 	fs := filestoresql.NewSQLFileStore(db)
 	file := createFile(t, fs, ns.Name)
 
@@ -190,7 +190,7 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
 	}
 
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	ds := datastoresql.NewSQLStore(db)
 	fs := filestoresql.NewSQLFileStore(db)
 	file := createFile(t, fs, ns.Name)
 
@@ -285,7 +285,7 @@ func Test_sqlRuntimeVariablesStore_CreateAndUpdate(t *testing.T) {
 		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
 	}
 
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	ds := datastoresql.NewSQLStore(db)
 	fs := filestoresql.NewSQLFileStore(db)
 	file := createFile(t, fs, ns.Name)
 

@@ -16,7 +16,7 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	ds := datastoresql.NewSQLStore(db)
 
 	newProcess := &datastore.MirrorProcess{
 		ID:        uuid.New(),
@@ -95,7 +95,7 @@ func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	ds := datastoresql.NewSQLStore(db)
 
 	// test create.
 

@@ -16,7 +16,7 @@ import (
 func assertFileStoreCorrectRootCreation(t *testing.T, db *gorm.DB, fs filestore.FileStore, namespace string) {
 	t.Helper()
 
-	ns, err := datastoresql.NewSQLStore(db, "some_secret_key_").Namespaces().Create(context.Background(), &datastore.Namespace{
+	ns, err := datastoresql.NewSQLStore(db).Namespaces().Create(context.Background(), &datastore.Namespace{
 		Name: namespace,
 	})
 	if err != nil {

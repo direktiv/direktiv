@@ -19,7 +19,7 @@ func Test_TopicAddGet(t *testing.T) {
 	}
 
 	// Create a new SQL data store
-	store := datastoresql.NewSQLStore(db, "some_secret_key_")
+	store := datastoresql.NewSQLStore(db)
 
 	eID := uuid.New()
 	listeningForEventType := "a"

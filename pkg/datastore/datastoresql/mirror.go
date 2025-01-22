@@ -15,8 +15,6 @@ import (
 type sqlMirrorStore struct {
 	// database connection.
 	db *gorm.DB
-	// symmetric encryption key to encrypt and decrypt mirror data.
-	configEncryptionKey string
 }
 
 func (s sqlMirrorStore) GetAllConfigs(ctx context.Context) ([]*datastore.MirrorConfig, error) {
@@ -30,7 +28,7 @@ func (s sqlMirrorStore) GetAllConfigs(ctx context.Context) ([]*datastore.MirrorC
 		return nil, res.Error
 	}
 	for i := range list {
-		config, err := cryptDecryptConfig(list[i], s.configEncryptionKey, false)
+		config, err := cryptDecryptConfig(list[i], datastore.SymmetricEncryptionKey, false)
 		if err != nil {
 			return nil, err
 		}
@@ -74,7 +72,7 @@ func cryptDecryptConfig(config *datastore.MirrorConfig, key string, encrypt bool
 }
 
 func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *datastore.MirrorConfig) (*datastore.MirrorConfig, error) {
-	newConfig, err := cryptDecryptConfig(config, s.configEncryptionKey, true)
+	newConfig, err := cryptDecryptConfig(config, datastore.SymmetricEncryptionKey, true)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +91,7 @@ func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *datastore.Mirr
 }
 
 func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *datastore.MirrorConfig) (*datastore.MirrorConfig, error) {
-	config, err := cryptDecryptConfig(config, s.configEncryptionKey, true)
+	config, err := cryptDecryptConfig(config, datastore.SymmetricEncryptionKey, true)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +155,7 @@ func (s sqlMirrorStore) GetConfig(ctx context.Context, namespace string) (*datas
 		return nil, res.Error
 	}
 
-	config, err := cryptDecryptConfig(config, s.configEncryptionKey, false)
+	config, err := cryptDecryptConfig(config, datastore.SymmetricEncryptionKey, false)
 	if err != nil {
 		return nil, err
 	}

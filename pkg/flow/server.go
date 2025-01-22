@@ -82,7 +82,7 @@ func Run(circuit *core.Circuit) error {
 		return fmt.Errorf("initialize db, err: %w", err)
 	}
 	// TODO: yassir, use the new db to refactor old code.
-	dbManager := database.NewDB(db, config.SecretKey)
+	dbManager := database.NewDB(db)
 
 	slog.Info("initialize legacy server")
 	srv, err := initLegacyServer(circuit, config, db, dbManager)

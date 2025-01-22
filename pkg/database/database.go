@@ -29,14 +29,12 @@ import (
 var Schema string
 
 type DB struct {
-	db        *gorm.DB
-	secretKey string
+	db *gorm.DB
 }
 
-func NewDB(gormDB *gorm.DB, secretKey string) *DB {
+func NewDB(gormDB *gorm.DB) *DB {
 	return &DB{
-		db:        gormDB,
-		secretKey: secretKey,
+		db: gormDB,
 	}
 }
 
@@ -45,7 +43,7 @@ func (tx *DB) FileStore() filestore.FileStore {
 }
 
 func (tx *DB) DataStore() datastore.Store {
-	return datastoresql.NewSQLStore(tx.db, tx.secretKey)
+	return datastoresql.NewSQLStore(tx.db)
 }
 
 func (tx *DB) InstanceStore() instancestore.Store {
@@ -67,8 +65,7 @@ func (tx *DB) BeginTx(ctx context.Context, opts ...*sql.TxOptions) (*DB, error) 
 	}
 
 	return &DB{
-		db:        res,
-		secretKey: tx.secretKey,
+		db: res,
 	}, nil
 }
 
@@ -137,7 +134,7 @@ func NewTestDataStoreWithNamespace(t *testing.T, namespace string) (*gorm.DB, *d
 	if err != nil {
 		return nil, nil, err
 	}
-	ns, err := datastoresql.NewSQLStore(db, "some_secret_key_").Namespaces().Create(context.Background(), &datastore.Namespace{
+	ns, err := datastoresql.NewSQLStore(db).Namespaces().Create(context.Background(), &datastore.Namespace{
 		Name: namespace,
 	})
 	if err != nil {

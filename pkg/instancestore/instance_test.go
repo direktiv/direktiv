@@ -332,7 +332,7 @@ type assertInstanceStoreCorrectGetNamespaceInstancesTest struct {
 func assertInstanceStoreCorrectGetNamespaceInstances(t *testing.T, db *gorm.DB, is instancestore.Store, args *instancestore.CreateInstanceDataArgs, namespace string, ids []uuid.UUID) {
 	t.Helper()
 
-	ns, err := datastoresql.NewSQLStore(db, "some_secret_key_").Namespaces().Create(context.Background(), &datastore.Namespace{
+	ns, err := datastoresql.NewSQLStore(db).Namespaces().Create(context.Background(), &datastore.Namespace{
 		Name: namespace,
 	})
 
@@ -454,7 +454,7 @@ type: noop
 		})
 	}
 
-	ns, err := datastoresql.NewSQLStore(db, "some_secret_key_").Namespaces().GetByName(context.Background(), namespace)
+	ns, err := datastoresql.NewSQLStore(db).Namespaces().GetByName(context.Background(), namespace)
 	if err != nil {
 		t.Errorf("unexpected Namespaces().GetByName() error: %v", err)
 
@@ -513,7 +513,7 @@ func Test_sqlInstanceStore_GetHangingInstances(t *testing.T) {
 		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 
-	ns, err := datastoresql.NewSQLStore(db, "some_secret_key_").Namespaces().Create(context.Background(), &datastore.Namespace{
+	ns, err := datastoresql.NewSQLStore(db).Namespaces().Create(context.Background(), &datastore.Namespace{
 		ID:   uuid.New(),
 		Name: uuid.New().String(),
 	})
@@ -660,7 +660,7 @@ func Test_sqlInstanceStore_DeleteOldInstances(t *testing.T) {
 		t.Fatalf("unepxected NewTestDataStore() error = %v", err)
 	}
 
-	ns, err := datastoresql.NewSQLStore(db, "some_secret_key_").Namespaces().Create(context.Background(), &datastore.Namespace{
+	ns, err := datastoresql.NewSQLStore(db).Namespaces().Create(context.Background(), &datastore.Namespace{
 		ID:   uuid.New(),
 		Name: uuid.New().String(),
 	})
@@ -839,7 +839,7 @@ type: noop
 		return
 	}
 
-	ns, err := datastoresql.NewSQLStore(db, "some_secret_key_").Namespaces().GetByName(context.Background(), namespace)
+	ns, err := datastoresql.NewSQLStore(db).Namespaces().GetByName(context.Background(), namespace)
 	if err != nil {
 		t.Errorf("unexpected Namespaces().GetByName() error: %v", err)
 

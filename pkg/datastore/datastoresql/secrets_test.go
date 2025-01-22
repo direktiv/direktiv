@@ -15,7 +15,7 @@ func Test_Secrets(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
 	}
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	ds := datastoresql.NewSQLStore(db)
 	err = ds.Secrets().Set(context.Background(), &datastore.Secret{
 		Name:      "test",
 		Namespace: ns.Name,

@@ -129,7 +129,7 @@ func Test_CorrectSetPath(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ns, err := datastoresql.NewSQLStore(db, "some_secret_key_").Namespaces().Create(context.Background(), &datastore.Namespace{
+			ns, err := datastoresql.NewSQLStore(db).Namespaces().Create(context.Background(), &datastore.Namespace{
 				Name: uuid.NewString(),
 			})
 			if err != nil {

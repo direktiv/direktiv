@@ -39,3 +39,6 @@ var (
 	// when tying to violate unique constraints.
 	ErrDuplication = errors.New("ErrDuplication")
 )
+
+// SymmetricEncryptionKey a symmetric encryption key to encrypt and decrypt sensitive data in the database.
+var SymmetricEncryptionKey = "some_secret_key_"

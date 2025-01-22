@@ -20,7 +20,7 @@ func setupEventHistoryStore(t *testing.T) (datastore.EventHistoryStore, uuid.UUI
 		t.Fatalf("unexpected NewTestDataStoreWithNamespace() error: %v", err)
 	}
 
-	return datastoresql.NewSQLStore(db, "some_secret_key_").EventHistory(), ns.ID, ns.Name
+	return datastoresql.NewSQLStore(db).EventHistory(), ns.ID, ns.Name
 }
 
 // func Test_EventStoreAddGet(t *testing.T) {
