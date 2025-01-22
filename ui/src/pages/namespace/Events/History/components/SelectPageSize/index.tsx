@@ -1,9 +1,8 @@
 import {
-  EventsPageSizeValueSchema,
-  eventsPageSizeValue,
-  useEventsPageSize,
-  useEventsPageSizeActions,
-} from "~/util/store/events";
+  PageSizeValueSchema,
+  PageSizeValueType,
+  pageSizeValue,
+} from "~/util/store/pagesizes/pagesize";
 import {
   Select,
   SelectContent,
@@ -14,19 +13,22 @@ import {
 
 import { useTranslation } from "react-i18next";
 
-export const SelectPageSize = ({ onChange }: { onChange: () => void }) => {
+export const SelectPageSize = ({
+  onSelect,
+  initialPageSize,
+}: {
+  onSelect: (selectedSize: PageSizeValueType) => void;
+  initialPageSize: string;
+}) => {
   const { t } = useTranslation();
-  const { setEventsPageSize } = useEventsPageSizeActions();
-  const pageSize = useEventsPageSize();
 
   return (
     <Select
-      defaultValue={String(pageSize)}
+      defaultValue={String(initialPageSize)}
       onValueChange={(value) => {
-        const parseValue = EventsPageSizeValueSchema.safeParse(value);
+        const parseValue = PageSizeValueSchema.safeParse(value);
         if (parseValue.success) {
-          setEventsPageSize(parseValue.data);
-          onChange();
+          onSelect(parseValue.data);
         }
       }}
     >
@@ -34,7 +36,7 @@ export const SelectPageSize = ({ onChange }: { onChange: () => void }) => {
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {eventsPageSizeValue.map((size) => (
+        {pageSizeValue.map((size) => (
           <SelectItem key={size} value={size}>
             {t("pages.events.history.selectPageSize.selectItem", {
               count: Number(size),
