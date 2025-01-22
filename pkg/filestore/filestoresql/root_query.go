@@ -233,7 +233,7 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 		count := 0
 		tx := q.db.WithContext(ctx).Raw("SELECT count(id) FROM filesystem_files WHERE root_id = ? AND typ = ? AND path = ?", q.rootID, filestore.FileTypeDirectory, path).Scan(&count)
 		if tx.Error != nil {
-			return nil, err
+			return nil, tx.Error
 		}
 		if count != 1 {
 			return nil, filestore.ErrNotFound
