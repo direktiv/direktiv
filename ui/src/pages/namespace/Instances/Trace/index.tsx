@@ -1,4 +1,3 @@
-import { FC, ReactElement } from "react";
 import {
   Table,
   TableCell,
@@ -8,48 +7,15 @@ import {
 } from "~/design/Table";
 
 import { Card } from "~/design/Card";
+import { FC } from "react";
 import { SquareGanttChartIcon } from "lucide-react";
 import { TableBody } from "@tremor/react";
 import mock from "./mock.json";
 import moment from "moment";
-import { twMergeClsx } from "~/util/helpers";
+import { processSpans } from "./utils";
 import { useTranslation } from "react-i18next";
 
-type SpanType = {
-  spanId: string;
-  startTimeUnixNano: string;
-  endTimeUnixNano: string;
-  children?: SpanType[];
-};
-
-type TreeElementProps = { id: string; label: string; depth?: number };
-
-const TreeElement: FC<TreeElementProps> = ({ label, depth = 0 }) => (
-  <div className="w-full" style={{ paddingLeft: `${depth * 12}px` }}>
-    {label}
-  </div>
-);
-
-type TimelineElementProps = { start: number; end: number; label: string };
-
-const TimelineElement: FC<TimelineElementProps> = ({ start, end, label }) => (
-  <div
-    className="relative flex flex-row w-full"
-    style={{ paddingLeft: `${start}%`, paddingRight: `${end}%` }}
-  >
-    <div
-      className={twMergeClsx(
-        "bg-primary-200 dark:bg-primary-700 rounded-sm h-5",
-        "overflow-x-visible text-nowrap min-w-px w-full max-w-full"
-      )}
-      style={start > 50 ? { direction: "rtl" } : {}}
-    >
-      <div style={{ direction: "ltr", display: "inline-block" }}>{label}</div>
-    </div>
-  </div>
-);
-
-const SpanViewer: FC = () => {
+const TraceViewer: FC = () => {
   const { t } = useTranslation();
   const { timeline: spans } = mock;
 
@@ -62,43 +28,7 @@ const SpanViewer: FC = () => {
     ...spans.map((span) => Number(span.endTimeUnixNano))
   );
 
-  const duration = timelineEnd - timelineStart;
-
-  type SpanElement = {
-    id: string;
-    tree: ReactElement;
-    timeline: ReactElement;
-  };
-
-  const processSpans = (spans: SpanType[], depth = 0): SpanElement[] =>
-    spans.reduce<SpanElement[]>((acc, span) => {
-      const spanStart = Number(span.startTimeUnixNano);
-      const spanEnd = Number(span.endTimeUnixNano);
-      const spanLength = spanEnd - spanStart;
-
-      const start = Math.round((spanStart / duration - timelineStart) * 100);
-      const end = Math.round((1 - (spanEnd - timelineStart) / duration) * 100);
-
-      // Todo: adjust to sensible values when we have real data
-      const labelDivider = duration < 100 ? 1000000 : 1000000000;
-      const labelUnit = duration < 100 ? "ms" : "s";
-      const label = `${Math.round(spanLength / labelDivider) / 100} ${labelUnit}`;
-
-      acc.push({
-        id: span.spanId,
-        tree: (
-          <TreeElement id={span.spanId} label={span.spanId} depth={depth} />
-        ),
-        timeline: <TimelineElement start={start} end={end} label={label} />,
-      });
-
-      if (span.children && span.children.length > 0) {
-        acc.push(...processSpans(span.children, depth + 1));
-      }
-      return acc;
-    }, []);
-
-  const spanElements = processSpans(spans);
+  const spanElements = processSpans({ spans, timelineStart, timelineEnd });
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
@@ -141,4 +71,4 @@ const SpanViewer: FC = () => {
   );
 };
 
-export default SpanViewer;
+export default TraceViewer;
