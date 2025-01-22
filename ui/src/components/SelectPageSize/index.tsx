@@ -2,7 +2,7 @@ import {
   PageSizeValueSchema,
   PageSizeValueType,
   pageSizeValue,
-} from "~/util/store/pagesizes/pagesize";
+} from "~/util/store/pagesize";
 import {
   Select,
   SelectContent,

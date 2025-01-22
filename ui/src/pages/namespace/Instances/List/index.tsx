@@ -8,6 +8,10 @@ import {
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
+import {
+  useInstancesPageSize,
+  usePageSizeActions,
+} from "~/util/store/pagesize";
 
 import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
@@ -15,18 +19,19 @@ import Filters from "../components/Filters";
 import { FiltersObj } from "~/api/instances/query/utils";
 import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
+import { SelectPageSize } from "../../../../components/SelectPageSize";
 import { useInstances } from "~/api/instances/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-const instancesPerPage = 15;
-
 const InstancesListPage = () => {
+  const pageSize = useInstancesPageSize();
+  const { setInstancesPageSize } = usePageSizeActions();
   const [offset, setOffset] = useState(0);
   const [filters, setFilters] = useState<FiltersObj>({});
   const { t } = useTranslation();
   const { data, isSuccess, isAllowed, noPermissionMessage } = useInstances({
-    limit: instancesPerPage,
+    limit: parseInt(pageSize),
     offset,
     filters,
   });
@@ -107,12 +112,21 @@ const InstancesListPage = () => {
           </TableBody>
         </Table>
       </Card>
-      <Pagination
-        itemsPerPage={instancesPerPage}
-        offset={offset}
-        setOffset={setOffset}
-        totalItems={numberOfInstances}
-      />
+      <div className="flex items-center justify-end gap-2">
+        <SelectPageSize
+          initialPageSize={pageSize}
+          onSelect={(selectedSize) => {
+            setInstancesPageSize(selectedSize);
+            setOffset(0);
+          }}
+        />
+        <Pagination
+          itemsPerPage={parseInt(pageSize)}
+          offset={offset}
+          setOffset={setOffset}
+          totalItems={numberOfInstances}
+        />
+      </div>
     </div>
   );
 };
