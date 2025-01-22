@@ -46,9 +46,20 @@ export const processSpans = ({
     const labelUnit = timelineLength < 100 ? "ms" : "s";
     const label = `${Math.round(spanLength / labelDivider) / 100} ${labelUnit}`;
 
+    const handleFilter = () => {
+      console.log(span.spanId);
+    };
+
     acc.push({
       id: span.spanId,
-      tree: <TreeElement id={span.spanId} label={span.spanId} depth={depth} />,
+      tree: (
+        <TreeElement
+          id={span.spanId}
+          label={span.spanId}
+          depth={depth}
+          onFilter={() => handleFilter()}
+        />
+      ),
       timeline: <TimelineElement start={start} end={end} label={label} />,
     });
 
