@@ -18,9 +18,9 @@ const TreeElement: FC<TreeElementProps> = ({ span, depth = 0 }) => (
   </div>
 );
 
-type TimelineElementProps = { start: number; end: number };
+type TimelineElementProps = { start: number; end: number; label: string };
 
-const TimelineElement: FC<TimelineElementProps> = ({ start, end }) => (
+const TimelineElement: FC<TimelineElementProps> = ({ start, end, label }) => (
   <div
     className="relative h-8 flex flex-row w-full"
     style={{ paddingLeft: `${start}%`, paddingRight: `${end}%` }}
@@ -32,19 +32,9 @@ const TimelineElement: FC<TimelineElementProps> = ({ start, end }) => (
       )}
       style={start > 50 ? { direction: "rtl" } : {}}
     >
-      <div style={{ direction: "ltr", display: "inline-block" }}>
-        {start} {end}
-      </div>
+      <div style={{ direction: "ltr", display: "inline-block" }}>{label}</div>
     </div>
   </div>
-  // <div className="relative w-full h-8 bg-gray-200">
-  //   <div
-  //     className="whitespace-nowrap absolute left-[48%] right-[48%] bg-blue-400 rounded h-5 text-white text-sm flex items-center overflow-visible"
-  //     style={start > 50 ? { direction: "rtl" } : {}}
-  //   >
-  //     Some text
-  //   </div>
-  // </div>
 );
 
 type TreeProps = { elements: ReactElement[] };
@@ -78,16 +68,21 @@ const SpanViewer: FC = () => {
 
   const processSpans = (spans: SpanType[], depth = 0): SpanElement[] =>
     spans.reduce<SpanElement[]>((acc, span) => {
-      const start = Math.round(
-        (Number(span.startTimeUnixNano) / duration - timelineStart) * 100
-      );
-      const end = Math.round(
-        (1 - (Number(span.endTimeUnixNano) - timelineStart) / duration) * 100
-      );
+      const spanStart = Number(span.startTimeUnixNano);
+      const spanEnd = Number(span.endTimeUnixNano);
+      const spanLength = spanEnd - spanStart;
+
+      const start = Math.round((spanStart / duration - timelineStart) * 100);
+      const end = Math.round((1 - (spanEnd - timelineStart) / duration) * 100);
+
+      // Todo: adjust to sensible values when we have real data
+      const labelDivider = duration < 100 ? 1000000 : 1000000000;
+      const labelUnit = duration < 100 ? "ms" : "s";
+      const label = `${Math.round(spanLength / labelDivider) / 100} ${labelUnit}`;
 
       acc.push({
         tree: <TreeElement span={span} depth={depth} />,
-        timeline: <TimelineElement start={start} end={end} />,
+        timeline: <TimelineElement start={start} end={end} label={label} />,
       });
 
       if (span.children && span.children.length > 0) {
