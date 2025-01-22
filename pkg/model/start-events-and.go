@@ -20,7 +20,7 @@ func (o *EventsAndStart) GetEvents() []StartEventDefinition {
 }
 
 func (o *EventsAndStart) Validate() error {
-	if o.Events == nil || len(o.Events) == 0 {
+	if len(o.Events) == 0 {
 		return errors.New("events required")
 	}
 

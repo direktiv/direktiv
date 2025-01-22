@@ -92,7 +92,7 @@ func (o *SwitchState) Validate() error {
 		return err
 	}
 
-	if o.Conditions == nil || len(o.Conditions) == 0 {
+	if len(o.Conditions) == 0 {
 		return errors.New("conditions required")
 	}
 

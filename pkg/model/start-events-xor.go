@@ -17,7 +17,7 @@ func (o *EventsXorStart) GetEvents() []StartEventDefinition {
 }
 
 func (o *EventsXorStart) Validate() error {
-	if o.Events == nil || len(o.Events) == 0 {
+	if len(o.Events) == 0 {
 		return errors.New("events required")
 	}
 

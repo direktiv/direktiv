@@ -55,7 +55,6 @@ linters:
     - canonicalheader
 
     # TODO: these need to be removed.
-    - gosimple
     - govet
 
 issues:
