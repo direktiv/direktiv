@@ -130,3 +130,44 @@ export type ConsumerSchemaType = z.infer<typeof ConsumerSchema>;
 export const ConsumersListSchema = z.object({
   data: z.array(ConsumerSchema),
 });
+
+/**
+ * example INFO
+{
+  "data": {
+    "spec": {
+      "openapi": "3.0.0",
+      "info": {
+        "title": "cg",
+        "version": "1.0"
+      },
+      "paths": {}
+    },
+    "file_path": "virtual",
+    "errors": []
+  }
+}
+ */
+export const GatewayInfoSchema = z.object({
+  data: z
+    .object({
+      spec: z
+        .object({
+          openapi: z.string(),
+          info: z
+            .object({
+              title: z.string(),
+              version: z.string(),
+              description: z.string().optional(),
+            })
+            .passthrough(),
+          paths: z.record(z.any()),
+        })
+        .passthrough(),
+      file_path: z.string(),
+      errors: z.array(z.unknown()),
+    })
+    .passthrough(),
+});
+
+export type GatewayInfoSchemaType = z.infer<typeof GatewayInfoSchema>;

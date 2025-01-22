@@ -955,7 +955,8 @@
     "gateway": {
       "tabs": {
         "routes": "Routes",
-        "consumers": "Consumers"
+        "consumers": "Consumers",
+        "info": "Info"
       },
       "routes": {
         "columns": {
@@ -1006,6 +1007,15 @@
           "groups": "groups"
         },
         "empty": "No consumers exist yet"
+      },
+      "info": {
+        "title": "Gateway Info",
+        "columns": {
+          "title": "Title",
+          "version": "Version",
+          "description": "Description",
+          "file": "File"
+        }
       }
     },
     "jqPlayground": {
@@ -1069,6 +1079,7 @@
       "gateway": "Gateway",
       "gatewayRoutes": "Routes",
       "gatewayConsumers": "Consumers",
+      "gatewayInfo": "Info",
       "jqPlayground": "jq Playground"
     },
     "contextMenu": {

@@ -1,4 +1,4 @@
-import { Info, Users, Workflow } from "lucide-react";
+import { BookOpen, Users, Workflow } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 
@@ -23,8 +23,8 @@ const GatewayPage = () => {
     {
       value: "info",
       active: isGatewayInfoPage,
-      icon: <Info aria-hidden="true" />,
-      title: "Info",
+      icon: <BookOpen aria-hidden="true" />,
+      title: t("pages.gateway.tabs.info"),
       link: pages.gateway.createHref({
         namespace,
         subpage: "GatewayInfoPage",
