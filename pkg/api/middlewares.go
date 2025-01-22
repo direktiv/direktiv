@@ -42,6 +42,7 @@ func (a *appMiddlewares) injectNamespace(next http.Handler) http.Handler {
 
 func (a *appMiddlewares) checkAPIKey(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//nolint:gosec
 		apiKeyHeader := "direktiv-token"
 		apiKey := os.Getenv("DIREKTIV_API_KEY")
 		if apiKey != "" && apiKey != r.Header.Get(apiKeyHeader) {
