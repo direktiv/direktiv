@@ -16,9 +16,9 @@ const TreeElement: FC<TreeElementProps> = ({ span }) => (
   <div className="h-8 w-full">{span.spanId}</div>
 );
 
-type TimelineElementProps = { span: SpanType; start: number; end: number };
+type TimelineElementProps = { start: number; end: number };
 
-const TimelineElement: FC<TimelineElementProps> = ({ span, start, end }) => (
+const TimelineElement: FC<TimelineElementProps> = ({ start, end }) => (
   <div
     className="relative h-8 flex flex-row w-full"
     style={{ paddingLeft: `${start}%`, paddingRight: `${end}%` }}
@@ -85,7 +85,7 @@ const SpanViewer: FC = () => {
 
       acc.push({
         tree: <TreeElement span={span} />,
-        timeline: <TimelineElement span={span} start={start} end={end} />,
+        timeline: <TimelineElement start={start} end={end} />,
       });
 
       if (span.children && span.children.length > 0) {
