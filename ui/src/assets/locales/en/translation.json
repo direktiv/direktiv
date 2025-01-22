@@ -650,8 +650,7 @@
     "trace": {
       "title": "Trace viewer",
       "tableHeader": {
-        "spanId": "span id",
-        "timeline": "timeline"
+        "spanId": "span id"
       }
     },
     "mirror": {

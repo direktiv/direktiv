@@ -11,6 +11,7 @@ import { Card } from "~/design/Card";
 import { SquareGanttChartIcon } from "lucide-react";
 import { TableBody } from "@tremor/react";
 import mock from "./mock.json";
+import moment from "moment";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 
@@ -51,6 +52,8 @@ const TimelineElement: FC<TimelineElementProps> = ({ start, end, label }) => (
 const SpanViewer: FC = () => {
   const { t } = useTranslation();
   const { timeline: spans } = mock;
+
+  const legendFormat = "YYYY-MM-DD, hh:mm:ss.SSS";
 
   const timelineStart = Math.min(
     ...spans.map((span) => Number(span.startTimeUnixNano))
@@ -112,8 +115,13 @@ const SpanViewer: FC = () => {
               <TableHeaderCell className="w-56">
                 {t("pages.trace.tableHeader.spanId")}
               </TableHeaderCell>
-              <TableHeaderCell>
-                {t("pages.trace.tableHeader.timeline")}
+              <TableHeaderCell className="flex flex-row justify-between">
+                <span>
+                  {moment(timelineStart / 1000000000).format(legendFormat)}
+                </span>
+                <span>
+                  {moment(timelineEnd / 100000000).format(legendFormat)}
+                </span>
               </TableHeaderCell>
             </TableRow>
           </TableHead>
