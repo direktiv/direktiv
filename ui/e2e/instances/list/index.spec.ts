@@ -339,7 +339,7 @@ test("it paginates instances", async ({ page }) => {
   await expect(page.getByTestId(/instance-row/)).toHaveCount(35);
 
   /* reload the page and check if pagesize was remembered */
-  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.reload({ waitUntil: "load" });
   await expect(selectPagesize).toBeVisible();
   expect(selectPagesize).toHaveText("Show 50 rows");
 });
