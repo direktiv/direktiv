@@ -109,7 +109,7 @@ const SpanViewer: FC = () => {
         <Table className="border-gray-5 dark:border-gray-dark-5">
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-              <TableHeaderCell className="w-40">
+              <TableHeaderCell className="w-56">
                 {t("pages.trace.tableHeader.spanId")}
               </TableHeaderCell>
               <TableHeaderCell>
@@ -117,10 +117,12 @@ const SpanViewer: FC = () => {
               </TableHeaderCell>
             </TableRow>
           </TableHead>
-          <TableBody>
+          <TableBody className="divide-y-0">
             {spanElements.map((item) => (
               <TableRow key={item.id}>
-                <TableCell>{item.tree}</TableCell>
+                <TableCell className="border-b border-r border-gray-3 dark:border-gray-dark-3">
+                  {item.tree}
+                </TableCell>
                 <TableCell>{item.timeline}</TableCell>
               </TableRow>
             ))}
