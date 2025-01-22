@@ -15,6 +15,7 @@ func (o *EventsAndStart) GetEvents() []StartEventDefinition {
 	if o != nil && o.Events != nil {
 		events = append(events, o.Events...)
 	}
+
 	return events
 }
 

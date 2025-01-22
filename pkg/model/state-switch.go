@@ -51,6 +51,7 @@ func (o *SwitchState) getTransitions() map[string]string {
 			transitions[fmt.Sprintf("conditions[%v]", i)] = condition.Transition
 		}
 	}
+
 	return transitions
 }
 
@@ -72,6 +73,7 @@ func (o *SwitchState) GetTransitions() []string {
 			transitions = append(transitions, condition.Transition)
 		}
 	}
+
 	return transitions
 }
 

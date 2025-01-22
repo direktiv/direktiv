@@ -12,6 +12,7 @@ func (o *EventsXorStart) GetEvents() []StartEventDefinition {
 	if o != nil && o.Events != nil {
 		events = append(events, o.Events...)
 	}
+
 	return events
 }
 
