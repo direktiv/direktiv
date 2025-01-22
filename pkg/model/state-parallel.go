@@ -61,7 +61,7 @@ func (o *ParallelState) Validate() error {
 		return err
 	}
 
-	if o.Actions == nil || len(o.Actions) == 0 {
+	if len(o.Actions) == 0 {
 		return errors.New("actions required")
 	}
 

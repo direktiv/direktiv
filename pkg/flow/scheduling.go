@@ -157,7 +157,7 @@ func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
 		// pop message
 		tx, err := engine.flow.beginSQLTx(ctx)
 		if err != nil {
-			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 			return
 		}
 		defer tx.Rollback()
@@ -169,14 +169,14 @@ func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
 				return
 			}
 
-			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 
 			return
 		}
 
 		err = tx.Commit(ctx)
 		if err != nil {
-			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 
 			return
 		}

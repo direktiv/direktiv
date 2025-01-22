@@ -213,7 +213,7 @@ var eventSendCmd = &cobra.Command{
 				return err
 			}
 
-			return fmt.Errorf(errJSON.Error.Message)
+			return fmt.Errorf("%s", errJSON.Error.Message)
 		}
 
 		fmt.Println("event sent")

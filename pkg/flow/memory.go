@@ -272,14 +272,14 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id uuid.UUID) (*ins
 
 	err = json.Unmarshal(im.instance.Instance.LiveData, &im.data)
 	if err != nil {
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 
 		return nil, err
 	}
 
 	err = json.Unmarshal(im.instance.Instance.StateMemory, &im.memory)
 	if err != nil {
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 
 		return nil, err
 	}
