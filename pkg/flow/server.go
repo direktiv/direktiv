@@ -6,7 +6,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -19,7 +18,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	eventsstore "github.com/direktiv/direktiv/pkg/events"
-	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
@@ -31,9 +29,6 @@ import (
 	"github.com/lib/pq"
 	"github.com/nats-io/nats.go"
 	"github.com/opensearch-project/opensearch-go"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 type server struct {
@@ -300,66 +295,6 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, db *database.D
 	}
 
 	return srv, nil
-}
-
-func InitDB(config *core.Config) (*database.DB, error) {
-	gormConf := &gorm.Config{
-		Logger: logger.New(
-			log.New(os.Stdout, "\r\n", log.LstdFlags),
-			logger.Config{
-				LogLevel:                  logger.Silent,
-				IgnoreRecordNotFoundError: true,
-			},
-		),
-	}
-
-	var err error
-	var db *gorm.DB
-	//nolint:intrange
-	for i := 0; i < 10; i++ {
-		slog.Info("connecting to database...")
-
-		db, err = gorm.Open(postgres.New(postgres.Config{
-			DSN:                  config.DB,
-			PreferSimpleProtocol: false, // disables implicit prepared statement usage
-			// Conn:                 edb.DB(),
-		}), gormConf)
-		if err == nil {
-			slog.Info("successfully connected to the database.")
-
-			break
-		}
-		time.Sleep(time.Second)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	res := db.Exec(database.Schema)
-	if res.Error != nil {
-		return nil, fmt.Errorf("provisioning schema, err: %w", res.Error)
-	}
-	slog.Info("Schema provisioned successfully")
-
-	if extensions.AdditionalSchema != nil {
-		res = db.Exec(extensions.AdditionalSchema())
-		if res.Error != nil {
-			return nil, fmt.Errorf("provisioning additional schema, err: %w", res.Error)
-		}
-		slog.Info("Additional schema provisioned successfully")
-	}
-
-	gdb, err := db.DB()
-	if err != nil {
-		return nil, fmt.Errorf("modifying gorm driver, err: %w", err)
-	}
-
-	slog.Debug("Database connection pool limits set", "maxIdleConns", 32, "maxOpenConns", 16)
-	gdb.SetMaxIdleConns(32)
-	gdb.SetMaxOpenConns(16)
-
-	return database.NewDB(db), nil
 }
 
 func (srv *server) cleanup(closer func() error) {
