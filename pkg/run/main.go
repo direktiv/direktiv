@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/tracing"
 	"log"
 	"log/slog"
 	"os"
@@ -28,6 +27,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/registry"
 	"github.com/direktiv/direktiv/pkg/service"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -368,6 +368,7 @@ func initDB(config *core.Config) (*database.DB, error) {
 
 	return database.NewDB(db), nil
 }
+
 func initSLog(cfg *core.Config) {
 	lvl := new(slog.LevelVar)
 	lvl.Set(slog.LevelInfo)
