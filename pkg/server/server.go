@@ -19,7 +19,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/gateway"
-	"github.com/direktiv/direktiv/pkg/helpers"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/mirror"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -31,63 +30,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
-
-func renderServiceManager(db *database.DB, serviceManager core.ServiceManager) {
-	ctx := context.Background()
-	slog := slog.With("subscriber", "services file watcher")
-
-	fStore, dStore := db.FileStore(), db.DataStore()
-
-	nsList, err := dStore.Namespaces().GetAll(ctx)
-	if err != nil {
-		slog.Error("listing namespaces", "error", err)
-
-		return
-	}
-
-	funConfigList := []*core.ServiceFileData{}
-
-	for _, ns := range nsList {
-		slog = slog.With("namespace", ns.Name)
-		files, err := fStore.ForNamespace(ns.Name).ListDirektivFilesWithData(ctx)
-		if err != nil {
-			slog.Error("listing direktiv files", "error", err)
-
-			continue
-		}
-		for _, file := range files {
-			if file.Typ == filestore.FileTypeService {
-				serviceDef, err := core.ParseServiceFile(file.Data)
-				if err != nil {
-					slog.Error("parse service file", "error", err)
-
-					continue
-				}
-				typ := core.ServiceTypeNamespace
-				if ns.Name == core.SystemNamespace {
-					typ = core.ServiceTypeSystem
-				}
-				funConfigList = append(funConfigList, &core.ServiceFileData{
-					Typ:         typ,
-					Name:        "",
-					Namespace:   ns.Name,
-					FilePath:    file.Path,
-					ServiceFile: *serviceDef,
-				})
-			} else if file.Typ == filestore.FileTypeWorkflow {
-				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file)
-				if err != nil {
-					slog.Error("parse workflow def", "error", err)
-
-					continue
-				}
-
-				funConfigList = append(funConfigList, sub...)
-			}
-		}
-	}
-	serviceManager.SetServices(funConfigList)
-}
 
 func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *filestore.File) ([]*core.ServiceFileData, error) {
 	var wf model.Workflow
@@ -221,13 +163,13 @@ func Run(circuit *core.Circuit) error {
 
 	if !config.DisableServices {
 		srv.Bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
-			renderServiceManager(db, serviceManager)
+			renderServiceFiles(db, serviceManager)
 		})
 		srv.Bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
-			renderServiceManager(db, serviceManager)
+			renderServiceFiles(db, serviceManager)
 		})
 		// Call at least once before booting
-		renderServiceManager(db, serviceManager)
+		renderServiceFiles(db, serviceManager)
 	}
 
 	srv.Bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(data string) {
@@ -252,13 +194,13 @@ func Run(circuit *core.Circuit) error {
 
 	// endpoint manager
 	srv.Bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
-		helpers.RenderGatewayFiles(db, gatewayManager)
+		renderGatewayFiles(db, gatewayManager)
 	})
 	srv.Bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
-		helpers.RenderGatewayFiles(db, gatewayManager)
+		renderGatewayFiles(db, gatewayManager)
 	})
 	// initial loading of routes and consumers
-	helpers.RenderGatewayFiles(db, gatewayManager)
+	renderGatewayFiles(db, gatewayManager)
 
 	// Create App
 	app := core.App{
