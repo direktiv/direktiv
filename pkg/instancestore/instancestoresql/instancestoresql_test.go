@@ -8,18 +8,17 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/instancestore"
-	"github.com/direktiv/direktiv/pkg/instancestore/instancestoresql"
 	"github.com/google/uuid"
 )
 
 func Test_NewSQLInstanceStore(t *testing.T) {
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatal(err)
 	}
 	server := uuid.New()
 
-	store := instancestoresql.NewSQLInstanceStore(db)
+	store := db.InstanceStore()
 
 	telemetryInfo := &engine.InstanceTelemetryInfo{
 		Version:       "v2",

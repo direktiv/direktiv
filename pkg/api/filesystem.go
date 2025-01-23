@@ -17,7 +17,7 @@ import (
 )
 
 type fsController struct {
-	db  *database.SQLStore
+	db  *database.DB
 	bus *pubsub.Bus
 }
 

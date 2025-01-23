@@ -8,16 +8,15 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/filestore/filestoresql"
 	"github.com/google/uuid"
 )
 
 func TestRoot_CreateFile(t *testing.T) {
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	fs := filestoresql.NewSQLFileStore(db)
+	fs := db.FileStore()
 
 	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
 	if err != nil {
@@ -121,11 +120,11 @@ func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, rootID uu
 }
 
 func TestRoot_CorrectReadDirectory(t *testing.T) {
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	fs := filestoresql.NewSQLFileStore(db)
+	fs := db.FileStore()
 
 	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
 	if err != nil {
@@ -184,11 +183,11 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 }
 
 func TestRoot_RenamePath(t *testing.T) {
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	fs := filestoresql.NewSQLFileStore(db)
+	fs := db.FileStore()
 
 	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
 	if err != nil {

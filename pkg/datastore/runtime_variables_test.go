@@ -9,19 +9,17 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 
 	"github.com/direktiv/direktiv/pkg/database"
-	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
-	"github.com/direktiv/direktiv/pkg/filestore/filestoresql"
 	"github.com/google/uuid"
 )
 
 func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
 
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
-	fs := filestoresql.NewSQLFileStore(db)
+	ds := db.DataStore()
+	fs := db.FileStore()
 	file := createFile(t, fs, ns.Name)
 
 	expect := []byte("some data")
@@ -96,12 +94,12 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 }
 
 func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
 
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	ds := db.DataStore()
 
 	testVar := &datastore.RuntimeVariable{
 		Namespace: ns.Name,
@@ -160,13 +158,13 @@ func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
 }
 
 func Test_sqlRuntimeVariablesStore_InvalidName(t *testing.T) {
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
 
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
-	fs := filestoresql.NewSQLFileStore(db)
+	ds := db.DataStore()
+	fs := db.FileStore()
 	file := createFile(t, fs, ns.Name)
 
 	testVar := &datastore.RuntimeVariable{
@@ -185,13 +183,13 @@ func Test_sqlRuntimeVariablesStore_InvalidName(t *testing.T) {
 }
 
 func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
 
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
-	fs := filestoresql.NewSQLFileStore(db)
+	ds := db.DataStore()
+	fs := db.FileStore()
 	file := createFile(t, fs, ns.Name)
 
 	for _, i := range []int{0, 1, 2, 3} {
@@ -280,13 +278,13 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 }
 
 func Test_sqlRuntimeVariablesStore_CreateAndUpdate(t *testing.T) {
-	db, ns, err := database.NewTestDataStoreWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewTestDataStoreWithNamespace() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
 
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
-	fs := filestoresql.NewSQLFileStore(db)
+	ds := db.DataStore()
+	fs := db.FileStore()
 	file := createFile(t, fs, ns.Name)
 
 	expect := []byte("some data")

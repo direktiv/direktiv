@@ -9,7 +9,7 @@ import (
 )
 
 type metricsController struct {
-	db *database.SQLStore
+	db *database.DB
 }
 
 func (e *metricsController) mountRouter(r chi.Router) {

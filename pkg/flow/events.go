@@ -77,7 +77,7 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 			}
 			defer end()
 			res := make([]*datastore.EventListener, 0)
-			err = events.runSQLTx(ctx, func(tx *database.SQLStore) error {
+			err = events.runSQLTx(ctx, func(tx *database.DB) error {
 				r, err := tx.DataStore().EventListenerTopics().GetListeners(ctx, s)
 				if err != nil {
 					slog.ErrorContext(ctx, "failed fetching event-listener-topics.")
@@ -100,7 +100,7 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 				slog.Debug("UpdateListeners:c failed to init telemetry", "error", err)
 			}
 			defer end()
-			err = events.runSQLTx(ctx, func(tx *database.SQLStore) error {
+			err = events.runSQLTx(ctx, func(tx *database.DB) error {
 				errs := tx.DataStore().EventListener().UpdateOrDelete(ctx, listener)
 				for _, err2 := range errs {
 					if err2 != nil {
