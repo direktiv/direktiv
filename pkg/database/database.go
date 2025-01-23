@@ -43,7 +43,7 @@ func (tx *DB) FileStore() filestore.FileStore {
 }
 
 func (tx *DB) DataStore() datastore.Store {
-	return datastoresql.NewSQLStore(tx.db)
+	return datastoresql.NewStore(tx.db)
 }
 
 func (tx *DB) InstanceStore() instancestore.Store {
