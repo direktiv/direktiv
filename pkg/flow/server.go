@@ -73,17 +73,17 @@ func Run(circuit *core.Circuit) error {
 	if err := config.Init(); err != nil {
 		return fmt.Errorf("init config, err: %w", err)
 	}
-	initSLog(config)
+	InitSLog(config)
 
 	slog.Info("initialize db connection")
-	db, err := initDB(config)
+	db, err := InitDB(config)
 	if err != nil {
 		return fmt.Errorf("initialize db, err: %w", err)
 	}
 	datastore.SymmetricEncryptionKey = config.SecretKey
 
 	slog.Info("initialize legacy server")
-	srv, err := initLegacyServer(circuit, config, db)
+	srv, err := InitLegacyServer(circuit, config, db)
 	if err != nil {
 		return fmt.Errorf("initialize legacy server, err: %w", err)
 	}
@@ -198,7 +198,7 @@ func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
-func initLegacyServer(circuit *core.Circuit, config *core.Config, db *database.DB) (*server, error) {
+func InitLegacyServer(circuit *core.Circuit, config *core.Config, db *database.DB) (*server, error) {
 	srv := new(server)
 	srv.ID = uuid.New()
 	srv.initJQ()
@@ -368,7 +368,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *database.D
 	return srv, nil
 }
 
-func initDB(config *core.Config) (*database.DB, error) {
+func InitDB(config *core.Config) (*database.DB, error) {
 	gormConf := &gorm.Config{
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
@@ -608,7 +608,7 @@ func (srv *server) runSQLTx(ctx context.Context, fun func(tx *database.DB) error
 	return tx.Commit(ctx)
 }
 
-func initSLog(cfg *core.Config) {
+func InitSLog(cfg *core.Config) {
 	lvl := new(slog.LevelVar)
 	lvl.Set(slog.LevelInfo)
 
