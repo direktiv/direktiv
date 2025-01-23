@@ -1,14 +1,14 @@
 package model
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/pb33f/libopenapi"
 	"github.com/pb33f/libopenapi/datamodel"
+	v3high "github.com/pb33f/libopenapi/datamodel/high/v3"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -124,24 +124,33 @@ func LoadResource(data []byte) (interface{}, error) {
 		return document, nil
 
 	case EndpointAPIV2:
-		var pathItemMap map[string]interface{}
-		err = yaml.Unmarshal(data, &pathItemMap)
-		if err != nil {
-			return &core.EndpointConfig{}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
-		}
+		var pathItem v3high.PathItem
 
-		// convert to JSON for openapi library
-		b, err := json.Marshal(pathItemMap)
-		if err != nil {
-			return &core.EndpointConfig{}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
-		}
+		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+		yaml.Unmarshal(data, &pathItem)
 
-		// source item
-		var pathItem openapi3.PathItem
-		err = pathItem.UnmarshalJSON(b)
-		if err != nil {
-			return &core.EndpointConfig{}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
-		}
+		b, err := pathItem.Render()
+
+		fmt.Printf("%v %v\n", string(b), err)
+
+		// var pathItemMap map[string]interface{}
+		// err = yaml.Unmarshal(data, &pathItemMap)
+		// if err != nil {
+		// 	return &core.EndpointConfig{}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
+		// }
+
+		// // convert to JSON for openapi library
+		// b, err := json.Marshal(pathItemMap)
+		// if err != nil {
+		// 	return &core.EndpointConfig{}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
+		// }
+
+		// // source item
+		// var pathItem openapi3.PathItem
+		// err = pathItem.UnmarshalJSON(b)
+		// if err != nil {
+		// 	return &core.EndpointConfig{}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
+		// }
 
 		return &pathItem, nil
 	default:

@@ -1,15 +1,19 @@
 package core
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
+	"io"
+	"io/fs"
 	"net/http"
 	"path"
 	"strings"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/pb33f/libopenapi"
 	"github.com/pb33f/libopenapi/datamodel"
+	v3high "github.com/pb33f/libopenapi/datamodel/high/v3"
+	v3low "github.com/pb33f/libopenapi/datamodel/low/v3"
+	"github.com/pb33f/libopenapi/index"
 	"gopkg.in/yaml.v3"
 )
 
@@ -66,7 +70,8 @@ type Gateway struct {
 }
 
 type Endpoint struct {
-	RenderedPathItem openapi3.PathItem
+	PathItem v3high.PathItem
+	Doc      libopenapi.Document
 
 	Config EndpointConfig
 
@@ -111,7 +116,6 @@ func ParseConsumerFile(ns string, filePath string, data []byte) Consumer {
 }
 
 func ParseGatewayFile(ns string, filePath string, data []byte) Gateway {
-	fmt.Println("PARSE GATEWAY!!!!")
 	gw := Gateway{
 		Namespace: ns,
 		FilePath:  filePath,
@@ -125,8 +129,22 @@ func ParseGatewayFile(ns string, filePath string, data []byte) Gateway {
 	}
 
 	// remove paths and servers
+	var interim map[string]interface{}
+	err := yaml.Unmarshal(data, &interim)
+	if err != nil {
+		gw.Errors = append(gw.Errors, err.Error())
+	}
 
-	document, err := libopenapi.NewDocumentWithConfiguration(data, &config)
+	// these will be generated in direktiv based on route files
+	delete(interim, "paths")
+	delete(interim, "servers")
+
+	out, err := yaml.Marshal(interim)
+	if err != nil {
+		gw.Errors = append(gw.Errors, err.Error())
+	}
+
+	document, err := libopenapi.NewDocumentWithConfiguration(out, &config)
 	if err != nil {
 		gw.Errors = append(gw.Errors, err.Error())
 	}
@@ -136,6 +154,34 @@ func ParseGatewayFile(ns string, filePath string, data []byte) Gateway {
 	return gw
 }
 
+type DummyFS struct {
+}
+
+type DummyFSFile struct {
+}
+
+func (d DummyFSFile) Close() error {
+	return nil
+}
+
+func (d DummyFSFile) Read([]byte) (int, error) {
+	return 0, io.EOF
+}
+
+func (d DummyFSFile) Stat() (fs.FileInfo, error) {
+	return fs.FileInfo{}, io.EOF
+}
+
+func (d *DummyFS) Open(name string) (fs.File, error) {
+	fmt.Println("FFFFFFFFFFFFFFFFFFFFFFEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
+	fmt.Println(name)
+	return DummyFSFile{}, nil
+}
+
+func (d *DummyFS) GetFiles() map[string]index.RolodexFile {
+	return make(map[string]index.RolodexFile)
+}
+
 func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 	ep := Endpoint{
 		Namespace: ns,
@@ -143,45 +189,63 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 		Errors:    make([]string, 0),
 	}
 
-	var pathItemMap map[string]interface{}
-	err := yaml.Unmarshal(data, &pathItemMap)
+	docConfig := datamodel.DocumentConfiguration{
+		AvoidIndexBuild:       true,
+		AllowFileReferences:   true,
+		AllowRemoteReferences: false,
+	}
+
+	// can not throw an error, fake document for root index
+	doc, _ := libopenapi.NewDocumentWithConfiguration([]byte("openapi: 3.0.0\ninfo:\n   version: \"1.0\"\n   title: dummy\npaths: {}\n"), &docConfig)
+	highDoc, _ := doc.BuildV3Model()
+
+	doc.GetRolodex().AddLocalFS("/", &DummyFS{})
+
+	var interim map[string]interface{}
+	err := yaml.Unmarshal(data, &interim)
 	if err != nil {
 		ep.Errors = append(ep.Errors, err.Error())
 		return ep
 	}
 
-	// convert to JSON for openapi library
-	b, err := json.Marshal(pathItemMap)
+	var node yaml.Node
+	err = node.Encode(interim)
 	if err != nil {
 		ep.Errors = append(ep.Errors, err.Error())
 		return ep
 	}
 
-	var pathItem openapi3.PathItem
-	err = pathItem.UnmarshalJSON(b)
+	var lowPathItem v3low.PathItem
+	err = lowPathItem.Build(context.Background(), nil, &node, doc.GetRolodex().GetRootIndex())
 	if err != nil {
+		fmt.Println(err)
 		ep.Errors = append(ep.Errors, err.Error())
 		return ep
 	}
 
-	api, ok := pathItem.Extensions["x-direktiv-api"]
-	if !ok || api != "endpoint/v2" {
+	pathItem := v3high.NewPathItem(&lowPathItem)
+
+	api, found := pathItem.Extensions.Get("x-direktiv-api")
+	if !found || api.Value != "endpoint/v2" {
 		ep.Errors = append(ep.Errors, "invalid endpoint api version")
 		return ep
 	}
 
-	config, err := parseConfig(&pathItem)
+	config, err := parseConfig(pathItem)
 	if err != nil {
 		ep.Errors = append(ep.Errors, err.Error())
 		return ep
 	}
 
 	// add methods
-	config.Methods = extractMethods(&pathItem)
+	config.Methods = extractMethods(pathItem)
 
 	// check for other errors
 	if config.Path != "" {
 		config.Path = path.Clean("/" + config.Path)
+	} else {
+		ep.Errors = append(ep.Errors, "no path for route specified")
+		return ep
 	}
 
 	if config.PluginsConfig.Target.Typ == "" {
@@ -194,13 +258,27 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 		return ep
 	}
 
+	fmt.Println("PARSE ENDPOINT5")
+	highDoc.Model.Paths.PathItems.Set(config.Path, pathItem)
+	_, newDoc, _, errs := doc.RenderAndReload()
+	if len(errs) > 0 {
+		for i := range errs {
+			ep.Errors = append(ep.Errors, errs[i].Error())
+		}
+		return ep
+	}
+
+	fmt.Println("PARSED ENDPOINT")
+	fmt.Println(ep.Errors)
+
 	ep.Config = config
-	ep.RenderedPathItem = pathItem
+	ep.PathItem = *pathItem
+	ep.Doc = newDoc
 
 	return ep
 }
 
-func extractMethods(pathItem *openapi3.PathItem) []string {
+func extractMethods(pathItem *v3high.PathItem) []string {
 	methods := make([]string, 0)
 
 	// add methods
@@ -232,11 +310,13 @@ func extractMethods(pathItem *openapi3.PathItem) []string {
 	return methods
 }
 
-func parseConfig(pathItem *openapi3.PathItem) (EndpointConfig, error) {
+func parseConfig(pathItem *v3high.PathItem) (EndpointConfig, error) {
 	var config EndpointConfig
 
-	c, ok := pathItem.Extensions["x-direktiv-config"]
-	if !ok {
+	c, found := pathItem.Extensions.Get("x-direktiv-config")
+
+	// c, ok := m["x-direktiv-config"]
+	if !found {
 		return config, fmt.Errorf("no endpoint configuration found")
 	}
 
@@ -246,5 +326,6 @@ func parseConfig(pathItem *openapi3.PathItem) (EndpointConfig, error) {
 	}
 
 	err = yaml.Unmarshal(ct, &config)
+
 	return config, err
 }
