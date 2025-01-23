@@ -1014,7 +1014,8 @@
           "title": "Title",
           "version": "Version",
           "description": "Description",
-          "file": "File"
+          "file": "File",
+          "errors": "Errors"
         }
       }
     },

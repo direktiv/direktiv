@@ -16,7 +16,7 @@ import { useInfo } from "~/api/gateway/query/getInfo";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
-const GatewayInfoPage = () => {
+const InfoPage = () => {
   const { t } = useTranslation();
   const { data } = useInfo();
   const theme = useTheme();
@@ -65,7 +65,7 @@ const GatewayInfoPage = () => {
 
           {errors?.length ? (
             <Alert variant="error">
-              <h3>Errors</h3>
+              <h3>{t("pages.gateway.info.columns.errors")}</h3>
               <p>
                 <ul className="list-disc pl-4">
                   {errors.map((error, index) => (
@@ -95,4 +95,4 @@ const GatewayInfoPage = () => {
   );
 };
 
-export default GatewayInfoPage;
+export default InfoPage;

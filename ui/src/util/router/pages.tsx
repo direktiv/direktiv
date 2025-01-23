@@ -204,7 +204,7 @@ type GatewayPageSetup = Record<
             routePath: string;
           }
         | {
-            subpage: "GatewayInfoPage";
+            subpage: "info";
           }
       )
     ) => string;
@@ -566,14 +566,14 @@ export const usePages = (): PageType & EnterprisePageType => {
       name: "components.mainMenu.gateway",
       icon: Network,
       createHref: (params) => {
-        let subpage = "routes";
+        let subpage = "info";
         if (params.subpage === "routeDetail") {
           subpage = `routes/${removeLeadingSlash(params.routePath)}`;
         }
         if (params.subpage === "consumers") {
           subpage = "consumers";
         }
-        if (params.subpage === "GatewayInfoPage") {
+        if (params.subpage === "info") {
           subpage = "info";
         }
         return `/n/${params.namespace}/gateway/${subpage}`;
