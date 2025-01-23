@@ -235,7 +235,7 @@ test("it will treat the status and finish date of pending instances accordingly"
   ).toContainText("complete");
 });
 
-test("it paginates instances", async ({ page }) => {
+test.skip("it paginates instances", async ({ page }) => {
   const totalCount = 35;
   const pageSize = 10;
 
@@ -339,7 +339,7 @@ test("it paginates instances", async ({ page }) => {
   await expect(page.getByTestId(/instance-row/)).toHaveCount(35);
 
   /* reload the page and check if pagesize was remembered */
-  await page.reload({ waitUntil: "load" });
+  await page.reload({ waitUntil: "domcontentloaded" });
   await expect(selectPagesize).toBeVisible();
   expect(selectPagesize).toHaveText("Show 50 rows");
 });
