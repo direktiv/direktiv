@@ -81,6 +81,14 @@ func Run(circuit *core.Circuit) error {
 	}
 	initSLog(config)
 
+	// Create App struct
+	app := core.App{
+		Version: &core.Version{
+			UnixTime: time.Now().Unix(),
+		},
+		Config: config,
+	}
+
 	// Create DB connection
 	slog.Info("initialize db connection")
 	db, err := initDB(config)
@@ -102,9 +110,8 @@ func Run(circuit *core.Circuit) error {
 	}
 
 	// Create service manager
-	var serviceManager core.ServiceManager
 	if !config.DisableServices {
-		serviceManager, err = service.NewManager(config)
+		app.ServiceManager, err = service.NewManager(config)
 		if err != nil {
 			slog.Error("initializing service manager", "error", err)
 			panic(err)
@@ -115,7 +122,7 @@ func Run(circuit *core.Circuit) error {
 		service.SetupGetServiceURLFunc(config)
 
 		circuit.Start(func() error {
-			err := serviceManager.Run(circuit)
+			err := app.ServiceManager.Run(circuit)
 			if err != nil {
 				return fmt.Errorf("service manager, err: %w", err)
 			}
@@ -127,7 +134,7 @@ func Run(circuit *core.Circuit) error {
 	}
 
 	// Create registry manager
-	registryManager, err := registry.NewManager(config.DisableServices)
+	app.RegistryManager, err = registry.NewManager(config.DisableServices)
 	if err != nil {
 		slog.Error("registry manager", "error", err)
 		panic(err)
@@ -135,11 +142,11 @@ func Run(circuit *core.Circuit) error {
 	slog.Info("registry manager initialized successfully")
 
 	// Create endpoint manager
-	gatewayManager := gateway.NewManager(db)
+	app.GatewayManager = gateway.NewManager(db)
 	slog.Info("gateway manager2 initialized successfully")
 
 	// Create syncNamespace function
-	syncNamespace := func(namespace any, mirrorConfig any) (any, error) {
+	app.SyncNamespace = func(namespace any, mirrorConfig any) (any, error) {
 		ns := namespace.(*datastore.Namespace)            //nolint:forcetypeassert
 		mConfig := mirrorConfig.(*datastore.MirrorConfig) //nolint:forcetypeassert
 		proc, err := srv.MirrorManager.NewProcess(context.Background(), ns, datastore.ProcessTypeSync)
@@ -163,13 +170,13 @@ func Run(circuit *core.Circuit) error {
 
 	if !config.DisableServices {
 		srv.Bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
-			renderServiceFiles(db, serviceManager)
+			renderServiceFiles(db, app.ServiceManager)
 		})
 		srv.Bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
-			renderServiceFiles(db, serviceManager)
+			renderServiceFiles(db, app.ServiceManager)
 		})
 		// Call at least once before booting
-		renderServiceFiles(db, serviceManager)
+		renderServiceFiles(db, app.ServiceManager)
 	}
 
 	srv.Bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(data string) {
@@ -194,28 +201,16 @@ func Run(circuit *core.Circuit) error {
 
 	// endpoint manager
 	srv.Bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
-		renderGatewayFiles(db, gatewayManager)
+		renderGatewayFiles(db, app.GatewayManager)
 	})
 	srv.Bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
-		renderGatewayFiles(db, gatewayManager)
+		renderGatewayFiles(db, app.GatewayManager)
 	})
 	// initial loading of routes and consumers
-	renderGatewayFiles(db, gatewayManager)
-
-	// Create App
-	app := core.App{
-		Version: &core.Version{
-			UnixTime: time.Now().Unix(),
-		},
-		Config:          config,
-		ServiceManager:  serviceManager,
-		RegistryManager: registryManager,
-		GatewayManager:  gatewayManager,
-		SyncNamespace:   syncNamespace,
-	}
+	renderGatewayFiles(db, app.GatewayManager)
 
 	// Start api v2 server
-	err = api.Initialize(app, db, srv.Bus, instanceManager, srv.Engine.WakeEventsWaiter, srv.Engine.EventsInvoke, circuit)
+	err = api.Initialize(circuit, app, db, srv.Bus, instanceManager, srv.Engine.WakeEventsWaiter, srv.Engine.EventsInvoke)
 	if err != nil {
 		return fmt.Errorf("initializing api v2, err: %w", err)
 	}
