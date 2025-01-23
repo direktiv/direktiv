@@ -160,12 +160,12 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		}
 
 		// Create a channel for logs and set up a worker to process it
-		logCh := make(chan metastore.LogEntry, 1000)
+		logCh := make(chan metastore.LogEntry, 100)
 		worker := tracing.NewWorker(tracing.WorkerArgs{
 			LogCh:         logCh,
 			LogStore:      meta.LogStore(),
-			MaxBatchSize:  10,
-			FlushInterval: 1 * time.Second,
+			MaxBatchSize:  1,
+			FlushInterval: 1 * time.Millisecond,
 			CachedLevel:   int(lvl.Level()),
 		})
 

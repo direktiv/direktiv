@@ -69,7 +69,6 @@ func (w *Worker) Start(circuit *core.Circuit) error {
 			}
 
 		case <-time.After(w.flushInterval):
-			slog.Info("Flush ping")
 			if count > 0 {
 				w.processBatch(w.batch[:count]) //nolint:contextcheck
 				count = 0
@@ -88,8 +87,6 @@ func (w *Worker) Start(circuit *core.Circuit) error {
 // processBatch flushes a batch of log records to the datastore if they meet the required log level.
 func (w *Worker) processBatch(batch []metastore.LogEntry) {
 	ctx := context.Background()
-	slog.Info("processBatch ping")
-
 	// Filter logs based on the required log level
 	filteredBatch := make([]metastore.LogEntry, 0, len(batch))
 	for _, logRecord := range batch {
@@ -99,7 +96,6 @@ func (w *Worker) processBatch(batch []metastore.LogEntry) {
 	}
 
 	for _, l := range filteredBatch {
-		slog.Info("Persist the filtered logs")
 		// Persist the filtered logs
 		if err := w.logStore.Append(ctx, l); err != nil {
 			slog.ErrorContext(ctx, "failed to store", "error", fmt.Errorf("%w: error appending logs", err))

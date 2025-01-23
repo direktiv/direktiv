@@ -23,7 +23,7 @@ func (m *logControllerV2) mountRouter(r chi.Router) {
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		params := extractLogRequestParams(r)
-
+		slog.Info("Log endpoint request start")
 		// Call the Get method with the cursor instead of offset
 		data, starting, err := m.getOlder(r.Context(), params)
 		if err != nil {
@@ -37,6 +37,7 @@ func (m *logControllerV2) mountRouter(r chi.Router) {
 			"startingFrom": nil,
 		}
 		if len(data) == 0 {
+			slog.Info("Log endpoint request empty")
 			writeJSONWithMeta(w, []logEntry{}, metaInfo)
 
 			return
@@ -48,6 +49,8 @@ func (m *logControllerV2) mountRouter(r chi.Router) {
 			"previousPage": previousPage,
 			"startingFrom": starting,
 		}
+		slog.Info("Log endpoint request data", "data", data)
+
 		writeJSONWithMeta(w, data, metaInfo)
 	})
 
@@ -123,7 +126,7 @@ func (m *logControllerV2) getOlder(ctx context.Context, params map[string]string
 	// 	return []logEntry{}, time.Time{}, err
 	// }
 
-	starting := time.Now().UTC().Add(-time.Hour * 2)
+	starting := time.Now().UTC().Add(-time.Hour + 2)
 	if t, ok := params["before"]; ok {
 		co, err := time.Parse(time.RFC3339Nano, t)
 		if err != nil {
@@ -147,13 +150,13 @@ func (m *logControllerV2) stream(w http.ResponseWriter, r *http.Request) {}
 func toFeatureLogEntryV2(e metastore.LogEntry) logEntry {
 	// Create a new feature log entry and map the relevant fields.
 	featureLogEntry := logEntry{
-		ID:        0,                         // TODO: Map LogEntry ID from the metastore to feature log entry
-		Time:      time.Unix(e.Timestamp, 0), // Convert Unix timestamp to time.Time
-		Msg:       e.Message,                 // Directly map the Message field
-		Level:     e.Level,                   // Map the Level field
-		Namespace: e.Metadata["namespace"],   // Assuming "namespace" is present in metadata
-		Trace:     e.Metadata["trace"],       // Assuming "trace" is present in metadata
-		Span:      e.Metadata["span"],        // Assuming "span" is present in metadata
+		ID:        0,                           // TODO: Map LogEntry ID from the metastore to feature log entry
+		Time:      time.UnixMilli(e.Timestamp), // Convert Unix timestamp to time.Time
+		Msg:       e.Message,                   // Directly map the Message field
+		Level:     e.Level,                     // Map the Level field
+		Namespace: e.Metadata["namespace"],     // Assuming "namespace" is present in metadata
+		Trace:     e.Metadata["trace"],         // Assuming "trace" is present in metadata
+		Span:      e.Metadata["span"],          // Assuming "span" is present in metadata
 	}
 
 	// Map optional contextual fields if available
