@@ -15,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/events"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/flow"
@@ -32,120 +31,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
-
-type NewMainArgs struct {
-	Config                       *core.Config
-	Database                     *database.DB
-	PubSubBus                    *pubsub.Bus
-	ConfigureWorkflow            func(event *pubsub.FileSystemChangeEvent) error
-	InstanceManager              *instancestore.InstanceManager
-	WakeInstanceByEvent          events.WakeEventsWaiter
-	WorkflowStart                events.WorkflowStart
-	SyncNamespace                core.SyncNamespace
-	RenderAllStartEventListeners func(ctx context.Context, tx *database.DB) error
-}
-
-func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
-	// Create service manager
-	var err error
-	var serviceManager core.ServiceManager
-	if !args.Config.DisableServices {
-		serviceManager, err = service.NewManager(args.Config)
-		if err != nil {
-			slog.Error("initializing service manager", "error", err)
-			panic(err)
-		}
-		slog.Info("service manager initialized successfully")
-
-		// Setup GetServiceURL function
-		service.SetupGetServiceURLFunc(args.Config)
-
-		circuit.Start(func() error {
-			err := serviceManager.Run(circuit)
-			if err != nil {
-				return fmt.Errorf("service manager, err: %w", err)
-			}
-
-			return nil
-		})
-	} else {
-		slog.Info("service manager is disabled")
-	}
-
-	// Create registry manager
-	registryManager, err := registry.NewManager(args.Config.DisableServices)
-	if err != nil {
-		slog.Error("registry manager", "error", err)
-		panic(err)
-	}
-	slog.Info("registry manager initialized successfully")
-
-	// Create endpoint manager
-	gatewayManager2 := gateway.NewManager(args.Database)
-	slog.Info("gateway manager2 initialized successfully")
-
-	// Create App
-	app := core.App{
-		Version: &core.Version{
-			UnixTime: time.Now().Unix(),
-		},
-		Config:          args.Config,
-		ServiceManager:  serviceManager,
-		RegistryManager: registryManager,
-		GatewayManager:  gatewayManager2,
-		SyncNamespace:   args.SyncNamespace,
-	}
-
-	if !args.Config.DisableServices {
-		args.PubSubBus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
-			renderServiceManager(args.Database, serviceManager)
-		})
-		args.PubSubBus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
-			renderServiceManager(args.Database, serviceManager)
-		})
-		// Call at least once before booting
-		renderServiceManager(args.Database, serviceManager)
-	}
-
-	args.PubSubBus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(data string) {
-		event := &pubsub.FileSystemChangeEvent{}
-		err := json.Unmarshal([]byte(data), event)
-		if err != nil {
-			panic("Logic Error could not parse file system change event")
-		}
-
-		err = args.ConfigureWorkflow(event)
-		if err != nil {
-			slog.Error("configure workflow", "error", err)
-		}
-	})
-
-	slog.Debug("Rendering event-listeners on server start")
-	err = args.RenderAllStartEventListeners(circuit.Context(), args.Database)
-	if err != nil {
-		slog.Error("rendering event listener on server start", "error", err)
-	}
-	slog.Debug("Completed rendering event-listeners on server start")
-
-	// endpoint manager
-	args.PubSubBus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
-		helpers.RenderGatewayFiles(args.Database, gatewayManager2)
-	})
-	args.PubSubBus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
-		helpers.RenderGatewayFiles(args.Database, gatewayManager2)
-	})
-	// initial loading of routes and consumers
-	helpers.RenderGatewayFiles(args.Database, gatewayManager2)
-
-	// Start api v2 server
-	err = api.Initialize(app, args.Database, args.PubSubBus, args.InstanceManager, args.WakeInstanceByEvent, args.WorkflowStart, circuit)
-	if err != nil {
-		return fmt.Errorf("initializing api v2, err: %w", err)
-	}
-	slog.Info("api server v2 started")
-
-	return nil
-}
 
 func renderServiceManager(db *database.DB, serviceManager core.ServiceManager) {
 	ctx := context.Background()
@@ -244,6 +129,7 @@ func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *file
 }
 
 func Run(circuit *core.Circuit) error {
+	var err error
 	config := &core.Config{}
 	if err := env.Parse(config); err != nil {
 		return fmt.Errorf("parsing env variables: %w", err)
@@ -253,6 +139,7 @@ func Run(circuit *core.Circuit) error {
 	}
 	initSLog(config)
 
+	// Create DB connection
 	slog.Info("initialize db connection")
 	db, err := initDB(config)
 	if err != nil {
@@ -260,6 +147,7 @@ func Run(circuit *core.Circuit) error {
 	}
 	datastore.SymmetricEncryptionKey = config.SecretKey
 
+	// Initialize legacy server
 	slog.Info("initialize legacy server")
 	srv, err := flow.InitLegacyServer(circuit, config, db)
 	if err != nil {
@@ -271,40 +159,125 @@ func Run(circuit *core.Circuit) error {
 		Cancel: srv.Engine.CancelInstance,
 	}
 
-	err = NewMain(circuit, &NewMainArgs{
-		Config:              config,
-		Database:            db,
-		PubSubBus:           srv.Bus,
-		ConfigureWorkflow:   srv.ConfigureWorkflow,
-		InstanceManager:     instanceManager,
-		WakeInstanceByEvent: srv.Engine.WakeEventsWaiter,
-		WorkflowStart:       srv.Engine.EventsInvoke,
-		SyncNamespace: func(namespace any, mirrorConfig any) (any, error) {
-			ns := namespace.(*datastore.Namespace)            //nolint:forcetypeassert
-			mConfig := mirrorConfig.(*datastore.MirrorConfig) //nolint:forcetypeassert
-			proc, err := srv.MirrorManager.NewProcess(context.Background(), ns, datastore.ProcessTypeSync)
+	// Create service manager
+	var serviceManager core.ServiceManager
+	if !config.DisableServices {
+		serviceManager, err = service.NewManager(config)
+		if err != nil {
+			slog.Error("initializing service manager", "error", err)
+			panic(err)
+		}
+		slog.Info("service manager initialized successfully")
+
+		// Setup GetServiceURL function
+		service.SetupGetServiceURLFunc(config)
+
+		circuit.Start(func() error {
+			err := serviceManager.Run(circuit)
 			if err != nil {
-				return nil, err
+				return fmt.Errorf("service manager, err: %w", err)
 			}
 
-			go func() {
-				srv.MirrorManager.Execute(context.Background(), proc, mConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
-				err := srv.Bus.Publish(&pubsub.NamespacesChangeEvent{
-					Action: "sync",
-					Name:   ns.Name,
-				})
-				if err != nil {
-					slog.Error("pubsub publish", "error", err)
-				}
-			}()
-
-			return proc, nil
-		},
-		RenderAllStartEventListeners: flow.RenderAllStartEventListeners,
-	})
-	if err != nil {
-		return fmt.Errorf("lunching new main, err: %w", err)
+			return nil
+		})
+	} else {
+		slog.Info("service manager is disabled")
 	}
+
+	// Create registry manager
+	registryManager, err := registry.NewManager(config.DisableServices)
+	if err != nil {
+		slog.Error("registry manager", "error", err)
+		panic(err)
+	}
+	slog.Info("registry manager initialized successfully")
+
+	// Create endpoint manager
+	gatewayManager2 := gateway.NewManager(db)
+	slog.Info("gateway manager2 initialized successfully")
+
+	// Create syncNamespace function
+	syncNamespace := func(namespace any, mirrorConfig any) (any, error) {
+		ns := namespace.(*datastore.Namespace)            //nolint:forcetypeassert
+		mConfig := mirrorConfig.(*datastore.MirrorConfig) //nolint:forcetypeassert
+		proc, err := srv.MirrorManager.NewProcess(context.Background(), ns, datastore.ProcessTypeSync)
+		if err != nil {
+			return nil, err
+		}
+
+		go func() {
+			srv.MirrorManager.Execute(context.Background(), proc, mConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
+			err := srv.Bus.Publish(&pubsub.NamespacesChangeEvent{
+				Action: "sync",
+				Name:   ns.Name,
+			})
+			if err != nil {
+				slog.Error("pubsub publish", "error", err)
+			}
+		}()
+
+		return proc, nil
+	}
+
+	if !config.DisableServices {
+		srv.Bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
+			renderServiceManager(db, serviceManager)
+		})
+		srv.Bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
+			renderServiceManager(db, serviceManager)
+		})
+		// Call at least once before booting
+		renderServiceManager(db, serviceManager)
+	}
+
+	srv.Bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(data string) {
+		event := &pubsub.FileSystemChangeEvent{}
+		err := json.Unmarshal([]byte(data), event)
+		if err != nil {
+			panic("Logic Error could not parse file system change event")
+		}
+
+		err = srv.ConfigureWorkflow(event)
+		if err != nil {
+			slog.Error("configure workflow", "error", err)
+		}
+	})
+
+	slog.Debug("Rendering event-listeners on server start")
+	err = flow.RenderAllStartEventListeners(circuit.Context(), db)
+	if err != nil {
+		slog.Error("rendering event listener on server start", "error", err)
+	}
+	slog.Debug("Completed rendering event-listeners on server start")
+
+	// endpoint manager
+	srv.Bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
+		helpers.RenderGatewayFiles(db, gatewayManager2)
+	})
+	srv.Bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
+		helpers.RenderGatewayFiles(db, gatewayManager2)
+	})
+	// initial loading of routes and consumers
+	helpers.RenderGatewayFiles(db, gatewayManager2)
+
+	// Create App
+	app := core.App{
+		Version: &core.Version{
+			UnixTime: time.Now().Unix(),
+		},
+		Config:          config,
+		ServiceManager:  serviceManager,
+		RegistryManager: registryManager,
+		GatewayManager:  gatewayManager2,
+		SyncNamespace:   syncNamespace,
+	}
+
+	// Start api v2 server
+	err = api.Initialize(app, db, srv.Bus, instanceManager, srv.Engine.WakeEventsWaiter, srv.Engine.EventsInvoke, circuit)
+	if err != nil {
+		return fmt.Errorf("initializing api v2, err: %w", err)
+	}
+	slog.Info("api server v2 started")
 
 	return nil
 }
