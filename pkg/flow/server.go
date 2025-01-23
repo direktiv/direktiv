@@ -48,7 +48,7 @@ type server struct {
 	Bus *pubsub2.Bus
 
 	timers *timers
-	engine *engine
+	Engine *engine
 
 	rawDB *sql.DB
 
@@ -177,7 +177,7 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, db *database.D
 
 	slog.Debug("initializing engine.")
 
-	srv.engine = initEngine(srv)
+	srv.Engine = initEngine(srv)
 	slog.Info("engine was started.")
 
 	slog.Debug("initializing flow server.")
@@ -443,13 +443,13 @@ func (srv *server) registerFunctions() {
 	srv.pubsub.RegisterFunction(pubsub.PubsubDisconnectFunction, srv.pubsub.Disconnect)
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteTimerFunction, srv.timers.deleteTimerHandler)
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteInstanceTimersFunction, srv.timers.deleteInstanceTimersHandler)
-	srv.pubsub.RegisterFunction(pubsub.PubsubCancelWorkflowFunction, srv.engine.finishCancelWorkflow)
-	srv.pubsub.RegisterFunction(pubsub.PubsubCancelMirrorProcessFunction, srv.engine.finishCancelMirrorProcess)
+	srv.pubsub.RegisterFunction(pubsub.PubsubCancelWorkflowFunction, srv.Engine.finishCancelWorkflow)
+	srv.pubsub.RegisterFunction(pubsub.PubsubCancelMirrorProcessFunction, srv.Engine.finishCancelMirrorProcess)
 	srv.pubsub.RegisterFunction(pubsub.PubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
 
-	srv.timers.registerFunction(timeoutFunction, srv.engine.timeoutHandler)
+	srv.timers.registerFunction(timeoutFunction, srv.Engine.timeoutHandler)
 	srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
-	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
+	srv.timers.registerFunction(retryWakeupFunction, srv.flow.Engine.retryWakeup)
 
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)
 }

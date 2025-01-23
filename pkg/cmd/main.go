@@ -8,7 +8,6 @@ import (
 	"github.com/caarlos0/env/v10"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/mirror"
-	"github.com/google/uuid"
 	"log/slog"
 	"time"
 
@@ -23,6 +22,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/pubsub"
+	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/registry"
 	"github.com/direktiv/direktiv/pkg/service"
 )
@@ -261,18 +261,18 @@ func Run(circuit *core.Circuit) error {
 	}
 
 	instanceManager := &instancestore.InstanceManager{
-		Start:  srv.engine.StartWorkflow,
-		Cancel: srv.engine.CancelInstance,
+		Start:  srv.Engine.StartWorkflow,
+		Cancel: srv.Engine.CancelInstance,
 	}
 
 	err = NewMain(circuit, &NewMainArgs{
 		Config:              config,
 		Database:            db,
-		PubSubBus:           srv.pBus,
+		PubSubBus:           srv.Bus,
 		ConfigureWorkflow:   srv.ConfigureWorkflow,
 		InstanceManager:     instanceManager,
-		WakeInstanceByEvent: srv.engine.WakeEventsWaiter,
-		WorkflowStart:       srv.engine.EventsInvoke,
+		WakeInstanceByEvent: srv.Engine.WakeEventsWaiter,
+		WorkflowStart:       srv.Engine.EventsInvoke,
 		SyncNamespace: func(namespace any, mirrorConfig any) (any, error) {
 			ns := namespace.(*datastore.Namespace)            //nolint:forcetypeassert
 			mConfig := mirrorConfig.(*datastore.MirrorConfig) //nolint:forcetypeassert
@@ -283,7 +283,7 @@ func Run(circuit *core.Circuit) error {
 
 			go func() {
 				srv.MirrorManager.Execute(context.Background(), proc, mConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
-				err := srv.pBus.Publish(&pubsub2.NamespacesChangeEvent{
+				err := srv.Bus.Publish(&pubsub2.NamespacesChangeEvent{
 					Action: "sync",
 					Name:   ns.Name,
 				})
@@ -294,7 +294,7 @@ func Run(circuit *core.Circuit) error {
 
 			return proc, nil
 		},
-		RenderAllStartEventListeners: renderAllStartEventListeners,
+		RenderAllStartEventListeners: flow.RenderAllStartEventListeners,
 	})
 	if err != nil {
 		return fmt.Errorf("lunching new main, err: %w", err)
