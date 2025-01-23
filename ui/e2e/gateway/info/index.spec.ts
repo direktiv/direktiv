@@ -25,36 +25,29 @@ test("Info page default view", async ({ page }) => {
   await expect(page.getByText("Gateway Info")).toBeVisible();
 
   await expect(
-    page.getByText(namespace).first(),
+    page.getByTestId("breadcrumb-namespace"),
     "it displays the current namespace in the breadcrumb"
-  ).toBeVisible();
+  ).toHaveText(namespace);
 
   await expect(
-    page.getByText(namespace).nth(1),
-    "it displays the current namespace in the title"
-  ).toBeVisible();
-
-  await expect(
-    page.getByText(namespace).nth(2),
+    page.getByRole("cell", { name: namespace }),
     "it displays the current namespace in the info section"
   ).toBeVisible();
 
   await expect(
-    page.getByText("Version").nth(0),
-    "it displays the gateway version in the title"
-  ).toBeVisible();
-  await expect(
-    page.getByText("Version").nth(1),
-    "it displays the gateway version in the title"
-  ).toBeVisible();
-
-  await expect(
-    page.getByText("1.0").nth(0),
+    page.getByRole("cell", { name: "1.0" }),
     "it displays the gateway version in the info section"
   ).toBeVisible();
 
+  const editor = page.locator(".lines-content");
+
   await expect(
-    page.getByText("1.0").nth(1),
-    "it displays the gateway version in the info section"
-  ).toBeVisible();
+    editor,
+    "it displays the namespace in the editor preview"
+  ).toContainText(`title: ${namespace}`, { useInnerText: true });
+
+  await expect(
+    editor,
+    "it displays the version in the editor preview"
+  ).toContainText(`version: "1.0"`, { useInnerText: true });
 });
