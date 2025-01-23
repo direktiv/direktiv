@@ -19,6 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/events"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/instancestore"
+	"github.com/direktiv/direktiv/pkg/metastore"
 	"github.com/direktiv/direktiv/pkg/middlewares"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/version"
@@ -30,7 +31,7 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Initialize(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, wakeByEvents events.WakeEventsWaiter, startByEvents events.WorkflowStart, circuit *core.Circuit) error {
+func Initialize(app core.App, db *database.DB, meta metastore.Store, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, wakeByEvents events.WakeEventsWaiter, startByEvents events.WorkflowStart, circuit *core.Circuit) error {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
@@ -120,6 +121,10 @@ func Initialize(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager
 	logCtr := &logController{
 		store: db.DataStore().NewLogs(),
 	}
+	logCtr2 := &logControllerV2{
+		metaLogStore: meta.LogStore(),
+	}
+
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
 
 	r.Route("/api/v2", func(r chi.Router) {
@@ -152,9 +157,15 @@ func Initialize(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager
 			r.Route("/namespaces/{namespace}/registries", func(r chi.Router) {
 				regCtr.mountRouter(r)
 			})
-			r.Route("/namespaces/{namespace}/logs", func(r chi.Router) {
-				logCtr.mountRouter(r)
-			})
+			if app.Config.OpenSearchInstalled {
+				r.Route("/namespaces/{namespace}/logs", func(r chi.Router) {
+					logCtr2.mountRouter(r)
+				})
+			} else {
+				r.Route("/namespaces/{namespace}/logs", func(r chi.Router) {
+					logCtr.mountRouter(r)
+				})
+			}
 			r.Route("/namespaces/{namespace}/notifications", func(r chi.Router) {
 				notificationsCtr.mountRouter(r)
 			})

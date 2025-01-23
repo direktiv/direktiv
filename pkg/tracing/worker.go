@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/metastore"
 )
 
@@ -43,51 +44,51 @@ func NewWorker(args WorkerArgs) *Worker {
 }
 
 // Start launches the log processing loop in a goroutine, which batches and flushes logs periodically.
-func (w *Worker) Start(ctx context.Context) {
-	go func() {
-		count := 0
+func (w *Worker) Start(circuit *core.Circuit) error {
+	count := 0
 
-		for {
-			select {
-			case record, ok := <-w.logCh:
-				if !ok {
-					// Channel is closed, flush remaining logs
-					if count > 0 {
-						w.processBatch(w.batch[:count]) //nolint:contextcheck
-					}
-
-					return
-				}
-
-				// Add log to batch
-				w.batch[count] = record
-				count++
-				if count >= len(w.batch) {
-					// Batch is full, flush it
-					w.processBatch(w.batch[:count]) //nolint:contextcheck
-					count = 0
-				}
-
-			case <-time.After(w.flushInterval):
+	for {
+		select {
+		case record, ok := <-w.logCh:
+			if !ok {
+				// Channel is closed, flush remaining logs
 				if count > 0 {
 					w.processBatch(w.batch[:count]) //nolint:contextcheck
-					count = 0
 				}
 
-			case <-ctx.Done():
-				// Context canceled, flush remaining logs
-				if count > 0 {
-					w.processBatch(w.batch[:count]) //nolint:contextcheck
-					count = 0
-				}
+				return nil
+			}
+
+			// Add log to batch
+			w.batch[count] = record
+			count++
+			if count >= len(w.batch) {
+				// Batch is full, flush it
+				w.processBatch(w.batch[:count]) //nolint:contextcheck
+				count = 0
+			}
+
+		case <-time.After(w.flushInterval):
+			slog.Info("Flush ping")
+			if count > 0 {
+				w.processBatch(w.batch[:count]) //nolint:contextcheck
+				count = 0
+			}
+
+		case <-circuit.Context().Done():
+			// Context canceled, flush remaining logs
+			if count > 0 {
+				w.processBatch(w.batch[:count]) //nolint:contextcheck
+				count = 0
 			}
 		}
-	}()
+	}
 }
 
 // processBatch flushes a batch of log records to the datastore if they meet the required log level.
 func (w *Worker) processBatch(batch []metastore.LogEntry) {
 	ctx := context.Background()
+	slog.Info("processBatch ping")
 
 	// Filter logs based on the required log level
 	filteredBatch := make([]metastore.LogEntry, 0, len(batch))
@@ -98,6 +99,7 @@ func (w *Worker) processBatch(batch []metastore.LogEntry) {
 	}
 
 	for _, l := range filteredBatch {
+		slog.Info("Persist the filtered logs")
 		// Persist the filtered logs
 		if err := w.logStore.Append(ctx, l); err != nil {
 			slog.ErrorContext(ctx, "failed to store", "error", fmt.Errorf("%w: error appending logs", err))

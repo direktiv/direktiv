@@ -76,41 +76,77 @@ func (store *LogStore) Append(ctx context.Context, log metastore.LogEntry) error
 
 // Get implements metastore.LogStore.
 func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOptions) ([]metastore.LogEntry, error) {
-	// Construct the query
-
-	// query := map[string]interface{}{
-	// 	"query": map[string]interface{}{
-	// 		"match_all": map[string]interface{}{},
-	// 	},
-	// }
+	// Construct the query with the specified filters
 	ran := map[string]interface{}{
 		"range": map[string]interface{}{
-			"Timestamp": map[string]interface{}{ // case sensitive !!
+			"Timestamp": map[string]interface{}{ // Case-sensitive field name
 				"gte": options.StartTime.UTC().UnixMilli(),
 				"lte": options.EndTime.UTC().UnixMilli(),
 			},
 		},
 	}
 
-	filters := []map[string]interface{}{}
-	filters = append(filters, ran)
+	filters := []map[string]interface{}{ran}
 
-	for _, level := range options.Levels {
+	// Add filters for log levels
+	filters = append(filters, map[string]interface{}{
+		"range": map[string]interface{}{
+			"Level": map[string]interface{}{
+				"gte": options.Level,
+			},
+		},
+	})
+
+	// Add filters for metadata
+	for key, value := range options.Metadata {
 		filters = append(filters, map[string]interface{}{
 			"term": map[string]interface{}{
-				"Level": level,
+				fmt.Sprintf("Metadata.%s", key): value,
 			},
 		})
 	}
 
+	// Add filters for keywords (full-text search)
+	if len(options.Keywords) > 0 {
+		shouldQueries := []map[string]interface{}{}
+		for _, keyword := range options.Keywords {
+			shouldQueries = append(shouldQueries, map[string]interface{}{
+				"match": map[string]interface{}{
+					"Message": keyword,
+				},
+			})
+		}
+		filters = append(filters, map[string]interface{}{
+			"bool": map[string]interface{}{
+				"should": shouldQueries,
+			},
+		})
+	}
+
+	// Build the search query
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
 				"filter": filters,
 			},
 		},
+		"sort": []map[string]interface{}{
+			{
+				"Timestamp": map[string]interface{}{
+					"order": "asc",
+				},
+			},
+		},
 	}
+
+	// Apply limit to the query
+	if options.Limit > 0 {
+		query["size"] = options.Limit
+	}
+
 	slog.Debug("create the search request using the OpenSearch client")
+
+	// Execute the query
 	searchRes, err := store.client.Search(
 		store.client.Search.WithContext(ctx),
 		store.client.Search.WithIndex(store.logIndex),
@@ -120,22 +156,21 @@ func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOption
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute search query: %w", err)
 	}
+	defer searchRes.Body.Close()
+
 	if searchRes.IsError() {
 		responseBody, _ := io.ReadAll(searchRes.Body)
 		slog.Error("Search failed", "status", searchRes.Status(), "response", string(responseBody))
 
 		return nil, fmt.Errorf("error executing search: %s, response: %s", searchRes.Status(), string(responseBody))
 	}
-	defer searchRes.Body.Close()
-	if searchRes.IsError() {
-		responseBody, _ := io.ReadAll(searchRes.Body)
-		return nil, fmt.Errorf("error executing search: %s, response: %s", searchRes.Status(), string(responseBody))
-	}
 
+	// Parse the response
 	var searchResult struct {
 		Hits struct {
 			Hits []struct {
 				Source metastore.LogEntry `json:"_source"`
+				Sort   []interface{}      `json:"sort"`
 			} `json:"hits"`
 		} `json:"hits"`
 	}
@@ -144,6 +179,7 @@ func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOption
 		return nil, fmt.Errorf("failed to decode search response: %w", err)
 	}
 
+	// Extract logs from the response
 	logs := make([]metastore.LogEntry, 0, len(searchResult.Hits.Hits))
 	for _, hit := range searchResult.Hits.Hits {
 		logs = append(logs, hit.Source)

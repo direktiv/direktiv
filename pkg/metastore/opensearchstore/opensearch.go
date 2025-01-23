@@ -10,9 +10,24 @@ import (
 	tcopensearch "github.com/testcontainers/testcontainers-go/modules/opensearch"
 )
 
+var _ metastore.Store = &opensearchMetaStore{}
+
 type opensearchMetaStore struct {
 	client *opensearch.Client
 	co     Config
+}
+
+func NewMetaStore(ctx context.Context, client *opensearch.Client, co Config) (metastore.Store, error) {
+	store := &opensearchMetaStore{
+		client: client,
+		co:     co,
+	}
+	err := store.LogStore().Init(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return store, nil
 }
 
 // LogStore implements metastore.Store.

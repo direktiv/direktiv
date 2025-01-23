@@ -2,10 +2,14 @@ package cmd
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/api"
@@ -17,15 +21,20 @@ import (
 	"github.com/direktiv/direktiv/pkg/gateway"
 	"github.com/direktiv/direktiv/pkg/helpers"
 	"github.com/direktiv/direktiv/pkg/instancestore"
+	"github.com/direktiv/direktiv/pkg/metastore"
+	"github.com/direktiv/direktiv/pkg/metastore/opensearchstore"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/registry"
 	"github.com/direktiv/direktiv/pkg/service"
+	"github.com/direktiv/direktiv/pkg/tracing"
+	"github.com/opensearch-project/opensearch-go"
 )
 
 type NewMainArgs struct {
 	Config                       *core.Config
 	Database                     *database.DB
+	Metastore                    metastore.Store
 	PubSubBus                    *pubsub.Bus
 	ConfigureWorkflow            func(event *pubsub.FileSystemChangeEvent) error
 	InstanceManager              *instancestore.InstanceManager
@@ -126,9 +135,68 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	})
 	// initial loading of routes and consumers
 	helpers.RenderGatewayFiles(args.Database, gatewayManager2)
+	if app.Config.OpenSearchInstalled {
+		slog.Info("initialize OpenSearch", "config.OpenSearchHost", app.Config.OpenSearchHost, "config.OpenSearchPort", app.Config.OpenSearchPort, "config.OpenSearchProtocol", app.Config.OpenSearchProtocol)
 
+		openSearchClient, err := initOpenSearch(app.Config)
+		if err != nil {
+			return fmt.Errorf("initialize OpenSearch client, err: %w", err)
+		}
+		slog.Info("connected to OpenSearch")
+		meta, err := opensearchstore.NewMetaStore(circuit.Context(), openSearchClient, opensearchstore.Config{
+			LogIndex:       "direktivlogs",
+			LogDeleteAfter: "7d",
+		})
+		if err != nil {
+			return fmt.Errorf("initialize OpenSearch meta client, err: %w", err)
+		}
+		// Initialize log level based on config
+		lvl := new(slog.LevelVar)
+		lvl.Set(slog.LevelInfo)
+
+		if app.Config.LogDebug {
+			slog.Info("Logging is set to debug")
+			lvl.Set(slog.LevelDebug)
+		}
+
+		// Create a channel for logs and set up a worker to process it
+		logCh := make(chan metastore.LogEntry, 1000)
+		worker := tracing.NewWorker(tracing.WorkerArgs{
+			LogCh:         logCh,
+			LogStore:      meta.LogStore(),
+			MaxBatchSize:  10,
+			FlushInterval: 1 * time.Second,
+			CachedLevel:   int(lvl.Level()),
+		})
+
+		circuit.Start(func() error {
+			err := worker.Start(circuit)
+			if err != nil {
+				return fmt.Errorf("logs worker, err: %w", err)
+			}
+
+			return nil
+		})
+
+		// Create handlers
+		jsonHandler := tracing.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+			Level: lvl,
+		}))
+		channelHandler := tracing.NewChannelHandler(logCh, nil, "default", lvl.Level())
+
+		// Combine handlers using a TeeHandler
+		compositeHandler := tracing.TeeHandler{
+			jsonHandler,
+			channelHandler,
+		}
+		args.Metastore = meta
+		// Set up the default logger
+		slogger := slog.New(compositeHandler)
+		slog.SetDefault(slogger)
+		slog.Info("Logger initialized")
+	}
 	// Start api v2 server
-	err = api.Initialize(app, args.Database, args.PubSubBus, args.InstanceManager, args.WakeInstanceByEvent, args.WorkflowStart, circuit)
+	err = api.Initialize(app, args.Database, args.Metastore, args.PubSubBus, args.InstanceManager, args.WakeInstanceByEvent, args.WorkflowStart, circuit)
 	if err != nil {
 		return fmt.Errorf("initializing api v2, err: %w", err)
 	}
@@ -231,4 +299,45 @@ func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *file
 	}
 
 	return list, nil
+}
+
+func initOpenSearch(cfg *core.Config) (*opensearch.Client, error) {
+	retries := 20
+	addr := cfg.OpenSearchProtocol + "://" + cfg.OpenSearchHost + ":" + strconv.Itoa(cfg.OpenSearchPort)
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+
+	config := opensearch.Config{
+		Addresses: []string{addr},
+		Username:  cfg.OpenSearchUsername,
+		Password:  cfg.OpenSearchPassword,
+		Transport: transport,
+		RetryBackoff: func(attempt int) time.Duration {
+			return time.Second + time.Duration(attempt)
+		},
+		DisableRetry: false,
+		MaxRetries:   retries,
+	}
+
+	client, err := opensearch.NewClient(config)
+	if err != nil {
+		slog.Info("connect to OpenSearch", "addr", addr, "error", err)
+		return nil, fmt.Errorf("failed to create OpenSearch client: %w", err)
+	}
+	slog.Debug("connect to OpenSearch", "addr", addr)
+
+	// Test the connection
+	res, err := client.Info()
+	if err != nil {
+		slog.Info("OpenSearch connection test failed", "addr", addr, "error", err)
+		return nil, fmt.Errorf("OpenSearch connection test failed: %w", err)
+	}
+	defer res.Body.Close()
+
+	slog.Info("Connected to OpenSearch", "info", res.String())
+
+	return client, nil
 }

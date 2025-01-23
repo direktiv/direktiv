@@ -11,6 +11,7 @@ type LogStore interface {
 	Append(ctx context.Context, log LogEntry) error
 	// Get retrieves logs based on a time range or filter criteria.
 	Get(ctx context.Context, options LogQueryOptions) ([]LogEntry, error)
+	Init(ctx context.Context) error
 }
 
 // LogEntry represents a single log entry stored in the Metastore.
@@ -26,7 +27,7 @@ type LogEntry struct { // TODO: Add json anottations
 type LogQueryOptions struct {
 	StartTime time.Time         // Start of the time range for logs.
 	EndTime   time.Time         // End of the time range for logs.
-	Levels    []int             // Optional filter by log levels (e.g., INFO, ERROR).
+	Level     int               // Optional gte filter by log levels (e.g., INFO, ERROR).
 	Metadata  map[string]string // Metadata filters (e.g., service name, environment).
 	Keywords  []string          // Keywords to search within log messages.
 	Limit     int               // Maximum number of logs to retrieve.
