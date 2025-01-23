@@ -135,7 +135,7 @@ func (m *logControllerV2) getOlder(ctx context.Context, params map[string]string
 		starting = co
 	}
 
-	r, err = getOlder(ctx, m.metaLogStore, starting)
+	r, err = getOlder(ctx, m.metaLogStore, params["namespace"], starting)
 	if err != nil {
 		return []logEntry{}, time.Time{}, err
 	}
@@ -254,14 +254,14 @@ func getNewer(ctx context.Context, store metastore.LogStore, timestamp time.Time
 }
 
 // getOlder retrieves older logs by stream and timestamp (without instance context).
-func getOlder(ctx context.Context, store metastore.LogStore, starting time.Time) ([]logEntry, error) {
+func getOlder(ctx context.Context, store metastore.LogStore, namespace string, starting time.Time) ([]logEntry, error) {
 	// Construct query options to filter logs by stream and time range.
 	queryOptions := metastore.LogQueryOptions{
 		StartTime: starting.UTC(),
 		EndTime:   time.Now().UTC(), // Current time as end time
-		// Metadata: map[string]string{
-		// 	"stream": stream,
-		// },
+		Metadata: map[string]string{
+			"namespace": namespace,
+		},
 	}
 
 	logs, err := store.Get(ctx, queryOptions)
