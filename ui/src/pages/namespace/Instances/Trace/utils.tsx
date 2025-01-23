@@ -37,7 +37,7 @@ export const processSpans = ({
     const spanLength = spanEnd - spanStart;
 
     const start = Math.round(
-      (spanStart / timelineLength - timelineStart) * 100
+      ((spanStart - timelineStart) / timelineLength) * 100
     );
     const end = Math.round(
       (1 - (spanEnd - timelineStart) / timelineLength) * 100

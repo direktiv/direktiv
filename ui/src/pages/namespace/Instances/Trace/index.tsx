@@ -30,7 +30,9 @@ const TraceViewer: FC = () => {
     ...spans.map((span) => Number(span.endTimeUnixNano))
   );
 
-  // Todo: find a better solution to the prop drilling below. Maybe use context provider.
+  // Todo: when we have a real backend, it might be worth moving the spans
+  // and filter functions to a hook or context provider, and also avoid
+  // prop drilling the onFilter function.
 
   const applyFilter = (newSpans: SpanType[]) => {
     setSpans(newSpans);
