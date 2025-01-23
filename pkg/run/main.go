@@ -22,7 +22,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/mirror"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/pubsub"
-	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/registry"
 	"github.com/direktiv/direktiv/pkg/service"
 )
@@ -283,7 +282,7 @@ func Run(circuit *core.Circuit) error {
 
 			go func() {
 				srv.MirrorManager.Execute(context.Background(), proc, mConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
-				err := srv.Bus.Publish(&pubsub2.NamespacesChangeEvent{
+				err := srv.Bus.Publish(&pubsub.NamespacesChangeEvent{
 					Action: "sync",
 					Name:   ns.Name,
 				})

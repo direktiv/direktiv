@@ -114,6 +114,7 @@ func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
+//nolint:revive
 func InitLegacyServer(circuit *core.Circuit, config *core.Config, db *database.DB) (*server, error) {
 	srv := new(server)
 	srv.ID = uuid.New()
