@@ -94,6 +94,9 @@ cluster-direktiv: ## Installs direktiv in cluster
 	--set registry=localhost:5001 \
 	--set tag=dev \
 	--set flow.sidecar=localhost:5001/direktiv:dev \
+	--set opentelemetry.enabled=true \
+	--set fluent-bit.install=false \
+	--set opensearch.install=true \
 	direktiv charts/direktiv
 
 	kubectl wait --for=condition=ready pod -l app=direktiv-flow --timeout=60s

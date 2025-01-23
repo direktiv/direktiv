@@ -52,7 +52,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
+      - name: Preload dev-container
+        run: |
+          docker pull opensearchproject/opensearch:2.11.1
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
