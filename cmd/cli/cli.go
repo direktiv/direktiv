@@ -15,7 +15,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/cmdserver"
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/run"
+	"github.com/direktiv/direktiv/pkg/server"
 	"github.com/direktiv/direktiv/pkg/sidecar"
 	"github.com/spf13/cobra"
 )
@@ -73,7 +73,7 @@ var startAPICmd = &cobra.Command{
 
 		circuit := core.NewCircuit(context.Background(), os.Interrupt)
 
-		err := run.Run(circuit)
+		err := server.Run(circuit)
 		if err != nil {
 			slog.Error("initializing", "err", err)
 			os.Exit(1)
