@@ -60,6 +60,8 @@ type server struct {
 	events           *events
 	nats             *nats.Conn
 	openSearchClient *opensearch.Client
+
+	ConfigureWorkflow func(event *pubsub2.FileSystemChangeEvent) error
 }
 
 type mirrorProcessLogger struct{}
@@ -277,6 +279,23 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, db *database.D
 			return nil, fmt.Errorf("initialize OpenSearch client, err: %w", err)
 		}
 		slog.Info("connected to OpenSearch")
+	}
+
+	srv.ConfigureWorkflow = func(event *pubsub2.FileSystemChangeEvent) error {
+		// If this is a delete workflow file
+		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
+			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.NamespaceID, event.DeleteFileID)
+		}
+		file, err := db.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context(), event.FilePath)
+		if err != nil {
+			return err
+		}
+		err = srv.flow.configureWorkflowStarts(circuit.Context(), db, event.NamespaceID, event.Namespace, file)
+		if err != nil {
+			return err
+		}
+
+		return srv.flow.placeholdSecrets(circuit.Context(), db, event.Namespace, file)
 	}
 
 	return srv, nil

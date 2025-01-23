@@ -260,33 +260,16 @@ func Run(circuit *core.Circuit) error {
 		return fmt.Errorf("initialize legacy server, err: %w", err)
 	}
 
-	configureWorkflow := func(event *pubsub2.FileSystemChangeEvent) error {
-		// If this is a delete workflow file
-		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
-			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.NamespaceID, event.DeleteFileID)
-		}
-		file, err := db.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context(), event.FilePath)
-		if err != nil {
-			return err
-		}
-		err = srv.flow.configureWorkflowStarts(circuit.Context(), db, event.NamespaceID, event.Namespace, file)
-		if err != nil {
-			return err
-		}
-
-		return srv.flow.placeholdSecrets(circuit.Context(), db, event.Namespace, file)
-	}
-
 	instanceManager := &instancestore.InstanceManager{
 		Start:  srv.engine.StartWorkflow,
 		Cancel: srv.engine.CancelInstance,
 	}
 
 	err = NewMain(circuit, &NewMainArgs{
-		Config:              srv.config,
+		Config:              config,
 		Database:            db,
 		PubSubBus:           srv.pBus,
-		ConfigureWorkflow:   configureWorkflow,
+		ConfigureWorkflow:   srv.ConfigureWorkflow,
 		InstanceManager:     instanceManager,
 		WakeInstanceByEvent: srv.engine.WakeEventsWaiter,
 		WorkflowStart:       srv.engine.EventsInvoke,
