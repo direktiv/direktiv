@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"context"
-	slog2 "log/slog"
+	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
@@ -11,13 +11,13 @@ import (
 
 func RenderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 	ctx := context.Background()
-	slog := slog2.With("subscriber", "gateway file watcher")
+	sLog := slog.With("subscriber", "gateway file watcher")
 
 	fStore, dStore := db.FileStore(), db.DataStore()
 
 	nsList, err := dStore.Namespaces().GetAll(ctx)
 	if err != nil {
-		slog.Error("listing namespaces", "err", err)
+		sLog.Error("listing namespaces", "err", err)
 
 		return
 	}
@@ -27,10 +27,10 @@ func RenderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 	var gateways []core.Gateway
 
 	for _, ns := range nsList {
-		slog = slog.With("namespace", ns.Name)
+		sLog = sLog.With("namespace", ns.Name)
 		files, err := fStore.ForNamespace(ns.Name).ListDirektivFilesWithData(ctx)
 		if err != nil {
-			slog.Error("listing direktiv files", "err", err)
+			sLog.Error("listing direktiv files", "err", err)
 
 			continue
 		}
@@ -46,6 +46,6 @@ func RenderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 	}
 	err = manager.SetEndpoints(endpoints, consumers, gateways)
 	if err != nil {
-		slog.Error("render gateway files", "err", err)
+		sLog.Error("render gateway files", "err", err)
 	}
 }
