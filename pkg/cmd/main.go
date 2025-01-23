@@ -282,7 +282,7 @@ func Run(circuit *core.Circuit) error {
 		Cancel: srv.engine.CancelInstance,
 	}
 
-	err = cmd.NewMain(circuit, &cmd.NewMainArgs{
+	err = NewMain(circuit, &NewMainArgs{
 		Config:              srv.config,
 		Database:            db,
 		PubSubBus:           srv.pBus,
@@ -293,13 +293,13 @@ func Run(circuit *core.Circuit) error {
 		SyncNamespace: func(namespace any, mirrorConfig any) (any, error) {
 			ns := namespace.(*datastore.Namespace)            //nolint:forcetypeassert
 			mConfig := mirrorConfig.(*datastore.MirrorConfig) //nolint:forcetypeassert
-			proc, err := srv.mirrorManager.NewProcess(context.Background(), ns, datastore.ProcessTypeSync)
+			proc, err := srv.MirrorManager.NewProcess(context.Background(), ns, datastore.ProcessTypeSync)
 			if err != nil {
 				return nil, err
 			}
 
 			go func() {
-				srv.mirrorManager.Execute(context.Background(), proc, mConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
+				srv.MirrorManager.Execute(context.Background(), proc, mConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
 				err := srv.pBus.Publish(&pubsub2.NamespacesChangeEvent{
 					Action: "sync",
 					Name:   ns.Name,

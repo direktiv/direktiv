@@ -54,7 +54,7 @@ type server struct {
 
 	db *database.DB
 
-	mirrorManager *mirror.Manager
+	MirrorManager *mirror.Manager
 
 	flow             *flow
 	events           *events
@@ -217,7 +217,7 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, db *database.D
 		return nil
 	}
 
-	srv.mirrorManager = mirror.NewManager(
+	srv.MirrorManager = mirror.NewManager(
 		&mirrorCallbacks{
 			logger: &mirrorProcessLogger{
 				// logger: srv.logger,
