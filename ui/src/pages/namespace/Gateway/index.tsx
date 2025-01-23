@@ -36,8 +36,7 @@ const GatewayPage = () => {
       title: t("pages.gateway.tabs.routes"),
       link: pages.gateway.createHref({
         namespace,
-        subpage: "routeDetail",
-        routePath: "",
+        subpage: "routes",
       }),
     },
     {

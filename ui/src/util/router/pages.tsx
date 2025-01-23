@@ -199,12 +199,10 @@ type GatewayPageSetup = Record<
     createHref: (
       params: { namespace: string } & (
         | { subpage?: "consumers" }
+        | { subpage?: "routes" }
         | {
             subpage: "routeDetail";
             routePath: string;
-          }
-        | {
-            subpage: "info";
           }
       )
     ) => string;
@@ -573,8 +571,8 @@ export const usePages = (): PageType & EnterprisePageType => {
         if (params.subpage === "consumers") {
           subpage = "consumers";
         }
-        if (params.subpage === "info") {
-          subpage = "info";
+        if (params.subpage === "routes") {
+          subpage = "routes";
         }
         return `/n/${params.namespace}/gateway/${subpage}`;
       },
