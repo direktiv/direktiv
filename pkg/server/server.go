@@ -92,7 +92,7 @@ func Run(circuit *core.Circuit) error {
 	}
 
 	// Create DB connection
-	slog.Info("initialize db connection")
+	slog.Info("initializing db connection")
 	db, err := initDB(config)
 	if err != nil {
 		return fmt.Errorf("initialize db, err: %w", err)
@@ -100,6 +100,7 @@ func Run(circuit *core.Circuit) error {
 	datastore.SymmetricEncryptionKey = config.SecretKey
 
 	// Create Raw DB connection
+	slog.Info("initializing raw db connection")
 	rawDB, err := sql.Open("postgres", config.DB)
 	if err == nil {
 		err = rawDB.Ping()
@@ -107,18 +108,14 @@ func Run(circuit *core.Circuit) error {
 	if err != nil {
 		return fmt.Errorf("creating raw db driver, err: %w", err)
 	}
-	slog.Debug("successfully connected to database with raw driver")
 
 	// Create Bus
-	slog.Debug("initializing pubsub routine.")
+	slog.Info("initializing pubsub2")
 	coreBus, err := pubsubSQL.NewPostgresCoreBus(rawDB, app.Config.DB)
 	if err != nil {
 		return fmt.Errorf("creating pubsub core bus, err: %w", err)
 	}
-	slog.Info("pubsub routine was initialized")
-
 	bus := pubsub.NewBus(coreBus)
-
 	circuit.Start(func() error {
 		err := bus.Loop(circuit)
 		if err != nil {
@@ -129,7 +126,7 @@ func Run(circuit *core.Circuit) error {
 	})
 
 	// Initialize legacy server
-	slog.Info("initialize legacy server")
+	slog.Info("initializing legacy server")
 	srv, err := flow.InitLegacyServer(circuit, config, bus, db, rawDB)
 	if err != nil {
 		return fmt.Errorf("initialize legacy server, err: %w", err)
@@ -142,12 +139,13 @@ func Run(circuit *core.Circuit) error {
 
 	// Create service manager
 	if !config.DisableServices {
+		slog.Info("initializing service manager")
 		app.ServiceManager, err = service.NewManager(config)
 		if err != nil {
+			// TODO: why return and panic here?
 			slog.Error("initializing service manager", "error", err)
 			panic(err)
 		}
-		slog.Info("service manager initialized successfully")
 
 		// Setup GetServiceURL function
 		service.SetupGetServiceURLFunc(config)
@@ -165,18 +163,19 @@ func Run(circuit *core.Circuit) error {
 	}
 
 	// Create registry manager
+	slog.Info("initializing registry manager")
 	app.RegistryManager, err = registry.NewManager(config.DisableServices)
 	if err != nil {
 		slog.Error("registry manager", "error", err)
 		panic(err)
 	}
-	slog.Info("registry manager initialized successfully")
 
 	// Create endpoint manager
+	slog.Info("initializing gateway manager")
 	app.GatewayManager = gateway.NewManager(db)
-	slog.Info("gateway manager2 initialized successfully")
 
 	// Create syncNamespace function
+	slog.Info("initializing sync namespace routine")
 	app.SyncNamespace = func(namespace any, mirrorConfig any) (any, error) {
 		ns := namespace.(*datastore.Namespace)            //nolint:forcetypeassert
 		mConfig := mirrorConfig.(*datastore.MirrorConfig) //nolint:forcetypeassert
