@@ -23,6 +23,7 @@ const RoutesBreadcrumb = () => {
         <Link
           to={pages.gateway.createHref({
             namespace,
+            subpage: "routes",
           })}
         >
           <Workflow aria-hidden="true" />
