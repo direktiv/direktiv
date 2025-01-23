@@ -11,11 +11,13 @@ const defaultPageSize: PageSizeValueType = "10";
 interface PageSizeState {
   events: PageSizeValueType;
   eventListeners: PageSizeValueType;
+  instances: PageSizeValueType;
   actions: {
     setEventsPageSize: (EventsPageSize: PageSizeState["events"]) => void;
     setEventListenersPageSize: (
-      EventsPageSize: PageSizeState["events"]
+      EventsPageSize: PageSizeState["eventListeners"]
     ) => void;
+    setInstancesPageSize: (EventsPageSize: PageSizeState["instances"]) => void;
   };
 }
 
@@ -24,11 +26,15 @@ const usePageSizeState = create<PageSizeState>()(
     (set) => ({
       events: defaultPageSize,
       eventListeners: defaultPageSize,
+      instances: defaultPageSize,
       actions: {
         setEventsPageSize: (newEventsPageSize) =>
           set(() => ({ events: newEventsPageSize })),
         setEventListenersPageSize(EventsPageSize) {
           set(() => ({ eventListeners: EventsPageSize }));
+        },
+        setInstancesPageSize(newInstancesPageSize) {
+          set(() => ({ instances: newInstancesPageSize }));
         },
       },
     }),
@@ -47,6 +53,9 @@ export const useEventsPageSize = () =>
 
 export const useEventListenersPageSize = () =>
   usePageSizeState((state) => state.eventListeners);
+
+export const useInstancesPageSize = () =>
+  usePageSizeState((state) => state.instances);
 
 export const usePageSizeActions = () =>
   usePageSizeState((state) => state.actions);

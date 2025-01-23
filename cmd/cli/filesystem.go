@@ -104,7 +104,7 @@ var instancesExecCmd = &cobra.Command{
 				return err
 			}
 
-			return fmt.Errorf(errJSON.Error.Message)
+			return fmt.Errorf("%s", errJSON.Error.Message)
 		}
 
 		id, err := handleResponse(resp, p)
@@ -188,6 +188,7 @@ func printLogSSE(ctx context.Context, instance string, profile profile) error {
 	urlSSE := fmt.Sprintf("%s/api/v2/namespaces/%s/logs/subscribe?instance=%s", profile.Address, profile.Namespace, instance)
 
 	clientLogs := sse.NewClient(urlSSE)
+	//nolint:gosec
 	clientLogs.Connection.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: profile.Insecure},
 	}

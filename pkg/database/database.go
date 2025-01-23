@@ -28,51 +28,48 @@ import (
 //go:embed db_schema.sql
 var Schema string
 
-type SQLStore struct {
-	db        *gorm.DB
-	secretKey string
+type DB struct {
+	db *gorm.DB
 }
 
-func NewSQLStore(gormDB *gorm.DB, secretKey string) *SQLStore {
-	return &SQLStore{
-		db:        gormDB,
-		secretKey: secretKey,
+func NewDB(db *gorm.DB) *DB {
+	return &DB{
+		db: db,
 	}
 }
 
-func (tx *SQLStore) FileStore() filestore.FileStore {
+func (tx *DB) FileStore() filestore.FileStore {
 	return filestoresql.NewSQLFileStore(tx.db)
 }
 
-func (tx *SQLStore) DataStore() datastore.Store {
-	return datastoresql.NewSQLStore(tx.db, tx.secretKey)
+func (tx *DB) DataStore() datastore.Store {
+	return datastoresql.NewSQLStore(tx.db)
 }
 
-func (tx *SQLStore) InstanceStore() instancestore.Store {
+func (tx *DB) InstanceStore() instancestore.Store {
 	return instancestoresql.NewSQLInstanceStore(tx.db)
 }
 
-func (tx *SQLStore) Commit(ctx context.Context) error {
+func (tx *DB) Commit(ctx context.Context) error {
 	return tx.db.WithContext(ctx).Commit().Error
 }
 
-func (tx *SQLStore) Rollback() error {
+func (tx *DB) Rollback() error {
 	return tx.db.Rollback().Error
 }
 
-func (tx *SQLStore) BeginTx(ctx context.Context, opts ...*sql.TxOptions) (*SQLStore, error) {
+func (tx *DB) BeginTx(ctx context.Context, opts ...*sql.TxOptions) (*DB, error) {
 	res := tx.db.WithContext(ctx).Begin(opts...)
 	if res.Error != nil {
 		return nil, res.Error
 	}
 
-	return &SQLStore{
-		db:        res,
-		secretKey: tx.secretKey,
+	return &DB{
+		db: res,
 	}, nil
 }
 
-func NewTestDataStore(t *testing.T) (*gorm.DB, error) {
+func NewTestDB(t *testing.T) (*DB, error) {
 	t.Helper()
 	ctx := context.Background()
 
@@ -99,7 +96,7 @@ func NewTestDataStore(t *testing.T) (*gorm.DB, error) {
 	return newTestPostgres(connStr)
 }
 
-func newTestPostgres(dsn string) (*gorm.DB, error) {
+func newTestPostgres(dsn string) (*DB, error) {
 	gormConf := &gorm.Config{
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
@@ -112,7 +109,7 @@ func newTestPostgres(dsn string) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
-		// Conn:                 edb.SQLStore(),
+		// Conn:                 edb.DB(),
 	}), gormConf)
 	if err != nil {
 		return nil, fmt.Errorf("connecting to db, err: %w", err)
@@ -127,17 +124,17 @@ func newTestPostgres(dsn string) (*gorm.DB, error) {
 		return nil, fmt.Errorf("delete namespaces, err: %w", res.Error)
 	}
 
-	return db, nil
+	return NewDB(db), nil
 }
 
-func NewTestDataStoreWithNamespace(t *testing.T, namespace string) (*gorm.DB, *datastore.Namespace, error) {
+func NewTestDBWithNamespace(t *testing.T, namespace string) (*DB, *datastore.Namespace, error) {
 	t.Helper()
 
-	db, err := NewTestDataStore(t)
+	db, err := NewTestDB(t)
 	if err != nil {
 		return nil, nil, err
 	}
-	ns, err := datastoresql.NewSQLStore(db, "some_secret_key_").Namespaces().Create(context.Background(), &datastore.Namespace{
+	ns, err := db.DataStore().Namespaces().Create(context.Background(), &datastore.Namespace{
 		Name: namespace,
 	})
 	if err != nil {

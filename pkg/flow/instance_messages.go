@@ -204,9 +204,9 @@ func (engine *engine) handleCancelMessage(ctx context.Context, im *instanceMemor
 	}
 
 	if args.Soft {
-		err = derrors.NewCatchableError(args.Code, args.Message)
+		err = derrors.NewCatchableError(args.Code, "%s", args.Message)
 	} else {
-		err = derrors.NewUncatchableError(args.Code, args.Message)
+		err = derrors.NewUncatchableError(args.Code, "%s", args.Message)
 	}
 
 	return engine.runState(ctx, im, nil, err)

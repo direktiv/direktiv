@@ -9,6 +9,7 @@
 *.dylib
 .vscode
 
+cmd/ee
 pkg/ee
 
 # certs for linkerd

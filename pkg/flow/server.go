@@ -55,10 +55,9 @@ type server struct {
 	timers *timers
 	engine *engine
 
-	gormDB *gorm.DB
-	rawDB  *sql.DB
+	rawDB *sql.DB
 
-	sqlStore *database.SQLStore
+	db *database.DB
 
 	mirrorManager *mirror.Manager
 
@@ -83,11 +82,10 @@ func Run(circuit *core.Circuit) error {
 	if err != nil {
 		return fmt.Errorf("initialize db, err: %w", err)
 	}
-	// TODO: yassir, use the new db to refactor old code.
-	dbManager := database.NewSQLStore(db, config.SecretKey)
+	datastore.SymmetricEncryptionKey = config.SecretKey
 
 	slog.Info("initialize legacy server")
-	srv, err := initLegacyServer(circuit, config, db, dbManager)
+	srv, err := initLegacyServer(circuit, config, db)
 	if err != nil {
 		return fmt.Errorf("initialize legacy server, err: %w", err)
 	}
@@ -97,16 +95,16 @@ func Run(circuit *core.Circuit) error {
 		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
 			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.NamespaceID, event.DeleteFileID)
 		}
-		file, err := dbManager.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context(), event.FilePath)
+		file, err := db.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context(), event.FilePath)
 		if err != nil {
 			return err
 		}
-		err = srv.flow.configureWorkflowStarts(circuit.Context(), dbManager, event.NamespaceID, event.Namespace, file)
+		err = srv.flow.configureWorkflowStarts(circuit.Context(), db, event.NamespaceID, event.Namespace, file)
 		if err != nil {
 			return err
 		}
 
-		return srv.flow.placeholdSecrets(circuit.Context(), dbManager, event.Namespace, file)
+		return srv.flow.placeholdSecrets(circuit.Context(), db, event.Namespace, file)
 	}
 
 	instanceManager := &instancestore.InstanceManager{
@@ -116,7 +114,7 @@ func Run(circuit *core.Circuit) error {
 
 	err = cmd.NewMain(circuit, &cmd.NewMainArgs{
 		Config:              srv.config,
-		Database:            dbManager,
+		Database:            db,
 		PubSubBus:           srv.pBus,
 		ConfigureWorkflow:   configureWorkflow,
 		InstanceManager:     instanceManager,
@@ -202,7 +200,7 @@ func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
-func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, dbManager *database.SQLStore) (*server, error) {
+func initLegacyServer(circuit *core.Circuit, config *core.Config, db *database.DB) (*server, error) {
 	srv := new(server)
 	srv.ID = uuid.New()
 	srv.initJQ()
@@ -213,12 +211,11 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	slog.Debug("initializing telemetry.")
 	telEnd, err := tracing.InitTelemetry(circuit.Context(), srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
-		return nil, fmt.Errorf("Telemetry init failed: %w", err)
+		return nil, fmt.Errorf("telemetry init failed: %w", err)
 	}
 	slog.Info("Telemetry initialized successfully.")
 
-	srv.gormDB = db
-	srv.sqlStore = dbManager
+	srv.db = db
 
 	srv.rawDB, err = sql.Open("postgres", config.DB)
 	if err == nil {
@@ -280,12 +277,12 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	slog.Debug("mirror manager was started.")
 
 	slog.Debug("initializing events.")
-	srv.events = initEvents(srv, dbManager.DataStore().StagingEvents().Append)
+	srv.events = initEvents(srv, db.DataStore().StagingEvents().Append)
 
 	slog.Debug("initializing EventWorkers.")
 
 	interval := 1 * time.Second // TODO: Adjust the polling interval
-	eventWorker := eventsstore.NewEventWorker(dbManager.DataStore().StagingEvents(), interval, srv.events.handleEvent)
+	eventWorker := eventsstore.NewEventWorker(db.DataStore().StagingEvents(), interval, srv.events.handleEvent)
 
 	circuit.Start(func() error {
 		eventWorker.Start(circuit.Context())
@@ -295,12 +292,12 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	slog.Info("events-engine was started.")
 
 	cc := func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
-		err = srv.flow.configureWorkflowStarts(ctx, dbManager, nsID, nsName, file)
+		err = srv.flow.configureWorkflowStarts(ctx, db, nsID, nsName, file)
 		if err != nil {
 			return err
 		}
 
-		err = srv.flow.placeholdSecrets(ctx, dbManager, nsName, file)
+		err = srv.flow.placeholdSecrets(ctx, db, nsName, file)
 		if err != nil {
 			slog.Debug("failed setting up placeholder secrets", "error", err, string(core.LogTrackKey), "namespace."+nsName, "namespace", nsName, "file", file.Path)
 		}
@@ -313,9 +310,9 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 			logger: &mirrorProcessLogger{
 				// logger: srv.logger,
 			},
-			store:    dbManager.DataStore().Mirror(),
-			fstore:   dbManager.FileStore(),
-			varstore: dbManager.DataStore().RuntimeVariables(),
+			store:    db.DataStore().Mirror(),
+			fstore:   db.FileStore(),
+			varstore: db.DataStore().RuntimeVariables(),
 			wfconf:   cc,
 		},
 	)
@@ -417,7 +414,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	return srv, nil
 }
 
-func initDB(config *core.Config) (*gorm.DB, error) {
+func initDB(config *core.Config) (*database.DB, error) {
 	gormConf := &gorm.Config{
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
@@ -437,7 +434,7 @@ func initDB(config *core.Config) (*gorm.DB, error) {
 		db, err = gorm.Open(postgres.New(postgres.Config{
 			DSN:                  config.DB,
 			PreferSimpleProtocol: false, // disables implicit prepared statement usage
-			// Conn:                 edb.SQLStore(),
+			// Conn:                 edb.DB(),
 		}), gormConf)
 		if err == nil {
 			slog.Info("successfully connected to the database.")
@@ -474,7 +471,7 @@ func initDB(config *core.Config) (*gorm.DB, error) {
 	gdb.SetMaxIdleConns(32)
 	gdb.SetMaxOpenConns(16)
 
-	return db, nil
+	return database.NewDB(db), nil
 }
 
 func (srv *server) cleanup(closer func() error) {
@@ -609,7 +606,7 @@ func (srv *server) cronPoll() {
 	}
 }
 
-func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database.SQLStore, file *filestore.File) {
+func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database.DB, file *filestore.File) {
 	ms, err := validateRouter(ctx, tx, file)
 	if err != nil {
 		slog.Error("Failed to validate Routing for a cron schedule.", "error", err)
@@ -639,11 +636,11 @@ func this() string {
 	return elems[len(elems)-1]
 }
 
-func (srv *server) beginSQLTx(ctx context.Context, opts ...*sql.TxOptions) (*database.SQLStore, error) {
-	return srv.sqlStore.BeginTx(ctx, opts...)
+func (srv *server) beginSQLTx(ctx context.Context, opts ...*sql.TxOptions) (*database.DB, error) {
+	return srv.db.BeginTx(ctx, opts...)
 }
 
-func (srv *server) runSQLTx(ctx context.Context, fun func(tx *database.SQLStore) error) error {
+func (srv *server) runSQLTx(ctx context.Context, fun func(tx *database.DB) error) error {
 	tx, err := srv.beginSQLTx(ctx)
 	if err != nil {
 		return err
