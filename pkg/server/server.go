@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -23,6 +24,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/mirror"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/pubsub"
+	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
 	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/service/registry"
 	"github.com/direktiv/direktiv/pkg/tracing"
@@ -97,9 +99,38 @@ func Run(circuit *core.Circuit) error {
 	}
 	datastore.SymmetricEncryptionKey = config.SecretKey
 
+	// Create Raw DB connection
+	rawDB, err := sql.Open("postgres", config.DB)
+	if err == nil {
+		err = rawDB.Ping()
+	}
+	if err != nil {
+		return fmt.Errorf("creating raw db driver, err: %w", err)
+	}
+	slog.Debug("successfully connected to database with raw driver")
+
+	// Create Bus
+	slog.Debug("initializing pubsub routine.")
+	coreBus, err := pubsubSQL.NewPostgresCoreBus(rawDB, app.Config.DB)
+	if err != nil {
+		return fmt.Errorf("creating pubsub core bus, err: %w", err)
+	}
+	slog.Info("pubsub routine was initialized")
+
+	bus := pubsub.NewBus(coreBus)
+
+	circuit.Start(func() error {
+		err := bus.Loop(circuit)
+		if err != nil {
+			return fmt.Errorf("pubsub bus loop, err: %w", err)
+		}
+
+		return nil
+	})
+
 	// Initialize legacy server
 	slog.Info("initialize legacy server")
-	srv, err := flow.InitLegacyServer(circuit, config, db)
+	srv, err := flow.InitLegacyServer(circuit, config, bus, db, rawDB)
 	if err != nil {
 		return fmt.Errorf("initialize legacy server, err: %w", err)
 	}
@@ -200,17 +231,17 @@ func Run(circuit *core.Circuit) error {
 	slog.Debug("Completed rendering event-listeners on server start")
 
 	// endpoint manager
-	srv.Bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
+	bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
 		renderGatewayFiles(db, app.GatewayManager)
 	})
-	srv.Bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
+	bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
 		renderGatewayFiles(db, app.GatewayManager)
 	})
 	// initial loading of routes and consumers
 	renderGatewayFiles(db, app.GatewayManager)
 
 	// Start api v2 server
-	err = api.Initialize(circuit, app, db, srv.Bus, instanceManager, srv.Engine.WakeEventsWaiter, srv.Engine.EventsInvoke)
+	err = api.Initialize(circuit, app, db, bus, instanceManager, srv.Engine.WakeEventsWaiter, srv.Engine.EventsInvoke)
 	if err != nil {
 		return fmt.Errorf("initializing api v2, err: %w", err)
 	}

@@ -23,7 +23,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/mirror"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
-	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -110,11 +109,14 @@ func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
 //nolint:revive
-func InitLegacyServer(circuit *core.Circuit, config *core.Config, db *database.DB) (*server, error) {
+func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.Bus, db *database.DB, rawDB *sql.DB) (*server, error) {
 	srv := new(server)
 	srv.ID = uuid.New()
 	srv.initJQ()
 	srv.config = config
+	srv.db = db
+	srv.rawDB = rawDB
+	srv.Bus = bus
 
 	var err error
 	slog.Debug("starting Flow server")
@@ -124,17 +126,6 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, db *database.D
 		return nil, fmt.Errorf("telemetry init failed: %w", err)
 	}
 	slog.Info("Telemetry initialized successfully.")
-
-	srv.db = db
-
-	srv.rawDB, err = sql.Open("postgres", config.DB)
-	if err == nil {
-		err = srv.rawDB.Ping()
-	}
-	if err != nil {
-		return nil, fmt.Errorf("creating raw db driver, err: %w", err)
-	}
-	slog.Debug("successfully connected to database with raw driver")
 
 	slog.Debug("initializing pub-sub.")
 
@@ -152,24 +143,6 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, db *database.D
 		return nil, err
 	}
 	slog.Info("timers where initialized successfully.")
-
-	slog.Debug("initializing pubsub routine.")
-	coreBus, err := pubsubSQL.NewPostgresCoreBus(srv.rawDB, srv.config.DB)
-	if err != nil {
-		return nil, fmt.Errorf("creating pubsub core bus, err: %w", err)
-	}
-	slog.Info("pubsub routine was initialized.")
-
-	srv.Bus = pubsub2.NewBus(coreBus)
-
-	circuit.Start(func() error {
-		err := srv.Bus.Loop(circuit)
-		if err != nil {
-			return fmt.Errorf("pubsub bus loop, err: %w", err)
-		}
-
-		return nil
-	})
 
 	slog.Debug("initializing engine.")
 
