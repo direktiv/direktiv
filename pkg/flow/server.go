@@ -45,7 +45,7 @@ type server struct {
 	pubsub *pubsub.Pubsub
 
 	// the new pubsub bus
-	pBus *pubsub2.Bus
+	Bus *pubsub2.Bus
 
 	timers *timers
 	engine *engine
@@ -164,10 +164,10 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, db *database.D
 	}
 	slog.Info("pubsub routine was initialized.")
 
-	srv.pBus = pubsub2.NewBus(coreBus)
+	srv.Bus = pubsub2.NewBus(coreBus)
 
 	circuit.Start(func() error {
-		err := srv.pBus.Loop(circuit)
+		err := srv.Bus.Loop(circuit)
 		if err != nil {
 			return fmt.Errorf("pubsub bus loop, err: %w", err)
 		}
