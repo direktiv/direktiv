@@ -193,7 +193,7 @@ func Run(circuit *core.Circuit) error {
 	slog.Info("registry manager initialized successfully")
 
 	// Create endpoint manager
-	gatewayManager2 := gateway.NewManager(db)
+	gatewayManager := gateway.NewManager(db)
 	slog.Info("gateway manager2 initialized successfully")
 
 	// Create syncNamespace function
@@ -252,13 +252,13 @@ func Run(circuit *core.Circuit) error {
 
 	// endpoint manager
 	srv.Bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
-		helpers.RenderGatewayFiles(db, gatewayManager2)
+		helpers.RenderGatewayFiles(db, gatewayManager)
 	})
 	srv.Bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
-		helpers.RenderGatewayFiles(db, gatewayManager2)
+		helpers.RenderGatewayFiles(db, gatewayManager)
 	})
 	// initial loading of routes and consumers
-	helpers.RenderGatewayFiles(db, gatewayManager2)
+	helpers.RenderGatewayFiles(db, gatewayManager)
 
 	// Create App
 	app := core.App{
@@ -268,7 +268,7 @@ func Run(circuit *core.Circuit) error {
 		Config:          config,
 		ServiceManager:  serviceManager,
 		RegistryManager: registryManager,
-		GatewayManager:  gatewayManager2,
+		GatewayManager:  gatewayManager,
 		SyncNamespace:   syncNamespace,
 	}
 
