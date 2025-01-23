@@ -15,8 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/caarlos0/env/v10"
-	"github.com/direktiv/direktiv/pkg/cmd"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
@@ -25,7 +23,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
-	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/mirror"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
@@ -63,89 +60,6 @@ type server struct {
 	events           *events
 	nats             *nats.Conn
 	openSearchClient *opensearch.Client
-}
-
-func Run(circuit *core.Circuit) error {
-	config := &core.Config{}
-	if err := env.Parse(config); err != nil {
-		return fmt.Errorf("parsing env variables: %w", err)
-	}
-	if err := config.Init(); err != nil {
-		return fmt.Errorf("init config, err: %w", err)
-	}
-	InitSLog(config)
-
-	slog.Info("initialize db connection")
-	db, err := InitDB(config)
-	if err != nil {
-		return fmt.Errorf("initialize db, err: %w", err)
-	}
-	datastore.SymmetricEncryptionKey = config.SecretKey
-
-	slog.Info("initialize legacy server")
-	srv, err := InitLegacyServer(circuit, config, db)
-	if err != nil {
-		return fmt.Errorf("initialize legacy server, err: %w", err)
-	}
-
-	configureWorkflow := func(event *pubsub2.FileSystemChangeEvent) error {
-		// If this is a delete workflow file
-		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
-			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.NamespaceID, event.DeleteFileID)
-		}
-		file, err := db.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context(), event.FilePath)
-		if err != nil {
-			return err
-		}
-		err = srv.flow.configureWorkflowStarts(circuit.Context(), db, event.NamespaceID, event.Namespace, file)
-		if err != nil {
-			return err
-		}
-
-		return srv.flow.placeholdSecrets(circuit.Context(), db, event.Namespace, file)
-	}
-
-	instanceManager := &instancestore.InstanceManager{
-		Start:  srv.engine.StartWorkflow,
-		Cancel: srv.engine.CancelInstance,
-	}
-
-	err = cmd.NewMain(circuit, &cmd.NewMainArgs{
-		Config:              srv.config,
-		Database:            db,
-		PubSubBus:           srv.pBus,
-		ConfigureWorkflow:   configureWorkflow,
-		InstanceManager:     instanceManager,
-		WakeInstanceByEvent: srv.engine.WakeEventsWaiter,
-		WorkflowStart:       srv.engine.EventsInvoke,
-		SyncNamespace: func(namespace any, mirrorConfig any) (any, error) {
-			ns := namespace.(*datastore.Namespace)            //nolint:forcetypeassert
-			mConfig := mirrorConfig.(*datastore.MirrorConfig) //nolint:forcetypeassert
-			proc, err := srv.mirrorManager.NewProcess(context.Background(), ns, datastore.ProcessTypeSync)
-			if err != nil {
-				return nil, err
-			}
-
-			go func() {
-				srv.mirrorManager.Execute(context.Background(), proc, mConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
-				err := srv.pBus.Publish(&pubsub2.NamespacesChangeEvent{
-					Action: "sync",
-					Name:   ns.Name,
-				})
-				if err != nil {
-					slog.Error("pubsub publish", "error", err)
-				}
-			}()
-
-			return proc, nil
-		},
-		RenderAllStartEventListeners: renderAllStartEventListeners,
-	})
-	if err != nil {
-		return fmt.Errorf("lunching new main, err: %w", err)
-	}
-
-	return nil
 }
 
 type mirrorProcessLogger struct{}
