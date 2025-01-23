@@ -19,36 +19,23 @@ var _ datastore.Store = &sqlStore{}
 // either commit or rollback the connection.
 
 func NewSQLStore(db *gorm.DB) datastore.Store {
-	return &sqlStore{
-		db: db,
-	}
+	return &sqlStore{db: db}
 }
 
-// Mirror returns mirror store.
 func (s *sqlStore) Mirror() datastore.MirrorStore {
-	return &sqlMirrorStore{
-		db: s.db,
-	}
+	return &sqlMirrorStore{db: s.db}
 }
 
-// Logs returns a log store.
 func (s *sqlStore) NewLogs() datastore.LogStore {
-	return &sqlLogNewStore{
-		db: s.db,
-	}
+	return &sqlLogNewStore{db: s.db}
 }
 
-// Secrets returns secrets store.
 func (s *sqlStore) Secrets() datastore.SecretsStore {
-	return &sqlSecretsStore{
-		db: s.db,
-	}
+	return &sqlSecretsStore{db: s.db}
 }
 
 func (s *sqlStore) RuntimeVariables() datastore.RuntimeVariablesStore {
-	return &sqlRuntimeVariablesStore{
-		db: s.db,
-	}
+	return &sqlRuntimeVariablesStore{db: s.db}
 }
 
 func (s *sqlStore) StagingEvents() datastore.StagingEventStore {
