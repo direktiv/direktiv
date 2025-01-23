@@ -1,5 +1,6 @@
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import ConsumerBreadcrumb from "./Consumer";
+import GatewayInfoBreadcrumb from "./GatewayInfo";
 import { Link } from "react-router-dom";
 import RoutesBreadcrumb from "./Routes";
 import { useNamespace } from "~/util/store/namespace";
@@ -30,6 +31,7 @@ const GatewayBreadcrumb = () => {
       </BreadcrumbLink>
       <RoutesBreadcrumb />
       <ConsumerBreadcrumb />
+      <GatewayInfoBreadcrumb />
     </>
   );
 };
