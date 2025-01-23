@@ -59,7 +59,11 @@ export const processSpans = ({
           id={span.spanId}
           label={span.spanId}
           depth={depth}
-          onFilter={() => handleFilter([span])}
+          onFilter={
+            span.children && span.children?.length > 0
+              ? () => handleFilter([span])
+              : undefined
+          }
         />
       ),
       timeline: <TimelineElement start={start} end={end} label={label} />,

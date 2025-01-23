@@ -651,6 +651,10 @@
       "title": "Trace viewer",
       "tableHeader": {
         "spanId": "span id"
+      },
+      "filters": {
+        "active": "filter applied",
+        "inactive": "no filter applied"
       }
     },
     "mirror": {

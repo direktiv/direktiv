@@ -1,3 +1,4 @@
+import { CircleX, SquareGanttChartIcon } from "lucide-react";
 import { FC, useState } from "react";
 import { SpanType, processSpans } from "./utils";
 import {
@@ -8,8 +9,8 @@ import {
   TableRow,
 } from "~/design/Table";
 
+import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import { SquareGanttChartIcon } from "lucide-react";
 import { TableBody } from "@tremor/react";
 import mock from "./mock.json";
 import moment from "moment";
@@ -17,7 +18,9 @@ import { useTranslation } from "react-i18next";
 
 const TraceViewer: FC = () => {
   const { t } = useTranslation();
+  const defaultSpans = mock.timeline;
   const [spans, setSpans] = useState<SpanType[]>(mock.timeline);
+  const [isFiltered, setIsFiltered] = useState(false);
   const legendFormat = "YYYY-MM-DD, hh:mm:ss.SSS";
 
   const timelineStart = Math.min(
@@ -31,6 +34,12 @@ const TraceViewer: FC = () => {
 
   const applyFilter = (newSpans: SpanType[]) => {
     setSpans(newSpans);
+    setIsFiltered(true);
+  };
+
+  const clearFilter = () => {
+    setSpans(defaultSpans);
+    setIsFiltered(false);
   };
 
   const spanElements = processSpans({
@@ -49,10 +58,28 @@ const TraceViewer: FC = () => {
         </h3>
       </div>
       <Card>
+        <div className="flex gap-5 p-2 border-b border-gray-5 dark:border-gray-dark-5">
+          {isFiltered ? (
+            <Button type="button" variant="outline" icon onClick={clearFilter}>
+              {t("pages.trace.filters.active")}
+              <CircleX className="h-5" />
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              disabled
+              className="font-normal"
+            >
+              {t("pages.trace.filters.inactive")}
+            </Button>
+          )}
+        </div>
+
         <Table className="border-gray-5 dark:border-gray-dark-5">
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-              <TableHeaderCell className="w-56">
+              <TableHeaderCell className="w-56 border-r border-gray-3 dark:border-gray-dark-3">
                 {t("pages.trace.tableHeader.spanId")}
               </TableHeaderCell>
               <TableHeaderCell className="flex flex-row justify-between">
