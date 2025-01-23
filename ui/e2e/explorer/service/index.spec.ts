@@ -280,7 +280,7 @@ test("it is possible to edit patches", async ({ page }) => {
     });
 
   await editorTarget.click();
-  // await page.locator("textarea").last().fill(updatedPatch.value);
+
   await page.keyboard.press("Control+a");
   await page.keyboard.press("Delete");
   await page.keyboard.type(updatedPatch.value);
@@ -471,14 +471,10 @@ test("empty fields are omitted from the service file", async ({ page }) => {
   await page.getByPlaceholder("service-name.yaml").fill(service.name);
   await page.getByRole("button", { name: "Create" }).click();
 
-  await page.waitForTimeout(1000);
-
   await expect(
     page,
     "it creates the service and opens the file in the explorer"
   ).toHaveURL(`/n/${namespace}/explorer/service/${service.name}`);
-
-  await page.waitForTimeout(1000);
 
   const editor = page.locator(".lines-content");
 
