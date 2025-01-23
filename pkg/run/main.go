@@ -1,25 +1,25 @@
-package cmd
+package run
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/caarlos0/env/v10"
-	"github.com/direktiv/direktiv/pkg/flow"
-	"github.com/direktiv/direktiv/pkg/mirror"
 	"log/slog"
 	"time"
 
+	"github.com/caarlos0/env/v10"
 	"github.com/direktiv/direktiv/pkg/api"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/events"
 	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/gateway"
 	"github.com/direktiv/direktiv/pkg/helpers"
 	"github.com/direktiv/direktiv/pkg/instancestore"
+	"github.com/direktiv/direktiv/pkg/mirror"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
