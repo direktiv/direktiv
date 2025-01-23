@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"log"
 	"log/slog"
 	"os"
@@ -250,7 +251,7 @@ func Run(circuit *core.Circuit) error {
 	if err := config.Init(); err != nil {
 		return fmt.Errorf("init config, err: %w", err)
 	}
-	flow.InitSLog(config)
+	initSLog(config)
 
 	slog.Info("initialize db connection")
 	db, err := initDB(config)
@@ -366,4 +367,24 @@ func initDB(config *core.Config) (*database.DB, error) {
 	gdb.SetMaxOpenConns(16)
 
 	return database.NewDB(db), nil
+}
+func initSLog(cfg *core.Config) {
+	lvl := new(slog.LevelVar)
+	lvl.Set(slog.LevelInfo)
+
+	logDebug := cfg.LogDebug
+	if logDebug {
+		slog.Info("logging is set to debug")
+		lvl.Set(slog.LevelDebug)
+	}
+	handlers := tracing.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+		Level: lvl,
+	}))
+	slogger := slog.New(
+		tracing.TeeHandler{
+			handlers,
+			tracing.EventHandler{},
+		})
+
+	slog.SetDefault(slogger)
 }

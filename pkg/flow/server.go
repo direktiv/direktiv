@@ -477,27 +477,6 @@ func (srv *server) runSQLTx(ctx context.Context, fun func(tx *database.DB) error
 	return tx.Commit(ctx)
 }
 
-func InitSLog(cfg *core.Config) {
-	lvl := new(slog.LevelVar)
-	lvl.Set(slog.LevelInfo)
-
-	logDebug := cfg.LogDebug
-	if logDebug {
-		slog.Info("logging is set to debug")
-		lvl.Set(slog.LevelDebug)
-	}
-	handlers := tracing.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
-		Level: lvl,
-	}))
-	slogger := slog.New(
-		tracing.TeeHandler{
-			handlers,
-			tracing.EventHandler{},
-		})
-
-	slog.SetDefault(slogger)
-}
-
 // Initialize NATS connection using environment variables.
 func (srv *server) initNATS(config *core.Config) error {
 	natsURL := config.NatsHost
