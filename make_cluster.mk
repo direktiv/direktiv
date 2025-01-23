@@ -94,8 +94,8 @@ cluster-direktiv: ## Installs direktiv in cluster
 	--set registry=localhost:5001 \
 	--set tag=dev \
 	--set flow.sidecar=localhost:5001/direktiv:dev \
-	--set opentelemetry.enabled=false \
-	--set fluent-bit.install=false \
+	--set opentelemetry.enabled=true \
+	--set fluent-bit.install=true \
 	--set opensearch.install=true \
 	direktiv charts/direktiv
 

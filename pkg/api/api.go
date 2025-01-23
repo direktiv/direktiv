@@ -121,8 +121,9 @@ func Initialize(app core.App, db *database.DB, meta metastore.Store, bus *pubsub
 	logCtr := &logController{
 		store: db.DataStore().NewLogs(),
 	}
-	logCtr2 := &logControllerV2{
-		metaLogStore: meta.LogStore(),
+	logCtr2 := &logControllerV2{}
+	if app.Config.OpenSearchInstalled {
+		logCtr2.metaLogStore = meta.LogStore()
 	}
 
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
