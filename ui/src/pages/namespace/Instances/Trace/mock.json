@@ -75,8 +75,8 @@
                 {
                   "spanId": "/x+ZEaW+4BU=",
                   "name": "Processing action result for object 2",
-                  "startTimeUnixNano": "410000000000",
-                  "endTimeUnixNano": "420000000000",
+                  "startTimeUnixNano": "370000000000",
+                  "endTimeUnixNano": "390000000000",
                   "details": {
                     "workflow": "foreach-wf.yaml",
                     "state": "solve",
@@ -101,7 +101,40 @@
                 {
                   "spanId": "ttEC73gWvhX=",
                   "name": "Processing action result for object 3",
-                  "startTimeUnixNano": "510000000000",
+                  "startTimeUnixNano": "480000000000",
+                  "endTimeUnixNano": "490000000000",
+                  "details": {
+                    "workflow": "foreach-wf.yaml",
+                    "state": "solve",
+                    "namespace": "test"
+                  }
+                },
+                {
+                  "spanId": "cHQifkan7dq",
+                  "name": "Processing action result for object 3",
+                  "startTimeUnixNano": "485000000000",
+                  "endTimeUnixNano": "495000000000",
+                  "details": {
+                    "workflow": "foreach-wf.yaml",
+                    "state": "solve",
+                    "namespace": "test"
+                  }
+                },
+                {
+                  "spanId": "IATwkQROm7i",
+                  "name": "Processing action result for object 3",
+                  "startTimeUnixNano": "500000000000",
+                  "endTimeUnixNano": "510000000000",
+                  "details": {
+                    "workflow": "foreach-wf.yaml",
+                    "state": "solve",
+                    "namespace": "test"
+                  }
+                },
+                {
+                  "spanId": "y1OLe6u5zLk",
+                  "name": "Processing action result for object 3",
+                  "startTimeUnixNano": "505000000000",
                   "endTimeUnixNano": "520000000000",
                   "details": {
                     "workflow": "foreach-wf.yaml",
