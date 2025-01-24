@@ -141,9 +141,7 @@ func Run(circuit *core.Circuit) error {
 	slog.Info("initializing service manager")
 	app.ServiceManager, err = service.NewManager(config)
 	if err != nil {
-		// TODO: why return and panic here?
-		slog.Error("initializing service manager", "error", err)
-		panic(err)
+		return fmt.Errorf("initializing service manager, err: %w", err)
 	}
 
 	// Setup GetServiceURL function

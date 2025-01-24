@@ -75,23 +75,23 @@ var startAPICmd = &cobra.Command{
 
 		err := server.Run(circuit)
 		if err != nil {
-			slog.Error("initializing", "err", err)
+			slog.Error("booting api server", "err", err)
 			os.Exit(1)
 		}
-		slog.Info("server booted successfully")
+		slog.Info("api server booted successfully")
 
 		// wait until server is done.
 		<-circuit.Done()
-		slog.Info("terminating server")
+		slog.Info("terminating api server")
 
 		go func() {
 			time.Sleep(time.Second * 15)
-			slog.Error("ungraceful server termination")
+			slog.Error("ungraceful api server termination")
 			os.Exit(1)
 		}()
 
 		circuit.Wait()
-		slog.Info("graceful server termination")
+		slog.Info("graceful api server termination")
 	},
 }
 
