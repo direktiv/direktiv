@@ -22,12 +22,11 @@ type DirektivOpenAPIFile struct {
 	reader *bytes.Reader
 	name   string
 	size   int64
+	data   []byte
 }
 
 func (d *DirektivOpenAPIFS) Open(name string) (fs.File, error) {
-
-	fmt.Printf("RESOLVING %v\n", name)
-
+	fmt.Printf("RESOLVE %v\n", name)
 	file, err := d.fileStore.ForNamespace(d.ns).GetFile(context.Background(), name)
 	if err != nil {
 		return nil, err
@@ -45,6 +44,7 @@ func (d *DirektivOpenAPIFS) Open(name string) (fs.File, error) {
 		file:   file,
 		size:   int64(len(data)),
 		name:   filepath.Base(name),
+		data:   data,
 	}, nil
 }
 
@@ -57,10 +57,15 @@ func (f *DirektivOpenAPIFile) Stat() (fs.FileInfo, error) {
 }
 
 func (f *DirektivOpenAPIFile) Read(b []byte) (int, error) {
-	return f.reader.Read(b)
+
+	d, e := f.reader.Read(b)
+	fmt.Println(string(b))
+	return d, e
+	// return f.reader.Read(b)
 }
 
 func (f *DirektivOpenAPIFile) Close() error {
+	f.reader = bytes.NewReader(f.data)
 	return nil
 }
 
@@ -81,7 +86,7 @@ func (f *DirektivOpenAPIFile) ModTime() time.Time {
 }
 
 func (f *DirektivOpenAPIFile) IsDir() bool {
-	return f.IsDir()
+	return f.file.Typ == filestore.FileTypeDirectory
 }
 
 func (f *DirektivOpenAPIFile) Sys() any {

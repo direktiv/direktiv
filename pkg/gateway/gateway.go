@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"path"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"strings"
 	"sync/atomic"
@@ -19,10 +20,13 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/pb33f/libopenapi"
 	validator "github.com/pb33f/libopenapi-validator"
+	"github.com/pb33f/libopenapi/bundler"
 	"github.com/pb33f/libopenapi/datamodel"
 	basehigh "github.com/pb33f/libopenapi/datamodel/high/base"
 	v3high "github.com/pb33f/libopenapi/datamodel/high/v3"
+	v3low "github.com/pb33f/libopenapi/datamodel/low/v3"
 	"github.com/pkg/errors"
+	"gopkg.in/yaml.v3"
 )
 
 // manager struct implements core.GatewayManager by wrapping a pointer to router struct. Whenever endpoint and
@@ -255,6 +259,12 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 		})
 
 		gw.Spec = *g.Base.GetSpecInfo().SpecJSON
+		// g.Base.GetRolodex().Resolve()
+
+		do, errs := g.Base.BuildV3Model()
+		fmt.Println(errs)
+		bb, err := bundler.BundleDocument(&do.Model)
+		fmt.Printf("OUTCOME %v %v\n", err, string(bb))
 
 		// // check base errors
 		// model, errs := g.Base.BuildV3Model()
@@ -322,9 +332,6 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 
 		// o, err := yaml.Marshal(gg)
 		// fmt.Printf("%v %v\n", string(o), err)
-
-		// bb, err := bundler.BundleDocument(&do.Model)
-		// fmt.Printf("%v %v\n", err, string(bb))
 
 		// model, err := g.Base.BuildV3Model()
 
@@ -456,9 +463,6 @@ func endpointsForAPI(endpoints []core.Endpoint, ns string, fileStore filestore.F
 
 	result := []any{}
 
-	// l := openapi3.NewLoader()
-	// l.IsExternalRefsAllowed = true
-
 	for _, item := range endpoints {
 		newItem := output{
 			FilePath: item.FilePath,
@@ -471,16 +475,65 @@ func endpointsForAPI(endpoints []core.Endpoint, ns string, fileStore filestore.F
 			newItem.Errors = []string{}
 		}
 
-		if len(item.Errors) == 0 {
+		// fmt.Println("DOC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1")
+		// fmt.Println(item.Doc)
 
+		docConfig := datamodel.DocumentConfiguration{
+			LocalFS: &DirektivOpenAPIFS{
+				fileStore: fileStore,
+				ns:        ns,
+			},
+			AllowFileReferences:   true,
+			AllowRemoteReferences: false,
 		}
 
-		fmt.Println("DOC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1")
-		fmt.Println(item.Doc)
+		fmt.Printf(">>>JENS %+v\n", item)
 
-		fmt.Printf("%+v\n", item)
+		// get gatway file and remove paths
 
-		newItem.PathItem = item.PathItem
+		// can not throw errors
+		doc, _ := libopenapi.NewDocumentWithConfiguration([]byte("openapi: 3.0.0\ninfo:\n   version: \"1.0\"\n   title: dummy\npaths: {}\n"), &docConfig)
+		highDoc, _ := doc.BuildV3Model()
+		// fmt.Println(highDoc)
+
+		var node yaml.Node
+		err := node.Encode(item.Yaml)
+		if err != nil {
+			// ep.Errors = append(ep.Errors, err.Error())
+			// return ep
+		}
+
+		fmt.Println("START LOW")
+		var lowPathItem v3low.PathItem
+		err = lowPathItem.Build(context.Background(), nil, &node, doc.GetRolodex().GetRootIndex())
+		if err != nil && !strings.Contains(err.Error(), "cannot be found at line") {
+			fmt.Println("111ERROROROR HERERERERERRE")
+			fmt.Println(reflect.TypeOf(err))
+			fmt.Println(err.Error())
+			// ep.Errors = append(ep.Errors, err.Error())
+			// return ep
+		}
+		fmt.Println("END LOW")
+
+		pathItem := v3high.NewPathItem(&lowPathItem)
+		highDoc.Model.Paths.PathItems.Set(item.Config.Path, pathItem)
+		_, newDoc, _, errs := doc.RenderAndReload()
+		if len(errs) > 0 {
+			// for i := range errs {
+			// 	ep.Errors = append(ep.Errors, errs[i].Error())
+			// }
+			// return ep
+		}
+
+		// newItem.PathItem = *newHigh.Model.Paths.PathItems.First()
+
+		// fmt.Println(newDoc)
+		c, _ := yaml.Marshal(item.Yaml)
+
+		fmt.Println(string(c))
+		b, _ := newDoc.Serialize()
+		fmt.Println(string(b))
+		// newItem.PathItem = item.PathItem
 
 		// item.Doc.SetConfiguration(&datamodel.DocumentConfiguration{
 		// 	LocalFS: &DirektivOpenAPIFS{

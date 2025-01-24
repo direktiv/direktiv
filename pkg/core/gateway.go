@@ -1,19 +1,13 @@
 package core
 
 import (
-	"context"
 	"fmt"
-	"io"
-	"io/fs"
 	"net/http"
 	"path"
 	"strings"
 
 	"github.com/pb33f/libopenapi"
 	"github.com/pb33f/libopenapi/datamodel"
-	v3high "github.com/pb33f/libopenapi/datamodel/high/v3"
-	v3low "github.com/pb33f/libopenapi/datamodel/low/v3"
-	"github.com/pb33f/libopenapi/index"
 	"gopkg.in/yaml.v3"
 )
 
@@ -70,10 +64,8 @@ type Gateway struct {
 }
 
 type Endpoint struct {
-	PathItem v3high.PathItem
-	Doc      libopenapi.Document
-
 	Config EndpointConfig
+	Yaml   map[string]interface{}
 
 	Namespace string
 	FilePath  string
@@ -154,34 +146,6 @@ func ParseGatewayFile(ns string, filePath string, data []byte) Gateway {
 	return gw
 }
 
-type DummyFS struct {
-}
-
-type DummyFSFile struct {
-}
-
-func (d DummyFSFile) Close() error {
-	return nil
-}
-
-func (d DummyFSFile) Read([]byte) (int, error) {
-	return 0, io.EOF
-}
-
-func (d DummyFSFile) Stat() (fs.FileInfo, error) {
-	return fs.FileInfo{}, io.EOF
-}
-
-func (d *DummyFS) Open(name string) (fs.File, error) {
-	fmt.Println("FFFFFFFFFFFFFFFFFFFFFFEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
-	fmt.Println(name)
-	return DummyFSFile{}, nil
-}
-
-func (d *DummyFS) GetFiles() map[string]index.RolodexFile {
-	return make(map[string]index.RolodexFile)
-}
-
 func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 	ep := Endpoint{
 		Namespace: ns,
@@ -189,17 +153,21 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 		Errors:    make([]string, 0),
 	}
 
-	docConfig := datamodel.DocumentConfiguration{
-		AvoidIndexBuild:       true,
-		AllowFileReferences:   true,
-		AllowRemoteReferences: false,
-	}
+	// docConfig := datamodel.DocumentConfiguration{
+	// 	AvoidIndexBuild:       true,
+	// 	AllowFileReferences:   true,
+	// 	AllowRemoteReferences: false,
+	// 	LocalFS:               &DummyFS{
+	// 		// fileStore: fileStore,
+	// 		// ns:        ns,
+	// 	},
+	// }
 
 	// can not throw an error, fake document for root index
-	doc, _ := libopenapi.NewDocumentWithConfiguration([]byte("openapi: 3.0.0\ninfo:\n   version: \"1.0\"\n   title: dummy\npaths: {}\n"), &docConfig)
-	highDoc, _ := doc.BuildV3Model()
+	// doc, _ := libopenapi.NewDocumentWithConfiguration([]byte("openapi: 3.0.0\ninfo:\n   version: \"1.0\"\n   title: dummy\npaths: {}\n"), &docConfig)
+	// highDoc, _ := doc.BuildV3Model()
 
-	doc.GetRolodex().AddLocalFS("/", &DummyFS{})
+	// doc.GetRolodex().AddLocalFS("/", &DummyFS{})
 
 	var interim map[string]interface{}
 	err := yaml.Unmarshal(data, &interim)
@@ -208,39 +176,41 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 		return ep
 	}
 
-	var node yaml.Node
-	err = node.Encode(interim)
-	if err != nil {
-		ep.Errors = append(ep.Errors, err.Error())
-		return ep
-	}
+	// var node yaml.Node
+	// err = node.Encode(interim)
+	// if err != nil {
+	// 	ep.Errors = append(ep.Errors, err.Error())
+	// 	return ep
+	// }
 
-	var lowPathItem v3low.PathItem
-	err = lowPathItem.Build(context.Background(), nil, &node, doc.GetRolodex().GetRootIndex())
-	if err != nil {
-		fmt.Println(err)
-		ep.Errors = append(ep.Errors, err.Error())
-		return ep
-	}
+	// var lowPathItem v3low.PathItem
+	// err = lowPathItem.Build(context.Background(), nil, &node, doc.GetRolodex().GetRootIndex())
+	// if err != nil && !strings.Contains(err.Error(), "cannot be found at line") {
+	// 	fmt.Println("111ERROROROR HERERERERERRE")
+	// 	fmt.Println(reflect.TypeOf(err))
+	// 	fmt.Println(err.Error())
+	// 	ep.Errors = append(ep.Errors, err.Error())
+	// 	return ep
+	// }
 
-	pathItem := v3high.NewPathItem(&lowPathItem)
+	// pathItem := v3high.NewPathItem(&lowPathItem)
 
-	api, found := pathItem.Extensions.Get("x-direktiv-api")
-	if !found || api.Value != "endpoint/v2" {
+	api, found := interim["x-direktiv-api"]
+	if !found || api != "endpoint/v2" {
 		ep.Errors = append(ep.Errors, "invalid endpoint api version")
 		return ep
 	}
 
-	config, err := parseConfig(pathItem)
+	config, err := parseConfig(interim)
 	if err != nil {
 		ep.Errors = append(ep.Errors, err.Error())
 		return ep
 	}
 
 	// add methods
-	config.Methods = extractMethods(pathItem)
+	config.Methods = extractMethods(interim)
 
-	// check for other errors
+	// // check for other errors
 	if config.Path != "" {
 		config.Path = path.Clean("/" + config.Path)
 	} else {
@@ -258,65 +228,55 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 		return ep
 	}
 
-	fmt.Println("PARSE ENDPOINT5")
-	highDoc.Model.Paths.PathItems.Set(config.Path, pathItem)
-	_, newDoc, _, errs := doc.RenderAndReload()
-	if len(errs) > 0 {
-		for i := range errs {
-			ep.Errors = append(ep.Errors, errs[i].Error())
-		}
-		return ep
-	}
+	// fmt.Println("PARSE ENDPOINT5")
+	// highDoc.Model.Paths.PathItems.Set(config.Path, pathItem)
+	// _, newDoc, _, errs := doc.RenderAndReload()
+	// if len(errs) > 0 {
+	// 	for i := range errs {
+	// 		ep.Errors = append(ep.Errors, errs[i].Error())
+	// 	}
+	// 	return ep
+	// }
 
-	fmt.Println("PARSED ENDPOINT")
-	fmt.Println(ep.Errors)
+	// fmt.Println("PARSED ENDPOINT")
+	// fmt.Println(ep.Errors)
 
 	ep.Config = config
-	ep.PathItem = *pathItem
-	ep.Doc = newDoc
+	ep.Yaml = interim
+	// ep.PathItem = *pathItem
+	// ep.Doc = newDoc
 
 	return ep
 }
 
-func extractMethods(pathItem *v3high.PathItem) []string {
+func extractMethods(pathItem map[string]interface{}) []string {
 	methods := make([]string, 0)
 
-	// add methods
-	if pathItem.Get != nil {
-		methods = append(methods, http.MethodGet)
+	availableMethods := []string{
+		http.MethodGet,
+		http.MethodPut,
+		http.MethodPost,
+		http.MethodDelete,
+		http.MethodOptions,
+		http.MethodHead,
+		http.MethodPatch,
+		http.MethodTrace,
 	}
-	if pathItem.Put != nil {
-		methods = append(methods, http.MethodPut)
-	}
-	if pathItem.Post != nil {
-		methods = append(methods, http.MethodPost)
-	}
-	if pathItem.Delete != nil {
-		methods = append(methods, http.MethodDelete)
-	}
-	if pathItem.Options != nil {
-		methods = append(methods, http.MethodOptions)
-	}
-	if pathItem.Head != nil {
-		methods = append(methods, http.MethodHead)
-	}
-	if pathItem.Patch != nil {
-		methods = append(methods, http.MethodPatch)
-	}
-	if pathItem.Trace != nil {
-		methods = append(methods, http.MethodTrace)
+
+	for i := range availableMethods {
+		if _, ok := pathItem[availableMethods[i]]; ok {
+			methods = append(methods, availableMethods[i])
+		}
 	}
 
 	return methods
 }
 
-func parseConfig(pathItem *v3high.PathItem) (EndpointConfig, error) {
+func parseConfig(pathItem map[string]interface{}) (EndpointConfig, error) {
 	var config EndpointConfig
 
-	c, found := pathItem.Extensions.Get("x-direktiv-config")
-
-	// c, ok := m["x-direktiv-config"]
-	if !found {
+	c, ok := pathItem["x-direktiv-config"]
+	if !ok {
 		return config, fmt.Errorf("no endpoint configuration found")
 	}
 
