@@ -121,9 +121,10 @@ func Initialize(app core.App, db *database.DB, meta metastore.Store, bus *pubsub
 	logCtr := &logController{
 		store: db.DataStore().NewLogs(),
 	}
-	logCtr2 := &logControllerV2{}
+
+	newLogs := &newLogsCtr{}
 	if app.Config.OpenSearchInstalled {
-		logCtr2.metaLogStore = meta.LogStore()
+		newLogs.meta = meta.LogStore()
 	}
 
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
@@ -158,13 +159,12 @@ func Initialize(app core.App, db *database.DB, meta metastore.Store, bus *pubsub
 			r.Route("/namespaces/{namespace}/registries", func(r chi.Router) {
 				regCtr.mountRouter(r)
 			})
+			r.Route("/namespaces/{namespace}/logs", func(r chi.Router) {
+				logCtr.mountRouter(r)
+			})
 			if app.Config.OpenSearchInstalled {
-				r.Route("/namespaces/{namespace}/logs", func(r chi.Router) {
-					logCtr2.mountRouter(r)
-				})
-			} else {
-				r.Route("/namespaces/{namespace}/logs", func(r chi.Router) {
-					logCtr.mountRouter(r)
+				r.Route("/namespaces/{namespace}/new_logs", func(r chi.Router) {
+					newLogs.mountRouter(r)
 				})
 			}
 			r.Route("/namespaces/{namespace}/notifications", func(r chi.Router) {

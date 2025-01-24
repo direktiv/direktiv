@@ -88,10 +88,8 @@ database:
 
 # Added this to connect to tracing.direktiv.io
 opentelemetry:
-  # -- installs opentelemtry agent as sidecar in flow
   enabled: false
   image: otel/opentelemetry-collector-dev:latest
-  # -- config for sidecar agent
   agentconfig: |
     receivers:
       otlp:
@@ -100,7 +98,7 @@ opentelemetry:
           http:
     exporters:
       otlp:
-        endpoint: "direktiv-fluent-bit.default.svc:4318" # otel receivers grpc port for expl. tempo 
+        endpoint: "data-prepper.default.svc:21890" # Data Prepper's gRPC endpoint
         insecure: true
         sending_queue:
           num_consumers: 4
@@ -112,11 +110,9 @@ opentelemetry:
     processors:
       batch:
       memory_limiter:
-        # Same as --mem-ballast-size-mib CLI argument
+        # Memory management
         ballast_size_mib: 165
-        # 80% of maximum memory up to 2G
         limit_mib: 400
-        # 25% of limit up to 2G
         spike_limit_mib: 100
         check_interval: 5s
     extensions:
@@ -173,31 +169,16 @@ fluent-bit:
           multiline.parser        cri, docker
           Refresh_Interval        1
           Buffer_Max_Size         64k
-      [INPUT]
-          Name                    opentelemetry
-          Listen                  0.0.0.0
-          Port                    4318
-          Tag                     traces
     outputs: |
       [OUTPUT]
-          name                    pgsql
-          match                   flow.*
-          port                    ${PG_PORT}
-          table                   fluentbit
-          user                    ${PG_USER}
-          database                ${PG_DB_NAME}
-          host                    ${PG_HOST}
-          password                ${PG_PASSWORD}
-      [OUTPUT]
-          Name                    opensearch
-          Match                   traces
-          Host                    opensearch-cluster-master.svc
-          Port                    9200
-          Index                   otel-v1-apm-span
-          Type                    _doc
-          Logstash_Format         On
-          AWS_Auth                Off
-          TLS                     True
+          Name                    http
+          Match                   *
+          Host                    direktiv-data-prepper.default.svc
+          Port                    2021
+          URI                     /v1/logs
+          Format                  json
+          Retry_Limit             False
+          tls                     Off
     filters: |
       [FILTER]
           Name                    rewrite_tag
@@ -328,7 +309,7 @@ opensearch:
     - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
       value: direktivTr0&3
     - name: "ES_JAVA_OPTS"
-      value: "Xms750m -Xmx750m"
+      value: "Xms4g -Xmx4g"
   plugins:
     security:
       ssl_cert_reload_enabled: true
@@ -344,3 +325,43 @@ opensearch:
 
   protocol: https
   httpPort: 9200
+
+dataprepper:
+  enabled: true
+  ports:
+    - name: http-source
+      port: 2021
+    - name: otel-traces
+      port: 21890
+    - name: otel-metrics
+      port: 21891
+    - name: otel-logs
+      port: 21892
+  pipelineConfig:
+    enabled: true
+    config:
+      otel-logs-pipeline:
+        source:
+          otel-logs:
+            type: "OTLP"
+            http:
+              port: 2021
+        processor:
+          - add_entry_time: {}
+        sink:
+          - opensearch:
+              hosts: ["http://opensearch-cluster-master.default.svc:9200"]
+              insecure: true
+              index: "direktiv-logs"
+      traces-pipeline:
+        source:
+          otel-traces:
+            type: "OTLP"
+            grpc:
+              port: 21890
+        sink:
+          - opensearch:
+              hosts: ["http://opensearch-cluster-master.default.svc:9200"]
+              insecure: true
+              index_type: "trace-analytics-service-map"
+              index: "direktiv-otel-v1-apm-span"

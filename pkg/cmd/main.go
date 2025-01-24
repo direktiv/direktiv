@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
@@ -27,7 +26,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/registry"
 	"github.com/direktiv/direktiv/pkg/service"
-	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/opensearch-project/opensearch-go"
 )
 
@@ -144,56 +142,57 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		}
 		slog.Info("connected to OpenSearch")
 		meta, err := opensearchstore.NewMetaStore(circuit.Context(), openSearchClient, opensearchstore.Config{
-			LogIndex:       "direktivlogs",
+			LogIndex:       "direktiv-logs",
 			LogDeleteAfter: "7d",
+			LogInit:        false,
 		})
 		if err != nil {
 			return fmt.Errorf("initialize OpenSearch meta client, err: %w", err)
 		}
-		// Initialize log level based on config
-		lvl := new(slog.LevelVar)
-		lvl.Set(slog.LevelInfo)
-
-		if app.Config.LogDebug {
-			slog.Info("Logging is set to debug")
-			lvl.Set(slog.LevelDebug)
-		}
-
-		// Create a channel for logs and set up a worker to process it
-		logCh := make(chan metastore.LogEntry, 100)
-		worker := tracing.NewWorker(tracing.WorkerArgs{
-			LogCh:         logCh,
-			LogStore:      meta.LogStore(),
-			MaxBatchSize:  1,
-			FlushInterval: 1 * time.Millisecond,
-			CachedLevel:   int(lvl.Level()),
-		})
-
-		circuit.Start(func() error {
-			err := worker.Start(circuit)
-			if err != nil {
-				return fmt.Errorf("logs worker, err: %w", err)
-			}
-
-			return nil
-		})
-
-		// Create handlers
-		jsonHandler := tracing.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
-			Level: lvl,
-		}))
-		channelHandler := tracing.NewChannelHandler(logCh, nil, "default", lvl.Level())
-
-		// Combine handlers using a TeeHandler
-		compositeHandler := tracing.TeeHandler{
-			jsonHandler,
-			channelHandler,
-		}
 		args.Metastore = meta
-		// Set up the default logger
-		slogger := slog.New(compositeHandler)
-		slog.SetDefault(slogger)
-		slog.Info("Logger initialized")
+		// // Initialize log level based on config
+		// lvl := new(slog.LevelVar)
+		// lvl.Set(slog.LevelInfo)
+
+		// if app.Config.LogDebug {
+		// 	slog.Info("Logging is set to debug")
+		// 	lvl.Set(slog.LevelDebug)
+		// }
+
+		// // Create a channel for logs and set up a worker to process it
+		// logCh := make(chan metastore.LogEntry, 100)
+		// worker := tracing.NewWorker(tracing.WorkerArgs{
+		// 	LogCh:         logCh,
+		// 	LogStore:      meta.LogStore(),
+		// 	MaxBatchSize:  1,
+		// 	FlushInterval: 1 * time.Millisecond,
+		// 	CachedLevel:   int(lvl.Level()),
+		// })
+
+		// circuit.Start(func() error {
+		// 	err := worker.Start(circuit)
+		// 	if err != nil {
+		// 		return fmt.Errorf("logs worker, err: %w", err)
+		// 	}
+
+		// 	return nil
+		// })
+
+		// // Create handlers
+		// jsonHandler := tracing.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+		// 	Level: lvl,
+		// }))
+		// channelHandler := tracing.NewChannelHandler(logCh, nil, "default", lvl.Level())
+
+		// // Combine handlers using a TeeHandler
+		// compositeHandler := tracing.TeeHandler{
+		// 	jsonHandler,
+		// 	channelHandler,
+		// }
+		// // Set up the default logger
+		// slogger := slog.New(compositeHandler)
+		// slog.SetDefault(slogger)
+		slog.Info("Metastore initialized")
 	}
 	// Start api v2 server
 	err = api.Initialize(app, args.Database, args.Metastore, args.PubSubBus, args.InstanceManager, args.WakeInstanceByEvent, args.WorkflowStart, circuit)
@@ -302,11 +301,11 @@ func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *file
 }
 
 func initOpenSearch(cfg *core.Config) (*opensearch.Client, error) {
-	retries := 20
+	retries := 40
 	addr := cfg.OpenSearchProtocol + "://" + cfg.OpenSearchHost + ":" + strconv.Itoa(cfg.OpenSearchPort)
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: true, // nolint:gosec // Todo
 		},
 	}
 

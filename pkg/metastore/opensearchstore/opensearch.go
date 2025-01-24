@@ -22,9 +22,11 @@ func NewMetaStore(ctx context.Context, client *opensearch.Client, co Config) (me
 		client: client,
 		co:     co,
 	}
-	err := store.LogStore().Init(ctx)
-	if err != nil {
-		return nil, err
+	if co.LogInit {
+		err := store.LogStore().Init(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return store, nil
@@ -38,6 +40,7 @@ func (o *opensearchMetaStore) LogStore() metastore.LogStore {
 type Config struct {
 	LogIndex       string
 	LogDeleteAfter string
+	LogInit        bool
 }
 
 func NewTestDataStore(t *testing.T) (metastore.Store, func(), error) {

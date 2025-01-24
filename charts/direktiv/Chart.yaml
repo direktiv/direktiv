@@ -31,7 +31,7 @@ dependencies:
     condition: ingress-nginx.install
   - name: fluent-bit
     repository: https://fluent.github.io/helm-charts
-    version: 0.46.7
+    version: 0.48.5
     condition: fluent-bit.install
   - name: nats
     repository: "https://nats-io.github.io/k8s/helm/charts"
@@ -39,5 +39,9 @@ dependencies:
     condition: nats.install
   - name: opensearch
     repository: "https://opensearch-project.github.io/helm-charts/"
-    version: "2.27.1"
+    version: "2.28.0"
+    condition: opensearch.install
+  - name: data-prepper
+    repository: "https://opensearch-project.github.io/helm-charts/"
+    version: "0.3.0"
     condition: opensearch.install
