@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"path"
@@ -25,6 +26,7 @@ import (
 	basehigh "github.com/pb33f/libopenapi/datamodel/high/base"
 	v3high "github.com/pb33f/libopenapi/datamodel/high/v3"
 	v3low "github.com/pb33f/libopenapi/datamodel/low/v3"
+	"github.com/pb33f/libopenapi/index"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
@@ -249,6 +251,8 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 		// set file path
 		gw.FilePath = g.FilePath
 
+		slog.SetLogLoggerLevel(slog.LevelDebug)
+
 		g.Base.SetConfiguration(&datamodel.DocumentConfiguration{
 			LocalFS: &DirektivOpenAPIFS{
 				fileStore: fileStore,
@@ -259,10 +263,12 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 		})
 
 		gw.Spec = *g.Base.GetSpecInfo().SpecJSON
-		// g.Base.GetRolodex().Resolve()
 
 		do, errs := g.Base.BuildV3Model()
 		fmt.Println(errs)
+		fmt.Println("in between1")
+		g.Base.GetRolodex().BuildIndexes()
+		fmt.Println("in between2")
 		bb, err := bundler.BundleDocument(&do.Model)
 		fmt.Printf("OUTCOME %v %v\n", err, string(bb))
 
@@ -477,17 +483,18 @@ func endpointsForAPI(endpoints []core.Endpoint, ns string, fileStore filestore.F
 
 		// fmt.Println("DOC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1")
 		// fmt.Println(item.Doc)
-
+		slog.SetLogLoggerLevel(slog.LevelDebug)
 		docConfig := datamodel.DocumentConfiguration{
 			LocalFS: &DirektivOpenAPIFS{
 				fileStore: fileStore,
 				ns:        ns,
+				files:     make(map[string]index.RolodexFile),
 			},
 			AllowFileReferences:   true,
 			AllowRemoteReferences: false,
 		}
 
-		fmt.Printf(">>>JENS %+v\n", item)
+		// fmt.Printf(">>>JENS %+v\n", item)
 
 		// get gatway file and remove paths
 
@@ -528,9 +535,9 @@ func endpointsForAPI(endpoints []core.Endpoint, ns string, fileStore filestore.F
 		// newItem.PathItem = *newHigh.Model.Paths.PathItems.First()
 
 		// fmt.Println(newDoc)
-		c, _ := yaml.Marshal(item.Yaml)
-
-		fmt.Println(string(c))
+		// c, _ := yaml.Marshal(item.Yaml)
+		fmt.Println("SERIALIZE!!!!")
+		// fmt.Println(string(c))
 		b, _ := newDoc.Serialize()
 		fmt.Println(string(b))
 		// newItem.PathItem = item.PathItem
