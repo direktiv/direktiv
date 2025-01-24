@@ -1,4 +1,4 @@
-package filestoresql
+package filesql
 
 import (
 	"context"
