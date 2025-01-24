@@ -26,8 +26,6 @@ type Config struct {
 
 	OpenTelemetry string `env:"DIREKTIV_OPEN_TELEMETRY_BACKEND"`
 
-	DisableServices bool `env:"DIREKTIV_DISABLE_SERVICES" envDefault:"false"`
-
 	KnativeServiceAccount string `env:"DIREKTIV_KNATIVE_SERVICE_ACCOUNT"`
 	KnativeNamespace      string `env:"DIREKTIV_KNATIVE_NAMESPACE"`
 	KnativeIngressClass   string `env:"DIREKTIV_KNATIVE_INGRESS_CLASS"`
@@ -94,20 +92,17 @@ func (conf *Config) Init() error {
 func (conf *Config) checkInvalidEmptyFields() error {
 	var invalidEmptyFields []string
 
-	// knative setting only required when docker mode is disabled.
-	if !conf.DisableServices {
-		if conf.KnativeServiceAccount == "" {
-			invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_SERVICE_ACCOUNT")
-		}
-		if conf.KnativeNamespace == "" {
-			invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_NAMESPACE")
-		}
-		if conf.KnativeIngressClass == "" {
-			invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_INGRESS_CLASS")
-		}
-		if conf.KnativeSidecar == "" {
-			invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_SIDECAR")
-		}
+	if conf.KnativeServiceAccount == "" {
+		invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_SERVICE_ACCOUNT")
+	}
+	if conf.KnativeNamespace == "" {
+		invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_NAMESPACE")
+	}
+	if conf.KnativeIngressClass == "" {
+		invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_INGRESS_CLASS")
+	}
+	if conf.KnativeSidecar == "" {
+		invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_SIDECAR")
 	}
 
 	if len(invalidEmptyFields) == 0 {

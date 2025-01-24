@@ -138,33 +138,29 @@ func Run(circuit *core.Circuit) error {
 	}
 
 	// Create service manager
-	if !config.DisableServices {
-		slog.Info("initializing service manager")
-		app.ServiceManager, err = service.NewManager(config)
+	slog.Info("initializing service manager")
+	app.ServiceManager, err = service.NewManager(config)
+	if err != nil {
+		// TODO: why return and panic here?
+		slog.Error("initializing service manager", "error", err)
+		panic(err)
+	}
+
+	// Setup GetServiceURL function
+	service.SetupGetServiceURLFunc(config)
+
+	circuit.Start(func() error {
+		err := app.ServiceManager.Run(circuit)
 		if err != nil {
-			// TODO: why return and panic here?
-			slog.Error("initializing service manager", "error", err)
-			panic(err)
+			return fmt.Errorf("service manager, err: %w", err)
 		}
 
-		// Setup GetServiceURL function
-		service.SetupGetServiceURLFunc(config)
-
-		circuit.Start(func() error {
-			err := app.ServiceManager.Run(circuit)
-			if err != nil {
-				return fmt.Errorf("service manager, err: %w", err)
-			}
-
-			return nil
-		})
-	} else {
-		slog.Info("service manager is disabled")
-	}
+		return nil
+	})
 
 	// Create registry manager
 	slog.Info("initializing registry manager")
-	app.RegistryManager, err = registry.NewManager(config.DisableServices)
+	app.RegistryManager, err = registry.NewManager()
 	if err != nil {
 		slog.Error("registry manager", "error", err)
 		panic(err)
@@ -198,16 +194,14 @@ func Run(circuit *core.Circuit) error {
 		return proc, nil
 	}
 
-	if !config.DisableServices {
-		srv.Bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
-			renderServiceFiles(db, app.ServiceManager)
-		})
-		srv.Bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
-			renderServiceFiles(db, app.ServiceManager)
-		})
-		// Call at least once before booting
+	srv.Bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
 		renderServiceFiles(db, app.ServiceManager)
-	}
+	})
+	srv.Bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
+		renderServiceFiles(db, app.ServiceManager)
+	})
+	// Call at least once before booting
+	renderServiceFiles(db, app.ServiceManager)
 
 	srv.Bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(data string) {
 		event := &pubsub.FileSystemChangeEvent{}

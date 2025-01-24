@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/url"
 	"sort"
-	"sync"
 
 	"github.com/direktiv/direktiv/pkg/core"
 	dReg "github.com/docker/docker/api/types/registry"
@@ -176,14 +175,7 @@ func buildSecret(registry core.Registry) (*v1.Secret, error) {
 	return &s, nil
 }
 
-func NewManager(mocked bool) (core.RegistryManager, error) {
-	if mocked {
-		return &mockedManager{
-			lock: &sync.Mutex{},
-			list: make(map[string][]*core.Registry),
-		}, nil
-	}
-
+func NewManager() (core.RegistryManager, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
