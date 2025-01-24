@@ -10,11 +10,11 @@ import (
 	"gorm.io/gorm"
 )
 
-type sqlFileStore struct {
+type store struct {
 	db *gorm.DB
 }
 
-func (s *sqlFileStore) ForRootID(rootID uuid.UUID) filestore.RootQuery {
+func (s *store) ForRootID(rootID uuid.UUID) filestore.RootQuery {
 	return &RootQuery{
 		rootID:       rootID,
 		db:           s.db,
@@ -22,7 +22,7 @@ func (s *sqlFileStore) ForRootID(rootID uuid.UUID) filestore.RootQuery {
 	}
 }
 
-func (s *sqlFileStore) ForNamespace(namespace string) filestore.RootQuery {
+func (s *store) ForNamespace(namespace string) filestore.RootQuery {
 	return &RootQuery{
 		namespace:    namespace,
 		db:           s.db,
@@ -30,7 +30,7 @@ func (s *sqlFileStore) ForNamespace(namespace string) filestore.RootQuery {
 	}
 }
 
-func (s *sqlFileStore) ForFile(file *filestore.File) filestore.FileQuery {
+func (s *store) ForFile(file *filestore.File) filestore.FileQuery {
 	return &FileQuery{
 		file:         file,
 		checksumFunc: filestore.DefaultCalculateChecksum,
@@ -38,15 +38,15 @@ func (s *sqlFileStore) ForFile(file *filestore.File) filestore.FileQuery {
 	}
 }
 
-var _ filestore.FileStore = &sqlFileStore{} // Ensures sqlFileStore struct conforms to filestore.FileStore interface.
+var _ filestore.FileStore = &store{} // Ensures store struct conforms to filestore.FileStore interface.
 
-func NewSQLFileStore(db *gorm.DB) filestore.FileStore {
-	return &sqlFileStore{
+func NewStore(db *gorm.DB) filestore.FileStore {
+	return &store{
 		db: db,
 	}
 }
 
-func (s *sqlFileStore) CreateRoot(ctx context.Context, rootID uuid.UUID, namespace string) (*filestore.Root, error) {
+func (s *store) CreateRoot(ctx context.Context, rootID uuid.UUID, namespace string) (*filestore.Root, error) {
 	n := &filestore.Root{
 		ID:        rootID,
 		Namespace: namespace,
@@ -62,7 +62,7 @@ func (s *sqlFileStore) CreateRoot(ctx context.Context, rootID uuid.UUID, namespa
 	return n, nil
 }
 
-func (s *sqlFileStore) CreateTempRoot(ctx context.Context, rootID uuid.UUID) (*filestore.Root, error) {
+func (s *store) CreateTempRoot(ctx context.Context, rootID uuid.UUID) (*filestore.Root, error) {
 	n := &filestore.Root{
 		ID: rootID,
 	}
@@ -77,7 +77,7 @@ func (s *sqlFileStore) CreateTempRoot(ctx context.Context, rootID uuid.UUID) (*f
 	return n, nil
 }
 
-func (s *sqlFileStore) GetRoot(ctx context.Context, id uuid.UUID) (*filestore.Root, error) {
+func (s *store) GetRoot(ctx context.Context, id uuid.UUID) (*filestore.Root, error) {
 	var list []filestore.Root
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
@@ -95,7 +95,7 @@ func (s *sqlFileStore) GetRoot(ctx context.Context, id uuid.UUID) (*filestore.Ro
 	return &list[0], nil
 }
 
-func (s *sqlFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, error) {
+func (s *store) GetAllRoots(ctx context.Context) ([]*filestore.Root, error) {
 	var list []filestore.Root
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
@@ -113,7 +113,7 @@ func (s *sqlFileStore) GetAllRoots(ctx context.Context) ([]*filestore.Root, erro
 	return ns, nil
 }
 
-func (s *sqlFileStore) GetRootByNamespace(ctx context.Context, namespace string) (*filestore.Root, error) {
+func (s *store) GetRootByNamespace(ctx context.Context, namespace string) (*filestore.Root, error) {
 	var list []filestore.Root
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
@@ -131,7 +131,7 @@ func (s *sqlFileStore) GetRootByNamespace(ctx context.Context, namespace string)
 	return &list[0], nil
 }
 
-func (s *sqlFileStore) GetFileByID(ctx context.Context, id uuid.UUID) (*filestore.File, error) {
+func (s *store) GetFileByID(ctx context.Context, id uuid.UUID) (*filestore.File, error) {
 	file := &filestore.File{}
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT id, root_id, path, depth, typ, created_at, updated_at, mime_type, length(data) AS size

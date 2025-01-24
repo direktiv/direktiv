@@ -39,7 +39,7 @@ func NewDB(db *gorm.DB) *DB {
 }
 
 func (tx *DB) FileStore() filestore.FileStore {
-	return filestoresql.NewSQLFileStore(tx.db)
+	return filestoresql.NewStore(tx.db)
 }
 
 func (tx *DB) DataStore() datastore.Store {
