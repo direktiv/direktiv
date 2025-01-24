@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
+	"github.com/direktiv/direktiv/pkg/datastore/datasql"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/direktiv/direktiv/pkg/instancestore"
@@ -47,7 +47,7 @@ func (tx *DB) FileStore() filestore.FileStore {
 }
 
 func (tx *DB) DataStore() datastore.Store {
-	return datastoresql.NewStore(tx.db)
+	return datasql.NewStore(tx.db)
 }
 
 func (tx *DB) InstanceStore() instancestore.Store {

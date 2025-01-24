@@ -1,4 +1,4 @@
-package datastoresql
+package datasql
 
 import (
 	"github.com/direktiv/direktiv/pkg/datastore"

@@ -1,4 +1,4 @@
-package datastoresql_test
+package datasql_test
 
 import (
 	"context"

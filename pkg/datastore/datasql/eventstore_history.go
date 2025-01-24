@@ -1,4 +1,4 @@
-package datastoresql
+package datasql
 
 import (
 	"context"
