@@ -98,7 +98,7 @@ opentelemetry:
           http:
     exporters:
       otlp:
-        endpoint: "data-prepper.default.svc:21890" # Data Prepper's gRPC endpoint
+        endpoint: "direktiv-data-prepper.default.svc:21890"
         insecure: true
         sending_queue:
           num_consumers: 4
@@ -326,42 +326,31 @@ opensearch:
   protocol: https
   httpPort: 9200
 
-dataprepper:
+data-prepper:
   enabled: true
-  ports:
-    - name: http-source
-      port: 2021
-    - name: otel-traces
-      port: 21890
-    - name: otel-metrics
-      port: 21891
-    - name: otel-logs
-      port: 21892
   pipelineConfig:
     enabled: true
     config:
-      otel-logs-pipeline:
+      logs-pipeline:
         source:
-          otel-logs:
-            type: "OTLP"
-            http:
-              port: 2021
-        processor:
-          - add_entry_time: {}
+          http:
+            port: 2021
         sink:
           - opensearch:
               hosts: ["http://opensearch-cluster-master.default.svc:9200"]
               insecure: true
               index: "direktiv-logs"
+              username: admin
+              password: direktivTr0&3
       traces-pipeline:
         source:
-          otel-traces:
-            type: "OTLP"
-            grpc:
-              port: 21890
+          otel_trace_source:
+            port: 21890
         sink:
           - opensearch:
               hosts: ["http://opensearch-cluster-master.default.svc:9200"]
               insecure: true
               index_type: "trace-analytics-service-map"
               index: "direktiv-otel-v1-apm-span"
+              username: admin
+              password: direktivTr0&3

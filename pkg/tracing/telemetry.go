@@ -13,11 +13,14 @@ import (
 	"github.com/go-chi/chi/v5"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	otlpgrpc "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.opentelemetry.io/otel/trace"
+	"google.golang.org/grpc"
 )
 
 var instrumentationName string
@@ -37,10 +40,24 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 		propagation.Baggage{},
 	))
 
-	// Check if OTLP Collector address is provided
 	if addr == "" {
-		slog.Warn("No OTLP Collector address provided. Telemetry will not be exported.")
+		slog.Warn("No OTLP address provided. Telemetry will not be exported.")
 		return func() {}, nil
+	}
+
+	// Setup OTLP exporter
+	slog.Debug("Creating OTLP gRPC client.", "endpoint", addr)
+	driver := otlpgrpc.NewClient(
+		otlpgrpc.WithInsecure(),
+		otlpgrpc.WithEndpoint(addr),
+		otlpgrpc.WithDialOption(grpc.WithBlock()), // nolint:staticcheck
+	)
+
+	slog.Debug("Setting up OTLP exporter.")
+	exp, err := otlp.New(cirCtx, driver)
+	if err != nil {
+		slog.Error("Failed to create OTLP exporter.", "error", err)
+		return nil, fmt.Errorf("failed to create OTLP exporter: %w", err)
 	}
 
 	// Setup resource with service name
@@ -51,12 +68,17 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
 
-	// Set up tracer provider
-	slog.Debug("Setting up tracer provider.")
+	sampler := sdktrace.AlwaysSample()
+
+	// Set up batch span processor and tracer provider
+	bsp := sdktrace.NewBatchSpanProcessor(exp)
 	tp := sdktrace.NewTracerProvider(
-		sdktrace.WithSampler(sdktrace.AlwaysSample()),
+		sdktrace.WithSampler(sampler),
 		sdktrace.WithResource(res),
+		sdktrace.WithSpanProcessor(bsp),
 	)
+
+	slog.Debug("Setting tracer provider.")
 	otel.SetTracerProvider(tp)
 
 	// Register HTTP telemetry middleware
@@ -67,15 +89,22 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 
 	slog.Debug("Telemetry initialization completed.")
 
-	return telemetryWaiter(cirCtx, tp), nil
+	return telemetryWaiter(cirCtx, tp, bsp), nil
 }
 
 // telemetryWaiter ensures all telemetry data is flushed and the provider is shut down gracefully.
-func telemetryWaiter(cirCtx context.Context, tp *sdktrace.TracerProvider) func() {
+func telemetryWaiter(cirCtx context.Context, tp *sdktrace.TracerProvider, bsp sdktrace.SpanProcessor) func() {
 	return func() {
 		ctx, cancel := context.WithTimeout(cirCtx, 25*time.Second)
 		defer cancel()
 
+		// Force flush to export all remaining telemetry data
+		slog.Info("Flushing telemetry data before shutdown.")
+		if err := bsp.ForceFlush(ctx); err != nil {
+			slog.Error("Failed to flush telemetry data.", "error", err)
+		}
+
+		// Shut down the tracer provider
 		slog.Info("Shutting down telemetry.")
 		if err := tp.Shutdown(ctx); err != nil {
 			slog.Error("Failed to shutdown telemetry.", "error", err)
