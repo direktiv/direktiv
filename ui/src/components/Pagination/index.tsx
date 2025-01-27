@@ -1,4 +1,3 @@
-import { Dispatch, SetStateAction } from "react";
 import {
   PaginationLink,
   Pagination as PaginationWrapper,
@@ -6,25 +5,23 @@ import {
 
 import describePagination from "./describePagination";
 
-type SetState<T> = Dispatch<SetStateAction<T>>;
-
 export const Pagination = ({
   itemsPerPage,
   totalItems,
-  offset,
-  setOffset,
+  value,
+  onChange,
 }: {
   itemsPerPage: number;
   totalItems?: number;
-  offset: number;
-  setOffset: SetState<number>;
+  value: number;
+  onChange: (page: number) => void;
 }) => {
   const setOffsetByPageNumber = (pageNumber: number) =>
     (pageNumber - 1) * itemsPerPage;
 
   const numberOfItems = totalItems ?? 0;
   const pages = Math.max(1, Math.ceil(numberOfItems / itemsPerPage));
-  const currentPage = Math.ceil(offset / itemsPerPage) + 1;
+  const currentPage = Math.ceil(value / itemsPerPage) + 1;
   const isFirstPage = currentPage === 1;
   const isLastPage = currentPage === pages;
 
@@ -38,7 +35,7 @@ export const Pagination = ({
       <PaginationLink
         icon="left"
         onClick={() =>
-          previousPage && setOffset(setOffsetByPageNumber(previousPage))
+          previousPage && onChange(setOffsetByPageNumber(previousPage))
         }
         disabled={isFirstPage}
         data-testid="pagination-btn-left"
@@ -51,9 +48,7 @@ export const Pagination = ({
             key={index}
             active={isActive}
             onClick={() => {
-              !isEllipsis &&
-                !isActive &&
-                setOffset(setOffsetByPageNumber(page));
+              !isEllipsis && !isActive && onChange(setOffsetByPageNumber(page));
             }}
             disabled={(isFirstPage && isLastPage) || isEllipsis}
             data-testid={`pagination-btn-page-${page}`}
@@ -64,7 +59,7 @@ export const Pagination = ({
       })}
       <PaginationLink
         icon="right"
-        onClick={() => nextPage && setOffset(setOffsetByPageNumber(nextPage))}
+        onClick={() => nextPage && onChange(setOffsetByPageNumber(nextPage))}
         disabled={isLastPage}
         data-testid="pagination-btn-right"
       />

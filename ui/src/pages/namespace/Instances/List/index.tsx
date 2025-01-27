@@ -122,8 +122,8 @@ const InstancesListPage = () => {
         />
         <Pagination
           itemsPerPage={parseInt(pageSize)}
-          offset={offset}
-          setOffset={setOffset}
+          value={offset}
+          onChange={(page) => setOffset(page)}
           totalItems={numberOfInstances}
         />
       </div>

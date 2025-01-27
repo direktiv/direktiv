@@ -73,8 +73,8 @@ const ListenersList = () => {
         />
         <Pagination
           itemsPerPage={parseInt(pageSize)}
-          offset={offset}
-          setOffset={(value) => setOffset(value)}
+          value={offset}
+          onChange={(value) => setOffset(value)}
           totalItems={numberOfResults}
         />
       </div>
