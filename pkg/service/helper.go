@@ -129,7 +129,7 @@ func buildVolumes(_ *core.Config, sv *core.ServiceFileData) []corev1.Volume {
 			},
 		},
 		{
-			Name: "otel-config",
+			Name: "otel-agent-config-vol",
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
@@ -138,7 +138,7 @@ func buildVolumes(_ *core.Config, sv *core.ServiceFileData) []corev1.Volume {
 					Items: []corev1.KeyToPath{
 						{
 							Key:  "otel-agent-config",
-							Path: "config.yaml",
+							Path: "otel-agent-config.yaml",
 						},
 					},
 				},
@@ -197,18 +197,29 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 		uc.Command = args
 	}
 
-	// OTel Collector sidecar
+	// directly include the otel sidecar as defined in Helm
 	otelCollector := corev1.Container{
-		Name:  "otel-collector",
+		Name:  "otel-agent",
 		Image: "otel/opentelemetry-collector-dev:latest",
-		Args: []string{
-			"--config=/etc/otel-collector-config/config.yaml",
+		Command: []string{
+			"/otelcol",
+			"--config=/conf/otel-agent-config.yaml",
 			"--mem-ballast-size-mib=165",
+		},
+		Resources: corev1.ResourceRequirements{
+			Limits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("500m"),
+				corev1.ResourceMemory: resource.MustParse("500Mi"),
+			},
+			Requests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("100m"),
+				corev1.ResourceMemory: resource.MustParse("100Mi"),
+			},
 		},
 		VolumeMounts: []corev1.VolumeMount{
 			{
-				Name:      "otel-config",
-				MountPath: "/etc/otel-collector-config",
+				Name:      "otel-agent-config-vol",
+				MountPath: "/conf",
 			},
 		},
 	}
@@ -347,7 +358,7 @@ func buildEnvVars(forSidecar bool, c *core.Config, sv *core.ServiceFileData) []c
 
 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 		Name:  direktivOpentelemetry,
-		Value: "http://localhost:4317",
+		Value: "localhost:4317",
 	})
 
 	if forSidecar {
