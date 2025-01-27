@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	eeDSQL "github.com/direktiv/direktiv/cmd/ee/datastore/datasql"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
@@ -174,9 +173,8 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 
 			if len(extensions.AdditionalAPIRoutes) > 0 {
 				eeApp := extensions.App{
-					DB:       db,
-					Bus:      bus,
-					EEDStore: eeDSQL.New(),
+					DB:  db,
+					Bus: bus,
 				}
 				for pattern, ctr := range extensions.AdditionalAPIRoutes {
 					r.Route(pattern, func(r chi.Router) {
