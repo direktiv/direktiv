@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type ctxKeyNamespace struct{}
+const ctxKeyNamespace = "namespace"
 
 type appMiddlewares struct {
 	dStore datastore.Store
@@ -35,7 +35,7 @@ func (a *appMiddlewares) injectNamespace(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), ctxKeyNamespace{}, ns)
+		ctx := context.WithValue(r.Context(), ctxKeyNamespace, ns)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

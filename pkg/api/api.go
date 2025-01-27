@@ -277,7 +277,7 @@ func writeOk(w http.ResponseWriter) {
 
 func extractContextNamespace(r *http.Request) *datastore.Namespace {
 	//nolint:forcetypeassert
-	ns := r.Context().Value(ctxKeyNamespace{}).(*datastore.Namespace)
+	ns := r.Context().Value(ctxKeyNamespace).(*datastore.Namespace)
 
 	return ns
 }
