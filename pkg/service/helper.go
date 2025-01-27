@@ -200,11 +200,10 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 	// directly include the otel sidecar as defined in Helm
 	otelCollector := corev1.Container{
 		Name:  "otel-agent",
-		Image: "otel/opentelemetry-collector-dev:latest",
+		Image: "otel/opentelemetry-collector:latest",
 		Command: []string{
 			"/otelcol",
 			"--config=/conf/otel-agent-config.yaml",
-			"--mem-ballast-size-mib=165",
 		},
 		Resources: corev1.ResourceRequirements{
 			Limits: corev1.ResourceList{

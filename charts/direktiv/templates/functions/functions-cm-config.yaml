@@ -15,9 +15,6 @@ data:
       # address of flow engine
       flow-service: {{ include "direktiv.fullname" . }}-flow.{{ .Release.Namespace }}
 
-      # address of opentelemetry backend
-      opentelemetry-backend: {{ include "direktiv.opentelemetry-backend" . }}
-
       # name of the service account to run the pods
       service-account: {{ include "direktiv.serviceAccountName" . }}-functions-pod
 

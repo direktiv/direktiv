@@ -89,7 +89,7 @@ database:
 # Added this to connect to tracing.direktiv.io
 opentelemetry:
   enabled: false
-  image: otel/opentelemetry-collector-dev:latest
+  image: otel/opentelemetry-collector:latest
   agentconfig: |
     receivers:
       otlp:
@@ -97,33 +97,29 @@ opentelemetry:
           grpc:
           http:
     exporters:
-      otlp:
-        endpoint: "direktiv-data-prepper.default.svc:21890"
-        insecure: true
-        sending_queue:
-          num_consumers: 4
-          queue_size: 100
-        retry_on_failure:
-          enabled: true
-      logging:
-        loglevel: debug
-    processors:
-      batch:
-      memory_limiter:
-        # Memory management
-        ballast_size_mib: 165
-        limit_mib: 400
-        spike_limit_mib: 100
-        check_interval: 5s
-    extensions:
-      zpages: {}
+      otlp/traces:
+        endpoint: direktiv-data-prepper.default.svc:21890
+        tls:
+          insecure: true
+      otlp/data-prepper:
+        endpoint: direktiv-data-prepper.default.svc:21891
+        tls:
+          insecure: true
+      otlp/logs:
+        endpoint: direktiv-data-prepper.default.svc:21892
+        tls:
+          insecure: true
     service:
-      extensions: [zpages]
       pipelines:
-        traces:
+        traces: 
           receivers: [otlp]
-          processors: [memory_limiter, batch]
-          exporters: [otlp]
+          exporters: [otlp/traces]
+        metrics:
+          receivers: [otlp]
+          exporters: [otlp/data-prepper]
+        logs:
+          receivers: [otlp]
+          exporters: [otlp/logs]
 
 ingress:
   # --
@@ -171,14 +167,14 @@ fluent-bit:
           Buffer_Max_Size         64k
     outputs: |
       [OUTPUT]
-          Name                    http
-          Match                   *
-          Host                    direktiv-data-prepper.default.svc
-          Port                    2021
-          URI                     /log/ingest
-          Format                  json
-          Retry_Limit             False
-          tls                     Off
+          name                    pgsql
+          match                   flow.*
+          port                    ${PG_PORT}
+          table                   fluentbit
+          user                    ${PG_USER}
+          database                ${PG_DB_NAME}
+          host                    ${PG_HOST}
+          password                ${PG_PASSWORD}
     filters: |
       [FILTER]
           Name                    rewrite_tag
@@ -190,7 +186,15 @@ fluent-bit:
           Parser                  json
           Key_Name                log
           Reserve_Data            on
-
+# [OUTPUT]
+#     Name                    http
+#     Match                   *
+#     Host                    direktiv-data-prepper.default.svc
+#     Port                    2021
+#     URI                     /log/ingest
+#     Format                  json
+#     Retry_Limit             False
+#     tls                     Off
 # -- service account for components. If preconfigured serviceaccounts are used the name ise the base
 # and two additional service accounts are needed, e.g. service account name is myaccount then another two
 # acounts are needed: myaccount-functions and myaccount-functions-pod
@@ -328,64 +332,111 @@ opensearch:
 
 data-prepper:
   enabled: true
+  config:
+    data-prepper-config.yaml: |
+      ssl: false
+      circuit_breakers:
+        heap:
+          usage: 2gb
+          reset: 30s
+          check_interval: 5s
   pipelineConfig:
     enabled: true
     config:
-      logs-pipeline:
+      otel-logs-pipeline:
+        workers: 5
+        delay: 10
         source:
-          http:
-            port: 2021
-          ssl: false
-        sink:
-          - opensearch:
-              hosts: ["https://opensearch-cluster-master.default.svc:9200"]
-              insecure: true
-              index: "direktiv-logs"
-              username: admin
-              password: direktivTr0&3
-          - stdout:
-      entry-pipeline:
-        delay: "100"
-        source:
-          otel_trace_source:
+          otel_logs_source:
             ssl: false
         buffer:
           bounded_blocking:
-            buffer_size: 10240
-            batch_size: 160
-        sink:
-          - pipeline:
-              name: "raw-pipeline"
-          - pipeline:
-              name: "service-map-pipeline"
-      raw-pipeline:
-        source:
-          pipeline:
-            name: "entry-pipeline"
-        buffer:
-          bounded_blocking:
-            buffer_size: 10240
-            batch_size: 160
-        processor:
-          - otel_trace_raw:
         sink:
           - opensearch:
               hosts: ["https://opensearch-cluster-master.default.svc:9200"]
               insecure: true
-              index_type: trace-analytics-raw
               username: admin
               password: direktivTr0&3
-      service-map-pipeline:
+              index_type: custom
+              index: events
+              # index: events-%{yyyy.MM.dd}
+              #max_retries: 20
+              bulk_size: 4
+      otel-trace-pipeline:
+        # workers is the number of threads processing data in each pipeline.
+        # We recommend same value for all pipelines.
+        # default value is 1, set a value based on the machine you are running Data Prepper
+        workers: 8
+        # delay in milliseconds is how often the worker threads should process data.
+        # Recommend not to change this config as we want the otel-trace-pipeline to process as quick as possible
+        # default value is 3_000 ms
         delay: "100"
         source:
-          pipeline:
-            name: "entry-pipeline"
+          otel_trace_source:
+            ssl: false # Change this to enable encryption in transit
         buffer:
           bounded_blocking:
-            buffer_size: 10240
-            batch_size: 160
+            # buffer_size is the number of ExportTraceRequest from otel-collector the data prepper should hold in memeory.
+            # We recommend to keep the same buffer_size for all pipelines.
+            # Make sure you configure sufficient heap
+            # default value is 12800
+            buffer_size: 25600
+            # This is the maximum number of request each worker thread will process within the delay.
+            # Default is 200.
+            # Make sure buffer_size >= workers * batch_size
+            batch_size: 400
+        sink:
+          - pipeline:
+              name: "raw-traces-pipeline"
+          - pipeline:
+              name: "otel-service-map-pipeline"
+      raw-traces-pipeline:
+        workers: 5
+        delay: 3000
+        source:
+          pipeline:
+            name: "otel-trace-pipeline"
+        buffer:
+          bounded_blocking:
+            buffer_size: 25600 # max number of records the buffer accepts
+            batch_size: 400 # max number of records the buffer drains after each read
+        processor:
+          - otel_trace_raw:
+          - otel_trace_group:
+              hosts: ["https://opensearch-cluster-master.default.svc:9200"]
+              insecure: true
+              username: admin
+              password: direktivTr0&3
+        sink:
+          - opensearch:
+              hosts: ["https://opensearch-cluster-master.default.svc:9200"]
+              insecure: true
+              username: admin
+              password: direktivTr0&3
+              index_type: trace-analytics-raw
+      otel-service-map-pipeline:
+        workers: 5
+        delay: 3000
+        source:
+          pipeline:
+            name: "otel-trace-pipeline"
         processor:
           - service_map_stateful:
+              # The window duration is the maximum length of time the data prepper stores the most recent trace data to evaluvate service-map relationships.
+              # The default is 3 minutes, this means we can detect relationships between services from spans reported in last 3 minutes.
+              # Set higher value if your applications have higher latency.
+              window_duration: 180
+        buffer:
+          bounded_blocking:
+            # buffer_size is the number of ExportTraceRequest from otel-collector the data prepper should hold in memeory.
+            # We recommend to keep the same buffer_size for all pipelines.
+            # Make sure you configure sufficient heap
+            # default value is 12800
+            buffer_size: 25600
+            # This is the maximum number of request each worker thread will process within the delay.
+            # Default is 200.
+            # Make sure buffer_size >= workers * batch_size
+            batch_size: 400
         sink:
           - opensearch:
               hosts: ["https://opensearch-cluster-master.default.svc:9200"]
@@ -393,3 +444,33 @@ data-prepper:
               username: admin
               password: direktivTr0&3
               index_type: trace-analytics-service-map
+              #index: otel-v1-apm-span-%{yyyy.MM.dd}
+              #max_retries: 20
+              bulk_size: 4
+      otel-metrics-pipeline:
+        workers: 8
+        delay: 3000
+        source:
+          otel_metrics_source:
+            health_check_service: true
+            ssl: false
+        buffer:
+          bounded_blocking:
+            buffer_size: 1024 # max number of records the buffer accepts
+            batch_size: 1024 # max number of records the buffer drains after each read
+        processor:
+          - otel_metrics:
+              calculate_histogram_buckets: true
+              calculate_exponential_histogram_buckets: true
+              exponential_histogram_max_allowed_scale: 10
+              flatten_attributes: false
+        sink:
+          - opensearch:
+              hosts: ["https://opensearch-cluster-master.default.svc:9200"]
+              insecure: true
+              username: admin
+              password: direktivTr0&3
+              index_type: custom
+              index: metrics-%{yyyy.MM.dd}
+              #max_retries: 20
+              bulk_size: 4
