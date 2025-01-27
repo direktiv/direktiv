@@ -14,6 +14,7 @@ type newLogsCtr struct {
 
 func (c *newLogsCtr) mountRouter(r chi.Router) {
 	r.Get("/", c.get)
+	r.Get("/mapping", c.getMapping)
 }
 
 func (c *newLogsCtr) get(w http.ResponseWriter, r *http.Request) {
@@ -30,6 +31,21 @@ func (c *newLogsCtr) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, logs)
+
+	return
+}
+
+func (c *newLogsCtr) getMapping(w http.ResponseWriter, r *http.Request) {
+	mapping, err := c.meta.GetMapping(r.Context())
+	if err != nil {
+		writeError(w, &Error{
+			Code:    "error",
+			Message: err.Error(),
+		})
+
+		return
+	}
+	writeJSON(w, mapping)
 
 	return
 }

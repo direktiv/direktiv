@@ -12,6 +12,7 @@ type LogStore interface {
 	// Get retrieves logs based on a time range or filter criteria.
 	Get(ctx context.Context, options LogQueryOptions) ([]LogEntry, error)
 	Init(ctx context.Context) error
+	GetMapping(ctx context.Context) (map[string]interface{}, error)
 }
 
 // LogEntry represents a single log entry stored in the Metastore.

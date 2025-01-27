@@ -471,6 +471,8 @@ data-prepper:
               username: admin
               password: direktivTr0&3
               index_type: custom
-              index: metrics-%{yyyy.MM.dd}
+              # index: metrics-%{yyyy.MM.dd}
+              index: metrics
+
               #max_retries: 20
               bulk_size: 4

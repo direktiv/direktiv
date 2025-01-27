@@ -74,14 +74,42 @@ func (store *LogStore) Append(ctx context.Context, log metastore.LogEntry) error
 	return nil
 }
 
+// GetMapping retrieves the mapping of the specified index.
+func (store *LogStore) GetMapping(ctx context.Context) (map[string]interface{}, error) {
+	// Make a request to OpenSearch to get the mapping
+	mappingRes, err := store.client.Indices.GetMapping(
+		store.client.Indices.GetMapping.WithContext(ctx),
+		store.client.Indices.GetMapping.WithIndex(store.logIndex), // Use the index name from LogStore
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get index mapping: %w", err)
+	}
+	defer mappingRes.Body.Close()
+
+	if mappingRes.IsError() {
+		responseBody, _ := io.ReadAll(mappingRes.Body)
+		slog.Error("Failed to retrieve mapping", "status", mappingRes.Status(), "response", string(responseBody))
+
+		return nil, fmt.Errorf("error retrieving index mapping: %s, response: %s", mappingRes.Status(), string(responseBody))
+	}
+
+	// Decode the mapping response
+	var mapping map[string]interface{}
+	if err := json.NewDecoder(mappingRes.Body).Decode(&mapping); err != nil {
+		return nil, fmt.Errorf("failed to decode mapping response: %w", err)
+	}
+
+	return mapping, nil
+}
+
 // Get implements metastore.LogStore.
 func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOptions) ([]metastore.LogEntry, error) {
 	// Construct the query with the specified filters
 	ran := map[string]interface{}{
 		"range": map[string]interface{}{
-			"Timestamp": map[string]interface{}{ // Case-sensitive field name
-				"gte": options.StartTime.UTC().UnixMilli(),
-				"lte": options.EndTime.UTC().UnixMilli(),
+			"timeUnixNano": map[string]interface{}{ // Case-sensitive field name
+				"gte": options.StartTime.UTC().UnixNano(),
+				"lte": options.EndTime.UTC().UnixNano(),
 			},
 		},
 	}
@@ -132,7 +160,7 @@ func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOption
 		},
 		"sort": []map[string]interface{}{
 			{
-				"Timestamp": map[string]interface{}{
+				"timeUnixNano": map[string]interface{}{
 					"order": "asc",
 				},
 			},
