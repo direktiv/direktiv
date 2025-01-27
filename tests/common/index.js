@@ -8,7 +8,6 @@ import structs from './structs'
 export default {
 	config,
 	regex,
-	structs,
 	filesystem,
 	helpers,
 	request,
