@@ -103,7 +103,7 @@ spec:
           - name: DIREKTIV_FUNCTIONS_TIMEOUT
             value: {{ .Values.requestTimeout | quote }}
           - name: DIREKTIV_OPEN_TELEMETRY_BACKEND
-            value: {{ include "direktiv.opentelemetry-backend" . }}
+            value: localhost:4317
           - name: DIREKTIV_KNATIVE_SERVICE_ACCOUNT
             value: "{{ include "direktiv.serviceAccountName" . }}-functions-pod"
           - name: DIREKTIV_KNATIVE_NAMESPACE

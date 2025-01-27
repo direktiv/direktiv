@@ -44,7 +44,7 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 		slog.Warn("No OTLP address provided. Telemetry will not be exported.")
 		return func() {}, nil
 	}
-
+	
 	// Setup OTLP exporter
 	slog.Debug("Creating OTLP gRPC client.", "endpoint", addr)
 	driver := otlpgrpc.NewClient(

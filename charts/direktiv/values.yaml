@@ -123,7 +123,7 @@ opentelemetry:
         traces:
           receivers: [otlp]
           processors: [memory_limiter, batch]
-          exporters: [logging, otlp]
+          exporters: [otlp]
 
 ingress:
   # --
@@ -175,7 +175,7 @@ fluent-bit:
           Match                   *
           Host                    direktiv-data-prepper.default.svc
           Port                    2021
-          URI                     /v1/logs
+          URI                     /log/ingest
           Format                  json
           Retry_Limit             False
           tls                     Off
@@ -335,22 +335,61 @@ data-prepper:
         source:
           http:
             port: 2021
+          ssl: false
         sink:
           - opensearch:
-              hosts: ["http://opensearch-cluster-master.default.svc:9200"]
+              hosts: ["https://opensearch-cluster-master.default.svc:9200"]
               insecure: true
               index: "direktiv-logs"
               username: admin
               password: direktivTr0&3
-      traces-pipeline:
+          - stdout:
+      entry-pipeline:
+        delay: "100"
         source:
           otel_trace_source:
-            port: 21890
+            ssl: false
+        buffer:
+          bounded_blocking:
+            buffer_size: 10240
+            batch_size: 160
+        sink:
+          - pipeline:
+              name: "raw-pipeline"
+          - pipeline:
+              name: "service-map-pipeline"
+      raw-pipeline:
+        source:
+          pipeline:
+            name: "entry-pipeline"
+        buffer:
+          bounded_blocking:
+            buffer_size: 10240
+            batch_size: 160
+        processor:
+          - otel_trace_raw:
         sink:
           - opensearch:
-              hosts: ["http://opensearch-cluster-master.default.svc:9200"]
+              hosts: ["https://opensearch-cluster-master.default.svc:9200"]
               insecure: true
-              index_type: "trace-analytics-service-map"
-              index: "direktiv-otel-v1-apm-span"
+              index_type: trace-analytics-raw
               username: admin
               password: direktivTr0&3
+      service-map-pipeline:
+        delay: "100"
+        source:
+          pipeline:
+            name: "entry-pipeline"
+        buffer:
+          bounded_blocking:
+            buffer_size: 10240
+            batch_size: 160
+        processor:
+          - service_map_stateful:
+        sink:
+          - opensearch:
+              hosts: ["https://opensearch-cluster-master.default.svc:9200"]
+              insecure: true
+              username: admin
+              password: direktivTr0&3
+              index_type: trace-analytics-service-map

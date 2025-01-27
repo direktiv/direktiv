@@ -128,6 +128,22 @@ func buildVolumes(_ *core.Config, sv *core.ServiceFileData) []corev1.Volume {
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 		},
+		{
+			Name: "otel-config",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: "direktiv-otel-agent-config",
+					},
+					Items: []corev1.KeyToPath{
+						{
+							Key:  "otel-agent-config",
+							Path: "config.yaml",
+						},
+					},
+				},
+			},
+		},
 	}
 
 	// add extra folder if bin required
@@ -144,7 +160,7 @@ func buildVolumes(_ *core.Config, sv *core.ServiceFileData) []corev1.Volume {
 }
 
 func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Container, error) {
-	// set resource limits.
+	// set resource limits
 	rl, err := buildResourceLimits(c, sv)
 	if err != nil {
 		return nil, err
@@ -154,9 +170,7 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 	secContext := &corev1.SecurityContext{
 		AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 		Capabilities: &corev1.Capabilities{
-			Drop: []corev1.Capability{
-				// corev1.Capability("ALL"),
-			},
+			Drop: []corev1.Capability{},
 		},
 	}
 
@@ -175,26 +189,27 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 		SecurityContext: secContext,
 	}
 
-	// add volume for binary or add command
-	if sv.Cmd == direktivCmdExecValue {
-		uc.VolumeMounts = append(uc.VolumeMounts, corev1.VolumeMount{
-			Name:      "bindir",
-			MountPath: "/usr/share/direktiv/",
-		})
-	}
-
 	if len(sv.Cmd) > 0 {
 		args, err := shellwords.Parse(sv.Cmd)
 		if err != nil {
-			return []corev1.Container{}, err
+			return nil, err
 		}
 		uc.Command = args
 	}
 
-	vMounts := []corev1.VolumeMount{
-		{
-			Name:      "workdir",
-			MountPath: "/mnt/shared",
+	// OTel Collector sidecar
+	otelCollector := corev1.Container{
+		Name:  "otel-collector",
+		Image: "otel/opentelemetry-collector-dev:latest",
+		Args: []string{
+			"--config=/etc/otel-collector-config/config.yaml",
+			"--mem-ballast-size-mib=165",
+		},
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "otel-config",
+				MountPath: "/etc/otel-collector-config",
+			},
 		},
 	}
 
@@ -202,10 +217,15 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 	sidecarEnvs := buildEnvVars(true, c, sv)
 	sidecarEnvs = append(sidecarEnvs, corev1.EnvVar{Name: "API_KEY", Value: c.ApiKey})
 	sc := corev1.Container{
-		Name:         containerSidecar,
-		Image:        c.KnativeSidecar,
-		Env:          sidecarEnvs,
-		VolumeMounts: vMounts,
+		Name:  containerSidecar,
+		Image: c.KnativeSidecar,
+		Env:   sidecarEnvs,
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "workdir",
+				MountPath: "/mnt/shared",
+			},
+		},
 		Ports: []corev1.ContainerPort{
 			{
 				ContainerPort: containerSidecarPort,
@@ -215,7 +235,7 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 		Command:         []string{"/app/direktiv", "start", "sidecar"},
 	}
 
-	return []corev1.Container{uc, sc}, nil
+	return []corev1.Container{uc, otelCollector, sc}, nil
 }
 
 func buildResourceLimits(cf *core.Config, sv *core.ServiceFileData) (*corev1.ResourceRequirements, error) {
@@ -327,7 +347,7 @@ func buildEnvVars(forSidecar bool, c *core.Config, sv *core.ServiceFileData) []c
 
 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 		Name:  direktivOpentelemetry,
-		Value: c.OpenTelemetry,
+		Value: "http://localhost:4317",
 	})
 
 	if forSidecar {

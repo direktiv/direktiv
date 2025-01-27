@@ -22,7 +22,11 @@ func (c *newLogsCtr) get(w http.ResponseWriter, r *http.Request) {
 		EndTime:   time.Now(),
 	})
 	if err != nil {
-		writeJSON(w, err)
+		writeError(w, &Error{
+			Code:    "error",
+			Message: err.Error(),
+		})
+
 		return
 	}
 	writeJSON(w, logs)
