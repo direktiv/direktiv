@@ -27,17 +27,17 @@ type PaginationShape = (number | "…")[];
  * @returns an array of numbers and "…"
  */
 const describePagination = ({
-  pages,
+  totalPages,
   currentPage: current,
   neighbours = 1,
 }: {
-  pages: number;
+  totalPages: number;
   currentPage: number;
   neighbours?: number;
 }): PaginationShape => {
   if (current < 1) return [];
-  if (pages < 1) return [];
-  if (current > pages) return [];
+  if (totalPages < 1) return [];
+  if (current > totalPages) return [];
   if (neighbours < 0) return [];
 
   /**
@@ -78,7 +78,8 @@ const describePagination = ({
 
   // currentLeft = rightDistance
   const rightDistance = current + neighbours;
-  const rightmostNeighbour = rightDistance <= pages ? rightDistance : current;
+  const rightmostNeighbour =
+    rightDistance <= totalPages ? rightDistance : current;
 
   const activeSegmentCount = rightmostNeighbour - leftmostNeighbour + 1;
   const activeSegment: PaginationShape = [];
@@ -132,8 +133,8 @@ const describePagination = ({
    * in this case we don't need to generate the end segment
    *  f.e. 1 2 … *9* 10
    */
-  if (rightmostNeighbour < pages) {
-    const endSegmentRight = pages;
+  if (rightmostNeighbour < totalPages) {
+    const endSegmentRight = totalPages;
     let endSegmentLeft = endSegmentRight - neighbours;
     // remove possible overlap
     if (endSegmentLeft <= rightmostNeighbour) {

@@ -12,6 +12,7 @@ import {
   useInstancesPageSize,
   usePageSizeActions,
 } from "~/util/store/pagesize";
+import { useMemo, useState } from "react";
 
 import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
@@ -20,16 +21,22 @@ import { FiltersObj } from "~/api/instances/query/utils";
 import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
 import { SelectPageSize } from "../../../../components/SelectPageSize";
+import { getOffsetByPageNumber } from "~/components/Pagination/utils";
 import { useInstances } from "~/api/instances/query/get";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const InstancesListPage = () => {
   const pageSize = useInstancesPageSize();
   const { setInstancesPageSize } = usePageSizeActions();
-  const [offset, setOffset] = useState(0);
+  const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<FiltersObj>({});
   const { t } = useTranslation();
+
+  const offset = useMemo(
+    () => getOffsetByPageNumber(page, Number(pageSize)),
+    [page, pageSize]
+  );
+
   const { data, isSuccess, isAllowed, noPermissionMessage } = useInstances({
     limit: parseInt(pageSize),
     offset,
@@ -38,13 +45,18 @@ const InstancesListPage = () => {
 
   const handleFilterChange = (filters: FiltersObj) => {
     setFilters(filters);
-    setOffset(0);
+    setPage(1);
   };
 
   const instances = data?.data ?? [];
   const numberOfInstances = data?.meta?.total ?? 0;
   const noResults = isSuccess && instances.length === 0;
   const hasFilters = !!Object.keys(filters).length;
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(numberOfInstances / Number(pageSize))
+  );
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
@@ -117,14 +129,13 @@ const InstancesListPage = () => {
           initialPageSize={pageSize}
           onSelect={(selectedSize) => {
             setInstancesPageSize(selectedSize);
-            setOffset(0);
+            setPage(1);
           }}
         />
         <Pagination
-          itemsPerPage={parseInt(pageSize)}
-          value={offset}
-          onChange={(page) => setOffset(page)}
-          totalItems={numberOfInstances}
+          value={page}
+          onChange={(page) => setPage(page)}
+          totalPages={totalPages}
         />
       </div>
     </div>

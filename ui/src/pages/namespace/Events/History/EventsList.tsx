@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
 import { NoPermissions, NoResult, TableCell, TableRow } from "~/design/Table";
-import { Pagination, PaginationLink } from "~/design/Pagination";
+// import { Pagination, PaginationLink } from "~/design/Pagination";
 import { useEventsPageSize, usePageSizeActions } from "~/util/store/pagesize";
 
 import { Card } from "~/design/Card";
@@ -8,6 +8,7 @@ import { EventSchemaType } from "~/api/events/schema";
 import EventsTable from "./Table";
 import Filters from "./components/Filters";
 import { FiltersSchemaType } from "~/api/events/schema/filters";
+import { Pagination } from "~/components/Pagination";
 import PaginationProvider from "~/components/PaginationProvider";
 import { Radio } from "lucide-react";
 import Row from "./Row";
@@ -47,6 +48,11 @@ const EventsList = ({
   const noResults = isFetched && data.data.length === 0;
   const hasFilters = !!Object.keys(filters).length;
 
+  const totalPages = Math.max(
+    1,
+    Math.ceil(data.data.length / Number(pageSize))
+  );
+
   return (
     <div className="flex grow flex-col gap-y-3 p-5">
       <Dialog open={!!eventDialog} onOpenChange={handleOpenChange}>
@@ -55,14 +61,15 @@ const EventsList = ({
             currentItems,
             goToFirstPage,
             goToPage,
-            goToNextPage,
-            goToPreviousPage,
+            // goToNextPage,
+            // goToPreviousPage,
             currentPage,
-            pagesList,
+            // pagesList,
           }) => (
             <>
               <Card>
                 <div className="flex flex-row place-content-between items-start">
+                  {currentPage}
                   <Filters
                     filters={filters}
                     onUpdate={(filters) => {
@@ -119,30 +126,13 @@ const EventsList = ({
                     goToFirstPage();
                   }}
                 />
-                <Pagination>
-                  <PaginationLink
-                    disabled={pagesList.length === 1}
-                    data-testid="pagination-btn-left"
-                    icon="left"
-                    onClick={() => goToPreviousPage()}
-                  />
-                  {pagesList.map((page) => (
-                    <PaginationLink
-                      disabled={pagesList.length === 1}
-                      active={currentPage === page}
-                      key={`${page}`}
-                      onClick={() => goToPage(page)}
-                    >
-                      {page}
-                    </PaginationLink>
-                  ))}
-                  <PaginationLink
-                    disabled={pagesList.length === 1}
-                    data-testid="pagination-btn-right"
-                    icon="right"
-                    onClick={() => goToNextPage()}
-                  />
-                </Pagination>
+                <Pagination
+                  totalPages={totalPages}
+                  value={currentPage}
+                  onChange={(value) => {
+                    goToPage(value);
+                  }}
+                />
               </div>
             </>
           )}

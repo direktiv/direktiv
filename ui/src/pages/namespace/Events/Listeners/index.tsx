@@ -3,6 +3,7 @@ import {
   useEventListenersPageSize,
   usePageSizeActions,
 } from "~/util/store/pagesize";
+import { useMemo, useState } from "react";
 
 import { Antenna } from "lucide-react";
 import { Card } from "~/design/Card";
@@ -10,16 +11,23 @@ import ListenersTable from "./Table";
 import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
 import { SelectPageSize } from "../../../../components/SelectPageSize";
+import { getOffsetByPageNumber } from "~/components/Pagination/utils";
 import { useEventListeners } from "~/api/eventListeners/query/get";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const ListenersList = () => {
   const pageSize = useEventListenersPageSize();
   const { setEventListenersPageSize } = usePageSizeActions();
-  const [offset, setOffset] = useState(0);
+  const [page, setPage] = useState(1);
+  const offset = useMemo(
+    () => getOffsetByPageNumber(page, Number(pageSize)),
+    [page, pageSize]
+  );
   const { data, isFetched, isAllowed, noPermissionMessage } = useEventListeners(
-    { limit: parseInt(pageSize), offset }
+    {
+      limit: parseInt(pageSize),
+      offset,
+    }
   );
 
   const { t } = useTranslation();
@@ -68,14 +76,18 @@ const ListenersList = () => {
           initialPageSize={pageSize}
           onSelect={(selectedSize) => {
             setEventListenersPageSize(selectedSize);
-            setOffset(0);
+            setPage(1);
           }}
         />
         <Pagination
-          itemsPerPage={parseInt(pageSize)}
-          value={offset}
-          onChange={(value) => setOffset(value)}
-          totalItems={numberOfResults}
+          value={page}
+          onChange={(value) => {
+            setPage(value);
+          }}
+          totalPages={Math.max(
+            1,
+            Math.ceil(numberOfResults / Number(pageSize))
+          )}
         />
       </div>
     </div>
