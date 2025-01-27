@@ -1,6 +1,7 @@
 package extensions
 
 import (
+	eeDStore "github.com/direktiv/direktiv/cmd/ee/datastore"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/go-chi/chi/v5"
@@ -18,6 +19,7 @@ type RouteController interface {
 }
 
 type App struct {
-	DB  *database.DB
-	Bus *pubsub.Bus
+	DB       *database.DB
+	Bus      *pubsub.Bus
+	EEDStore eeDStore.Store
 }
