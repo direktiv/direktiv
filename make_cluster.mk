@@ -20,7 +20,7 @@ cluster-create:
 		docker network connect kind kind-registry; \
 	fi
 
-	DOCKER_BUILDKIT=1 docker build --push -t localhost:5001/direktiv:dev .
+	DOCKER_BUILDKIT=1 docker build --build-arg IS_ENTERPRISE=${IS_ENTERPRISE} --push -t localhost:5001/direktiv:dev .
 
 	if ! docker inspect proxy-quay >/dev/null 2>&1; then \
 		docker run -d --name proxy-quay --restart=always \
