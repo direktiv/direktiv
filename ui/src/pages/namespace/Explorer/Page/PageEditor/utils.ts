@@ -22,9 +22,8 @@ const defaultPageFileJson: PageFormSchemaType = {
   direktiv_api: "page/v1",
   path: "/",
   layout: [
-    { element: "header" },
-    { element: "placeholder" },
-    { element: "footer" },
+    { name: "header", hidden: true },
+    { name: "footer", hidden: true },
   ],
 };
 

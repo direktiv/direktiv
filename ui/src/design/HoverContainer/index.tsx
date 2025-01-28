@@ -16,7 +16,7 @@ const HoverContainer = React.forwardRef<
 HoverContainer.displayName = "HoverContainer";
 
 export type HoverElementProps = {
-  variant?: "alwaysVisible";
+  variant?: "alwaysVisibleRight" | "alwaysVisibleLeft";
 };
 
 const HoverElement = React.forwardRef<
@@ -26,11 +26,16 @@ const HoverElement = React.forwardRef<
   <div
     ref={ref}
     className={twMergeClsx(
-      "absolute right-2 top-2 flex justify-end gap-1",
+      "absolute top-2 flex justify-end gap-1",
       !variant && [
-        "invisible transition-opacity group-hover:visible group-focus:invisible",
+        "invisible right-2 transition-opacity group-hover:visible group-focus:invisible",
       ],
-      variant === "alwaysVisible" && ["opacity-50 hover:opacity-100"],
+      variant === "alwaysVisibleRight" && [
+        "right-2 opacity-50 hover:opacity-100",
+      ],
+      variant === "alwaysVisibleLeft" && [
+        "right-12 opacity-50 hover:opacity-100",
+      ],
       className
     )}
   >

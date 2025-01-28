@@ -1,31 +1,38 @@
 import {
-  DroppableElement,
-  Placeholder,
-} from "~/design/DragAndDropEditor/DroppableElement";
-import { FC, ReactNode, useState } from "react";
-import { Image, List, Save, TableIcon } from "lucide-react";
-import {
+  ArrowDownFromLine,
+  ArrowDownToLine,
+  Image,
+  List,
+  Save,
   Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeaderCell,
-  TableRow,
-} from "~/design/Table";
+  Text,
+} from "lucide-react";
+import { DragAndDropPreview, getElementComponent } from "./PreviewElements";
+import {
+  DroppableElement,
+  NonDroppableElement,
+} from "~/design/DragAndDropEditor/DroppableElement";
+import { FC, Fragment, useState } from "react";
+import {
+  LayoutSchemaType,
+  PageElementSchemaType,
+  PageFormSchemaType,
+} from "./schema";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 import { decode, encode } from "js-base64";
 
 import Alert from "~/design/Alert";
-import Avatar from "~/design/Avatar";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import { Dialog } from "~/design/Dialog";
 import { DndContext } from "~/design/DragAndDropEditor/Context.tsx";
-import { DragAndDropPreview } from "~/design/DragAndDropEditor";
-import { Draggable } from "~/design/DragAndDropEditor/DraggableElement";
+import { DraggableElement } from "~/design/DragAndDropEditor/DraggableElement";
+import { DroppableSeparator } from "~/design/DragAndDropEditor/DroppableSeparator";
+import { EditModal } from "~/design/DragAndDropEditor/EditModal";
 import { FileSchemaType } from "~/api/files/schema";
 import { Form } from "./Form";
 import FormErrors from "~/components/FormErrors";
 import NavigationBlocker from "~/components/NavigationBlocker";
-import { PageFormSchemaType } from "./schema";
 import { ScrollArea } from "~/design/ScrollArea";
 import { jsonToYaml } from "../../utils";
 import { serializePageFile } from "./utils";
@@ -36,64 +43,6 @@ type PageEditorProps = {
   data: NonNullable<FileSchemaType>;
 };
 
-type person = {
-  name?: string;
-  email?: string;
-  title?: string;
-  role?: string;
-};
-
-type TableProps = {
-  columns?: number;
-  rows?: number;
-  people?: person[];
-};
-
-const DefaultTable: FC<TableProps> = () => (
-  <Table>
-    <TableHead>
-      <TableRow>
-        <TableHeaderCell>...</TableHeaderCell>
-        <TableHeaderCell>...</TableHeaderCell>
-        <TableHeaderCell>...</TableHeaderCell>
-        <TableHeaderCell>...</TableHeaderCell>
-        <TableHeaderCell>
-          <span className="sr-only">Edit</span>
-        </TableHeaderCell>
-      </TableRow>
-    </TableHead>
-    <TableBody>
-      <TableRow>
-        <TableCell>...</TableCell>
-        <TableCell>...</TableCell>
-        <TableCell>...</TableCell>
-        <TableCell>...</TableCell>
-      </TableRow>
-    </TableBody>
-  </Table>
-);
-
-const DefaultList: FC = () => (
-  <ul className="list-disc">
-    <li>...</li>
-    <li>...</li>
-    <li>...</li>
-  </ul>
-);
-
-const getElementComponent = (element: string) => {
-  switch (element) {
-    case "Image":
-      return <Avatar />;
-    case "Table":
-      return <DefaultTable />;
-    case "List":
-      return <DefaultList />;
-    default:
-      return <div>emptyyyy</div>;
-  }
-};
-
 const PageEditor: FC<PageEditorProps> = ({ data }) => {
   const { t } = useTranslation();
   const fileContentFromServer = decode(data.data ?? "");
@@ -102,26 +51,91 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
   );
   const { mutate: updateRoute, isPending } = useUpdateFile();
 
-  //  check for pageConfig === undefined
-  //  pageConfig === undefined ? "" : pageConfig.layout[0].element
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
-  const [elementName, setElementName] = useState<string>("Table");
-  const [content, setContent] = useState<ReactNode>(<div></div>);
+  const headerDefault: PageElementSchemaType = {
+    name: "Header",
+    hidden: true,
+    content: "This is the header",
+    preview: "This is the header",
+  };
 
-  //const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-  const [header, setHeader] = useState<ReactNode>(<div></div>);
-  const [footer, setFooter] = useState<ReactNode>(<div></div>);
+  const footerDefault: PageElementSchemaType = {
+    name: "Footer",
+    hidden: false,
+    content: "This is the footer",
+    preview: "This is the footer",
+  };
 
-  if (!header) {
-    header !== "<div>" ? setHeader(<div></div>) : setHeader(<div></div>);
-    footer !== "<div>" ? setFooter(<div></div>) : setFooter(<div></div>);
-  }
+  const placeholder1: PageElementSchemaType = {
+    name: "Text",
+    hidden: false,
+    content: "This is a Text...",
+    preview: "This is a Text...",
+  };
 
-  const onMove = (element: string, target: string) => {
+  const placeholder2: PageElementSchemaType = {
+    name: "Table",
+    hidden: false,
+    content: "data",
+    preview: "Placeholder Table",
+  };
+
+  const placeholder3: PageElementSchemaType = {
+    name: "Text",
+    hidden: true,
+    content: "some more info about...",
+    preview: "some more info about...",
+  };
+
+  const defaultConfig: PageFormSchemaType = {
+    layout: [placeholder1, placeholder2, placeholder3],
+    direktiv_api: "page/v1",
+    path: undefined,
+  };
+
+  const defaultLayout = defaultConfig.layout;
+
+  const [layout, setLayout] = useState<LayoutSchemaType>(defaultLayout);
+
+  const [header, setHeader] = useState<PageElementSchemaType>(headerDefault);
+  const [footer, setFooter] = useState<PageElementSchemaType>(footerDefault);
+
+  const updateHeader = (header: PageElementSchemaType) => {
+    const newHeader = header;
+    newHeader.hidden = !header.hidden;
+    setHeader(newHeader);
+  };
+
+  const updateFooter = (footer: PageElementSchemaType) => {
+    const newFooter = footer;
+    newFooter.hidden = !footer.hidden;
+    setFooter(newFooter);
+  };
+
+  const onMove = (name: string, target: string) => {
     if (target) {
-      const elementComponent = getElementComponent(element);
-      setContent(elementComponent);
-      setElementName(element);
+      const newElement = {
+        name,
+        hidden: false,
+        content: undefined,
+        preview: `Placeholder ${name} `,
+      };
+      const newLayout = [...layout];
+
+      if (target.includes("A")) {
+        target = target.slice(0, -1);
+        newLayout.splice(Number(target), 0, newElement);
+      } else {
+        if (target.includes("B")) {
+          target = target.slice(0, -1);
+          newLayout.splice(Number(target + 1), 0, newElement);
+        } else {
+          newLayout[Number(target)] = newElement;
+        }
+      }
+
+      setLayout(newLayout);
     }
   };
 
@@ -133,121 +147,215 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
     });
   };
 
-  const defaultConfig: PageFormSchemaType = {
-    layout: [
-      {
-        element: "header",
-      },
-    ],
-    direktiv_api: "page/v1",
-    path: undefined,
-  };
-
   return (
-    <DndContext onMove={onMove}>
-      <Form defaultConfig={pageConfig ?? defaultConfig} onSave={save}>
-        {({
-          formControls: {
-            formState: { errors },
-            handleSubmit,
-          },
-          formMarkup,
-        }) => {
-          // const preview = jsonToYaml(values);
-          //const parsedOriginal = pageConfig && jsonToYaml(pageConfig);
-          // const filehasChanged = preview !== parsedOriginal;
-          const filehasChanged = false;
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <DndContext onMove={onMove}>
+        <Form defaultConfig={pageConfig ?? defaultConfig} onSave={save}>
+          {({
+            formControls: {
+              formState: { errors },
+              handleSubmit,
+            },
+            formMarkup,
+          }) => {
+            const filehasChanged = false;
 
-          const isDirty = !pageConfigError && filehasChanged;
-          const disableButton = isPending || !!pageConfigError;
+            const isDirty = !pageConfigError && filehasChanged;
+            const disableButton = isPending || !!pageConfigError;
 
-          return (
-            <form
-              onSubmit={handleSubmit(save)}
-              className="relative flex-col gap-4 p-5"
-            >
-              {isDirty && <NavigationBlocker />}
-              <div className="flex flex-col gap-4">
-                <div className="grid grow grid-cols-1 gap-5 lg:grid-cols-2">
-                  <Card className="p-5 lg:h-[calc(100vh-15.5rem)]">
-                    {pageConfigError ? (
-                      <div className="flex flex-col gap-5 lg:overflow-y-scroll">
-                        <Alert variant="error">
-                          {t(
-                            "pages.explorer.endpoint.editor.form.serialisationError"
+            return (
+              <form
+                onSubmit={handleSubmit(save)}
+                className="relative flex-col gap-4 p-5"
+              >
+                {isDirty && <NavigationBlocker />}
+                <div className="flex flex-col gap-4">
+                  <div className="grid grow grid-cols-1 gap-5 lg:grid-cols-2">
+                    <Card className="p-5 lg:h-[calc(100vh-15.5rem)] overflow-x-clip  overflow-y-auto">
+                      {pageConfigError ? (
+                        <div className="flex flex-col gap-5 lg:overflow-y-scroll">
+                          <Alert variant="error">
+                            {t(
+                              "pages.explorer.endpoint.editor.form.serialisationError"
+                            )}
+                          </Alert>
+                          <ScrollArea className="size-full whitespace-nowrap">
+                            <pre className="grow text-sm text-primary-500">
+                              {JSON.stringify(pageConfigError, null, 2)}
+                            </pre>
+                          </ScrollArea>
+                        </div>
+                      ) : (
+                        <div>
+                          {formMarkup}
+                          <div className="pt-8 pb-4">
+                            <h2 className="flex text-sm">
+                              <ArrowDownFromLine size={20} className="mr-2" />
+                              Select Components
+                            </h2>
+                          </div>
+                          <Tabs defaultValue="data" className="w-full">
+                            <TabsList variant="boxed">
+                              <TabsTrigger variant="boxed" value="data">
+                                Data Collection
+                              </TabsTrigger>
+                              <TabsTrigger variant="boxed" value="static">
+                                Static Elements
+                              </TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="data" asChild>
+                              <Card
+                                className="p-4 text-sm bg-gray-2 dark:bg-gray-dark-2 flex row"
+                                noShadow
+                              >
+                                <DraggableElement icon={Table} name="Table" />
+                                <DraggableElement icon={List} name="List" />
+                              </Card>
+                            </TabsContent>
+                            <TabsContent value="static" asChild>
+                              <Card
+                                className="p-4 text-sm bg-gray-2 dark:bg-gray-dark-2 flex row"
+                                noShadow
+                              >
+                                <DraggableElement icon={Image} name="Image" />
+                                <DraggableElement icon={Text} name="Text" />
+                              </Card>
+                            </TabsContent>
+                          </Tabs>
+
+                          <div className="pt-8 pb-4">
+                            <h2 className="flex text-sm">
+                              <ArrowDownToLine size={20} className="mr-2" />
+                              Place Components
+                            </h2>
+                          </div>
+                          <Card
+                            noShadow
+                            className="relative w-full bg-gray-2 dark:bg-gray-dark-2 rounded-md p-4"
+                          >
+                            <NonDroppableElement
+                              name="Header"
+                              preview={header.preview}
+                              hidden={header.hidden}
+                              onHide={() => updateHeader(header)}
+                              onEdit={() => setDialogOpen(true)}
+                            />
+
+                            {layout.map((element, index) => {
+                              const isLastListItem =
+                                index === layout.length - 1;
+                              return (
+                                <Fragment key={index}>
+                                  {isLastListItem ? (
+                                    <>
+                                      <DroppableSeparator
+                                        id={String(index) + "A"}
+                                      />
+                                      <DroppableElement
+                                        id={String(index)}
+                                        name={element.name}
+                                        preview={element.preview}
+                                        hidden={element.hidden}
+                                        onHide={() =>
+                                          (element.hidden = !element.hidden)
+                                        }
+                                        onEdit={() => setDialogOpen(true)}
+                                      />
+                                      <DroppableSeparator
+                                        id={String(index) + "B"}
+                                      />
+                                    </>
+                                  ) : (
+                                    <>
+                                      <DroppableSeparator
+                                        id={String(index) + "A"}
+                                      />
+                                      <DroppableElement
+                                        id={String(index)}
+                                        name={element.name}
+                                        preview={element.preview}
+                                        hidden={element.hidden}
+                                        onHide={() =>
+                                          (element.hidden = !element.hidden)
+                                        }
+                                        onEdit={() => setDialogOpen(true)}
+                                      />
+                                    </>
+                                  )}
+                                </Fragment>
+                              );
+                            })}
+
+                            <FormErrors errors={errors} className="mb-5" />
+
+                            <NonDroppableElement
+                              name="Footer"
+                              preview={footer.preview}
+                              hidden={footer.hidden}
+                              onHide={() => updateFooter(footer)}
+                              onEdit={() => setDialogOpen(true)}
+                            />
+                          </Card>
+                        </div>
+                      )}
+                    </Card>
+                    <Card className="flex grow p-4 max-lg:h-[500px] bg-gray-2 dark:bg-gray-dark-2">
+                      <Card
+                        noShadow
+                        className="ring-0 size-full bg-white dark:bg-black p-4"
+                      >
+                        <DragAndDropPreview>
+                          {getElementComponent(
+                            header.name,
+                            header.hidden,
+                            header.content
                           )}
-                        </Alert>
-                        <ScrollArea className="size-full whitespace-nowrap">
-                          <pre className="grow text-sm text-primary-500">
-                            {JSON.stringify(pageConfigError, null, 2)}
-                          </pre>
-                        </ScrollArea>
-                      </div>
-                    ) : (
-                      <div>
-                        {formMarkup}
-                        <Card className="h-full bg-gray-1 p-4">
-                          <Draggable name="Image">
-                            <Button asChild variant="outline" size="lg">
-                              <div className="w-28 bg-white">
-                                <Image size={16} />
-                                Image
-                              </div>
-                            </Button>
-                          </Draggable>
-                          <Draggable name="Table">
-                            <Button asChild variant="outline" size="lg">
-                              <div className="w-28 bg-white ">
-                                <TableIcon size={16} />
-                                Table
-                              </div>
-                            </Button>
-                          </Draggable>
-                          <Draggable name="List">
-                            <Button asChild variant="outline" size="lg">
-                              <div className="w-28 bg-white">
-                                <List size={16} />
-                                List
-                              </div>
-                            </Button>
-                          </Draggable>
-                        </Card>
-                        <Placeholder name="Header" />
-                        <DroppableElement
-                          droppedElementName={elementName}
-                        ></DroppableElement>
-                        <FormErrors errors={errors} className="mb-5" />
-                        <Placeholder name="Footer" />
+                        </DragAndDropPreview>
+                        {layout.map((element, index) => (
+                          <DragAndDropPreview key={index}>
+                            {getElementComponent(
+                              element.name,
+                              element.hidden,
+                              element.content
+                            )}
+                          </DragAndDropPreview>
+                        ))}
+                        <DragAndDropPreview>
+                          {getElementComponent(
+                            footer.name,
+                            footer.hidden,
+                            footer.content
+                          )}
+                        </DragAndDropPreview>
+                      </Card>
+                    </Card>
+                  </div>
+                  <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
+                    {isDirty && (
+                      <div className="text-sm text-gray-8 dark:text-gray-dark-8">
+                        <span className="text-center">
+                          {t("pages.explorer.endpoint.editor.unsavedNote")}
+                        </span>
                       </div>
                     )}
-                  </Card>
-                  <Card className="flex grow p-4 max-lg:h-[500px]">
-                    <DragAndDropPreview>{content}</DragAndDropPreview>
-                  </Card>
+                    <Button
+                      variant={isDirty ? "primary" : "outline"}
+                      disabled={disableButton}
+                      type="submit"
+                    >
+                      <Save />
+                      {t("pages.explorer.endpoint.editor.saveBtn")}
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-                  {isDirty && (
-                    <div className="text-sm text-gray-8 dark:text-gray-dark-8">
-                      <span className="text-center">
-                        {t("pages.explorer.endpoint.editor.unsavedNote")}
-                      </span>
-                    </div>
-                  )}
-                  <Button
-                    variant={isDirty ? "primary" : "outline"}
-                    disabled={disableButton}
-                    type="submit"
-                  >
-                    <Save />
-                    {t("pages.explorer.endpoint.editor.saveBtn")}
-                  </Button>
-                </div>
-              </div>
-            </form>
-          );
-        }}
-      </Form>
-    </DndContext>
+              </form>
+            );
+          }}
+        </Form>
+      </DndContext>
+
+      <EditModal />
+    </Dialog>
   );
 };
 

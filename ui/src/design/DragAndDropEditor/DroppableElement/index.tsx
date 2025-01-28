@@ -1,89 +1,221 @@
+import { Eye, EyeOff, PlusCircle, Settings } from "lucide-react";
 import { FC, PropsWithChildren } from "react";
 import { HoverContainer, HoverElement } from "~/design/HoverContainer";
+import { LogEntry, Logs } from "~/design/Logs";
+import { useDndContext, useDroppable } from "@dnd-kit/core";
 
 import Badge from "~/design/Badge";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import { Settings } from "lucide-react";
 import { twMergeClsx } from "~/util/helpers";
-import { useDroppable } from "@dnd-kit/core";
 
 type DroppableProps = PropsWithChildren & {
-  droppedElementName: string;
-  onClick?: () => void;
+  name: string;
+  hidden: boolean;
+  id: string;
+  onHide?: () => void;
+  onEdit?: () => void;
+  preview: string;
 };
 
 export const DroppableElement: FC<DroppableProps> = ({
-  droppedElementName,
+  name,
+  hidden,
+  id,
   children,
-  onClick,
+  onHide,
+  onEdit,
+  preview,
 }) => {
-  const id = droppedElementName;
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
 
   return (
-    <div ref={setNodeRef} aria-label={id} className="relative">
+    <div ref={setNodeRef} aria-label={name} className="relative">
       {children}
-      <Droppable isOver={isOver} id={id} onClick={onClick} />
+      <Droppable
+        preview={preview}
+        hidden={hidden}
+        name={name}
+        isOver={isOver}
+        onHide={onHide}
+        onEdit={onEdit}
+      />
     </div>
   );
 };
 
 export const Droppable = ({
-  id,
+  hidden,
   isOver,
-  onClick,
+  onHide,
+  onEdit,
+  name,
+  preview,
 }: {
-  id: string;
+  hidden: boolean;
   isOver: boolean;
-  onClick?: () => void;
+  onHide?: () => void;
+  onEdit?: () => void;
+  name: string;
+  preview: string;
 }) => (
   <HoverContainer>
-    <div
+    <Card
+      noShadow
       className={twMergeClsx(
-        isOver && "border-4 border-dashed",
-        !isOver && "border",
-        "flex h-24 w-full items-center justify-center bg-slate-50"
+        "flex h-24 w-full items-center border-transparent justify-center bg-white dark:bg-black",
+        isOver && " opacity-100",
+        hidden && "bg-gray-2"
       )}
     >
-      <HoverElement className="bg-white opacity-100" variant="alwaysVisible">
-        <Button disabled={!id} icon variant="outline" onClick={onClick}>
+      <HoverElement
+        className={twMergeClsx(
+          "bg-white dark:bg-black opacity-100",
+          isOver && "hidden",
+          hidden && "opacity-60"
+        )}
+        variant="alwaysVisibleLeft"
+      >
+        <Button icon variant="outline" onClick={onHide}>
+          {hidden ? <EyeOff size={16} /> : <Eye size={16} />}
+        </Button>
+      </HoverElement>
+
+      <HoverElement
+        className={twMergeClsx(
+          "bg-white dark:bg-black opacity-100",
+          isOver && "hidden",
+          hidden && "opacity-60"
+        )}
+        variant="alwaysVisibleRight"
+      >
+        <Button icon variant="outline" onClick={onEdit}>
           <Settings size={16} />
         </Button>
       </HoverElement>
+
       <div className="flex flex-col">
-        <Badge variant="outline">{!id ? "empty" : id}</Badge>
+        {isOver ? (
+          <Badge className="bg-gray-10 ">
+            <PlusCircle className="mr-2" size={16} />
+            Replace this
+          </Badge>
+        ) : (
+          <div className={twMergeClsx("opacity-100", hidden && "opacity-60")}>
+            <div className="justify-center flex">
+              <Badge variant="outline" className="h-6">
+                {name}
+              </Badge>
+            </div>
+
+            <Logs className="pt-2">
+              <LogEntry>{preview}</LogEntry>
+            </Logs>
+          </div>
+        )}
       </div>
-    </div>
+    </Card>
   </HoverContainer>
 );
 
-type PlaceholderProps = PropsWithChildren & {
-  name: string;
-  onClick?: () => void;
+type DropableProps = PropsWithChildren & {
+  id: string;
 };
 
-export const Placeholder: FC<PlaceholderProps> = ({ name, onClick }) => (
+export const Droppable3: FC<DropableProps> = ({ id, children }) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id,
+  });
+
+  const { active } = useDndContext();
+
+  const canDrop = !!active;
+
+  return (
+    <div
+      ref={setNodeRef}
+      aria-label={id}
+      className={twMergeClsx(
+        "relative h-1 w-full bg-primary-200 transition-all",
+        isOver && "h-12 bg-primary-500"
+      )}
+    >
+      {children}
+      {canDrop && <DropZone id={id} isOver={isOver} />}
+    </div>
+  );
+};
+
+const DropZone = ({ isOver, id }: { isOver: boolean; id: string }) => (
+  <div className="absolute h-6 inset-0 flex flex-col items-center justify-center border-b-8">
+    <div className="flex flex-col">
+      <Badge variant="outline">
+        {isOver ? (
+          <>
+            <PlusCircle className="mr-2" size={16} />
+            {id}
+          </>
+        ) : (
+          <>{!id ? "empty" : id}</>
+        )}
+      </Badge>
+    </div>
+  </div>
+);
+
+type NonDroppableElementProps = PropsWithChildren & {
+  name: string;
+  onHide?: () => void;
+  onEdit?: () => void;
+  hidden: boolean;
+  preview: string;
+};
+
+export const NonDroppableElement: FC<NonDroppableElementProps> = ({
+  name,
+  onHide,
+  onEdit,
+  hidden,
+  preview,
+}) => (
   <div aria-label={name} className="relative">
     <HoverContainer>
       <Card
         noShadow
         className={twMergeClsx(
-          "flex h-24 w-full items-center border-transparent justify-center bg-white"
+          "flex h-24 w-full items-center flex-col border-transparent justify-center bg-white dark:bg-black",
+          hidden && "bg-gray-2 opacity-60"
         )}
       >
-        <HoverElement className="bg-white opacity-100" variant="alwaysVisible">
-          <Button icon variant="outline" onClick={onClick}>
+        <HoverElement
+          className="bg-white dark:bg-black opacity-100"
+          variant="alwaysVisibleLeft"
+        >
+          <Button icon variant="outline" onClick={onHide}>
+            {hidden ? <EyeOff size={16} /> : <Eye size={16} />}
+          </Button>
+        </HoverElement>
+
+        <HoverElement
+          className="bg-white dark:bg-black opacity-100"
+          variant="alwaysVisibleRight"
+        >
+          <Button icon variant="outline" onClick={onEdit}>
             <Settings size={16} />
           </Button>
         </HoverElement>
-        <div className="flex flex-col">
+
+        <div className="justify-center flex ">
           <Badge variant="outline" className="h-6">
             {name}
           </Badge>
         </div>
+
+        <Logs className="pt-2">
+          <LogEntry>{preview}</LogEntry>
+        </Logs>
       </Card>
     </HoverContainer>
   </div>
