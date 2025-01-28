@@ -1,6 +1,5 @@
 import { FileJson, Trash } from "lucide-react";
 import { NoResult, Table, TableBody } from "~/design/Table";
-import { Pagination, PaginationLink } from "~/design/Pagination";
 import { useEffect, useMemo, useState } from "react";
 
 import Button from "~/design/Button";
@@ -13,6 +12,7 @@ import { Dialog } from "~/design/Dialog";
 import Edit from "./Edit";
 import Input from "~/design/Input";
 import ItemRow from "~/pages/namespace/Settings/components/ItemRow";
+import { Pagination } from "~/components/Pagination";
 import PaginationProvider from "~/components/PaginationProvider";
 import { VarSchemaType } from "~/api/variables/schema";
 import { triggerDownloadFromBase64String } from "~/util/helpers";
@@ -96,10 +96,8 @@ const VariablesList = ({ path }: { path: string }) => {
           currentItems,
           goToFirstPage,
           goToPage,
-          goToNextPage,
-          goToPreviousPage,
+
           currentPage,
-          pagesList,
           totalPages,
         }) => (
           <>
@@ -191,30 +189,11 @@ const VariablesList = ({ path }: { path: string }) => {
                 </NoResult>
               )}
             </Card>
-            <Pagination>
-              <PaginationLink
-                disabled={totalPages === 1}
-                data-testid="pagination-btn-left"
-                icon="left"
-                onClick={() => goToPreviousPage()}
-              />
-              {pagesList.map((page) => (
-                <PaginationLink
-                  disabled={totalPages === 1}
-                  active={currentPage === page}
-                  key={`${page}`}
-                  onClick={() => goToPage(page)}
-                >
-                  {page}
-                </PaginationLink>
-              ))}
-              <PaginationLink
-                disabled={totalPages === 1}
-                data-testid="pagination-btn-right"
-                icon="right"
-                onClick={() => goToNextPage()}
-              />
-            </Pagination>
+            <Pagination
+              totalPages={totalPages}
+              value={currentPage}
+              onChange={(value) => goToPage(value)}
+            />
           </>
         )}
       </PaginationProvider>

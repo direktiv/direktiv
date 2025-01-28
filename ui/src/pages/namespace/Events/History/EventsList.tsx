@@ -1,6 +1,5 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
 import { NoPermissions, NoResult, TableCell, TableRow } from "~/design/Table";
-// import { Pagination, PaginationLink } from "~/design/Pagination";
 import { useEventsPageSize, usePageSizeActions } from "~/util/store/pagesize";
 
 import { Card } from "~/design/Card";
