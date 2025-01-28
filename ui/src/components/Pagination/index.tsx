@@ -14,12 +14,9 @@ export const Pagination = ({
   value: number;
   onChange: (page: number) => void;
 }) => {
-  console.log("pageValue", value);
   const isFirstPage = value === 1;
-  console.log("isFirstPage", isFirstPage);
 
   const isLastPage = value === totalPages;
-  console.log("isLastPage", value, totalPages, isLastPage);
 
   const previousPage = value > 1 ? value - 1 : null;
 
