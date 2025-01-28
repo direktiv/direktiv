@@ -102,13 +102,20 @@ opentelemetry:
         tls:
           insecure: true
           insecure_skip_verify: true
+      otlp/metrics:
+        endpoint: direktiv-data-prepper.default.svc:21891
+        tls:
+          insecure: true    
+          insecure_skip_verify: true
       debug:
     service:
       pipelines:
         traces: 
           receivers: [otlp]
           exporters: [debug, otlp/traces]
-
+        metrics:
+          receivers: [otlp]
+          exporters: [debug, otlp/metrics]
 ingress:
   # --
   enabled: true
@@ -349,7 +356,6 @@ data-prepper:
               username: admin
               password: direktivTr0&3
               index_type: trace-analytics-raw
-          - stdout:
       otel-service-map-pipeline:
         delay: "100"
         source:
@@ -364,4 +370,17 @@ data-prepper:
               username: admin
               password: direktivTr0&3
               index_type: trace-analytics-service-map
+      metric-pipeline:
+        source:
+          otel_metrics_source:
+            ssl: false
+        processor:
+          - otel_metrics:
+        sink:
+          - opensearch:
+              hosts: ["https://opensearch-cluster-master.default.svc:9200"]
+              insecure: true
+              username: admin
+              password: direktivTr0&3
+              index: otel_metrics
           - stdout:
