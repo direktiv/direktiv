@@ -87,7 +87,7 @@ const ListenersList = () => {
           onChange={(value) => {
             setPage(value);
           }}
-          totalPages={getTotalPages(data.data.length, Number(pageSize))}
+          totalPages={getTotalPages(numberOfResults, Number(pageSize))}
         />
       </div>
     </div>

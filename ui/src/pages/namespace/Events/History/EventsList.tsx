@@ -61,7 +61,6 @@ const EventsList = ({
             <>
               <Card>
                 <div className="flex flex-row place-content-between items-start">
-                  {currentPage}
                   <Filters
                     filters={filters}
                     onUpdate={(filters) => {
