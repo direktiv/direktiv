@@ -9,9 +9,14 @@ import {
   TableRow,
 } from "~/design/Table";
 import {
+  getOffsetByPageNumber,
+  getTotalPages,
+} from "~/components/Pagination/utils";
+import {
   useInstancesPageSize,
   usePageSizeActions,
 } from "~/util/store/pagesize";
+import { useMemo, useState } from "react";
 
 import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
@@ -21,15 +26,20 @@ import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
 import { SelectPageSize } from "../../../../components/SelectPageSize";
 import { useInstances } from "~/api/instances/query/get";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const InstancesListPage = () => {
   const pageSize = useInstancesPageSize();
   const { setInstancesPageSize } = usePageSizeActions();
-  const [offset, setOffset] = useState(0);
+  const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<FiltersObj>({});
   const { t } = useTranslation();
+
+  const offset = useMemo(
+    () => getOffsetByPageNumber(page, Number(pageSize)),
+    [page, pageSize]
+  );
+
   const { data, isSuccess, isAllowed, noPermissionMessage } = useInstances({
     limit: parseInt(pageSize),
     offset,
@@ -38,7 +48,7 @@ const InstancesListPage = () => {
 
   const handleFilterChange = (filters: FiltersObj) => {
     setFilters(filters);
-    setOffset(0);
+    setPage(1);
   };
 
   const instances = data?.data ?? [];
@@ -117,14 +127,13 @@ const InstancesListPage = () => {
           initialPageSize={pageSize}
           onSelect={(selectedSize) => {
             setInstancesPageSize(selectedSize);
-            setOffset(0);
+            setPage(1);
           }}
         />
         <Pagination
-          itemsPerPage={parseInt(pageSize)}
-          offset={offset}
-          setOffset={setOffset}
-          totalItems={numberOfInstances}
+          value={page}
+          onChange={(page) => setPage(page)}
+          totalPages={getTotalPages(numberOfInstances, Number(pageSize))}
         />
       </div>
     </div>
