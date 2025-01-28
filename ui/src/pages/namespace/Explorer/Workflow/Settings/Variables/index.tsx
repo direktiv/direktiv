@@ -192,7 +192,7 @@ const VariablesList = ({ path }: { path: string }) => {
             <Pagination
               totalPages={totalPages}
               value={currentPage}
-              onChange={(value) => goToPage(value)}
+              onChange={goToPage}
             />
           </>
         )}

@@ -183,7 +183,7 @@ const SecretsList: FC = () => {
             <Pagination
               totalPages={totalPages}
               value={currentPage}
-              onChange={(value) => goToPage(value)}
+              onChange={goToPage}
             />
           </>
         )}
