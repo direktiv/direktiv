@@ -10,7 +10,7 @@ import {
   SidebarMain,
   SidebarTop,
 } from "~/design/Appshell";
-import { Outlet, useParams } from "react-router-dom";
+import { Outlet, useParams } from "@tanstack/react-router";
 import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 
 import Breadcrumb from "~/components/Breadcrumb";
@@ -28,7 +28,8 @@ const Layout = () => {
   const { data: version } = useVersion();
   const namespace = useNamespace();
   const { setNamespace } = useNamespaceActions();
-  const { namespace: namespaceFromUrl } = useParams();
+  // const { namespace: namespaceFromUrl } = useParams();
+  const namespaceFromUrl = "test";
 
   const { isError, error } = useFile({ path: "/" });
 
