@@ -67,17 +67,22 @@ const Layout = () => {
         activeNamespace &&
         availableNamespaces.data.some((ns) => ns.name === activeNamespace)
       ) {
-        navigate(pages.explorer.createHref({ namespace: activeNamespace }));
+        navigate({
+          to: "/n/$namespace/explorer",
+          params: {
+            namespace: activeNamespace,
+          },
+        });
         return;
       }
       // otherwise, redirect to the first namespace and store it in localStorage
       setNamespace(availableNamespaces.data[0].name);
-      navigate(
-        pages.explorer.createHref({
+      navigate({
+        to: "/n/$namespace/explorer",
+        params: {
           namespace: availableNamespaces.data[0].name,
-        })
-      );
-      return;
+        },
+      });
     }
   }, [
     activeNamespace,
