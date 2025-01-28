@@ -21,7 +21,7 @@ type PaginationShape = (number | "…")[];
  * 1 2 3 4 *5* 6 … 10 11
  * 1 2 … 5 *6* 7 … 10 11
  *
- * @param pages the amount of pages
+ * @param totalPages the amount of pages
  * @param currentPage the page we are currently on
  * @param neighbours the amount of neighbours to the left and right of the current page, start and end defaults to 1
  * @returns an array of numbers and "…"
@@ -70,7 +70,6 @@ const describePagination = ({
    */
 
   // active segment
-
   const leftDistance = current - neighbours;
 
   // activeSegmentLeft = leftmostNeighbour

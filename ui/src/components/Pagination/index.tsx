@@ -15,11 +15,8 @@ export const Pagination = ({
   onChange: (page: number) => void;
 }) => {
   const isFirstPage = value === 1;
-
   const isLastPage = value === totalPages;
-
   const previousPage = value > 1 ? value - 1 : null;
-
   const nextPage = value < totalPages ? value + 1 : null;
 
   const paginationDescription = describePagination({

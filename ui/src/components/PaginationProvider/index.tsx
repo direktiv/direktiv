@@ -1,9 +1,10 @@
+import { getTotalPages } from "../Pagination/utils";
 import { useState } from "react";
 
 const PaginationProvider = <TArrayItem,>({
   children,
   items,
-  pageSize: pageSizeProp,
+  pageSize = 10,
 }: {
   children: (props: {
     currentItems: TArrayItem[];
@@ -23,8 +24,7 @@ const PaginationProvider = <TArrayItem,>({
 }) => {
   const firstPage = 1;
   const [currentPage, setCurrentPage] = useState(firstPage);
-  const pageSize = pageSizeProp || 10;
-  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+  const totalPages = getTotalPages(items.length, pageSize);
   const isLastPage = currentPage === totalPages;
   const isFirstPage = currentPage === firstPage;
 
