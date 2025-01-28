@@ -142,7 +142,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		}
 		slog.Info("connected to OpenSearch")
 		meta, err := opensearchstore.NewMetaStore(circuit.Context(), openSearchClient, opensearchstore.Config{
-			LogIndex:       "events",
+			LogIndex:       "otel-v1-apm-span-2025.01.28",
 			LogDeleteAfter: "7d",
 			LogInit:        false,
 		})

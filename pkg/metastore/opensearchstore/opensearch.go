@@ -73,7 +73,7 @@ func NewTestDataStore(t *testing.T) (metastore.Store, func(), error) {
 
 	t.Log("OpenSearch client created successfully.")
 	co := Config{
-		LogIndex:       "test-logging",
+		LogIndex:       "test",
 		LogDeleteAfter: "7d",
 	}
 	err = NewOpenSearchLogStore(client, co).Init(ctx)
