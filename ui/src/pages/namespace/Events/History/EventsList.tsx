@@ -47,11 +47,6 @@ const EventsList = ({
   const noResults = isFetched && data.data.length === 0;
   const hasFilters = !!Object.keys(filters).length;
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(data.data.length / Number(pageSize))
-  );
-
   return (
     <div className="flex grow flex-col gap-y-3 p-5">
       <Dialog open={!!eventDialog} onOpenChange={handleOpenChange}>
@@ -60,10 +55,8 @@ const EventsList = ({
             currentItems,
             goToFirstPage,
             goToPage,
-            // goToNextPage,
-            // goToPreviousPage,
             currentPage,
-            // pagesList,
+            totalPages,
           }) => (
             <>
               <Card>

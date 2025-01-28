@@ -1,5 +1,9 @@
 import { NoPermissions, NoResult, TableCell, TableRow } from "~/design/Table";
 import {
+  getOffsetByPageNumber,
+  getTotalPages,
+} from "~/components/Pagination/utils";
+import {
   useEventListenersPageSize,
   usePageSizeActions,
 } from "~/util/store/pagesize";
@@ -11,7 +15,6 @@ import ListenersTable from "./Table";
 import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
 import { SelectPageSize } from "../../../../components/SelectPageSize";
-import { getOffsetByPageNumber } from "~/components/Pagination/utils";
 import { useEventListeners } from "~/api/eventListeners/query/get";
 import { useTranslation } from "react-i18next";
 
@@ -84,10 +87,7 @@ const ListenersList = () => {
           onChange={(value) => {
             setPage(value);
           }}
-          totalPages={Math.max(
-            1,
-            Math.ceil(numberOfResults / Number(pageSize))
-          )}
+          totalPages={getTotalPages(data.data.length, Number(pageSize))}
         />
       </div>
     </div>

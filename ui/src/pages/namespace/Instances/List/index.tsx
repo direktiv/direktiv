@@ -9,6 +9,10 @@ import {
   TableRow,
 } from "~/design/Table";
 import {
+  getOffsetByPageNumber,
+  getTotalPages,
+} from "~/components/Pagination/utils";
+import {
   useInstancesPageSize,
   usePageSizeActions,
 } from "~/util/store/pagesize";
@@ -21,7 +25,6 @@ import { FiltersObj } from "~/api/instances/query/utils";
 import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
 import { SelectPageSize } from "../../../../components/SelectPageSize";
-import { getOffsetByPageNumber } from "~/components/Pagination/utils";
 import { useInstances } from "~/api/instances/query/get";
 import { useTranslation } from "react-i18next";
 
@@ -52,11 +55,6 @@ const InstancesListPage = () => {
   const numberOfInstances = data?.meta?.total ?? 0;
   const noResults = isSuccess && instances.length === 0;
   const hasFilters = !!Object.keys(filters).length;
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(numberOfInstances / Number(pageSize))
-  );
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
@@ -135,7 +133,7 @@ const InstancesListPage = () => {
         <Pagination
           value={page}
           onChange={(page) => setPage(page)}
-          totalPages={totalPages}
+          totalPages={getTotalPages(numberOfInstances, Number(pageSize))}
         />
       </div>
     </div>
