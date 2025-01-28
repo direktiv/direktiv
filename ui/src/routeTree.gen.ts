@@ -12,6 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
+import { Route as NNamespaceRouteImport } from './routes/n/$namespace/route'
 import { Route as NNamespaceServicesImport } from './routes/n/$namespace/services'
 
 // Create/Update Routes
@@ -22,10 +23,16 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const NNamespaceServicesRoute = NNamespaceServicesImport.update({
-  id: '/n/$namespace/services',
-  path: '/n/$namespace/services',
+const NNamespaceRouteRoute = NNamespaceRouteImport.update({
+  id: '/n/$namespace',
+  path: '/n/$namespace',
   getParentRoute: () => rootRoute,
+} as any)
+
+const NNamespaceServicesRoute = NNamespaceServicesImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => NNamespaceRouteRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -39,51 +46,73 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/n/$namespace': {
+      id: '/n/$namespace'
+      path: '/n/$namespace'
+      fullPath: '/n/$namespace'
+      preLoaderRoute: typeof NNamespaceRouteImport
+      parentRoute: typeof rootRoute
+    }
     '/n/$namespace/services': {
       id: '/n/$namespace/services'
-      path: '/n/$namespace/services'
+      path: '/services'
       fullPath: '/n/$namespace/services'
       preLoaderRoute: typeof NNamespaceServicesImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof NNamespaceRouteImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface NNamespaceRouteRouteChildren {
+  NNamespaceServicesRoute: typeof NNamespaceServicesRoute
+}
+
+const NNamespaceRouteRouteChildren: NNamespaceRouteRouteChildren = {
+  NNamespaceServicesRoute: NNamespaceServicesRoute,
+}
+
+const NNamespaceRouteRouteWithChildren = NNamespaceRouteRoute._addFileChildren(
+  NNamespaceRouteRouteChildren,
+)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/n/$namespace': typeof NNamespaceRouteRouteWithChildren
   '/n/$namespace/services': typeof NNamespaceServicesRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/n/$namespace': typeof NNamespaceRouteRouteWithChildren
   '/n/$namespace/services': typeof NNamespaceServicesRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/n/$namespace': typeof NNamespaceRouteRouteWithChildren
   '/n/$namespace/services': typeof NNamespaceServicesRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/n/$namespace/services'
+  fullPaths: '/' | '/n/$namespace' | '/n/$namespace/services'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/n/$namespace/services'
-  id: '__root__' | '/' | '/n/$namespace/services'
+  to: '/' | '/n/$namespace' | '/n/$namespace/services'
+  id: '__root__' | '/' | '/n/$namespace' | '/n/$namespace/services'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  NNamespaceServicesRoute: typeof NNamespaceServicesRoute
+  NNamespaceRouteRoute: typeof NNamespaceRouteRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  NNamespaceServicesRoute: NNamespaceServicesRoute,
+  NNamespaceRouteRoute: NNamespaceRouteRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -97,14 +126,21 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/n/$namespace/services"
+        "/n/$namespace"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
+    "/n/$namespace": {
+      "filePath": "n/$namespace/route.tsx",
+      "children": [
+        "/n/$namespace/services"
+      ]
+    },
     "/n/$namespace/services": {
-      "filePath": "n/$namespace/services.tsx"
+      "filePath": "n/$namespace/services.tsx",
+      "parent": "/n/$namespace"
     }
   }
 }

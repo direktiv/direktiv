@@ -2,11 +2,7 @@ import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 
 import { QueryClient } from "@tanstack/react-query";
 
-const RootComponent = () => (
-  <div className="flex h-screen">
-    <Outlet />
-  </div>
-);
+const RootComponent = () => <Outlet />;
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;

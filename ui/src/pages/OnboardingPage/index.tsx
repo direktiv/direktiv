@@ -10,7 +10,7 @@ import LogoutButton from "~/components/LogoutButton";
 import NamespaceEdit from "~/components/NamespaceEdit";
 import useApiKeyHandling from "~/hooks/useApiKeyHandling";
 import { useListNamespaces } from "~/api/namespaces/query/get";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
