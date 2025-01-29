@@ -170,6 +170,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 			r.Route("/namespaces/{namespace}/events/broadcast", func(r chi.Router) {
 				eventsCtr.mountBroadcast(r)
 			})
+			r.Handle("/namespaces/{namespace}/gateway/*", app.GatewayManager)
 
 			if len(extensions.AdditionalAPIRoutes) > 0 {
 				eeApp := extensions.App{
@@ -183,8 +184,6 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 					})
 				}
 			}
-
-			r.Handle("/namespaces/{namespace}/gateway/*", app.GatewayManager)
 		})
 
 		r.Route("/jx", func(r chi.Router) {
