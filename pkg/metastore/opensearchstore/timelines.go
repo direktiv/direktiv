@@ -100,7 +100,7 @@ func (t *Timelines) Get(ctx context.Context, traceID string, options metastore.T
 
 	if resp.IsError() {
 		responseBody, _ := io.ReadAll(resp.Body)
-		slog.Error("OpenSearch search error", "status", resp.Status(), "response", string(responseBody))
+		slog.Error("openSearch search error", "status", resp.Status(), "response", string(responseBody))
 
 		return nil, fmt.Errorf("error searching OpenSearch: %s, response: %s", resp.Status(), string(responseBody))
 	}
@@ -114,7 +114,7 @@ func (t *Timelines) Get(ctx context.Context, traceID string, options metastore.T
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		slog.Error("Error decoding OpenSearch response", "error", err)
+		slog.Error("decoding OpenSearch response", "error", err)
 		return nil, err
 	}
 
@@ -124,29 +124,4 @@ func (t *Timelines) Get(ctx context.Context, traceID string, options metastore.T
 	}
 
 	return serviceMapData, nil
-}
-
-func (t *Timelines) GetMapping(ctx context.Context) (map[string]interface{}, error) {
-	mappingRes, err := t.client.Indices.GetMapping(
-		t.client.Indices.GetMapping.WithContext(ctx),
-		t.client.Indices.GetMapping.WithIndex(t.index),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get index mapping: %w", err)
-	}
-	defer mappingRes.Body.Close()
-
-	if mappingRes.IsError() {
-		responseBody, _ := io.ReadAll(mappingRes.Body)
-		slog.Error("Failed to retrieve mapping", "status", mappingRes.Status(), "response", string(responseBody))
-
-		return nil, fmt.Errorf("error retrieving index mapping: %s, response: %s", mappingRes.Status(), string(responseBody))
-	}
-
-	var mapping map[string]interface{}
-	if err := json.NewDecoder(mappingRes.Body).Decode(&mapping); err != nil {
-		return nil, fmt.Errorf("failed to decode mapping response: %w", err)
-	}
-
-	return mapping, nil
 }

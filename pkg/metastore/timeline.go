@@ -7,7 +7,6 @@ import (
 
 type TimelineStore interface {
 	Get(ctx context.Context, traceID string, options TimelineQueryOptions) ([]map[string]any, error)
-	GetMapping(ctx context.Context) (map[string]interface{}, error)
 }
 
 type TimelineQueryOptions struct {

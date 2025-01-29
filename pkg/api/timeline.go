@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/metastore"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -13,13 +14,15 @@ type timelineCtr struct {
 
 func (c *timelineCtr) mountRouter(r chi.Router) {
 	r.Get("/{traceid}", c.get)
-	r.Get("/mapping", c.getMapping)
 }
 
 func (c *timelineCtr) get(w http.ResponseWriter, r *http.Request) {
 	traceid := chi.URLParam(r, "traceid")
+	// spanID := r.URL.Query().Get("spanid")
 
-	logs, err := c.meta.Get(r.Context(), traceid, metastore.TimelineQueryOptions{})
+	traces, err := c.meta.Get(r.Context(), traceid, metastore.TimelineQueryOptions{
+		// SpanID: spanID,
+	})
 	if err != nil {
 		writeError(w, &Error{
 			Code:    "error",
@@ -28,11 +31,7 @@ func (c *timelineCtr) get(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	writeJSON(w, logs)
-}
-
-func (c *timelineCtr) getMapping(w http.ResponseWriter, r *http.Request) {
-	mapping, err := c.meta.GetMapping(r.Context())
+	timelines, err := tracing.ConvertTracesToTimelines(traces)
 	if err != nil {
 		writeError(w, &Error{
 			Code:    "error",
@@ -41,7 +40,7 @@ func (c *timelineCtr) getMapping(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	writeJSON(w, mapping)
+	writeJSON(w, timelines)
 }
 
 // {

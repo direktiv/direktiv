@@ -109,7 +109,7 @@ func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOption
 	// Handle errors
 	if searchRes.IsError() {
 		responseBody, _ := io.ReadAll(searchRes.Body)
-		log.Printf("Search failed, status: %s, response: %s", searchRes.Status(), string(responseBody))
+		log.Printf("search failed, status: %s, response: %s", searchRes.Status(), string(responseBody))
 
 		return nil, fmt.Errorf("error executing search: %s, response: %s", searchRes.Status(), string(responseBody))
 	}

@@ -60,7 +60,7 @@ func NewTestDataStore(t *testing.T) (metastore.Store, func(), error) {
 	t.Helper()
 
 	ctx := context.TODO()
-	t.Log("Starting OpenSearch container...")
+	t.Log("starting OpenSearch container...")
 	ctr, err := tcopensearch.Run(ctx, "opensearchproject/opensearch:2.11.1")
 	if err != nil {
 		return nil, func() {}, err
@@ -73,7 +73,7 @@ func NewTestDataStore(t *testing.T) (metastore.Store, func(), error) {
 	if err != nil {
 		return nil, cleanup, err
 	}
-	t.Logf("OpenSearch container address: %s", address)
+	t.Logf("openSearch container address: %s", address)
 
 	client, err := opensearch.NewClient(opensearch.Config{
 		Addresses: []string{
@@ -84,7 +84,7 @@ func NewTestDataStore(t *testing.T) (metastore.Store, func(), error) {
 		return nil, cleanup, err
 	}
 
-	t.Log("OpenSearch client created successfully.")
+	t.Log("openSearch client created successfully.")
 	co := Config{
 		EventsIndex:       "test-events",
 		EventsDeleteAfter: "7d",
