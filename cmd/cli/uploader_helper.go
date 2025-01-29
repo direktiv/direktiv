@@ -208,7 +208,7 @@ func (u *uploader) sendRequest(method, url string, data []byte) (*http.Response,
 	}
 
 	if u.profile.Token != "" {
-		req.Header.Add("Direktiv-Token", u.profile.Token)
+		req.Header.Add("Direktiv-Api-Key", u.profile.Token)
 	}
 
 	req.Header.Add("Content-Type", "application/json")

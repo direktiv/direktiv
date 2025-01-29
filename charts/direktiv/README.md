@@ -111,7 +111,7 @@ $ helm install direktiv direktiv/direktiv
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
-| apikey | string | `"none"` | enabled api key for API authentication with the `direktiv-token` header |
+| apikey | string | `"none"` | enabled api key for API authentication with the `Direktiv-Api-Key`header|
 | database.additional | string | `""` | additional connection attributes, e.g. target_session_attrs |
 | database.host | string | `"postgres-postgresql-ha-pgpool.postgres"` | database host |
 | database.name | string | `"direktiv"` | database name, has to be created before installation |

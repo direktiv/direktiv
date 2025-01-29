@@ -194,7 +194,7 @@ func printLogSSE(ctx context.Context, instance string, profile profile) error {
 	}
 
 	if profile.Token != "" {
-		clientLogs.Headers["Direktiv-Token"] = profile.Token
+		clientLogs.Headers["Direktiv-Api-Key"] = profile.Token
 	}
 
 	errCh := make(chan error, 1)
