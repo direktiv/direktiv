@@ -6,8 +6,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/pb33f/libopenapi"
-	"github.com/pb33f/libopenapi/datamodel"
 	"gopkg.in/yaml.v3"
 )
 
@@ -55,7 +53,7 @@ type Plugin interface {
 }
 
 type Gateway struct {
-	Base libopenapi.Document
+	Base []byte
 
 	Namespace string
 	FilePath  string
@@ -65,7 +63,7 @@ type Gateway struct {
 
 type Endpoint struct {
 	Config EndpointConfig
-	Yaml   map[string]interface{}
+	Base   []byte
 
 	Namespace string
 	FilePath  string
@@ -114,12 +112,6 @@ func ParseGatewayFile(ns string, filePath string, data []byte) Gateway {
 		Errors:    make([]string, 0),
 	}
 
-	config := datamodel.DocumentConfiguration{
-		AvoidIndexBuild:       true,
-		AllowFileReferences:   true,
-		AllowRemoteReferences: false,
-	}
-
 	// remove paths and servers
 	var interim map[string]interface{}
 	err := yaml.Unmarshal(data, &interim)
@@ -136,12 +128,8 @@ func ParseGatewayFile(ns string, filePath string, data []byte) Gateway {
 		gw.Errors = append(gw.Errors, err.Error())
 	}
 
-	document, err := libopenapi.NewDocumentWithConfiguration(out, &config)
-	if err != nil {
-		gw.Errors = append(gw.Errors, err.Error())
-	}
-
-	gw.Base = document
+	// set cleaned up spec
+	gw.Base = out
 
 	return gw
 }
@@ -153,51 +141,10 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 		Errors:    make([]string, 0),
 	}
 
-	// docConfig := datamodel.DocumentConfiguration{
-	// 	AvoidIndexBuild:       true,
-	// 	AllowFileReferences:   true,
-	// 	AllowRemoteReferences: false,
-	// 	LocalFS:               &DummyFS{
-	// 		// fileStore: fileStore,
-	// 		// ns:        ns,
-	// 	},
-	// }
-
-	// can not throw an error, fake document for root index
-	// doc, _ := libopenapi.NewDocumentWithConfiguration([]byte("openapi: 3.0.0\ninfo:\n   version: \"1.0\"\n   title: dummy\npaths: {}\n"), &docConfig)
-	// highDoc, _ := doc.BuildV3Model()
-
-	// doc.GetRolodex().AddLocalFS("/", &DummyFS{})
-
 	var interim map[string]interface{}
 	err := yaml.Unmarshal(data, &interim)
 	if err != nil {
 		ep.Errors = append(ep.Errors, err.Error())
-		return ep
-	}
-
-	// var node yaml.Node
-	// err = node.Encode(interim)
-	// if err != nil {
-	// 	ep.Errors = append(ep.Errors, err.Error())
-	// 	return ep
-	// }
-
-	// var lowPathItem v3low.PathItem
-	// err = lowPathItem.Build(context.Background(), nil, &node, doc.GetRolodex().GetRootIndex())
-	// if err != nil && !strings.Contains(err.Error(), "cannot be found at line") {
-	// 	fmt.Println("111ERROROROR HERERERERERRE")
-	// 	fmt.Println(reflect.TypeOf(err))
-	// 	fmt.Println(err.Error())
-	// 	ep.Errors = append(ep.Errors, err.Error())
-	// 	return ep
-	// }
-
-	// pathItem := v3high.NewPathItem(&lowPathItem)
-
-	api, found := interim["x-direktiv-api"]
-	if !found || api != "endpoint/v2" {
-		ep.Errors = append(ep.Errors, "invalid endpoint api version")
 		return ep
 	}
 
@@ -210,11 +157,16 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 	// add methods
 	config.Methods = extractMethods(interim)
 
-	// // check for other errors
+	// check for other errors
 	if config.Path != "" {
 		config.Path = path.Clean("/" + config.Path)
 	} else {
 		ep.Errors = append(ep.Errors, "no path for route specified")
+		return ep
+	}
+
+	if len(config.Methods) == 0 {
+		ep.Errors = append(ep.Errors, "no valid http method available")
 		return ep
 	}
 
@@ -228,23 +180,24 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 		return ep
 	}
 
-	// fmt.Println("PARSE ENDPOINT5")
-	// highDoc.Model.Paths.PathItems.Set(config.Path, pathItem)
-	// _, newDoc, _, errs := doc.RenderAndReload()
-	// if len(errs) > 0 {
-	// 	for i := range errs {
-	// 		ep.Errors = append(ep.Errors, errs[i].Error())
-	// 	}
+	ep.Config = config
+	ep.Base = data
+
+	// out, err := json.Marshal(interim)
+	// if err != nil {
+	// 	ep.Errors = append(ep.Errors, err.Error())
 	// 	return ep
 	// }
 
-	// fmt.Println("PARSED ENDPOINT")
-	// fmt.Println(ep.Errors)
+	// // parse endpoint
+	// var pathItem openapi3.PathItem
+	// err = pathItem.UnmarshalJSON(out)
+	// if err != nil {
+	// 	ep.Errors = append(ep.Errors, err.Error())
+	// 	return ep
+	// }
 
-	ep.Config = config
-	ep.Yaml = interim
-	// ep.PathItem = *pathItem
-	// ep.Doc = newDoc
+	// ep.PathItem = &pathItem
 
 	return ep
 }
@@ -264,7 +217,7 @@ func extractMethods(pathItem map[string]interface{}) []string {
 	}
 
 	for i := range availableMethods {
-		if _, ok := pathItem[availableMethods[i]]; ok {
+		if _, ok := pathItem[strings.ToLower(availableMethods[i])]; ok {
 			methods = append(methods, availableMethods[i])
 		}
 	}

@@ -2,6 +2,8 @@ FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.23.0 as builder
 
 ARG VERSION=dev
 
+COPY libopenapi /home/jens/go/src/github/direktiv/direktiv/libopenapi
+
 COPY go.mod src/go.mod
 COPY go.sum src/go.sum
 RUN cd src/ && go mod download

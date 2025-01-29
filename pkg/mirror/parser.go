@@ -16,8 +16,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
-	"github.com/pb33f/libopenapi"
-	v3high "github.com/pb33f/libopenapi/datamodel/high/v3"
 )
 
 type Parser struct {
@@ -293,12 +291,12 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		if err != nil {
 			return err
 		}
-	case *v3high.PathItem:
+	case core.Endpoint:
 		err = p.handleEndpoint(path, data)
 		if err != nil {
 			return err
 		}
-	case libopenapi.Document:
+	case core.Gateway:
 		err = p.handleGateway(path, data)
 		if err != nil {
 			return err
