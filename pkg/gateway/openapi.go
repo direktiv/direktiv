@@ -13,6 +13,7 @@ import (
 	"github.com/pb33f/libopenapi"
 	validator "github.com/pb33f/libopenapi-validator"
 	"github.com/pb33f/libopenapi/datamodel"
+	v3high "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/index"
 )
 
@@ -93,7 +94,8 @@ func (f *direktivOpenAPIFile) Close() error {
 }
 
 type openAPIDoc struct {
-	doc libopenapi.Document
+	doc   libopenapi.Document
+	model *v3high.Document
 }
 
 func newOpenAPIDoc(ns, path, content string, fileStore filestore.FileStore) (*openAPIDoc, error) {
@@ -122,8 +124,14 @@ paths:
 		return nil, err
 	}
 
+	model, errs := doc.BuildV3Model()
+	if len(errs) > 0 {
+		return nil, errs[0]
+	}
+
 	return &openAPIDoc{
-		doc: doc,
+		doc:   doc,
+		model: &model.Model,
 	}, nil
 }
 

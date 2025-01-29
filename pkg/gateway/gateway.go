@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"path"
@@ -14,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/go-chi/chi/v5"
-	v3high "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
@@ -195,18 +195,45 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 
 	// we always take the first one, even if there are more
 	if len(gateways) > 0 {
-		fmt.Println("DO GATEWAY!!!")
 		g := gateways[0]
 
 		// set file path
 		gw.FilePath = g.FilePath
 
-		apiDoc, err := newOpenAPIDoc(ns, g.FilePath, string(g.Base), fileStore)
+		var docData map[string]interface{}
+		err := yaml.Unmarshal(g.Base, &docData)
+		if err != nil {
+		}
+		// apiDoc, err := newOpenAPIDoc(ns, g.FilePath, string(g.Base), fileStore)
+		// if err != nil {
+
+		// }
+
+		// gw.Spec = *apiDoc.doc.GetSpecInfo().SpecJSON
+		endpointList := make(map[string]interface{})
+		for i := range endpoints {
+			_, errs := validateEndpoint(endpoints[i], ns, fileStore)
+			if len(errs) > 0 {
+
+			}
+			g := make(map[string]string)
+			g["$ref"] = "\"../../route1.yaml\""
+
+			endpointList[endpoints[i].Config.Path] = g
+		}
+
+		docData["paths"] = endpointList
+		// b, _ := json.MarshalIndent(gw.Spec, "", "   ")
+		// fmt.Println(string(b))
+
+		dataBytes, err := json.Marshal(docData)
+		if err != nil {
+		}
+
+		apiDoc, err := newOpenAPIDoc(ns, g.FilePath, string(dataBytes), fileStore)
 		if err != nil {
 
 		}
-
-		gw.Spec = *apiDoc.doc.GetSpecInfo().SpecJSON
 
 		errors := apiDoc.validate()
 		if len(errors) > 0 {
@@ -265,7 +292,6 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 
 func endpointsForAPI(endpoints []core.Endpoint, ns string, fileStore filestore.FileStore) any {
 	type output struct {
-		// Spec       *v3high.PathItem `json:"spec"`
 		Spec       interface{} `json:"spec"`
 		FilePath   string      `json:"file_path"`
 		Errors     []string    `json:"errors"`
@@ -279,7 +305,6 @@ func endpointsForAPI(endpoints []core.Endpoint, ns string, fileStore filestore.F
 		newItem := output{
 			FilePath: item.FilePath,
 			Errors:   item.Errors,
-			// PathItem: item.PathItem,
 		}
 
 		newItem.Warnings = []string{}
@@ -289,23 +314,8 @@ func endpointsForAPI(endpoints []core.Endpoint, ns string, fileStore filestore.F
 
 		pathItem, errors := validateEndpoint(item, ns, fileStore)
 		newItem.Errors = append(newItem.Errors, errors...)
+		newItem.Spec = pathItem
 
-		var m map[string]interface{}
-		b, _ := pathItem.Render()
-		yaml.Unmarshal(b, &m)
-
-		// j, _ := json.Marshal(m)
-		// json.Unmarshal(j, &m)
-
-		newItem.Spec = m
-		// f, _ := json.MarshalIndent(pathItem, "", "   ")
-		// fmt.Println(string(f))
-		// gg, _ := pathItem.MarshalYAML()
-		// out, _ := yaml.Marshal(gg)
-
-		// fmt.Printf("YAML2 %+v\n", string(out))
-		// newItem.Spec = gg
-		// TODO: remove this useless field
 		if item.Config.Path != "" {
 			newItem.ServerPath = path.Clean(fmt.Sprintf("/ns/%s/%s", item.Namespace, item.Config.Path))
 		}
@@ -315,131 +325,39 @@ func endpointsForAPI(endpoints []core.Endpoint, ns string, fileStore filestore.F
 	return result
 }
 
-func validateEndpoint(item core.Endpoint, ns string, fileStore filestore.FileStore) (*v3high.PathItem, []string) {
-
+func validateEndpoint(item core.Endpoint, ns string, fileStore filestore.FileStore) (interface{}, []string) {
 	validationErrors := make([]string, 0)
 
-	// var (
-	// 	idxNode yaml.Node
-	// 	n       v3low.PathItem
-	// )
+	docString := fmt.Sprintf("openapi: 3.0.0\ninfo:\n   title: %s\n   version: \"1.0.0\"\npaths:\n   %s:\n      %s",
+		ns, item.Config.Path, strings.ReplaceAll(string(item.Base), "\n", "\n      "))
+	d, err := newOpenAPIDoc(ns, item.Config.Path, docString, fileStore)
+	if err != nil {
+		validationErrors = append(validationErrors, err.Error())
+		return nil, validationErrors
+	}
 
-	// // we have to create the rolodex manually
-	// idxConfig := &index.SpecIndexConfig{
-	// 	BasePath:          filepath.Dir(item.FilePath),
-	// 	AllowRemoteLookup: true,
-	// 	AvoidBuildIndex:   true,
-	// 	AllowFileLookup:   true,
-	// }
+	errs := d.validate()
+	validationErrors = append(validationErrors, errs...)
 
-	// rolodex := index.NewRolodex(idxConfig)
-	// rolodex.AddLocalFS("/", &direktivOpenAPIFS{
-	// 	fileStore: fileStore,
-	// 	ns:        ns,
-	// 	// files:     make(map[string]index.RolodexFile),
-	// })
+	mm := *d.doc.GetSpecInfo().SpecJSON
 
-	// err := yaml.Unmarshal(item.Base, &idxNode)
-	// if err != nil {
-	// 	validationErrors = append(validationErrors, err.Error())
-	// 	return nil, validationErrors
-	// }
+	paths, ok := mm["paths"]
+	if !ok {
+		validationErrors = append(validationErrors, "invalid pathitem layout")
+		return nil, validationErrors
+	}
 
-	// rolodex.SetRootNode(&idxNode)
-	// err = rolodex.IndexTheRolodex()
-	// if err != nil {
-	// 	validationErrors = append(validationErrors, err.Error())
-	// 	return nil, validationErrors
-	// }
+	m, ok := paths.(map[string]interface{})
+	if !ok {
+		validationErrors = append(validationErrors, "invalid pathitem layout")
+		return nil, validationErrors
+	}
 
-	// idxConfig.Rolodex = rolodex
-	// err = low.BuildModel(idxNode.Content[0], &n)
-	// if err != nil {
-	// 	validationErrors = append(validationErrors, err.Error())
-	// 	return nil, validationErrors
-	// }
+	value, ok := m[item.Config.Path]
+	if !ok {
+		validationErrors = append(validationErrors, "invalid pathitem layout")
+		return nil, validationErrors
+	}
 
-	// err = n.Build(context.Background(), nil, idxNode.Content[0], rolodex.GetRootIndex())
-	// if err != nil {
-	// 	validationErrors = append(validationErrors, err.Error())
-	// 	return nil, validationErrors
-	// }
-
-	// pathItem := v3high.NewPathItem(&n)
-
-	// // gg, _ := pi2.MarshalYAML()
-	// // out, _ := yaml.Marshal(gg)
-	// // fmt.Printf("YAML %+v\n", string(out))
-
-	// doc, _ := libopenapi.NewDocumentWithConfiguration([]byte("openapi: 3.0.0\ninfo:\n   title: dummy\n   version: \"1.0.0\"\n   paths:"), &datamodel.DocumentConfiguration{
-	// 	AllowFileReferences:   true,
-	// 	AllowRemoteReferences: true,
-	// 	BasePath:              filepath.Dir(item.FilePath),
-	// 	AvoidIndexBuild:       true,
-	// 	LocalFS: &direktivOpenAPIFS{
-	// 		fileStore: fileStore,
-	// 		ns:        ns,
-	// 	},
-	// })
-
-	// v3Model, errs := doc.BuildV3Model()
-	// if len(errs) > 0 {
-	// 	for i := range errs {
-	// 		validationErrors = append(validationErrors, errs[i].Error())
-	// 	}
-	// 	return nil, validationErrors
-	// }
-
-	// v3Model.Model.Paths.PathItems.Set(item.Config.Path, pathItem)
-	// _, doc, _, errs = doc.RenderAndReload()
-	// if len(errs) > 0 {
-	// 	for i := range errs {
-	// 		validationErrors = append(validationErrors, errs[i].Error())
-	// 	}
-	// 	return nil, validationErrors
-	// }
-
-	// hlval, errs := validator.NewValidator(doc)
-	// if len(errs) > 0 {
-	// 	for i := range errs {
-	// 		fmt.Printf(">>>> %v\n", errs[i])
-	// 		validationErrors = append(validationErrors, errs[i].Error())
-	// 	}
-	// 	return nil, validationErrors
-	// }
-
-	// _, valErrs := hlval.ValidateDocument()
-	// if len(valErrs) > 0 {
-	// 	for i := range valErrs {
-	// 		fmt.Printf(">>>> %v\n", valErrs[i])
-	// 		validationErrors = append(validationErrors, valErrs[i].Error())
-	// 	}
-	// 	return nil, validationErrors
-	// }
-
-	gg := fmt.Sprintf("openapi: 3.0.0\ninfo:\n   title: %s\n   version: \"1.0.0\"\npaths:\n   %s:\n      %s", ns, item.Config.Path, strings.ReplaceAll(string(item.Base), "\n", "\n      "))
-	d, err := newOpenAPIDoc(ns, item.Config.Path, gg, fileStore)
-	fmt.Println(d)
-	fmt.Println(err)
-
-	// fmt.Println(strings.ReplaceAll(string(item.Base), "\n", "\n      "))
-	// value := "      " + strings.ReplaceAll(string(item.Base), "\n", "\n      ")
-	// fmt.Println(value)
-	// model, errs := d.doc.BuildV3Model()
-	// fmt.Println(errs)
-
-	a, _ := d.doc.Serialize()
-	fmt.Println(string(a))
-	// fmt.Printf("RENDER %v\n", string(j))
-
-	ee := d.validate()
-	fmt.Println(ee)
-
-	m, errs := d.doc.BuildV3Model()
-	fmt.Println(errs)
-
-	pi, erhasr := m.Model.Paths.PathItems.Get(item.Config.Path)
-	fmt.Println(erhasr)
-
-	return pi, validationErrors
+	return value, validationErrors
 }
