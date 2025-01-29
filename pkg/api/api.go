@@ -17,6 +17,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/events"
+	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/middlewares"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
@@ -29,7 +30,7 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, wakeByEvents events.WakeEventsWaiter, startByEvents events.WorkflowStart, circuit *core.Circuit) error {
+func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, wakeByEvents events.WakeEventsWaiter, startByEvents events.WorkflowStart) error {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
@@ -169,6 +170,20 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 			r.Route("/namespaces/{namespace}/events/broadcast", func(r chi.Router) {
 				eventsCtr.mountBroadcast(r)
 			})
+
+			if len(extensions.AdditionalAPIRoutes) > 0 {
+				eeApp := extensions.App{
+					DB:  db,
+					Bus: bus,
+				}
+				for pattern, ctr := range extensions.AdditionalAPIRoutes {
+					r.Route(pattern, func(r chi.Router) {
+						ctr.Initialize(eeApp)
+						ctr.MountRouter(r)
+					})
+				}
+			}
+
 			r.Handle("/namespaces/{namespace}/gateway/*", app.GatewayManager)
 		})
 
@@ -260,7 +275,7 @@ func writeOk(w http.ResponseWriter) {
 
 func extractContextNamespace(r *http.Request) *datastore.Namespace {
 	//nolint:forcetypeassert
-	ns := r.Context().Value(ctxKeyNamespace{}).(*datastore.Namespace)
+	ns := r.Context().Value(ctxKeyNamespace).(*datastore.Namespace)
 
 	return ns
 }

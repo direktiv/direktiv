@@ -3,8 +3,10 @@ package model
 import (
 	"errors"
 	"fmt"
+	"net/url"
 
 	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/getkin/kin-openapi/openapi3"
 	"gopkg.in/yaml.v3"
 )
 
@@ -39,23 +41,20 @@ const (
 	ConsumerAPIV1 = "consumer/v1"
 )
 
+const (
+	GatewayAPIV1 = "gateway/v1"
+)
+
+const (
+	EndpointAPIV2 = "endpoint/v2"
+)
+
 var ErrNotDirektivAPIResource = errors.New("not a direktiv_api resource")
 
 func LoadResource(data []byte) (interface{}, error) {
-	m := make(map[string]interface{})
-	err := yaml.Unmarshal(data, &m)
+	s, err := extractType(data)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrNotDirektivAPIResource, err)
-	}
-
-	x, exists := m["direktiv_api"]
-	if !exists {
-		return nil, fmt.Errorf("%w: missing 'direktiv_api' field", ErrNotDirektivAPIResource)
-	}
-
-	s, ok := x.(string)
-	if !ok {
-		return nil, fmt.Errorf("%w: invalid 'direktiv_api' field", ErrNotDirektivAPIResource)
+		return nil, err
 	}
 
 	switch s {
@@ -114,7 +113,57 @@ func LoadResource(data []byte) (interface{}, error) {
 
 		return ef, nil
 
+	case GatewayAPIV1:
+		loader := openapi3.NewLoader()
+		loader.IsExternalRefsAllowed = true
+
+		// don't follow any ref in this doc
+		loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
+			return nil, nil
+		}
+
+		base, err := loader.LoadFromData(data)
+		if err != nil {
+			return &openapi3.T{
+				Extensions: map[string]any{
+					"x-direktiv-api": s,
+				},
+			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
+		}
+
+		return base, nil
+
+	case EndpointAPIV2:
+		// TODO:
+		fallthrough
 	default:
 		return nil, fmt.Errorf("error parsing direktiv resource: invalid 'direktiv_api': \"%s\"", s)
 	}
+}
+
+func extractType(data []byte) (string, error) {
+	m := make(map[string]interface{})
+	err := yaml.Unmarshal(data, &m)
+	if err != nil {
+		return "", fmt.Errorf("%w: %w", ErrNotDirektivAPIResource, err)
+	}
+
+	// check for openapi gateway resource or regular resource
+	x, exists := m["direktiv_api"]
+	if !exists {
+		x, exists = m["x-direktiv-api"]
+	}
+
+	if !exists {
+		return "", fmt.Errorf("%w: missing 'direktiv_api' field",
+			ErrNotDirektivAPIResource)
+	}
+
+	s, ok := x.(string)
+	if !ok {
+		return "", fmt.Errorf("%w: invalid 'direktiv_api' field",
+			ErrNotDirektivAPIResource)
+	}
+
+	return s, nil
 }

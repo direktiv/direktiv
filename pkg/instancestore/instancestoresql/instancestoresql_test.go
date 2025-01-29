@@ -8,19 +8,17 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/instancestore"
-	"github.com/direktiv/direktiv/pkg/instancestore/instancestoresql"
 	"github.com/google/uuid"
 )
 
 func Test_NewSQLInstanceStore(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatal(err)
 	}
-	ns := uuid.New()
 	server := uuid.New()
 
-	store := instancestoresql.NewSQLInstanceStore(db)
+	store := db.InstanceStore()
 
 	telemetryInfo := &engine.InstanceTelemetryInfo{
 		Version:       "v2",
@@ -36,7 +34,7 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 
 	_, err = store.CreateInstanceData(context.Background(), &instancestore.CreateInstanceDataArgs{
 		ID:             uuid.New(),
-		NamespaceID:    ns,
+		NamespaceID:    ns.ID,
 		RootInstanceID: uuid.New(),
 		Server:         server,
 		Invoker:        "api",
@@ -64,7 +62,7 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 			},
 		},
 	}
-	res, err := store.GetNamespaceInstances(context.Background(), ns, opts)
+	res, err := store.GetNamespaceInstances(context.Background(), ns.ID, opts)
 	if err != nil {
 		t.Error(err)
 		return

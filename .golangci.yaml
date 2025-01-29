@@ -54,15 +54,9 @@ linters:
     - mnd
     - canonicalheader
 
-    # TODO: these need to be removed.
-    - gosimple
-    - govet
-    - gosec
-
 issues:
-  exclude-files: [ ".pb.go" ]
   exclude-rules:
-    - path: '(pkg|cmd)\/(model|sidecar|exec|utils|jqer|flow)\/.*'
+    - path: '(pkg)\/(model|sidecar|utils|jqer|flow)\/.*'
       linters:
         - paralleltest
         - forbidigo

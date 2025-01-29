@@ -9,7 +9,11 @@
 *.dylib
 .vscode
 
-# certs for linkerd 
+cmd/ee
+pkg/ee
+ee
+
+# certs for linkerd
 ca.*
 issuer.*
 
