@@ -22,8 +22,8 @@ func NewMetaStore(ctx context.Context, client *opensearch.Client, co Config) (me
 		client: client,
 		co:     co,
 	}
-	if co.LogInit {
-		err := store.LogStore().Init(ctx)
+	if co.EventsInit {
+		err := store.EventsStore().Init(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -32,15 +32,22 @@ func NewMetaStore(ctx context.Context, client *opensearch.Client, co Config) (me
 	return store, nil
 }
 
-// LogStore implements metastore.Store.
+// EventsStore implements metastore.Store.
+func (o *opensearchMetaStore) EventsStore() metastore.EventsStore {
+	return NewOpenSearchEventsStore(o.client, o.co)
+}
+
 func (o *opensearchMetaStore) LogStore() metastore.LogStore {
-	return NewOpenSearchLogStore(o.client, o.co)
+	return NewLogStore(o.client, o.co)
 }
 
 type Config struct {
-	LogIndex       string
-	LogDeleteAfter string
-	LogInit        bool
+	LogIndex          string
+	LogDeleteAfter    string
+	LogInit           bool
+	EventsIndex       string
+	EventsDeleteAfter string
+	EventsInit        bool
 }
 
 func NewTestDataStore(t *testing.T) (metastore.Store, func(), error) {
@@ -73,10 +80,10 @@ func NewTestDataStore(t *testing.T) (metastore.Store, func(), error) {
 
 	t.Log("OpenSearch client created successfully.")
 	co := Config{
-		LogIndex:       "test",
-		LogDeleteAfter: "7d",
+		EventsIndex:       "test-events",
+		EventsDeleteAfter: "7d",
 	}
-	err = NewOpenSearchLogStore(client, co).Init(ctx)
+	err = NewOpenSearchEventsStore(client, co).Init(ctx)
 	if err != nil {
 		return nil, cleanup, err
 	}
