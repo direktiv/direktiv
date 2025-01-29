@@ -1,14 +1,16 @@
+import { Link, useMatch } from "@tanstack/react-router";
+
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
-import { Link } from "react-router-dom";
+import { PlaySquare } from "lucide-react";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const JqPlaygroundBreadcrumb = () => {
-  const pages = usePages();
   const namespace = useNamespace();
-  const { isJqPlaygroundPage } = pages.jqPlayground.useParams();
-  const { icon: Icon } = pages.jqPlayground;
+  const isJqPlaygroundPage = useMatch({
+    from: "/n/$namespace/jq",
+    shouldThrow: false,
+  });
   const { t } = useTranslation();
 
   if (!isJqPlaygroundPage) return null;
@@ -17,12 +19,8 @@ const JqPlaygroundBreadcrumb = () => {
   return (
     <>
       <BreadcrumbLink>
-        <Link
-          to={pages.jqPlayground.createHref({
-            namespace,
-          })}
-        >
-          <Icon aria-hidden="true" />
+        <Link to="/n/$namespace/jq" params={{ namespace }}>
+          <PlaySquare aria-hidden="true" />
           {t("components.breadcrumb.jqPlayground")}
         </Link>
       </BreadcrumbLink>
