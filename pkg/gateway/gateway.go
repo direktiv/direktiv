@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 	"path"
-	"path/filepath"
 	"slices"
 	"strings"
 	"sync/atomic"
@@ -15,15 +13,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
-	"github.com/pb33f/libopenapi"
-	validator "github.com/pb33f/libopenapi-validator"
-	"github.com/pb33f/libopenapi/datamodel"
 	v3high "github.com/pb33f/libopenapi/datamodel/high/v3"
-	"github.com/pb33f/libopenapi/datamodel/low"
-	v3low "github.com/pb33f/libopenapi/datamodel/low/v3"
-	"github.com/pb33f/libopenapi/index"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
@@ -56,37 +47,6 @@ func NewManager(db *database.SQLStore) core.GatewayManager {
 	return &manager{
 		db: db,
 	}
-}
-
-type openAPIResolver struct {
-	path, ns  string
-	fileStore filestore.FileStore
-}
-
-func (r *openAPIResolver) resolveDirektivPath(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
-	readFilePath := url.String()
-
-	fmt.Printf("RESOLVE %v\n", readFilePath)
-
-	// if absolute, read it
-	if !filepath.IsAbs(readFilePath) {
-		fullFile := filepath.Dir(r.path) + "/" + readFilePath
-		readFilePath = filepath.Clean(fullFile)
-	}
-
-	fmt.Printf("RESOLVE2%v\n", readFilePath)
-
-	file, err := r.fileStore.ForNamespace(r.ns).GetFile(context.Background(), readFilePath)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := r.fileStore.ForFile(file).GetData(context.Background())
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
 }
 
 // ServeHTTP makes this manager serves http requests.
@@ -221,20 +181,16 @@ func consumersForAPI(consumers []core.Consumer) any {
 
 func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileStore, endpoints []core.Endpoint, expand bool) any {
 	type output struct {
-		Spec     v3high.Document `json:"spec"`
-		FilePath string          `json:"file_path"`
-		Errors   []string        `json:"errors"`
+		Spec     map[string]interface{} `json:"spec"`
+		FilePath string                 `json:"file_path"`
+		Errors   []string               `json:"errors"`
 	}
 
+	apiDoc, _ := newOpenAPIDoc(ns, "/virual", "", fileStore)
 	gw := output{
 		FilePath: "virtual",
 		Errors:   make([]string, 0),
-		// Spec: &openapi3.T{
-		// 	OpenAPI: "3.0.0",
-		// 	Info: &openapi3.Info{
-		// 		Title: ns,
-		// 	},
-		// },
+		Spec:     *apiDoc.doc.GetSpecInfo().SpecJSON,
 	}
 
 	// we always take the first one, even if there are more
@@ -245,56 +201,52 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 		// set file path
 		gw.FilePath = g.FilePath
 
-		config := datamodel.DocumentConfiguration{
-			AllowFileReferences:   true,
-			AllowRemoteReferences: true,
-			BasePath:              filepath.Dir(g.FilePath),
-			LocalFS: &DirektivOpenAPIFS{
-				fileStore: fileStore,
-				ns:        ns,
-				// files:     make(map[string]index.RolodexFile),
-			},
-		}
-
-		doc, err := libopenapi.NewDocumentWithConfiguration(g.Base, &config)
+		apiDoc, err := newOpenAPIDoc(ns, g.FilePath, string(g.Base), fileStore)
 		if err != nil {
-			gw.Errors = append(gw.Errors, err.Error())
-			return gw
+
 		}
 
-		hlDoc, errs := doc.BuildV3Model()
-		if len(errs) > 0 {
-			for i := range errs {
-				gw.Errors = append(gw.Errors, errs[i].Error())
-			}
-			return gw
+		gw.Spec = *apiDoc.doc.GetSpecInfo().SpecJSON
+
+		errors := apiDoc.validate()
+		if len(errors) > 0 {
+			gw.Errors = append(gw.Errors, errors...)
 		}
+
+		// doc, err := libopenapi.NewDocumentWithConfiguration(g.Base,
+		// 	openapiDocConfig(fileStore, ns, g.FilePath))
+		// if err != nil {
+		// 	gw.Errors = append(gw.Errors, err.Error())
+		// 	return gw
+		// }
 
 		// add paths
 
-		hlval, errs := validator.NewValidator(doc)
-		if len(errs) > 0 {
-			for i := range errs {
-				gw.Errors = append(gw.Errors, errs[i].Error())
-			}
-			return gw
-		}
+		// hlval, errs := validator.NewValidator(doc)
+		// if len(errs) > 0 {
+		// 	for i := range errs {
+		// 		gw.Errors = append(gw.Errors, errs[i].Error())
+		// 	}
+		// 	return gw
+		// }
 
-		_, valErrs := hlval.ValidateDocument()
-		if len(errs) > 0 {
-			for i := range valErrs {
-				gw.Errors = append(gw.Errors, valErrs[i].Error())
-			}
-			return gw
-		}
+		// _, valErrs := hlval.ValidateDocument()
+		// if len(errs) > 0 {
+		// 	for i := range valErrs {
+		// 		gw.Errors = append(gw.Errors, valErrs[i].Error())
+		// 	}
+		// 	return gw
+		// }
 
-		// bytes, e := bundler.BundleDocument(&hlDoc.Model)
-		// fmt.Println(e)
-		// fmt.Println(string(bytes))
+		// var m map[string]interface{}
+		// b, err := doc.Render()
+		// yaml.Unmarshal(b, &m)
+		// if err != nil {
+		// 	gw.Errors = append(gw.Errors, err.Error())
+		// 	return gw
+		// }
 
-		gw.Spec = hlDoc.Model
-		// gw.Spec = hlDoc.Model.MarshalYAML()
-
+		// gw.Spec = m
 	}
 
 	// if there are more, it is an error
@@ -367,106 +319,127 @@ func validateEndpoint(item core.Endpoint, ns string, fileStore filestore.FileSto
 
 	validationErrors := make([]string, 0)
 
-	var (
-		idxNode yaml.Node
-		n       v3low.PathItem
-	)
+	// var (
+	// 	idxNode yaml.Node
+	// 	n       v3low.PathItem
+	// )
 
-	// we have to create the rolodex manually
-	idxConfig := &index.SpecIndexConfig{
-		BasePath:          filepath.Dir(item.FilePath),
-		AllowRemoteLookup: true,
-		AvoidBuildIndex:   true,
-		AllowFileLookup:   true,
-	}
+	// // we have to create the rolodex manually
+	// idxConfig := &index.SpecIndexConfig{
+	// 	BasePath:          filepath.Dir(item.FilePath),
+	// 	AllowRemoteLookup: true,
+	// 	AvoidBuildIndex:   true,
+	// 	AllowFileLookup:   true,
+	// }
 
-	rolodex := index.NewRolodex(idxConfig)
-	rolodex.AddLocalFS("/", &DirektivOpenAPIFS{
-		fileStore: fileStore,
-		ns:        ns,
-		// files:     make(map[string]index.RolodexFile),
-	})
+	// rolodex := index.NewRolodex(idxConfig)
+	// rolodex.AddLocalFS("/", &direktivOpenAPIFS{
+	// 	fileStore: fileStore,
+	// 	ns:        ns,
+	// 	// files:     make(map[string]index.RolodexFile),
+	// })
 
-	err := yaml.Unmarshal(item.Base, &idxNode)
-	if err != nil {
-		validationErrors = append(validationErrors, err.Error())
-		return nil, validationErrors
-	}
+	// err := yaml.Unmarshal(item.Base, &idxNode)
+	// if err != nil {
+	// 	validationErrors = append(validationErrors, err.Error())
+	// 	return nil, validationErrors
+	// }
 
-	rolodex.SetRootNode(&idxNode)
-	err = rolodex.IndexTheRolodex()
-	if err != nil {
-		validationErrors = append(validationErrors, err.Error())
-		return nil, validationErrors
-	}
+	// rolodex.SetRootNode(&idxNode)
+	// err = rolodex.IndexTheRolodex()
+	// if err != nil {
+	// 	validationErrors = append(validationErrors, err.Error())
+	// 	return nil, validationErrors
+	// }
 
-	idxConfig.Rolodex = rolodex
-	err = low.BuildModel(idxNode.Content[0], &n)
-	if err != nil {
-		validationErrors = append(validationErrors, err.Error())
-		return nil, validationErrors
-	}
+	// idxConfig.Rolodex = rolodex
+	// err = low.BuildModel(idxNode.Content[0], &n)
+	// if err != nil {
+	// 	validationErrors = append(validationErrors, err.Error())
+	// 	return nil, validationErrors
+	// }
 
-	err = n.Build(context.Background(), nil, idxNode.Content[0], rolodex.GetRootIndex())
-	if err != nil {
-		validationErrors = append(validationErrors, err.Error())
-		return nil, validationErrors
-	}
+	// err = n.Build(context.Background(), nil, idxNode.Content[0], rolodex.GetRootIndex())
+	// if err != nil {
+	// 	validationErrors = append(validationErrors, err.Error())
+	// 	return nil, validationErrors
+	// }
 
-	pathItem := v3high.NewPathItem(&n)
+	// pathItem := v3high.NewPathItem(&n)
 
-	// gg, _ := pi2.MarshalYAML()
-	// out, _ := yaml.Marshal(gg)
-	// fmt.Printf("YAML %+v\n", string(out))
+	// // gg, _ := pi2.MarshalYAML()
+	// // out, _ := yaml.Marshal(gg)
+	// // fmt.Printf("YAML %+v\n", string(out))
 
-	doc, _ := libopenapi.NewDocumentWithConfiguration([]byte("openapi: 3.0.0\ninfo:\n   title: dummy\n   version: \"1.0.0\"\n   paths:"), &datamodel.DocumentConfiguration{
-		AllowFileReferences:   true,
-		AllowRemoteReferences: true,
-		BasePath:              filepath.Dir(item.FilePath),
-		AvoidIndexBuild:       true,
-		LocalFS: &DirektivOpenAPIFS{
-			fileStore: fileStore,
-			ns:        ns,
-			// files:     make(map[string]index.RolodexFile),
-		},
-	})
+	// doc, _ := libopenapi.NewDocumentWithConfiguration([]byte("openapi: 3.0.0\ninfo:\n   title: dummy\n   version: \"1.0.0\"\n   paths:"), &datamodel.DocumentConfiguration{
+	// 	AllowFileReferences:   true,
+	// 	AllowRemoteReferences: true,
+	// 	BasePath:              filepath.Dir(item.FilePath),
+	// 	AvoidIndexBuild:       true,
+	// 	LocalFS: &direktivOpenAPIFS{
+	// 		fileStore: fileStore,
+	// 		ns:        ns,
+	// 	},
+	// })
 
-	v3Model, errs := doc.BuildV3Model()
-	if len(errs) > 0 {
-		for i := range errs {
-			validationErrors = append(validationErrors, errs[i].Error())
-		}
-		return nil, validationErrors
-	}
+	// v3Model, errs := doc.BuildV3Model()
+	// if len(errs) > 0 {
+	// 	for i := range errs {
+	// 		validationErrors = append(validationErrors, errs[i].Error())
+	// 	}
+	// 	return nil, validationErrors
+	// }
 
-	v3Model.Model.Paths.PathItems.Set(item.Config.Path, pathItem)
-	_, doc, _, errs = doc.RenderAndReload()
-	if len(errs) > 0 {
-		for i := range errs {
-			validationErrors = append(validationErrors, errs[i].Error())
-		}
-		return nil, validationErrors
-	}
+	// v3Model.Model.Paths.PathItems.Set(item.Config.Path, pathItem)
+	// _, doc, _, errs = doc.RenderAndReload()
+	// if len(errs) > 0 {
+	// 	for i := range errs {
+	// 		validationErrors = append(validationErrors, errs[i].Error())
+	// 	}
+	// 	return nil, validationErrors
+	// }
 
-	hlval, errs := validator.NewValidator(doc)
-	if len(errs) > 0 {
-		for i := range errs {
-			fmt.Printf(">>>> %v\n", errs[i])
-			validationErrors = append(validationErrors, errs[i].Error())
-		}
-		return nil, validationErrors
-	}
+	// hlval, errs := validator.NewValidator(doc)
+	// if len(errs) > 0 {
+	// 	for i := range errs {
+	// 		fmt.Printf(">>>> %v\n", errs[i])
+	// 		validationErrors = append(validationErrors, errs[i].Error())
+	// 	}
+	// 	return nil, validationErrors
+	// }
 
-	_, valErrs := hlval.ValidateDocument()
-	if len(valErrs) > 0 {
-		for i := range valErrs {
-			fmt.Printf(">>>> %v\n", valErrs[i])
-			validationErrors = append(validationErrors, valErrs[i].Error())
-		}
-		return nil, validationErrors
-	}
+	// _, valErrs := hlval.ValidateDocument()
+	// if len(valErrs) > 0 {
+	// 	for i := range valErrs {
+	// 		fmt.Printf(">>>> %v\n", valErrs[i])
+	// 		validationErrors = append(validationErrors, valErrs[i].Error())
+	// 	}
+	// 	return nil, validationErrors
+	// }
 
+	gg := fmt.Sprintf("openapi: 3.0.0\ninfo:\n   title: %s\n   version: \"1.0.0\"\npaths:\n   %s:\n      %s", ns, item.Config.Path, strings.ReplaceAll(string(item.Base), "\n", "\n      "))
+	d, err := newOpenAPIDoc(ns, item.Config.Path, gg, fileStore)
+	fmt.Println(d)
+	fmt.Println(err)
+
+	// fmt.Println(strings.ReplaceAll(string(item.Base), "\n", "\n      "))
+	// value := "      " + strings.ReplaceAll(string(item.Base), "\n", "\n      ")
+	// fmt.Println(value)
+	// model, errs := d.doc.BuildV3Model()
+	// fmt.Println(errs)
+
+	a, _ := d.doc.Serialize()
+	fmt.Println(string(a))
 	// fmt.Printf("RENDER %v\n", string(j))
 
-	return pathItem, validationErrors
+	ee := d.validate()
+	fmt.Println(ee)
+
+	m, errs := d.doc.BuildV3Model()
+	fmt.Println(errs)
+
+	pi, erhasr := m.Model.Paths.PathItems.Get(item.Config.Path)
+	fmt.Println(erhasr)
+
+	return pi, validationErrors
 }

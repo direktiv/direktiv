@@ -10,84 +10,25 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/pb33f/libopenapi"
+	validator "github.com/pb33f/libopenapi-validator"
+	"github.com/pb33f/libopenapi/datamodel"
 	"github.com/pb33f/libopenapi/index"
 )
 
-type DirektivOpenAPIFS struct {
+type direktivOpenAPIFS struct {
 	fileStore filestore.FileStore
 	ns        string
-	// files     map[string]index.RolodexFile
 }
 
-type DirektivOpenAPIFile struct {
+type direktivOpenAPIFile struct {
 	file   *filestore.File
 	reader *bytes.Reader
 	name   string
-	// size   int64
-	data []byte
+	data   []byte
 }
 
-// type DirektivRoloFile struct {
-// }
-
-// func (dr *DirektivRoloFile) GetContent() string {
-// 	fmt.Println("GET CONTENT")
-// 	return ""
-// }
-
-// func (dr *DirektivRoloFile) GetFileExtension() index.FileExtension {
-// 	fmt.Println("GET ESXT")
-// 	return index.YAML
-// }
-
-// func (dr *DirektivRoloFile) GetFullPath() string {
-// 	fmt.Println("GET FULPATH")
-// 	return ""
-// }
-
-// func (dr *DirektivRoloFile) GetErrors() []error {
-// 	fmt.Println("GET ERRORS")
-// 	return make([]error, 0)
-// }
-
-// func (dr *DirektivRoloFile) GetContentAsYAMLNode() (*yaml.Node, error) {
-// 	fmt.Println("AS YAML")
-// 	return &yaml.Node{}, nil
-// }
-
-// func (dr *DirektivRoloFile) GetIndex() *index.SpecIndex {
-// 	fmt.Println("GET INDEX")
-// 	return nil
-// }
-
-// func (dr *DirektivRoloFile) Name() string {
-// 	fmt.Println("GET NAME")
-// 	return "nil"
-// }
-
-// func (dr *DirektivRoloFile) ModTime() time.Time {
-// 	return time.Now()
-// }
-
-// func (dr *DirektivRoloFile) IsDir() bool {
-// 	return false
-// }
-
-// func (dr *DirektivRoloFile) Sys() any {
-// 	return nil
-// }
-
-// func (dr *DirektivRoloFile) Size() int64 {
-// 	fmt.Println("GET SIOZE")
-// 	return 0
-// }
-
-// func (dr *DirektivRoloFile) Mode() os.FileMode {
-// 	return 0700
-// }
-
-func (d *DirektivOpenAPIFS) Open(name string) (fs.File, error) {
-	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!RESOLVE %v\n", name)
+func (d *direktivOpenAPIFS) Open(name string) (fs.File, error) {
 	file, err := d.fileStore.ForNamespace(d.ns).GetFile(context.Background(), name)
 	if err != nil {
 		return nil, err
@@ -100,120 +41,113 @@ func (d *DirektivOpenAPIFS) Open(name string) (fs.File, error) {
 
 	r := bytes.NewReader(data)
 
-	f := &DirektivOpenAPIFile{
+	f := &direktivOpenAPIFile{
 		reader: r,
 		file:   file,
 		name:   filepath.Base(name),
 		data:   data,
 	}
-	// d.files[name] = f
-
 	return f, nil
 }
 
-// GetContent() string
-// GetFileExtension() FileExtension
-// GetFullPath() string
-// GetErrors() []error
-// GetContentAsYAMLNode() (*yaml.Node, error)
-// GetIndex() *SpecIndex
-// Name() string
-// ModTime() time.Time
-// IsDir() bool
-// Sys() any
-// Size() int64
-// Mode() os.FileMode
-
-func (d *DirektivOpenAPIFS) GetFiles() map[string]index.RolodexFile {
+func (d *direktivOpenAPIFS) GetFiles() map[string]index.RolodexFile {
 	return make(map[string]index.RolodexFile)
-	// return d.files
 }
 
-// func (f *DirektivOpenAPIFile) GetContent() string {
-// 	return string(f.data)
-// }
-
-// func (f *DirektivOpenAPIFile) GetFileExtension() index.FileExtension {
-// 	return index.YAML
-// }
-
-// func (f *DirektivOpenAPIFile) GetFullPath() string {
-// 	fmt.Printf("FULL PATH %v\n", f.file.Path)
-// 	return f.file.Path
-// }
-
-// func (f *DirektivOpenAPIFile) GetErrors() []error {
-// 	return make([]error, 0)
-// }
-
-// func (f *DirektivOpenAPIFile) GetContentAsYAMLNode() (*yaml.Node, error) {
-// 	fmt.Println("AS YAML NODE")
-// 	return nil, nil
-// }
-
-// func (f *DirektivOpenAPIFile) GetIndex() *index.SpecIndex {
-// 	fmt.Println("GET INDEX!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-// 	return nil
-// }
-
-func (f *DirektivOpenAPIFile) Name() string {
+func (f *direktivOpenAPIFile) Name() string {
 	return f.name
 
 }
 
-func (f *DirektivOpenAPIFile) ModTime() time.Time {
+func (f *direktivOpenAPIFile) ModTime() time.Time {
 	return time.Now()
 }
 
-func (f *DirektivOpenAPIFile) IsDir() bool {
+func (f *direktivOpenAPIFile) IsDir() bool {
 	return f.file.Typ == filestore.FileTypeDirectory
 }
 
-func (f *DirektivOpenAPIFile) Sys() any {
+func (f *direktivOpenAPIFile) Sys() any {
 	return ""
 }
 
-func (f *DirektivOpenAPIFile) Size() int64 {
+func (f *direktivOpenAPIFile) Size() int64 {
 	return int64(len(f.data))
 }
 
-func (f *DirektivOpenAPIFile) Mode() os.FileMode {
+func (f *direktivOpenAPIFile) Mode() os.FileMode {
 	return 0700
 }
 
-func (f *DirektivOpenAPIFile) Stat() (fs.FileInfo, error) {
+func (f *direktivOpenAPIFile) Stat() (fs.FileInfo, error) {
 	return f, nil
 }
 
-func (f *DirektivOpenAPIFile) Read(b []byte) (int, error) {
+func (f *direktivOpenAPIFile) Read(b []byte) (int, error) {
 	return f.reader.Read(b)
 }
 
-func (f *DirektivOpenAPIFile) Close() error {
+func (f *direktivOpenAPIFile) Close() error {
 	f.reader = bytes.NewReader(f.data)
 	return nil
 }
 
-// func (f *DirektivOpenAPIFile) Name() string {
-// 	return f.name
-// }
+type openAPIDoc struct {
+	doc libopenapi.Document
+}
 
-// func (f *DirektivOpenAPIFile) Size() int64 {
-// 	return f.size
-// }
+func newOpenAPIDoc(ns, path, content string, fileStore filestore.FileStore) (*openAPIDoc, error) {
+	if content == "" {
+		content = fmt.Sprintf(`openapi: 3.0.0
+info:
+   title: %s
+   version: "1.0.0"
+paths:
+`, ns)
+	}
 
-// func (f *DirektivOpenAPIFile) Mode() fs.FileMode {
-// 	return 0700
-// }
+	doc, err := libopenapi.NewDocumentWithConfiguration([]byte(content),
+		&datamodel.DocumentConfiguration{
+			AllowFileReferences:   true,
+			AllowRemoteReferences: true,
+			BasePath:              filepath.Dir(path),
+			AvoidIndexBuild:       true,
+			LocalFS: &direktivOpenAPIFS{
+				fileStore: fileStore,
+				ns:        ns,
+			},
+		})
 
-// func (f *DirektivOpenAPIFile) ModTime() time.Time {
-// 	return f.file.UpdatedAt
-// }
+	if err != nil {
+		return nil, err
+	}
 
-// func (f *DirektivOpenAPIFile) IsDir() bool {
-// 	return f.file.Typ == filestore.FileTypeDirectory
-// }
+	return &openAPIDoc{
+		doc: doc,
+	}, nil
+}
 
-// func (f *DirektivOpenAPIFile) Sys() any {
-// 	return ""
-// }
+func (o *openAPIDoc) validate() []string {
+	totalErrors := make([]string, 0)
+
+	hlval, errs := validator.NewValidator(o.doc)
+	if len(errs) > 0 {
+		for i := range errs {
+			totalErrors = append(totalErrors, errs[i].Error())
+		}
+	}
+
+	_, valErrs := hlval.ValidateDocument()
+	if len(valErrs) > 0 {
+		for i := range valErrs {
+			fmt.Println(valErrs[i].HowToFix)
+			fmt.Println(valErrs[i].Message)
+			fmt.Println(valErrs[i].Reason)
+			// fmt.Println(valErrs[i].)
+			// fmt.Println(valErrs[i].HowToFix)
+
+			totalErrors = append(totalErrors, valErrs[i].Error())
+		}
+	}
+	return totalErrors
+}
