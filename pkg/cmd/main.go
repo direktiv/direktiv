@@ -142,9 +142,10 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		}
 		slog.Info("connected to OpenSearch")
 		meta, err := opensearchstore.NewMetaStore(circuit.Context(), openSearchClient, opensearchstore.Config{
-			LogIndex:       "direktiv-logs",
-			LogDeleteAfter: "7d",
-			LogInit:        false,
+			LogIndex:            "direktiv-logs",
+			LogDeleteAfter:      "7d",
+			TimelineIndex:       "otel-v1-apm-span", //"otel-v1-apm-service-map",
+			TimelineDeleteAfter: "7d",
 		})
 		if err != nil {
 			return fmt.Errorf("initialize OpenSearch meta client, err: %w", err)

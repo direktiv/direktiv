@@ -127,6 +127,11 @@ func Initialize(app core.App, db *database.DB, meta metastore.Store, bus *pubsub
 		newLogs.meta = meta.LogStore()
 	}
 
+	timeline := &timelineCtr{}
+	if app.Config.OpenSearchInstalled {
+		timeline.meta = meta.TimelineStore()
+	}
+
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
 
 	r.Route("/api/v2", func(r chi.Router) {
@@ -165,6 +170,11 @@ func Initialize(app core.App, db *database.DB, meta metastore.Store, bus *pubsub
 			if app.Config.OpenSearchInstalled {
 				r.Route("/namespaces/{namespace}/new_logs", func(r chi.Router) {
 					newLogs.mountRouter(r)
+				})
+			}
+			if app.Config.OpenSearchInstalled {
+				r.Route("/namespaces/{namespace}/timelines", func(r chi.Router) {
+					timeline.mountRouter(r)
 				})
 			}
 			r.Route("/namespaces/{namespace}/notifications", func(r chi.Router) {

@@ -17,6 +17,11 @@ type opensearchMetaStore struct {
 	co     Config
 }
 
+// TimelineStore implements metastore.Store.
+func (o *opensearchMetaStore) TimelineStore() metastore.TimelineStore {
+	return NewTimelinesStore(o.client, o.co)
+}
+
 func NewMetaStore(ctx context.Context, client *opensearch.Client, co Config) (metastore.Store, error) {
 	store := &opensearchMetaStore{
 		client: client,
@@ -42,12 +47,13 @@ func (o *opensearchMetaStore) LogStore() metastore.LogStore {
 }
 
 type Config struct {
-	LogIndex          string
-	LogDeleteAfter    string
-	LogInit           bool
-	EventsIndex       string
-	EventsDeleteAfter string
-	EventsInit        bool
+	LogIndex            string
+	LogDeleteAfter      string
+	EventsIndex         string
+	EventsDeleteAfter   string
+	EventsInit          bool
+	TimelineIndex       string
+	TimelineDeleteAfter string
 }
 
 func NewTestDataStore(t *testing.T) (metastore.Store, func(), error) {
