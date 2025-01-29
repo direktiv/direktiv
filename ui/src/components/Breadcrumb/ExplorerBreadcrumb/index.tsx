@@ -5,7 +5,7 @@ import { analyzePath } from "~/util/router/utils";
 
 const ExplorerBreadcrumb = () => {
   const isExplorerPage = useMatch({
-    from: "/n/$namespace/explorer",
+    from: "/n/$namespace/explorer/",
     shouldThrow: false,
   });
   const { location } = useRouterState();

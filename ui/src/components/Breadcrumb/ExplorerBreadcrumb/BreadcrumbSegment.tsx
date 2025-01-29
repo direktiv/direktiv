@@ -2,7 +2,7 @@ import { fileTypeToExplorerSubpage, fileTypeToIcon } from "~/api/files/utils";
 
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import { FC } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
 import { usePages } from "~/util/router/pages";

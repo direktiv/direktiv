@@ -13,8 +13,9 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as NNamespaceRouteImport } from './routes/n/$namespace/route'
-import { Route as NNamespaceServicesImport } from './routes/n/$namespace/services'
-import { Route as NNamespaceExplorerImport } from './routes/n/$namespace/explorer'
+import { Route as NNamespaceServicesIndexImport } from './routes/n/$namespace/services/index'
+import { Route as NNamespaceExplorerIndexImport } from './routes/n/$namespace/explorer/index'
+import { Route as NNamespaceServicesServiceImport } from './routes/n/$namespace/services/$service'
 
 // Create/Update Routes
 
@@ -30,15 +31,21 @@ const NNamespaceRouteRoute = NNamespaceRouteImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const NNamespaceServicesRoute = NNamespaceServicesImport.update({
-  id: '/services',
-  path: '/services',
+const NNamespaceServicesIndexRoute = NNamespaceServicesIndexImport.update({
+  id: '/services/',
+  path: '/services/',
   getParentRoute: () => NNamespaceRouteRoute,
 } as any)
 
-const NNamespaceExplorerRoute = NNamespaceExplorerImport.update({
-  id: '/explorer',
-  path: '/explorer',
+const NNamespaceExplorerIndexRoute = NNamespaceExplorerIndexImport.update({
+  id: '/explorer/',
+  path: '/explorer/',
+  getParentRoute: () => NNamespaceRouteRoute,
+} as any)
+
+const NNamespaceServicesServiceRoute = NNamespaceServicesServiceImport.update({
+  id: '/services/$service',
+  path: '/services/$service',
   getParentRoute: () => NNamespaceRouteRoute,
 } as any)
 
@@ -60,18 +67,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NNamespaceRouteImport
       parentRoute: typeof rootRoute
     }
-    '/n/$namespace/explorer': {
-      id: '/n/$namespace/explorer'
-      path: '/explorer'
-      fullPath: '/n/$namespace/explorer'
-      preLoaderRoute: typeof NNamespaceExplorerImport
+    '/n/$namespace/services/$service': {
+      id: '/n/$namespace/services/$service'
+      path: '/services/$service'
+      fullPath: '/n/$namespace/services/$service'
+      preLoaderRoute: typeof NNamespaceServicesServiceImport
       parentRoute: typeof NNamespaceRouteImport
     }
-    '/n/$namespace/services': {
-      id: '/n/$namespace/services'
+    '/n/$namespace/explorer/': {
+      id: '/n/$namespace/explorer/'
+      path: '/explorer'
+      fullPath: '/n/$namespace/explorer'
+      preLoaderRoute: typeof NNamespaceExplorerIndexImport
+      parentRoute: typeof NNamespaceRouteImport
+    }
+    '/n/$namespace/services/': {
+      id: '/n/$namespace/services/'
       path: '/services'
       fullPath: '/n/$namespace/services'
-      preLoaderRoute: typeof NNamespaceServicesImport
+      preLoaderRoute: typeof NNamespaceServicesIndexImport
       parentRoute: typeof NNamespaceRouteImport
     }
   }
@@ -80,13 +94,15 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface NNamespaceRouteRouteChildren {
-  NNamespaceExplorerRoute: typeof NNamespaceExplorerRoute
-  NNamespaceServicesRoute: typeof NNamespaceServicesRoute
+  NNamespaceServicesServiceRoute: typeof NNamespaceServicesServiceRoute
+  NNamespaceExplorerIndexRoute: typeof NNamespaceExplorerIndexRoute
+  NNamespaceServicesIndexRoute: typeof NNamespaceServicesIndexRoute
 }
 
 const NNamespaceRouteRouteChildren: NNamespaceRouteRouteChildren = {
-  NNamespaceExplorerRoute: NNamespaceExplorerRoute,
-  NNamespaceServicesRoute: NNamespaceServicesRoute,
+  NNamespaceServicesServiceRoute: NNamespaceServicesServiceRoute,
+  NNamespaceExplorerIndexRoute: NNamespaceExplorerIndexRoute,
+  NNamespaceServicesIndexRoute: NNamespaceServicesIndexRoute,
 }
 
 const NNamespaceRouteRouteWithChildren = NNamespaceRouteRoute._addFileChildren(
@@ -96,23 +112,26 @@ const NNamespaceRouteRouteWithChildren = NNamespaceRouteRoute._addFileChildren(
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/n/$namespace': typeof NNamespaceRouteRouteWithChildren
-  '/n/$namespace/explorer': typeof NNamespaceExplorerRoute
-  '/n/$namespace/services': typeof NNamespaceServicesRoute
+  '/n/$namespace/services/$service': typeof NNamespaceServicesServiceRoute
+  '/n/$namespace/explorer': typeof NNamespaceExplorerIndexRoute
+  '/n/$namespace/services': typeof NNamespaceServicesIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/n/$namespace': typeof NNamespaceRouteRouteWithChildren
-  '/n/$namespace/explorer': typeof NNamespaceExplorerRoute
-  '/n/$namespace/services': typeof NNamespaceServicesRoute
+  '/n/$namespace/services/$service': typeof NNamespaceServicesServiceRoute
+  '/n/$namespace/explorer': typeof NNamespaceExplorerIndexRoute
+  '/n/$namespace/services': typeof NNamespaceServicesIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/n/$namespace': typeof NNamespaceRouteRouteWithChildren
-  '/n/$namespace/explorer': typeof NNamespaceExplorerRoute
-  '/n/$namespace/services': typeof NNamespaceServicesRoute
+  '/n/$namespace/services/$service': typeof NNamespaceServicesServiceRoute
+  '/n/$namespace/explorer/': typeof NNamespaceExplorerIndexRoute
+  '/n/$namespace/services/': typeof NNamespaceServicesIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -120,20 +139,23 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/n/$namespace'
+    | '/n/$namespace/services/$service'
     | '/n/$namespace/explorer'
     | '/n/$namespace/services'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/n/$namespace'
+    | '/n/$namespace/services/$service'
     | '/n/$namespace/explorer'
     | '/n/$namespace/services'
   id:
     | '__root__'
     | '/'
     | '/n/$namespace'
-    | '/n/$namespace/explorer'
-    | '/n/$namespace/services'
+    | '/n/$namespace/services/$service'
+    | '/n/$namespace/explorer/'
+    | '/n/$namespace/services/'
   fileRoutesById: FileRoutesById
 }
 
@@ -167,16 +189,21 @@ export const routeTree = rootRoute
     "/n/$namespace": {
       "filePath": "n/$namespace/route.tsx",
       "children": [
-        "/n/$namespace/explorer",
-        "/n/$namespace/services"
+        "/n/$namespace/services/$service",
+        "/n/$namespace/explorer/",
+        "/n/$namespace/services/"
       ]
     },
-    "/n/$namespace/explorer": {
-      "filePath": "n/$namespace/explorer.tsx",
+    "/n/$namespace/services/$service": {
+      "filePath": "n/$namespace/services/$service.tsx",
       "parent": "/n/$namespace"
     },
-    "/n/$namespace/services": {
-      "filePath": "n/$namespace/services.tsx",
+    "/n/$namespace/explorer/": {
+      "filePath": "n/$namespace/explorer/index.tsx",
+      "parent": "/n/$namespace"
+    },
+    "/n/$namespace/services/": {
+      "filePath": "n/$namespace/services/index.tsx",
       "parent": "/n/$namespace"
     }
   }

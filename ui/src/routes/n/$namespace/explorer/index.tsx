@@ -6,6 +6,6 @@ const ExplorerPage = () => (
   </div>
 );
 
-export const Route = createFileRoute("/n/$namespace/explorer")({
+export const Route = createFileRoute("/n/$namespace/explorer/")({
   component: ExplorerPage,
 });
