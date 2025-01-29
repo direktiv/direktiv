@@ -18,6 +18,7 @@ export const oidcConfig: AuthProviderProps = {
   client_id,
   post_logout_redirect_uri: rootUrl,
   redirect_uri: rootUrl,
+  loadUserInfo: true,
   /**
    * removes code and state from url after signin
    * see https://github.com/authts/react-oidc-context/blob/f175dcba6ab09871b027d6a2f2224a17712b67c5/src/AuthProvider.tsx#L20-L30
