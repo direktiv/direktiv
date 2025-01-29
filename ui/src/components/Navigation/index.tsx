@@ -1,4 +1,16 @@
-import { FolderTree, Layers, LucideIcon } from "lucide-react";
+import {
+  ActivitySquare,
+  Boxes,
+  FolderTree,
+  GitCompare,
+  Layers,
+  LucideIcon,
+  Network,
+  PlaySquare,
+  Radio,
+  Settings,
+} from "lucide-react";
+import { FileRoutesById, FileRoutesByTo } from "~/routeTree.gen";
 import { Link, useRouterState } from "@tanstack/react-router";
 
 import { FC } from "react";
@@ -7,7 +19,7 @@ import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 type NavigationItem = {
-  path: string;
+  path: keyof FileRoutesByTo;
   label: string;
   icon: LucideIcon;
 };
@@ -26,9 +38,44 @@ const Navigation: FC = () => {
       icon: FolderTree,
     },
     {
+      path: "/n/$namespace/monitoring",
+      label: t("components.mainMenu.monitoring"),
+      icon: ActivitySquare,
+    },
+    {
+      path: "/n/$namespace/instances",
+      label: t("components.mainMenu.instances"),
+      icon: Boxes,
+    },
+    {
+      path: "/n/$namespace/events/history",
+      label: t("components.mainMenu.events"),
+      icon: Radio,
+    },
+    {
+      path: "/n/$namespace/gateway/routes",
+      label: t("components.mainMenu.gateway"),
+      icon: Network,
+    },
+    {
       path: "/n/$namespace/services",
       label: t("components.mainMenu.services"),
       icon: Layers,
+    },
+    {
+      path: "/n/$namespace/mirror",
+      label: t("components.mainMenu.mirror"),
+      icon: GitCompare,
+    },
+    {
+      path: "/n/$namespace/settings",
+      label: t("components.mainMenu.settings"),
+      icon: Settings,
+    },
+    {
+      path: "/n/$namespace/jq",
+      label: t("components.mainMenu.jqPlayground"),
+      icon: PlaySquare,
     },
   ];
 
