@@ -1,44 +1,49 @@
-import { NavLink, useMatches } from "react-router-dom";
+import { FolderTree, Layers, LucideIcon } from "lucide-react";
+import { Link, useRouterState } from "@tanstack/react-router";
 
 import { FC } from "react";
-import { checkHandlerInMatcher } from "~/util/router/utils";
 import { createClassNames } from "~/design/NavigationLink";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
+type NavigationItem = {
+  path: string;
+  label: string;
+  icon: LucideIcon;
+};
+
 const Navigation: FC = () => {
-  const pages = usePages();
   const namespace = useNamespace();
+  const { location } = useRouterState();
   const { t } = useTranslation();
-  const [, secondPathLevel] = useMatches();
 
   if (!namespace) return null;
 
-  type PagesKeys = keyof typeof pages;
+  const navigationItems: NavigationItem[] = [
+    {
+      path: "/n/$namespace/explorer",
+      label: t("components.mainMenu.explorer"),
+      icon: FolderTree,
+    },
+    {
+      path: "/n/$namespace/services",
+      label: t("components.mainMenu.services"),
+      icon: Layers,
+    },
+  ];
+
   return (
     <>
-      {Object.entries(pages).map(([key, item]) => {
-        // we should normaly avoid using "as" at this place, because we should not tell
-        // TS that we know better than it, but in this case we actually do and it can
-        // simply not infer the type of key at this point.
-        const typedKey = key as PagesKeys;
-        if (!item.icon || !item.name) return null;
-
-        const isActive = checkHandlerInMatcher(secondPathLevel, key);
-
-        return (
-          <NavLink
-            key={key}
-            to={item.createHref({ namespace })}
-            className={createClassNames(isActive)}
-            end={false}
-          >
-            <item.icon aria-hidden="true" />{" "}
-            {t(`components.mainMenu.${typedKey}`)}
-          </NavLink>
-        );
-      })}
+      {navigationItems.map((item) => (
+        <Link
+          key={item.path}
+          to={item.path}
+          params={{ namespace }}
+          className={createClassNames(location.pathname === item.path)}
+        >
+          <item.icon aria-hidden="true" /> {item.label}
+        </Link>
+      ))}
     </>
   );
 };

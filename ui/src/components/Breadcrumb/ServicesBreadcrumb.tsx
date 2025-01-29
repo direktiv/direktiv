@@ -1,16 +1,18 @@
+import { Link, useMatch } from "@tanstack/react-router";
+
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
-import { Diamond } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Layers } from "lucide-react";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const ServicesBreadcrumb = () => {
-  const pages = usePages();
   const namespace = useNamespace();
-  const { isServicePage, isServiceDetailPage, service } =
-    pages.services.useParams();
-  const { icon: Icon } = pages.services;
+  // const { isServicePage, isServiceDetailPage, service } =
+  //   pages.services.useParams();
+  const isServicePage = useMatch({
+    from: "/n/$namespace/services",
+    shouldThrow: false,
+  });
   const { t } = useTranslation();
 
   if (!isServicePage) return null;
@@ -19,16 +21,11 @@ const ServicesBreadcrumb = () => {
   return (
     <>
       <BreadcrumbLink data-testid="breadcrumb-services">
-        <Link
-          to={pages.services.createHref({
-            namespace,
-          })}
-        >
-          <Icon aria-hidden="true" />
-          {t("components.breadcrumb.services")}
+        <Link to="/n/$namespace/services" params={{ namespace }}>
+          <Layers aria-hidden="true" /> {t("components.breadcrumb.services")}
         </Link>
       </BreadcrumbLink>
-      {isServiceDetailPage && service ? (
+      {/* {isServiceDetailPage && service ? (
         <BreadcrumbLink>
           <Diamond aria-hidden="true" />
           <Link
@@ -40,7 +37,7 @@ const ServicesBreadcrumb = () => {
             {service}
           </Link>
         </BreadcrumbLink>
-      ) : null}
+      ) : null} */}
     </>
   );
 };
