@@ -1,5 +1,8 @@
+import { FileListSchemaType } from "~/api/files/schema";
 import { RJSFSchema } from "@rjsf/utils";
+import { decode } from "js-base64";
 import { parse } from "yaml";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 export const workflowInputSchema = z.string().refine((string) => {
@@ -28,4 +31,21 @@ export const getValidationSchemaFromYaml = (
   const parsed = workflowSchema.passthrough().safeParse(workflowDataJson);
   if (!parsed.success) return null;
   return parsed.data.states[0].schema as RJSFSchema;
+};
+
+export const useValidationSchemaFromFile = (
+  file: FileListSchemaType["data"] | undefined
+) => {
+  const { t } = useTranslation();
+  let result: RJSFSchema | null = null;
+  let error: string | undefined;
+  try {
+    result =
+      file?.type === "workflow"
+        ? getValidationSchemaFromYaml(decode(file?.data ?? ""))
+        : null;
+  } catch (e) {
+    error = t("pages.explorer.tree.workflow.runWorkflow.invalidYaml");
+  }
+  return { result, error };
 };
