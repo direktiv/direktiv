@@ -201,6 +201,7 @@
         "editor": {
           "unsavedNote": "unsaved changes",
           "theresOneIssue": "There is an issue",
+          "cannotStartWithSpace": "Workflows cannot start with a space",
           "runBtn": "Run",
           "saveBtn": "Save",
           "layout": {

@@ -57,11 +57,15 @@ const WorkflowEditor: FC<{
 
   const onSave = (toSave: string | undefined) => {
     if (toSave) {
-      setError(undefined);
-      updateFile({
-        path: data.path,
-        payload: { data: encode(toSave) },
-      });
+      if (toSave.startsWith(" ")) {
+        setError(t("pages.explorer.workflow.editor.cannotStartWithSpace"));
+      } else {
+        setError(undefined);
+        updateFile({
+          path: data.path,
+          payload: { data: encode(toSave) },
+        });
+      }
     }
   };
 
