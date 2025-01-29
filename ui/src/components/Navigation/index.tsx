@@ -10,10 +10,10 @@ import {
   Radio,
   Settings,
 } from "lucide-react";
-import { FileRoutesById, FileRoutesByTo } from "~/routeTree.gen";
 import { Link, useRouterState } from "@tanstack/react-router";
 
 import { FC } from "react";
+import { FileRoutesByTo } from "~/routeTree.gen";
 import { createClassNames } from "~/design/NavigationLink";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
