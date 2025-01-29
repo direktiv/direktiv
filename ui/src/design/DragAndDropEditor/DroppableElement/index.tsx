@@ -1,4 +1,18 @@
-import { Eye, EyeOff, PlusCircle, Settings } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/design/Dropdown";
+import {
+  Eye,
+  EyeOff,
+  MoreVertical,
+  PlusCircle,
+  Settings,
+  Trash2,
+} from "lucide-react";
 import { FC, PropsWithChildren } from "react";
 import { HoverContainer, HoverElement } from "~/design/HoverContainer";
 import { LogEntry, Logs } from "~/design/Logs";
@@ -7,6 +21,7 @@ import { useDndContext, useDroppable } from "@dnd-kit/core";
 import Badge from "~/design/Badge";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import { DialogTrigger } from "~/design/Dialog";
 import { twMergeClsx } from "~/util/helpers";
 
 type DroppableProps = PropsWithChildren & {
@@ -14,8 +29,8 @@ type DroppableProps = PropsWithChildren & {
   hidden: boolean;
   id: string;
   onHide?: () => void;
-  onEdit?: () => void;
   preview: string;
+  setSelectedDialog: (fileType: string) => void;
 };
 
 export const DroppableElement: FC<DroppableProps> = ({
@@ -24,8 +39,8 @@ export const DroppableElement: FC<DroppableProps> = ({
   id,
   children,
   onHide,
-  onEdit,
   preview,
+  setSelectedDialog,
 }) => {
   const { setNodeRef, isOver } = useDroppable({
     id,
@@ -40,26 +55,28 @@ export const DroppableElement: FC<DroppableProps> = ({
         name={name}
         isOver={isOver}
         onHide={onHide}
-        onEdit={onEdit}
+        setSelectedDialog={setSelectedDialog}
       />
     </div>
   );
 };
 
+type dialogType = "edit" | "delete";
+
 export const Droppable = ({
   hidden,
   isOver,
   onHide,
-  onEdit,
   name,
   preview,
+  setSelectedDialog,
 }: {
   hidden: boolean;
   isOver: boolean;
   onHide?: () => void;
-  onEdit?: () => void;
   name: string;
   preview: string;
+  setSelectedDialog: (selectedDialog: dialogType) => void;
 }) => (
   <HoverContainer>
     <Card
@@ -91,9 +108,37 @@ export const Droppable = ({
         )}
         variant="alwaysVisibleRight"
       >
-        <Button icon variant="outline" onClick={onEdit}>
-          <Settings size={16} />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" onClick={(e) => e.preventDefault()} icon>
+              <MoreVertical size={16} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-40">
+            <DropdownMenuGroup>
+              <DialogTrigger
+                className="w-full"
+                onClick={() => {
+                  setSelectedDialog("edit");
+                }}
+              >
+                <DropdownMenuItem>
+                  <Settings className="mr-2 size-4" /> Edit
+                </DropdownMenuItem>
+              </DialogTrigger>
+              <DialogTrigger
+                className="w-full"
+                onClick={() => {
+                  setSelectedDialog("delete");
+                }}
+              >
+                <DropdownMenuItem>
+                  <Trash2 className="mr-2 size-4" /> Delete
+                </DropdownMenuItem>
+              </DialogTrigger>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </HoverElement>
 
       <div className="flex flex-col">
@@ -109,9 +154,10 @@ export const Droppable = ({
                 {name}
               </Badge>
             </div>
-
-            <Logs className="pt-2">
-              <LogEntry>{preview}</LogEntry>
+            <Logs>
+              <LogEntry className="pt-2 text-center">
+                <div className="truncate w-48">{preview}</div>
+              </LogEntry>
             </Logs>
           </div>
         )}

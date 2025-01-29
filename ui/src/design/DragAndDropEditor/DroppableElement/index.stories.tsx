@@ -20,6 +20,8 @@ export const Default: Story = {
     hidden: false,
     id: "1",
     name: "Text",
+    setSelectedDialog: (selectedDropdown: string) =>
+      alert("clicked " + selectedDropdown),
   },
   argTypes: {
     preview: {
@@ -42,6 +44,11 @@ export const Default: Story = {
       control: "text",
       type: { name: "string", required: true },
     },
+    setSelectedDialog: {
+      description: "Needed if there is a DropDownMenu in the Button",
+      control: "text",
+      type: { name: "string", required: true },
+    },
   },
 };
 
@@ -56,7 +63,7 @@ export const ClickToHideOrEdit = () => {
         id="1"
         name="Text"
         onHide={() => setHidden(!hidden)}
-        onEdit={() => setDialogOpen(true)}
+        setSelectedDialog={() => setDialogOpen(true)}
       />
       <EditModal />
     </Dialog>

@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+export const PageElementContentSchema = z.object({
+  content: z.string(),
+});
+
+export type PageElementContentSchemaType = z.infer<
+  typeof PageElementContentSchema
+>;
+
 export const PageElementSchema = z.object({
   name: z.any(),
   hidden: z.any(),

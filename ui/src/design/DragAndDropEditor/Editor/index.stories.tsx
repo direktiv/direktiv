@@ -63,7 +63,7 @@ export const DragAndDrop = () => {
               id="2"
               name={name}
               onHide={() => setHidden(!hidden)}
-              onEdit={() => setDialogOpen(true)}
+              setSelectedDialog={() => setDialogOpen(true)}
             />
             <DroppableSeparator id="3" />
             <NonDroppableElement

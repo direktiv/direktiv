@@ -7,6 +7,7 @@ import {
   Table,
   Text,
 } from "lucide-react";
+import { Dialog, DialogContent } from "~/design/Dialog";
 import { DragAndDropPreview, getElementComponent } from "./PreviewElements";
 import {
   DroppableElement,
@@ -24,11 +25,11 @@ import { decode, encode } from "js-base64";
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import { Dialog } from "~/design/Dialog";
+import DeleteModal from "./modals/Delete";
 import { DndContext } from "~/design/DragAndDropEditor/Context.tsx";
 import { DraggableElement } from "~/design/DragAndDropEditor/DraggableElement";
 import { DroppableSeparator } from "~/design/DragAndDropEditor/DroppableSeparator";
-import { EditModal } from "~/design/DragAndDropEditor/EditModal";
+import EditModal from "./modals/Edit";
 import { FileSchemaType } from "~/api/files/schema";
 import { Form } from "./Form";
 import FormErrors from "~/components/FormErrors";
@@ -50,6 +51,9 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
     fileContentFromServer
   );
   const { mutate: updateRoute, isPending } = useUpdateFile();
+
+  const [selectedDialog, setSelectedDialog] = useState<string>("edit");
+  const [selectedElement, setSelectedElement] = useState<number>(0);
 
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
@@ -240,7 +244,9 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                               onHide={() => updateHeader(header)}
                               onEdit={() => setDialogOpen(true)}
                             />
-
+                            {!layout.length && (
+                              <DroppableSeparator id={String(0) + "A"} />
+                            )}
                             {layout.map((element, index) => {
                               const isLastListItem =
                                 index === layout.length - 1;
@@ -259,7 +265,11 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                                         onHide={() =>
                                           (element.hidden = !element.hidden)
                                         }
-                                        onEdit={() => setDialogOpen(true)}
+                                        setSelectedDialog={(dialogType) => {
+                                          setSelectedDialog(dialogType);
+                                          setSelectedElement(index);
+                                          setDialogOpen(true);
+                                        }}
                                       />
                                       <DroppableSeparator
                                         id={String(index) + "B"}
@@ -278,7 +288,11 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                                         onHide={() =>
                                           (element.hidden = !element.hidden)
                                         }
-                                        onEdit={() => setDialogOpen(true)}
+                                        setSelectedDialog={(dialogType) => {
+                                          setSelectedDialog(dialogType);
+                                          setSelectedElement(index);
+                                          setDialogOpen(true);
+                                        }}
                                       />
                                     </>
                                   )}
@@ -354,7 +368,32 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
         </Form>
       </DndContext>
 
-      <EditModal />
+      <DialogContent>
+        {selectedDialog === "edit" && (
+          <EditModal
+            layout={layout}
+            success={(newLayout) => {
+              setLayout(newLayout);
+            }}
+            pageElementID={selectedElement}
+            close={() => {
+              setDialogOpen(false);
+            }}
+          />
+        )}
+        {selectedDialog === "delete" && (
+          <DeleteModal
+            layout={layout}
+            success={(newLayout) => {
+              setLayout(newLayout);
+            }}
+            pageElementID={selectedElement}
+            close={() => {
+              setDialogOpen(false);
+            }}
+          />
+        )}
+      </DialogContent>
     </Dialog>
   );
 };
