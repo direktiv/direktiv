@@ -1,30 +1,28 @@
+import { Link, useParams } from "@tanstack/react-router";
 import { Pencil, SquareGanttChartIcon } from "lucide-react";
 
 import { AllowAnonymous } from "../components/Anonymous";
 import Badge from "~/design/Badge";
 import Button from "~/design/Button";
-import { Link } from "react-router-dom";
 import MessagesOverlay from "../components/MessagesOverlay";
 import { Methods } from "../components/Methods";
 import Plugins from "../components/Plugins";
 import PublicPathInput from "../components/PublicPath";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useRoute } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
 const Header = () => {
-  const pages = usePages();
   const namespace = useNamespace();
-  const { routePath } = pages.gateway.useParams();
+  const { filename } = useParams({ strict: false });
   const { data: route } = useRoute({
-    routePath: routePath ?? "",
-    enabled: !!routePath,
+    routePath: filename ?? "",
+    enabled: !!filename,
   });
 
   const { t } = useTranslation();
 
-  if (!route) return null;
+  if (!(route && filename)) return null;
   if (!namespace) return null;
 
   return (
@@ -82,11 +80,8 @@ const Header = () => {
         <div className="flex gap-5">
           <Button asChild isAnchor variant="primary" className="max-md:w-full">
             <Link
-              to={pages.explorer.createHref({
-                namespace,
-                subpage: "endpoint",
-                path: route.file_path,
-              })}
+              to="/n/$namespace/explorer/endpoint/$filename"
+              params={{ namespace, filename }}
             >
               <Pencil />
               {t("pages.gateway.routes.detail.editRoute")}

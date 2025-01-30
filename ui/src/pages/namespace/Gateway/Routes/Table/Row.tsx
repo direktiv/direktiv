@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { TableCell, TableRow } from "~/design/Table";
 
 import { AllowAnonymous } from "../components/Anonymous";
@@ -10,7 +10,6 @@ import Plugins from "../components/Plugins";
 import PublicPathInput from "../components/PublicPath";
 import { RouteSchemaType } from "~/api/gateway/schema";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 type RowProps = {
@@ -18,7 +17,6 @@ type RowProps = {
 };
 
 export const Row: FC<RowProps> = ({ route }) => {
-  const pages = usePages();
   const namespace = useNamespace();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -27,13 +25,10 @@ export const Row: FC<RowProps> = ({ route }) => {
   return (
     <TableRow
       onClick={() => {
-        navigate(
-          pages.gateway.createHref({
-            namespace,
-            subpage: "routeDetail",
-            routePath: route.file_path,
-          })
-        );
+        navigate({
+          to: "/n/$namespace/gateway/routes/$filename",
+          params: { namespace, filename: route.file_path },
+        });
       }}
       className="cursor-pointer"
     >
@@ -44,11 +39,8 @@ export const Row: FC<RowProps> = ({ route }) => {
               e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link
             }}
             className="whitespace-normal break-all hover:underline"
-            to={pages.explorer.createHref({
-              namespace,
-              path: route.file_path,
-              subpage: "endpoint",
-            })}
+            to="/n/$namespace/explorer/endpoint/$filename"
+            params={{ namespace, filename: route.file_path }}
           >
             {route.file_path}
           </Link>
