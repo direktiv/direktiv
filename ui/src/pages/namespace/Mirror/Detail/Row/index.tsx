@@ -10,8 +10,7 @@ import Badge from "~/design/Badge";
 import { SyncObjectSchemaType } from "~/api/syncs/schema";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
 import { activityStatusToBadgeProps } from "../utils";
-import { useNavigate } from "react-router-dom";
-import { usePages } from "~/util/router/pages";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
 
@@ -22,7 +21,6 @@ const Row = ({
   item: SyncObjectSchemaType;
   namespace: string;
 }) => {
-  const pages = usePages();
   const createdAt = useUpdatedAt(item.createdAt);
 
   const { t } = useTranslation();
@@ -34,12 +32,10 @@ const Row = ({
     <TableRow
       data-testid="sync-row"
       onClick={() => {
-        navigate(
-          pages.mirror.createHref({
-            namespace,
-            sync: item.id,
-          })
-        );
+        navigate({
+          to: "/n/$namespace/mirror/logs/$id",
+          params: { namespace, id: item.id },
+        });
       }}
     >
       <TooltipProvider>
