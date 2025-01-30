@@ -6,13 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/metastore"
 	"github.com/opensearch-project/opensearch-go"
 	"github.com/opensearch-project/opensearch-go/opensearchapi"
 )
+
+const eventsISMPolicyName = "direktiv-events-policy"
 
 // NewOpenSearchEventsStore creates a new OpenSearchLogStore with the specified settings.
 func NewOpenSearchEventsStore(client *opensearch.Client, co Config) *EventStore {
@@ -29,9 +30,12 @@ func (store *EventStore) Init(ctx context.Context) error {
 	if err := store.ensureIndex(ctx); err != nil {
 		return fmt.Errorf("failed to ensure index: %w", err)
 	}
-
+	_, err := checkAndDeleteISMPolicy(ctx, store.client, logISMPolicyName, true)
+	if err != nil {
+		return err
+	}
 	// Ensure lifecycle policies
-	if err := store.ensureDeletionPolicy(ctx); err != nil {
+	if err := ensureISMPolicy(ctx, store.client, eventsISMPolicyName, store.eventIndex, store.deleteAfter); err != nil {
 		return fmt.Errorf("failed to ensure deletion policy: %w", err)
 	}
 
@@ -69,34 +73,6 @@ func (store *EventStore) Append(ctx context.Context, e metastore.EventEntry) err
 	}
 
 	return nil
-}
-
-// GetMapping retrieves the mapping of the specified index.
-func (store *EventStore) GetMapping(ctx context.Context) (map[string]interface{}, error) {
-	// Make a request to OpenSearch to get the mapping
-	mappingRes, err := store.client.Indices.GetMapping(
-		store.client.Indices.GetMapping.WithContext(ctx),
-		store.client.Indices.GetMapping.WithIndex(store.eventIndex), // Use the index name from LogStore
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get index mapping: %w", err)
-	}
-	defer mappingRes.Body.Close()
-
-	if mappingRes.IsError() {
-		responseBody, _ := io.ReadAll(mappingRes.Body)
-		slog.Error("Failed to retrieve mapping", "status", mappingRes.Status(), "response", string(responseBody))
-
-		return nil, fmt.Errorf("error retrieving index mapping: %s, response: %s", mappingRes.Status(), string(responseBody))
-	}
-
-	// Decode the mapping response
-	var mapping map[string]interface{}
-	if err := json.NewDecoder(mappingRes.Body).Decode(&mapping); err != nil {
-		return nil, fmt.Errorf("failed to decode mapping response: %w", err)
-	}
-
-	return mapping, nil
 }
 
 func (store *EventStore) Get(ctx context.Context, options metastore.EventQueryOptions) ([]metastore.EventEntry, error) {
@@ -261,78 +237,6 @@ func (store *EventStore) ensureIndex(ctx context.Context) error {
 	if createRes.IsError() {
 		responseBody, _ := io.ReadAll(createRes.Body)
 		return fmt.Errorf("error creating index: %s, response: %s", createRes.String(), string(responseBody))
-	}
-
-	return nil
-}
-
-func (store *EventStore) ensureDeletionPolicy(ctx context.Context) error {
-	policy := map[string]interface{}{
-		"policy": map[string]interface{}{
-			"description":   "Event retention policy",
-			"default_state": "delete",
-			"states": []map[string]interface{}{
-				{
-					"name": "delete",
-					"actions": []map[string]interface{}{
-						{
-							"delete": map[string]interface{}{},
-						},
-					},
-					"transitions": []map[string]interface{}{},
-				},
-			},
-		},
-	}
-
-	body, err := json.Marshal(policy)
-	if err != nil {
-		return fmt.Errorf("failed to marshal ISM policy: %w", err)
-	}
-
-	endpoint := fmt.Sprintf("/_plugins/_ism/policies/%s_policy", store.eventIndex)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPut, endpoint, bytes.NewReader(body))
-	if err != nil {
-		return fmt.Errorf("failed to create ISM policy request: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	res, err := store.client.Transport.Perform(req)
-	if err != nil {
-		return fmt.Errorf("failed to execute ISM policy request: %w", err)
-	}
-	defer res.Body.Close()
-
-	bodyBytes, _ := io.ReadAll(res.Body)
-	if res.StatusCode >= http.StatusBadRequest {
-		return fmt.Errorf("error applying ISM policy: %s, response: %s", res.Status, string(bodyBytes))
-	}
-
-	// Attach the ISM policy to the index
-	attachPolicyBody := map[string]interface{}{
-		"policy_id": fmt.Sprintf("%s_policy", store.eventIndex),
-	}
-	attachBody, err := json.Marshal(attachPolicyBody)
-	if err != nil {
-		return fmt.Errorf("failed to marshal attach policy body: %w", err)
-	}
-
-	attachEndpoint := fmt.Sprintf("/_plugins/_ism/add/%s", store.eventIndex)
-	attachReq, err := http.NewRequestWithContext(ctx, http.MethodPost, attachEndpoint, bytes.NewReader(attachBody))
-	if err != nil {
-		return fmt.Errorf("failed to create attach policy request: %w", err)
-	}
-	attachReq.Header.Set("Content-Type", "application/json")
-
-	attachRes, err := store.client.Transport.Perform(attachReq)
-	if err != nil {
-		return fmt.Errorf("failed to execute attach policy request: %w", err)
-	}
-	defer attachRes.Body.Close()
-
-	attachBodyBytes, _ := io.ReadAll(attachRes.Body)
-	if attachRes.StatusCode >= http.StatusBadRequest {
-		return fmt.Errorf("error attaching ISM policy: %s, response: %s", attachRes.Status, string(attachBodyBytes))
 	}
 
 	return nil

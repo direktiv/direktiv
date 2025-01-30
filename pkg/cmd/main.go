@@ -144,55 +144,17 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		meta, err := opensearchstore.NewMetaStore(circuit.Context(), openSearchClient, opensearchstore.Config{
 			LogIndex:            "direktiv-logs",
 			LogDeleteAfter:      "7d",
+			LogInit:             true,
 			TimelineIndex:       "otel-v1-apm-span", //"otel-v1-apm-service-map",
 			TimelineDeleteAfter: "7d",
+			MetricsIndex:        "otel-metrics",
+			MetricsDeleteAfter:  "30d",
+			MetricsInit:         false,
 		})
 		if err != nil {
 			return fmt.Errorf("initialize OpenSearch meta client, err: %w", err)
 		}
 		args.Metastore = meta
-		// // Initialize log level based on config
-		// lvl := new(slog.LevelVar)
-		// lvl.Set(slog.LevelInfo)
-
-		// if app.Config.LogDebug {
-		// 	slog.Info("Logging is set to debug")
-		// 	lvl.Set(slog.LevelDebug)
-		// }
-
-		// // Create a channel for logs and set up a worker to process it
-		// logCh := make(chan metastore.LogEntry, 100)
-		// worker := tracing.NewWorker(tracing.WorkerArgs{
-		// 	LogCh:         logCh,
-		// 	LogStore:      meta.LogStore(),
-		// 	MaxBatchSize:  1,
-		// 	FlushInterval: 1 * time.Millisecond,
-		// 	CachedLevel:   int(lvl.Level()),
-		// })
-
-		// circuit.Start(func() error {
-		// 	err := worker.Start(circuit)
-		// 	if err != nil {
-		// 		return fmt.Errorf("logs worker, err: %w", err)
-		// 	}
-
-		// 	return nil
-		// })
-
-		// // Create handlers
-		// jsonHandler := tracing.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
-		// 	Level: lvl,
-		// }))
-		// channelHandler := tracing.NewChannelHandler(logCh, nil, "default", lvl.Level())
-
-		// // Combine handlers using a TeeHandler
-		// compositeHandler := tracing.TeeHandler{
-		// 	jsonHandler,
-		// 	channelHandler,
-		// }
-		// // Set up the default logger
-		// slogger := slog.New(compositeHandler)
-		// slog.SetDefault(slogger)
 		slog.Info("Metastore initialized")
 	}
 	// Start api v2 server

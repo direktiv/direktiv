@@ -6,23 +6,45 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/metastore"
 	"github.com/opensearch-project/opensearch-go"
 )
 
+const logISMPolicyName = "otel-logs-policy"
+
 type LogStore struct {
-	client   *opensearch.Client
-	logIndex string
+	client      *opensearch.Client
+	index       string
+	deleteAfter string
 }
 
 func NewLogStore(client *opensearch.Client, co Config) *LogStore {
 	return &LogStore{
-		client:   client,
-		logIndex: co.LogIndex,
+		client:      client,
+		index:       co.LogIndex,
+		deleteAfter: co.LogDeleteAfter,
 	}
+}
+
+func (store *LogStore) Init(ctx context.Context) error {
+	var err error
+	for i := 1; i <= maxRetries; i++ {
+		_, err = checkAndDeleteISMPolicy(ctx, store.client, logISMPolicyName, true)
+		if err != nil {
+			continue
+		}
+		err = ensureISMPolicy(ctx, store.client, logISMPolicyName, store.index, store.deleteAfter)
+		if err == nil {
+			return nil
+		}
+		slog.Warn(fmt.Sprintf("Failed to initialize ISM policy (attempt %d/%d): %v", i, maxRetries, err))
+		time.Sleep(retryDelay) // Wait before retrying
+	}
+
+	return fmt.Errorf("failed to initialize ISM policy after %d attempts: %w", maxRetries, err)
 }
 
 func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOptions) ([]metastore.LogEntry, error) {
@@ -97,7 +119,7 @@ func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOption
 	// Execute the OpenSearch query
 	searchRes, err := store.client.Search(
 		store.client.Search.WithContext(ctx),
-		store.client.Search.WithIndex(store.logIndex),
+		store.client.Search.WithIndex(store.index),
 		store.client.Search.WithBody(bytes.NewReader(mustJSON(query))),
 		store.client.Search.WithTrackTotalHits(true),
 	)
@@ -109,7 +131,7 @@ func (store *LogStore) Get(ctx context.Context, options metastore.LogQueryOption
 	// Handle errors
 	if searchRes.IsError() {
 		responseBody, _ := io.ReadAll(searchRes.Body)
-		log.Printf("search failed, status: %s, response: %s", searchRes.Status(), string(responseBody))
+		slog.Warn("search failed, status: %s, response: %s", searchRes.Status(), string(responseBody))
 
 		return nil, fmt.Errorf("error executing search: %s, response: %s", searchRes.Status(), string(responseBody))
 	}

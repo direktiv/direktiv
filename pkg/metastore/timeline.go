@@ -12,8 +12,8 @@ type TimelineStore interface {
 type TimelineQueryOptions struct {
 	StartTime time.Time // Start of time range filter
 	EndTime   time.Time // End of time range filter
-	Severity  string    // Log level (e.g., "INFO", "ERROR")
+	Severity  string
 	SpanID    string
 	Metadata  map[string]string // Additional metadata filters (e.g., namespace, instance, workflow)
-	Limit     int               // Maximum number of logs to return
+	Limit     int               // Maximum number of entries to return
 }

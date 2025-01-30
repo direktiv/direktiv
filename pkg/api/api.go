@@ -20,6 +20,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/metastore"
+
 	"github.com/direktiv/direktiv/pkg/middlewares"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/version"
@@ -132,6 +133,11 @@ func Initialize(app core.App, db *database.DB, meta metastore.Store, bus *pubsub
 		timeline.meta = meta.TimelineStore()
 	}
 
+	newMetrics := &newMetricsCtr{}
+	if app.Config.OpenSearchInstalled {
+		newMetrics.meta = meta.MetricsStore()
+	}
+
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
 
 	r.Route("/api/v2", func(r chi.Router) {
@@ -175,6 +181,26 @@ func Initialize(app core.App, db *database.DB, meta metastore.Store, bus *pubsub
 			if app.Config.OpenSearchInstalled {
 				r.Route("/namespaces/{namespace}/timelines", func(r chi.Router) {
 					timeline.mountRouter(r)
+				})
+			}
+			if app.Config.OpenSearchInstalled {
+				r.Route("/namespaces/{namespace}/new_metrics", func(r chi.Router) {
+					newMetrics.mountRouter(r)
+				})
+			}
+			if app.Config.OpenSearchInstalled {
+				r.Get("/namespaces/{namespace}/mapping/{index}", func(w http.ResponseWriter, r *http.Request) {
+					index := chi.URLParam(r, "index")
+					res, err := meta.GetMapping(r.Context(), index)
+					if err != nil {
+						writeError(w, &Error{
+							Code:    "error",
+							Message: err.Error(),
+						})
+
+						return
+					}
+					writeJSON(w, res)
 				})
 			}
 			r.Route("/namespaces/{namespace}/notifications", func(r chi.Router) {

@@ -395,5 +395,5 @@ data-prepper:
               insecure: true
               username: admin
               password: direktivTr0&3
-              index: otel_metrics
+              index: otel-metrics
           - stdout:

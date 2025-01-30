@@ -9,7 +9,6 @@ type EventsStore interface {
 	Append(ctx context.Context, e EventEntry) error
 	Get(ctx context.Context, options EventQueryOptions) ([]EventEntry, error)
 	Init(ctx context.Context) error
-	GetMapping(ctx context.Context) (map[string]interface{}, error)
 }
 
 type EventEntry struct {

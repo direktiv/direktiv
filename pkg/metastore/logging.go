@@ -7,6 +7,7 @@ import (
 
 // LogStore defines a high-level interface for managing logs in the Metastore.
 type LogStore interface {
+	Init(ctx context.Context) error
 	Get(ctx context.Context, options LogQueryOptions) ([]LogEntry, error)
 }
 

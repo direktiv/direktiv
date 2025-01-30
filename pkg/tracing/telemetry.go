@@ -13,9 +13,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	otlpgrpc "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	otlpmetric "go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
@@ -23,7 +26,12 @@ import (
 	"google.golang.org/grpc"
 )
 
-var instrumentationName string
+var (
+	instrumentationName string
+	meter               otlpmetric.Meter
+	requestCounter      otlpmetric.Int64Counter
+	requestDuration     otlpmetric.Float64Histogram
+)
 
 func SetInstrumentationName(name string) {
 	instrumentationName = name
@@ -44,7 +52,7 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 		slog.Warn("No OTLP address provided. Telemetry will not be exported.")
 		return func() {}, nil
 	}
-	
+
 	// Setup OTLP exporter
 	slog.Debug("Creating OTLP gRPC client.", "endpoint", addr)
 	driver := otlpgrpc.NewClient(
@@ -52,6 +60,41 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 		otlpgrpc.WithEndpoint(addr),
 		otlpgrpc.WithDialOption(grpc.WithBlock()), // nolint:staticcheck
 	)
+	// Set up OTLP Metric Exporter
+	slog.Debug("Creating OTLP metric exporter.", "endpoint", addr)
+	metricExporter, err := otlpmetricgrpc.New(cirCtx, otlpmetricgrpc.WithInsecure(), otlpmetricgrpc.WithEndpoint(addr))
+	if err != nil {
+		slog.Error("Failed to create OTLP metric exporter.", "error", err)
+		return nil, fmt.Errorf("failed to create OTLP metric exporter: %w", err)
+	}
+
+	// Create new OpenTelemetry metric provider
+	slog.Debug("Setting up OpenTelemetry metric provider.")
+	meterProvider := metric.NewMeterProvider(
+		metric.WithReader(metric.NewPeriodicReader(metricExporter)),
+	)
+
+	otel.SetMeterProvider(meterProvider)
+	meter = meterProvider.Meter(instrumentationName)
+
+	// Define metrics
+	requestCounter, err = meter.Int64Counter(
+		"http.server.requests",
+		otlpmetric.WithDescription("Total number of HTTP requests received"),
+	)
+	if err != nil {
+		slog.Error("Failed to create requestCounter metric.", "error", err)
+		return nil, fmt.Errorf("failed to create requestCounter metric: %w", err)
+	}
+
+	requestDuration, err = meter.Float64Histogram(
+		"http.server.duration",
+		otlpmetric.WithDescription("Duration of HTTP requests"),
+	)
+	if err != nil {
+		slog.Error("Failed to create requestDuration metric.", "error", err)
+		return nil, fmt.Errorf("failed to create requestDuration metric: %w", err)
+	}
 
 	slog.Debug("Setting up OTLP exporter.")
 	exp, err := otlp.New(cirCtx, driver)
@@ -115,6 +158,7 @@ func telemetryWaiter(cirCtx context.Context, tp *sdktrace.TracerProvider, bsp sd
 // entrypointOtelMiddleware injects trace context into the request and starts a new span.
 func entrypointOtelMiddleware(imName string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		startTime := time.Now()
 		ctx := r.Context()
 		parentSpan := trace.SpanFromContext(ctx)
 		var span trace.Span
@@ -139,15 +183,45 @@ func entrypointOtelMiddleware(imName string, next http.Handler) http.Handler {
 			attribute.String("instance.manager", imName),
 		)
 
+		// Wrap ResponseWriter to capture response status
+		rw := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
+
 		defer func() {
+			duration := time.Since(startTime).Seconds()
+
+			// Record Metrics
+			requestCounter.Add(ctx, 1, otlpmetric.WithAttributes(
+				attribute.String("http.method", method),
+				attribute.String("http.route", route),
+				attribute.Int("http.status", rw.statusCode),
+			))
+
+			requestDuration.Record(ctx, duration, otlpmetric.WithAttributes(
+				attribute.String("http.method", method),
+				attribute.String("http.route", route),
+				attribute.Int("http.status", rw.statusCode),
+			))
+
 			span.End()
 		}()
+
 		r = r.WithContext(ctx)
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(rw, r)
 	})
 }
 
-// extractRoute attempts to extract the API route from the request. If unable, it returns a default value.
+// responseWriter is a wrapper around http.ResponseWriter to capture status codes.
+type responseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (rw *responseWriter) WriteHeader(code int) {
+	rw.statusCode = code
+	rw.ResponseWriter.WriteHeader(code)
+}
+
+// extractRoute attempts to extract the API route from the request.
 func extractRoute(r *http.Request) string {
 	if chiCtx := chi.RouteContext(r.Context()); chiCtx != nil && chiCtx.RoutePath != "" {
 		return chiCtx.RoutePath
@@ -167,7 +241,6 @@ func extractNamespace(r *http.Request) string {
 	pathSegments := splitURLPath(r.URL.Path)
 	for i, segment := range pathSegments {
 		if segment == "namespaces" && i+1 < len(pathSegments) {
-			// Return the segment following "namespaces"
 			return pathSegments[i+1]
 		}
 	}
