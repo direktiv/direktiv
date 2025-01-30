@@ -1,46 +1,43 @@
+import { Link, useMatch, useParams } from "@tanstack/react-router";
+
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import CopyButton from "~/design/CopyButton";
 import { GitCompare } from "lucide-react";
-import { Link } from "react-router-dom";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const MirrorBreadcrumb = () => {
-  const pages = usePages();
   const namespace = useNamespace();
-  const { isMirrorPage, isSyncDetailPage, sync } = pages.mirror.useParams();
-  const { icon: Icon } = pages.mirror;
+  const { id } = useParams({ strict: false });
+  const isMirrorPage = useMatch({
+    from: "/n/$namespace/mirror/",
+    shouldThrow: false,
+  });
+  const isSyncDetailPage = useMatch({
+    from: "/n/$namespace/mirror/logs/$id",
+    shouldThrow: false,
+  });
   const { t } = useTranslation();
 
-  if (!isMirrorPage) return null;
+  if (!(isMirrorPage || isSyncDetailPage)) return null;
   if (!namespace) return null;
 
   return (
     <>
       <BreadcrumbLink>
-        <Link
-          to={pages.mirror.createHref({
-            namespace,
-          })}
-        >
-          <Icon aria-hidden="true" />
+        <Link to="/n/$namespace/mirror" params={{ namespace }}>
+          <GitCompare aria-hidden="true" />
           {t("components.breadcrumb.mirror")}
         </Link>
       </BreadcrumbLink>
-      {isSyncDetailPage && sync ? (
+      {isSyncDetailPage && id ? (
         <BreadcrumbLink>
           <GitCompare aria-hidden="true" />
-          <Link
-            to={pages.mirror.createHref({
-              namespace,
-              sync,
-            })}
-          >
-            {sync.slice(0, 8)}
+          <Link to="/n/$namespace/mirror/logs/$id" params={{ namespace, id }}>
+            {id.slice(0, 8)}
           </Link>
           <CopyButton
-            value={sync}
+            value={id}
             buttonProps={{
               variant: "outline",
               className: "hidden group-hover:inline-flex",
