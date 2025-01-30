@@ -18,7 +18,6 @@ type Config struct {
 
 	ApiPort int `env:"DIREKTIV_API_PORT" envDefault:"6665"`
 
-	ApiKey    string `env:"DIREKTIV_API_KEY"`
 	SecretKey string `env:"DIREKTIV_SECRET_KEY,notEmpty"`
 	DB        string `env:"DIREKTIV_DB,notEmpty"`
 
