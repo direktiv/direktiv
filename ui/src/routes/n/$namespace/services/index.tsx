@@ -1,11 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
+import ServicesListPage from "~/pages/namespace/Services/List";
+import { createFileRoute } from "@tanstack/react-router";
 
-const ServicesPage = () => (
-  <div>
-    <h1>Services page</h1>
-  </div>
-)
-
-export const Route = createFileRoute('/n/$namespace/services/')({
-  component: ServicesPage,
-})
+export const Route = createFileRoute("/n/$namespace/services/")({
+  component: ServicesListPage,
+});
