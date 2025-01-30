@@ -8,6 +8,7 @@ import JqPlaygroundBreadcrumb from "./JqPlaygroundBreadcrumb";
 import ListenerBreadcrumb from "./Events/ListenerBreadcrumb";
 import MirrorBreadcrumb from "./MirrorBreadcrumb";
 import MonitoringBreadcrumb from "./MonitoringBreadcrumb";
+import NamespaceSelector from "./NamespaceSelector";
 import ServicesBreadcrumb from "./ServicesBreadcrumb";
 import SettingsBreadcrumb from "./SettingsBreadcrumb";
 import { useMatches } from "@tanstack/react-router";
@@ -24,7 +25,7 @@ const Breadcrumb = () => {
 
   return (
     <BreadcrumbRoot className="group">
-      {/* <NamespaceSelector /> */}
+      <NamespaceSelector />
       {match("/n/$namespace/explorer/") && <ExplorerBreadcrumb />}
       {match("/n/$namespace/instances/") && <InstancesBreadcrumb />}
       {match("/n/$namespace/services/") && <ServicesBreadcrumb />}

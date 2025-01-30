@@ -28,8 +28,7 @@ const Layout = () => {
   const { data: version } = useVersion();
   const namespace = useNamespace();
   const { setNamespace } = useNamespaceActions();
-  // const { namespace: namespaceFromUrl } = useParams();
-  const namespaceFromUrl = "test";
+  const { namespace: namespaceFromUrl } = useParams({ strict: false });
 
   const { isError, error } = useFile({ path: "/" });
 
