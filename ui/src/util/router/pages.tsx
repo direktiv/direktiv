@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
+import ApiBaseFile from "~/pages/namespace/Explorer/ApiBaseFile";
 import ConsumerEditorPage from "~/pages/namespace/Explorer/Consumer";
 import EndpointEditorPage from "~/pages/namespace/Explorer/Endpoint";
 import ErrorPage from "./ErrorPage";
@@ -72,7 +73,8 @@ export type ExplorerSubpages =
   | "workflow-services"
   | "service"
   | "endpoint"
-  | "consumer";
+  | "consumer"
+  | "baseFile";
 
 type ExplorerSubpagesParams =
   | {
@@ -106,6 +108,7 @@ type ExplorerPageSetup = Record<
       isServicePage: boolean;
       isEndpointPage: boolean;
       isConsumerPage: boolean;
+      isBaseFilePage: boolean;
       serviceId: string | undefined;
     };
   }
@@ -209,6 +212,7 @@ type GatewayPageSetup = Record<
       isGatewayRoutesPage: boolean;
       isGatewayRoutesDetailPage: boolean;
       isGatewayConsumerPage: boolean;
+      isGatewayBaseFilePage: boolean;
       routePath?: string;
     };
   }
@@ -334,6 +338,7 @@ export const usePages = (): PageType & EnterprisePageType => {
           endpoint: "endpoint",
           consumer: "consumer",
           service: "service",
+          baseFile: "baseFile",
         };
 
         let searchParamsObj;
@@ -367,12 +372,14 @@ export const usePages = (): PageType & EnterprisePageType => {
         const isServicePage = checkHandler(thirdLvl, "isServicePage");
         const isEndpointPage = checkHandler(thirdLvl, "isEndpointPage");
         const isConsumerPage = checkHandler(thirdLvl, "isConsumerPage");
+        const isBaseFilePage = checkHandler(thirdLvl, "isBaseFilePage");
         const isExplorerPage =
           isTreePage ||
           isWorkflowPage ||
           isServicePage ||
           isEndpointPage ||
-          isConsumerPage;
+          isConsumerPage ||
+          isBaseFilePage;
         const isWorkflowEditorPage = checkHandler(fourthLvl, "isEditorPage");
         const isWorkflowOverviewPage = checkHandler(
           fourthLvl,
@@ -400,6 +407,7 @@ export const usePages = (): PageType & EnterprisePageType => {
           isServicePage,
           isEndpointPage,
           isConsumerPage,
+          isBaseFilePage,
           serviceId: searchParams.get("serviceId") ?? undefined,
         };
       },
@@ -455,6 +463,11 @@ export const usePages = (): PageType & EnterprisePageType => {
             path: "consumer/*",
             element: <ConsumerEditorPage />,
             handle: { isConsumerPage: true },
+          },
+          {
+            path: "baseFile/*",
+            element: <ApiBaseFile />,
+            handle: { isBaseFilePage: true },
           },
         ],
       },
@@ -587,11 +600,16 @@ export const usePages = (): PageType & EnterprisePageType => {
           thirdLevel,
           "isGatewayRoutesDetailPage"
         );
+        const isGatewayBaseFilePage = checkHandler(
+          thirdLevel,
+          "isGatewayBaseFilePage"
+        );
         return {
           isGatewayPage,
           isGatewayRoutesPage,
           isGatewayConsumerPage,
           isGatewayRoutesDetailPage,
+          isGatewayBaseFilePage,
           routePath: isGatewayRoutesDetailPage ? path : undefined,
         };
       },
@@ -614,6 +632,11 @@ export const usePages = (): PageType & EnterprisePageType => {
             path: "consumers",
             element: <GatewayConsumersPage />,
             handle: { isGatewayConsumerPage: true },
+          },
+          {
+            path: "baseFile/*",
+            element: <ApiBaseFile />,
+            handle: { isGatewayBaseFilePage: true },
           },
         ],
       },
