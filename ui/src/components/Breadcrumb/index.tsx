@@ -35,8 +35,7 @@ const Breadcrumb = () => {
       {match("/n/$namespace/settings") && <SettingsBreadcrumb />}
       {match("/n/$namespace/jq") && <JqPlaygroundBreadcrumb />}
       {match("/n/$namespace/mirror/") && <MirrorBreadcrumb />}
-      {match("/n/$namespace/gateway/routes") && <GatewayBreadcrumb />}
-      {match("/n/$namespace/gateway/consumers") && <GatewayBreadcrumb />}
+      {match("/n/$namespace/gateway/") && <GatewayBreadcrumb />}
     </BreadcrumbRoot>
   );
 };
