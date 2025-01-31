@@ -89,6 +89,8 @@ export const fileTypeToExplorerSubpage = (
       return "endpoint";
     case "consumer":
       return "consumer";
+    case "gateway":
+      return "baseFile";
     default:
       return undefined;
   }

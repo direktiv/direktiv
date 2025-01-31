@@ -2,6 +2,7 @@ import { Dialog, DialogContent } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
 import NewFileButton, { FileTypeSelection } from "./components/NewFileButton";
 
+import NewBaseFile from "./components/modals/CreateNew/Gateway/BaseFile";
 import NewConsumer from "./components/modals/CreateNew/Gateway/Consumer";
 import NewDirectory from "./components/modals/CreateNew/Directory";
 import NewRoute from "./components/modals/CreateNew/Gateway/Route";
@@ -70,6 +71,13 @@ export const NewFileDialog: FC<NewFileDialogProps> = ({ path }) => {
         )}
         {selectedDialog === "new-consumer" && (
           <NewConsumer
+            path={data?.path}
+            unallowedNames={existingNames}
+            close={() => setDialogOpen(false)}
+          />
+        )}
+        {selectedDialog === "new-baseFile" && (
+          <NewBaseFile
             path={data?.path}
             unallowedNames={existingNames}
             close={() => setDialogOpen(false)}

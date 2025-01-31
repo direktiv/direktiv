@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
 import {
+  FileText,
   Folder,
   Layers,
   Network,
@@ -32,7 +33,8 @@ export type FileTypeSelection =
   | "new-workflow"
   | "new-service"
   | "new-route"
-  | "new-consumer";
+  | "new-consumer"
+  | "new-baseFile";
 
 type NewFileButtonProps = {
   setSelectedDialog: (fileType: FileTypeSelection) => void;
@@ -120,6 +122,17 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
                     {t(
                       "pages.explorer.tree.newFileButton.items.gateway.consumer"
                     )}
+                  </DropdownMenuItem>
+                </DialogTrigger>
+                <DialogTrigger
+                  className="w-full"
+                  onClick={() => {
+                    setSelectedDialog("new-baseFile");
+                  }}
+                >
+                  <DropdownMenuItem>
+                    <FileText className="mr-2 size-4" />
+                    Openapi Base File
                   </DropdownMenuItem>
                 </DialogTrigger>
               </DropdownMenuSubContent>
