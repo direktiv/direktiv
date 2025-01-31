@@ -32,7 +32,7 @@ func NewLogStore(client *opensearch.Client, co Config) *LogStore {
 func (store *LogStore) Init(ctx context.Context) error {
 	var err error
 	for i := 1; i <= maxRetries; i++ {
-		_, err = checkAndDeleteISMPolicy(ctx, store.client, logISMPolicyName, true)
+		err = checkAndDeleteISMPolicy(ctx, store.client, logISMPolicyName, true)
 		if err != nil {
 			continue
 		}

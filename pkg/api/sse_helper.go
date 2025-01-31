@@ -21,7 +21,7 @@ type Event struct {
 type sseHandle func(ctx context.Context, cursorTime time.Time) ([]CoursoredEvent, error)
 
 // sseWorker manages the server side event polling and channel communication.
-type seeWorker struct {
+type sseWorker struct {
 	Get      sseHandle
 	Interval time.Duration
 	Ch       chan Event
@@ -29,7 +29,7 @@ type seeWorker struct {
 }
 
 // Start starts the sse polling worker.
-func (lw *seeWorker) start(ctx context.Context) {
+func (lw *sseWorker) start(ctx context.Context) {
 	go func() {
 		ticker := time.NewTicker(lw.Interval)
 		defer ticker.Stop()

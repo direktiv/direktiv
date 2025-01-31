@@ -36,7 +36,7 @@ func NewMetricsStore(client *opensearch.Client, co Config) metastore.MetricsStor
 func (m *MetricsStore) Init(ctx context.Context) error {
 	var err error
 	for i := 1; i <= maxRetries; i++ {
-		_, err = checkAndDeleteISMPolicy(ctx, m.client, logISMPolicyName, true)
+		err = checkAndDeleteISMPolicy(ctx, m.client, logISMPolicyName, true)
 		if err != nil {
 			continue
 		}

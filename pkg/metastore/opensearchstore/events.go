@@ -30,7 +30,7 @@ func (store *EventStore) Init(ctx context.Context) error {
 	if err := store.ensureIndex(ctx); err != nil {
 		return fmt.Errorf("failed to ensure index: %w", err)
 	}
-	_, err := checkAndDeleteISMPolicy(ctx, store.client, logISMPolicyName, true)
+	err := checkAndDeleteISMPolicy(ctx, store.client, logISMPolicyName, true)
 	if err != nil {
 		return err
 	}

@@ -191,7 +191,7 @@ func ensureISMPolicy(ctx context.Context, client *opensearch.Client, policyName,
 
 	// Attach the ISM policy to the index alias
 	attachPolicyBody := map[string]interface{}{
-		"policy_id": logISMPolicyName,
+		"policy_id": policyName,
 	}
 	attachBody, err := json.Marshal(attachPolicyBody)
 	if err != nil {
@@ -220,30 +220,30 @@ func ensureISMPolicy(ctx context.Context, client *opensearch.Client, policyName,
 	return nil
 }
 
-func checkAndDeleteISMPolicy(ctx context.Context, client *opensearch.Client, policyName string, deleteIfExists bool) (bool, error) {
+func checkAndDeleteISMPolicy(ctx context.Context, client *opensearch.Client, policyName string, deleteIfExists bool) error {
 	slog.Debug("checking if ISM policy exists", "policy", policyName)
 
 	policyEndpoint := fmt.Sprintf("/_plugins/_ism/policies/%s", policyName)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, policyEndpoint, nil)
 	if err != nil {
-		return false, fmt.Errorf("failed to create ISM policy check request: %w", err)
+		return fmt.Errorf("failed to create ISM policy check request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	res, err := client.Transport.Perform(req)
 	if err != nil {
-		return false, fmt.Errorf("failed to execute ISM policy check request: %w", err)
+		return fmt.Errorf("failed to execute ISM policy check request: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode == http.StatusNotFound {
 		slog.Debug("ISM policy does not exist", "policy", policyName)
-		return false, nil
+		return nil
 	}
 
 	if res.StatusCode >= http.StatusBadRequest {
 		bodyBytes, _ := io.ReadAll(res.Body)
-		return false, fmt.Errorf("error checking ISM policy: %s, response: %s", res.Status, string(bodyBytes))
+		return fmt.Errorf("error checking ISM policy: %s, response: %s", res.Status, string(bodyBytes))
 	}
 
 	slog.Debug("ISM policy exists", "policy", policyName)
@@ -252,35 +252,35 @@ func checkAndDeleteISMPolicy(ctx context.Context, client *opensearch.Client, pol
 		slog.Debug("deleting existing ISM policy", "policy", policyName)
 		delReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, policyEndpoint, nil)
 		if err != nil {
-			return true, fmt.Errorf("failed to create ISM policy delete request: %w", err)
+			return fmt.Errorf("failed to create ISM policy delete request: %w", err)
 		}
 		delReq.Header.Set("Content-Type", "application/json")
 
 		delRes, err := client.Transport.Perform(delReq)
 		if err != nil {
-			return true, fmt.Errorf("failed to execute ISM policy delete request: %w", err)
+			return fmt.Errorf("failed to execute ISM policy delete request: %w", err)
 		}
 		defer delRes.Body.Close()
 
 		if delRes.StatusCode >= http.StatusBadRequest {
 			bodyBytes, _ := io.ReadAll(delRes.Body)
-			return true, fmt.Errorf("error deleting ISM policy: %s, response: %s", delRes.Status, string(bodyBytes))
+			return fmt.Errorf("error deleting ISM policy: %s, response: %s", delRes.Status, string(bodyBytes))
 		}
 
 		slog.Info("ISM policy deleted successfully", "policy", policyName)
 
-		return false, nil
+		return nil
 	}
 
-	return true, nil
+	return nil
 }
 
 // GetMapping retrieves the mapping of the specified index.
-func (s opensearchMetaStore) GetMapping(ctx context.Context, index string) (map[string]interface{}, error) {
+func (o *opensearchMetaStore) GetMapping(ctx context.Context, index string) (map[string]interface{}, error) {
 	// Make a request to OpenSearch to get the mapping
-	mappingRes, err := s.client.Indices.GetMapping(
-		s.client.Indices.GetMapping.WithContext(ctx),
-		s.client.Indices.GetMapping.WithIndex(index),
+	mappingRes, err := o.client.Indices.GetMapping(
+		o.client.Indices.GetMapping.WithContext(ctx),
+		o.client.Indices.GetMapping.WithIndex(index),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get index mapping: %w", err)

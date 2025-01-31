@@ -20,7 +20,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/metastore"
-
 	"github.com/direktiv/direktiv/pkg/middlewares"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/version"

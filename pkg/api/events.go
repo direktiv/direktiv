@@ -153,7 +153,7 @@ func (c *eventsController) subscribe(w http.ResponseWriter, r *http.Request) {
 		return sseHandlefunc(ctx, r, c, cursorTime, params)
 	}
 
-	worker := seeWorker{
+	worker := sseWorker{
 		Get:      getCursoredStyle,
 		Interval: time.Second,
 		Ch:       messageChannel,

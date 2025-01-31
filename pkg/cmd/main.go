@@ -145,7 +145,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 			LogIndex:            "direktiv-logs",
 			LogDeleteAfter:      "7d",
 			LogInit:             true,
-			TimelineIndex:       "otel-v1-apm-span", //"otel-v1-apm-service-map",
+			TimelineIndex:       "otel-v1-apm-span", // TODO: add store for otel-v1-apm-service-map.
 			TimelineDeleteAfter: "7d",
 			MetricsIndex:        "otel-metrics",
 			MetricsDeleteAfter:  "30d",

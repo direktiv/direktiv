@@ -264,7 +264,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 		return res, nil
 	}
 
-	worker := seeWorker{
+	worker := sseWorker{
 		Get:      getCursoredStyle,
 		Interval: time.Second,
 		Ch:       messageChannel,

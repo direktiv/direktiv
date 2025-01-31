@@ -123,7 +123,6 @@ func buildSpanMap(traces []map[string]interface{}) map[string]*SpanNode {
 	return spanMap
 }
 
-// Helper functions for safe type assertions
 func safeString(data map[string]interface{}, key string) string {
 	if val, ok := data[key].(string); ok {
 		return val
