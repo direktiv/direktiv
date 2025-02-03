@@ -648,6 +648,16 @@
         }
       }
     },
+    "trace": {
+      "title": "Trace viewer",
+      "tableHeader": {
+        "spanId": "span id"
+      },
+      "filters": {
+        "active": "filter applied",
+        "inactive": "no filter applied"
+      }
+    },
     "mirror": {
       "header": {
         "ref": "ref",
@@ -1049,7 +1059,8 @@
       "services": "Services",
       "settings": "Settings",
       "jqPlayground": "jq Playground",
-      "mirror": "Mirror"
+      "mirror": "Mirror",
+      "trace": "Trace"
     },
     "breadcrumb": {
       "searchPlaceholder": "Search namespace...",

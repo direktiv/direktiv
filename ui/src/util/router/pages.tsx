@@ -1,6 +1,7 @@
 import {
   ActivitySquare,
   BadgeCheck,
+  BarChartHorizontalBigIcon,
   Boxes,
   FolderTree,
   GitCompare,
@@ -42,6 +43,7 @@ import ServicesListPage from "~/pages/namespace/Services/List";
 import ServicesPage from "~/pages/namespace/Services";
 import SettingsPage from "~/pages/namespace/Settings";
 import TokensPage from "~/pages/namespace/Permissions/Tokens";
+import TracePage from "~/pages/namespace/Instances/Trace";
 import TreePage from "~/pages/namespace/Explorer/Tree";
 import WorkflowPage from "~/pages/namespace/Explorer/Workflow";
 import WorkflowPageActive from "~/pages/namespace/Explorer/Workflow/Edit";
@@ -58,7 +60,11 @@ type PageBase = {
   route: RouteObject;
 };
 
-type KeysWithNoPathParams = "monitoring" | "settings" | "jqPlayground";
+type KeysWithNoPathParams =
+  | "monitoring"
+  | "settings"
+  | "jqPlayground"
+  | "trace";
 
 type DefaultPageSetup = Record<
   KeysWithNoPathParams,
@@ -214,6 +220,15 @@ type GatewayPageSetup = Record<
   }
 >;
 
+type TracePageSetup = Record<
+  "trace",
+  PageBase & {
+    useParams: () => {
+      isTracePage: boolean;
+    };
+  }
+>;
+
 type PageType = DefaultPageSetup &
   ExplorerPageSetup &
   InstancesPageSetup &
@@ -223,7 +238,8 @@ type PageType = DefaultPageSetup &
   SettingsPageSetup &
   GatewayPageSetup &
   JqPlaygroundPageSetup &
-  MirrorPageSetup;
+  MirrorPageSetup &
+  TracePageSetup;
 
 type PermissionsPageSetup = Partial<
   Record<
@@ -732,6 +748,21 @@ export const usePages = (): PageType & EnterprisePageType => {
         path: "jq",
         element: <JqPlaygroundPage />,
         handle: { jqPlayground: true, isJqPlaygroundPage: true },
+      },
+    },
+    trace: {
+      name: "components.mainMenu.trace",
+      icon: BarChartHorizontalBigIcon,
+      createHref: (params) => `/n/${params.namespace}/trace`,
+      useParams: () => {
+        const [, secondLevel] = useMatches(); // first level is namespace level
+        const isTracePage = checkHandler(secondLevel, "isTraceHandler");
+        return { isTracePage };
+      },
+      route: {
+        path: "trace",
+        element: <TracePage />,
+        handle: { trace: true, isTracePage: true },
       },
     },
   };
