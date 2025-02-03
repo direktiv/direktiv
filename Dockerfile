@@ -11,9 +11,9 @@ COPY pkg src/pkg/
 COPY cmd src/cmd/
 
 RUN if [ "$IS_ENTERPRISE" = "true" ]; then \
-        echo "/direktiv cmd/ee/*.go" > BUILD_PATH.txt; \
+    echo "/direktiv cmd/ee/*.go" > BUILD_PATH.txt; \
     else \
-        echo "/direktiv cmd/*.go" > BUILD_PATH.txt; \
+    echo "/direktiv cmd/*.go" > BUILD_PATH.txt; \
     fi
 
 RUN --mount=type=cache,target=/root/.cache/go-build cd src &&  \
@@ -24,6 +24,7 @@ FROM --platform=$BUILDPLATFORM node:20-slim as ui-builder
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
+RUN corepack prepare pnpm@9.15.4 --activate
 
 WORKDIR /app
 
