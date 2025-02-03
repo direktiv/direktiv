@@ -1,11 +1,11 @@
 import { FC } from "react";
 import WorkflowEditor from "./WorkflowEditor";
 import { useFile } from "~/api/files/query/file";
-import { usePages } from "~/util/router/pages";
+import { useParams } from "@tanstack/react-router";
 
 const WorkflowOverviewPage: FC = () => {
-  const pages = usePages();
-  const { path } = pages.explorer.useParams();
+  const { _splat: path } = useParams({ strict: false });
+
   const { data } = useFile({ path });
 
   if (data?.type !== "workflow" || !path) return null;

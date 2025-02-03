@@ -1,22 +1,21 @@
 import { FileSymlink, Layers } from "lucide-react";
+import { Link, useParams } from "@tanstack/react-router";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { FC } from "react";
-import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
 import ServiceEditor from "./ServiceEditor";
 import { analyzePath } from "~/util/router/utils";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceAndSystemServices } from "~/api/services/query/services";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const ServicePage: FC = () => {
-  const pages = usePages();
-  const { path } = pages.explorer.useParams();
   const namespace = useNamespace();
+  const { _splat: path } = useParams({ strict: false });
+
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];
   const { t } = useTranslation();
@@ -58,10 +57,8 @@ const ServicePage: FC = () => {
           {serviceId && (
             <Button isAnchor asChild variant="primary">
               <Link
-                to={pages.services.createHref({
-                  namespace,
-                  service: serviceId,
-                })}
+                to="/n/$namespace/services/$service"
+                params={{ namespace, service: serviceId }}
               >
                 <FileSymlink />
                 {t("pages.explorer.service.goToService")}

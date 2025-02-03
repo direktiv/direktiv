@@ -1,21 +1,19 @@
 import { FileSymlink, Users } from "lucide-react";
+import { Link, useParams } from "@tanstack/react-router";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import ConsumerEditor from "./ConsumerEditor";
 import { FC } from "react";
-import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
 import { analyzePath } from "~/util/router/utils";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const ConsumerPage: FC = () => {
-  const pages = usePages();
-  const { path } = pages.explorer.useParams();
   const namespace = useNamespace();
+  const { _splat: path } = useParams({ strict: false });
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];
   const { t } = useTranslation();
@@ -48,12 +46,7 @@ const ConsumerPage: FC = () => {
             {filename?.relative}
           </h3>
           <Button isAnchor asChild variant="primary">
-            <Link
-              to={pages.gateway.createHref({
-                namespace,
-                subpage: "consumers",
-              })}
-            >
+            <Link to="/n/$namespace/gateway/consumers" params={{ namespace }}>
               <FileSymlink />
               {t("pages.explorer.consumer.goToConsumer")}
             </Link>

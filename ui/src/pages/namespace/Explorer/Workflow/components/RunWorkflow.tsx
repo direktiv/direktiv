@@ -21,7 +21,6 @@ import { useCreateInstance } from "~/api/instances/mutate/create";
 import { useFile } from "~/api/files/query/file";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { usePages } from "~/util/router/pages";
 import { useTheme } from "~/util/store/theme";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
@@ -37,7 +36,6 @@ type JSONSchemaFormSubmit = Parameters<typeof JSONSchemaForm>[0]["onSubmit"];
 const defaultEmptyJson = "{\n    \n}";
 
 const RunWorkflow = ({ path }: { path: string }) => {
-  const pages = usePages();
   const { toast } = useToast();
   const { t } = useTranslation();
   const theme = useTheme();

@@ -16,8 +16,6 @@ import { defaultConsumerFileYaml } from "~/pages/namespace/Explorer/Consumer/Con
 import { encode } from "js-base64";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
-import { useNavigate } from "react-router-dom";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,7 +34,6 @@ const NewConsumer = ({
   close: () => void;
   unallowedNames?: string[];
 }) => {
-  const pages = usePages();
   const { t } = useTranslation();
   const namespace = useNamespace();
   const navigate = useNavigate();

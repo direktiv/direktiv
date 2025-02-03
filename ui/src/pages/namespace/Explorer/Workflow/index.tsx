@@ -15,34 +15,33 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
+import { useMatches, useParams } from "@tanstack/react-router";
 
 import ApiCommands from "./ApiCommands";
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { Card } from "~/design/Card";
 import { FC } from "react";
+import { FileRoutesById } from "~/routeTree.gen";
 import { NoPermissions } from "~/design/Table";
 import RunWorkflow from "./components/RunWorkflow";
 import { analyzePath } from "~/util/router/utils";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 import { useUnsavedChanges } from "./store/unsavedChangesContext";
 
-const Header: FC = () => {
-  const pages = usePages();
+const WorkflowLayout: FC = () => {
   const { t } = useTranslation();
-  const {
-    path,
-    isWorkflowEditorPage,
-    isWorkflowOverviewPage,
-    isWorkflowSettingsPage,
-    isWorkflowServicesPage,
-  } = pages.explorer.useParams();
   const namespace = useNamespace();
+  const { _splat: path } = useParams({ strict: false });
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];
+
+  const matches = useMatches();
+
+  const match = (routeId: keyof FileRoutesById) =>
+    matches.some((match) => match.routeId.startsWith(routeId));
 
   const {
     isAllowed,
@@ -58,47 +57,43 @@ const Header: FC = () => {
   const tabs = [
     {
       value: "editor",
-      active: isWorkflowEditorPage,
+      active: match("/n/$namespace/explorer/workflow/edit/$"),
       icon: <Code2 aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.fileContent"),
-      link: pages.explorer.createHref({
-        namespace,
-        path,
-        subpage: "workflow",
-      }),
+      link: {
+        to: "/n/$namespace/explorer/workflow/edit/$",
+        params: { namespace, _splat: path },
+      },
     },
     {
       value: "overview",
-      active: isWorkflowOverviewPage,
+      active: match("/n/$namespace/explorer/workflow/overview/$"),
       icon: <PieChart aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.overview"),
-      link: pages.explorer.createHref({
-        namespace,
-        path,
-        subpage: "workflow-overview",
-      }),
+      link: {
+        to: "pages.explorer.workflow.menu.overview",
+        params: { namespace, _splat: path },
+      },
     },
     {
       value: "services",
-      active: isWorkflowServicesPage,
+      active: match("/n/$namespace/explorer/workflow/services/$"),
       icon: <Layers aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.services"),
-      link: pages.explorer.createHref({
-        namespace,
-        path,
-        subpage: "workflow-services",
-      }),
+      link: {
+        to: "pages.explorer.workflow.menu.services",
+        params: { namespace, _splat: path },
+      },
     },
     {
       value: "settings",
-      active: isWorkflowSettingsPage,
+      active: match("/n/$namespace/explorer/workflow/settings/$"),
       icon: <Settings aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.settings"),
-      link: pages.explorer.createHref({
-        namespace,
-        path,
-        subpage: "workflow-settings",
-      }),
+      link: {
+        to: "pages.explorer.workflow.menu.settings",
+        params: { namespace, _splat: path },
+      },
     },
   ] as const;
 
@@ -173,7 +168,7 @@ const Header: FC = () => {
                     key={tab.value}
                     data-testid={`workflow-tabs-trg-${tab.value}`}
                   >
-                    <Link to={tab.link}>
+                    <Link {...tab.link}>
                       {tab.icon}
                       {tab.title}
                     </Link>
@@ -190,4 +185,4 @@ const Header: FC = () => {
   );
 };
 
-export default Header;
+export default WorkflowLayout;

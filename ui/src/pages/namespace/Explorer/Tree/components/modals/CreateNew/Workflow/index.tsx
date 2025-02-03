@@ -27,7 +27,6 @@ import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "~/api/notifications/query/get";
-import { usePages } from "~/util/router/pages";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -51,7 +50,6 @@ const NewWorkflow = ({
   close: () => void;
   unallowedNames?: string[];
 }) => {
-  const pages = usePages();
   const { t } = useTranslation();
   const namespace = useNamespace();
   const navigate = useNavigate();
