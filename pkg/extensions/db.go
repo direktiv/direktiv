@@ -22,4 +22,4 @@ type App struct {
 	Bus *pubsub.Bus
 }
 
-var IsEnterprise bool = false
+var IsEnterprise = false

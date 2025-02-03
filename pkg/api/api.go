@@ -19,7 +19,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/events"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/instancestore"
-	"github.com/direktiv/direktiv/pkg/middlewares"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
@@ -90,13 +89,6 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 			Message: "request http path is not found",
 		})
 	})
-
-	chiMiddlewares := make([]func(http.Handler) http.Handler, 0)
-	for i := range middlewares.GetMiddlewares() {
-		chiMiddlewares = append(chiMiddlewares, middlewares.GetMiddlewares()[i])
-	}
-
-	r.Use(chiMiddlewares...)
 
 	for _, extraRoute := range GetExtraRoutes() {
 		extraRoute(r)
