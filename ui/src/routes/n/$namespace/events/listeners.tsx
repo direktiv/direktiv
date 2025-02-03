@@ -1,9 +1,6 @@
+import ListenersList from '~/pages/namespace/Events/Listeners'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/n/$namespace/events/listeners')({
-  component: RouteComponent,
+  component: ListenersList,
 })
-
-function RouteComponent() {
-  return <div>Hello "/events/listeners"!</div>
-}

@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 const EventsListenerBreadcrumb = () => {
   const namespace = useNamespace();
   const isEventsHistoryPage = useMatch({
-    from: "/n/$namespace/events/history",
+    from: "/n/$namespace/events/history/",
     shouldThrow: false,
   });
 
