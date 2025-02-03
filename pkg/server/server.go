@@ -281,8 +281,8 @@ func initDB(config *core.Config) (*database.DB, error) {
 	}
 	slog.Info("Schema provisioned successfully")
 
-	if extensions.AdditionalSchema != nil {
-		res = db.Exec(extensions.AdditionalSchema())
+	if extensions.AdditionalSchema != "" {
+		res = db.Exec(extensions.AdditionalSchema)
 		if res.Error != nil {
 			return nil, fmt.Errorf("provisioning additional schema, err: %w", res.Error)
 		}

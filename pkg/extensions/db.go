@@ -9,7 +9,7 @@ import (
 
 // AdditionalSchema for hooking additional sql schema provisioning scripts. This helps build new plugins and
 // extensions for Direktiv.
-var AdditionalSchema func() string
+var AdditionalSchema string
 
 var AdditionalAPIRoutes map[string]RouteController
 
