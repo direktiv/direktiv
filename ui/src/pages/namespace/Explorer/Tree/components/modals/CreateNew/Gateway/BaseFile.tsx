@@ -8,9 +8,14 @@ import { Network, PlusCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
+import { Editor } from "@monaco-editor/react";
 import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
+import InfoTooltip from "~/components/NamespaceEdit/InfoTooltip";
 import Input from "~/design/Input";
+import { InputWithButton } from "~/design/InputWithButton";
+import { Textarea } from "~/design/TextArea";
 import { addYamlFileExtension } from "../../../../utils";
 import { defaultEndpointFileYaml } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/utils";
 import { encode } from "js-base64";
@@ -18,6 +23,8 @@ import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { usePages } from "~/util/router/pages";
+import { useState } from "react";
+import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,6 +43,10 @@ const NewapiBaseSpec = ({
   close: () => void;
   unallowedNames?: string[];
 }) => {
+  const theme = useTheme();
+  const [baseFileData, setBaseFileData] = useState<string>(
+    defaultEndpointFileYaml
+  );
   const pages = usePages();
   const { t } = useTranslation();
   const namespace = useNamespace();
@@ -61,6 +72,7 @@ const NewapiBaseSpec = ({
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver,
@@ -110,19 +122,50 @@ const NewapiBaseSpec = ({
         </DialogTitle>
       </DialogHeader>
 
-      <div className="my-3">
+      <div className="my-3 flex flex-col gap-5">
         <FormErrors errors={errors} className="mb-5" />
-        <form id={formId} onSubmit={handleSubmit(onSubmit)}>
-          <fieldset className="flex items-center gap-5">
-            <label className="w-[90px] text-right text-[14px]" htmlFor="name">
-              {t("pages.explorer.tree.newRoute.nameLabel")}
-            </label>
-            <Input
-              id="name"
-              placeholder={t("pages.explorer.tree.newRoute.namePlaceholder")}
-              {...register("name")}
-            />
-          </fieldset>
+        <form
+          id={formId}
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col gap-5"
+        >
+          <div>
+            <fieldset className="flex items-center gap-5">
+              <label className="w-[90px] text-right text-[14px]" htmlFor="name">
+                {t("pages.explorer.tree.newRoute.nameLabel")}
+              </label>
+              <InputWithButton>
+                <Input
+                  id="name"
+                  placeholder={t(
+                    "pages.explorer.tree.newRoute.namePlaceholder"
+                  )}
+                  {...register("name")}
+                />
+                <InfoTooltip>
+                  Every namespace should only have <strong>one</strong> OpenAPI
+                  Base Specification
+                </InfoTooltip>
+              </InputWithButton>
+            </fieldset>
+          </div>
+          <div>
+            <fieldset className="flex items-start gap-5">
+              <Textarea className="hidden" {...register("fileContent")} />
+              <Card className="h-96 w-full p-4" noShadow background="weight-1">
+                <Editor
+                  value={baseFileData}
+                  onChange={(newData) => {
+                    if (newData) {
+                      setBaseFileData(newData);
+                      setValue("fileContent", newData);
+                    }
+                  }}
+                  theme={theme ?? undefined}
+                />
+              </Card>
+            </fieldset>
+          </div>
         </form>
       </div>
       <DialogFooter>

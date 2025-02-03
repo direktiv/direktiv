@@ -207,6 +207,7 @@ type GatewayPageSetup = Record<
             subpage: "routeDetail";
             routePath: string;
           }
+        | { subpage?: "info" }
       )
     ) => string;
     useParams: () => {

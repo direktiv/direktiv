@@ -132,7 +132,7 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
                 >
                   <DropdownMenuItem>
                     <FileText className="mr-2 size-4" />
-                    Openapi Base File
+                    New BaseFile
                   </DropdownMenuItem>
                 </DialogTrigger>
               </DropdownMenuSubContent>

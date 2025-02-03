@@ -1,4 +1,12 @@
-import { File, Folder, Layers, Play, Users, Workflow } from "lucide-react";
+import {
+  File,
+  FileText,
+  Folder,
+  Layers,
+  Play,
+  Users,
+  Workflow,
+} from "lucide-react";
 
 import { BaseFileSchemaType } from "./schema";
 import { ExplorerSubpages } from "~/util/router/pages";
@@ -72,6 +80,8 @@ export const fileTypeToIcon = (type: BaseFileSchemaType["type"]) => {
       return Workflow;
     case "consumer":
       return Users;
+    case "gateway":
+      return FileText;
     default:
       return File;
   }
