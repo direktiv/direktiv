@@ -22,6 +22,8 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
 
     const hasWorkflowInformation = !!workflow;
 
+    const workflowPath = workflow?.workflow;
+
     const isChildInstanceEntry = workflow
       ? instanceId !== workflow.instance
       : false;
@@ -51,9 +53,11 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
               to="/n/$namespace/explorer/workflow/overview/$filename"
               params={{
                 namespace: namespace ?? "",
-                filename: workflow?.workflow ?? "",
+                filename: workflowPath ?? "",
               }}
-            ></Link>
+            >
+              {workflowPath}
+            </Link>{" "}
             (
             <Link
               to="/n/$namespace/instances/$id"
