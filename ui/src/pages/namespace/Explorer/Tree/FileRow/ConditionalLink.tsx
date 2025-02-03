@@ -1,14 +1,9 @@
 import { FC, PropsWithChildren } from "react";
-import {
-  fileTypeToExplorerSubpage,
-  getFilenameFromPath,
-  isPreviewable,
-} from "~/api/files/utils";
+import { getFilenameFromPath, isPreviewable } from "~/api/files/utils";
 
 import { BaseFileSchemaType } from "~/api/files/schema";
 import { DialogTrigger } from "~/design/Dialog";
-import { Link } from "react-router-dom";
-import { usePages } from "~/util/router/pages";
+import { Link } from "@tanstack/react-router";
 
 type ConditionalLinkProps = PropsWithChildren & {
   file: BaseFileSchemaType;
@@ -22,7 +17,6 @@ export const ConditionalLink: FC<ConditionalLinkProps> = ({
   onPreviewClicked,
   children,
 }) => {
-  const pages = usePages();
   const linkToPreview = isPreviewable(file.type);
   if (linkToPreview)
     return (
@@ -38,16 +32,11 @@ export const ConditionalLink: FC<ConditionalLinkProps> = ({
       </DialogTrigger>
     );
 
-  const linkTarget = pages.explorer.createHref({
-    namespace,
-    path: file.path,
-    subpage: fileTypeToExplorerSubpage(file.type),
-  });
-
   return (
     <Link
       data-testid={`explorer-item-link-${getFilenameFromPath(file.path)}`}
-      to={linkTarget}
+      to="/n/$namespace/explorer/tree/$"
+      params={{ namespace, _splat: file.path }}
       className="flex-1 hover:underline"
     >
       {children}

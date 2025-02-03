@@ -1,18 +1,19 @@
 import { ArrowLeft, Home, RefreshCw } from "lucide-react";
-import { Link, isRouteErrorResponse, useRouteError } from "react-router-dom";
 
 import Button from "~/design/Button";
+import { Link } from "@tanstack/react-router";
 import Logo from "~/components/Logo";
 import { isApiErrorSchema } from "~/api/errorHandling";
 import { twMergeClsx } from "../helpers";
 import { useTranslation } from "react-i18next";
 
 type ErrorPageProps = {
+  error: Error;
   className?: string;
 };
-const ErrorPage = ({ className }: ErrorPageProps) => {
+
+const ErrorPage = ({ error, className }: ErrorPageProps) => {
   const { t } = useTranslation();
-  const error = useRouteError();
 
   let errorTitle = t("pages.error.status");
   let errorMessage = t("pages.error.message");
@@ -20,11 +21,6 @@ const ErrorPage = ({ className }: ErrorPageProps) => {
   if (isApiErrorSchema(error) && error.status === 404) {
     errorTitle = `${error.status}`;
     errorMessage = t("pages.error.notFound");
-  }
-
-  if (isRouteErrorResponse(error)) {
-    errorTitle = `${error.status}`;
-    errorMessage = error.statusText;
   }
 
   return (
