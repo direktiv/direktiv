@@ -121,6 +121,9 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 		})
 
 		r.Group(func(r chi.Router) {
+			if extensions.AdditionalMiddlewares != nil {
+				r.Use(extensions.AdditionalMiddlewares.CheckOidc)
+			}
 			r.Use(mw.checkAPIKey, mw.injectNamespace)
 
 			r.Route("/namespaces/{namespace}/instances", func(r chi.Router) {

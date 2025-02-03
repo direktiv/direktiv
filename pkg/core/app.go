@@ -63,6 +63,9 @@ type Config struct {
 	OpenSearchPort      int    `env:"DIREKTIV_OPENSEARCH_PORT"`
 	OpenSearchUsername  string `env:"DIREKTIV_OPENSEARCH_USERNAME"`
 	OpenSearchPassword  string `env:"DIREKTIV_OPENSEARCH_PASSWORD"`
+
+	OidcIssuerUrl string `env:"DIREKTIV_OIDC_ISSUER_URL"`
+	OidcClientID  string `env:"DIREKTIV_OIDC_CLIENT_ID"`
 }
 
 func (conf *Config) GetFunctionsTimeout() time.Duration {
