@@ -59,7 +59,6 @@ tests-lint: ## Runs very strict linting on the project.
 
 .PHONY: docker-playwright
 docker-e2e-playwright:
-docker-e2e-playwright: ## Perform ui e2e tests with playwright platform.
 	docker run \
 	-v $$PWD/ui:/app/ui \
 	-e NODE_TLS_REJECT_UNAUTHORIZED=0 \
@@ -70,4 +69,9 @@ docker-e2e-playwright: ## Perform ui e2e tests with playwright platform.
 	-w /app/ui \
 	--net=host \
 	node:20-slim \
-	bash -c "corepack enable && pnpm install && pnpm exec playwright install --with-deps chromium && pnpm exec playwright test --shard=${PLAYWRIGHT_SHARD} --project \"chromium\"  --reporter=line"
+	bash -c "\
+		corepack enable && \
+		corepack prepare pnpm@9.15.4 --activate && \
+		pnpm install && \
+		pnpm exec playwright install --with-deps chromium && \
+		pnpm exec playwright test --shard=$${PLAYWRIGHT_SHARD} --project \"chromium\" --reporter=line"
