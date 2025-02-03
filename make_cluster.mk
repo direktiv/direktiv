@@ -4,7 +4,7 @@ KIND_CONFIG ?= kind-config.yaml
 cluster-setup: cluster-create cluster-prep cluster-direktiv
 
 .PHONY: cluster-create
-cluster-create: 
+cluster-create:
 	kind delete clusters --all
 	kind create cluster --config ${KIND_CONFIG}
 
@@ -98,10 +98,12 @@ cluster-direktiv: ## Installs direktiv in cluster
 
 	kubectl wait --for=condition=ready pod -l app=direktiv-flow --timeout=60s
 
-	@echo "Installing Dex"
-	helm repo add dex https://charts.dexidp.io
-	helm repo update
-	helm install dex dex/dex -f kind/dex-values.yaml
+	@if [ "$(IS_ENTERPRISE)" == "true" ]; then \
+	@echo "Installing Dex"; \
+	helm repo add dex https://charts.dexidp.io; \
+	helm repo update; \
+	helm install dex dex/dex -f kind/dex-values.yaml; \
+	fi
 
 	@echo "Waiting for API endpoint to return 200..."
 	@until curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:9090/api/v2/status | grep -q 200; do \
