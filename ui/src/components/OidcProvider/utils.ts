@@ -15,7 +15,6 @@ const authority = `${rootUrl}dex`;
 export const oidcConfig: AuthProviderProps = {
   authority,
   client_id,
-  client_secret: "direktiv-secret",
   post_logout_redirect_uri: rootUrl,
   redirect_uri: `${rootUrl}callback`,
 
