@@ -1,9 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
+import InstancesListPage from "~/pages/namespace/Instances/List";
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/n/$namespace/instances/')({
-  component: RouteComponent,
-})
-
-function RouteComponent() {
-  return <div>Hello "/instances/"!</div>
-}
+export const Route = createFileRoute("/n/$namespace/instances/")({
+  component: InstancesListPage,
+});
