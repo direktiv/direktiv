@@ -121,8 +121,8 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 		})
 
 		r.Group(func(r chi.Router) {
-			if extensions.AdditionalMiddlewares != nil {
-				r.Use(extensions.AdditionalMiddlewares.CheckOidc)
+			if extensions.CheckOidcMiddlewares != nil {
+				r.Use(extensions.CheckOidcMiddlewares)
 			}
 			r.Use(mw.checkAPIKey, mw.injectNamespace)
 
@@ -168,14 +168,9 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 			r.Handle("/namespaces/{namespace}/gateway/*", app.GatewayManager)
 
 			if len(extensions.AdditionalAPIRoutes) > 0 {
-				eeApp := extensions.App{
-					DB:  db,
-					Bus: bus,
-				}
 				for pattern, ctr := range extensions.AdditionalAPIRoutes {
 					r.Route(pattern, func(r chi.Router) {
-						ctr.Initialize(eeApp)
-						ctr.MountRouter(r)
+						ctr(r)
 					})
 				}
 			}

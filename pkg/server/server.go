@@ -231,6 +231,9 @@ func Run(circuit *core.Circuit) error {
 	// initial loading of routes and consumers
 	renderGatewayFiles(db, app.GatewayManager)
 
+	// initialize extensions
+	extensions.Initialize(db, bus, config)
+
 	// Start api v2 server
 	err = api.Initialize(circuit, app, db, bus, instanceManager, srv.Engine.WakeEventsWaiter, srv.Engine.EventsInvoke)
 	if err != nil {
