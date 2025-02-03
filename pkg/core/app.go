@@ -50,8 +50,6 @@ type Config struct {
 
 	FunctionsReconcileInterval int `env:"DIREKTIV_FUNCTIONS_RECONCILE_INTERVAL" envDefault:"1"`
 
-	IsEnterprise bool `env:"DIREKTIV_IS_ENTERPRISE" envDefault:"false"`
-
 	NatsInstalled bool   `env:"DIREKTIV_NATS_INSTALLED"`
 	NatsHost      string `env:"DIREKTIV_NATS_HOST"`
 	NatsPort      int    `env:"DIREKTIV_NATS_PORT"      envDefault:"4222"`

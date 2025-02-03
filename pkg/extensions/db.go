@@ -21,3 +21,5 @@ type App struct {
 	DB  *database.DB
 	Bus *pubsub.Bus
 }
+
+var IsEnterprise bool = false

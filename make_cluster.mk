@@ -98,6 +98,7 @@ cluster-direktiv: ## Installs direktiv in cluster
 
 	kubectl wait --for=condition=ready pod -l app=direktiv-flow --timeout=60s
 
+	@echo "Installing Dex"
 	helm repo add dex https://charts.dexidp.io
 	helm repo update
 	helm install dex dex/dex -f kind/dex-values.yaml

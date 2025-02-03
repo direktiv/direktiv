@@ -110,7 +110,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 			RequiresAuth bool   `json:"requiresAuth"`
 		}{
 			Version:      version.Version,
-			IsEnterprise: app.Config.IsEnterprise,
+			IsEnterprise: extensions.IsEnterprise,
 			RequiresAuth: os.Getenv("DIREKTIV_API_KEY") != "",
 		}
 
