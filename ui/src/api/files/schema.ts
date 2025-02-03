@@ -93,6 +93,9 @@ const CreateYamlFileSchema = z.object({
   name: z.string().nonempty(),
   mimeType: z.literal("application/yaml"),
   data: z.string(), // base64 encoded file body
+  version: z.string().optional(),
+  title: z.string().optional(),
+  description: z.string().optional(),
 });
 
 const CreateConsumerSchema = CreateYamlFileSchema.extend({

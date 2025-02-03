@@ -8,23 +8,24 @@ import { Network, PlusCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
-import { Card } from "~/design/Card";
-import { Editor } from "@monaco-editor/react";
+// import { Card } from "~/design/Card";
+// import { Editor } from "@monaco-editor/react";
 import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import InfoTooltip from "~/components/NamespaceEdit/InfoTooltip";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
-import { Textarea } from "~/design/TextArea";
+// import { Textarea } from "~/design/TextArea";
 import { addYamlFileExtension } from "../../../../utils";
-import { defaultEndpointFileYaml } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/utils";
+// import { defaultEndpointFileYaml } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/utils";
 import { encode } from "js-base64";
+import { jsonToYaml } from "~/pages/namespace/Explorer/utils";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { usePages } from "~/util/router/pages";
-import { useState } from "react";
-import { useTheme } from "~/util/store/theme";
+// import { useState } from "react";
+// import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,14 +44,26 @@ const NewapiBaseSpec = ({
   close: () => void;
   unallowedNames?: string[];
 }) => {
-  const theme = useTheme();
-  const [baseFileData, setBaseFileData] = useState<string>(
-    defaultEndpointFileYaml
-  );
+  // const theme = useTheme();
   const pages = usePages();
   const { t } = useTranslation();
   const namespace = useNamespace();
   const navigate = useNavigate();
+
+  const baseOpenApiObject = {
+    openapi: "3.0.0",
+    info: {
+      title: namespace,
+      version: "1.0.0",
+      description: "Minimal OpenAPI Base Specification",
+    },
+  };
+
+  const defaultMinimalOpenApiYaml = jsonToYaml(baseOpenApiObject);
+
+  // const [baseFileData, setBaseFileData] = useState<string>(
+  //   defaultMinimalOpenApiJSON
+  // );
 
   const resolver = zodResolver(
     z.object({
@@ -62,7 +75,7 @@ const NewapiBaseSpec = ({
             (unallowedName) => unallowedName === nameWithExtension
           ),
         {
-          message: t("pages.explorer.tree.newRoute.nameAlreadyExists"), // Fix this
+          message: t("pages.explorer.tree.newRoute.nameAlreadyExists"),
         }
       ),
       fileContent: z.string(),
@@ -72,12 +85,12 @@ const NewapiBaseSpec = ({
   const {
     register,
     handleSubmit,
-    setValue,
+    // setValue,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver,
     defaultValues: {
-      fileContent: defaultEndpointFileYaml,
+      fileContent: defaultMinimalOpenApiYaml,
     },
   });
 
@@ -149,7 +162,7 @@ const NewapiBaseSpec = ({
               </InputWithButton>
             </fieldset>
           </div>
-          <div>
+          {/* <div>
             <fieldset className="flex items-start gap-5">
               <Textarea className="hidden" {...register("fileContent")} />
               <Card className="h-96 w-full p-4" noShadow background="weight-1">
@@ -165,7 +178,7 @@ const NewapiBaseSpec = ({
                 />
               </Card>
             </fieldset>
-          </div>
+          </div> */}
         </form>
       </div>
       <DialogFooter>
