@@ -8,16 +8,17 @@ const rootUrl = isBrowser
   ? `${window.location.protocol}//${window.location.host}/`
   : "/";
 
-const realm = "direktiv";
 const client_id = "direktiv";
 
-const authority = `${rootUrl}/auth/realms/${realm}`;
+const authority = `${rootUrl}dex`;
 
 export const oidcConfig: AuthProviderProps = {
   authority,
   client_id,
+  client_secret: "direktiv-secret",
   post_logout_redirect_uri: rootUrl,
-  redirect_uri: rootUrl,
+  redirect_uri: `${rootUrl}callback`,
+
   /**
    * removes code and state from url after signin
    * see https://github.com/authts/react-oidc-context/blob/f175dcba6ab09871b027d6a2f2224a17712b67c5/src/AuthProvider.tsx#L20-L30

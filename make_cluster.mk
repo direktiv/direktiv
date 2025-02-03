@@ -98,6 +98,10 @@ cluster-direktiv: ## Installs direktiv in cluster
 
 	kubectl wait --for=condition=ready pod -l app=direktiv-flow --timeout=60s
 
+	helm repo add dex https://charts.dexidp.io
+	helm repo update
+	helm install dex dex/dex -f kind/dex-values.yaml
+
 	@echo "Waiting for API endpoint to return 200..."
 	@until curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:9090/api/v2/status | grep -q 200; do \
 		echo "Waiting..."; \
