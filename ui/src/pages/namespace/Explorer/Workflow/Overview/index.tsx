@@ -4,7 +4,7 @@ import Metrics from "./Metrics";
 import Services from "./Services";
 import { useParams } from "@tanstack/react-router";
 
-const ActiveWorkflowPage: FC = () => {
+const WorkflowOverviewPage: FC = () => {
   const { _splat: path } = useParams({ strict: false });
 
   if (!path) return null;
@@ -18,4 +18,4 @@ const ActiveWorkflowPage: FC = () => {
   );
 };
 
-export default ActiveWorkflowPage;
+export default WorkflowOverviewPage;

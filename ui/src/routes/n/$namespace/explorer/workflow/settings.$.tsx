@@ -1,11 +1,8 @@
+import WorkflowSettingsPage from "~/pages/namespace/Explorer/Workflow/Settings";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute(
   "/n/$namespace/explorer/workflow/settings/$"
 )({
-  component: RouteComponent,
+  component: WorkflowSettingsPage,
 });
-
-function RouteComponent() {
-  return <div>Hello /n/$namespace/explorer/workflow/settings/$filename!</div>;
-}

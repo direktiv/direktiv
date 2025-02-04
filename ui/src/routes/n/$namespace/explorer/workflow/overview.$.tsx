@@ -1,4 +1,4 @@
-import WorkflowOverviewPage from "~/pages/namespace/Explorer/Workflow/Edit";
+import WorkflowOverviewPage from "~/pages/namespace/Explorer/Workflow/Overview";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute(

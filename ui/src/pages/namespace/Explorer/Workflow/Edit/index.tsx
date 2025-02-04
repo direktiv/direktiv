@@ -3,7 +3,7 @@ import WorkflowEditor from "./WorkflowEditor";
 import { useFile } from "~/api/files/query/file";
 import { useParams } from "@tanstack/react-router";
 
-const WorkflowOverviewPage: FC = () => {
+const WorkflowEditPage: FC = () => {
   const { _splat: path } = useParams({ strict: false });
 
   const { data } = useFile({ path });
@@ -16,4 +16,4 @@ const WorkflowOverviewPage: FC = () => {
   return <WorkflowEditor data={data} />;
 };
 
-export default WorkflowOverviewPage;
+export default WorkflowEditPage;
