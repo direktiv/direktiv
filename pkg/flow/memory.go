@@ -272,14 +272,14 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id uuid.UUID) (*ins
 
 	err = json.Unmarshal(im.instance.Instance.LiveData, &im.data)
 	if err != nil {
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 
 		return nil, err
 	}
 
 	err = json.Unmarshal(im.instance.Instance.StateMemory, &im.memory)
 	if err != nil {
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 
 		return nil, err
 	}
@@ -320,7 +320,7 @@ func (engine *engine) freeArtefacts(im *instanceMemory) {
 
 	err := engine.events.deleteInstanceEventListeners(context.Background(), im)
 	if err != nil {
-		slog.Error("Failed to delete instance event listeners.", "error", err, "instance", im.instance, "namespace", im.Namespace())
+		slog.Error("Failed to delete instance event listeners.", "error", err, "instance", im.instance, "namespace", im.Namespace().Name)
 	}
 }
 
@@ -338,6 +338,6 @@ func (engine *engine) freeMemory(ctx context.Context, im *instanceMemory) error 
 func (engine *engine) forceFreeCriticalMemory(ctx context.Context, im *instanceMemory) {
 	err := im.flushUpdates(ctx)
 	if err != nil {
-		slog.ErrorContext(ctx, "Failed to force flush updates for instance memory during critical memory release.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", err)
+		slog.ErrorContext(ctx, "Failed to force flush updates for instance memory during critical memory release.", "instance", im.ID().String(), "namespace", im.Namespace().Name, "error", err)
 	}
 }

@@ -110,6 +110,30 @@ test("it is possible to create and delete secrets", async ({ page }) => {
   ).toBeHidden();
 });
 
+test("secrets are displayed in alphabetical order", async ({ page }) => {
+  await page.goto(`/n/${namespace}/settings`);
+
+  // Firt Create secrets in non-alphabetical order
+  const secretNames = ["X", "T", "A", "01"];
+
+  for (const name of secretNames) {
+    await page.getByTestId("secret-create").click();
+    await page.getByPlaceholder("secret-name").type(name);
+    await page.locator("textarea").type("test-value");
+    await page.getByRole("button", { name: "Create" }).click();
+    await waitForSuccessToast(page);
+  }
+
+  // Then get all secret names in the list
+  const secretElements = page
+    .getByTestId("secrets-section")
+    .getByTestId("item-name");
+  const displayedNames = await secretElements.allTextContents();
+
+  // And check if the names are in alphabetical order
+  expect(displayedNames).toEqual(["01", "A", "T", "X"]);
+});
+
 test("it is possible to create and delete registries", async ({ page }) => {
   const registries = await createRegistries(namespace, 3);
   const registryToDelete = registries[2];
@@ -232,6 +256,54 @@ test("it is possible to create and delete variables", async ({
     page.getByTestId("item-name").filter({ hasText: "awesome-variable" }),
     "the new variable is still in the list"
   ).toHaveCount(1);
+});
+
+test("bulk delete variables", async ({ page }) => {
+  /* set up test data */
+  const variables = await createVariables(namespace, 4);
+  const variableToDelete = variables[3];
+
+  if (!variableToDelete) throw "error setting up test data";
+
+  await page.goto(`/n/${namespace}/settings`);
+
+  // Check first checkbox and click delete
+  await page.getByTestId("item-name").getByRole("checkbox").first().check();
+  await page.getByRole("button", { name: "Delete selected" }).click();
+  await expect(
+    page.getByText(`Are you sure you want to delete variable`, { exact: false })
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Delete" }).click();
+  await waitForSuccessToast(page);
+  await expect(page.getByTestId("item-name")).toHaveCount(3);
+
+  // Check second checkbox and click delete
+  await page.getByTestId("item-name").getByRole("checkbox").nth(0).check();
+  await page.getByTestId("item-name").getByRole("checkbox").nth(1).check();
+  await page.getByRole("button", { name: "Delete selected" }).click();
+  await expect(
+    page.getByText("Are you sure you want to delete 2 variables?", {
+      exact: true,
+    })
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Cancel" }).click();
+
+  // Check third checkbox and click delete
+  await page.getByTestId("item-name").getByRole("checkbox").nth(0).check();
+  await page.getByTestId("item-name").getByRole("checkbox").nth(1).check();
+  await page.getByTestId("item-name").getByRole("checkbox").nth(2).check();
+  await page.getByRole("button", { name: "Delete selected" }).click();
+  await expect(
+    page.getByText("Are you sure you want to delete all variables?", {
+      exact: true,
+    })
+  ).toBeVisible();
+
+  // Confirm deletion
+  await page.getByRole("button", { name: "Delete" }).click();
+  await waitForSuccessToast(page);
+
+  await expect(page.getByTestId("item-name")).toHaveCount(0);
 });
 
 test("it is possible to edit variables", async ({ page }) => {

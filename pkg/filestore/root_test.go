@@ -8,18 +8,17 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/filestore/filestoresql"
 	"github.com/google/uuid"
 )
 
 func TestRoot_CreateFile(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	fs := filestoresql.NewSQLFileStore(db)
+	fs := db.FileStore()
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), "ns1")
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -121,13 +120,13 @@ func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, rootID uu
 }
 
 func TestRoot_CorrectReadDirectory(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	fs := filestoresql.NewSQLFileStore(db)
+	fs := db.FileStore()
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), "ns1")
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -184,13 +183,13 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 }
 
 func TestRoot_RenamePath(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	fs := filestoresql.NewSQLFileStore(db)
+	fs := db.FileStore()
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), "ns1")
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}

@@ -21,7 +21,7 @@ func loadSource(rev []byte) (*model.Workflow, error) {
 	return workflow, nil
 }
 
-func (flow *flow) placeholdSecrets(ctx context.Context, tx *database.SQLStore, ns string, file *filestore.File) error {
+func (flow *flow) placeholdSecrets(ctx context.Context, tx *database.DB, ns string, file *filestore.File) error {
 	data, err := tx.FileStore().ForFile(file).GetData(ctx)
 	if err != nil {
 		return err

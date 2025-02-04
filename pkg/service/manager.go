@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/reconcile"
+	"github.com/direktiv/direktiv/pkg/service/reconcile"
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"

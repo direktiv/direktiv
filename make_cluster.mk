@@ -4,7 +4,7 @@ KIND_CONFIG ?= kind-config.yaml
 cluster-setup: cluster-create cluster-prep cluster-direktiv
 
 .PHONY: cluster-create
-cluster-create: 
+cluster-create:
 	kind delete clusters --all
 	kind create cluster --config ${KIND_CONFIG}
 
@@ -20,7 +20,7 @@ cluster-create:
 		docker network connect kind kind-registry; \
 	fi
 
-	DOCKER_BUILDKIT=1 docker build --push -t localhost:5001/direktiv:dev .
+	DOCKER_BUILDKIT=1 docker build --build-arg IS_ENTERPRISE=${IS_ENTERPRISE} --push -t localhost:5001/direktiv:dev .
 
 	if ! docker inspect proxy-quay >/dev/null 2>&1; then \
 		docker run -d --name proxy-quay --restart=always \
@@ -88,15 +88,22 @@ cluster-direktiv: ## Installs direktiv in cluster
 	--set database.password=password \
 	--set database.name=direktiv \
 	--set database.sslmode=disable \
+	--set pullPolicy=Always \
 	--set ingress-nginx.install=false \
 	--set image=direktiv \
 	--set registry=localhost:5001 \
 	--set tag=dev \
-	--set pullPolicy=IfNotPresent \
 	--set flow.sidecar=localhost:5001/direktiv:dev \
 	direktiv charts/direktiv
 
 	kubectl wait --for=condition=ready pod -l app=direktiv-flow --timeout=60s
+
+	@if [ "$(IS_ENTERPRISE)" == "true" ]; then \
+	@echo "Installing Dex"; \
+	helm repo add dex https://charts.dexidp.io; \
+	helm repo update; \
+	helm install dex dex/dex -f kind/dex-values.yaml; \
+	fi
 
 	@echo "Waiting for API endpoint to return 200..."
 	@until curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:9090/api/v2/status | grep -q 200; do \

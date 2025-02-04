@@ -2,16 +2,18 @@ package core
 
 import (
 	"net/http"
+	"net/url"
 	"path"
 	"strings"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"gopkg.in/yaml.v3"
 )
 
 type GatewayManager interface {
 	http.Handler
 
-	SetEndpoints(list []Endpoint, cList []Consumer) error
+	SetEndpoints(list []Endpoint, cList []Consumer, baseDefs []Gateway) error
 }
 
 type EndpointFile struct {
@@ -50,6 +52,15 @@ type Plugin interface {
 
 	Execute(w http.ResponseWriter, r *http.Request) *http.Request
 	Type() string
+}
+
+type Gateway struct {
+	RenderedBase openapi3.T
+
+	Namespace string
+	FilePath  string
+
+	Errors []string
 }
 
 type Endpoint struct {
@@ -95,6 +106,33 @@ func ParseConsumerFile(ns string, filePath string, data []byte) Consumer {
 	}
 }
 
+func ParseGatewayFile(ns string, filePath string, data []byte) Gateway {
+	gw := Gateway{
+		Namespace: ns,
+		FilePath:  filePath,
+		Errors:    make([]string, 0),
+	}
+
+	loader := openapi3.NewLoader()
+	loader.IsExternalRefsAllowed = true
+	loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
+		return nil, nil
+	}
+
+	base, err := loader.LoadFromData(data)
+	if err != nil {
+		gw.Errors = append(gw.Errors, err.Error())
+		return gw
+	}
+
+	// remove paths and server because it will be generated
+	base.Paths = openapi3.NewPaths()
+	base.Servers = openapi3.Servers{}
+	gw.RenderedBase = *base
+
+	return gw
+}
+
 func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 	res := &EndpointFile{}
 	err := yaml.Unmarshal(data, res)
@@ -126,7 +164,7 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 		return Endpoint{
 			Namespace: ns,
 			FilePath:  filePath,
-			Errors:    []string{"no auth plugin configured but 'allow_anonymous' set true"},
+			Errors:    []string{"no auth plugin configured but 'allow_anonymous' set false"},
 		}
 	}
 

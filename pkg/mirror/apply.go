@@ -74,6 +74,11 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 		return fmt.Errorf("failed to copy consumers into new filesystem root: %w", err)
 	}
 
+	err = o.copyGatewayIntoRoot(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to copy gateway into new filesystem root: %w", err)
+	}
+
 	err = o.copyDeprecatedVariables(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to copy deprecated variables: %w", err)
@@ -289,6 +294,28 @@ func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 				return fmt.Errorf("failed to save workflow variable '%s' '%s': %w", path, k, err)
 			}
 		}
+	}
+
+	return nil
+}
+
+func (o *DirektivApplyer) copyGatewayIntoRoot(ctx context.Context) error {
+	paths := []string{}
+	for k := range o.parser.Gateways {
+		paths = append(paths, k)
+	}
+
+	sort.Strings(paths)
+
+	for _, path := range paths {
+		data := o.parser.Gateways[path]
+		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path,
+			filestore.FileTypeGateway, "application/yaml", data)
+		if err != nil {
+			return err
+		}
+
+		o.log.Debugf("Created gateway in database: %s", path)
 	}
 
 	return nil

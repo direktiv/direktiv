@@ -15,7 +15,7 @@ import (
 // For now, this is just a port of the v1 linting API. The UI guys requested that I rename it to notifications.
 
 type notificationsController struct {
-	db *database.SQLStore
+	db *database.DB
 }
 
 func (c *notificationsController) mountRouter(r chi.Router) {
@@ -56,7 +56,7 @@ func (c *notificationsController) list(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, notifications)
 }
 
-func (c *notificationsController) lintSecrets(ctx context.Context, tx *database.SQLStore, ns *datastore.Namespace) ([]*apiNotification, error) {
+func (c *notificationsController) lintSecrets(ctx context.Context, tx *database.DB, ns *datastore.Namespace) ([]*apiNotification, error) {
 	secrets, err := tx.DataStore().Secrets().GetAll(ctx, ns.Name)
 	if err != nil {
 		return nil, err

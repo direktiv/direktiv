@@ -2,6 +2,7 @@ import type { QueryFunctionContext } from "@tanstack/react-query";
 import { SecretsListSchema } from "../schema";
 import { apiFactory } from "../../apiFactory";
 import { secretKeys } from "..";
+import { sortByName } from "~/api/files/utils";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
@@ -39,5 +40,9 @@ export const useSecrets = () => {
     }),
     queryFn: fetchSecrets,
     enabled: !!namespace,
+    select: (response) => ({
+      ...response,
+      data: [...response.data].sort(sortByName),
+    }),
   });
 };

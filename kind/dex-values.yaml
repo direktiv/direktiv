@@ -1,0 +1,41 @@
+logLevel: debug
+config:
+  issuer: http://127.0.0.1:9090/dex
+
+  storage:
+    type: memory
+
+  web:
+    http: 0.0.0.0:5556
+
+  enablePasswordDB: true
+
+  staticPasswords:
+    - email: "admin@example.com"
+      hash: "$2y$10$i0T8CJesqQPmbnxh3PRY3e3SuWQl9CEUuLOG0OpTuvUJf/Rr7/WZy"  # bcrypt hash of 'password'
+      username: "admin"
+      userID: "1"
+      displayName: "John Doe"
+
+  staticClients:
+    - id: direktiv
+      name: "Direktiv EE"
+      redirectURIs:
+        - "http://127.0.0.1:9090/callback"
+      public: true
+  oauth2:
+    skipApprovalScreen: true
+
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: ""
+      paths:
+        - path: /dex
+          pathType: Prefix
+          backend:
+            service:
+              name: dex  # Dex service name
+              port:
+                number: 5556

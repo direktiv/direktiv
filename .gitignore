@@ -9,7 +9,11 @@
 *.dylib
 .vscode
 
-# certs for linkerd 
+cmd/ee
+pkg/ee
+ee
+
+# certs for linkerd
 ca.*
 issuer.*
 
@@ -98,7 +102,7 @@ direktivctl*
 *node_modules
 
 .draft
-
+tight.sh
 openapi/node_modules
 openapi/output
 
