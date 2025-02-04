@@ -7,22 +7,27 @@ import {
 } from "~/design/Tooltip";
 
 import EnvsVariables from "../components/EnvVariables";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import RefreshButton from "~/design/RefreshButton";
 import Scale from "./Scale";
 import { StatusBadge } from "../components/StatusBadge";
-import { usePages } from "~/util/router/pages";
+import { useNamespace } from "~/util/store/namespace";
 import { useService } from "~/api/services/query/services";
 import { useTranslation } from "react-i18next";
 
 const Header = ({ serviceId }: { serviceId: string }) => {
-  const pages = usePages();
+  const namespace = useNamespace();
   const { data: service, refetch, isFetching } = useService(serviceId);
 
   const { t } = useTranslation();
 
+  if (!namespace) return null;
   if (!service) return null;
+
   const serviceTitle = service.name ? service.name : serviceId;
+
+  const linkSubpage =
+    service.type === "namespace-service" ? "service" : "workflow";
 
   return (
     <div
@@ -38,12 +43,8 @@ const Header = ({ serviceId }: { serviceId: string }) => {
         <div>
           <Link
             className="hover:underline"
-            to={pages.explorer.createHref({
-              namespace: service.namespace,
-              path: service.filePath,
-              subpage:
-                service.type === "namespace-service" ? "service" : "workflow",
-            })}
+            to={`/n/$namespace/explorer/${linkSubpage}/$`}
+            params={{ namespace, _splat: service.filePath }}
           >
             {service.filePath}
           </Link>
