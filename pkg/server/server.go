@@ -233,6 +233,7 @@ func Run(circuit *core.Circuit) error {
 
 	// initialize extensions
 	if extensions.Initialize != nil {
+		slog.Info("initializing extensions")
 		extensions.Initialize(db, bus, config)
 	}
 

@@ -116,6 +116,9 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Route("/namespaces", func(r chi.Router) {
+			if extensions.CheckOidcMiddlewares != nil {
+				r.Use(extensions.CheckOidcMiddlewares)
+			}
 			r.Use(mw.checkAPIKey)
 			nsCtr.mountRouter(r)
 		})
