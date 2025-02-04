@@ -90,7 +90,7 @@ export const fileTypeToExplorerSubpage = (
     case "consumer":
       return "consumer";
     default:
-      return undefined;
+      return "tree";
   }
 };
 

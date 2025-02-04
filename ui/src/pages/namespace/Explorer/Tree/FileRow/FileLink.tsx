@@ -1,23 +1,30 @@
 import { FC, PropsWithChildren } from "react";
-import { getFilenameFromPath, isPreviewable } from "~/api/files/utils";
+import {
+  fileTypeToExplorerSubpage,
+  getFilenameFromPath,
+  isPreviewable,
+} from "~/api/files/utils";
 
 import { BaseFileSchemaType } from "~/api/files/schema";
 import { DialogTrigger } from "~/design/Dialog";
 import { Link } from "@tanstack/react-router";
 
-type ConditionalLinkProps = PropsWithChildren & {
+type FileLinkProps = PropsWithChildren & {
   file: BaseFileSchemaType;
   namespace: string;
   onPreviewClicked: (file: BaseFileSchemaType) => void;
 };
 
-export const ConditionalLink: FC<ConditionalLinkProps> = ({
+export const FileLink: FC<FileLinkProps> = ({
   file,
   namespace,
   onPreviewClicked,
   children,
 }) => {
   const linkToPreview = isPreviewable(file.type);
+
+  const subpage = fileTypeToExplorerSubpage(file.type);
+
   if (linkToPreview)
     return (
       <DialogTrigger
@@ -35,7 +42,7 @@ export const ConditionalLink: FC<ConditionalLinkProps> = ({
   return (
     <Link
       data-testid={`explorer-item-link-${getFilenameFromPath(file.path)}`}
-      to="/n/$namespace/explorer/tree/$"
+      to={`/n/$namespace/explorer/${subpage}/$`}
       params={{ namespace, _splat: file.path }}
       className="flex-1 hover:underline"
     >

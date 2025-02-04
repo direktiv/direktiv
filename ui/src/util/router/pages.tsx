@@ -66,6 +66,7 @@ type DefaultPageSetup = Record<
 >;
 
 export type ExplorerSubpages =
+  | "tree"
   | "workflow"
   | "workflow-overview"
   | "workflow-settings"
