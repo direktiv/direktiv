@@ -1,6 +1,3 @@
-import { useMatches } from "@tanstack/react-router";
-import { z } from "zod";
-
 export const analyzePath = (path?: string) => {
   // convert undefined and empty path to null
   let pathClean: string | null = path || null;
