@@ -9,10 +9,10 @@ RUN cd src/ && go mod download
 
 COPY pkg src/pkg/
 COPY cmd src/cmd/
-COPY direktiv-ee*/new src/direktiv-ee/new
+COPY direktiv-ee*/pkg src/direktiv-ee/pkg
 
 RUN if [ "$IS_ENTERPRISE" = "true" ]; then \
-    echo "/direktiv direktiv-ee/new/ee/*.go" > BUILD_PATH.txt; \
+    echo "/direktiv direktiv-ee/pkg/*.go" > BUILD_PATH.txt; \
     else \
     echo "/direktiv cmd/*.go" > BUILD_PATH.txt; \
     fi
