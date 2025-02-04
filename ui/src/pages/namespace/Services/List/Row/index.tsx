@@ -23,7 +23,7 @@ const ServicesTableRow: FC<{
   setRebuildService: (service: ServiceSchemaType) => void;
 }> = ({ service, setRebuildService }) => {
   const namespace = useNamespace();
-  const { filename } = useParams({ strict: false });
+  const { _splat: path } = useParams({ strict: false });
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -34,10 +34,10 @@ const ServicesTableRow: FC<{
       <TableRow
         data-testid="service-row"
         onClick={() => {
-          if (service.type === "workflow-service" && filename) {
+          if (service.type === "workflow-service" && path) {
             return navigate({
-              to: "/n/$namespace/explorer/workflow/services/$filename",
-              params: { namespace, filename },
+              to: "/n/$namespace/explorer/workflow/services/$",
+              params: { namespace, _splat: path },
             });
           }
           return navigate({
@@ -51,10 +51,10 @@ const ServicesTableRow: FC<{
           <div className="flex flex-col gap-1">
             <div>
               <span className="whitespace-pre-wrap break-all">
-                {service.type === "workflow-service" && filename ? (
+                {service.type === "workflow-service" && path ? (
                   <Link
-                    to="/n/$namespace/explorer/workflow/services/$filename"
-                    params={{ namespace, filename }}
+                    to="/n/$namespace/explorer/workflow/services/$"
+                    params={{ namespace, _splat: path }}
                     onClick={(e) => e.stopPropagation()}
                     className="hover:underline"
                   >
