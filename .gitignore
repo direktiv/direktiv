@@ -11,6 +11,7 @@
 
 cmd/ee
 pkg/ee
+direktiv-ee
 ee
 
 # certs for linkerd
