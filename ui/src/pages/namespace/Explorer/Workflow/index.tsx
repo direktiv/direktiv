@@ -7,7 +7,7 @@ import {
   TerminalSquare,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useMatches, useParams } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import {
   Tooltip,
@@ -15,7 +15,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
-import { useMatches, useParams } from "@tanstack/react-router";
 
 import ApiCommands from "./ApiCommands";
 import Button from "~/design/Button";
@@ -60,40 +59,28 @@ const WorkflowLayout: FC = () => {
       active: match("/n/$namespace/explorer/workflow/edit/$"),
       icon: <Code2 aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.fileContent"),
-      link: {
-        to: "/n/$namespace/explorer/workflow/edit/$",
-        params: { namespace, _splat: path },
-      },
+      link: "/n/$namespace/explorer/workflow/edit/$",
     },
     {
       value: "overview",
       active: match("/n/$namespace/explorer/workflow/overview/$"),
       icon: <PieChart aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.overview"),
-      link: {
-        to: "pages.explorer.workflow.menu.overview",
-        params: { namespace, _splat: path },
-      },
+      link: "/n/$namespace/explorer/workflow/overview/$",
     },
     {
       value: "services",
       active: match("/n/$namespace/explorer/workflow/services/$"),
       icon: <Layers aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.services"),
-      link: {
-        to: "pages.explorer.workflow.menu.services",
-        params: { namespace, _splat: path },
-      },
+      link: "/n/$namespace/explorer/workflow/services/$",
     },
     {
       value: "settings",
       active: match("/n/$namespace/explorer/workflow/settings/$"),
       icon: <Settings aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.settings"),
-      link: {
-        to: "pages.explorer.workflow.menu.settings",
-        params: { namespace, _splat: path },
-      },
+      link: "/n/$namespace/explorer/workflow/settings/$",
     },
   ] as const;
 
@@ -168,7 +155,7 @@ const WorkflowLayout: FC = () => {
                     key={tab.value}
                     data-testid={`workflow-tabs-trg-${tab.value}`}
                   >
-                    <Link {...tab.link}>
+                    <Link to={tab.link} params={{ namespace, _splat: path }}>
                       {tab.icon}
                       {tab.title}
                     </Link>

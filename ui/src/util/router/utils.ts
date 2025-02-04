@@ -1,4 +1,4 @@
-import { useMatches } from "react-router-dom";
+import { useMatches } from "@tanstack/react-router";
 import { z } from "zod";
 
 export const analyzePath = (path?: string) => {
@@ -24,7 +24,7 @@ export const analyzePath = (path?: string) => {
   };
 };
 
-// react routers useMatches returns an array of match data, this method checks
+// tanstack router's useMatches returns an array of match data, this method checks
 // for a specific matcher. Please check the corespoinding test for an example
 // https://reactrouter.com/en/main/hooks/use-match
 export const checkHandlerInMatcher = (

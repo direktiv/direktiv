@@ -1,6 +1,6 @@
 import { FC, PropsWithChildren } from "react";
 import {
-  fileTypeToExplorerSubpage,
+  fileTypeToExplorerRoute,
   getFilenameFromPath,
   isPreviewable,
 } from "~/api/files/utils";
@@ -23,8 +23,6 @@ export const FileLink: FC<FileLinkProps> = ({
 }) => {
   const linkToPreview = isPreviewable(file.type);
 
-  const subpage = fileTypeToExplorerSubpage(file.type);
-
   if (linkToPreview)
     return (
       <DialogTrigger
@@ -42,7 +40,7 @@ export const FileLink: FC<FileLinkProps> = ({
   return (
     <Link
       data-testid={`explorer-item-link-${getFilenameFromPath(file.path)}`}
-      to={`/n/$namespace/explorer/${subpage}/$`}
+      to={fileTypeToExplorerRoute(file.type)}
       params={{ namespace, _splat: file.path }}
       className="flex-1 hover:underline"
     >

@@ -16,7 +16,7 @@ import { defaultServiceYaml } from "~/pages/namespace/Explorer/Service/ServiceEd
 import { encode } from "js-base64";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,13 +69,10 @@ const NewService = ({
   const { mutate: createFile, isPending } = useCreateFile({
     onSuccess: (data) => {
       namespace &&
-        navigate(
-          pages.explorer.createHref({
-            namespace,
-            path: data.data.path,
-            subpage: "service",
-          })
-        );
+        navigate({
+          to: "/n/$namespace/explorer/service/$",
+          params: { namespace, _splat: data.data.path },
+        });
       close();
     },
   });

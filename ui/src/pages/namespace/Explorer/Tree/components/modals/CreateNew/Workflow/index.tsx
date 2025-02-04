@@ -25,7 +25,7 @@ import { addYamlFileExtension } from "../../../../utils";
 import { encode } from "js-base64";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { useNotifications } from "~/api/notifications/query/get";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
@@ -97,13 +97,10 @@ const NewWorkflow = ({
        */
       updateNotificationBell();
       namespace &&
-        navigate(
-          pages.explorer.createHref({
-            namespace,
-            path: data.data.path,
-            subpage: "workflow",
-          })
-        );
+        navigate({
+          to: "/n/$namespace/explorer/workflow/edit/$",
+          params: { namespace, _splat: data.data.path },
+        });
       close();
     },
   });

@@ -31,18 +31,18 @@ const useNavigationBlocker = (message: string | null) => {
    * This triggers a confirmation dialog when navigating away from the
    * current route, but staying within our app.
    */
-  const blockerFunction: BlockerFunction = ({
-    currentLocation,
-    nextLocation,
-  }) => (message ? currentLocation !== nextLocation : false);
+  // const blockerFunction: BlockerFunction = ({
+  //   currentLocation,
+  //   nextLocation,
+  // }) => (message ? currentLocation !== nextLocation : false);
 
-  const blocker = useBlocker(blockerFunction);
+  // const blocker = useBlocker(blockerFunction);
 
-  useEffect(() => {
-    message && blocker.state === "blocked" && window.confirm(message)
-      ? blocker.proceed()
-      : blocker.reset?.();
-  }, [blocker, blocker.state, message]);
+  // useEffect(() => {
+  //   message && blocker.state === "blocked" && window.confirm(message)
+  //     ? blocker.proceed()
+  //     : blocker.reset?.();
+  // }, [blocker, blocker.state, message]);
 };
 
 export default useNavigationBlocker;
