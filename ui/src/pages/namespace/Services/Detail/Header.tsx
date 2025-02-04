@@ -7,6 +7,7 @@ import {
 } from "~/design/Tooltip";
 
 import EnvsVariables from "../components/EnvVariables";
+import { FileRoutesById } from "~/routeTree.gen";
 import { Link } from "@tanstack/react-router";
 import RefreshButton from "~/design/RefreshButton";
 import Scale from "./Scale";
@@ -26,8 +27,10 @@ const Header = ({ serviceId }: { serviceId: string }) => {
 
   const serviceTitle = service.name ? service.name : serviceId;
 
-  const linkSubpage =
-    service.type === "namespace-service" ? "service" : "workflow";
+  const link: keyof FileRoutesById =
+    service.type === "namespace-service"
+      ? "/n/$namespace/explorer/workflow/services/$"
+      : "/n/$namespace/explorer/service/$";
 
   return (
     <div
@@ -43,7 +46,7 @@ const Header = ({ serviceId }: { serviceId: string }) => {
         <div>
           <Link
             className="hover:underline"
-            to={`/n/$namespace/explorer/${linkSubpage}/$`}
+            to={link}
             params={{ namespace, _splat: service.filePath }}
           >
             {service.filePath}
