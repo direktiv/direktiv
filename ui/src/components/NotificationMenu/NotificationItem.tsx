@@ -1,7 +1,7 @@
 import { NotificationClose, NotificationMessage } from "~/design/Notification/";
 
 import { FC } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { NotificationSchemaType } from "~/api/notifications/schema";
 import { useNotificationConfig } from "./config";
 

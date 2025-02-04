@@ -1,5 +1,5 @@
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { Users } from "lucide-react";
 import { useNamespace } from "~/util/store/namespace";
 import { usePages } from "~/util/router/pages";

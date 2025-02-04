@@ -1,4 +1,4 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import { Users, Workflow } from "lucide-react";
 
@@ -24,19 +24,14 @@ const GatewayPage = () => {
       active: isGatewayRoutesPage,
       icon: <Workflow aria-hidden="true" />,
       title: t("pages.gateway.tabs.routes"),
-      link: pages.gateway.createHref({
-        namespace,
-      }),
+      link: "/n/$namespace/gateway",
     },
     {
       value: "consumers",
       active: isGatewayConsumerPage,
       icon: <Users aria-hidden="true" />,
       title: t("pages.gateway.tabs.consumers"),
-      link: pages.gateway.createHref({
-        namespace,
-        subpage: "consumers",
-      }),
+      link: "/n/$namespace/gateway/consumers",
     },
   ] as const;
 
@@ -48,7 +43,7 @@ const GatewayPage = () => {
             <TabsList>
               {tabs.map((tab) => (
                 <TabsTrigger asChild value={tab.value} key={tab.value}>
-                  <Link to={tab.link}>
+                  <Link to={tab.link} params={{ namespace }}>
                     {tab.icon}
                     {tab.title}
                   </Link>
