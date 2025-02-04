@@ -17,6 +17,7 @@ export const oidcConfig: AuthProviderProps = {
   client_id,
   post_logout_redirect_uri: rootUrl,
   redirect_uri: `${rootUrl}callback`,
+  scope: "openid profile email groups",
 
   /**
    * removes code and state from url after signin
