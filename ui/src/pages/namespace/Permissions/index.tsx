@@ -1,26 +1,28 @@
 import { FileCheck, KeyRound, Users } from "lucide-react";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useMatch } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const PermissionsPage = () => {
-  const pages = usePages();
-  const permissions = pages.permissions;
-
   const namespace = useNamespace();
   const { t } = useTranslation();
 
-  if (!permissions) return null;
-  if (!namespace) return null;
+  const isPermissionsPolicyPage = useMatch({
+    from: "/n/$namespace/permissions/",
+    shouldThrow: false,
+  });
+  const isPermissionsGroupsPage = useMatch({
+    from: "/n/$namespace/permissions/groups",
+    shouldThrow: false,
+  });
+  const isPermissionsTokensPage = useMatch({
+    from: "/n/$namespace/permissions/tokens",
+    shouldThrow: false,
+  });
 
-  const {
-    isPermissionsGroupPage,
-    isPermissionsPolicyPage,
-    isPermissionsTokenPage,
-  } = permissions.useParams();
+  if (!namespace) return null;
 
   const tabs = [
     {
@@ -28,29 +30,21 @@ const PermissionsPage = () => {
       active: isPermissionsPolicyPage,
       icon: <FileCheck aria-hidden="true" />,
       title: t("pages.permissions.tabs.policy"),
-      link: permissions.createHref({
-        namespace,
-      }),
+      link: "/n/$namespace/permissions",
     },
     {
       value: "groups",
-      active: isPermissionsGroupPage,
+      active: isPermissionsGroupsPage,
       icon: <Users aria-hidden="true" />,
       title: t("pages.permissions.tabs.groups"),
-      link: permissions.createHref({
-        namespace,
-        subpage: "groups",
-      }),
+      link: "/n/$namespace/permissions/groups",
     },
     {
       value: "tokens",
-      active: isPermissionsTokenPage,
+      active: isPermissionsTokensPage,
       icon: <KeyRound aria-hidden="true" />,
       title: t("pages.permissions.tabs.tokens"),
-      link: permissions.createHref({
-        namespace,
-        subpage: "tokens",
-      }),
+      link: "/n/$namespace/permissions/tokens",
     },
   ] as const;
 
@@ -66,7 +60,7 @@ const PermissionsPage = () => {
                 key={tab.value}
                 data-testid={`event-tabs-trg-${tab.value}`}
               >
-                <Link to={tab.link}>
+                <Link to={tab.link} params={{ namespace }}>
                   {tab.icon}
                   {tab.title}
                 </Link>

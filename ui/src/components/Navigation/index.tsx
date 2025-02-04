@@ -1,5 +1,6 @@
 import {
   ActivitySquare,
+  BadgeCheck,
   Boxes,
   FolderTree,
   GitCompare,
@@ -15,6 +16,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { FC } from "react";
 import { FileRoutesByTo } from "~/routeTree.gen";
 import { createClassNames } from "~/design/NavigationLink";
+import { isEnterprise } from "~/config/env/utils";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
@@ -30,6 +32,18 @@ const Navigation: FC = () => {
   const { t } = useTranslation();
 
   if (!namespace) return null;
+
+  const enableEnterpriseItems = isEnterprise();
+
+  const enterpriseItems: NavigationItem[] = enableEnterpriseItems
+    ? [
+        {
+          path: "/n/$namespace/permissions",
+          label: t("components.mainMenu.permissions"),
+          icon: BadgeCheck,
+        },
+      ]
+    : [];
 
   const navigationItems: NavigationItem[] = [
     {
@@ -67,6 +81,7 @@ const Navigation: FC = () => {
       label: t("components.mainMenu.mirror"),
       icon: GitCompare,
     },
+    ...enterpriseItems,
     {
       path: "/n/$namespace/settings",
       label: t("components.mainMenu.settings"),
