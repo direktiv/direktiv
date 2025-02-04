@@ -13,14 +13,14 @@ export const NotificationItem: FC<NotificationSchemaType> = ({
 
   if (!config) return null;
 
-  const { description, href, icon: Icon } = config;
+  const { description, linkProps, icon: Icon } = config;
 
   return (
     <NotificationClose
       className="w-full hover:bg-gray-3 dark:hover:bg-gray-dark-3"
       asChild
     >
-      <Link to={href}>
+      <Link {...linkProps}>
         <NotificationMessage text={description} icon={Icon} />
       </Link>
     </NotificationClose>

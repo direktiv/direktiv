@@ -3,11 +3,9 @@ import { Link, useMatch } from "@tanstack/react-router";
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import { KeyRound } from "lucide-react";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const TokensBreadcrumb = () => {
-  const pages = usePages();
   const namespace = useNamespace();
   const isPermissionsTokenPage = useMatch({
     from: "/n/$namespace/permissions/",
@@ -17,7 +15,6 @@ const TokensBreadcrumb = () => {
 
   if (!isPermissionsTokenPage) return null;
   if (!namespace) return null;
-  if (!pages.permissions) return null;
 
   return (
     <>
