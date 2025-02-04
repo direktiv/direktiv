@@ -3,6 +3,10 @@ KIND_CONFIG ?= kind-config.yaml
 .PHONY: cluster-setup
 cluster-setup: cluster-create cluster-prep cluster-direktiv
 
+.PHONY: cluster-setup-ee
+cluster-setup-ee:
+	make cluster-setup IS_ENTERPRISE=true
+
 .PHONY: cluster-create
 cluster-create:
 	kind delete clusters --all
@@ -82,6 +86,8 @@ cluster-direktiv-delete: ## Deletes direktiv from cluster
 cluster-direktiv: ## Installs direktiv in cluster
 	kubectl wait -n ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
 	kubectl wait -n ingress-nginx --for=condition=complete job --selector=app.kubernetes.io/component=admission-webhook --timeout=120s
+
+	@if [ "$(IS_ENTERPRISE)" != "true" ]; then \
 	helm install --set database.host=postgres.default.svc \
 	--set database.port=5432 \
 	--set database.user=admin \
@@ -94,7 +100,25 @@ cluster-direktiv: ## Installs direktiv in cluster
 	--set registry=localhost:5001 \
 	--set tag=dev \
 	--set flow.sidecar=localhost:5001/direktiv:dev \
-	direktiv charts/direktiv
+	direktiv charts/direktiv; \
+	fi
+
+	@if [ "$(IS_ENTERPRISE)" == "true" ]; then \
+	helm install --set database.host=postgres.default.svc \
+	--set database.port=5432 \
+	--set database.user=admin \
+	--set database.password=password \
+	--set database.name=direktiv \
+	--set database.sslmode=disable \
+	--set pullPolicy=Always \
+	--set ingress-nginx.install=false \
+	--set image=direktiv \
+	--set registry=localhost:5001 \
+	--set tag=dev \
+	--set flow.sidecar=localhost:5001/direktiv:dev \
+	--set apikey=password \
+	direktiv charts/direktiv; \
+	fi
 
 	kubectl wait --for=condition=ready pod -l app=direktiv-flow --timeout=60s
 
@@ -111,6 +135,7 @@ cluster-direktiv: ## Installs direktiv in cluster
 		sleep 2; \
 	done
 	@echo "Endpoint is ready!"
+
 
 .PHONY: cluster-image-cache-stop
 cluster-image-cache-stop:  
