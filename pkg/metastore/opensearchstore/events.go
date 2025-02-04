@@ -15,11 +15,13 @@ import (
 
 const eventsISMPolicyName = "direktiv-events-policy"
 
+const maxBatchSize = 500
+
 // NewOpenSearchEventsStore creates a new OpenSearchLogStore with the specified settings.
 func NewOpenSearchEventsStore(client *opensearch.Client, co Config) *EventStore {
 	return &EventStore{
 		client:      client,
-		eventIndex:  co.EventsIndex,
+		Index:       co.EventsIndex,
 		deleteAfter: co.EventsDeleteAfter,
 	}
 }
@@ -35,7 +37,7 @@ func (store *EventStore) Init(ctx context.Context) error {
 		return err
 	}
 	// Ensure lifecycle policies
-	if err := ensureISMPolicy(ctx, store.client, eventsISMPolicyName, store.eventIndex, store.deleteAfter); err != nil {
+	if err := ensureISMPolicy(ctx, store.client, eventsISMPolicyName, store.Index, store.deleteAfter); err != nil {
 		return fmt.Errorf("failed to ensure deletion policy: %w", err)
 	}
 
@@ -44,7 +46,7 @@ func (store *EventStore) Init(ctx context.Context) error {
 
 type EventStore struct {
 	client      *opensearch.Client
-	eventIndex  string
+	Index       string
 	deleteAfter string // e.g., "30d" for 30 days
 }
 
@@ -55,7 +57,7 @@ func (store *EventStore) Append(ctx context.Context, e metastore.EventEntry) err
 	}
 
 	req := opensearchapi.IndexRequest{
-		Index:      store.eventIndex,
+		Index:      store.Index,
 		DocumentID: e.ID,
 		Body:       bytes.NewReader(body),
 		Refresh:    "true",
@@ -70,6 +72,39 @@ func (store *EventStore) Append(ctx context.Context, e metastore.EventEntry) err
 	if res.IsError() {
 		responseBody, _ := io.ReadAll(res.Body)
 		return fmt.Errorf("error indexing event: %s, response: %s", res.Status(), string(responseBody))
+	}
+
+	return nil
+}
+
+func (store *EventStore) AppendBatch(ctx context.Context, events ...metastore.EventEntry) error {
+	var buf bytes.Buffer
+	if len(events) > maxBatchSize {
+		return fmt.Errorf("batch bigger then the maxium batch size")
+	}
+	for _, e := range events {
+		meta := map[string]interface{}{"index": map[string]interface{}{"_index": store.Index}}
+		metaBytes, _ := json.Marshal(meta)
+		eventBytes, _ := json.Marshal(e)
+		buf.Write(metaBytes)
+		buf.WriteByte('\n')
+		buf.Write(eventBytes)
+		buf.WriteByte('\n')
+	}
+
+	req := opensearchapi.BulkRequest{
+		Body: bytes.NewReader(buf.Bytes()),
+	}
+
+	res, err := req.Do(ctx, store.client)
+	if err != nil {
+		return fmt.Errorf("bulk index failed: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		responseBody, _ := io.ReadAll(res.Body)
+		return fmt.Errorf("bulk index error: %s, response: %s", res.Status(), string(responseBody))
 	}
 
 	return nil
@@ -138,7 +173,7 @@ func (store *EventStore) Get(ctx context.Context, options metastore.EventQueryOp
 	// Execute the search
 	searchRes, err := store.client.Search(
 		store.client.Search.WithContext(ctx),
-		store.client.Search.WithIndex(store.eventIndex),
+		store.client.Search.WithIndex(store.Index),
 		store.client.Search.WithBody(bytes.NewReader(mustJSON(query))),
 		store.client.Search.WithTrackTotalHits(true),
 	)
@@ -174,6 +209,33 @@ func (store *EventStore) Get(ctx context.Context, options metastore.EventQueryOp
 	return events, nil
 }
 
+// GetByID retrieves a single event by its unique ID
+func (store *EventStore) GetByID(ctx context.Context, id string) (metastore.EventEntry, error) {
+	var event metastore.EventEntry
+
+	res, err := store.client.Get(store.Index, id)
+	if err != nil {
+		return event, fmt.Errorf("error retrieving event by ID: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode == http.StatusNotFound {
+		return event, fmt.Errorf("event not found")
+	}
+	if res.StatusCode != http.StatusOK {
+		return event, fmt.Errorf("unexpected response status: %d", res.StatusCode)
+	}
+
+	var response struct {
+		Source metastore.EventEntry `json:"_source"`
+	}
+	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+		return event, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return response.Source, nil
+}
+
 func mustJSON(v interface{}) []byte {
 	body, err := json.Marshal(v)
 	if err != nil {
@@ -187,7 +249,7 @@ var _ metastore.EventsStore = &EventStore{}
 
 func (store *EventStore) ensureIndex(ctx context.Context) error {
 	// Check if the index exists
-	req := opensearchapi.IndicesExistsRequest{Index: []string{store.eventIndex}}
+	req := opensearchapi.IndicesExistsRequest{Index: []string{store.Index}}
 	res, err := req.Do(ctx, store.client)
 	if err != nil {
 		return fmt.Errorf("failed to check if index exists: %w", err)
@@ -224,7 +286,7 @@ func (store *EventStore) ensureIndex(ctx context.Context) error {
 
 	// Create the index
 	createReq := opensearchapi.IndicesCreateRequest{
-		Index: store.eventIndex,
+		Index: store.Index,
 		Body:  bytes.NewReader(body),
 	}
 

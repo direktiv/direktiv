@@ -137,3 +137,87 @@ func TestOpenSearchEventStore(t *testing.T) {
 	require.Len(t, events, 1)
 	require.JSONEq(t, `{"type":"event.third", "source":"service3", "data":"third event"}`, events[0].CloudEvent)
 }
+
+func TestOpenSearchEventStore_AppendBatch(t *testing.T) {
+	// Create a new test data store
+	store, cleanup, err := opensearchstore.NewTestDataStore(t)
+	defer cleanup()
+	require.NoError(t, err)
+
+	now := time.Now()
+
+	// Prepare multiple events for bulk append
+	eventEntries := []metastore.EventEntry{
+		{
+			ID:         uuid.NewString(),
+			ReceivedAt: now.Add(-time.Minute).UnixMilli(),
+			CloudEvent: `{"type":"bulk.event.first", "source":"service1", "data":"first bulk event"}`,
+			Namespace:  "default",
+			Metadata:   map[string]string{"batch": "1"},
+		},
+		{
+			ID:         uuid.NewString(),
+			ReceivedAt: now.UnixMilli(),
+			CloudEvent: `{"type":"bulk.event.second", "source":"service2", "data":"second bulk event"}`,
+			Namespace:  "default",
+			Metadata:   map[string]string{"batch": "1"},
+		},
+		{
+			ID:         uuid.NewString(),
+			ReceivedAt: now.Add(time.Minute).UnixMilli(),
+			CloudEvent: `{"type":"bulk.event.third", "source":"service3", "data":"third bulk event"}`,
+			Namespace:  "default",
+			Metadata:   map[string]string{"batch": "1"},
+		},
+	}
+
+	// Append events in bulk
+	err = store.EventsStore().AppendBatch(context.Background(), eventEntries...)
+	require.NoError(t, err)
+
+	// Allow OpenSearch some time to index the events
+	time.Sleep(time.Second * 2)
+
+	// Retrieve all events within a time range
+	events, err := store.EventsStore().Get(context.Background(), metastore.EventQueryOptions{
+		StartTime: now.Add(-time.Hour),
+		EndTime:   now.Add(time.Hour),
+	})
+	require.NoError(t, err)
+	require.Len(t, events, 3)
+
+	// Validate that all appended events exist
+	require.ElementsMatch(t, eventEntries, events)
+}
+
+func TestOpenSearchEventStore_GetByID(t *testing.T) {
+	// Create a new test data store
+	store, cleanup, err := opensearchstore.NewTestDataStore(t)
+	defer cleanup()
+	require.NoError(t, err)
+
+	now := time.Now()
+	eventID := uuid.NewString()
+
+	// Append an event
+	eventEntry := metastore.EventEntry{
+		ID:         eventID,
+		ReceivedAt: now.UnixMilli(),
+		CloudEvent: `{"type":"test.getbyid", "source":"test", "data":"retrieve me"}`,
+		Namespace:  "default",
+		Metadata:   map[string]string{"key": "value"},
+	}
+
+	err = store.EventsStore().Append(context.Background(), eventEntry)
+	require.NoError(t, err)
+
+	// Allow OpenSearch some time to index the event
+	time.Sleep(time.Second * 2)
+
+	// Retrieve the event by ID
+	retrievedEvent, err := store.EventsStore().GetByID(context.Background(), eventID)
+	require.NoError(t, err)
+
+	// Validate that the retrieved event matches the stored event
+	require.Equal(t, eventEntry, retrievedEvent)
+}

@@ -7,6 +7,8 @@ import (
 
 type EventsStore interface {
 	Append(ctx context.Context, e EventEntry) error
+	AppendBatch(ctx context.Context, events ...EventEntry) error
+	GetByID(ctx context.Context, id string) (EventEntry, error)
 	Get(ctx context.Context, options EventQueryOptions) ([]EventEntry, error)
 	Init(ctx context.Context) error
 }

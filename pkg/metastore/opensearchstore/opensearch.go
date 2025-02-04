@@ -126,6 +126,47 @@ func NewTestDataStore(t *testing.T) (metastore.Store, func(), error) {
 	}, cleanup, nil
 }
 
+func NewTestDataStoreB(tb testing.TB) (metastore.Store, func(), error) {
+	tb.Helper()
+
+	ctx := context.TODO()
+	tb.Log("starting OpenSearch container...")
+	ctr, err := tcopensearch.Run(ctx, "opensearchproject/opensearch:2.11.1")
+	if err != nil {
+		return nil, func() {}, err
+	}
+	cleanup := func() {
+		testcontainers.CleanupContainer(tb, ctr)
+	}
+	address, err := ctr.Address(ctx)
+	if err != nil {
+		return nil, cleanup, err
+	}
+	tb.Logf("openSearch container address: %s", address)
+
+	client, err := opensearch.NewClient(opensearch.Config{
+		Addresses: []string{address},
+	})
+	if err != nil {
+		return nil, cleanup, err
+	}
+
+	tb.Log("openSearch client created successfully.")
+	co := Config{
+		EventsIndex:       "test-events",
+		EventsDeleteAfter: "7d",
+	}
+	err = NewOpenSearchEventsStore(client, co).Init(ctx)
+	if err != nil {
+		return nil, cleanup, err
+	}
+
+	return &opensearchMetaStore{
+		client: client,
+		co:     co,
+	}, cleanup, nil
+}
+
 func ensureISMPolicy(ctx context.Context, client *opensearch.Client, policyName, indexName, retentionPeriod string) error {
 	slog.Debug("defining ISM policy", "index", indexName)
 	policy := map[string]interface{}{
