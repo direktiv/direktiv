@@ -1,22 +1,21 @@
+import { Link, useMatch } from "@tanstack/react-router";
+
+import { BadgeCheck } from "lucide-react";
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import GroupsBreadcrumb from "./GroupsBreadcrumb";
-import { Link } from "react-router-dom";
 import PolicyBreadcrumb from "./PolicyBreadcumb";
 import TokensBreadcrumb from "./TokenBreadCrumb";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const PermissionsBreadcrumb = () => {
-  const pages = usePages();
   const namespace = useNamespace();
   const { t } = useTranslation();
 
-  const permissions = pages.permissions;
-  if (!permissions) return null;
-
-  const { isPermissionsPage } = permissions.useParams();
-  const { icon: Icon } = permissions;
+  const isPermissionsPage = useMatch({
+    from: "/n/$namespace/permissions/",
+    shouldThrow: false,
+  });
 
   if (!isPermissionsPage) return null;
   if (!namespace) return null;
@@ -24,12 +23,8 @@ const PermissionsBreadcrumb = () => {
   return (
     <>
       <BreadcrumbLink>
-        <Link
-          to={permissions.createHref({
-            namespace,
-          })}
-        >
-          <Icon aria-hidden="true" />
+        <Link to="/n/$namespace/permissions" params={{ namespace }}>
+          <BadgeCheck aria-hidden="true" />
           {t("components.breadcrumb.permissions")}
         </Link>
       </BreadcrumbLink>
