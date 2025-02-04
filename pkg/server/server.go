@@ -232,7 +232,9 @@ func Run(circuit *core.Circuit) error {
 	renderGatewayFiles(db, app.GatewayManager)
 
 	// initialize extensions
-	extensions.Initialize(db, bus, config)
+	if extensions.Initialize != nil {
+		extensions.Initialize(db, bus, config)
+	}
 
 	// Start api v2 server
 	err = api.Initialize(circuit, app, db, bus, instanceManager, srv.Engine.WakeEventsWaiter, srv.Engine.EventsInvoke)
