@@ -9,11 +9,11 @@ const EventsPage = () => {
   const namespace = useNamespace();
   const { t } = useTranslation();
   const isEventsHistoryPage = useMatch({
-    from: "/n/$namespace/events/history/",
+    from: "/n/$namespace/events/history",
     shouldThrow: false,
   });
   const isEventsListenersPage = useMatch({
-    from: "/n/$namespace/events/listeners/",
+    from: "/n/$namespace/events/listeners",
     shouldThrow: false,
   });
 

@@ -80,8 +80,8 @@ const Header = () => {
         <div className="flex gap-5">
           <Button asChild isAnchor variant="primary" className="max-md:w-full">
             <Link
-              to="/n/$namespace/explorer/endpoint/$filename"
-              params={{ namespace, filename }}
+              to="/n/$namespace/explorer/endpoint/$"
+              params={{ namespace, _splat: filename }}
             >
               <Pencil />
               {t("pages.gateway.routes.detail.editRoute")}

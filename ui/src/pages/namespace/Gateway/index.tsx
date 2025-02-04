@@ -1,20 +1,25 @@
-import { Link, Outlet } from "@tanstack/react-router";
+import { Link, Outlet, useMatch } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import { Users, Workflow } from "lucide-react";
 
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const GatewayPage = () => {
-  const pages = usePages();
   const namespace = useNamespace();
   const { t } = useTranslation();
-  const {
-    isGatewayRoutesPage,
-    isGatewayConsumerPage,
-    isGatewayRoutesDetailPage,
-  } = pages.gateway.useParams();
+  const isGatewayRoutesPage = useMatch({
+    from: "/n/$namespace/gateway/",
+    shouldThrow: false,
+  });
+  const isGatewayConsumerPage = useMatch({
+    from: "/n/$namespace/gateway/consumers",
+    shouldThrow: false,
+  });
+  const isGatewayRoutesDetailPage = useMatch({
+    from: "/n/$namespace/gateway/routes/$filename",
+    shouldThrow: false,
+  });
 
   if (!namespace) return null;
 

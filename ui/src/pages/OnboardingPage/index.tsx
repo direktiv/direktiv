@@ -11,11 +11,9 @@ import NamespaceEdit from "~/components/NamespaceEdit";
 import useApiKeyHandling from "~/hooks/useApiKeyHandling";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNavigate } from "@tanstack/react-router";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const Layout = () => {
-  const pages = usePages();
   const { t } = useTranslation();
   const { usesAccounts } = useApiKeyHandling();
   const {
@@ -89,7 +87,6 @@ const Layout = () => {
     availableNamespaces,
     isRefetching,
     navigate,
-    pages.explorer,
     setNamespace,
   ]);
 

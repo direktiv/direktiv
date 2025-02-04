@@ -8,13 +8,13 @@ import { useTranslation } from "react-i18next";
 
 const MirrorBreadcrumb = () => {
   const namespace = useNamespace();
-  const { id } = useParams({ strict: false });
+  const { sync } = useParams({ strict: false });
   const isMirrorPage = useMatch({
     from: "/n/$namespace/mirror/",
     shouldThrow: false,
   });
   const isSyncDetailPage = useMatch({
-    from: "/n/$namespace/mirror/logs/$id",
+    from: "/n/$namespace/mirror/logs/$sync",
     shouldThrow: false,
   });
   const { t } = useTranslation();
@@ -30,14 +30,17 @@ const MirrorBreadcrumb = () => {
           {t("components.breadcrumb.mirror")}
         </Link>
       </BreadcrumbLink>
-      {isSyncDetailPage && id ? (
+      {isSyncDetailPage && sync ? (
         <BreadcrumbLink>
           <GitCompare aria-hidden="true" />
-          <Link to="/n/$namespace/mirror/logs/$id" params={{ namespace, id }}>
-            {id.slice(0, 8)}
+          <Link
+            to="/n/$namespace/mirror/logs/$sync"
+            params={{ namespace, sync }}
+          >
+            {sync.slice(0, 8)}
           </Link>
           <CopyButton
-            value={id}
+            value={sync}
             buttonProps={{
               variant: "outline",
               className: "hidden group-hover:inline-flex",

@@ -50,10 +50,10 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         <LogSegment display={isChildInstanceEntry && hasWorkflowInformation}>
           <span className="opacity-60">
             <Link
-              to="/n/$namespace/explorer/workflow/overview/$filename"
+              to="/n/$namespace/explorer/workflow/overview/$"
               params={{
                 namespace: namespace ?? "",
-                filename: workflowPath ?? "",
+                _splat: workflowPath ?? "",
               }}
             >
               {workflowPath}

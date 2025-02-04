@@ -39,7 +39,7 @@ import { Route as NNamespaceEventsListenersImport } from './routes/n/$namespace/
 import { Route as NNamespaceEventsHistoryImport } from './routes/n/$namespace/events/history'
 import { Route as NNamespaceExplorerWorkflowRouteImport } from './routes/n/$namespace/explorer/workflow/route'
 import { Route as NNamespaceGatewayRoutesIndexImport } from './routes/n/$namespace/gateway/routes/index'
-import { Route as NNamespaceMirrorLogsIdImport } from './routes/n/$namespace/mirror/logs.$id'
+import { Route as NNamespaceMirrorLogsSyncImport } from './routes/n/$namespace/mirror/logs.$sync'
 import { Route as NNamespaceGatewayRoutesFilenameImport } from './routes/n/$namespace/gateway/routes/$filename'
 import { Route as NNamespaceExplorerTreeSplatImport } from './routes/n/$namespace/explorer/tree.$'
 import { Route as NNamespaceExplorerServiceSplatImport } from './routes/n/$namespace/explorer/service.$'
@@ -239,9 +239,9 @@ const NNamespaceGatewayRoutesIndexRoute =
     getParentRoute: () => NNamespaceRouteRoute,
   } as any)
 
-const NNamespaceMirrorLogsIdRoute = NNamespaceMirrorLogsIdImport.update({
-  id: '/logs/$id',
-  path: '/logs/$id',
+const NNamespaceMirrorLogsSyncRoute = NNamespaceMirrorLogsSyncImport.update({
+  id: '/logs/$sync',
+  path: '/logs/$sync',
   getParentRoute: () => NNamespaceMirrorRoute,
 } as any)
 
@@ -543,11 +543,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NNamespaceGatewayRoutesFilenameImport
       parentRoute: typeof NNamespaceRouteImport
     }
-    '/n/$namespace/mirror/logs/$id': {
-      id: '/n/$namespace/mirror/logs/$id'
-      path: '/logs/$id'
-      fullPath: '/n/$namespace/mirror/logs/$id'
-      preLoaderRoute: typeof NNamespaceMirrorLogsIdImport
+    '/n/$namespace/mirror/logs/$sync': {
+      id: '/n/$namespace/mirror/logs/$sync'
+      path: '/logs/$sync'
+      fullPath: '/n/$namespace/mirror/logs/$sync'
+      preLoaderRoute: typeof NNamespaceMirrorLogsSyncImport
       parentRoute: typeof NNamespaceMirrorImport
     }
     '/n/$namespace/gateway/routes/': {
@@ -688,13 +688,13 @@ const NNamespaceInstancesRouteWithChildren =
 interface NNamespaceMirrorRouteChildren {
   NNamespaceMirrorLayoutRoute: typeof NNamespaceMirrorLayoutRoute
   NNamespaceMirrorIndexRoute: typeof NNamespaceMirrorIndexRoute
-  NNamespaceMirrorLogsIdRoute: typeof NNamespaceMirrorLogsIdRoute
+  NNamespaceMirrorLogsSyncRoute: typeof NNamespaceMirrorLogsSyncRoute
 }
 
 const NNamespaceMirrorRouteChildren: NNamespaceMirrorRouteChildren = {
   NNamespaceMirrorLayoutRoute: NNamespaceMirrorLayoutRoute,
   NNamespaceMirrorIndexRoute: NNamespaceMirrorIndexRoute,
-  NNamespaceMirrorLogsIdRoute: NNamespaceMirrorLogsIdRoute,
+  NNamespaceMirrorLogsSyncRoute: NNamespaceMirrorLogsSyncRoute,
 }
 
 const NNamespaceMirrorRouteWithChildren =
@@ -784,7 +784,7 @@ export interface FileRoutesByFullPath {
   '/n/$namespace/explorer/service/$': typeof NNamespaceExplorerServiceSplatRoute
   '/n/$namespace/explorer/tree/$': typeof NNamespaceExplorerTreeSplatRoute
   '/n/$namespace/gateway/routes/$filename': typeof NNamespaceGatewayRoutesFilenameRoute
-  '/n/$namespace/mirror/logs/$id': typeof NNamespaceMirrorLogsIdRoute
+  '/n/$namespace/mirror/logs/$sync': typeof NNamespaceMirrorLogsSyncRoute
   '/n/$namespace/gateway/routes': typeof NNamespaceGatewayRoutesIndexRoute
   '/n/$namespace/explorer/workflow/edit/$': typeof NNamespaceExplorerWorkflowEditSplatRoute
   '/n/$namespace/explorer/workflow/overview/$': typeof NNamespaceExplorerWorkflowOverviewSplatRoute
@@ -818,7 +818,7 @@ export interface FileRoutesByTo {
   '/n/$namespace/explorer/service/$': typeof NNamespaceExplorerServiceSplatRoute
   '/n/$namespace/explorer/tree/$': typeof NNamespaceExplorerTreeSplatRoute
   '/n/$namespace/gateway/routes/$filename': typeof NNamespaceGatewayRoutesFilenameRoute
-  '/n/$namespace/mirror/logs/$id': typeof NNamespaceMirrorLogsIdRoute
+  '/n/$namespace/mirror/logs/$sync': typeof NNamespaceMirrorLogsSyncRoute
   '/n/$namespace/gateway/routes': typeof NNamespaceGatewayRoutesIndexRoute
   '/n/$namespace/explorer/workflow/edit/$': typeof NNamespaceExplorerWorkflowEditSplatRoute
   '/n/$namespace/explorer/workflow/overview/$': typeof NNamespaceExplorerWorkflowOverviewSplatRoute
@@ -861,7 +861,7 @@ export interface FileRoutesById {
   '/n/$namespace/explorer/service/$': typeof NNamespaceExplorerServiceSplatRoute
   '/n/$namespace/explorer/tree/$': typeof NNamespaceExplorerTreeSplatRoute
   '/n/$namespace/gateway/routes/$filename': typeof NNamespaceGatewayRoutesFilenameRoute
-  '/n/$namespace/mirror/logs/$id': typeof NNamespaceMirrorLogsIdRoute
+  '/n/$namespace/mirror/logs/$sync': typeof NNamespaceMirrorLogsSyncRoute
   '/n/$namespace/gateway/routes/': typeof NNamespaceGatewayRoutesIndexRoute
   '/n/$namespace/explorer/workflow/edit/$': typeof NNamespaceExplorerWorkflowEditSplatRoute
   '/n/$namespace/explorer/workflow/overview/$': typeof NNamespaceExplorerWorkflowOverviewSplatRoute
@@ -902,7 +902,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/explorer/service/$'
     | '/n/$namespace/explorer/tree/$'
     | '/n/$namespace/gateway/routes/$filename'
-    | '/n/$namespace/mirror/logs/$id'
+    | '/n/$namespace/mirror/logs/$sync'
     | '/n/$namespace/gateway/routes'
     | '/n/$namespace/explorer/workflow/edit/$'
     | '/n/$namespace/explorer/workflow/overview/$'
@@ -935,7 +935,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/explorer/service/$'
     | '/n/$namespace/explorer/tree/$'
     | '/n/$namespace/gateway/routes/$filename'
-    | '/n/$namespace/mirror/logs/$id'
+    | '/n/$namespace/mirror/logs/$sync'
     | '/n/$namespace/gateway/routes'
     | '/n/$namespace/explorer/workflow/edit/$'
     | '/n/$namespace/explorer/workflow/overview/$'
@@ -976,7 +976,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/explorer/service/$'
     | '/n/$namespace/explorer/tree/$'
     | '/n/$namespace/gateway/routes/$filename'
-    | '/n/$namespace/mirror/logs/$id'
+    | '/n/$namespace/mirror/logs/$sync'
     | '/n/$namespace/gateway/routes/'
     | '/n/$namespace/explorer/workflow/edit/$'
     | '/n/$namespace/explorer/workflow/overview/$'
@@ -1117,7 +1117,7 @@ export const routeTree = rootRoute
       "children": [
         "/n/$namespace/mirror/_layout",
         "/n/$namespace/mirror/",
-        "/n/$namespace/mirror/logs/$id"
+        "/n/$namespace/mirror/logs/$sync"
       ]
     },
     "/n/$namespace/mirror/_layout": {
@@ -1192,8 +1192,8 @@ export const routeTree = rootRoute
       "filePath": "n/$namespace/gateway/routes/$filename.tsx",
       "parent": "/n/$namespace"
     },
-    "/n/$namespace/mirror/logs/$id": {
-      "filePath": "n/$namespace/mirror/logs.$id.tsx",
+    "/n/$namespace/mirror/logs/$sync": {
+      "filePath": "n/$namespace/mirror/logs.$sync.tsx",
       "parent": "/n/$namespace/mirror"
     },
     "/n/$namespace/gateway/routes/": {

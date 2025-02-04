@@ -39,8 +39,8 @@ export const Row: FC<RowProps> = ({ route }) => {
               e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link
             }}
             className="whitespace-normal break-all hover:underline"
-            to="/n/$namespace/explorer/endpoint/$filename"
-            params={{ namespace, filename: route.file_path }}
+            to="/n/$namespace/explorer/endpoint/$"
+            params={{ namespace, _splat: route.file_path }}
           >
             {route.file_path}
           </Link>

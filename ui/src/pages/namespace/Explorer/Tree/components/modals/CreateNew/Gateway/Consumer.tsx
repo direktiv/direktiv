@@ -16,6 +16,7 @@ import { defaultConsumerFileYaml } from "~/pages/namespace/Explorer/Consumer/Con
 import { encode } from "js-base64";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,13 +70,10 @@ const NewConsumer = ({
   const { mutate: createFile, isPending } = useCreateFile({
     onSuccess: (data) => {
       namespace &&
-        navigate(
-          pages.explorer.createHref({
-            namespace,
-            path: data.data.path,
-            subpage: "consumer",
-          })
-        );
+        navigate({
+          to: "/n/$namespace/explorer/consumer/$",
+          params: { namespace, _splat: data.data.path },
+        });
       close();
     },
   });

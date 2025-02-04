@@ -97,10 +97,10 @@ const Header = () => {
           </TooltipProvider>
           <Button asChild isAnchor variant="primary" className="max-md:w-full">
             <Link
-              to="/n/$namespace/explorer/workflow/overview/$filename"
+              to="/n/$namespace/explorer/workflow/overview/$"
               params={{
                 namespace: instance.namespace,
-                filename: instance.path,
+                _splat: instance.path,
               }}
             >
               <FileSymlink />

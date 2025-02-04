@@ -33,8 +33,8 @@ const Row = ({
       data-testid="sync-row"
       onClick={() => {
         navigate({
-          to: "/n/$namespace/mirror/logs/$id",
-          params: { namespace, id: item.id },
+          to: "/n/$namespace/mirror/logs/$sync",
+          params: { namespace, sync: item.id },
         });
       }}
     >

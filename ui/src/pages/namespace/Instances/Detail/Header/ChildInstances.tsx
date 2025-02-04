@@ -16,15 +16,15 @@ import { t } from "i18next";
 import { useInstanceId } from "../store/instanceContext";
 import { useInstances } from "~/api/instances/query/get";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 const maxChildInstancesToShow = 50;
 
 const ChildInstances = () => {
-  const pages = usePages();
   const instanceId = useInstanceId();
   const namespace = useNamespace();
+  const navigate = useNavigate();
   const [popoverOpen, setPopoverOpen] = useState(false);
   const { data, refetch, isFetching } = useInstances({
     limit: maxChildInstancesToShow + 1,
@@ -42,8 +42,10 @@ const ChildInstances = () => {
   const instances = data?.data ?? [];
 
   const onInstanceSelect = (instance: string) => {
-    // useNavigate(); is not working for some reason
-    location.href = pages.instances.createHref({ namespace, instance });
+    navigate({
+      to: "/n/$namespace/instances/$id",
+      params: { namespace, id: instance },
+    });
   };
 
   const childCount = instances.length ?? 0;

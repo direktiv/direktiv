@@ -44,16 +44,16 @@ const Row = ({
         <TableCell>
           {workflow ? (
             <Link
-              to="/n/$namespace/explorer/workflow/overview/$filename"
-              params={{ namespace, filename: workflow }}
+              to="/n/$namespace/explorer/workflow/overview/$"
+              params={{ namespace, _splat: workflow }}
             >
               {target}
             </Link>
           ) : (
             instance && (
               <Link
-                to="/n/$namespace/explorer/workflow/overview/$filename"
-                params={{ namespace, filename: instance }}
+                to="/n/$namespace/explorer/workflow/overview/$"
+                params={{ namespace, _splat: instance }}
               >
                 {target}
               </Link>
