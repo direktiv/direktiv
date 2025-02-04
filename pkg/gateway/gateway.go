@@ -2,10 +2,11 @@ package gateway
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"path"
+	"path/filepath"
 	"slices"
 	"strings"
 	"sync/atomic"
@@ -203,77 +204,68 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 		var docData map[string]interface{}
 		err := yaml.Unmarshal(g.Base, &docData)
 		if err != nil {
+			slog.Error("can not unmarshal gateway data", slog.Any("err", err),
+				slog.String("namespace", ns))
+			gw.Errors = append(gw.Errors, err.Error())
+			return gw
 		}
-		// apiDoc, err := newOpenAPIDoc(ns, g.FilePath, string(g.Base), fileStore)
-		// if err != nil {
 
-		// }
-
-		// gw.Spec = *apiDoc.doc.GetSpecInfo().SpecJSON
 		endpointList := make(map[string]interface{})
 		for i := range endpoints {
 			_, errs := validateEndpoint(endpoints[i], ns, fileStore)
 			if len(errs) > 0 {
-
+				slog.Info("skipping endpoint with errors",
+					slog.String("endpoint", endpoints[i].FilePath),
+					slog.String("namespace", ns))
+				continue
 			}
-			g := make(map[string]string)
-			g["$ref"] = "\"../../route1.yaml\""
-
-			endpointList[endpoints[i].Config.Path] = g
+			rel, err := filepath.Rel(filepath.Dir(g.FilePath), endpoints[i].FilePath)
+			if err != nil {
+				slog.Info("skipping endpoint with uncalculated path",
+					slog.String("endpoint", endpoints[i].FilePath),
+					slog.String("namespace", ns))
+				continue
+			}
+			ref := make(map[string]string)
+			ref["$ref"] = rel
+			endpointList[endpoints[i].Config.Path] = ref
 		}
 
 		docData["paths"] = endpointList
-		// b, _ := json.MarshalIndent(gw.Spec, "", "   ")
-		// fmt.Println(string(b))
 
-		dataBytes, err := json.Marshal(docData)
+		docBytes, err := yaml.Marshal(docData)
 		if err != nil {
+			slog.Error("can not marshal gateway data", slog.Any("err", err),
+				slog.String("namespace", ns))
+			gw.Errors = append(gw.Errors, err.Error())
+			return gw
 		}
 
-		apiDoc, err := newOpenAPIDoc(ns, g.FilePath, string(dataBytes), fileStore)
+		fmt.Println(string(docBytes))
+
+		apiDoc, err = newOpenAPIDoc(ns, g.FilePath, string(docBytes), fileStore)
 		if err != nil {
-
+			slog.Error("gateway file invalid", slog.Any("err", err),
+				slog.String("namespace", ns))
+			gw.Errors = append(gw.Errors, err.Error())
+			return gw
 		}
+		// gw.Spec = *apiDoc.doc.GetSpecInfo().SpecJSON
 
-		errors := apiDoc.validate()
-		if len(errors) > 0 {
-			gw.Errors = append(gw.Errors, errors...)
+		// errs := apiDoc.validate()
+		// gw.Errors = append(gw.Errors, errs...)
+
+		if expand {
+			spec, err := apiDoc.expand()
+			if err != nil {
+				slog.Error("gateway exapnd failed", slog.Any("err", err),
+					slog.String("namespace", ns))
+				gw.Errors = append(gw.Errors, err.Error())
+				return gw
+			}
+
+			gw.Spec = spec
 		}
-
-		// doc, err := libopenapi.NewDocumentWithConfiguration(g.Base,
-		// 	openapiDocConfig(fileStore, ns, g.FilePath))
-		// if err != nil {
-		// 	gw.Errors = append(gw.Errors, err.Error())
-		// 	return gw
-		// }
-
-		// add paths
-
-		// hlval, errs := validator.NewValidator(doc)
-		// if len(errs) > 0 {
-		// 	for i := range errs {
-		// 		gw.Errors = append(gw.Errors, errs[i].Error())
-		// 	}
-		// 	return gw
-		// }
-
-		// _, valErrs := hlval.ValidateDocument()
-		// if len(errs) > 0 {
-		// 	for i := range valErrs {
-		// 		gw.Errors = append(gw.Errors, valErrs[i].Error())
-		// 	}
-		// 	return gw
-		// }
-
-		// var m map[string]interface{}
-		// b, err := doc.Render()
-		// yaml.Unmarshal(b, &m)
-		// if err != nil {
-		// 	gw.Errors = append(gw.Errors, err.Error())
-		// 	return gw
-		// }
-
-		// gw.Spec = m
 	}
 
 	// if there are more, it is an error
@@ -282,7 +274,6 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 		for i := range gateways {
 			f = append(f, gateways[i].FilePath)
 		}
-
 		gw.Errors = append(gw.Errors,
 			fmt.Sprintf("multiple gateway specifications found: %s but using %s.", strings.Join(f, ", "), gw.FilePath))
 	}
