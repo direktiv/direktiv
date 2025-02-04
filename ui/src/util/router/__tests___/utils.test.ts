@@ -1,5 +1,6 @@
-import { analyzePath, checkHandlerInMatcher } from "../utils";
 import { describe, expect, test } from "vitest";
+
+import { analyzePath } from "../utils";
 
 describe("analyzePath", () => {
   test("undefined", () => {
@@ -73,20 +74,5 @@ describe("analyzePath", () => {
         },
       ],
     });
-  });
-});
-
-describe("checkHandlerInMatcher", () => {
-  test("basic functionality", () => {
-    const matcher = {
-      id: "id",
-      pathname: "pathname",
-      params: {},
-      handle: { isHome: true },
-      data: {},
-    };
-
-    expect(checkHandlerInMatcher(matcher, "isHome")).toBe(true);
-    expect(checkHandlerInMatcher(matcher, "isWhatever")).toBe(false);
   });
 });
