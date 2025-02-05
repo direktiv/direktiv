@@ -1,4 +1,5 @@
 import {
+  Navigate,
   RouterProvider as RouterProviderReactRouterDom,
   createBrowserRouter,
 } from "react-router-dom";
@@ -15,6 +16,11 @@ export const RouterProvider = () => {
       path: "/",
       element: <OnboardingPage />,
       errorElement: <ErrorPage />,
+    },
+    {
+      // this is the OIDC redirect route
+      path: "/callback",
+      element: <Navigate to="/" replace />,
     },
     {
       path: "/n/:namespace",
