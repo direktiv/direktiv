@@ -1,9 +1,8 @@
 import { FileSymlink, FileText } from "lucide-react";
 
-// import BaseFileEditor from "./BaseFileEditor";
+import BaseFileEditor from "./BaseFileEditor";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-// import ConsumerEditor from "./ConsumerEditor";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
@@ -62,7 +61,7 @@ const BaseFilePage: FC = () => {
           </Button>
         </div>
       </div>
-      {/* <BaseFileEditor data={gatewayData} /> */}
+      <BaseFileEditor data={gatewayData} />
     </>
   );
 };
