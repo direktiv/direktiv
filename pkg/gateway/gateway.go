@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"path"
 	"path/filepath"
 	"slices"
@@ -15,9 +16,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v3"
 )
 
 // manager struct implements core.GatewayManager by wrapping a pointer to router struct. Whenever endpoint and
@@ -89,21 +90,6 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	// // gateway info endpoint
-	// if strings.HasSuffix(r.URL.Path, "/spec") {
-	// 	ns := chi.URLParam(r, "namespace")
-
-	// 	expand := false
-	// 	if r.URL.Query().Get("expand") != "" {
-	// 		expand = true
-	// 	}
-	// 	if ns != "" {
-	// 		//nolint:contextcheck
-	// 		WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns, m.db.FileStore(), inner.endpoints))
-	// 		return
-	// 	}
-	// }
 
 	inner.serveMux.ServeHTTP(w, r)
 }
@@ -182,91 +168,30 @@ func consumersForAPI(consumers []core.Consumer) any {
 
 func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileStore, endpoints []core.Endpoint, expand bool) any {
 	type output struct {
-		Spec     map[string]interface{} `json:"spec"`
-		FilePath string                 `json:"file_path"`
-		Errors   []string               `json:"errors"`
+		Spec     any      `json:"spec"`
+		FilePath string   `json:"file_path"`
+		Errors   []string `json:"errors"`
+		Warnings []string `json:"warnings"`
 	}
 
-	apiDoc, _ := newOpenAPIDoc(ns, "/virual", "", fileStore)
 	gw := output{
-		FilePath: "virtual",
 		Errors:   make([]string, 0),
-		Spec:     *apiDoc.doc.GetSpecInfo().SpecJSON,
+		Warnings: make([]string, 0),
+	}
+
+	// edfault gateway
+	g := core.Gateway{
+		Base:     []byte(fmt.Sprintf("openapi: 3.0.0\ninfo:\n   title: %s\n   version: \"1.0\"", ns)),
+		FilePath: "virtual",
 	}
 
 	// we always take the first one, even if there are more
 	if len(gateways) > 0 {
-		g := gateways[0]
-
-		// set file path
-		gw.FilePath = g.FilePath
-
-		var docData map[string]interface{}
-		err := yaml.Unmarshal(g.Base, &docData)
-		if err != nil {
-			slog.Error("can not unmarshal gateway data", slog.Any("err", err),
-				slog.String("namespace", ns))
-			gw.Errors = append(gw.Errors, err.Error())
-			return gw
-		}
-
-		endpointList := make(map[string]interface{})
-		for i := range endpoints {
-			_, errs := validateEndpoint(endpoints[i], ns, fileStore)
-			if len(errs) > 0 {
-				slog.Info("skipping endpoint with errors",
-					slog.String("endpoint", endpoints[i].FilePath),
-					slog.String("namespace", ns))
-				continue
-			}
-			rel, err := filepath.Rel(filepath.Dir(g.FilePath), endpoints[i].FilePath)
-			if err != nil {
-				slog.Info("skipping endpoint with uncalculated path",
-					slog.String("endpoint", endpoints[i].FilePath),
-					slog.String("namespace", ns))
-				continue
-			}
-			ref := make(map[string]string)
-			ref["$ref"] = rel
-			endpointList[endpoints[i].Config.Path] = ref
-		}
-
-		docData["paths"] = endpointList
-
-		docBytes, err := yaml.Marshal(docData)
-		if err != nil {
-			slog.Error("can not marshal gateway data", slog.Any("err", err),
-				slog.String("namespace", ns))
-			gw.Errors = append(gw.Errors, err.Error())
-			return gw
-		}
-
-		fmt.Println(string(docBytes))
-
-		apiDoc, err = newOpenAPIDoc(ns, g.FilePath, string(docBytes), fileStore)
-		if err != nil {
-			slog.Error("gateway file invalid", slog.Any("err", err),
-				slog.String("namespace", ns))
-			gw.Errors = append(gw.Errors, err.Error())
-			return gw
-		}
-		// gw.Spec = *apiDoc.doc.GetSpecInfo().SpecJSON
-
-		// errs := apiDoc.validate()
-		// gw.Errors = append(gw.Errors, errs...)
-
-		if expand {
-			spec, err := apiDoc.expand()
-			if err != nil {
-				slog.Error("gateway exapnd failed", slog.Any("err", err),
-					slog.String("namespace", ns))
-				gw.Errors = append(gw.Errors, err.Error())
-				return gw
-			}
-
-			gw.Spec = spec
-		}
+		g = gateways[0]
 	}
+
+	// set file path
+	gw.FilePath = g.FilePath
 
 	// if there are more, it is an error
 	if len(gateways) > 1 {
@@ -274,9 +199,61 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 		for i := range gateways {
 			f = append(f, gateways[i].FilePath)
 		}
-		gw.Errors = append(gw.Errors,
+		gw.Warnings = append(gw.Warnings,
 			fmt.Sprintf("multiple gateway specifications found: %s but using %s.", strings.Join(f, ", "), gw.FilePath))
 	}
+
+	doc, err := loadDoc(g.Base, g.FilePath, ns, fileStore)
+	if err != nil {
+		gw.Errors = append(gw.Errors, err.Error())
+		return gw
+	}
+
+	// add endpoints
+	doc.Paths = openapi3.NewPaths()
+	for i := range endpoints {
+		ep := endpoints[i]
+		_, err := validateEndpoint(ep, ns, fileStore)
+		if err != nil {
+			slog.Warn("skipping endpoint because of errors",
+				slog.String("endpoint", ep.FilePath))
+			gw.Warnings = append(gw.Warnings, fmt.Sprintf("skipping endpoint %s", ep.FilePath))
+			continue
+		}
+
+		rel, err := filepath.Rel(filepath.Dir(gw.FilePath), ep.FilePath)
+		if err != nil {
+			slog.Warn("skipping endpoint because of of filepath calculation",
+				slog.String("endpoint", ep.FilePath))
+			gw.Warnings = append(gw.Warnings, fmt.Sprintf("skipping endpoint %s", ep.FilePath))
+			continue
+		}
+
+		doc.Paths.Set(ep.Config.Path, &openapi3.PathItem{
+			Ref: rel,
+		})
+	}
+
+	if expand {
+		c, err := doc.MarshalJSON()
+		if err != nil {
+			gw.Errors = append(gw.Errors, err.Error())
+			return gw
+		}
+		doc, err = loadDoc(c, g.FilePath, ns, fileStore)
+		if err != nil {
+			gw.Errors = append(gw.Errors, err.Error())
+			return gw
+		}
+		doc.InternalizeRefs(context.Background(), nil)
+	}
+
+	a, err := doc.MarshalYAML()
+	if err != nil {
+		gw.Errors = append(gw.Errors, err.Error())
+		return gw
+	}
+	gw.Spec = a
 
 	return gw
 }
@@ -303,8 +280,12 @@ func endpointsForAPI(endpoints []core.Endpoint, ns string, fileStore filestore.F
 			newItem.Errors = []string{}
 		}
 
-		pathItem, errors := validateEndpoint(item, ns, fileStore)
-		newItem.Errors = append(newItem.Errors, errors...)
+		pathItem, err := validateEndpoint(item, ns, fileStore)
+		if err != nil {
+			slog.Error("endpoint invalid", slog.Any("err", err),
+				slog.String("namespace", ns))
+			newItem.Errors = append(newItem.Errors, err.Error())
+		}
 		newItem.Spec = pathItem
 
 		if item.Config.Path != "" {
@@ -316,39 +297,55 @@ func endpointsForAPI(endpoints []core.Endpoint, ns string, fileStore filestore.F
 	return result
 }
 
-func validateEndpoint(item core.Endpoint, ns string, fileStore filestore.FileStore) (interface{}, []string) {
-	validationErrors := make([]string, 0)
+func validateEndpoint(item core.Endpoint, ns string, fileStore filestore.FileStore) (*openapi3.PathItem, error) {
+	// generate basic document for validation
+	doc := &openapi3.T{
+		OpenAPI: "3.0.0",
+		Info: &openapi3.Info{
+			Title:   ns,
+			Version: "1.0",
+		},
+	}
 
-	docString := fmt.Sprintf("openapi: 3.0.0\ninfo:\n   title: %s\n   version: \"1.0.0\"\npaths:\n   %s:\n      %s",
-		ns, item.Config.Path, strings.ReplaceAll(string(item.Base), "\n", "\n      "))
-	d, err := newOpenAPIDoc(ns, item.Config.Path, docString, fileStore)
+	var pi openapi3.PathItem
+	err := pi.UnmarshalJSON(item.Base)
 	if err != nil {
-		validationErrors = append(validationErrors, err.Error())
-		return nil, validationErrors
+		return &pi, err
 	}
 
-	errs := d.validate()
-	validationErrors = append(validationErrors, errs...)
+	doc.Paths = openapi3.NewPaths(
+		openapi3.WithPath(item.Config.Path, &pi))
 
-	mm := *d.doc.GetSpecInfo().SpecJSON
-
-	paths, ok := mm["paths"]
-	if !ok {
-		validationErrors = append(validationErrors, "invalid pathitem layout")
-		return nil, validationErrors
+	// marshal doc to push it into the loader
+	b, err := doc.MarshalJSON()
+	if err != nil {
+		return &pi, err
 	}
 
-	m, ok := paths.(map[string]interface{})
-	if !ok {
-		validationErrors = append(validationErrors, "invalid pathitem layout")
-		return nil, validationErrors
+	doc, err = loadDoc(b, item.FilePath, ns, fileStore)
+	if err != nil {
+		return &pi, err
 	}
 
-	value, ok := m[item.Config.Path]
-	if !ok {
-		validationErrors = append(validationErrors, "invalid pathitem layout")
-		return nil, validationErrors
+	err = doc.Validate(context.Background())
+	return &pi, err
+}
+
+func loadDoc(data []byte, filePath, ns string, fileStore filestore.FileStore) (*openapi3.T, error) {
+	loader := openapi3.NewLoader()
+	loader.IsExternalRefsAllowed = true
+	loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
+		file, err := fileStore.ForNamespace(ns).GetFile(context.Background(), url.String())
+		if err != nil {
+			return nil, err
+		}
+		return fileStore.ForFile(file).GetData(context.Background())
 	}
 
-	return value, validationErrors
+	rel, err := filepath.Rel("/", filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	return loader.LoadFromDataWithPath(data, &url.URL{Path: rel})
 }

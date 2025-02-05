@@ -1,6 +1,7 @@
 package core
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"path"
@@ -180,24 +181,14 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 		return ep
 	}
 
+	jsonData, err := json.Marshal(interim)
+	if err != nil {
+		ep.Errors = append(ep.Errors, err.Error())
+		return ep
+	}
+
 	ep.Config = config
-	ep.Base = data
-
-	// out, err := json.Marshal(interim)
-	// if err != nil {
-	// 	ep.Errors = append(ep.Errors, err.Error())
-	// 	return ep
-	// }
-
-	// // parse endpoint
-	// var pathItem openapi3.PathItem
-	// err = pathItem.UnmarshalJSON(out)
-	// if err != nil {
-	// 	ep.Errors = append(ep.Errors, err.Error())
-	// 	return ep
-	// }
-
-	// ep.PathItem = &pathItem
+	ep.Base = jsonData
 
 	return ep
 }
