@@ -176,6 +176,9 @@ func OtelMiddleware() func(http.Handler) http.Handler {
 			rw := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
 
 			defer func() {
+				if requestCounter == nil || requestDuration == nil {
+					return
+				}
 				duration := time.Since(startTime).Seconds()
 
 				// Record Metrics
