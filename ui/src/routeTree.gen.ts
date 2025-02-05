@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as Import } from './routes/*'
 import { Route as IndexImport } from './routes/index'
 import { Route as NNamespaceRouteImport } from './routes/n/$namespace/route'
 import { Route as NNamespaceSettingsImport } from './routes/n/$namespace/settings'
@@ -57,6 +58,12 @@ const NNamespaceMirrorImport = createFileRoute('/n/$namespace/mirror')()
 const NNamespaceInstancesImport = createFileRoute('/n/$namespace/instances')()
 
 // Create/Update Routes
+
+const Route = Import.update({
+  id: '/*',
+  path: '/*',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
@@ -317,6 +324,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/*': {
+      id: '/*'
+      path: '/*'
+      fullPath: '/*'
+      preLoaderRoute: typeof Import
       parentRoute: typeof rootRoute
     }
     '/n/$namespace': {
@@ -755,6 +769,7 @@ const NNamespaceRouteRouteWithChildren = NNamespaceRouteRoute._addFileChildren(
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/*': typeof Route
   '/n/$namespace': typeof NNamespaceRouteRouteWithChildren
   '/n/$namespace/events': typeof NNamespaceEventsRouteRouteWithChildren
   '/n/$namespace/explorer': typeof NNamespaceExplorerRouteRouteWithChildren
@@ -794,6 +809,7 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/*': typeof Route
   '/n/$namespace': typeof NNamespaceRouteRouteWithChildren
   '/n/$namespace/events': typeof NNamespaceEventsRouteRouteWithChildren
   '/n/$namespace/jq': typeof NNamespaceJqRoute
@@ -829,6 +845,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/*': typeof Route
   '/n/$namespace': typeof NNamespaceRouteRouteWithChildren
   '/n/$namespace/events': typeof NNamespaceEventsRouteRouteWithChildren
   '/n/$namespace/explorer': typeof NNamespaceExplorerRouteRouteWithChildren
@@ -873,6 +890,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/*'
     | '/n/$namespace'
     | '/n/$namespace/events'
     | '/n/$namespace/explorer'
@@ -911,6 +929,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/*'
     | '/n/$namespace'
     | '/n/$namespace/events'
     | '/n/$namespace/jq'
@@ -944,6 +963,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/*'
     | '/n/$namespace'
     | '/n/$namespace/events'
     | '/n/$namespace/explorer'
@@ -987,11 +1007,13 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  Route: typeof Route
   NNamespaceRouteRoute: typeof NNamespaceRouteRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  Route: Route,
   NNamespaceRouteRoute: NNamespaceRouteRouteWithChildren,
 }
 
@@ -1006,11 +1028,15 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/*",
         "/n/$namespace"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/*": {
+      "filePath": "*.tsx"
     },
     "/n/$namespace": {
       "filePath": "n/$namespace/route.tsx",

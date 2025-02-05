@@ -10,5 +10,5 @@ export const Route = createRootRouteWithContext<{
   apiKey: string | undefined;
 }>()({
   component: RootComponent,
-  errorComponent: ErrorPage, // Todo: migrate?
+  errorComponent: ErrorPage,
 });
