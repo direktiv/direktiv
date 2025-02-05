@@ -62,8 +62,8 @@ const ServicesTableRow: FC<{
                   </Link>
                 ) : (
                   <Link
-                    to="/n/$namespace/services/$service"
-                    params={{ namespace, service: service.id }}
+                    to="/n/$namespace/explorer/service/$"
+                    params={{ namespace, _splat: service.filePath }}
                     onClick={(e) => e.stopPropagation()}
                     className="hover:underline"
                   >
