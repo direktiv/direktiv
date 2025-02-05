@@ -20,6 +20,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
 )
@@ -77,6 +78,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 	mw := &appMiddlewares{dStore: db.DataStore()}
 
 	r := chi.NewRouter()
+	r.Use(tracing.OtelMiddleware())
 	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
 		writeError(w, &Error{
 			Code:    "request_method_not_allowed",
