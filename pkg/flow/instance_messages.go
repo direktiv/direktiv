@@ -82,7 +82,7 @@ func (engine *engine) enqueueInstanceMessage(ctx context.Context, id uuid.UUID, 
 	if idata.Server == engine.ID && time.Now().Add(-engineOwnershipTimeout).Before(idata.UpdatedAt) {
 		go engine.instanceMessagesChannelHandler(string(msg)) //nolint:contextcheck
 	} else {
-		err = engine.pBus.Publish(&pubsub.InstanceMessageEvent{
+		err = engine.Bus.Publish(&pubsub.InstanceMessageEvent{
 			Message: string(msg),
 		})
 		if err != nil {
@@ -204,9 +204,9 @@ func (engine *engine) handleCancelMessage(ctx context.Context, im *instanceMemor
 	}
 
 	if args.Soft {
-		err = derrors.NewCatchableError(args.Code, args.Message)
+		err = derrors.NewCatchableError(args.Code, "%s", args.Message)
 	} else {
-		err = derrors.NewUncatchableError(args.Code, args.Message)
+		err = derrors.NewUncatchableError(args.Code, "%s", args.Message)
 	}
 
 	return engine.runState(ctx, im, nil, err)

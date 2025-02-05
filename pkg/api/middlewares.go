@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type ctxKeyNamespace struct{}
+const ctxKeyNamespace = "namespace"
 
 type appMiddlewares struct {
 	dStore datastore.Store
@@ -35,14 +35,15 @@ func (a *appMiddlewares) injectNamespace(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), ctxKeyNamespace{}, ns)
+		ctx := context.WithValue(r.Context(), ctxKeyNamespace, ns)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
 func (a *appMiddlewares) checkAPIKey(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		apiKeyHeader := "direktiv-token"
+		//nolint:gosec
+		apiKeyHeader := "Direktiv-Api-Key"
 		apiKey := os.Getenv("DIREKTIV_API_KEY")
 		if apiKey != "" && apiKey != r.Header.Get(apiKeyHeader) {
 			w.WriteHeader(http.StatusUnauthorized)

@@ -14,7 +14,7 @@ image: "direktiv/direktiv"
 # -- image tag for main direktiv binary pod
 tag: ""
 
-# -- enabled api key for API authentication with the `direktiv-token` header
+# -- enabled api key for API authentication with the `Direktiv-Api-Key` header
 apikey: none
 
 # -- max request timeouts in seconds. Used in Knative and the ingress controller if enabled.

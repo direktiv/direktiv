@@ -1,7 +1,6 @@
 // TODO: tests for no, one and multiple gateway files
 // TODO: tests for broken gateway file
 
-
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
 
@@ -75,7 +74,6 @@ additional:
 	})
 })
 
-
 describe('Test gateway with multiple basic files', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
@@ -91,7 +89,7 @@ info:
 `)
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
-	'/', 'gw2.yaml', 'gateway', `
+		'/', 'gw2.yaml', 'gateway', `
 openapi: 3.0.0
 x-direktiv-api: gateway/v1
 
@@ -105,7 +103,7 @@ info:
 			.send({})
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.errors.length).toEqual(1)
-		expect(res.body.data.errors[0].startsWith("multiple gateway specifications found")).toBeTruthy();
+		expect(res.body.data.errors[0].startsWith('multiple gateway specifications found')).toBeTruthy()
 	})
 
 })

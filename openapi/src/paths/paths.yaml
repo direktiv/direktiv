@@ -723,8 +723,16 @@
         required: true
       - name: wait
         in: query
+        required: false
         schema:
-          type: string
+          type: boolean
+          description: if true waits until instance execution finalizes and response with the raw response or a summary output (if output is set true)
+      - name: output
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description:  alters wait response to a instance summary output if set true
     responses:
       "200":
         description: Instance created.

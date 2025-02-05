@@ -9,7 +9,10 @@
 *.dylib
 .vscode
 
+cmd/ee
 pkg/ee
+direktiv-ee
+ee
 
 # certs for linkerd
 ca.*
@@ -100,7 +103,7 @@ direktivctl*
 *node_modules
 
 .draft
-
+tight.sh
 openapi/node_modules
 openapi/output
 

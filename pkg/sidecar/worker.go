@@ -451,7 +451,7 @@ func fetchFunctionFiles(ctx context.Context, flowToken string, flowAddr string, 
 					pw.CloseWithError(fmt.Errorf("failed to create new request: %w", err))
 					return
 				}
-				req.Header.Set("Direktiv-Token", flowToken)
+				req.Header.Set("Direktiv-Api-Key", flowToken)
 				resp, err := client.Do(req)
 				if err != nil {
 					pw.CloseWithError(fmt.Errorf("failed to execute request: %w", err))

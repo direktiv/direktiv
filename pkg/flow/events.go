@@ -55,7 +55,7 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 			}
 			defer end()
 			slog.DebugContext(ctx, "starting workflow via CloudEvent.")
-			events.engine.EventsInvoke(ctx, workflowID, ev...) //nolint:contextcheck
+			events.Engine.EventsInvoke(ctx, workflowID, ev...) //nolint:contextcheck
 		},
 		WakeInstance: func(instanceID uuid.UUID, ev []*cloudevents.Event) {
 			// nolint:fatcontext
@@ -67,7 +67,7 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 			}
 			defer end()
 			slog.DebugContext(ctx, "invoking instance via cloudevent")
-			events.engine.WakeEventsWaiter(instanceID, ev) //nolint:contextcheck
+			events.Engine.WakeEventsWaiter(instanceID, ev) //nolint:contextcheck
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*datastore.EventListener, error) {
 			ctx = tracing.WithTrack(tracing.AddNamespace(ctx, ns.Name), tracing.BuildNamespaceTrack(ns.Name))
@@ -77,7 +77,7 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 			}
 			defer end()
 			res := make([]*datastore.EventListener, 0)
-			err = events.runSQLTx(ctx, func(tx *database.SQLStore) error {
+			err = events.runSQLTx(ctx, func(tx *database.DB) error {
 				r, err := tx.DataStore().EventListenerTopics().GetListeners(ctx, s)
 				if err != nil {
 					slog.ErrorContext(ctx, "failed fetching event-listener-topics.")
@@ -100,7 +100,7 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 				slog.Debug("UpdateListeners:c failed to init telemetry", "error", err)
 			}
 			defer end()
-			err = events.runSQLTx(ctx, func(tx *database.SQLStore) error {
+			err = events.runSQLTx(ctx, func(tx *database.DB) error {
 				errs := tx.DataStore().EventListener().UpdateOrDelete(ctx, listener)
 				for _, err2 := range errs {
 					if err2 != nil {

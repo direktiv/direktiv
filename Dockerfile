@@ -1,6 +1,7 @@
 FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.23.0 as builder
 
 ARG VERSION=dev
+ARG IS_ENTERPRISE=false
 
 COPY go.mod src/go.mod
 COPY go.sum src/go.sum
@@ -8,9 +9,16 @@ RUN cd src/ && go mod download
 
 COPY pkg src/pkg/
 COPY cmd src/cmd/
+COPY direktiv-ee*/pkg src/direktiv-ee/pkg
 
-RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
-    CGO_ENABLED=false GOOS=linux GOARCH=$TARGETARCH go build -tags osusergo,netgo -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$VERSION" -o /direktiv cmd/*.go;
+RUN if [ "$IS_ENTERPRISE" = "true" ]; then \
+    echo "/direktiv direktiv-ee/pkg/*.go" > BUILD_PATH.txt; \
+    else \
+    echo "/direktiv cmd/*.go" > BUILD_PATH.txt; \
+    fi
+
+RUN --mount=type=cache,target=/root/.cache/go-build cd src &&  \
+    CGO_ENABLED=false GOOS=linux GOARCH=$TARGETARCH go build -tags osusergo,netgo -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$VERSION" -o $(cat ../BUILD_PATH.txt);
 
 #########################################################################################
 FROM --platform=$BUILDPLATFORM node:20-slim as ui-builder
