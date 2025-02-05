@@ -7,6 +7,7 @@ config:
 
   web:
     http: 0.0.0.0:5556
+    allowedOrigins: ["*"]
 
   enablePasswordDB: true
 
