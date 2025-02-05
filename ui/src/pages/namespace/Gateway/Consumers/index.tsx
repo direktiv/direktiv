@@ -4,7 +4,7 @@ import RefreshButton from "~/design/RefreshButton";
 import { useConsumers } from "~/api/gateway/query/getConsumers";
 import { useTranslation } from "react-i18next";
 
-const ConsumerPage = () => {
+const ConsumersPage = () => {
   const { isFetching, refetch } = useConsumers();
   const { t } = useTranslation();
   return (
@@ -25,4 +25,4 @@ const ConsumerPage = () => {
   );
 };
 
-export default ConsumerPage;
+export default ConsumersPage;
