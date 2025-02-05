@@ -147,3 +147,7 @@ cluster-direktiv-run: cluster-build
 	kubectl delete pod -l app.kubernetes.io/name=direktiv,app.kubernetes.io/instance=direktiv 
 	kubectl wait --for=condition=ready pod -l "app=direktiv-flow"
 	kubectl logs -f -l "app=direktiv-flow"
+
+cluster-dev:
+	DOCKER_BUILDKIT=1 docker build --build-arg IS_ENTERPRISE=${IS_ENTERPRISE} --push -t localhost:5001/direktiv:dev .
+	kubectl delete pod -l app=direktiv-flow
