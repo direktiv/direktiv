@@ -31,7 +31,7 @@ const BreadcrumbSegment: FC<{
   const route = fileTypeToExplorerRoute(data?.type ?? "directory");
 
   return (
-    <BreadcrumbLink>
+    <BreadcrumbLink data-testid="breadcrumb-segment">
       <Link to={route} params={{ namespace, _splat: absolute }}>
         <Icon aria-hidden="true" />
         {relative}

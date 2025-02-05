@@ -12,7 +12,7 @@ describe("analyzePath", () => {
     });
   });
 
-  test("empyt string", () => {
+  test("empty string", () => {
     expect(analyzePath("")).toEqual({
       path: null,
       isRoot: true,

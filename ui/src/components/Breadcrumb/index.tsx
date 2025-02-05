@@ -18,7 +18,7 @@ const Breadcrumb = () => {
   const namespace = useNamespace();
   const matches = useMatches();
 
-  const match = (routeId: keyof FileRoutesById) =>
+  const matchRouteStart = (routeId: keyof FileRoutesById) =>
     matches.some((match) => match.routeId.startsWith(routeId));
 
   if (!namespace) return null;
@@ -26,17 +26,19 @@ const Breadcrumb = () => {
   return (
     <BreadcrumbRoot className="group">
       <NamespaceSelector />
-      {match("/n/$namespace/explorer/") && <ExplorerBreadcrumb />}
-      {match("/n/$namespace/instances/") && <InstancesBreadcrumb />}
-      {match("/n/$namespace/services/") && <ServicesBreadcrumb />}
-      {match("/n/$namespace/events/history") && <HistoryBreadcrumb />}
-      {match("/n/$namespace/events/listeners") && <ListenerBreadcrumb />}
-      {match("/n/$namespace/monitoring") && <MonitoringBreadcrumb />}
+      {matchRouteStart("/n/$namespace/explorer") && <ExplorerBreadcrumb />}
+      {matchRouteStart("/n/$namespace/instances/") && <InstancesBreadcrumb />}
+      {matchRouteStart("/n/$namespace/services/") && <ServicesBreadcrumb />}
+      {matchRouteStart("/n/$namespace/events/history") && <HistoryBreadcrumb />}
+      {matchRouteStart("/n/$namespace/events/listeners") && (
+        <ListenerBreadcrumb />
+      )}
+      {matchRouteStart("/n/$namespace/monitoring") && <MonitoringBreadcrumb />}
       {/* { && <PermissionsBreadcrumb />} */}
-      {match("/n/$namespace/settings") && <SettingsBreadcrumb />}
-      {match("/n/$namespace/jq") && <JqPlaygroundBreadcrumb />}
-      {match("/n/$namespace/mirror/") && <MirrorBreadcrumb />}
-      {match("/n/$namespace/gateway/") && <GatewayBreadcrumb />}
+      {matchRouteStart("/n/$namespace/settings") && <SettingsBreadcrumb />}
+      {matchRouteStart("/n/$namespace/jq") && <JqPlaygroundBreadcrumb />}
+      {matchRouteStart("/n/$namespace/mirror/") && <MirrorBreadcrumb />}
+      {matchRouteStart("/n/$namespace/gateway/") && <GatewayBreadcrumb />}
     </BreadcrumbRoot>
   );
 };

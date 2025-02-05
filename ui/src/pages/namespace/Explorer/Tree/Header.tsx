@@ -46,7 +46,6 @@ const ExplorerHeader: FC = () => {
             {segments
               .map((x) => (
                 <BreadcrumbSegment
-                  data-testid="breadcrumb-segment"
                   key={x.absolute}
                   absolute={x.absolute}
                   relative={x.relative}
