@@ -148,24 +148,26 @@ export const ConsumersListSchema = z.object({
   }
 }
  */
-export const GatewayInfoSchema = z.object({
-  data: z.object({
-    spec: z
-      .object({
-        openapi: z.string(),
-        info: z
-          .object({
-            title: z.string(),
-            version: z.string(),
-            description: z.string().optional(),
-          })
-          .passthrough(),
-        paths: z.record(z.any()),
-      })
-      .passthrough(),
-    file_path: z.string(),
-    errors: z.array(z.unknown()),
-  }),
+export const OpenApiBaseFileSchema = z.object({
+  data: z
+    .object({
+      spec: z
+        .object({
+          openapi: z.string(),
+          info: z
+            .object({
+              title: z.string(),
+              version: z.string(),
+              description: z.string().optional(),
+            })
+            .passthrough(),
+          paths: z.record(z.any()),
+        })
+        .passthrough(),
+      file_path: z.string(),
+      errors: z.array(z.unknown()),
+    })
+    .passthrough(),
 });
 
-export type GatewayInfoSchemaType = z.infer<typeof GatewayInfoSchema>;
+export type OpenApiBaseFileSchemaType = z.infer<typeof OpenApiBaseFileSchema>;

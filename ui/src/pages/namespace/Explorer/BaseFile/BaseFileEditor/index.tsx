@@ -7,11 +7,11 @@ import {
 } from "../../Workflow/store/unsavedChangesContext";
 
 import Alert from "~/design/Alert";
-import { BaseFileFormSchema } from "./schema";
 import Button from "~/design/Button";
 import { CodeEditor } from "../../Workflow/Edit/CodeEditor";
 import { FileSchemaType } from "~/api/files/schema";
 import { Form } from "react-router-dom";
+import { OpenApiBaseFileFormSchema } from "./schema";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { useTranslation } from "react-i18next";
@@ -32,7 +32,6 @@ const BaseFileEditor: FC<BaseFileEditorProps> = ({ data }) => {
     decodedFileContentFromServer
   );
 
-  const [isSchemaValid, setIsSchemaValid] = useState(true);
   const [error, setError] = useState<string | undefined>();
 
   const { mutate: updateFile, isPending } = useUpdateFile({
@@ -53,12 +52,11 @@ const BaseFileEditor: FC<BaseFileEditorProps> = ({ data }) => {
   const saveContent = (content: string | undefined) => {
     try {
       const parsedContent = yamlToJsonOrNull(content ?? "");
-      const result = BaseFileFormSchema.safeParse(parsedContent);
+      const result = OpenApiBaseFileFormSchema.safeParse(parsedContent);
       if (!result.success) {
         setError(result.error?.issues[0]?.code ?? "Unknown error");
         return;
       }
-      setIsSchemaValid(true);
       setError(undefined);
 
       updateFile({
@@ -66,7 +64,6 @@ const BaseFileEditor: FC<BaseFileEditorProps> = ({ data }) => {
         payload: { data: encode(jsonToYaml(parsedContent ?? {})) },
       });
     } catch (error) {
-      setIsSchemaValid(false);
       setError(`Parsing error: ${String(error)}`);
     }
   };
@@ -94,7 +91,7 @@ const BaseFileEditor: FC<BaseFileEditorProps> = ({ data }) => {
               )}
               <Button
                 variant={hasUnsavedChanges ? "primary" : "outline"}
-                disabled={isPending || !isSchemaValid}
+                disabled={isPending}
                 type="submit"
               >
                 <Save />

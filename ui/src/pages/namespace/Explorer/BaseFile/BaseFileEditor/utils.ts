@@ -1,7 +1,7 @@
 import { BaseFileFormSchema, BaseFileFormSchemaType } from "./schema";
-import { jsonToYaml, yamlToJsonOrNull } from "../../utils";
 
 import { ZodError } from "zod";
+import { yamlToJsonOrNull } from "../../utils";
 
 type SerializeReturnType =
   | [BaseFileFormSchemaType, undefined]
@@ -16,14 +16,3 @@ export const serializeBaseFileFile = (yaml: string): SerializeReturnType => {
 
   return [undefined, jsonParsed.error];
 };
-
-// const defaultBaseFileJson: BaseFileFormSchemaType = {
-//   openapi: "3.0.0",
-//   info: {
-//     title: "Default Title",
-//     version: "1.0.0",
-//     description: "Default description",
-//   },
-// };
-
-// export const defaultBaseFileYaml = jsonToYaml(defaultBaseFileJson);
