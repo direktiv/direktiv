@@ -97,7 +97,7 @@ const Header = () => {
           </TooltipProvider>
           <Button asChild isAnchor variant="primary" className="max-md:w-full">
             <Link
-              to="/n/$namespace/explorer/workflow/overview/$"
+              to="/n/$namespace/explorer/workflow/edit/$"
               params={{
                 namespace: instance.namespace,
                 _splat: instance.path,
