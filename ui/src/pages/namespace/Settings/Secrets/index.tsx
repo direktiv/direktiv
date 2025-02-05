@@ -1,7 +1,6 @@
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useEffect, useMemo, useState } from "react";
 import { NoPermissions, NoResult, Table, TableBody } from "~/design/Table";
-import { Pagination, PaginationLink } from "~/design/Pagination";
 import { PlusCircle, SquareAsterisk } from "lucide-react";
 import {
   Tooltip,
@@ -18,6 +17,7 @@ import Delete from "./Delete";
 import Edit from "./Edit";
 import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
+import { Pagination } from "~/components/Pagination";
 import PaginationProvider from "~/components/PaginationProvider";
 import { SecretSchemaType } from "~/api/secrets/schema";
 import { useDeleteSecret } from "~/api/secrets/mutate/delete";
@@ -82,12 +82,9 @@ const SecretsList: FC = () => {
       <PaginationProvider items={filteredItems} pageSize={pageSize}>
         {({
           currentItems,
-          goToFirstPage,
           goToPage,
-          goToNextPage,
-          goToPreviousPage,
+          goToFirstPage,
           currentPage,
-          pagesList,
           totalPages,
         }) => (
           <>
@@ -96,23 +93,27 @@ const SecretsList: FC = () => {
                 <SquareAsterisk className="h-5" />
                 {t("pages.settings.secrets.list.title")}
               </h3>
-              <Input
-                className="sm:w-60"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  goToFirstPage();
-                }}
-                placeholder={t("pages.settings.secrets.list.searchPlaceholder")}
-              />
-              <CreateItemButton
-                data-testid="secret-create"
-                onClick={() => setCreateSecret(true)}
-              >
-                {t("pages.settings.secrets.list.createBtn")}
-              </CreateItemButton>
             </div>
             <Card className="mb-4">
+              <div className="flex justify-end gap-5 p-2 border-b border-gray-5 dark:border-gray-dark-5">
+                <Input
+                  className="sm:w-60"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    goToFirstPage();
+                  }}
+                  placeholder={t(
+                    "pages.settings.secrets.list.searchPlaceholder"
+                  )}
+                />
+                <CreateItemButton
+                  data-testid="secret-create"
+                  onClick={() => setCreateSecret(true)}
+                >
+                  {t("pages.settings.secrets.list.createBtn")}
+                </CreateItemButton>
+              </div>
               {isAllowed ? (
                 <>
                   {currentItems.length ? (
@@ -179,24 +180,11 @@ const SecretsList: FC = () => {
                 <NoPermissions>{noPermissionMessage}</NoPermissions>
               )}
             </Card>
-            {totalPages > 1 && (
-              <Pagination>
-                <PaginationLink
-                  icon="left"
-                  onClick={() => goToPreviousPage()}
-                />
-                {pagesList.map((page) => (
-                  <PaginationLink
-                    active={currentPage === page}
-                    key={`${page}`}
-                    onClick={() => goToPage(page)}
-                  >
-                    {page}
-                  </PaginationLink>
-                ))}
-                <PaginationLink icon="right" onClick={() => goToNextPage()} />
-              </Pagination>
-            )}
+            <Pagination
+              totalPages={totalPages}
+              value={currentPage}
+              onChange={goToPage}
+            />
           </>
         )}
       </PaginationProvider>

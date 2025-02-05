@@ -12,6 +12,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
 	"github.com/pkg/errors"
 )
@@ -21,7 +22,8 @@ import (
 // atomically swaps the old one.
 type manager struct {
 	routerPointer unsafe.Pointer
-	db            *database.SQLStore
+
+	db *database.DB
 }
 
 func (m *manager) atomicLoadRouter() *router {
@@ -39,7 +41,7 @@ func (m *manager) atomicSetRouter(inner *router) {
 
 var _ core.GatewayManager = &manager{}
 
-func NewManager(db *database.SQLStore) core.GatewayManager {
+func NewManager(db *database.DB) core.GatewayManager {
 	return &manager{
 		db: db,
 	}
@@ -71,18 +73,30 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// gateway info endpoint
+	if strings.HasSuffix(r.URL.Path, "/info") {
+		ns := chi.URLParam(r, "namespace")
+		if ns != "" {
+			//nolint:contextcheck
+			WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns))
+			return
+		}
+	}
+
 	inner.serveMux.ServeHTTP(w, r)
 }
 
 // SetEndpoints compiles a new router and atomically swaps the old one. No ongoing requests should be effected.
-func (m *manager) SetEndpoints(list []core.Endpoint, cList []core.Consumer) error {
+func (m *manager) SetEndpoints(list []core.Endpoint, cList []core.Consumer,
+	glist []core.Gateway,
+) error {
 	cList = slices.Clone(cList)
 
 	err := m.interpolateConsumersList(cList)
 	if err != nil {
 		return errors.Wrap(err, "interpolate consumer files")
 	}
-	newOne := buildRouter(list, cList)
+	newOne := buildRouter(list, cList, glist)
 	m.atomicSetRouter(newOne)
 
 	return nil
@@ -142,6 +156,58 @@ func consumersForAPI(consumers []core.Consumer) any {
 	}
 
 	return result
+}
+
+func gatewayForAPI(gateways []core.Gateway, ns string) any {
+	type output struct {
+		Spec     openapi3.T `json:"spec"`
+		FilePath string     `json:"file_path"`
+		Errors   []string   `json:"errors"`
+	}
+
+	gw := output{
+		FilePath: "virtual",
+		Errors:   make([]string, 0),
+		Spec: openapi3.T{
+			OpenAPI: "3.0.0",
+			Info: &openapi3.Info{
+				Title:   ns,
+				Version: "1.0",
+			},
+			Paths: openapi3.NewPaths(),
+		},
+	}
+
+	// we always take the first one, even if there are more
+	if len(gateways) > 0 {
+		g := gateways[0]
+
+		gw.Errors = g.Errors
+		gw.FilePath = g.FilePath
+		gw.Spec = g.RenderedBase
+
+		if gw.Spec.Info == nil {
+			gw.Spec.Info = &openapi3.Info{}
+		}
+
+		err := gw.Spec.Validate(context.TODO())
+		if err != nil {
+			gw.Errors = append(gw.Errors, err.Error())
+		}
+	}
+
+	// if there are more, it is an error
+	if len(gateways) > 1 {
+		f := make([]string, 0)
+		for i := range gateways {
+			f = append(f, gateways[i].FilePath)
+		}
+
+		gw.Errors = append(gw.Errors,
+			fmt.Sprintf("multiple gateway specifications found: %s but using %s.", strings.Join(f, ", "), gw.FilePath))
+	}
+
+	return gw
 }
 
 func endpointsForAPI(endpoints []core.Endpoint) any {

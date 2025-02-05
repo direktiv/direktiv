@@ -133,6 +133,11 @@ test("it renders, filters, and paginates events", async ({ page }) => {
 
   await expect(page.getByTestId("event-row")).toHaveCount(22);
 
+  /* reload the page and check if pagesize was remembered */
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(selectPagesize).toBeVisible();
+  expect(selectPagesize).toHaveText("Show 30 rows");
+
   selectPagesize.click();
   page.getByLabel("Show 20 rows").click();
 
@@ -165,8 +170,6 @@ test("it renders, filters, and paginates events", async ({ page }) => {
     page.getByTestId("event-row"),
     "when filtering by event type, it shows the correct number of events"
   ).toHaveCount(7);
-
-  await expect(page.getByTestId("pagination-wrapper")).not.toBeVisible();
 
   /**
    * Additionally filter by content, expect a smaller subset of results.

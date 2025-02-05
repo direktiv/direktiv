@@ -1,4 +1,3 @@
-import { Dispatch, SetStateAction } from "react";
 import {
   PaginationLink,
   Pagination as PaginationWrapper,
@@ -6,56 +5,44 @@ import {
 
 import describePagination from "./describePagination";
 
-type SetState<T> = Dispatch<SetStateAction<T>>;
-
 export const Pagination = ({
-  itemsPerPage,
-  totalItems,
-  offset,
-  setOffset,
+  totalPages,
+  value,
+  onChange,
 }: {
-  itemsPerPage: number;
-  totalItems?: number;
-  offset: number;
-  setOffset: SetState<number>;
+  totalPages: number;
+  value: number;
+  onChange: (page: number) => void;
 }) => {
-  const setOffsetByPageNumber = (pageNumber: number) =>
-    (pageNumber - 1) * itemsPerPage;
+  const isFirstPage = value === 1;
+  const isLastPage = value === totalPages;
+  const previousPage = value > 1 ? value - 1 : null;
+  const nextPage = value < totalPages ? value + 1 : null;
 
-  const numberOfItems = totalItems ?? 0;
-  const pages = Math.ceil(numberOfItems / itemsPerPage);
-  const currentPage = Math.ceil(offset / itemsPerPage) + 1;
-  const isFirstPage = currentPage === 1;
-  const isLastPage = currentPage === pages;
-
-  const previousPage = currentPage > 1 ? currentPage - 1 : null;
-  const nextPage = currentPage < pages ? currentPage + 1 : null;
-
-  const paginationDescription = describePagination({ currentPage, pages });
+  const paginationDescription = describePagination({
+    currentPage: value,
+    totalPages,
+  });
 
   return (
     <PaginationWrapper>
       <PaginationLink
         icon="left"
-        onClick={() =>
-          previousPage && setOffset(setOffsetByPageNumber(previousPage))
-        }
+        onClick={() => previousPage && onChange(previousPage)}
         disabled={isFirstPage}
         data-testid="pagination-btn-left"
       />
       {paginationDescription.map((page, index) => {
-        const isActive = currentPage === page;
+        const isActive = value === page;
         const isEllipsis = page === "…";
         return (
           <PaginationLink
             key={index}
             active={isActive}
             onClick={() => {
-              !isEllipsis &&
-                !isActive &&
-                setOffset(setOffsetByPageNumber(page));
+              !isEllipsis && !isActive && onChange(page);
             }}
-            disabled={isEllipsis}
+            disabled={(isFirstPage && isLastPage) || isEllipsis}
             data-testid={`pagination-btn-page-${page}`}
           >
             {page}
@@ -64,7 +51,7 @@ export const Pagination = ({
       })}
       <PaginationLink
         icon="right"
-        onClick={() => nextPage && setOffset(setOffsetByPageNumber(nextPage))}
+        onClick={() => nextPage && onChange(nextPage)}
         disabled={isLastPage}
         data-testid="pagination-btn-right"
       />

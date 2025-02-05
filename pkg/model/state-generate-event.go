@@ -94,5 +94,6 @@ func (o *GenerateEventState) Validate() error {
 			return fmt.Errorf("catch[%v] is invalid: %w", i, err)
 		}
 	}
+
 	return nil
 }

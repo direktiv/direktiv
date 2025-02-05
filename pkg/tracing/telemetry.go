@@ -1,3 +1,4 @@
+// nolint:unused
 package tracing
 
 import (
@@ -8,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/middlewares"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
 	"go.opentelemetry.io/otel"
@@ -82,10 +82,10 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 	otel.SetTracerProvider(tp)
 
 	// Register HTTP telemetry middleware
-	slog.Debug("Registering HTTP telemetry middleware.")
-	middlewares.RegisterHTTPMiddleware(func(h http.Handler) http.Handler {
-		return entrypointOtelMiddleware(imName, h)
-	})
+	// slog.Debug("Registering HTTP telemetry middleware.")
+	// middlewares.RegisterHTTPMiddleware(func(h http.Handler) http.Handler {
+	// 	return entrypointOtelMiddleware(imName, h)
+	// })
 
 	slog.Debug("Telemetry initialization completed.")
 
@@ -112,6 +112,7 @@ func telemetryWaiter(cirCtx context.Context, tp *sdktrace.TracerProvider, bsp sd
 	}
 }
 
+// nolint:unused
 // entrypointOtelMiddleware injects trace context into the request and starts a new span.
 func entrypointOtelMiddleware(imName string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

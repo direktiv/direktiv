@@ -51,6 +51,7 @@ func (o *SwitchState) getTransitions() map[string]string {
 			transitions[fmt.Sprintf("conditions[%v]", i)] = condition.Transition
 		}
 	}
+
 	return transitions
 }
 
@@ -72,6 +73,7 @@ func (o *SwitchState) GetTransitions() []string {
 			transitions = append(transitions, condition.Transition)
 		}
 	}
+
 	return transitions
 }
 
@@ -90,7 +92,7 @@ func (o *SwitchState) Validate() error {
 		return err
 	}
 
-	if o.Conditions == nil || len(o.Conditions) == 0 {
+	if len(o.Conditions) == 0 {
 		return errors.New("conditions required")
 	}
 

@@ -25,7 +25,7 @@ func (engine *engine) scheduleTimeout(_ context.Context, im *instanceMemory, old
 	}
 
 	// cancel existing timeouts
-	slog.Debug("Cancelling existing timeouts.", "namespace", im.Namespace(), "instance", im.ID(), "timeout_type", prefix, "step", im.Step())
+	slog.Debug("Cancelling existing timeouts.", "namespace", im.Namespace().Name, "instance", im.ID(), "timeout_type", prefix, "step", im.Step())
 
 	engine.timers.deleteTimerByName(oldController, engine.pubsub.Hostname, oldID)
 	engine.timers.deleteTimerByName(oldController, engine.pubsub.Hostname, id)
@@ -45,9 +45,9 @@ func (engine *engine) scheduleTimeout(_ context.Context, im *instanceMemory, old
 
 	err = engine.timers.addOneShot(id, timeoutFunction, deadline, data)
 	if err != nil {
-		slog.Error("Failed to schedule a timeout.", "namespace", im.Namespace(), "instance", im.ID(), "timeout_type", prefix, "step", im.Step(), "error", err)
+		slog.Error("Failed to schedule a timeout.", "namespace", im.Namespace().Name, "instance", im.ID(), "timeout_type", prefix, "step", im.Step(), "error", err)
 	} else {
-		slog.Debug("Successfully scheduled a new timeout.", "namespace", im.Namespace(), "instance", im.ID(), "timeout_type", prefix, "step", im.Step())
+		slog.Debug("Successfully scheduled a new timeout.", "namespace", im.Namespace().Name, "instance", im.ID(), "timeout_type", prefix, "step", im.Step())
 	}
 }
 

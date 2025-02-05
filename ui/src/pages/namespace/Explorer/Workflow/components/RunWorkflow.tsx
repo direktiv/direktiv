@@ -6,9 +6,10 @@ import {
 } from "~/design/Dialog";
 import { ElementRef, useEffect, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
-import { getValidationSchemaFromYaml, workflowInputSchema } from "./utils";
 import { isObject, prettifyJsonString } from "~/util/helpers";
+import { useValidationSchemaFromFile, workflowInputSchema } from "./utils";
 
+import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
@@ -16,7 +17,6 @@ import FormInputHint from "./FormInputHint";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
 import { Play } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
-import { decode } from "js-base64";
 import { useCreateInstance } from "~/api/instances/mutate/create";
 import { useFile } from "~/api/files/query/file";
 import { useForm } from "react-hook-form";
@@ -43,10 +43,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const { data } = useFile({ path });
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const jsonSchemaFormRef = useRef<ElementRef<typeof JSONSchemaForm>>(null);
-  const validationSchema =
-    data?.type === "workflow"
-      ? getValidationSchemaFromYaml(decode(data?.data ?? ""))
-      : null;
+  const { result: validationSchema, error } = useValidationSchemaFromFile(data);
 
   // tab handling
   const isFormAvailable = validationSchema !== null;
@@ -134,7 +131,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
     }
   };
 
-  const disableSubmit = !isValid;
+  const disableSubmit = !isValid || !!error;
 
   return (
     <>
@@ -147,92 +144,96 @@ const RunWorkflow = ({ path }: { path: string }) => {
         className="my-3 flex flex-col gap-y-5"
         data-testid="run-workflow-dialog"
       >
-        <Tabs
-          value={activeTab}
-          onValueChange={(value) => {
-            const tabValueParsed = z.enum(tabs).safeParse(value);
-            if (tabValueParsed.success) {
-              setActiveTab(tabValueParsed.data);
-              if (isFormAvailable) syncInputData(tabValueParsed.data);
-            }
-          }}
-        >
-          <TabsList variant="boxed">
-            <TabsTrigger
-              variant="boxed"
-              value={tabs[0]}
-              data-testid="run-workflow-json-tab-btn"
-            >
-              {t("pages.explorer.tree.workflow.runWorkflow.jsonInput")}
-            </TabsTrigger>
-            <TabsTrigger
-              variant="boxed"
-              value={tabs[1]}
-              data-testid="run-workflow-form-tab-btn"
-            >
-              {t("pages.explorer.tree.workflow.runWorkflow.formInput")}
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value={tabs[0]} asChild>
-            <Card
-              className="h-96 w-full p-4 sm:h-[500px]"
-              noShadow
-              background="weight-1"
-              data-testid="run-workflow-editor"
-            >
-              <Editor
-                value={jsonInput}
-                onMount={(editor) => {
-                  editor.focus();
-                  if (jsonInput === defaultEmptyJson) {
-                    editor.setPosition({ lineNumber: 2, column: 5 });
-                  }
-                }}
-                onChange={(newData) => {
-                  if (newData != undefined) setJsonInput(newData);
+        {error ? (
+          <Alert variant="error">{error}</Alert>
+        ) : (
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => {
+              const tabValueParsed = z.enum(tabs).safeParse(value);
+              if (tabValueParsed.success) {
+                setActiveTab(tabValueParsed.data);
+                if (isFormAvailable) syncInputData(tabValueParsed.data);
+              }
+            }}
+          >
+            <TabsList variant="boxed">
+              <TabsTrigger
+                variant="boxed"
+                value={tabs[0]}
+                data-testid="run-workflow-json-tab-btn"
+              >
+                {t("pages.explorer.tree.workflow.runWorkflow.jsonInput")}
+              </TabsTrigger>
+              <TabsTrigger
+                variant="boxed"
+                value={tabs[1]}
+                data-testid="run-workflow-form-tab-btn"
+              >
+                {t("pages.explorer.tree.workflow.runWorkflow.formInput")}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value={tabs[0]} asChild>
+              <Card
+                className="h-96 w-full p-4 sm:h-[500px]"
+                noShadow
+                background="weight-1"
+                data-testid="run-workflow-editor"
+              >
+                <Editor
+                  value={jsonInput}
+                  onMount={(editor) => {
+                    editor.focus();
+                    if (jsonInput === defaultEmptyJson) {
+                      editor.setPosition({ lineNumber: 2, column: 5 });
+                    }
+                  }}
+                  onChange={(newData) => {
+                    if (newData != undefined) setJsonInput(newData);
 
-                  if (typeof newData === "string") {
-                    setValue("payload", newData, {
-                      shouldValidate: true,
-                    });
-                  }
-                }}
-                language="json"
-                theme={theme ?? undefined}
-              />
-            </Card>
-          </TabsContent>
-          <TabsContent value={tabs[1]} asChild>
-            <Card className="h-96 w-full p-4 sm:h-[500px]">
-              {isFormAvailable ? (
-                <ScrollArea className="h-full">
-                  <JSONSchemaForm
-                    onChange={(e) => {
-                      const newFormInput = isObject(e.formData)
-                        ? e.formData
-                        : {};
-                      setFormInput(newFormInput);
-                    }}
-                    formData={formInput}
-                    ref={jsonSchemaFormRef}
-                    schema={validationSchema}
-                    omitExtraData={true}
-                    action="submit"
-                    onSubmit={jsonSchemaFormSubmit}
-                  >
-                    <Button
-                      type="submit"
-                      ref={submitButtonRef}
-                      className="hidden"
-                    />
-                  </JSONSchemaForm>
-                </ScrollArea>
-              ) : (
-                <FormInputHint />
-              )}
-            </Card>
-          </TabsContent>
-        </Tabs>
+                    if (typeof newData === "string") {
+                      setValue("payload", newData, {
+                        shouldValidate: true,
+                      });
+                    }
+                  }}
+                  language="json"
+                  theme={theme ?? undefined}
+                />
+              </Card>
+            </TabsContent>
+            <TabsContent value={tabs[1]} asChild>
+              <Card className="h-96 w-full p-4 sm:h-[500px]">
+                {isFormAvailable ? (
+                  <ScrollArea className="h-full">
+                    <JSONSchemaForm
+                      onChange={(e) => {
+                        const newFormInput = isObject(e.formData)
+                          ? e.formData
+                          : {};
+                        setFormInput(newFormInput);
+                      }}
+                      formData={formInput}
+                      ref={jsonSchemaFormRef}
+                      schema={validationSchema}
+                      omitExtraData={true}
+                      action="submit"
+                      onSubmit={jsonSchemaFormSubmit}
+                    >
+                      <Button
+                        type="submit"
+                        ref={submitButtonRef}
+                        className="hidden"
+                      />
+                    </JSONSchemaForm>
+                  </ScrollArea>
+                ) : (
+                  <FormInputHint />
+                )}
+              </Card>
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
       <DialogFooter>
         <DialogClose asChild>

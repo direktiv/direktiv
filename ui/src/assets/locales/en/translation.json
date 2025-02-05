@@ -136,6 +136,7 @@
           "runWorkflow": {
             "title": "Run Workflow",
             "jsonInput": "JSON Input",
+            "invalidYaml": "Cannot run the workflow as it is not a valid YAML file.",
             "formInput": "Form Input",
             "formInputHint": "The first state of this Workflow must be of type 'validate' to generate a form.",
             "learnMoreBtn": "Learn more",
@@ -149,7 +150,8 @@
                 "title": "Workflow variables",
                 "createBtn": "Add variable",
                 "emptySearch": "No variable matches your search",
-                "empty": "No variable found"
+                "empty": "No variable found",
+                "deleteSelected": "Delete selected"
               }
             }
           },
@@ -1130,7 +1132,8 @@
         "passphrase": "Passphrase to decrypt keys (optional).",
         "privateKey": "Private SSH key used for authentication via git@ url.",
         "publicKey": "Public SSH key used for authenticating via git@ url.",
-        "insecure": "This will skip all checks for TLS certificate validity (only relevant for https and ssh, has no effect on http)"
+        "insecure": "This will skip all checks for TLS certificate validity (only relevant for https and ssh, has no effect on http)",
+        "systemNamespaceTooltip": "Using the name 'system' will create a privileged namespace with special system-wide impacts"
       }
     },
     "button": {
@@ -1171,7 +1174,8 @@
     "namespaceSelector": {
       "placeholder": "Select Namespace",
       "loading": "loading...",
-      "optionDoesNotExist": "{{namespace}} (does not exist)"
+      "optionDoesNotExist": "{{namespace}} (does not exist)",
+      "systemNamespaceTooltip": "A privileged namespace with special system-wide impacts"
     },
     "variableForm": {
       "title": {
@@ -1442,9 +1446,13 @@
           }
         },
         "deleteVariable": {
+          "allItemsMsg": "Are you sure you want to delete <b>all</b> variables?",
+          "multipleItemsMsg": "Are you sure you want to delete <b>{{count}}</b> variables?",
+          "singleItemMsg": "Are you sure you want to delete variable <b>'{{name}}'</b>?",
           "success": {
             "title": "Variable deleted",
-            "description": "Variable {{name}} was deleted."
+            "description": "{{count}} variables have been deleted.",
+            "description_one": "{{count}} variable has been deleted."
           },
           "error": {
             "description": "Could not delete variable 😢"

@@ -270,19 +270,24 @@ const NamespaceEdit = ({
           className="flex flex-col gap-y-5"
         >
           {isNew && (
-            <fieldset className="flex items-center gap-5">
+            <fieldset className="flex gap-2 items-center">
               <label
                 className="w-[112px] overflow-hidden text-right text-[14px]"
                 htmlFor="name"
               >
                 {t("components.namespaceEdit.label.name")}
               </label>
-              <Input
-                id="name"
-                data-testid="new-namespace-name"
-                placeholder={t("components.namespaceEdit.placeholder.name")}
-                {...register("name")}
-              />
+              <InputWithButton>
+                <Input
+                  id="name"
+                  data-testid="new-namespace-name"
+                  placeholder={t("components.namespaceEdit.placeholder.name")}
+                  {...register("name")}
+                />
+                <InfoTooltip>
+                  {t("components.namespaceEdit.tooltip.systemNamespaceTooltip")}
+                </InfoTooltip>
+              </InputWithButton>
             </fieldset>
           )}
 
