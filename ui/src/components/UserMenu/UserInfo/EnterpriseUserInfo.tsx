@@ -4,7 +4,9 @@ import { useTranslation } from "react-i18next";
 const EnterpriseUserInfo = () => {
   const auth = useAuth();
   const { t } = useTranslation();
-  const username = auth?.user?.profile?.preferred_username ?? "";
+
+  const username =
+    auth?.user?.profile?.preferred_username ?? auth?.user?.profile?.name ?? "";
 
   if (!username) {
     return <>{t("components.userMenu.loggedIn")}</>;
