@@ -9,7 +9,7 @@ require (
 	github.com/docker/docker v27.3.1+incompatible
 	github.com/dop251/goja v0.0.0-20241024094426-79f3a7efcdbd
 	github.com/gabriel-vasile/mimetype v1.4.7
-	github.com/getkin/kin-openapi v0.128.0
+	github.com/getkin/kin-openapi v0.129.0
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/google/go-github/v57 v57.0.1-0.20231214141441-c4ec3276de85
