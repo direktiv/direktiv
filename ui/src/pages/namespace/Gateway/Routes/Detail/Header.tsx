@@ -22,7 +22,8 @@ const Header = () => {
 
   const { t } = useTranslation();
 
-  if (!(route && filename)) return null;
+  if (!route) return null;
+  if (!filename) return null;
   if (!namespace) return null;
 
   return (
