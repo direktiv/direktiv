@@ -174,18 +174,6 @@ spec:
             value: "{{ .Values.nats.config.routeURLs.user }}"
           - name: DIREKTIV_NATS_PASSWORD
             value: "{{ .Values.nats.config.routeURLs.password }}"
-          - name: DIREKTIV_OPENSEARCH_INSTALLED
-            value: "{{ .Values.opensearch.install }}"
-          - name: DIREKTIV_OPENSEARCH_HOST
-            value: "opensearch-cluster-master.{{ .Release.Namespace }}.svc" 
-          - name: DIREKTIV_OPENSEARCH_PORT
-            value: "{{ .Values.opensearch.httpPort }}"
-          - name: DIREKTIV_OPENSEARCH_PROTOCOL
-            value: "{{ .Values.opensearch.protocol }}"
-          - name: DIREKTIV_OPENSEARCH_USERNAME
-            value: "admin"
-          - name: DIREKTIV_OPENSEARCH_PASSWORD
-            value: "{{ (index .Values.opensearch.extraEnvs 0).value }}"
 
       volumes:
         {{- if .Values.flow.extraVolumes }}
