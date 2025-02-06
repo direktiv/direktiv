@@ -11,15 +11,10 @@ import {
   Radio,
   Settings,
 } from "lucide-react";
-import {
-  activeClassNames,
-  baseClassNames,
-  inactiveClassNames,
-} from "~/design/NavigationLink";
 
 import { FC } from "react";
 import { FileRoutesByTo } from "~/routeTree.gen";
-import { Link } from "@tanstack/react-router";
+import { RouterNavigationLink } from "../RouterNavigationLink";
 import { isEnterprise } from "~/config/env/utils";
 import { useTranslation } from "react-i18next";
 
@@ -96,16 +91,13 @@ const Navigation: FC = () => {
   return (
     <>
       {navigationItems.map((item) => (
-        <Link
+        <RouterNavigationLink
           key={item.path}
           to={item.path}
           from="/n/$namespace"
-          className={baseClassNames}
-          activeProps={{ className: activeClassNames }}
-          inactiveProps={{ className: inactiveClassNames }}
         >
           <item.icon aria-hidden="true" /> {item.label}
-        </Link>
+        </RouterNavigationLink>
       ))}
     </>
   );
