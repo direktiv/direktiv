@@ -24,7 +24,7 @@ import { useTranslation } from "react-i18next";
 const TokensPage = () => {
   const { t } = useTranslation();
   const { data, isFetched, isAllowed, noPermissionMessage } = useTokens();
-  const noResults = isFetched && data?.tokens.length === 0;
+  const noResults = isFetched && data?.data.length === 0;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createToken, setCreateToken] = useState(false);
   const [deleteToken, setDeleteToken] = useState<TokenSchemaType>();
@@ -79,9 +79,9 @@ const TokensPage = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data?.tokens.map((token) => (
+                  data?.data.map((token) => (
                     <Row
-                      key={token.id}
+                      key={token.name}
                       token={token}
                       onDeleteClicked={setDeleteToken}
                     />
