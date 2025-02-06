@@ -11,11 +11,15 @@ import {
   Radio,
   Settings,
 } from "lucide-react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import {
+  activeClassNames,
+  baseClassNames,
+  inactiveClassNames,
+} from "~/design/NavigationLink";
 
 import { FC } from "react";
 import { FileRoutesByTo } from "~/routeTree.gen";
-import { createClassNames } from "~/design/NavigationLink";
+import { Link } from "@tanstack/react-router";
 import { isEnterprise } from "~/config/env/utils";
 import { useTranslation } from "react-i18next";
 
@@ -26,7 +30,6 @@ type NavigationItem = {
 };
 
 const Navigation: FC = () => {
-  const { location } = useRouterState();
   const { t } = useTranslation();
 
   const enableEnterpriseItems = isEnterprise();
@@ -97,7 +100,9 @@ const Navigation: FC = () => {
           key={item.path}
           to={item.path}
           from="/n/$namespace"
-          className={createClassNames(location.pathname === item.path)}
+          className={baseClassNames}
+          activeProps={{ className: activeClassNames }}
+          inactiveProps={{ className: inactiveClassNames }}
         >
           <item.icon aria-hidden="true" /> {item.label}
         </Link>
