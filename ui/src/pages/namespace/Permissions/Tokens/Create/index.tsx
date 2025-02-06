@@ -43,9 +43,18 @@ const CreateToken = ({ close }: { close: () => void }) => {
     defaultValues: {
       name: "",
       description: "",
-      // TODO: add this back
-      // duration: "",
-      permissions: [],
+      duration: "",
+      // TODO: remove this, update zod to not allow empty array
+      permissions: [
+        {
+          topic: "secrets",
+          method: "read",
+        },
+        {
+          topic: "variables",
+          method: "manage",
+        },
+      ],
     },
     resolver: zodResolver(TokenFormSchema),
   });
@@ -112,7 +121,7 @@ const CreateToken = ({ close }: { close: () => void }) => {
                   {...register("description")}
                 />
               </fieldset>
-              {/* <fieldset className="flex items-center gap-5">
+              <fieldset className="flex items-center gap-5">
                 <label
                   className="w-[90px] text-right text-[14px]"
                   htmlFor="duration"
@@ -138,7 +147,7 @@ const CreateToken = ({ close }: { close: () => void }) => {
                     }}
                   />
                 </InputWithButton>
-              </fieldset> */}
+              </fieldset>
               {/* <PermissionsSelector
                 availablePermissions={availablePermissions ?? []}
                 selectedPermissions={watch("permissions")}

@@ -84,7 +84,6 @@ export const TokenCreatedSchema = z.object({
   }),
 });
 
-// TODO: is this still duration still needed?
 export const ISO8601durationSchema = z
   .string()
   .regex(
@@ -109,8 +108,7 @@ export const ISO8601durationSchema = z
 export const TokenFormSchema = z.object({
   name: z.string().nonempty(),
   description: z.string().nonempty(),
-  // TODO: add this back
-  // duration: ISO8601durationSchema,
+  duration: ISO8601durationSchema,
   permissions: z.array(PermisionSchema),
 });
 
