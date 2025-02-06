@@ -8,24 +8,18 @@ import { Network, PlusCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
-// import { Card } from "~/design/Card";
-// import { Editor } from "@monaco-editor/react";
 import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import InfoTooltip from "~/components/NamespaceEdit/InfoTooltip";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
-// import { Textarea } from "~/design/TextArea";
 import { addYamlFileExtension } from "../../../../utils";
-// import { defaultEndpointFileYaml } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/utils";
 import { encode } from "js-base64";
 import { jsonToYaml } from "~/pages/namespace/Explorer/utils";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { usePages } from "~/util/router/pages";
-// import { useState } from "react";
-// import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,7 +38,6 @@ const NewapiBaseSpec = ({
   close: () => void;
   unallowedNames?: string[];
 }) => {
-  // const theme = useTheme();
   const pages = usePages();
   const { t } = useTranslation();
   const namespace = useNamespace();
@@ -60,10 +53,6 @@ const NewapiBaseSpec = ({
   };
 
   const defaultMinimalOpenApiYaml = jsonToYaml(baseOpenApiObject);
-
-  // const [baseFileData, setBaseFileData] = useState<string>(
-  //   defaultMinimalOpenApiJSON
-  // );
 
   const resolver = zodResolver(
     z.object({
@@ -85,7 +74,6 @@ const NewapiBaseSpec = ({
   const {
     register,
     handleSubmit,
-    // setValue,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver,
@@ -130,8 +118,7 @@ const NewapiBaseSpec = ({
       <DialogHeader>
         <DialogTitle>
           <Network />
-          NEW BaseFILE
-          {/* {t("pages.explorer.tree.newRoute.title")} */}
+          New Base File
         </DialogTitle>
       </DialogHeader>
 
@@ -162,23 +149,6 @@ const NewapiBaseSpec = ({
               </InputWithButton>
             </fieldset>
           </div>
-          {/* <div>
-            <fieldset className="flex items-start gap-5">
-              <Textarea className="hidden" {...register("fileContent")} />
-              <Card className="h-96 w-full p-4" noShadow background="weight-1">
-                <Editor
-                  value={baseFileData}
-                  onChange={(newData) => {
-                    if (newData) {
-                      setBaseFileData(newData);
-                      setValue("fileContent", newData);
-                    }
-                  }}
-                  theme={theme ?? undefined}
-                />
-              </Card>
-            </fieldset>
-          </div> */}
         </form>
       </div>
       <DialogFooter>
