@@ -40,11 +40,6 @@ func InitTelemetry(ctx context.Context, addr, svcName, imName string) (func(), e
 		propagation.Baggage{},
 	))
 
-	if addr == "" {
-		slog.Warn("no OTLP address provided. Telemetry will not be exported.")
-		return func() {}, nil
-	}
-
 	res, err := resource.New(ctx, resource.WithAttributes(semconv.ServiceNameKey.String(svcName)))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create resource: %w", err)
