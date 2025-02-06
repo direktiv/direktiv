@@ -6,13 +6,12 @@ import { useParams } from "@tanstack/react-router";
 import { useSyncDetail } from "~/api/syncs/query/get";
 
 const Logs = () => {
-  const { sync } = useParams({ strict: false });
+  const { sync } = useParams({ from: "/n/$namespace/mirror/logs/$sync" });
 
   const { isAllowed, noPermissionMessage, isFetched } = useSyncDetail(
     sync || ""
   );
 
-  if (!sync) return null;
   if (!isFetched) return null;
   if (!isAllowed)
     return (
