@@ -235,7 +235,7 @@ test("it will treat the status and finish date of pending instances accordingly"
   ).toContainText("complete");
 });
 
-test.skip("it paginates instances", async ({ page }) => {
+test("it paginates instances", async ({ page }) => {
   const totalCount = 35;
   const pageSize = 10;
 
