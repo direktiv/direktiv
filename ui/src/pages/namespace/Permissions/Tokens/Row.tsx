@@ -34,6 +34,7 @@ const Row = ({
   return (
     <TooltipProvider>
       <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+        <TableCell>{token.name}</TableCell>
         <TableCell>{token.description}</TableCell>
         <TableCell>
           <Tooltip>

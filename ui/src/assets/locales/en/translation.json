@@ -819,6 +819,7 @@
       },
       "tokens": {
         "tableHeader": {
+          "name": "name",
           "description": "description",
           "permissions": "permissions",
           "created": "created",

@@ -52,6 +52,9 @@ const TokensPage = () => {
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
               <TableHeaderCell>
+                {t("pages.permissions.tokens.tableHeader.name")}
+              </TableHeaderCell>
+              <TableHeaderCell>
                 {t("pages.permissions.tokens.tableHeader.description")}
               </TableHeaderCell>
               <TableHeaderCell className="w-40">
