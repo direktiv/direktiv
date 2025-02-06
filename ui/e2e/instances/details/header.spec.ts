@@ -1,55 +1,15 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
-import {
-  workflowWithDelay as delayedWorkflowContent,
-  workflowWithFewLogs as fewLogsWorkflowContent,
-  workflowWithManyLogs as manyLogsWorkflowContent,
-  simpleWorkflow as simpleWorkflowContent,
-} from "../utils/workflows";
 import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils/index";
 import { faker } from "@faker-js/faker";
-import { mockClipboardAPI } from "e2e/utils/testutils";
+import { simpleWorkflow } from "../utils/workflows";
 
 let namespace = "";
-const simpleWorkflowName = faker.system.commonFileName("yaml");
-const delayedWorkflowName = faker.system.commonFileName("yaml");
-const fewLogsWorkflowName = faker.system.commonFileName("yaml");
-const manyLogsWorkflowName = faker.system.commonFileName("yaml");
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async () => {
   namespace = await createNamespace();
-  /* create workflows we can use to create instances later */
-  await createFile({
-    name: simpleWorkflowName,
-    namespace,
-    type: "workflow",
-    yaml: simpleWorkflowContent,
-  });
-
-  await createFile({
-    name: delayedWorkflowName,
-    namespace,
-    type: "workflow",
-    yaml: delayedWorkflowContent,
-  });
-
-  await createFile({
-    name: fewLogsWorkflowName,
-    namespace,
-    type: "workflow",
-    yaml: fewLogsWorkflowContent,
-  });
-
-  await createFile({
-    name: manyLogsWorkflowName,
-    namespace,
-    type: "workflow",
-    yaml: manyLogsWorkflowContent,
-  });
-
-  await mockClipboardAPI(page);
 });
 
 test.afterEach(async () => {
@@ -60,10 +20,17 @@ test.afterEach(async () => {
 test("the header of the instance page shows the relevant data for the workflow", async ({
   page,
 }) => {
+  const workflowName = faker.system.commonFileName("yaml");
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: simpleWorkflow,
+  });
   const instanceId = (
     await createInstance({
       namespace,
-      path: simpleWorkflowName,
+      path: workflowName,
     })
   ).data.id;
 
@@ -114,7 +81,7 @@ test("the header of the instance page shows the relevant data for the workflow",
   ).toBeDisabled();
 
   await header.getByRole("link", { name: "Open workflow" }).click();
-  const editURL = `/n/${namespace}/explorer/workflow/edit/${simpleWorkflowName}`;
+  const editURL = `/n/${namespace}/explorer/workflow/edit/${workflowName}`;
   await expect(
     page,
     "the button 'Open Workflow' is clickable and links to the URL to edit this workflow"
