@@ -173,9 +173,6 @@ func OtelMiddleware() func(http.Handler) http.Handler {
 				attribute.String("instance.manager", instrumentationName),
 			)
 
-			// Wrap ResponseWriter to capture response status
-			rw := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
-
 			defer func() {
 				if requestCounter == nil || requestDuration == nil {
 					return
@@ -186,33 +183,20 @@ func OtelMiddleware() func(http.Handler) http.Handler {
 				requestCounter.Add(ctx, 1, otlpmetric.WithAttributes(
 					attribute.String("http.method", method),
 					attribute.String("http.route", routePattern),
-					attribute.Int("http.status", rw.statusCode),
 				))
 
 				requestDuration.Record(ctx, duration, otlpmetric.WithAttributes(
 					attribute.String("http.method", method),
 					attribute.String("http.route", routePattern),
-					attribute.Int("http.status", rw.statusCode),
 				))
 
 				span.End()
 			}()
 
 			r = r.WithContext(ctx)
-			next.ServeHTTP(rw, r)
+			next.ServeHTTP(w, r)
 		})
 	}
-}
-
-// responseWriter is a wrapper around http.ResponseWriter to capture status codes.
-type responseWriter struct {
-	http.ResponseWriter
-	statusCode int
-}
-
-func (rw *responseWriter) WriteHeader(code int) {
-	rw.statusCode = code
-	rw.ResponseWriter.WriteHeader(code)
 }
 
 // extractNamespace attempts to extract the namespace from chi params or the URL path.
