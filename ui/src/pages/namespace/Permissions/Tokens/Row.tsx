@@ -30,7 +30,7 @@ const Row = ({
 }) => {
   const { t } = useTranslation();
   const createdAt = useUpdatedAt(token.createdAt);
-  // const expiresAt = useUpdatedAt(token.expires);
+  const expiresAt = useUpdatedAt(token.expiredAt);
   return (
     <TooltipProvider>
       <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
@@ -47,11 +47,10 @@ const Row = ({
           </Tooltip>
         </TableCell>
         <TableCell>
-          {/* TODO: reenable this */}
-          {/* <Badge variant={token.expired ? "destructive" : "outline"}>
+          <Badge variant={token.isExpired ? "destructive" : "outline"}>
             <Tooltip>
               <TooltipTrigger>
-                {token.expired
+                {token.isExpired
                   ? t("pages.permissions.tokens.expiredAgo", {
                       relativeTime: expiresAt,
                     })
@@ -59,9 +58,9 @@ const Row = ({
                       relativeTime: expiresAt,
                     })}
               </TooltipTrigger>
-              <TooltipContent>{token.expires}</TooltipContent>
+              <TooltipContent>{token.isExpired}</TooltipContent>
             </Tooltip>
-          </Badge> */}
+          </Badge>
         </TableCell>
         <TableCell>
           {/* <PermissionsInfo permissions={token.permissions} /> */}
