@@ -57,6 +57,9 @@ const TokensPage = () => {
               <TableHeaderCell>
                 {t("pages.permissions.tokens.tableHeader.description")}
               </TableHeaderCell>
+              <TableHeaderCell>
+                {t("pages.permissions.tokens.tableHeader.prefix")}
+              </TableHeaderCell>
               <TableHeaderCell className="w-40">
                 {t("pages.permissions.tokens.tableHeader.created")}
               </TableHeaderCell>
@@ -74,7 +77,7 @@ const TokensPage = () => {
               <>
                 {noResults ? (
                   <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                    <TableCell colSpan={5}>
+                    <TableCell colSpan={6}>
                       <NoResult icon={KeyRound} button={createNewButton}>
                         {t("pages.permissions.tokens.noTokens")}
                       </NoResult>
@@ -92,7 +95,7 @@ const TokensPage = () => {
               </>
             ) : (
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                <TableCell colSpan={5}>
+                <TableCell colSpan={6}>
                   <NoPermissions>{noPermissionMessage}</NoPermissions>
                 </TableCell>
               </TableRow>

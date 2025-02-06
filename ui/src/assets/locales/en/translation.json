@@ -821,6 +821,7 @@
         "tableHeader": {
           "name": "name",
           "description": "description",
+          "prefix": "Secret hint",
           "permissions": "permissions",
           "created": "created",
           "expires": "expires"

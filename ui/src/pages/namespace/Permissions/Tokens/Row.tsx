@@ -37,6 +37,9 @@ const Row = ({
         <TableCell>{token.name}</TableCell>
         <TableCell>{token.description}</TableCell>
         <TableCell>
+          <pre>{token.prefix}***</pre>
+        </TableCell>
+        <TableCell>
           <Tooltip>
             <TooltipTrigger>
               {t("pages.permissions.tokens.created", {
