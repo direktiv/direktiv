@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -116,7 +117,22 @@ func LoadResource(data []byte) (interface{}, error) {
 
 	case EndpointAPIV2:
 		var pi openapi3.PathItem
-		err := pi.UnmarshalJSON(data)
+
+		// its yaml but we need JSON
+		var interim map[string]interface{}
+		err := yaml.Unmarshal(data, &interim)
+		if err != nil {
+			return core.Endpoint{}, err
+		}
+		d, err := json.Marshal(interim)
+		if err != nil {
+			return core.Endpoint{}, err
+		}
+
+		err = pi.UnmarshalJSON(d)
+		if err != nil {
+			return core.Endpoint{}, err
+		}
 
 		return core.Endpoint{}, err
 

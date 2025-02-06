@@ -58,6 +58,7 @@ type Gateway struct {
 
 	Namespace string
 	FilePath  string
+	IsVirtual bool
 
 	Errors []string
 }

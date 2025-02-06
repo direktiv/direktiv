@@ -64,6 +64,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.URL.Path, "/routes") {
 		ns := chi.URLParam(r, "namespace")
 		if ns != "" {
+			//nolint:contextcheck
 			WriteJSON(w, endpointsForAPI(filterNamespacedEndpoints(inner.endpoints, ns, r.URL.Query().Get("path")), ns, m.db.FileStore()))
 			return
 		}
@@ -87,6 +88,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 			//nolint:contextcheck
 			WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns, m.db.FileStore(), inner.endpoints, expand))
+
 			return
 		}
 	}
@@ -181,13 +183,15 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 
 	// edfault gateway
 	g := core.Gateway{
-		Base:     []byte(fmt.Sprintf("openapi: 3.0.0\ninfo:\n   title: %s\n   version: \"1.0\"", ns)),
-		FilePath: "virtual",
+		Base:      []byte(fmt.Sprintf("openapi: 3.0.0\ninfo:\n   title: %s\n   version: \"1.0\"", ns)),
+		FilePath:  "/virtual.yaml",
+		IsVirtual: true,
 	}
 
 	// we always take the first one, even if there are more
 	if len(gateways) > 0 {
 		g = gateways[0]
+		g.IsVirtual = false
 	}
 
 	// set file path
@@ -205,7 +209,9 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 
 	doc, err := loadDoc(g.Base, g.FilePath, ns, fileStore)
 	if err != nil {
+		slog.Error("can not load the openapi doc", slog.Any("error", err))
 		gw.Errors = append(gw.Errors, err.Error())
+
 		return gw
 	}
 
@@ -218,14 +224,16 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 			slog.Warn("skipping endpoint because of errors",
 				slog.String("endpoint", ep.FilePath))
 			gw.Warnings = append(gw.Warnings, fmt.Sprintf("skipping endpoint %s", ep.FilePath))
+
 			continue
 		}
 
 		rel, err := filepath.Rel(filepath.Dir(gw.FilePath), ep.FilePath)
 		if err != nil {
-			slog.Warn("skipping endpoint because of of filepath calculation",
+			slog.Warn("skipping endpoint because of filepath calculation",
 				slog.String("endpoint", ep.FilePath))
 			gw.Warnings = append(gw.Warnings, fmt.Sprintf("skipping endpoint %s", ep.FilePath))
+
 			continue
 		}
 
@@ -237,12 +245,16 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 	if expand {
 		c, err := doc.MarshalJSON()
 		if err != nil {
+			slog.Error("can not marshal (json) the openapi doc", slog.Any("error", err))
 			gw.Errors = append(gw.Errors, err.Error())
+
 			return gw
 		}
 		doc, err = loadDoc(c, g.FilePath, ns, fileStore)
 		if err != nil {
+			slog.Error("can not load the openapi doc", slog.Any("error", err))
 			gw.Errors = append(gw.Errors, err.Error())
+
 			return gw
 		}
 		doc.InternalizeRefs(context.Background(), nil)
@@ -250,10 +262,16 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 
 	a, err := doc.MarshalYAML()
 	if err != nil {
+		slog.Error("can not marshal (yaml) the openapi doc", slog.Any("error", err))
 		gw.Errors = append(gw.Errors, err.Error())
+
 		return gw
 	}
 	gw.Spec = a
+
+	if g.IsVirtual {
+		gw.FilePath = "virtual"
+	}
 
 	return gw
 }
@@ -328,6 +346,7 @@ func validateEndpoint(item core.Endpoint, ns string, fileStore filestore.FileSto
 	}
 
 	err = doc.Validate(context.Background())
+
 	return &pi, err
 }
 
@@ -339,6 +358,7 @@ func loadDoc(data []byte, filePath, ns string, fileStore filestore.FileStore) (*
 		if err != nil {
 			return nil, err
 		}
+
 		return fileStore.ForFile(file).GetData(context.Background())
 	}
 
