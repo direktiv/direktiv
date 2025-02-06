@@ -28,8 +28,8 @@ const CreateToken = ({ close }: { close: () => void }) => {
   const { t } = useTranslation();
   const { data: availablePermissions } = usePermissionKeys();
   const { mutate: createToken, isPending } = useCreateToken({
-    onSuccess: (data) => {
-      setCreatedToken(data.token);
+    onSuccess: (token) => {
+      setCreatedToken(token);
     },
   });
 

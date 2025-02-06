@@ -6,6 +6,7 @@ import Button from "~/design/Button";
 import CopyButton from "~/design/CopyButton";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
+import PasswordInput from "~/pages/namespace/Gateway/Consumers/Table/Row/PasswordInput";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -31,20 +32,7 @@ const ShowToken = ({
           {t("pages.permissions.tokens.create.success.description")}
         </Alert>
         <div className="flex gap-3">
-          <InputWithButton>
-            <Input
-              value={token}
-              readOnly
-              type={revealToken ? "text" : "password"}
-            />
-            <Button
-              variant="outline"
-              onClick={() => setRevealToken(!revealToken)}
-              icon
-            >
-              {revealToken ? <EyeOff /> : <Eye />}
-            </Button>
-          </InputWithButton>
+          <PasswordInput password={token} />
           <CopyButton
             value={token}
             buttonProps={{

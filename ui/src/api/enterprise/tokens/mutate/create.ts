@@ -16,11 +16,9 @@ const createToken = apiFactory<TokenFormSchemaType>({
   schema: TokenCreatedSchema,
 });
 
-type ResolvedCreateToken = Awaited<ReturnType<typeof createToken>>;
-
 export const useCreateToken = ({
   onSuccess,
-}: { onSuccess?: (data: ResolvedCreateToken) => void } = {}) => {
+}: { onSuccess?: (secret: string) => void } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -46,7 +44,8 @@ export const useCreateToken = ({
           apiKey: apiKey ?? undefined,
         }),
       });
-      onSuccess?.(data);
+      // TODO: why is this any???
+      onSuccess?.(data.data.secret);
     },
     onError: () => {
       toast({
