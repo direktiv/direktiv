@@ -45,6 +45,8 @@ const PermisionSchema = z.object({
       "method": "foo1_method2"
     }
   ],
+  "isExpired": false,
+  "expiredAt": "2025-02-06T09:35:50.800122Z",
   "createdAt": "2025-02-06T09:35:50.800122Z",
   "updatedAt": "2025-02-06T09:35:50.800122Z"
 }
@@ -54,6 +56,8 @@ const TokenSchema = z.object({
   description: z.string(),
   prefix: z.string(),
   permissions: z.array(PermisionSchema),
+  isExpired: z.boolean(),
+  expiredAt: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
