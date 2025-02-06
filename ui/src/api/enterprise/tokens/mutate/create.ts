@@ -9,7 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const createToken = apiFactory<TokenFormSchemaType>({
+const createToken = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/api_tokens`,
   method: "POST",
@@ -44,7 +44,6 @@ export const useCreateToken = ({
           apiKey: apiKey ?? undefined,
         }),
       });
-      // TODO: why is this any???
       onSuccess?.(data.data.secret);
     },
     onError: () => {
