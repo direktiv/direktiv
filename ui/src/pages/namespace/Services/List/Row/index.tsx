@@ -15,19 +15,15 @@ import { FC } from "react";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import { StatusBadge } from "../../components/StatusBadge";
 import { TooltipProvider } from "~/design/Tooltip";
-import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 const ServicesTableRow: FC<{
   service: ServiceSchemaType;
   setRebuildService: (service: ServiceSchemaType) => void;
 }> = ({ service, setRebuildService }) => {
-  const namespace = useNamespace();
   const { _splat: path } = useParams({ strict: false });
   const navigate = useNavigate();
   const { t } = useTranslation();
-
-  if (!namespace) return null;
 
   return (
     <TooltipProvider>
@@ -37,12 +33,16 @@ const ServicesTableRow: FC<{
           if (service.type === "workflow-service" && path) {
             return navigate({
               to: "/n/$namespace/explorer/workflow/services/$",
-              params: { namespace, _splat: path },
+              from: "/n/$namespace",
+              params: { _splat: path },
             });
           }
           return navigate({
             to: "/n/$namespace/services/$service",
-            params: { namespace, service: service.id },
+            from: "/n/$namespace",
+            params: {
+              service: service.id,
+            },
           });
         }}
         className="cursor-pointer"
@@ -54,7 +54,8 @@ const ServicesTableRow: FC<{
                 {service.type === "workflow-service" && path ? (
                   <Link
                     to="/n/$namespace/explorer/workflow/services/$"
-                    params={{ namespace, _splat: path }}
+                    from="/n/$namespace"
+                    params={{ _splat: path }}
                     onClick={(e) => e.stopPropagation()}
                     className="hover:underline"
                   >
@@ -63,7 +64,8 @@ const ServicesTableRow: FC<{
                 ) : (
                   <Link
                     to="/n/$namespace/explorer/service/$"
-                    params={{ namespace, _splat: service.filePath }}
+                    from="/n/$namespace"
+                    params={{ _splat: service.filePath }}
                     onClick={(e) => e.stopPropagation()}
                     className="hover:underline"
                   >

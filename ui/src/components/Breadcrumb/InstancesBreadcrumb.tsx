@@ -3,11 +3,9 @@ import { Link, useMatch, useParams } from "@tanstack/react-router";
 
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import CopyButton from "~/design/CopyButton";
-import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 const InstancesBreadcrumb = () => {
-  const namespace = useNamespace();
   const { id } = useParams({ strict: false });
   const isInstancePage = useMatch({
     from: "/n/$namespace/instances/",
@@ -20,12 +18,11 @@ const InstancesBreadcrumb = () => {
   const { t } = useTranslation();
 
   if (!(isInstancePage || isInstanceDetailPage)) return null;
-  if (!namespace) return null;
 
   return (
     <>
       <BreadcrumbLink>
-        <Link to="/n/$namespace/instances" params={{ namespace }}>
+        <Link to="/n/$namespace/instances" from="/n/$namespace">
           <Boxes aria-hidden="true" />
           {t("components.breadcrumb.instances")}
         </Link>
@@ -33,7 +30,11 @@ const InstancesBreadcrumb = () => {
       {isInstanceDetailPage && id ? (
         <BreadcrumbLink>
           <Box aria-hidden="true" />
-          <Link to="/n/$namespace/instances/$id" params={{ namespace, id }}>
+          <Link
+            to="/n/$namespace/instances/$id"
+            from="/n/$namespace"
+            params={{ id }}
+          >
             {id.slice(0, 8)}
           </Link>
           <CopyButton

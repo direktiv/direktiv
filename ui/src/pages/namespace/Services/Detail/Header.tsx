@@ -12,17 +12,14 @@ import { Link } from "@tanstack/react-router";
 import RefreshButton from "~/design/RefreshButton";
 import Scale from "./Scale";
 import { StatusBadge } from "../components/StatusBadge";
-import { useNamespace } from "~/util/store/namespace";
 import { useService } from "~/api/services/query/services";
 import { useTranslation } from "react-i18next";
 
 const Header = ({ serviceId }: { serviceId: string }) => {
-  const namespace = useNamespace();
   const { data: service, refetch, isFetching } = useService(serviceId);
 
   const { t } = useTranslation();
 
-  if (!namespace) return null;
   if (!service) return null;
 
   const serviceTitle = service.name ? service.name : serviceId;
@@ -47,7 +44,8 @@ const Header = ({ serviceId }: { serviceId: string }) => {
           <Link
             className="hover:underline"
             to={link}
-            params={{ namespace, _splat: service.filePath }}
+            from="/n/$namespace"
+            params={{ _splat: service.filePath }}
           >
             {service.filePath}
           </Link>

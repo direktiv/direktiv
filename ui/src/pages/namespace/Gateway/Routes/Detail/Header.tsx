@@ -8,12 +8,10 @@ import MessagesOverlay from "../components/MessagesOverlay";
 import { Methods } from "../components/Methods";
 import Plugins from "../components/Plugins";
 import PublicPathInput from "../components/PublicPath";
-import { useNamespace } from "~/util/store/namespace";
 import { useRoute } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
 const Header = () => {
-  const namespace = useNamespace();
   const { filename } = useParams({ strict: false });
   const { data: route } = useRoute({
     routePath: filename ?? "",
@@ -24,7 +22,6 @@ const Header = () => {
 
   if (!route) return null;
   if (!filename) return null;
-  if (!namespace) return null;
 
   return (
     <div
@@ -82,7 +79,8 @@ const Header = () => {
           <Button asChild isAnchor variant="primary" className="max-md:w-full">
             <Link
               to="/n/$namespace/explorer/endpoint/$"
-              params={{ namespace, _splat: filename }}
+              from="/n/$namespace"
+              params={{ _splat: filename }}
             >
               <Pencil />
               {t("pages.gateway.routes.detail.editRoute")}

@@ -8,12 +8,10 @@ import { NoPermissions } from "~/design/Table";
 import ServiceEditor from "./ServiceEditor";
 import { analyzePath } from "~/util/router/utils";
 import { useFile } from "~/api/files/query/file";
-import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceAndSystemServices } from "~/api/services/query/services";
 import { useTranslation } from "react-i18next";
 
 const ServicePage: FC = () => {
-  const namespace = useNamespace();
   const { _splat: path } = useParams({ strict: false });
 
   const { segments } = analyzePath(path);
@@ -29,7 +27,6 @@ const ServicePage: FC = () => {
 
   const { data: servicesList } = useNamespaceAndSystemServices();
 
-  if (!namespace) return null;
   if (!path) return null;
   if (serviceData?.type !== "service") return null;
   if (!isPermissionCheckFetched) return null;
@@ -58,7 +55,8 @@ const ServicePage: FC = () => {
             <Button isAnchor asChild variant="primary">
               <Link
                 to="/n/$namespace/services/$service"
-                params={{ namespace, service: serviceId }}
+                from="/n/$namespace"
+                params={{ service: serviceId }}
               >
                 <FileSymlink />
                 {t("pages.explorer.service.goToService")}

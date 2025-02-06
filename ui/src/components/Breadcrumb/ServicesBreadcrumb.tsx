@@ -5,7 +5,7 @@ import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import { useTranslation } from "react-i18next";
 
 const ServicesBreadcrumb = () => {
-  const { namespace, service } = useParams({ strict: false });
+  const { service } = useParams({ strict: false });
 
   const isServicePage = useMatch({
     from: "/n/$namespace/services/",
@@ -22,12 +22,11 @@ const ServicesBreadcrumb = () => {
   const { t } = useTranslation();
 
   if (!isServicesRoute) return null;
-  if (!namespace) return null;
 
   return (
     <>
       <BreadcrumbLink data-testid="breadcrumb-services">
-        <Link to="/n/$namespace/services" params={{ namespace }}>
+        <Link to="/n/$namespace/services" from="/n/$namespace">
           <Layers aria-hidden="true" /> {t("components.breadcrumb.services")}
         </Link>
       </BreadcrumbLink>
@@ -36,7 +35,8 @@ const ServicesBreadcrumb = () => {
           <Diamond aria-hidden="true" />
           <Link
             to="/n/$namespace/services/$service"
-            params={{ namespace, service }}
+            from="/n/$namespace"
+            params={{ service }}
           >
             {service}
           </Link>

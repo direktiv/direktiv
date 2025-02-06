@@ -9,12 +9,10 @@ import { NoPermissions } from "~/design/Table";
 import PublicPathInput from "../../Gateway/Routes/components/PublicPath";
 import { analyzePath } from "~/util/router/utils";
 import { useFile } from "~/api/files/query/file";
-import { useNamespace } from "~/util/store/namespace";
 import { useRoute } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
 const EndpointPage: FC = () => {
-  const namespace = useNamespace();
   const { _splat: path } = useParams({ strict: false });
 
   const { segments } = analyzePath(path);
@@ -33,7 +31,6 @@ const EndpointPage: FC = () => {
     enabled: !!path,
   });
 
-  if (!namespace) return null;
   if (!path) return null;
   if (endpointData?.type !== "endpoint") return null;
   if (!isPermissionCheckFetched) return null;
@@ -62,7 +59,8 @@ const EndpointPage: FC = () => {
           <Button isAnchor asChild variant="primary">
             <Link
               to="/n/$namespace/gateway/routes/$filename"
-              params={{ namespace, filename: path }}
+              from="/n/$namespace"
+              params={{ filename: path }}
             >
               <ScrollText />
               {t("pages.explorer.endpoint.openRouteLogs")}

@@ -2,11 +2,9 @@ import { Link, Outlet, useMatch } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import { Users, Workflow } from "lucide-react";
 
-import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 const GatewayPage = () => {
-  const namespace = useNamespace();
   const { t } = useTranslation();
   const isGatewayRoutesPage = useMatch({
     from: "/n/$namespace/gateway/",
@@ -20,8 +18,6 @@ const GatewayPage = () => {
     from: "/n/$namespace/gateway/routes/$filename",
     shouldThrow: false,
   });
-
-  if (!namespace) return null;
 
   const tabs = [
     {
@@ -48,7 +44,7 @@ const GatewayPage = () => {
             <TabsList>
               {tabs.map((tab) => (
                 <TabsTrigger asChild value={tab.value} key={tab.value}>
-                  <Link to={tab.link} params={{ namespace }}>
+                  <Link to={tab.link} from="/n/$namespace">
                     {tab.icon}
                     {tab.title}
                   </Link>

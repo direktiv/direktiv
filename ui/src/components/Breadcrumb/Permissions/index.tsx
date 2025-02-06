@@ -5,11 +5,9 @@ import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import GroupsBreadcrumb from "./GroupsBreadcrumb";
 import PolicyBreadcrumb from "./PolicyBreadcumb";
 import TokensBreadcrumb from "./TokenBreadCrumb";
-import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 const PermissionsBreadcrumb = () => {
-  const namespace = useNamespace();
   const { t } = useTranslation();
 
   const isPermissionsPage = useMatch({
@@ -18,12 +16,11 @@ const PermissionsBreadcrumb = () => {
   });
 
   if (!isPermissionsPage) return null;
-  if (!namespace) return null;
 
   return (
     <>
       <BreadcrumbLink>
-        <Link to="/n/$namespace/permissions" params={{ namespace }}>
+        <Link to="/n/$namespace/permissions" from="/n/$namespace">
           <BadgeCheck aria-hidden="true" />
           {t("components.breadcrumb.permissions")}
         </Link>

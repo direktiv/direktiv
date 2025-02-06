@@ -8,11 +8,9 @@ import { FC } from "react";
 import { NoPermissions } from "~/design/Table";
 import { analyzePath } from "~/util/router/utils";
 import { useFile } from "~/api/files/query/file";
-import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 const ConsumerPage: FC = () => {
-  const namespace = useNamespace();
   const { _splat: path } = useParams({ strict: false });
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];
@@ -25,7 +23,6 @@ const ConsumerPage: FC = () => {
     isFetched: isPermissionCheckFetched,
   } = useFile({ path });
 
-  if (!namespace) return null;
   if (!path) return null;
   if (consumerData?.type !== "consumer") return null;
   if (!isPermissionCheckFetched) return null;
@@ -46,7 +43,7 @@ const ConsumerPage: FC = () => {
             {filename?.relative}
           </h3>
           <Button isAnchor asChild variant="primary">
-            <Link to="/n/$namespace/gateway/consumers" params={{ namespace }}>
+            <Link to="/n/$namespace/gateway/consumers" from="/n/$namespace">
               <FileSymlink />
               {t("pages.explorer.consumer.goToConsumer")}
             </Link>

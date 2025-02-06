@@ -9,7 +9,6 @@ import { Methods } from "../components/Methods";
 import Plugins from "../components/Plugins";
 import PublicPathInput from "../components/PublicPath";
 import { RouteSchemaType } from "~/api/gateway/schema";
-import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 type RowProps = {
@@ -17,17 +16,16 @@ type RowProps = {
 };
 
 export const Row: FC<RowProps> = ({ route }) => {
-  const namespace = useNamespace();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  if (!namespace) return null;
 
   return (
     <TableRow
       onClick={() => {
         navigate({
           to: "/n/$namespace/gateway/routes/$filename",
-          params: { namespace, filename: route.file_path },
+          from: "/n/$namespace",
+          params: { filename: route.file_path },
         });
       }}
       className="cursor-pointer"
@@ -40,7 +38,8 @@ export const Row: FC<RowProps> = ({ route }) => {
             }}
             className="whitespace-normal break-all hover:underline"
             to="/n/$namespace/explorer/endpoint/$"
-            params={{ namespace, _splat: route.file_path }}
+            from="/n/$namespace"
+            params={{ _splat: route.file_path }}
           >
             {route.file_path}
           </Link>

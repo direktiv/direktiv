@@ -155,7 +155,11 @@ const WorkflowLayout: FC = () => {
                     key={tab.value}
                     data-testid={`workflow-tabs-trg-${tab.value}`}
                   >
-                    <Link to={tab.link} params={{ namespace, _splat: path }}>
+                    <Link
+                      to={tab.link}
+                      from="/n/$namespace"
+                      params={{ _splat: path }}
+                    >
                       {tab.icon}
                       {tab.title}
                     </Link>

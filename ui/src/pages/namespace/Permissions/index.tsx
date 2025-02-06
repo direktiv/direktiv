@@ -2,11 +2,9 @@ import { FileCheck, KeyRound, Users } from "lucide-react";
 import { Link, Outlet, useMatch } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 
-import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 const PermissionsPage = () => {
-  const namespace = useNamespace();
   const { t } = useTranslation();
 
   const isPermissionsPolicyPage = useMatch({
@@ -21,8 +19,6 @@ const PermissionsPage = () => {
     from: "/n/$namespace/permissions/tokens",
     shouldThrow: false,
   });
-
-  if (!namespace) return null;
 
   const tabs = [
     {
@@ -60,7 +56,7 @@ const PermissionsPage = () => {
                 key={tab.value}
                 data-testid={`event-tabs-trg-${tab.value}`}
               >
-                <Link to={tab.link} params={{ namespace }}>
+                <Link to={tab.link} from="/n/$namespace">
                   {tab.icon}
                   {tab.title}
                 </Link>

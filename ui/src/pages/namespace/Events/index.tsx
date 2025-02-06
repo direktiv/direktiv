@@ -2,11 +2,9 @@ import { Antenna, Radio } from "lucide-react";
 import { Link, Outlet, useMatch } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 
-import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 const EventsPage = () => {
-  const namespace = useNamespace();
   const { t } = useTranslation();
   const isEventsHistoryPage = useMatch({
     from: "/n/$namespace/events/history",
@@ -17,7 +15,6 @@ const EventsPage = () => {
     shouldThrow: false,
   });
 
-  if (!namespace) return null;
   const tabs = [
     {
       value: "history",
@@ -47,7 +44,7 @@ const EventsPage = () => {
                 key={tab.value}
                 data-testid={`event-tabs-trg-${tab.value}`}
               >
-                <Link to={tab.link} params={{ namespace }}>
+                <Link to={tab.link} from="/n/$namespace">
                   {tab.icon}
                   {tab.title}
                 </Link>

@@ -17,7 +17,6 @@ import { FC } from "react";
 import { FileRoutesByTo } from "~/routeTree.gen";
 import { createClassNames } from "~/design/NavigationLink";
 import { isEnterprise } from "~/config/env/utils";
-import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 type NavigationItem = {
@@ -27,11 +26,8 @@ type NavigationItem = {
 };
 
 const Navigation: FC = () => {
-  const namespace = useNamespace();
   const { location } = useRouterState();
   const { t } = useTranslation();
-
-  if (!namespace) return null;
 
   const enableEnterpriseItems = isEnterprise();
 
@@ -100,7 +96,7 @@ const Navigation: FC = () => {
         <Link
           key={item.path}
           to={item.path}
-          params={{ namespace }}
+          from="/n/$namespace"
           className={createClassNames(location.pathname === item.path)}
         >
           <item.icon aria-hidden="true" /> {item.label}
