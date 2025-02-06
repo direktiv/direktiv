@@ -50,12 +50,11 @@ export const useDeleteToken = ({
         urlParams: { tokenName, namespace },
       }),
     onSuccess(_, tokenName) {
-      queryClient.setQueryData<TokenListSchemaType>(
-        tokenKeys.apiTokens(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: tokenKeys.apiTokens(namespace, {
           apiKey: apiKey ?? undefined,
         }),
-        (oldData) => updateCache(oldData, tokenName)
-      );
+      });
       toast({
         title: t("api.tokens.mutate.deleteToken.success.title"),
         description: t("api.tokens.mutate.deleteToken.success.description"),

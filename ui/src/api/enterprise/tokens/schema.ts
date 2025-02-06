@@ -79,7 +79,7 @@ export const TokenListSchema = z.object({
  */
 export const TokenCreatedSchema = z.object({
   data: z.object({
-    token: TokenSchema,
+    apiToken: TokenSchema,
     secret: z.string(),
   }),
 });
