@@ -7,7 +7,6 @@ pullPolicy: Always
 # -- Container registry secrets.
 imagePullSecrets: []
 
-
 # -- image for main direktiv binary
 image: "direktiv/direktiv"
 
@@ -31,9 +30,10 @@ flow:
   encryptionKey:
   # -- number of flow replicas
   replicas: 1
-  # -- extra environment variables in flow pod 
-  extraVariables: []
-    # - name: 
+  # -- extra environment variables in flow pod
+  extraVariables:
+    []
+    # - name:
     #   value:
   # -- extra container in flow pod
   extraContainers: []
@@ -47,7 +47,8 @@ flow:
     #   configMap:
     #     name: service-template
   # -- affinity for flow pods
-  affinity: {}
+  affinity:
+    {}
     # podAntiAffinity:
     #   requiredDuringSchedulingIgnoredDuringExecution:
     #   - labelSelector:
@@ -64,10 +65,10 @@ flow:
           memory: "128Mi"
         limits:
           memory: "512Mi"
-  
+
   # -- Knative max scale
   max_scale: 5
-  sidecar: 
+  sidecar:
 
 database:
   # -- database host
@@ -87,10 +88,8 @@ database:
 
 # Added this to connect to tracing.direktiv.io
 opentelemetry:
-  # -- installs opentelemtry agent as sidecar in flow
-  enabled: false
-  image: otel/opentelemetry-collector-dev:latest
-  # -- config for sidecar agent
+  enabled: true
+  image: otel/opentelemetry-collector:latest
   agentconfig: |
     receivers:
       otlp:
@@ -98,38 +97,27 @@ opentelemetry:
           grpc:
           http:
     exporters:
-      otlp:
-        endpoint: "tempo.grafana.svc:4317" # otel receivers grpc port for expl. tempo 
-        insecure: true
-        sending_queue:
-          num_consumers: 4
-          queue_size: 100
-        retry_on_failure:
-          enabled: true
-      logging:
-        loglevel: debug
-    processors:
-      batch:
-      memory_limiter:
-        # Same as --mem-ballast-size-mib CLI argument
-        ballast_size_mib: 165
-        # 80% of maximum memory up to 2G
-        limit_mib: 400
-        # 25% of limit up to 2G
-        spike_limit_mib: 100
-        check_interval: 5s
-    extensions:
-      zpages: {}
+      otlphttp/traces:
+        endpoint: http://direktiv-fluent-bit.default.svc:4318
+        tls:
+          insecure: true
+          insecure_skip_verify: true
+      otlphttp/metrics:
+        endpoint: http://direktiv-fluent-bit.default.svc:4318
+        tls:
+          insecure: true
+          insecure_skip_verify: true
+      debug: {}
     service:
-      extensions: [zpages]
       pipelines:
-        traces:
+        traces: 
           receivers: [otlp]
-          processors: [memory_limiter, batch]
-          exporters: [logging, otlp]
-
+          exporters: [debug, otlphttp/traces]
+        metrics:
+          receivers: [otlp]
+          exporters: [debug, otlphttp/metrics]
 ingress:
-  # -- 
+  # --
   enabled: true
   # -- Host for external services, only required for TLS
   host:
@@ -141,7 +129,6 @@ ingress:
   additionalAnnotations: {}
   # -- Additional Labels
   additionalLabels: {}
-
 
 # -- nginx ingress controller configuration
 ingress-nginx:
@@ -159,9 +146,15 @@ ingress-nginx:
 
 fluent-bit:
   install: true
+  extraPorts:
+    - port: 4318
+      containerPort: 4318
+      protocol: TCP
+      name: traces
+      nodePort: 4318
   envFrom:
-  - secretRef:
-      name: direktiv-fluentbit
+    - secretRef:
+        name: direktiv-fluentbit
   config:
     inputs: |
       [INPUT]
@@ -173,6 +166,12 @@ fluent-bit:
           multiline.parser        cri, docker
           Refresh_Interval        1
           Buffer_Max_Size         64k
+      [INPUT]
+          Name                    opentelemetry
+          Port                    4318
+          raw_traces              false
+          tag_from_uri            true
+          http2                   false
     outputs: |
       [OUTPUT]
           name                    pgsql
@@ -183,20 +182,42 @@ fluent-bit:
           database                ${PG_DB_NAME}
           host                    ${PG_HOST}
           password                ${PG_PASSWORD}
+      [OUTPUT]
+          name                    pgsql
+          match                   v1_metrics
+          port                    ${PG_PORT}
+          table                   v1metrics
+          user                    ${PG_USER}
+          database                ${PG_DB_NAME}
+          host                    ${PG_HOST}
+          password                ${PG_PASSWORD}
+      [OUTPUT]
+          name                    pgsql
+          match                   v1_traces
+          port                    ${PG_PORT}
+          table                   v1traces
+          user                    ${PG_USER}
+          database                ${PG_DB_NAME}
+          host                    ${PG_HOST}
+          password                ${PG_PASSWORD}
+      [OUTPUT]
+          name                    stdout
+          match                   v1_metrics
+          format                  json
     filters: |
       [FILTER]
           Name                    rewrite_tag
           Match                   input
           Rule                    $log ^.*"track":"([^"]*).*$ flow.$1 true
       [FILTER]
-          Name parser
-          Match *
-          Parser json
-          Key_Name log
-          Reserve_Data on
+          Name                    parser
+          Match                   input
+          Parser                  json
+          Key_Name                log
+          Reserve_Data            on
 
-# -- service account for components. If preconfigured serviceaccounts are used the name ise the base 
-# and two additional service accounts are needed, e.g. service account name is myaccount then another two 
+# -- service account for components. If preconfigured serviceaccounts are used the name ise the base
+# and two additional service accounts are needed, e.g. service account name is myaccount then another two
 # acounts are needed: myaccount-functions and myaccount-functions-pod
 serviceAccount:
   annotations: {}
@@ -214,8 +235,7 @@ https_proxy: ""
 no_proxy: ""
 
 functions:
-
-  # -- knative service limits 
+  # -- knative service limits
   limits:
     memory:
       small: 512
@@ -238,10 +258,10 @@ functions:
   replicas: 1
 
   # -- Egress/Ingress network limit for functions if supported by network
-  netShape: 
+  netShape:
 
   # -- Cleaning up tasks, Kubernetes < 1.20 does not clean finished tasks
-  podCleaner: true  # deprecated
+  podCleaner: true # deprecated
 
   # -- runtime to use, e.g. gvisor on GCP
   runtime: "default"
@@ -252,8 +272,7 @@ functions:
   extraContainersPod: []
 
   # -- extra volumes for tasks and knative pods
-  extraVolumes:
-    []
+  extraVolumes: []
   #   - configMap:
   #   name: otel-agent-conf
   #   items:
@@ -285,11 +304,11 @@ nats:
       port: 6222
       replicas: 3
     tls:
-        enabled: false
-        secretName:
-        dir: /etc/nats-certs/cluster
-        cert: tls.crt
-        key: tls.key
+      enabled: false
+      secretName:
+      dir: /etc/nats-certs/cluster
+      cert: tls.crt
+      key: tls.key
     routeURLs:
       user: direktiv
       password: direktiv
@@ -311,7 +330,7 @@ opensearch:
     storageClassName: "local-path"
   services:
     enviroment:
-  extraEnvs: 
+  extraEnvs:
     - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
       value: direktivTr0&3
     - name: "ES_JAVA_OPTS"

@@ -4,11 +4,12 @@ dependencies:
   version: 4.9.0
 - name: fluent-bit
   repository: https://fluent.github.io/helm-charts
-  version: 0.46.7
+  version: 0.48.5
 - name: nats
   repository: https://nats-io.github.io/k8s/helm/charts
   version: 1.2.6
 - name: opensearch
   repository: https://opensearch-project.github.io/helm-charts/
   version: 2.27.1
-
+digest: sha256:1f9f28702d8796f1252481686eec6ee9f8f1cb1c605c2dc36f3d93f4cec069e6
+generated: "2025-02-05T22:14:58.033892546+01:00"

@@ -100,6 +100,7 @@ cluster-direktiv: ## Installs direktiv in cluster
 	--set registry=localhost:5001 \
 	--set tag=dev \
 	--set flow.sidecar=localhost:5001/direktiv:dev \
+	--set opentelemetry.enabled=true \
 	direktiv charts/direktiv; \
 	fi
 

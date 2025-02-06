@@ -116,8 +116,7 @@ otlp sidecar
 - command:
     - "/otelcol"
     - "--config=/conf/otel-agent-config.yaml"
-    - "--mem-ballast-size-mib=165"
-  image: {{ .Values.opentelemetry.image | default "otel/opentelemetry-collector-dev:latest"}}
+  image: {{ .Values.opentelemetry.image | default "otel/opentelemetry-collector:latest"}}
   name: otel-agent
   resources:
     limits:
@@ -138,16 +137,4 @@ otlp sidecar
       - key: otel-agent-config
         path: otel-agent-config.yaml
   name: otel-agent-config-vol
-{{- end }}
-
-{{- define "direktiv.opentelemetry-backend" -}}
-{{- if .Values.opentelemetry.enabled }}
-{{- $agentconfig:= fromYaml .Values.opentelemetry.agentconfig -}}
-{{if not $agentconfig.exporters.otlp.endpoint}}
-{{- fail "opentelemetry.agentconfig.exporters.endpoint is required when opentelemetry is enabled" }}
-{{- end }}
-{{- $agentconfig.exporters.otlp.endpoint | quote }}
-{{- else }}
-{{- "\"\""}}
-{{- end }}
 {{- end }}

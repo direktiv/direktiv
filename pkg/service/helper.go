@@ -121,7 +121,7 @@ func buildPodMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMeta {
 	return metaSpec
 }
 
-func buildVolumes(_ *core.Config, sv *core.ServiceFileData) []corev1.Volume {
+func buildVolumes(c *core.Config, sv *core.ServiceFileData) []corev1.Volume {
 	volumes := []corev1.Volume{
 		{
 			Name: "workdir",
@@ -131,6 +131,26 @@ func buildVolumes(_ *core.Config, sv *core.ServiceFileData) []corev1.Volume {
 		},
 	}
 
+	if c.OpenTelemetry != "" {
+		volumes = append(volumes,
+			corev1.Volume{
+				Name: "otel-agent-config-vol",
+				VolumeSource: corev1.VolumeSource{
+					ConfigMap: &corev1.ConfigMapVolumeSource{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: "direktiv-otel-agent-config",
+						},
+						Items: []corev1.KeyToPath{
+							{
+								Key:  "otel-agent-config",
+								Path: "otel-agent-config.yaml",
+							},
+						},
+					},
+				},
+			},
+		)
+	}
 	// add extra folder if bin required
 	if sv.Cmd == direktivCmdExecValue {
 		volumes = append(volumes, corev1.Volume{
@@ -192,21 +212,51 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 		uc.Command = args
 	}
 
-	vMounts := []corev1.VolumeMount{
-		{
-			Name:      "workdir",
-			MountPath: "/mnt/shared",
-		},
+	var containers []corev1.Container
+
+	// Add OpenTelemetry collector if configured
+	if c.OpenTelemetry != "" {
+		otelCollector := corev1.Container{
+			Name:  "otel-agent",
+			Image: "otel/opentelemetry-collector:latest",
+			Command: []string{
+				"/otelcol",
+				"--config=/conf/otel-agent-config.yaml",
+			},
+			Resources: corev1.ResourceRequirements{
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("500m"),
+					corev1.ResourceMemory: resource.MustParse("500Mi"),
+				},
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("100m"),
+					corev1.ResourceMemory: resource.MustParse("100Mi"),
+				},
+			},
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      "otel-agent-config-vol",
+					MountPath: "/conf",
+				},
+			},
+		}
+
+		containers = append(containers, otelCollector)
 	}
 
 	// direktiv sidecar
 	sidecarEnvs := buildEnvVars(true, c, sv)
 	sidecarEnvs = append(sidecarEnvs, corev1.EnvVar{Name: "API_KEY", Value: os.Getenv("DIREKTIV_API_KEY")})
 	sc := corev1.Container{
-		Name:         containerSidecar,
-		Image:        c.KnativeSidecar,
-		Env:          sidecarEnvs,
-		VolumeMounts: vMounts,
+		Name:  containerSidecar,
+		Image: c.KnativeSidecar,
+		Env:   sidecarEnvs,
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "workdir",
+				MountPath: "/mnt/shared",
+			},
+		},
 		Ports: []corev1.ContainerPort{
 			{
 				ContainerPort: containerSidecarPort,
@@ -216,7 +266,10 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 		Command:         []string{"/app/direktiv", "start", "sidecar"},
 	}
 
-	return []corev1.Container{uc, sc}, nil
+	// Add the main user container and the sidecar to the list
+	containers = append(containers, uc, sc)
+
+	return containers, nil
 }
 
 func buildResourceLimits(cf *core.Config, sv *core.ServiceFileData) (*corev1.ResourceRequirements, error) {
