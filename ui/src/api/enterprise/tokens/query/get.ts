@@ -15,7 +15,7 @@ const getTokens = apiFactory({
 
 const fetchTokens = async ({
   queryKey: [{ apiKey, namespace }],
-}: QueryFunctionContext<ReturnType<(typeof tokenKeys)["tokenList"]>>) =>
+}: QueryFunctionContext<ReturnType<(typeof tokenKeys)["apiTokens"]>>) =>
   getTokens({
     apiKey,
     urlParams: { namespace },
@@ -30,7 +30,7 @@ export const useTokens = () => {
   }
 
   return useQueryWithPermissions({
-    queryKey: tokenKeys.tokenList(namespace, {
+    queryKey: tokenKeys.apiTokens(namespace, {
       apiKey: apiKey ?? undefined,
     }),
     queryFn: fetchTokens,

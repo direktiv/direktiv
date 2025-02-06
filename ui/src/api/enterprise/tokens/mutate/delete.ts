@@ -1,8 +1,4 @@
-import {
-  TokenDeletedSchema,
-  TokenListSchemaType,
-  TokenSchemaType,
-} from "../schema";
+import { TokenDeletedSchema, TokenListSchemaType } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
 import { tokenKeys } from "..";
@@ -15,11 +11,11 @@ import { useTranslation } from "react-i18next";
 
 const updateCache = (
   oldData: TokenListSchemaType | undefined,
-  variables: Parameters<ReturnType<typeof useDeleteToken>["mutate"]>[0]
+  tokenName: Parameters<ReturnType<typeof useDeleteToken>["mutate"]>[0]
 ) => {
   if (!oldData) return undefined;
-  const remainingTokens = oldData.tokens.filter(
-    (token) => token.id !== variables.id
+  const remainingTokens = oldData.data.filter(
+    (token) => token.name !== tokenName
   );
   return {
     ...oldData,
@@ -28,8 +24,8 @@ const updateCache = (
 };
 
 const deleteToken = apiFactory({
-  url: ({ namespace, tokenId }: { namespace: string; tokenId: string }) =>
-    `/api/v2/namespaces/${namespace}/tokens/${tokenId}`,
+  url: ({ namespace, tokenName }: { namespace: string; tokenName: string }) =>
+    `/api/v2/namespaces/${namespace}/api_tokens/${tokenName}`,
   method: "DELETE",
   schema: TokenDeletedSchema,
 });
@@ -48,20 +44,17 @@ export const useDeleteToken = ({
   }
 
   return useMutationWithPermissions({
-    mutationFn: (token: TokenSchemaType) =>
+    mutationFn: (tokenName: string) =>
       deleteToken({
         apiKey: apiKey ?? undefined,
-        urlParams: {
-          tokenId: token.id,
-          namespace,
-        },
+        urlParams: { tokenName, namespace },
       }),
-    onSuccess(_, variables) {
+    onSuccess(_, tokenName) {
       queryClient.setQueryData<TokenListSchemaType>(
-        tokenKeys.tokenList(namespace, {
+        tokenKeys.apiTokens(namespace, {
           apiKey: apiKey ?? undefined,
         }),
-        (oldData) => updateCache(oldData, variables)
+        (oldData) => updateCache(oldData, tokenName)
       );
       toast({
         title: t("api.tokens.mutate.deleteToken.success.title"),

@@ -42,7 +42,7 @@ export const useCreateToken = ({
       }),
     onSuccess(data) {
       queryClient.invalidateQueries({
-        queryKey: tokenKeys.tokenList(namespace, {
+        queryKey: tokenKeys.apiTokens(namespace, {
           apiKey: apiKey ?? undefined,
         }),
       });
