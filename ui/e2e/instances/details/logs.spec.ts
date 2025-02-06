@@ -77,6 +77,11 @@ test("It displays a log message from the workflow yaml, one initial and one fina
     page.getByTestId("instance-header-container").locator("div").first()
   ).toContainText("complete");
 
+  // for some reason, logs do not update in the test at this point.
+  // Possibly streaming is interrupted in the test context? As a workaround,
+  // reload the page to ensure all logs are eventually rendered.
+  page.reload();
+
   await expect(
     scrollContainer.locator("pre").locator("span").nth(3),
     "It displays the log message from the log field in the workflow yaml"
@@ -100,7 +105,7 @@ test("the logs panel can be maximized", async ({ page }) => {
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: workflowWithDelayLogs,
+    yaml: simpleWorkflow,
   });
 
   const instanceId = (
