@@ -15,7 +15,6 @@ import { addYamlFileExtension } from "../../../../utils";
 import { defaultEndpointFileYaml } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/utils";
 import { encode } from "js-base64";
 import { useCreateFile } from "~/api/files/mutate/createFile";
-import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -36,7 +35,6 @@ const NewRoute = ({
   unallowedNames?: string[];
 }) => {
   const { t } = useTranslation();
-  const namespace = useNamespace();
   const navigate = useNavigate();
 
   const resolver = zodResolver(
@@ -69,11 +67,11 @@ const NewRoute = ({
 
   const { mutate: createFile, isPending } = useCreateFile({
     onSuccess: (data) => {
-      namespace &&
-        navigate({
-          to: "/n/$namespace/explorer/endpoint/$",
-          params: { namespace, _splat: data.data.path },
-        });
+      navigate({
+        to: "/n/$namespace/explorer/endpoint/$",
+        from: "/n/$namespace",
+        params: { _splat: data.data.path },
+      });
       close();
     },
   });

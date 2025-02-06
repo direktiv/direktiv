@@ -12,7 +12,6 @@ import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { useCreateFile } from "~/api/files/mutate/createFile";
-import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -32,7 +31,6 @@ const NewDirectory = ({
   unallowedNames?: string[];
 }) => {
   const { t } = useTranslation();
-  const namespace = useNamespace();
   const navigate = useNavigate();
 
   const resolver = zodResolver(
@@ -57,11 +55,11 @@ const NewDirectory = ({
 
   const { mutate: createDirectory, isPending } = useCreateFile({
     onSuccess: (data) => {
-      namespace &&
-        navigate({
-          to: "/n/$namespace/explorer/tree/$",
-          params: { namespace, _splat: data.data.path },
-        });
+      navigate({
+        to: "/n/$namespace/explorer/tree/$",
+        from: "/n/$namespace",
+        params: { _splat: data.data.path },
+      });
       close();
     },
   });

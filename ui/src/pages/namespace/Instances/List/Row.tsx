@@ -20,7 +20,6 @@ import TooltipCopyBadge from "~/design/TooltipCopyBadge";
 import { decode } from "js-base64";
 import moment from "moment";
 import { statusToBadgeVariant } from "../utils";
-import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
@@ -28,7 +27,6 @@ import useUpdatedAt from "~/hooks/useUpdatedAt";
 const InstanceTableRow: FC<{
   instance: InstanceSchemaType;
 }> = ({ instance }) => {
-  const namespace = useNamespace();
   const [invoker, childInstance] = instance.invoker.split(":");
   const isValidDate = moment(instance.endedAt).isValid();
   const endedAt = useUpdatedAt(instance.endedAt);
@@ -36,8 +34,6 @@ const InstanceTableRow: FC<{
   const navigate = useNavigate();
   const { t } = useTranslation();
   const isChildInstance = invoker === "instance" && !!childInstance;
-
-  if (!namespace) return null;
 
   return (
     <TooltipProvider>
@@ -47,7 +43,8 @@ const InstanceTableRow: FC<{
         onClick={() => {
           navigate({
             to: "/n/$namespace/instances/$id",
-            params: { namespace, id: instance.id },
+            from: "/n/$namespace",
+            params: { id: instance.id },
           });
         }}
         className="cursor-pointer"

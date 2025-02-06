@@ -15,7 +15,6 @@ import { statusToBadgeVariant } from "../../utils";
 import { t } from "i18next";
 import { useInstanceId } from "../store/instanceContext";
 import { useInstances } from "~/api/instances/query/get";
-import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -23,7 +22,6 @@ const maxChildInstancesToShow = 50;
 
 const ChildInstances = () => {
   const instanceId = useInstanceId();
-  const namespace = useNamespace();
   const navigate = useNavigate();
   const [popoverOpen, setPopoverOpen] = useState(false);
   const { data, refetch, isFetching } = useInstances({
@@ -37,14 +35,13 @@ const ChildInstances = () => {
     },
   });
 
-  if (!namespace) return null;
-
   const instances = data?.data ?? [];
 
   const onInstanceSelect = (instance: string) => {
     navigate({
       to: "/n/$namespace/instances/$id",
-      params: { namespace, id: instance },
+      from: "/n/$namespace",
+      params: { id: instance },
     });
   };
 

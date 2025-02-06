@@ -24,7 +24,6 @@ import { Textarea } from "~/design/TextArea";
 import { addYamlFileExtension } from "../../../../utils";
 import { encode } from "js-base64";
 import { useCreateFile } from "~/api/files/mutate/createFile";
-import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "@tanstack/react-router";
 import { useNotifications } from "~/api/notifications/query/get";
 import { useState } from "react";
@@ -51,7 +50,6 @@ const NewWorkflow = ({
   unallowedNames?: string[];
 }) => {
   const { t } = useTranslation();
-  const namespace = useNamespace();
   const navigate = useNavigate();
   const { refetch: updateNotificationBell } = useNotifications();
 
@@ -96,11 +94,11 @@ const NewWorkflow = ({
        * We need to update the notification bell, to see potential new messages.
        */
       updateNotificationBell();
-      namespace &&
-        navigate({
-          to: "/n/$namespace/explorer/workflow/edit/$",
-          params: { namespace, _splat: data.data.path },
-        });
+      navigate({
+        to: "/n/$namespace/explorer/workflow/edit/$",
+        from: "/n/$namespace",
+        params: { _splat: data.data.path },
+      });
       close();
     },
   });
