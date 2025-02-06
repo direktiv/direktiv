@@ -2,10 +2,12 @@ import { z } from "zod";
 
 export const permissionTopics = [
   "namespaces",
+  "instances",
   "secrets",
   "variables",
-  "instances",
 ] as const; // TODO: finalize this array
+
+export type PermissionTopic = (typeof permissionTopics)[number];
 
 const permissionMethods = [
   "POST",
@@ -20,8 +22,10 @@ const permissionMethods = [
 /**
  * the ui only offers a subset of the methods
  */
-export const permissionMethodsAvailableUi: (typeof permissionMethods)[number][] =
-  ["manage", "read"] as const;
+export const permissionMethodsAvailableUi = ["manage", "read"] as const;
+
+export type PermissionMethodAvailableUi =
+  (typeof permissionMethodsAvailableUi)[number];
 
 const PermisionSchema = z.object({
   topic: z.enum(permissionTopics),

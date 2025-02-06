@@ -148,17 +148,16 @@ const CreateToken = ({ close }: { close: () => void }) => {
                   />
                 </InputWithButton>
               </fieldset>
-              {/* <PermissionsSelector
-                availablePermissions={availablePermissions ?? []}
+              <PermissionsSelector
                 selectedPermissions={watch("permissions")}
-                setPermissions={(permissions) =>
+                onChange={(permissions) =>
                   setValue("permissions", permissions, {
                     shouldDirty: true,
                     shouldTouch: true,
                     shouldValidate: true,
                   })
                 }
-              /> */}
+              />
             </form>
           </div>
           <DialogFooter>

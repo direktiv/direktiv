@@ -1,45 +1,47 @@
+import {
+  PermissionMethodAvailableUi,
+  PermissionTopic,
+  permissionMethodsAvailableUi,
+} from "~/api/enterprise/tokens/schema";
+import { RadioGroup, RadioGroupItem } from "~/design/RadioGroup";
 import { TableCell, TableRow } from "~/design/Table";
 
-import { Checkbox } from "~/design/Checkbox";
-import { joinPermissionString } from "./utils";
+import { z } from "zod";
 
 type PermissionRowProps = {
-  resource: string;
-  scopes: string[];
-  availableScopes: string[];
-  selectedPermissions: string[];
-  onCheckedChange: (permissionValue: string, isChecked: boolean) => void;
+  topic: PermissionTopic;
+  onChange: (newValue: PermissionMethodAvailableUi | undefined) => void;
 };
 
-export const PermissionRow = ({
-  resource,
-  scopes,
-  availableScopes,
-  selectedPermissions,
-  onCheckedChange,
-}: PermissionRowProps) => (
-  <TableRow>
-    <TableCell className="grow">{resource}</TableCell>
-    {availableScopes.map((availableScope) => {
-      const permissionString = joinPermissionString(availableScope, resource);
-      return (
-        <TableCell key={availableScope} className="px-2">
-          <div className="flex justify-center">
-            {scopes.includes(availableScope) ? (
-              <Checkbox
-                checked={selectedPermissions.includes(permissionString)}
-                onCheckedChange={(checked) => {
-                  if (checked !== "indeterminate") {
-                    onCheckedChange(permissionString, checked);
-                  }
-                }}
-              />
-            ) : (
-              <Checkbox disabled={true} />
-            )}
-          </div>
+const noPermissionsOptionsValue = "";
+
+export const PermissionRow = ({ topic, onChange }: PermissionRowProps) => (
+  <RadioGroup
+    defaultValue={noPermissionsOptionsValue}
+    onValueChange={(newValue) => {
+      const parsedValue = z
+        .enum(permissionMethodsAvailableUi)
+        .safeParse(newValue);
+
+      if (parsedValue.success) {
+        onChange(parsedValue.data);
+      } else {
+        onChange(undefined);
+      }
+    }}
+    className="table-row"
+    asChild
+  >
+    <TableRow>
+      <TableCell className="grow">{topic}</TableCell>
+      <TableCell className="text-center">
+        <RadioGroupItem value={noPermissionsOptionsValue} />
+      </TableCell>
+      {permissionMethodsAvailableUi.map((permission) => (
+        <TableCell key={permission} className="text-center">
+          <RadioGroupItem value={permission} />
         </TableCell>
-      );
-    })}
-  </TableRow>
+      ))}
+    </TableRow>
+  </RadioGroup>
 );

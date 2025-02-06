@@ -1,3 +1,8 @@
+import {
+  PermisionSchemaType,
+  permissionMethodsAvailableUi,
+  permissionTopics,
+} from "~/api/enterprise/tokens/schema";
 import { SquareDashedMousePointer, SquareMousePointer } from "lucide-react";
 import {
   Table,
@@ -6,64 +11,22 @@ import {
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
-import {
-  groupPermissionStringsByResource,
-  permissionStringsToScopes,
-} from "./utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { PermissionRow } from "./Row";
-import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+type PermisionsSelectorProps = {
+  selectedPermissions: PermisionSchemaType[];
+  onChange: (permissions: PermisionSchemaType[]) => void;
+};
+
 const PermissionsSelector = ({
-  availablePermissions,
   selectedPermissions,
-  setPermissions,
-}: {
-  availablePermissions: string[];
-  selectedPermissions: string[];
-  setPermissions: (permissions: string[]) => void;
-}) => {
+  onChange,
+}: PermisionsSelectorProps) => {
   const { t } = useTranslation();
-
-  const onCheckedChange = (permission: string, isChecked: boolean) => {
-    const currentPermissions = selectedPermissions;
-    const newPermissions = isChecked
-      ? [...currentPermissions, permission]
-      : currentPermissions.filter((p) => p !== permission);
-    setPermissions(newPermissions);
-  };
-
-  const allSelected =
-    selectedPermissions.length === availablePermissions?.length;
-  const noneSelected = selectedPermissions.length === 0;
-
-  const selectAllPermissions = () => {
-    setPermissions(availablePermissions);
-  };
-
-  const deselectAllPermissions = () => {
-    setPermissions([]);
-  };
-
-  const availableScopes = useMemo(
-    () => permissionStringsToScopes(availablePermissions),
-    [availablePermissions]
-  );
-
-  const groupedResources = useMemo(
-    () => groupPermissionStringsByResource(availablePermissions),
-    [availablePermissions]
-  );
-
-  const sortedResources = useMemo(
-    () =>
-      Object.entries(groupedResources).sort((a, b) => a[0].localeCompare(b[0])),
-    [groupedResources]
-  );
-
   return (
     <>
       <fieldset className="flex items-center gap-5">
@@ -81,8 +44,9 @@ const PermissionsSelector = ({
                       variant="link"
                       type="button"
                       size="sm"
-                      onClick={selectAllPermissions}
-                      disabled={allSelected}
+                      // TODO:
+                      // onClick={selectAllPermissions}
+                      // disabled={allSelected}
                     >
                       <SquareMousePointer />
                       {t("pages.permissions.permissionsSelector.selectAll")}
@@ -91,34 +55,38 @@ const PermissionsSelector = ({
                       variant="link"
                       size="sm"
                       type="button"
-                      onClick={deselectAllPermissions}
-                      disabled={noneSelected}
+                      // TODO:
+                      // onClick={deselectAllPermissions}
+                      // disabled={noneSelected}
                     >
                       <SquareDashedMousePointer />
                       {t("pages.permissions.permissionsSelector.deselectAll")}
                     </Button>
                   </div>
                 </TableHeaderCell>
-                {availableScopes.map((scope) => (
+                <TableHeaderCell sticky className="w-20 px-2 text-center">
+                  no
+                </TableHeaderCell>
+                {permissionMethodsAvailableUi.map((method) => (
                   <TableHeaderCell
                     sticky
-                    key={scope}
+                    key={method}
                     className="w-20 px-2 text-center"
                   >
-                    {scope.toLowerCase()}
+                    {method.toLowerCase()}
                   </TableHeaderCell>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {sortedResources.map(([resource, scopes]) => (
+              {permissionTopics.map((topic) => (
                 <PermissionRow
-                  key={resource}
-                  resource={resource}
-                  scopes={scopes}
-                  availableScopes={availableScopes}
-                  selectedPermissions={selectedPermissions}
-                  onCheckedChange={onCheckedChange}
+                  key={topic}
+                  topic={topic}
+                  // TODO:implement default value
+                  onChange={(value) => {
+                    console.log("🚀 set value", value, "for topic", topic);
+                  }}
                 />
               ))}
             </TableBody>
