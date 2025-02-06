@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 
 const createToken = apiFactory<TokenFormSchemaType>({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
-    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/tokens`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/api_tokens`,
   method: "POST",
   schema: TokenCreatedSchema,
 });

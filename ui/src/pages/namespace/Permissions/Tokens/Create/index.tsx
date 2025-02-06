@@ -41,8 +41,10 @@ const CreateToken = ({ close }: { close: () => void }) => {
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<TokenFormSchemaType>({
     defaultValues: {
+      name: "",
       description: "",
-      duration: "",
+      // TODO: add this back
+      // duration: "",
       permissions: [],
     },
     resolver: zodResolver(TokenFormSchema),
@@ -81,6 +83,22 @@ const CreateToken = ({ close }: { close: () => void }) => {
               <fieldset className="flex items-center gap-5">
                 <label
                   className="w-[90px] text-right text-[14px]"
+                  htmlFor="name"
+                >
+                  {t("pages.permissions.tokens.create.name.label")}
+                </label>
+                <Input
+                  id="name"
+                  placeholder={t(
+                    "pages.permissions.tokens.create.name.placeholder"
+                  )}
+                  autoComplete="off"
+                  {...register("name")}
+                />
+              </fieldset>
+              <fieldset className="flex items-center gap-5">
+                <label
+                  className="w-[90px] text-right text-[14px]"
                   htmlFor="description"
                 >
                   {t("pages.permissions.tokens.create.description.label")}
@@ -94,7 +112,7 @@ const CreateToken = ({ close }: { close: () => void }) => {
                   {...register("description")}
                 />
               </fieldset>
-              <fieldset className="flex items-center gap-5">
+              {/* <fieldset className="flex items-center gap-5">
                 <label
                   className="w-[90px] text-right text-[14px]"
                   htmlFor="duration"
@@ -120,8 +138,8 @@ const CreateToken = ({ close }: { close: () => void }) => {
                     }}
                   />
                 </InputWithButton>
-              </fieldset>
-              <PermissionsSelector
+              </fieldset> */}
+              {/* <PermissionsSelector
                 availablePermissions={availablePermissions ?? []}
                 selectedPermissions={watch("permissions")}
                 setPermissions={(permissions) =>
@@ -131,7 +149,7 @@ const CreateToken = ({ close }: { close: () => void }) => {
                     shouldValidate: true,
                   })
                 }
-              />
+              /> */}
             </form>
           </div>
           <DialogFooter>
