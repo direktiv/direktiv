@@ -752,10 +752,10 @@
         "permissionsHintTitle": "Available permissions"
       },
       "permissionsInfo": {
-        "all": "all permissions",
-        "partial": "{{count}} permisions",
-        "partial_one": "{{count}} permision",
-        "partial_zero": "no permissions"
+        "all": "all topics",
+        "partial": "{{count}} topics",
+        "partial_one": "{{count}} topic",
+        "noPermissions": "no permissions"
       },
       "durationHint": {
         "title": "Token lifetime",

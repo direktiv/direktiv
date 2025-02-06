@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const permissionTopics = [
+export const permissionTopics = [
   "namespaces",
   "secrets",
   "variables",
@@ -118,6 +118,7 @@ export const TokenFormSchema = z.object({
 
 export const TokenDeletedSchema = z.null();
 
+export type PermisionSchemaType = z.infer<typeof PermisionSchema>;
 export type TokenSchemaType = z.infer<typeof TokenSchema>;
 export type TokenListSchemaType = z.infer<typeof TokenListSchema>;
 export type TokenFormSchemaType = z.infer<typeof TokenFormSchema>;

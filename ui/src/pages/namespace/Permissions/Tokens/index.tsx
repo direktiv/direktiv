@@ -74,7 +74,7 @@ const TokensPage = () => {
               <>
                 {noResults ? (
                   <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                    <TableCell colSpan={4}>
+                    <TableCell colSpan={5}>
                       <NoResult icon={KeyRound} button={createNewButton}>
                         {t("pages.permissions.tokens.noTokens")}
                       </NoResult>
@@ -92,7 +92,7 @@ const TokensPage = () => {
               </>
             ) : (
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                <TableCell colSpan={4}>
+                <TableCell colSpan={5}>
                   <NoPermissions>{noPermissionMessage}</NoPermissions>
                 </TableCell>
               </TableRow>

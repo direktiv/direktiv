@@ -1,4 +1,9 @@
 import {
+  PermisionSchemaType,
+  permissionTopics,
+} from "~/api/enterprise/tokens/schema";
+import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -6,19 +11,19 @@ import {
 } from "~/design/Tooltip";
 
 import Badge from "~/design/Badge";
-import { usePermissionKeys } from "~/api/enterprise/permissions/query/get";
 import usePermissionLevel from "./usePermissionLevel";
 import { useTranslation } from "react-i18next";
 
-const PermissionsInfo = ({ permissions }: { permissions: string[] }) => {
-  const { t } = useTranslation();
-  const { data: availablePermissions, isSuccess } = usePermissionKeys();
-  const { hasAllPermissions, badgeVariant } = usePermissionLevel(
-    permissions,
-    availablePermissions ?? []
-  );
+type PermissionsInfoProps = {
+  permissions: PermisionSchemaType[];
+};
 
-  if (!isSuccess) return null;
+const PermissionsInfo = ({ permissions }: PermissionsInfoProps) => {
+  const { t } = useTranslation();
+  const { hasAllPermissions, badgeVariant } = usePermissionLevel(
+    permissions.map((permission) => permission.topic),
+    [...permissionTopics]
+  );
 
   return (
     <TooltipProvider>
@@ -32,16 +37,29 @@ const PermissionsInfo = ({ permissions }: { permissions: string[] }) => {
                 })}
           </Badge>
         </TooltipTrigger>
-        <TooltipContent className="flex max-w-xl flex-wrap gap-3">
-          {availablePermissions.map((permission) => (
-            <Badge
-              key={permission}
-              className="cursor-pointer"
-              variant={permissions.includes(permission) ? "success" : "outline"}
-            >
-              {permission}
-            </Badge>
-          ))}
+        <TooltipContent className="flex flex-col max-w-xl flex-wrap gap-3 text-inherit">
+          <Table>
+            <TableBody>
+              {permissionTopics.map((permission) => {
+                const permisionValue = permissions.find(
+                  (p) => p.topic === permission
+                );
+
+                const permissionSet = !!permisionValue;
+
+                return (
+                  <TableRow key={permission}>
+                    <TableCell className="font-bold">{permission}</TableCell>
+                    <TableCell>
+                      {permissionSet
+                        ? permisionValue?.method
+                        : t("pages.permissions.permissionsInfo.noPermissions")}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

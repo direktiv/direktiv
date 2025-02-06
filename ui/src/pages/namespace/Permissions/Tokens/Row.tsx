@@ -63,7 +63,7 @@ const Row = ({
           </Badge>
         </TableCell>
         <TableCell>
-          {/* <PermissionsInfo permissions={token.permissions} /> */}
+          <PermissionsInfo permissions={token.permissions} />
         </TableCell>
         <TableCell>
           <DropdownMenu>
