@@ -8,7 +8,7 @@ import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
 const getTokens = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
-    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/tokens`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/api_tokens`,
   method: "GET",
   schema: TokenListSchema,
 });
