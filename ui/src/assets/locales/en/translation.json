@@ -836,9 +836,13 @@
           "title": "Create a token",
           "cancelBtn": "Cancel",
           "createBtn": "Create",
+          "name": {
+            "label": "Name",
+            "placeholder": "Enter a name for the token"
+          },
           "description": {
             "label": "Description",
-            "placeholder": "Enter a description for the group"
+            "placeholder": "Enter a description for the token"
           },
           "duration": {
             "label": "Duration",
