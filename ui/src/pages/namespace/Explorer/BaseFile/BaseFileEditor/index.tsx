@@ -6,14 +6,15 @@ import {
   useUnsavedChanges,
 } from "../../Workflow/store/unsavedChangesContext";
 
-import Alert from "~/design/Alert";
+// import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { CodeEditor } from "../../Workflow/Edit/CodeEditor";
 import { FileSchemaType } from "~/api/files/schema";
 import { Form } from "react-router-dom";
 import { OpenApiBaseFileFormSchema } from "./schema";
 import { Save } from "lucide-react";
-import { ScrollArea } from "~/design/ScrollArea";
+import { useToast } from "~/design/Toast";
+// import { ScrollArea } from "~/design/ScrollArea";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
@@ -23,8 +24,9 @@ type BaseFileEditorProps = {
 
 const BaseFileEditor: FC<BaseFileEditorProps> = ({ data }) => {
   const { t } = useTranslation();
-  const decodedFileContentFromServer = decode(data.data ?? "");
+  const { toast: showToast } = useToast();
 
+  const decodedFileContentFromServer = decode(data.data ?? "");
   const hasUnsavedChanges = useUnsavedChanges();
   const setHasUnsavedChanges = useSetUnsavedChanges();
 
@@ -32,17 +34,36 @@ const BaseFileEditor: FC<BaseFileEditorProps> = ({ data }) => {
     decodedFileContentFromServer
   );
 
-  const [error, setError] = useState<string | undefined>();
+  // const [error, setError] = useState<string | undefined>();
 
   const { mutate: updateFile, isPending } = useUpdateFile({
-    onError: (error) => {
-      error && setError(error);
+    onError: (errorMessage) => {
+      showToast({
+        variant: "error",
+        title: "Save Error",
+        description: errorMessage || "An unknown error occurred",
+      });
     },
     onSuccess: () => {
       setHasUnsavedChanges(false);
-      setError(undefined);
+
+      showToast({
+        variant: "success",
+        title: "File Saved",
+        description: "Your changes have been saved successfully.",
+      });
     },
   });
+
+  // const { mutate: updateFile, isPending } = useUpdateFile({
+  //   onError: (error) => {
+  //     toast.error(error);
+  //   },
+  //   onSuccess: () => {
+  //     setHasUnsavedChanges(false);
+  //     setError(undefined);
+  //   },
+  // });
 
   const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -54,32 +75,68 @@ const BaseFileEditor: FC<BaseFileEditorProps> = ({ data }) => {
       const parsedContent = yamlToJsonOrNull(content ?? "");
       const result = OpenApiBaseFileFormSchema.safeParse(parsedContent);
       if (!result.success) {
-        setError(result.error?.issues[0]?.code ?? "Unknown error");
+        showToast({
+          variant: "error",
+          title: "Parsing Error",
+          description: result.error?.issues[0]?.code ?? "Unknown error",
+        });
         return;
       }
-      setError(undefined);
 
       updateFile({
         path: data.path,
         payload: { data: encode(jsonToYaml(parsedContent ?? {})) },
       });
-    } catch (error) {
-      setError(`Parsing error: ${String(error)}`);
+    } catch (err) {
+      showToast({
+        variant: "error",
+        title: "Save Failed",
+        description: String(err),
+      });
     }
   };
 
+  const handleEditorChange = (value: string) => {
+    setEditorContent(value);
+    setHasUnsavedChanges(true);
+  };
+
+  // const saveContent = (content: string | undefined) => {
+  //   try {
+  //     const parsedContent = yamlToJsonOrNull(content ?? "");
+  //     const result = OpenApiBaseFileFormSchema.safeParse(parsedContent);
+  //     if (!result.success) {
+  //       setError(
+  //         `Parsing error: ${result.error?.issues[0]?.code ?? "Unknown error"}`
+  //       );
+  //       return;
+  //     }
+  //     setError(undefined);
+
+  //     updateFile({
+  //       path: data.path,
+  //       payload: { data: encode(jsonToYaml(parsedContent ?? {})) },
+  //     });
+  //   } catch (error) {
+  //     setError(`Failed to save: ${String(error)}`);
+  //   }
+  // };
+
   return (
-    <Form onSubmit={handleFormSubmit} className="relative flex-col gap-4 p-5">
-      <div className="flex flex-col gap-4">
-        <div className="grid grow grid-cols-1 gap-5 lg:grid-cols-2">
-          <div className="flex flex-col gap-5 grow min-h-96">
+    <Form
+      onSubmit={handleFormSubmit}
+      className="relative flex-col gap-4 p-5 size-full"
+    >
+      <div className="flex flex-col gap-4 size-full">
+        <div className="grid grow  size-full">
+          <div className="flex flex-col gap-5 grow size-full">
             <CodeEditor
               value={editorContent}
-              onValueChange={setEditorContent}
+              onValueChange={handleEditorChange}
               onSave={saveContent}
               hasUnsavedChanges={hasUnsavedChanges}
               updatedAt={data.updatedAt}
-              error={error}
+              error={undefined}
             />
             <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
               {hasUnsavedChanges && (
@@ -99,7 +156,7 @@ const BaseFileEditor: FC<BaseFileEditorProps> = ({ data }) => {
               </Button>
             </div>
           </div>
-          {error && (
+          {/* {error && (
             <div className="flex flex-col gap-5">
               <Alert variant="error">
                 {t("pages.explorer.consumer.editor.form.serialisationError")}
@@ -110,7 +167,7 @@ const BaseFileEditor: FC<BaseFileEditorProps> = ({ data }) => {
                 </ScrollArea>
               </Alert>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </Form>

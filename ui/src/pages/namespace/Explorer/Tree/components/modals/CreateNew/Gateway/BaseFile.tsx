@@ -43,6 +43,7 @@ const NewapiBaseSpec = ({
   const namespace = useNamespace();
   const navigate = useNavigate();
 
+  // TODO: This is the minimal OpenAPI object that is used to create the base file.
   const baseOpenApiObject = {
     openapi: "3.0.0",
     info: {
@@ -108,8 +109,6 @@ const NewapiBaseSpec = ({
     });
   };
 
-  // you can not submit if the form has not changed or if there are any errors and
-  // you have already submitted the form (errors will first show up after submit)
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
   const formId = `new-openapiBaseSpec-${path}`;
