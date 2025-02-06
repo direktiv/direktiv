@@ -26,7 +26,7 @@ const Row = ({
   onDeleteClicked,
 }: {
   token: TokenSchemaType;
-  onDeleteClicked: (group: TokenSchemaType) => void;
+  onDeleteClicked: (tokenName: string) => void;
 }) => {
   const { t } = useTranslation();
   const createdAt = useUpdatedAt(token.created);

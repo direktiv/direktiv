@@ -17,7 +17,6 @@ import { Card } from "~/design/Card";
 import CreateToken from "./Create";
 import Delete from "./Delete";
 import Row from "./Row";
-import { TokenSchemaType } from "~/api/enterprise/tokens/schema";
 import { useTokens } from "~/api/enterprise/tokens/query/get";
 import { useTranslation } from "react-i18next";
 
@@ -27,7 +26,7 @@ const TokensPage = () => {
   const noResults = isFetched && data?.data.length === 0;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createToken, setCreateToken] = useState(false);
-  const [deleteToken, setDeleteToken] = useState<TokenSchemaType>();
+  const [deleteToken, setDeleteToken] = useState<string>();
 
   useEffect(() => {
     if (dialogOpen === false) {
@@ -99,7 +98,10 @@ const TokensPage = () => {
         </Table>
         <DialogContent className="sm:max-w-2xl md:max-w-3xl">
           {deleteToken && (
-            <Delete token={deleteToken} close={() => setDialogOpen(false)} />
+            <Delete
+              tokenName={deleteToken}
+              close={() => setDialogOpen(false)}
+            />
           )}
           {createToken && <CreateToken close={() => setDialogOpen(false)} />}
         </DialogContent>
