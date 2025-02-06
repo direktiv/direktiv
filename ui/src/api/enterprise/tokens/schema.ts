@@ -1,7 +1,27 @@
 import { z } from "zod";
 
-const permissionTopics = ["namespace", "files"] as const; // TODO: finalize this array
-const permissionMethods = ["manage", "read"] as const;
+const permissionTopics = [
+  "namespaces",
+  "secrets",
+  "variables",
+  "instances",
+] as const; // TODO: finalize this array
+
+const permissionMethods = [
+  "POST",
+  "GET",
+  "DELETE",
+  "PATCH",
+  "PUT",
+  "read",
+  "manage",
+] as const;
+
+/**
+ * the ui only offers a subset of the methods
+ */
+export const permissionMethodsAvailableUi: (typeof permissionMethods)[number][] =
+  ["manage", "read"] as const;
 
 const PermisionSchema = z.object({
   topic: z.enum(permissionTopics),
