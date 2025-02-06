@@ -11,7 +11,7 @@ const PermissionsBreadcrumb = () => {
   const { t } = useTranslation();
 
   const isPermissionsPage = useMatch({
-    from: "/n/$namespace/permissions/",
+    from: "/n/$namespace/permissions",
     shouldThrow: false,
   });
 

@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 
 const TokensBreadcrumb = () => {
   const isPermissionsTokenPage = useMatch({
-    from: "/n/$namespace/permissions/",
+    from: "/n/$namespace/permissions/tokens",
     shouldThrow: false,
   });
   const { t } = useTranslation();

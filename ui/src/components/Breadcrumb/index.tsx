@@ -9,6 +9,7 @@ import ListenerBreadcrumb from "./Events/ListenerBreadcrumb";
 import MirrorBreadcrumb from "./MirrorBreadcrumb";
 import MonitoringBreadcrumb from "./MonitoringBreadcrumb";
 import NamespaceSelector from "./NamespaceSelector";
+import PermissionsBreadcrumb from "./Permissions";
 import ServicesBreadcrumb from "./ServicesBreadcrumb";
 import SettingsBreadcrumb from "./SettingsBreadcrumb";
 import { useMatches } from "@tanstack/react-router";
@@ -34,7 +35,9 @@ const Breadcrumb = () => {
         <ListenerBreadcrumb />
       )}
       {matchRouteStart("/n/$namespace/monitoring") && <MonitoringBreadcrumb />}
-      {/* { && <PermissionsBreadcrumb />} */}
+      {matchRouteStart("/n/$namespace/permissions") && (
+        <PermissionsBreadcrumb />
+      )}
       {matchRouteStart("/n/$namespace/settings") && <SettingsBreadcrumb />}
       {matchRouteStart("/n/$namespace/jq") && <JqPlaygroundBreadcrumb />}
       {matchRouteStart("/n/$namespace/mirror/") && <MirrorBreadcrumb />}
