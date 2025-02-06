@@ -29,8 +29,8 @@ const Row = ({
   onDeleteClicked: (tokenName: string) => void;
 }) => {
   const { t } = useTranslation();
-  const createdAt = useUpdatedAt(token.created);
-  const expiresAt = useUpdatedAt(token.expires);
+  const createdAt = useUpdatedAt(token.createdAt);
+  // const expiresAt = useUpdatedAt(token.expires);
   return (
     <TooltipProvider>
       <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
@@ -42,11 +42,12 @@ const Row = ({
                 relativeTime: createdAt,
               })}
             </TooltipTrigger>
-            <TooltipContent>{token.created}</TooltipContent>
+            <TooltipContent>{token.createdAt}</TooltipContent>
           </Tooltip>
         </TableCell>
         <TableCell>
-          <Badge variant={token.expired ? "destructive" : "outline"}>
+          {/* TODO: reenable this */}
+          {/* <Badge variant={token.expired ? "destructive" : "outline"}>
             <Tooltip>
               <TooltipTrigger>
                 {token.expired
@@ -59,10 +60,10 @@ const Row = ({
               </TooltipTrigger>
               <TooltipContent>{token.expires}</TooltipContent>
             </Tooltip>
-          </Badge>
+          </Badge> */}
         </TableCell>
         <TableCell>
-          <PermissionsInfo permissions={token.permissions} />
+          {/* <PermissionsInfo permissions={token.permissions} /> */}
         </TableCell>
         <TableCell>
           <DropdownMenu>
@@ -81,7 +82,7 @@ const Row = ({
                 className="w-full"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onDeleteClicked(token);
+                  onDeleteClicked(token.name);
                 }}
               >
                 <DropdownMenuItem>
