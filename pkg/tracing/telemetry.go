@@ -87,6 +87,20 @@ func setupMetrics(ctx context.Context, addr string, res *resource.Resource) erro
 		sdkmetric.WithReader(reader),
 		sdkmetric.WithResource(res),
 	)
+	// Initialize the meter here
+	meter = otel.Meter(instrumentationName)
+
+	// Initialize requestCounter (counter for requests)
+	requestCounter, err = meter.Int64Counter("requests", otelmetric.WithDescription("Counts the number of requests"))
+	if err != nil {
+		return err
+	}
+	// Initialize requestDuration (histogram for request durations)
+	requestDuration, err = meter.Float64Histogram("request_duration", otelmetric.WithDescription("Records the duration of requests"))
+	if err != nil {
+		return err
+	}
+
 	otel.SetMeterProvider(meterProvider)
 
 	return nil
