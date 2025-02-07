@@ -117,7 +117,7 @@ export const TokenFormSchema = z.object({
   name: z.string().nonempty(),
   description: z.string().nonempty(),
   duration: ISO8601durationSchema,
-  permissions: z.array(PermisionSchema),
+  permissions: z.array(PermisionSchema).nonempty(),
 });
 
 export const TokenDeletedSchema = z.null();

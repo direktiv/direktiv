@@ -44,17 +44,7 @@ const CreateToken = ({ close }: { close: () => void }) => {
       name: "",
       description: "",
       duration: "",
-      // TODO: remove this, update zod to not allow empty array
-      permissions: [
-        {
-          topic: "secrets",
-          method: "read",
-        },
-        {
-          topic: "variables",
-          method: "manage",
-        },
-      ],
+      permissions: [],
     },
     resolver: zodResolver(TokenFormSchema),
   });
@@ -150,13 +140,13 @@ const CreateToken = ({ close }: { close: () => void }) => {
               </fieldset>
               <PermissionsSelector
                 permissions={watch("permissions")}
-                onChange={(permissions) =>
+                onChange={(permissions) => {
                   setValue("permissions", permissions, {
                     shouldDirty: true,
                     shouldTouch: true,
                     shouldValidate: true,
-                  })
-                }
+                  });
+                }}
               />
             </form>
           </div>
