@@ -29,7 +29,7 @@ type FormInput = {
   fileContent: string;
 };
 
-const NewapiBaseSpec = ({
+const NewOpenapiSpecification = ({
   path,
   close,
   unallowedNames,
@@ -90,7 +90,7 @@ const NewapiBaseSpec = ({
           pages.explorer.createHref({
             namespace,
             path: data.data.path,
-            subpage: "baseFile",
+            subpage: "openapiSpecification",
           })
         );
       close();
@@ -117,7 +117,7 @@ const NewapiBaseSpec = ({
       <DialogHeader>
         <DialogTitle>
           <Network />
-          New Base File
+          New OpenAPI Specification
         </DialogTitle>
       </DialogHeader>
 
@@ -143,7 +143,7 @@ const NewapiBaseSpec = ({
                 />
                 <InfoTooltip>
                   Every namespace should only have <strong>one</strong> OpenAPI
-                  Base Specification
+                  Specification
                 </InfoTooltip>
               </InputWithButton>
             </fieldset>
@@ -170,4 +170,4 @@ const NewapiBaseSpec = ({
   );
 };
 
-export default NewapiBaseSpec;
+export default NewOpenapiSpecification;

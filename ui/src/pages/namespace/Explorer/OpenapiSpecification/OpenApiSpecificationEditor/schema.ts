@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const OpenApiBaseFileFormSchema = z
+export const OpenapiSpecificationFormSchema = z
   .object({
     openapi: z.string(),
     info: z
@@ -13,6 +13,6 @@ export const OpenApiBaseFileFormSchema = z
   })
   .passthrough(); // TODO: Add the rest of the fields
 
-export type OpenApiBaseFileFormSchemaType = z.infer<
-  typeof OpenApiBaseFileFormSchema
+export type OpenapiSpecificationFormSchemaType = z.infer<
+  typeof OpenapiSpecificationFormSchema
 >;

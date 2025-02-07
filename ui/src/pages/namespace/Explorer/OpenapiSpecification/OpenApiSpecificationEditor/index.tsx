@@ -11,18 +11,20 @@ import Button from "~/design/Button";
 import { CodeEditor } from "../../Workflow/Edit/CodeEditor";
 import { FileSchemaType } from "~/api/files/schema";
 import { Form } from "react-router-dom";
-import { OpenApiBaseFileFormSchema } from "./schema";
+import { OpenapiSpecificationFormSchema } from "./schema";
 import { Save } from "lucide-react";
 import { useToast } from "~/design/Toast";
 // import { ScrollArea } from "~/design/ScrollArea";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
-type BaseFileEditorProps = {
+type OpenapiSpecificationEditorProps = {
   data: NonNullable<FileSchemaType>;
 };
 
-const BaseFileEditor: FC<BaseFileEditorProps> = ({ data }) => {
+const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
+  data,
+}) => {
   const { t } = useTranslation();
   const { toast: showToast } = useToast();
 
@@ -73,7 +75,7 @@ const BaseFileEditor: FC<BaseFileEditorProps> = ({ data }) => {
   const saveContent = (content: string | undefined) => {
     try {
       const parsedContent = yamlToJsonOrNull(content ?? "");
-      const result = OpenApiBaseFileFormSchema.safeParse(parsedContent);
+      const result = OpenapiSpecificationFormSchema.safeParse(parsedContent);
       if (!result.success) {
         showToast({
           variant: "error",
@@ -174,4 +176,4 @@ const BaseFileEditor: FC<BaseFileEditorProps> = ({ data }) => {
   );
 };
 
-export default BaseFileEditor;
+export default OpenapiSpecificationEditor;

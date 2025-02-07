@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
-import BaseFile from "~/pages/namespace/Explorer/BaseFile";
 import ConsumerEditorPage from "~/pages/namespace/Explorer/Consumer";
 import EndpointEditorPage from "~/pages/namespace/Explorer/Endpoint";
 import ErrorPage from "./ErrorPage";
@@ -34,6 +33,7 @@ import Logs from "~/pages/namespace/Mirror/Detail/Sync";
 import MirrorDetail from "~/pages/namespace/Mirror/Detail";
 import MirrorPage from "~/pages/namespace/Mirror";
 import MonitoringPage from "~/pages/namespace/Monitoring";
+import OpenapiSpecificationPage from "~/pages/namespace/Explorer/OpenapiSpecification";
 import PermissionsPage from "~/pages/namespace/Permissions";
 import PolicyPage from "~/pages/namespace/Permissions/Policy";
 import type { RouteObject } from "react-router-dom";
@@ -75,7 +75,7 @@ export type ExplorerSubpages =
   | "service"
   | "endpoint"
   | "consumer"
-  | "baseFile";
+  | "openapiSpecification";
 
 type ExplorerSubpagesParams =
   | {
@@ -109,7 +109,7 @@ type ExplorerPageSetup = Record<
       isServicePage: boolean;
       isEndpointPage: boolean;
       isConsumerPage: boolean;
-      isBaseFilePage: boolean;
+      isOpenapiSpecificationPage: boolean;
       serviceId: string | undefined;
     };
   }
@@ -341,7 +341,7 @@ export const usePages = (): PageType & EnterprisePageType => {
           endpoint: "endpoint",
           consumer: "consumer",
           service: "service",
-          baseFile: "baseFile",
+          openapiSpecification: "openapiSpecification",
         };
 
         let searchParamsObj;
@@ -375,14 +375,17 @@ export const usePages = (): PageType & EnterprisePageType => {
         const isServicePage = checkHandler(thirdLvl, "isServicePage");
         const isEndpointPage = checkHandler(thirdLvl, "isEndpointPage");
         const isConsumerPage = checkHandler(thirdLvl, "isConsumerPage");
-        const isBaseFilePage = checkHandler(thirdLvl, "isBaseFilePage");
+        const isOpenapiSpecificationPage = checkHandler(
+          thirdLvl,
+          "isOpenapiSpecificationPage"
+        );
         const isExplorerPage =
           isTreePage ||
           isWorkflowPage ||
           isServicePage ||
           isEndpointPage ||
           isConsumerPage ||
-          isBaseFilePage;
+          isOpenapiSpecificationPage;
         const isWorkflowEditorPage = checkHandler(fourthLvl, "isEditorPage");
         const isWorkflowOverviewPage = checkHandler(
           fourthLvl,
@@ -410,7 +413,7 @@ export const usePages = (): PageType & EnterprisePageType => {
           isServicePage,
           isEndpointPage,
           isConsumerPage,
-          isBaseFilePage,
+          isOpenapiSpecificationPage,
           serviceId: searchParams.get("serviceId") ?? undefined,
         };
       },
@@ -468,9 +471,9 @@ export const usePages = (): PageType & EnterprisePageType => {
             handle: { isConsumerPage: true },
           },
           {
-            path: "baseFile/*",
-            element: <BaseFile />,
-            handle: { isBaseFilePage: true },
+            path: "openapiSpecification/*",
+            element: <OpenapiSpecificationPage />,
+            handle: { isOpenapiSpecificationPage: true },
           },
         ],
       },

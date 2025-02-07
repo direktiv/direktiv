@@ -148,7 +148,7 @@ export const ConsumersListSchema = z.object({
   }
 }
  */
-export const OpenApiBaseFileSchema = z.object({
+export const OpenapiSpecificationSchema = z.object({
   data: z.object({
     spec: z
       .object({
@@ -168,4 +168,6 @@ export const OpenApiBaseFileSchema = z.object({
   }),
 });
 
-export type OpenApiBaseFileSchemaType = z.infer<typeof OpenApiBaseFileSchema>;
+export type OpenapiSpecificationSchemaType = z.infer<
+  typeof OpenapiSpecificationSchema
+>;

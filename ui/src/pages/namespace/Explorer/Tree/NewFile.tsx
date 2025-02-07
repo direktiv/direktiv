@@ -2,9 +2,9 @@ import { Dialog, DialogContent } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
 import NewFileButton, { FileTypeSelection } from "./components/NewFileButton";
 
-import NewBaseFile from "./components/modals/CreateNew/Gateway/BaseFile";
 import NewConsumer from "./components/modals/CreateNew/Gateway/Consumer";
 import NewDirectory from "./components/modals/CreateNew/Directory";
+import NewOpenapiSpecification from "./components/modals/CreateNew/Gateway/OpenapiSpecification";
 import NewRoute from "./components/modals/CreateNew/Gateway/Route";
 import NewService from "./components/modals/CreateNew/Service";
 import NewWorkflow from "./components/modals/CreateNew/Workflow";
@@ -76,8 +76,8 @@ export const NewFileDialog: FC<NewFileDialogProps> = ({ path }) => {
             close={() => setDialogOpen(false)}
           />
         )}
-        {selectedDialog === "new-baseFile" && (
-          <NewBaseFile
+        {selectedDialog === "new-openapiSpecification" && (
+          <NewOpenapiSpecification
             path={data?.path}
             unallowedNames={existingNames}
             close={() => setDialogOpen(false)}

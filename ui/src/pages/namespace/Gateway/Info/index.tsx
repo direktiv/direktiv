@@ -2,7 +2,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
@@ -36,28 +35,30 @@ const InfoPage = () => {
       </div>
       <div className="flex flex-col gap-4 sm:flex-row w-full">
         <Card className=" lg:h-[calc(100vh-15.5rem)] lg:overflow-y-scroll w-1/2">
-          <Table className=" border-gray-5 dark:border-gray-dark-5">
-            <TableHead>
+          <Table className="border-gray-5 dark:border-gray-dark-5">
+            <TableBody>
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableHeaderCell>
                   {t("pages.gateway.info.columns.title")}
                 </TableHeaderCell>
+                <TableCell>{title}</TableCell>
+              </TableRow>
+              <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableHeaderCell>
                   {t("pages.gateway.info.columns.version")}
                 </TableHeaderCell>
+                <TableCell>{version}</TableCell>
+              </TableRow>
+              <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableHeaderCell>
                   {t("pages.gateway.info.columns.description")}
                 </TableHeaderCell>
+                <TableCell>{description}</TableCell>
+              </TableRow>
+              <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableHeaderCell>
                   {t("pages.gateway.info.columns.file")}
                 </TableHeaderCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                <TableCell>{title}</TableCell>
-                <TableCell>{version}</TableCell>
-                <TableCell>{description}</TableCell>
                 <TableCell>{filePath}</TableCell>
               </TableRow>
             </TableBody>

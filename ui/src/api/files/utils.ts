@@ -1,6 +1,6 @@
 import {
+  BookOpen,
   File,
-  FileText,
   Folder,
   Layers,
   Play,
@@ -81,7 +81,7 @@ export const fileTypeToIcon = (type: BaseFileSchemaType["type"]) => {
     case "consumer":
       return Users;
     case "gateway":
-      return FileText;
+      return BookOpen;
     default:
       return File;
   }
@@ -100,7 +100,7 @@ export const fileTypeToExplorerSubpage = (
     case "consumer":
       return "consumer";
     case "gateway":
-      return "baseFile";
+      return "openapiSpecification";
     default:
       return undefined;
   }

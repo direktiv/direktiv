@@ -1,4 +1,14 @@
 import {
+  BookOpen,
+  Folder,
+  Layers,
+  Network,
+  Play,
+  PlusCircle,
+  Users,
+  Workflow,
+} from "lucide-react";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -11,16 +21,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
-import {
-  FileText,
-  Folder,
-  Layers,
-  Network,
-  Play,
-  PlusCircle,
-  Users,
-  Workflow,
-} from "lucide-react";
 
 import Button from "~/design/Button";
 import { DialogTrigger } from "@radix-ui/react-dialog";
@@ -34,7 +34,7 @@ export type FileTypeSelection =
   | "new-service"
   | "new-route"
   | "new-consumer"
-  | "new-baseFile";
+  | "new-openapiSpecification";
 
 type NewFileButtonProps = {
   setSelectedDialog: (fileType: FileTypeSelection) => void;
@@ -127,12 +127,14 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
                 <DialogTrigger
                   className="w-full"
                   onClick={() => {
-                    setSelectedDialog("new-baseFile");
+                    setSelectedDialog("new-openapiSpecification");
                   }}
                 >
-                  <DropdownMenuItem>
-                    <FileText className="mr-2 size-4" />
-                    New BaseFile
+                  <DropdownMenuItem className="flex items-center">
+                    <BookOpen className="mr-2 size-4" />
+                    <span className="flex-1 text-left">
+                      OpenAPI Specification
+                    </span>
                   </DropdownMenuItem>
                 </DialogTrigger>
               </DropdownMenuSubContent>
