@@ -19,14 +19,12 @@ import { InputWithButton } from "~/design/InputWithButton";
 import PermissionsSelector from "../../components/PermisionsSelector";
 import ShowToken from "./ShowToken";
 import { useCreateToken } from "~/api/enterprise/tokens/mutate/create";
-import { usePermissionKeys } from "~/api/enterprise/permissions/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const CreateToken = ({ close }: { close: () => void }) => {
   const { t } = useTranslation();
-  const { data: availablePermissions } = usePermissionKeys();
   const { mutate: createToken, isPending } = useCreateToken({
     onSuccess: (token) => {
       setCreatedToken(token);
