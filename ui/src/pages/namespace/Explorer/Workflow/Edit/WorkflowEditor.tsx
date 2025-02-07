@@ -34,6 +34,13 @@ const WorkflowEditor: FC<{
 
   const workflowDataFromServer = decode(data?.data ?? "");
 
+  const [editorContent, setEditorContent] = useState(workflowDataFromServer);
+
+  const onEditorContentUpdate = (newData: string) => {
+    setHasUnsavedChanges(workflowDataFromServer !== newData);
+    setEditorContent(newData ?? "");
+  };
+
   const { mutate: updateFile, isPending } = useUpdateFile({
     onError: (error) => {
       error && setError(error);
@@ -48,12 +55,7 @@ const WorkflowEditor: FC<{
     },
   });
 
-  const [editorContent, setEditorContent] = useState(workflowDataFromServer);
-
-  const onEditorContentUpdate = (newData: string) => {
-    setHasUnsavedChanges(workflowDataFromServer !== newData);
-    setEditorContent(newData ?? "");
-  };
+  if (!data) throw Error("data (file) is undefined in Editor");
 
   const onSave = (toSave: string | undefined) => {
     if (toSave) {

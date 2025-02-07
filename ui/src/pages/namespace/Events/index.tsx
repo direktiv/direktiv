@@ -1,19 +1,19 @@
 import { Antenna, Radio } from "lucide-react";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useMatch } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 
-import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const EventsPage = () => {
-  const pages = usePages();
-  const namespace = useNamespace();
   const { t } = useTranslation();
-  const { isEventsHistoryPage, isEventsListenersPage } =
-    pages.events.useParams();
-
-  if (!namespace) return null;
+  const isEventsHistoryPage = useMatch({
+    from: "/n/$namespace/events/history",
+    shouldThrow: false,
+  });
+  const isEventsListenersPage = useMatch({
+    from: "/n/$namespace/events/listeners",
+    shouldThrow: false,
+  });
 
   const tabs = [
     {
@@ -21,19 +21,14 @@ const EventsPage = () => {
       active: isEventsHistoryPage,
       icon: <Radio aria-hidden="true" />,
       title: t("pages.events.tabs.history"),
-      link: pages.events.createHref({
-        namespace,
-      }),
+      link: "/n/$namespace/events/history",
     },
     {
       value: "listeners",
       active: isEventsListenersPage,
       icon: <Antenna aria-hidden="true" />,
       title: t("pages.events.tabs.listeners"),
-      link: pages.events.createHref({
-        namespace,
-        subpage: "eventlisteners",
-      }),
+      link: "/n/$namespace/events/listeners",
     },
   ] as const;
 
@@ -49,7 +44,7 @@ const EventsPage = () => {
                 key={tab.value}
                 data-testid={`event-tabs-trg-${tab.value}`}
               >
-                <Link to={tab.link}>
+                <Link to={tab.link} from="/n/$namespace">
                   {tab.icon}
                   {tab.title}
                 </Link>

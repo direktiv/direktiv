@@ -1,4 +1,4 @@
-import { BlockerFunction, useBlocker } from "react-router-dom";
+import { ShouldBlockFn, useBlocker } from "@tanstack/react-router";
 
 import { useEffect } from "react";
 
@@ -31,18 +31,23 @@ const useNavigationBlocker = (message: string | null) => {
    * This triggers a confirmation dialog when navigating away from the
    * current route, but staying within our app.
    */
-  const blockerFunction: BlockerFunction = ({
-    currentLocation,
-    nextLocation,
-  }) => (message ? currentLocation !== nextLocation : false);
 
-  const blocker = useBlocker(blockerFunction);
+  const shouldBlockFn: ShouldBlockFn = ({ current, next }) =>
+    message ? current !== next : false;
+
+  const { status, proceed, reset } = useBlocker({
+    shouldBlockFn,
+    withResolver: true,
+  });
 
   useEffect(() => {
-    message && blocker.state === "blocked" && window.confirm(message)
-      ? blocker.proceed()
-      : blocker.reset?.();
-  }, [blocker, blocker.state, message]);
+    if (!message) {
+      return proceed?.();
+    }
+    if (status === "blocked" && window.confirm(message)) {
+      return proceed();
+    }
+  }, [message, status, proceed, reset]);
 };
 
 export default useNavigationBlocker;

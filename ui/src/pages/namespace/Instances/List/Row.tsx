@@ -20,15 +20,13 @@ import TooltipCopyBadge from "~/design/TooltipCopyBadge";
 import { decode } from "js-base64";
 import moment from "moment";
 import { statusToBadgeVariant } from "../utils";
-import { useNavigate } from "react-router-dom";
-import { usePages } from "~/util/router/pages";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 const InstanceTableRow: FC<{
   instance: InstanceSchemaType;
 }> = ({ instance }) => {
-  const pages = usePages();
   const [invoker, childInstance] = instance.invoker.split(":");
   const isValidDate = moment(instance.endedAt).isValid();
   const endedAt = useUpdatedAt(instance.endedAt);
@@ -43,12 +41,11 @@ const InstanceTableRow: FC<{
         data-testid={`instance-row-${instance.id}`}
         key={instance.id}
         onClick={() => {
-          navigate(
-            pages.instances.createHref({
-              namespace: instance.namespace,
-              instance: instance.id,
-            })
-          );
+          navigate({
+            to: "/n/$namespace/instances/$id",
+            from: "/n/$namespace",
+            params: { id: instance.id },
+          });
         }}
         className="cursor-pointer"
       >
