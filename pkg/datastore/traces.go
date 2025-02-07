@@ -7,18 +7,18 @@ import (
 
 // Trace represents the structure of a trace in the database.
 type Trace struct {
-	TraceID      string     `json:"traceID"`
-	SpanID       string     `json:"spanID"`
-	ParentSpanID *string    `json:"parentSpanID,omitempty"`
-	Starttime    time.Time  `json:"starttime"`
-	Endtime      *time.Time `json:"endtime,omitempty"`
-	RawTrace     []byte     `json:"rawTrace"`
+	TraceID      string    `json:"traceID"`
+	SpanID       string    `json:"spanID"`
+	ParentSpanID *string   `json:"parentSpanID,omitempty"`
+	StartTime    time.Time `json:"startTime"`
+	EndTime      time.Time `json:"endTime,omitempty"`
+	RawTrace     []byte    `json:"rawTrace"`
 }
 
 // TracesStore defines the interface for interacting with trace data.
 type TracesStore interface {
-	// Append adds a new trace entry to the store.
-	Append(ctx context.Context, trace Trace) error
+	// Append adds a new traces to the store.
+	Append(ctx context.Context, traces ...Trace) error
 
 	// DeleteOld deletes traces older than the specified cutoff time.
 	DeleteOld(ctx context.Context, cutoffTime time.Time) error

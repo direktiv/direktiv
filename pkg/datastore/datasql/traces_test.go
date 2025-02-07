@@ -14,6 +14,7 @@ func TestTraceStoreOperations(t *testing.T) {
 	t.Run("testGetNonExistentTrace", testGetNonExistentTrace)
 	t.Run("AddDeleteAndGet", testAddDeleteAndGetTrace)
 	t.Run("GetByParentSpanID", testGetByParentSpanID)
+	t.Run("testBatchInsertTraces", testBatchInsertTraces)
 }
 
 func testGetNonExistentTrace(t *testing.T) {
@@ -92,7 +93,7 @@ func createTestTrace() *datastore.Trace {
 	return &datastore.Trace{
 		TraceID:   uuid.NewString(),
 		SpanID:    uuid.NewString(),
-		Starttime: time.Now().UTC().Add(-10 * time.Hour),
+		StartTime: time.Now().UTC().Add(-10 * time.Hour),
 		RawTrace:  []byte("{}"), // Test with empty raw trace data
 	}
 }
@@ -138,18 +139,14 @@ func verifyTraceRetrieved(t *testing.T, retrievedTrace, expectedTrace *datastore
 	}
 
 	// Allow for minor differences in StartTime
-	if retrievedTrace.Starttime.Sub(expectedTrace.Starttime) > timeTolerance ||
-		expectedTrace.Starttime.Sub(retrievedTrace.Starttime) > timeTolerance {
-		t.Errorf("retrieved StartTime does not match expected: got %v, want %v", retrievedTrace.Starttime, expectedTrace.Starttime)
+	if retrievedTrace.StartTime.Sub(expectedTrace.StartTime) > timeTolerance ||
+		expectedTrace.StartTime.Sub(retrievedTrace.StartTime) > timeTolerance {
+		t.Errorf("retrieved StartTime does not match expected: got %v, want %v", retrievedTrace.StartTime, expectedTrace.StartTime)
 	}
 
-	if retrievedTrace.Endtime != nil && expectedTrace.Endtime != nil {
-		if retrievedTrace.Endtime.Sub(*expectedTrace.Endtime) > timeTolerance ||
-			expectedTrace.Endtime.Sub(*retrievedTrace.Endtime) > timeTolerance {
-			t.Errorf("retrieved EndTime does not match expected: got %v, want %v", retrievedTrace.Endtime, expectedTrace.Endtime)
-		}
-	} else if retrievedTrace.Endtime != expectedTrace.Endtime {
-		t.Errorf("retrieved EndTime does not match expected: got %v, want %v", retrievedTrace.Endtime, expectedTrace.Endtime)
+	if retrievedTrace.EndTime.Sub(expectedTrace.EndTime) > timeTolerance ||
+		expectedTrace.EndTime.Sub(retrievedTrace.EndTime) > timeTolerance {
+		t.Errorf("retrieved EndTime does not match expected: got %v, want %v", retrievedTrace.EndTime, expectedTrace.EndTime)
 	}
 
 	if string(retrievedTrace.RawTrace) != string(expectedTrace.RawTrace) {
@@ -161,5 +158,27 @@ func verifyTraceDeleted(t *testing.T, store datastore.TracesStore, traceID strin
 	_, err := store.GetByTraceID(context.Background(), traceID)
 	if err == nil {
 		t.Error("expected trace to be deleted")
+	}
+}
+
+func testBatchInsertTraces(t *testing.T) {
+	traceStore, _ := setupTestTrace(t)
+
+	traces := []datastore.Trace{
+		*createTestTrace(),
+		*createTestTrace(),
+		*createTestTrace(),
+	}
+
+	// Insert batch
+	err := traceStore.Append(context.Background(), traces...)
+	if err != nil {
+		t.Fatalf("error inserting batch of traces: %v", err)
+	}
+
+	// Verify each trace exists
+	for _, trace := range traces {
+		retrievedTrace := getTraceByID(t, traceStore, trace.TraceID)
+		verifyTraceRetrieved(t, retrievedTrace, &trace)
 	}
 }

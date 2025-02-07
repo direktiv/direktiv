@@ -248,8 +248,8 @@ CREATE TABLE IF NOT EXISTS "traces" (
     "trace_id" text PRIMARY KEY,
     "span_id" text NOT NULL,
     "parent_span_id" text,
-    "starttime" timestamptz NOT NULL,
-    "endtime" timestamptz,
+    "start_time" timestamptz NOT NULL,
+    "end_time" timestamptz,
     "raw_trace" JSONB
 );
 

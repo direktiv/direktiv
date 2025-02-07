@@ -3,6 +3,7 @@ package datasql
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/datastore"
@@ -16,27 +17,28 @@ type sqlTracesStore struct {
 }
 
 // Append implements datastore.TracesStore.
-func (s *sqlTracesStore) Append(ctx context.Context, trace datastore.Trace) error {
-	// Ensure StartTime is stored in UTC
-	trace.Starttime = trace.Starttime.UTC()
-	if trace.Endtime != nil {
-		t := trace.Endtime.UTC()
-		trace.Endtime = &t
+func (s *sqlTracesStore) Append(ctx context.Context, traces ...datastore.Trace) error {
+	if len(traces) == 0 {
+		return nil // No traces to insert
 	}
-	// The SQL query to insert a new trace
-	q := `INSERT INTO traces (trace_id, span_id, parent_span_id, starttime, endtime, raw_trace)
-		  VALUES ($1, $2, $3, $4, $5, $6);`
 
-	// Executing the query using the provided trace data
-	tx := s.db.WithContext(ctx).Exec(
-		q,
-		trace.TraceID,
-		trace.SpanID,
-		trace.ParentSpanID,
-		trace.Starttime,
-		trace.Endtime,
-		trace.RawTrace,
-	)
+	// The SQL query to insert multiple traces
+	q := `INSERT INTO traces (trace_id, span_id, parent_span_id, start_time, end_time, raw_trace) VALUES %s;`
+
+	var values []interface{}
+	var placeholders []string
+
+	for _, trace := range traces {
+		trace.StartTime = trace.StartTime.UTC()
+		trace.EndTime = trace.EndTime.UTC()
+		placeholders = append(placeholders, "(?, ?, ?, ?, ?, ?)")
+		values = append(values, trace.TraceID, trace.SpanID, trace.ParentSpanID, trace.StartTime, trace.EndTime, trace.RawTrace)
+	}
+
+	finalQuery := fmt.Sprintf(q, strings.Join(placeholders, ", "))
+
+	// Executing the batch insert query
+	tx := s.db.WithContext(ctx).Exec(finalQuery, values...)
 
 	return tx.Error
 }
@@ -44,7 +46,7 @@ func (s *sqlTracesStore) Append(ctx context.Context, trace datastore.Trace) erro
 // DeleteOld implements datastore.TracesStore.
 func (s *sqlTracesStore) DeleteOld(ctx context.Context, cutoffTime time.Time) error {
 	// SQL query to delete traces older than the cutoff time
-	q := `DELETE FROM traces WHERE starttime < $1;`
+	q := `DELETE FROM traces WHERE start_time < $1;`
 
 	tx := s.db.WithContext(ctx).Exec(q, cutoffTime)
 	if tx.Error != nil {
@@ -57,7 +59,7 @@ func (s *sqlTracesStore) DeleteOld(ctx context.Context, cutoffTime time.Time) er
 // GetByParentSpanID implements datastore.TracesStore.
 func (s *sqlTracesStore) GetByParentSpanID(ctx context.Context, parentSpanID string) ([]datastore.Trace, error) {
 	// SQL query to select traces by parent span ID
-	q := `SELECT trace_id, span_id, parent_span_id, starttime, endtime, raw_trace
+	q := `SELECT trace_id, span_id, parent_span_id, start_time, end_time, raw_trace
 		  FROM traces WHERE parent_span_id = $1;`
 
 	var res []datastore.Trace
@@ -71,7 +73,7 @@ func (s *sqlTracesStore) GetByParentSpanID(ctx context.Context, parentSpanID str
 
 // GetByTraceID implements datastore.TracesStore.
 func (s *sqlTracesStore) GetByTraceID(ctx context.Context, traceID string) (datastore.Trace, error) {
-	q := `SELECT trace_id, span_id, parent_span_id, starttime, endtime, raw_trace
+	q := `SELECT trace_id, span_id, parent_span_id, start_time, end_time, raw_trace
 		  FROM traces WHERE trace_id = $1;`
 
 	var trace datastore.Trace
@@ -85,11 +87,8 @@ func (s *sqlTracesStore) GetByTraceID(ctx context.Context, traceID string) (data
 	}
 
 	// Ensure StartTime is in UTC
-	trace.Starttime = trace.Starttime.UTC()
-	if trace.Endtime != nil {
-		t := trace.Endtime.UTC()
-		trace.Endtime = &t
-	}
+	trace.StartTime = trace.StartTime.UTC()
+	trace.EndTime = trace.EndTime.UTC()
 
 	return trace, nil
 }
