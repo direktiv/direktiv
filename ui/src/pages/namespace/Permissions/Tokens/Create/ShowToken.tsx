@@ -1,11 +1,9 @@
-import { CheckCircle2, Eye, EyeOff, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { DialogFooter, DialogHeader, DialogTitle } from "~/design/Dialog";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import CopyButton from "~/design/CopyButton";
-import Input from "~/design/Input";
-import { InputWithButton } from "~/design/InputWithButton";
 import PasswordInput from "~/pages/namespace/Gateway/Consumers/Table/Row/PasswordInput";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -18,7 +16,6 @@ const ShowToken = ({
   onCloseClicked: () => void;
 }) => {
   const { t } = useTranslation();
-  const [revealToken, setRevealToken] = useState(false);
   const [copied, setCopied] = useState(false);
   return (
     <>
