@@ -31,6 +31,8 @@ const PermisionSchema = z.object({
   method: z.enum(permissionMethods),
 });
 
+export const PermissionsArray = z.array(PermisionSchema).nonempty();
+
 /**
  * example:
  * 
@@ -58,7 +60,7 @@ const TokenSchema = z.object({
   name: z.string(),
   description: z.string(),
   prefix: z.string(),
-  permissions: z.array(PermisionSchema),
+  permissions: PermissionsArray,
   isExpired: z.boolean(),
   expiredAt: z.string(),
   createdAt: z.string(),
@@ -116,7 +118,7 @@ export const TokenFormSchema = z.object({
   name: z.string().nonempty(),
   description: z.string().nonempty(),
   duration: ISO8601durationSchema,
-  permissions: z.array(PermisionSchema).nonempty(),
+  permissions: PermissionsArray,
 });
 
 export const TokenDeletedSchema = z.null();

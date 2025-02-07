@@ -5,11 +5,12 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import { Diamond, PlusCircle } from "lucide-react";
-import { SubmitHandler, useForm } from "react-hook-form";
 import {
+  PermissionsArray,
   TokenFormSchema,
   TokenFormSchemaType,
 } from "~/api/enterprise/tokens/schema";
+import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
 import DurationHint from "../../components/DurationHint";
@@ -139,11 +140,15 @@ const CreateToken = ({ close }: { close: () => void }) => {
               <PermissionsSelector
                 permissions={watch("permissions")}
                 onChange={(permissions) => {
-                  setValue("permissions", permissions, {
-                    shouldDirty: true,
-                    shouldTouch: true,
-                    shouldValidate: true,
-                  });
+                  const parsedPermissions =
+                    PermissionsArray.safeParse(permissions);
+                  if (parsedPermissions.success) {
+                    setValue("permissions", parsedPermissions.data, {
+                      shouldDirty: true,
+                      shouldTouch: true,
+                      shouldValidate: true,
+                    });
+                  }
                 }}
               />
             </form>
