@@ -130,7 +130,7 @@ test("it is possible to create a folder", async ({ page }) => {
   await expect(
     page,
     "when clicking the tree icon, it navigates back to the tree root"
-  ).toHaveURL(`/n/${namespace}/explorer/tree`);
+  ).toHaveURL(`/n/${namespace}/explorer/tree/`);
 
   await expect(
     page.getByTestId(`explorer-item-${folderName}`),

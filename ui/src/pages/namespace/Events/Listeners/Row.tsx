@@ -9,8 +9,7 @@ import {
 import ContextFilters from "./ContextFilters";
 import CopyButton from "~/design/CopyButton";
 import { EventListenerSchemaType } from "~/api/eventListeners/schema";
-import { Link } from "react-router-dom";
-import { usePages } from "~/util/router/pages";
+import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
 
@@ -21,33 +20,16 @@ const Row = ({
   listener: EventListenerSchemaType;
   namespace: string;
 }) => {
-  const pages = usePages();
   const { t } = useTranslation();
   const createdAt = useUpdatedAt(listener.createdAt);
 
   const { triggerWorkflow: workflow, triggerInstance: instance } = listener;
+
   const listenerType = instance ? "instance" : "workflow";
   const target = workflow || instance;
   const contextFilters = listener.eventContextFilters.filter(
     (item) => !!Object.keys(item.context).length
   );
-
-  let linkTarget;
-
-  if (workflow) {
-    linkTarget = pages.explorer.createHref({
-      namespace,
-      path: workflow,
-      subpage: "workflow",
-    });
-  }
-
-  if (instance) {
-    linkTarget = pages.instances.createHref({
-      namespace,
-      instance,
-    });
-  }
 
   const eventTypes = listener.listeningForEventTypes
     .map((eventType) => eventType)
@@ -60,7 +42,23 @@ const Row = ({
           {t(`pages.events.listeners.tableRow.type.${listenerType}`)}
         </TableCell>
         <TableCell>
-          {linkTarget ? <Link to={linkTarget}>{target}</Link> : <>{target}</>}
+          {workflow ? (
+            <Link
+              to="/n/$namespace/explorer/workflow/edit/$"
+              params={{ namespace, _splat: workflow }}
+            >
+              {target}
+            </Link>
+          ) : (
+            instance && (
+              <Link
+                to="/n/$namespace/explorer/workflow/edit/$"
+                params={{ namespace, _splat: instance }}
+              >
+                {target}
+              </Link>
+            )
+          )}
         </TableCell>
         <TableCell>{listener.triggerType}</TableCell>
         <TableCell>

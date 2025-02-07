@@ -36,6 +36,7 @@ RUN pnpm install --frozen-lockfile
 
 COPY ui/.eslintrc.js .
 COPY ui/.prettierrc.mjs .
+COPY ui/.prettierignore .
 COPY ui/index.html .
 COPY ui/postcss.config.cjs .
 COPY ui/tailwind.config.cjs .

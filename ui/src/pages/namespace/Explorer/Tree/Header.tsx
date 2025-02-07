@@ -1,33 +1,29 @@
 import { FC, Fragment } from "react";
+import { Link, useParams } from "@tanstack/react-router";
 
 import { FolderTree } from "lucide-react";
-import { Link } from "react-router-dom";
 import { NewFileDialog } from "./NewFile";
 import { analyzePath } from "~/util/router/utils";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 
 const BreadcrumbSegment: FC<{
   absolute: string;
   relative: string;
   namespace: string;
-}> = ({ absolute, relative, namespace, ...props }) => {
-  const pages = usePages();
-  return (
-    <Link
-      to={pages.explorer.createHref({ namespace, path: absolute })}
-      className="hover:underline"
-      {...props}
-    >
-      {relative}
-    </Link>
-  );
-};
+}> = ({ absolute, relative, namespace, ...props }) => (
+  <Link
+    to="/n/$namespace/explorer/tree/$"
+    params={{ namespace, _splat: absolute }}
+    className="hover:underline"
+    {...props}
+  >
+    {relative}
+  </Link>
+);
 
 const ExplorerHeader: FC = () => {
-  const pages = usePages();
   const namespace = useNamespace();
-  const { path } = pages.explorer.useParams();
+  const { _splat: path } = useParams({ strict: false });
 
   const { segments } = analyzePath(path);
 
@@ -39,7 +35,8 @@ const ExplorerHeader: FC = () => {
         <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
           <Link
             data-testid="tree-root"
-            to={pages.explorer.createHref({ namespace })}
+            to="/n/$namespace/explorer/tree/$"
+            params={{ namespace, _splat: "" }}
             className="hover:underline"
           >
             <FolderTree className="h-5" />
@@ -49,7 +46,6 @@ const ExplorerHeader: FC = () => {
             {segments
               .map((x) => (
                 <BreadcrumbSegment
-                  data-testid="breadcrumb-segment"
                   key={x.absolute}
                   absolute={x.absolute}
                   relative={x.relative}
