@@ -18,15 +18,15 @@ const noPermissionsOptionsValue = "";
 export const PermissionRow = ({ topic, onChange }: PermissionRowProps) => (
   <RadioGroup
     defaultValue={noPermissionsOptionsValue}
-    onValueChange={(newValue) => {
-      const parsedValue = z
-        .enum(permissionMethodsAvailableUi)
-        .safeParse(newValue);
-
+    onValueChange={(value) => {
+      if (value === noPermissionsOptionsValue) {
+        onChange(undefined);
+        return;
+      }
+      const parsedValue = z.enum(permissionMethodsAvailableUi).safeParse(value);
       if (parsedValue.success) {
         onChange(parsedValue.data);
-      } else {
-        onChange(undefined);
+        return;
       }
     }}
     className="table-row"
