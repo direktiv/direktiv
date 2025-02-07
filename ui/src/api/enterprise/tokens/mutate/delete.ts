@@ -49,7 +49,7 @@ export const useDeleteToken = ({
         apiKey: apiKey ?? undefined,
         urlParams: { tokenName, namespace },
       }),
-    onSuccess(_, tokenName) {
+    onSuccess() {
       queryClient.invalidateQueries({
         queryKey: tokenKeys.apiTokens(namespace, {
           apiKey: apiKey ?? undefined,
