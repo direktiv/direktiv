@@ -244,3 +244,13 @@ CREATE TABLE IF NOT EXISTS "event_topics" (
 -- is a compound like this: "namespace-id:event-type"
 CREATE INDEX IF NOT EXISTS "event_topic_bucket" ON "event_topics" USING hash("topic");
 
+CREATE TABLE IF NOT EXISTS "traces" (
+    "trace_id" text PRIMARY KEY,
+    "span_id" text NOT NULL,
+    "parent_span_id" text,
+    "starttime" timestamptz NOT NULL,
+    "endtime" timestamptz,
+    "raw_trace" JSONB
+);
+
+CREATE INDEX IF NOT EXISTS "trace_id" ON "traces" USING hash("parent_span_id");
