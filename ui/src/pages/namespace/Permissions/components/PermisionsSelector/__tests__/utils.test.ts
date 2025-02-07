@@ -1,21 +1,9 @@
-import {
-  PermisionSchemaType,
-  PermissionMethodAvailableUi,
-  PermissionTopic,
-} from "~/api/enterprise/tokens/schema";
 import { describe, expect, test } from "vitest";
 
+import { PermisionSchemaType } from "~/api/enterprise/tokens/schema";
 import { updatePermissions } from "../utils";
 
 describe("updatePermissions", () => {
-  const createPermission = (
-    topic: PermissionTopic,
-    method: PermissionMethodAvailableUi
-  ): PermisionSchemaType => ({
-    topic,
-    method,
-  });
-
   test("should add a new permission when none exists for the topic", () => {
     const initialPermissions: PermisionSchemaType[] = [];
     const result = updatePermissions({
@@ -33,7 +21,7 @@ describe("updatePermissions", () => {
 
   test("should update an existing permission", () => {
     const initialPermissions: PermisionSchemaType[] = [
-      createPermission("namespaces", "read"),
+      { topic: "namespaces", method: "read" },
     ];
 
     const result = updatePermissions({
@@ -51,8 +39,8 @@ describe("updatePermissions", () => {
 
   test("should remove a permission when value is undefined", () => {
     const initialPermissions: PermisionSchemaType[] = [
-      createPermission("namespaces", "read"),
-      createPermission("instances", "manage"),
+      { topic: "namespaces", method: "read" },
+      { topic: "instances", method: "manage" },
     ];
 
     const result = updatePermissions({
@@ -70,9 +58,9 @@ describe("updatePermissions", () => {
 
   test("should not modify other permissions when updating one", () => {
     const initialPermissions: PermisionSchemaType[] = [
-      createPermission("namespaces", "read"),
-      createPermission("instances", "manage"),
-      createPermission("secrets", "read"),
+      { topic: "namespaces", method: "read" },
+      { topic: "instances", method: "manage" },
+      { topic: "secrets", method: "read" },
     ];
 
     const result = updatePermissions({
@@ -82,9 +70,9 @@ describe("updatePermissions", () => {
     });
 
     expect(result).toHaveLength(3);
-    expect(result).toContainEqual(createPermission("namespaces", "read"));
-    expect(result).toContainEqual(createPermission("instances", "read"));
-    expect(result).toContainEqual(createPermission("secrets", "read"));
+    expect(result).toContainEqual({ topic: "namespaces", method: "read" });
+    expect(result).toContainEqual({ topic: "instances", method: "read" });
+    expect(result).toContainEqual({ topic: "secrets", method: "read" });
   });
 
   test("should handle empty permissions array", () => {
@@ -103,9 +91,9 @@ describe("updatePermissions", () => {
 
   test("should maintain permission order when updating", () => {
     const initialPermissions: PermisionSchemaType[] = [
-      createPermission("namespaces", "read"),
-      createPermission("instances", "manage"),
-      createPermission("secrets", "read"),
+      { topic: "namespaces", method: "read" },
+      { topic: "instances", method: "manage" },
+      { topic: "secrets", method: "read" },
     ];
 
     const result = updatePermissions({
@@ -115,15 +103,15 @@ describe("updatePermissions", () => {
     });
 
     expect(result).toEqual([
-      createPermission("namespaces", "read"),
-      createPermission("instances", "read"),
-      createPermission("secrets", "read"),
+      { topic: "namespaces", method: "read" },
+      { topic: "instances", method: "read" },
+      { topic: "secrets", method: "read" },
     ]);
   });
 
   test("should create a new array and not modify the original", () => {
     const initialPermissions: PermisionSchemaType[] = [
-      createPermission("namespaces", "read"),
+      { topic: "namespaces", method: "read" },
     ];
 
     const result = updatePermissions({
