@@ -325,6 +325,11 @@ func validateEndpoint(item core.Endpoint, ns string, fileStore filestore.FileSto
 		},
 	}
 
+	// if the base is empty for some reason
+	if len(item.Base) == 0 {
+		return nil, fmt.Errorf("endpoint not parseable")
+	}
+
 	var pi openapi3.PathItem
 	err := pi.UnmarshalJSON(item.Base)
 	if err != nil {

@@ -50,47 +50,6 @@ func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 	}
 }
 
-// func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
-// 	ctx := context.Background()
-// 	sLog := slog.With("subscriber", "gateway file watcher")
-
-// 	fStore, dStore := db.FileStore(), db.DataStore()
-
-// 	nsList, err := dStore.Namespaces().GetAll(ctx)
-// 	if err != nil {
-// 		sLog.Error("listing namespaces", "err", err)
-
-// 		return
-// 	}
-
-// 	var consumers []core.Consumer
-// 	var endpoints []core.Endpoint
-// 	var gateways []core.Gateway
-
-// 	for _, ns := range nsList {
-// 		sLog = sLog.With("namespace", ns.Name)
-// 		files, err := fStore.ForNamespace(ns.Name).ListDirektivFilesWithData(ctx)
-// 		if err != nil {
-// 			sLog.Error("listing direktiv files", "err", err)
-
-// 			continue
-// 		}
-// 		for _, file := range files {
-// 			if file.Typ == filestore.FileTypeConsumer {
-// 				consumers = append(consumers, core.ParseConsumerFile(ns.Name, file.Path, file.Data))
-// 			} else if file.Typ == filestore.FileTypeEndpoint {
-// 				endpoints = append(endpoints, core.ParseEndpointFile(ns.Name, file.Path, file.Data))
-// 			} else if file.Typ == filestore.FileTypeGateway {
-// 				gateways = append(gateways, core.ParseGatewayFile(ns.Name, file.Path, file.Data))
-// 			}
-// 		}
-// 	}
-// 	err = manager.SetEndpoints(endpoints, consumers, gateways)
-// 	if err != nil {
-// 		sLog.Error("render gateway files", "err", err)
-// 	}
-// }
-
 func renderServiceFiles(db *database.DB, serviceManager core.ServiceManager) {
 	ctx := context.Background()
 	slog := slog.With("subscriber", "services file watcher")

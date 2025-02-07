@@ -15,22 +15,24 @@ states:
     result: jq(.)
 `
 
-const endpointFile = `
-direktiv_api: endpoint/v1
-allow_anonymous: false
-plugins:
-  target:
-    type: target-flow
-    configuration:
-        flow: /target.yaml
-        content_type: application/json
-  auth:
-    - type: gitlab-webhook-auth
-      configuration:
-        secret: secret
-methods: 
-  - POST
-path: /target`
+const endpointFile = `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/target"
+    allow_anonymous: false
+    plugins:
+       auth:
+       - type: gitlab-webhook-auth
+         configuration:
+            secret: secret
+       target:
+         type: target-flow
+         configuration:
+            flow: /target.yaml
+            content_type: application/json
+post:
+   responses:
+      "200":
+        description: works`
 
 describe('Test gitlab auth plugin', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)

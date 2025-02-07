@@ -150,6 +150,13 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 		return ep
 	}
 
+	jsonData, err := json.Marshal(interim)
+	if err != nil {
+		ep.Errors = append(ep.Errors, err.Error())
+		return ep
+	}
+	ep.Base = jsonData
+
 	config, err := parseConfig(interim)
 	if err != nil {
 		ep.Errors = append(ep.Errors, err.Error())
@@ -164,32 +171,21 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 		config.Path = path.Clean("/" + config.Path)
 	} else {
 		ep.Errors = append(ep.Errors, "no path for route specified")
-		return ep
 	}
 
 	if len(config.Methods) == 0 {
 		ep.Errors = append(ep.Errors, "no valid http method available")
-		return ep
 	}
 
 	if config.PluginsConfig.Target.Typ == "" {
 		ep.Errors = append(ep.Errors, "no target plugin found")
-		return ep
 	}
 
 	if !config.AllowAnonymous && len(config.PluginsConfig.Auth) == 0 {
 		ep.Errors = append(ep.Errors, "no auth plugin configured but 'allow_anonymous' set false")
-		return ep
-	}
-
-	jsonData, err := json.Marshal(interim)
-	if err != nil {
-		ep.Errors = append(ep.Errors, err.Error())
-		return ep
 	}
 
 	ep.Config = config
-	ep.Base = jsonData
 
 	return ep
 }

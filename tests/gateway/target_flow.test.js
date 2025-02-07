@@ -38,95 +38,118 @@ const workflowEcho = `
 `
 
 const endpointWorkflow = `
-  direktiv_api: endpoint/v1
-  allow_anonymous: true
-  plugins:
-    target:
-      type: target-flow
-      configuration:
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint1"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-flow
+        configuration:
           namespace: ` + testNamespace + `
           flow: /workflow.yaml
-  methods: 
-    - GET
-  path: /endpoint1`
+get:
+   responses:
+      "200":
+        description: works`
 
 const endpointTargetLimitedNamespaceWorkflow = `
-  direktiv_api: endpoint/v1
-  allow_anonymous: true
-  plugins:
-    target:
-      type: target-flow
-      configuration:
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint1"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-flow
+        configuration:
           namespace: ` + limitedNamespace + `
           flow: /workflow.yaml
-  methods: 
-    - GET
-  path: /endpoint1`
+get:
+   responses:
+      "200":
+        description: works`
 
 const endpointPOSTWorkflow = `
-  direktiv_api: endpoint/v1
-  allow_anonymous: true
-  plugins:
-    target:
-      type: target-flow
-      configuration:
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint1"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-flow
+        configuration:
           namespace: ` + testNamespace + `
           flow: /workflow.yaml
-  methods: 
-    - POST
-  path: /endpoint1`
+post:
+   responses:
+      "200":
+        description: works`
 
 const endpointComplexPOSTWorkflow = `
-  direktiv_api: endpoint/v1
-  allow_anonymous: true
-  plugins:
-    inbound:
-      - type: js-inbound
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint1"
+    allow_anonymous: true
+    plugins:
+      inbound:
+        - type: js-inbound
+          configuration:
+            script: b = JSON.parse(input["Body"]); b["message"] = "Changed"; input["Body"] = JSON.stringify(b);
+      target:
+        type: target-flow
         configuration:
-          script: b = JSON.parse(input["Body"]); b["message"] = "Changed"; input["Body"] = JSON.stringify(b);
-    target:
-      type: target-flow
-      configuration:
-          namespace: ` + testNamespace + `
-          flow: /workflow.yaml
-  methods: 
-    - POST
-  path: /endpoint1`
+            namespace: ` + testNamespace + `
+            flow: /workflow.yaml
+post:
+   responses:
+      "200":
+        description: works`
 
 const endpointWorkflowAllowed = `
-  direktiv_api: endpoint/v1
-  allow_anonymous: true
-  plugins:
-    target:
-      type: target-flow
-      configuration:
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint2"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-flow
+        configuration:
           namespace: ` + limitedNamespace + `
           flow: /workflow.yaml
           content_type: text/json
-  methods: 
-    - GET
-  path: /endpoint2`
+get:
+   responses:
+      "200":
+        description: works`
 
 const endpointBroken = `
-  direktiv_api: endpoint/v1
-  allow_anonymous: true
-  plugins:
-    target:
-      type: target-flow
-  methods: 
-    - GET
-  path: /endpoint3`
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint3"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-flow
+get:
+   responses:
+      "200":
+        description: works`
 
-const endpointErrorWorkflow = `direktiv_api: endpoint/v1
-allow_anonymous: true
-plugins:
-  target:
-    type: target-flow
-    configuration:
-      flow: /ep3.yaml
-methods: 
-  - GET
-path: /endpoint3`
+
+const endpointErrorWorkflow = `
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint3"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-flow
+        configuration:
+          flow: /ep3.yaml
+get:
+   responses:
+      "200":
+        description: works`
 
 const errorWorkflow = `direktiv_api: workflow/v1
 states:
@@ -136,28 +159,36 @@ states:
   message: 'Missing or invalid value for required input.'
 `
 
-const endpointNoContentType = `direktiv_api: endpoint/v1
-allow_anonymous: true
-plugins:
-  target:
-    type: target-flow
-    configuration:
-      flow: /contentType.yaml
-methods: 
-  - GET
-path: /endpointct`
+const endpointNoContentType = `
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpointct"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-flow
+        configuration:
+          flow: /contentType.yaml
+get:
+   responses:
+      "200":
+        description: works`
 
-const endpointContentType = `direktiv_api: endpoint/v1
-allow_anonymous: true
-plugins:
-  target:
-    type: target-flow
-    configuration:
-      flow: /contentType.yaml
-      content_type: test/me
-methods: 
-  - GET
-path: /endpointcttest`
+const endpointContentType = `
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpointcttest"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-flow
+        configuration:
+          flow: /contentType.yaml
+          content_type: test/me
+get:
+   responses:
+      "200":
+        description: works`
 
 const contentType = `
 direktiv_api: workflow/v1
@@ -188,15 +219,11 @@ describe('Test target workflow wrong config', () => {
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
 		expect(listRes.body.data[0]).toEqual({
+			spec: expect.anything(),
 			file_path: '/ep3.yaml',
-			path: '/endpoint3',
-			methods: [ 'GET' ],
-			allow_anonymous: true,
 			server_path: '/ns/system/endpoint3',
-			timeout: 0,
 			errors: [ "plugin 'target-flow' err: flow required" ],
 			warnings: [],
-			plugins: { target: { type: 'target-flow' } },
 		})
 	})
 })
@@ -313,7 +340,7 @@ describe('Test target workflow plugin', () => {
 		expect(req.text).toEqual('{"result":"Hello world!"}')
 	})
 
-	retry10(`should not return a workflow in onn-magic namespace`, async () => {
+	retry10(`should not return a workflow in non-magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
 			`/ns/` + limitedNamespace + `/endpoint1`,
 		)

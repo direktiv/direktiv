@@ -36,10 +36,14 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 	for i, item := range endpoints {
 		// don't process endpoints with errors
 		if len(item.Errors) > 0 {
+			slog.Error("endpoint skipped due to errors", slog.String("endpoint", item.FilePath),
+				slog.Any("error", item.Errors))
 			continue
 		}
 
 		if _, ok := checkUniqueGatewayPaths[item.Namespace+item.Config.Path]; ok {
+			slog.Error("endpoint skipped because of duplicate path", slog.String("endpoint", item.FilePath),
+				slog.String("path", item.Config.Path))
 			item.Errors = append(item.Errors, fmt.Sprintf("duplicate gateway path: %s", item.Config.Path))
 			endpoints[i] = item
 
@@ -72,6 +76,8 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 
 		// skip mount http handler when plugins has zero errors.
 		if len(item.Errors) > 0 {
+			slog.Error("endpoint skipped due to errors", slog.String("endpoint", item.FilePath),
+				slog.Any("error", item.Errors))
 			continue
 		}
 
