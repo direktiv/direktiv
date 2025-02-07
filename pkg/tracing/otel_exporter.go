@@ -2,7 +2,6 @@ package tracing
 
 import (
 	"context"
-	"fmt"
 
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/metric/metricdata"
@@ -15,11 +14,11 @@ type Exporter struct {
 
 // ExportSpans exports spans to both console and remote (if available).
 func (e *Exporter) ExportSpans(ctx context.Context, spans []sdktrace.ReadOnlySpan) error {
-	for _, span := range spans {
-		fmt.Printf("Span: %s | TraceID: %s | ParentID: %s | Duration: %s\n",
-			span.Name(), span.SpanContext().TraceID(), span.Parent().SpanID(), span.EndTime().Sub(span.StartTime()),
-		)
-	}
+	// for _, span := range spans {
+	// 	fmt.Printf("Span: %s | TraceID: %s | ParentID: %s | Duration: %s\n",
+	// 		span.Name(), span.SpanContext().TraceID(), span.Parent().SpanID(), span.EndTime().Sub(span.StartTime()),
+	// 	)
+	// }
 
 	if e.RemoteExporter != nil {
 		return e.RemoteExporter.ExportSpans(ctx, spans)
@@ -44,13 +43,13 @@ type MetricExporter struct {
 // Export logs metrics and forwards them if a remote exporter is set.
 func (e *MetricExporter) Export(ctx context.Context, rm *metricdata.ResourceMetrics) error {
 	// Log metrics to console
-	for _, scopeMetrics := range rm.ScopeMetrics {
-		for _, m := range scopeMetrics.Metrics {
-			fmt.Printf("Metric: %s | Description: %s | Data: %v\n",
-				m.Name, m.Description, m.Data,
-			)
-		}
-	}
+	// for _, scopeMetrics := range rm.ScopeMetrics {
+	// 	for _, m := range scopeMetrics.Metrics {
+	// 		fmt.Printf("Metric: %s | Description: %s | Data: %v\n",
+	// 			m.Name, m.Description, m.Data,
+	// 		)
+	// 	}
+	// }
 
 	// Forward metrics to remote exporter if available
 	if e.RemoteExporter != nil {
