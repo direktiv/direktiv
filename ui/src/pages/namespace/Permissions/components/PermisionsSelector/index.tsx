@@ -1,7 +1,5 @@
 import {
   PermisionSchemaType,
-  PermissionMethodAvailableUi,
-  PermissionTopic,
   permissionMethodsAvailableUi,
   permissionTopics,
 } from "~/api/enterprise/tokens/schema";
