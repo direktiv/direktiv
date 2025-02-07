@@ -83,7 +83,9 @@ const PermissionsSelector = ({
                 <PermissionRow
                   key={topic}
                   topic={topic}
-                  // TODO:implement default value
+                  defaultValue={
+                    permissions.find((p) => p.topic === topic)?.method
+                  }
                   onChange={(value) => {
                     onChange(updatePermissions({ permissions, topic, value }));
                   }}

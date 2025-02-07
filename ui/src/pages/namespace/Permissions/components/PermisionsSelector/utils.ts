@@ -1,6 +1,6 @@
 import {
   PermisionSchemaType,
-  PermissionMethodAvailableUi,
+  PermissionMethod,
   PermissionTopic,
 } from "~/api/enterprise/tokens/schema";
 
@@ -11,7 +11,7 @@ export const updatePermissions = ({
 }: {
   permissions: PermisionSchemaType[];
   topic: PermissionTopic;
-  value: PermissionMethodAvailableUi | undefined;
+  value: PermissionMethod | undefined;
 }) => {
   let newPermissions = structuredClone(permissions);
   const permissionAlreadyExists = permissions.some(

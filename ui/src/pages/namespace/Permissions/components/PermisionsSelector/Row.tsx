@@ -1,5 +1,5 @@
 import {
-  PermissionMethodAvailableUi,
+  PermissionMethod,
   PermissionTopic,
   permissionMethodsAvailableUi,
 } from "~/api/enterprise/tokens/schema";
@@ -10,14 +10,19 @@ import { z } from "zod";
 
 type PermissionRowProps = {
   topic: PermissionTopic;
-  onChange: (newValue: PermissionMethodAvailableUi | undefined) => void;
+  onChange: (newValue: PermissionMethod | undefined) => void;
+  defaultValue?: PermissionMethod;
 };
 
 const noPermissionsOptionsValue = "";
 
-export const PermissionRow = ({ topic, onChange }: PermissionRowProps) => (
+export const PermissionRow = ({
+  topic,
+  onChange,
+  defaultValue,
+}: PermissionRowProps) => (
   <RadioGroup
-    defaultValue={noPermissionsOptionsValue}
+    value={defaultValue || noPermissionsOptionsValue}
     onValueChange={(value) => {
       if (value === noPermissionsOptionsValue) {
         onChange(undefined);
