@@ -1,23 +1,20 @@
+import { Link, useParams } from "@tanstack/react-router";
 import { ScrollText, Workflow } from "lucide-react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import EndpointEditor from "./EndpointEditor";
 import { FC } from "react";
-import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
 import PublicPathInput from "../../Gateway/Routes/components/PublicPath";
 import { analyzePath } from "~/util/router/utils";
 import { useFile } from "~/api/files/query/file";
-import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useRoute } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
 const EndpointPage: FC = () => {
-  const pages = usePages();
-  const { path } = pages.explorer.useParams();
-  const namespace = useNamespace();
+  const { _splat: path } = useParams({ strict: false });
+
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];
   const { t } = useTranslation();
@@ -34,7 +31,6 @@ const EndpointPage: FC = () => {
     enabled: !!path,
   });
 
-  if (!namespace) return null;
   if (!path) return null;
   if (endpointData?.type !== "endpoint") return null;
   if (!isPermissionCheckFetched) return null;
@@ -62,11 +58,9 @@ const EndpointPage: FC = () => {
           </div>
           <Button isAnchor asChild variant="primary">
             <Link
-              to={pages.gateway.createHref({
-                subpage: "routeDetail",
-                namespace,
-                routePath: path,
-              })}
+              to="/n/$namespace/gateway/routes/$filename"
+              from="/n/$namespace"
+              params={{ filename: path }}
             >
               <ScrollText />
               {t("pages.explorer.endpoint.openRouteLogs")}

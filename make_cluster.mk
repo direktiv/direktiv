@@ -151,3 +151,26 @@ cluster-direktiv-run: cluster-build
 cluster-dev:
 	DOCKER_BUILDKIT=1 docker build --build-arg IS_ENTERPRISE=${IS_ENTERPRISE} --push -t localhost:5001/direktiv:dev .
 	kubectl delete pod -l app=direktiv-flow
+
+cluster-otel-install:
+	helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+	helm upgrade --install --set image.repository=otel/opentelemetry-collector-k8s  \
+	--set mode=deployment \
+	--set resources.limits.cpu=250m \
+	--set resources.limits.memory=512Mi \
+	otel-collector open-telemetry/opentelemetry-collector -n default;
+	kubectl wait --for=condition=ready pod -l "app.kubernetes.io/instance=otel-collector"
+	helm upgrade --set database.host=postgres.default.svc \
+	--set database.port=5432 \
+	--set database.user=admin \
+	--set database.password=password \
+	--set database.name=direktiv \
+	--set database.sslmode=disable \
+	--set pullPolicy=Always \
+	--set ingress-nginx.install=false \
+	--set image=direktiv \
+	--set registry=localhost:5001 \
+	--set tag=dev \
+	--set flow.sidecar=localhost:5001/direktiv:dev \
+	--set flow.opentelemetryBackend=otel-collector-opentelemetry-collector.default:4317 \
+	direktiv charts/direktiv; 
