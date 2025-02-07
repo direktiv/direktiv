@@ -1,5 +1,7 @@
 import {
   PermisionSchemaType,
+  PermissionMethodAvailableUi,
+  PermissionTopic,
   permissionMethodsAvailableUi,
   permissionTopics,
 } from "~/api/enterprise/tokens/schema";
@@ -15,15 +17,16 @@ import {
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { PermissionRow } from "./Row";
+import { updatePermissions } from "./utils";
 import { useTranslation } from "react-i18next";
 
 type PermisionsSelectorProps = {
-  selectedPermissions: PermisionSchemaType[];
+  permissions: PermisionSchemaType[];
   onChange: (permissions: PermisionSchemaType[]) => void;
 };
 
 const PermissionsSelector = ({
-  selectedPermissions,
+  permissions,
   onChange,
 }: PermisionsSelectorProps) => {
   const { t } = useTranslation();
@@ -33,7 +36,6 @@ const PermissionsSelector = ({
         <label className="w-[90px] text-right text-[14px]">
           {t("pages.permissions.permissionsSelector.permissions")}
         </label>
-
         <Card className="max-h-[400px] w-full overflow-scroll" noShadow>
           <Table>
             <TableHead>
@@ -64,8 +66,8 @@ const PermissionsSelector = ({
                     </Button>
                   </div>
                 </TableHeaderCell>
-                <TableHeaderCell sticky className="w-20 px-2 text-center">
-                  no
+                <TableHeaderCell sticky className="w-32 px-2 text-center">
+                  {t("pages.permissions.permissionsSelector.noPermissions")}
                 </TableHeaderCell>
                 {permissionMethodsAvailableUi.map((method) => (
                   <TableHeaderCell
@@ -85,7 +87,7 @@ const PermissionsSelector = ({
                   topic={topic}
                   // TODO:implement default value
                   onChange={(value) => {
-                    console.log("🚀 set value", value, "for topic", topic);
+                    onChange(updatePermissions({ permissions, topic, value }));
                   }}
                 />
               ))}

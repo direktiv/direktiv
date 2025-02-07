@@ -149,7 +149,7 @@ const CreateToken = ({ close }: { close: () => void }) => {
                 </InputWithButton>
               </fieldset>
               <PermissionsSelector
-                selectedPermissions={watch("permissions")}
+                permissions={watch("permissions")}
                 onChange={(permissions) =>
                   setValue("permissions", permissions, {
                     shouldDirty: true,

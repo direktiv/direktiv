@@ -115,7 +115,7 @@ const CreateGroup = ({
           </fieldset>
           <PermissionsSelector
             availablePermissions={availablePermissions ?? []}
-            selectedPermissions={watch("permissions")}
+            permissions={watch("permissions")}
             setPermissions={(permissions) =>
               setValue("permissions", permissions, {
                 shouldDirty: true,
