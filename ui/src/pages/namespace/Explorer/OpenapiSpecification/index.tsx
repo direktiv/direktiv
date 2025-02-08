@@ -1,22 +1,18 @@
 import { BookOpen, FileSymlink } from "lucide-react";
+import { Link, useParams } from "@tanstack/react-router";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { FC } from "react";
-import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
 import OpenapiSpecificationEditor from "./OpenApiSpecificationEditor";
 import { analyzePath } from "~/util/router/utils";
 import { useFile } from "~/api/files/query/file";
-import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 
 // import { useTranslation } from "react-i18next";
 
 const OpenapiSpecificationPage: FC = () => {
-  const pages = usePages();
-  const { path } = pages.explorer.useParams();
-  const namespace = useNamespace();
+  const { _splat: path } = useParams({ strict: false });
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];
   // const { t } = useTranslation();
@@ -28,7 +24,6 @@ const OpenapiSpecificationPage: FC = () => {
     isFetched: isPermissionCheckFetched,
   } = useFile({ path });
 
-  if (!namespace) return null;
   if (!path) return null;
   if (gatewayData?.type !== "gateway") return null;
   if (!isPermissionCheckFetched) return null;
@@ -49,12 +44,7 @@ const OpenapiSpecificationPage: FC = () => {
             {filename?.relative}
           </h3>
           <Button isAnchor asChild variant="primary">
-            <Link
-              to={pages.gateway.createHref({
-                namespace,
-                subpage: "info",
-              })}
-            >
+            <Link to="/n/$namespace/gateway/routes" from="/n/$namespace">
               <FileSymlink />
               Go to Gateway Info
             </Link>

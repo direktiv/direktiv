@@ -1,20 +1,17 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
 import { NoPermissions, NoResult, TableCell, TableRow } from "~/design/Table";
-import { Pagination, PaginationLink } from "~/design/Pagination";
-import {
-  useEventsPageSize,
-  usePageSizeActions,
-} from "~/util/store/pagesizes/pagesize";
+import { useEventsPageSize, usePageSizeActions } from "~/util/store/pagesize";
 
 import { Card } from "~/design/Card";
 import { EventSchemaType } from "~/api/events/schema";
 import EventsTable from "./Table";
 import Filters from "./components/Filters";
 import { FiltersSchemaType } from "~/api/events/schema/filters";
+import { Pagination } from "~/components/Pagination";
 import PaginationProvider from "~/components/PaginationProvider";
 import { Radio } from "lucide-react";
 import Row from "./Row";
-import { SelectPageSize } from "./components/SelectPageSize";
+import { SelectPageSize } from "../../../../components/SelectPageSize";
 import SendEvent from "./SendEvent";
 import ViewEvent from "./ViewEvent";
 import { useEvents } from "~/api/events/query/get";
@@ -58,10 +55,8 @@ const EventsList = ({
             currentItems,
             goToFirstPage,
             goToPage,
-            goToNextPage,
-            goToPreviousPage,
             currentPage,
-            pagesList,
+            totalPages,
           }) => (
             <>
               <Card>
@@ -122,30 +117,11 @@ const EventsList = ({
                     goToFirstPage();
                   }}
                 />
-                <Pagination>
-                  <PaginationLink
-                    disabled={pagesList.length === 1}
-                    data-testid="pagination-btn-left"
-                    icon="left"
-                    onClick={() => goToPreviousPage()}
-                  />
-                  {pagesList.map((page) => (
-                    <PaginationLink
-                      disabled={pagesList.length === 1}
-                      active={currentPage === page}
-                      key={`${page}`}
-                      onClick={() => goToPage(page)}
-                    >
-                      {page}
-                    </PaginationLink>
-                  ))}
-                  <PaginationLink
-                    disabled={pagesList.length === 1}
-                    data-testid="pagination-btn-right"
-                    icon="right"
-                    onClick={() => goToNextPage()}
-                  />
-                </Pagination>
+                <Pagination
+                  totalPages={totalPages}
+                  value={currentPage}
+                  onChange={goToPage}
+                />
               </div>
             </>
           )}

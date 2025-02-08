@@ -10,7 +10,6 @@ import {
 import Button from "~/design/Button";
 import { CodeEditor } from "../../Workflow/Edit/CodeEditor";
 import { FileSchemaType } from "~/api/files/schema";
-import { Form } from "react-router-dom";
 import { OpenapiSpecificationFormSchema } from "./schema";
 import { Save } from "lucide-react";
 import { useToast } from "~/design/Toast";
@@ -125,7 +124,7 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
   // };
 
   return (
-    <Form
+    <form
       onSubmit={handleFormSubmit}
       className="relative flex-col gap-4 p-5 size-full"
     >
@@ -172,7 +171,7 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
           )} */}
         </div>
       </div>
-    </Form>
+    </form>
   );
 };
 

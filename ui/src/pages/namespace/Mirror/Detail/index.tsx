@@ -9,10 +9,10 @@ import {
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
-import { Pagination, PaginationLink } from "~/design/Pagination";
 
 import { Card } from "~/design/Card";
 import Header from "./Header";
+import { Pagination } from "~/components/Pagination";
 import PaginationProvider from "~/components/PaginationProvider";
 import Row from "./Row";
 import { syncKeys } from "~/api/syncs";
@@ -70,15 +70,7 @@ const MirrorDetail = () => {
     <>
       <Header mirror={mirror} loading={!!pendingSyncs.length} />
       <PaginationProvider items={syncs} pageSize={pageSize}>
-        {({
-          currentItems,
-          goToPage,
-          goToNextPage,
-          goToPreviousPage,
-          currentPage,
-          pagesList,
-          totalPages,
-        }) => (
+        {({ currentItems, goToPage, currentPage, totalPages }) => (
           <div className="flex grow flex-col gap-y-4 p-5">
             <h3 className="flex items-center gap-x-2 font-bold">
               <FolderSync className="h-5" />
@@ -115,28 +107,11 @@ const MirrorDetail = () => {
                 </TableBody>
               </Table>
             </Card>
-            <Pagination>
-              <PaginationLink
-                disabled={totalPages === 1}
-                icon="left"
-                onClick={() => goToPreviousPage()}
-              />
-              {pagesList.map((page) => (
-                <PaginationLink
-                  disabled={totalPages === 1}
-                  active={currentPage === page}
-                  key={`${page}`}
-                  onClick={() => goToPage(page)}
-                >
-                  {page}
-                </PaginationLink>
-              ))}
-              <PaginationLink
-                disabled={totalPages === 1}
-                icon="right"
-                onClick={() => goToNextPage()}
-              />
-            </Pagination>
+            <Pagination
+              totalPages={totalPages}
+              value={currentPage}
+              onChange={goToPage}
+            />
           </div>
         )}
       </PaginationProvider>
