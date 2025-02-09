@@ -1,0 +1,4 @@
+direktiv_api: "info/v1"
+name: testname
+version: 2.0.0
+description: testDescription

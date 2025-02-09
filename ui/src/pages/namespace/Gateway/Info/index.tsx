@@ -68,14 +68,18 @@ const InfoPage = () => {
                   {t("pages.gateway.info.columns.file")}
                 </TableHeaderCell>
                 <TableCell>
-                  <Link
-                    className="whitespace-normal break-all hover:underline"
-                    to="/n/$namespace/explorer/openapiSpecification/$"
-                    from="/n/$namespace"
-                    params={{ _splat: filePath ?? "" }}
-                  >
-                    {filePath ?? "Unknown File Path"}
-                  </Link>
+                  {filePath === "virtual" ? (
+                    <span>{filePath}</span>
+                  ) : (
+                    <Link
+                      className="whitespace-normal break-all hover:underline"
+                      to="/n/$namespace/explorer/openapiSpecification/$"
+                      from="/n/$namespace"
+                      params={{ _splat: filePath ?? "" }}
+                    >
+                      {filePath ?? "Unknown File Path"}
+                    </Link>
+                  )}
                 </TableCell>
               </TableRow>
             </TableBody>
