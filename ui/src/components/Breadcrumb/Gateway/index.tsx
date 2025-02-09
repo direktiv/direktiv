@@ -22,7 +22,7 @@ const GatewayBreadcrumb = () => {
   return (
     <>
       <BreadcrumbLink>
-        <Link to="/n/$namespace/gateway" from="/n/$namespace">
+        <Link to="/n/$namespace/gateway/gatewayInfo" from="/n/$namespace">
           <Network aria-hidden="true" />
           {t("components.breadcrumb.gateway")}
         </Link>

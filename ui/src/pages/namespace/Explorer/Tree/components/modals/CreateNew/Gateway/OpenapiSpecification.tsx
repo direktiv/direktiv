@@ -1,11 +1,12 @@
+import { BookOpen, PlusCircle } from "lucide-react";
 import {
   DialogClose,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { Network, PlusCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
 import { FileNameSchema } from "~/api/files/schema";
@@ -19,7 +20,6 @@ import { jsonToYaml } from "~/pages/namespace/Explorer/utils";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "@tanstack/react-router";
-import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -113,8 +113,8 @@ const NewOpenapiSpecification = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Network />
-          New OpenAPI Specification
+          <BookOpen />
+          {t("pages.explorer.tree.openapiSpecification.title")}
         </DialogTitle>
       </DialogHeader>
 
@@ -128,19 +128,21 @@ const NewOpenapiSpecification = ({
           <div>
             <fieldset className="flex items-center gap-5">
               <label className="w-[90px] text-right text-[14px]" htmlFor="name">
-                {t("pages.explorer.tree.newRoute.nameLabel")}
+                {t("pages.explorer.tree.openapiSpecification.nameLabel")}
               </label>
               <InputWithButton>
                 <Input
                   id="name"
                   placeholder={t(
-                    "pages.explorer.tree.newRoute.namePlaceholder"
+                    "pages.explorer.tree.openapiSpecification.namePlaceholder"
                   )}
                   {...register("name")}
                 />
                 <InfoTooltip>
-                  Every namespace should only have <strong>one</strong> OpenAPI
-                  Specification
+                  <Trans i18nKey="pages.explorer.tree.openapiSpecification.infoTooltip">
+                    Every namespace should only have <b>one</b> OpenAPI
+                    Specification
+                  </Trans>
                 </InfoTooltip>
               </InputWithButton>
             </fieldset>
@@ -150,7 +152,7 @@ const NewOpenapiSpecification = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.explorer.tree.newRoute.cancelBtn")}
+            {t("pages.explorer.tree.openapiSpecification.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
@@ -160,7 +162,7 @@ const NewOpenapiSpecification = ({
           form={formId}
         >
           {!isPending && <PlusCircle />}
-          {t("pages.explorer.tree.newRoute.createBtn")}
+          {t("pages.explorer.tree.openapiSpecification.createBtn")}
         </Button>
       </DialogFooter>
     </>

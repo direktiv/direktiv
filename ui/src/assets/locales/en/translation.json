@@ -95,7 +95,8 @@
             "gateway": {
               "label": "Gateway",
               "route": "New Route",
-              "consumer": "New Consumer"
+              "consumer": "New Consumer",
+              "openapiSpecification": "OpenAPI Spec."
             }
           }
         },
@@ -131,6 +132,18 @@
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
           "createBtn": "Create"
+        },
+
+        "openapiSpecification": {
+          "title": "Create a new OpenAPI Specification",
+          "nameLabel": "Name",
+          "namePlaceholder": "openapi-specification-name.yaml",
+          "link": "Go to Gateway Info",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create",
+          "infoTooltip": "Every namespace should only have <1>one</1> OpenAPI Specification",
+          "errorTitle": "Parsing Error",
+          "errorDescription": "The OpenAPI Specification is not valid.<br />Please provide at least the following required fields:<br />openapi:<br />info:<br /> - title:<br />  - description:<br />  - version:"
         },
         "workflow": {
           "runWorkflow": {
@@ -1016,7 +1029,8 @@
           "version": "Version",
           "description": "Description",
           "file": "File",
-          "errors": "Errors"
+          "errors": "Errors",
+          "errorSiblingFields": "The OpenAPI Specification contains unexpected fields. Please remove any extra fields that are not part of a valid OpenAPI structure."
         }
       }
     },

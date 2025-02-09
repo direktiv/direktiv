@@ -10,6 +10,7 @@ import Alert from "~/design/Alert";
 import { BookOpen } from "lucide-react";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import { Link } from "@tanstack/react-router";
 import { jsonToYaml } from "../../Explorer/utils";
 import { useInfo } from "~/api/gateway/query/getInfo";
 import { useTheme } from "~/util/store/theme";
@@ -22,6 +23,13 @@ const InfoPage = () => {
   const info = data?.data;
   const { spec, errors, file_path: filePath } = info || {};
   const { title, version, description = "" } = spec?.info || {};
+
+  const errorDescription =
+    errors?.length &&
+    typeof errors[0] === "string" &&
+    errors[0].includes("extra sibling fields:")
+      ? t("pages.gateway.info.columns.errorSiblingFields")
+      : undefined;
 
   const specToYaml = spec ? jsonToYaml(spec) : "";
 
@@ -59,7 +67,16 @@ const InfoPage = () => {
                 <TableHeaderCell>
                   {t("pages.gateway.info.columns.file")}
                 </TableHeaderCell>
-                <TableCell>{filePath}</TableCell>
+                <TableCell>
+                  <Link
+                    className="whitespace-normal break-all hover:underline"
+                    to="/n/$namespace/explorer/openapiSpecification/$"
+                    from="/n/$namespace"
+                    params={{ _splat: filePath ?? "" }}
+                  >
+                    {filePath ?? "Unknown File Path"}
+                  </Link>
+                </TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -76,6 +93,7 @@ const InfoPage = () => {
                         : String(error)}
                     </li>
                   ))}
+                  <li>{errorDescription}</li>
                 </ul>
               </p>
             </Alert>

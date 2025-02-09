@@ -8,14 +8,13 @@ import { NoPermissions } from "~/design/Table";
 import OpenapiSpecificationEditor from "./OpenApiSpecificationEditor";
 import { analyzePath } from "~/util/router/utils";
 import { useFile } from "~/api/files/query/file";
-
-// import { useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 const OpenapiSpecificationPage: FC = () => {
   const { _splat: path } = useParams({ strict: false });
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];
-  // const { t } = useTranslation();
+  const { t } = useTranslation();
 
   const {
     isAllowed,
@@ -44,9 +43,9 @@ const OpenapiSpecificationPage: FC = () => {
             {filename?.relative}
           </h3>
           <Button isAnchor asChild variant="primary">
-            <Link to="/n/$namespace/gateway/routes" from="/n/$namespace">
+            <Link to="/n/$namespace/gateway/gatewayInfo" from="/n/$namespace">
               <FileSymlink />
-              Go to Gateway Info
+              {t("pages.explorer.tree.openapiSpecification.link")}
             </Link>
           </Button>
         </div>

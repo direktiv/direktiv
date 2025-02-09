@@ -1,4 +1,5 @@
 import { FC, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { decode, encode } from "js-base64";
 import { jsonToYaml, yamlToJsonOrNull } from "../../utils";
 import {
@@ -6,15 +7,12 @@ import {
   useUnsavedChanges,
 } from "../../Workflow/store/unsavedChangesContext";
 
-// import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { CodeEditor } from "../../Workflow/Edit/CodeEditor";
 import { FileSchemaType } from "~/api/files/schema";
 import { OpenapiSpecificationFormSchema } from "./schema";
 import { Save } from "lucide-react";
 import { useToast } from "~/design/Toast";
-// import { ScrollArea } from "~/design/ScrollArea";
-import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
 type OpenapiSpecificationEditorProps = {
@@ -35,8 +33,6 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
     decodedFileContentFromServer
   );
 
-  // const [error, setError] = useState<string | undefined>();
-
   const { mutate: updateFile, isPending } = useUpdateFile({
     onError: (errorMessage) => {
       showToast({
@@ -56,16 +52,6 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
     },
   });
 
-  // const { mutate: updateFile, isPending } = useUpdateFile({
-  //   onError: (error) => {
-  //     toast.error(error);
-  //   },
-  //   onSuccess: () => {
-  //     setHasUnsavedChanges(false);
-  //     setError(undefined);
-  //   },
-  // });
-
   const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     saveContent(editorContent);
@@ -78,8 +64,10 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
       if (!result.success) {
         showToast({
           variant: "error",
-          title: "Parsing Error",
-          description: result.error?.issues[0]?.code ?? "Unknown error",
+          title: t("pages.explorer.tree.openapiSpecification.errorTitle"),
+          description: (
+            <Trans i18nKey="pages.explorer.tree.openapiSpecification.errorDescription" />
+          ),
         });
         return;
       }
@@ -102,27 +90,6 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
     setHasUnsavedChanges(true);
   };
 
-  // const saveContent = (content: string | undefined) => {
-  //   try {
-  //     const parsedContent = yamlToJsonOrNull(content ?? "");
-  //     const result = OpenApiBaseFileFormSchema.safeParse(parsedContent);
-  //     if (!result.success) {
-  //       setError(
-  //         `Parsing error: ${result.error?.issues[0]?.code ?? "Unknown error"}`
-  //       );
-  //       return;
-  //     }
-  //     setError(undefined);
-
-  //     updateFile({
-  //       path: data.path,
-  //       payload: { data: encode(jsonToYaml(parsedContent ?? {})) },
-  //     });
-  //   } catch (error) {
-  //     setError(`Failed to save: ${String(error)}`);
-  //   }
-  // };
-
   return (
     <form
       onSubmit={handleFormSubmit}
@@ -135,9 +102,9 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
               value={editorContent}
               onValueChange={handleEditorChange}
               onSave={saveContent}
-              hasUnsavedChanges={hasUnsavedChanges}
+              hasUnsavedChanges={undefined} // To avoid double unsaved msg this is not passed
               updatedAt={data.updatedAt}
-              error={undefined}
+              error={undefined} // To avoid double toasts this is not passed
             />
             <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
               {hasUnsavedChanges && (
@@ -157,18 +124,6 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
               </Button>
             </div>
           </div>
-          {/* {error && (
-            <div className="flex flex-col gap-5">
-              <Alert variant="error">
-                {t("pages.explorer.consumer.editor.form.serialisationError")}
-                <ScrollArea className="size-full whitespace-nowrap">
-                  <pre className="grow text-sm text-primary-500">
-                    {JSON.stringify(error, null, 2)}
-                  </pre>
-                </ScrollArea>
-              </Alert>
-            </div>
-          )} */}
         </div>
       </div>
     </form>

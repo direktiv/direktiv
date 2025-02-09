@@ -133,7 +133,9 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
                   <DropdownMenuItem className="flex items-center">
                     <BookOpen className="mr-2 size-4" />
                     <span className="flex-1 text-left">
-                      OpenAPI Specification
+                      {t(
+                        "pages.explorer.tree.newFileButton.items.gateway.openapiSpecification"
+                      )}
                     </span>
                   </DropdownMenuItem>
                 </DialogTrigger>

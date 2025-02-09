@@ -6,6 +6,10 @@ import { useTranslation } from "react-i18next";
 
 const GatewayPage = () => {
   const { t } = useTranslation();
+  const isGatewayInfoPage = useMatch({
+    from: "/n/$namespace/gateway/gatewayInfo",
+    shouldThrow: false,
+  });
   const isGatewayRoutesPage = useMatch({
     from: "/n/$namespace/gateway/routes/",
     shouldThrow: false,
@@ -16,10 +20,6 @@ const GatewayPage = () => {
   });
   const isGatewayRoutesDetailPage = useMatch({
     from: "/n/$namespace/gateway/routes/$filename",
-    shouldThrow: false,
-  });
-  const isGatewayInfoPage = useMatch({
-    from: "/n/$namespace/gateway/gatewayInfo",
     shouldThrow: false,
   });
 

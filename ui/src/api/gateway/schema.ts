@@ -164,7 +164,7 @@ export const OpenapiSpecificationSchema = z.object({
       })
       .passthrough(),
     file_path: z.string(),
-    errors: z.array(z.unknown()),
+    errors: z.array(z.string()),
   }),
 });
 
