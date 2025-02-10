@@ -330,7 +330,7 @@ test("log entries will be automatically scrolled to the end", async ({
     "After scrolling up, a button appeared"
   ).toBeVisible();
 
-  followButton.click();
+  await followButton.click();
 
   await expect(
     followButton,
