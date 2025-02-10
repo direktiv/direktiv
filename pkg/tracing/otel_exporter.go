@@ -12,8 +12,12 @@ import (
 )
 
 type Exporter struct {
-	RemoteExporter sdktrace.SpanExporter
-	Store          datastore.TracesStore
+	remoteExporter sdktrace.SpanExporter
+	store          datastore.TracesStore
+}
+
+func NewExporter(remoteExporter sdktrace.SpanExporter, store datastore.TracesStore) sdktrace.SpanExporter {
+	return &Exporter{remoteExporter: remoteExporter, store: store}
 }
 
 // ExportSpans exports spans to both the trace store and remote exporter.
@@ -43,15 +47,15 @@ func (e *Exporter) ExportSpans(ctx context.Context, spans []sdktrace.ReadOnlySpa
 	}
 
 	// Store traces in DB
-	if len(traces) > 0 {
-		if err := e.Store.Append(ctx, traces...); err != nil {
+	if len(traces) > 0 && e.store != nil {
+		if err := e.store.Append(ctx, traces...); err != nil {
 			return err
 		}
 	}
 
 	// Export remotely if applicable
-	if e.RemoteExporter != nil {
-		return e.RemoteExporter.ExportSpans(ctx, spans)
+	if e.remoteExporter != nil {
+		return e.remoteExporter.ExportSpans(ctx, spans)
 	}
 
 	return nil
@@ -59,8 +63,8 @@ func (e *Exporter) ExportSpans(ctx context.Context, spans []sdktrace.ReadOnlySpa
 
 // Shutdown ensures proper cleanup.
 func (e *Exporter) Shutdown(ctx context.Context) error {
-	if e.RemoteExporter != nil {
-		return e.RemoteExporter.Shutdown(ctx)
+	if e.remoteExporter != nil {
+		return e.remoteExporter.Shutdown(ctx)
 	}
 
 	return nil

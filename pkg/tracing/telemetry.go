@@ -119,7 +119,7 @@ func setupTracing(ctx context.Context, addr string, res *resource.Resource) (*sd
 			otlptracegrpc.WithEndpoint(addr),
 			otlptracegrpc.WithInsecure(),
 		)
-		exporter.RemoteExporter, err = retry(func() (sdktrace.SpanExporter, error) {
+		exporter.remoteExporter, err = retry(func() (sdktrace.SpanExporter, error) {
 			return otlptrace.New(ctx, driver)
 		})
 		if err != nil {
