@@ -21,7 +21,7 @@ func (e *Exporter) ExportSpans(ctx context.Context, spans []sdktrace.ReadOnlySpa
 	var traces []datastore.Trace
 
 	for _, span := range spans {
-		rawTrace, err := MarshalSpan(span)
+		metadata, err := MarshalSpan(span)
 		if err != nil {
 			return err
 		}
@@ -31,7 +31,7 @@ func (e *Exporter) ExportSpans(ctx context.Context, spans []sdktrace.ReadOnlySpa
 			SpanID:    span.SpanContext().SpanID().String(),
 			StartTime: span.StartTime(),
 			EndTime:   span.EndTime(),
-			RawTrace:  rawTrace,
+			Metadata:  metadata,
 		}
 
 		if span.Parent().IsValid() {

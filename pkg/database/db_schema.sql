@@ -250,7 +250,7 @@ CREATE TABLE IF NOT EXISTS "traces" (
     "parent_span_id" text,
     "start_time" timestamptz NOT NULL,
     "end_time" timestamptz,
-    "raw_trace" JSONB
+    "metadata" JSONB
 );
 
 CREATE INDEX IF NOT EXISTS "trace_id" ON "traces" USING hash("parent_span_id");

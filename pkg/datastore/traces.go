@@ -12,7 +12,7 @@ type Trace struct {
 	ParentSpanID *string   `json:"parentSpanID,omitempty"`
 	StartTime    time.Time `json:"startTime"`
 	EndTime      time.Time `json:"endTime,omitempty"`
-	RawTrace     []byte    `json:"rawTrace"`
+	Metadata     []byte    `json:"metadata"`
 }
 
 // TracesStore defines the interface for interacting with trace data.

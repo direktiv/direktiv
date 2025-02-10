@@ -23,7 +23,7 @@ func (s *sqlTracesStore) Append(ctx context.Context, traces ...datastore.Trace) 
 	}
 
 	// The SQL query to insert multiple traces
-	q := `INSERT INTO traces (trace_id, span_id, parent_span_id, start_time, end_time, raw_trace) VALUES %s;`
+	q := `INSERT INTO traces (trace_id, span_id, parent_span_id, start_time, end_time, metadata) VALUES %s;`
 
 	var values []interface{}
 	var placeholders []string
@@ -32,7 +32,7 @@ func (s *sqlTracesStore) Append(ctx context.Context, traces ...datastore.Trace) 
 		trace.StartTime = trace.StartTime.UTC()
 		trace.EndTime = trace.EndTime.UTC()
 		placeholders = append(placeholders, "(?, ?, ?, ?, ?, ?)")
-		values = append(values, trace.TraceID, trace.SpanID, trace.ParentSpanID, trace.StartTime, trace.EndTime, trace.RawTrace)
+		values = append(values, trace.TraceID, trace.SpanID, trace.ParentSpanID, trace.StartTime, trace.EndTime, trace.Metadata)
 	}
 
 	finalQuery := fmt.Sprintf(q, strings.Join(placeholders, ", "))
@@ -59,7 +59,7 @@ func (s *sqlTracesStore) DeleteOld(ctx context.Context, cutoffTime time.Time) er
 // GetByParentSpanID implements datastore.TracesStore.
 func (s *sqlTracesStore) GetByParentSpanID(ctx context.Context, parentSpanID string) ([]datastore.Trace, error) {
 	// SQL query to select traces by parent span ID
-	q := `SELECT trace_id, span_id, parent_span_id, start_time, end_time, raw_trace
+	q := `SELECT trace_id, span_id, parent_span_id, start_time, end_time, metadata
 		  FROM traces WHERE parent_span_id = $1;`
 
 	var res []datastore.Trace
@@ -73,7 +73,7 @@ func (s *sqlTracesStore) GetByParentSpanID(ctx context.Context, parentSpanID str
 
 // GetByTraceID implements datastore.TracesStore.
 func (s *sqlTracesStore) GetByTraceID(ctx context.Context, traceID string) (datastore.Trace, error) {
-	q := `SELECT trace_id, span_id, parent_span_id, start_time, end_time, raw_trace
+	q := `SELECT trace_id, span_id, parent_span_id, start_time, end_time, metadata
 		  FROM traces WHERE trace_id = $1;`
 
 	var trace datastore.Trace

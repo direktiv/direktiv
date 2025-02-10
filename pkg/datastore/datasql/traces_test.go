@@ -94,7 +94,7 @@ func createTestTrace() *datastore.Trace {
 		TraceID:   uuid.NewString(),
 		SpanID:    uuid.NewString(),
 		StartTime: time.Now().UTC().Add(-10 * time.Hour),
-		RawTrace:  []byte("{}"), // Test with empty raw trace data
+		Metadata:  []byte("{}"), // Test with empty raw trace data
 	}
 }
 
@@ -149,8 +149,8 @@ func verifyTraceRetrieved(t *testing.T, retrievedTrace, expectedTrace *datastore
 		t.Errorf("retrieved EndTime does not match expected: got %v, want %v", retrievedTrace.EndTime, expectedTrace.EndTime)
 	}
 
-	if string(retrievedTrace.RawTrace) != string(expectedTrace.RawTrace) {
-		t.Errorf("retrieved RawTrace does not match expected: got %s, want %s", string(retrievedTrace.RawTrace), string(expectedTrace.RawTrace))
+	if string(retrievedTrace.Metadata) != string(expectedTrace.Metadata) {
+		t.Errorf("retrieved RawTrace does not match expected: got %s, want %s", string(retrievedTrace.Metadata), string(expectedTrace.Metadata))
 	}
 }
 
