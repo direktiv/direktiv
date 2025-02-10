@@ -97,7 +97,7 @@ const InfoPage = () => {
                         : String(error)}
                     </li>
                   ))}
-                  <li>{errorDescription}</li>
+                  {errorDescription && <li>{errorDescription}</li>}
                 </ul>
               </p>
             </Alert>
