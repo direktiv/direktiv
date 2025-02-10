@@ -118,18 +118,23 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Route("/namespaces", func(r chi.Router) {
-			if extensions.CheckOidcMiddlewares != nil {
-				r.Use(extensions.CheckOidcMiddlewares)
+			if extensions.CheckOidcMiddleware != nil {
+				r.Use(
+					extensions.CheckOidcMiddleware,
+					extensions.CheckAPITokenMiddleware,
+					extensions.CheckAPIKeyMiddleware)
 			}
-			r.Use(mw.checkAPIKey)
 			nsCtr.mountRouter(r)
 		})
 
 		r.Group(func(r chi.Router) {
-			if extensions.CheckOidcMiddlewares != nil {
-				r.Use(extensions.CheckOidcMiddlewares)
+			if extensions.CheckOidcMiddleware != nil {
+				r.Use(
+					extensions.CheckOidcMiddleware,
+					extensions.CheckAPITokenMiddleware,
+					extensions.CheckAPIKeyMiddleware)
 			}
-			r.Use(mw.checkAPIKey, mw.injectNamespace)
+			r.Use(mw.injectNamespace)
 
 			r.Route("/namespaces/{namespace}/instances", func(r chi.Router) {
 				instCtr.mountRouter(r)
