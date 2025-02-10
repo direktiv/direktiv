@@ -32,10 +32,127 @@ func (o *TimeoutDefinition) Validate() error {
 	return nil
 }
 
+type SecretRef struct {
+	Name   string `yaml:"name"`
+	Path   string `yaml:"path,omitempty"`
+	Source string `yaml:"source,omitempty"`
+}
+
+func (secretRef *SecretRef) MarshalJSON() ([]byte, error) {
+	if secretRef.Path == "" && secretRef.Source == "" {
+		return json.Marshal(secretRef.Name)
+	}
+
+	m := make(map[string]string)
+	m["name"] = secretRef.Name
+
+	if secretRef.Path != "" {
+		m["path"] = secretRef.Path
+	}
+
+	if secretRef.Source != "" {
+		m["source"] = secretRef.Source
+	}
+
+	return json.Marshal(m)
+}
+
+func (secretRef *SecretRef) MarshalYAML() (interface{}, error) {
+	if secretRef.Path == "" && secretRef.Source == "" {
+		return json.Marshal(secretRef.Name)
+	}
+
+	m := make(map[string]string)
+	m["name"] = secretRef.Name
+
+	if secretRef.Path != "" {
+		m["path"] = secretRef.Path
+	}
+
+	if secretRef.Source != "" {
+		m["source"] = secretRef.Source
+	}
+
+	return m, nil
+}
+
+func (secretRef *SecretRef) UnmarshalJSON(data []byte) error {
+	secretRef.Path = ""
+	secretRef.Source = ""
+
+	var x interface{}
+
+	_ = json.Unmarshal(data, &x)
+
+	s, ok := x.(string)
+	if ok {
+		secretRef.Name = s
+
+		return nil
+	}
+
+	m := make(map[string]string)
+
+	err := json.Unmarshal(data, &m)
+	if err != nil {
+		return err
+	}
+
+	secretRef.Name, _ = m["name"]
+	secretRef.Path, _ = m["path"]
+	secretRef.Source, _ = m["source"]
+
+	delete(m, "name")
+	delete(m, "path")
+	delete(m, "source")
+
+	if len(m) > 0 {
+		for k := range m {
+			return fmt.Errorf("unexpected field '%s' in secret reference", k)
+		}
+	}
+
+	return nil
+}
+
+func (secretRef *SecretRef) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var s string
+
+	err := unmarshal(&s)
+	if err == nil {
+		secretRef.Name = s
+
+		return nil
+	}
+
+	m := make(map[string]string)
+
+	err = unmarshal(&m)
+	if err != nil {
+		return err
+	}
+
+	secretRef.Name, _ = m["name"]
+	secretRef.Path, _ = m["path"]
+	secretRef.Source, _ = m["source"]
+
+	delete(m, "name")
+	delete(m, "path")
+	delete(m, "source")
+
+	if len(m) > 0 {
+		for k := range m {
+			return fmt.Errorf("unexpected field '%s' in secret reference", k)
+		}
+	}
+
+	return nil
+}
+
 type ActionDefinition struct {
 	Function string                   `yaml:"function,omitempty"`
 	Input    interface{}              `yaml:"input,omitempty"`
-	Secrets  []string                 `yaml:"secrets,omitempty"`
+	Secrets  []SecretRef              `yaml:"secrets,omitempty"`
 	Retries  *RetryDefinition         `yaml:"retries,omitempty"`
 	Files    []FunctionFileDefinition `json:"files,omitempty"    yaml:"files,omitempty"`
 }

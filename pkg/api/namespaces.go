@@ -11,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/pubsub"
+	"github.com/direktiv/direktiv/pkg/secrets"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -91,6 +92,8 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error("pubsub publish filesystem event", "err", err)
 	}
+
+	secrets.DeleteController(name) // the secrets controller is stored in NATS or memory, not the database, so it doesn't cascade
 
 	writeOk(w)
 }

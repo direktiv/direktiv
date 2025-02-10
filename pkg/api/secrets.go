@@ -7,6 +7,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/secrets"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -70,6 +71,8 @@ func (e *secretsController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	secrets.DeleteController(ns.Name) // changing the data stored in the secrets database should cause a cache invalidation for the secrets controller. Since this should be a rare operation, I don't worry about performance impact, and I just wipe the entire controller and let it rebuild
+
 	writeOk(w)
 }
 
@@ -117,6 +120,8 @@ func (e *secretsController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	secrets.DeleteController(ns.Name) // changing the data stored in the secrets database should cause a cache invalidation for the secrets controller. Since this should be a rare operation, I don't worry about performance impact, and I just wipe the entire controller and let it rebuild
+
 	writeJSON(w, convertSecret(secret))
 }
 
@@ -163,6 +168,8 @@ func (e *secretsController) create(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
+
+	secrets.DeleteController(ns.Name) // changing the data stored in the secrets database should cause a cache invalidation for the secrets controller. Since this should be a rare operation, I don't worry about performance impact, and I just wipe the entire controller and let it rebuild
 
 	writeJSON(w, convertSecret(secret))
 }

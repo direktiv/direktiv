@@ -57,6 +57,7 @@ func (c *notificationsController) list(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *notificationsController) lintSecrets(ctx context.Context, tx *database.DB, ns *datastore.Namespace) ([]*apiNotification, error) {
+	// TODO: alan, should probably remove or entirely redo secret placeholder logic...
 	secrets, err := tx.DataStore().Secrets().GetAll(ctx, ns.Name)
 	if err != nil {
 		return nil, err

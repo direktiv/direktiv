@@ -355,28 +355,33 @@ type VariableReference struct {
 	Operation []string `json:"operation"`
 }
 
+// TODO: alan, can I delete this function now? I don't think the purpose it served is going to remain valid.
 // GetSecretReferences - Get all secrets referenced in actions.
 func (o *Workflow) GetSecretReferences() []string {
-	refs := make([]string, 0)
-	refsMap := make(map[string]bool)
+	return []string{}
 
-	// Get All secret references
-	for _, state := range o.GetStates() {
-		sType := state.GetType()
+	/*
+		refs := make([]string, 0)
+		refsMap := make(map[string]bool)
 
-		// handle action secret references
-		if sType == StateTypeAction {
-			actionState := state.(*ActionState)
-			for j := range actionState.Action.Secrets {
-				refsMap[actionState.Action.Secrets[j]] = true
+		// Get All secret references
+		for _, state := range o.GetStates() {
+			sType := state.GetType()
+
+			// handle action secret references
+			if sType == StateTypeAction {
+				actionState := state.(*ActionState)
+				for j := range actionState.Action.Secrets {
+					refsMap[actionState.Action.Secrets[j]] = true
+				}
 			}
 		}
-	}
 
-	// Convert Map to array
-	for secretName := range refsMap {
-		refs = append(refs, secretName)
-	}
+		// Convert Map to array
+		for secretName := range refsMap {
+			refs = append(refs, secretName)
+		}
 
-	return refs
+		return refs
+	*/
 }

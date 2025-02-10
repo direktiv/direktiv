@@ -19,6 +19,7 @@ import (
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/secrets"
 	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/direktiv/direktiv/pkg/utils"
@@ -178,19 +179,38 @@ func (im *instanceMemory) Raise(ctx context.Context, err *derrors.CatchableError
 	return im.engine.InstanceRaise(ctx, im, err)
 }
 
-func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (string, error) {
-	tx, err := im.engine.flow.beginSQLTx(ctx)
+func (im *instanceMemory) RetrieveSecrets(ctx context.Context, secretRefs ...model.SecretRef) ([]secrets.Secret, error) {
+	controller, err := secrets.GetController(im.instance.Instance.Namespace)
 	if err != nil {
-		return "", err
-	}
-	defer tx.Rollback()
-
-	secretData, err := tx.DataStore().Secrets().Get(ctx, im.instance.Instance.Namespace, secret)
-	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return string(secretData.Data), nil
+	refs := make([]secrets.SecretRef, len(secretRefs))
+
+	for i, ref := range secretRefs {
+		refs[i].Name = ref.Name
+		refs[i].Path = ref.Path
+		refs[i].Source = ref.Source
+	}
+
+	list, err := controller.Lookup(ctx, refs)
+	if err != nil {
+		return nil, err
+	}
+
+	secretErrors := []secrets.Secret{}
+	for _, entry := range list {
+		if entry.Error != nil {
+			secretErrors = append(secretErrors, entry)
+		}
+	}
+
+	if len(secretErrors) > 0 {
+		// TODO: should this error me capturable?
+		return nil, fmt.Errorf("failed to fetch one or more secrets") // TODO: alan, maybe be more immediately descriptive to the user here
+	}
+
+	return list, nil
 }
 
 //nolint:gocognit

@@ -278,7 +278,7 @@ functions:
     #       cpu:    "1"
 
 nats:
-  install: false
+  install: true
   config:
     cluster:
       enabled: true

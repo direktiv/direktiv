@@ -365,6 +365,10 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *database.D
 		slog.Info("connected to OpenSearch")
 	}
 
+	if err := srv.initializeSecrets(); err != nil {
+		return nil, fmt.Errorf("initialize secrets, err: %w", err)
+	}
+
 	return srv, nil
 }
 

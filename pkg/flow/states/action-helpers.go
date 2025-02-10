@@ -223,17 +223,17 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 	return inputData, files, nil
 }
 
-func addSecrets(ctx context.Context, instance Instance, m map[string]interface{}, secrets ...string) (map[string]interface{}, error) {
-	if len(secrets) > 0 {
+func addSecrets(ctx context.Context, instance Instance, m map[string]interface{}, secretRefs ...model.SecretRef) (map[string]interface{}, error) {
+	if len(secretRefs) > 0 {
 		s := make(map[string]string)
 
-		for _, name := range secrets {
-			dd, err := instance.RetrieveSecret(ctx, name)
-			if err != nil {
-				return nil, err
-			}
+		secrets, err := instance.RetrieveSecrets(ctx, secretRefs...)
+		if err != nil {
+			return nil, err
+		}
 
-			s[name] = dd
+		for idx := range secretRefs {
+			s[secretRefs[idx].Name] = string(secrets[idx].Data)
 		}
 
 		m["secrets"] = s

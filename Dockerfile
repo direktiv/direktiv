@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.23.0 as builder
+FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.23.0 AS builder
 
 ARG VERSION=dev
 
@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
     CGO_ENABLED=false GOOS=linux GOARCH=$TARGETARCH go build -tags osusergo,netgo -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$VERSION" -o /direktiv cmd/*.go;
 
 #########################################################################################
-FROM --platform=$BUILDPLATFORM node:20-slim as ui-builder
+FROM --platform=$BUILDPLATFORM node:20-slim AS ui-builder
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable

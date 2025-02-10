@@ -9,6 +9,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/secrets"
 )
 
 type fetchSecretArgs struct {
@@ -38,15 +39,29 @@ func fetchSecret(db *database.DB, namespace string, callExpression string) (stri
 		return "", fmt.Errorf("trying to fetch secret from different namespace")
 	}
 
-	s, err := db.DataStore().Secrets().Get(context.Background(), fArgs.namespace, fArgs.secretName)
+	secretsController, err := secrets.GetController(fArgs.namespace)
 	if err != nil {
 		return "", fmt.Errorf("can not fetch secret: %w", err)
 	}
-	if !utf8.Valid(s.Data) {
+
+	secretsList, err := secretsController.Lookup(context.Background(), []secrets.SecretRef{
+		{
+			Name: fArgs.secretName,
+			// TODO: Path: ,
+			// TODO: Source: ,
+		},
+	})
+	if err != nil {
+		return "", fmt.Errorf("can not fetch secret: %w", err)
+	}
+
+	secret := secretsList[0]
+
+	if !utf8.Valid(secret.Data) {
 		return "", fmt.Errorf("secret '%s' has none utf8 content", fArgs.secretName)
 	}
 
-	return string(s.Data), nil
+	return string(secret.Data), nil
 }
 
 func parseFetchSecretExpressionTwoArgs(callExpression string) (*fetchSecretArgs, error) {

@@ -11,6 +11,7 @@ import (
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/secrets"
 	"github.com/google/uuid"
 )
 
@@ -172,9 +173,9 @@ func (instance *testerInstance) Raise(ctx context.Context, err *derrors.Catchabl
 	return nil
 }
 
-func (instance *testerInstance) RetrieveSecret(ctx context.Context, secret string) (string, error) {
+func (instance *testerInstance) RetrieveSecrets(ctx context.Context, secretRef ...model.SecretRef) ([]secrets.Secret, error) {
 	instance.trace()
-	return "", nil
+	return make([]secrets.Secret, 0), nil
 }
 
 func (instance *testerInstance) SetMemory(ctx context.Context, x interface{}) error {
