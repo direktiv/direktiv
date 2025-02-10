@@ -23,9 +23,9 @@ export const Row: FC<RowProps> = ({ route }) => {
     <TableRow
       onClick={() => {
         navigate({
-          to: "/n/$namespace/gateway/routes/$filename",
+          to: "/n/$namespace/gateway/routes/$",
           from: "/n/$namespace",
-          params: { filename: route.file_path },
+          params: { _splat: route.file_path },
         });
       }}
       className="cursor-pointer"

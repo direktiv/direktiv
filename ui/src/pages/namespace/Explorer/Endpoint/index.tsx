@@ -58,9 +58,9 @@ const EndpointPage: FC = () => {
           </div>
           <Button isAnchor asChild variant="primary">
             <Link
-              to="/n/$namespace/gateway/routes/$filename"
+              to="/n/$namespace/gateway/routes/$"
               from="/n/$namespace"
-              params={{ filename: path }}
+              params={{ _splat: path }}
             >
               <ScrollText />
               {t("pages.explorer.endpoint.openRouteLogs")}
