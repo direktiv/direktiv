@@ -9,7 +9,7 @@ import { TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
-import { GroupSchemaType } from "~/api/enterprise/groups/schema";
+import { GroupSchemaType } from "~/api/enterprise/roles/schema";
 import PermissionsInfo from "../components/PermissionsInfo";
 import { useTranslation } from "react-i18next";
 
@@ -28,7 +28,7 @@ const Row = ({
       <TableCell>{group.group}</TableCell>
       <TableCell>{group.description}</TableCell>
       <TableCell>
-        <PermissionsInfo permissions={group.permissions} />
+        {/* <PermissionsInfo permissions={group.permissions} /> */}
       </TableCell>
       <TableCell>
         <DropdownMenu>
@@ -52,7 +52,7 @@ const Row = ({
             >
               <DropdownMenuItem>
                 <Trash className="mr-2 size-4" />
-                {t("pages.permissions.groups.contextMenu.delete")}
+                {t("pages.permissions.roles.contextMenu.delete")}
               </DropdownMenuItem>
             </DialogTrigger>
             <DialogTrigger
@@ -64,7 +64,7 @@ const Row = ({
             >
               <DropdownMenuItem>
                 <Pencil className="mr-2 size-4" />
-                {t("pages.permissions.groups.contextMenu.edit")}
+                {t("pages.permissions.roles.contextMenu.edit")}
               </DropdownMenuItem>
             </DialogTrigger>
           </DropdownMenuContent>

@@ -32,7 +32,7 @@ import { Route as NNamespaceExplorerIndexImport } from './routes/n/$namespace/ex
 import { Route as NNamespaceServicesLayoutImport } from './routes/n/$namespace/services/_layout'
 import { Route as NNamespaceServicesServiceImport } from './routes/n/$namespace/services/$service'
 import { Route as NNamespacePermissionsTokensImport } from './routes/n/$namespace/permissions/tokens'
-import { Route as NNamespacePermissionsGroupsImport } from './routes/n/$namespace/permissions/groups'
+import { Route as NNamespacePermissionsRolesImport } from './routes/n/$namespace/permissions/roles'
 import { Route as NNamespaceInstancesLayoutImport } from './routes/n/$namespace/instances/_layout'
 import { Route as NNamespaceInstancesIdImport } from './routes/n/$namespace/instances/$id'
 import { Route as NNamespaceGatewayConsumersImport } from './routes/n/$namespace/gateway/consumers'
@@ -188,12 +188,13 @@ const NNamespacePermissionsTokensRoute =
     getParentRoute: () => NNamespacePermissionsRouteRoute,
   } as any)
 
-const NNamespacePermissionsGroupsRoute =
-  NNamespacePermissionsGroupsImport.update({
-    id: '/groups',
-    path: '/groups',
+const NNamespacePermissionsRolesRoute = NNamespacePermissionsRolesImport.update(
+  {
+    id: '/roles',
+    path: '/roles',
     getParentRoute: () => NNamespacePermissionsRouteRoute,
-  } as any)
+  } as any,
+)
 
 const NNamespaceInstancesLayoutRoute = NNamespaceInstancesLayoutImport.update({
   id: '/_layout',
@@ -432,11 +433,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NNamespaceInstancesLayoutImport
       parentRoute: typeof NNamespaceInstancesRoute
     }
-    '/n/$namespace/permissions/groups': {
-      id: '/n/$namespace/permissions/groups'
-      path: '/groups'
-      fullPath: '/n/$namespace/permissions/groups'
-      preLoaderRoute: typeof NNamespacePermissionsGroupsImport
+    '/n/$namespace/permissions/roles': {
+      id: '/n/$namespace/permissions/roles'
+      path: '/roles'
+      fullPath: '/n/$namespace/permissions/roles'
+      preLoaderRoute: typeof NNamespacePermissionsRolesImport
       parentRoute: typeof NNamespacePermissionsRouteImport
     }
     '/n/$namespace/permissions/tokens': {
@@ -671,14 +672,14 @@ const NNamespaceMirrorRouteRouteWithChildren =
   )
 
 interface NNamespacePermissionsRouteRouteChildren {
-  NNamespacePermissionsGroupsRoute: typeof NNamespacePermissionsGroupsRoute
+  NNamespacePermissionsRolesRoute: typeof NNamespacePermissionsRolesRoute
   NNamespacePermissionsTokensRoute: typeof NNamespacePermissionsTokensRoute
   NNamespacePermissionsIndexRoute: typeof NNamespacePermissionsIndexRoute
 }
 
 const NNamespacePermissionsRouteRouteChildren: NNamespacePermissionsRouteRouteChildren =
   {
-    NNamespacePermissionsGroupsRoute: NNamespacePermissionsGroupsRoute,
+    NNamespacePermissionsRolesRoute: NNamespacePermissionsRolesRoute,
     NNamespacePermissionsTokensRoute: NNamespacePermissionsTokensRoute,
     NNamespacePermissionsIndexRoute: NNamespacePermissionsIndexRoute,
   }
@@ -771,7 +772,7 @@ export interface FileRoutesByFullPath {
   '/n/$namespace/gateway/consumers': typeof NNamespaceGatewayConsumersRoute
   '/n/$namespace/instances/$id': typeof NNamespaceInstancesIdRoute
   '/n/$namespace/instances': typeof NNamespaceInstancesLayoutRoute
-  '/n/$namespace/permissions/groups': typeof NNamespacePermissionsGroupsRoute
+  '/n/$namespace/permissions/roles': typeof NNamespacePermissionsRolesRoute
   '/n/$namespace/permissions/tokens': typeof NNamespacePermissionsTokensRoute
   '/n/$namespace/services/$service': typeof NNamespaceServicesServiceRoute
   '/n/$namespace/services': typeof NNamespaceServicesLayoutRoute
@@ -808,7 +809,7 @@ export interface FileRoutesByTo {
   '/n/$namespace/gateway/consumers': typeof NNamespaceGatewayConsumersRoute
   '/n/$namespace/instances/$id': typeof NNamespaceInstancesIdRoute
   '/n/$namespace/instances': typeof NNamespaceInstancesIndexRoute
-  '/n/$namespace/permissions/groups': typeof NNamespacePermissionsGroupsRoute
+  '/n/$namespace/permissions/roles': typeof NNamespacePermissionsRolesRoute
   '/n/$namespace/permissions/tokens': typeof NNamespacePermissionsTokensRoute
   '/n/$namespace/services/$service': typeof NNamespaceServicesServiceRoute
   '/n/$namespace/services': typeof NNamespaceServicesIndexRoute
@@ -848,7 +849,7 @@ export interface FileRoutesById {
   '/n/$namespace/instances/$id': typeof NNamespaceInstancesIdRoute
   '/n/$namespace/instances': typeof NNamespaceInstancesRouteWithChildren
   '/n/$namespace/instances/_layout': typeof NNamespaceInstancesLayoutRoute
-  '/n/$namespace/permissions/groups': typeof NNamespacePermissionsGroupsRoute
+  '/n/$namespace/permissions/roles': typeof NNamespacePermissionsRolesRoute
   '/n/$namespace/permissions/tokens': typeof NNamespacePermissionsTokensRoute
   '/n/$namespace/services/$service': typeof NNamespaceServicesServiceRoute
   '/n/$namespace/services': typeof NNamespaceServicesRouteWithChildren
@@ -891,7 +892,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/gateway/consumers'
     | '/n/$namespace/instances/$id'
     | '/n/$namespace/instances'
-    | '/n/$namespace/permissions/groups'
+    | '/n/$namespace/permissions/roles'
     | '/n/$namespace/permissions/tokens'
     | '/n/$namespace/services/$service'
     | '/n/$namespace/services'
@@ -927,7 +928,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/gateway/consumers'
     | '/n/$namespace/instances/$id'
     | '/n/$namespace/instances'
-    | '/n/$namespace/permissions/groups'
+    | '/n/$namespace/permissions/roles'
     | '/n/$namespace/permissions/tokens'
     | '/n/$namespace/services/$service'
     | '/n/$namespace/services'
@@ -965,7 +966,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/instances/$id'
     | '/n/$namespace/instances'
     | '/n/$namespace/instances/_layout'
-    | '/n/$namespace/permissions/groups'
+    | '/n/$namespace/permissions/roles'
     | '/n/$namespace/permissions/tokens'
     | '/n/$namespace/services/$service'
     | '/n/$namespace/services'
@@ -1075,7 +1076,7 @@ export const routeTree = rootRoute
       "filePath": "n/$namespace/permissions/route.tsx",
       "parent": "/n/$namespace",
       "children": [
-        "/n/$namespace/permissions/groups",
+        "/n/$namespace/permissions/roles",
         "/n/$namespace/permissions/tokens",
         "/n/$namespace/permissions/"
       ]
@@ -1130,8 +1131,8 @@ export const routeTree = rootRoute
       "filePath": "n/$namespace/instances/_layout.tsx",
       "parent": "/n/$namespace/instances"
     },
-    "/n/$namespace/permissions/groups": {
-      "filePath": "n/$namespace/permissions/groups.tsx",
+    "/n/$namespace/permissions/roles": {
+      "filePath": "n/$namespace/permissions/roles.tsx",
       "parent": "/n/$namespace/permissions"
     },
     "/n/$namespace/permissions/tokens": {

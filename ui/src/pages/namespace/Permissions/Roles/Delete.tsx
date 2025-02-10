@@ -7,9 +7,9 @@ import {
 import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
-import { GroupSchemaType } from "~/api/enterprise/groups/schema";
+import { GroupSchemaType } from "~/api/enterprise/roles/schema";
 import { Trash } from "lucide-react";
-import { useDeleteGroup } from "~/api/enterprise/groups/mutation/delete";
+import { useDeleteGroup } from "~/api/enterprise/roles/mutation/delete";
 
 const Delete = ({
   group,
@@ -29,7 +29,7 @@ const Delete = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Trash /> {t("pages.permissions.groups.delete.title")}
+          <Trash /> {t("pages.permissions.roles.delete.title")}
         </DialogTitle>
       </DialogHeader>
       <div className="my-3">
@@ -41,7 +41,7 @@ const Delete = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.permissions.groups.delete.cancelBtn")}
+            {t("pages.permissions.roles.delete.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
@@ -52,7 +52,7 @@ const Delete = ({
           loading={isPending}
         >
           {!isPending && <Trash />}
-          {t("pages.permissions.groups.delete.deleteBtn")}
+          {t("pages.permissions.roles.delete.deleteBtn")}
         </Button>
       </DialogFooter>
     </>

@@ -743,7 +743,7 @@
       "tabs": {
         "policy": "Policy",
         "tokens": "Tokens",
-        "groups": "Groups"
+        "roles": "Roles"
       },
       "policy": {
         "unsavedNote": "unsaved changes",
@@ -771,7 +771,7 @@
         "deselectAll": "Deselect all",
         "noPermissions": "No permissions"
       },
-      "groups": {
+      "roles": {
         "tableHeader": {
           "name": "name",
           "description": "description",
@@ -1072,7 +1072,7 @@
       "permissions": "Permissions",
       "permissionsPolicy": "Policy",
       "permissionsTokens": "Tokens",
-      "permissionsGroups": "Groups",
+      "permissionsRoles": "Roles",
       "settings": "Settings",
       "gateway": "Gateway",
       "gatewayRoutes": "Routes",
@@ -1534,33 +1534,33 @@
         }
       }
     },
-    "groups": {
+    "roles": {
       "mutate": {
-        "createGroup": {
+        "createRole": {
           "success": {
-            "title": "Group created",
-            "description": "The group {{name}} was created"
+            "title": "Role created",
+            "description": "The role {{name}} was created"
           },
           "error": {
-            "description": "The group could not be created 😢"
+            "description": "The role could not be created 😢"
           }
         },
-        "editGroup": {
+        "editRole": {
           "success": {
-            "title": "Group updated",
-            "description": "The group {{name}} was updated"
+            "title": "Role updated",
+            "description": "The role {{name}} was updated"
           },
           "error": {
-            "description": "The group could not be updated 😢"
+            "description": "The role could not be updated 😢"
           }
         },
-        "deleteGroup": {
+        "deleteRole": {
           "success": {
-            "title": "Group deleted",
-            "description": "The group {{name}} was deleted"
+            "title": "Role deleted",
+            "description": "The role {{name}} was deleted"
           },
           "error": {
-            "description": "The group could not be deleted 😢"
+            "description": "The role could not be deleted 😢"
           }
         }
       }

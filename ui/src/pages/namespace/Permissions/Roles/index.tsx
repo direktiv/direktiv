@@ -17,14 +17,14 @@ import { Card } from "~/design/Card";
 import CreateGroup from "./Create";
 import Delete from "./Delete";
 import EditGroup from "./Edit";
-import { GroupSchemaType } from "~/api/enterprise/groups/schema";
+import { GroupSchemaType } from "~/api/enterprise/roles/schema";
 import Row from "./Row";
-import { useGroups } from "~/api/enterprise/groups/query/get";
+import { useRoles } from "~/api/enterprise/roles/query/get";
 import { useTranslation } from "react-i18next";
 
-const GroupsPage = () => {
+const RolesPage = () => {
   const { t } = useTranslation();
-  const { data, isFetched, isAllowed, noPermissionMessage } = useGroups();
+  const { data, isFetched, isAllowed, noPermissionMessage } = useRoles();
   const noResults = isFetched && data?.groups.length === 0;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createGroup, setCreateGroup] = useState(false);
@@ -45,7 +45,7 @@ const GroupsPage = () => {
     <DialogTrigger asChild>
       <Button onClick={() => setCreateGroup(true)} variant="outline">
         <PlusCircle />
-        {t("pages.permissions.groups.createBtn")}
+        {t("pages.permissions.roles.createBtn")}
       </Button>
     </DialogTrigger>
   );
@@ -58,13 +58,13 @@ const GroupsPage = () => {
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
               <TableHeaderCell className="w-32">
-                {t("pages.permissions.groups.tableHeader.name")}
+                {t("pages.permissions.roles.tableHeader.name")}
               </TableHeaderCell>
               <TableHeaderCell>
-                {t("pages.permissions.groups.tableHeader.description")}
+                {t("pages.permissions.roles.tableHeader.description")}
               </TableHeaderCell>
               <TableHeaderCell className="w-36">
-                {t("pages.permissions.groups.tableHeader.permissions")}
+                {t("pages.permissions.roles.tableHeader.permissions")}
               </TableHeaderCell>
               <TableHeaderCell className="w-16" />
             </TableRow>
@@ -76,7 +76,7 @@ const GroupsPage = () => {
                   <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                     <TableCell colSpan={3}>
                       <NoResult icon={Users} button={createNewButton}>
-                        {t("pages.permissions.groups.noGroups")}
+                        {t("pages.permissions.roles.noGroups")}
                       </NoResult>
                     </TableCell>
                   </TableRow>
@@ -125,4 +125,4 @@ const GroupsPage = () => {
   );
 };
 
-export default GroupsPage;
+export default RolesPage;

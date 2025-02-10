@@ -1,27 +1,27 @@
 import { GroupsListSchema } from "../schema";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
-import { groupKeys } from "..";
+import { roleKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
-const getGroups = apiFactory({
+const getRoles = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/groups`,
   method: "GET",
   schema: GroupsListSchema,
 });
 
-const fetchGroups = async ({
+const fetchRoles = async ({
   queryKey: [{ apiKey, namespace }],
-}: QueryFunctionContext<ReturnType<(typeof groupKeys)["groupList"]>>) =>
-  getGroups({
+}: QueryFunctionContext<ReturnType<(typeof roleKeys)["roleList"]>>) =>
+  getRoles({
     apiKey,
     urlParams: { namespace },
   });
 
-export const useGroups = () => {
+export const useRoles = () => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -30,10 +30,10 @@ export const useGroups = () => {
   }
 
   return useQueryWithPermissions({
-    queryKey: groupKeys.groupList(namespace, {
+    queryKey: roleKeys.roleList(namespace, {
       apiKey: apiKey ?? undefined,
     }),
-    queryFn: fetchGroups,
+    queryFn: fetchRoles,
     enabled: !!namespace,
   });
 };

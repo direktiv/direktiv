@@ -8,14 +8,14 @@ import { Diamond, PlusCircle } from "lucide-react";
 import {
   GroupFormSchema,
   GroupFormSchemaType,
-} from "~/api/enterprise/groups/schema";
+} from "~/api/enterprise/roles/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import PermissionsSelector from "../components/PermisionsSelector";
-import { useCreateGroup } from "~/api/enterprise/groups/mutation/create";
+import { useCreateRole } from "~/api/enterprise/roles/mutation/create";
 import { usePermissionKeys } from "~/api/enterprise/permissions/query/get";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,7 +29,7 @@ const CreateGroup = ({
 }) => {
   const { t } = useTranslation();
   const { data: availablePermissions } = usePermissionKeys();
-  const { mutate: createGroup, isPending } = useCreateGroup({
+  const { mutate: createGroup, isPending } = useCreateRole({
     onSuccess: () => {
       close();
     },
@@ -40,7 +40,7 @@ const CreateGroup = ({
       (x) => !(unallowedNames ?? []).some((n) => n === x.group),
       {
         path: ["group"],
-        message: t("pages.permissions.groups.create.group.alreadyExist"),
+        message: t("pages.permissions.roles.create.group.alreadyExist"),
       }
     )
   );
@@ -74,7 +74,7 @@ const CreateGroup = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Diamond /> {t("pages.permissions.groups.create.title")}
+          <Diamond /> {t("pages.permissions.roles.create.title")}
         </DialogTitle>
       </DialogHeader>
 
@@ -87,12 +87,12 @@ const CreateGroup = ({
         >
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[14px]" htmlFor="group">
-              {t("pages.permissions.groups.create.group.label")}
+              {t("pages.permissions.roles.create.group.label")}
             </label>
             <Input
               id="group"
               placeholder={t(
-                "pages.permissions.groups.create.group.placeholder"
+                "pages.permissions.roles.create.group.placeholder"
               )}
               autoComplete="off"
               {...register("group")}
@@ -103,17 +103,17 @@ const CreateGroup = ({
               className="w-[90px] text-right text-[14px]"
               htmlFor="description"
             >
-              {t("pages.permissions.groups.create.description.label")}
+              {t("pages.permissions.roles.create.description.label")}
             </label>
             <Input
               id="description"
               placeholder={t(
-                "pages.permissions.groups.create.description.placeholder"
+                "pages.permissions.roles.create.description.placeholder"
               )}
               {...register("description")}
             />
           </fieldset>
-          <PermissionsSelector
+          {/* <PermissionsSelector
             availablePermissions={availablePermissions ?? []}
             permissions={watch("permissions")}
             setPermissions={(permissions) =>
@@ -123,13 +123,13 @@ const CreateGroup = ({
                 shouldValidate: true,
               })
             }
-          />
+          /> */}
         </form>
       </div>
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.permissions.groups.create.cancelBtn")}
+            {t("pages.permissions.roles.create.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
@@ -139,7 +139,7 @@ const CreateGroup = ({
           form={formId}
         >
           {!isPending && <PlusCircle />}
-          {t("pages.permissions.groups.create.createBtn")}
+          {t("pages.permissions.roles.create.createBtn")}
         </Button>
       </DialogFooter>
     </>

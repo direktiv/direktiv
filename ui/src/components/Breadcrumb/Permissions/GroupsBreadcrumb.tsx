@@ -4,26 +4,26 @@ import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import { Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-const GroupsBreadcrumb = () => {
-  const isPermissionsGroupPage = useMatch({
-    from: "/n/$namespace/permissions/groups",
+const RolesBreadcrumb = () => {
+  const isPermissionsRolesPage = useMatch({
+    from: "/n/$namespace/permissions/roles",
     shouldThrow: false,
   });
 
   const { t } = useTranslation();
 
-  if (!isPermissionsGroupPage) return null;
+  if (!isPermissionsRolesPage) return null;
 
   return (
     <>
       <BreadcrumbLink>
-        <Link to="/n/$namespace/permissions/groups" from="/n/$namespace">
+        <Link to="/n/$namespace/permissions/tokens" from="/n/$namespace">
           <Users aria-hidden="true" />
-          {t("components.breadcrumb.permissionsGroups")}
+          {t("components.breadcrumb.permissionsRoles")}
         </Link>
       </BreadcrumbLink>
     </>
   );
 };
 
-export default GroupsBreadcrumb;
+export default RolesBreadcrumb;

@@ -9,14 +9,14 @@ import {
   GroupFormSchema,
   GroupFormSchemaType,
   GroupSchemaType,
-} from "~/api/enterprise/groups/schema";
+} from "~/api/enterprise/roles/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import PermissionsSelector from "../components/PermisionsSelector";
-import { useEditGroup } from "~/api/enterprise/groups/mutation/edit";
+import { useEditRole } from "~/api/enterprise/roles/mutation/edit";
 import { usePermissionKeys } from "~/api/enterprise/permissions/query/get";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,7 +32,7 @@ const EditGroup = ({
 }) => {
   const { t } = useTranslation();
   const { data: availablePermissions } = usePermissionKeys();
-  const { mutate: editGroup, isPending } = useEditGroup({
+  const { mutate: editGroup, isPending } = useEditRole({
     onSuccess: () => {
       close();
     },
@@ -43,7 +43,7 @@ const EditGroup = ({
       (x) => !(unallowedNames ?? []).some((n) => n === x.group),
       {
         path: ["group"],
-        message: t("pages.permissions.groups.edit.group.alreadyExist"),
+        message: t("pages.permissions.roles.edit.group.alreadyExist"),
       }
     )
   );
@@ -80,7 +80,7 @@ const EditGroup = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Diamond /> {t("pages.permissions.groups.edit.title")}
+          <Diamond /> {t("pages.permissions.roles.edit.title")}
         </DialogTitle>
       </DialogHeader>
 
@@ -93,11 +93,11 @@ const EditGroup = ({
         >
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[14px]" htmlFor="group">
-              {t("pages.permissions.groups.edit.group.label")}
+              {t("pages.permissions.roles.edit.group.label")}
             </label>
             <Input
               id="group"
-              placeholder={t("pages.permissions.groups.edit.group.placeholder")}
+              placeholder={t("pages.permissions.roles.edit.group.placeholder")}
               autoComplete="off"
               {...register("group")}
             />
@@ -107,17 +107,17 @@ const EditGroup = ({
               className="w-[90px] text-right text-[14px]"
               htmlFor="description"
             >
-              {t("pages.permissions.groups.edit.description.label")}
+              {t("pages.permissions.roles.edit.description.label")}
             </label>
             <Input
               id="description"
               placeholder={t(
-                "pages.permissions.groups.edit.description.placeholder"
+                "pages.permissions.roles.edit.description.placeholder"
               )}
               {...register("description")}
             />
           </fieldset>
-          <PermissionsSelector
+          {/* <PermissionsSelector
             availablePermissions={availablePermissions ?? []}
             permissions={watch("permissions")}
             setPermissions={(permissions) =>
@@ -127,13 +127,13 @@ const EditGroup = ({
                 shouldValidate: true,
               })
             }
-          />
+          /> */}
         </form>
       </div>
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.permissions.groups.edit.cancelBtn")}
+            {t("pages.permissions.roles.edit.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
@@ -143,7 +143,7 @@ const EditGroup = ({
           form={formId}
         >
           {!isPending && <Save />}
-          {t("pages.permissions.groups.edit.editBtn")}
+          {t("pages.permissions.roles.edit.editBtn")}
         </Button>
       </DialogFooter>
     </>

@@ -5,7 +5,7 @@ import {
 } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
-import { groupKeys } from "..";
+import { roleKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
@@ -18,12 +18,12 @@ const updateCache = (
   variables: Parameters<ReturnType<typeof useDeleteGroup>["mutate"]>[0]
 ) => {
   if (!oldData) return undefined;
-  const remainingGroups = oldData.groups.filter(
+  const remainingRoles = oldData.groups.filter(
     (group) => group.id !== variables.id
   );
   return {
     ...oldData,
-    groups: remainingGroups,
+    groups: remainingRoles,
   };
 };
 
@@ -58,14 +58,14 @@ export const useDeleteGroup = ({
       }),
     onSuccess(_, variables) {
       queryClient.setQueryData<GroupsListSchemaType>(
-        groupKeys.groupList(namespace, {
+        roleKeys.roleList(namespace, {
           apiKey: apiKey ?? undefined,
         }),
         (oldData) => updateCache(oldData, variables)
       );
       toast({
-        title: t("api.groups.mutate.deleteGroup.success.title"),
-        description: t("api.groups.mutate.deleteGroup.success.description", {
+        title: t("api.roles.mutate.deleteRole.success.title"),
+        description: t("api.roles.mutate.deleteRole.success.description", {
           name: variables.group,
         }),
         variant: "success",
@@ -75,7 +75,7 @@ export const useDeleteGroup = ({
     onError: () => {
       toast({
         title: t("api.generic.error"),
-        description: t("api.groups.mutate.deleteGroup.error.description"),
+        description: t("api.roles.mutate.deleteRole.error.description"),
         variant: "error",
       });
     },

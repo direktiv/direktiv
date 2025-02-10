@@ -11,8 +11,8 @@ const PermissionsPage = () => {
     from: "/n/$namespace/permissions/",
     shouldThrow: false,
   });
-  const isPermissionsGroupsPage = useMatch({
-    from: "/n/$namespace/permissions/groups",
+  const isPermissionsRolesPage = useMatch({
+    from: "/n/$namespace/permissions/roles",
     shouldThrow: false,
   });
   const isPermissionsTokensPage = useMatch({
@@ -29,11 +29,11 @@ const PermissionsPage = () => {
       link: "/n/$namespace/permissions",
     },
     {
-      value: "groups",
-      active: isPermissionsGroupsPage,
+      value: "roles",
+      active: isPermissionsRolesPage,
       icon: <Users aria-hidden="true" />,
-      title: t("pages.permissions.tabs.groups"),
-      link: "/n/$namespace/permissions/groups",
+      title: t("pages.permissions.tabs.roles"),
+      link: "/n/$namespace/permissions/roles",
     },
     {
       value: "tokens",
