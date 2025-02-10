@@ -57,3 +57,7 @@ func (s *store) EventListenerTopics() datastore.EventTopicsStore {
 func (s *store) Namespaces() datastore.NamespacesStore {
 	return &sqlNamespacesStore{db: s.db}
 }
+
+func (s *store) Traces() datastore.TracesStore {
+	return &sqlTracesStore{db: s.db}
+}
