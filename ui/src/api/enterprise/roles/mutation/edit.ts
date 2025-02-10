@@ -13,21 +13,17 @@ const editRole = apiFactory<RoleFormSchemaType>({
   url: ({
     namespace,
     baseUrl,
-    groupId,
+    roleName,
   }: {
     baseUrl?: string;
     namespace: string;
-    groupId: string;
-  }) => `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/groups/${groupId}`,
+    roleName: string;
+  }) => `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/roles/${roleName}`,
   method: "PUT",
   schema: RoleCreatedEditedSchema,
 });
 
-type ResolvedCreateGroup = Awaited<ReturnType<typeof editRole>>;
-
-export const useEditRole = ({
-  onSuccess,
-}: { onSuccess?: (data: ResolvedCreateGroup) => void } = {}) => {
+export const useEditRole = ({ onSuccess }: { onSuccess?: () => void } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -40,21 +36,18 @@ export const useEditRole = ({
 
   return useMutationWithPermissions({
     mutationFn: ({
-      groupId,
-      tokenFormProps,
+      roleName,
+      payload,
     }: {
-      groupId: string;
-      tokenFormProps: RoleFormSchemaType;
+      roleName: string;
+      payload: RoleFormSchemaType;
     }) =>
       editRole({
         apiKey: apiKey ?? undefined,
-        urlParams: {
-          groupId,
-          namespace,
-        },
-        payload: tokenFormProps,
+        urlParams: { roleName, namespace },
+        payload,
       }),
-    onSuccess(data, { tokenFormProps: { description } }) {
+    onSuccess() {
       queryClient.invalidateQueries({
         queryKey: roleKeys.roleList(namespace, {
           apiKey: apiKey ?? undefined,
@@ -62,12 +55,10 @@ export const useEditRole = ({
       });
       toast({
         title: t("api.roles.mutate.editRole.success.title"),
-        description: t("api.roles.mutate.editRole.success.description", {
-          name: description,
-        }),
+        description: t("api.roles.mutate.editRole.success.description"),
         variant: "success",
       });
-      onSuccess?.(data);
+      onSuccess?.();
     },
     onError: () => {
       toast({

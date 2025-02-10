@@ -16,11 +16,9 @@ const createRole = apiFactory<RoleFormSchemaType>({
   schema: RoleCreatedEditedSchema,
 });
 
-type ResolvedCreateRole = Awaited<ReturnType<typeof createRole>>;
-
 export const useCreateRole = ({
   onSuccess,
-}: { onSuccess?: (data: ResolvedCreateRole) => void } = {}) => {
+}: { onSuccess?: () => void } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -32,15 +30,13 @@ export const useCreateRole = ({
   }
 
   return useMutationWithPermissions({
-    mutationFn: (tokenFormProps: RoleFormSchemaType) =>
+    mutationFn: (roleFormProps: RoleFormSchemaType) =>
       createRole({
         apiKey: apiKey ?? undefined,
-        urlParams: {
-          namespace,
-        },
-        payload: tokenFormProps,
+        urlParams: { namespace },
+        payload: roleFormProps,
       }),
-    onSuccess(data, { description }) {
+    onSuccess() {
       queryClient.invalidateQueries({
         queryKey: roleKeys.roleList(namespace, {
           apiKey: apiKey ?? undefined,
@@ -48,12 +44,10 @@ export const useCreateRole = ({
       });
       toast({
         title: t("api.roles.mutate.createRole.success.title"),
-        description: t("api.roles.mutate.createRole.success.description", {
-          name: description,
-        }),
+        description: t("api.roles.mutate.createRole.success.description"),
         variant: "success",
       });
-      onSuccess?.(data);
+      onSuccess?.();
     },
     onError: () => {
       toast({

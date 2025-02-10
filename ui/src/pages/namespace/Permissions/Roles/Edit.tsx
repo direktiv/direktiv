@@ -66,7 +66,7 @@ const EditGroup = ({
   const onSubmit: SubmitHandler<RoleFormSchemaType> = (params) => {
     editGroup({
       groupId: group.id,
-      tokenFormProps: params,
+      role: params,
     });
   };
 

@@ -33,9 +33,7 @@ export const useCreateToken = ({
     mutationFn: (tokenFormProps: TokenFormSchemaType) =>
       createToken({
         apiKey: apiKey ?? undefined,
-        urlParams: {
-          namespace,
-        },
+        urlParams: { namespace },
         payload: tokenFormProps,
       }),
     onSuccess(data) {
