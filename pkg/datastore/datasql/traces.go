@@ -2,6 +2,7 @@ package datasql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -79,7 +80,7 @@ func (s *sqlTracesStore) GetByTraceID(ctx context.Context, traceID string) (data
 	var trace datastore.Trace
 	tx := s.db.WithContext(ctx).Raw(q, traceID).First(&trace)
 	if tx.Error != nil {
-		if tx.Error == gorm.ErrRecordNotFound {
+		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 			return datastore.Trace{}, fmt.Errorf("trace not found: %w", tx.Error)
 		}
 
