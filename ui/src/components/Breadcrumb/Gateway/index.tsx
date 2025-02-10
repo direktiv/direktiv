@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 
 const GatewayBreadcrumb = () => {
   const matches = useMatches();
-  const routeId: keyof FileRoutesById = "/n/$namespace/gateway/";
+  const routeId: keyof FileRoutesById = "/n/$namespace/gateway";
   const isGatewayPage = matches.some((match) =>
     match.routeId.startsWith(routeId)
   );
@@ -20,8 +20,8 @@ const GatewayBreadcrumb = () => {
 
   return (
     <>
-      <BreadcrumbLink>
-        <Link to="/n/$namespace/gateway" from="/n/$namespace">
+      <BreadcrumbLink data-testid="breadcrumb-gateway">
+        <Link to="/n/$namespace/gateway/routes" from="/n/$namespace">
           <Network aria-hidden="true" />
           {t("components.breadcrumb.gateway")}
         </Link>

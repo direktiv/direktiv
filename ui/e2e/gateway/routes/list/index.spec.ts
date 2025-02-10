@@ -20,10 +20,15 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("Route list is empty by default", async ({ page }) => {
+test("The route list can be visited", async ({ page }) => {
   await page.goto(`/n/${namespace}/gateway/routes`, {
     waitUntil: "networkidle",
   });
+
+  await expect(
+    page.getByTestId("breadcrumb-gateway"),
+    "it renders the 'Gateway' breadcrumb"
+  ).toBeVisible();
 
   await expect(
     page.getByTestId("breadcrumb-routes"),

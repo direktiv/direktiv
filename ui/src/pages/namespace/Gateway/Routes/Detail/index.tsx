@@ -8,10 +8,10 @@ import { useParams } from "@tanstack/react-router";
 import { useRoute } from "~/api/gateway/query/getRoutes";
 
 const RoutesDetailPage = () => {
-  const { filename } = useParams({ strict: false });
+  const { _splat } = useParams({ strict: false });
   const { data, isAllowed, isFetched, noPermissionMessage } = useRoute({
-    routePath: filename ?? "",
-    enabled: !!filename,
+    routePath: _splat ?? "",
+    enabled: !!_splat,
   });
 
   if (!isFetched) return null;
