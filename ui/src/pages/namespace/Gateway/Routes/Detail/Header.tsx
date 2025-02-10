@@ -12,16 +12,15 @@ import { useRoute } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
 const Header = () => {
-  const { filename } = useParams({ strict: false });
+  const { _splat } = useParams({ strict: false });
   const { data: route } = useRoute({
-    routePath: filename ?? "",
-    enabled: !!filename,
+    routePath: _splat ?? "",
+    enabled: !!_splat,
   });
 
   const { t } = useTranslation();
 
   if (!route) return null;
-  if (!filename) return null;
 
   return (
     <div
@@ -80,7 +79,7 @@ const Header = () => {
             <Link
               to="/n/$namespace/explorer/endpoint/$"
               from="/n/$namespace"
-              params={{ _splat: filename }}
+              params={{ _splat }}
             >
               <Pencil />
               {t("pages.gateway.routes.detail.editRoute")}
