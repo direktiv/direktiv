@@ -20,7 +20,7 @@ const GatewayBreadcrumb = () => {
 
   return (
     <>
-      <BreadcrumbLink>
+      <BreadcrumbLink data-testid="breadcrumb-gateway">
         <Link to="/n/$namespace/gateway/routes" from="/n/$namespace">
           <Network aria-hidden="true" />
           {t("components.breadcrumb.gateway")}
