@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 const GatewayPage = () => {
   const { t } = useTranslation();
   const isGatewayRoutesPage = useMatch({
-    from: "/n/$namespace/gateway/",
+    from: "/n/$namespace/gateway",
     shouldThrow: false,
   });
   const isGatewayConsumerPage = useMatch({
@@ -15,7 +15,7 @@ const GatewayPage = () => {
     shouldThrow: false,
   });
   const isGatewayRoutesDetailPage = useMatch({
-    from: "/n/$namespace/gateway/routes/$filename",
+    from: "/n/$namespace/gateway/routes/$",
     shouldThrow: false,
   });
 
