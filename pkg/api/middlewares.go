@@ -3,9 +3,10 @@ package api
 import (
 	"context"
 	"errors"
+	"net/http"
+
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/go-chi/chi/v5"
-	"net/http"
 )
 
 const ctxKeyNamespace = "namespace"
