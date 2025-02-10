@@ -25,7 +25,7 @@ const GatewayPage = () => {
       active: isGatewayRoutesPage,
       icon: <Workflow aria-hidden="true" />,
       title: t("pages.gateway.tabs.routes"),
-      link: "/n/$namespace/gateway",
+      link: "/n/$namespace/gateway/routes",
     },
     {
       value: "consumers",
