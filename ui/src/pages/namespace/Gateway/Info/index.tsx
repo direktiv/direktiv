@@ -24,13 +24,6 @@ const InfoPage = () => {
   const { spec, errors, file_path: filePath } = info || {};
   const { title, version, description = "" } = spec?.info || {};
 
-  const errorDescription =
-    errors?.length &&
-    typeof errors[0] === "string" &&
-    errors[0].includes("extra sibling fields:")
-      ? t("pages.gateway.info.columns.errorSiblingFields")
-      : undefined;
-
   const specToYaml = spec ? jsonToYaml(spec) : "";
 
   return (
@@ -68,8 +61,13 @@ const InfoPage = () => {
                   {t("pages.gateway.info.columns.file")}
                 </TableHeaderCell>
                 <TableCell>
-                  {filePath === "virtual" ? (
-                    <span>{filePath}</span>
+                  {filePath === "virtual" || !filePath ? (
+                    <span>
+                      {filePath ||
+                        t(
+                          "pages.explorer.tree.openapiSpecification.unknownFilePath"
+                        )}
+                    </span>
                   ) : (
                     <Link
                       className="whitespace-normal break-all hover:underline"
@@ -77,7 +75,7 @@ const InfoPage = () => {
                       from="/n/$namespace"
                       params={{ _splat: filePath ?? "" }}
                     >
-                      {filePath ?? "Unknown File Path"}
+                      {filePath}
                     </Link>
                   )}
                 </TableCell>
@@ -93,11 +91,17 @@ const InfoPage = () => {
                   {errors.map((error, index) => (
                     <li key={index}>
                       {typeof error === "object"
-                        ? JSON.stringify(error)
-                        : String(error)}
+                        ? JSON.stringify(error, null, 2)
+                        : String(error)
+                            .split("\n")
+                            .map((line, i) => (
+                              <span key={i}>
+                                {line}
+                                <br />
+                              </span>
+                            ))}
                     </li>
                   ))}
-                  {errorDescription && <li>{errorDescription}</li>}
                 </ul>
               </p>
             </Alert>

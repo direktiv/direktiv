@@ -25,7 +25,7 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
   const { t } = useTranslation();
   const { toast: showToast } = useToast();
 
-  const decodedFileContentFromServer = decode(data.data ?? "");
+  const decodedFileContentFromServer = decode(data.data);
   const hasUnsavedChanges = useUnsavedChanges();
   const setHasUnsavedChanges = useSetUnsavedChanges();
 
@@ -58,20 +58,19 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
   };
 
   const saveContent = (content: string | undefined) => {
+    const parsedContent = yamlToJsonOrNull(content ?? "");
+    const result = OpenapiSpecificationFormSchema.safeParse(parsedContent);
+    if (!result.success) {
+      showToast({
+        variant: "error",
+        title: t("pages.explorer.tree.openapiSpecification.errorTitle"),
+        description: (
+          <Trans i18nKey="pages.explorer.tree.openapiSpecification.errorDescription" />
+        ),
+      });
+      return;
+    }
     try {
-      const parsedContent = yamlToJsonOrNull(content ?? "");
-      const result = OpenapiSpecificationFormSchema.safeParse(parsedContent);
-      if (!result.success) {
-        showToast({
-          variant: "error",
-          title: t("pages.explorer.tree.openapiSpecification.errorTitle"),
-          description: (
-            <Trans i18nKey="pages.explorer.tree.openapiSpecification.errorDescription" />
-          ),
-        });
-        return;
-      }
-
       updateFile({
         path: data.path,
         payload: { data: encode(jsonToYaml(parsedContent ?? {})) },

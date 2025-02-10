@@ -41,13 +41,12 @@ const NewOpenapiSpecification = ({
   const namespace = useNamespace();
   const navigate = useNavigate();
 
-  // TODO: This is the minimal OpenAPI object that is used to create the base file.
   const baseOpenApiObject = {
     openapi: "3.0.0",
     info: {
       title: namespace,
       version: "1.0.0",
-      description: "Minimal OpenAPI Base Specification",
+      description: `${namespace} API Docs`,
     },
   };
 

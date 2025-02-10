@@ -11,7 +11,7 @@ export const OpenapiSpecificationFormSchema = z
       })
       .passthrough(),
   })
-  .passthrough(); // TODO: Add the rest of the fields
+  .passthrough();
 
 export type OpenapiSpecificationFormSchemaType = z.infer<
   typeof OpenapiSpecificationFormSchema

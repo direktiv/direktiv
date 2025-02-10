@@ -87,16 +87,16 @@
         },
         "newFileButton": {
           "buttonText": "New",
-          "label": "Create",
+          "label": "Create New",
           "items": {
-            "directory": "New Directory",
-            "workflow": "New Workflow",
-            "service": "New Service",
+            "directory": "Directory",
+            "workflow": "Workflow",
+            "service": "Service",
             "gateway": {
               "label": "Gateway",
-              "route": "New Route",
-              "consumer": "New Consumer",
-              "openapiSpecification": "OpenAPI Spec."
+              "route": "Route",
+              "consumer": "Consumer",
+              "openapiSpecification": "OpenAPI Specification"
             }
           }
         },
@@ -141,6 +141,7 @@
           "link": "Go to Gateway Info",
           "cancelBtn": "Cancel",
           "createBtn": "Create",
+          "unknownFilePath": "Unknown File Path",
           "infoTooltip": "Every namespace should only have <1>one</1> OpenAPI Specification",
           "errorTitle": "Parsing Error",
           "errorDescription": "The OpenAPI Specification is not valid.<br />Please provide at least the following required fields:<br />openapi:<br />info:<br /> - title:<br />  - description:<br />  - version:"

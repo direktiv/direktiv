@@ -99,7 +99,7 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
               {t("pages.explorer.tree.newFileButton.items.gateway.label")}
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
-              <DropdownMenuSubContent className="w-40">
+              <DropdownMenuSubContent className="w-52">
                 <DialogTrigger
                   className="w-full"
                   onClick={() => {
