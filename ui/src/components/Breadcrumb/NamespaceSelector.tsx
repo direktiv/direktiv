@@ -5,7 +5,7 @@ import {
   CommandStaticSeparator,
 } from "~/design/Command";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
@@ -13,12 +13,10 @@ import Button from "~/design/Button";
 import NamespaceEdit from "../NamespaceEdit";
 import { NamespaceSelectorList } from "../NamespaceSelectorList";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const NamespaceSelector = () => {
-  const pages = usePages();
   const { t } = useTranslation();
   const namespace = useNamespace();
 
@@ -30,13 +28,14 @@ const NamespaceSelector = () => {
 
   const onNameSpaceChange = (namespace: string) => {
     setOpen(false);
-    navigate(pages.explorer.createHref({ namespace }));
+    navigate({ to: "/n/$namespace/explorer", params: { namespace } });
   };
 
   return (
     <BreadcrumbLink noArrow>
       <Link
-        to={pages.explorer.createHref({ namespace })}
+        to="/n/$namespace/explorer"
+        params={{ namespace }}
         data-testid="breadcrumb-namespace"
       >
         <Home />

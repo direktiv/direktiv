@@ -1,13 +1,18 @@
+import { useMatch, useParams } from "@tanstack/react-router";
+
 import BreadcrumbSegment from "./BreadcrumbSegment";
 import { analyzePath } from "~/util/router/utils";
-import { usePages } from "~/util/router/pages";
 
 const ExplorerBreadcrumb = () => {
-  const pages = usePages();
-  const { isExplorerPage, path: pathParams } = pages.explorer.useParams();
-  const path = analyzePath(pathParams);
+  const isExplorerSubPage = useMatch({
+    from: "/n/$namespace/explorer",
+    shouldThrow: false,
+  });
+  const { _splat } = useParams({ strict: false });
 
-  if (!isExplorerPage) return null;
+  const path = analyzePath(_splat);
+
+  if (!isExplorerSubPage) return null;
 
   return (
     <>

@@ -4,7 +4,7 @@ import { InstanceStreamingSubscriber } from "~/api/instances/query/details/strea
 import InstancesDetail from "./InstanceDetail";
 import { LogStreamingSubscriber } from "~/api/logs/query/LogStreamingSubscriber";
 import { useInstanceDetails } from "~/api/instances/query/details";
-import { usePages } from "~/util/router/pages";
+import { useParams } from "@tanstack/react-router";
 
 const InstanceStreaming = () => {
   const instanceId = useInstanceId();
@@ -24,12 +24,11 @@ const InstanceStreaming = () => {
 };
 
 const InstanceWithContextProvider = () => {
-  const pages = usePages();
-  const { instance: instanceId } = pages.instances.useParams();
-  if (!instanceId) return null;
+  const { id } = useParams({ strict: false });
+  if (!id) return null;
 
   return (
-    <InstanceStateProvider instanceId={instanceId}>
+    <InstanceStateProvider instanceId={id}>
       <InstanceStreaming />
     </InstanceStateProvider>
   );

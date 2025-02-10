@@ -1,50 +1,47 @@
 import { BreadcrumbRoot } from "~/design/Breadcrumbs";
-import EventHistoryBreadcrumb from "./Events/HistoryBreadcrumb";
-import EventListenerBreadcrumb from "./Events/ListenerBreadcrumb";
 import ExplorerBreadcrumb from "./ExplorerBreadcrumb";
+import { FileRoutesById } from "~/routeTree.gen";
 import GatewayBreadcrumb from "./Gateway";
+import HistoryBreadcrumb from "./Events/HistoryBreadcrumb";
 import InstancesBreadcrumb from "./InstancesBreadcrumb";
 import JqPlaygroundBreadcrumb from "./JqPlaygroundBreadcrumb";
+import ListenerBreadcrumb from "./Events/ListenerBreadcrumb";
 import MirrorBreadcrumb from "./MirrorBreadcrumb";
 import MonitoringBreadcrumb from "./MonitoringBreadcrumb";
 import NamespaceSelector from "./NamespaceSelector";
 import PermissionsBreadcrumb from "./Permissions";
 import ServicesBreadcrumb from "./ServicesBreadcrumb";
 import SettingsBreadcrumb from "./SettingsBreadcrumb";
+import { useMatches } from "@tanstack/react-router";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 
 const Breadcrumb = () => {
-  const pages = usePages();
   const namespace = useNamespace();
-  const { isExplorerPage } = pages.explorer.useParams();
-  const { isInstancePage } = pages.instances.useParams();
-  const { isServicePage } = pages.services.useParams();
-  const { isEventsHistoryPage, isEventsListenersPage } =
-    pages.events.useParams();
-  const { isMonitoringPage } = pages.monitoring.useParams();
-  const { isPermissionsPage } = pages.permissions?.useParams() ?? {};
-  const { isSettingsPage } = pages.settings.useParams();
-  const { isJqPlaygroundPage } = pages.jqPlayground.useParams();
-  const { isMirrorPage } = pages.mirror.useParams();
-  const { isGatewayPage } = pages.gateway.useParams();
+  const matches = useMatches();
+
+  const matchRouteStart = (routeId: keyof FileRoutesById) =>
+    matches.some((match) => match.routeId.startsWith(routeId));
 
   if (!namespace) return null;
 
   return (
     <BreadcrumbRoot className="group">
       <NamespaceSelector />
-      {isExplorerPage && <ExplorerBreadcrumb />}
-      {isInstancePage && <InstancesBreadcrumb />}
-      {isServicePage && <ServicesBreadcrumb />}
-      {isEventsHistoryPage && <EventHistoryBreadcrumb />}
-      {isEventsListenersPage && <EventListenerBreadcrumb />}
-      {isMonitoringPage && <MonitoringBreadcrumb />}
-      {isPermissionsPage && <PermissionsBreadcrumb />}
-      {isSettingsPage && <SettingsBreadcrumb />}
-      {isJqPlaygroundPage && <JqPlaygroundBreadcrumb />}
-      {isMirrorPage && <MirrorBreadcrumb />}
-      {isGatewayPage && <GatewayBreadcrumb />}
+      {matchRouteStart("/n/$namespace/explorer") && <ExplorerBreadcrumb />}
+      {matchRouteStart("/n/$namespace/instances/") && <InstancesBreadcrumb />}
+      {matchRouteStart("/n/$namespace/services/") && <ServicesBreadcrumb />}
+      {matchRouteStart("/n/$namespace/events/history") && <HistoryBreadcrumb />}
+      {matchRouteStart("/n/$namespace/events/listeners") && (
+        <ListenerBreadcrumb />
+      )}
+      {matchRouteStart("/n/$namespace/monitoring") && <MonitoringBreadcrumb />}
+      {matchRouteStart("/n/$namespace/permissions") && (
+        <PermissionsBreadcrumb />
+      )}
+      {matchRouteStart("/n/$namespace/settings") && <SettingsBreadcrumb />}
+      {matchRouteStart("/n/$namespace/jq") && <JqPlaygroundBreadcrumb />}
+      {matchRouteStart("/n/$namespace/mirror/") && <MirrorBreadcrumb />}
+      {matchRouteStart("/n/$namespace/gateway/") && <GatewayBreadcrumb />}
     </BreadcrumbRoot>
   );
 };

@@ -1,9 +1,9 @@
 import { Locator, Page } from "@playwright/test";
 
 const token = process.env.VITE_E2E_API_TOKEN;
-export const headers: { "Direktiv-Token"?: string } = token
+export const headers: { "Direktiv-Api-Key"?: string } = token
   ? {
-      "Direktiv-Token": token,
+      "Direktiv-Api-Key": token,
     }
   : {};
 

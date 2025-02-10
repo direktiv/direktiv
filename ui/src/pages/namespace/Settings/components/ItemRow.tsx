@@ -37,7 +37,10 @@ const ItemRow = <ItemType,>({
 
   return (
     <TableRow data-testid="variable-row">
-      <TableCell data-testid="item-name" className="flex items-center">
+      <TableCell
+        data-testid="item-name"
+        className="flex items-center justify-between"
+      >
         {onSelect && (
           <Checkbox
             className="mr-3"
@@ -46,7 +49,7 @@ const ItemRow = <ItemType,>({
             onCheckedChange={onSelect}
           />
         )}
-        {children}
+        <div className="grow">{children}</div>
       </TableCell>
       <TableCell className="w-0">
         <DropdownMenu>

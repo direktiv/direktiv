@@ -2,12 +2,11 @@ import { Card } from "~/design/Card";
 import Header from "./Header";
 import { NoPermissions } from "~/design/Table";
 import { Pods } from "./Pods";
-import { usePages } from "~/util/router/pages";
+import { useParams } from "@tanstack/react-router";
 import { usePods } from "~/api/services/query/pods";
 
 const ServiceDetailPage = () => {
-  const pages = usePages();
-  const { service: serviceId } = pages.services.useParams();
+  const { service: serviceId } = useParams({ strict: false });
   const { isFetched, isAllowed, noPermissionMessage } = usePods(
     serviceId ?? ""
   );

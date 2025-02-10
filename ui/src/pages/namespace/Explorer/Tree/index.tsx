@@ -24,12 +24,11 @@ import { getFilenameFromPath } from "~/api/files/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
+import { useParams } from "@tanstack/react-router";
 
 const ExplorerPage: FC = () => {
-  const pages = usePages();
   const namespace = useNamespace();
-  const { path } = pages.explorer.useParams();
+  const { _splat: path } = useParams({ strict: false });
   const { data, isSuccess, isFetched, isAllowed, noPermissionMessage } =
     useFile({
       path,

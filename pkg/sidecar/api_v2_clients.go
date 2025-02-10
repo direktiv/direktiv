@@ -156,7 +156,7 @@ func getVariableDataViaID(ctx context.Context, flowToken string, flowAddr string
 	if err != nil {
 		return variable{}, err
 	}
-	req.Header.Set("Direktiv-Token", flowToken)
+	req.Header.Set("Direktiv-Api-Key", flowToken)
 	resp, err := client.Do(req)
 	if err != nil {
 		return variable{}, err
@@ -230,7 +230,7 @@ func doRequest(ctx context.Context, method, flowToken, url string, body io.Reade
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new request: %w", err)
 	}
-	req.Header.Set("Direktiv-Token", flowToken)
+	req.Header.Set("Direktiv-Api-Key", flowToken)
 
 	resp, err := client.Do(req)
 	if err != nil {

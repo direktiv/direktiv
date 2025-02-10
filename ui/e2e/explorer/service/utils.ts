@@ -36,13 +36,27 @@ export const createServiceYaml = ({
   cmd,
   patches,
   envs,
-}: Service) => `direktiv_api: service/v1
-image: ${image}
-scale: ${scale}
-size: ${size}
-cmd: ${cmd}
-patches: ${createPatchesYaml(patches)}
-envs: ${createEnvsYaml(envs)}`;
+}: Service) => {
+  // Build the YAML lines individually
+  const lines: string[] = [
+    "direktiv_api: service/v1",
+    `image: ${image}`,
+    `scale: ${scale}`,
+    `size: ${size}`,
+    `cmd: ${cmd}`,
+  ];
+
+  if (patches && patches.length > 0) {
+    lines.push(`patches:${createPatchesYaml(patches)}`);
+  }
+
+  if (envs && envs.length > 0) {
+    lines.push(`envs:${createEnvsYaml(envs)}`);
+  }
+
+  // Join everything with newlines
+  return lines.join("\n");
+};
 
 export const createService = async (namespace: string, service: Service) => {
   const yaml = createServiceYaml(service);

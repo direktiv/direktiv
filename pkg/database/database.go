@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
+	"github.com/direktiv/direktiv/pkg/datastore/datasql"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/filestore/filestoresql"
+	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/instancestore/instancestoresql"
 	"github.com/stretchr/testify/require"
@@ -38,12 +38,16 @@ func NewDB(db *gorm.DB) *DB {
 	}
 }
 
+func (tx *DB) Conn() *gorm.DB {
+	return tx.db
+}
+
 func (tx *DB) FileStore() filestore.FileStore {
-	return filestoresql.NewSQLFileStore(tx.db)
+	return filesql.NewStore(tx.db)
 }
 
 func (tx *DB) DataStore() datastore.Store {
-	return datastoresql.NewSQLStore(tx.db)
+	return datasql.NewStore(tx.db)
 }
 
 func (tx *DB) InstanceStore() instancestore.Store {

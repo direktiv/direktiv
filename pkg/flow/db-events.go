@@ -90,7 +90,7 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, im *inst
 	return nil
 }
 
-func renderAllStartEventListeners(ctx context.Context, tx *database.DB) error {
+func RenderAllStartEventListeners(ctx context.Context, tx *database.DB) error {
 	nsList, err := tx.DataStore().Namespaces().GetAll(ctx)
 	if err != nil {
 		return err

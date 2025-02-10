@@ -180,6 +180,6 @@ func (engine *engine) finishCancelMirrorProcess(req *pubsub.PubsubUpdate) {
 		return
 	}
 
-	_ = engine.mirrorManager.Cancel(context.Background(), uid)
+	_ = engine.MirrorManager.Cancel(context.Background(), uid)
 	slog.Info("Requested cancellation of mirror process.", "activity_id", uid)
 }

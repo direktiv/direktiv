@@ -1,10 +1,9 @@
 import { FC } from "react";
 import VariablesList from "./Variables";
-import { usePages } from "~/util/router/pages";
+import { useParams } from "@tanstack/react-router";
 
 const WorkflowSettingsPage: FC = () => {
-  const pages = usePages();
-  const { path } = pages.explorer.useParams();
+  const { _splat: path } = useParams({ strict: false });
 
   return (
     <div className="flex flex-col space-y-10 p-5">

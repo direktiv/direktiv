@@ -9,7 +9,7 @@ import { AuthenticationProvider } from "./components/AuthenticationProvider";
 import { OidcProvider } from "./components/OidcProvider";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { RouterProvider } from "./util/router/RouterProvider";
+import { Router } from "./components/Router";
 import { Toaster } from "~/design/Toast";
 import queryClient from "./util/queryClient";
 import { useEffect } from "react";
@@ -38,7 +38,7 @@ const App = () => {
       <AppInitializer>
         <OidcProvider>
           <AuthenticationProvider>
-            <RouterProvider />
+            <Router />
           </AuthenticationProvider>
         </OidcProvider>
       </AppInitializer>

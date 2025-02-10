@@ -30,14 +30,14 @@ const apiEndpointTextResponseWithHeaders = "http://localhost/text-and-headers";
 
 const testApi = setupServer(
   http.get(apiEndpoint, ({ request }) =>
-    request?.headers?.get("direktiv-token") === API_KEY
+    request?.headers?.get("Direktiv-Api-Key") === API_KEY
       ? HttpResponse.json({
           response: "this works",
         })
       : new HttpResponse(null, { status: 401 })
   ),
   http.get(apiEndpointWithDynamicSegment, ({ request }) =>
-    request?.headers?.get("direktiv-token") === API_KEY
+    request?.headers?.get("Direktiv-Api-Key") === API_KEY
       ? HttpResponse.json({
           response: "dynamic segment this works",
         })

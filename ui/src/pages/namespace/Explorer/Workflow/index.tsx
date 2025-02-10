@@ -7,7 +7,7 @@ import {
   TerminalSquare,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useMatches, useParams } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import {
   Tooltip,
@@ -21,28 +21,26 @@ import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { Card } from "~/design/Card";
 import { FC } from "react";
+import { FileRoutesById } from "~/routeTree.gen";
 import { NoPermissions } from "~/design/Table";
 import RunWorkflow from "./components/RunWorkflow";
 import { analyzePath } from "~/util/router/utils";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 import { useUnsavedChanges } from "./store/unsavedChangesContext";
 
-const Header: FC = () => {
-  const pages = usePages();
+const WorkflowLayout: FC = () => {
   const { t } = useTranslation();
-  const {
-    path,
-    isWorkflowEditorPage,
-    isWorkflowOverviewPage,
-    isWorkflowSettingsPage,
-    isWorkflowServicesPage,
-  } = pages.explorer.useParams();
   const namespace = useNamespace();
+  const { _splat: path } = useParams({ strict: false });
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];
+
+  const matches = useMatches();
+
+  const match = (routeId: keyof FileRoutesById) =>
+    matches.some((match) => match.routeId.startsWith(routeId));
 
   const {
     isAllowed,
@@ -58,47 +56,31 @@ const Header: FC = () => {
   const tabs = [
     {
       value: "editor",
-      active: isWorkflowEditorPage,
+      active: match("/n/$namespace/explorer/workflow/edit/$"),
       icon: <Code2 aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.fileContent"),
-      link: pages.explorer.createHref({
-        namespace,
-        path,
-        subpage: "workflow",
-      }),
+      link: "/n/$namespace/explorer/workflow/edit/$",
     },
     {
       value: "overview",
-      active: isWorkflowOverviewPage,
+      active: match("/n/$namespace/explorer/workflow/overview/$"),
       icon: <PieChart aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.overview"),
-      link: pages.explorer.createHref({
-        namespace,
-        path,
-        subpage: "workflow-overview",
-      }),
+      link: "/n/$namespace/explorer/workflow/overview/$",
     },
     {
       value: "services",
-      active: isWorkflowServicesPage,
+      active: match("/n/$namespace/explorer/workflow/services/$"),
       icon: <Layers aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.services"),
-      link: pages.explorer.createHref({
-        namespace,
-        path,
-        subpage: "workflow-services",
-      }),
+      link: "/n/$namespace/explorer/workflow/services/$",
     },
     {
       value: "settings",
-      active: isWorkflowSettingsPage,
+      active: match("/n/$namespace/explorer/workflow/settings/$"),
       icon: <Settings aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.settings"),
-      link: pages.explorer.createHref({
-        namespace,
-        path,
-        subpage: "workflow-settings",
-      }),
+      link: "/n/$namespace/explorer/workflow/settings/$",
     },
   ] as const;
 
@@ -173,7 +155,11 @@ const Header: FC = () => {
                     key={tab.value}
                     data-testid={`workflow-tabs-trg-${tab.value}`}
                   >
-                    <Link to={tab.link}>
+                    <Link
+                      to={tab.link}
+                      from="/n/$namespace"
+                      params={{ _splat: path }}
+                    >
                       {tab.icon}
                       {tab.title}
                     </Link>
@@ -190,4 +176,4 @@ const Header: FC = () => {
   );
 };
 
-export default Header;
+export default WorkflowLayout;

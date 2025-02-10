@@ -2,11 +2,10 @@ import { FC } from "react";
 import Instances from "./Instances";
 import Metrics from "./Metrics";
 import Services from "./Services";
-import { usePages } from "~/util/router/pages";
+import { useParams } from "@tanstack/react-router";
 
-const ActiveWorkflowPage: FC = () => {
-  const pages = usePages();
-  const { path } = pages.explorer.useParams();
+const WorkflowOverviewPage: FC = () => {
+  const { _splat: path } = useParams({ strict: false });
 
   if (!path) return null;
 
@@ -19,4 +18,4 @@ const ActiveWorkflowPage: FC = () => {
   );
 };
 
-export default ActiveWorkflowPage;
+export default WorkflowOverviewPage;

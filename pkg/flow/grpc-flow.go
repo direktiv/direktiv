@@ -110,7 +110,7 @@ func (flow *flow) kickExpiredInstances() {
 			panic(err) // TODO ?
 		}
 
-		flow.engine.retryWakeup(data)
+		flow.Engine.retryWakeup(data)
 	}
 }
 

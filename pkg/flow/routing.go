@@ -192,7 +192,7 @@ func (flow *flow) cronHandler(data []byte) {
 		SyncHash: &hash,
 	}
 
-	im, err := flow.engine.NewInstance(ctx, args)
+	im, err := flow.Engine.NewInstance(ctx, args)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate") {
 			slog.DebugContext(ctx, "Instance creation clash detected, likely due to parallel execution. This is not an error.")
@@ -206,7 +206,7 @@ func (flow *flow) cronHandler(data []byte) {
 		return
 	}
 
-	go flow.engine.start(im)
+	go flow.Engine.start(im)
 }
 
 func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database.DB, nsID uuid.UUID, nsName string, file *filestore.File) error {

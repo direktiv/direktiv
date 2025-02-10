@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -200,7 +201,7 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 
 	// direktiv sidecar
 	sidecarEnvs := buildEnvVars(true, c, sv)
-	sidecarEnvs = append(sidecarEnvs, corev1.EnvVar{Name: "API_KEY", Value: c.ApiKey})
+	sidecarEnvs = append(sidecarEnvs, corev1.EnvVar{Name: "API_KEY", Value: os.Getenv("DIREKTIV_API_KEY")})
 	sc := corev1.Container{
 		Name:         containerSidecar,
 		Image:        c.KnativeSidecar,

@@ -24,10 +24,8 @@ import { Textarea } from "~/design/TextArea";
 import { addYamlFileExtension } from "../../../../utils";
 import { encode } from "js-base64";
 import { useCreateFile } from "~/api/files/mutate/createFile";
-import { useNamespace } from "~/util/store/namespace";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { useNotifications } from "~/api/notifications/query/get";
-import { usePages } from "~/util/router/pages";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -51,9 +49,7 @@ const NewWorkflow = ({
   close: () => void;
   unallowedNames?: string[];
 }) => {
-  const pages = usePages();
   const { t } = useTranslation();
-  const namespace = useNamespace();
   const navigate = useNavigate();
   const { refetch: updateNotificationBell } = useNotifications();
 
@@ -98,14 +94,11 @@ const NewWorkflow = ({
        * We need to update the notification bell, to see potential new messages.
        */
       updateNotificationBell();
-      namespace &&
-        navigate(
-          pages.explorer.createHref({
-            namespace,
-            path: data.data.path,
-            subpage: "workflow",
-          })
-        );
+      navigate({
+        to: "/n/$namespace/explorer/workflow/edit/$",
+        from: "/n/$namespace",
+        params: { _splat: data.data.path },
+      });
       close();
     },
   });

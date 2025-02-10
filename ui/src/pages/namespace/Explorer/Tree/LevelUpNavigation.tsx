@@ -1,8 +1,7 @@
 import { TableCell, TableRow } from "~/design/Table";
 
 import { FolderUp } from "lucide-react";
-import { Link } from "react-router-dom";
-import { usePages } from "~/util/router/pages";
+import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 export const LevelUpNavigation = ({
@@ -12,16 +11,13 @@ export const LevelUpNavigation = ({
   namespace: string;
   path?: string;
 }) => {
-  const pages = usePages();
   const { t } = useTranslation();
   return (
     <TableRow>
       <TableCell colSpan={2}>
         <Link
-          to={pages.explorer.createHref({
-            namespace,
-            path,
-          })}
+          to="/n/$namespace/explorer/tree/$"
+          params={{ namespace, _splat: path }}
           className="flex items-center space-x-3 hover:underline"
         >
           <FolderUp className="h-5" />

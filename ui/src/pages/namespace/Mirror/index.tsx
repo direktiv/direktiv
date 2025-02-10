@@ -1,5 +1,5 @@
 import NoMirror from "./NoMirror";
-import { Outlet } from "react-router-dom";
+import { Outlet } from "@tanstack/react-router";
 import { useNamespaceDetail } from "~/api/namespaces/query/get";
 
 const MirrorPage = () => {
@@ -7,7 +7,7 @@ const MirrorPage = () => {
 
   if (!isSuccess) return null;
 
-  const isMirror = data?.mirror;
+  const isMirror = !!data?.mirror;
 
   return (
     <div className="flex grow flex-col">

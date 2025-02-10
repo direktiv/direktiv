@@ -4,15 +4,14 @@ import { LogStreamingSubscriber } from "~/api/logs/query/LogStreamingSubscriber"
 import Logs from "./Logs";
 import { NoPermissions } from "~/design/Table";
 import { twMergeClsx } from "~/util/helpers";
-import { usePages } from "~/util/router/pages";
+import { useParams } from "@tanstack/react-router";
 import { useRoute } from "~/api/gateway/query/getRoutes";
 
 const RoutesDetailPage = () => {
-  const pages = usePages();
-  const { routePath } = pages.gateway.useParams();
+  const { filename } = useParams({ strict: false });
   const { data, isAllowed, isFetched, noPermissionMessage } = useRoute({
-    routePath: routePath ?? "",
-    enabled: !!routePath,
+    routePath: filename ?? "",
+    enabled: !!filename,
   });
 
   if (!isFetched) return null;

@@ -5,7 +5,7 @@ type AuthHeader =
       authorization: string;
     }
   | {
-      "direktiv-token": string;
+      "direktiv-api-key": string;
     };
 
 export const getAuthHeader = (apiKey: string): AuthHeader => {
@@ -16,7 +16,7 @@ export const getAuthHeader = (apiKey: string): AuthHeader => {
   }
 
   return {
-    "direktiv-token": apiKey,
+    "direktiv-api-key": apiKey,
   };
 };
 

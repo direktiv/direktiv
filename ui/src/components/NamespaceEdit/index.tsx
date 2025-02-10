@@ -28,8 +28,7 @@ import { MirrorValidationSchema } from "~/api/namespaces/schema/mirror/validatio
 import { Textarea } from "~/design/TextArea";
 import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
 import { useListNamespaces } from "~/api/namespaces/query/get";
-import { useNavigate } from "react-router-dom";
-import { usePages } from "~/util/router/pages";
+import { useNavigate } from "@tanstack/react-router";
 import { useSync } from "~/api/syncs/mutate/sync";
 import { useTranslation } from "react-i18next";
 import { useUpdateNamespace } from "~/api/namespaces/mutate/updateNamespace";
@@ -61,7 +60,7 @@ const NamespaceEdit = ({
   mirror?: MirrorSchemaType;
   close: () => void;
 }) => {
-  const pages = usePages();
+  const navigate = useNavigate();
   // note that isMirror is initially redundant with !isNew, but
   // isMirror may change through user interaction.
   const [isMirror, setIsMirror] = useState(!!mirror);
@@ -69,7 +68,6 @@ const NamespaceEdit = ({
   const { data: namespaces } = useListNamespaces();
   const { mutate: sync } = useSync();
   const { setNamespace } = useNamespaceActions();
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const namespace = useNamespace();
 
@@ -127,17 +125,15 @@ const NamespaceEdit = ({
       setNamespace(data.data.name);
       if (isMirror) {
         sync({ namespace: data.data.name });
-        navigate(
-          pages.mirror.createHref({
-            namespace: data.data.name,
-          })
-        );
+        navigate({
+          to: "/n/$namespace/mirror",
+          params: { namespace: data.data.name },
+        });
       } else {
-        navigate(
-          pages.explorer.createHref({
-            namespace: data.data.name,
-          })
-        );
+        navigate({
+          to: "/n/$namespace/explorer",
+          params: { namespace: data.data.name },
+        });
       }
       close();
     },

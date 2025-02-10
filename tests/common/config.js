@@ -11,6 +11,6 @@ export default {
 
 		return isEnterprice
 			? { Authorization: `Bearer ${ authToken }` }
-			: { 'direktiv-token': authToken }
+			: { 'Direktiv-Api-Key': authToken }
 	},
 }

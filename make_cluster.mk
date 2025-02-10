@@ -3,8 +3,12 @@ KIND_CONFIG ?= kind-config.yaml
 .PHONY: cluster-setup
 cluster-setup: cluster-create cluster-prep cluster-direktiv
 
+.PHONY: cluster-setup-ee
+cluster-setup-ee:
+	make cluster-setup IS_ENTERPRISE=true
+
 .PHONY: cluster-create
-cluster-create: 
+cluster-create:
 	kind delete clusters --all
 	kind create cluster --config ${KIND_CONFIG}
 
@@ -20,7 +24,7 @@ cluster-create:
 		docker network connect kind kind-registry; \
 	fi
 
-	DOCKER_BUILDKIT=1 docker build --push -t localhost:5001/direktiv:dev .
+	DOCKER_BUILDKIT=1 docker build --build-arg IS_ENTERPRISE=${IS_ENTERPRISE} --push -t localhost:5001/direktiv:dev .
 
 	if ! docker inspect proxy-quay >/dev/null 2>&1; then \
 		docker run -d --name proxy-quay --restart=always \
@@ -82,6 +86,8 @@ cluster-direktiv-delete: ## Deletes direktiv from cluster
 cluster-direktiv: ## Installs direktiv in cluster
 	kubectl wait -n ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
 	kubectl wait -n ingress-nginx --for=condition=complete job --selector=app.kubernetes.io/component=admission-webhook --timeout=120s
+
+	@if [ "$(IS_ENTERPRISE)" != "true" ]; then \
 	helm install --set database.host=postgres.default.svc \
 	--set database.port=5432 \
 	--set database.user=admin \
@@ -94,9 +100,34 @@ cluster-direktiv: ## Installs direktiv in cluster
 	--set registry=localhost:5001 \
 	--set tag=dev \
 	--set flow.sidecar=localhost:5001/direktiv:dev \
-	direktiv charts/direktiv
+	direktiv charts/direktiv; \
+	fi
+
+	@if [ "$(IS_ENTERPRISE)" == "true" ]; then \
+	helm install --set database.host=postgres.default.svc \
+	--set database.port=5432 \
+	--set database.user=admin \
+	--set database.password=password \
+	--set database.name=direktiv \
+	--set database.sslmode=disable \
+	--set pullPolicy=Always \
+	--set ingress-nginx.install=false \
+	--set image=direktiv \
+	--set registry=localhost:5001 \
+	--set tag=dev \
+	--set flow.sidecar=localhost:5001/direktiv:dev \
+	--set apikey=password \
+	direktiv charts/direktiv; \
+	fi
 
 	kubectl wait --for=condition=ready pod -l app=direktiv-flow --timeout=60s
+
+	@if [ "$(IS_ENTERPRISE)" == "true" ]; then \
+	@echo "Installing Dex"; \
+	helm repo add dex https://charts.dexidp.io; \
+	helm repo update; \
+	helm install dex dex/dex -f kind/dex-values.yaml; \
+	fi
 
 	@echo "Waiting for API endpoint to return 200..."
 	@until curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:9090/api/v2/status | grep -q 200; do \
@@ -104,6 +135,7 @@ cluster-direktiv: ## Installs direktiv in cluster
 		sleep 2; \
 	done
 	@echo "Endpoint is ready!"
+
 
 .PHONY: cluster-image-cache-stop
 cluster-image-cache-stop:  
@@ -115,3 +147,30 @@ cluster-direktiv-run: cluster-build
 	kubectl delete pod -l app.kubernetes.io/name=direktiv,app.kubernetes.io/instance=direktiv 
 	kubectl wait --for=condition=ready pod -l "app=direktiv-flow"
 	kubectl logs -f -l "app=direktiv-flow"
+
+cluster-dev:
+	DOCKER_BUILDKIT=1 docker build --build-arg IS_ENTERPRISE=${IS_ENTERPRISE} --push -t localhost:5001/direktiv:dev .
+	kubectl delete pod -l app=direktiv-flow
+
+cluster-otel-install:
+	helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+	helm upgrade --install --set image.repository=otel/opentelemetry-collector-k8s  \
+	--set mode=deployment \
+	--set resources.limits.cpu=250m \
+	--set resources.limits.memory=512Mi \
+	otel-collector open-telemetry/opentelemetry-collector -n default;
+	kubectl wait --for=condition=ready pod -l "app.kubernetes.io/instance=otel-collector"
+	helm upgrade --set database.host=postgres.default.svc \
+	--set database.port=5432 \
+	--set database.user=admin \
+	--set database.password=password \
+	--set database.name=direktiv \
+	--set database.sslmode=disable \
+	--set pullPolicy=Always \
+	--set ingress-nginx.install=false \
+	--set image=direktiv \
+	--set registry=localhost:5001 \
+	--set tag=dev \
+	--set flow.sidecar=localhost:5001/direktiv:dev \
+	--set flow.opentelemetryBackend=otel-collector-opentelemetry-collector.default:4317 \
+	direktiv charts/direktiv; 

@@ -21,7 +21,7 @@ func doRequest(r *http.Request, method, url string, body io.ReadCloser) (*http.R
 
 	// add api key if required
 	if os.Getenv("DIREKTIV_API_KEY") != "" {
-		req.Header.Set("Direktiv-Token", os.Getenv("DIREKTIV_API_KEY"))
+		req.Header.Set("Direktiv-Api-Key", os.Getenv("DIREKTIV_API_KEY"))
 	}
 
 	resp, err := client.Do(req.WithContext(ctx))

@@ -20,7 +20,7 @@ export const ApiErrorSchema = z.object({
   body: ErrorJson,
 });
 
-type ApiErrorSchemaType = z.infer<typeof ApiErrorSchema>;
+export type ApiErrorSchemaType = z.infer<typeof ApiErrorSchema>;
 type ErrorJsonType = z.infer<typeof ErrorJson>;
 
 /**
