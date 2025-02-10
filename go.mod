@@ -7,7 +7,6 @@ require (
 	github.com/bbuck/go-lexer v1.0.0
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/cloudevents/sdk-go/v2 v2.15.2
-	github.com/coreos/go-oidc/v3 v3.12.0
 	github.com/docker/docker v27.5.1+incompatible
 	github.com/dop251/goja v0.0.0-20250114131315-46d383d606d3
 	github.com/gabriel-vasile/mimetype v1.4.8
@@ -57,7 +56,10 @@ require (
 	knative.dev/serving v0.44.0
 )
 
-require go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.59.0 // indirect
+require (
+	github.com/channelmeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.59.0 // indirect
+)
 
 require (
 	dario.cat/mergo v1.0.1 // indirect
@@ -67,7 +69,6 @@ require (
 	github.com/ProtonMail/go-crypto v1.1.5 // indirect
 	github.com/blendle/zapdriver v1.3.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
-	github.com/channelmeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61 // indirect
 	github.com/cloudflare/circl v1.5.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/platforms v0.2.1 // indirect
@@ -83,9 +84,9 @@ require (
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
+	github.com/go-chi/chi v1.5.5
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.6.2 // indirect
-	github.com/go-jose/go-jose/v4 v4.0.2 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect

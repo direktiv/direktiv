@@ -47,7 +47,18 @@ test("Route details page shows all important information about the route", async
     )
     .toBeTruthy();
 
-  await page.goto(`/n/${namespace}/gateway/routes/${fileName}`);
+  await page.goto(`/n/${namespace}/gateway/routes`);
+
+  page
+    .getByTestId("route-table")
+    .locator("div")
+    .filter({ hasText: `/my-route.yaml` })
+    .click();
+
+  await expect(
+    page,
+    "it is possible to navigate to the route detail page"
+  ).toHaveURL(`n/${namespace}/gateway/routes/my-route.yaml`);
 
   await expect(
     page
