@@ -741,15 +741,8 @@
     },
     "permissions": {
       "tabs": {
-        "policy": "Policy",
         "tokens": "Tokens",
         "roles": "Roles"
-      },
-      "policy": {
-        "unsavedNote": "unsaved changes",
-        "theresOneIssue": "There is an issue",
-        "saveBtn": "Save",
-        "permissionsHintTitle": "Available permissions"
       },
       "permissionsInfo": {
         "all": "all topics",

@@ -14,9 +14,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
-import PermissionsSelector from "../components/PermisionsSelector";
 import { useCreateRole } from "~/api/enterprise/roles/mutation/create";
-import { usePermissionKeys } from "~/api/enterprise/permissions/query/get";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -28,7 +26,7 @@ const CreateGroup = ({
   unallowedNames?: string[];
 }) => {
   const { t } = useTranslation();
-  const { data: availablePermissions } = usePermissionKeys();
+
   const { mutate: createGroup, isPending } = useCreateRole({
     onSuccess: () => {
       close();
