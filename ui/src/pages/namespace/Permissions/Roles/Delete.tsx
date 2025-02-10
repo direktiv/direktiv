@@ -7,7 +7,7 @@ import {
 import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
-import { GroupSchemaType } from "~/api/enterprise/roles/schema";
+import { RoleSchemaType } from "~/api/enterprise/roles/schema";
 import { Trash } from "lucide-react";
 import { useDeleteGroup } from "~/api/enterprise/roles/mutation/delete";
 
@@ -15,7 +15,7 @@ const Delete = ({
   group,
   close,
 }: {
-  group: GroupSchemaType;
+  group: RoleSchemaType;
   close: () => void;
 }) => {
   const { t } = useTranslation();

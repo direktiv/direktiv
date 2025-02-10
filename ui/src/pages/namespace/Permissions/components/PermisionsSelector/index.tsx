@@ -2,7 +2,7 @@ import {
   PermisionSchemaType,
   permissionMethodsAvailableUi,
   permissionTopics,
-} from "~/api/enterprise/tokens/schema";
+} from "~/api/enterprise/schema";
 import { SquareDashedMousePointer, SquareMousePointer } from "lucide-react";
 import {
   Table,

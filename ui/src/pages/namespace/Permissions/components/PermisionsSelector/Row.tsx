@@ -2,7 +2,7 @@ import {
   PermissionMethod,
   PermissionTopic,
   permissionMethodsAvailableUi,
-} from "~/api/enterprise/tokens/schema";
+} from "~/api/enterprise/schema";
 import { RadioGroup, RadioGroupItem } from "~/design/RadioGroup";
 import { TableCell, TableRow } from "~/design/Table";
 

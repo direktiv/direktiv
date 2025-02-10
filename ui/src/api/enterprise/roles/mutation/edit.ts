@@ -1,4 +1,4 @@
-import { GroupCreatedEditedSchema, GroupFormSchemaType } from "../schema";
+import { RoleCreatedEditedSchema, RoleFormSchemaType } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
 import { roleKeys } from "..";
@@ -9,7 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const editRole = apiFactory<GroupFormSchemaType>({
+const editRole = apiFactory<RoleFormSchemaType>({
   url: ({
     namespace,
     baseUrl,
@@ -20,7 +20,7 @@ const editRole = apiFactory<GroupFormSchemaType>({
     groupId: string;
   }) => `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/groups/${groupId}`,
   method: "PUT",
-  schema: GroupCreatedEditedSchema,
+  schema: RoleCreatedEditedSchema,
 });
 
 type ResolvedCreateGroup = Awaited<ReturnType<typeof editRole>>;
@@ -44,7 +44,7 @@ export const useEditRole = ({
       tokenFormProps,
     }: {
       groupId: string;
-      tokenFormProps: GroupFormSchemaType;
+      tokenFormProps: RoleFormSchemaType;
     }) =>
       editRole({
         apiKey: apiKey ?? undefined,

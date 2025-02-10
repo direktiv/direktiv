@@ -1,4 +1,4 @@
-import { GroupCreatedEditedSchema, GroupFormSchemaType } from "../schema";
+import { RoleCreatedEditedSchema, RoleFormSchemaType } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
 import { roleKeys } from "..";
@@ -9,11 +9,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const createRole = apiFactory<GroupFormSchemaType>({
+const createRole = apiFactory<RoleFormSchemaType>({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
-    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/groups`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/roles`,
   method: "POST",
-  schema: GroupCreatedEditedSchema,
+  schema: RoleCreatedEditedSchema,
 });
 
 type ResolvedCreateRole = Awaited<ReturnType<typeof createRole>>;
@@ -32,7 +32,7 @@ export const useCreateRole = ({
   }
 
   return useMutationWithPermissions({
-    mutationFn: (tokenFormProps: GroupFormSchemaType) =>
+    mutationFn: (tokenFormProps: RoleFormSchemaType) =>
       createRole({
         apiKey: apiKey ?? undefined,
         urlParams: {

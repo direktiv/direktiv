@@ -1,9 +1,4 @@
-import {
-  GroupDeletedSchema,
-  GroupSchemaType,
-  GroupsListSchemaType,
-} from "../schema";
-
+import { RoleDeletedSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { roleKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
@@ -13,25 +8,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const updateCache = (
-  oldData: GroupsListSchemaType | undefined,
-  variables: Parameters<ReturnType<typeof useDeleteGroup>["mutate"]>[0]
-) => {
-  if (!oldData) return undefined;
-  const remainingRoles = oldData.groups.filter(
-    (group) => group.id !== variables.id
-  );
-  return {
-    ...oldData,
-    groups: remainingRoles,
-  };
-};
-
 const deleteGroup = apiFactory({
-  url: ({ namespace, groupId }: { namespace: string; groupId: string }) =>
-    `/api/v2/namespaces/${namespace}/groups/${groupId}`,
+  url: ({ namespace, groupName }: { namespace: string; groupName: string }) =>
+    `/api/v2/namespaces/${namespace}/groups/${groupName}`,
   method: "DELETE",
-  schema: GroupDeletedSchema,
+  schema: RoleDeletedSchema,
 });
 
 export const useDeleteGroup = ({
@@ -48,26 +29,20 @@ export const useDeleteGroup = ({
   }
 
   return useMutationWithPermissions({
-    mutationFn: (group: GroupSchemaType) =>
+    mutationFn: (groupName: string) =>
       deleteGroup({
         apiKey: apiKey ?? undefined,
-        urlParams: {
-          groupId: group.id,
-          namespace,
-        },
+        urlParams: { groupName, namespace },
       }),
-    onSuccess(_, variables) {
-      queryClient.setQueryData<GroupsListSchemaType>(
-        roleKeys.roleList(namespace, {
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: roleKeys.roleList(namespace, {
           apiKey: apiKey ?? undefined,
         }),
-        (oldData) => updateCache(oldData, variables)
-      );
+      });
       toast({
         title: t("api.roles.mutate.deleteRole.success.title"),
-        description: t("api.roles.mutate.deleteRole.success.description", {
-          name: variables.group,
-        }),
+        description: t("api.roles.mutate.deleteRole.success.description"),
         variant: "success",
       });
       onSuccess?.();

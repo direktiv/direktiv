@@ -1,7 +1,4 @@
-import {
-  PermisionSchemaType,
-  permissionTopics,
-} from "~/api/enterprise/tokens/schema";
+import { PermisionSchemaType, permissionTopics } from "~/api/enterprise/schema";
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import {
   Tooltip,

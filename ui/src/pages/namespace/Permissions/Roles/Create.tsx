@@ -6,8 +6,8 @@ import {
 } from "~/design/Dialog";
 import { Diamond, PlusCircle } from "lucide-react";
 import {
-  GroupFormSchema,
-  GroupFormSchemaType,
+  RoleFormSchema,
+  RoleFormSchemaType,
 } from "~/api/enterprise/roles/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
@@ -36,7 +36,7 @@ const CreateGroup = ({
   });
 
   const resolver = zodResolver(
-    GroupFormSchema.refine(
+    RoleFormSchema.refine(
       (x) => !(unallowedNames ?? []).some((n) => n === x.group),
       {
         path: ["group"],
@@ -51,7 +51,7 @@ const CreateGroup = ({
     handleSubmit,
     watch,
     formState: { isDirty, errors, isValid, isSubmitted },
-  } = useForm<GroupFormSchemaType>({
+  } = useForm<RoleFormSchemaType>({
     defaultValues: {
       group: "",
       description: "",
@@ -60,7 +60,7 @@ const CreateGroup = ({
     resolver,
   });
 
-  const onSubmit: SubmitHandler<GroupFormSchemaType> = (params) => {
+  const onSubmit: SubmitHandler<RoleFormSchemaType> = (params) => {
     createGroup(params);
   };
 

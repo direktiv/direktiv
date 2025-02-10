@@ -5,18 +5,18 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import { Diamond, PlusCircle } from "lucide-react";
+import { SubmitHandler, useForm } from "react-hook-form";
 import {
-  PermissionsArray,
   TokenFormSchema,
   TokenFormSchemaType,
 } from "~/api/enterprise/tokens/schema";
-import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
 import DurationHint from "../../components/DurationHint";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
+import { PermissionsArray } from "~/api/enterprise/schema";
 import PermissionsSelector from "../../components/PermisionsSelector";
 import ShowToken from "./ShowToken";
 import { useCreateToken } from "~/api/enterprise/tokens/mutate/create";

@@ -17,7 +17,7 @@ import { Card } from "~/design/Card";
 import CreateGroup from "./Create";
 import Delete from "./Delete";
 import EditGroup from "./Edit";
-import { GroupSchemaType } from "~/api/enterprise/roles/schema";
+import { RoleSchemaType } from "~/api/enterprise/roles/schema";
 import Row from "./Row";
 import { useRoles } from "~/api/enterprise/roles/query/get";
 import { useTranslation } from "react-i18next";
@@ -28,8 +28,8 @@ const RolesPage = () => {
   const noResults = isFetched && data?.groups.length === 0;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createGroup, setCreateGroup] = useState(false);
-  const [deleteGroup, setDeleteGroup] = useState<GroupSchemaType>();
-  const [editGroup, setEditGroup] = useState<GroupSchemaType>();
+  const [deleteGroup, setDeleteGroup] = useState<RoleSchemaType>();
+  const [editGroup, setEditGroup] = useState<RoleSchemaType>();
 
   const allAvailableNames = data?.groups.map((group) => group.group) ?? [];
 

@@ -1539,7 +1539,7 @@
         "createRole": {
           "success": {
             "title": "Role created",
-            "description": "The role {{name}} was created"
+            "description": "The role was created"
           },
           "error": {
             "description": "The role could not be created 😢"
@@ -1548,7 +1548,7 @@
         "editRole": {
           "success": {
             "title": "Role updated",
-            "description": "The role {{name}} was updated"
+            "description": "The role was updated"
           },
           "error": {
             "description": "The role could not be updated 😢"
@@ -1557,7 +1557,7 @@
         "deleteRole": {
           "success": {
             "title": "Role deleted",
-            "description": "The role {{name}} was deleted"
+            "description": "The role was deleted"
           },
           "error": {
             "description": "The role could not be deleted 😢"

@@ -2,7 +2,7 @@ import {
   PermisionSchemaType,
   PermissionMethod,
   PermissionTopic,
-} from "~/api/enterprise/tokens/schema";
+} from "~/api/enterprise/schema";
 
 export const updatePermissions = ({
   permissions,

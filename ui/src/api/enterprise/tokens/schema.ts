@@ -1,37 +1,5 @@
+import { PermissionsArray } from "../schema";
 import { z } from "zod";
-
-export const permissionTopics = [
-  "namespaces",
-  "instances",
-  "secrets",
-  "variables",
-] as const; // TODO: finalize this array
-
-export type PermissionTopic = (typeof permissionTopics)[number];
-
-const permissionMethods = [
-  "POST",
-  "GET",
-  "DELETE",
-  "PATCH",
-  "PUT",
-  "read",
-  "manage",
-] as const;
-
-export type PermissionMethod = (typeof permissionMethods)[number];
-
-/**
- * the ui only offers a subset of the methods
- */
-export const permissionMethodsAvailableUi = ["manage", "read"] as const;
-
-const PermisionSchema = z.object({
-  topic: z.enum(permissionTopics),
-  method: z.enum(permissionMethods),
-});
-
-export const PermissionsArray = z.array(PermisionSchema).nonempty();
 
 /**
  * example:
@@ -82,8 +50,10 @@ export const TokenListSchema = z.object({
  * example:
  * 
   {
-    "token": {...},
-    "secret": "6dcbe0b0-f824-423c-be17-f199e57e1653"
+    "data": {
+      "apiToken": {...},
+      "secret": "6dcbe0b0-f824-423c-be17-f199e57e1653"
+    }
   }
  */
 export const TokenCreatedSchema = z.object({
@@ -107,7 +77,7 @@ export const ISO8601durationSchema = z
  * 
   {
     "name": "token name",
-    "description": "",
+    "description": "token description",
     "permissions": [
       { "topic": "namespace", "method": "read" },
       { "topic": "files", "method": "manage" }
@@ -123,7 +93,6 @@ export const TokenFormSchema = z.object({
 
 export const TokenDeletedSchema = z.null();
 
-export type PermisionSchemaType = z.infer<typeof PermisionSchema>;
 export type TokenSchemaType = z.infer<typeof TokenSchema>;
 export type TokenListSchemaType = z.infer<typeof TokenListSchema>;
 export type TokenFormSchemaType = z.infer<typeof TokenFormSchema>;

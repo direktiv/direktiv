@@ -6,9 +6,9 @@ import {
 } from "~/design/Dialog";
 import { Diamond, Save } from "lucide-react";
 import {
-  GroupFormSchema,
-  GroupFormSchemaType,
-  GroupSchemaType,
+  RoleFormSchema,
+  RoleFormSchemaType,
+  RoleSchemaType,
 } from "~/api/enterprise/roles/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
@@ -26,7 +26,7 @@ const EditGroup = ({
   close,
   unallowedNames,
 }: {
-  group: GroupSchemaType;
+  group: RoleSchemaType;
   close: () => void;
   unallowedNames?: string[];
 }) => {
@@ -39,7 +39,7 @@ const EditGroup = ({
   });
 
   const resolver = zodResolver(
-    GroupFormSchema.refine(
+    RoleFormSchema.refine(
       (x) => !(unallowedNames ?? []).some((n) => n === x.group),
       {
         path: ["group"],
@@ -54,7 +54,7 @@ const EditGroup = ({
     handleSubmit,
     watch,
     formState: { isDirty, errors, isValid, isSubmitted },
-  } = useForm<GroupFormSchemaType>({
+  } = useForm<RoleFormSchemaType>({
     defaultValues: {
       group: group.group,
       description: group.description,
@@ -63,7 +63,7 @@ const EditGroup = ({
     resolver,
   });
 
-  const onSubmit: SubmitHandler<GroupFormSchemaType> = (params) => {
+  const onSubmit: SubmitHandler<RoleFormSchemaType> = (params) => {
     editGroup({
       groupId: group.id,
       tokenFormProps: params,

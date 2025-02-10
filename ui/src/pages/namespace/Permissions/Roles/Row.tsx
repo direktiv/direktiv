@@ -9,8 +9,8 @@ import { TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
-import { GroupSchemaType } from "~/api/enterprise/roles/schema";
 import PermissionsInfo from "../components/PermissionsInfo";
+import { RoleSchemaType } from "~/api/enterprise/roles/schema";
 import { useTranslation } from "react-i18next";
 
 const Row = ({
@@ -18,9 +18,9 @@ const Row = ({
   onDeleteClicked,
   onEditClicked,
 }: {
-  group: GroupSchemaType;
-  onDeleteClicked: (group: GroupSchemaType) => void;
-  onEditClicked: (group: GroupSchemaType) => void;
+  group: RoleSchemaType;
+  onDeleteClicked: (group: RoleSchemaType) => void;
+  onEditClicked: (group: RoleSchemaType) => void;
 }) => {
   const { t } = useTranslation();
   return (

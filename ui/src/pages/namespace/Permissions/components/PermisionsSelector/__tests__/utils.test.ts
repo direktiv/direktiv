@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { PermisionSchemaType } from "~/api/enterprise/tokens/schema";
+import { PermisionSchemaType } from "~/api/enterprise/schema";
 import { updatePermissions } from "../utils";
 
 describe("updatePermissions", () => {
