@@ -2,7 +2,7 @@ import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 import {
   simpleWorkflow,
-  workflowWithDelayLogs,
+  workflowWithFewLogs,
   workflowWithManyLogs,
 } from "../utils/workflows";
 
@@ -33,7 +33,7 @@ test("It displays a log message from the workflow yaml, one initial and one fina
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: workflowWithDelayLogs,
+    yaml: workflowWithFewLogs,
   });
 
   const instanceId = (
