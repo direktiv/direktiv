@@ -76,7 +76,7 @@ const RolesPage = () => {
                   <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                     <TableCell colSpan={3}>
                       <NoResult icon={Users} button={createNewButton}>
-                        {t("pages.permissions.roles.noGroups")}
+                        {t("pages.permissions.roles.noRoles")}
                       </NoResult>
                     </TableCell>
                   </TableRow>

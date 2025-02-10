@@ -43,7 +43,7 @@ const EditGroup = ({
       (x) => !(unallowedNames ?? []).some((n) => n === x.group),
       {
         path: ["group"],
-        message: t("pages.permissions.roles.edit.group.alreadyExist"),
+        message: t("pages.permissions.roles.create.role.alreadyExist"),
       }
     )
   );
@@ -80,7 +80,7 @@ const EditGroup = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Diamond /> {t("pages.permissions.roles.edit.title")}
+          <Diamond /> {t("pages.permissions.roles.create.title")}
         </DialogTitle>
       </DialogHeader>
 
@@ -93,11 +93,11 @@ const EditGroup = ({
         >
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[14px]" htmlFor="group">
-              {t("pages.permissions.roles.edit.group.label")}
+              {t("pages.permissions.roles.create.role.label")}
             </label>
             <Input
               id="group"
-              placeholder={t("pages.permissions.roles.edit.group.placeholder")}
+              placeholder={t("pages.permissions.roles.create.role.placeholder")}
               autoComplete="off"
               {...register("group")}
             />
@@ -107,12 +107,12 @@ const EditGroup = ({
               className="w-[90px] text-right text-[14px]"
               htmlFor="description"
             >
-              {t("pages.permissions.roles.edit.description.label")}
+              {t("pages.permissions.roles.create.description.label")}
             </label>
             <Input
               id="description"
               placeholder={t(
-                "pages.permissions.roles.edit.description.placeholder"
+                "pages.permissions.roles.create.description.placeholder"
               )}
               {...register("description")}
             />
@@ -133,7 +133,7 @@ const EditGroup = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.permissions.roles.edit.cancelBtn")}
+            {t("pages.permissions.roles.create.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
@@ -143,7 +143,7 @@ const EditGroup = ({
           form={formId}
         >
           {!isPending && <Save />}
-          {t("pages.permissions.roles.edit.editBtn")}
+          {t("pages.permissions.roles.create.saveBtn")}
         </Button>
       </DialogFooter>
     </>

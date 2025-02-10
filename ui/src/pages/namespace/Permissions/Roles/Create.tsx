@@ -40,7 +40,7 @@ const CreateGroup = ({
       (x) => !(unallowedNames ?? []).some((n) => n === x.group),
       {
         path: ["group"],
-        message: t("pages.permissions.roles.create.group.alreadyExist"),
+        message: t("pages.permissions.roles.create.role.alreadyExist"),
       }
     )
   );
@@ -87,13 +87,11 @@ const CreateGroup = ({
         >
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[14px]" htmlFor="group">
-              {t("pages.permissions.roles.create.group.label")}
+              {t("pages.permissions.roles.create.role.label")}
             </label>
             <Input
               id="group"
-              placeholder={t(
-                "pages.permissions.roles.create.group.placeholder"
-              )}
+              placeholder={t("pages.permissions.roles.create.role.placeholder")}
               autoComplete="off"
               {...register("group")}
             />
@@ -139,7 +137,7 @@ const CreateGroup = ({
           form={formId}
         >
           {!isPending && <PlusCircle />}
-          {t("pages.permissions.roles.create.createBtn")}
+          {t("pages.permissions.roles.create.saveBtn")}
         </Button>
       </DialogFooter>
     </>

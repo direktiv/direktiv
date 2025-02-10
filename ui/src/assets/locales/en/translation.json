@@ -777,42 +777,28 @@
           "description": "description",
           "permissions": "permissions"
         },
-        "createBtn": "Create a new group",
-        "noGroups": "There are no groups yet.",
+        "createBtn": "Create a new role",
+        "noRoles": "There are no roles yet.",
         "contextMenu": {
           "edit": "Edit",
           "delete": "Delete"
         },
         "create": {
-          "title": "Create a group",
+          "title": "Create a Role",
           "cancelBtn": "Cancel",
-          "createBtn": "Create",
-          "group": {
+          "saveBtn": "Save",
+          "role": {
             "label": "Name",
-            "placeholder": "groupname",
+            "placeholder": "role-name",
             "alreadyExist": "The name already exists"
           },
           "description": {
             "label": "Description",
-            "placeholder": "Enter a description for the group"
-          }
-        },
-        "edit": {
-          "title": "Update group",
-          "cancelBtn": "Cancel",
-          "editBtn": "Save",
-          "group": {
-            "label": "Name",
-            "placeholder": "groupname",
-            "alreadyExist": "The name already exists"
-          },
-          "description": {
-            "label": "Description",
-            "placeholder": "Enter a description for the group"
+            "placeholder": "Enter a description for the role"
           }
         },
         "delete": {
-          "title": "Delete group",
+          "title": "Delete role",
           "msg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
           "cancelBtn": "Cancel",
           "deleteBtn": "Delete"
