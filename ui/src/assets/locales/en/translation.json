@@ -791,6 +791,10 @@
             "placeholder": "role-name",
             "alreadyExist": "The name already exists"
           },
+          "oidcGroups": {
+            "label": "Oidc groups",
+            "placeholder": "enter-oidc-group"
+          },
           "description": {
             "label": "Description",
             "placeholder": "Enter a description for the role"

@@ -11,7 +11,9 @@ import {
 } from "~/api/enterprise/roles/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
+import { ArrayForm } from "~/components/Form/Array";
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { PermissionsArray } from "~/api/enterprise/schema";
@@ -111,6 +113,47 @@ const CreateRole = ({
               )}
               {...register("description")}
             />
+          </fieldset>
+          <fieldset className="flex items-center gap-5">
+            <label className="w-[90px] text-right text-[14px]">
+              {t("pages.permissions.roles.create.oidcGroups.label")}
+            </label>
+            <Card
+              className="max-h-[200px] w-full overflow-scroll p-5 grid grid-cols-2 gap-5"
+              noShadow
+            >
+              <ArrayForm
+                defaultValue={watch("oidcGroups")}
+                onChange={(newGroups) => {
+                  setValue("oidcGroups", newGroups, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                    shouldValidate: true,
+                  });
+                }}
+                emptyItem=""
+                itemIsValid={(item) => {
+                  if (!item) return false;
+                  if (item.includes(",")) return false;
+                  if (item.includes(" ")) return false;
+                  return true;
+                }}
+                renderItem={({ value, setValue, handleKeyDown }) => (
+                  <Input
+                    placeholder={t(
+                      "pages.permissions.roles.create.oidcGroups.placeholder"
+                    )}
+                    className="basis-full"
+                    value={value}
+                    onKeyDown={handleKeyDown}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      setValue(newValue);
+                    }}
+                  />
+                )}
+              />
+            </Card>
           </fieldset>
           <PermissionsSelector
             permissions={watch("permissions")}
