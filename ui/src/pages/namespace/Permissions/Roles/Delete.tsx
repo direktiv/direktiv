@@ -34,8 +34,8 @@ const Delete = ({
       </DialogHeader>
       <div className="my-3">
         <Trans
-          i18nKey="pages.permissions.tokens.delete.msg"
-          values={{ name: group.group }}
+          i18nKey="pages.permissions.roles.delete.msg"
+          values={{ name: group.name }}
         />
       </div>
       <DialogFooter>
@@ -46,7 +46,7 @@ const Delete = ({
         </DialogClose>
         <Button
           onClick={() => {
-            deleteGroup(group);
+            deleteGroup(group.name);
           }}
           variant="destructive"
           loading={isPending}
