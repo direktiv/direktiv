@@ -1,4 +1,3 @@
-import { Table, TableBody } from "~/design/Table";
 import {
   Tooltip,
   TooltipContent,
@@ -25,16 +24,12 @@ const OidcGroupsInfo = ({ groups }: OidcGroupsInfoProps) => {
             })}
           </Badge>
         </TooltipTrigger>
-        <TooltipContent className="flex flex-col max-w-xl flex-wrap gap-3 text-inherit">
-          <Table>
-            <TableBody>
-              {groups.map((group) => (
-                <Badge key={group} className="cursor-pointer" variant="outline">
-                  {group}
-                </Badge>
-              ))}
-            </TableBody>
-          </Table>
+        <TooltipContent className="flex flex-row max-w-xl flex-wrap gap-3 text-inherit">
+          {groups.map((group) => (
+            <Badge key={group} className="cursor-pointer" variant="outline">
+              {group}
+            </Badge>
+          ))}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
