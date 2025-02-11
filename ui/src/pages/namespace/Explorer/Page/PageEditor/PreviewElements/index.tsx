@@ -18,7 +18,7 @@ export const DragAndDropPreview: FC<PropsWithChildren> = ({ children }) => (
 export const getElementComponent = (
   element: string,
   hidden: boolean,
-  content: string
+  content: string | tableData
 ) => {
   switch (element) {
     case "Header":
@@ -31,8 +31,6 @@ export const getElementComponent = (
       return <DefaultText hidden={hidden} content={content} />;
     case "Table":
       return <DefaultTable hidden={hidden} content={content} />;
-    case "List":
-      return <DefaultList hidden={hidden} content={content} />;
     default:
       return <></>;
   }
@@ -43,52 +41,65 @@ type TableProps = {
   rows?: number;
 };
 
+type tableData = [
+  {
+    header: string;
+    cell: string;
+  },
+];
+
 type previewElementProps = {
-  content: string;
+  content: string | tableData;
   hidden: boolean;
 };
 
-const DefaultTable: FC<TableProps & previewElementProps> = (content) => (
-  <Table className="p-2 my-2 border-2" hidden={content.hidden}>
-    <TableHead className="border-2">
-      <TableRow className="hover:bg-transparent">
-        <TableHeaderCell>TableHeader1</TableHeaderCell>
-        <TableHeaderCell>TableHeader2</TableHeaderCell>
-        <TableHeaderCell>TableHeader3</TableHeaderCell>
-        <TableHeaderCell>TableHeader4</TableHeaderCell>
-        <TableHeaderCell>
-          <span className="sr-only">Edit</span>
-        </TableHeaderCell>
-      </TableRow>
-    </TableHead>
-    <TableBody>
-      <TableRow className="border-2 hover:bg-transparent">
-        <TableCell>TableCell 1</TableCell>
-        <TableCell>TableCell 2</TableCell>
-        <TableCell>TableCell 3</TableCell>
-        <TableCell>TableCell 4</TableCell>
-      </TableRow>
-    </TableBody>
-  </Table>
-);
+const DefaultTable: FC<TableProps & previewElementProps> = (content) => {
+  const placeholderData = [
+    {
+      header: "TableHeader 1",
+      cell: "TableCell 1",
+    },
+    { header: "TableHeader 1", cell: "TableCell 2" },
+  ];
 
-const DefaultList: FC<previewElementProps> = (content) => (
-  <ul hidden={content.hidden} className="p-2 list-disc pl-4">
-    <li>Item 1</li>
-    <li>Item 2</li>
-    <li>Item 3</li>
-  </ul>
-);
+  const data =
+    typeof content.content !== "string" ? content.content : placeholderData;
+
+  // const data = placeholderData;
+
+  return (
+    <Table className="p-2 my-2 border-2 text-xs" hidden={content.hidden}>
+      <TableHead className="border-2">
+        <TableRow className="hover:bg-transparent">
+          {data.map((element, index) => (
+            <TableHeaderCell key={index}>{element.header}</TableHeaderCell>
+          ))}
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        <TableRow className="border-2 hover:bg-transparent">
+          {data.map((element, index) => (
+            <TableCell key={index}>{element.cell}</TableCell>
+          ))}
+        </TableRow>
+      </TableBody>
+    </Table>
+  );
+};
 
 const DefaultImage: FC<previewElementProps> = (content) => (
   <div hidden={content.hidden} className="p-2">
-    <ImageIcon />
+    {content.content === undefined ? (
+      <ImageIcon />
+    ) : (
+      <img src={content.content} />
+    )}
   </div>
 );
 
 const DefaultText: FC<previewElementProps> = (content) => (
   <p hidden={content.hidden} className="py-2">
-    {content.content === undefined ? (
+    {typeof content.content !== "string" ? (
       <>Placeholder Text</>
     ) : (
       <>{content.content}</>
@@ -98,12 +109,16 @@ const DefaultText: FC<previewElementProps> = (content) => (
 
 const DefaultHeader: FC<previewElementProps> = (content) => (
   <Card noShadow className="border-2 my-2" hidden={content.hidden}>
-    <p className="text-lg font-semibold p-2">{content.content}</p>
+    <p className="text-lg font-semibold p-2">
+      {JSON.stringify(content.content)}
+    </p>
   </Card>
 );
 
 const DefaultFooter: FC<previewElementProps> = (content) => (
   <Card noShadow className="border-2 my-2" hidden={content.hidden}>
-    <p className="text-lg font-semibold p-2">{content.content}</p>
+    <p className="text-lg font-semibold p-2">
+      {JSON.stringify(content.content)}
+    </p>
   </Card>
 );

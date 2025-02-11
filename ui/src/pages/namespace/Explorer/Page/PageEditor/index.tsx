@@ -2,7 +2,6 @@ import {
   ArrowDownFromLine,
   ArrowDownToLine,
   Image,
-  List,
   Save,
   Table,
   Text,
@@ -31,8 +30,10 @@ import { DraggableElement } from "~/design/DragAndDropEditor/DraggableElement";
 import { DroppableSeparator } from "~/design/DragAndDropEditor/DroppableSeparator";
 import EditModal from "./modals/Edit";
 import { FileSchemaType } from "~/api/files/schema";
+import FooterForm from "./modals/forms/Footer";
 import { Form } from "./Form";
 import FormErrors from "~/components/FormErrors";
+import HeaderForm from "./modals/forms/Header";
 import NavigationBlocker from "~/components/NavigationBlocker";
 import { ScrollArea } from "~/design/ScrollArea";
 import { jsonToYaml } from "../../utils";
@@ -81,7 +82,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
   const placeholder2: PageElementSchemaType = {
     name: "Table",
     hidden: false,
-    content: "data",
+    content: [{ header: "Example Header", cell: "unset" }],
     preview: "Placeholder Table",
   };
 
@@ -93,6 +94,8 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
   };
 
   const defaultConfig: PageFormSchemaType = {
+    header: headerDefault,
+    footer: footerDefault,
     layout: [placeholder1, placeholder2, placeholder3],
     direktiv_api: "page/v1",
     path: undefined,
@@ -100,7 +103,9 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
 
   const defaultLayout = defaultConfig.layout;
 
-  const [layout, setLayout] = useState<LayoutSchemaType>(defaultLayout);
+  const [layout, setLayout] = useState<LayoutSchemaType>(
+    pageConfig?.layout ?? defaultLayout
+  );
 
   const [header, setHeader] = useState<PageElementSchemaType>(headerDefault);
   const [footer, setFooter] = useState<PageElementSchemaType>(footerDefault);
@@ -122,7 +127,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
       const newElement = {
         name,
         hidden: false,
-        content: undefined,
+        content: `Placeholder ${name} `,
         preview: `Placeholder ${name} `,
       };
       const newLayout = [...layout];
@@ -145,6 +150,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
 
   const save = (value: PageFormSchemaType) => {
     const toSave = jsonToYaml(value);
+
     updateRoute({
       path: data.path,
       payload: { data: encode(toSave) },
@@ -195,7 +201,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                           <div className="pt-8 pb-4">
                             <h2 className="flex text-sm">
                               <ArrowDownFromLine size={20} className="mr-2" />
-                              Select Components
+                              Select Elements
                             </h2>
                           </div>
                           <Tabs defaultValue="data" className="w-full">
@@ -213,7 +219,6 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                                 noShadow
                               >
                                 <DraggableElement icon={Table} name="Table" />
-                                <DraggableElement icon={List} name="List" />
                               </Card>
                             </TabsContent>
                             <TabsContent value="static" asChild>
@@ -230,7 +235,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                           <div className="pt-8 pb-4">
                             <h2 className="flex text-sm">
                               <ArrowDownToLine size={20} className="mr-2" />
-                              Place Components
+                              Place Elements
                             </h2>
                           </div>
                           <Card
@@ -242,7 +247,10 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                               preview={header.preview}
                               hidden={header.hidden}
                               onHide={() => updateHeader(header)}
-                              onEdit={() => setDialogOpen(true)}
+                              onEdit={() => {
+                                setSelectedDialog("editHeader");
+                                setDialogOpen(true);
+                              }}
                             />
                             {!layout.length && (
                               <DroppableSeparator id={String(0) + "A"} />
@@ -299,7 +307,6 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                                 </Fragment>
                               );
                             })}
-
                             <FormErrors errors={errors} className="mb-5" />
 
                             <NonDroppableElement
@@ -307,7 +314,10 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                               preview={footer.preview}
                               hidden={footer.hidden}
                               onHide={() => updateFooter(footer)}
-                              onEdit={() => setDialogOpen(true)}
+                              onEdit={() => {
+                                setSelectedDialog("editFooter");
+                                setDialogOpen(true);
+                              }}
                             />
                           </Card>
                         </div>
@@ -368,9 +378,28 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
         </Form>
       </DndContext>
 
-      <DialogContent>
+      <DialogContent className="overflow-auto min-w-[950px]">
+        {selectedDialog === "editHeader" && (
+          <HeaderForm
+            header={header}
+            onEdit={(newHeader) => setHeader(newHeader)}
+            close={() => {
+              setDialogOpen(false);
+            }}
+          />
+        )}
+        {selectedDialog === "editFooter" && (
+          <FooterForm
+            footer={footer}
+            onEdit={(newFooter) => setFooter(newFooter)}
+            close={() => {
+              setDialogOpen(false);
+            }}
+          />
+        )}
         {selectedDialog === "edit" && (
           <EditModal
+            onChange={() => console.log("changed")}
             layout={layout}
             success={(newLayout) => {
               setLayout(newLayout);

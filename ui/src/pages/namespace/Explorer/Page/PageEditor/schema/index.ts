@@ -1,7 +1,16 @@
 import { z } from "zod";
 
+export const TableSchema = z.array(
+  z.object({
+    header: z.string(),
+    cell: z.string(),
+  })
+);
+
+export type TableSchemaType = z.infer<typeof TableSchema>;
+
 export const PageElementContentSchema = z.object({
-  content: z.string(),
+  content: z.string().or(TableSchema),
 });
 
 export type PageElementContentSchemaType = z.infer<
@@ -25,6 +34,8 @@ export const PageFormSchema = z.object({
   direktiv_api: z.literal("page/v1"),
   path: z.string().nonempty().optional(),
   layout: z.array(PageElementSchema),
+  header: PageElementSchema.optional(),
+  footer: PageElementSchema.optional(),
 });
 
 export type PageFormSchemaType = z.infer<typeof PageFormSchema>;

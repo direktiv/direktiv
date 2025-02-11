@@ -4,11 +4,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
+import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
 import { LayoutSchemaType } from "~/pages/namespace/Explorer/Page/PageEditor/schema";
 import { Trash } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 const DeleteModal = ({
   layout,
@@ -22,7 +22,7 @@ const DeleteModal = ({
   success: (newLayout: LayoutSchemaType) => void;
 }) => {
   const { t } = useTranslation();
-
+  const elementName = layout ? layout[pageElementID]?.name : "element";
   let isPending = false;
 
   const onDelete = (pageElementID: number) => {
@@ -40,10 +40,15 @@ const DeleteModal = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Trash /> Delete this
+          <Trash /> Delete
         </DialogTitle>
       </DialogHeader>
-
+      <div className="my-3">
+        <Trans
+          i18nKey="pages.explorer.tree.delete.fileMsg"
+          values={{ name: `this ${elementName}` }}
+        />
+      </div>
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
@@ -51,7 +56,6 @@ const DeleteModal = ({
           </Button>
         </DialogClose>
         <Button
-          data-testid="node-delete-confirm"
           onClick={() => {
             onDelete(pageElementID);
           }}
