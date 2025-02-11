@@ -61,13 +61,13 @@ const TokensPage = () => {
                 {t("pages.permissions.tokens.tableHeader.prefix")}
               </TableHeaderCell>
               <TableHeaderCell className="w-40">
-                {t("pages.permissions.tokens.tableHeader.created")}
-              </TableHeaderCell>
-              <TableHeaderCell className="w-40">
                 {t("pages.permissions.tokens.tableHeader.expires")}
               </TableHeaderCell>
               <TableHeaderCell className="w-36">
                 {t("pages.permissions.tokens.tableHeader.permissions")}
+              </TableHeaderCell>
+              <TableHeaderCell className="w-40">
+                {t("pages.permissions.tokens.tableHeader.created")}
               </TableHeaderCell>
               <TableHeaderCell className="w-16" />
             </TableRow>
