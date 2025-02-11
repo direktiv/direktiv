@@ -15,6 +15,7 @@ import {
 
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
+import OidcGroupsInfo from "../components/OidcGroupsInfo";
 import PermissionsInfo from "../components/PermissionsInfo";
 import { RoleSchemaType } from "~/api/enterprise/roles/schema";
 import { useTranslation } from "react-i18next";
@@ -36,7 +37,9 @@ const Row = ({
       <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
         <TableCell>{role.name}</TableCell>
         <TableCell>{role.description}</TableCell>
-        <TableCell>{role.oidcGroups.join(", ")}</TableCell>
+        <TableCell>
+          <OidcGroupsInfo groups={role.oidcGroups} />
+        </TableCell>
         <TableCell>
           <PermissionsInfo permissions={role.permissions} />
         </TableCell>

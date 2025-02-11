@@ -750,6 +750,10 @@
         "partial_one": "{{count}} topic",
         "noPermissions": "no permissions"
       },
+      "OidcGroupsInfo": {
+        "title": "{{count}} OIDC Groups",
+        "title_one": "{{count}} OIDC Group"
+      },
       "durationHint": {
         "title": "Token lifetime",
         "description": "The token lifetime must be a valid ISO 8601 duration string.",
