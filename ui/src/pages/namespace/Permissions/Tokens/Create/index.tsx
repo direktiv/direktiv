@@ -80,7 +80,7 @@ const CreateToken = ({ close }: { close: () => void }) => {
             >
               <fieldset className="flex items-center gap-5">
                 <label
-                  className="w-[90px] text-right text-[14px]"
+                  className="w-[120px] text-right text-[14px]"
                   htmlFor="name"
                 >
                   {t("pages.permissions.tokens.create.name.label")}
@@ -96,7 +96,7 @@ const CreateToken = ({ close }: { close: () => void }) => {
               </fieldset>
               <fieldset className="flex items-center gap-5">
                 <label
-                  className="w-[90px] text-right text-[14px]"
+                  className="w-[120px] text-right text-[14px]"
                   htmlFor="description"
                 >
                   {t("pages.permissions.tokens.create.description.label")}
@@ -112,7 +112,7 @@ const CreateToken = ({ close }: { close: () => void }) => {
               </fieldset>
               <fieldset className="flex items-center gap-5">
                 <label
-                  className="w-[90px] text-right text-[14px]"
+                  className="w-[120px] text-right text-[14px]"
                   htmlFor="duration"
                 >
                   {t("pages.permissions.tokens.create.duration.label")}

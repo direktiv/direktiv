@@ -23,7 +23,7 @@ const OidcGroupSelector = ({
 
   return (
     <fieldset className="flex items-center gap-5">
-      <label className="w-[90px] text-right text-[14px]">
+      <label className="w-[120px] text-right text-[14px]">
         {t("pages.permissions.oidcGroupSelector.label")}
       </label>
       <Card

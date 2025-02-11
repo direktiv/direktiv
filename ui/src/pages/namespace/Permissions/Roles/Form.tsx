@@ -32,7 +32,7 @@ const RoleForm = ({ form, onSubmit, formId }: RoleFormProps) => {
         className="flex flex-col space-y-5"
       >
         <fieldset className="flex items-center gap-5">
-          <label className="w-[90px] text-right text-[14px]" htmlFor="name">
+          <label className="w-[120px] text-right text-[14px]" htmlFor="name">
             {t("pages.permissions.roles.form.name.label")}
           </label>
           <Input
@@ -44,7 +44,7 @@ const RoleForm = ({ form, onSubmit, formId }: RoleFormProps) => {
         </fieldset>
         <fieldset className="flex items-center gap-5">
           <label
-            className="w-[90px] text-right text-[14px]"
+            className="w-[120px] text-right text-[14px]"
             htmlFor="description"
           >
             {t("pages.permissions.roles.form.description.label")}
