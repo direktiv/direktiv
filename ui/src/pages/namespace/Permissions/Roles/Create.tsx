@@ -12,24 +12,18 @@ import {
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
-import FormErrors from "~/components/FormErrors";
-import Input from "~/design/Input";
-import OidcGroupSelector from "../components/OidcGroupSelector";
-import { PermissionsArray } from "~/api/enterprise/schema";
-import PermissionsSelector from "../components/PermisionsSelector";
+import RoleForm from "./Form";
 import { useCreateRole } from "~/api/enterprise/roles/mutation/create";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const CreateRole = ({
-  close,
-  unallowedNames,
-}: {
+type CreateRoleProps = {
   close: () => void;
   unallowedNames?: string[];
-}) => {
-  const { t } = useTranslation();
+};
 
+const CreateRole = ({ close, unallowedNames }: CreateRoleProps) => {
+  const { t } = useTranslation();
   const { mutate: createRole, isPending } = useCreateRole({
     onSuccess: () => {
       close();
@@ -41,18 +35,12 @@ const CreateRole = ({
       (x) => !(unallowedNames ?? []).some((n) => n === x.name),
       {
         path: ["group"],
-        message: t("pages.permissions.roles.create.name.alreadyExist"),
+        message: t("pages.permissions.roles.form.name.alreadyExist"),
       }
     )
   );
 
-  const {
-    register,
-    setValue,
-    handleSubmit,
-    watch,
-    formState: { isDirty, errors, isValid, isSubmitted },
-  } = useForm<RoleFormSchemaType>({
+  const form = useForm<RoleFormSchemaType>({
     defaultValues: {
       name: "",
       description: "",
@@ -61,6 +49,10 @@ const CreateRole = ({
     },
     resolver,
   });
+
+  const {
+    formState: { isDirty, isValid, isSubmitted },
+  } = form;
 
   const onSubmit: SubmitHandler<RoleFormSchemaType> = (params) => {
     createRole(params);
@@ -79,65 +71,7 @@ const CreateRole = ({
           <Diamond /> {t("pages.permissions.roles.create.title")}
         </DialogTitle>
       </DialogHeader>
-
-      <div className="my-3">
-        <FormErrors errors={errors} className="mb-5" />
-        <form
-          id={formId}
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col space-y-5"
-        >
-          <fieldset className="flex items-center gap-5">
-            <label className="w-[90px] text-right text-[14px]" htmlFor="name">
-              {t("pages.permissions.roles.create.name.label")}
-            </label>
-            <Input
-              id="name"
-              placeholder={t("pages.permissions.roles.create.name.placeholder")}
-              autoComplete="off"
-              {...register("name")}
-            />
-          </fieldset>
-          <fieldset className="flex items-center gap-5">
-            <label
-              className="w-[90px] text-right text-[14px]"
-              htmlFor="description"
-            >
-              {t("pages.permissions.roles.create.description.label")}
-            </label>
-            <Input
-              id="description"
-              placeholder={t(
-                "pages.permissions.roles.create.description.placeholder"
-              )}
-              {...register("description")}
-            />
-          </fieldset>
-          <OidcGroupSelector
-            oidcGroups={watch("oidcGroups")}
-            onChange={(oidcGroups) => {
-              setValue("oidcGroups", oidcGroups, {
-                shouldDirty: true,
-                shouldTouch: true,
-                shouldValidate: true,
-              });
-            }}
-          />
-          <PermissionsSelector
-            permissions={watch("permissions")}
-            onChange={(permissions) => {
-              const parsedPermissions = PermissionsArray.safeParse(permissions);
-              if (parsedPermissions.success) {
-                setValue("permissions", parsedPermissions.data, {
-                  shouldDirty: true,
-                  shouldTouch: true,
-                  shouldValidate: true,
-                });
-              }
-            }}
-          />
-        </form>
-      </div>
+      <RoleForm form={form} onSubmit={onSubmit} formId={formId} />
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">

@@ -787,12 +787,16 @@
           "delete": "Delete"
         },
         "edit": {
-          "title": "Edit Role"
+          "title": "Edit Role",
+          "saveBtn": "Save",
+          "cancelBtn": "Cancel"
         },
         "create": {
           "title": "Create a Role",
-          "cancelBtn": "Cancel",
-          "saveBtn": "Save",
+          "saveBtn": "Create",
+          "cancelBtn": "Cancel"
+        },
+        "form": {
           "name": {
             "label": "Name",
             "placeholder": "role-name",
