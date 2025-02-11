@@ -84,7 +84,7 @@ const InfoPage = () => {
           </Table>
 
           {errors?.length ? (
-            <Alert variant="error">
+            <Alert variant="error" className="m-5">
               <h3>{t("pages.gateway.info.columns.errors")}</h3>
               <p>
                 <ul className="list-disc pl-4">
