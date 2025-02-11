@@ -13,8 +13,7 @@ import {
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
-import FormErrors from "~/components/FormErrors";
-import Input from "~/design/Input";
+import RoleForm from "./Form";
 import { useEditRole } from "~/api/enterprise/roles/mutation/edit";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,33 +36,32 @@ const EditRole = ({
 
   const resolver = zodResolver(
     RoleFormSchema.refine(
-      (x) => !(unallowedNames ?? []).some((n) => n === x.group),
+      (x) => !(unallowedNames ?? []).some((n) => n === x.name),
       {
         path: ["group"],
-        message: t("pages.permissions.roles.create.role.alreadyExist"),
+        message: t("pages.permissions.roles.form.name.alreadyExist"),
       }
     )
   );
 
-  const {
-    register,
-    setValue,
-    handleSubmit,
-    watch,
-    formState: { isDirty, errors, isValid, isSubmitted },
-  } = useForm<RoleFormSchemaType>({
+  const form = useForm<RoleFormSchemaType>({
     defaultValues: {
-      group: group.group,
+      name: group.name,
       description: group.description,
+      oidcGroups: group.oidcGroups,
       permissions: group.permissions,
     },
     resolver,
   });
 
+  const {
+    formState: { isDirty, isValid, isSubmitted },
+  } = form;
+
   const onSubmit: SubmitHandler<RoleFormSchemaType> = (params) => {
     editGroup({
-      groupId: group.id,
-      role: params,
+      roleName: group.name,
+      payload: params,
     });
   };
 
@@ -80,57 +78,11 @@ const EditRole = ({
           <Diamond /> {t("pages.permissions.roles.edit.title")}
         </DialogTitle>
       </DialogHeader>
-
-      <div className="my-3">
-        <FormErrors errors={errors} className="mb-5" />
-        <form
-          id={formId}
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col space-y-5"
-        >
-          <fieldset className="flex items-center gap-5">
-            <label className="w-[90px] text-right text-[14px]" htmlFor="group">
-              {t("pages.permissions.roles.create.role.label")}
-            </label>
-            <Input
-              id="group"
-              placeholder={t("pages.permissions.roles.create.role.placeholder")}
-              autoComplete="off"
-              {...register("group")}
-            />
-          </fieldset>
-          <fieldset className="flex items-center gap-5">
-            <label
-              className="w-[90px] text-right text-[14px]"
-              htmlFor="description"
-            >
-              {t("pages.permissions.roles.create.description.label")}
-            </label>
-            <Input
-              id="description"
-              placeholder={t(
-                "pages.permissions.roles.create.description.placeholder"
-              )}
-              {...register("description")}
-            />
-          </fieldset>
-          {/* <PermissionsSelector
-            availablePermissions={availablePermissions ?? []}
-            permissions={watch("permissions")}
-            setPermissions={(permissions) =>
-              setValue("permissions", permissions, {
-                shouldDirty: true,
-                shouldTouch: true,
-                shouldValidate: true,
-              })
-            }
-          /> */}
-        </form>
-      </div>
+      <RoleForm form={form} onSubmit={onSubmit} formId={formId} />
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.permissions.roles.create.cancelBtn")}
+            {t("pages.permissions.roles.edit.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
@@ -140,7 +92,7 @@ const EditRole = ({
           form={formId}
         >
           {!isPending && <Save />}
-          {t("pages.permissions.roles.create.saveBtn")}
+          {t("pages.permissions.roles.edit.saveBtn")}
         </Button>
       </DialogFooter>
     </>
