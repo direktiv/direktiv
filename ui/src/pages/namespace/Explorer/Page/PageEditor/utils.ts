@@ -39,7 +39,7 @@ export type KeyWithDepth = {
 };
 
 export const extractKeysWithDepth = (
-  obj: Record<string, any>,
+  obj: Record<string, string>,
   depth = 0,
   parentKey = ""
 ): KeyWithDepth[] => {

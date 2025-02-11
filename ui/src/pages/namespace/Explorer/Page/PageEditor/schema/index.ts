@@ -1,11 +1,13 @@
 import { z } from "zod";
 
-export const TableSchema = z.array(
-  z.object({
-    header: z.string(),
-    cell: z.string(),
-  })
-);
+export const TableKeySchema = z.object({
+  header: z.string(),
+  cell: z.string(),
+});
+
+export type TableKeySchemaType = z.infer<typeof TableSchema>;
+
+export const TableSchema = z.array(TableKeySchema);
 
 export type TableSchemaType = z.infer<typeof TableSchema>;
 

@@ -1,6 +1,5 @@
 import Button, { ButtonProps } from "~/design/Button";
 import {
-  Check,
   CircleCheck,
   CircleX,
   Loader2,
@@ -9,15 +8,8 @@ import {
   Settings,
   Trash2,
   Unplug,
-  X,
 } from "lucide-react";
-import {
-  Controller,
-  SubmitHandler,
-  useFieldArray,
-  useForm,
-  useWatch,
-} from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import {
   DialogClose,
   DialogFooter,
@@ -30,8 +22,6 @@ import {
   LayoutSchemaType,
   PageElementContentSchema,
   PageElementContentSchemaType,
-  TableSchema,
-  TableSchemaType,
 } from "~/pages/namespace/Explorer/Page/PageEditor/schema";
 import {
   Select,
@@ -56,45 +46,45 @@ import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { Pagination } from "~/components/Pagination";
 import { useCreateInstanceWithOutput } from "~/api/instances/mutate/createWithOutput";
-import { useRoutes } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type fieldType = {
-  id: string;
-  value: {
-    checkbox: "on";
-  };
-};
+// type fieldType = {
+//   header: string;
+//   cell: string;
+// };
 
-const ConditionalInput = ({
-  control,
-  index,
-  field,
-}: {
-  control: any;
-  index: number;
-  field: fieldType;
-}) => {
-  const value = useWatch({
-    name: "test",
-    control,
-  });
+// const ConditionalInput = ({
+//   control,
+//   index,
+// }: {
+//   control: Control<FieldValues>;
+//   index: number;
+//   field: fieldType;
+// }) => {
+//   const value = useWatch({
+//     name: "test",
+//     control,
+//   });
 
-  return (
-    <Controller
-      control={control}
-      name={`test.${index}.header`}
-      render={({ field }) => <input {...field} />}
-    />
-  );
-};
+//   const newv = value;
+
+//   return (
+//     <Controller
+//       control={control}
+//       name={`test.${index}.header`}
+//       render={({ field }) => (
+//         <>
+//           <div>{newv}</div>
+//           <input {...field} />
+//         </>
+//       )}
+//     />
+//   );
+// };
 
 const TableForm = ({
-  layout,
-  pageElementID,
   onEdit,
-  onChange,
 }: {
   layout: LayoutSchemaType;
   pageElementID: number;
@@ -105,25 +95,14 @@ const TableForm = ({
   const [testSucceeded, setTestSucceeded] = useState<boolean | null>(null);
   let variant: ButtonProps["variant"] = "outline";
 
-  const { data: routes } = useRoutes();
   const [selectRoute, setSelectRoute] = useState<string>("/ns/namespace/hd");
 
   const [output, setOutput] = useState<KeyWithDepth[]>([]);
 
   let isPending;
 
-  type TableDataType = {
-    header: string;
-    cell: undefined | string;
-  };
-
   const exampleTableData = {
     header: "Example Header",
-    cell: "unset",
-  };
-
-  const exampleTableData2 = {
-    header: "Example Header 2",
     cell: "unset",
   };
 
@@ -137,13 +116,6 @@ const TableForm = ({
     tableHeaderAndCells[index]?.header ?? ""
   );
   const [tableCell, setTableCell] = useState<string | undefined>(
-    tableHeaderAndCells[index]?.cell ?? ""
-  );
-
-  const [displayTableHeader, setDisplayTableHeader] = useState<string>(
-    tableHeaderAndCells[index]?.header ?? ""
-  );
-  const [displayTableCell, setDisplayTableCell] = useState<string | undefined>(
     tableHeaderAndCells[index]?.cell ?? ""
   );
 
@@ -161,10 +133,8 @@ const TableForm = ({
 
   const {
     register,
-    handleSubmit,
     control,
     setValue,
-    getValues,
     formState: { errors },
   } = useForm<PageElementContentSchemaType>({
     resolver: zodResolver(PageElementContentSchema),
@@ -173,7 +143,7 @@ const TableForm = ({
     },
   });
 
-  const { fields, append, prepend } = useFieldArray({
+  const { fields } = useFieldArray({
     control,
     name: "content" as const,
   });
@@ -202,15 +172,13 @@ const TableForm = ({
 
   const loadPaginationData = (index: number) => {
     setTableCell(tableHeaderAndCells[index]?.cell);
-    setTableHeader(tableHeaderAndCells[index]?.header);
+    setTableHeader(tableHeaderAndCells[index]?.header ?? "wasundefined");
   };
 
   let added = false;
   const addTableItem = () => {
     added = true;
     const newPage = tableHeaderAndCells.length;
-
-    const newcell = getValues("cell");
 
     const newElement = {
       header: `Example Header ${newPage + 1}`,
@@ -226,8 +194,8 @@ const TableForm = ({
     setTableHeader(newElement.header);
     setTableCell(newElement.cell);
 
-    setValue("header", newElement.header);
-    setValue("cell", newElement.cell);
+    // setValue("header", newElement.header);
+    // setValue("cell", newElement.cell);
   };
 
   const deleteTableItem = () => {
@@ -257,7 +225,7 @@ const TableForm = ({
     if (element === "header") {
       newElement = {
         header: value,
-        cell: tableCell,
+        cell: tableCell ?? "",
       };
     } else {
       newElement = {
@@ -357,8 +325,8 @@ const TableForm = ({
                           onChange={(e) => {
                             setTableHeader(e.target.value);
                             setValue(`content.${index}.header`, e.target.value);
-                            if (e.target.value !== displayTableHeader)
-                              updateTable("header", e.target.value);
+                            // if (e.target.value !== displayTableHeader)
+                            //   updateTable("header", e.target.value);
                           }}
                         />
                       </div>
@@ -392,7 +360,7 @@ const TableForm = ({
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectGroup>
-                                  {output?.map((element, key) => (
+                                  {output?.map((element) => (
                                     <SelectItem
                                       key={element.key}
                                       value={element.key}
@@ -466,7 +434,7 @@ const TableForm = ({
                     id={id}
                     {...register(`content.${index}`)}
                   />
-                  <ConditionalInput {...{ control, index, field }} />
+                  {/* <ConditionalInput {...{ control, index, field }} /> */}
                 </section>
                 <hr />
               </div>
@@ -474,19 +442,20 @@ const TableForm = ({
           })}
 
           <br></br>
-          <button
+          {/* <button
             type="button"
             onClick={() =>
-              append({
-                header: "append value",
-                cell: "unset",
-              })
+              // append({
+              //   header: "append value",
+              //   cell: "unset",
+              // })
+            
             }
           >
             append
-          </button>
+          </button> */}
 
-          <button
+          {/* <button
             type="button"
             onClick={() =>
               prepend({
@@ -495,13 +464,13 @@ const TableForm = ({
             }
           >
             prepend
-          </button>
+          </button> */}
           <br></br>
 
           <Controller
             control={control}
             name={`content.${index}.header`}
-            render={({ field }) => (
+            render={() => (
               <Input
                 placeholder="Insert a Caption for the data below"
                 className="hidden w-80 rounded-none rounded-tr-md"
@@ -516,7 +485,7 @@ const TableForm = ({
           <Controller
             control={control}
             name={`content.${index}.cell`}
-            render={({ field }) => (
+            render={() => (
               <Input
                 placeholder="Insert a Caption for the data below"
                 className="hidden w-80 rounded-none rounded-tr-md"

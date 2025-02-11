@@ -399,7 +399,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
         )}
         {selectedDialog === "edit" && (
           <EditModal
-            onChange={() => console.log("changed")}
+            onChange={() => setSelectedElement(0)}
             layout={layout}
             success={(newLayout) => {
               setLayout(newLayout);

@@ -24,7 +24,7 @@ export const useCreateInstanceWithOutput = ({
   onSuccess,
   onError,
 }: {
-  onSuccess?: (namespace: string, data: any) => void;
+  onSuccess?: (namespace: string, data: Record<string, string>) => void;
   onError?: (error?: string) => void;
 } = {}) => {
   const apiKey = useApiKey();

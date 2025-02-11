@@ -1,8 +1,4 @@
-import {
-  LayoutSchemaType,
-  PageElementContentSchemaType,
-} from "~/pages/namespace/Explorer/Page/PageEditor/schema";
-
+import { LayoutSchemaType } from "~/pages/namespace/Explorer/Page/PageEditor/schema";
 import TableForm from "./forms/Table";
 import TextForm from "./forms/Text";
 
@@ -21,12 +17,17 @@ const EditModal = ({
 }) => {
   const oldElement = layout ? layout[pageElementID] : { content: "nothing" };
 
-  const onEdit = (content: PageElementContentSchemaType) => {
+  const onEdit = (content: unknown) => {
     let newElement;
     if (type === "Table") {
-      const ObjectToString = content.map(
-        (element, index) => `${element.header}:${element.cell}, `
-      );
+      // const ObjectToString =
+      //   content.content === undefined
+      //     ? ""
+      //     : content.content.map(
+      //         (element) => `${element.header}:${element.cell}, `
+      //       );
+
+      const ObjectToString = "something";
 
       newElement = {
         name: oldElement?.name,

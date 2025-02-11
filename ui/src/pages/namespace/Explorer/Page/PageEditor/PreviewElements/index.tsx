@@ -18,7 +18,7 @@ export const DragAndDropPreview: FC<PropsWithChildren> = ({ children }) => (
 export const getElementComponent = (
   element: string,
   hidden: boolean,
-  content: string | tableData
+  content: contentType
 ) => {
   switch (element) {
     case "Header":
@@ -36,9 +36,9 @@ export const getElementComponent = (
   }
 };
 
-type TableProps = {
-  columns?: number;
-  rows?: number;
+type contentType = {
+  content?: string;
+  tableData?: tableData;
 };
 
 type tableData = [
@@ -48,12 +48,17 @@ type tableData = [
   },
 ];
 
+// type previewTableProps = {
+//   tableData: tableData;
+//   hidden: boolean;
+// };
+
 type previewElementProps = {
-  content: string | tableData;
+  content: contentType;
   hidden: boolean;
 };
 
-const DefaultTable: FC<TableProps & previewElementProps> = (content) => {
+const DefaultTable: FC<previewElementProps> = (content, hidden) => {
   const placeholderData = [
     {
       header: "TableHeader 1",
@@ -63,22 +68,24 @@ const DefaultTable: FC<TableProps & previewElementProps> = (content) => {
   ];
 
   const data =
-    typeof content.content !== "string" ? content.content : placeholderData;
+    typeof content.content.tableData !== undefined
+      ? content.content.tableData
+      : placeholderData;
 
   // const data = placeholderData;
 
   return (
-    <Table className="p-2 my-2 border-2 text-xs" hidden={content.hidden}>
+    <Table className="p-2 my-2 border-2 text-xs" hidden={hidden}>
       <TableHead className="border-2">
         <TableRow className="hover:bg-transparent">
-          {data.map((element, index) => (
+          {data?.map((element, index) => (
             <TableHeaderCell key={index}>{element.header}</TableHeaderCell>
           ))}
         </TableRow>
       </TableHead>
       <TableBody>
         <TableRow className="border-2 hover:bg-transparent">
-          {data.map((element, index) => (
+          {data?.map((element, index) => (
             <TableCell key={index}>{element.cell}</TableCell>
           ))}
         </TableRow>
@@ -89,11 +96,7 @@ const DefaultTable: FC<TableProps & previewElementProps> = (content) => {
 
 const DefaultImage: FC<previewElementProps> = (content) => (
   <div hidden={content.hidden} className="p-2">
-    {content.content === undefined ? (
-      <ImageIcon />
-    ) : (
-      <img src={content.content} />
-    )}
+    {content.content === undefined ? <ImageIcon /> : <img src="test" />}
   </div>
 );
 

@@ -23,7 +23,7 @@ const TextForm = ({
 }: {
   layout: LayoutSchemaType;
   pageElementID: number;
-  onEdit: (content: PageElementContentSchemaType) => void;
+  onEdit: (content: unknown) => void;
 }) => {
   const { t } = useTranslation();
 
@@ -33,7 +33,6 @@ const TextForm = ({
     onEdit(content);
   };
 
-  const oldElement = layout ? layout[pageElementID] : { content: "nothing" };
   const oldContent = layout ? layout[pageElementID]?.content : "nothing";
 
   const {
