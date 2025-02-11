@@ -11,10 +11,10 @@ import { retry10 } from '../common/retry'
 const namespace = basename(__filename)
 
 describe('Test target-flow-var plugin', () => {
-	beforeAll(helpers.deleteAllNamespaces)
-	helpers.itShouldCreateNamespace(it, expect, namespace)
+    beforeAll(helpers.deleteAllNamespaces)
+    helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace, '/', 'wf1.yaml', 'workflow', `
+    helpers.itShouldCreateYamlFile(it, expect, namespace, '/', 'wf1.yaml', 'workflow', `
 direktiv_api: workflow/v1
 description: A simple 'no-op' state that returns 'Hello world!'
 states:
@@ -24,37 +24,44 @@ states:
     result: Hello world!
 `)
 
-	it(`should set plain text variable`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/variables`)
-			.send({
-				name: 'foo',
-				data: btoa('Hello World 55'),
-				mimeType: 'text/plain',
-				workflowPath: '/wf1.yaml',
-			})
-		expect(workflowVarResponse.statusCode).toEqual(200)
-	})
+    it(`should set plain text variable`, async () => {
+        const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/variables`)
+            .send({
+                name: 'foo',
+                data: btoa('Hello World 55'),
+                mimeType: 'text/plain',
+                workflowPath: '/wf1.yaml',
+            })
+        expect(workflowVarResponse.statusCode).toEqual(200)
+    })
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'ep1.yaml', 'endpoint', `
-direktiv_api: endpoint/v1
-path: /ep1
-methods: 
-  - GET
-allow_anonymous: true
-plugins:
-  target:
-    type: target-flow-var
-    configuration:
-        namespace: ${ namespace }
-        variable: foo
-        flow: /wf1.yaml
-`)
-	retry10(`should execute wf1.yaml file`, async () => {
-		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway/ep1`)
-		expect(res.statusCode).toEqual(200)
-		expect(res.text).toEqual('Hello World 55')
-		expect(res.headers['content-type']).toEqual('text/plain')
-		expect(res.headers['content-length']).toEqual('14')
-	})
+
+
+helpers.itShouldCreateYamlFile(it, expect, namespace,
+    '/', 'ep1.yaml', 'endpoint', `
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: /ep1
+    allow_anonymous: true
+    plugins:
+        target:
+            type: target-flow-var
+            configuration:
+                namespace: ${ namespace }
+                variable: foo
+                flow: /wf1.yaml
+get:
+    responses:
+        "200":
+        description: works
+`
+)
+
+    retry10(`should execute wf1.yaml file`, async () => {
+        const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway/ep1`)
+        expect(res.statusCode).toEqual(200)
+        expect(res.text).toEqual('Hello World 55')
+        expect(res.headers['content-type']).toEqual('text/plain')
+        expect(res.headers['content-length']).toEqual('14')
+    })
 })

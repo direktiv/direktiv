@@ -3,8 +3,11 @@ package gateway
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
+	"net/url"
 	"path"
+	"path/filepath"
 	"slices"
 	"strings"
 	"sync/atomic"
@@ -12,6 +15,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
 	"github.com/pkg/errors"
@@ -60,7 +64,8 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.URL.Path, "/routes") {
 		ns := chi.URLParam(r, "namespace")
 		if ns != "" {
-			WriteJSON(w, endpointsForAPI(filterNamespacedEndpoints(inner.endpoints, ns, r.URL.Query().Get("path"))))
+			//nolint:contextcheck
+			WriteJSON(w, endpointsForAPI(filterNamespacedEndpoints(inner.endpoints, ns, r.URL.Query().Get("path")), ns, m.db.FileStore()))
 			return
 		}
 	}
@@ -77,8 +82,13 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.URL.Path, "/info") {
 		ns := chi.URLParam(r, "namespace")
 		if ns != "" {
+			expand := false
+			if r.URL.Query().Get("expand") != "" {
+				expand = true
+			}
 			//nolint:contextcheck
-			WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns))
+			WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns, m.db.FileStore(), inner.endpoints, expand))
+
 			return
 		}
 	}
@@ -158,43 +168,34 @@ func consumersForAPI(consumers []core.Consumer) any {
 	return result
 }
 
-func gatewayForAPI(gateways []core.Gateway, ns string) any {
+func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileStore, endpoints []core.Endpoint, expand bool) any {
 	type output struct {
-		Spec     openapi3.T `json:"spec"`
-		FilePath string     `json:"file_path"`
-		Errors   []string   `json:"errors"`
+		Spec     any      `json:"spec"`
+		FilePath string   `json:"file_path"`
+		Errors   []string `json:"errors"`
+		Warnings []string `json:"warnings"`
 	}
 
 	gw := output{
-		FilePath: "virtual",
 		Errors:   make([]string, 0),
-		Spec: openapi3.T{
-			OpenAPI: "3.0.0",
-			Info: &openapi3.Info{
-				Title:   ns,
-				Version: "1.0",
-			},
-			Paths: openapi3.NewPaths(),
-		},
+		Warnings: make([]string, 0),
+	}
+
+	// edfault gateway
+	g := core.Gateway{
+		Base:      []byte(fmt.Sprintf("openapi: 3.0.0\ninfo:\n   title: %s\n   version: \"1.0\"", ns)),
+		FilePath:  "/virtual.yaml",
+		IsVirtual: true,
 	}
 
 	// we always take the first one, even if there are more
 	if len(gateways) > 0 {
-		g := gateways[0]
-
-		gw.Errors = g.Errors
-		gw.FilePath = g.FilePath
-		gw.Spec = g.RenderedBase
-
-		if gw.Spec.Info == nil {
-			gw.Spec.Info = &openapi3.Info{}
-		}
-
-		err := gw.Spec.Validate(context.TODO())
-		if err != nil {
-			gw.Errors = append(gw.Errors, err.Error())
-		}
+		g = gateways[0]
+		g.IsVirtual = false
 	}
+
+	// set file path
+	gw.FilePath = g.FilePath
 
 	// if there are more, it is an error
 	if len(gateways) > 1 {
@@ -202,58 +203,174 @@ func gatewayForAPI(gateways []core.Gateway, ns string) any {
 		for i := range gateways {
 			f = append(f, gateways[i].FilePath)
 		}
-
-		gw.Errors = append(gw.Errors,
+		gw.Warnings = append(gw.Warnings,
 			fmt.Sprintf("multiple gateway specifications found: %s but using %s.", strings.Join(f, ", "), gw.FilePath))
+	}
+
+	doc, err := loadDoc(g.Base, g.FilePath, ns, fileStore)
+	if err != nil {
+		slog.Error("can not load the openapi doc", slog.Any("error", err))
+		gw.Errors = append(gw.Errors, err.Error())
+
+		return gw
+	}
+
+	// add endpoints
+	doc.Paths = openapi3.NewPaths()
+	for i := range endpoints {
+		ep := endpoints[i]
+		_, err := validateEndpoint(ep, ns, fileStore)
+		if err != nil {
+			slog.Warn("skipping endpoint because of errors",
+				slog.String("endpoint", ep.FilePath))
+			gw.Warnings = append(gw.Warnings, fmt.Sprintf("skipping endpoint %s", ep.FilePath))
+
+			continue
+		}
+
+		rel, err := filepath.Rel(filepath.Dir(gw.FilePath), ep.FilePath)
+		if err != nil {
+			slog.Warn("skipping endpoint because of filepath calculation",
+				slog.String("endpoint", ep.FilePath))
+			gw.Warnings = append(gw.Warnings, fmt.Sprintf("skipping endpoint %s", ep.FilePath))
+
+			continue
+		}
+
+		doc.Paths.Set(ep.Config.Path, &openapi3.PathItem{
+			Ref: rel,
+		})
+	}
+
+	if expand {
+		c, err := doc.MarshalJSON()
+		if err != nil {
+			slog.Error("can not marshal (json) the openapi doc", slog.Any("error", err))
+			gw.Errors = append(gw.Errors, err.Error())
+
+			return gw
+		}
+		doc, err = loadDoc(c, g.FilePath, ns, fileStore)
+		if err != nil {
+			slog.Error("can not load the openapi doc", slog.Any("error", err))
+			gw.Errors = append(gw.Errors, err.Error())
+
+			return gw
+		}
+		doc.InternalizeRefs(context.Background(), nil)
+	}
+
+	a, err := doc.MarshalYAML()
+	if err != nil {
+		slog.Error("can not marshal (yaml) the openapi doc", slog.Any("error", err))
+		gw.Errors = append(gw.Errors, err.Error())
+
+		return gw
+	}
+	gw.Spec = a
+
+	if g.IsVirtual {
+		gw.FilePath = "virtual"
 	}
 
 	return gw
 }
 
-func endpointsForAPI(endpoints []core.Endpoint) any {
+func endpointsForAPI(endpoints []core.Endpoint, ns string, fileStore filestore.FileStore) any {
 	type output struct {
-		Methods        []string `json:"methods"`
-		Path           string   `json:"path,omitempty"`
-		AllowAnonymous bool     `json:"allow_anonymous"`
-		PluginsConfig  struct {
-			Auth     []core.PluginConfig `json:"auth,omitempty"`
-			Inbound  []core.PluginConfig `json:"inbound,omitempty"`
-			Target   core.PluginConfig   `json:"target,omitempty"`
-			Outbound []core.PluginConfig `json:"outbound,omitempty"`
-		} `json:"plugins"`
-		Timeout    int      `json:"timeout"`
-		FilePath   string   `json:"file_path"`
-		Errors     []string `json:"errors"`
-		ServerPath string   `json:"server_path"`
-		Warnings   []string `json:"warnings"`
+		Spec       interface{} `json:"spec"`
+		FilePath   string      `json:"file_path"`
+		Errors     []string    `json:"errors"`
+		ServerPath string      `json:"server_path"`
+		Warnings   []string    `json:"warnings"`
 	}
 
 	result := []any{}
+
 	for _, item := range endpoints {
 		newItem := output{
-			Methods:        item.Methods,
-			Path:           item.Path,
-			AllowAnonymous: item.AllowAnonymous,
-			Timeout:        item.Timeout,
-			FilePath:       item.FilePath,
-			Errors:         item.Errors,
+			FilePath: item.FilePath,
+			Errors:   item.Errors,
 		}
-		newItem.PluginsConfig.Auth = item.PluginsConfig.Auth
-		newItem.PluginsConfig.Inbound = item.PluginsConfig.Inbound
-		newItem.PluginsConfig.Target = item.PluginsConfig.Target
-		newItem.PluginsConfig.Outbound = item.PluginsConfig.Outbound
 
 		newItem.Warnings = []string{}
 		if newItem.Errors == nil {
 			newItem.Errors = []string{}
 		}
-		// set server_path
-		// TODO: remove this useless field
-		if item.Path != "" {
-			newItem.ServerPath = path.Clean(fmt.Sprintf("/ns/%s/%s", item.Namespace, item.Path))
+
+		pathItem, err := validateEndpoint(item, ns, fileStore)
+		if err != nil {
+			slog.Error("endpoint invalid", slog.Any("err", err),
+				slog.String("namespace", ns))
+			newItem.Errors = append(newItem.Errors, err.Error())
+		}
+		newItem.Spec = pathItem
+
+		if item.Config.Path != "" {
+			newItem.ServerPath = path.Clean(fmt.Sprintf("/ns/%s/%s", item.Namespace, item.Config.Path))
 		}
 		result = append(result, newItem)
 	}
 
 	return result
+}
+
+func validateEndpoint(item core.Endpoint, ns string, fileStore filestore.FileStore) (*openapi3.PathItem, error) {
+	// generate basic document for validation
+	doc := &openapi3.T{
+		OpenAPI: "3.0.0",
+		Info: &openapi3.Info{
+			Title:   ns,
+			Version: "1.0",
+		},
+	}
+
+	// if the base is empty for some reason
+	if len(item.Base) == 0 {
+		return nil, fmt.Errorf("endpoint not parseable")
+	}
+
+	var pi openapi3.PathItem
+	err := pi.UnmarshalJSON(item.Base)
+	if err != nil {
+		return &pi, err
+	}
+
+	doc.Paths = openapi3.NewPaths(
+		openapi3.WithPath(item.Config.Path, &pi))
+
+	// marshal doc to push it into the loader
+	b, err := doc.MarshalJSON()
+	if err != nil {
+		return &pi, err
+	}
+
+	doc, err = loadDoc(b, item.FilePath, ns, fileStore)
+	if err != nil {
+		return &pi, err
+	}
+
+	err = doc.Validate(context.Background())
+
+	return &pi, err
+}
+
+func loadDoc(data []byte, filePath, ns string, fileStore filestore.FileStore) (*openapi3.T, error) {
+	loader := openapi3.NewLoader()
+	loader.IsExternalRefsAllowed = true
+	loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
+		file, err := fileStore.ForNamespace(ns).GetFile(context.Background(), url.String())
+		if err != nil {
+			return nil, err
+		}
+
+		return fileStore.ForFile(file).GetData(context.Background())
+	}
+
+	rel, err := filepath.Rel("/", filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	return loader.LoadFromDataWithPath(data, &url.URL{Path: rel})
 }

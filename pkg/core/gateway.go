@@ -1,23 +1,22 @@
 package core
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
-	"net/url"
 	"path"
 	"strings"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"gopkg.in/yaml.v3"
 )
 
 type GatewayManager interface {
 	http.Handler
 
-	SetEndpoints(list []Endpoint, cList []Consumer, baseDefs []Gateway) error
+	SetEndpoints(list []Endpoint, cList []Consumer, gList []Gateway) error
 }
 
-type EndpointFile struct {
-	DirektivAPI    string        `yaml:"direktiv_api"`
+type EndpointConfig struct {
 	Methods        []string      `yaml:"methods"`
 	Path           string        `yaml:"path"`
 	AllowAnonymous bool          `yaml:"allow_anonymous"`
@@ -55,16 +54,18 @@ type Plugin interface {
 }
 
 type Gateway struct {
-	RenderedBase openapi3.T
+	Base []byte
 
 	Namespace string
 	FilePath  string
+	IsVirtual bool
 
 	Errors []string
 }
 
 type Endpoint struct {
-	EndpointFile
+	Config EndpointConfig
+	Base   []byte
 
 	Namespace string
 	FilePath  string
@@ -113,64 +114,119 @@ func ParseGatewayFile(ns string, filePath string, data []byte) Gateway {
 		Errors:    make([]string, 0),
 	}
 
-	loader := openapi3.NewLoader()
-	loader.IsExternalRefsAllowed = true
-	loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
-		return nil, nil
-	}
-
-	base, err := loader.LoadFromData(data)
+	// remove paths and servers
+	var interim map[string]interface{}
+	err := yaml.Unmarshal(data, &interim)
 	if err != nil {
 		gw.Errors = append(gw.Errors, err.Error())
-		return gw
 	}
 
-	// remove paths and server because it will be generated
-	base.Paths = openapi3.NewPaths()
-	base.Servers = openapi3.Servers{}
-	gw.RenderedBase = *base
+	// these will be generated in direktiv based on route files
+	delete(interim, "paths")
+	delete(interim, "servers")
+
+	out, err := yaml.Marshal(interim)
+	if err != nil {
+		gw.Errors = append(gw.Errors, err.Error())
+	}
+
+	// set cleaned up spec
+	gw.Base = out
 
 	return gw
 }
 
 func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
-	res := &EndpointFile{}
-	err := yaml.Unmarshal(data, res)
+	ep := Endpoint{
+		Namespace: ns,
+		FilePath:  filePath,
+		Errors:    make([]string, 0),
+	}
+
+	var interim map[string]interface{}
+	err := yaml.Unmarshal(data, &interim)
 	if err != nil {
-		return Endpoint{
-			Namespace: ns,
-			FilePath:  filePath,
-			Errors:    []string{err.Error()},
-		}
+		ep.Errors = append(ep.Errors, err.Error())
+		return ep
 	}
-	if res.Path != "" {
-		res.Path = path.Clean("/" + res.Path)
+
+	jsonData, err := json.Marshal(interim)
+	if err != nil {
+		ep.Errors = append(ep.Errors, err.Error())
+		return ep
 	}
-	if !strings.HasPrefix(res.DirektivAPI, "endpoint/v1") {
-		return Endpoint{
-			Namespace: ns,
-			FilePath:  filePath,
-			Errors:    []string{"invalid endpoint api version"},
-		}
+	ep.Base = jsonData
+
+	config, err := parseConfig(interim)
+	if err != nil {
+		ep.Errors = append(ep.Errors, err.Error())
+		return ep
 	}
-	if res.PluginsConfig.Target.Typ == "" {
-		return Endpoint{
-			Namespace: ns,
-			FilePath:  filePath,
-			Errors:    []string{"no target plugin found"},
-		}
+
+	// add methods
+	config.Methods = extractMethods(interim)
+
+	// check for other errors
+	if config.Path != "" {
+		config.Path = path.Clean("/" + config.Path)
+	} else {
+		ep.Errors = append(ep.Errors, "no path for route specified")
 	}
-	if !res.AllowAnonymous && len(res.PluginsConfig.Auth) == 0 {
-		return Endpoint{
-			Namespace: ns,
-			FilePath:  filePath,
-			Errors:    []string{"no auth plugin configured but 'allow_anonymous' set false"},
+
+	if len(config.Methods) == 0 {
+		ep.Errors = append(ep.Errors, "no valid http method available")
+	}
+
+	if config.PluginsConfig.Target.Typ == "" {
+		ep.Errors = append(ep.Errors, "no target plugin found")
+	}
+
+	if !config.AllowAnonymous && len(config.PluginsConfig.Auth) == 0 {
+		ep.Errors = append(ep.Errors, "no auth plugin configured but 'allow_anonymous' set false")
+	}
+
+	ep.Config = config
+
+	return ep
+}
+
+func extractMethods(pathItem map[string]interface{}) []string {
+	methods := make([]string, 0)
+
+	availableMethods := []string{
+		http.MethodGet,
+		http.MethodPut,
+		http.MethodPost,
+		http.MethodDelete,
+		http.MethodOptions,
+		http.MethodHead,
+		http.MethodPatch,
+		http.MethodTrace,
+	}
+
+	for i := range availableMethods {
+		if _, ok := pathItem[strings.ToLower(availableMethods[i])]; ok {
+			methods = append(methods, availableMethods[i])
 		}
 	}
 
-	return Endpoint{
-		Namespace:    ns,
-		FilePath:     filePath,
-		EndpointFile: *res,
+	return methods
+}
+
+func parseConfig(pathItem map[string]interface{}) (EndpointConfig, error) {
+	var config EndpointConfig
+
+	c, ok := pathItem["x-direktiv-config"]
+	if !ok {
+		return config, fmt.Errorf("no endpoint configuration found")
 	}
+
+	ct, err := yaml.Marshal(c)
+	if err != nil {
+		return config, err
+	}
+
+	err = yaml.Unmarshal(ct, &config)
+
+	return config, err
 }

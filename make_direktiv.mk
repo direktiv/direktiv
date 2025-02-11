@@ -15,6 +15,10 @@ direktiv-build-cross:
 	docker buildx build --build-arg RELEASE_VERSION=${RELEASE_VERSION} --platform linux/amd64,linux/arm64 \
 		-t ${DOCKER_REPO}/direktiv:${RELEASE} --push . 
 
+.PHONY: direktiv-merge-main
+direktiv-merge-main:
+	@git fetch origin
+	@git merge -S origin/main
 
 CGO_LDFLAGS := "CGO_LDFLAGS=-static -w -s"
 GO_BUILD_TAGS := "osusergo,netgo"
