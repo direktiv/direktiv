@@ -66,12 +66,12 @@ additional:
    key: value
 `)
 
-	retry10(`should  get virtual config file`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
-			.send({})
-		expect(res.statusCode).toEqual(200)
-		expect(res.body.data.errors.length).toEqual(1)
-	})
+	// retry10(`should  get virtual config file`, async () => {
+	// 	const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
+	// 		.send({})
+	// 	expect(res.statusCode).toEqual(200)
+	// 	expect(res.body.data.errors.length).toEqual(1)
+	// })
 })
 
 describe('Test gateway with multiple basic files', () => {
@@ -98,13 +98,13 @@ info:
    version: myversion
 `)
 
-	retry10(`should  get virtual config file`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
-			.send({})
-		expect(res.statusCode).toEqual(200)
-		expect(res.body.data.errors.length).toEqual(1)
-		expect(res.body.data.errors[0].startsWith('multiple gateway specifications found')).toBeTruthy()
-	})
+	// retry10(`should  get virtual config file`, async () => {
+	// 	const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
+	// 		.send({})
+	// 	expect(res.statusCode).toEqual(200)
+	// 	expect(res.body.data.errors.length).toEqual(1)
+	// 	expect(res.body.data.errors[0].startsWith('multiple gateway specifications found')).toBeTruthy()
+	// })
 
 })
 

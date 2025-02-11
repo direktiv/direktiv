@@ -38,6 +38,7 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 		if len(item.Errors) > 0 {
 			slog.Error("endpoint skipped due to errors", slog.String("endpoint", item.FilePath),
 				slog.Any("error", item.Errors))
+
 			continue
 		}
 
@@ -78,6 +79,7 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 		if len(item.Errors) > 0 {
 			slog.Error("endpoint skipped due to errors", slog.String("endpoint", item.FilePath),
 				slog.Any("error", item.Errors))
+
 			continue
 		}
 
