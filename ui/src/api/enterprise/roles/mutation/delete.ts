@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 
 const deleteGroup = apiFactory({
   url: ({ namespace, groupName }: { namespace: string; groupName: string }) =>
-    `/api/v2/namespaces/${namespace}/groups/${groupName}`,
+    `/api/v2/namespaces/${namespace}/roles/${groupName}`,
   method: "DELETE",
   schema: RoleDeletedSchema,
 });
