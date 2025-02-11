@@ -37,8 +37,10 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
     onError: (errorMessage) => {
       showToast({
         variant: "error",
-        title: "Save Error",
-        description: errorMessage || "An unknown error occurred",
+        title: t("pages.explorer.tree.openapiSpecification.saveError"),
+        description:
+          errorMessage ||
+          t("pages.explorer.tree.openapiSpecification.unknownError"),
       });
     },
     onSuccess: () => {
@@ -46,8 +48,8 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
 
       showToast({
         variant: "success",
-        title: "File Saved",
-        description: "Your changes have been saved successfully.",
+        title: t("pages.explorer.tree.openapiSpecification.saveSuccessTitle"),
+        description: t("pages.explorer.tree.openapiSpecification.saveSuccess"),
       });
     },
   });
@@ -78,7 +80,7 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
     } catch (err) {
       showToast({
         variant: "error",
-        title: "Save Failed",
+        title: t("pages.explorer.tree.openapiSpecification.saveFailed"),
         description: String(err),
       });
     }

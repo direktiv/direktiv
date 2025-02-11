@@ -73,7 +73,7 @@ const InfoPage = () => {
                       className="whitespace-normal break-all hover:underline"
                       to="/n/$namespace/explorer/openapiSpecification/$"
                       from="/n/$namespace"
-                      params={{ _splat: filePath ?? "" }}
+                      params={{ _splat: filePath }}
                     >
                       {filePath}
                     </Link>
@@ -84,23 +84,12 @@ const InfoPage = () => {
           </Table>
 
           {errors?.length ? (
-            <Alert variant="error" className="m-5">
+            <Alert variant="error" className="m-2">
               <h3>{t("pages.gateway.info.columns.errors")}</h3>
               <p>
                 <ul className="list-disc pl-4">
                   {errors.map((error, index) => (
-                    <li key={index}>
-                      {typeof error === "object"
-                        ? JSON.stringify(error, null, 2)
-                        : String(error)
-                            .split("\n")
-                            .map((line, i) => (
-                              <span key={i}>
-                                {line}
-                                <br />
-                              </span>
-                            ))}
-                    </li>
+                    <li key={index}>{error}</li>
                   ))}
                 </ul>
               </p>
