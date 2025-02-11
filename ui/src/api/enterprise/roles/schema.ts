@@ -70,7 +70,7 @@ export const RoleCreatedEditedSchema = z.object({
  */
 export const RoleFormSchema = z.object({
   name: z.string().nonempty(),
-  description: z.string().nonempty(),
+  description: z.string(),
   oidcGroups: z.array(z.string()),
   permissions: PermissionsArray,
 });

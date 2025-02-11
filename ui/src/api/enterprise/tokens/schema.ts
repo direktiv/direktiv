@@ -86,7 +86,7 @@ export const ISO8601durationSchema = z
  */
 export const TokenFormSchema = z.object({
   name: z.string().nonempty(),
-  description: z.string().nonempty(),
+  description: z.string(),
   duration: ISO8601durationSchema,
   permissions: PermissionsArray,
 });
