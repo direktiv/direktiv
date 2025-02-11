@@ -2,12 +2,15 @@ import { FC, PropsWithChildren } from "react";
 
 import { twMergeClsx } from "~/util/helpers";
 
+export const activeClassNames = "bg-primary-50 dark:bg-primary-700";
+export const inactiveClassNames = "hover:bg-gray-2 dark:hover:bg-gray-dark-2";
+export const baseClassNames =
+  "[&>svg]:group group flex items-center rounded-md p-2 text-sm font-medium [&>svg]:mr-3";
+
 export const createClassNames = (active: boolean, className?: string) =>
   twMergeClsx(
-    active
-      ? "bg-primary-50 dark:bg-primary-700"
-      : "hover:bg-gray-2 dark:hover:bg-gray-dark-2",
-    "[&>svg]:group group flex items-center rounded-md p-2 text-sm font-medium [&>svg]:mr-3",
+    active ? activeClassNames : inactiveClassNames,
+    baseClassNames,
     className
   );
 

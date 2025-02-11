@@ -19,4 +19,8 @@ var Initialize func(db *database.DB, bus *pubsub.Bus, config *core.Config)
 
 var AdditionalAPIRoutes map[string]func(r chi.Router)
 
-var CheckOidcMiddlewares func(http.Handler) http.Handler
+var CheckOidcMiddleware func(http.Handler) http.Handler
+
+var CheckAPITokenMiddleware func(http.Handler) http.Handler
+
+var CheckAPIKeyMiddleware func(http.Handler) http.Handler
