@@ -17,8 +17,7 @@ describe('Test gateway basic-auth plugin', () => {
 direktiv_api: workflow/v1
 states:
 - id: a
-  type: delay
-  duration: PT5S
+  type: noop
 `)
 
 helpers.itShouldCreateYamlFile(it, expect, namespace,
@@ -42,12 +41,13 @@ get:
 )
 
 helpers.itShouldCreateYamlFile(it, expect, namespace,
-    '/', 'ep3.yaml', 'endpoint', `
+    '/', 'ep2.yaml', 'endpoint', `
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: /ep3
     allow_anonymous: true
     timeout: 10
+    skip_openapi: true
     plugins:
         target:
             type: target-flow
@@ -62,41 +62,19 @@ get:
 )
 
 
-helpers.itShouldCreateYamlFile(it, expect, namespace,
-    '/', 'ep2.yaml', 'endpoint', `
-x-direktiv-api: endpoint/v2
-x-direktiv-config:
-    path: /ep2
-    allow_anonymous: true
-    plugins:
-        target:
-            type: target-flow
-            configuration:
-                namespace: ${ namespace }
-                flow: /wf2.yaml
-get:
-    responses:
-        "200":
-            description: works
-`
-)
-
-retry10(`should execute gateway ep1.yaml endpoint`, async () => {
-    const res = await request(config.getDirektivHost()).get(`/ns/${ namespace }/ep1`)
-        .send({})
-    expect(res.statusCode).toEqual(504)
-})
-
-
-retry10(`should execute gateway ep2.yaml endpoint`, async () => {
-    const res = await request(config.getDirektivHost()).get(`/ns/${ namespace }/ep2`)
+retry10(`should show two routes`, async () => {
+    const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway/routes`)
         .send({})
     expect(res.statusCode).toEqual(200)
+    expect(res.body.data).toHaveLength(2);
 })
 
-retry10(`should execute gateway ep3.yaml endpoint`, async () => {
-    const res = await request(config.getDirektivHost()).get(`/ns/${ namespace }/ep3`)
+retry10(`should show one route`, async () => {
+    const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway/info`)
         .send({})
     expect(res.statusCode).toEqual(200)
+    expect(res.body.data.spec.paths["/ep1"]).not.toBeUndefined();
+    expect(res.body.data.spec.paths["/ep2"]).toBeUndefined();
 })
+
 })
