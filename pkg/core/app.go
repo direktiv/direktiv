@@ -59,6 +59,9 @@ type Config struct {
 
 	OidcIssuerUrl string `env:"DIREKTIV_OIDC_ISSUER_URL"`
 	OidcClientID  string `env:"DIREKTIV_OIDC_CLIENT_ID"`
+
+	VictoriaMetrics      string `env:"DIREKTIV_VICTORIA_METRICS"`
+	VictoriaLogsEndpoint string `env:"DIREKTIV_VICTORIA_LOGS"`
 }
 
 func (conf *Config) GetFunctionsTimeout() time.Duration {

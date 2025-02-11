@@ -23,7 +23,7 @@ func RunApplication(ctx context.Context) {
 
 	openTelemetryBackend := os.Getenv(direktivOpentelemetry)
 
-	telend, err := tracing.InitTelemetry(ctx, openTelemetryBackend, "direktiv/sidecar", "direktiv")
+	telend, err := tracing.InitTelemetry(ctx, openTelemetryBackend, "", "direktiv/sidecar", "direktiv")
 	if err != nil {
 		slog.Warn("Failed to initialize telemetry, but continuing", "error", err)
 	} else {

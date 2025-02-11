@@ -154,11 +154,16 @@ cluster-dev:
 
 cluster-otel-install:
 	helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
-	helm upgrade --install --set image.repository=otel/opentelemetry-collector-k8s  \
+	helm upgrade --install --set image.repository=otel/opentelemetry-collector-k8s \
 	--set mode=deployment \
 	--set resources.limits.cpu=250m \
 	--set resources.limits.memory=512Mi \
-	otel-collector open-telemetry/opentelemetry-collector -n default;
+	--set config.exporters.otlphttp.endpoint=http://direktiv-victoria-logs-single-server:9428/insert/jsonline \
+	--set config.exporters.otlphttp.traces_endpoint=http://direktiv-victoria-logs-single-server:9428/insert/jsonline \
+	--set config.exporters.otlphttp.compression=none \
+	--set config.service.pipelines.traces.exporters[0]=otlphttp \
+	--set config.exporters.otlphttp.encoding=json \
+	otel-collector open-telemetry/opentelemetry-collector -n default
 	kubectl wait --for=condition=ready pod -l "app.kubernetes.io/instance=otel-collector"
 	helm upgrade --set database.host=postgres.default.svc \
 	--set database.port=5432 \

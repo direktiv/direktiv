@@ -8,5 +8,11 @@ dependencies:
 - name: nats
   repository: https://nats-io.github.io/k8s/helm/charts
   version: 1.2.6
-digest: sha256:6de0d29c627fbe0ec5e1b63fb7144823915bd487ad964016da9c86f9dae9aa41
-generated: "2025-02-06T13:36:30.743304504+01:00"
+- name: victoria-metrics-single
+  repository: https://victoriametrics.github.io/helm-charts/
+  version: 0.13.10
+- name: victoria-logs-single
+  repository: https://victoriametrics.github.io/helm-charts/
+  version: 0.8.16
+digest: sha256:4018d4b22a3bfa9c5fa0c972d60963eec678753c48d8c39ae207cd685df6ac6a
+generated: "2025-02-11T12:39:17.862937541+01:00"

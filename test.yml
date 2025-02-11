@@ -1,0 +1,28 @@
+mode: deployment
+image:
+  repository: otel/opentelemetry-collector-k8s
+
+resources:
+  limits:
+    cpu: 250m
+    memory: 512Mi
+
+config:
+  exporters:
+    otlphttp:
+      endpoint: "http://direktiv-victoria-logs-single-server:9428/insert/jsonline"
+      traces_endpoint: "http://direktiv-victoria-logs-single-server:9428/insert/jsonline"
+      compression: "none"
+      encoding: "json"
+  processors:
+    transform:
+      traces:
+        statements:
+          - 'set(attributes._msg, "default_message") where not exists(attributes._msg)'
+  service:
+    pipelines:
+      traces:
+        exporters:
+          - otlphttp
+        processors:
+          - transform

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	otelmetric "go.opentelemetry.io/otel/metric"
@@ -31,8 +31,8 @@ var (
 )
 
 // InitTelemetry initializes tracing and metrics with OTLP.
-func InitTelemetry(ctx context.Context, addr, svcName, imName string) (func(), error) {
-	slog.Debug("Initializing telemetry.", slog.String("instrumentationName", imName))
+func InitTelemetry(ctx context.Context, addrTracing, addrMetrics, svcName, imName string) (func(), error) {
+	slog.Debug("initializing telemetry.", slog.String("instrumentationName", imName))
 	instrumentationName = imName
 
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
@@ -46,11 +46,11 @@ func InitTelemetry(ctx context.Context, addr, svcName, imName string) (func(), e
 	}
 
 	// Use the retry-enabled setupMetrics for metrics
-	if err := setupMetrics(ctx, addr, res); err != nil {
+	if err := setupMetrics(ctx, addrMetrics, res); err != nil {
 		return nil, err
 	}
 
-	tracerProvider, spanProcessor, err := setupTracing(ctx, addr, res)
+	tracerProvider, spanProcessor, err := setupTracing(ctx, addrTracing, res)
 	if err != nil {
 		return nil, err
 	}
@@ -68,10 +68,12 @@ func setupMetrics(ctx context.Context, addr string, res *resource.Resource) erro
 
 	// Initialize the RemoteExporter if an address is provided
 	if addr != "" {
-		metricExporter.RemoteExporter, err = retry(func() (*otlpmetricgrpc.Exporter, error) {
-			return otlpmetricgrpc.New(ctx,
-				otlpmetricgrpc.WithInsecure(),
-				otlpmetricgrpc.WithEndpoint(addr),
+		metricExporter.RemoteExporter, err = retry(func() (*otlpmetrichttp.Exporter, error) {
+			return otlpmetrichttp.New(ctx,
+				otlpmetrichttp.WithInsecure(),
+				otlpmetrichttp.WithEndpoint("direktiv-victoria-metrics-single-server.default.svc:8428"),
+				otlpmetrichttp.WithURLPath("/opentelemetry/v1/metrics"),
+				otlpmetrichttp.WithCompression(otlpmetrichttp.GzipCompression),
 			)
 		})
 		if err != nil {
@@ -91,12 +93,12 @@ func setupMetrics(ctx context.Context, addr string, res *resource.Resource) erro
 	meter = otel.Meter(instrumentationName)
 
 	// Initialize requestCounter (counter for requests)
-	requestCounter, err = meter.Int64Counter("requests", otelmetric.WithDescription("Counts the number of requests"))
+	requestCounter, err = meter.Int64Counter("direktiv_requests", otelmetric.WithDescription("Counts the number of requests"))
 	if err != nil {
 		return err
 	}
 	// Initialize requestDuration (histogram for request durations)
-	requestDuration, err = meter.Float64Histogram("request_duration", otelmetric.WithDescription("Records the duration of requests"))
+	requestDuration, err = meter.Float64Histogram("direktiv_request_duration", otelmetric.WithDescription("Records the duration of requests"))
 	if err != nil {
 		return err
 	}

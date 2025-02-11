@@ -10,7 +10,7 @@ import (
 
 // Helper to initialize and return the shutdown function for telemetry
 func initTestWithTelemetry() func() {
-	shutdown, err := tracing.InitTelemetry(context.Background(), "", "test-service", "test-instrumentation")
+	shutdown, err := tracing.InitTelemetry(context.Background(), "", "", "test-service", "test-instrumentation")
 	if err != nil {
 		panic("Failed to initialize test telemetry: " + err.Error())
 	}
