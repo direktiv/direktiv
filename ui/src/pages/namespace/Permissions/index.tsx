@@ -8,7 +8,7 @@ const PermissionsPage = () => {
   const { t } = useTranslation();
 
   const isPermissionsRolesPage = useMatch({
-    from: "/n/$namespace/permissions/",
+    from: "/n/$namespace/permissions/roles",
     shouldThrow: false,
   });
   const isPermissionsTokensPage = useMatch({
@@ -22,7 +22,7 @@ const PermissionsPage = () => {
       active: isPermissionsRolesPage,
       icon: <Users aria-hidden="true" />,
       title: t("pages.permissions.tabs.roles"),
-      link: "/n/$namespace/permissions",
+      link: "/n/$namespace/permissions/roles",
     },
     {
       value: "tokens",

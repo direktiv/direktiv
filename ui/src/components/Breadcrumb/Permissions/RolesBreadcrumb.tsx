@@ -17,7 +17,7 @@ const RolesBreadcrumb = () => {
   return (
     <>
       <BreadcrumbLink>
-        <Link to="/n/$namespace/permissions/tokens" from="/n/$namespace">
+        <Link to="/n/$namespace/permissions/roles" from="/n/$namespace">
           <Users aria-hidden="true" />
           {t("components.breadcrumb.permissionsRoles")}
         </Link>

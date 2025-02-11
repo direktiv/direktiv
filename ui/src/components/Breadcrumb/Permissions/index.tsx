@@ -2,8 +2,7 @@ import { Link, useMatch } from "@tanstack/react-router";
 
 import { BadgeCheck } from "lucide-react";
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
-import PolicyBreadcrumb from "./PolicyBreadcumb";
-import RolesBreadcrumb from "./GroupsBreadcrumb";
+import RolesBreadcrumb from "./RolesBreadcrumb";
 import TokensBreadcrumb from "./TokenBreadCrumb";
 import { useTranslation } from "react-i18next";
 
@@ -25,7 +24,6 @@ const PermissionsBreadcrumb = () => {
           {t("components.breadcrumb.permissions")}
         </Link>
       </BreadcrumbLink>
-      <PolicyBreadcrumb />
       <RolesBreadcrumb />
       <TokensBreadcrumb />
     </>
