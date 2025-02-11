@@ -8,7 +8,7 @@ import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
 const getRoles = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
-    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/groups`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/roles`,
   method: "GET",
   schema: RolesListSchema,
 });
