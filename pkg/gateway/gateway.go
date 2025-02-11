@@ -86,8 +86,10 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Query().Get("expand") != "" {
 				expand = true
 			}
+
 			//nolint:contextcheck
-			WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns, m.db.FileStore(), inner.endpoints, expand))
+			WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns, m.db.FileStore(),
+				filterNamespacedEndpoints(inner.endpoints, ns, ""), expand))
 
 			return
 		}
@@ -219,6 +221,7 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 	doc.Paths = openapi3.NewPaths()
 	for i := range endpoints {
 		ep := endpoints[i]
+
 		_, err := validateEndpoint(ep, ns, fileStore)
 		if err != nil {
 			slog.Warn("skipping endpoint because of errors",
@@ -237,9 +240,11 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 			continue
 		}
 
-		doc.Paths.Set(ep.Config.Path, &openapi3.PathItem{
-			Ref: rel,
-		})
+		if !ep.Config.SkipOpenAPI {
+			doc.Paths.Set(ep.Config.Path, &openapi3.PathItem{
+				Ref: rel,
+			})
+		}
 	}
 
 	if expand {

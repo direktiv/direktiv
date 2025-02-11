@@ -22,6 +22,7 @@ type EndpointConfig struct {
 	AllowAnonymous bool          `yaml:"allow_anonymous"`
 	PluginsConfig  PluginsConfig `yaml:"plugins"`
 	Timeout        int           `yaml:"timeout"`
+	SkipOpenAPI    bool          `yaml:"skip_openapi"`
 }
 
 type ConsumerFile struct {
