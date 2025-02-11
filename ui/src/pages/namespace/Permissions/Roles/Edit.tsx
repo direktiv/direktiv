@@ -77,7 +77,7 @@ const EditRole = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Diamond /> {t("pages.permissions.roles.create.title")}
+          <Diamond /> {t("pages.permissions.roles.edit.title")}
         </DialogTitle>
       </DialogHeader>
 

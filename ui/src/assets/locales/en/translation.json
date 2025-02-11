@@ -786,6 +786,9 @@
           "edit": "Edit",
           "delete": "Delete"
         },
+        "edit": {
+          "title": "Edit Role"
+        },
         "create": {
           "title": "Create a Role",
           "cancelBtn": "Cancel",
