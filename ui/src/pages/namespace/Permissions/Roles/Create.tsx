@@ -14,6 +14,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
+import { PermissionsArray } from "~/api/enterprise/schema";
+import PermissionsSelector from "../components/PermisionsSelector";
 import { useCreateRole } from "~/api/enterprise/roles/mutation/create";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,7 +29,7 @@ const CreateRole = ({
 }) => {
   const { t } = useTranslation();
 
-  const { mutate: createGroup, isPending } = useCreateRole({
+  const { mutate: createRole, isPending } = useCreateRole({
     onSuccess: () => {
       close();
     },
@@ -35,10 +37,10 @@ const CreateRole = ({
 
   const resolver = zodResolver(
     RoleFormSchema.refine(
-      (x) => !(unallowedNames ?? []).some((n) => n === x.group),
+      (x) => !(unallowedNames ?? []).some((n) => n === x.name),
       {
         path: ["group"],
-        message: t("pages.permissions.roles.create.role.alreadyExist"),
+        message: t("pages.permissions.roles.create.name.alreadyExist"),
       }
     )
   );
@@ -51,22 +53,23 @@ const CreateRole = ({
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<RoleFormSchemaType>({
     defaultValues: {
-      group: "",
+      name: "",
       description: "",
+      oidcGroups: [],
       permissions: [],
     },
     resolver,
   });
 
   const onSubmit: SubmitHandler<RoleFormSchemaType> = (params) => {
-    createGroup(params);
+    createRole(params);
   };
 
   // you can not submit if the form has not changed or if there are any errors and
   // you have already submitted the form (errors will first show up after submit)
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
-  const formId = `new-group`;
+  const formId = `new-role`;
 
   return (
     <>
@@ -84,14 +87,14 @@ const CreateRole = ({
           className="flex flex-col space-y-5"
         >
           <fieldset className="flex items-center gap-5">
-            <label className="w-[90px] text-right text-[14px]" htmlFor="group">
-              {t("pages.permissions.roles.create.role.label")}
+            <label className="w-[90px] text-right text-[14px]" htmlFor="name">
+              {t("pages.permissions.roles.create.name.label")}
             </label>
             <Input
-              id="group"
-              placeholder={t("pages.permissions.roles.create.role.placeholder")}
+              id="name"
+              placeholder={t("pages.permissions.roles.create.name.placeholder")}
               autoComplete="off"
-              {...register("group")}
+              {...register("name")}
             />
           </fieldset>
           <fieldset className="flex items-center gap-5">
@@ -109,17 +112,19 @@ const CreateRole = ({
               {...register("description")}
             />
           </fieldset>
-          {/* <PermissionsSelector
-            availablePermissions={availablePermissions ?? []}
+          <PermissionsSelector
             permissions={watch("permissions")}
-            setPermissions={(permissions) =>
-              setValue("permissions", permissions, {
-                shouldDirty: true,
-                shouldTouch: true,
-                shouldValidate: true,
-              })
-            }
-          /> */}
+            onChange={(permissions) => {
+              const parsedPermissions = PermissionsArray.safeParse(permissions);
+              if (parsedPermissions.success) {
+                setValue("permissions", parsedPermissions.data, {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                  shouldValidate: true,
+                });
+              }
+            }}
+          />
         </form>
       </div>
       <DialogFooter>

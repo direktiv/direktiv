@@ -12,24 +12,28 @@ import { DialogTrigger } from "~/design/Dialog";
 import PermissionsInfo from "../components/PermissionsInfo";
 import { RoleSchemaType } from "~/api/enterprise/roles/schema";
 import { useTranslation } from "react-i18next";
+import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 const Row = ({
-  group,
+  role,
   onDeleteClicked,
   onEditClicked,
 }: {
-  group: RoleSchemaType;
+  role: RoleSchemaType;
   onDeleteClicked: (group: RoleSchemaType) => void;
   onEditClicked: (group: RoleSchemaType) => void;
 }) => {
   const { t } = useTranslation();
+  const createdAt = useUpdatedAt(role.createdAt);
   return (
     <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-      <TableCell>{group.group}</TableCell>
-      <TableCell>{group.description}</TableCell>
+      <TableCell>{role.name}</TableCell>
+      <TableCell>{role.description}</TableCell>
+      <TableCell>{role.oidcGroups.join(", ")}</TableCell>
       <TableCell>
-        {/* <PermissionsInfo permissions={group.permissions} /> */}
+        <PermissionsInfo permissions={role.permissions} />
       </TableCell>
+      <TableCell>{createdAt}</TableCell>
       <TableCell>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -47,7 +51,7 @@ const Row = ({
               className="w-full"
               onClick={(e) => {
                 e.stopPropagation();
-                onDeleteClicked(group);
+                onDeleteClicked(role);
               }}
             >
               <DropdownMenuItem>
@@ -59,7 +63,7 @@ const Row = ({
               className="w-full"
               onClick={(e) => {
                 e.stopPropagation();
-                onEditClicked(group);
+                onEditClicked(role);
               }}
             >
               <DropdownMenuItem>

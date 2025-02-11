@@ -63,8 +63,14 @@ const RolesPage = () => {
               <TableHeaderCell>
                 {t("pages.permissions.roles.tableHeader.description")}
               </TableHeaderCell>
+              <TableHeaderCell>
+                {t("pages.permissions.roles.tableHeader.oidcGroups")}
+              </TableHeaderCell>
               <TableHeaderCell className="w-36">
                 {t("pages.permissions.roles.tableHeader.permissions")}
+              </TableHeaderCell>
+              <TableHeaderCell className="w-36">
+                {t("pages.permissions.roles.tableHeader.createdAt")}
               </TableHeaderCell>
               <TableHeaderCell className="w-16" />
             </TableRow>
@@ -74,7 +80,7 @@ const RolesPage = () => {
               <>
                 {noResults ? (
                   <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                    <TableCell colSpan={3}>
+                    <TableCell colSpan={5}>
                       <NoResult icon={Users} button={createNewButton}>
                         {t("pages.permissions.roles.noRoles")}
                       </NoResult>
@@ -82,13 +88,12 @@ const RolesPage = () => {
                   </TableRow>
                 ) : (
                   data?.data.map((role) => (
-                    <span key={role.name}>TODO!</span>
-                    // <Row
-                    //   key={group.id}
-                    //   group={group}
-                    //   onDeleteClicked={setDeleteRole}
-                    //   onEditClicked={setEditRole}
-                    // />
+                    <Row
+                      key={role.name}
+                      role={role}
+                      onDeleteClicked={setDeleteRole}
+                      onEditClicked={setEditRole}
+                    />
                   ))
                 )}
               </>

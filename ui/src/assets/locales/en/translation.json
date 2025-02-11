@@ -768,7 +768,9 @@
         "tableHeader": {
           "name": "name",
           "description": "description",
-          "permissions": "permissions"
+          "oidcGroups": "oidc groups",
+          "permissions": "permissions",
+          "createdAt": "created at"
         },
         "createBtn": "Create a new role",
         "noRoles": "There are no roles yet.",
@@ -780,7 +782,7 @@
           "title": "Create a Role",
           "cancelBtn": "Cancel",
           "saveBtn": "Save",
-          "role": {
+          "name": {
             "label": "Name",
             "placeholder": "role-name",
             "alreadyExist": "The name already exists"
