@@ -101,9 +101,7 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
               value={editorContent}
               onValueChange={handleEditorChange}
               onSave={saveContent}
-              hasUnsavedChanges={undefined} // To avoid double unsaved msg this is not passed
               updatedAt={data.updatedAt}
-              error={undefined} // To avoid double toasts this is not passed
             />
             <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
               {hasUnsavedChanges && (
