@@ -2,15 +2,12 @@ package flow
 
 import (
 	"context"
-	"crypto/tls"
 	"database/sql"
 	"errors"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
 	"runtime"
-	"strconv"
 	"strings"
 	"time"
 
@@ -27,7 +24,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"github.com/nats-io/nats.go"
-	"github.com/opensearch-project/opensearch-go"
 )
 
 type server struct {
@@ -50,10 +46,9 @@ type server struct {
 
 	MirrorManager *mirror.Manager
 
-	flow             *flow
-	events           *events
-	nats             *nats.Conn
-	openSearchClient *opensearch.Client
+	flow   *flow
+	events *events
+	nats   *nats.Conn
 
 	ConfigureWorkflow func(event *pubsub2.FileSystemChangeEvent) error
 }
@@ -238,16 +233,6 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 			return nil, fmt.Errorf("testing NATS connection, err: %w", err)
 		}
 		slog.Info("connected to NATS")
-	}
-
-	if config.OpenSearchInstalled {
-		slog.Info("initialize OpenSearch", "config.OpenSearchHost", config.OpenSearchHost, "config.OpenSearchPort", config.OpenSearchPort, "config.OpenSearchProtocol", config.OpenSearchProtocol)
-		var err error
-		srv.openSearchClient, err = initOpenSearch(config)
-		if err != nil {
-			return nil, fmt.Errorf("initialize OpenSearch client, err: %w", err)
-		}
-		slog.Info("connected to OpenSearch")
 	}
 
 	srv.ConfigureWorkflow = func(event *pubsub2.FileSystemChangeEvent) error {
@@ -479,45 +464,4 @@ func (srv *server) publishDemoMessage(subject, msg string) error {
 	slog.Info("message published", "subject", subject, "msg", msg)
 
 	return nil
-}
-
-func initOpenSearch(cfg *core.Config) (*opensearch.Client, error) {
-	retries := 12
-	addr := cfg.OpenSearchProtocol + "://" + cfg.OpenSearchHost + ":" + strconv.Itoa(cfg.OpenSearchPort)
-	transport := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
-		},
-	}
-
-	config := opensearch.Config{
-		Addresses: []string{addr},
-		Username:  cfg.OpenSearchUsername,
-		Password:  cfg.OpenSearchPassword,
-		Transport: transport,
-		RetryBackoff: func(attempt int) time.Duration {
-			return time.Second + time.Duration(attempt)
-		},
-		DisableRetry: false,
-		MaxRetries:   retries,
-	}
-
-	client, err := opensearch.NewClient(config)
-	if err != nil {
-		slog.Info("connect to OpenSearch", "addr", addr, "error", err)
-		return nil, fmt.Errorf("failed to create OpenSearch client: %w", err)
-	}
-	slog.Debug("connect to OpenSearch", "addr", addr)
-
-	// Test the connection
-	res, err := client.Info()
-	if err != nil {
-		slog.Info("OpenSearch connection test failed", "addr", addr, "error", err)
-		return nil, fmt.Errorf("OpenSearch connection test failed: %w", err)
-	}
-	defer res.Body.Close()
-
-	slog.Info("Connected to OpenSearch", "info", res.String())
-
-	return client, nil
 }

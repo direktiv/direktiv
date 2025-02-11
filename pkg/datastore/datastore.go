@@ -26,6 +26,7 @@ type Store interface {
 	EventListener() EventListenerStore
 	EventListenerTopics() EventTopicsStore
 	StagingEvents() StagingEventStore
+	Traces() TracesStore
 }
 
 type ValidationError map[string]string

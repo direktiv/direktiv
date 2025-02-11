@@ -1,45 +1,42 @@
+import { Link, useMatch, useParams } from "@tanstack/react-router";
 import { SquareGanttChartIcon, Workflow } from "lucide-react";
 
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
-import { Link } from "react-router-dom";
-import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const RoutesBreadcrumb = () => {
-  const pages = usePages();
-  const namespace = useNamespace();
-  const { isGatewayRoutesPage, isGatewayRoutesDetailPage, routePath } =
-    pages.gateway.useParams();
+  const { _splat } = useParams({ strict: false });
+  const isGatewayRoutesPage = useMatch({
+    from: "/n/$namespace/gateway/routes/",
+    shouldThrow: false,
+  });
+
+  const isGatewayRoutesDetailPage = useMatch({
+    from: "/n/$namespace/gateway/routes/$",
+    shouldThrow: false,
+  });
 
   const { t } = useTranslation();
 
-  if (!namespace) return null;
   if (!isGatewayRoutesPage && !isGatewayRoutesDetailPage) return null;
 
   return (
     <>
       <BreadcrumbLink data-testid="breadcrumb-routes">
-        <Link
-          to={pages.gateway.createHref({
-            namespace,
-          })}
-        >
+        <Link to="/n/$namespace/gateway/routes" from="/n/$namespace">
           <Workflow aria-hidden="true" />
           {t("components.breadcrumb.gatewayRoutes")}
         </Link>
       </BreadcrumbLink>
-      {routePath && (
+      {isGatewayRoutesDetailPage && (
         <BreadcrumbLink data-testid="breadcrumb-routes">
           <Link
-            to={pages.gateway.createHref({
-              namespace,
-              subpage: "routeDetail",
-              routePath,
-            })}
+            to="/n/$namespace/gateway/routes/$"
+            from="/n/$namespace"
+            params={{ _splat }}
           >
             <SquareGanttChartIcon aria-hidden="true" />
-            {routePath}
+            {_splat}
           </Link>
         </BreadcrumbLink>
       )}

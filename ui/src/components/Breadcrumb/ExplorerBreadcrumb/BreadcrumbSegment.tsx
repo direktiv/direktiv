@@ -1,19 +1,15 @@
-import { fileTypeToExplorerSubpage, fileTypeToIcon } from "~/api/files/utils";
+import { fileTypeToExplorerRoute, fileTypeToIcon } from "~/api/files/utils";
 
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import { FC } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { useFile } from "~/api/files/query/file";
-import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 
 const BreadcrumbSegment: FC<{
   absolute: string;
   relative: string;
   isLast: boolean;
 }> = ({ absolute, relative, isLast }) => {
-  const pages = usePages();
-  const namespace = useNamespace();
   /**
    * the last breadcrumb item in the file browser can be a file
    * we need to request file information to figure out which
@@ -25,20 +21,15 @@ const BreadcrumbSegment: FC<{
     enabled: isLast,
   });
 
-  if (!namespace) return null;
   if (isLast && !data) return null;
 
   const Icon = fileTypeToIcon(data?.type ?? "directory");
 
-  const link = pages.explorer.createHref({
-    namespace,
-    path: absolute,
-    subpage: fileTypeToExplorerSubpage(data?.type ?? "directory"),
-  });
+  const route = fileTypeToExplorerRoute(data?.type ?? "directory");
 
   return (
-    <BreadcrumbLink>
-      <Link to={link} data-testid="breadcrumb-segment">
+    <BreadcrumbLink data-testid="breadcrumb-segment">
+      <Link to={route} from="/n/$namespace" params={{ _splat: absolute }}>
         <Icon aria-hidden="true" />
         {relative}
       </Link>
