@@ -3,7 +3,6 @@ module github.com/direktiv/direktiv
 go 1.23.0
 
 require (
-	github.com/ChannelMeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61
 	github.com/bbuck/go-lexer v1.0.0
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/cloudevents/sdk-go/v2 v2.15.2
@@ -16,7 +15,6 @@ require (
 	github.com/google/go-github/v57 v57.0.1-0.20231214141441-c4ec3276de85
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
-	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/itchyny/gojq v0.12.17
 	github.com/jinzhu/copier v0.4.0
 	github.com/lib/pq v1.10.9
@@ -56,10 +54,7 @@ require (
 	knative.dev/serving v0.44.0
 )
 
-require (
-	github.com/channelmeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61 // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.59.0 // indirect
-)
+require go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.59.0 // indirect
 
 require (
 	dario.cat/mergo v1.0.1 // indirect
