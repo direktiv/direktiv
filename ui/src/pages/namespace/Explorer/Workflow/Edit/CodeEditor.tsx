@@ -22,7 +22,7 @@ export const CodeEditor: FC<EditorProps> = ({
   value,
   onValueChange,
   onSave,
-  hasUnsavedChanges,
+  hasUnsavedChanges = false,
   updatedAt,
   error,
 }) => {
