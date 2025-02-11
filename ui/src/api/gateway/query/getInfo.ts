@@ -1,4 +1,4 @@
-import { GatewayInfoSchema } from "../schema";
+import { OpenapiSpecificationSchema } from "../schema";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { gatewayKeys } from "..";
@@ -10,7 +10,7 @@ export const getInfo = apiFactory({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/gateway/info`,
   method: "GET",
-  schema: GatewayInfoSchema,
+  schema: OpenapiSpecificationSchema,
 });
 
 const fetchInfo = async ({

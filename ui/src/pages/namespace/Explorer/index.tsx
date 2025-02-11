@@ -1,12 +1,11 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useParams } from "@tanstack/react-router";
+
 import { UnsavedChangesStateProvider } from "./Workflow/store/unsavedChangesContext";
 import { isApiErrorSchema } from "~/api/errorHandling";
 import { useFile } from "~/api/files/query/file";
-import { usePages } from "~/util/router/pages";
 
-const ExplorerPage = () => {
-  const pages = usePages();
-  const { path } = pages.explorer.useParams();
+const ExplorerWrapper = () => {
+  const { _splat: path } = useParams({ strict: false });
   const { isError, error, isFetched } = useFile({ path });
   if (!isFetched) return null;
 
@@ -22,4 +21,4 @@ const ExplorerPage = () => {
   );
 };
 
-export default ExplorerPage;
+export default ExplorerWrapper;

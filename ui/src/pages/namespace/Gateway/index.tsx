@@ -1,23 +1,27 @@
 import { BookOpen, Users, Workflow } from "lucide-react";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useMatch } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 
-import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const GatewayPage = () => {
-  const pages = usePages();
-  const namespace = useNamespace();
   const { t } = useTranslation();
-  const {
-    isGatewayRoutesPage,
-    isGatewayConsumerPage,
-    isGatewayRoutesDetailPage,
-    isGatewayInfoPage,
-  } = pages.gateway.useParams();
-
-  if (!namespace) return null;
+  const isGatewayInfoPage = useMatch({
+    from: "/n/$namespace/gateway/gatewayInfo",
+    shouldThrow: false,
+  });
+  const isGatewayRoutesPage = useMatch({
+    from: "/n/$namespace/gateway/routes/",
+    shouldThrow: false,
+  });
+  const isGatewayConsumerPage = useMatch({
+    from: "/n/$namespace/gateway/consumers",
+    shouldThrow: false,
+  });
+  const isGatewayRoutesDetailPage = useMatch({
+    from: "/n/$namespace/gateway/routes/$filename",
+    shouldThrow: false,
+  });
 
   const tabs = [
     {
@@ -25,29 +29,21 @@ const GatewayPage = () => {
       active: isGatewayInfoPage,
       icon: <BookOpen aria-hidden="true" />,
       title: t("pages.gateway.tabs.info"),
-      link: pages.gateway.createHref({
-        namespace,
-      }),
+      link: "/n/$namespace/gateway/gatewayInfo",
     },
     {
       value: "endpoints",
       active: isGatewayRoutesPage,
       icon: <Workflow aria-hidden="true" />,
       title: t("pages.gateway.tabs.routes"),
-      link: pages.gateway.createHref({
-        namespace,
-        subpage: "routes",
-      }),
+      link: "/n/$namespace/gateway/routes",
     },
     {
       value: "consumers",
       active: isGatewayConsumerPage,
       icon: <Users aria-hidden="true" />,
       title: t("pages.gateway.tabs.consumers"),
-      link: pages.gateway.createHref({
-        namespace,
-        subpage: "consumers",
-      }),
+      link: "/n/$namespace/gateway/consumers",
     },
   ] as const;
 
@@ -59,7 +55,7 @@ const GatewayPage = () => {
             <TabsList>
               {tabs.map((tab) => (
                 <TabsTrigger asChild value={tab.value} key={tab.value}>
-                  <Link to={tab.link}>
+                  <Link to={tab.link} from="/n/$namespace">
                     {tab.icon}
                     {tab.title}
                   </Link>

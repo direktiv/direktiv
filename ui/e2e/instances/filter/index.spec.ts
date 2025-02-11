@@ -82,7 +82,7 @@ test("it is possible to navigate to the instances list, it renders and paginates
   await expect(
     page.getByTestId(/instance-row/),
     "it lists the expected number of instances on page 1"
-  ).toHaveCount(15);
+  ).toHaveCount(10);
 
   await expect(page.getByLabel("Pagination")).toBeVisible();
   await expect(
@@ -100,14 +100,14 @@ test("it is possible to navigate to the instances list, it renders and paginates
   await expect(
     page.getByTestId(/instance-row/),
     "it lists the expected number of instances on page 2"
-  ).toHaveCount(2);
+  ).toHaveCount(7);
 
   await page.getByTestId("pagination-btn-left").click();
 
   await expect(
     page.getByTestId(/instance-row/),
     "it lists the expected number of instances on page 1"
-  ).toHaveCount(15);
+  ).toHaveCount(10);
 });
 
 test("it is possible to filter by date using created before", async ({
@@ -354,6 +354,11 @@ test("it is possible to apply multiple filters", async ({ page }) => {
 
   /* visit page and test initial state */
   await page.goto(`/n/${namespace}/instances/`);
+
+  const selectPagesize = page.getByRole("combobox");
+  await expect(selectPagesize).toBeVisible();
+  selectPagesize.click();
+  page.getByLabel("Show 20 rows").click();
 
   await expect(
     page.getByTestId(/instance-row/),

@@ -2,12 +2,11 @@ import { FC } from "react";
 import { FolderOpen } from "lucide-react";
 import { NewFileDialog } from "./NewFile";
 import { NoResult as NoResultContainer } from "~/design/Table";
-import { usePages } from "~/util/router/pages";
+import { useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 const EmptyDirectoryButton = () => {
-  const pages = usePages();
-  const { path } = pages.explorer.useParams();
+  const { _splat: path } = useParams({ strict: false });
 
   return (
     <div className="grid gap-5">

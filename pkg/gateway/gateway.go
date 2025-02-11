@@ -23,7 +23,7 @@ import (
 type manager struct {
 	routerPointer unsafe.Pointer
 
-	db *database.SQLStore
+	db *database.DB
 }
 
 func (m *manager) atomicLoadRouter() *router {
@@ -41,7 +41,7 @@ func (m *manager) atomicSetRouter(inner *router) {
 
 var _ core.GatewayManager = &manager{}
 
-func NewManager(db *database.SQLStore) core.GatewayManager {
+func NewManager(db *database.DB) core.GatewayManager {
 	return &manager{
 		db: db,
 	}

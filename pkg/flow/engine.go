@@ -43,7 +43,7 @@ func initEngine(srv *server) *engine {
 
 	engine.server = srv
 
-	engine.pBus.Subscribe(&pubsub.InstanceMessageEvent{}, engine.instanceMessagesChannelHandler)
+	engine.Bus.Subscribe(&pubsub.InstanceMessageEvent{}, engine.instanceMessagesChannelHandler)
 
 	go engine.instanceKicker()
 
@@ -99,7 +99,7 @@ func (engine *engine) kickWaitingInstances() {
 }
 
 type newInstanceArgs struct {
-	tx            *database.SQLStore
+	tx            *database.DB
 	ID            uuid.UUID
 	Namespace     *datastore.Namespace
 	CalledAs      string

@@ -148,7 +148,7 @@ export const ConsumersListSchema = z.object({
   }
 }
  */
-export const GatewayInfoSchema = z.object({
+export const OpenapiSpecificationSchema = z.object({
   data: z.object({
     spec: z
       .object({
@@ -164,8 +164,10 @@ export const GatewayInfoSchema = z.object({
       })
       .passthrough(),
     file_path: z.string(),
-    errors: z.array(z.unknown()),
+    errors: z.array(z.string()),
   }),
 });
 
-export type GatewayInfoSchemaType = z.infer<typeof GatewayInfoSchema>;
+export type OpenapiSpecificationSchemaType = z.infer<
+  typeof OpenapiSpecificationSchema
+>;

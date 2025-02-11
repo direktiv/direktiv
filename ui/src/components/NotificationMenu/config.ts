@@ -1,11 +1,11 @@
 import { LucideIcon, SquareAsterisk } from "lucide-react";
 
+import { LinkComponentProps } from "@tanstack/react-router";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 export type NotificationConfig = {
-  href: string;
+  linkProps: LinkComponentProps;
   description: string;
   icon: LucideIcon;
 };
@@ -17,7 +17,6 @@ export const useNotificationConfig = ({
   type: string;
   count: number;
 }): NotificationConfig | null => {
-  const pages = usePages();
   const { t } = useTranslation();
   const namespace = useNamespace();
   if (!namespace) return null;
@@ -32,9 +31,7 @@ export const useNotificationConfig = ({
             count,
           }
         ),
-        href: pages.settings.createHref({
-          namespace,
-        }),
+        linkProps: { to: "/n/$namespace/settings", params: { namespace } },
       };
     default:
       return null;
