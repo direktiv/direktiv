@@ -1,6 +1,7 @@
 import { ArrayForm } from "~/components/Form/Array";
 import { Card } from "~/design/Card";
 import Input from "~/design/Input";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 type PermisionsSelectorProps = {
@@ -13,6 +14,13 @@ const OidcGroupSelector = ({
   onChange,
 }: PermisionsSelectorProps) => {
   const { t } = useTranslation();
+  const [value, setValue] = useState(oidcGroups);
+
+  const handleChange = (newGroups: string[]) => {
+    setValue(newGroups);
+    onChange(newGroups);
+  };
+
   return (
     <fieldset className="flex items-center gap-5">
       <label className="w-[90px] text-right text-[14px]">
@@ -23,13 +31,14 @@ const OidcGroupSelector = ({
         noShadow
       >
         <ArrayForm
-          defaultValue={oidcGroups}
-          onChange={onChange}
+          defaultValue={value}
+          onChange={handleChange}
           emptyItem=""
           itemIsValid={(item) => {
             if (!item) return false;
             if (item.includes(",")) return false;
             if (item.includes(" ")) return false;
+            if (value.includes(item)) return false;
             return true;
           }}
           renderItem={({ value, setValue, handleKeyDown }) => (
