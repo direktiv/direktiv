@@ -19,7 +19,7 @@ import { useEditRole } from "~/api/enterprise/roles/mutation/edit";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const EditGroup = ({
+const EditRole = ({
   group,
   close,
   unallowedNames,
@@ -147,4 +147,4 @@ const EditGroup = ({
   );
 };
 
-export default EditGroup;
+export default EditRole;

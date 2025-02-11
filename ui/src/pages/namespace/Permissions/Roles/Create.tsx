@@ -18,7 +18,7 @@ import { useCreateRole } from "~/api/enterprise/roles/mutation/create";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const CreateGroup = ({
+const CreateRole = ({
   close,
   unallowedNames,
 }: {
@@ -142,4 +142,4 @@ const CreateGroup = ({
   );
 };
 
-export default CreateGroup;
+export default CreateRole;
