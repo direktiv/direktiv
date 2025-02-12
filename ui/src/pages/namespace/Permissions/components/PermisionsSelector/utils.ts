@@ -2,6 +2,7 @@ import {
   PermisionSchemaType,
   PermissionMethod,
   PermissionTopic,
+  permissionTopics,
 } from "~/api/enterprise/schema";
 
 export const updatePermissions = ({
@@ -45,3 +46,11 @@ export const updatePermissions = ({
   }
   return newPermissions;
 };
+
+export const setPermissionForAllTopics = (
+  method: PermissionMethod
+): PermisionSchemaType[] =>
+  permissionTopics.map((topic) => ({
+    topic,
+    method,
+  }));

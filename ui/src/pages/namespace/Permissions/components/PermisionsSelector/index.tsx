@@ -3,7 +3,6 @@ import {
   permissionMethodsAvailableUi,
   permissionTopics,
 } from "~/api/enterprise/schema";
-import { SquareDashedMousePointer, SquareMousePointer } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -11,11 +10,12 @@ import {
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
+import { setPermissionForAllTopics, updatePermissions } from "./utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { PermissionRow } from "./Row";
-import { updatePermissions } from "./utils";
+import { SquareMousePointer } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 type PermisionsSelectorProps = {
@@ -29,7 +29,7 @@ const PermissionsSelector = ({
 }: PermisionsSelectorProps) => {
   const { t } = useTranslation();
   return (
-    <fieldset className="flex items-center gap-5">
+    <fieldset className="flex flex-col items-center gap-5">
       <label className="w-[120px] text-right text-[14px]">
         {t("pages.permissions.permissionsSelector.permissions")}
       </label>
@@ -37,44 +37,52 @@ const PermissionsSelector = ({
         <Table>
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-              <TableHeaderCell sticky className="px-0">
-                <div className="flex gap-5">
+              <TableHeaderCell sticky className="px-0"></TableHeaderCell>
+              <TableHeaderCell sticky className="w-36 px-2 text-center">
+                <div className="flex flex-col gap-2">
+                  {t("pages.permissions.permissionsSelector.noPermissions")}
                   <Button
-                    variant="link"
-                    type="button"
+                    variant="outline"
                     size="sm"
-                    // TODO:
-                    // onClick={selectAllPermissions}
-                    // disabled={allSelected}
+                    type="button"
+                    disabled={permissions.length === 0}
+                    onClick={() => {
+                      onChange([]);
+                    }}
                   >
                     <SquareMousePointer />
                     {t("pages.permissions.permissionsSelector.selectAll")}
                   </Button>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    type="button"
-                    // TODO:
-                    // onClick={deselectAllPermissions}
-                    // disabled={noneSelected}
-                  >
-                    <SquareDashedMousePointer />
-                    {t("pages.permissions.permissionsSelector.deselectAll")}
-                  </Button>
                 </div>
               </TableHeaderCell>
-              <TableHeaderCell sticky className="w-32 px-2 text-center">
-                {t("pages.permissions.permissionsSelector.noPermissions")}
-              </TableHeaderCell>
-              {permissionMethodsAvailableUi.map((method) => (
-                <TableHeaderCell
-                  sticky
-                  key={method}
-                  className="w-20 px-2 text-center"
-                >
-                  {method.toLowerCase()}
-                </TableHeaderCell>
-              ))}
+              {permissionMethodsAvailableUi.map((method) => {
+                const allSelected =
+                  permissions.length > 0 &&
+                  permissions.every((p) => p.method === method);
+                return (
+                  <TableHeaderCell
+                    sticky
+                    key={method}
+                    className="w-36 px-2 text-center"
+                  >
+                    <div className="flex flex-col gap-2">
+                      {method}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        type="button"
+                        disabled={allSelected}
+                        onClick={() => {
+                          onChange(setPermissionForAllTopics(method));
+                        }}
+                      >
+                        <SquareMousePointer />
+                        {t("pages.permissions.permissionsSelector.selectAll")}
+                      </Button>
+                    </div>
+                  </TableHeaderCell>
+                );
+              })}
             </TableRow>
           </TableHead>
           <TableBody>
