@@ -149,7 +149,8 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
   };
 
   const save = (value: PageFormSchemaType) => {
-    const toSave = jsonToYaml(value);
+    const newValue = { ...value, header, footer, layout };
+    const toSave = jsonToYaml(newValue);
 
     updateRoute({
       path: data.path,

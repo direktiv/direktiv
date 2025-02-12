@@ -6,7 +6,7 @@ import {
 } from "~/design/Dialog";
 import {
   LayoutSchemaType,
-  PageElementContentSchemaType,
+  TextContentSchemaType,
 } from "~/pages/namespace/Explorer/Page/PageEditor/schema";
 import { Save, Settings } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -23,14 +23,12 @@ const TextForm = ({
 }: {
   layout: LayoutSchemaType;
   pageElementID: number;
-  onEdit: (content: unknown) => void;
+  onEdit: (content: TextContentSchemaType) => void;
 }) => {
   const { t } = useTranslation();
 
-  const onSubmit: SubmitHandler<PageElementContentSchemaType> = ({
-    content,
-  }) => {
-    onEdit(content);
+  const onSubmit: SubmitHandler<TextContentSchemaType> = ({ content }) => {
+    onEdit({ content });
   };
 
   const oldContent = layout ? layout[pageElementID]?.content : "nothing";
@@ -39,7 +37,7 @@ const TextForm = ({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<PageElementContentSchemaType>({
+  } = useForm<TextContentSchemaType>({
     defaultValues: {
       content: oldContent,
     },

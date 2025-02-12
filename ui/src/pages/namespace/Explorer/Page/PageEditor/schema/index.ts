@@ -11,6 +11,18 @@ export const TableSchema = z.array(TableKeySchema);
 
 export type TableSchemaType = z.infer<typeof TableSchema>;
 
+export const TextContentSchema = z.object({
+  content: z.string(),
+});
+
+export type TextContentSchemaType = z.infer<typeof TextContentSchema>;
+
+export const TableContentSchema = z.object({
+  content: TableSchema,
+});
+
+export type TableContentSchemaType = z.infer<typeof TableContentSchema>;
+
 export const PageElementContentSchema = z.object({
   content: z.string().or(TableSchema),
 });

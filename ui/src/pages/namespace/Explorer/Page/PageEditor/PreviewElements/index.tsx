@@ -8,7 +8,6 @@ import {
   TableRow,
 } from "~/design/Table";
 
-import { Card } from "~/design/Card";
 import { ImageIcon } from "lucide-react";
 
 export const DragAndDropPreview: FC<PropsWithChildren> = ({ children }) => (
@@ -30,7 +29,7 @@ export const getElementComponent = (
     case "Text":
       return <DefaultText hidden={hidden} content={content} />;
     case "Table":
-      return <DefaultTable hidden={hidden} content={content} />;
+      return <DefaultTable hidden={hidden} content={content.content} />;
     default:
       return <></>;
   }
@@ -41,25 +40,23 @@ type contentType = {
   tableData?: tableData;
 };
 
-type tableData = [
-  {
-    header: string;
-    cell: string;
-  },
-];
+type tableData = {
+  header: string;
+  cell: string;
+}[];
 
-// type previewTableProps = {
-//   tableData: tableData;
-//   hidden: boolean;
-// };
+type previewTableProps = {
+  content: tableData | string | undefined;
+  hidden: boolean;
+};
 
 type previewElementProps = {
   content: contentType;
   hidden: boolean;
 };
 
-const DefaultTable: FC<previewElementProps> = (content, hidden) => {
-  const placeholderData = [
+const DefaultTable: FC<previewTableProps> = ({ content, hidden }) => {
+  const placeholderData: tableData = [
     {
       header: "TableHeader 1",
       cell: "TableCell 1",
@@ -67,12 +64,7 @@ const DefaultTable: FC<previewElementProps> = (content, hidden) => {
     { header: "TableHeader 1", cell: "TableCell 2" },
   ];
 
-  const data =
-    typeof content.content.tableData !== undefined
-      ? content.content.tableData
-      : placeholderData;
-
-  // const data = placeholderData;
+  const data = content && Array.isArray(content) ? content : placeholderData;
 
   return (
     <Table className="p-2 my-2 border-2 text-xs" hidden={hidden}>
@@ -94,34 +86,26 @@ const DefaultTable: FC<previewElementProps> = (content, hidden) => {
   );
 };
 
-const DefaultImage: FC<previewElementProps> = (content) => (
-  <div hidden={content.hidden} className="p-2">
-    {content.content === undefined ? <ImageIcon /> : <img src="test" />}
+const DefaultImage: FC<previewElementProps> = ({ content, hidden }) => (
+  <div hidden={hidden} className="p-2">
+    {content?.content === undefined ? <ImageIcon /> : <img src="test" />}
   </div>
 );
 
-const DefaultText: FC<previewElementProps> = (content) => (
-  <p hidden={content.hidden} className="py-2">
-    {typeof content.content !== "string" ? (
-      <>Placeholder Text</>
-    ) : (
-      <>{content.content}</>
-    )}
+const DefaultText: FC<previewElementProps> = ({ content, hidden }) => (
+  <p hidden={hidden} className="py-2">
+    {typeof content !== "string" ? <>Placeholder Text</> : <>{content}</>}
   </p>
 );
 
-const DefaultHeader: FC<previewElementProps> = (content) => (
-  <Card noShadow className="border-2 my-2" hidden={content.hidden}>
-    <p className="text-lg font-semibold p-2">
-      {JSON.stringify(content.content)}
-    </p>
-  </Card>
+const DefaultHeader: FC<previewElementProps> = ({ content, hidden }) => (
+  <p hidden={hidden} className="border-b-4 my-2 text-lg font-semibold p-2">
+    {typeof content !== "string" ? <>Placeholder Text</> : <>{content}</>}
+  </p>
 );
 
-const DefaultFooter: FC<previewElementProps> = (content) => (
-  <Card noShadow className="border-2 my-2" hidden={content.hidden}>
-    <p className="text-lg font-semibold p-2">
-      {JSON.stringify(content.content)}
-    </p>
-  </Card>
+const DefaultFooter: FC<previewElementProps> = ({ content, hidden }) => (
+  <p hidden={hidden} className="border-t-4 my-2 text-lg font-semibold p-2">
+    {typeof content !== "string" ? <>Placeholder Text</> : <>{content}</>}
+  </p>
 );

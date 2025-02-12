@@ -1,4 +1,9 @@
-import { LayoutSchemaType } from "~/pages/namespace/Explorer/Page/PageEditor/schema";
+import {
+  LayoutSchemaType,
+  TableContentSchemaType,
+  TextContentSchemaType,
+} from "~/pages/namespace/Explorer/Page/PageEditor/schema";
+
 import TableForm from "./forms/Table";
 import TextForm from "./forms/Text";
 
@@ -17,17 +22,31 @@ const EditModal = ({
 }) => {
   const oldElement = layout ? layout[pageElementID] : { content: "nothing" };
 
-  const onEdit = (content: unknown) => {
+  const onEditText = (content: TextContentSchemaType) => {
+    const newElement = {
+      name: oldElement?.name,
+      hidden: oldElement?.hidden,
+      preview: content.content,
+      content: content.content,
+    };
+
+    const newLayout = [...layout];
+
+    newLayout.splice(pageElementID, 1, newElement);
+
+    success(newLayout);
+    close();
+  };
+
+  const onEditTable = (content: TableContentSchemaType) => {
     let newElement;
     if (type === "Table") {
-      // const ObjectToString =
-      //   content.content === undefined
-      //     ? ""
-      //     : content.content.map(
-      //         (element) => `${element.header}:${element.cell}, `
-      //       );
-
-      const ObjectToString = "something";
+      const ObjectToString =
+        content.content === undefined
+          ? ""
+          : content.content.map(
+              (element) => `${element.header}:${element.cell}, `
+            );
 
       newElement = {
         name: oldElement?.name,
@@ -59,7 +78,7 @@ const EditModal = ({
       {type === "Text" && (
         <TextForm
           layout={layout}
-          onEdit={onEdit}
+          onEdit={onEditText}
           pageElementID={pageElementID}
         />
       )}
@@ -67,7 +86,7 @@ const EditModal = ({
         <TableForm
           onChange={onChange}
           layout={layout}
-          onEdit={onEdit}
+          onEdit={onEditTable}
           pageElementID={pageElementID}
         />
       )}
