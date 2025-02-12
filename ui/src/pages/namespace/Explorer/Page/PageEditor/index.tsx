@@ -270,9 +270,19 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                                         name={element.name}
                                         preview={element.preview}
                                         hidden={element.hidden}
-                                        onHide={() =>
-                                          (element.hidden = !element.hidden)
-                                        }
+                                        onHide={() => {
+                                          const newLayout = [...layout];
+                                          const newElement = {
+                                            ...element,
+                                            hidden: !element.hidden,
+                                          };
+                                          newLayout.splice(
+                                            index,
+                                            1,
+                                            newElement
+                                          );
+                                          setLayout(newLayout);
+                                        }}
                                         setSelectedDialog={(dialogType) => {
                                           setSelectedDialog(dialogType);
                                           setSelectedElement(index);
@@ -293,9 +303,19 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                                         name={element.name}
                                         preview={element.preview}
                                         hidden={element.hidden}
-                                        onHide={() =>
-                                          (element.hidden = !element.hidden)
-                                        }
+                                        onHide={() => {
+                                          const newLayout = [...layout];
+                                          const newElement = {
+                                            ...element,
+                                            hidden: !element.hidden,
+                                          };
+                                          newLayout.splice(
+                                            index,
+                                            1,
+                                            newElement
+                                          );
+                                          setLayout(newLayout);
+                                        }}
                                         setSelectedDialog={(dialogType) => {
                                           setSelectedDialog(dialogType);
                                           setSelectedElement(index);
