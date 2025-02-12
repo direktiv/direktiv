@@ -17,7 +17,7 @@ func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 
 	nsList, err := dStore.Namespaces().GetAll(ctx)
 	if err != nil {
-		sLog.Error("listing namespaces", "err", err)
+		slog.Error("listing namespaces", "err", err)
 
 		return
 	}
@@ -30,7 +30,7 @@ func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 		sLog = sLog.With("namespace", ns.Name)
 		files, err := fStore.ForNamespace(ns.Name).ListDirektivFilesWithData(ctx)
 		if err != nil {
-			sLog.Error("listing direktiv files", "err", err)
+			slog.Error("listing direktiv files", "err", err)
 
 			continue
 		}
@@ -46,7 +46,7 @@ func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 	}
 	err = manager.SetEndpoints(endpoints, consumers, gateways)
 	if err != nil {
-		sLog.Error("render gateway files", "err", err)
+		slog.Error("render gateway files", "err", err)
 	}
 }
 

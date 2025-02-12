@@ -15,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 )
 
@@ -282,11 +281,6 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		if err != nil {
 			return err
 		}
-	case *core.EndpointFile:
-		err = p.handleEndpoint(path, data)
-		if err != nil {
-			return err
-		}
 	case *core.ConsumerFile:
 		err = p.handleConsumer(path, data)
 		if err != nil {
@@ -297,7 +291,12 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		if err != nil {
 			return err
 		}
-	case *openapi3.T:
+	case core.Endpoint:
+		err = p.handleEndpoint(path, data)
+		if err != nil {
+			return err
+		}
+	case core.Gateway:
 		err = p.handleGateway(path, data)
 		if err != nil {
 			return err
