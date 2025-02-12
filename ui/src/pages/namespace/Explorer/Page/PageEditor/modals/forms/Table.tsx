@@ -65,20 +65,26 @@ const TableForm = ({
   const [testSucceeded, setTestSucceeded] = useState<boolean | null>(null);
   let variant: ButtonProps["variant"] = "outline";
 
-  const [selectRoute, setSelectRoute] = useState<string>("/ns/namespace/hd");
+  const [selectRoute, setSelectRoute] = useState<string>("");
 
   const [output, setOutput] = useState<KeyWithDepth[]>([]);
 
   let isPending;
 
-  const exampleTableData = {
-    header: "Example Header",
-    cell: "unset",
-  };
+  const exampleTableData = [
+    {
+      header: "TableHeader 1",
+      cell: "TableCell 1",
+    },
+    {
+      header: "TableHeader 2",
+      cell: "TableCell 2",
+    },
+  ];
   const hasTableData = layout[pageElementID]?.content?.content;
 
   const [tableHeaderAndCells, setTableHeaderAndCells] =
-    useState<TableSchemaType>(hasTableData ?? [exampleTableData]);
+    useState<TableSchemaType>(hasTableData ?? exampleTableData);
 
   const [index, setIndex] = useState<number>(0);
 
@@ -171,10 +177,17 @@ const TableForm = ({
     setTableHeaderAndCells(copyArray);
 
     const actualizedElement =
-      tableHeaderAndCells[actualizedIndex] ?? exampleTableData;
+      tableHeaderAndCells[actualizedIndex] ?? exampleTableData[0];
 
-    setTableHeader(actualizedElement.header);
-    setTableCell(actualizedElement.cell);
+    const actualizedHeader =
+      actualizedElement !== undefined
+        ? actualizedElement.header
+        : "Example Header";
+    const actualizedCell =
+      actualizedElement !== undefined ? actualizedElement.cell : "unset";
+
+    setTableHeader(actualizedHeader);
+    setTableCell(actualizedCell);
   };
 
   const updateTable = (element: string, value: string) => {
