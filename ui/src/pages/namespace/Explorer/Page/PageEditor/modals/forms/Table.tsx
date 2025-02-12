@@ -9,7 +9,6 @@ import {
   Trash2,
   Unplug,
 } from "lucide-react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
 import {
   DialogClose,
   DialogFooter,
@@ -22,6 +21,8 @@ import {
   LayoutSchemaType,
   PageElementContentSchema,
   PageElementContentSchemaType,
+  TableContentSchemaType,
+  TableSchemaType,
 } from "~/pages/namespace/Explorer/Page/PageEditor/schema";
 import {
   Select,
@@ -44,51 +45,20 @@ import { Card } from "~/design/Card";
 import FilePicker from "~/components/FilePicker";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
-import { Pagination } from "~/components/Pagination";
+import { Pagination } from "../../Pagination";
 import { useCreateInstanceWithOutput } from "~/api/instances/mutate/createWithOutput";
+import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-// type fieldType = {
-//   header: string;
-//   cell: string;
-// };
-
-// const ConditionalInput = ({
-//   control,
-//   index,
-// }: {
-//   control: Control<FieldValues>;
-//   index: number;
-//   field: fieldType;
-// }) => {
-//   const value = useWatch({
-//     name: "test",
-//     control,
-//   });
-
-//   const newv = value;
-
-//   return (
-//     <Controller
-//       control={control}
-//       name={`test.${index}.header`}
-//       render={({ field }) => (
-//         <>
-//           <div>{newv}</div>
-//           <input {...field} />
-//         </>
-//       )}
-//     />
-//   );
-// };
-
 const TableForm = ({
+  layout,
+  pageElementID,
   onEdit,
 }: {
   layout: LayoutSchemaType;
   pageElementID: number;
-  onEdit: (content: unknown) => void;
+  onEdit: (content: TableContentSchemaType) => void;
   onChange: (newArray: string[]) => void;
 }) => {
   const { t } = useTranslation();
@@ -105,10 +75,10 @@ const TableForm = ({
     header: "Example Header",
     cell: "unset",
   };
+  const hasTableData = layout[pageElementID]?.content?.content;
 
-  const [tableHeaderAndCells, setTableHeaderAndCells] = useState([
-    exampleTableData,
-  ]);
+  const [tableHeaderAndCells, setTableHeaderAndCells] =
+    useState<TableSchemaType>(hasTableData ?? [exampleTableData]);
 
   const [index, setIndex] = useState<number>(0);
 
@@ -123,8 +93,7 @@ const TableForm = ({
     e.preventDefault();
     e.stopPropagation(); // prevent the parent form from submitting
     //  handleSubmit(onSubmit)(e);
-
-    onEdit(tableHeaderAndCells);
+    onEdit({ content: tableHeaderAndCells });
   };
 
   const defaultTableData = exampleTableData;
@@ -132,20 +101,13 @@ const TableForm = ({
   const formId = "edit-table-element";
 
   const {
-    register,
-    control,
     setValue,
     formState: { errors },
   } = useForm<PageElementContentSchemaType>({
     resolver: zodResolver(PageElementContentSchema),
     defaultValues: {
-      content: { ...defaultTableData },
+      content: hasTableData ?? { ...defaultTableData },
     },
-  });
-
-  const { fields } = useFieldArray({
-    control,
-    name: "content" as const,
   });
 
   if (testSucceeded === false) {
@@ -176,6 +138,7 @@ const TableForm = ({
   };
 
   let added = false;
+
   const addTableItem = () => {
     added = true;
     const newPage = tableHeaderAndCells.length;
@@ -193,9 +156,6 @@ const TableForm = ({
 
     setTableHeader(newElement.header);
     setTableCell(newElement.cell);
-
-    // setValue("header", newElement.header);
-    // setValue("cell", newElement.cell);
   };
 
   const deleteTableItem = () => {
@@ -234,15 +194,6 @@ const TableForm = ({
       };
     }
 
-    // const newElement = {
-    //   header: tableHeader,
-    //   cell: tableCell,
-    // };
-
-    // const newElement2 = {
-    //   header: getValues("header"),
-    //   cell: getValues("cell"),
-    // };
     const copyArray = tableHeaderAndCells;
     copyArray.splice(index, 1, newElement);
     setTableHeaderAndCells(copyArray);
@@ -255,8 +206,6 @@ const TableForm = ({
           <Settings /> Edit table component
         </DialogTitle>
       </DialogHeader>
-      <>Index:{JSON.stringify(index)}</>
-
       <FormErrors errors={errors} className="mb-5" />
       <form id={formId} onSubmit={onSubmit}>
         <div className="my-3">
@@ -306,7 +255,7 @@ const TableForm = ({
                   Data Keys:
                 </label>
 
-                <div className="w-full m-0">
+                <div className="w-full flex-wrap m-0">
                   <Card noShadow className="flex flex-row ">
                     <div className="flex flex-col">
                       <div className="flex flex-row">
@@ -325,8 +274,8 @@ const TableForm = ({
                           onChange={(e) => {
                             setTableHeader(e.target.value);
                             setValue(`content.${index}.header`, e.target.value);
-                            // if (e.target.value !== displayTableHeader)
-                            //   updateTable("header", e.target.value);
+                            if (e.target.value !== tableHeader)
+                              updateTable("header", e.target.value);
                           }}
                         />
                       </div>
@@ -338,7 +287,6 @@ const TableForm = ({
                         >
                           <label>Table Cell</label>
                         </Button>
-
                         <>
                           {output.length ? (
                             <Select
@@ -385,19 +333,20 @@ const TableForm = ({
                           )}
                         </>
                       </div>
-                      <div className="flex-col flex items-end ">
+                      <div className="flex-col flex items-end m-0">
                         <Button
-                          className=""
+                          className="m-0"
                           icon
                           variant="outline"
-                          onClick={() => deleteTableItem()}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            deleteTableItem();
+                          }}
                         >
                           <Trash2 />
                         </Button>
                       </div>
                     </div>
-
-                    <div className="flex justify-items-end relative right-0"></div>
                   </Card>
 
                   <div className="flex flex-row pt-4 gap-4">
@@ -412,7 +361,10 @@ const TableForm = ({
                     <Button
                       icon
                       variant="outline"
-                      onClick={() => addTableItem()}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        addTableItem();
+                      }}
                     >
                       <Plus />
                     </Button>
@@ -421,82 +373,7 @@ const TableForm = ({
               </fieldset>
             </div>
           </div>
-          <br></br>
-          {fields.map((field, index) => {
-            const id = `test.${index}.checkbox`;
-            return (
-              <div key={id}>
-                <section>
-                  <label htmlFor={id}>Show Input</label>
-                  <input
-                    type="checkbox"
-                    value="on"
-                    id={id}
-                    {...register(`content.${index}`)}
-                  />
-                  {/* <ConditionalInput {...{ control, index, field }} /> */}
-                </section>
-                <hr />
-              </div>
-            );
-          })}
 
-          <br></br>
-          {/* <button
-            type="button"
-            onClick={() =>
-              // append({
-              //   header: "append value",
-              //   cell: "unset",
-              // })
-            
-            }
-          >
-            append
-          </button> */}
-
-          {/* <button
-            type="button"
-            onClick={() =>
-              prepend({
-                firstName: "prepend value",
-              })
-            }
-          >
-            prepend
-          </button> */}
-          <br></br>
-
-          <Controller
-            control={control}
-            name={`content.${index}.header`}
-            render={() => (
-              <Input
-                placeholder="Insert a Caption for the data below"
-                className="hidden w-80 rounded-none rounded-tr-md"
-                value={tableHeader}
-                onChange={(e) => {
-                  setTableHeader(e.target.value);
-                  setValue(`content.${index}.header`, e.target.value);
-                }}
-              />
-            )}
-          />
-          <Controller
-            control={control}
-            name={`content.${index}.cell`}
-            render={() => (
-              <Input
-                placeholder="Insert a Caption for the data below"
-                className="hidden w-80 rounded-none rounded-tr-md"
-                value={tableCell}
-                onChange={(e) => {
-                  setTableCell(e.target.value);
-                  setValue(`content.${index}.cell`, e.target.value);
-                }}
-              />
-            )}
-          />
           <Table className="p-2 my-2 border-2 text-xs">
             <TableHead className="border-2">
               <TableRow className="hover:bg-transparent">
