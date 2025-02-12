@@ -765,7 +765,6 @@
       "permissionsSelector": {
         "permissions": "Permissions",
         "selectAll": "Select all",
-        "deselectAll": "Deselect all",
         "noPermissions": "No permissions"
       },
       "oidcGroupSelector": {
