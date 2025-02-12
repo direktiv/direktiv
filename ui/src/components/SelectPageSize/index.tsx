@@ -24,7 +24,7 @@ export const SelectPageSize = ({
 
   return (
     <Select
-      defaultValue={String(initialPageSize)}
+      defaultValue={initialPageSize}
       onValueChange={(value) => {
         const parseValue = PageSizeValueSchema.safeParse(value);
         if (parseValue.success) {

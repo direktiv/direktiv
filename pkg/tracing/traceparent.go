@@ -43,6 +43,11 @@ func TraceParentToTraceID(ctx context.Context, traceParent string) (string, erro
 
 // InjectTraceParent injects the given traceparent into a new context and returns it with the parent span.
 // The tracer is automatically obtained from the global OpenTelemetry TracerProvider.
+// The function ensures that tracing always happens, even if the provided traceparent is invalid.
+//
+// This function operates in two modes:
+// 1. **Valid Traceparent** → A properly linked span is created, attributes are set, and no error is returned.
+// 2. **Invalid Traceparent** → A span is still created (ensuring traceability), attributes are set, but an error is returned.
 func InjectTraceParent(ctx context.Context, traceParent string, traceName string) (context.Context, trace.Span, error) {
 	// Set up the propagation map with the traceparent
 	carrier := propagation.MapCarrier{
@@ -55,8 +60,14 @@ func InjectTraceParent(ctx context.Context, traceParent string, traceName string
 	tracer := otel.GetTracerProvider().Tracer(instrumentationName)
 
 	// Start a new span with this context, making it the parent span
+	// # Context Handling Explanation:
+	// - `ctx` is the original context, which may contain useful metadata (namespace, instance, workflow, etc.).
+	// - `newCtx` is derived by extracting the `traceparent` from `ctx` and is used as the parent for the new span.
+	// - We use `ctx` (not `newCtx`) to retrieve attributes because `ctx` may have pre-existing metadata before tracing was injected.
 	newCtx, span := tracer.Start(newCtx, traceName)
 	if span.SpanContext().IsValid() {
+		// Retrieve attributes from the original context (`ctx`), not `newCtx`
+		// to ensure we capture metadata that existed before tracing was injected.
 		attr := GetCoreAttributes(ctx)
 		kv := make([]attribute.KeyValue, 0, len(attr)*2)
 		for k, v := range attr {
@@ -67,6 +78,7 @@ func InjectTraceParent(ctx context.Context, traceParent string, traceName string
 		return newCtx, span, nil
 	}
 
+	// Even if the traceparent was invalid, we still create a span and attach attributes.
 	attr := GetCoreAttributes(ctx)
 	kv := make([]attribute.KeyValue, 0, len(attr)*2)
 	for k, v := range attr {

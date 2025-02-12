@@ -42,7 +42,7 @@ import { Route as NNamespaceEventsHistoryImport } from './routes/n/$namespace/ev
 import { Route as NNamespaceExplorerWorkflowRouteImport } from './routes/n/$namespace/explorer/workflow/route'
 import { Route as NNamespaceGatewayRoutesIndexImport } from './routes/n/$namespace/gateway/routes/index'
 import { Route as NNamespaceMirrorLogsSyncImport } from './routes/n/$namespace/mirror/logs.$sync'
-import { Route as NNamespaceGatewayRoutesFilenameImport } from './routes/n/$namespace/gateway/routes/$filename'
+import { Route as NNamespaceGatewayRoutesSplatImport } from './routes/n/$namespace/gateway/routes/$'
 import { Route as NNamespaceExplorerTreeSplatImport } from './routes/n/$namespace/explorer/tree.$'
 import { Route as NNamespaceExplorerServiceSplatImport } from './routes/n/$namespace/explorer/service.$'
 import { Route as NNamespaceExplorerOpenapiSpecificationSplatImport } from './routes/n/$namespace/explorer/openapiSpecification.$'
@@ -255,10 +255,10 @@ const NNamespaceMirrorLogsSyncRoute = NNamespaceMirrorLogsSyncImport.update({
   getParentRoute: () => NNamespaceMirrorRouteRoute,
 } as any)
 
-const NNamespaceGatewayRoutesFilenameRoute =
-  NNamespaceGatewayRoutesFilenameImport.update({
-    id: '/routes/$filename',
-    path: '/routes/$filename',
+const NNamespaceGatewayRoutesSplatRoute =
+  NNamespaceGatewayRoutesSplatImport.update({
+    id: '/routes/$',
+    path: '/routes/$',
     getParentRoute: () => NNamespaceGatewayRouteRoute,
   } as any)
 
@@ -567,11 +567,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NNamespaceExplorerTreeSplatImport
       parentRoute: typeof NNamespaceExplorerRouteImport
     }
-    '/n/$namespace/gateway/routes/$filename': {
-      id: '/n/$namespace/gateway/routes/$filename'
-      path: '/routes/$filename'
-      fullPath: '/n/$namespace/gateway/routes/$filename'
-      preLoaderRoute: typeof NNamespaceGatewayRoutesFilenameImport
+    '/n/$namespace/gateway/routes/$': {
+      id: '/n/$namespace/gateway/routes/$'
+      path: '/routes/$'
+      fullPath: '/n/$namespace/gateway/routes/$'
+      preLoaderRoute: typeof NNamespaceGatewayRoutesSplatImport
       parentRoute: typeof NNamespaceGatewayRouteImport
     }
     '/n/$namespace/mirror/logs/$sync': {
@@ -691,7 +691,7 @@ const NNamespaceExplorerRouteRouteWithChildren =
 interface NNamespaceGatewayRouteRouteChildren {
   NNamespaceGatewayConsumersRoute: typeof NNamespaceGatewayConsumersRoute
   NNamespaceGatewayGatewayInfoRoute: typeof NNamespaceGatewayGatewayInfoRoute
-  NNamespaceGatewayRoutesFilenameRoute: typeof NNamespaceGatewayRoutesFilenameRoute
+  NNamespaceGatewayRoutesSplatRoute: typeof NNamespaceGatewayRoutesSplatRoute
   NNamespaceGatewayRoutesIndexRoute: typeof NNamespaceGatewayRoutesIndexRoute
 }
 
@@ -699,7 +699,7 @@ const NNamespaceGatewayRouteRouteChildren: NNamespaceGatewayRouteRouteChildren =
   {
     NNamespaceGatewayConsumersRoute: NNamespaceGatewayConsumersRoute,
     NNamespaceGatewayGatewayInfoRoute: NNamespaceGatewayGatewayInfoRoute,
-    NNamespaceGatewayRoutesFilenameRoute: NNamespaceGatewayRoutesFilenameRoute,
+    NNamespaceGatewayRoutesSplatRoute: NNamespaceGatewayRoutesSplatRoute,
     NNamespaceGatewayRoutesIndexRoute: NNamespaceGatewayRoutesIndexRoute,
   }
 
@@ -834,7 +834,7 @@ export interface FileRoutesByFullPath {
   '/n/$namespace/explorer/openapiSpecification/$': typeof NNamespaceExplorerOpenapiSpecificationSplatRoute
   '/n/$namespace/explorer/service/$': typeof NNamespaceExplorerServiceSplatRoute
   '/n/$namespace/explorer/tree/$': typeof NNamespaceExplorerTreeSplatRoute
-  '/n/$namespace/gateway/routes/$filename': typeof NNamespaceGatewayRoutesFilenameRoute
+  '/n/$namespace/gateway/routes/$': typeof NNamespaceGatewayRoutesSplatRoute
   '/n/$namespace/mirror/logs/$sync': typeof NNamespaceMirrorLogsSyncRoute
   '/n/$namespace/gateway/routes': typeof NNamespaceGatewayRoutesIndexRoute
   '/n/$namespace/explorer/workflow/edit/$': typeof NNamespaceExplorerWorkflowEditSplatRoute
@@ -871,7 +871,7 @@ export interface FileRoutesByTo {
   '/n/$namespace/explorer/openapiSpecification/$': typeof NNamespaceExplorerOpenapiSpecificationSplatRoute
   '/n/$namespace/explorer/service/$': typeof NNamespaceExplorerServiceSplatRoute
   '/n/$namespace/explorer/tree/$': typeof NNamespaceExplorerTreeSplatRoute
-  '/n/$namespace/gateway/routes/$filename': typeof NNamespaceGatewayRoutesFilenameRoute
+  '/n/$namespace/gateway/routes/$': typeof NNamespaceGatewayRoutesSplatRoute
   '/n/$namespace/mirror/logs/$sync': typeof NNamespaceMirrorLogsSyncRoute
   '/n/$namespace/gateway/routes': typeof NNamespaceGatewayRoutesIndexRoute
   '/n/$namespace/explorer/workflow/edit/$': typeof NNamespaceExplorerWorkflowEditSplatRoute
@@ -916,7 +916,7 @@ export interface FileRoutesById {
   '/n/$namespace/explorer/openapiSpecification/$': typeof NNamespaceExplorerOpenapiSpecificationSplatRoute
   '/n/$namespace/explorer/service/$': typeof NNamespaceExplorerServiceSplatRoute
   '/n/$namespace/explorer/tree/$': typeof NNamespaceExplorerTreeSplatRoute
-  '/n/$namespace/gateway/routes/$filename': typeof NNamespaceGatewayRoutesFilenameRoute
+  '/n/$namespace/gateway/routes/$': typeof NNamespaceGatewayRoutesSplatRoute
   '/n/$namespace/mirror/logs/$sync': typeof NNamespaceMirrorLogsSyncRoute
   '/n/$namespace/gateway/routes/': typeof NNamespaceGatewayRoutesIndexRoute
   '/n/$namespace/explorer/workflow/edit/$': typeof NNamespaceExplorerWorkflowEditSplatRoute
@@ -960,7 +960,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/explorer/openapiSpecification/$'
     | '/n/$namespace/explorer/service/$'
     | '/n/$namespace/explorer/tree/$'
-    | '/n/$namespace/gateway/routes/$filename'
+    | '/n/$namespace/gateway/routes/$'
     | '/n/$namespace/mirror/logs/$sync'
     | '/n/$namespace/gateway/routes'
     | '/n/$namespace/explorer/workflow/edit/$'
@@ -996,7 +996,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/explorer/openapiSpecification/$'
     | '/n/$namespace/explorer/service/$'
     | '/n/$namespace/explorer/tree/$'
-    | '/n/$namespace/gateway/routes/$filename'
+    | '/n/$namespace/gateway/routes/$'
     | '/n/$namespace/mirror/logs/$sync'
     | '/n/$namespace/gateway/routes'
     | '/n/$namespace/explorer/workflow/edit/$'
@@ -1039,7 +1039,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/explorer/openapiSpecification/$'
     | '/n/$namespace/explorer/service/$'
     | '/n/$namespace/explorer/tree/$'
-    | '/n/$namespace/gateway/routes/$filename'
+    | '/n/$namespace/gateway/routes/$'
     | '/n/$namespace/mirror/logs/$sync'
     | '/n/$namespace/gateway/routes/'
     | '/n/$namespace/explorer/workflow/edit/$'
@@ -1126,7 +1126,7 @@ export const routeTree = rootRoute
       "children": [
         "/n/$namespace/gateway/consumers",
         "/n/$namespace/gateway/gatewayInfo",
-        "/n/$namespace/gateway/routes/$filename",
+        "/n/$namespace/gateway/routes/$",
         "/n/$namespace/gateway/routes/"
       ]
     },
@@ -1265,8 +1265,8 @@ export const routeTree = rootRoute
       "filePath": "n/$namespace/explorer/tree.$.tsx",
       "parent": "/n/$namespace/explorer"
     },
-    "/n/$namespace/gateway/routes/$filename": {
-      "filePath": "n/$namespace/gateway/routes/$filename.tsx",
+    "/n/$namespace/gateway/routes/$": {
+      "filePath": "n/$namespace/gateway/routes/$.tsx",
       "parent": "/n/$namespace/gateway"
     },
     "/n/$namespace/mirror/logs/$sync": {

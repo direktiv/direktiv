@@ -43,7 +43,7 @@ func filterNamespacedConsumers(consumers []core.Consumer, namespace string) []co
 func filterNamespacedEndpoints(endpoints []core.Endpoint, namespace string, path string) []core.Endpoint {
 	list := []core.Endpoint{}
 	for _, item := range endpoints {
-		if item.Namespace == namespace && (path == "" || path == item.Path) {
+		if item.Namespace == namespace && (path == "" || path == item.Config.Path) {
 			list = append(list, item)
 		}
 	}

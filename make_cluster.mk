@@ -117,6 +117,8 @@ cluster-direktiv: ## Installs direktiv in cluster
 	--set tag=dev \
 	--set flow.sidecar=localhost:5001/direktiv:dev \
 	--set apikey=password \
+	--set flow.additionalEnvs[0].name=DIREKTIV_OIDC_ADMIN_GROUP_NAME \
+	--set flow.additionalEnvs[0].value="admin" \
 	direktiv charts/direktiv; \
 	fi
 

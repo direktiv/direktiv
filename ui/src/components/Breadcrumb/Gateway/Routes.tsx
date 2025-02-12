@@ -5,14 +5,14 @@ import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import { useTranslation } from "react-i18next";
 
 const RoutesBreadcrumb = () => {
-  const { filename } = useParams({ strict: false });
+  const { _splat } = useParams({ strict: false });
   const isGatewayRoutesPage = useMatch({
     from: "/n/$namespace/gateway/routes/",
     shouldThrow: false,
   });
 
   const isGatewayRoutesDetailPage = useMatch({
-    from: "/n/$namespace/gateway/routes/$filename",
+    from: "/n/$namespace/gateway/routes/$",
     shouldThrow: false,
   });
 
@@ -28,15 +28,15 @@ const RoutesBreadcrumb = () => {
           {t("components.breadcrumb.gatewayRoutes")}
         </Link>
       </BreadcrumbLink>
-      {filename && (
+      {isGatewayRoutesDetailPage && (
         <BreadcrumbLink data-testid="breadcrumb-routes">
           <Link
-            to="/n/$namespace/gateway/routes/$filename"
+            to="/n/$namespace/gateway/routes/$"
             from="/n/$namespace"
-            params={{ filename }}
+            params={{ _splat }}
           >
             <SquareGanttChartIcon aria-hidden="true" />
-            {filename}
+            {_splat}
           </Link>
         </BreadcrumbLink>
       )}

@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
 )
@@ -36,25 +37,30 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 	for i, item := range endpoints {
 		// don't process endpoints with errors
 		if len(item.Errors) > 0 {
+			slog.Error("endpoint skipped due to errors", slog.String("endpoint", item.FilePath),
+				slog.Any("error", item.Errors))
+
 			continue
 		}
 
-		if _, ok := checkUniqueGatewayPaths[item.Namespace+item.Path]; ok {
-			item.Errors = append(item.Errors, fmt.Sprintf("duplicate gateway path: %s", item.Path))
+		if _, ok := checkUniqueGatewayPaths[item.Namespace+item.Config.Path]; ok {
+			slog.Error("endpoint skipped because of duplicate path", slog.String("endpoint", item.FilePath),
+				slog.String("path", item.Config.Path))
+			item.Errors = append(item.Errors, fmt.Sprintf("duplicate gateway path: %s", item.Config.Path))
 			endpoints[i] = item
 
 			continue
 		}
-		checkUniqueGatewayPaths[item.Namespace+item.Path] = item.Path
+		checkUniqueGatewayPaths[item.Namespace+item.Config.Path] = item.Config.Path
 
 		// concat plugins configs into one list.
 		pConfigs := []core.PluginConfig{}
-		pConfigs = append(pConfigs, item.PluginsConfig.Auth...)
-		pConfigs = append(pConfigs, item.PluginsConfig.Inbound...)
-		pConfigs = append(pConfigs, item.PluginsConfig.Target)
-		pConfigs = append(pConfigs, item.PluginsConfig.Outbound...)
+		pConfigs = append(pConfigs, item.Config.PluginsConfig.Auth...)
+		pConfigs = append(pConfigs, item.Config.PluginsConfig.Inbound...)
+		pConfigs = append(pConfigs, item.Config.PluginsConfig.Target)
+		pConfigs = append(pConfigs, item.Config.PluginsConfig.Outbound...)
 
-		hasOutboundConfigured := len(item.PluginsConfig.Outbound) > 0
+		hasOutboundConfigured := len(item.Config.PluginsConfig.Outbound) > 0
 
 		// build plugins chain.
 		pChain := []core.Plugin{}
@@ -65,97 +71,118 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 			}
 			pChain = append(pChain, p)
 		}
-		if len(item.PluginsConfig.Auth) == 0 && !item.AllowAnonymous {
+		if len(item.Config.PluginsConfig.Auth) == 0 && !item.Config.AllowAnonymous {
 			item.Errors = append(item.Errors, "AllowAnonymous is false but zero auth plugin configured")
 		}
 		endpoints[i] = item
 
 		// skip mount http handler when plugins has zero errors.
 		if len(item.Errors) > 0 {
+			slog.Error("endpoint skipped due to errors", slog.String("endpoint", item.FilePath),
+				slog.Any("error", item.Errors))
+
 			continue
 		}
 
-		cleanPath := strings.Trim(item.Path, " /")
+		cleanPath := strings.Trim(item.Config.Path, " /")
 
 		for _, pattern := range []string{
 			fmt.Sprintf("/api/v2/namespaces/%s/gateway/%s", item.Namespace, cleanPath),
 			fmt.Sprintf("/ns/%s/%s", item.Namespace, cleanPath),
 		} {
 			serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-				// Check if correct method.
-				if !slices.Contains(item.Methods, r.Method) {
-					WriteJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
-						fmt.Sprintf("method:%s is not allowed with this endpoint", r.Method))
+				result := make(chan bool, 1)
 
-					return
-				}
+				//nolint:contextcheck
+				go func() {
+					// Check if correct method.
+					if !slices.Contains(item.Config.Methods, r.Method) {
+						WriteJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
+							fmt.Sprintf("method:%s is not allowed with this endpoint", r.Method))
 
-				// Inject consumer files.
-				r = InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
-				// inject endpoint.
-				r = InjectContextEndpoint(r, &endpoints[i])
-				r = InjectContextURLParams(r, ExtractBetweenCurlyBraces(pattern))
+						return
+					}
 
-				// Outbound plugins are used to transform the output from target plugins. When an outbound plugin is
-				// configured, target plugins output should be recorded in a buffer rather than flushed directly to
-				// the client's tcp connection. Then the recorded bytes should be somehow piped to the outbound
-				// plugins.
-				originalWriter := w
-				if hasOutboundConfigured {
-					w = httptest.NewRecorder()
-				}
+					// Inject consumer files.
+					r = InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
+					// inject endpoint.
+					r = InjectContextEndpoint(r, &endpoints[i])
+					r = InjectContextURLParams(r, ExtractBetweenCurlyBraces(pattern))
 
-				for _, p := range pChain {
-					// Checkpoint if auth plugins had a match.
-					if !isAuthPlugin(p) {
-						// Case where auth is required but request is not authenticated (consumers doesn't match).
-						hasActiveConsumer := ExtractContextActiveConsumer(r) != nil
-						if !item.AllowAnonymous && !hasActiveConsumer {
-							WriteJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
+					// Outbound plugins are used to transform the output from target plugins. When an outbound plugin is
+					// configured, target plugins output should be recorded in a buffer rather than flushed directly to
+					// the client's tcp connection. Then the recorded bytes should be somehow piped to the outbound
+					// plugins.
+					originalWriter := w
+					if hasOutboundConfigured {
+						w = httptest.NewRecorder()
+					}
 
+					for _, p := range pChain {
+						// Checkpoint if auth plugins had a match.
+						if !isAuthPlugin(p) {
+							// Case where auth is required but request is not authenticated (consumers doesn't match).
+							hasActiveConsumer := ExtractContextActiveConsumer(r) != nil
+							if !item.Config.AllowAnonymous && !hasActiveConsumer {
+								WriteJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
+
+								break
+							}
+						}
+						if p.Type() == "js-outbound" {
+							// Inject the output in the request so that the outbound plugin can process it.
+							//nolint:forcetypeassert
+							w := w.(*httptest.ResponseRecorder)
+							newReq, err := http.NewRequest(http.MethodGet, "/writer", w.Body)
+							if err != nil {
+								slog.With("component", "gateway").
+									Error("creating js-outbound plugin request", "err", err)
+							}
+							newReq.Response = &http.Response{
+								StatusCode: w.Code,
+							}
+							//nolint:contextcheck
+							newReq = newReq.WithContext(r.Context())
+							r = newReq
+						}
+						if r = p.Execute(w, r); r == nil {
 							break
 						}
 					}
-					if p.Type() == "js-outbound" {
-						// Inject the output in the request so that the outbound plugin can process it.
+
+					if hasOutboundConfigured {
 						//nolint:forcetypeassert
 						w := w.(*httptest.ResponseRecorder)
-						newReq, err := http.NewRequest(http.MethodGet, "/writer", w.Body)
-						if err != nil {
+						// Copy headers to the original writer.
+						for key, values := range w.Header() {
+							for _, value := range values {
+								originalWriter.Header().Add(key, value)
+							}
+						}
+						// Set the new content length.
+						originalWriter.Header().Set("Content-Length", strconv.Itoa(w.Body.Len()))
+						// Copy status code to the original writer.
+						originalWriter.WriteHeader(w.Code)
+
+						// Copy body to the original writer.
+						if _, err := io.Copy(originalWriter, w.Body); err != nil {
 							slog.With("component", "gateway").
-								Error("creating js-outbound plugin request", "err", err)
+								Error("flushing final bytes to connection", "err", err)
 						}
-						newReq.Response = &http.Response{
-							StatusCode: w.Code,
-						}
-						//nolint:contextcheck
-						newReq = newReq.WithContext(r.Context())
-						r = newReq
 					}
-					if r = p.Execute(w, r); r == nil {
-						break
-					}
+
+					result <- true
+				}()
+
+				timeout := 24 * time.Hour
+				if item.Config.Timeout != 0 {
+					timeout = time.Duration(item.Config.Timeout) * time.Second
 				}
 
-				if hasOutboundConfigured {
-					//nolint:forcetypeassert
-					w := w.(*httptest.ResponseRecorder)
-					// Copy headers to the original writer.
-					for key, values := range w.Header() {
-						for _, value := range values {
-							originalWriter.Header().Add(key, value)
-						}
-					}
-					// Set the new content length.
-					originalWriter.Header().Set("Content-Length", strconv.Itoa(w.Body.Len()))
-					// Copy status code to the original writer.
-					originalWriter.WriteHeader(w.Code)
-
-					// Copy body to the original writer.
-					if _, err := io.Copy(originalWriter, w.Body); err != nil {
-						slog.With("component", "gateway").
-							Error("flushing final bytes to connection", "err", err)
-					}
+				select {
+				case <-time.After(timeout):
+					w.WriteHeader(http.StatusGatewayTimeout)
+				case <-result:
 				}
 			})
 		}

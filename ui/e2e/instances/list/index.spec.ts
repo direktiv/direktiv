@@ -235,7 +235,7 @@ test("it will treat the status and finish date of pending instances accordingly"
   ).toContainText("complete");
 });
 
-test.skip("it paginates instances", async ({ page }) => {
+test("it paginates instances", async ({ page }) => {
   const totalCount = 35;
   const pageSize = 10;
 
@@ -331,7 +331,7 @@ test.skip("it paginates instances", async ({ page }) => {
 
   const selectPagesize = page.getByRole("combobox");
   await expect(selectPagesize).toBeVisible();
-  expect(selectPagesize).toHaveText("Show 10 rows");
+  await expect(selectPagesize).toHaveText("Show 10 rows");
 
   selectPagesize.click();
   page.getByLabel("Show 50 rows").click();
@@ -341,7 +341,7 @@ test.skip("it paginates instances", async ({ page }) => {
   /* reload the page and check if pagesize was remembered */
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(selectPagesize).toBeVisible();
-  expect(selectPagesize).toHaveText("Show 50 rows");
+  await expect(selectPagesize).toHaveText("Show 50 rows");
 });
 
 test("It will display child instances as well", async ({ page }) => {

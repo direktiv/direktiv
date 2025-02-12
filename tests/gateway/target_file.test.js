@@ -9,64 +9,81 @@ const testNamespace = 'system'
 const limitedNamespace = 'limited_namespace'
 
 const endpointNSFile = `
-direktiv_api: endpoint/v1
-allow_anonymous: true
-plugins:
-  target:
-    type: target-namespace-file
-    configuration:
-        namespace: ` + testNamespace + `
-        file: /endpoint1.yaml
-methods: 
-  - GET
-path: /endpoint1`
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint1"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-namespace-file
+        configuration:
+          namespace: ` + testNamespace + `
+          file: /endpoint1.yaml
+get:
+   responses:
+      "200":
+        description: works
+`
 
 const endpointNSFileAllowed = `
-  direktiv_api: endpoint/v1
-  allow_anonymous: true
-  plugins:
-    target:
-      type: target-namespace-file
-      configuration:
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint2"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-namespace-file
+        configuration:
           file: /endpoint1.yaml
-  methods: 
-    - GET
-  path: /endpoint2`
+get:
+   responses:
+      "200":
+        description: works`
 
 const endpointBroken = `
-  direktiv_api: endpoint/v1
-  allow_anonymous: true
-  plugins:
-    target:
-      type: something-wrong
-  methods: 
-    - GET
-  path: /endpoint3`
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint3"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: something-wrong
+get:
+   responses:
+      "200":
+        description: works`
 
 const mimetypeSet = `
-  direktiv_api: endpoint/v1
-  allow_anonymous: true
-  plugins:
-    target:
-      type: target-namespace-file
-      configuration:
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint-mimetype"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-namespace-file
+        configuration:
           file: /mimetype.yaml
           content_type: application/whatever
-  methods: 
-    - GET
-  path: /endpoint-mimetype`
+get:
+   responses:
+      "200":
+        description: works`
+
 
 const mimetypeNotSet = `
-  direktiv_api: endpoint/v1
-  allow_anonymous: true
-  plugins:
-    target:
-      type: target-namespace-file
-      configuration:
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint-no-mimetype"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-namespace-file
+        configuration:
           file: /mimetype.yaml
-  methods: 
-    - GET
-  path: /endpoint-no-mimetype`
+get:
+   responses:
+      "200":
+        description: works`
 
 describe('Test target file wrong config', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -88,15 +105,11 @@ describe('Test target file wrong config', () => {
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
 		expect(listRes.body.data[0]).toEqual({
+			spec: expect.anything(),
 			file_path: '/ep3.yaml',
-			path: '/endpoint3',
 			server_path: '/ns/system/endpoint3',
-			methods: [ 'GET' ],
-			allow_anonymous: true,
-			timeout: 0,
 			errors: [ "plugin 'something-wrong' err: doesn't exist" ],
 			warnings: [],
-			plugins: { target: { type: 'something-wrong' } },
 		})
 	})
 })

@@ -1,9 +1,8 @@
-
 /api/v2/namespaces/{namespace}/events/broadcast:
   post:
     tags:
-    - events
-    summary: Broadcast a cloud event to a namespace.    
+      - events
+    summary: Broadcast a cloud event to a namespace.
     description: |
       This endpoint allows you to broadcast a cloud event to a specific namespace using json encoding. Cloud events are a specification for describing event data in a common way. https://github.com/cloudevents/spec
     parameters:
@@ -12,8 +11,8 @@
         description: The namespace to which the cloud event will be broadcasted.
         required: true
         schema:
-            type: string
-            pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+          type: string
+          pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
         style: simple
     requestBody:
       description: Data representing the cloud event(s) to be broadcasted.
@@ -37,11 +36,11 @@
                 type: string
                 description: The type of the event.
               additionalProperties:
-                  type: object
+                type: object
         application/cloudevents-batch+json:
           schema:
             type: array
-            items: 
+            items:
               type: object
               properties:
                 specversion:
@@ -63,7 +62,7 @@
 /api/v2/namespaces/{namespace}/events/history:
   get:
     tags:
-    - events
+      - events
     summary: Retrieve the history of events within a specific namespace.
     description: |
       This endpoint allows you to retrieve the history of events within the specified namespace. You can filter events based on various criteria such as creation time, reception time, event type, and text contained in the event.
@@ -73,8 +72,8 @@
         description: The namespace for which to retrieve event history.
         required: true
         schema:
-            type: string
-            pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+          type: string
+          pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
         style: simple
       - name: before
         in: query
@@ -117,24 +116,24 @@
         schema:
           type: string
     responses:
-      '200':
+      "200":
         description: OK
         content:
-          'application/json':
+          "application/json":
             example:
               meta:
-                previousPage: '2024-04-25T13:39:00.01915Z'
-                startingFrom: '2024-01-16T01:44:08.128136Z'
+                previousPage: "2024-04-25T13:39:00.01915Z"
+                startingFrom: "2024-01-16T01:44:08.128136Z"
               data:
-              - event:
-                  specversion: '1.0'
-                  id: '4'
-                  source: 'https://direktiv.io/test'
-                  type: 'testerDuplicate'
-                namespaceID: 'b1e7f55b-3e16-4b9c-b5b5-3f94c5e149c0'
-                namespace: 'wfeventsv2'
-                receivedAt: '2024-04-25T13:39:00.01915Z'
-                serialID: 1
+                - event:
+                    specversion: "1.0"
+                    id: "4"
+                    source: "https://direktiv.io/test"
+                    type: "testerDuplicate"
+                  namespaceID: "b1e7f55b-3e16-4b9c-b5b5-3f94c5e149c0"
+                  namespace: "wfeventsv2"
+                  receivedAt: "2024-04-25T13:39:00.01915Z"
+                  serialID: 1
             schema:
               type: object
               properties:
@@ -151,24 +150,24 @@
                       format: RFC3339Nano
                 data:
                   type: array
-                  items: 
+                  items:
                     type: object
                     properties:
-                      namespace: 
+                      namespace:
                         type: string
-                      namespaceID: 
+                      namespaceID:
                         type: string
-                      receivedAt: 
+                      receivedAt:
                         type: string
                         format: RFC3339Nano
                       serialID:
                         type: int
-                      event:       
+                      event:
                         type: object
                         required:
                           - specversion
                           - id
-                          - source 
+                          - source
                           - type
                         properties:
                           specversion:
@@ -186,7 +185,7 @@
 /api/v2/namespaces/{namespace}/events/history/replay/{eventID}:
   post:
     tags:
-    - events
+      - events
     summary: Replay a event from the event-history.
     description: |
       This endpoint allows to replay a event from the event-history.
@@ -196,28 +195,28 @@
         description: The namespace to from which the cloud event has to be replayed.
         required: true
         schema:
-            type: string
-            pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+          type: string
+          pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
         style: simple
       - name: eventID
         in: path
         description: The event-id of the cloud event.
         required: true
         schema:
-            type: string
+          type: string
 
 /api/v2/namespaces/{namespace}/events/subscribe:
   get:
     tags:
-    - events
+      - events
     summary: Api for SSE streaming of incoming events stating the systems current time.
     parameters:
       - name: namespace
         in: path
         required: true
         schema:
-            type: string
-            pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+          type: string
+          pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
         style: simple
       - name: Last-Event-ID
         in: header
@@ -259,7 +258,7 @@
         schema:
           type: string
     responses:
-      '200':
+      "200":
         description: OK
         content:
           text/event-stream:
@@ -275,7 +274,7 @@
 /api/v2/namespaces/{namespace}/events/listeners:
   get:
     tags:
-    - events
+      - events
     summary: Retrieve a list of event listeners within a specific namespace.
     description: |
       This endpoint retrieves a list of the last 200 event listeners configured within the specified namespace. Event listeners are entities that listen for specific events within a workflow environment, allowing for event-driven architecture.
@@ -285,8 +284,8 @@
         description: The namespace for which to retrieve event listeners.
         required: true
         schema:
-            type: string
-            pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+          type: string
+          pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
       - name: limit
         in: query
         schema:
@@ -298,22 +297,22 @@
           type: integer
         required: true
     responses:
-      '200':
+      "200":
         description: OK
         content:
-          'application/json':
+          "application/json":
             example:
               meta:
                 total: 100
               data:
-                - id: '977a5b18-27bf-4914-b666-456cc0073ea9'
-                  createdAt: '2024-04-25T20:55:00.956697Z'
-                  updatedAt: '2024-04-25T20:55:00.956697Z'
-                  namespace: 'wfeventsv2'
-                  listeningForEventTypes: 
-                    - 'greeting'
-                  triggerType: 'StartSimple'
-                  triggerWorkflow: '/listener.yml'
+                - id: "977a5b18-27bf-4914-b666-456cc0073ea9"
+                  createdAt: "2024-04-25T20:55:00.956697Z"
+                  updatedAt: "2024-04-25T20:55:00.956697Z"
+                  namespace: "wfeventsv2"
+                  listeningForEventTypes:
+                    - "greeting"
+                  triggerType: "StartSimple"
+                  triggerWorkflow: "/listener.yml"
             schema:
               type: object
               properties:
@@ -325,7 +324,7 @@
                       type: integer
                 data:
                   type: array
-                  items: 
+                  items:
                     type: object
                     properties:
                       id:
@@ -368,84 +367,84 @@
                         description: Glob patterns associated with the event listener.
 
 /api/v2/namespaces/{namespace}/events/listeners/{listenerID}:
-    get:
-      tags:
+  get:
+    tags:
       - events
-      summary: Retrieve details of an individual event listener within a namespace.
-      description: |
-        This endpoint retrieves details of an individual event listener identified by the provided listener ID within the specified namespace. Event listeners are entities configured to listen for specific events within a workflow environment, facilitating event-driven interactions.
-      parameters:
-        - name: namespace
-          in: path
-          required: true
-          schema:
-              type: string
-              pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
-        - name: listenerID
-          in: path    
-          required: true
-          schema:
-              type: string
-              pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
-      responses:
-        '200':
-          description: OK
-          content:
-            'application/json':
-              example:
+    summary: Retrieve details of an individual event listener within a namespace.
+    description: |
+      This endpoint retrieves details of an individual event listener identified by the provided listener ID within the specified namespace. Event listeners are entities configured to listen for specific events within a workflow environment, facilitating event-driven interactions.
+    parameters:
+      - name: namespace
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+      - name: listenerID
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+    responses:
+      "200":
+        description: OK
+        content:
+          "application/json":
+            example:
+              data:
+                id: "977a5b18-27bf-4914-b666-456cc0073ea9"
+                createdAt: "2024-04-25T20:55:00.956697Z"
+                updatedAt: "2024-04-25T20:55:00.956697Z"
+                namespaceID: "wfeventsv2"
+                listeningForEventTypes:
+                  - "greeting"
+                triggerType: "StartSimple"
+                triggerWorkflow: "/listener.yml"
+            schema:
+              type: object
+              properties:
                 data:
-                  id: '977a5b18-27bf-4914-b666-456cc0073ea9'
-                  createdAt: '2024-04-25T20:55:00.956697Z'
-                  updatedAt: '2024-04-25T20:55:00.956697Z'
-                  namespaceID: 'wfeventsv2'
-                  listeningForEventTypes: 
-                    - 'greeting'
-                  triggerType: 'StartSimple'
-                  triggerWorkflow: '/listener.yml'
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      id:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      required: true
+                      description: The unique identifier of the event listener.
+                    createdAt:
+                      type: string
+                      required: true
+                      description: The timestamp indicating when the event listener was created.
+                    updatedAt:
+                      type: string
+                      required: true
+                      description: The timestamp indicating when the event listener was last updated.
+                    namespaceID:
+                      type: string
+                      required: true
+                      description: The id of the namespace to which the event listener belongs.
+                    namespace:
+                      type: string
+                      required: true
+                      description: The name of the namespace to which the event listener belongs.
+                    listeningForEventTypes:
+                      type: array
+                      items:
                         type: string
-                        required: true
-                        description: The unique identifier of the event listener.
-                      createdAt:
-                        type: string
-                        required: true
-                        description: The timestamp indicating when the event listener was created.
-                      updatedAt:
-                        type: string
-                        required: true
-                        description: The timestamp indicating when the event listener was last updated.
-                      namespaceID:
-                        type: string
-                        required: true
-                        description: The id of the namespace to which the event listener belongs.
-                      namespace:
-                        type: string
-                        required: true
-                        description: The name of the namespace to which the event listener belongs.
-                      listeningForEventTypes:
-                        type: array
-                        items:
-                          type: string
-                        description: The types of events the listener is configured to listen for.
-                      triggerType:
-                        type: string
-                        required: true
-                        description: The type of trigger associated with the event listener.
-                      triggerWorkflow:
-                        type: string
-                        description: The workflow triggered by the event listener.
-                      triggerInstance:
-                        type: string
-                        description: The instance triggered by the event listener.
-                      eventContextFilters:
-                        type: object
-                        description: Glob patterns associated with the event listener.
+                      description: The types of events the listener is configured to listen for.
+                    triggerType:
+                      type: string
+                      required: true
+                      description: The type of trigger associated with the event listener.
+                    triggerWorkflow:
+                      type: string
+                      description: The workflow triggered by the event listener.
+                    triggerInstance:
+                      type: string
+                      description: The instance triggered by the event listener.
+                    eventContextFilters:
+                      type: object
+                      description: Glob patterns associated with the event listener.
 
 /api/v2/namespaces/{namespace}/files/{path}:
   get:
@@ -454,7 +453,7 @@
     summary: Read any node in the filesystem tree
     # description:
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
       - name: path
         in: path
         schema:
@@ -472,7 +471,7 @@
                 data:
                   type: object
                   allOf: # Combines the BasicErrorModel and the inline model
-                    - $ref: '../objects.yaml#/FileNodeWithoutData'
+                    - $ref: "../objects.yaml#/FileNodeWithoutData"
                     - type: object
                       description: files node data
                       properties:
@@ -483,7 +482,7 @@
                           type: array
                           description: list of files child nodes
                           items:
-                            $ref: '../objects.yaml#/FileNodeWithoutData'
+                            $ref: "../objects.yaml#/FileNodeWithoutData"
 
   delete:
     tags:
@@ -491,7 +490,7 @@
     summary: Delete any node in the filesystem tree
     # description:
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
       - name: path
         in: path
         schema:
@@ -502,14 +501,13 @@
       "200":
         description: filesystem tree node deleted successfully
 
-
   post:
     tags:
       - files
     summary: Create a node in the filesystem tree
     # description:
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
       - name: path
         in: path
         schema:
@@ -524,19 +522,19 @@
           schema:
             type: object
             properties:
-             name:
-               type: string
-               description: name of the node(file or directory name)
-             type:
-               type: string
-               enum: [ directory, file, workflow, service, endpoint, consumer ]
-               description: type of the node
-             mimeType:
-               type: string
-               description: (only with type != directory) mime type of the file content
-             data:
-               type: string
-               description: (only with type != directory) base64 encoded string of the file content
+              name:
+                type: string
+                description: name of the node(file or directory name)
+              type:
+                type: string
+                enum: [directory, file, workflow, service, endpoint, consumer]
+                description: type of the node
+              mimeType:
+                type: string
+                description: (only with type != directory) mime type of the file content
+              data:
+                type: string
+                description: (only with type != directory) base64 encoded string of the file content
 
     responses:
       "200":
@@ -548,7 +546,7 @@
               properties:
                 data:
                   type: object
-                  $ref: '../objects.yaml#/FileNodeWithoutData'
+                  $ref: "../objects.yaml#/FileNodeWithoutData"
 
   patch:
     tags:
@@ -556,7 +554,7 @@
     summary: Update a node in the filesystem tree (change path or data)
     # description:
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
       - name: path
         in: path
         schema:
@@ -585,7 +583,7 @@
             schema:
               type: object
               allOf: # Combines the BasicErrorModel and the inline model
-                - $ref: '../objects.yaml#/FileNodeWithoutData'
+                - $ref: "../objects.yaml#/FileNodeWithoutData"
                 - type: object
                   description: files node data
                   properties:
@@ -598,7 +596,7 @@
       - gateway
     summary: Get all consumers
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
     responses:
       "200":
         description: Consumers for gateway in the namespace
@@ -634,13 +632,56 @@
                           type: string
                           description: group identifier
 
+/api/v2/namespaces/{namespace}/gateway/info:
+  get:
+    tags:
+      - gateway
+    summary: Get config file
+    description: |-
+      A basic OpenAPI config file is not required but can add context to the API provided by the gateway.
+      If none is provided Direktiv generates a virtual one with a basic configuration. The paths section
+      is autogenerated based on the route files provided in the namespace.
+    parameters:
+      - $ref: "../parameters.yaml#/namespace"
+      - in: query
+        name: expand
+        schema:
+          type: string
+        description: Includes all relative files into one OpenAPI spec file
+    responses:
+      "200":
+        description: Basic configuration file for gateway in the namespace
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                errors:
+                  type: array
+                  items:
+                    type: string
+                    description: list of errors in config, e.g. unknown parameters in config
+                warnings:
+                  type: array
+                  items:
+                    type: string
+                    description: list of warnings in config itself
+                file_path:
+                  type: string
+                  description: path to file in file tree
+                  example: /my/path.yaml
+                spec:
+                  type: object
+                  description: |-
+                    contains an OpenAPI spec object. The paths section is replaced based on the routes in the namespace.
+
 /api/v2/namespaces/{namespace}/gateway/routes:
   get:
     tags:
       - gateway
     summary: Get all routes
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
       - in: query
         name: path
         schema:
@@ -657,7 +698,7 @@
                 data:
                   type: array
                   items:
-                    $ref: '../objects.yaml#/route'
+                    $ref: "../objects.yaml#/route"
 
 /api/v2/namespaces/{namespace}/instances:
   get:
@@ -665,7 +706,7 @@
       - instances
     summary: Get all instances
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
       - name: limit
         in: query
         required: false
@@ -702,19 +743,19 @@
                 meta:
                   type: object
                   properties:
-                    total: 
+                    total:
                       type: integer
                 data:
                   type: array
                   items:
-                    $ref: '../objects.yaml#/InstanceData'
-  
+                    $ref: "../objects.yaml#/InstanceData"
+
   post:
     tags:
       - instances
     summary: Create an instance
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
       - name: path
         in: query
         schema:
@@ -726,13 +767,13 @@
         required: false
         schema:
           type: boolean
-          description: if true waits until instance execution finalizes and response with the raw response or a summary output (if output is set true)
+          description: if true waits until instance execution finalizes and responds with the raw response or a summary output (if output is set true)
       - name: output
         in: query
         required: false
         schema:
           type: boolean
-          description:  alters wait response to a instance summary output if set true
+          description: alters wait response to a instance summary output if set true
     responses:
       "200":
         description: Instance created.
@@ -742,7 +783,7 @@
               type: object
               properties:
                 data:
-                  $ref: '../objects.yaml#/InstanceData'
+                  $ref: "../objects.yaml#/InstanceData"
 
 /api/v2/namespaces/{namespace}/instances/{instanceID}:
   patch:
@@ -750,8 +791,8 @@
       - instances
     summary: Change information about an instance. Right now this can only be used to cancel an instance.
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
-      - $ref: '../parameters.yaml#/instanceID'
+      - $ref: "../parameters.yaml#/namespace"
+      - $ref: "../parameters.yaml#/instanceID"
     requestBody:
       required: true
       content:
@@ -771,8 +812,8 @@
       - instances
     summary: Get detailed instance information including blob lengths.
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
-      - $ref: '../parameters.yaml#/instanceID'
+      - $ref: "../parameters.yaml#/namespace"
+      - $ref: "../parameters.yaml#/instanceID"
     responses:
       "200":
         description: Instance summary information only returned.
@@ -782,7 +823,7 @@
               type: object
               properties:
                 data:
-                  $ref: '../objects.yaml#/InstanceData'
+                  $ref: "../objects.yaml#/InstanceData"
 
 /api/v2/namespaces/{namespace}/instances/{instanceID}/input:
   get:
@@ -790,8 +831,8 @@
       - instances
     summary: Get detailed instance information including the input blob.
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
-      - $ref: '../parameters.yaml#/instanceID'
+      - $ref: "../parameters.yaml#/namespace"
+      - $ref: "../parameters.yaml#/instanceID"
     responses:
       "200":
         description: Instance summary information plus input blob returned.
@@ -801,7 +842,7 @@
               type: object
               properties:
                 data:
-                  $ref: '../objects.yaml#/InstanceData'
+                  $ref: "../objects.yaml#/InstanceData"
 
 /api/v2/namespaces/{namespace}/instances/{instanceID}/output:
   get:
@@ -809,8 +850,8 @@
       - instances
     summary: Get detailed instance information including the output blob.
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
-      - $ref: '../parameters.yaml#/instanceID'
+      - $ref: "../parameters.yaml#/namespace"
+      - $ref: "../parameters.yaml#/instanceID"
     responses:
       "200":
         description: Instance summary information plus output blob returned.
@@ -820,7 +861,7 @@
               type: object
               properties:
                 data:
-                  $ref: '../objects.yaml#/InstanceData'
+                  $ref: "../objects.yaml#/InstanceData"
 
 /api/v2/namespaces/{namespace}/instances/{instanceID}/metadata:
   get:
@@ -828,8 +869,8 @@
       - instances
     summary: Get detailed instance information including the metadata blob.
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
-      - $ref: '../parameters.yaml#/instanceID'
+      - $ref: "../parameters.yaml#/namespace"
+      - $ref: "../parameters.yaml#/instanceID"
     responses:
       "200":
         description: Instance summary information plus metadata blob returned.
@@ -839,32 +880,32 @@
               type: object
               properties:
                 data:
-                  $ref: '../objects.yaml#/InstanceData'
+                  $ref: "../objects.yaml#/InstanceData"
 
 /api/v2/namespaces/{namespace}/instances/{instancesID}/subscribe:
- get:
-   tags:
-     - instances
-   summary: API for SSE streaming of instance data. The form of the data should match the generic instance request.
-   parameters:
-     - $ref: '../parameters.yaml#/namespace'
-     - $ref: '../parameters.yaml#/instanceID'
-   responses:
-     "200":
-       description: Instance summary information only returned.
-       content:
-         text/event-stream:
-           schema:
-             type: object
+  get:
+    tags:
+      - instances
+    summary: API for SSE streaming of instance data. The form of the data should match the generic instance request.
+    parameters:
+      - $ref: "../parameters.yaml#/namespace"
+      - $ref: "../parameters.yaml#/instanceID"
+    responses:
+      "200":
+        description: Instance summary information only returned.
+        content:
+          text/event-stream:
+            schema:
+              type: object
 #
 
 /api/v2/jx:
   post:
     summary: Perform a jx query.
     tags:
-    - server
+      - server
     responses:
-      '200': 
+      "200":
         description: JX helper API.
         content:
           application/json:
@@ -891,7 +932,7 @@
       - metrics
     summary: Gets all notifications in a namespace
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
       - in: query
         name: workflowPath
         required: true
@@ -959,7 +1000,7 @@
                             description: git branch name
                           authType:
                             type: string
-                            enum: [ public, ssh, token]
+                            enum: [public, ssh, token]
                             description: this field indicated what kind of authentication is used
                           publicKey:
                             type: string(optional)
@@ -1008,7 +1049,7 @@
                     description: git branch name
                   authType:
                     type: string
-                    enum: [ public, ssh, token ]
+                    enum: [public, ssh, token]
                     description: this field indicated what kind of authentication is used
                   authToken:
                     type: string(optional)
@@ -1041,8 +1082,8 @@
                       type: string
                       description: a unique string that represent name of the namespace
                     isSystemNamespace:
-                        type: boolean
-                        description: returns true only if this is a privileged namespace with special system-wide impacts.
+                      type: boolean
+                      description: returns true only if this is a privileged namespace with special system-wide impacts.
                     mirror:
                       type: object
                       nullable: true
@@ -1056,7 +1097,7 @@
                           description: git branch name
                         authType:
                           type: string
-                          enum: [ public, ssh, token]
+                          enum: [public, ssh, token]
                           description: this field indicated what kind of authentication is used
                         publicKey:
                           type: string(optional)
@@ -1077,14 +1118,13 @@
                       type: string
                       description: timestamp of last updating date
 
-
 /api/v2/namespaces/{namespace}:
   get:
     tags:
       - namespaces
     summary: Fetches a direktiv namespace
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
     responses:
       "200":
         description: data of the direktiv  namespace
@@ -1100,8 +1140,8 @@
                       type: string
                       description: a unique name string of the namespace
                     isSystemNamespace:
-                        type: boolean
-                        description: returns true only if this is a privileged namespace with special system-wide impacts.
+                      type: boolean
+                      description: returns true only if this is a privileged namespace with special system-wide impacts.
                     mirror:
                       type: object
                       nullable: true
@@ -1115,7 +1155,7 @@
                           description: git branch name
                         authType:
                           type: string
-                          enum: [ public, ssh, token]
+                          enum: [public, ssh, token]
                           description: this field indicated what kind of authentication is used
                         publicKey:
                           type: string(optional)
@@ -1141,17 +1181,17 @@
       - namespaces
     summary: Removes a direktiv namespace and all related resources
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
     responses:
       "200":
-        description:  object deleted successfully
+        description: object deleted successfully
 
   patch:
     tags:
       - namespaces
     summary: Patches a direktiv namespace
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
     requestBody:
       description: Namespace's updated data
       required: true
@@ -1173,7 +1213,7 @@
                     description: git branch name
                   authType:
                     type: string
-                    enum: [ public, ssh, token ]
+                    enum: [public, ssh, token]
                     description: this field indicated what kind of authentication is used
                   authToken:
                     type: string(optional)
@@ -1206,8 +1246,8 @@
                       type: string
                       description: a unique string that represent name of the namespace
                     isSystemNamespace:
-                        type: boolean
-                        description: returns true only if this is a privileged namespace with special system-wide impacts.
+                      type: boolean
+                      description: returns true only if this is a privileged namespace with special system-wide impacts.
                     mirror:
                       type: object
                       nullable: true
@@ -1221,7 +1261,7 @@
                           description: git branch name
                         authType:
                           type: string
-                          enum: [ public, ssh, token]
+                          enum: [public, ssh, token]
                           description: this field indicated what kind of authentication is used
                         publicKey:
                           type: string(optional)
@@ -1248,7 +1288,7 @@
       - notifications
     summary: Gets all notifications in a namespace
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
     responses:
       "200":
         description: list of notifications
@@ -1265,7 +1305,7 @@
                       description:
                         type: string
                         description: dynamic string for humans to read
-                      count: 
+                      count:
                         type: integer
                       level:
                         type: string
@@ -1277,15 +1317,15 @@
 /api/v2/namespaces/{namespace}/logs:
   get:
     tags:
-    - plattformlogs
+      - plattformlogs
     summary: Api for listing the last 200 log entries for a given resource.
     parameters:
       - name: namespace
         in: path
         required: true
         schema:
-            type: string
-            pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+          type: string
+          pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
         style: simple
       - name: instance
         in: query
@@ -1313,59 +1353,59 @@
         in: query
         required: false
         description: Optional argument for using to request logs older then the given time.
-        schema: 
-          type: string 
+        schema:
+          type: string
           format: RFC3339Nano
     responses:
-      '200':
+      "200":
         description: OK
         content:
-          'application/json':
+          "application/json":
             example:
-              previousPage: '2024-01-17T01:44:08.128136Z'
-              startingFrom: '2024-01-16T01:44:08.128136Z'
+              previousPage: "2024-01-17T01:44:08.128136Z"
+              startingFrom: "2024-01-16T01:44:08.128136Z"
               data:
-              - id: 0,
-                time: '2024-01-17T01:44:08.128136Z'
-                level: 'INFO'
-                msg: 'Running state logic'
-                trace: "00000000000000000000000000000000"
-                span: "0000000000000000"
-                workflow:
-                  status: "running"
-                  state: null,
-                  branch: null,
-                  path: "/test.yaml"
-                  calledAs: null,
-                  instance: 1bdf4042-1708-4212-b21d-7240f4685e4a
-              - id: 13976,
-                time: "2024-03-11T12:30:00.007424Z"
-                msg: "Workflow has been triggered"
-                level: "INFO"
-                namespace: "nsfad"
-                trace: "00000000000000000000000000000000"
-                span: "0000000000000000"
-                error: null
-              - id: 14943
-                time: "2024-03-11T12:35:55.978736Z"
-                msg: "File 'variables/README.md' loaded."
-                level: "INFO"
-                namespace: null,
-                trace: null,
-                span: null,
-                activity:
-                  id: "29960091-2797-493e-a262-1a7765146cd4"
-                error: null
-              - id: 16138
-                time: "2024-03-11T12:56:51.268669Z"
-                msg: "can not process plugin"
-                level: "ERROR"
-                namespace: "myns"
-                trace: 00000000000000000000000000000000
-                span: 0000000000000000
-                route: 
-                  path: "/consumer"
-                error: "forbidden"
+                - id: 0,
+                  time: "2024-01-17T01:44:08.128136Z"
+                  level: "INFO"
+                  msg: "Running state logic"
+                  trace: "00000000000000000000000000000000"
+                  span: "0000000000000000"
+                  workflow:
+                    status: "running"
+                    state: null,
+                    branch: null,
+                    path: "/test.yaml"
+                    calledAs: null,
+                    instance: 1bdf4042-1708-4212-b21d-7240f4685e4a
+                - id: 13976,
+                  time: "2024-03-11T12:30:00.007424Z"
+                  msg: "Workflow has been triggered"
+                  level: "INFO"
+                  namespace: "nsfad"
+                  trace: "00000000000000000000000000000000"
+                  span: "0000000000000000"
+                  error: null
+                - id: 14943
+                  time: "2024-03-11T12:35:55.978736Z"
+                  msg: "File 'variables/README.md' loaded."
+                  level: "INFO"
+                  namespace: null,
+                  trace: null,
+                  span: null,
+                  activity:
+                    id: "29960091-2797-493e-a262-1a7765146cd4"
+                  error: null
+                - id: 16138
+                  time: "2024-03-11T12:56:51.268669Z"
+                  msg: "can not process plugin"
+                  level: "ERROR"
+                  namespace: "myns"
+                  trace: 00000000000000000000000000000000
+                  span: 0000000000000000
+                  route:
+                    path: "/consumer"
+                  error: "forbidden"
             schema:
               type: object
               properties:
@@ -1382,24 +1422,24 @@
                       format: RFC3339Nano
                 data:
                   type: array
-                  items: 
+                  items:
                     type: object
                     properties:
-                      time: 
-                        type: string 
+                      time:
+                        type: string
                         format: RFC3339Nano
-                      level: 
-                        type: string 
+                      level:
+                        type: string
                         enum: ["INFO", "ERROR", "WARNING", "DEBUG"]
-                      msg: 
+                      msg:
                         type: string
-                      id: 
+                      id:
                         type: string
-                      trace: 
+                      trace:
                         type: string
-                      span: 
+                      span:
                         type: string
-                      namespace: 
+                      namespace:
                         type: string
                       error:
                         type: object
@@ -1410,7 +1450,14 @@
                         properties:
                           status:
                             type: string
-                            enum: ["error", "unknown", "running", "failed", "completed"]
+                            enum:
+                              [
+                                "error",
+                                "unknown",
+                                "running",
+                                "failed",
+                                "completed",
+                              ]
                           state:
                             type: string
                           branch:
@@ -1441,15 +1488,15 @@
 /api/v2/namespaces/{namespace}/logs/subscribe:
   get:
     tags:
-    - plattformlogs
+      - plattformlogs
     summary: Api for SSE streaming of incoming logs stating the systems current time.
     parameters:
       - name: namespace
         in: path
         required: true
         schema:
-            type: string
-            pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+          type: string
+          pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
         style: simple
       - name: instance
         in: query
@@ -1479,7 +1526,7 @@
         schema:
           type: integer
     responses:
-      '200':
+      "200":
         description: OK
         content:
           text/event-stream:
@@ -1487,7 +1534,7 @@
               id: 4
               event: message
               data: {'id':'4','time':'2024-02-07T08:59:52.666925Z','msg':'Starting workflow /action.yaml','level':'INFO'}
-              
+
               id: 6
               event: message
               data: {'id':'6','time':'2024-02-07T09:00:01.770604Z','msg':'Workflow /action.yaml completed.','level':'INFO'}
@@ -1499,7 +1546,7 @@
     summary: Get all namespace registries
     # description:
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
     responses:
       "200":
         description: Registries list returned
@@ -1574,17 +1621,17 @@
       - registries
     summary: Remove a registry secret
     parameters:
-      - $ref: '../parameters.yaml#/registryID'
+      - $ref: "../parameters.yaml#/registryID"
     responses:
       "200":
-        description:  Registry object deleted
+        description: Registry object deleted
 /api/v2/namespaces/{namespace}/secrets:
   get:
     tags:
       - secrets
     summary: Gets all direktiv secrets in a namespace
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
     responses:
       "200":
         description: list of direktiv secrets
@@ -1613,7 +1660,7 @@
       - secrets
     summary: Creates a new direktiv secret
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
     requestBody:
       description: Secret's creating data
       required: true
@@ -1655,7 +1702,7 @@
       - secrets
     summary: Fetches a direktiv secret
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
       - name: secretName
         in: path
         required: true
@@ -1688,7 +1735,7 @@
       - secrets
     summary: Removes a direktiv  secret
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
       - name: secretName
         in: path
         required: true
@@ -1697,14 +1744,14 @@
           description: name of the secret
     responses:
       "200":
-        description:  object deleted successfully
+        description: object deleted successfully
 
   patch:
     tags:
       - secrets
     summary: Updates a direktiv secret
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
       - name: secretName
         in: path
         required: true
@@ -1747,7 +1794,7 @@
     summary: Get all services
     # description:
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
     responses:
       "200":
         description: Services list returned
@@ -1789,7 +1836,7 @@
                         type: integer
                         description: number from 0 to 9
                       error:
-                        type: [ string, null ]
+                        type: [string, null]
                         description: error string when service failed to be scheduled, otherwise null
                       envs:
                         type: array
@@ -1828,8 +1875,8 @@
     summary: Get all pods for a given service
     # description:
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
-      - $ref: '../parameters.yaml#/serviceID'
+      - $ref: "../parameters.yaml#/namespace"
+      - $ref: "../parameters.yaml#/serviceID"
     responses:
       "200":
         description: Pods list returned
@@ -1854,9 +1901,9 @@
     summary: Stream logs for a given pod
     # description:
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
-      - $ref: '../parameters.yaml#/serviceID'
-      - $ref: '../parameters.yaml#/podID'
+      - $ref: "../parameters.yaml#/namespace"
+      - $ref: "../parameters.yaml#/serviceID"
+      - $ref: "../parameters.yaml#/podID"
     responses:
       "200":
         description: Stream of plain text log data
@@ -1865,11 +1912,11 @@
   post:
     tags:
       - services
-    summary:  Rebuilds service
+    summary: Rebuilds service
     # description:
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
-      - $ref: '../parameters.yaml#/serviceID'
+      - $ref: "../parameters.yaml#/namespace"
+      - $ref: "../parameters.yaml#/serviceID"
     responses:
       "200":
         description: Service rebuilds successfully
@@ -1880,7 +1927,7 @@
       - syncs
     summary: Gets all direktiv namespace mirroring syncs
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
     responses:
       "200":
         description: list of direktiv namespace mirroring syncs processes
@@ -1911,13 +1958,12 @@
                         type: string
                         description: timestamp of last updating date
 
-
   post:
     tags:
       - syncs
     summary: Creates (trigger) a new namespace mirroring sync
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
     responses:
       "200":
         description: data of the created direktiv namespace mirroring sync status
@@ -1946,15 +1992,13 @@
                       type: string
                       description: timestamp of last updating date
 
-
-
 /api/v2/namespaces/{namespace}/variables:
   get:
     tags:
       - variables
     summary: Gets all direktiv variables in a namespace
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
       - in: query
         name: workflowPath
         schema:
@@ -1969,7 +2013,7 @@
         name: name
         schema:
           type: string
-        description:  When set, the list will contain only variables having this name. Empty list return when the filter matches to no variable
+        description: When set, the list will contain only variables having this name. Empty list return when the filter matches to no variable
     responses:
       "200":
         description: list of direktiv variables
@@ -2013,7 +2057,7 @@
       - variables
     summary: Creates a new direktiv variable
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
     requestBody:
       description: Variable's creating data
       required: true
@@ -2078,7 +2122,7 @@
       - variables
     summary: Removes multiple direktiv variables
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
       - in: query
         name: ids
         schema:
@@ -2086,7 +2130,7 @@
         description: Comma separated string of variables ids
     responses:
       "200":
-        description:  objects deleted successfully
+        description: objects deleted successfully
 
 /api/v2/namespaces/{namespace}/variables/{variableID}:
   get:
@@ -2094,7 +2138,7 @@
       - variables
     summary: Fetches a direktiv variable
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
       - name: variableID
         in: path
         required: true
@@ -2145,7 +2189,7 @@
       - variables
     summary: Removes a direktiv  variable
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
       - name: variableID
         in: path
         required: true
@@ -2154,14 +2198,14 @@
           description: id string of the variable
     responses:
       "200":
-        description:  object deleted successfully
+        description: object deleted successfully
 
   patch:
     tags:
       - variables
     summary: Updates a direktiv variable
     parameters:
-      - $ref: '../parameters.yaml#/namespace'
+      - $ref: "../parameters.yaml#/namespace"
       - name: variableID
         in: path
         required: true
@@ -2228,9 +2272,9 @@
   get:
     summary: Get server status information.
     tags:
-    - server
+      - server
     responses:
-      '200': 
+      "200":
         description: Server status information.
         content:
           application/json:

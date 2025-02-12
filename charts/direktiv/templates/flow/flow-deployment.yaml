@@ -174,7 +174,8 @@ spec:
             value: "{{ .Values.nats.config.routeURLs.user }}"
           - name: DIREKTIV_NATS_PASSWORD
             value: "{{ .Values.nats.config.routeURLs.password }}"
-
+          - name: DIREKTIV_VICTORIA_LOGS
+            value: "direktiv-victoria-logs-single-server.{{ .Release.Namespace }}.svc"
       volumes:
         {{- if .Values.flow.extraVolumes }}
         {{ toYaml .Values.flow.extraVolumes | nindent 8 }}

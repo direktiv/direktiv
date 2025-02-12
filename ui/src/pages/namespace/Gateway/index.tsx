@@ -19,7 +19,7 @@ const GatewayPage = () => {
     shouldThrow: false,
   });
   const isGatewayRoutesDetailPage = useMatch({
-    from: "/n/$namespace/gateway/routes/$filename",
+    from: "/n/$namespace/gateway/routes/$",
     shouldThrow: false,
   });
 
