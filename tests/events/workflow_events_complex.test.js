@@ -70,7 +70,7 @@ describe('Test complex workflow events orchistration', () => {
 
 		await events.sendEventAndList(namespaceName, eventStream3)
 		await helpers.sleep(500)
-		
+
 		instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0`)
 		const stream3InstanceId = instancesResponse.body.data[0].id // assuming they are sorted
 		expect(instancesResponse.body.data.length).toBe(3)

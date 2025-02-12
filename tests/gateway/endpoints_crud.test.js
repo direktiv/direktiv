@@ -210,27 +210,27 @@ describe('Test gateway get single endpoint', () => {
 		expect(listRes.body.data[0]).toEqual(expect.objectContaining({
 			spec: expect.objectContaining({
 				get: expect.anything(),
-				"x-direktiv-config": {
+				'x-direktiv-config': {
 					allow_anonymous: false,
-					path: "/endpoint1",
+					path: '/endpoint1',
 					plugins: {
 						auth: [
-						{
-							configuration: {
-								key_name: "secret"
+							{
+								configuration: {
+									key_name: 'secret',
+								},
+								type: 'key-auth',
 							},
-							type: "key-auth"
-							}
 						],
 						target: {
 							configuration: {
 								status_code: 201,
-								status_message: "TEST1"
+								status_message: 'TEST1',
 							},
-							type: "instant-response"
-						}
-					}
-				}
+							type: 'instant-response',
+						},
+					},
+				},
 			}),
 			errors: [],
 			warnings: [],
@@ -245,7 +245,7 @@ describe('Test gateway get single endpoint', () => {
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
-		expect(listRes.body.data[0].spec["x-direktiv-config"].path).toEqual("/endpoint3/longer/path")
+		expect(listRes.body.data[0].spec['x-direktiv-config'].path).toEqual('/endpoint3/longer/path')
 	})
 
 	retry10(`should list long path endpoint with var`, async () => {
@@ -254,7 +254,7 @@ describe('Test gateway get single endpoint', () => {
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
-		expect(listRes.body.data[0].spec["x-direktiv-config"].path).toEqual("/endpoint4/longer/path/{id}")
+		expect(listRes.body.data[0].spec['x-direktiv-config'].path).toEqual('/endpoint4/longer/path/{id}')
 	})
 })
 
