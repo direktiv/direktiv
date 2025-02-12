@@ -19,6 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/events"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/instancestore"
+	"github.com/direktiv/direktiv/pkg/metastore/victoriametrics"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/direktiv/direktiv/pkg/version"
@@ -72,6 +73,8 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 		wakeInstance:  wakeByEvents,
 		startWorkflow: startByEvents,
 	}
+
+	newLogs := newLogsCtr{meta: victoriametrics.NewVictoriaMetricsLogStore("http://"+app.Config.VictoriaLogsEndpoint+":9428", time.Second)}
 
 	jxCtr := jxController{}
 
@@ -159,6 +162,9 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 			})
 			r.Route("/namespaces/{namespace}/logs", func(r chi.Router) {
 				logCtr.mountRouter(r)
+			})
+			r.Route("/namespaces/{namespace}/new_logs", func(r chi.Router) {
+				newLogs.mountRouter(r)
 			})
 			r.Route("/namespaces/{namespace}/notifications", func(r chi.Router) {
 				notificationsCtr.mountRouter(r)
