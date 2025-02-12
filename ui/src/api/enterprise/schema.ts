@@ -32,4 +32,4 @@ const PermisionSchema = z.object({
 });
 export type PermisionSchemaType = z.infer<typeof PermisionSchema>;
 
-export const PermissionsArray = z.array(PermisionSchema).nonempty();
+export const PermissionsArray = z.array(PermisionSchema);
