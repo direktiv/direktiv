@@ -3,7 +3,6 @@ import { ComponentProps } from "react";
 
 type BadgeVariant = ComponentProps<typeof Badge>["variant"];
 
-// TODO: is this in use?
 const usePermissionLevel = (
   appliedPermissions: string[],
   availablePermissions: string[]
