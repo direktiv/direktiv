@@ -8,6 +8,7 @@ import (
 // LogStore defines a high-level interface for managing logs in the Metastore.
 type LogStore interface {
 	Get(ctx context.Context, options LogQueryOptions) ([]LogEntry, error)
+	Stream(ctx context.Context, options LogQueryOptions, ch chan<- LogEntry) error
 }
 
 // LogEntry represents a log entry aligned with the OpenSearch index mapping.
@@ -35,10 +36,10 @@ type LogEntry struct {
 
 // LogQueryOptions defines filters for querying logs.
 type LogQueryOptions struct {
-	StartTime time.Time         // Start of time range filter
-	EndTime   time.Time         // End of time range filter
+	StartTime *time.Time        // Start of time range filter
+	EndTime   *time.Time        // End of time range filter
 	Level     string            // Log level (e.g., "INFO", "ERROR")
-	Keywords  []string          // Keywords to search within the message field
+	Keywords  string            // Keywords to search within the message field
 	Metadata  map[string]string // Additional metadata filters (e.g., namespace, instance, workflow)
 	Limit     int               // Maximum number of logs to return
 }

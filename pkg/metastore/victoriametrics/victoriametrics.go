@@ -15,9 +15,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/metastore"
 )
 
-// LogStore implements LogStore for VictoriaMetrics backend.
+// LogStore implements LogStore for VictoriaMetrics Logs backend.
 type LogStore struct {
-	Endpoint string       // VictoriaMetrics API endpoint
+	Endpoint string       // VictoriaMetrics Logs API endpoint
 	Client   *http.Client // HTTP client for making requests
 }
 
@@ -29,17 +29,34 @@ func NewVictoriaMetricsLogStore(endpoint string, timeout time.Duration) *LogStor
 	}
 }
 
-// Get fetches logs from VictoriaMetrics based on LogQueryOptions.
-func (v *LogStore) Get(ctx context.Context, options metastore.LogQueryOptions) ([]metastore.LogEntry, error) {
-	// query := v.buildLogQLQuery(options)
+// fetchLogs is a helper function that sends a request to VictoriaMetrics
+// and either returns a slice of logs (for Get) or streams logs to a channel (for Stream).
+func (v *LogStore) fetchLogs(ctx context.Context, options metastore.LogQueryOptions, endpoint string, ch chan<- metastore.LogEntry) ([]metastore.LogEntry, error) {
 	query := "*"
+	if len(options.Keywords) != 0 {
+		query = options.Keywords
+	}
+
 	// Prepare request body
 	formData := url.Values{}
 	formData.Set("query", query)
 	formData.Set("limit", strconv.Itoa(options.Limit))
+	if len(options.Metadata) > 0 {
+		filters, err := json.Marshal(options.Metadata)
+		if err != nil {
+			return nil, err
+		}
+		formData.Set("extra_filters", string(filters))
+	}
+	if options.StartTime != nil {
+		formData.Set("start", fmt.Sprint(options.StartTime.Unix()))
+	}
+	if options.EndTime != nil {
+		formData.Set("end", fmt.Sprint(options.EndTime.Unix()))
+	}
 
 	// Create a POST request
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("%s/select/logsql/query", v.Endpoint), strings.NewReader(formData.Encode()))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, strings.NewReader(formData.Encode()))
 	if err != nil {
 		return nil, err
 	}
@@ -52,21 +69,16 @@ func (v *LogStore) Get(ctx context.Context, options metastore.LogQueryOptions) (
 	}
 	defer resp.Body.Close()
 
-	// Check response status
+	// Handle non-200 responses
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to fetch logs, status code: %d", resp.StatusCode)
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("failed to fetch logs, status: %v, response: %s", resp.StatusCode, string(bodyBytes))
 	}
 
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("error reading response body: %w", err)
-	}
+	// Read logs from response
+	var logs []metastore.LogEntry
+	scanner := bufio.NewScanner(resp.Body)
 
-	// Parse response JSON
-	var response []metastore.LogEntry
-
-	// Read the response as NDJSON (Newline-Delimited JSON)
-	scanner := bufio.NewScanner(strings.NewReader(string(bodyBytes)))
 	for scanner.Scan() {
 		var entry metastore.LogEntry
 		line := scanner.Text()
@@ -75,38 +87,36 @@ func (v *LogStore) Get(ctx context.Context, options metastore.LogQueryOptions) (
 			return nil, fmt.Errorf("failed to parse JSON line: %s, error: %w", line, err)
 		}
 
-		response = append(response, entry)
+		if ch != nil {
+			// If streaming, send to the channel
+			select {
+			case ch <- entry:
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			}
+		} else {
+			// Otherwise, collect for batch response
+			logs = append(logs, entry)
+		}
 	}
 
-	// Check for scanner errors
+	// Handle scanner errors
 	if err := scanner.Err(); err != nil {
 		return nil, fmt.Errorf("error reading response: %w", err)
 	}
 
-	return response, nil
+	return logs, nil
 }
 
-// buildLogQLQuery converts LogQueryOptions into a VictoriaMetrics LogQL query.
-func (v *LogStore) buildLogQLQuery(options metastore.LogQueryOptions) string {
-	var filters []string
+// Get fetches logs from VictoriaMetrics.
+func (v *LogStore) Get(ctx context.Context, options metastore.LogQueryOptions) ([]metastore.LogEntry, error) {
+	return v.fetchLogs(ctx, options, fmt.Sprintf("%s/select/logsql/query", v.Endpoint), nil)
+}
 
-	// Convert metadata filters (namespace, instance, workflow, etc.)
-	for k, v := range options.Metadata {
-		filters = append(filters, fmt.Sprintf(`%s="%s"`, k, v))
-	}
+// Stream streams logs from VictoriaMetrics in real-time.
+func (v *LogStore) Stream(ctx context.Context, options metastore.LogQueryOptions, ch chan<- metastore.LogEntry) error {
+	defer close(ch)
+	_, err := v.fetchLogs(ctx, options, fmt.Sprintf("%s/select/logsql/tail", v.Endpoint), ch)
 
-	// Add log level filter if specified
-	if options.Level != "" {
-		filters = append(filters, fmt.Sprintf(`level="%s"`, options.Level))
-	}
-
-	// Construct the base query
-	query := fmt.Sprintf("{%s}", strings.Join(filters, ","))
-
-	// Add keyword search if specified
-	for _, keyword := range options.Keywords {
-		query += fmt.Sprintf(` |= "%s"`, keyword)
-	}
-
-	return query
+	return err
 }

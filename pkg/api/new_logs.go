@@ -14,10 +14,16 @@ type newLogsCtr struct {
 
 func (m *newLogsCtr) mountRouter(r chi.Router) {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now().UTC().Add(-time.Hour)
+		end := time.Now().UTC()
 		logs, err := m.meta.Get(r.Context(), metastore.LogQueryOptions{
-			StartTime: time.Now().UTC().Add(-time.Hour), // 1 hour ago
-			EndTime:   time.Now().UTC(),                 // Now
-			Limit:     10000,
+			StartTime: &start, // 1 hour ago
+			EndTime:   &end,   // Now
+			Metadata: map[string]string{
+				"namespace": "test",
+				"instance":  "8f129335-9fb6-4353-989f-4d34c78f5b1b",
+			},
+			Limit: 10000,
 		})
 
 		if err != nil {
