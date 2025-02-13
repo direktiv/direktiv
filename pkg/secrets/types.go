@@ -7,6 +7,7 @@ import (
 )
 
 type Secret struct {
+	ID     string `json:"id"`
 	Path   string `json:"path"`
 	Source string `json:"source"`
 	Data   []byte `json:"data"`

@@ -35,6 +35,14 @@ func (d *MockSourceDriver) ConstructSource(data []byte) secrets.Source {
 	return s
 }
 
+func (d *MockSourceDriver) RedactConfig(data []byte) ([]byte, error) {
+	return data, nil
+}
+
+func (d *MockSourceDriver) ValidateConfig(data []byte) error {
+	return nil
+}
+
 func TestMockSourceDriver(t *testing.T) {
 	_ = secrets.RegisterDriver("mock", &MockSourceDriver{})
 

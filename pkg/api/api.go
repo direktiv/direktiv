@@ -72,6 +72,9 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 		wakeInstance:  wakeByEvents,
 		startWorkflow: startByEvents,
 	}
+	vaultsCtr := &vaultsController{
+		db: db,
+	}
 
 	jxCtr := jxController{}
 
@@ -171,6 +174,16 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 				eventsCtr.mountBroadcast(r)
 			})
 			r.Handle("/namespaces/{namespace}/gateway/*", app.GatewayManager)
+
+			r.Route("/namespaces/{namespace}/vaults/default", func(r chi.Router) {
+				vaultsCtr.mountDefaultRouter(r)
+			})
+			r.Route("/namespaces/{namespace}/vaults/configs", func(r chi.Router) {
+				vaultsCtr.mountConfigsRouter(r)
+			})
+			r.Route("/namespaces/{namespace}/vaults/cache", func(r chi.Router) {
+				vaultsCtr.mountCacheRouter(r)
+			})
 
 			if len(extensions.AdditionalAPIRoutes) > 0 {
 				for pattern, ctr := range extensions.AdditionalAPIRoutes {

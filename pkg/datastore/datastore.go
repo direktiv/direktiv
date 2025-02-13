@@ -19,6 +19,7 @@ type Store interface {
 	NewLogs() LogStore
 
 	Secrets() SecretsStore
+	SecretsConfigs() SecretsConfigsStore
 
 	RuntimeVariables() RuntimeVariablesStore
 

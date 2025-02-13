@@ -13,9 +13,9 @@ const (
 var ErrSecretNotFound = NewJSONMarshalableError(errors.New("secret not found"))
 
 type SourceConfig struct {
-	Name   string
-	Driver string
-	Data   []byte
+	Name   string `json:"name"`
+	Driver string `json:"driver"`
+	Data   []byte `json:"data"`
 }
 
 type Source interface {

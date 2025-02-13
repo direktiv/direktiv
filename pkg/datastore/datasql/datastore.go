@@ -34,6 +34,10 @@ func (s *store) Secrets() datastore.SecretsStore {
 	return &sqlSecretsStore{db: s.db}
 }
 
+func (s *store) SecretsConfigs() datastore.SecretsConfigsStore {
+	return &sqlSecretsConfigsStore{db: s.db}
+}
+
 func (s *store) RuntimeVariables() datastore.RuntimeVariablesStore {
 	return &sqlRuntimeVariablesStore{db: s.db}
 }

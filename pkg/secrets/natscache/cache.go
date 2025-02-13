@@ -28,7 +28,7 @@ func (c *Cache) List(ctx context.Context) (secrets.List, error) {
 
 	for key := range keys.Keys() {
 		list = append(list, secrets.Secret{
-			Path: key,
+			ID: key,
 		})
 	}
 
@@ -56,7 +56,7 @@ func (c *Cache) List(ctx context.Context) (secrets.List, error) {
 func (c *Cache) Insert(ctx context.Context, secret secrets.Secret) error {
 	data, _ := json.Marshal(secret)
 
-	_, err := c.kv.Create(ctx, secret.Path, data)
+	_, err := c.kv.Create(ctx, secret.ID, data)
 	if err != nil {
 		if errors.Is(err, jetstream.ErrKeyExists) {
 			return secrets.ErrKeyExists

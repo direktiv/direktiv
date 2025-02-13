@@ -89,27 +89,43 @@ func (srv *server) initializeSecrets() error {
 
 	// set config getter
 	secrets.SetDefaultConfigGetter(func(namespace string) (*secrets.Config, error) {
-		// TODO: figure out where to store secrets settings and then load them here instead of just defining a default local secrets.
+		var config *secrets.Config
 
-		confData, _ := json.Marshal(localsecrets.Config{
-			DriverName: localsecrets.DriverName,
-			Namespace:  namespace,
-		})
+		secretsConfigs, err := srv.db.DataStore().SecretsConfigs().Get(context.Background(), namespace)
+		if err != nil {
+			if !errors.Is(err, datastore.ErrNotFound) {
+				return nil, err
+			}
 
-		config := &secrets.Config{
-			DefaultSource: "local",
-			RetryTime:     time.Second, // TODO: what is a good value here?
-			SourceConfigs: []secrets.SourceConfig{
-				{
-					Name:   "local",
-					Driver: localsecrets.DriverName,
-					Data:   confData,
-				},
-			},
+			config = DefaultSecretsConfig(namespace)
+		} else {
+			if err := json.Unmarshal(secretsConfigs.Configuration, &config); err != nil {
+				return nil, err
+			}
 		}
 
 		return config, nil
 	})
 
 	return nil
+}
+
+func DefaultSecretsConfig(namespace string) *secrets.Config {
+	// initialize sensible default here
+	confData, _ := json.Marshal(localsecrets.Config{
+		DriverName: localsecrets.DriverName,
+		Namespace:  namespace,
+	})
+
+	return &secrets.Config{
+		DefaultSource: "local",
+		RetryTime:     time.Second,
+		SourceConfigs: []secrets.SourceConfig{
+			{
+				Name:   "local",
+				Driver: localsecrets.DriverName,
+				Data:   confData,
+			},
+		},
+	}
 }

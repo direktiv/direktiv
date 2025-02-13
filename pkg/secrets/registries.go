@@ -6,10 +6,14 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 type Driver interface {
 	ConstructSource(data []byte) Source
+	RedactConfig(data []byte) ([]byte, error)
+	ValidateConfig(data []byte) error
 }
 
 var drivers sync.Map
@@ -88,7 +92,9 @@ func DeleteController(namespace string) {
 			panic(errors.New("bad type stored in controller registry"))
 		}
 
-		c.Delete()
+		if err := c.Delete(); err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -104,7 +110,7 @@ func SetDefaultConfigGetter(fn func(namespace string) (*Config, error)) {
 	configGetter = fn
 }
 
-var defaultCacheFactory func(namespace string) (Cache, error) = func(namespace string) (Cache, error) {
+var defaultCacheFactory = func(namespace string) (Cache, error) {
 	return &MemoryCache{}, nil
 }
 
@@ -152,6 +158,10 @@ func (c *MemoryCache) List(_ context.Context) (List, error) {
 func (c *MemoryCache) Insert(_ context.Context, secret Secret) error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
+
+	if secret.ID == "" {
+		secret.ID = uuid.New().String()
+	}
 
 	for _, entry := range c.list {
 		if entry.Path == secret.Path && entry.Source == secret.Source {

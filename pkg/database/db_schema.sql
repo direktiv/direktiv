@@ -244,3 +244,14 @@ CREATE TABLE IF NOT EXISTS "event_topics" (
 -- is a compound like this: "namespace-id:event-type"
 CREATE INDEX IF NOT EXISTS "event_topic_bucket" ON "event_topics" USING hash("topic");
 
+CREATE TABLE IF NOT EXISTS "secrets_configs" (
+    "namespace" text,
+    "configuration" bytea NOT NULL,
+
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY ("namespace"),
+    CONSTRAINT "fk_namespaces_secrets_configs"
+    FOREIGN KEY ("namespace") REFERENCES "namespaces"("name") ON DELETE CASCADE ON UPDATE CASCADE
+);

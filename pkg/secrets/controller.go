@@ -31,9 +31,23 @@ type Cache interface {
 }
 
 type Config struct {
-	DefaultSource string         `json:"defaultSource"`
-	RetryTime     time.Duration  `json:"retryTime"`
-	SourceConfigs []SourceConfig `json:"sourceConfigs"`
+	DefaultSource string        `json:"defaultSource"`
+	RetryTime     time.Duration `json:"retryTime"`
+	SourceConfigs SourceConfigs `json:"sourceConfigs"`
+}
+
+type SourceConfigs []SourceConfig
+
+func (x SourceConfigs) Len() int {
+	return len(x)
+}
+
+func (x SourceConfigs) Swap(i, j int) {
+	x[i], x[j] = x[j], x[i]
+}
+
+func (x SourceConfigs) Less(i, j int) bool {
+	return x[i].Name < x[j].Name
 }
 
 func NewController(config *Config, cache Cache) Controller {
@@ -192,44 +206,25 @@ func (c *ephemeralController) Delete() error {
 	return c.cache.Delete()
 }
 
-// TODO: enable NATS
-// TODO: design apis next
-// TODO: store/load source settings from database
-//
-// TODO: implement apis:
-//		invalidate cache
-//		define new source (don't forget multiple in same request ???)
-//		rename source ???
-//		change defaultSource
-// 		delete source
-//		list sources
-//		list secrets in source ???
 // TODO: implement source drivers
 //				cyberark // STALLED: need an account.
 //				azure // STALLED: need Jens' Azure code.
 //				aws // STALLED: need an IAM account.
 // TODO: documentation
 // TODO: exported symbols documentation comments
+// TODO: openapi docs
 // TODO: more extensive unit testing
 // TODO: jest e2e tests
 // TODO: figure out how to automate testing against third party services
+// TODO: test with NATS
+// TODO: enhance performance by changing driver interface queries from looking up one secret at a time to looking up a list
+// TODO: should we use our encryption key to encrypt secrets stored in NATS cache?
+//
+// TODO: handoff for frontend work
 
 /*
 
-APIs:
-
-List/Get sources on namespace
-Delete a source
-Create a source
-	AWS
-	Azure
-	CyberArk
-
-List secrets in namespace cache
-Invalidate a cached secret
-Force lookup (as a test only; do not return)
-
-Get the namespace secrets config
-Update the namespace secrets config
+TODO: alan, should we duplicate the existing secrets APIs to the following endpoint?
+	/namespaces/{namespace}/vaults/local
 
 */

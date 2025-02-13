@@ -44,23 +44,40 @@ func (d *Driver) ConstructSource(data []byte) secrets.Source {
 		}
 	}
 
-	if src.Config.DriverName != DriverName {
+	if err := d.ValidateConfig(data); err != nil {
 		return &secrets.BadConfigSource{
 			Name:  DriverName,
-			Error: fmt.Errorf("invalid driver name: '%s'", src.Config.DriverName),
-		}
-	}
-
-	if src.Config.Namespace == "" {
-		return &secrets.BadConfigSource{
-			Name:  DriverName,
-			Error: errors.New("missing namespace"),
+			Error: err,
 		}
 	}
 
 	src.SecretsStore = d.SecretsStore
 
 	return src
+}
+
+func (d *Driver) RedactConfig(data []byte) ([]byte, error) {
+	return data, nil // no sensitive information is stored in this config
+}
+
+func (d *Driver) ValidateConfig(data []byte) error {
+	var config Config
+
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&config); err != nil {
+		return err
+	}
+
+	if config.DriverName != DriverName {
+		return fmt.Errorf("invalid driver name: '%s'", config.DriverName)
+	}
+
+	if config.Namespace == "" {
+		return errors.New("missing namespace")
+	}
+
+	return nil
 }
 
 type Source struct {
