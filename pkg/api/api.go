@@ -114,9 +114,9 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 		writeJSON(w, data)
 	})
 
-	logCtr := &logController{
-		store: db.DataStore().NewLogs(),
-	}
+	// logCtr := &logController{
+	// 	store: db.DataStore().NewLogs(),
+	// }
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
 
 	r.Route("/api/v2", func(r chi.Router) {
@@ -161,7 +161,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 				regCtr.mountRouter(r)
 			})
 			r.Route("/namespaces/{namespace}/logs", func(r chi.Router) {
-				logCtr.mountRouter(r)
+				newLogs.mountRouter(r)
 			})
 			r.Route("/namespaces/{namespace}/new_logs", func(r chi.Router) {
 				newLogs.mountRouter(r)

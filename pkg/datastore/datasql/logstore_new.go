@@ -21,7 +21,7 @@ type sqlLogNewStore struct {
 }
 
 type ScanResult struct {
-	ID   int
+	ID   int64
 	Time time.Time
 	Tag  string
 	Data []byte

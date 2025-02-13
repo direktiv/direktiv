@@ -251,7 +251,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 			}
 
 			e := Event{
-				ID:   strconv.Itoa(fle.ID),
+				ID:   fmt.Sprint(fle.ID),
 				Data: dst.String(),
 				Type: "message",
 			}
@@ -353,7 +353,7 @@ func extractLogRequestParams(r *http.Request) map[string]string {
 }
 
 type logEntry struct {
-	ID        int                   `json:"id"`
+	ID        int64                 `json:"id"`
 	Time      time.Time             `json:"time"`
 	Msg       interface{}           `json:"msg"`
 	Level     interface{}           `json:"level"`

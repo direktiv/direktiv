@@ -24,7 +24,7 @@ const (
 )
 
 type LogEntry struct {
-	ID   int
+	ID   int64
 	Time time.Time
 	Tag  string
 	Data map[string]interface{}
