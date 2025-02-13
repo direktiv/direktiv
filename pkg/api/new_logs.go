@@ -60,7 +60,7 @@ func (c *newLogsCtr) get(w http.ResponseWriter, r *http.Request) {
 		}
 		if len(log.Activity) > 0 {
 			entry.Activity = &ActivityEntryContext{
-				ID: 0,
+				ID: log.Activity,
 			}
 		}
 		if len(log.Route) > 0 {
@@ -70,7 +70,21 @@ func (c *newLogsCtr) get(w http.ResponseWriter, r *http.Request) {
 		}
 		res = append(res, entry)
 	}
-	writeJSON(w, logs)
+	if len(res) == 0 {
+		metaInfo := map[string]any{
+			"previousPage": nil,
+			"startingFrom": nil,
+		}
+		writeJSONWithMeta(w, res, metaInfo)
+	}
+	var previousPage interface{} = res[0].Time.UTC().Format(time.RFC3339Nano)
+
+	metaInfo := map[string]any{
+		"previousPage": previousPage,
+		"startingFrom": res[len(res)-1].Time.UTC().Format(time.RFC3339Nano),
+	}
+
+	writeJSONWithMeta(w, res, metaInfo)
 }
 
 func getOptions(params map[string]string) (*metastore.LogQueryOptions, error) {
@@ -115,6 +129,7 @@ func getOptions(params map[string]string) (*metastore.LogQueryOptions, error) {
 		co := time.Unix(int64(uTime), 0)
 		options.StartTime = &co
 	}
+	options.Limit = 4
 
 	return &options, nil
 }
