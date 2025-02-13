@@ -58,10 +58,10 @@ func (v *LogStore) fetchLogs(ctx context.Context, options metastore.LogQueryOpti
 		formData.Set("extra_filters", string(filters))
 	}
 	if options.StartTime != nil {
-		formData.Set("start", strconv.FormatInt(options.StartTime.Unix(), 10))
+		formData.Set("start", strconv.FormatInt(options.StartTime.UnixNano(), 10))
 	}
 	if options.EndTime != nil {
-		formData.Set("end", strconv.FormatInt(options.EndTime.Unix(), 10))
+		formData.Set("end", strconv.FormatInt(options.EndTime.UnixNano(), 10))
 	}
 
 	// Create a POST request
@@ -86,16 +86,31 @@ func (v *LogStore) fetchLogs(ctx context.Context, options metastore.LogQueryOpti
 
 	// Read logs from response
 	scanner := bufio.NewScanner(resp.Body)
-	slog.Info("got body")
-
 	for scanner.Scan() {
-		var entry metastore.LogEntry
+		rawLog := map[string]any{}
 		line := scanner.Text()
-		slog.Info("scanning", line, line)
-		if err := json.Unmarshal([]byte(line), &entry); err != nil {
+		if err := json.Unmarshal([]byte(line), &rawLog); err != nil {
 			return fmt.Errorf("failed to parse JSON line: %s, error: %w", line, err)
 		}
-		err := add(entry)
+		var entry metastore.LogEntry
+		keyMapping := map[string]string{
+			"_time": "time",
+			"_msg":  "msg",
+		}
+		for k, v := range keyMapping {
+			rawLog[v] = rawLog[k]
+		}
+		entryBytes, err := json.Marshal(rawLog)
+		if err != nil {
+			return fmt.Errorf("failed to marshal raw log: %w", err)
+		}
+
+		// Unmarshal into LogEntry
+		if err := json.Unmarshal(entryBytes, &entry); err != nil {
+			return fmt.Errorf("failed to unmarshal into LogEntry: %w", err)
+		}
+		entry.Time = entry.Time.UTC()
+		err = add(entry)
 		if err != nil {
 			return err
 		}

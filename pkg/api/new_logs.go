@@ -13,7 +13,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/metastore"
 	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
 )
 
 type newLogsCtr struct {
@@ -66,13 +65,12 @@ func (m *newLogsCtr) mountRouter(r chi.Router) {
 						slog.Error("serve to SSE", "err", err)
 					}
 
-					// Writing to the response
-					_, err = io.Copy(w, strings.NewReader(fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", uuid.NewString(), "message", dst.String())))
+					logBytes := dst.Bytes()
+					_, err = io.Copy(w, strings.NewReader(fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", message.Time, "message", string(logBytes))))
 					if err != nil {
 						slog.Error("serve to SSE", "err", err)
 					}
 
-					// Flush the response to the client
 					if f, ok := w.(http.Flusher); ok {
 						f.Flush()
 					}
