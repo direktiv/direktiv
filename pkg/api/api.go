@@ -74,7 +74,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 		startWorkflow: startByEvents,
 	}
 
-	newLogs := newLogsCtr{meta: victoriametrics.NewVictoriaMetricsLogStore("http://"+app.Config.VictoriaLogsEndpoint+":9428", nil)}
+	newLogs := newLogsCtr{meta: victoriametrics.NewVictoriaMetricsLogStore("http://"+app.Config.VictoriaLogsEndpoint+":9428", nil), db: db}
 
 	jxCtr := jxController{}
 
