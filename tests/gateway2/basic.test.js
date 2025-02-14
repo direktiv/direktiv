@@ -25,11 +25,9 @@ describe('Test gateway basic call', () => {
       responses:
          "200":
            description: works
-`
+`,
 	)
 
-
-	
 	retry10(`should execute gateway ep1.yaml endpoint`, async () => {
 		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
 			.send({})

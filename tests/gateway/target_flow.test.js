@@ -135,7 +135,6 @@ get:
       "200":
         description: works`
 
-
 const endpointErrorWorkflow = `
 x-direktiv-api: endpoint/v2
 x-direktiv-config:

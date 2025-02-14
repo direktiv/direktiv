@@ -24,8 +24,8 @@ groups:
 - group1
 `)
 
-helpers.itShouldCreateYamlFile(it, expect, namespace,
-	'/', 'ep1.yaml', 'endpoint', `
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
+		'/', 'ep1.yaml', 'endpoint', `
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: "/foo1"
@@ -43,11 +43,11 @@ post:
    responses:
       "200":
         description: works
-`
-)
+`,
+	)
 
-helpers.itShouldCreateYamlFile(it, expect, namespace,
-	'/', 'ep2.yaml', 'endpoint', `
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
+		'/', 'ep2.yaml', 'endpoint', `
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: "/foo2"
@@ -65,8 +65,8 @@ post:
    responses:
       "200":
         description: works
-`
-)
+`,
+	)
 
 	retry10(`should denied ep1.yaml endpoint`, async () => {
 		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo1`)
