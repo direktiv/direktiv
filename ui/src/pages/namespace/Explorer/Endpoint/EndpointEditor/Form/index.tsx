@@ -55,7 +55,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
             htmlFor="path"
             className="grow"
           >
-            <Input {...register("path")} id="path" />
+            <Input {...register("x-direktiv-config.path")} id="path" />
           </Fieldset>
           <Fieldset
             label={t("pages.explorer.endpoint.editor.form.timeout")}
@@ -63,7 +63,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
             className="w-32"
           >
             <Input
-              {...register("timeout", {
+              {...register("x-direktiv-config.timeout", {
                 setValueAs: treatAsNumberOrUndefined,
               })}
               type="number"
@@ -74,7 +74,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
         <Fieldset label={t("pages.explorer.endpoint.editor.form.methods")}>
           <Controller
             control={control}
-            name="methods"
+            name="x-direktiv-config.methods"
             render={({ field }) => (
               <div className="grid grid-cols-3 gap-5">
                 {routeMethods.map((method) => {
@@ -112,19 +112,19 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
         </Fieldset>
         <Fieldset
           label={t("pages.explorer.endpoint.editor.form.allowAnonymous")}
-          htmlFor="allow_anonymous"
+          htmlFor="x-direktiv-config.allow_anonymous"
           horizontal
         >
           <Controller
             control={control}
-            name="allow_anonymous"
+            name="x-direktiv-config.allow_anonymous"
             render={({ field }) => (
               <Switch
                 defaultChecked={field.value ?? false}
                 onCheckedChange={(value) => {
                   field.onChange(value);
                 }}
-                id="allow_anonymous"
+                id="x-direktiv-config.allow_anonymous"
               />
             )}
           />

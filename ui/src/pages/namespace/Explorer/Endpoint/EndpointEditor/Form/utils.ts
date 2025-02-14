@@ -6,27 +6,35 @@ import {
 } from "../schema";
 
 export const useSortedValues = (control: Control<EndpointFormSchemaType>) => {
-  const watchedValues = useWatch({
-    control,
-  });
+  const watchedValues = useWatch({ control });
 
-  const sortedRootLevelFields = EndpointFormSchema.keyof().options;
-  const sortedRootLevel = sortedRootLevelFields.reduce(
-    (object, key) => ({ ...object, [key]: watchedValues[key] }),
-    {}
+  const configKeys =
+    EndpointFormSchema.shape["x-direktiv-config"].keyof().options;
+
+  const sortedConfig = configKeys.reduce(
+    (acc, key) => ({
+      ...acc,
+      [key]: watchedValues?.["x-direktiv-config"]?.[key],
+    }),
+    {} as Record<string, unknown>
   );
 
   const sortedPluginFields = EndpointsPluginsSchema.keyof().options;
-  const sortedPlugins = sortedPluginFields.reduce((object, pluginKey) => {
-    const pluginToAdd = watchedValues?.plugins?.[pluginKey]
-      ? { [pluginKey]: watchedValues?.plugins?.[pluginKey] }
-      : {};
-    return { ...object, ...pluginToAdd };
+  const sortedPlugins = sortedPluginFields.reduce((acc, pluginKey) => {
+    const pluginValue =
+      watchedValues?.["x-direktiv-config"]?.plugins?.[pluginKey];
+    return pluginValue ? { ...acc, [pluginKey]: pluginValue } : acc;
   }, {});
+
   const hasPlugins = Object.keys(sortedPlugins).length > 0;
+  if (hasPlugins) {
+    sortedConfig.plugins = sortedPlugins;
+  } else {
+    delete sortedConfig.plugins;
+  }
 
   return {
-    ...sortedRootLevel,
-    plugins: hasPlugins ? sortedPlugins : undefined,
+    "x-direktiv-api": watchedValues["x-direktiv-api"],
+    "x-direktiv-config": sortedConfig,
   };
 };

@@ -19,7 +19,8 @@ export const serializeEndpointFile = (yaml: string): SerializeReturnType => {
 };
 
 const defaultEndpointFileJson: EndpointFormSchemaType = {
-  direktiv_api: "endpoint/v1",
+  "x-direktiv-api": "endpoint/v2",
+  "x-direktiv-config": {},
 };
 
 export const defaultEndpointFileYaml = jsonToYaml(defaultEndpointFileJson);
