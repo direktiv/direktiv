@@ -132,15 +132,6 @@ fluent-bit:
           Refresh_Interval        1
           Buffer_Max_Size         64k
     outputs: |
-      [OUTPUT]
-          name                    pgsql
-          match                   flow.*
-          port                    ${PG_PORT}
-          table                   fluentbit
-          user                    ${PG_USER}
-          database                ${PG_DB_NAME}
-          host                    ${PG_HOST}
-          password                ${PG_PASSWORD}
       [Output]
           Name                    http
           Match                   flow.*
