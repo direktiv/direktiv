@@ -126,6 +126,15 @@ func ParseGatewayFile(ns string, filePath string, data []byte) Gateway {
 	delete(interim, "paths")
 	delete(interim, "servers")
 
+	// remove security schemes
+	if c, ok := interim["components"]; ok {
+		components, ok := c.(map[string]interface{})
+		if ok {
+			delete(components, "securitySchemes")
+			interim["components"] = components
+		}
+	}
+
 	out, err := yaml.Marshal(interim)
 	if err != nil {
 		gw.Errors = append(gw.Errors, err.Error())
@@ -150,6 +159,8 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 		ep.Errors = append(ep.Errors, err.Error())
 		return ep
 	}
+
+	removeSecurity(interim)
 
 	jsonData, err := json.Marshal(interim)
 	if err != nil {
@@ -191,10 +202,8 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 	return ep
 }
 
-func extractMethods(pathItem map[string]interface{}) []string {
-	methods := make([]string, 0)
-
-	availableMethods := []string{
+var (
+	availableMethods = []string{
 		http.MethodGet,
 		http.MethodPut,
 		http.MethodPost,
@@ -204,6 +213,23 @@ func extractMethods(pathItem map[string]interface{}) []string {
 		http.MethodPatch,
 		http.MethodTrace,
 	}
+)
+
+func removeSecurity(pathItem map[string]interface{}) {
+	for i := range availableMethods {
+		if a, ok := pathItem[strings.ToLower(availableMethods[i])]; ok {
+			method, ok := a.(map[string]interface{})
+			if ok {
+				delete(method, "security")
+				pathItem[strings.ToLower(availableMethods[i])] = method
+			}
+		}
+	}
+
+}
+
+func extractMethods(pathItem map[string]interface{}) []string {
+	methods := make([]string, 0)
 
 	for i := range availableMethods {
 		if _, ok := pathItem[strings.ToLower(availableMethods[i])]; ok {
