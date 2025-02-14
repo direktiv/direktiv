@@ -216,6 +216,9 @@ func (c *newLogsCtr) getOptions(ctx context.Context, params map[string]string) (
 
 		params["instance"] = ""
 	}
+	if v, ok := params["activity"]; ok && len(v) > 0 {
+		params["namespace"] = "" // TODO remove when mirror logger is fixed
+	}
 	filterParams := []string{
 		"route",
 		"trace",
