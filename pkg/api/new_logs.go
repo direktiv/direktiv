@@ -8,6 +8,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -30,10 +31,12 @@ func (c *newLogsCtr) get(w http.ResponseWriter, r *http.Request) {
 	options, err := getOptions(params)
 	if err != nil {
 		writeBadrequestError(w, err)
+		return
 	}
 	logs, err := c.meta.Get(r.Context(), *options)
 	if err != nil {
 		writeDataStoreError(w, err)
+		return
 	}
 	res := []logEntry{}
 	slog.Info("got logs", "logs", len(logs))
@@ -48,12 +51,12 @@ func (c *newLogsCtr) get(w http.ResponseWriter, r *http.Request) {
 			Span:      log.Span,
 			Error:     log.Error,
 		}
-		if len(log.Workflow) != 0 {
+		if len(log.Workflow) != 0 && len(log.State) != 0 {
 			entry.Workflow = &WorkflowEntryContext{
 				Status:   log.Status,
 				State:    log.State,
-				Branch:   log.Branch,
 				Path:     log.Workflow,
+				Workflow: log.Workflow,
 				CalledAs: log.CalledAs,
 				Instance: log.Instance,
 			}
@@ -76,7 +79,12 @@ func (c *newLogsCtr) get(w http.ResponseWriter, r *http.Request) {
 			"startingFrom": nil,
 		}
 		writeJSONWithMeta(w, res, metaInfo)
+
+		return
 	}
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].ID < res[j].ID
+	})
 	var previousPage interface{} = res[0].Time.UTC().Format(time.RFC3339Nano)
 
 	metaInfo := map[string]any{
@@ -129,7 +137,6 @@ func getOptions(params map[string]string) (*metastore.LogQueryOptions, error) {
 		co := time.Unix(int64(uTime), 0)
 		options.StartTime = &co
 	}
-	options.Limit = 4
 
 	return &options, nil
 }
@@ -172,19 +179,19 @@ func (c *newLogsCtr) subscribe(w http.ResponseWriter, r *http.Request) {
 					Span:      log.Span,
 					Error:     log.Error,
 				}
-				if len(log.Workflow) != 0 {
+				if len(log.Workflow) != 0 && len(log.State) != 0 {
 					entry.Workflow = &WorkflowEntryContext{
 						Status:   log.Status,
 						State:    log.State,
-						Branch:   log.Branch,
 						Path:     log.Workflow,
+						Workflow: log.Workflow,
 						CalledAs: log.CalledAs,
 						Instance: log.Instance,
 					}
 				}
 				if len(log.Activity) > 0 {
 					entry.Activity = &ActivityEntryContext{
-						ID: 0,
+						ID: fmt.Sprint(log.Time.UnixNano()),
 					}
 				}
 				if len(log.Route) > 0 {

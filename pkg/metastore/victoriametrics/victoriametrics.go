@@ -44,7 +44,6 @@ func (v *LogStore) fetchLogs(ctx context.Context, options metastore.LogQueryOpti
 		query = options.Keywords
 	}
 
-	// Prepare request body
 	formData := url.Values{}
 	formData.Set("query", query)
 	if options.Limit > 0 {
@@ -64,28 +63,56 @@ func (v *LogStore) fetchLogs(ctx context.Context, options metastore.LogQueryOpti
 		formData.Set("end", strconv.FormatInt(options.EndTime.UnixNano(), 10))
 	}
 
-	// Create a POST request
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, strings.NewReader(formData.Encode()))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	// Execute the request
-	resp, err := v.Client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+	// Retry logic with exponential backoff
+	maxRetries := 5
+	delay := time.Second
 
-	// Handle non-200 responses
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("failed to fetch logs, status: %v, response: %s", resp.StatusCode, string(bodyBytes))
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		resp, err := v.Client.Do(req)
+		if err != nil {
+			// Network errors, context canceled, etc.
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
+			slog.Error("HTTP request failed", "attempt", attempt, "error", err)
+		} else {
+			defer resp.Body.Close()
+
+			// If response is successful, process logs
+			if resp.StatusCode == http.StatusOK {
+				return processLogs(resp.Body, add)
+			}
+
+			// Retry on retriable HTTP errors (502, 503, 504)
+			if resp.StatusCode != http.StatusBadGateway && resp.StatusCode != http.StatusServiceUnavailable && resp.StatusCode != http.StatusGatewayTimeout {
+				bodyBytes, _ := io.ReadAll(resp.Body)
+				return fmt.Errorf("failed to fetch logs, status: %v, response: %s", resp.StatusCode, string(bodyBytes))
+			}
+		}
+
+		// Apply exponential backoff before retrying
+		if attempt < maxRetries {
+			slog.Warn("Retrying request due to bad gateway", "attempt", attempt+1, "delay", delay)
+			time.Sleep(delay)
+			delay += 1 // Double the delay for next retry
+
+			continue
+		}
+
+		return fmt.Errorf("fetchLogs failed after %d attempts", maxRetries)
 	}
 
-	// Read logs from response
-	scanner := bufio.NewScanner(resp.Body)
+	return nil
+}
+
+func processLogs(body io.Reader, add func(entry metastore.LogEntry) error) error {
+	scanner := bufio.NewScanner(body)
 	for scanner.Scan() {
 		rawLog := map[string]any{}
 		line := scanner.Text()
@@ -105,18 +132,15 @@ func (v *LogStore) fetchLogs(ctx context.Context, options metastore.LogQueryOpti
 			return fmt.Errorf("failed to marshal raw log: %w", err)
 		}
 
-		// Unmarshal into LogEntry
 		if err := json.Unmarshal(entryBytes, &entry); err != nil {
 			return fmt.Errorf("failed to unmarshal into LogEntry: %w", err)
 		}
 		entry.Time = entry.Time.UTC()
-		err = add(entry)
-		if err != nil {
+		if err := add(entry); err != nil {
 			return err
 		}
 	}
 
-	// Handle scanner errors
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("error reading response: %w", err)
 	}
