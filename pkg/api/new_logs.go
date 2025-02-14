@@ -106,7 +106,6 @@ func (c *newLogsCtr) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	res := []logEntry{}
-	slog.Info("got logs", "logs", len(logs))
 	for _, log := range logs {
 		entry := logEntry{
 			ID:        log.Time.UnixNano(),
