@@ -288,7 +288,7 @@ func (c *newLogsCtr) subscribe(w http.ResponseWriter, r *http.Request) {
 				}
 				if len(log.Activity) > 0 {
 					entry.Activity = &ActivityEntryContext{
-						ID: fmt.Sprint(log.Time.UnixNano()),
+						ID: strconv.FormatInt(log.Time.UnixNano(), 10),
 					}
 				}
 				if len(log.Route) > 0 {
