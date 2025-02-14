@@ -161,6 +161,7 @@ func (c *newLogsCtr) get(w http.ResponseWriter, r *http.Request) {
 	writeJSONWithMeta(w, res, metaInfo)
 }
 
+// nolint:gocognit
 func (c *newLogsCtr) getOptions(ctx context.Context, params map[string]string) (*metastore.LogQueryOptions, error) {
 	options := metastore.LogQueryOptions{
 		Metadata: make(map[string]string),
@@ -187,7 +188,7 @@ func (c *newLogsCtr) getOptions(ctx context.Context, params map[string]string) (
 		co := time.Unix(int64(uTime), 0)
 		options.StartTime = &co
 	}
-	if v, ok := params["instance"]; ok && len(v) > 0 {
+	if v, ok := params["instance"]; ok && len(v) > 0 { // nolint:nestif
 		id, err := uuid.Parse(v)
 		if err != nil {
 			return nil, err
@@ -236,6 +237,7 @@ func (c *newLogsCtr) getOptions(ctx context.Context, params map[string]string) (
 	return &options, nil
 }
 
+// nolint:gocognit
 func (c *newLogsCtr) subscribe(w http.ResponseWriter, r *http.Request) {
 	// Extract query parameters for filtering logs
 	params := extractLogRequestParams(r)

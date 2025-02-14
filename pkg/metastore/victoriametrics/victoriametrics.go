@@ -69,8 +69,7 @@ func (v *LogStore) fetchLogs(ctx context.Context, options metastore.LogQueryOpti
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	// Retry logic with exponential backoff
-	maxRetries := 5
+	maxRetries := 3
 	delay := time.Second
 
 	for attempt := 0; attempt <= maxRetries; attempt++ {
@@ -84,23 +83,20 @@ func (v *LogStore) fetchLogs(ctx context.Context, options metastore.LogQueryOpti
 		} else {
 			defer resp.Body.Close()
 
-			// If response is successful, process logs
 			if resp.StatusCode == http.StatusOK {
 				return processLogs(resp.Body, add)
 			}
 
-			// Retry on retriable HTTP errors (502, 503, 504)
 			if resp.StatusCode != http.StatusBadGateway && resp.StatusCode != http.StatusServiceUnavailable && resp.StatusCode != http.StatusGatewayTimeout {
 				bodyBytes, _ := io.ReadAll(resp.Body)
 				return fmt.Errorf("failed to fetch logs, status: %v, response: %s", resp.StatusCode, string(bodyBytes))
 			}
 		}
 
-		// Apply exponential backoff before retrying
 		if attempt < maxRetries {
 			slog.Warn("Retrying request due to bad gateway", "attempt", attempt+1, "delay", delay)
 			time.Sleep(delay)
-			delay += 1 // Double the delay for next retry
+			delay++
 
 			continue
 		}
