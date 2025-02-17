@@ -53,7 +53,6 @@ linters:
     - err113 # TODO: This ensures no dynamic errors.
     - mnd
     - canonicalheader
-    - revive
 
 issues:
   exclude-rules:
@@ -90,7 +89,6 @@ issues:
         - rowserrcheck
         - nakedret
         - gocyclo
-        - revive
 
     - text: "do not define dynamic errors, use wrapped static errors instead:"
       linters:
@@ -122,7 +120,7 @@ issues:
     - text: "context-as-argument:"
       linters:
         - revive
-    - text: "context-keys-type: should not use basic type string"
+    - text: "context-keys-type: should not use basic type"
       linters:
         - revive
     - text: "fmt.Errorf can be replaced"
