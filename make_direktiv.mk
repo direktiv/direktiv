@@ -6,7 +6,7 @@ direktiv-build:
 .PHONY: direktiv
 direktiv:
 	@echo "building and pushing direktiv ${RELEASE_VERSION}"
-	DOCKER_BUILDKIT=1 docker build --build-arg RELEASE_VERSION=${RELEASE_VERSION} -t ${DOCKER_REPO}/direktiv:${RELEASE} . --push
+	DOCKER_BUILDKIT=1 docker build --build-arg IS_ENTERPRISE=${IS_ENTERPRISE} --build-arg RELEASE_VERSION=${RELEASE_VERSION} -t ${DOCKER_REPO}/direktiv:${RELEASE} . --push
 
 .PHONY: direktiv-build-cross
 direktiv-build-cross:

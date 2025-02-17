@@ -21,7 +21,7 @@ linters-settings:
     # Default: 1
     block-size: 2
 
-  sloglint:
+    # sloglint:
     # Enforce not using global loggers.
     # Values:
     # - "": disabled
