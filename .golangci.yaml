@@ -53,6 +53,7 @@ linters:
     - err113 # TODO: This ensures no dynamic errors.
     - mnd
     - canonicalheader
+    - revive
 
 issues:
   exclude-rules:
