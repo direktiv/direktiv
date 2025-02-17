@@ -43,10 +43,9 @@ info:
 			.send({})
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.file_path).toEqual('/gw.yaml')
-		expect(res.body.data.spec.info.title).toEqual("mytitle")
-		expect(res.body.data.spec.info.version).toEqual("myversion")
+		expect(res.body.data.spec.info.title).toEqual('mytitle')
+		expect(res.body.data.spec.info.version).toEqual('myversion')
 	})
-
 })
 
 describe('Test gateway broken basic file', () => {
@@ -97,7 +96,6 @@ info:
 	// 	expect(res.body.data.errors.length).toEqual(1)
 	// 	expect(res.body.data.errors[0].startsWith('multiple gateway specifications found')).toBeTruthy()
 	// })
-
 })
 
 // TODO: test broken spec

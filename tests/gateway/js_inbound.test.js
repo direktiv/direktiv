@@ -98,7 +98,6 @@ post:
       "200":
         description: works`
 
-
 const endpointErrorFile = `x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: "/target"

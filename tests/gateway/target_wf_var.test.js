@@ -46,7 +46,7 @@ get:
 //           namespace: ` + testNamespace + `
 //           flow: /workflow.yaml
 //           variable: test
-//   methods: 
+//   methods:
 //     - GET
 //   path: /endpoint1`
 
@@ -80,7 +80,7 @@ get:
 //           flow: /workflow.yaml
 //           variable: test
 //           content_type: text/test
-//   methods: 
+//   methods:
 //     - GET
 //   path: endpoint2`
 
@@ -104,7 +104,7 @@ get:
 //   plugins:
 //     target:
 //       type: target-flow-var
-//   methods: 
+//   methods:
 //     - GET
 //   path: ep3`
 
