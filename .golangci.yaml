@@ -89,6 +89,7 @@ issues:
         - rowserrcheck
         - nakedret
         - gocyclo
+        - revive
 
     - text: "do not define dynamic errors, use wrapped static errors instead:"
       linters:
