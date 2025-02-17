@@ -58,6 +58,8 @@ require (
 
 require (
 	github.com/channelmeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61 // indirect
+	github.com/coreos/go-oidc/v3 v3.12.0 // indirect
+	github.com/go-jose/go-jose/v4 v4.0.2 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.59.0 // indirect
 )
 

@@ -10,14 +10,13 @@ const rootUrl = isBrowser
 
 const client_id = "direktiv";
 
-const authority = `${rootUrl}dex`;
+const authority = `${rootUrl}/auth/realms/direktiv`;
 
 export const oidcConfig: AuthProviderProps = {
   authority,
   client_id,
   post_logout_redirect_uri: rootUrl,
   redirect_uri: rootUrl,
-  scope: "openid profile email groups",
 
   /**
    * removes code and state from url after signin
