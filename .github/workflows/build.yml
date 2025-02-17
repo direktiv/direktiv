@@ -46,7 +46,7 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.63
+          version: v1.64
 
   backend-test:
     runs-on: ubuntu-latest
@@ -116,7 +116,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
   e2e:
-    needs: [build, backend-license, backend-lint, backend-test]
+    needs: [build, backend-license, backend-test]
     runs-on: ubuntu-latest
 
     timeout-minutes: 18
