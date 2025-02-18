@@ -35,6 +35,7 @@ import { Route as NNamespacePermissionsTokensImport } from './routes/n/$namespac
 import { Route as NNamespacePermissionsGroupsImport } from './routes/n/$namespace/permissions/groups'
 import { Route as NNamespaceInstancesLayoutImport } from './routes/n/$namespace/instances/_layout'
 import { Route as NNamespaceInstancesIdImport } from './routes/n/$namespace/instances/$id'
+import { Route as NNamespaceGatewayGatewayInfoImport } from './routes/n/$namespace/gateway/gatewayInfo'
 import { Route as NNamespaceGatewayConsumersImport } from './routes/n/$namespace/gateway/consumers'
 import { Route as NNamespaceEventsListenersImport } from './routes/n/$namespace/events/listeners'
 import { Route as NNamespaceEventsHistoryImport } from './routes/n/$namespace/events/history'
@@ -44,6 +45,7 @@ import { Route as NNamespaceMirrorLogsSyncImport } from './routes/n/$namespace/m
 import { Route as NNamespaceGatewayRoutesSplatImport } from './routes/n/$namespace/gateway/routes/$'
 import { Route as NNamespaceExplorerTreeSplatImport } from './routes/n/$namespace/explorer/tree.$'
 import { Route as NNamespaceExplorerServiceSplatImport } from './routes/n/$namespace/explorer/service.$'
+import { Route as NNamespaceExplorerOpenapiSpecificationSplatImport } from './routes/n/$namespace/explorer/openapiSpecification.$'
 import { Route as NNamespaceExplorerEndpointSplatImport } from './routes/n/$namespace/explorer/endpoint.$'
 import { Route as NNamespaceExplorerConsumerSplatImport } from './routes/n/$namespace/explorer/consumer.$'
 import { Route as NNamespaceExplorerWorkflowSettingsSplatImport } from './routes/n/$namespace/explorer/workflow/settings.$'
@@ -206,6 +208,13 @@ const NNamespaceInstancesIdRoute = NNamespaceInstancesIdImport.update({
   getParentRoute: () => NNamespaceRouteRoute,
 } as any)
 
+const NNamespaceGatewayGatewayInfoRoute =
+  NNamespaceGatewayGatewayInfoImport.update({
+    id: '/gatewayInfo',
+    path: '/gatewayInfo',
+    getParentRoute: () => NNamespaceGatewayRouteRoute,
+  } as any)
+
 const NNamespaceGatewayConsumersRoute = NNamespaceGatewayConsumersImport.update(
   {
     id: '/consumers',
@@ -264,6 +273,13 @@ const NNamespaceExplorerServiceSplatRoute =
   NNamespaceExplorerServiceSplatImport.update({
     id: '/service/$',
     path: '/service/$',
+    getParentRoute: () => NNamespaceExplorerRouteRoute,
+  } as any)
+
+const NNamespaceExplorerOpenapiSpecificationSplatRoute =
+  NNamespaceExplorerOpenapiSpecificationSplatImport.update({
+    id: '/openapiSpecification/$',
+    path: '/openapiSpecification/$',
     getParentRoute: () => NNamespaceExplorerRouteRoute,
   } as any)
 
@@ -418,6 +434,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NNamespaceGatewayConsumersImport
       parentRoute: typeof NNamespaceGatewayRouteImport
     }
+    '/n/$namespace/gateway/gatewayInfo': {
+      id: '/n/$namespace/gateway/gatewayInfo'
+      path: '/gatewayInfo'
+      fullPath: '/n/$namespace/gateway/gatewayInfo'
+      preLoaderRoute: typeof NNamespaceGatewayGatewayInfoImport
+      parentRoute: typeof NNamespaceGatewayRouteImport
+    }
     '/n/$namespace/instances/$id': {
       id: '/n/$namespace/instances/$id'
       path: '/instances/$id'
@@ -521,6 +544,13 @@ declare module '@tanstack/react-router' {
       path: '/endpoint/$'
       fullPath: '/n/$namespace/explorer/endpoint/$'
       preLoaderRoute: typeof NNamespaceExplorerEndpointSplatImport
+      parentRoute: typeof NNamespaceExplorerRouteImport
+    }
+    '/n/$namespace/explorer/openapiSpecification/$': {
+      id: '/n/$namespace/explorer/openapiSpecification/$'
+      path: '/openapiSpecification/$'
+      fullPath: '/n/$namespace/explorer/openapiSpecification/$'
+      preLoaderRoute: typeof NNamespaceExplorerOpenapiSpecificationSplatImport
       parentRoute: typeof NNamespaceExplorerRouteImport
     }
     '/n/$namespace/explorer/service/$': {
@@ -635,6 +665,7 @@ interface NNamespaceExplorerRouteRouteChildren {
   NNamespaceExplorerIndexRoute: typeof NNamespaceExplorerIndexRoute
   NNamespaceExplorerConsumerSplatRoute: typeof NNamespaceExplorerConsumerSplatRoute
   NNamespaceExplorerEndpointSplatRoute: typeof NNamespaceExplorerEndpointSplatRoute
+  NNamespaceExplorerOpenapiSpecificationSplatRoute: typeof NNamespaceExplorerOpenapiSpecificationSplatRoute
   NNamespaceExplorerServiceSplatRoute: typeof NNamespaceExplorerServiceSplatRoute
   NNamespaceExplorerTreeSplatRoute: typeof NNamespaceExplorerTreeSplatRoute
 }
@@ -646,6 +677,8 @@ const NNamespaceExplorerRouteRouteChildren: NNamespaceExplorerRouteRouteChildren
     NNamespaceExplorerIndexRoute: NNamespaceExplorerIndexRoute,
     NNamespaceExplorerConsumerSplatRoute: NNamespaceExplorerConsumerSplatRoute,
     NNamespaceExplorerEndpointSplatRoute: NNamespaceExplorerEndpointSplatRoute,
+    NNamespaceExplorerOpenapiSpecificationSplatRoute:
+      NNamespaceExplorerOpenapiSpecificationSplatRoute,
     NNamespaceExplorerServiceSplatRoute: NNamespaceExplorerServiceSplatRoute,
     NNamespaceExplorerTreeSplatRoute: NNamespaceExplorerTreeSplatRoute,
   }
@@ -657,6 +690,7 @@ const NNamespaceExplorerRouteRouteWithChildren =
 
 interface NNamespaceGatewayRouteRouteChildren {
   NNamespaceGatewayConsumersRoute: typeof NNamespaceGatewayConsumersRoute
+  NNamespaceGatewayGatewayInfoRoute: typeof NNamespaceGatewayGatewayInfoRoute
   NNamespaceGatewayRoutesSplatRoute: typeof NNamespaceGatewayRoutesSplatRoute
   NNamespaceGatewayRoutesIndexRoute: typeof NNamespaceGatewayRoutesIndexRoute
 }
@@ -664,6 +698,7 @@ interface NNamespaceGatewayRouteRouteChildren {
 const NNamespaceGatewayRouteRouteChildren: NNamespaceGatewayRouteRouteChildren =
   {
     NNamespaceGatewayConsumersRoute: NNamespaceGatewayConsumersRoute,
+    NNamespaceGatewayGatewayInfoRoute: NNamespaceGatewayGatewayInfoRoute,
     NNamespaceGatewayRoutesSplatRoute: NNamespaceGatewayRoutesSplatRoute,
     NNamespaceGatewayRoutesIndexRoute: NNamespaceGatewayRoutesIndexRoute,
   }
@@ -782,6 +817,7 @@ export interface FileRoutesByFullPath {
   '/n/$namespace/events/history': typeof NNamespaceEventsHistoryRoute
   '/n/$namespace/events/listeners': typeof NNamespaceEventsListenersRoute
   '/n/$namespace/gateway/consumers': typeof NNamespaceGatewayConsumersRoute
+  '/n/$namespace/gateway/gatewayInfo': typeof NNamespaceGatewayGatewayInfoRoute
   '/n/$namespace/instances/$id': typeof NNamespaceInstancesIdRoute
   '/n/$namespace/instances': typeof NNamespaceInstancesLayoutRoute
   '/n/$namespace/permissions/groups': typeof NNamespacePermissionsGroupsRoute
@@ -795,6 +831,7 @@ export interface FileRoutesByFullPath {
   '/n/$namespace/services/': typeof NNamespaceServicesIndexRoute
   '/n/$namespace/explorer/consumer/$': typeof NNamespaceExplorerConsumerSplatRoute
   '/n/$namespace/explorer/endpoint/$': typeof NNamespaceExplorerEndpointSplatRoute
+  '/n/$namespace/explorer/openapiSpecification/$': typeof NNamespaceExplorerOpenapiSpecificationSplatRoute
   '/n/$namespace/explorer/service/$': typeof NNamespaceExplorerServiceSplatRoute
   '/n/$namespace/explorer/tree/$': typeof NNamespaceExplorerTreeSplatRoute
   '/n/$namespace/gateway/routes/$': typeof NNamespaceGatewayRoutesSplatRoute
@@ -819,6 +856,7 @@ export interface FileRoutesByTo {
   '/n/$namespace/events/history': typeof NNamespaceEventsHistoryRoute
   '/n/$namespace/events/listeners': typeof NNamespaceEventsListenersRoute
   '/n/$namespace/gateway/consumers': typeof NNamespaceGatewayConsumersRoute
+  '/n/$namespace/gateway/gatewayInfo': typeof NNamespaceGatewayGatewayInfoRoute
   '/n/$namespace/instances/$id': typeof NNamespaceInstancesIdRoute
   '/n/$namespace/instances': typeof NNamespaceInstancesIndexRoute
   '/n/$namespace/permissions/groups': typeof NNamespacePermissionsGroupsRoute
@@ -830,6 +868,7 @@ export interface FileRoutesByTo {
   '/n/$namespace/permissions': typeof NNamespacePermissionsIndexRoute
   '/n/$namespace/explorer/consumer/$': typeof NNamespaceExplorerConsumerSplatRoute
   '/n/$namespace/explorer/endpoint/$': typeof NNamespaceExplorerEndpointSplatRoute
+  '/n/$namespace/explorer/openapiSpecification/$': typeof NNamespaceExplorerOpenapiSpecificationSplatRoute
   '/n/$namespace/explorer/service/$': typeof NNamespaceExplorerServiceSplatRoute
   '/n/$namespace/explorer/tree/$': typeof NNamespaceExplorerTreeSplatRoute
   '/n/$namespace/gateway/routes/$': typeof NNamespaceGatewayRoutesSplatRoute
@@ -858,6 +897,7 @@ export interface FileRoutesById {
   '/n/$namespace/events/history': typeof NNamespaceEventsHistoryRoute
   '/n/$namespace/events/listeners': typeof NNamespaceEventsListenersRoute
   '/n/$namespace/gateway/consumers': typeof NNamespaceGatewayConsumersRoute
+  '/n/$namespace/gateway/gatewayInfo': typeof NNamespaceGatewayGatewayInfoRoute
   '/n/$namespace/instances/$id': typeof NNamespaceInstancesIdRoute
   '/n/$namespace/instances': typeof NNamespaceInstancesRouteWithChildren
   '/n/$namespace/instances/_layout': typeof NNamespaceInstancesLayoutRoute
@@ -873,6 +913,7 @@ export interface FileRoutesById {
   '/n/$namespace/services/': typeof NNamespaceServicesIndexRoute
   '/n/$namespace/explorer/consumer/$': typeof NNamespaceExplorerConsumerSplatRoute
   '/n/$namespace/explorer/endpoint/$': typeof NNamespaceExplorerEndpointSplatRoute
+  '/n/$namespace/explorer/openapiSpecification/$': typeof NNamespaceExplorerOpenapiSpecificationSplatRoute
   '/n/$namespace/explorer/service/$': typeof NNamespaceExplorerServiceSplatRoute
   '/n/$namespace/explorer/tree/$': typeof NNamespaceExplorerTreeSplatRoute
   '/n/$namespace/gateway/routes/$': typeof NNamespaceGatewayRoutesSplatRoute
@@ -902,6 +943,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/events/history'
     | '/n/$namespace/events/listeners'
     | '/n/$namespace/gateway/consumers'
+    | '/n/$namespace/gateway/gatewayInfo'
     | '/n/$namespace/instances/$id'
     | '/n/$namespace/instances'
     | '/n/$namespace/permissions/groups'
@@ -915,6 +957,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/services/'
     | '/n/$namespace/explorer/consumer/$'
     | '/n/$namespace/explorer/endpoint/$'
+    | '/n/$namespace/explorer/openapiSpecification/$'
     | '/n/$namespace/explorer/service/$'
     | '/n/$namespace/explorer/tree/$'
     | '/n/$namespace/gateway/routes/$'
@@ -938,6 +981,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/events/history'
     | '/n/$namespace/events/listeners'
     | '/n/$namespace/gateway/consumers'
+    | '/n/$namespace/gateway/gatewayInfo'
     | '/n/$namespace/instances/$id'
     | '/n/$namespace/instances'
     | '/n/$namespace/permissions/groups'
@@ -949,6 +993,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/permissions'
     | '/n/$namespace/explorer/consumer/$'
     | '/n/$namespace/explorer/endpoint/$'
+    | '/n/$namespace/explorer/openapiSpecification/$'
     | '/n/$namespace/explorer/service/$'
     | '/n/$namespace/explorer/tree/$'
     | '/n/$namespace/gateway/routes/$'
@@ -975,6 +1020,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/events/history'
     | '/n/$namespace/events/listeners'
     | '/n/$namespace/gateway/consumers'
+    | '/n/$namespace/gateway/gatewayInfo'
     | '/n/$namespace/instances/$id'
     | '/n/$namespace/instances'
     | '/n/$namespace/instances/_layout'
@@ -990,6 +1036,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/services/'
     | '/n/$namespace/explorer/consumer/$'
     | '/n/$namespace/explorer/endpoint/$'
+    | '/n/$namespace/explorer/openapiSpecification/$'
     | '/n/$namespace/explorer/service/$'
     | '/n/$namespace/explorer/tree/$'
     | '/n/$namespace/gateway/routes/$'
@@ -1068,6 +1115,7 @@ export const routeTree = rootRoute
         "/n/$namespace/explorer/",
         "/n/$namespace/explorer/consumer/$",
         "/n/$namespace/explorer/endpoint/$",
+        "/n/$namespace/explorer/openapiSpecification/$",
         "/n/$namespace/explorer/service/$",
         "/n/$namespace/explorer/tree/$"
       ]
@@ -1077,6 +1125,7 @@ export const routeTree = rootRoute
       "parent": "/n/$namespace",
       "children": [
         "/n/$namespace/gateway/consumers",
+        "/n/$namespace/gateway/gatewayInfo",
         "/n/$namespace/gateway/routes/$",
         "/n/$namespace/gateway/routes/"
       ]
@@ -1130,6 +1179,10 @@ export const routeTree = rootRoute
     },
     "/n/$namespace/gateway/consumers": {
       "filePath": "n/$namespace/gateway/consumers.tsx",
+      "parent": "/n/$namespace/gateway"
+    },
+    "/n/$namespace/gateway/gatewayInfo": {
+      "filePath": "n/$namespace/gateway/gatewayInfo.tsx",
       "parent": "/n/$namespace/gateway"
     },
     "/n/$namespace/instances/$id": {
@@ -1198,6 +1251,10 @@ export const routeTree = rootRoute
     },
     "/n/$namespace/explorer/endpoint/$": {
       "filePath": "n/$namespace/explorer/endpoint.$.tsx",
+      "parent": "/n/$namespace/explorer"
+    },
+    "/n/$namespace/explorer/openapiSpecification/$": {
+      "filePath": "n/$namespace/explorer/openapiSpecification.$.tsx",
       "parent": "/n/$namespace/explorer"
     },
     "/n/$namespace/explorer/service/$": {

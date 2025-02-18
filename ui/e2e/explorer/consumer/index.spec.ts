@@ -41,7 +41,7 @@ test("it is possible to create a consumer", async ({ page }) => {
   /* create consumer */
   await page.getByRole("button", { name: "New" }).first().click();
   await page.getByRole("menuitem", { name: "Gateway" }).click();
-  await page.getByRole("button", { name: "New Consumer" }).click();
+  await page.getByRole("button", { name: "Consumer" }).click();
 
   await expect(page.getByRole("button", { name: "Create" })).toBeDisabled();
   await page.getByPlaceholder("consumer-name.yaml").fill(filename);

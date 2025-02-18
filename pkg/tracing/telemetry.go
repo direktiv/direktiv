@@ -1,3 +1,4 @@
+// nolint:unused
 package tracing
 
 import (
@@ -165,12 +166,12 @@ func telemetryWaiter(ctx context.Context, tp *sdktrace.TracerProvider, bsp sdktr
 
 		slog.Info("flushing telemetry data before shutdown.")
 		if err := bsp.ForceFlush(ctx); err != nil {
-			slog.Error("Failed to flush telemetry data.", "error", err)
+			slog.Error("failed to flush telemetry data.", "error", err)
 		}
 
 		slog.Info("shutting down telemetry.")
 		if err := tp.Shutdown(ctx); err != nil {
-			slog.Error("Failed to shutdown telemetry.", "error", err)
+			slog.Error("failed to shutdown telemetry.", "error", err)
 		}
 	}
 }

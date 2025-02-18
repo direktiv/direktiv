@@ -1,4 +1,14 @@
 import {
+  BookOpen,
+  Folder,
+  Layers,
+  Network,
+  Play,
+  PlusCircle,
+  Users,
+  Workflow,
+} from "lucide-react";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -11,15 +21,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
-import {
-  Folder,
-  Layers,
-  Network,
-  Play,
-  PlusCircle,
-  Users,
-  Workflow,
-} from "lucide-react";
 
 import Button from "~/design/Button";
 import { DialogTrigger } from "@radix-ui/react-dialog";
@@ -32,7 +33,8 @@ export type FileTypeSelection =
   | "new-workflow"
   | "new-service"
   | "new-route"
-  | "new-consumer";
+  | "new-consumer"
+  | "new-openapiSpecification";
 
 type NewFileButtonProps = {
   setSelectedDialog: (fileType: FileTypeSelection) => void;
@@ -97,7 +99,7 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
               {t("pages.explorer.tree.newFileButton.items.gateway.label")}
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
-              <DropdownMenuSubContent className="w-40">
+              <DropdownMenuSubContent className="w-52">
                 <DialogTrigger
                   className="w-full"
                   onClick={() => {
@@ -120,6 +122,21 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
                     {t(
                       "pages.explorer.tree.newFileButton.items.gateway.consumer"
                     )}
+                  </DropdownMenuItem>
+                </DialogTrigger>
+                <DialogTrigger
+                  className="w-full"
+                  onClick={() => {
+                    setSelectedDialog("new-openapiSpecification");
+                  }}
+                >
+                  <DropdownMenuItem className="flex items-center">
+                    <BookOpen className="mr-2 size-4" />
+                    <span className="flex-1 text-left">
+                      {t(
+                        "pages.explorer.tree.newFileButton.items.gateway.openapiSpecification"
+                      )}
+                    </span>
                   </DropdownMenuItem>
                 </DialogTrigger>
               </DropdownMenuSubContent>

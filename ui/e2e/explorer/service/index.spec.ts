@@ -63,7 +63,7 @@ test("it is possible to create a service", async ({ page }) => {
 
   /* create service */
   await page.getByRole("button", { name: "New" }).first().click();
-  await page.getByRole("button", { name: "New Service" }).click();
+  await page.getByRole("button", { name: "Service" }).click();
 
   await expect(page.getByRole("button", { name: "Create" })).toBeDisabled();
   await page.getByPlaceholder("service-name.yaml").fill(service.name);
@@ -465,7 +465,7 @@ test("empty fields are omitted from the service file", async ({ page }) => {
 
   /* create service */
   await page.getByRole("button", { name: "New" }).first().click();
-  await page.getByRole("button", { name: "New Service" }).click();
+  await page.getByRole("button", { name: "Service" }).click();
 
   await expect(page.getByRole("button", { name: "Create" })).toBeDisabled();
   await page.getByPlaceholder("service-name.yaml").fill(service.name);

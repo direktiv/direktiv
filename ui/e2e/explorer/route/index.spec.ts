@@ -43,7 +43,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
   /* create route */
   await page.getByRole("button", { name: "New" }).first().click();
   await page.getByRole("menuitem", { name: "Gateway" }).click();
-  await page.getByRole("button", { name: "New Route" }).click();
+  await page.getByRole("button", { name: "Route" }).click();
 
   await expect(page.getByRole("button", { name: "Create" })).toBeDisabled();
   await page.getByPlaceholder("route-name.yaml").fill(filename);

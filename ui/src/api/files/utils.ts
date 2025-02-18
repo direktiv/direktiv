@@ -1,4 +1,12 @@
-import { File, Folder, Layers, Play, Users, Workflow } from "lucide-react";
+import {
+  BookOpen,
+  File,
+  Folder,
+  Layers,
+  Play,
+  Users,
+  Workflow,
+} from "lucide-react";
 
 import { BaseFileSchemaType } from "./schema";
 
@@ -71,6 +79,8 @@ export const fileTypeToIcon = (type: BaseFileSchemaType["type"]) => {
       return Workflow;
     case "consumer":
       return Users;
+    case "gateway":
+      return BookOpen;
     default:
       return File;
   }
@@ -90,6 +100,8 @@ export const fileTypeToExplorerRoute = (type: BaseFileSchemaType["type"]) => {
       return "/n/$namespace/explorer/endpoint/$";
     case "consumer":
       return "/n/$namespace/explorer/consumer/$";
+    case "gateway":
+      return "/n/$namespace/explorer/openapiSpecification/$";
     default:
       return "/n/$namespace/explorer/tree/$";
   }
