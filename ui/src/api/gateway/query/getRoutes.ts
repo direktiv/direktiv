@@ -42,7 +42,25 @@ const useRoutesGeneric = <T>({
     }),
     queryFn: fetchRoutes,
     enabled: !!namespace && enabled,
-    select: (data) => filter(data),
+    select: (data) => {
+      // Ensure plugins properties are arrays
+      const normalizedData = data.data.map((route) => ({
+        ...route,
+        spec: {
+          ...route.spec,
+          "x-direktiv-config": {
+            ...route.spec["x-direktiv-config"],
+            plugins: {
+              ...route.spec["x-direktiv-config"].plugins,
+              inbound: route.spec["x-direktiv-config"].plugins.inbound ?? [],
+              outbound: route.spec["x-direktiv-config"].plugins.outbound ?? [],
+              auth: route.spec["x-direktiv-config"].plugins.auth ?? [],
+            },
+          },
+        },
+      }));
+      return filter({ data: normalizedData });
+    },
   });
 };
 

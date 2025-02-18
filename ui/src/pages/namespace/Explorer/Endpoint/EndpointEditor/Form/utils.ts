@@ -14,7 +14,7 @@ export const useSortedValues = (control: Control<EndpointFormSchemaType>) => {
   const sortedConfig = configKeys.reduce(
     (acc, key) => ({
       ...acc,
-      [key]: watchedValues?.["x-direktiv-config"]?.[key],
+      [key]: watchedValues?.["x-direktiv-config"]?.[key] ?? [],
     }),
     {} as Record<string, unknown>
   );
@@ -22,7 +22,7 @@ export const useSortedValues = (control: Control<EndpointFormSchemaType>) => {
   const sortedPluginFields = EndpointsPluginsSchema.keyof().options;
   const sortedPlugins = sortedPluginFields.reduce((acc, pluginKey) => {
     const pluginValue =
-      watchedValues?.["x-direktiv-config"]?.plugins?.[pluginKey];
+      watchedValues?.["x-direktiv-config"]?.plugins?.[pluginKey] ?? [];
     return pluginValue ? { ...acc, [pluginKey]: pluginValue } : acc;
   }, {});
 

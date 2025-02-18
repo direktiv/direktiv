@@ -7,12 +7,12 @@ import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 
 import { ConditionalWrapper } from "~/util/helpers";
 import { FC } from "react";
-import { RouteSchemaType } from "~/api/gateway/schema";
+import { NewRouteSchemaType } from "~/api/gateway/schema";
 import { useTranslation } from "react-i18next";
 
 type PluginCountProps = {
   number: number;
-  type: keyof RouteSchemaType["plugins"];
+  type: "inbound" | "outbound" | "auth" | "target";
 };
 
 const PluginCount: FC<PluginCountProps> = ({ type, number }) => {
@@ -30,14 +30,14 @@ const PluginCount: FC<PluginCountProps> = ({ type, number }) => {
 };
 
 type PluginsProps = {
-  plugins: RouteSchemaType["plugins"];
+  plugins: NewRouteSchemaType["spec"]["x-direktiv-config"]["plugins"];
 };
 
 const Plugins: FC<PluginsProps> = ({ plugins }) => {
-  const numberOfInboundPlugins = plugins.inbound?.length ?? 0;
-  const numberOfAuthPlugins = plugins.auth?.length ?? 0;
-  const numberOfOutboundPlugins = plugins.outbound?.length ?? 0;
-  const numberOfTargetPlugin = plugins.target ? 1 : 0;
+  const numberOfInboundPlugins = plugins?.inbound?.length ?? 0;
+  const numberOfAuthPlugins = plugins?.auth?.length ?? 0;
+  const numberOfOutboundPlugins = plugins?.outbound?.length ?? 0;
+  const numberOfTargetPlugin = plugins?.target ? 1 : 0;
 
   const numberOfPlugins =
     numberOfInboundPlugins +

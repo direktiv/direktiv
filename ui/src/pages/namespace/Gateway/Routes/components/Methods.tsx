@@ -6,11 +6,11 @@ import {
 
 import Badge from "~/design/Badge";
 import { FC } from "react";
-import { RouteSchemaType } from "~/api/gateway/schema";
+import { NewRouteSchemaType } from "~/api/gateway/schema";
 import { useTranslation } from "react-i18next";
 
 type AllowAnonymousProps = {
-  methods: RouteSchemaType["methods"];
+  methods: NewRouteSchemaType["spec"]["x-direktiv-config"]["methods"];
 };
 
 const methodDisplayCount = 2;

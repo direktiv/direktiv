@@ -10,7 +10,7 @@ import {
 } from "~/design/Table";
 
 import { Network } from "lucide-react";
-import { RouteSchemaType } from "~/api/gateway/schema";
+import { NewRouteSchemaType } from "~/api/gateway/schema";
 import { Row } from "./Row";
 import { useRoutes } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
@@ -20,7 +20,7 @@ const RoutesTable = ({
   filteredRoutes,
 }: {
   search: string;
-  filteredRoutes: RouteSchemaType[];
+  filteredRoutes: NewRouteSchemaType[];
 }) => {
   const { t } = useTranslation();
   const {
@@ -74,7 +74,7 @@ const RoutesTable = ({
               </TableRow>
             ) : (
               filteredRoutes?.map((route) => (
-                <Row key={route.file_path} route={route} />
+                <Row key={route?.file_path} route={route} />
               ))
             )}
           </>

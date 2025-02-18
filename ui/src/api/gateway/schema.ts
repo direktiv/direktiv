@@ -1,15 +1,15 @@
 import { z } from "zod";
 
 export const routeMethods = [
-  "CONNECT",
-  "DELETE",
-  "GET",
-  "HEAD",
-  "OPTIONS",
-  "PATCH",
-  "POST",
-  "PUT",
-  "TRACE",
+  "connect",
+  "delete",
+  "get",
+  "head",
+  "options",
+  "patch",
+  "post",
+  "put",
+  "trace",
 ] as const;
 
 export const MethodsSchema = z.enum(routeMethods);
@@ -62,24 +62,28 @@ const filterInvalidEntries = (schema: z.ZodTypeAny) =>
       entryArr.filter((entry) => schema.safeParse(entry).success)
     );
 
-const RouteSchema = z.object({
-  methods: filterInvalidEntries(MethodsSchema).nullable(),
-  file_path: z.string(),
-  path: z.string().optional(),
-  server_path: z.string().optional(),
-  allow_anonymous: z.boolean(),
-  errors: z.array(z.string()),
-  warnings: z.array(z.string()),
-  plugins: z.object({
-    // if a user might use an unsupported plugin, they will be parsed out instead of throwing an error
-    outbound: filterInvalidEntries(PluginSchema).optional(),
-    inbound: filterInvalidEntries(PluginSchema).optional(),
-    auth: filterInvalidEntries(PluginSchema).optional(),
-    target: PluginSchema.optional(),
+export const NewRouteSchema = z.object({
+  spec: z.object({
+    "x-direktiv-api": z.literal("endpoint/v2"),
+    "x-direktiv-config": z.object({
+      allow_anonymous: z.boolean(),
+      methods: filterInvalidEntries(MethodsSchema).nullable(),
+      path: z.string(),
+      plugins: z.object({
+        inbound: filterInvalidEntries(PluginSchema).default([]),
+        outbound: filterInvalidEntries(PluginSchema).default([]),
+        auth: filterInvalidEntries(PluginSchema).default([]),
+        target: PluginSchema,
+      }),
+    }),
   }),
+  file_path: z.string(),
+  errors: z.array(z.string()),
+  server_path: z.string(),
+  warnings: z.array(z.string()),
 });
 
-export type RouteSchemaType = z.infer<typeof RouteSchema>;
+export type NewRouteSchemaType = z.infer<typeof NewRouteSchema>;
 
 /**
  * example
@@ -88,7 +92,7 @@ export type RouteSchemaType = z.infer<typeof RouteSchema>;
   } 
  */
 export const RoutesListSchema = z.object({
-  data: z.array(RouteSchema),
+  data: z.array(NewRouteSchema),
 });
 
 export type RoutesListSchemaType = z.infer<typeof RoutesListSchema>;
