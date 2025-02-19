@@ -9,6 +9,7 @@ import { Methods } from "../components/Methods";
 import { NewRouteSchemaType } from "~/api/gateway/schema";
 import Plugins from "../components/Plugins";
 import PublicPathInput from "../components/PublicPath";
+import { getMethodOperations } from "../utils";
 import { useTranslation } from "react-i18next";
 
 type RowProps = {
@@ -66,7 +67,7 @@ export const Row: FC<RowProps> = ({ route }) => {
         </div>
       </TableCell>
       <TableCell>
-        <Methods methods={route?.spec["x-direktiv-config"]?.methods ?? []} />
+        <Methods methods={getMethodOperations(route?.spec ?? {})} />
       </TableCell>
       <TableCell>
         <Plugins plugins={route?.spec["x-direktiv-config"]?.plugins ?? {}} />

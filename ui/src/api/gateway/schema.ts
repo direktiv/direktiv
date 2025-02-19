@@ -1,5 +1,22 @@
 import { z } from "zod";
 
+// x-direktiv-api: endpoint/v2
+
+// x-direktiv-config:
+//   path: "/testme"
+//   allow_anonymous: true
+//   plugins:
+//     target:
+//       type: instant-response
+//       configuration:
+//         status_code: 200
+//         status_message: hello
+// get:
+//   description: Optional extended description in CommonMark or HTML.
+//   responses:
+//     "200":
+//       description: returns something
+
 export const routeMethods = [
   "connect",
   "delete",
@@ -11,8 +28,6 @@ export const routeMethods = [
   "put",
   "trace",
 ] as const;
-
-export const MethodsSchema = z.enum(routeMethods);
 
 /**
  * example
@@ -62,12 +77,30 @@ const filterInvalidEntries = (schema: z.ZodTypeAny) =>
       entryArr.filter((entry) => schema.safeParse(entry).success)
     );
 
+export const OperationSchema = z.object({
+  description: z.string().optional(),
+  responses: z.record(z.any()).optional(),
+});
+
+// I am helping TypeScript preserve the literal key types for
+// when being spread into the NewRouteSchema
+export type RouteMethod = (typeof routeMethods)[number];
+
+export const methodSchemas = routeMethods.reduce<
+  Record<RouteMethod, z.ZodTypeAny>
+>(
+  (acc, method) => {
+    acc[method] = OperationSchema.optional();
+    return acc;
+  },
+  {} as Record<RouteMethod, z.ZodTypeAny>
+);
+
 export const NewRouteSchema = z.object({
   spec: z.object({
     "x-direktiv-api": z.literal("endpoint/v2"),
     "x-direktiv-config": z.object({
       allow_anonymous: z.boolean(),
-      methods: filterInvalidEntries(MethodsSchema).nullable(),
       path: z.string(),
       plugins: z.object({
         inbound: filterInvalidEntries(PluginSchema).default([]),
@@ -76,6 +109,7 @@ export const NewRouteSchema = z.object({
         target: PluginSchema,
       }),
     }),
+    ...methodSchemas,
   }),
   file_path: z.string(),
   errors: z.array(z.string()),
@@ -85,6 +119,11 @@ export const NewRouteSchema = z.object({
 
 export type NewRouteSchemaType = z.infer<typeof NewRouteSchema>;
 
+export type MethodsKeys = keyof NewRouteSchemaType["spec"];
+
+export type MethodsObject = Partial<
+  Pick<NewRouteSchemaType["spec"], MethodsKeys>
+>;
 /**
  * example
   {
