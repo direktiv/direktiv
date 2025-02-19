@@ -3,6 +3,7 @@ import Header from "./Header";
 import { LogStreamingSubscriber } from "~/api/logs/query/LogStreamingSubscriber";
 import Logs from "./Logs";
 import { NoPermissions } from "~/design/Table";
+import NotFoundPage from "~/util/router/NotFoundPage";
 import { twMergeClsx } from "~/util/helpers";
 import { useParams } from "@tanstack/react-router";
 import { useRoute } from "~/api/gateway/query/getRoutes";
@@ -22,7 +23,7 @@ const RoutesDetailPage = () => {
       </Card>
     );
 
-  if (!data) return null;
+  if (!data) return <NotFoundPage />;
 
   return (
     <div className="grid grow grid-rows-[auto_1fr]">
