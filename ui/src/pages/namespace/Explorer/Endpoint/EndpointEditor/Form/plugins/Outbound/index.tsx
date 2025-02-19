@@ -47,7 +47,7 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({
     fields,
   } = useFieldArray({
     control,
-    name: "plugins.outbound",
+    name: "x-direktiv-config.plugins.outbound",
   });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editIndex, setEditIndex] = useState<number>();

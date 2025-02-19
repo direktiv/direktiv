@@ -45,12 +45,12 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const currentType = values.plugins?.target?.type;
+  const currentType = values["x-direktiv-config"]?.plugins?.target?.type;
   const [selectedPlugin, setSelectedPlugin] = useState(currentType);
 
   const handleSubmit = (configuration: TargetPluginFormSchemaType) => {
     setDialogOpen(false);
-    form.setValue("plugins.target", configuration);
+    form.setValue("x-direktiv-config.plugins.target", configuration);
     handleParentSubmit(onSave)();
   };
 
@@ -63,7 +63,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
     targetEvent,
   } = targetPluginTypes;
 
-  const currentConfiguration = values.plugins?.target;
+  const currentConfiguration = values["x-direktiv-config"]?.plugins?.target;
 
   const currentInstantResponseConfig =
     currentConfiguration?.type === instantResponse.name
@@ -109,11 +109,11 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
           <TableBody>
             <TableRow>
               <TableCell colSpan={2}>
-                {values.plugins?.target?.type ? (
+                {values["x-direktiv-config"]?.plugins?.target?.type ? (
                   <DialogTrigger asChild>
                     <div className="cursor-pointer">
                       {t(
-                        `pages.explorer.endpoint.editor.form.plugins.target.types.${values.plugins?.target?.type}`
+                        `pages.explorer.endpoint.editor.form.plugins.target.types.${values["x-direktiv-config"].plugins?.target?.type}`
                       )}
                     </div>
                   </DialogTrigger>

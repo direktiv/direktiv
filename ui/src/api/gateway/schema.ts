@@ -1,18 +1,33 @@
 import { z } from "zod";
 
-export const routeMethods = [
-  "CONNECT",
-  "DELETE",
-  "GET",
-  "HEAD",
-  "OPTIONS",
-  "PATCH",
-  "POST",
-  "PUT",
-  "TRACE",
-] as const;
+// x-direktiv-api: endpoint/v2
 
-export const MethodsSchema = z.enum(routeMethods);
+// x-direktiv-config:
+//   path: "/testme"
+//   allow_anonymous: true
+//   plugins:
+//     target:
+//       type: instant-response
+//       configuration:
+//         status_code: 200
+//         status_message: hello
+// get:
+//   description: Optional extended description in CommonMark or HTML.
+//   responses:
+//     "200":
+//       description: returns something
+
+export const routeMethods = [
+  "connect",
+  "delete",
+  "get",
+  "head",
+  "options",
+  "patch",
+  "post",
+  "put",
+  "trace",
+] as const;
 
 /**
  * example
@@ -62,25 +77,53 @@ const filterInvalidEntries = (schema: z.ZodTypeAny) =>
       entryArr.filter((entry) => schema.safeParse(entry).success)
     );
 
-const RouteSchema = z.object({
-  methods: filterInvalidEntries(MethodsSchema).nullable(),
-  file_path: z.string(),
-  path: z.string().optional(),
-  server_path: z.string().optional(),
-  allow_anonymous: z.boolean(),
-  errors: z.array(z.string()),
-  warnings: z.array(z.string()),
-  plugins: z.object({
-    // if a user might use an unsupported plugin, they will be parsed out instead of throwing an error
-    outbound: filterInvalidEntries(PluginSchema).optional(),
-    inbound: filterInvalidEntries(PluginSchema).optional(),
-    auth: filterInvalidEntries(PluginSchema).optional(),
-    target: PluginSchema.optional(),
-  }),
+export const OperationSchema = z.object({
+  description: z.string().optional(),
+  responses: z.record(z.any()).optional(),
 });
 
-export type RouteSchemaType = z.infer<typeof RouteSchema>;
+// I am helping TypeScript preserve the literal key types for
+// when being spread into the NewRouteSchema
+export type RouteMethod = (typeof routeMethods)[number];
 
+export const methodSchemas = routeMethods.reduce<
+  Record<RouteMethod, z.ZodTypeAny>
+>(
+  (acc, method) => {
+    acc[method] = OperationSchema.optional();
+    return acc;
+  },
+  {} as Record<RouteMethod, z.ZodTypeAny>
+);
+
+export const NewRouteSchema = z.object({
+  spec: z.object({
+    "x-direktiv-api": z.literal("endpoint/v2"),
+    "x-direktiv-config": z.object({
+      allow_anonymous: z.boolean(),
+      path: z.string(),
+      plugins: z.object({
+        inbound: filterInvalidEntries(PluginSchema).default([]),
+        outbound: filterInvalidEntries(PluginSchema).default([]),
+        auth: filterInvalidEntries(PluginSchema).default([]),
+        target: PluginSchema,
+      }),
+    }),
+    ...methodSchemas,
+  }),
+  file_path: z.string(),
+  errors: z.array(z.string()),
+  server_path: z.string(),
+  warnings: z.array(z.string()),
+});
+
+export type NewRouteSchemaType = z.infer<typeof NewRouteSchema>;
+
+export type MethodsKeys = keyof NewRouteSchemaType["spec"];
+
+export type MethodsObject = Partial<
+  Pick<NewRouteSchemaType["spec"], MethodsKeys>
+>;
 /**
  * example
   {
@@ -88,7 +131,7 @@ export type RouteSchemaType = z.infer<typeof RouteSchema>;
   } 
  */
 export const RoutesListSchema = z.object({
-  data: z.array(RouteSchema),
+  data: z.array(NewRouteSchema),
 });
 
 export type RoutesListSchemaType = z.infer<typeof RoutesListSchema>;
