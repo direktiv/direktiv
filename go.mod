@@ -1,6 +1,6 @@
 module github.com/direktiv/direktiv
 
-go 1.24.0
+go 1.23.0
 
 require (
 	github.com/ChannelMeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61
