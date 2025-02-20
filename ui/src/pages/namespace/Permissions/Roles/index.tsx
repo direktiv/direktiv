@@ -106,7 +106,7 @@ const RolesPage = () => {
             )}
           </TableBody>
         </Table>
-        <DialogContent className="sm:max-w-2xl md:max-w-3xl">
+        <DialogContent className="sm:max-w-2xl">
           {deleteRole && (
             <Delete group={deleteRole} close={() => setDialogOpen(false)} />
           )}
