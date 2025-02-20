@@ -73,9 +73,10 @@ func (tx *DB) BeginTx(ctx context.Context, opts ...*sql.TxOptions) (*DB, error) 
 	}, nil
 }
 
+// nolint:usetesting
 func NewTestDB(t *testing.T) (*DB, error) {
 	t.Helper()
-	ctx := t.Context()
+	ctx := context.Background()
 
 	pgContainer, err := tsPostgres.Run(ctx, "postgres:15.3-alpine",
 		tsPostgres.WithDatabase("mydb"),
@@ -131,6 +132,7 @@ func newTestPostgres(dsn string) (*DB, error) {
 	return NewDB(db), nil
 }
 
+//nolint:usetesting
 func NewTestDBWithNamespace(t *testing.T, namespace string) (*DB, *datastore.Namespace, error) {
 	t.Helper()
 
@@ -138,7 +140,7 @@ func NewTestDBWithNamespace(t *testing.T, namespace string) (*DB, *datastore.Nam
 	if err != nil {
 		return nil, nil, err
 	}
-	ns, err := db.DataStore().Namespaces().Create(t.Context(), &datastore.Namespace{
+	ns, err := db.DataStore().Namespaces().Create(context.Background(), &datastore.Namespace{
 		Name: namespace,
 	})
 	if err != nil {
