@@ -143,11 +143,7 @@ const CreateToken = ({ close }: { close: () => void }) => {
                   const parsedPermissions =
                     PermissionsArray.safeParse(permissions);
                   if (parsedPermissions.success) {
-                    setValue("permissions", parsedPermissions.data, {
-                      shouldDirty: true,
-                      shouldTouch: true,
-                      shouldValidate: true,
-                    });
+                    setValue("permissions", parsedPermissions.data);
                   }
                 }}
               />

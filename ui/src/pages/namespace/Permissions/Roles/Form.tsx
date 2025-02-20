@@ -72,11 +72,7 @@ const RoleForm = ({ form, onSubmit, formId }: RoleFormProps) => {
           onChange={(permissions) => {
             const parsedPermissions = PermissionsArray.safeParse(permissions);
             if (parsedPermissions.success) {
-              setValue("permissions", parsedPermissions.data, {
-                shouldDirty: true,
-                shouldTouch: true,
-                shouldValidate: true,
-              });
+              setValue("permissions", parsedPermissions.data);
             }
           }}
         />
