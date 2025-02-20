@@ -5,14 +5,13 @@ import {
   useForm,
 } from "react-hook-form";
 import { EndpointFormSchema, EndpointFormSchemaType } from "../schema";
+import { FC, useEffect } from "react";
 
 import { AuthPluginForm } from "./plugins/Auth";
-import Badge from "~/design/Badge";
-import { Checkbox } from "~/design/Checkbox";
-import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { InboundPluginForm } from "./plugins/Inbound";
 import Input from "~/design/Input";
+import { MethodCheckbox } from "./methodCheckbox";
 import { OutboundPluginForm } from "./plugins/Outbound";
 import { Switch } from "~/design/Switch";
 import { TargetPluginForm } from "./plugins/Target";
@@ -34,12 +33,19 @@ type FormProps = {
 
 export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
   const { t } = useTranslation();
+
   const formControls = useForm<EndpointFormSchemaType>({
     resolver: zodResolver(EndpointFormSchema),
-    defaultValues: {
-      ...defaultConfig,
-    },
   });
+
+  // Reset the form only when the server-supplied defaultConfig changes.
+  // This prevents user edits from getting overwritten each render,
+  // but still updates if new defaults arrive from the backend.
+  useEffect(() => {
+    if (defaultConfig) {
+      formControls.reset(defaultConfig);
+    }
+  }, [defaultConfig, formControls]);
 
   const values = useSortedValues(formControls.control);
   const { register, control } = formControls;
@@ -72,43 +78,19 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
           </Fieldset>
         </div>
         <Fieldset label={t("pages.explorer.endpoint.editor.form.methods")}>
-          <Controller
-            control={control}
-            name="x-direktiv-config.methods"
-            render={({ field }) => (
-              <div className="grid grid-cols-3 gap-5">
-                {routeMethods.map((method) => {
-                  const isChecked = field.value?.includes(method);
-                  return (
-                    <label
-                      key={method}
-                      className="flex items-center gap-2 text-sm"
-                      htmlFor={method}
-                    >
-                      <Checkbox
-                        id={method}
-                        value={method}
-                        checked={isChecked}
-                        onCheckedChange={(checked) => {
-                          if (checked === true) {
-                            field.onChange([...(field.value ?? []), method]);
-                          }
-                          if (checked === false && field.value) {
-                            field.onChange(
-                              field.value.filter((v) => v !== method)
-                            );
-                          }
-                        }}
-                      />
-                      <Badge variant={isChecked ? undefined : "secondary"}>
-                        {method}
-                      </Badge>
-                    </label>
-                  );
-                })}
-              </div>
-            )}
-          />
+          <div className="grid grid-cols-3 gap-5">
+            {routeMethods.map((method) => (
+              <Controller
+                key={method}
+                control={control}
+                name={method}
+                defaultValue={undefined}
+                render={({ field }) => (
+                  <MethodCheckbox method={method} field={field} />
+                )}
+              />
+            ))}
+          </div>
         </Fieldset>
         <Fieldset
           label={t("pages.explorer.endpoint.editor.form.allowAnonymous")}
@@ -120,7 +102,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
             name="x-direktiv-config.allow_anonymous"
             render={({ field }) => (
               <Switch
-                defaultChecked={field.value ?? false}
+                checked={field.value ?? false}
                 onCheckedChange={(value) => {
                   field.onChange(value);
                 }}

@@ -1,40 +1,38 @@
 import { Control, useWatch } from "react-hook-form";
-import {
-  EndpointFormSchema,
-  EndpointFormSchemaType,
-  EndpointsPluginsSchema,
-} from "../schema";
+import { EndpointFormSchemaType, EndpointsPluginsSchema } from "../schema";
+
+import { routeMethods } from "~/api/gateway/schema";
 
 export const useSortedValues = (control: Control<EndpointFormSchemaType>) => {
   const watchedValues = useWatch({ control });
 
-  const configKeys =
-    EndpointFormSchema.shape["x-direktiv-config"].keyof().options;
+  const sortedConfig = { ...watchedValues["x-direktiv-config"] };
 
-  const sortedConfig = configKeys.reduce(
-    (acc, key) => ({
-      ...acc,
-      [key]: watchedValues?.["x-direktiv-config"]?.[key] ?? [],
-    }),
-    {} as Record<string, unknown>
-  );
+  if (sortedConfig?.plugins) {
+    const pluginFields = EndpointsPluginsSchema.keyof().options;
+    pluginFields.forEach((key) => {
+      const value = sortedConfig.plugins?.[key];
 
-  const sortedPluginFields = EndpointsPluginsSchema.keyof().options;
-  const sortedPlugins = sortedPluginFields.reduce((acc, pluginKey) => {
-    const pluginValue =
-      watchedValues?.["x-direktiv-config"]?.plugins?.[pluginKey] ?? [];
-    return pluginValue ? { ...acc, [pluginKey]: pluginValue } : acc;
-  }, {});
-
-  const hasPlugins = Object.keys(sortedPlugins).length > 0;
-  if (hasPlugins) {
-    sortedConfig.plugins = sortedPlugins;
-  } else {
-    delete sortedConfig.plugins;
+      if (Array.isArray(value) && value.length && sortedConfig.plugins) {
+        delete sortedConfig.plugins[key];
+      }
+    });
+    if (Object.keys(sortedConfig.plugins).length === 0) {
+      delete sortedConfig.plugins;
+    }
   }
+
+  const methods = routeMethods.reduce((acc, method) => {
+    const value = watchedValues[method];
+    if (value !== undefined) {
+      acc[method] = value;
+    }
+    return acc;
+  }, {} as Partial<EndpointFormSchemaType>);
 
   return {
     "x-direktiv-api": watchedValues["x-direktiv-api"],
     "x-direktiv-config": sortedConfig,
+    ...methods,
   };
 };

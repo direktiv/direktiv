@@ -1,4 +1,4 @@
-import { RouteSchemaType } from "~/api/gateway/schema";
+import { NewRouteSchemaType } from "~/api/gateway/schema";
 import { getRoutes } from "~/api/gateway/query/getRoutes";
 import { headers } from "e2e/utils/testutils";
 
@@ -64,7 +64,7 @@ plugins:
 
 type FindRouteWithApiRequestParams = {
   namespace: string;
-  match: (route: RouteSchemaType) => boolean;
+  match: (route: NewRouteSchemaType) => boolean;
 };
 
 type ErrorType = { response: { status?: number } };
