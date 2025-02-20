@@ -1,23 +1,24 @@
-import { EndpointLoadSchema, EndpointLoadSchemaType } from "./schema";
+import { EndpointFormSchema, EndpointFormSchemaType } from "./schema";
 import { jsonToYaml, yamlToJsonOrNull } from "../../utils";
 
 import { ZodError } from "zod";
 
 type SerializeReturnType =
-  | [ReturnType<typeof EndpointLoadSchema.parse>, undefined]
-  | [undefined, ZodError];
+  | [EndpointFormSchemaType, undefined]
+  | [undefined, ZodError<EndpointFormSchemaType>];
 
 export const serializeEndpointFile = (yaml: string): SerializeReturnType => {
   const json = yamlToJsonOrNull(yaml);
 
-  const parsed = EndpointLoadSchema.safeParse(json);
-  if (parsed.success) {
-    return [parsed.data, undefined];
+  const jsonParsed = EndpointFormSchema.safeParse(json);
+  if (jsonParsed.success) {
+    return [jsonParsed.data, undefined];
   }
-  return [undefined, parsed.error];
+
+  return [undefined, jsonParsed.error];
 };
 
-const defaultEndpointFileJson: EndpointLoadSchemaType = {
+const defaultEndpointFileJson: EndpointFormSchemaType = {
   "x-direktiv-api": "endpoint/v2",
   "x-direktiv-config": {},
 };
