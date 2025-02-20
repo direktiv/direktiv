@@ -835,6 +835,7 @@
           "title": "Create a token",
           "cancelBtn": "Cancel",
           "createBtn": "Create",
+          "noPermissions": "You must select at least one permission",
           "name": {
             "label": "Name",
             "placeholder": "Enter a name for the token"

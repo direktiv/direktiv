@@ -45,7 +45,23 @@ const CreateToken = ({ close }: { close: () => void }) => {
       duration: "",
       permissions: [],
     },
-    resolver: zodResolver(TokenFormSchema),
+    resolver: zodResolver(
+      TokenFormSchema.refine(
+        (token) =>
+          /**
+           * the length of the array could also be restricted in the payload schema,
+           * but this would make it impossible to click the "select all" button for
+           * "no permissions", cause this would result in an invalid form. But for the
+           * user it might be handy to deselect all permissions and e.g. select one
+           * single permission afterwards
+           */
+          token.permissions.length > 0,
+        {
+          path: ["permissions"],
+          message: t("pages.permissions.tokens.create.noPermissions"),
+        }
+      )
+    ),
   });
 
   const [createdToken, setCreatedToken] = useState<string>();
