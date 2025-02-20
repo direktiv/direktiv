@@ -102,12 +102,14 @@ export const NewRouteSchema = z.object({
     "x-direktiv-config": z.object({
       allow_anonymous: z.boolean(),
       path: z.string(),
-      plugins: z.object({
-        inbound: filterInvalidEntries(PluginSchema).default([]),
-        outbound: filterInvalidEntries(PluginSchema).default([]),
-        auth: filterInvalidEntries(PluginSchema).default([]),
-        target: PluginSchema,
-      }),
+      plugins: z
+        .object({
+          inbound: filterInvalidEntries(PluginSchema).optional(),
+          outbound: filterInvalidEntries(PluginSchema).optional(),
+          auth: filterInvalidEntries(PluginSchema).optional(),
+          target: PluginSchema.optional(),
+        })
+        .optional(),
     }),
     ...methodSchemas,
   }),

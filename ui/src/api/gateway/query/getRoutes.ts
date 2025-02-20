@@ -82,9 +82,9 @@ const useRoutesGeneric = <T>({
               ...config,
               plugins: {
                 ...config.plugins,
-                inbound: config.plugins.inbound ?? [],
-                outbound: config.plugins.outbound ?? [],
-                auth: config.plugins.auth ?? [],
+                inbound: config.plugins?.inbound ?? [],
+                outbound: config.plugins?.outbound ?? [],
+                auth: config.plugins?.auth ?? [],
               },
             },
             ...Object.fromEntries(

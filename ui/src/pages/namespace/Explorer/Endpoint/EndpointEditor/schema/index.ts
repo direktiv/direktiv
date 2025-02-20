@@ -23,15 +23,56 @@ export const methodSchemas = routeMethods.reduce<
   {} as Record<(typeof routeMethods)[number], z.ZodTypeAny>
 );
 
+export const EndpointLoadSchema = z.object({
+  "x-direktiv-api": z.literal("endpoint/v2"),
+  "x-direktiv-config": z.object({}),
+});
+
+export type EndpointLoadSchemaType = z.infer<typeof EndpointLoadSchema>;
+
+export const XDirektivConfigSchema = z.object({
+  allow_anonymous: z.boolean().optional(),
+  path: z.string().nonempty().optional(),
+  timeout: z.number().int().positive().optional(),
+  plugins: EndpointsPluginsSchema.optional(),
+});
+
 export const EndpointFormSchema = z.object({
   "x-direktiv-api": z.literal("endpoint/v2"),
-  "x-direktiv-config": z.object({
-    allow_anonymous: z.boolean().optional(),
-    path: z.string().nonempty().optional(),
-    timeout: z.number().int().positive().optional(),
-    plugins: EndpointsPluginsSchema.optional(),
-  }),
+  "x-direktiv-config": XDirektivConfigSchema,
   ...methodSchemas,
 });
+
+export const EndpointSaveSchema = EndpointFormSchema.superRefine(
+  (data, ctx) => {
+    const hasMethod = routeMethods.some((method) => data[method] !== undefined);
+    if (!hasMethod) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "no valid http method available",
+        path: [],
+      });
+    }
+
+    if (!data["x-direktiv-config"].plugins?.target) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "no target plugin found",
+        path: ["x-direktiv-config", "plugins", "target"],
+      });
+    }
+    if (
+      data["x-direktiv-config"].allow_anonymous === false &&
+      (!data["x-direktiv-config"].plugins?.auth ||
+        data["x-direktiv-config"].plugins.auth.length === 0)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "no auth plugin configured but 'allow_anonymous' set false",
+        path: ["x-direktiv-config", "plugins", "auth"],
+      });
+    }
+  }
+);
 
 export type EndpointFormSchemaType = z.infer<typeof EndpointFormSchema>;
