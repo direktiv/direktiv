@@ -22,10 +22,8 @@ states:
     result: Hello world!
 `)
 
-
-
-helpers.itShouldCreateYamlFile(it, expect, namespace,
-    '/', 'ep1.yaml', 'endpoint', `
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
+		'/', 'ep1.yaml', 'endpoint', `
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: /ep1
@@ -40,8 +38,8 @@ get:
     responses:
         "200":
         description: works
-`
-)
+`,
+	)
 
 	retry10(`should execute wf1.yaml file`, async () => {
 		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway/ep1`)

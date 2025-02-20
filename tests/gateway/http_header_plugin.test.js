@@ -38,7 +38,6 @@ post:
       "200":
         description: works`
 
-
 const wf = `
 direktiv_api: workflow/v1
 states:

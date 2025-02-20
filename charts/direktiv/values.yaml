@@ -141,17 +141,27 @@ fluent-bit:
           database                ${PG_DB_NAME}
           host                    ${PG_HOST}
           password                ${PG_PASSWORD}
+      [OUTPUT]
+          name                    loki
+          match                   *
+          host                    direktiv-victoria-logs-single-server.default.svc
+          uri                     /insert/loki/api/v1/push
+          port                    9428
+          label_keys              $path,$log,$time
+          header                  VL-Msg-Field log
+          header                  VL-Time-Field time
+          header                  VL-Stream-Fields path
     filters: |
       [FILTER]
           Name                    rewrite_tag
           Match                   input
           Rule                    $log ^.*"track":"([^"]*).*$ flow.$1 true
       [FILTER]
-          Name parser
-          Match *
-          Parser json
-          Key_Name log
-          Reserve_Data on
+          Name                    parser
+          Match                   *
+          Parser                  json
+          Key_Name                log
+          Reserve_Data            on
 
 # -- service account for components. If preconfigured serviceaccounts are used the name ise the base
 # and two additional service accounts are needed, e.g. service account name is myaccount then another two
