@@ -6,6 +6,7 @@ import {
 } from "~/design/Tooltip";
 
 import Badge from "~/design/Badge";
+import { ConditionalWrapper } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 
 type OidcGroupsInfoProps = {
@@ -15,24 +16,29 @@ type OidcGroupsInfoProps = {
 const OidcGroupsInfo = ({ groups }: OidcGroupsInfoProps) => {
   const { t } = useTranslation();
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger>
-          <Badge className="cursor-pointer" variant="outline">
-            {t("pages.permissions.OidcGroupsInfo.title", {
-              count: groups.length,
-            })}
-          </Badge>
-        </TooltipTrigger>
-        <TooltipContent className="flex flex-row max-w-xl flex-wrap gap-3 text-inherit">
-          {groups.map((group) => (
-            <Badge key={group} className="cursor-pointer" variant="outline">
-              {group}
-            </Badge>
-          ))}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <ConditionalWrapper
+      condition={groups.length > 0}
+      wrapper={(children) => (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>{children}</TooltipTrigger>
+            <TooltipContent className="flex flex-row max-w-xl flex-wrap gap-3 text-inherit">
+              {groups.map((group) => (
+                <Badge key={group} className="cursor-pointer" variant="outline">
+                  {group}
+                </Badge>
+              ))}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    >
+      <Badge variant="outline">
+        {t("pages.permissions.OidcGroupsInfo.title", {
+          count: groups.length,
+        })}
+      </Badge>
+    </ConditionalWrapper>
   );
 };
 

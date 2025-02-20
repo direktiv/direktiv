@@ -752,7 +752,8 @@
       },
       "OidcGroupsInfo": {
         "title": "{{count}} OIDC Groups",
-        "title_one": "{{count}} OIDC Group"
+        "title_one": "{{count}} OIDC Group",
+        "title_zero": "no OIDC Groups"
       },
       "durationHint": {
         "title": "Token lifetime",
