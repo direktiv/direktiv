@@ -120,7 +120,7 @@ issues:
     - text: "context-as-argument:"
       linters:
         - revive
-    - text: "context-keys-type: should not use basic type string"
+    - text: "context-keys-type: should not use basic type"
       linters:
         - revive
     - text: "fmt.Errorf can be replaced"

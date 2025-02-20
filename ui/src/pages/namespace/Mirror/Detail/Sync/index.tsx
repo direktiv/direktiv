@@ -23,7 +23,7 @@ const Logs = () => {
   return (
     <>
       <LogStreamingSubscriber activity={sync} />
-      <SyncDetail syncId={sync} />
+      <SyncDetail />
     </>
   );
 };

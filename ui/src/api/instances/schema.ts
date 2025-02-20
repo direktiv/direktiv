@@ -148,7 +148,7 @@ export type InstanceDetailsResponseSchemaType = z.infer<
 export const InstanceInputResponseSchema = z.object({
   data: InstanceSchema.extend({
     inputLength: z.number(),
-    input: z.string().nullable(),
+    input: z.string(),
   }),
 });
 
