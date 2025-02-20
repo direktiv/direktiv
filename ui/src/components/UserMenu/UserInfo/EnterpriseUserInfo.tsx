@@ -6,7 +6,9 @@ const EnterpriseUserInfo = () => {
   const { t } = useTranslation();
 
   const username =
-    auth?.user?.profile?.preferred_username ?? auth?.user?.profile?.name ?? "";
+    auth?.user?.profile?.preferred_username ??
+    auth?.user?.profile?.name ??
+    auth?.user?.profile?.email;
 
   if (!username) {
     return <>{t("components.userMenu.loggedIn")}</>;
