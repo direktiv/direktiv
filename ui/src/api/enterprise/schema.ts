@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const permissionTopics = [
-  "namespace",
+  "namespaces",
   "instances",
   "syncs",
   "secrets",
