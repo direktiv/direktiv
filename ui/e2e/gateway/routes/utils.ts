@@ -20,44 +20,45 @@ export const createRouteFile = ({
     .map((method) => `${method}: { responses: { "200": { description: "" } } }`)
     .join("\n");
 
-  return `direktiv_api: "endpoint/v2"
-path: ${path}
-allow_anonymous: true
-plugins:
-  inbound: []
-  outbound: []
-  auth: []
-  target:
-    type: ${targetType}
-    configuration:
-      status_code: ${targetConfigurationStatus}
+  return `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+  allow_anonymous: true
+  path: ${path}
+  plugins:
+    inbound: []
+    outbound: []
+    auth: []
+    target:
+      type: ${targetType}
+      configuration:
+        status_code: ${targetConfigurationStatus}
 ${methodsYaml ? "\n" + methodsYaml : ""}`;
 };
 
-export const routeWithAWarning = `direktiv_api: "endpoint/v1"
-timeout: 10000
-allow_anonymous: true
-plugins:
-  inbound: []
-  outbound: []
-  auth: []
-connect: { responses: { "200": { description: "" } } }
-delete: { responses: { "200": { description: "" } } }`;
+export const routeWithAWarning = `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+  allow_anonymous: true
+  path: defaultPath
+  plugins:
+    inbound: []
+    outbound: []
+    auth: []
+delete: { responses: { "200": { description: "" } } }
+options: { responses: { "200": { description: "" } } }`;
 
-export const routeWithAnError = `direktiv_api: "endpoint/v1"
-allow_anonymous: true
-path: "test"
-timeout: 10000
-plugins:
-  target:
-    type: "this-plugin-does-not-exist"
-    configuration:
-      status_code: 200
-      status_message: "Test"
-  inbound: []
-  outbound: []
-  auth: []
-`;
+export const routeWithAnError = `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+  allow_anonymous: true
+  path: test
+  plugins:
+    target:
+      type: "this-plugin-does-not-exist"
+      configuration:
+        status_code: 200
+        status_message: "Test"
+    inbound: []
+    outbound: []
+    auth: []`;
 
 type FindRouteWithApiRequestParams = {
   namespace: string;
