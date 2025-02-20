@@ -7,6 +7,7 @@ require (
 	github.com/bbuck/go-lexer v1.0.0
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/cloudevents/sdk-go/v2 v2.15.2
+	github.com/coreos/go-oidc/v3 v3.12.0
 	github.com/docker/docker v27.5.1+incompatible
 	github.com/dop251/goja v0.0.0-20250114131315-46d383d606d3
 	github.com/gabriel-vasile/mimetype v1.4.8
@@ -58,7 +59,6 @@ require (
 
 require (
 	github.com/channelmeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61 // indirect
-	github.com/coreos/go-oidc/v3 v3.12.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.2 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.59.0 // indirect
 )
