@@ -96,6 +96,8 @@ spec:
                 key: db
           - name: DIREKTIV_FUNCTIONS_TIMEOUT
             value: {{ .Values.requestTimeout | quote }}
+          - name: DIREKTIV_LICENSE
+            value: '{"to":"LocalTester","type":"dev","features":["feature1","feature2"],"expiresAt":"2025-05-20T17:42:51+02:00","signature":"oEoHLqJdz2F1K0TY/WZLuUld4ajJ/aP2xWdOBjJbXg7mxA+zSIXrUIiukua7gB+Ax32BIMhA4WWWvcFU5gBQ4o900oRk9gyxghjG8nXsUOK+W+MO0vpsVIohFQSTl5mioQHp9Hl2Ryngd9Fv2FXSOg3gWgcGrs7oZGVY9qggex+gN1X1vq8rPynVE1cTHbmGiXy5Y1HPB3oBsEE/hLwxQbnP5GmD19mD7cBBWplKf8v5+nHOSfDZodT4aBpMfYKFrKkSRGRRf/os+L6XmGyne+Pl6OLobUwvjNXyqWHm08FuMdow6RJDfTkcvWDAmx+7ZiOgU2HbtMhfp3un01JzUw=="}'
           - name: DIREKTIV_OPEN_TELEMETRY_BACKEND
             value: {{ .Values.flow.opentelemetryBackend | quote }}
           - name: DIREKTIV_KNATIVE_SERVICE_ACCOUNT
