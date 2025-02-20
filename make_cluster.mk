@@ -117,7 +117,7 @@ cluster-direktiv: ## Installs direktiv in cluster
 	--set tag=dev \
 	--set flow.sidecar=localhost:5001/direktiv:dev \
 	--set apikey=password \
-	--set license2=qqwwee \
+	--set-literal license='{"to":"LocalTester","type":"dev","features":["feature1","feature2"],"expiresAt":"2025-05-20T17:42:51+02:00","signature":"oEoHLqJdz2F1K0TY/WZLuUld4ajJ/aP2xWdOBjJbXg7mxA+zSIXrUIiukua7gB+Ax32BIMhA4WWWvcFU5gBQ4o900oRk9gyxghjG8nXsUOK+W+MO0vpsVIohFQSTl5mioQHp9Hl2Ryngd9Fv2FXSOg3gWgcGrs7oZGVY9qggex+gN1X1vq8rPynVE1cTHbmGiXy5Y1HPB3oBsEE/hLwxQbnP5GmD19mD7cBBWplKf8v5+nHOSfDZodT4aBpMfYKFrKkSRGRRf/os+L6XmGyne+Pl6OLobUwvjNXyqWHm08FuMdow6RJDfTkcvWDAmx+7ZiOgU2HbtMhfp3un01JzUw=="}' \
 	--set flow.additionalEnvs[0].name=DIREKTIV_OIDC_ADMIN_GROUP \
 	--set flow.additionalEnvs[0].value="admin" \
 	direktiv charts/direktiv; \
