@@ -34,7 +34,7 @@ const CreateRole = ({ close, unallowedNames }: CreateRoleProps) => {
     RoleFormSchema.refine(
       (x) => !(unallowedNames ?? []).some((n) => n === x.name),
       {
-        path: ["group"],
+        path: ["name"],
         message: t("pages.permissions.roles.form.name.alreadyExist"),
       }
     )
