@@ -24,7 +24,12 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const CreateToken = ({ close }: { close: () => void }) => {
+type CreateTokenProps = {
+  close: () => void;
+  unallowedNames?: string[];
+};
+
+const CreateToken = ({ unallowedNames, close }: CreateTokenProps) => {
   const { t } = useTranslation();
   const { mutate: createToken, isPending } = useCreateToken({
     onSuccess: (token) => {
@@ -58,7 +63,15 @@ const CreateToken = ({ close }: { close: () => void }) => {
           token.permissions.length > 0,
         {
           path: ["permissions"],
-          message: t("pages.permissions.tokens.create.noPermissions"),
+          message: t(
+            "pages.permissions.tokens.create.permissions.noPermissions"
+          ),
+        }
+      ).refine(
+        (token) => !(unallowedNames ?? []).some((n) => n === token.name),
+        {
+          path: ["name"],
+          message: t("pages.permissions.tokens.create.name.alreadyExist"),
         }
       )
     ),

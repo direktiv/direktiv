@@ -109,7 +109,12 @@ const TokensPage = () => {
               close={() => setDialogOpen(false)}
             />
           )}
-          {createToken && <CreateToken close={() => setDialogOpen(false)} />}
+          {createToken && (
+            <CreateToken
+              close={() => setDialogOpen(false)}
+              unallowedNames={data?.data.map((token) => token.name)}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </Card>

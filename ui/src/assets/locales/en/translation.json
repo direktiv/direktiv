@@ -835,10 +835,10 @@
           "title": "Create a token",
           "cancelBtn": "Cancel",
           "createBtn": "Create",
-          "noPermissions": "You must select at least one permission",
           "name": {
             "label": "Name",
-            "placeholder": "Enter a name for the token"
+            "placeholder": "Enter a name for the token",
+            "alreadyExist": "The name already exists"
           },
           "description": {
             "label": "Description",
@@ -847,6 +847,9 @@
           "duration": {
             "label": "Duration",
             "placeholder": "Lifetime of the token in ISO 8601 like e.g P1Y (1 year) or PT12H (12 hours)"
+          },
+          "permissions": {
+            "noPermissions": "You must select at least one permission"
           },
           "success": {
             "title": "Token was Created",
