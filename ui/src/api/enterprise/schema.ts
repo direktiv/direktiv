@@ -1,11 +1,19 @@
 import { z } from "zod";
 
 export const permissionTopics = [
-  "namespaces",
+  "namespace",
   "instances",
+  "syncs",
   "secrets",
   "variables",
-] as const; // TODO: finalize this array
+  "files",
+  "services",
+  "registries",
+  "logs",
+  "notifications",
+  "metrics",
+  "events",
+] as const;
 
 export type PermissionTopic = (typeof permissionTopics)[number];
 
