@@ -1,16 +1,9 @@
 type Route = {
   path: string;
   timeout: number;
-  methods: string[];
   plugins: Plugins;
   allow_anonymous: boolean;
-  patch: {
-    responses: {
-      "200": {
-        description: string;
-      };
-    };
-  };
+  methods: object[];
 };
 
 type Plugins = {
@@ -20,9 +13,17 @@ type Plugins = {
   target: string;
 };
 
+export const normalizeText = (text: string): string =>
+  text
+    .split("\n")
+    .filter((line) => line.trim().length > 0) // remove empty lines
+    .join("\n")
+    .trim();
+
 export const createRouteYaml = ({
   path,
   timeout,
+  plugins,
 }: Route) => `x-direktiv-api: endpoint/v2
 x-direktiv-config:
   allow_anonymous: true
@@ -33,6 +34,9 @@ x-direktiv-config:
       type: instant-response
       configuration:
         status_code: 200
+    ${plugins.inbound ?? ""}
+    ${plugins.outbound ?? ""}
+    ${plugins.auth ?? ""}
 get:
   responses:
     "200":

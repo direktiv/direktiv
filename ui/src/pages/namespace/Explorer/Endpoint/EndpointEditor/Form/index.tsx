@@ -17,7 +17,7 @@ import { Switch } from "~/design/Switch";
 import { TargetPluginForm } from "./plugins/Target";
 import { routeMethods } from "~/api/gateway/schema";
 import { treatAsNumberOrUndefined } from "../../../utils";
-import { useSortedValues } from "./utils";
+// import { useSortedValues } from "./utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -50,7 +50,12 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
     }
   }, [defaultConfig, formControls]);
 
-  const values = useSortedValues(formControls.control);
+  const values = formControls.watch();
+  //note: Not completely sure what the purpose of this hook was,
+  // I leave it here for now to hear what PR reviewers think about it.
+
+  // const values = useSortedValues(formControls.control);
+
   const { register, control } = formControls;
 
   return children({

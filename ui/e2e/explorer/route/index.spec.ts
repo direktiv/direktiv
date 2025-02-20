@@ -1,5 +1,5 @@
 import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
-import { createRouteYaml, removeLines } from "./utils";
+import { createRouteYaml, normalizeText, removeLines } from "./utils";
 import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
@@ -139,6 +139,14 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
     path: "path",
     timeout: 3000,
     methods: ["GET", "POST"],
+    allow_anonymous: true,
+    patch: {
+      responses: {
+        "200": {
+          description: "",
+        },
+      },
+    },
   };
 
   const basicTargetPlugin = `
@@ -209,36 +217,38 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   /* check editor content */
   const inboundPluginsBeforeSorting = `
-    - type: acl
-      configuration:
-        allow_groups:
-          - allow this group 1
-          - allow this group 2
-        deny_groups: []
-        allow_tags: []
-        deny_tags: []
-    - type: request-convert
-      configuration:
-        omit_headers: false
-        omit_queries: true
-        omit_body: false
-        omit_consumer: true`;
+    inbound:
+      - type: acl
+        configuration:
+          allow_groups:
+            - allow this group 1
+            - allow this group 2
+          deny_groups: []
+          allow_tags: []
+          deny_tags: []
+      - type: request-convert
+        configuration:
+          omit_headers: false
+          omit_queries: true
+          omit_body: false
+          omit_consumer: true`;
 
   const inboundPluginsAfterSorting = `
-    - type: request-convert
-      configuration:
-        omit_headers: false
-        omit_queries: true
-        omit_body: false
-        omit_consumer: true
-    - type: acl
-      configuration:
-        allow_groups:
-          - allow this group 1
-          - allow this group 2
-        deny_groups: []
-        allow_tags: []
-        deny_tags: []`;
+    inbound:
+      - type: request-convert
+        configuration:
+          omit_headers: false
+          omit_queries: true
+          omit_body: false
+          omit_consumer: true
+      - type: acl
+        configuration:
+          allow_groups:
+            - allow this group 1
+            - allow this group 2
+          deny_groups: []
+          allow_tags: []
+          deny_tags: []`;
 
   let expectedEditorContent = createRouteYaml({
     ...minimalRouteConfig,
@@ -267,7 +277,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await expect(
     editor,
     "the inbound plugins are represented in the editor preview"
-  ).toContainText(removeLines(expectedEditorContent, 4, "top"), {
+  ).toContainText(removeLines(expectedEditorContent, 12, "top"), {
     useInnerText: true,
   });
 
@@ -289,7 +299,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await expect(
     editor,
     "the new inbound plugin order is represented in the editor preview"
-  ).toContainText(removeLines(expectedEditorContent, 4, "top"), {
+  ).toContainText(removeLines(expectedEditorContent, 11, "top"), {
     useInnerText: true,
   });
 
@@ -302,9 +312,10 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   /* check editor content */
   const outboundPlugins = `
-    - type: js-outbound
-      configuration:
-        script: // execute some JavaScript here`;
+    outbound:
+      - type: js-outbound
+        configuration:
+          script: // execute some JavaScript here`;
 
   expectedEditorContent = createRouteYaml({
     ...minimalRouteConfig,
@@ -318,9 +329,10 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await expect(
     editor,
     "the outbound plugin is represented in the editor preview"
-  ).toContainText(removeLines(expectedEditorContent, 7, "top"), {
-    useInnerText: true,
-  });
+  ).toContainText(
+    normalizeText(removeLines(expectedEditorContent, 16, "top")),
+    { useInnerText: true }
+  );
 
   /* configure auth plugin: Github Webhook */
   await page.getByRole("button", { name: "add auth plugin" }).click();
@@ -331,9 +343,10 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   /* check editor content */
   const authPlugins = `
-    - type: github-webhook-auth
-      configuration:
-        secret: my github secret`;
+    auth:
+      - type: github-webhook-auth
+        configuration:
+          secret: my github secret`;
 
   expectedEditorContent = createRouteYaml({
     ...minimalRouteConfig,
@@ -348,9 +361,10 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await expect(
     editor,
     "the auth plugin is represented in the editor preview"
-  ).toContainText(removeLines(expectedEditorContent, 10, "top"), {
-    useInnerText: true,
-  });
+  ).toContainText(
+    normalizeText(removeLines(expectedEditorContent, 18, "top")),
+    { useInnerText: true }
+  );
 
   /* note: saving the plugin should have saved the whole file. */
   await expect(
@@ -363,9 +377,10 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await expect(
     editor,
     "after reloading, the entered data is still in the editor preview"
-  ).toContainText(removeLines(expectedEditorContent, 9, "bottom"), {
-    useInnerText: true,
-  });
+  ).toContainText(
+    normalizeText(removeLines(expectedEditorContent, 18, "bottom")),
+    { useInnerText: true }
+  );
 
   /* delete all optional plugins */
   await page
@@ -396,6 +411,9 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
     ...minimalRouteConfig,
     plugins: {
       target: basicTargetPlugin,
+      inbound: "inbound: []",
+      outbound: "outbound: []",
+      auth: "auth: []",
     },
   });
 
@@ -548,5 +566,40 @@ test("it does not block navigation when only formatting has changed", async ({
   await expect(
     page.getByRole("heading", { name: "Monitoring", exact: true }),
     "it is possible to leave the route"
+  ).toBeVisible();
+});
+
+test("it shows a notification for outdated endpoint format", async ({
+  page,
+}) => {
+  /* prepare data */
+  const filename = "outdatedroute.yaml";
+
+  const outdatedRouteYaml = `
+    direktiv_api: endpoint/v1
+    direktiv_config:
+      allow_anonymous: true
+      path: /outdated
+      timeout: 3000`;
+
+  await createFile({
+    namespace,
+    name: filename,
+    type: "endpoint",
+    yaml: outdatedRouteYaml,
+  });
+
+  /* visit page */
+  await page.goto(`/n/${namespace}/explorer/endpoint/${filename}`, {
+    waitUntil: "networkidle",
+  });
+
+  const notification = page.getByText(
+    "This endpoint config is using the outdated endpoint/v1 format. Please update your endpoint config to the new format."
+  );
+
+  await expect(
+    notification,
+    "it shows a notification for outdated endpoint format"
   ).toBeVisible();
 });
