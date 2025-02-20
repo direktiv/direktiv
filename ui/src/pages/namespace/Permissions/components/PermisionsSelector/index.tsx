@@ -30,7 +30,7 @@ const PermissionsSelector = ({
   const { t } = useTranslation();
   return (
     <fieldset className="flex flex-col items-center gap-5">
-      <label className="w-[120px] text-right text-[14px]">
+      <label className="text-[14px]">
         {t("pages.permissions.permissionsSelector.permissions")}
       </label>
       <Card className="max-h-[400px] w-full overflow-scroll" noShadow>
