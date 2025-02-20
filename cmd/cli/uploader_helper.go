@@ -198,7 +198,7 @@ func (u *uploader) createFileItem(path, method string, obj fileObject) error {
 			return err
 		}
 
-		return errors.New(errJson.Error.Message)
+		return fmt.Errorf(errJson.Error.Message)
 	}
 
 	return nil
