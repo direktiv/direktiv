@@ -22,12 +22,21 @@ test("it is possible to create a basic route file", async ({ page }) => {
   const expectedYaml = createRouteYaml({
     path: "path",
     timeout: 3000,
-    methods: ["GET", "POST"],
+    methods: ["PATCH"],
     plugins: {
       target: `
     type: instant-response
     configuration:
-        status_code: 200`,
+        status_code: 200
+        status_message: asdasd`,
+    },
+    allow_anonymous: true,
+    patch: {
+      responses: {
+        "200": {
+          description: "",
+        },
+      },
     },
   });
 
@@ -63,16 +72,26 @@ test("it is possible to create a basic route file", async ({ page }) => {
   /* fill out form */
   await page.getByLabel("path").fill("path");
   await page.getByLabel("timeout").fill("3000");
-  await page.getByLabel("GET").click();
-  await page.getByLabel("POST").click();
+  await page
+    .locator("label")
+    .filter({ hasText: "get" })
+    .getByRole("checkbox")
+    .click();
+  await page
+    .locator("label")
+    .filter({ hasText: "post" })
+    .getByRole("checkbox")
+    .click();
 
   /* try to save incomplete form */
   await page.getByRole("button", { name: "Save" }).click();
 
   await expect(
-    page.getByText("plugins : this field is invalid"),
+    page.getByText("x-direktiv-config : this field is invalid"),
     "it can not save the route without a valid target plugin"
   ).toBeVisible();
+
+  await page.getByLabel("allow anonymous").click();
 
   await page.getByRole("button", { name: "set target plugin" }).click();
 

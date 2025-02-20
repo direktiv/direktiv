@@ -49,7 +49,7 @@ export const EndpointSaveSchema = EndpointFormSchema.superRefine(
     if (!hasMethod) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "no valid http method available",
+        message: "No valid HTTP method available.",
         path: [],
       });
     }
@@ -57,20 +57,25 @@ export const EndpointSaveSchema = EndpointFormSchema.superRefine(
     if (!data["x-direktiv-config"].plugins?.target) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "no target plugin found",
+        message: "No target plugin found.",
         path: ["x-direktiv-config", "plugins", "target"],
       });
     }
-    if (
-      data["x-direktiv-config"].allow_anonymous === false &&
-      (!data["x-direktiv-config"].plugins?.auth ||
-        data["x-direktiv-config"].plugins.auth.length === 0)
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "no auth plugin configured but 'allow_anonymous' set false",
-        path: ["x-direktiv-config", "plugins", "auth"],
-      });
+
+    if (data["x-direktiv-config"].allow_anonymous === false) {
+      if (!data["x-direktiv-config"].plugins?.auth) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Auth plugins are missing.",
+          path: ["x-direktiv-config", "plugins", "auth"],
+        });
+      } else if (data["x-direktiv-config"].plugins.auth.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Auth plugins array is empty.",
+          path: ["x-direktiv-config", "plugins", "auth"],
+        });
+      }
     }
   }
 );

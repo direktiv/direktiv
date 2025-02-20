@@ -1,11 +1,16 @@
-const methodsYaml = (methods: string[]) =>
-  methods.map((method) => `\n  - ${method}`).join("");
-
 type Route = {
   path: string;
   timeout: number;
   methods: string[];
   plugins: Plugins;
+  allow_anonymous: boolean;
+  patch: {
+    responses: {
+      "200": {
+        description: string;
+      };
+    };
+  };
 };
 
 type Plugins = {
@@ -18,17 +23,24 @@ type Plugins = {
 export const createRouteYaml = ({
   path,
   timeout,
-  methods,
-  plugins,
-}: Route) => `direktiv_api: endpoint/v1
-path: ${path}
-timeout: ${timeout}
-methods:${methodsYaml(methods)}
-plugins:
-  target:${plugins.target}
-  inbound:${plugins.inbound ?? " []"}
-  outbound:${plugins.outbound ?? " []"}
-  auth:${plugins.auth ?? " []"}`;
+}: Route) => `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+  allow_anonymous: true
+  path: ${path}
+  timeout: ${timeout}
+  plugins:
+    target:
+      type: instant-response
+      configuration:
+        status_code: 200
+get:
+  responses:
+    "200":
+      description: ""
+post:
+  responses:
+    "200":
+      description: ""`;
 
 export const removeLines = (
   text: string,
