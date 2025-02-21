@@ -9,7 +9,7 @@ import { Methods } from "../components/Methods";
 import Plugins from "../components/Plugins";
 import PublicPathInput from "../components/PublicPath";
 import { RouteSchemaType } from "~/api/gateway/schema";
-import { getMethodFromOpenApiSpec } from "../utils";
+import { getMethodsFromOpenApiSpec } from "../utils";
 import { useTranslation } from "react-i18next";
 
 type RowProps = {
@@ -67,7 +67,7 @@ export const Row: FC<RowProps> = ({ route }) => {
         </div>
       </TableCell>
       <TableCell>
-        <Methods methods={getMethodFromOpenApiSpec(route.spec)} />
+        <Methods methods={getMethodsFromOpenApiSpec(route.spec)} />
       </TableCell>
       <TableCell>
         <Plugins plugins={route.spec["x-direktiv-config"].plugins} />
