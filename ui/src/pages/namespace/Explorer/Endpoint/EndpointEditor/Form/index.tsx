@@ -36,6 +36,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
 
   const formControls = useForm<EndpointFormSchemaType>({
     resolver: zodResolver(EndpointSaveSchema),
+    criteriaMode: "all",
   });
 
   // Reset the form only when the server-supplied defaultConfig changes.
