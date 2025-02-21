@@ -30,7 +30,7 @@ const PluginCount: FC<PluginCountProps> = ({ type, number }) => {
 };
 
 type PluginsProps = {
-  plugins: PluginsSchemaType;
+  plugins: PluginsSchemaType | undefined;
 };
 
 const Plugins: FC<PluginsProps> = ({ plugins }) => {
