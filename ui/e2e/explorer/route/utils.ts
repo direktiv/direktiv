@@ -3,7 +3,7 @@ type Route = {
   timeout: number;
   plugins: Plugins;
   allow_anonymous: boolean;
-  methods: object[];
+  methods: Record<string, object>;
 };
 
 type Plugins = {
