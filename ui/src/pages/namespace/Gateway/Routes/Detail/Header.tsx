@@ -8,7 +8,7 @@ import MessagesOverlay from "../components/MessagesOverlay";
 import { Methods } from "../components/Methods";
 import Plugins from "../components/Plugins";
 import PublicPathInput from "../components/PublicPath";
-import { getMethodOperations } from "../utils";
+import { getMethodFromOpenApiSpec } from "../utils";
 import { useRoute } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
@@ -59,7 +59,7 @@ const Header = () => {
           <div className="text-gray-10 dark:text-gray-dark-10">
             {t("pages.gateway.routes.columns.methods")}
           </div>
-          <Methods methods={getMethodOperations(route?.spec ?? {})} />
+          <Methods methods={getMethodFromOpenApiSpec(route.spec)} />
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">

@@ -116,7 +116,9 @@ const DirektivOpenApiSpecSchema = z
   })
   .merge(MethodsSchema);
 
-type DirektivOpenApiSpecSchemaType = z.infer<typeof DirektivOpenApiSpecSchema>;
+export type DirektivOpenApiSpecSchemaType = z.infer<
+  typeof DirektivOpenApiSpecSchema
+>;
 
 export type MethodsKeys = keyof DirektivOpenApiSpecSchemaType;
 export type MethodsObject = Partial<
