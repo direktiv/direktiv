@@ -8,7 +8,7 @@ import {
 } from "~/design/Tooltip";
 
 import Badge from "~/design/Badge";
-import usePermissionLevel from "./usePermissionLevel";
+import { usePermissionLevel } from "./utils";
 import { useTranslation } from "react-i18next";
 
 type PermissionsInfoProps = {

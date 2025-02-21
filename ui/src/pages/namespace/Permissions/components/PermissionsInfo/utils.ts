@@ -3,7 +3,7 @@ import { ComponentProps } from "react";
 
 type BadgeVariant = ComponentProps<typeof Badge>["variant"];
 
-const usePermissionLevel = (
+export const usePermissionLevel = (
   appliedPermissions: string[],
   availablePermissions: string[]
 ): {
@@ -30,5 +30,3 @@ const usePermissionLevel = (
     badgeVariant,
   };
 };
-
-export default usePermissionLevel;

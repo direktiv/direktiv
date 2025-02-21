@@ -10,7 +10,6 @@ import {
   TableRow,
 } from "~/design/Table";
 import { PlusCircle, Users } from "lucide-react";
-import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -20,6 +19,7 @@ import EditRole from "./Edit";
 import { RoleSchemaType } from "~/api/enterprise/roles/schema";
 import Row from "./Row";
 import { useRoles } from "~/api/enterprise/roles/query/get";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const RolesPage = () => {

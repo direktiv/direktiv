@@ -12,7 +12,7 @@ import {
 } from "~/api/enterprise/tokens/schema";
 
 import Button from "~/design/Button";
-import DurationHint from "../../components/DurationHint";
+import DurationHint from "./DurationHint";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";

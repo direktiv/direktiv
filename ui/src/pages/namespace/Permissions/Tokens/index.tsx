@@ -10,14 +10,13 @@ import {
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
-import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CreateToken from "./Create";
 import Delete from "./Delete";
 import Row from "./Row";
-import { on } from "events";
+import { useState } from "react";
 import { useTokens } from "~/api/enterprise/tokens/query/get";
 import { useTranslation } from "react-i18next";
 

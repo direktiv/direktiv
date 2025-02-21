@@ -1,6 +1,6 @@
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
-import OidcGroupSelector from "../components/OidcGroupSelector";
+import OidcGroupSelector from "./OidcGroupSelector";
 import { PermissionsArray } from "~/api/enterprise/schema";
 import PermissionsSelector from "../components/PermisionsSelector";
 import { RoleFormSchemaType } from "~/api/enterprise/roles/schema";

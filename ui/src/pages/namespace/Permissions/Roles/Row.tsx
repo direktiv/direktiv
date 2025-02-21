@@ -15,7 +15,7 @@ import {
 
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
-import OidcGroupsInfo from "../components/OidcGroupsInfo";
+import OidcGroupsInfo from "./OidcGroupsInfo";
 import PermissionsInfo from "../components/PermissionsInfo";
 import { RoleSchemaType } from "~/api/enterprise/roles/schema";
 import { useTranslation } from "react-i18next";
