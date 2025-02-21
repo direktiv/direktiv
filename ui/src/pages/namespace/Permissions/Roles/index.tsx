@@ -33,14 +33,6 @@ const RolesPage = () => {
 
   const allAvailableNames = data?.data.map((role) => role.name) ?? [];
 
-  useEffect(() => {
-    if (dialogOpen === false) {
-      setCreateRole(false);
-      setDeleteRole(undefined);
-      setEditRole(undefined);
-    }
-  }, [dialogOpen]);
-
   const createNewButton = (
     <DialogTrigger asChild>
       <Button onClick={() => setCreateRole(true)} variant="outline">
@@ -50,9 +42,18 @@ const RolesPage = () => {
     </DialogTrigger>
   );
 
+  const onOpenChange = (openState: boolean) => {
+    if (openState === false) {
+      setCreateRole(false);
+      setDeleteRole(undefined);
+      setEditRole(undefined);
+    }
+    setDialogOpen(openState);
+  };
+
   return (
     <Card className="m-5">
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={onOpenChange}>
         <div className="flex justify-end gap-5 p-2">{createNewButton}</div>
         <Table className="border-t border-gray-5 dark:border-gray-dark-5">
           <TableHead>

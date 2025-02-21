@@ -17,6 +17,7 @@ import { Card } from "~/design/Card";
 import CreateToken from "./Create";
 import Delete from "./Delete";
 import Row from "./Row";
+import { on } from "events";
 import { useTokens } from "~/api/enterprise/tokens/query/get";
 import { useTranslation } from "react-i18next";
 
@@ -28,12 +29,13 @@ const TokensPage = () => {
   const [createToken, setCreateToken] = useState(false);
   const [deleteToken, setDeleteToken] = useState<string>();
 
-  useEffect(() => {
-    if (dialogOpen === false) {
+  const onOpenChange = (openState: boolean) => {
+    if (openState === false) {
       setCreateToken(false);
       setDeleteToken(undefined);
     }
-  }, [dialogOpen]);
+    setDialogOpen(openState);
+  };
 
   const createNewButton = (
     <DialogTrigger asChild>
@@ -46,7 +48,7 @@ const TokensPage = () => {
 
   return (
     <Card className="m-5">
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={onOpenChange}>
         <div className="flex justify-end gap-5 p-2">{createNewButton}</div>
         <Table className="border-t border-gray-5 dark:border-gray-dark-5">
           <TableHead>
