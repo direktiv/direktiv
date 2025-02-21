@@ -157,11 +157,7 @@ const CreateToken = ({ unallowedNames, close }: CreateTokenProps) => {
                   />
                   <DurationHint
                     onDurationSelect={(duration) => {
-                      setValue("duration", duration, {
-                        shouldDirty: true,
-                        shouldTouch: true,
-                        shouldValidate: true,
-                      });
+                      setValue("duration", duration, { shouldDirty: true });
                     }}
                   />
                 </InputWithButton>
@@ -172,7 +168,9 @@ const CreateToken = ({ unallowedNames, close }: CreateTokenProps) => {
                   const parsedPermissions =
                     PermissionsArray.safeParse(permissions);
                   if (parsedPermissions.success) {
-                    setValue("permissions", parsedPermissions.data);
+                    setValue("permissions", parsedPermissions.data, {
+                      shouldDirty: true,
+                    });
                   }
                 }}
               />

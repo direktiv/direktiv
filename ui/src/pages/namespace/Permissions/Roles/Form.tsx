@@ -60,11 +60,7 @@ const RoleForm = ({ form, onSubmit, formId }: RoleFormProps) => {
         <OidcGroupSelector
           oidcGroups={watch("oidcGroups")}
           onChange={(oidcGroups) => {
-            setValue("oidcGroups", oidcGroups, {
-              shouldDirty: true,
-              shouldTouch: true,
-              shouldValidate: true,
-            });
+            setValue("oidcGroups", oidcGroups, { shouldDirty: true });
           }}
         />
         <PermissionsSelector
@@ -72,7 +68,9 @@ const RoleForm = ({ form, onSubmit, formId }: RoleFormProps) => {
           onChange={(permissions) => {
             const parsedPermissions = PermissionsArray.safeParse(permissions);
             if (parsedPermissions.success) {
-              setValue("permissions", parsedPermissions.data);
+              setValue("permissions", parsedPermissions.data, {
+                shouldDirty: true,
+              });
             }
           }}
         />
