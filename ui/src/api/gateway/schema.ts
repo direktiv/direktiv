@@ -82,8 +82,6 @@ export const OperationSchema = z.object({
   responses: z.record(z.any()).optional(),
 });
 
-// I am helping TypeScript preserve the literal key types for
-// when being spread into the NewRouteSchema
 export type RouteMethod = (typeof routeMethods)[number];
 
 export const methodSchemas = routeMethods.reduce<
@@ -96,7 +94,7 @@ export const methodSchemas = routeMethods.reduce<
   {} as Record<RouteMethod, z.ZodTypeAny>
 );
 
-export const NewRouteSchema = z.object({
+export const RouteSchema = z.object({
   spec: z.object({
     "x-direktiv-api": z.literal("endpoint/v2"),
     "x-direktiv-config": z.object({
@@ -119,7 +117,7 @@ export const NewRouteSchema = z.object({
   warnings: z.array(z.string()),
 });
 
-export type RouteSchemaType = z.infer<typeof NewRouteSchema>;
+export type RouteSchemaType = z.infer<typeof RouteSchema>;
 
 export type MethodsKeys = keyof RouteSchemaType["spec"];
 
@@ -131,7 +129,7 @@ export type MethodsObject = Partial<Pick<RouteSchemaType["spec"], MethodsKeys>>;
   } 
  */
 export const RoutesListSchema = z.object({
-  data: z.array(NewRouteSchema),
+  data: z.array(RouteSchema),
 });
 
 export type RoutesListSchemaType = z.infer<typeof RoutesListSchema>;
