@@ -22,7 +22,10 @@ test("it is possible to create a basic route file", async ({ page }) => {
   const expectedYaml = createRouteYaml({
     path: "path",
     timeout: 3000,
-    methods: ["PATCH"],
+    methods: {
+      get: {},
+      post: {},
+    },
     plugins: {
       target: `
     type: instant-response
@@ -31,13 +34,6 @@ test("it is possible to create a basic route file", async ({ page }) => {
         status_message: asdasd`,
     },
     allow_anonymous: true,
-    patch: {
-      responses: {
-        "200": {
-          description: "",
-        },
-      },
-    },
   });
 
   /* visit page */
@@ -138,15 +134,11 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   const minimalRouteConfig: Omit<CreateRouteYamlParam, "plugins"> = {
     path: "path",
     timeout: 3000,
-    methods: ["GET", "POST"],
-    allow_anonymous: true,
-    patch: {
-      responses: {
-        "200": {
-          description: "",
-        },
-      },
+    methods: {
+      get: {},
+      post: {},
     },
+    allow_anonymous: true,
   };
 
   const basicTargetPlugin = `
@@ -442,7 +434,11 @@ test("it blocks navigation when there are unsaved changes", async ({
   const minimalRouteConfig: Omit<CreateRouteYamlParam, "plugins"> = {
     path: "path",
     timeout: 3000,
-    methods: ["GET", "POST"],
+    methods: {
+      get: {},
+      post: {},
+    },
+    allow_anonymous: true,
   };
 
   const basicTargetPlugin = `
@@ -513,7 +509,11 @@ test("it does not block navigation when only formatting has changed", async ({
   const minimalRouteConfig: Omit<CreateRouteYamlParam, "plugins"> = {
     path: "path",
     timeout: 3000,
-    methods: ["GET", "POST"],
+    methods: {
+      get: {},
+      post: {},
+    },
+    allow_anonymous: true,
   };
 
   const basicTargetPlugin = `
