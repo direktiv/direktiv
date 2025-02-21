@@ -50,17 +50,11 @@ const CreateRole = ({ close, unallowedNames }: CreateRoleProps) => {
     resolver,
   });
 
-  const {
-    formState: { isDirty, isValid, isSubmitted },
-  } = form;
-
   const onSubmit: SubmitHandler<RoleFormSchemaType> = (params) => {
     createRole(params);
   };
 
-  // you can not submit if the form has not changed or if there are any errors and
-  // you have already submitted the form (errors will first show up after submit)
-  const disableSubmit = !isDirty || (isSubmitted && !isValid);
+  const disableSubmit = !form.formState.isDirty;
 
   const formId = `new-role`;
 

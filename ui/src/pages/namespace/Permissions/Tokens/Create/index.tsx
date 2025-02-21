@@ -42,7 +42,7 @@ const CreateToken = ({ unallowedNames, close }: CreateTokenProps) => {
     setValue,
     handleSubmit,
     watch,
-    formState: { isDirty, errors, isValid, isSubmitted },
+    formState: { isDirty, errors },
   } = useForm<TokenFormSchemaType>({
     defaultValues: {
       name: "",
@@ -83,9 +83,7 @@ const CreateToken = ({ unallowedNames, close }: CreateTokenProps) => {
     createToken(params);
   };
 
-  // you can not submit if the form has not changed or if there are any errors and
-  // you have already submitted the form (errors will first show up after submit)
-  const disableSubmit = !isDirty || (isSubmitted && !isValid);
+  const disableSubmit = !isDirty;
 
   const formId = `new-token`;
 
@@ -170,6 +168,7 @@ const CreateToken = ({ unallowedNames, close }: CreateTokenProps) => {
                   if (parsedPermissions.success) {
                     setValue("permissions", parsedPermissions.data, {
                       shouldDirty: true,
+                      shouldTouch: true,
                     });
                   }
                 }}
