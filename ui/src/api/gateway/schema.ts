@@ -58,7 +58,9 @@ const PluginsSchema = z.object({
   target: PluginSchema.optional(),
 });
 
-export type PluginType = keyof z.infer<typeof PluginsSchema>;
+export type PluginsSchemaType = z.infer<typeof PluginsSchema>;
+
+export type PluginType = keyof PluginsSchemaType;
 
 export const OperationSchema = z.object({
   description: z.string().optional(),

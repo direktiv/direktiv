@@ -3,7 +3,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "~/design/HoverCard";
-import { PluginType, RouteSchemaType } from "~/api/gateway/schema";
+import { PluginType, PluginsSchemaType } from "~/api/gateway/schema";
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 
 import { ConditionalWrapper } from "~/util/helpers";
@@ -30,7 +30,7 @@ const PluginCount: FC<PluginCountProps> = ({ type, number }) => {
 };
 
 type PluginsProps = {
-  plugins: RouteSchemaType["spec"]["x-direktiv-config"]["plugins"];
+  plugins: PluginsSchemaType;
 };
 
 const Plugins: FC<PluginsProps> = ({ plugins }) => {
