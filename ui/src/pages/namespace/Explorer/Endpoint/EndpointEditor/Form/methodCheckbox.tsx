@@ -18,6 +18,7 @@ export const MethodCheckbox: React.FC<MethodCheckboxProps> = ({
   return (
     <label className="flex items-center gap-2 text-sm" htmlFor={method}>
       <Checkbox
+        id={method}
         checked={isChecked}
         onCheckedChange={(checked) => {
           if (checked) {
