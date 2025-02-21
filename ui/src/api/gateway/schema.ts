@@ -1,17 +1,5 @@
 import { z } from "zod";
 
-export const routeMethods = [
-  "connect",
-  "delete",
-  "get",
-  "head",
-  "options",
-  "patch",
-  "post",
-  "put",
-  "trace",
-] as const;
-
 /**
  * example
   {
@@ -33,23 +21,6 @@ const filterInvalidEntries = (schema: z.ZodTypeAny) =>
     .transform((entryArr) =>
       entryArr.filter((entry) => schema.safeParse(entry).success)
     );
-
-export const OperationSchema = z.object({
-  description: z.string().optional(),
-  responses: z.record(z.any()).optional(),
-});
-
-export type RouteMethod = (typeof routeMethods)[number];
-
-export const methodSchemas = routeMethods.reduce<
-  Record<RouteMethod, z.ZodTypeAny>
->(
-  (acc, method) => {
-    acc[method] = OperationSchema.optional();
-    return acc;
-  },
-  {} as Record<RouteMethod, z.ZodTypeAny>
-);
 
 /**
  * example
@@ -89,6 +60,38 @@ const PluginsSchema = z.object({
 
 export type PluginType = keyof z.infer<typeof PluginsSchema>;
 
+export const OperationSchema = z.object({
+  description: z.string().optional(),
+  responses: z.record(z.any()).optional(),
+});
+
+const MethodsSchema = z.object({
+  connect: OperationSchema.optional(),
+  delete: OperationSchema.optional(),
+  get: OperationSchema.optional(),
+  head: OperationSchema.optional(),
+  options: OperationSchema.optional(),
+  patch: OperationSchema.optional(),
+  post: OperationSchema.optional(),
+  put: OperationSchema.optional(),
+  trace: OperationSchema.optional(),
+});
+
+type MethodsSchemaType = z.infer<typeof MethodsSchema>;
+export type RouteMethod = keyof MethodsSchemaType;
+
+export const routeMethods: Set<RouteMethod> = new Set([
+  "connect",
+  "delete",
+  "get",
+  "head",
+  "options",
+  "patch",
+  "post",
+  "put",
+  "trace",
+]);
+
 /**
  * example
 {
@@ -102,15 +105,16 @@ export type PluginType = keyof z.infer<typeof PluginsSchema>;
   }
 }
  */
-const DirektivOpenApiSpecSchema = z.object({
-  "x-direktiv-api": z.literal("endpoint/v2"),
-  "x-direktiv-config": z.object({
-    allow_anonymous: z.boolean(),
-    path: z.string(),
-    plugins: PluginsSchema.optional(),
-  }),
-  ...methodSchemas,
-});
+const DirektivOpenApiSpecSchema = z
+  .object({
+    "x-direktiv-api": z.literal("endpoint/v2"),
+    "x-direktiv-config": z.object({
+      allow_anonymous: z.boolean(),
+      path: z.string(),
+      plugins: PluginsSchema.optional(),
+    }),
+  })
+  .merge(MethodsSchema);
 
 type DirektivOpenApiSpecSchemaType = z.infer<typeof DirektivOpenApiSpecSchema>;
 

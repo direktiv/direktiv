@@ -1,4 +1,8 @@
-import { RouteSchemaType, routeMethods } from "~/api/gateway/schema";
+import {
+  RouteMethod,
+  RouteSchemaType,
+  routeMethods,
+} from "~/api/gateway/schema";
 
 import { getRoutes } from "~/api/gateway/query/getRoutes";
 import { headers } from "e2e/utils/testutils";
@@ -7,7 +11,7 @@ type CreateRouteFileParams = {
   path?: string;
   targetType?: string;
   targetConfigurationStatus?: string;
-  enabledMethods?: (typeof routeMethods)[number][];
+  enabledMethods?: RouteMethod[];
 };
 
 export const createRouteFile = ({

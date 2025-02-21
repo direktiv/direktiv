@@ -2,10 +2,10 @@ import Badge from "~/design/Badge";
 import { Checkbox } from "~/design/Checkbox";
 import { ControllerRenderProps } from "react-hook-form";
 import { EndpointFormSchemaType } from "../schema";
-import { routeMethods } from "~/api/gateway/schema";
+import { RouteMethod } from "~/api/gateway/schema";
 
 interface MethodCheckboxProps {
-  method: (typeof routeMethods)[number];
+  method: RouteMethod;
   field: ControllerRenderProps<EndpointFormSchemaType>;
 }
 

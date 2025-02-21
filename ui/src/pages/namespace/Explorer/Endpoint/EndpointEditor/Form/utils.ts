@@ -22,7 +22,7 @@ export const useSortedValues = (control: Control<EndpointFormSchemaType>) => {
     }
   }
 
-  const methods = routeMethods.reduce((acc, method) => {
+  const methods = Array.from(routeMethods).reduce((acc, method) => {
     const value = watchedValues[method];
     if (value !== undefined) {
       acc[method] = value;

@@ -1,6 +1,7 @@
 import {
   MethodsKeys,
   OperationSchema,
+  RouteMethod,
   RoutesListSchema,
   RoutesListSchemaType,
   routeMethods,
@@ -57,10 +58,8 @@ const useRoutesGeneric = <T>({
         const { spec } = route;
         const { "x-direktiv-config": config, ...rest } = spec;
 
-        function isRouteMethod(
-          key: string
-        ): key is (typeof routeMethods)[number] {
-          return routeMethods.includes(key as (typeof routeMethods)[number]);
+        function isRouteMethod(key: string): key is RouteMethod {
+          return routeMethods.has(key as RouteMethod);
         }
 
         const methods = Object.keys(rest).filter(isRouteMethod);

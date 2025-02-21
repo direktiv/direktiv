@@ -1,4 +1,8 @@
-import { OperationSchema, routeMethods } from "~/api/gateway/schema";
+import {
+  OperationSchema,
+  RouteMethod,
+  routeMethods,
+} from "~/api/gateway/schema";
 
 import { AuthPluginFormSchema } from "./plugins/auth/schema";
 import { InboundPluginFormSchema } from "./plugins/inbound/schema";
@@ -13,14 +17,14 @@ export const EndpointsPluginsSchema = z.object({
   auth: z.array(AuthPluginFormSchema).optional(),
 });
 
-export const methodSchemas = routeMethods.reduce<
-  Record<(typeof routeMethods)[number], z.ZodTypeAny>
+export const methodSchemas = Array.from(routeMethods).reduce<
+  Record<RouteMethod, z.ZodTypeAny>
 >(
   (acc, method) => {
     acc[method] = OperationSchema.optional();
     return acc;
   },
-  {} as Record<(typeof routeMethods)[number], z.ZodTypeAny>
+  {} as Record<RouteMethod, z.ZodTypeAny>
 );
 
 export const EndpointLoadSchema = z.object({
@@ -45,7 +49,9 @@ export const EndpointFormSchema = z.object({
 
 export const EndpointSaveSchema = EndpointFormSchema.superRefine(
   (data, ctx) => {
-    const hasMethod = routeMethods.some((method) => data[method] !== undefined);
+    const hasMethod = Array.from(routeMethods).some(
+      (method) => data[method] !== undefined
+    );
     if (!hasMethod) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
