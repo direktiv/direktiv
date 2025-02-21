@@ -6,14 +6,14 @@ import Badge from "~/design/Badge";
 import { FC } from "react";
 import MessagesOverlay from "../components/MessagesOverlay";
 import { Methods } from "../components/Methods";
-import { NewRouteSchemaType } from "~/api/gateway/schema";
 import Plugins from "../components/Plugins";
 import PublicPathInput from "../components/PublicPath";
+import { RouteSchemaType } from "~/api/gateway/schema";
 import { getMethodOperations } from "../utils";
 import { useTranslation } from "react-i18next";
 
 type RowProps = {
-  route: NewRouteSchemaType;
+  route: RouteSchemaType;
 };
 
 export const Row: FC<RowProps> = ({ route }) => {

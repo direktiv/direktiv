@@ -3,13 +3,13 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "~/design/HoverCard";
-import { MethodsKeys, NewRouteSchemaType } from "~/api/gateway/schema";
+import { MethodsKeys, RouteSchemaType } from "~/api/gateway/schema";
 
 import Badge from "~/design/Badge";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
-type MethodsObject = Pick<NewRouteSchemaType["spec"], MethodsKeys>;
+type MethodsObject = Pick<RouteSchemaType["spec"], MethodsKeys>;
 
 type AllowAnonymousProps = {
   methods: Partial<MethodsObject>;

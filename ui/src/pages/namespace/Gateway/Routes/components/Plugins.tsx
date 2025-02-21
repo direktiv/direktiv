@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 
 import { ConditionalWrapper } from "~/util/helpers";
 import { FC } from "react";
-import { NewRouteSchemaType } from "~/api/gateway/schema";
+import { RouteSchemaType } from "~/api/gateway/schema";
 import { useTranslation } from "react-i18next";
 
 type PluginCountProps = {
@@ -30,7 +30,7 @@ const PluginCount: FC<PluginCountProps> = ({ type, number }) => {
 };
 
 type PluginsProps = {
-  plugins: NewRouteSchemaType["spec"]["x-direktiv-config"]["plugins"];
+  plugins: RouteSchemaType["spec"]["x-direktiv-config"]["plugins"];
 };
 
 const Plugins: FC<PluginsProps> = ({ plugins }) => {

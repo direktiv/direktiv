@@ -1,4 +1,4 @@
-import { NewRouteSchemaType, routeMethods } from "~/api/gateway/schema";
+import { RouteSchemaType, routeMethods } from "~/api/gateway/schema";
 
 import { getRoutes } from "~/api/gateway/query/getRoutes";
 import { headers } from "e2e/utils/testutils";
@@ -62,7 +62,7 @@ x-direktiv-config:
 
 type FindRouteWithApiRequestParams = {
   namespace: string;
-  match: (route: NewRouteSchemaType) => boolean;
+  match: (route: RouteSchemaType) => boolean;
 };
 
 type ErrorType = { response: { status?: number } };

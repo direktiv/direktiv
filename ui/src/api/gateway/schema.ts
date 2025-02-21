@@ -119,13 +119,11 @@ export const NewRouteSchema = z.object({
   warnings: z.array(z.string()),
 });
 
-export type NewRouteSchemaType = z.infer<typeof NewRouteSchema>;
+export type RouteSchemaType = z.infer<typeof NewRouteSchema>;
 
-export type MethodsKeys = keyof NewRouteSchemaType["spec"];
+export type MethodsKeys = keyof RouteSchemaType["spec"];
 
-export type MethodsObject = Partial<
-  Pick<NewRouteSchemaType["spec"], MethodsKeys>
->;
+export type MethodsObject = Partial<Pick<RouteSchemaType["spec"], MethodsKeys>>;
 /**
  * example
   {
