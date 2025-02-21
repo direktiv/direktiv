@@ -3,16 +3,16 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "~/design/HoverCard";
+import { PluginType, RouteSchemaType } from "~/api/gateway/schema";
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 
 import { ConditionalWrapper } from "~/util/helpers";
 import { FC } from "react";
-import { RouteSchemaType } from "~/api/gateway/schema";
 import { useTranslation } from "react-i18next";
 
 type PluginCountProps = {
   number: number;
-  type: "inbound" | "outbound" | "auth" | "target";
+  type: PluginType;
 };
 
 const PluginCount: FC<PluginCountProps> = ({ type, number }) => {

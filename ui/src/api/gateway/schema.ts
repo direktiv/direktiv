@@ -94,20 +94,22 @@ export const methodSchemas = routeMethods.reduce<
   {} as Record<RouteMethod, z.ZodTypeAny>
 );
 
+const PluginsSchema = z.object({
+  inbound: filterInvalidEntries(PluginSchema).optional(),
+  outbound: filterInvalidEntries(PluginSchema).optional(),
+  auth: filterInvalidEntries(PluginSchema).optional(),
+  target: PluginSchema.optional(),
+});
+
+export type PluginType = keyof z.infer<typeof PluginsSchema>;
+
 export const RouteSchema = z.object({
   spec: z.object({
     "x-direktiv-api": z.literal("endpoint/v2"),
     "x-direktiv-config": z.object({
       allow_anonymous: z.boolean(),
       path: z.string(),
-      plugins: z
-        .object({
-          inbound: filterInvalidEntries(PluginSchema).optional(),
-          outbound: filterInvalidEntries(PluginSchema).optional(),
-          auth: filterInvalidEntries(PluginSchema).optional(),
-          target: PluginSchema.optional(),
-        })
-        .optional(),
+      plugins: PluginsSchema.optional(),
     }),
     ...methodSchemas,
   }),
