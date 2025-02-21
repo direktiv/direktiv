@@ -103,16 +103,18 @@ const PluginsSchema = z.object({
 
 export type PluginType = keyof z.infer<typeof PluginsSchema>;
 
-export const RouteSchema = z.object({
-  spec: z.object({
-    "x-direktiv-api": z.literal("endpoint/v2"),
-    "x-direktiv-config": z.object({
-      allow_anonymous: z.boolean(),
-      path: z.string(),
-      plugins: PluginsSchema.optional(),
-    }),
-    ...methodSchemas,
+const DirektivOpenApiSpecSchema = z.object({
+  "x-direktiv-api": z.literal("endpoint/v2"),
+  "x-direktiv-config": z.object({
+    allow_anonymous: z.boolean(),
+    path: z.string(),
+    plugins: PluginsSchema.optional(),
   }),
+  ...methodSchemas,
+});
+
+export const RouteSchema = z.object({
+  spec: DirektivOpenApiSpecSchema,
   file_path: z.string(),
   errors: z.array(z.string()),
   server_path: z.string(),
