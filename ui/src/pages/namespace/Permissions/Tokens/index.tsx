@@ -105,14 +105,11 @@ const TokensPage = () => {
         </Table>
         <DialogContent className="sm:max-w-2xl">
           {deleteToken && (
-            <Delete
-              tokenName={deleteToken}
-              close={() => setDialogOpen(false)}
-            />
+            <Delete tokenName={deleteToken} close={() => onOpenChange(false)} />
           )}
           {createToken && (
             <CreateToken
-              close={() => setDialogOpen(false)}
+              close={() => onOpenChange(false)}
               unallowedNames={data?.data.map((token) => token.name)}
             />
           )}

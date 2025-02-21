@@ -109,12 +109,12 @@ const RolesPage = () => {
         </Table>
         <DialogContent className="sm:max-w-2xl">
           {deleteRole && (
-            <Delete group={deleteRole} close={() => setDialogOpen(false)} />
+            <Delete group={deleteRole} close={() => onOpenChange(false)} />
           )}
           {editRole && (
             <EditRole
               group={editRole}
-              close={() => setDialogOpen(false)}
+              close={() => onOpenChange(false)}
               unallowedNames={allAvailableNames.filter(
                 (name) => name !== editRole.name
               )}
@@ -122,7 +122,7 @@ const RolesPage = () => {
           )}
           {createRole && (
             <CreateRole
-              close={() => setDialogOpen(false)}
+              close={() => onOpenChange(false)}
               unallowedNames={allAvailableNames}
             />
           )}
