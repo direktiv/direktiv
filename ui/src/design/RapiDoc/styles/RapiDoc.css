@@ -12,6 +12,10 @@ html[data-theme="dark"] rapi-doc {
   @apply bg-gray-dark-1 text-gray-dark-12;
 }
 
+rapi-doc::part(section-main-content) {
+  @apply pt-5 pr-5;
+}
+
 rapi-doc::part(section-navbar) {
   @apply bg-gray-1;
   @apply text-gray-12;

@@ -10,6 +10,7 @@ interface Spec {
     title: string;
     version: string;
   };
+  paths: Record<string, unknown>;
 }
 
 interface DocumentationInfo {
@@ -25,19 +26,19 @@ const OpenapiDocPage: React.FC = () => {
   const { spec, errors } = info || { Spec: null, errors: [] };
 
   const hasErrors = errors && errors.length > 0;
-  const hasSpec = spec && spec.openapi;
+  const hasSpec = spec && spec.paths && Object.keys(spec.paths).length > 0;
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
       <div className="flex flex-col gap-4 sm:flex-row w-full">
         <Card className="size-full">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col">
             {hasErrors && (
               <Alert variant="error">
                 <pre>{JSON.stringify(errors, null, 2)}</pre>
               </Alert>
             )}
-            {hasSpec && <RapiDoc spec={spec} className="h-[80vh]" />}
+            {hasSpec && <RapiDoc spec={spec} className="h-[80vh] my-1" />}
             {!hasSpec && !hasErrors && (
               <Alert variant="info">
                 <p> {t("pages.gateway.documentation.noDocumentation")}</p>

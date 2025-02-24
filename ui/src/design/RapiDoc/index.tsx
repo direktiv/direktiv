@@ -25,11 +25,11 @@ export function RapiDoc({
   className?: string;
 }) {
   return (
-    <div className={twMergeClsx("size-full overflow-scroll py-5", className)}>
+    <div className={twMergeClsx("size-full", className)}>
       <rapi-doc
         ref={(rapiDocElement) => rapiDocElement?.loadSpec(spec)}
         id="rapidoc"
-        render-style="view" // view | read to show sidebar
+        render-style="view" // (view | read) sidebar visibility
         allow-try="true" // Add a "Try" button to execute requests
         allow-authentication="false"
         show-header="false"
