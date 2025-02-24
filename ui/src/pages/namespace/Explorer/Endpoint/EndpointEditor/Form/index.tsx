@@ -5,7 +5,7 @@ import {
   useForm,
   useWatch,
 } from "react-hook-form";
-import { EndpointFormSchemaType, EndpointSaveSchema } from "../schema";
+import { EndpointFormSchema, EndpointFormSchemaType } from "../schema";
 
 import { AuthPluginForm } from "./plugins/Auth";
 import { FC } from "react";
@@ -35,7 +35,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
   const { t } = useTranslation();
 
   const formControls = useForm<EndpointFormSchemaType>({
-    resolver: zodResolver(EndpointSaveSchema),
+    resolver: zodResolver(EndpointFormSchema),
     defaultValues: {
       ...defaultConfig,
     },

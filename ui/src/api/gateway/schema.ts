@@ -55,7 +55,7 @@ const PluginsSchema = z.object({
   inbound: filterInvalidEntries(PluginSchema).optional(),
   outbound: filterInvalidEntries(PluginSchema).optional(),
   auth: filterInvalidEntries(PluginSchema).optional(),
-  target: PluginSchema.optional(),
+  target: PluginSchema,
 });
 
 export type PluginsSchemaType = z.infer<typeof PluginsSchema>;
@@ -67,7 +67,7 @@ export const OperationSchema = z.object({
   responses: z.record(z.any()).optional(),
 });
 
-const MethodsSchema = z.object({
+export const MethodsSchema = z.object({
   connect: OperationSchema.optional(),
   delete: OperationSchema.optional(),
   get: OperationSchema.optional(),
