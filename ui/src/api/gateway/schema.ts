@@ -112,7 +112,7 @@ const DirektivOpenApiSpecSchema = z
     "x-direktiv-api": z.literal("endpoint/v2"),
     "x-direktiv-config": z.object({
       allow_anonymous: z.boolean().optional(),
-      path: z.string(),
+      path: z.string().optional(),
       plugins: PluginsSchema.optional(),
     }),
   })
