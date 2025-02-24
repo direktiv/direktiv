@@ -3,30 +3,39 @@ import "rapidoc";
 
 import { twMergeClsx } from "~/util/helpers";
 
-interface Spec {
-  openapi: string;
-  info: {
-    title: string;
-    version: string;
-  };
-}
-interface RapiDocProps {
-  spec: Spec;
-  className?: string;
+interface BaseSpec {
+  info: { title: string; version: string };
 }
 
-export function RapiDoc({ spec, className }: RapiDocProps) {
+interface OpenApiSpec extends BaseSpec {
+  openapi: string;
+}
+
+interface SwaggerSpec extends BaseSpec {
+  swagger: string;
+}
+
+type Spec = OpenApiSpec | SwaggerSpec;
+
+export function RapiDoc({
+  spec,
+  className,
+}: {
+  spec: Spec;
+  className?: string;
+}) {
   return (
-    <div className={twMergeClsx("size-full overflow-scroll", className)}>
+    <div className={twMergeClsx("size-full overflow-scroll py-5", className)}>
       <rapi-doc
         ref={(rapiDocElement) => rapiDocElement?.loadSpec(spec)}
         id="rapidoc"
-        render-style="read"
-        allow-try="false"
+        render-style="view" // view | read to show sidebar
+        allow-try="true" // Add a "Try" button to execute requests
         allow-authentication="false"
         show-header="false"
         show-info="true"
         theme="light"
+        schema-style="table" // table | tree
         primary-color="#5364FF"
       ></rapi-doc>
     </div>
