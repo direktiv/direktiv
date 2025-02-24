@@ -63,9 +63,8 @@ export const EndpointSaveSchema = EndpointFormSchema.superRefine(
     }
 
     if (
-      (data["x-direktiv-config"].allow_anonymous === false &&
-        !data["x-direktiv-config"].plugins?.auth) ||
-      !data["x-direktiv-config"].allow_anonymous
+      data["x-direktiv-config"].allow_anonymous !== true &&
+      !data["x-direktiv-config"].plugins?.auth
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
