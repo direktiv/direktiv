@@ -5,9 +5,9 @@ import {
   useForm,
 } from "react-hook-form";
 import { EndpointFormSchemaType, EndpointSaveSchema } from "../schema";
-import { FC, useEffect } from "react";
 
 import { AuthPluginForm } from "./plugins/Auth";
+import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { InboundPluginForm } from "./plugins/Inbound";
 import Input from "~/design/Input";
@@ -37,19 +37,10 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
   const formControls = useForm<EndpointFormSchemaType>({
     resolver: zodResolver(EndpointSaveSchema),
     criteriaMode: "all",
+    defaultValues: {
+      ...defaultConfig,
+    },
   });
-
-  // Reset the form only when the server-supplied defaultConfig changes.
-  // This prevents user edits from getting overwritten each render,
-  // but still updates if new defaults arrive from the backend.
-  // added this since having ...defaultConfig in the useForm call was causing
-  // the form to reset to the defaultConfig on every render, which was
-  // causing the form to lose all user edits.
-  useEffect(() => {
-    if (defaultConfig) {
-      formControls.reset(defaultConfig);
-    }
-  }, [defaultConfig, formControls]);
 
   const values = formControls.watch();
 
@@ -91,7 +82,6 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
                 key={method}
                 control={control}
                 name={method}
-                defaultValue={undefined}
                 render={({ field }) => (
                   <MethodCheckbox method={method} field={field} />
                 )}
