@@ -1047,7 +1047,10 @@
       },
       "documentation": {
         "title": "OpenAPI Documentation",
-        "noDocumentation": "No documentation found"
+        "noDocumentation": "No documentation found",
+        "copyAPI": "Copy API",
+        "copied": "Copied!",
+        "error": "Error copying specification"
       }
     },
     "jqPlayground": {
