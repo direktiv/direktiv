@@ -53,7 +53,7 @@ const GatewayPage = () => {
       value: "openapiDoc",
       active: isGatewayOpenapiDocPage,
       icon: <ScrollText aria-hidden="true" />,
-      title: "Documentation",
+      title: t("pages.gateway.tabs.documentation"),
       link: "/n/$namespace/gateway/openapiDoc",
     },
   ] as const;

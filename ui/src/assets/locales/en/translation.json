@@ -981,7 +981,8 @@
       "tabs": {
         "routes": "Routes",
         "consumers": "Consumers",
-        "info": "Info"
+        "info": "Info",
+        "documentation": "Documentation"
       },
       "routes": {
         "columns": {
@@ -1043,6 +1044,10 @@
           "errors": "Errors",
           "errorSiblingFields": "The OpenAPI Specification contains unexpected fields. Please remove any extra fields that are not part of a valid OpenAPI structure."
         }
+      },
+      "documentation": {
+        "title": "OpenAPI Documentation",
+        "noDocumentation": "No documentation found"
       }
     },
     "jqPlayground": {

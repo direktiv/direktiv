@@ -23,4 +23,12 @@ export const gatewayKeys = {
         namespace,
       },
     ] as const,
+  documentation: (namespace: string, { apiKey }: { apiKey?: string }) =>
+    [
+      {
+        scope: "gateway-documentation",
+        apiKey,
+        namespace,
+      },
+    ] as const,
 } as const;

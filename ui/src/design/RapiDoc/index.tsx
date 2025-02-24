@@ -3,8 +3,15 @@ import "rapidoc";
 
 import { twMergeClsx } from "~/util/helpers";
 
+interface Spec {
+  openapi: string;
+  info: {
+    title: string;
+    version: string;
+  };
+}
 interface RapiDocProps {
-  spec: object;
+  spec: Spec;
   className?: string;
 }
 
