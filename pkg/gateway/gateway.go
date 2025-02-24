@@ -87,9 +87,11 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				expand = true
 			}
 
+			server := r.URL.Query().Get("server")
+
 			//nolint:contextcheck
 			WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns, m.db.FileStore(),
-				filterNamespacedEndpoints(inner.endpoints, ns, ""), expand))
+				filterNamespacedEndpoints(inner.endpoints, ns, ""), expand, server))
 
 			return
 		}
@@ -170,7 +172,8 @@ func consumersForAPI(consumers []core.Consumer) any {
 	return result
 }
 
-func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileStore, endpoints []core.Endpoint, expand bool) any {
+func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileStore, endpoints []core.Endpoint,
+	expand bool, server string) any {
 	type output struct {
 		Spec     any      `json:"spec"`
 		FilePath string   `json:"file_path"`
@@ -262,6 +265,15 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 
 			return gw
 		}
+
+		if server != "" {
+			doc.Servers = []*openapi3.Server{
+				&openapi3.Server{
+					URL: server,
+				},
+			}
+		}
+
 		doc.InternalizeRefs(context.Background(), nil)
 	}
 
