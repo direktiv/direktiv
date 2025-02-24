@@ -103,6 +103,14 @@ jobs:
           path: /tmp/.buildx-cache
           key: api-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-x
 
+      - name: Set Docker Arg VERSION
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          else
+            echo "VERSION=$(git rev-parse --short=10 HEAD)" >> $GITHUB_ENV
+          fi
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -114,6 +122,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          build-args: VERSION=${{ env.VERSION }}
 
   e2e:
     needs: [build, backend-license, backend-lint, backend-test]
