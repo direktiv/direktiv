@@ -68,20 +68,16 @@ export const EndpointSaveSchema = EndpointFormSchema.superRefine(
       });
     }
 
-    if (data["x-direktiv-config"].allow_anonymous === false) {
-      if (!data["x-direktiv-config"].plugins?.auth) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Auth plugins are missing.",
-          path: ["x-direktiv-config", "plugins", "auth"],
-        });
-      } else if (data["x-direktiv-config"].plugins.auth.length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Auth plugins array is empty.",
-          path: ["x-direktiv-config", "plugins", "auth"],
-        });
-      }
+    if (
+      (data["x-direktiv-config"].allow_anonymous === false &&
+        !data["x-direktiv-config"].plugins?.auth) ||
+      !data["x-direktiv-config"].allow_anonymous
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Set allow anonymous to true or add auth plugin.",
+        path: ["x-direktiv-config", "allow_anonymous"],
+      });
     }
   }
 );

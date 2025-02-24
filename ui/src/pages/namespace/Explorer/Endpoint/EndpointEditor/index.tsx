@@ -12,6 +12,7 @@ import FormErrors from "~/components/FormErrors";
 import NavigationBlocker from "~/components/NavigationBlocker";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
+import { flattenErrors } from "./Form/utils";
 import { jsonToYaml } from "../../utils";
 import { serializeEndpointFile } from "./utils";
 import { useTheme } from "~/util/store/theme";
@@ -73,6 +74,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
         const filehasChanged = preview !== parsedOriginal;
         const isDirty = !endpointConfigError && filehasChanged;
         const disableButton = isPending || !!endpointConfigError;
+        const flattenedErrors = flattenErrors(errors);
 
         return (
           <form
@@ -98,7 +100,16 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
                     </div>
                   ) : (
                     <div>
-                      <FormErrors errors={errors} className="mb-5" />
+                      <FormErrors
+                        errors={flattenedErrors.reduce(
+                          (acc, { path, message }) => ({
+                            ...acc,
+                            [path]: { message },
+                          }),
+                          {}
+                        )}
+                        className="mb-5"
+                      />
                       {formMarkup}
                     </div>
                   )}
