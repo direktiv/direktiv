@@ -11,9 +11,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  UI_IMAGE_NAME: ${{ github.repository }}-ui
   KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-  SRVTAG: dev
   IS_GITHUB_ACTIONS: true
 
 concurrency:
