@@ -195,7 +195,7 @@ jobs:
           pullPolicy: IfNotPresent
           registry: ghcr.io
           image: direktiv/direktiv
-          tag: sha-${{ github.sha::7 }}
+          tag: sha-${GITHUB_SHA::7}
           flow:
             logging: json
           database:
