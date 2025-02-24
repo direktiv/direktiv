@@ -12,12 +12,16 @@ export const EndpointsPluginsSchema = z.object({
   auth: z.array(AuthPluginFormSchema).optional(),
 });
 
+export type EndpointsPluginsSchemaType = z.infer<typeof EndpointsPluginsSchema>;
+
 export const XDirektivConfigSchema = z.object({
   allow_anonymous: z.boolean().optional(),
   path: z.string().nonempty().optional(),
   timeout: z.number().int().positive().optional(),
   plugins: EndpointsPluginsSchema.optional(),
 });
+
+export type XDirektivConfigSchemaType = z.infer<typeof XDirektivConfigSchema>;
 
 export const EndpointFormSchema = z
   .object({
