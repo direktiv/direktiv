@@ -3,6 +3,7 @@ import {
   DeepPartialSkipArrayKey,
   UseFormReturn,
   useForm,
+  useWatch,
 } from "react-hook-form";
 import { EndpointFormSchemaType, EndpointSaveSchema } from "../schema";
 
@@ -40,7 +41,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
     },
   });
 
-  const values = formControls.watch();
+  const values = useWatch({ control: formControls.control });
 
   const { register, control } = formControls;
 
