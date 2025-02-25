@@ -1114,6 +1114,7 @@
       "gateway": "Gateway",
       "gatewayRoutes": "Routes",
       "gatewayConsumers": "Consumers",
+      "gatewayDocumentation": "Documentation",
       "gatewayInfo": "Info",
       "jqPlayground": "jq Playground"
     },
