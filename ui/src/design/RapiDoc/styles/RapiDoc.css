@@ -162,6 +162,16 @@ rapi-doc::part(section-endpoint-head-method) {
   @apply rounded-md w-24;
 }
 
+/* Method description expanded */
+html[data-theme="dark"] rapi-doc::part(section-endpoint-head-expanded) {
+  @apply text-gray-12;
+}
+
+/* Method description collapsed */
+html[data-theme="dark"] rapi-doc::part(section-endpoint-head-collapsed):hover {
+  @apply text-gray-12;
+}
+
 html[data-theme="dark"] rapi-doc::part(textbox) {
   @apply bg-gray-dark-1 text-gray-dark-12 focus:border-gray-dark-12;
 }
