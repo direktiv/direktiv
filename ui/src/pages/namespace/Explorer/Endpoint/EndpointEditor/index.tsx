@@ -1,5 +1,5 @@
 import { decode, encode } from "js-base64";
-import { deepSortObject, serializeEndpointFile } from "./utils";
+import { normalizeEndpointObject, serializeEndpointFile } from "./utils";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
@@ -49,7 +49,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
         formMarkup,
         values,
       }) => {
-        const preview = jsonToYaml(deepSortObject(values));
+        const preview = jsonToYaml(normalizeEndpointObject(values));
         const parsedOriginal = endpointConfig && jsonToYaml(endpointConfig);
         const filehasChanged = preview !== parsedOriginal;
         const isDirty = !endpointConfigError && filehasChanged;

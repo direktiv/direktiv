@@ -22,7 +22,7 @@ import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormProps = {
-  defaultConfig?: EndpointFormSchemaType;
+  defaultConfig?: DeepPartialSkipArrayKey<EndpointFormSchemaType>;
   onSave: (value: EndpointFormSchemaType) => void;
   children: (args: {
     formControls: UseFormReturn<EndpointFormSchemaType>;

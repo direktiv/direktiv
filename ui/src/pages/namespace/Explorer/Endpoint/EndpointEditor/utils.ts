@@ -1,10 +1,11 @@
 import { EndpointFormSchema, EndpointFormSchemaType } from "./schema";
 import { jsonToYaml, yamlToJsonOrNull } from "../../utils";
 
+import { DeepPartialSkipArrayKey } from "react-hook-form";
 import { ZodError } from "zod";
 
 type SerializeReturnType =
-  | [EndpointFormSchemaType, undefined]
+  | [DeepPartialSkipArrayKey<EndpointFormSchemaType>, undefined]
   | [undefined, ZodError<EndpointFormSchemaType>];
 
 export const serializeEndpointFile = (yaml: string): SerializeReturnType => {
@@ -12,7 +13,7 @@ export const serializeEndpointFile = (yaml: string): SerializeReturnType => {
 
   const jsonParsed = EndpointFormSchema.safeParse(json);
   if (jsonParsed.success) {
-    return [deepSortObject(jsonParsed.data), undefined];
+    return [normalizeEndpointObject(jsonParsed.data), undefined];
   }
 
   return [undefined, jsonParsed.error];
@@ -20,6 +21,25 @@ export const serializeEndpointFile = (yaml: string): SerializeReturnType => {
 
 const defaultEndpointFileJson: EndpointFormSchemaType = {
   "x-direktiv-api": "endpoint/v2",
+};
+
+/**
+ * this fucntion parses the endpoint config and sorts all the keys recursively.
+ * However, it will only start sorting starting at x-direktiv-config if it exists.
+ * This ensures that x-direktiv-api: endpoint/v2 always stays at the top.
+ */
+export const normalizeEndpointObject = (
+  data: DeepPartialSkipArrayKey<EndpointFormSchemaType>
+) => {
+  if (!data) {
+    return data;
+  }
+
+  const config = data["x-direktiv-config"]
+    ? { "x-direktiv-config": deepSortObject(data["x-direktiv-config"]) }
+    : {};
+
+  return { ...data, ...config };
 };
 
 export const defaultEndpointFileYaml = jsonToYaml(defaultEndpointFileJson);
