@@ -439,9 +439,9 @@ test("it blocks navigation when there are unsaved changes", async ({
   };
 
   const basicTargetPlugin = `
-    type: instant-response
-    configuration:
-      status_code: 200`;
+      configuration:
+        status_code: 200
+      type: instant-response`;
 
   const initialRouteYaml = createRouteYaml({
     ...minimalRouteConfig,
@@ -514,9 +514,9 @@ test("it does not block navigation when only formatting has changed", async ({
   };
 
   const basicTargetPlugin = `
-    type: "instant-response"
-    configuration:
-      status_code: 200`;
+      configuration:
+        status_code: 200
+      type: instant-response`;
 
   const initialRouteYaml = createRouteYaml({
     ...minimalRouteConfig,
