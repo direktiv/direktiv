@@ -99,12 +99,12 @@ cluster-direktiv: ## Installs direktiv in cluster
 	--set image=direktiv \
 	--set registry=localhost:5001 \
 	--set tag=dev \
-	--set flow.sidecar=localhost:5001/direktiv:dev \
 	direktiv charts/direktiv; \
 	fi
 
 	@if [ "$(IS_ENTERPRISE)" == "true" ]; then \
 	helm install --set database.host=postgres.default.svc \
+	-f direktiv-ee/install/05_direktiv/keys.yaml \
 	--set database.port=5432 \
 	--set database.user=admin \
 	--set database.password=password \
@@ -115,10 +115,10 @@ cluster-direktiv: ## Installs direktiv in cluster
 	--set image=direktiv \
 	--set registry=localhost:5001 \
 	--set tag=dev \
-	--set flow.sidecar=localhost:5001/direktiv:dev \
-	--set apikey=password \
 	--set flow.additionalEnvs[0].name=DIREKTIV_OIDC_ADMIN_GROUP \
 	--set flow.additionalEnvs[0].value="admin" \
+	--set flow.additionalEnvs[1].name=DIREKTIV_OIDC_DEV \
+	--set flow.additionalEnvs[1].value=true \
 	direktiv charts/direktiv; \
 	fi
 
