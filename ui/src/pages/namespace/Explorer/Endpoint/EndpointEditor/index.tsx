@@ -6,10 +6,10 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { EndpointFormSchemaType } from "./schema";
+import { ErrorMessage } from "./ErrorMessage";
 import { FC } from "react";
 import { FileSchemaType } from "~/api/files/schema";
 import { Form } from "./Form";
-import FormErrors from "~/components/FormErrors";
 import NavigationBlocker from "~/components/NavigationBlocker";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
@@ -79,7 +79,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
                     </div>
                   ) : (
                     <div>
-                      <FormErrors errors={errors} className="mb-5" />
+                      <ErrorMessage errors={errors} />
                       {formMarkup}
                     </div>
                   )}
