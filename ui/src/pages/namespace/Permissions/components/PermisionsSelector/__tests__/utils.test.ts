@@ -5,36 +5,42 @@ import { updatePermissions } from "../utils";
 
 describe("updatePermissions", () => {
   test("should add a new permission when none exists for the topic", () => {
-    const initialPermissions: PermisionSchemaType[] = [];
+    const initialPermissions: PermisionSchemaType[] = [
+      {
+        topic: "events",
+        method: "manage",
+      },
+    ];
     const result = updatePermissions({
       permissions: initialPermissions,
       topic: "namespaces",
       value: "read",
     });
 
-    expect(result).toHaveLength(1);
-    expect(result[0]).toEqual({
+    expect(result).toHaveLength(2);
+    expect(result[1]).toEqual({
       topic: "namespaces",
       method: "read",
     });
   });
 
-  test("should update an existing permission", () => {
+  test("it should update an existing permission", () => {
     const initialPermissions: PermisionSchemaType[] = [
       { topic: "namespaces", method: "read" },
+      { topic: "instances", method: "manage" },
+      { topic: "secrets", method: "read" },
     ];
 
     const result = updatePermissions({
       permissions: initialPermissions,
-      topic: "namespaces",
-      value: "manage",
+      topic: "instances",
+      value: "read",
     });
 
-    expect(result).toHaveLength(1);
-    expect(result[0]).toEqual({
-      topic: "namespaces",
-      method: "manage",
-    });
+    expect(result).toHaveLength(3);
+    expect(result).toContainEqual({ topic: "namespaces", method: "read" });
+    expect(result).toContainEqual({ topic: "instances", method: "read" });
+    expect(result).toContainEqual({ topic: "secrets", method: "read" });
   });
 
   test("should remove a permission when value is undefined", () => {
@@ -54,25 +60,6 @@ describe("updatePermissions", () => {
       topic: "instances",
       method: "manage",
     });
-  });
-
-  test("should not modify other permissions when updating one", () => {
-    const initialPermissions: PermisionSchemaType[] = [
-      { topic: "namespaces", method: "read" },
-      { topic: "instances", method: "manage" },
-      { topic: "secrets", method: "read" },
-    ];
-
-    const result = updatePermissions({
-      permissions: initialPermissions,
-      topic: "instances",
-      value: "read",
-    });
-
-    expect(result).toHaveLength(3);
-    expect(result).toContainEqual({ topic: "namespaces", method: "read" });
-    expect(result).toContainEqual({ topic: "instances", method: "read" });
-    expect(result).toContainEqual({ topic: "secrets", method: "read" });
   });
 
   test("should handle empty permissions array", () => {
