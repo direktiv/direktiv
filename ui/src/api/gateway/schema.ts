@@ -55,7 +55,7 @@ const PluginsSchema = z.object({
   inbound: filterInvalidEntries(PluginSchema).optional(),
   outbound: filterInvalidEntries(PluginSchema).optional(),
   auth: filterInvalidEntries(PluginSchema).optional(),
-  target: PluginSchema,
+  target: PluginSchema.optional(),
 });
 
 export type PluginsSchemaType = z.infer<typeof PluginsSchema>;
