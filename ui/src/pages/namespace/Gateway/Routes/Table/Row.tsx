@@ -70,11 +70,11 @@ export const Row: FC<RowProps> = ({ route }) => {
         <Methods methods={getMethodsFromOpenApiSpec(route.spec)} />
       </TableCell>
       <TableCell>
-        <Plugins plugins={route.spec["x-direktiv-config"].plugins} />
+        <Plugins plugins={route.spec["x-direktiv-config"]?.plugins} />
       </TableCell>
       <TableCell>
         <AllowAnonymous
-          allow={route.spec["x-direktiv-config"].allow_anonymous}
+          allow={route.spec["x-direktiv-config"]?.allow_anonymous}
         />
       </TableCell>
       <TableCell className="whitespace-normal break-all">

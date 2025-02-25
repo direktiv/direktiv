@@ -65,14 +65,14 @@ const Header = () => {
           <div className="text-gray-10 dark:text-gray-dark-10">
             {t("pages.gateway.routes.columns.plugins")}
           </div>
-          <Plugins plugins={route.spec["x-direktiv-config"].plugins} />
+          <Plugins plugins={route.spec["x-direktiv-config"]?.plugins} />
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
             {t("pages.gateway.routes.columns.anonymous")}
           </div>
           <AllowAnonymous
-            allow={route.spec["x-direktiv-config"].allow_anonymous}
+            allow={route.spec["x-direktiv-config"]?.allow_anonymous}
           />
         </div>
         <div className="grow text-sm">

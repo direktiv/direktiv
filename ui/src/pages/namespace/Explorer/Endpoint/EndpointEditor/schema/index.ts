@@ -26,7 +26,7 @@ export type XDirektivConfigSchemaType = z.infer<typeof XDirektivConfigSchema>;
 export const EndpointFormSchema = z
   .object({
     "x-direktiv-api": z.literal("endpoint/v2"),
-    "x-direktiv-config": XDirektivConfigSchema,
+    "x-direktiv-config": XDirektivConfigSchema.optional(),
   })
   .merge(MethodsSchema);
 
