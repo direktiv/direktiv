@@ -6,9 +6,9 @@ import {
 } from "../schema";
 
 /**
- * useSortedPlugins is a hook that sorts the plugins object in
- * the form based on the keys defined in the EndpointsPluginsSchema.
- * It returns a new object with the plugins sorted.
+ * useSortedPlugins is a hook that sorts the plugins of the endpoint form data.
+ * The sorting is inconsistent after form submission, resulting in the file
+ * appearing to have unsaved changes even when it does not.
  */
 export const useSortedPlugins = (
   control: Control<EndpointFormSchemaType>
@@ -22,7 +22,7 @@ export const useSortedPlugins = (
     (object, key) => {
       const configToAdd = watchedValues?.["x-direktiv-config"]?.plugins?.[key]
         ? {
-            [key]: watchedValues?.["x-direktiv-config"]?.plugins?.[key],
+            [key]: watchedValues["x-direktiv-config"].plugins[key],
           }
         : {};
       return { ...object, ...configToAdd };
