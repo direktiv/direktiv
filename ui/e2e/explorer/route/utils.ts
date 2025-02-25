@@ -28,15 +28,12 @@ export const createRouteYaml = ({
 x-direktiv-config:
   allow_anonymous: true
   path: ${path}
-  timeout: ${timeout}
   plugins:
-    target:
-      type: instant-response
-      configuration:
-        status_code: 200
-    ${plugins.inbound ?? ""}
-    ${plugins.outbound ?? ""}
-    ${plugins.auth ?? ""}
+    auth: ${plugins.auth ?? "[]"}
+    inbound: ${plugins.inbound ?? "[]"} 
+    outbound: ${plugins.outbound ?? "[]"}
+    target: ${plugins.target ?? ""}
+  timeout: ${timeout}
 get:
   responses:
     "200":

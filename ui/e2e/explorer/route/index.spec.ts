@@ -28,10 +28,9 @@ test("it is possible to create a basic route file", async ({ page }) => {
     },
     plugins: {
       target: `
-    type: instant-response
-    configuration:
+      configuration:
         status_code: 200
-        status_message: asdasd`,
+      type: instant-response`,
     },
     allow_anonymous: true,
   });
@@ -83,7 +82,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
   await page.getByRole("button", { name: "Save" }).click();
 
   await expect(
-    page.getByText("x-direktiv-config : this field is invalid"),
+    page.getByText("target : Required"),
     "it can not save the route without a valid target plugin"
   ).toBeVisible();
 
