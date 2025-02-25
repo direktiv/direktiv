@@ -99,7 +99,6 @@ cluster-direktiv: ## Installs direktiv in cluster
 	--set image=direktiv \
 	--set registry=localhost:5001 \
 	--set tag=dev \
-	--set flow.sidecar=localhost:5001/direktiv:dev \
 	direktiv charts/direktiv; \
 	fi
 
@@ -116,7 +115,6 @@ cluster-direktiv: ## Installs direktiv in cluster
 	--set image=direktiv \
 	--set registry=localhost:5001 \
 	--set tag=dev \
-	--set flow.sidecar=localhost:5001/direktiv:dev \
 	--set flow.additionalEnvs[0].name=DIREKTIV_OIDC_ADMIN_GROUP \
 	--set flow.additionalEnvs[0].value="admin" \
 	--set flow.additionalEnvs[1].name=DIREKTIV_OIDC_DEV \
