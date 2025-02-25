@@ -3,6 +3,7 @@ import {
   DeepPartialSkipArrayKey,
   UseFormReturn,
   useForm,
+  useWatch,
 } from "react-hook-form";
 import { EndpointFormSchema, EndpointFormSchemaType } from "../schema";
 
@@ -17,7 +18,6 @@ import { Switch } from "~/design/Switch";
 import { TargetPluginForm } from "./plugins/Target";
 import { routeMethods } from "~/api/gateway/schema";
 import { treatAsNumberOrUndefined } from "../../../utils";
-import { useSortedPlugins } from "./utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -41,7 +41,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
     },
   });
 
-  const values = useSortedPlugins(formControls.control);
+  const values = useWatch({ control: formControls.control });
 
   const { register, control } = formControls;
 

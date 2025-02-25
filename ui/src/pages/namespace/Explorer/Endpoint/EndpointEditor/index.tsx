@@ -1,4 +1,5 @@
 import { decode, encode } from "js-base64";
+import { deepSortObject, serializeEndpointFile } from "./utils";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
@@ -13,7 +14,6 @@ import NavigationBlocker from "~/components/NavigationBlocker";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { jsonToYaml } from "../../utils";
-import { serializeEndpointFile } from "./utils";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
@@ -68,7 +68,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
         formMarkup,
         values,
       }) => {
-        const preview = jsonToYaml(values);
+        const preview = jsonToYaml(deepSortObject(values));
         const parsedOriginal = endpointConfig && jsonToYaml(endpointConfig);
         const filehasChanged = preview !== parsedOriginal;
         const isDirty = !endpointConfigError && filehasChanged;
