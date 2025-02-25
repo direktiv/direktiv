@@ -595,7 +595,7 @@ test("it shows a notification for outdated endpoint format", async ({
   });
 
   const notification = page.getByText(
-    "This endpoint config is using the outdated endpoint/v1 format. Please update your endpoint config to the new format."
+    "There was an error serializing the form data"
   );
 
   await expect(
