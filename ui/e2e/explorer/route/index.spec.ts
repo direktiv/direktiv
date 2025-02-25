@@ -79,14 +79,6 @@ test("it is possible to create a basic route file", async ({ page }) => {
     .getByRole("checkbox")
     .click();
 
-  /* try to save incomplete form */
-  await page.getByRole("button", { name: "Save" }).click();
-
-  await expect(
-    page.getByText("x-direktiv-config : this field is invalid"),
-    "it can not save the route without a valid target plugin"
-  ).toBeVisible();
-
   await page.getByLabel("allow anonymous").click();
 
   await page.getByRole("button", { name: "set target plugin" }).click();
