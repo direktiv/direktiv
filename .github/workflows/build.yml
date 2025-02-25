@@ -81,7 +81,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=semver,pattern={{version}}
+            type=semver,pattern={{raw}}
             type=sha,prefix=,format=short
         env:
           DOCKER_METADATA_SHORT_SHA_LENGTH: 10
@@ -154,7 +154,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=semver,pattern={{version}}
+            type=semver,pattern={{raw}}
             type=sha,prefix=,format=short
         env:
           DOCKER_METADATA_SHORT_SHA_LENGTH: 10
