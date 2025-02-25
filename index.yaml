@@ -2,6 +2,33 @@ apiVersion: v1
 entries:
   direktiv:
   - apiVersion: v2
+    appVersion: v0.9.0-dev.10
+    created: "2025-02-25T12:21:36.503331055Z"
+    dependencies:
+    - condition: ingress-nginx.install
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: 4.9.0
+    - condition: fluent-bit.install
+      name: fluent-bit
+      repository: https://fluent.github.io/helm-charts
+      version: 0.48.5
+    - condition: nats.install
+      name: nats
+      repository: https://nats-io.github.io/k8s/helm/charts
+      version: 1.2.6
+    - name: victoria-logs-single
+      repository: https://victoriametrics.github.io/helm-charts/
+      version: 0.8.16
+    description: direktiv helm chart
+    digest: 0adde38b2db01590a81d07d175d070c5f6157a4583aa1577b6fab43b6638a817
+    icon: https://charts.direktiv.io/logo.png
+    name: direktiv
+    type: application
+    urls:
+    - https://github.com/direktiv/direktiv/releases/download/direktiv-0.9.0-dev.10/direktiv-0.9.0-dev.10.tgz
+    version: 0.9.0-dev.10
+  - apiVersion: v2
     appVersion: v0.9.0-dev.9
     created: "2025-02-25T11:33:04.540384554Z"
     dependencies:
@@ -281,4 +308,4 @@ entries:
     urls:
     - https://github.com/direktiv/direktiv/releases/download/direktiv-0.1.22/direktiv-0.1.22.tgz
     version: 0.1.22
-generated: "2025-02-25T11:33:04.54044137Z"
+generated: "2025-02-25T12:21:36.503434328Z"
