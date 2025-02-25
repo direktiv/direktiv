@@ -10,7 +10,7 @@ const rootUrl = isBrowser
 
 const client_id = "direktiv";
 
-const authority = `${rootUrl}dex`;
+const authority = `${rootUrl}auth/realms/direktiv`;
 
 export const oidcConfig: AuthProviderProps = {
   authority,
