@@ -141,9 +141,9 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   };
 
   const basicTargetPlugin = `
-    type: instant-response
-    configuration:
-      status_code: 200`;
+      configuration:
+        status_code: 200
+      type: instant-response`;
 
   const initialRouteYaml = createRouteYaml({
     ...minimalRouteConfig,
