@@ -1,37 +1,21 @@
-import { Control, useWatch } from "react-hook-form";
+import { Control, DeepPartialSkipArrayKey, useWatch } from "react-hook-form";
 import {
-  EndpointFormSchema,
   EndpointFormSchemaType,
   EndpointsPluginsSchema,
   EndpointsPluginsSchemaType,
-  XDirektivConfigSchema,
-  XDirektivConfigSchemaType,
 } from "../schema";
 
-export const useSortedValues = (
+/**
+ * useSortedPlugins is a hook that sorts the plugins object in
+ * the form based on the keys defined in the EndpointsPluginsSchema.
+ * It returns a new object with the plugins sorted.
+ */
+export const useSortedPlugins = (
   control: Control<EndpointFormSchemaType>
-): EndpointFormSchemaType => {
+): DeepPartialSkipArrayKey<EndpointFormSchemaType> => {
   const watchedValues = useWatch({
     control,
   });
-
-  const sortedRootLevelFields = EndpointFormSchema.keyof().options;
-  const sortedRootLevel = sortedRootLevelFields.reduce<EndpointFormSchemaType>(
-    (object, key) => ({ ...object, [key]: watchedValues[key] }),
-    {} as EndpointFormSchemaType
-  );
-
-  const sortedDirektivConfigFields = XDirektivConfigSchema.keyof().options;
-  const sortedDirektivConfig =
-    sortedDirektivConfigFields.reduce<XDirektivConfigSchemaType>(
-      (object, key) => {
-        const configToAdd = watchedValues?.["x-direktiv-config"]?.[key]
-          ? { [key]: watchedValues?.["x-direktiv-config"]?.[key] }
-          : {};
-        return { ...object, ...configToAdd };
-      },
-      {} as XDirektivConfigSchemaType
-    );
 
   const sortedPluginsFields = EndpointsPluginsSchema.keyof().options;
   const sortedPlugins = sortedPluginsFields.reduce<EndpointsPluginsSchemaType>(
@@ -48,11 +32,18 @@ export const useSortedValues = (
 
   const hasPlugins = Object.keys(sortedPlugins).length > 0;
 
+  const configWithSortedPlugins =
+    hasPlugins && watchedValues?.["x-direktiv-config"]
+      ? {
+          ["x-direktiv-config"]: {
+            ...watchedValues["x-direktiv-config"],
+            plugins: sortedPlugins,
+          },
+        }
+      : {};
+
   return {
-    ...sortedRootLevel,
-    "x-direktiv-config": {
-      ...sortedDirektivConfig,
-      plugins: hasPlugins ? sortedPlugins : undefined,
-    },
+    ...watchedValues,
+    ...configWithSortedPlugins,
   };
 };
