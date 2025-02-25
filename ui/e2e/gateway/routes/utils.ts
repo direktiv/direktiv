@@ -84,33 +84,14 @@ export const findRouteWithApiRequest = async ({
       headers,
     });
 
-    const normalizedRoutes = routes.map((route) => {
-      const config = route.spec["x-direktiv-config"];
-      return {
-        ...route,
-        spec: {
-          ...route.spec,
-          "x-direktiv-config": {
-            ...config,
-            plugins: {
-              ...config.plugins,
-              inbound: config.plugins?.inbound ?? [],
-              outbound: config.plugins?.outbound ?? [],
-              auth: config.plugins?.auth ?? [],
-              target: config.plugins?.target,
-            },
-          },
-        },
-      };
-    });
-    return normalizedRoutes.find(match);
+    return routes.find(match);
   } catch (error) {
     const typedError = error as ErrorType;
     if (typedError.response.status === 404) {
       return false;
     }
     throw new Error(
-      `Unexpected error ${typedError?.response?.status} during lookup of service ${match} in namespace ${namespace}`
+      `Unexpected error ${typedError?.response?.status} during lookup of route ${match} in namespace ${namespace}`
     );
   }
 };
