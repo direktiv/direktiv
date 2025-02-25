@@ -39,25 +39,6 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
     });
   };
 
-  const endpointV1 = fileContentFromServer.includes("endpoint/v1");
-  if (endpointV1) {
-    return (
-      <Alert variant="info" className="m-5">
-        <p className="font-bold">
-          {t("pages.explorer.endpoint.editor.oldEndpointConfig.title")}
-        </p>
-        <p>
-          {t("pages.explorer.endpoint.editor.oldEndpointConfig.description")}
-        </p>
-        <p>
-          {t(
-            "pages.explorer.endpoint.editor.oldEndpointConfig.oldEndpointConfigNote"
-          )}
-        </p>
-      </Alert>
-    );
-  }
-
   return (
     <Form defaultConfig={endpointConfig} onSave={save}>
       {({
