@@ -173,7 +173,8 @@ func consumersForAPI(consumers []core.Consumer) any {
 }
 
 func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileStore, endpoints []core.Endpoint,
-	expand bool, server string) any {
+	expand bool, server string,
+) any {
 	type output struct {
 		Spec     any      `json:"spec"`
 		FilePath string   `json:"file_path"`
@@ -268,7 +269,7 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 
 		if server != "" {
 			doc.Servers = []*openapi3.Server{
-				&openapi3.Server{
+				{
 					URL: server,
 				},
 			}
