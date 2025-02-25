@@ -6,7 +6,7 @@ import { TargetPluginFormSchema } from "./plugins/target/schema";
 import { z } from "zod";
 
 export const EndpointsPluginsSchema = z.object({
-  target: TargetPluginFormSchema,
+  target: TargetPluginFormSchema.optional(),
   inbound: z.array(InboundPluginFormSchema).optional(),
   outbound: z.array(OutboundPluginFormSchema).optional(),
   auth: z.array(AuthPluginFormSchema).optional(),
