@@ -67,12 +67,7 @@ const Row = ({
       <TableCell>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => e.preventDefault()}
-              icon
-            >
+            <Button variant="ghost" size="sm" type="button" icon>
               <MoreVertical />
             </Button>
           </DropdownMenuTrigger>
