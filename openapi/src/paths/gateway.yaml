@@ -57,6 +57,11 @@
         schema:
           type: string
         description: Includes all relative files into one OpenAPI spec file
+      - in: query
+        name: server
+        schema:
+          type: string
+        description: Includes a server name into the spec
     responses:
       "200":
         description: Basic configuration file for gateway in the namespace
