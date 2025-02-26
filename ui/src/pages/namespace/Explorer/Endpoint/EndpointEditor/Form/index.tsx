@@ -3,27 +3,26 @@ import {
   DeepPartialSkipArrayKey,
   UseFormReturn,
   useForm,
+  useWatch,
 } from "react-hook-form";
 import { EndpointFormSchema, EndpointFormSchemaType } from "../schema";
 
 import { AuthPluginForm } from "./plugins/Auth";
-import Badge from "~/design/Badge";
-import { Checkbox } from "~/design/Checkbox";
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { InboundPluginForm } from "./plugins/Inbound";
 import Input from "~/design/Input";
+import { MethodCheckbox } from "./methodCheckbox";
 import { OutboundPluginForm } from "./plugins/Outbound";
 import { Switch } from "~/design/Switch";
 import { TargetPluginForm } from "./plugins/Target";
 import { routeMethods } from "~/api/gateway/schema";
 import { treatAsNumberOrUndefined } from "../../../utils";
-import { useSortedValues } from "./utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormProps = {
-  defaultConfig?: EndpointFormSchemaType;
+  defaultConfig?: DeepPartialSkipArrayKey<EndpointFormSchemaType>;
   onSave: (value: EndpointFormSchemaType) => void;
   children: (args: {
     formControls: UseFormReturn<EndpointFormSchemaType>;
@@ -34,6 +33,7 @@ type FormProps = {
 
 export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
   const { t } = useTranslation();
+
   const formControls = useForm<EndpointFormSchemaType>({
     resolver: zodResolver(EndpointFormSchema),
     defaultValues: {
@@ -41,7 +41,8 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
     },
   });
 
-  const values = useSortedValues(formControls.control);
+  const values = useWatch({ control: formControls.control });
+
   const { register, control } = formControls;
 
   return children({
@@ -55,7 +56,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
             htmlFor="path"
             className="grow"
           >
-            <Input {...register("path")} id="path" />
+            <Input {...register("x-direktiv-config.path")} id="path" />
           </Fieldset>
           <Fieldset
             label={t("pages.explorer.endpoint.editor.form.timeout")}
@@ -63,7 +64,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
             className="w-32"
           >
             <Input
-              {...register("timeout", {
+              {...register("x-direktiv-config.timeout", {
                 setValueAs: treatAsNumberOrUndefined,
               })}
               type="number"
@@ -72,59 +73,34 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
           </Fieldset>
         </div>
         <Fieldset label={t("pages.explorer.endpoint.editor.form.methods")}>
-          <Controller
-            control={control}
-            name="methods"
-            render={({ field }) => (
-              <div className="grid grid-cols-3 gap-5">
-                {routeMethods.map((method) => {
-                  const isChecked = field.value?.includes(method);
-                  return (
-                    <label
-                      key={method}
-                      className="flex items-center gap-2 text-sm"
-                      htmlFor={method}
-                    >
-                      <Checkbox
-                        id={method}
-                        value={method}
-                        checked={isChecked}
-                        onCheckedChange={(checked) => {
-                          if (checked === true) {
-                            field.onChange([...(field.value ?? []), method]);
-                          }
-                          if (checked === false && field.value) {
-                            field.onChange(
-                              field.value.filter((v) => v !== method)
-                            );
-                          }
-                        }}
-                      />
-                      <Badge variant={isChecked ? undefined : "secondary"}>
-                        {method}
-                      </Badge>
-                    </label>
-                  );
-                })}
-              </div>
-            )}
-          />
+          <div className="grid grid-cols-3 gap-5">
+            {Array.from(routeMethods).map((method) => (
+              <Controller
+                key={method}
+                control={control}
+                name={method}
+                render={({ field }) => (
+                  <MethodCheckbox method={method} field={field} />
+                )}
+              />
+            ))}
+          </div>
         </Fieldset>
         <Fieldset
           label={t("pages.explorer.endpoint.editor.form.allowAnonymous")}
-          htmlFor="allow_anonymous"
+          htmlFor="x-direktiv-config.allow_anonymous"
           horizontal
         >
           <Controller
             control={control}
-            name="allow_anonymous"
+            name="x-direktiv-config.allow_anonymous"
             render={({ field }) => (
               <Switch
-                defaultChecked={field.value ?? false}
+                checked={field.value ?? false}
                 onCheckedChange={(value) => {
                   field.onChange(value);
                 }}
-                id="allow_anonymous"
+                id="x-direktiv-config.allow_anonymous"
               />
             )}
           />

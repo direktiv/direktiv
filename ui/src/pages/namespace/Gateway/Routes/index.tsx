@@ -19,8 +19,8 @@ const RoutesPage = () => {
       (routes?.data ?? [])?.filter(
         (route) =>
           !isSearch ||
-          route.file_path.includes(search) ||
-          route.server_path?.includes(search)
+          route?.file_path.includes(search) ||
+          route?.server_path?.includes(search)
       ),
     [isSearch, search, routes?.data]
   );

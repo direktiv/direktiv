@@ -59,7 +59,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({
     fields,
   } = useFieldArray({
     control,
-    name: "plugins.auth",
+    name: "x-direktiv-config.plugins.auth",
   });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editIndex, setEditIndex] = useState<number>();

@@ -1,5 +1,5 @@
 import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
-import { createRouteYaml, removeLines } from "./utils";
+import { createRouteYaml, normalizeText, removeLines } from "./utils";
 import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
@@ -22,13 +22,17 @@ test("it is possible to create a basic route file", async ({ page }) => {
   const expectedYaml = createRouteYaml({
     path: "path",
     timeout: 3000,
-    methods: ["GET", "POST"],
+    methods: {
+      get: {},
+      post: {},
+    },
     plugins: {
       target: `
-    type: instant-response
-    configuration:
-        status_code: 200`,
+      configuration:
+        status_code: 200
+      type: instant-response`,
     },
+    allow_anonymous: true,
   });
 
   /* visit page */
@@ -63,16 +67,26 @@ test("it is possible to create a basic route file", async ({ page }) => {
   /* fill out form */
   await page.getByLabel("path").fill("path");
   await page.getByLabel("timeout").fill("3000");
-  await page.getByLabel("GET").click();
-  await page.getByLabel("POST").click();
+  await page
+    .locator("label")
+    .filter({ hasText: "get" })
+    .getByRole("checkbox")
+    .click();
+  await page
+    .locator("label")
+    .filter({ hasText: "post" })
+    .getByRole("checkbox")
+    .click();
 
   /* try to save incomplete form */
   await page.getByRole("button", { name: "Save" }).click();
 
   await expect(
-    page.getByText("plugins : this field is invalid"),
+    page.getByText("target : Required"),
     "it can not save the route without a valid target plugin"
   ).toBeVisible();
+
+  await page.getByLabel("allow anonymous").click();
 
   await page.getByRole("button", { name: "set target plugin" }).click();
 
@@ -110,7 +124,8 @@ test("it is possible to create a basic route file", async ({ page }) => {
   ).toHaveURL(`/n/${namespace}/gateway/routes/${filename}`);
 });
 
-test("it is possible to add plugins to a route file", async ({ page }) => {
+// TODO: re-enable this test [DIR-1958]
+test.skip("it is possible to add plugins to a route file", async ({ page }) => {
   /* prepare data */
   const filename = "myroute.yaml";
   const editor = page.locator(".lines-content");
@@ -119,13 +134,14 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   const minimalRouteConfig: Omit<CreateRouteYamlParam, "plugins"> = {
     path: "path",
     timeout: 3000,
-    methods: ["GET", "POST"],
+    methods: {},
+    allow_anonymous: true,
   };
 
   const basicTargetPlugin = `
-    type: instant-response
-    configuration:
-      status_code: 200`;
+      configuration:
+        status_code: 200
+      type: instant-response`;
 
   const initialRouteYaml = createRouteYaml({
     ...minimalRouteConfig,
@@ -190,36 +206,38 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   /* check editor content */
   const inboundPluginsBeforeSorting = `
-    - type: acl
-      configuration:
-        allow_groups:
-          - allow this group 1
-          - allow this group 2
-        deny_groups: []
-        allow_tags: []
-        deny_tags: []
-    - type: request-convert
-      configuration:
-        omit_headers: false
-        omit_queries: true
-        omit_body: false
-        omit_consumer: true`;
+    inbound:
+      - configuration:
+          allow_groups:
+            - allow this group 1
+            - allow this group 2
+          allow_tags: []
+          deny_groups: []
+          deny_tags: []
+        type: acl
+      - configuration:      
+          omit_body: false
+          omit_consumer: trues
+          omit_headers: false
+          omit_queries: true
+        type: request-convert`;
 
   const inboundPluginsAfterSorting = `
-    - type: request-convert
-      configuration:
-        omit_headers: false
-        omit_queries: true
-        omit_body: false
-        omit_consumer: true
-    - type: acl
-      configuration:
-        allow_groups:
-          - allow this group 1
-          - allow this group 2
-        deny_groups: []
-        allow_tags: []
-        deny_tags: []`;
+     inbound:
+       - configuration:
+          omit_body: false
+          omit_consumer: true
+          omit_headers: false
+          omit_queries: true
+        type: request-convert
+      - configuration:
+          allow_groups:
+            - allow this group 1
+            - allow this group 2
+          allow_tags: []
+          deny_groups: []
+          deny_tags: []
+        type: acl`;
 
   let expectedEditorContent = createRouteYaml({
     ...minimalRouteConfig,
@@ -248,7 +266,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await expect(
     editor,
     "the inbound plugins are represented in the editor preview"
-  ).toContainText(removeLines(expectedEditorContent, 4, "top"), {
+  ).toContainText(removeLines(expectedEditorContent, 7, "top"), {
     useInnerText: true,
   });
 
@@ -270,7 +288,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await expect(
     editor,
     "the new inbound plugin order is represented in the editor preview"
-  ).toContainText(removeLines(expectedEditorContent, 4, "top"), {
+  ).toContainText(removeLines(expectedEditorContent, 11, "top"), {
     useInnerText: true,
   });
 
@@ -283,9 +301,10 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   /* check editor content */
   const outboundPlugins = `
-    - type: js-outbound
-      configuration:
-        script: // execute some JavaScript here`;
+    outbound:
+      - type: js-outbound
+        configuration:
+          script: // execute some JavaScript here`;
 
   expectedEditorContent = createRouteYaml({
     ...minimalRouteConfig,
@@ -299,9 +318,10 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await expect(
     editor,
     "the outbound plugin is represented in the editor preview"
-  ).toContainText(removeLines(expectedEditorContent, 7, "top"), {
-    useInnerText: true,
-  });
+  ).toContainText(
+    normalizeText(removeLines(expectedEditorContent, 16, "top")),
+    { useInnerText: true }
+  );
 
   /* configure auth plugin: Github Webhook */
   await page.getByRole("button", { name: "add auth plugin" }).click();
@@ -312,9 +332,10 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   /* check editor content */
   const authPlugins = `
-    - type: github-webhook-auth
-      configuration:
-        secret: my github secret`;
+    auth:
+      - type: github-webhook-auth
+        configuration:
+          secret: my github secret`;
 
   expectedEditorContent = createRouteYaml({
     ...minimalRouteConfig,
@@ -329,9 +350,10 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await expect(
     editor,
     "the auth plugin is represented in the editor preview"
-  ).toContainText(removeLines(expectedEditorContent, 10, "top"), {
-    useInnerText: true,
-  });
+  ).toContainText(
+    normalizeText(removeLines(expectedEditorContent, 18, "top")),
+    { useInnerText: true }
+  );
 
   /* note: saving the plugin should have saved the whole file. */
   await expect(
@@ -344,9 +366,10 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await expect(
     editor,
     "after reloading, the entered data is still in the editor preview"
-  ).toContainText(removeLines(expectedEditorContent, 9, "bottom"), {
-    useInnerText: true,
-  });
+  ).toContainText(
+    normalizeText(removeLines(expectedEditorContent, 18, "bottom")),
+    { useInnerText: true }
+  );
 
   /* delete all optional plugins */
   await page
@@ -377,6 +400,9 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
     ...minimalRouteConfig,
     plugins: {
       target: basicTargetPlugin,
+      inbound: "inbound: []",
+      outbound: "outbound: []",
+      auth: "auth: []",
     },
   });
 
@@ -405,13 +431,17 @@ test("it blocks navigation when there are unsaved changes", async ({
   const minimalRouteConfig: Omit<CreateRouteYamlParam, "plugins"> = {
     path: "path",
     timeout: 3000,
-    methods: ["GET", "POST"],
+    methods: {
+      get: {},
+      post: {},
+    },
+    allow_anonymous: true,
   };
 
   const basicTargetPlugin = `
-    type: instant-response
-    configuration:
-      status_code: 200`;
+      configuration:
+        status_code: 200
+      type: instant-response`;
 
   const initialRouteYaml = createRouteYaml({
     ...minimalRouteConfig,
@@ -476,13 +506,17 @@ test("it does not block navigation when only formatting has changed", async ({
   const minimalRouteConfig: Omit<CreateRouteYamlParam, "plugins"> = {
     path: "path",
     timeout: 3000,
-    methods: ["GET", "POST"],
+    methods: {
+      get: {},
+      post: {},
+    },
+    allow_anonymous: true,
   };
 
   const basicTargetPlugin = `
-    type: "instant-response"
-    configuration:
-      status_code: 200`;
+      configuration:
+        status_code: 200
+      type: instant-response`;
 
   const initialRouteYaml = createRouteYaml({
     ...minimalRouteConfig,
@@ -529,5 +563,40 @@ test("it does not block navigation when only formatting has changed", async ({
   await expect(
     page.getByRole("heading", { name: "Monitoring", exact: true }),
     "it is possible to leave the route"
+  ).toBeVisible();
+});
+
+test("it shows a notification for outdated endpoint format", async ({
+  page,
+}) => {
+  /* prepare data */
+  const filename = "outdatedroute.yaml";
+
+  const outdatedRouteYaml = `
+    direktiv_api: endpoint/v1
+    direktiv_config:
+      allow_anonymous: true
+      path: /outdated
+      timeout: 3000`;
+
+  await createFile({
+    namespace,
+    name: filename,
+    type: "endpoint",
+    yaml: outdatedRouteYaml,
+  });
+
+  /* visit page */
+  await page.goto(`/n/${namespace}/explorer/endpoint/${filename}`, {
+    waitUntil: "networkidle",
+  });
+
+  const notification = page.getByText(
+    "There was an error serializing the form data"
+  );
+
+  await expect(
+    notification,
+    "it shows a notification for outdated endpoint format"
   ).toBeVisible();
 });

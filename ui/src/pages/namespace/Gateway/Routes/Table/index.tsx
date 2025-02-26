@@ -73,7 +73,7 @@ const RoutesTable = ({
                 </TableCell>
               </TableRow>
             ) : (
-              filteredRoutes?.map((route) => (
+              filteredRoutes.map((route) => (
                 <Row key={route.file_path} route={route} />
               ))
             )}
