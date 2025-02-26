@@ -110,7 +110,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
         <InboundPluginForm form={formControls} onSave={onSave} />
         <OutboundPluginForm form={formControls} onSave={onSave} />
         <AuthPluginForm formControls={formControls} onSave={onSave} />
-        <OpenAPIDocsForm formControls={formControls} onSave={onSave} />
+        <OpenAPIDocsForm form={formControls} onSave={onSave} />
       </div>
     ),
   });

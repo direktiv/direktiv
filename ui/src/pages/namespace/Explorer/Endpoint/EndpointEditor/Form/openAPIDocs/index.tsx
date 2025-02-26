@@ -1,46 +1,87 @@
-import { BookOpen, Plus } from "lucide-react";
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
+import { UseFormReturn, useForm } from "react-hook-form";
+import { jsonToYaml, yamlToJsonOrNull } from "~/pages/namespace/Explorer/utils";
 
+import { BookOpen } from "lucide-react";
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
+import Editor from "~/design/Editor";
 import { EndpointFormSchemaType } from "../../schema";
+import { MethodsSchema } from "~/api/gateway/schema";
 import { ModalWrapper } from "~/components/ModalWrapper";
-import { UseFormReturn } from "react-hook-form";
+import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type OpenAPIDocsFormProps = {
-  formControls: UseFormReturn<EndpointFormSchemaType>;
+  form: UseFormReturn<EndpointFormSchemaType>;
   onSave: (value: EndpointFormSchemaType) => void;
 };
 
-export const OpenAPIDocsForm: FC<OpenAPIDocsFormProps> = ({
-  formControls,
-  onSave,
-}) => {
+const FormSchema = z.object({
+  editor: MethodsSchema,
+});
+
+type FormSchemaType = z.infer<typeof FormSchema>;
+
+export const OpenAPIDocsForm: FC<OpenAPIDocsFormProps> = ({ form, onSave }) => {
+  const theme = useTheme();
   const { t } = useTranslation();
-  const { control, handleSubmit: handleParentSubmit } = formControls;
+  const { handleSubmit: handleParentSubmit, watch: getParentValues } = form;
+
+  const {
+    handleSubmit,
+    getValues,
+    setValue,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<FormSchemaType>({
+    resolver: zodResolver(MethodsSchema),
+    defaultValues: {
+      editor: {
+        connect: getParentValues("connect"),
+        delete: getParentValues("delete"),
+        get: getParentValues("get"),
+        head: getParentValues("head"),
+        options: getParentValues("options"),
+        patch: getParentValues("patch"),
+        post: getParentValues("post"),
+        put: getParentValues("put"),
+        trace: getParentValues("trace"),
+      },
+    },
+  });
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editIndex, setEditIndex] = useState<number>();
 
-  const formId = "authPluginForm";
+  const formId = "openAPIDocsForm";
 
-  // const handleSubmit = (configuration: PluginConfigSchema) => {
-  //   setDialogOpen(false);
-  //   if (editIndex === undefined) {
-  //     addPlugin(configuration);
-  //   } else {
-  //     editPlugin(editIndex, configuration);
-  //   }
-  //   handleParentSubmit(onSave)();
-  //   setEditIndex(undefined);
-  // };
+  const onSubmit = (configuration: FormSchemaType) => {
+    setDialogOpen(false);
+    form.setValue("get", configuration.editor.get);
+    form.setValue("post", configuration.editor.post);
+    form.setValue("put", configuration.editor.put);
+    form.setValue("delete", configuration.editor.delete);
+    form.setValue("patch", configuration.editor.patch);
+    form.setValue("head", configuration.editor.head);
+    form.setValue("options", configuration.editor.options);
+    form.setValue("trace", configuration.editor.trace);
+    form.setValue("connect", configuration.editor.connect);
+    handleParentSubmit(onSave)();
+  };
 
   return (
     <Dialog
       open={dialogOpen}
       onOpenChange={(isOpen) => {
-        if (isOpen === false) setEditIndex(undefined);
+        // TODO: check what happens when user presses cancel, changes the  methods and reopens the dialog
+        if (isOpen === false) {
+          // TODO: is this needed?
+          reset();
+        }
         setDialogOpen(isOpen);
       }}
     >
@@ -57,7 +98,43 @@ export const OpenAPIDocsForm: FC<OpenAPIDocsFormProps> = ({
         onCancel={() => {
           setDialogOpen(false);
         }}
-      ></ModalWrapper>
+      >
+        <form id={formId} onSubmit={handleSubmit(onSubmit)}>
+          <pre>{JSON.stringify(watch("editor"), null, 2)}</pre>
+          <pre>
+            {JSON.stringify(
+              {
+                connect: getParentValues("connect"),
+                delete: getParentValues("delete"),
+                get: getParentValues("get"),
+                head: getParentValues("head"),
+                options: getParentValues("options"),
+                patch: getParentValues("patch"),
+                post: getParentValues("post"),
+                put: getParentValues("put"),
+                trace: getParentValues("trace"),
+              },
+              null,
+              2
+            )}
+          </pre>
+          <pre>ERRORS: {JSON.stringify(errors, null, 2)}</pre>
+          <Card className="h-96 w-full p-4" noShadow background="weight-1">
+            <Editor
+              defaultValue={jsonToYaml(getValues("editor"))}
+              onChange={(newDocs) => {
+                if (newDocs) {
+                  const docsAsJson = yamlToJsonOrNull(newDocs);
+                  if (docsAsJson) {
+                    setValue("editor", docsAsJson);
+                  }
+                }
+              }}
+              theme={theme ?? undefined}
+            />
+          </Card>
+        </form>
+      </ModalWrapper>
     </Dialog>
   );
 };

@@ -79,7 +79,7 @@ export const MethodsSchema = z.object({
   trace: OperationSchema.optional(),
 });
 
-type MethodsSchemaType = z.infer<typeof MethodsSchema>;
+export type MethodsSchemaType = z.infer<typeof MethodsSchema>;
 export type RouteMethod = keyof MethodsSchemaType;
 
 export const routeMethods: Set<RouteMethod> = new Set([
