@@ -1,7 +1,7 @@
-import { GroupCreatedEditedSchema, GroupFormSchemaType } from "../schema";
+import { RoleCreatedEditedSchema, RoleFormSchemaType } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
-import { groupKeys } from "..";
+import { roleKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
@@ -9,18 +9,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const createGroup = apiFactory<GroupFormSchemaType>({
+const createRole = apiFactory<RoleFormSchemaType>({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
-    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/groups`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/roles`,
   method: "POST",
-  schema: GroupCreatedEditedSchema,
+  schema: RoleCreatedEditedSchema,
 });
 
-type ResolvedCreateGroup = Awaited<ReturnType<typeof createGroup>>;
-
-export const useCreateGroup = ({
+export const useCreateRole = ({
   onSuccess,
-}: { onSuccess?: (data: ResolvedCreateGroup) => void } = {}) => {
+}: { onSuccess?: () => void } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -32,33 +30,29 @@ export const useCreateGroup = ({
   }
 
   return useMutationWithPermissions({
-    mutationFn: (tokenFormProps: GroupFormSchemaType) =>
-      createGroup({
+    mutationFn: (roleFormProps: RoleFormSchemaType) =>
+      createRole({
         apiKey: apiKey ?? undefined,
-        urlParams: {
-          namespace,
-        },
-        payload: tokenFormProps,
+        urlParams: { namespace },
+        payload: roleFormProps,
       }),
-    onSuccess(data, { description }) {
+    onSuccess() {
       queryClient.invalidateQueries({
-        queryKey: groupKeys.groupList(namespace, {
+        queryKey: roleKeys.roleList(namespace, {
           apiKey: apiKey ?? undefined,
         }),
       });
       toast({
-        title: t("api.groups.mutate.createGroup.success.title"),
-        description: t("api.groups.mutate.createGroup.success.description", {
-          name: description,
-        }),
+        title: t("api.roles.mutate.createRole.success.title"),
+        description: t("api.roles.mutate.createRole.success.description"),
         variant: "success",
       });
-      onSuccess?.(data);
+      onSuccess?.();
     },
     onError: () => {
       toast({
         title: t("api.generic.error"),
-        description: t("api.groups.mutate.createGroup.error.description"),
+        description: t("api.roles.mutate.createRole.error.description"),
         variant: "error",
       });
     },

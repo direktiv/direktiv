@@ -1,29 +1,27 @@
-import { PolicySchema } from "../schema";
 import { QueryFunctionContext } from "@tanstack/react-query";
+import { RolesListSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
-import { policyKeys } from "..";
+import { roleKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
-const getPolicy = apiFactory({
+const getRoles = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
-    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/policy`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/roles`,
   method: "GET",
-  schema: PolicySchema,
+  schema: RolesListSchema,
 });
 
-const fetchPolicy = async ({
+const fetchRoles = async ({
   queryKey: [{ apiKey, namespace }],
-}: QueryFunctionContext<ReturnType<(typeof policyKeys)["get"]>>) =>
-  getPolicy({
+}: QueryFunctionContext<ReturnType<(typeof roleKeys)["roleList"]>>) =>
+  getRoles({
     apiKey,
-    urlParams: {
-      namespace,
-    },
+    urlParams: { namespace },
   });
 
-export const usePolicy = () => {
+export const useRoles = () => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -32,7 +30,10 @@ export const usePolicy = () => {
   }
 
   return useQueryWithPermissions({
-    queryKey: policyKeys.get(namespace, { apiKey: apiKey ?? undefined }),
-    queryFn: fetchPolicy,
+    queryKey: roleKeys.roleList(namespace, {
+      apiKey: apiKey ?? undefined,
+    }),
+    queryFn: fetchRoles,
+    enabled: !!namespace,
   });
 };
