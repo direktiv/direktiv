@@ -132,11 +132,9 @@ export const OpenAPIDocsForm: FC<OpenAPIDocsFormProps> = ({ form, onSave }) => {
             <Editor
               defaultValue={jsonToYaml(getValues("editor"))}
               onChange={(newDocs) => {
-                if (newDocs) {
-                  const docsAsJson = yamlToJsonOrNull(newDocs);
-                  if (docsAsJson) {
-                    setValue("editor", docsAsJson);
-                  }
+                if (newDocs !== undefined) {
+                  const docsAsJson = yamlToJsonOrNull(newDocs) ?? {};
+                  setValue("editor", docsAsJson);
                 }
               }}
               theme={theme ?? undefined}
