@@ -39,7 +39,7 @@ export const OpenAPIDocsForm: FC<OpenAPIDocsFormProps> = ({ form, onSave }) => {
     watch,
     formState: { errors },
   } = useForm<FormSchemaType>({
-    resolver: zodResolver(MethodsSchema),
+    resolver: zodResolver(FormSchema),
     defaultValues: {
       editor: {
         connect: getParentValues("connect"),
@@ -100,25 +100,34 @@ export const OpenAPIDocsForm: FC<OpenAPIDocsFormProps> = ({ form, onSave }) => {
         }}
       >
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
-          <pre>{JSON.stringify(watch("editor"), null, 2)}</pre>
-          <pre>
-            {JSON.stringify(
-              {
-                connect: getParentValues("connect"),
-                delete: getParentValues("delete"),
-                get: getParentValues("get"),
-                head: getParentValues("head"),
-                options: getParentValues("options"),
-                patch: getParentValues("patch"),
-                post: getParentValues("post"),
-                put: getParentValues("put"),
-                trace: getParentValues("trace"),
-              },
-              null,
-              2
-            )}
-          </pre>
-          <pre>ERRORS: {JSON.stringify(errors, null, 2)}</pre>
+          <div className="flex gap-5 p-5">
+            <pre className="text-xs h-96 overflow-y-scroll">
+              This Form:
+              {JSON.stringify(watch("editor"), null, 2)}
+            </pre>
+            <pre className="text-xs h-96 overflow-y-scroll">
+              Parent Form:
+              {JSON.stringify(
+                {
+                  connect: getParentValues("connect"),
+                  delete: getParentValues("delete"),
+                  get: getParentValues("get"),
+                  head: getParentValues("head"),
+                  options: getParentValues("options"),
+                  patch: getParentValues("patch"),
+                  post: getParentValues("post"),
+                  put: getParentValues("put"),
+                  trace: getParentValues("trace"),
+                },
+                null,
+                2
+              )}
+            </pre>
+            <pre className="text-xs h-96 overflow-y-scroll">
+              ERRORS: {JSON.stringify(errors, null, 2)}
+            </pre>
+          </div>
+
           <Card className="h-96 w-full p-4" noShadow background="weight-1">
             <Editor
               defaultValue={jsonToYaml(getValues("editor"))}

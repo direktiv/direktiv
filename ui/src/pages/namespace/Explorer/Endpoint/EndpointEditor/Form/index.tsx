@@ -110,7 +110,17 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
         <InboundPluginForm form={formControls} onSave={onSave} />
         <OutboundPluginForm form={formControls} onSave={onSave} />
         <AuthPluginForm formControls={formControls} onSave={onSave} />
-        <OpenAPIDocsForm form={formControls} onSave={onSave} />
+        <OpenAPIDocsForm
+          form={formControls}
+          onSave={onSave}
+          /**
+           * the key attribute here is required to reset the component
+           * when the form changes after its initial load. For example,
+           * when the user changes the methods via the checkboxes, these
+           * changes would not be reflected in the editor
+           */
+          key={JSON.stringify(values)}
+        />
       </div>
     ),
   });
