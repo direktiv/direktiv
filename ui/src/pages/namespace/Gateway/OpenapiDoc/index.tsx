@@ -1,11 +1,8 @@
 import Alert from "~/design/Alert";
-import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import { RapiDoc } from "~/design/RapiDoc";
-import { Save } from "lucide-react";
 import { useInfo } from "~/api/gateway/query/getInfo";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 interface Spec {
@@ -30,31 +27,12 @@ const OpenapiDocPage: React.FC = () => {
     expand: true,
   });
   const { t } = useTranslation();
-  const [copied, setCopied] = useState(false);
-  const [copyError, setCopyError] = useState<string | null>(null);
 
   const info = data?.data as DocumentationInfo | undefined;
   const { spec, errors } = info || { spec: null, errors: [] };
 
   const hasErrors = errors && errors.length > 0;
   const hasSpec = spec && spec.paths && Object.keys(spec.paths).length > 0;
-
-  const handleCopy = async () => {
-    if (!spec) return;
-    try {
-      await navigator.clipboard.writeText(JSON.stringify(spec, null, 2));
-      setCopied(true);
-      setCopyError(null);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      setCopyError(
-        error instanceof Error
-          ? error.message
-          : t("pages.gateway.documentation.error")
-      );
-      setTimeout(() => setCopyError(null), 4000);
-    }
-  };
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
@@ -73,11 +51,6 @@ const OpenapiDocPage: React.FC = () => {
           )}
         </div>
       </Card>
-      {copyError && (
-        <Alert variant="error">
-          <p>{copyError}</p>
-        </Alert>
-      )}
       <div className="flex justify-end">
         <CopyButton
           value={spec ? JSON.stringify(spec, null, 2) : ""}
