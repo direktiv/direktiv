@@ -109,7 +109,7 @@ export const routeMethods: Set<RouteMethod> = new Set([
  */
 const DirektivOpenApiSpecSchema = z
   .object({
-    "x-direktiv-api": z.literal("endpoint/v2"),
+    "x-direktiv-api": z.literal("endpoint/v2").optional(),
     "x-direktiv-config": z
       .object({
         allow_anonymous: z.boolean().optional(),
