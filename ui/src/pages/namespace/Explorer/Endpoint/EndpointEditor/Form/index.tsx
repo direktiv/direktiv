@@ -80,9 +80,18 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
                 key={method}
                 control={control}
                 name={method}
-                render={({ field }) => (
-                  <MethodCheckbox method={method} field={field} />
-                )}
+                render={({ field }) => {
+                  const isChecked = !!values[method];
+                  return (
+                    <div className="flex items-center gap-2">
+                      <MethodCheckbox
+                        method={method}
+                        field={field}
+                        isChecked={isChecked}
+                      />
+                    </div>
+                  );
+                }}
               />
             ))}
           </div>
