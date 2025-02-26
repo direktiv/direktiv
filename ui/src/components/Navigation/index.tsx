@@ -32,7 +32,7 @@ const Navigation: FC = () => {
   const enterpriseItems: NavigationItem[] = enableEnterpriseItems
     ? [
         {
-          path: "/n/$namespace/permissions",
+          path: "/n/$namespace/permissions/roles",
           label: t("components.mainMenu.permissions"),
           icon: BadgeCheck,
         },

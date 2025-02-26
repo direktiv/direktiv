@@ -1,7 +1,6 @@
-import { TokenCreatedSchema, TokenFormSchemaType } from "../schema";
-
+import { RoleDeletedSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
-import { tokenKeys } from "..";
+import { roleKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
@@ -9,16 +8,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const createToken = apiFactory({
-  url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
-    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/api_tokens`,
-  method: "POST",
-  schema: TokenCreatedSchema,
+const deleteGroup = apiFactory({
+  url: ({ namespace, groupName }: { namespace: string; groupName: string }) =>
+    `/api/v2/namespaces/${namespace}/roles/${groupName}`,
+  method: "DELETE",
+  schema: RoleDeletedSchema,
 });
 
-export const useCreateToken = ({
+export const useDeleteGroup = ({
   onSuccess,
-}: { onSuccess?: (secret: string) => void } = {}) => {
+}: { onSuccess?: () => void } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -30,24 +29,28 @@ export const useCreateToken = ({
   }
 
   return useMutationWithPermissions({
-    mutationFn: (tokenFormProps: TokenFormSchemaType) =>
-      createToken({
+    mutationFn: (groupName: string) =>
+      deleteGroup({
         apiKey: apiKey ?? undefined,
-        urlParams: { namespace },
-        payload: tokenFormProps,
+        urlParams: { groupName, namespace },
       }),
-    onSuccess(data) {
+    onSuccess() {
       queryClient.invalidateQueries({
-        queryKey: tokenKeys.apiTokens(namespace, {
+        queryKey: roleKeys.roleList(namespace, {
           apiKey: apiKey ?? undefined,
         }),
       });
-      onSuccess?.(data.data.secret);
+      toast({
+        title: t("api.roles.mutate.deleteRole.success.title"),
+        description: t("api.roles.mutate.deleteRole.success.description"),
+        variant: "success",
+      });
+      onSuccess?.();
     },
     onError: () => {
       toast({
         title: t("api.generic.error"),
-        description: t("api.tokens.mutate.createToken.error.description"),
+        description: t("api.roles.mutate.deleteRole.error.description"),
         variant: "error",
       });
     },

@@ -1,6 +1,7 @@
 import { User, WebStorageStateStore } from "oidc-client-ts";
 
 import { AuthProviderProps } from "react-oidc-context";
+import { isDev } from "~/config/env/utils";
 
 const isBrowser = typeof window !== "undefined";
 
@@ -10,13 +11,15 @@ const rootUrl = isBrowser
 
 const client_id = "direktiv";
 
-const authority = `${rootUrl}auth/realms/direktiv`;
+const getAuthority = () =>
+  isDev() ? `${rootUrl}dex` : `${rootUrl}auth/realms/direktiv`;
 
-export const oidcConfig: AuthProviderProps = {
-  authority,
+export const getOidcConfig = (): AuthProviderProps => ({
+  authority: getAuthority(),
   client_id,
   post_logout_redirect_uri: rootUrl,
   redirect_uri: rootUrl,
+  scope: "openid profile email groups",
 
   /**
    * removes code and state from url after signin
@@ -35,11 +38,11 @@ export const oidcConfig: AuthProviderProps = {
         store: window.localStorage,
       })
     : undefined,
-};
+});
 
 export const getOidcUser = () => {
   const oidcStorage = localStorage.getItem(
-    `oidc.user:${authority}:${client_id}`
+    `oidc.user:${getAuthority()}:${client_id}`
   );
   if (!oidcStorage) {
     return null;

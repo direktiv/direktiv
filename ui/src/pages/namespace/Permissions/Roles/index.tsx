@@ -10,61 +10,68 @@ import {
   TableRow,
 } from "~/design/Table";
 import { PlusCircle, Users } from "lucide-react";
-import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import CreateGroup from "./Create";
+import CreateRole from "./Create";
 import Delete from "./Delete";
-import EditGroup from "./Edit";
-import { GroupSchemaType } from "~/api/enterprise/groups/schema";
+import EditRole from "./Edit";
+import { RoleSchemaType } from "~/api/enterprise/roles/schema";
 import Row from "./Row";
-import { useGroups } from "~/api/enterprise/groups/query/get";
+import { useRoles } from "~/api/enterprise/roles/query/get";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-const GroupsPage = () => {
+const RolesPage = () => {
   const { t } = useTranslation();
-  const { data, isFetched, isAllowed, noPermissionMessage } = useGroups();
-  const noResults = isFetched && data?.groups.length === 0;
+  const { data, isFetched, isAllowed, noPermissionMessage } = useRoles();
+  const noResults = isFetched && data?.data.length === 0;
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [createGroup, setCreateGroup] = useState(false);
-  const [deleteGroup, setDeleteGroup] = useState<GroupSchemaType>();
-  const [editGroup, setEditGroup] = useState<GroupSchemaType>();
+  const [createRole, setCreateRole] = useState(false);
+  const [deleteRole, setDeleteRole] = useState<RoleSchemaType>();
+  const [editRole, setEditRole] = useState<RoleSchemaType>();
 
-  const allAvailableNames = data?.groups.map((group) => group.group) ?? [];
-
-  useEffect(() => {
-    if (dialogOpen === false) {
-      setCreateGroup(false);
-      setDeleteGroup(undefined);
-      setEditGroup(undefined);
-    }
-  }, [dialogOpen]);
+  const allAvailableNames = data?.data.map((role) => role.name) ?? [];
 
   const createNewButton = (
     <DialogTrigger asChild>
-      <Button onClick={() => setCreateGroup(true)} variant="outline">
+      <Button onClick={() => setCreateRole(true)} variant="outline">
         <PlusCircle />
-        {t("pages.permissions.groups.createBtn")}
+        {t("pages.permissions.roles.createBtn")}
       </Button>
     </DialogTrigger>
   );
 
+  const onOpenChange = (openState: boolean) => {
+    if (openState === false) {
+      setCreateRole(false);
+      setDeleteRole(undefined);
+      setEditRole(undefined);
+    }
+    setDialogOpen(openState);
+  };
+
   return (
     <Card className="m-5">
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={onOpenChange}>
         <div className="flex justify-end gap-5 p-2">{createNewButton}</div>
         <Table className="border-t border-gray-5 dark:border-gray-dark-5">
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
               <TableHeaderCell className="w-32">
-                {t("pages.permissions.groups.tableHeader.name")}
+                {t("pages.permissions.roles.tableHeader.name")}
               </TableHeaderCell>
               <TableHeaderCell>
-                {t("pages.permissions.groups.tableHeader.description")}
+                {t("pages.permissions.roles.tableHeader.description")}
+              </TableHeaderCell>
+              <TableHeaderCell>
+                {t("pages.permissions.roles.tableHeader.oidcGroups")}
               </TableHeaderCell>
               <TableHeaderCell className="w-36">
-                {t("pages.permissions.groups.tableHeader.permissions")}
+                {t("pages.permissions.roles.tableHeader.permissions")}
+              </TableHeaderCell>
+              <TableHeaderCell className="w-36">
+                {t("pages.permissions.roles.tableHeader.createdAt")}
               </TableHeaderCell>
               <TableHeaderCell className="w-16" />
             </TableRow>
@@ -74,19 +81,19 @@ const GroupsPage = () => {
               <>
                 {noResults ? (
                   <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                    <TableCell colSpan={3}>
+                    <TableCell colSpan={5}>
                       <NoResult icon={Users} button={createNewButton}>
-                        {t("pages.permissions.groups.noGroups")}
+                        {t("pages.permissions.roles.noRoles")}
                       </NoResult>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data?.groups.map((group) => (
+                  data?.data.map((role) => (
                     <Row
-                      key={group.id}
-                      group={group}
-                      onDeleteClicked={setDeleteGroup}
-                      onEditClicked={setEditGroup}
+                      key={role.name}
+                      role={role}
+                      onDeleteClicked={setDeleteRole}
+                      onEditClicked={setEditRole}
                     />
                   ))
                 )}
@@ -100,22 +107,22 @@ const GroupsPage = () => {
             )}
           </TableBody>
         </Table>
-        <DialogContent className="sm:max-w-2xl md:max-w-3xl">
-          {deleteGroup && (
-            <Delete group={deleteGroup} close={() => setDialogOpen(false)} />
+        <DialogContent className="sm:max-w-2xl">
+          {deleteRole && (
+            <Delete group={deleteRole} close={() => onOpenChange(false)} />
           )}
-          {editGroup && (
-            <EditGroup
-              group={editGroup}
-              close={() => setDialogOpen(false)}
+          {editRole && (
+            <EditRole
+              group={editRole}
+              close={() => onOpenChange(false)}
               unallowedNames={allAvailableNames.filter(
-                (name) => name !== editGroup.group
+                (name) => name !== editRole.name
               )}
             />
           )}
-          {createGroup && (
-            <CreateGroup
-              close={() => setDialogOpen(false)}
+          {createRole && (
+            <CreateRole
+              close={() => onOpenChange(false)}
               unallowedNames={allAvailableNames}
             />
           )}
@@ -125,4 +132,4 @@ const GroupsPage = () => {
   );
 };
 
-export default GroupsPage;
+export default RolesPage;
