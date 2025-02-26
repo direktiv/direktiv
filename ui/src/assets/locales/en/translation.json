@@ -443,6 +443,12 @@
                   "keyNamePlaceholder": "name of the key"
                 }
               }
+            },
+            "docs": {
+              "buttonLabel": "Edit OpenAPI Docs",
+              "modal": {
+                "title": "OpenAPI Docs"
+              }
             }
           },
           "saveBtn": "Save",

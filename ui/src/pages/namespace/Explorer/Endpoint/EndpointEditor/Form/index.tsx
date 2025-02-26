@@ -13,6 +13,7 @@ import { Fieldset } from "~/components/Form/Fieldset";
 import { InboundPluginForm } from "./plugins/Inbound";
 import Input from "~/design/Input";
 import { MethodCheckbox } from "./methodCheckbox";
+import { OpenAPIDocsForm } from "./openAPIDocs";
 import { OutboundPluginForm } from "./plugins/Outbound";
 import { Switch } from "~/design/Switch";
 import { TargetPluginForm } from "./plugins/Target";
@@ -109,6 +110,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
         <InboundPluginForm form={formControls} onSave={onSave} />
         <OutboundPluginForm form={formControls} onSave={onSave} />
         <AuthPluginForm formControls={formControls} onSave={onSave} />
+        <OpenAPIDocsForm formControls={formControls} onSave={onSave} />
       </div>
     ),
   });
