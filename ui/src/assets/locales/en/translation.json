@@ -87,15 +87,16 @@
         },
         "newFileButton": {
           "buttonText": "New",
-          "label": "Create",
+          "label": "Create New",
           "items": {
-            "directory": "New Directory",
-            "workflow": "New Workflow",
-            "service": "New Service",
+            "directory": "Directory",
+            "workflow": "Workflow",
+            "service": "Service",
             "gateway": {
               "label": "Gateway",
-              "route": "New Route",
-              "consumer": "New Consumer"
+              "route": "Route",
+              "consumer": "Consumer",
+              "openapiSpecification": "OpenAPI Specification"
             }
           }
         },
@@ -131,6 +132,24 @@
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
           "createBtn": "Create"
+        },
+
+        "openapiSpecification": {
+          "title": "Create a new OpenAPI Specification",
+          "nameLabel": "Name",
+          "namePlaceholder": "openapi-specification-name.yaml",
+          "link": "Go to Gateway Info",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create",
+          "unknownFilePath": "Unknown File Path",
+          "infoTooltip": "Every namespace should only have <1>one</1> OpenAPI Specification",
+          "errorTitle": "Parsing Error",
+          "errorDescription": "The OpenAPI Specification is not valid.<br />Please provide at least the following required fields:<br />openapi:<br />info:<br /> - title:<br />  - description:<br />  - version:",
+          "saveError": "There was an error saving the OpenAPI Specification.",
+          "saveSuccessTitle": "File Saved",
+          "saveSuccess": "OpenAPI Specification saved successfully.",
+          "unknownError": "An unknown error occurred",
+          "saveFailed": "Failed to save the OpenAPI Specification."
         },
         "workflow": {
           "runWorkflow": {
@@ -963,7 +982,8 @@
     "gateway": {
       "tabs": {
         "routes": "Routes",
-        "consumers": "Consumers"
+        "consumers": "Consumers",
+        "info": "Info"
       },
       "routes": {
         "columns": {
@@ -1014,6 +1034,17 @@
           "groups": "groups"
         },
         "empty": "No consumers exist yet"
+      },
+      "info": {
+        "title": "Gateway Info",
+        "columns": {
+          "title": "Title",
+          "version": "Version",
+          "description": "Description",
+          "file": "File",
+          "errors": "Errors",
+          "errorSiblingFields": "The OpenAPI Specification contains unexpected fields. Please remove any extra fields that are not part of a valid OpenAPI structure."
+        }
       }
     },
     "jqPlayground": {
@@ -1077,6 +1108,7 @@
       "gateway": "Gateway",
       "gatewayRoutes": "Routes",
       "gatewayConsumers": "Consumers",
+      "gatewayInfo": "Info",
       "jqPlayground": "jq Playground"
     },
     "contextMenu": {

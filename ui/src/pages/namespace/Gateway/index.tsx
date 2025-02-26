@@ -1,13 +1,17 @@
+import { BookOpen, Users, Workflow } from "lucide-react";
 import { Link, Outlet, useMatch } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
-import { Users, Workflow } from "lucide-react";
 
 import { useTranslation } from "react-i18next";
 
 const GatewayPage = () => {
   const { t } = useTranslation();
+  const isGatewayInfoPage = useMatch({
+    from: "/n/$namespace/gateway/gatewayInfo",
+    shouldThrow: false,
+  });
   const isGatewayRoutesPage = useMatch({
-    from: "/n/$namespace/gateway",
+    from: "/n/$namespace/gateway/routes/",
     shouldThrow: false,
   });
   const isGatewayConsumerPage = useMatch({
@@ -20,6 +24,13 @@ const GatewayPage = () => {
   });
 
   const tabs = [
+    {
+      value: "info",
+      active: isGatewayInfoPage,
+      icon: <BookOpen aria-hidden="true" />,
+      title: t("pages.gateway.tabs.info"),
+      link: "/n/$namespace/gateway/gatewayInfo",
+    },
     {
       value: "endpoints",
       active: isGatewayRoutesPage,

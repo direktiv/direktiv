@@ -8,6 +8,7 @@ import MessagesOverlay from "../components/MessagesOverlay";
 import { Methods } from "../components/Methods";
 import Plugins from "../components/Plugins";
 import PublicPathInput from "../components/PublicPath";
+import { getMethodsFromOpenApiSpec } from "../utils";
 import { useRoute } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
@@ -30,7 +31,8 @@ const Header = () => {
       <div className="flex flex-col gap-x-7 max-md:space-y-4 md:flex-row md:items-center md:justify-start">
         <div className="flex flex-col items-start gap-2">
           <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
-            <SquareGanttChartIcon className="h-5" /> {route.file_path}
+            <SquareGanttChartIcon className="h-5" />
+            {route.file_path}
           </h3>
           <div className="flex gap-1">
             <MessagesOverlay messages={route.errors} variant="error">
@@ -57,19 +59,21 @@ const Header = () => {
           <div className="text-gray-10 dark:text-gray-dark-10">
             {t("pages.gateway.routes.columns.methods")}
           </div>
-          <Methods methods={route.methods} />
+          <Methods methods={getMethodsFromOpenApiSpec(route.spec)} />
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
             {t("pages.gateway.routes.columns.plugins")}
           </div>
-          <Plugins plugins={route.plugins} />
+          <Plugins plugins={route.spec["x-direktiv-config"]?.plugins} />
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
             {t("pages.gateway.routes.columns.anonymous")}
           </div>
-          <AllowAnonymous allow={route.allow_anonymous} />
+          <AllowAnonymous
+            allow={route.spec["x-direktiv-config"]?.allow_anonymous}
+          />
         </div>
         <div className="grow text-sm">
           {route.server_path && <PublicPathInput path={route.server_path} />}

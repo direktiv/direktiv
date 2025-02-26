@@ -68,18 +68,19 @@ test("Route details page shows all important information about the route", async
   ).toBeVisible();
 
   await expect(
-    page.getByTestId("route-details-header").getByText("GET"),
+    page.getByTestId("route-details-header").getByText("connect"),
     "it renders the text for the method"
   ).toBeVisible();
 
   await page.getByTestId("route-details-header").getByText("+7").hover();
 
-  await expect(
-    page
-      .getByTestId("route-details-header")
-      .getByText("OPTIONSPUTPOSTHEADCONNECTPATCHTRACE"),
-    'it shows more methods when hovering over the "+7"'
-  ).toBeVisible();
+  const methods = ["get", "head", "options", "patch", "post", "put", "trace"];
+
+  for (const method of methods) {
+    await expect(
+      page.getByTestId("route-details-header").getByText(method)
+    ).toBeVisible();
+  }
 
   await expect(
     page
@@ -163,10 +164,7 @@ test("Route details page shows warning if the route was not configured correctly
     .hover();
 
   await expect(
-    page
-      .getByTestId("route-details-header")
-      .getByText("plugin 'this-plugin-does-not-exist' err: doesn't exist"),
-    "it shows an error with error detail on hover"
+    page.getByTestId("route-details-header").getByText("no valid http method")
   ).toBeVisible();
 
   await expect(

@@ -61,7 +61,7 @@ const Navigation: FC = () => {
       icon: Radio,
     },
     {
-      path: "/n/$namespace/gateway/routes",
+      path: "/n/$namespace/gateway/gatewayInfo",
       label: t("components.mainMenu.gateway"),
       icon: Network,
     },

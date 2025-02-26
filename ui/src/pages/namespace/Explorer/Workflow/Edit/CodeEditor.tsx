@@ -13,16 +13,16 @@ type EditorProps = {
   value: string;
   onValueChange: (value: string) => void;
   onSave: Parameters<typeof Editor>[0]["onSave"];
-  hasUnsavedChanges: boolean;
+  hasUnsavedChanges?: boolean;
   updatedAt: string | undefined;
-  error: string | undefined;
+  error?: string;
 };
 
 export const CodeEditor: FC<EditorProps> = ({
   value,
   onValueChange,
   onSave,
-  hasUnsavedChanges,
+  hasUnsavedChanges = false,
   updatedAt,
   error,
 }) => {

@@ -684,7 +684,7 @@ test(`it is possible to delete a file (and it will be removed from cache)`, asyn
 
   /* create new file with the same name */
   await page.getByTestId("dropdown-trg-new").first().click();
-  await page.getByRole("button", { name: "New Service" }).click();
+  await page.getByRole("button", { name: "Service" }).click();
   await page.getByPlaceholder("service-name.yaml").fill(service.name);
   await page.getByTestId("new-workflow-submit").click();
 
