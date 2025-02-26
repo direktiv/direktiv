@@ -3,11 +3,12 @@ import {
   DeepPartialSkipArrayKey,
   UseFormReturn,
   useForm,
+  useWatch,
 } from "react-hook-form";
-import { EndpointFormSchemaType, EndpointSaveSchema } from "../schema";
-import { FC, useEffect } from "react";
+import { EndpointFormSchema, EndpointFormSchemaType } from "../schema";
 
 import { AuthPluginForm } from "./plugins/Auth";
+import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { InboundPluginForm } from "./plugins/Inbound";
 import Input from "~/design/Input";
@@ -17,12 +18,11 @@ import { Switch } from "~/design/Switch";
 import { TargetPluginForm } from "./plugins/Target";
 import { routeMethods } from "~/api/gateway/schema";
 import { treatAsNumberOrUndefined } from "../../../utils";
-// import { useSortedValues } from "./utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormProps = {
-  defaultConfig?: EndpointFormSchemaType;
+  defaultConfig?: DeepPartialSkipArrayKey<EndpointFormSchemaType>;
   onSave: (value: EndpointFormSchemaType) => void;
   children: (args: {
     formControls: UseFormReturn<EndpointFormSchemaType>;
@@ -35,25 +35,13 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
   const { t } = useTranslation();
 
   const formControls = useForm<EndpointFormSchemaType>({
-    resolver: zodResolver(EndpointSaveSchema),
-    criteriaMode: "all",
+    resolver: zodResolver(EndpointFormSchema),
+    defaultValues: {
+      ...defaultConfig,
+    },
   });
 
-  // Reset the form only when the server-supplied defaultConfig changes.
-  // This prevents user edits from getting overwritten each render,
-  // but still updates if new defaults arrive from the backend.
-  // added this since having ...defaultConfig in the useForm call was causing
-  // the form to reset to the defaultConfig on every render, which was
-  // causing the form to lose all user edits.
-  useEffect(() => {
-    if (defaultConfig) {
-      formControls.reset(defaultConfig);
-    }
-  }, [defaultConfig, formControls]);
-
-  const values = formControls.watch();
-
-  // const values = useSortedValues(formControls.control);
+  const values = useWatch({ control: formControls.control });
 
   const { register, control } = formControls;
 
@@ -86,12 +74,11 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
         </div>
         <Fieldset label={t("pages.explorer.endpoint.editor.form.methods")}>
           <div className="grid grid-cols-3 gap-5">
-            {routeMethods.map((method) => (
+            {Array.from(routeMethods).map((method) => (
               <Controller
                 key={method}
                 control={control}
                 name={method}
-                defaultValue={undefined}
                 render={({ field }) => (
                   <MethodCheckbox method={method} field={field} />
                 )}

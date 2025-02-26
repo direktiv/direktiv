@@ -9,7 +9,7 @@ import { Methods } from "../components/Methods";
 import Plugins from "../components/Plugins";
 import PublicPathInput from "../components/PublicPath";
 import { RouteSchemaType } from "~/api/gateway/schema";
-import { getMethodOperations } from "../utils";
+import { getMethodsFromOpenApiSpec } from "../utils";
 import { useTranslation } from "react-i18next";
 
 type RowProps = {
@@ -26,7 +26,7 @@ export const Row: FC<RowProps> = ({ route }) => {
         navigate({
           to: "/n/$namespace/gateway/routes/$",
           from: "/n/$namespace",
-          params: { _splat: route?.file_path },
+          params: { _splat: route.file_path },
         });
       }}
       className="cursor-pointer"
@@ -40,12 +40,12 @@ export const Row: FC<RowProps> = ({ route }) => {
             className="whitespace-normal break-all hover:underline"
             to="/n/$namespace/explorer/endpoint/$"
             from="/n/$namespace"
-            params={{ _splat: route?.file_path }}
+            params={{ _splat: route.file_path }}
           >
-            {route?.file_path}
+            {route.file_path}
           </Link>
           <div className="flex gap-1">
-            <MessagesOverlay messages={route?.errors ?? []} variant="error">
+            <MessagesOverlay messages={route.errors} variant="error">
               {(errorCount) => (
                 <Badge variant="destructive">
                   {t("pages.gateway.routes.row.error.count", {
@@ -54,7 +54,7 @@ export const Row: FC<RowProps> = ({ route }) => {
                 </Badge>
               )}
             </MessagesOverlay>
-            <MessagesOverlay messages={route?.warnings ?? []} variant="warning">
+            <MessagesOverlay messages={route.warnings} variant="warning">
               {(warningCount) => (
                 <Badge variant="secondary">
                   {t("pages.gateway.routes.row.warnings.count", {
@@ -67,18 +67,18 @@ export const Row: FC<RowProps> = ({ route }) => {
         </div>
       </TableCell>
       <TableCell>
-        <Methods methods={getMethodOperations(route?.spec ?? {})} />
+        <Methods methods={getMethodsFromOpenApiSpec(route.spec)} />
       </TableCell>
       <TableCell>
-        <Plugins plugins={route?.spec["x-direktiv-config"]?.plugins ?? {}} />
+        <Plugins plugins={route.spec["x-direktiv-config"]?.plugins} />
       </TableCell>
       <TableCell>
         <AllowAnonymous
-          allow={route?.spec["x-direktiv-config"]?.allow_anonymous ?? false}
+          allow={route.spec["x-direktiv-config"]?.allow_anonymous}
         />
       </TableCell>
       <TableCell className="whitespace-normal break-all">
-        {route?.server_path && <PublicPathInput path={route?.server_path} />}
+        {route.server_path && <PublicPathInput path={route.server_path} />}
       </TableCell>
     </TableRow>
   );

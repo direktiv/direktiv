@@ -8,7 +8,7 @@ import MessagesOverlay from "../components/MessagesOverlay";
 import { Methods } from "../components/Methods";
 import Plugins from "../components/Plugins";
 import PublicPathInput from "../components/PublicPath";
-import { getMethodOperations } from "../utils";
+import { getMethodsFromOpenApiSpec } from "../utils";
 import { useRoute } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
@@ -32,10 +32,10 @@ const Header = () => {
         <div className="flex flex-col items-start gap-2">
           <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
             <SquareGanttChartIcon className="h-5" />
-            {route?.file_path}
+            {route.file_path}
           </h3>
           <div className="flex gap-1">
-            <MessagesOverlay messages={route?.errors} variant="error">
+            <MessagesOverlay messages={route.errors} variant="error">
               {(errorCount) => (
                 <Badge variant="destructive">
                   {t("pages.gateway.routes.row.error.count", {
@@ -44,7 +44,7 @@ const Header = () => {
                 </Badge>
               )}
             </MessagesOverlay>
-            <MessagesOverlay messages={route?.warnings} variant="warning">
+            <MessagesOverlay messages={route.warnings} variant="warning">
               {(warningCount) => (
                 <Badge variant="secondary">
                   {t("pages.gateway.routes.row.warnings.count", {
@@ -59,24 +59,24 @@ const Header = () => {
           <div className="text-gray-10 dark:text-gray-dark-10">
             {t("pages.gateway.routes.columns.methods")}
           </div>
-          <Methods methods={getMethodOperations(route?.spec ?? {})} />
+          <Methods methods={getMethodsFromOpenApiSpec(route.spec)} />
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
             {t("pages.gateway.routes.columns.plugins")}
           </div>
-          <Plugins plugins={route?.spec["x-direktiv-config"].plugins} />
+          <Plugins plugins={route.spec["x-direktiv-config"]?.plugins} />
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
             {t("pages.gateway.routes.columns.anonymous")}
           </div>
           <AllowAnonymous
-            allow={route?.spec["x-direktiv-config"].allow_anonymous}
+            allow={route.spec["x-direktiv-config"]?.allow_anonymous}
           />
         </div>
         <div className="grow text-sm">
-          {route?.server_path && <PublicPathInput path={route?.server_path} />}
+          {route.server_path && <PublicPathInput path={route.server_path} />}
         </div>
         <div className="flex gap-5">
           <Button asChild isAnchor variant="primary" className="max-md:w-full">

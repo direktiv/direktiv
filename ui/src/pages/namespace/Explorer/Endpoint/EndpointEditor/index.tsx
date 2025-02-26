@@ -1,20 +1,19 @@
 import { decode, encode } from "js-base64";
+import { normalizeEndpointObject, serializeEndpointFile } from "./utils";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { EndpointFormSchemaType } from "./schema";
+import { ErrorMessage } from "./ErrorMessage";
 import { FC } from "react";
 import { FileSchemaType } from "~/api/files/schema";
 import { Form } from "./Form";
-import FormErrors from "~/components/FormErrors";
 import NavigationBlocker from "~/components/NavigationBlocker";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
-import { flattenErrors } from "./Form/utils";
 import { jsonToYaml } from "../../utils";
-import { serializeEndpointFile } from "./utils";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
@@ -40,25 +39,6 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
     });
   };
 
-  const endpointV1 = fileContentFromServer.includes("endpoint/v1");
-  if (endpointV1) {
-    return (
-      <Alert variant="info" className="m-5">
-        <p className="font-bold">
-          {t("pages.explorer.endpoint.editor.oldEndpointConfig.title")}
-        </p>
-        <p>
-          {t("pages.explorer.endpoint.editor.oldEndpointConfig.description")}
-        </p>
-        <p>
-          {t(
-            "pages.explorer.endpoint.editor.oldEndpointConfig.oldEndpointConfigNote"
-          )}
-        </p>
-      </Alert>
-    );
-  }
-
   return (
     <Form defaultConfig={endpointConfig} onSave={save}>
       {({
@@ -69,12 +49,11 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
         formMarkup,
         values,
       }) => {
-        const preview = jsonToYaml(values);
+        const preview = jsonToYaml(normalizeEndpointObject(values));
         const parsedOriginal = endpointConfig && jsonToYaml(endpointConfig);
         const filehasChanged = preview !== parsedOriginal;
         const isDirty = !endpointConfigError && filehasChanged;
         const disableButton = isPending || !!endpointConfigError;
-        const flattenedErrors = flattenErrors(errors);
 
         return (
           <form
@@ -100,16 +79,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
                     </div>
                   ) : (
                     <div>
-                      <FormErrors
-                        errors={flattenedErrors.reduce(
-                          (acc, { path, message }) => ({
-                            ...acc,
-                            [path]: { message },
-                          }),
-                          {}
-                        )}
-                        className="mb-5"
-                      />
+                      <ErrorMessage errors={errors} />
                       {formMarkup}
                     </div>
                   )}
