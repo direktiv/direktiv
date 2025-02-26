@@ -61,15 +61,15 @@ export const OpenAPIDocsForm: FC<OpenAPIDocsFormProps> = ({ form, onSave }) => {
 
   const onSubmit = (configuration: FormSchemaType) => {
     setDialogOpen(false);
-    form.setValue("get", configuration.editor.get);
-    form.setValue("post", configuration.editor.post);
-    form.setValue("put", configuration.editor.put);
+    form.setValue("connect", configuration.editor.connect);
     form.setValue("delete", configuration.editor.delete);
-    form.setValue("patch", configuration.editor.patch);
+    form.setValue("get", configuration.editor.get);
     form.setValue("head", configuration.editor.head);
     form.setValue("options", configuration.editor.options);
+    form.setValue("patch", configuration.editor.patch);
+    form.setValue("post", configuration.editor.post);
+    form.setValue("put", configuration.editor.put);
     form.setValue("trace", configuration.editor.trace);
-    form.setValue("connect", configuration.editor.connect);
     handleParentSubmit(onSave)();
   };
 
