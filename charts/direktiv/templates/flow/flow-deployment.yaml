@@ -94,6 +94,10 @@ spec:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: db
+        {{- if .Values.license }}
+          - name: DIREKTIV_LICENSE
+            value: {{ .Values.license | quote }}
+        {{- end}}
           - name: DIREKTIV_FUNCTIONS_TIMEOUT
             value: {{ .Values.requestTimeout | quote }}
           - name: DIREKTIV_OPEN_TELEMETRY_BACKEND

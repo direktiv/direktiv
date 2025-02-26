@@ -234,7 +234,9 @@ func Run(circuit *core.Circuit) error {
 	// initialize extensions
 	if extensions.Initialize != nil {
 		slog.Info("initializing extensions")
-		extensions.Initialize(db, bus, config)
+		if err = extensions.Initialize(db, bus, config); err != nil {
+			return fmt.Errorf("initializing extensions, err: %w", err)
+		}
 	}
 
 	// Start api v2 server
