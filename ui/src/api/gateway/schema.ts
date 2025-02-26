@@ -1,34 +1,5 @@
 import { z } from "zod";
 
-// x-direktiv-api: endpoint/v2
-
-// x-direktiv-config:
-//   path: "/testme"
-//   allow_anonymous: true
-//   plugins:
-//     target:
-//       type: instant-response
-//       configuration:
-//         status_code: 200
-//         status_message: hello
-// get:
-//   description: Optional extended description in CommonMark or HTML.
-//   responses:
-//     "200":
-//       description: returns something
-
-export const routeMethods = [
-  "connect",
-  "delete",
-  "get",
-  "head",
-  "options",
-  "patch",
-  "post",
-  "put",
-  "trace",
-] as const;
-
 /**
  * example
   {
@@ -44,32 +15,6 @@ const PluginSchema = z.object({
   configuration: z.record(z.unknown()).optional(),
 });
 
-/**
- * example
-{
-  "file_path": "/test/roottree.yaml",
-  "path": "/adon/",
-  "server_path": "/ns/git-test/adon",
-  "methods": [
-    "GET"
-  ],
-  "allow_anonymous": true,
-  "timeout": 0,
-  "errors": [],
-  "warnings": [],
-  "plugins": {
-    "target": {
-      "type": "instant-response",
-      "configuration": {
-        "content_type": "application/xml",
-        "status_code": 200,
-        "status_message": "..."
-      }
-    }
-  }
-}
- */
-
 const filterInvalidEntries = (schema: z.ZodTypeAny) =>
   z
     .array(z.any())
@@ -77,40 +22,125 @@ const filterInvalidEntries = (schema: z.ZodTypeAny) =>
       entryArr.filter((entry) => schema.safeParse(entry).success)
     );
 
+/**
+ * example
+  {
+    "inbound": [
+      {
+        "configuration": {
+          "script": "some script"
+        },
+        "type": "js-inbound"
+      },
+      {
+        "configuration": {
+          "omit_body": false,
+          "omit_consumer": false,
+          "omit_headers": true,
+          "omit_queries": true
+        },
+        "type": "request-convert"
+      }
+    ],
+    "outbound": [],
+    "target": {
+      "configuration": {
+        "status_code": 200
+      },
+      "type": "instant-response"
+    }
+  }
+ */
+const PluginsSchema = z.object({
+  inbound: filterInvalidEntries(PluginSchema).optional(),
+  outbound: filterInvalidEntries(PluginSchema).optional(),
+  auth: filterInvalidEntries(PluginSchema).optional(),
+  target: PluginSchema.optional(),
+});
+
+export type PluginsSchemaType = z.infer<typeof PluginsSchema>;
+
+export type PluginType = keyof PluginsSchemaType;
+
 export const OperationSchema = z.object({
   description: z.string().optional(),
   responses: z.record(z.any()).optional(),
 });
 
-export type RouteMethod = (typeof routeMethods)[number];
+export const MethodsSchema = z.object({
+  connect: OperationSchema.optional(),
+  delete: OperationSchema.optional(),
+  get: OperationSchema.optional(),
+  head: OperationSchema.optional(),
+  options: OperationSchema.optional(),
+  patch: OperationSchema.optional(),
+  post: OperationSchema.optional(),
+  put: OperationSchema.optional(),
+  trace: OperationSchema.optional(),
+});
 
-export const methodSchemas = routeMethods.reduce<
-  Record<RouteMethod, z.ZodTypeAny>
->(
-  (acc, method) => {
-    acc[method] = OperationSchema.optional();
-    return acc;
-  },
-  {} as Record<RouteMethod, z.ZodTypeAny>
-);
+type MethodsSchemaType = z.infer<typeof MethodsSchema>;
+export type RouteMethod = keyof MethodsSchemaType;
 
-export const RouteSchema = z.object({
-  spec: z.object({
+export const routeMethods: Set<RouteMethod> = new Set([
+  "connect",
+  "delete",
+  "get",
+  "head",
+  "options",
+  "patch",
+  "post",
+  "put",
+  "trace",
+]);
+
+/**
+ * example
+{
+  "x-direktiv-api": "endpoint/v2",
+  "get": {...},
+  "post": {...},
+  "x-direktiv-config": {
+    "allow_anonymous": true,
+    "path": "path",
+    "plugins": {...}
+  }
+}
+ */
+const DirektivOpenApiSpecSchema = z
+  .object({
     "x-direktiv-api": z.literal("endpoint/v2"),
-    "x-direktiv-config": z.object({
-      allow_anonymous: z.boolean(),
-      path: z.string(),
-      plugins: z
-        .object({
-          inbound: filterInvalidEntries(PluginSchema).optional(),
-          outbound: filterInvalidEntries(PluginSchema).optional(),
-          auth: filterInvalidEntries(PluginSchema).optional(),
-          target: PluginSchema.optional(),
-        })
-        .optional(),
-    }),
-    ...methodSchemas,
-  }),
+    "x-direktiv-config": z
+      .object({
+        allow_anonymous: z.boolean().optional(),
+        path: z.string().optional(),
+        plugins: PluginsSchema.optional(),
+      })
+      .optional(),
+  })
+  .merge(MethodsSchema);
+
+export type DirektivOpenApiSpecSchemaType = z.infer<
+  typeof DirektivOpenApiSpecSchema
+>;
+
+export type MethodsKeys = keyof DirektivOpenApiSpecSchemaType;
+export type MethodsObject = Partial<
+  Pick<DirektivOpenApiSpecSchemaType, MethodsKeys>
+>;
+
+/**
+ * example
+  {
+    "spec": {...},
+    "file_path": "/route.yaml",
+    "errors": [],
+    "server_path": "/ns/demo/path",
+    "warnings": []
+  }
+ */
+export const RouteSchema = z.object({
+  spec: DirektivOpenApiSpecSchema,
   file_path: z.string(),
   errors: z.array(z.string()),
   server_path: z.string(),
@@ -119,9 +149,6 @@ export const RouteSchema = z.object({
 
 export type RouteSchemaType = z.infer<typeof RouteSchema>;
 
-export type MethodsKeys = keyof RouteSchemaType["spec"];
-
-export type MethodsObject = Partial<Pick<RouteSchemaType["spec"], MethodsKeys>>;
 /**
  * example
   {

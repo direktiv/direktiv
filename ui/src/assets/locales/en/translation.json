@@ -446,12 +446,7 @@
             }
           },
           "saveBtn": "Save",
-          "unsavedNote": "unsaved changes",
-          "oldEndpointConfig": {
-            "title": "Old endpoint config detected",
-            "description": "This endpoint config is using the outdated endpoint/v1 format. Please update your endpoint config to the new format.",
-            "oldEndpointConfigNote": "Old endpoint config can still be edited via Git."
-          }
+          "unsavedNote": "unsaved changes"
         }
       },
       "consumer": {

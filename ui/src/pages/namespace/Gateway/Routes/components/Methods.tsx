@@ -3,28 +3,26 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "~/design/HoverCard";
-import { MethodsKeys, RouteSchemaType } from "~/api/gateway/schema";
 
 import Badge from "~/design/Badge";
 import { FC } from "react";
+import { RouteMethod } from "~/api/gateway/schema";
 import { useTranslation } from "react-i18next";
 
-type MethodsObject = Pick<RouteSchemaType["spec"], MethodsKeys>;
-
 type AllowAnonymousProps = {
-  methods: Partial<MethodsObject>;
+  methods: RouteMethod[];
 };
 
 const methodDisplayCount = 2;
 
 export const Methods: FC<AllowAnonymousProps> = ({ methods }) => {
   const { t } = useTranslation();
-  const numberOfMethods = Object.keys(methods).length;
+  const numberOfMethods = methods.length;
   const numberOfHiddenMethods = numberOfMethods - methodDisplayCount;
   const needsTooltip = numberOfHiddenMethods > 0;
 
-  const methodsToDisplay = Object.keys(methods).slice(0, methodDisplayCount);
-  const methodsBehindTooltip = Object.keys(methods).slice(methodDisplayCount);
+  const methodsToDisplay = methods.slice(0, methodDisplayCount);
+  const methodsBehindTooltip = methods.slice(methodDisplayCount);
 
   return (
     <div className="flex gap-1">

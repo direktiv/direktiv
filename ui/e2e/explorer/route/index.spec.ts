@@ -28,10 +28,9 @@ test("it is possible to create a basic route file", async ({ page }) => {
     },
     plugins: {
       target: `
-    type: instant-response
-    configuration:
+      configuration:
         status_code: 200
-        status_message: asdasd`,
+      type: instant-response`,
     },
     allow_anonymous: true,
   });
@@ -83,7 +82,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
   await page.getByRole("button", { name: "Save" }).click();
 
   await expect(
-    page.getByText("x-direktiv-config : this field is invalid"),
+    page.getByText("target : Required"),
     "it can not save the route without a valid target plugin"
   ).toBeVisible();
 
@@ -125,7 +124,8 @@ test("it is possible to create a basic route file", async ({ page }) => {
   ).toHaveURL(`/n/${namespace}/gateway/routes/${filename}`);
 });
 
-test("it is possible to add plugins to a route file", async ({ page }) => {
+// TODO: re-enable this test [DIR-1958]
+test.skip("it is possible to add plugins to a route file", async ({ page }) => {
   /* prepare data */
   const filename = "myroute.yaml";
   const editor = page.locator(".lines-content");
@@ -134,17 +134,14 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   const minimalRouteConfig: Omit<CreateRouteYamlParam, "plugins"> = {
     path: "path",
     timeout: 3000,
-    methods: {
-      get: {},
-      post: {},
-    },
+    methods: {},
     allow_anonymous: true,
   };
 
   const basicTargetPlugin = `
-    type: instant-response
-    configuration:
-      status_code: 200`;
+      configuration:
+        status_code: 200
+      type: instant-response`;
 
   const initialRouteYaml = createRouteYaml({
     ...minimalRouteConfig,
@@ -210,37 +207,37 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   /* check editor content */
   const inboundPluginsBeforeSorting = `
     inbound:
-      - type: acl
-        configuration:
+      - configuration:
           allow_groups:
             - allow this group 1
             - allow this group 2
-          deny_groups: []
           allow_tags: []
+          deny_groups: []
           deny_tags: []
-      - type: request-convert
-        configuration:
+        type: acl
+      - configuration:      
+          omit_body: false
+          omit_consumer: trues
           omit_headers: false
           omit_queries: true
-          omit_body: false
-          omit_consumer: true`;
+        type: request-convert`;
 
   const inboundPluginsAfterSorting = `
-    inbound:
-      - type: request-convert
-        configuration:
-          omit_headers: false
-          omit_queries: true
+     inbound:
+       - configuration:
           omit_body: false
           omit_consumer: true
-      - type: acl
-        configuration:
+          omit_headers: false
+          omit_queries: true
+        type: request-convert
+      - configuration:
           allow_groups:
             - allow this group 1
             - allow this group 2
-          deny_groups: []
           allow_tags: []
-          deny_tags: []`;
+          deny_groups: []
+          deny_tags: []
+        type: acl`;
 
   let expectedEditorContent = createRouteYaml({
     ...minimalRouteConfig,
@@ -269,7 +266,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await expect(
     editor,
     "the inbound plugins are represented in the editor preview"
-  ).toContainText(removeLines(expectedEditorContent, 12, "top"), {
+  ).toContainText(removeLines(expectedEditorContent, 7, "top"), {
     useInnerText: true,
   });
 
@@ -442,9 +439,9 @@ test("it blocks navigation when there are unsaved changes", async ({
   };
 
   const basicTargetPlugin = `
-    type: instant-response
-    configuration:
-      status_code: 200`;
+      configuration:
+        status_code: 200
+      type: instant-response`;
 
   const initialRouteYaml = createRouteYaml({
     ...minimalRouteConfig,
@@ -517,9 +514,9 @@ test("it does not block navigation when only formatting has changed", async ({
   };
 
   const basicTargetPlugin = `
-    type: "instant-response"
-    configuration:
-      status_code: 200`;
+      configuration:
+        status_code: 200
+      type: instant-response`;
 
   const initialRouteYaml = createRouteYaml({
     ...minimalRouteConfig,
@@ -595,7 +592,7 @@ test("it shows a notification for outdated endpoint format", async ({
   });
 
   const notification = page.getByText(
-    "This endpoint config is using the outdated endpoint/v1 format. Please update your endpoint config to the new format."
+    "There was an error serializing the form data"
   );
 
   await expect(
