@@ -7,21 +7,42 @@ import { useNamespace } from "~/util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
 export const getInfo = apiFactory({
-  url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
-    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/gateway/info`,
+  url: ({
+    baseUrl,
+    namespace,
+    expand,
+    server,
+  }: {
+    baseUrl?: string;
+    namespace: string;
+    expand?: boolean;
+    server?: string;
+  }) => {
+    const url = `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/gateway/info`;
+
+    const queryParams = new URLSearchParams();
+    if (expand) queryParams.append("expand", "true");
+    if (server) queryParams.append("server", server);
+
+    return queryParams.toString() ? `${url}?${queryParams.toString()}` : url;
+  },
+
   method: "GET",
   schema: OpenapiSpecificationSchema,
 });
 
 const fetchInfo = async ({
-  queryKey: [{ apiKey, namespace }],
+  queryKey: [{ apiKey, namespace, expand, server }],
 }: QueryFunctionContext<ReturnType<(typeof gatewayKeys)["info"]>>) =>
   getInfo({
     apiKey,
-    urlParams: { namespace },
+    urlParams: { namespace, expand, server },
   });
 
-export const useInfo = () => {
+export const useInfo = ({
+  expand,
+  server,
+}: { expand?: boolean; server?: string } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -32,6 +53,8 @@ export const useInfo = () => {
   return useQueryWithPermissions({
     queryKey: gatewayKeys.info(namespace, {
       apiKey: apiKey ?? undefined,
+      expand,
+      server: server ?? window.location.origin,
     }),
     queryFn: fetchInfo,
     enabled: !!namespace,

@@ -30,7 +30,7 @@ export function RapiDoc({
         ref={(rapiDocElement) => rapiDocElement?.loadSpec(spec)}
         id="rapidoc"
         render-style="view" // (view | read) sidebar visibility
-        allow-try="true" // Add a "Try" button to execute requests
+        allow-try="true" // Test Endpoints
         allow-authentication="false"
         show-header="false"
         show-info="true"

@@ -3,7 +3,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { RapiDoc } from "~/design/RapiDoc";
 import { Save } from "lucide-react";
-import { useDocumentation } from "~/api/gateway/query/getDocumentation";
+import { useInfo } from "~/api/gateway/query/getInfo";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -22,7 +22,7 @@ interface DocumentationInfo {
 }
 
 const OpenapiDocPage: React.FC = () => {
-  const { data } = useDocumentation();
+  const { data } = useInfo({ expand: true, server: window.location.origin });
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState<string | null>(null);
