@@ -1043,7 +1043,7 @@
       "documentation": {
         "title": "OpenAPI Documentation",
         "noDocumentation": "No documentation found",
-        "copyAPI": "Copy API",
+        "copySpec": "Copy Spec",
         "copied": "Copied!",
         "error": "Error copying specification"
       }

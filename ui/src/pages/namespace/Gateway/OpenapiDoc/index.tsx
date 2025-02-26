@@ -1,6 +1,7 @@
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import CopyButton from "~/design/CopyButton";
 import { RapiDoc } from "~/design/RapiDoc";
 import { Save } from "lucide-react";
 import { useInfo } from "~/api/gateway/query/getInfo";
@@ -22,7 +23,12 @@ interface DocumentationInfo {
 }
 
 const OpenapiDocPage: React.FC = () => {
-  const { data } = useInfo({ expand: true, server: window.location.origin });
+  //
+  // Leaving out 'server'-prop from useInfo hook
+  //  will default to `${window.location.origin}/ns/${namespace}`
+  const { data } = useInfo({
+    expand: true,
+  });
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState<string | null>(null);
@@ -73,12 +79,27 @@ const OpenapiDocPage: React.FC = () => {
         </Alert>
       )}
       <div className="flex justify-end">
-        <Button variant="outline" onClick={handleCopy}>
+        <CopyButton
+          value={spec ? JSON.stringify(spec, null, 2) : ""}
+          buttonProps={{
+            variant: "outline",
+            size: "lg",
+            className: "",
+          }}
+        >
+          {(copied) =>
+            copied
+              ? t("pages.gateway.documentation.copied")
+              : t("pages.gateway.documentation.copySpec")
+          }
+        </CopyButton>
+        {/* <Button variant="ghost" onClick={handleCopy}>
           <Save />
+
           {copied
             ? t("pages.gateway.documentation.copied")
             : t("pages.gateway.documentation.copyAPI")}
-        </Button>
+        </Button> */}
       </div>
     </div>
   );

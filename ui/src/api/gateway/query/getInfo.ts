@@ -54,7 +54,7 @@ export const useInfo = ({
     queryKey: gatewayKeys.info(namespace, {
       apiKey: apiKey ?? undefined,
       expand,
-      server: server ?? window.location.origin,
+      server: server ?? `${window.location.origin}/ns/${namespace}`,
     }),
     queryFn: fetchInfo,
     enabled: !!namespace,
