@@ -51,6 +51,7 @@ export const OpenAPIDocsForm: FC<OpenAPIDocsFormProps> = ({
         </Button>
       </DialogTrigger>
       <ModalWrapper
+        size="lg"
         formId={formId}
         title={t("pages.explorer.endpoint.editor.form.docs.modal.title")}
         onCancel={() => {
