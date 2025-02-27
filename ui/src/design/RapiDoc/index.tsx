@@ -13,7 +13,7 @@ export function RapiDoc({
   return (
     <div
       className={twMergeClsx(
-        "my-1 lg:h-[calc(100vh-220px)] sm:h-[calc(100vh-300px)]",
+        "my-1 lg:h-[calc(100vh-240px)] sm:h-[calc(100vh-320px)]",
         className
       )}
     >
