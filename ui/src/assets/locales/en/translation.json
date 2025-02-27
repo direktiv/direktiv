@@ -1051,8 +1051,7 @@
         "title": "OpenAPI Documentation",
         "noDocumentation": "No documentation found",
         "copySpec": "Copy Spec",
-        "copied": "Copied!",
-        "error": "Error copying specification"
+        "copied": "Copied!"
       }
     },
     "jqPlayground": {

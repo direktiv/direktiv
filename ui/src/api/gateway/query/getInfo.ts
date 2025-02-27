@@ -11,18 +11,19 @@ export const getInfo = apiFactory({
     baseUrl,
     namespace,
     expand,
-    server,
   }: {
     baseUrl?: string;
     namespace: string;
     expand?: boolean;
-    server?: string;
   }) => {
     const url = `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/gateway/info`;
 
+    const serverParams = `${window.location.origin}/ns/${namespace}`;
     const queryParams = new URLSearchParams();
-    if (expand) queryParams.append("expand", "true");
-    if (server) queryParams.append("server", server);
+    if (expand) {
+      queryParams.append("expand", "true");
+    }
+    queryParams.append("server", serverParams);
 
     return queryParams.toString() ? `${url}?${queryParams.toString()}` : url;
   },
@@ -32,16 +33,15 @@ export const getInfo = apiFactory({
 });
 
 const fetchInfo = async ({
-  queryKey: [{ apiKey, namespace, expand, server }],
+  queryKey: [{ apiKey, namespace, expand }],
 }: QueryFunctionContext<ReturnType<(typeof gatewayKeys)["info"]>>) =>
   getInfo({
     apiKey,
-    urlParams: { namespace, expand, server },
+    urlParams: { namespace, expand },
   });
 
 export const useInfo = ({
   expand,
-  server,
 }: { expand?: boolean; server?: string } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -54,7 +54,6 @@ export const useInfo = ({
     queryKey: gatewayKeys.info(namespace, {
       apiKey: apiKey ?? undefined,
       expand,
-      server: server ?? `${window.location.origin}/ns/${namespace}`,
     }),
     queryFn: fetchInfo,
     enabled: !!namespace,

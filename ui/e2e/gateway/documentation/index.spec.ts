@@ -17,7 +17,9 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("Info section show no documentation available", async ({ page }) => {
+test("Documentation section show no documentation available when no route endpoints are set", async ({
+  page,
+}) => {
   await page.goto(`/n/${namespace}/gateway/openapiDoc`, {
     waitUntil: "networkidle",
   });
@@ -42,7 +44,7 @@ test("Info section show no documentation available", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("Visit section and make sure Rapidoc component is displaying basic OpenAPI doc", async ({
+test("Make sure Rapidoc component is displaying basic OpenAPI doc", async ({
   page,
 }) => {
   const testOpenApiObject = {

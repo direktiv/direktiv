@@ -17,11 +17,7 @@ export const gatewayKeys = {
     ] as const,
   info: (
     namespace: string,
-    {
-      apiKey,
-      expand,
-      server,
-    }: { apiKey?: string; expand?: boolean; server?: string }
+    { apiKey, expand }: { apiKey?: string; expand?: boolean; server?: string }
   ) =>
     [
       {
@@ -29,7 +25,6 @@ export const gatewayKeys = {
         apiKey,
         namespace,
         expand,
-        server,
       },
     ] as const,
   documentation: (namespace: string, { apiKey }: { apiKey?: string }) =>

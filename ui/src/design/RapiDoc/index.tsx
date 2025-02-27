@@ -3,29 +3,20 @@ import "rapidoc";
 
 import { twMergeClsx } from "~/util/helpers";
 
-interface BaseSpec {
-  info: { title: string; version: string };
-}
-
-interface OpenApiSpec extends BaseSpec {
-  openapi: string;
-}
-
-interface SwaggerSpec extends BaseSpec {
-  swagger: string;
-}
-
-type Spec = OpenApiSpec | SwaggerSpec;
-
 export function RapiDoc({
   spec,
   className,
 }: {
-  spec: Spec;
+  spec: object;
   className?: string;
 }) {
   return (
-    <div className={twMergeClsx("size-full", className)}>
+    <div
+      className={twMergeClsx(
+        "my-1 lg:h-[calc(100vh-220px)] sm:h-[calc(100vh-300px)]",
+        className
+      )}
+    >
       <rapi-doc
         ref={(rapiDocElement) => rapiDocElement?.loadSpec(spec)}
         id="rapidoc"

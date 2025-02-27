@@ -2,11 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react";
 import OpenApiSpec from "./example.json";
 import { RapiDoc } from "./index";
 
-interface RapiDocProps {
-  spec: typeof OpenApiSpec;
-  className?: string;
-}
-
 const meta = {
   title: "Components/RapiDoc",
   component: RapiDoc,
@@ -20,7 +15,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    spec: OpenApiSpec as RapiDocProps["spec"],
+    spec: OpenApiSpec,
     className: "h-[80vh]",
   },
 };
