@@ -35,10 +35,10 @@ export const normalizeEndpointObject = (
   }
 
   return deepSortObject(data, (a, b) => {
-    if (a.startsWith("x-direktiv")) {
+    if (a.startsWith("x-direktiv") && !b.startsWith("x-direktiv")) {
       return -1;
     }
-    if (b.startsWith("x-direktiv")) {
+    if (b.startsWith("x-direktiv") && !a.startsWith("x-direktiv")) {
       return 1;
     }
     return a.localeCompare(b);
