@@ -7,6 +7,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { EndpointFormSchemaType } from "../../schema";
+import FormErrors from "~/components/FormErrors";
 import { MethodsSchema } from "~/api/gateway/schema";
 import { ModalWrapper } from "~/components/ModalWrapper";
 import { ScrollText } from "lucide-react";
@@ -35,8 +36,6 @@ export const OpenAPIDocsForm: FC<OpenAPIDocsFormProps> = ({ form, onSave }) => {
     handleSubmit,
     getValues,
     setValue,
-    reset,
-    watch,
     formState: { errors },
   } = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
@@ -77,11 +76,6 @@ export const OpenAPIDocsForm: FC<OpenAPIDocsFormProps> = ({ form, onSave }) => {
     <Dialog
       open={dialogOpen}
       onOpenChange={(isOpen) => {
-        // TODO: check what happens when user presses cancel, changes the  methods and reopens the dialog
-        if (isOpen === false) {
-          // TODO: is this needed?
-          reset();
-        }
         setDialogOpen(isOpen);
       }}
     >
@@ -100,35 +94,8 @@ export const OpenAPIDocsForm: FC<OpenAPIDocsFormProps> = ({ form, onSave }) => {
         }}
       >
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
-          <div className="flex gap-5 p-5">
-            <pre className="text-xs h-96 overflow-y-scroll">
-              This Form:
-              {JSON.stringify(watch("editor"), null, 2)}
-            </pre>
-            <pre className="text-xs h-96 overflow-y-scroll">
-              Parent Form:
-              {JSON.stringify(
-                {
-                  connect: getParentValues("connect"),
-                  delete: getParentValues("delete"),
-                  get: getParentValues("get"),
-                  head: getParentValues("head"),
-                  options: getParentValues("options"),
-                  patch: getParentValues("patch"),
-                  post: getParentValues("post"),
-                  put: getParentValues("put"),
-                  trace: getParentValues("trace"),
-                },
-                null,
-                2
-              )}
-            </pre>
-            <pre className="text-xs h-96 overflow-y-scroll">
-              ERRORS: {JSON.stringify(errors, null, 2)}
-            </pre>
-          </div>
-
           <Card className="h-96 w-full p-4" noShadow background="weight-1">
+            <FormErrors errors={errors} className="mb-5" />
             <Editor
               defaultValue={jsonToYaml(getValues("editor"))}
               onChange={(newDocs) => {
