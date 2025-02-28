@@ -1,5 +1,6 @@
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
+import { MethodsSchema, RouteMethod, routeMethods } from "~/api/gateway/schema";
 import { UseFormReturn, useForm } from "react-hook-form";
 import { jsonToYaml, yamlToJsonOrNull } from "~/pages/namespace/Explorer/utils";
 
@@ -8,7 +9,6 @@ import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { EndpointFormSchemaType } from "../../schema";
 import FormErrors from "~/components/FormErrors";
-import { MethodsSchema } from "~/api/gateway/schema";
 import { ModalWrapper } from "~/components/ModalWrapper";
 import { ScrollText } from "lucide-react";
 import { useTheme } from "~/util/store/theme";
@@ -22,7 +22,11 @@ type OpenAPIDocsFormProps = {
 };
 
 const FormSchema = z.object({
-  editor: MethodsSchema,
+  /**
+   * Passthrough is required here to detect if the user adds some additional unallowed
+   * keys, that we will then restrict with an error message in the schemas refine function.
+   */
+  editor: MethodsSchema.passthrough(),
 });
 
 type FormSchemaType = z.infer<typeof FormSchema>;
@@ -38,7 +42,23 @@ export const OpenAPIDocsForm: FC<OpenAPIDocsFormProps> = ({ form, onSave }) => {
     setValue,
     formState: { errors },
   } = useForm<FormSchemaType>({
-    resolver: zodResolver(FormSchema),
+    resolver: zodResolver(
+      FormSchema.refine(
+        (data) => {
+          const containsUnsupportedMethod = Object.keys(data.editor).some(
+            (method) => !routeMethods.has(method as RouteMethod)
+          );
+          if (containsUnsupportedMethod) return false;
+          return true;
+        },
+        {
+          message: t(
+            "pages.explorer.endpoint.editor.form.docs.modal.unsupportedMethods",
+            { methods: Array.from(routeMethods).join(", ") }
+          ),
+        }
+      )
+    ),
     defaultValues: {
       editor: {
         connect: getParentValues("connect"),
