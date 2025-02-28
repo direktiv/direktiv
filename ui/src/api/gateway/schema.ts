@@ -62,10 +62,7 @@ export type PluginsSchemaType = z.infer<typeof PluginsSchema>;
 
 export type PluginType = keyof PluginsSchemaType;
 
-export const OperationSchema = z.object({
-  description: z.string().optional(),
-  responses: z.record(z.any()).optional(),
-});
+export const OperationSchema = z.record(z.any());
 
 export const MethodsSchema = z.object({
   connect: OperationSchema.optional(),
