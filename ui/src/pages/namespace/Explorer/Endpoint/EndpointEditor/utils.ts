@@ -25,8 +25,7 @@ const defaultEndpointFileJson: EndpointFormSchemaType = {
 
 /**
  * this fucntion parses the endpoint config and sorts all the keys recursively.
- * However, it will only start sorting starting at x-direktiv-config if it exists.
- * This ensures that x-direktiv-api: endpoint/v2 always stays at the top.
+ * However, it will make sure that x-direktiv-api will always be at the top.
  */
 export const normalizeEndpointObject = (
   data: DeepPartialSkipArrayKey<EndpointFormSchemaType>
@@ -35,11 +34,15 @@ export const normalizeEndpointObject = (
     return data;
   }
 
-  const config = data["x-direktiv-config"]
-    ? { "x-direktiv-config": deepSortObject(data["x-direktiv-config"]) }
-    : {};
-
-  return { ...data, ...config };
+  return deepSortObject(data, (a, b) => {
+    if (a === "x-direktiv-api") {
+      return -1;
+    }
+    if (b === "x-direktiv-api") {
+      return 1;
+    }
+    return b.localeCompare(a);
+  });
 };
 
 export const defaultEndpointFileYaml = jsonToYaml(defaultEndpointFileJson);
