@@ -44,22 +44,25 @@ export const normalizeEndpointObject = (
 
 export const defaultEndpointFileYaml = jsonToYaml(defaultEndpointFileJson);
 
-export const deepSortObject = <T extends object>(obj: T): T => {
+export const deepSortObject = <T extends object>(
+  obj: T,
+  compare?: (a: string, b: string) => number
+): T => {
   if (typeof obj !== "object" || obj === null) {
     return obj; // Return primitives and null as is
   }
 
   if (Array.isArray(obj)) {
-    return obj.map(deepSortObject) as T; // recursively sort array values
+    return obj.map((item) => deepSortObject(item, compare)) as T; // recursively sort array values
   }
 
-  const sortedKeys = Object.keys(obj).sort();
+  const sortedKeys = Object.keys(obj).sort(compare);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sortedObj: { [key: string]: any } = {}; // Use index signature
 
   for (const key of sortedKeys) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sortedObj[key] = deepSortObject((obj as any)[key]); // recursively sort object values
+    sortedObj[key] = deepSortObject((obj as any)[key], compare); // recursively sort object values
   }
 
   return sortedObj as T;

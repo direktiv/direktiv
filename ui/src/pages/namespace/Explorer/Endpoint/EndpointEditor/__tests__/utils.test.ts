@@ -67,4 +67,39 @@ describe("deepSortObject", () => {
 
     expect(deepSortObject(obj)).toEqual(expected);
   });
+
+  describe("with custom compare function", () => {
+    const sortSpecialStringToTheTop = (a: string, b: string) => {
+      if (a === "I_SHOULD_BE_FIRST") {
+        return -1;
+      }
+
+      if (b === "I_SHOULD_BE_FIRST") {
+        return 1;
+      }
+
+      return b.localeCompare(a);
+    };
+
+    test("should sort with a custom compare function", () => {
+      const obj = { b: 1, I_SHOULD_BE_FIRST: 2, c: 3 };
+      const expected = { I_SHOULD_BE_FIRST: 2, b: 1, c: 3 };
+      expect(deepSortObject(obj, sortSpecialStringToTheTop)).toEqual(expected);
+    });
+
+    test("should deeply sort with a custom compare function", () => {
+      const obj = {
+        b: { y: 1, x: 2, z: 3 },
+        I_SHOULD_BE_FIRST: { c: 1, b: 2, I_SHOULD_BE_FIRST: 3 },
+        c: { z: { b: 1, a: 2 }, y: 2 },
+      };
+      const expected = {
+        I_SHOULD_BE_FIRST: { I_SHOULD_BE_FIRST: 3, b: 2, c: 1 },
+        b: { x: 2, y: 1, z: 3 },
+        c: { y: 2, z: { a: 2, b: 1 } },
+      };
+      const compare = (a: string, b: string) => b.localeCompare(a);
+      expect(deepSortObject(obj, compare)).toEqual(expected);
+    });
+  });
 });
