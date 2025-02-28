@@ -24,8 +24,8 @@ const defaultEndpointFileJson: EndpointFormSchemaType = {
 };
 
 /**
- * this fucntion parses the endpoint config and sorts all the keys recursively.
- * However, it will make sure that x-direktiv-api will always be at the top.
+ * this fucntion parses the endpoint config and sorts all the keys recursively. However,
+ * it will make sure that all keys starting with x-direktiv- will always be at the top.
  */
 export const normalizeEndpointObject = (
   data: DeepPartialSkipArrayKey<EndpointFormSchemaType>
@@ -35,13 +35,13 @@ export const normalizeEndpointObject = (
   }
 
   return deepSortObject(data, (a, b) => {
-    if (a === "x-direktiv-api") {
+    if (a.startsWith("x-direktiv")) {
       return -1;
     }
-    if (b === "x-direktiv-api") {
+    if (b.startsWith("x-direktiv")) {
       return 1;
     }
-    return b.localeCompare(a);
+    return a.localeCompare(b);
   });
 };
 
