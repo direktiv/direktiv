@@ -34,23 +34,17 @@ export const normalizeEndpointObject = (
   if (!data) {
     return data;
   }
-  // Pick the x-direktiv-api to keep it at the top
   const apiVersion = { "x-direktiv-api": data["x-direktiv-api"] };
-  // Keep th sorting for x-direktiv-config
   const config = data["x-direktiv-config"]
     ? { "x-direktiv-config": deepSortObject(data["x-direktiv-config"]) }
     : {};
 
-  // Keep the rest of the data
   const restOfData = { ...data };
   delete restOfData["x-direktiv-api"];
   delete restOfData["x-direktiv-config"];
 
-  // Sort the methods to be in the same order as the properties
-  // from the server after going through serializeEndpointFile
   const sortedRest = deepSortObject(restOfData);
 
-  // Return the new object with the methods in the order of routeMethods
   return { ...apiVersion, ...config, ...sortedRest };
 };
 
