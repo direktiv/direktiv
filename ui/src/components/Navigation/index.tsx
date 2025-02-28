@@ -56,12 +56,12 @@ const Navigation: FC = () => {
       icon: Boxes,
     },
     {
-      path: "/n/$namespace/events/history",
+      path: "/n/$namespace/events",
       label: t("components.mainMenu.events"),
       icon: Radio,
     },
     {
-      path: "/n/$namespace/gateway/gatewayInfo",
+      path: "/n/$namespace/gateway",
       label: t("components.mainMenu.gateway"),
       icon: Network,
     },

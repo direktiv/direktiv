@@ -28,7 +28,9 @@ import { Route as NNamespaceServicesIndexImport } from './routes/n/$namespace/se
 import { Route as NNamespacePermissionsIndexImport } from './routes/n/$namespace/permissions/index'
 import { Route as NNamespaceMirrorIndexImport } from './routes/n/$namespace/mirror/index'
 import { Route as NNamespaceInstancesIndexImport } from './routes/n/$namespace/instances/index'
+import { Route as NNamespaceGatewayIndexImport } from './routes/n/$namespace/gateway/index'
 import { Route as NNamespaceExplorerIndexImport } from './routes/n/$namespace/explorer/index'
+import { Route as NNamespaceEventsIndexImport } from './routes/n/$namespace/events/index'
 import { Route as NNamespaceServicesLayoutImport } from './routes/n/$namespace/services/_layout'
 import { Route as NNamespaceServicesServiceImport } from './routes/n/$namespace/services/$service'
 import { Route as NNamespacePermissionsTokensImport } from './routes/n/$namespace/permissions/tokens'
@@ -167,10 +169,22 @@ const NNamespaceInstancesIndexRoute = NNamespaceInstancesIndexImport.update({
   getParentRoute: () => NNamespaceInstancesRoute,
 } as any)
 
+const NNamespaceGatewayIndexRoute = NNamespaceGatewayIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => NNamespaceGatewayRouteRoute,
+} as any)
+
 const NNamespaceExplorerIndexRoute = NNamespaceExplorerIndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => NNamespaceExplorerRouteRoute,
+} as any)
+
+const NNamespaceEventsIndexRoute = NNamespaceEventsIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => NNamespaceEventsRouteRoute,
 } as any)
 
 const NNamespaceServicesLayoutRoute = NNamespaceServicesLayoutImport.update({
@@ -513,12 +527,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NNamespaceServicesLayoutImport
       parentRoute: typeof NNamespaceServicesRoute
     }
+    '/n/$namespace/events/': {
+      id: '/n/$namespace/events/'
+      path: '/'
+      fullPath: '/n/$namespace/events/'
+      preLoaderRoute: typeof NNamespaceEventsIndexImport
+      parentRoute: typeof NNamespaceEventsRouteImport
+    }
     '/n/$namespace/explorer/': {
       id: '/n/$namespace/explorer/'
       path: '/'
       fullPath: '/n/$namespace/explorer/'
       preLoaderRoute: typeof NNamespaceExplorerIndexImport
       parentRoute: typeof NNamespaceExplorerRouteImport
+    }
+    '/n/$namespace/gateway/': {
+      id: '/n/$namespace/gateway/'
+      path: '/'
+      fullPath: '/n/$namespace/gateway/'
+      preLoaderRoute: typeof NNamespaceGatewayIndexImport
+      parentRoute: typeof NNamespaceGatewayRouteImport
     }
     '/n/$namespace/instances/': {
       id: '/n/$namespace/instances/'
@@ -640,11 +668,13 @@ declare module '@tanstack/react-router' {
 interface NNamespaceEventsRouteRouteChildren {
   NNamespaceEventsHistoryRoute: typeof NNamespaceEventsHistoryRoute
   NNamespaceEventsListenersRoute: typeof NNamespaceEventsListenersRoute
+  NNamespaceEventsIndexRoute: typeof NNamespaceEventsIndexRoute
 }
 
 const NNamespaceEventsRouteRouteChildren: NNamespaceEventsRouteRouteChildren = {
   NNamespaceEventsHistoryRoute: NNamespaceEventsHistoryRoute,
   NNamespaceEventsListenersRoute: NNamespaceEventsListenersRoute,
+  NNamespaceEventsIndexRoute: NNamespaceEventsIndexRoute,
 }
 
 const NNamespaceEventsRouteRouteWithChildren =
@@ -708,6 +738,7 @@ interface NNamespaceGatewayRouteRouteChildren {
   NNamespaceGatewayConsumersRoute: typeof NNamespaceGatewayConsumersRoute
   NNamespaceGatewayGatewayInfoRoute: typeof NNamespaceGatewayGatewayInfoRoute
   NNamespaceGatewayOpenapiDocRoute: typeof NNamespaceGatewayOpenapiDocRoute
+  NNamespaceGatewayIndexRoute: typeof NNamespaceGatewayIndexRoute
   NNamespaceGatewayRoutesSplatRoute: typeof NNamespaceGatewayRoutesSplatRoute
   NNamespaceGatewayRoutesIndexRoute: typeof NNamespaceGatewayRoutesIndexRoute
 }
@@ -717,6 +748,7 @@ const NNamespaceGatewayRouteRouteChildren: NNamespaceGatewayRouteRouteChildren =
     NNamespaceGatewayConsumersRoute: NNamespaceGatewayConsumersRoute,
     NNamespaceGatewayGatewayInfoRoute: NNamespaceGatewayGatewayInfoRoute,
     NNamespaceGatewayOpenapiDocRoute: NNamespaceGatewayOpenapiDocRoute,
+    NNamespaceGatewayIndexRoute: NNamespaceGatewayIndexRoute,
     NNamespaceGatewayRoutesSplatRoute: NNamespaceGatewayRoutesSplatRoute,
     NNamespaceGatewayRoutesIndexRoute: NNamespaceGatewayRoutesIndexRoute,
   }
@@ -843,7 +875,9 @@ export interface FileRoutesByFullPath {
   '/n/$namespace/permissions/tokens': typeof NNamespacePermissionsTokensRoute
   '/n/$namespace/services/$service': typeof NNamespaceServicesServiceRoute
   '/n/$namespace/services': typeof NNamespaceServicesLayoutRoute
+  '/n/$namespace/events/': typeof NNamespaceEventsIndexRoute
   '/n/$namespace/explorer/': typeof NNamespaceExplorerIndexRoute
+  '/n/$namespace/gateway/': typeof NNamespaceGatewayIndexRoute
   '/n/$namespace/instances/': typeof NNamespaceInstancesIndexRoute
   '/n/$namespace/mirror/': typeof NNamespaceMirrorIndexRoute
   '/n/$namespace/permissions/': typeof NNamespacePermissionsIndexRoute
@@ -866,8 +900,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/*': typeof Route
   '/n/$namespace': typeof NNamespaceRouteRouteWithChildren
-  '/n/$namespace/events': typeof NNamespaceEventsRouteRouteWithChildren
-  '/n/$namespace/gateway': typeof NNamespaceGatewayRouteRouteWithChildren
   '/n/$namespace/jq': typeof NNamespaceJqRoute
   '/n/$namespace/monitoring': typeof NNamespaceMonitoringRoute
   '/n/$namespace/settings': typeof NNamespaceSettingsRoute
@@ -883,7 +915,9 @@ export interface FileRoutesByTo {
   '/n/$namespace/permissions/tokens': typeof NNamespacePermissionsTokensRoute
   '/n/$namespace/services/$service': typeof NNamespaceServicesServiceRoute
   '/n/$namespace/services': typeof NNamespaceServicesIndexRoute
+  '/n/$namespace/events': typeof NNamespaceEventsIndexRoute
   '/n/$namespace/explorer': typeof NNamespaceExplorerIndexRoute
+  '/n/$namespace/gateway': typeof NNamespaceGatewayIndexRoute
   '/n/$namespace/mirror': typeof NNamespaceMirrorIndexRoute
   '/n/$namespace/permissions': typeof NNamespacePermissionsIndexRoute
   '/n/$namespace/explorer/consumer/$': typeof NNamespaceExplorerConsumerSplatRoute
@@ -927,7 +961,9 @@ export interface FileRoutesById {
   '/n/$namespace/services/$service': typeof NNamespaceServicesServiceRoute
   '/n/$namespace/services': typeof NNamespaceServicesRouteWithChildren
   '/n/$namespace/services/_layout': typeof NNamespaceServicesLayoutRoute
+  '/n/$namespace/events/': typeof NNamespaceEventsIndexRoute
   '/n/$namespace/explorer/': typeof NNamespaceExplorerIndexRoute
+  '/n/$namespace/gateway/': typeof NNamespaceGatewayIndexRoute
   '/n/$namespace/instances/': typeof NNamespaceInstancesIndexRoute
   '/n/$namespace/mirror/': typeof NNamespaceMirrorIndexRoute
   '/n/$namespace/permissions/': typeof NNamespacePermissionsIndexRoute
@@ -972,7 +1008,9 @@ export interface FileRouteTypes {
     | '/n/$namespace/permissions/tokens'
     | '/n/$namespace/services/$service'
     | '/n/$namespace/services'
+    | '/n/$namespace/events/'
     | '/n/$namespace/explorer/'
+    | '/n/$namespace/gateway/'
     | '/n/$namespace/instances/'
     | '/n/$namespace/mirror/'
     | '/n/$namespace/permissions/'
@@ -994,8 +1032,6 @@ export interface FileRouteTypes {
     | '/'
     | '/*'
     | '/n/$namespace'
-    | '/n/$namespace/events'
-    | '/n/$namespace/gateway'
     | '/n/$namespace/jq'
     | '/n/$namespace/monitoring'
     | '/n/$namespace/settings'
@@ -1011,7 +1047,9 @@ export interface FileRouteTypes {
     | '/n/$namespace/permissions/tokens'
     | '/n/$namespace/services/$service'
     | '/n/$namespace/services'
+    | '/n/$namespace/events'
     | '/n/$namespace/explorer'
+    | '/n/$namespace/gateway'
     | '/n/$namespace/mirror'
     | '/n/$namespace/permissions'
     | '/n/$namespace/explorer/consumer/$'
@@ -1053,7 +1091,9 @@ export interface FileRouteTypes {
     | '/n/$namespace/services/$service'
     | '/n/$namespace/services'
     | '/n/$namespace/services/_layout'
+    | '/n/$namespace/events/'
     | '/n/$namespace/explorer/'
+    | '/n/$namespace/gateway/'
     | '/n/$namespace/instances/'
     | '/n/$namespace/mirror/'
     | '/n/$namespace/permissions/'
@@ -1128,7 +1168,8 @@ export const routeTree = rootRoute
       "parent": "/n/$namespace",
       "children": [
         "/n/$namespace/events/history",
-        "/n/$namespace/events/listeners"
+        "/n/$namespace/events/listeners",
+        "/n/$namespace/events/"
       ]
     },
     "/n/$namespace/explorer": {
@@ -1151,6 +1192,7 @@ export const routeTree = rootRoute
         "/n/$namespace/gateway/consumers",
         "/n/$namespace/gateway/gatewayInfo",
         "/n/$namespace/gateway/openapiDoc",
+        "/n/$namespace/gateway/",
         "/n/$namespace/gateway/routes/$",
         "/n/$namespace/gateway/routes/"
       ]
@@ -1254,9 +1296,17 @@ export const routeTree = rootRoute
       "filePath": "n/$namespace/services/_layout.tsx",
       "parent": "/n/$namespace/services"
     },
+    "/n/$namespace/events/": {
+      "filePath": "n/$namespace/events/index.tsx",
+      "parent": "/n/$namespace/events"
+    },
     "/n/$namespace/explorer/": {
       "filePath": "n/$namespace/explorer/index.tsx",
       "parent": "/n/$namespace/explorer"
+    },
+    "/n/$namespace/gateway/": {
+      "filePath": "n/$namespace/gateway/index.tsx",
+      "parent": "/n/$namespace/gateway"
     },
     "/n/$namespace/instances/": {
       "filePath": "n/$namespace/instances/index.tsx",
