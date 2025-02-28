@@ -3,13 +3,13 @@ import { FC, useState } from "react";
 import { UseFormReturn, useForm } from "react-hook-form";
 import { jsonToYaml, yamlToJsonOrNull } from "~/pages/namespace/Explorer/utils";
 
-import { BookOpen } from "lucide-react";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { EndpointFormSchemaType } from "../../schema";
 import { MethodsSchema } from "~/api/gateway/schema";
 import { ModalWrapper } from "~/components/ModalWrapper";
+import { ScrollText } from "lucide-react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -87,7 +87,7 @@ export const OpenAPIDocsForm: FC<OpenAPIDocsFormProps> = ({ form, onSave }) => {
     >
       <DialogTrigger asChild>
         <Button icon variant="outline">
-          <BookOpen />
+          <ScrollText />
           {t("pages.explorer.endpoint.editor.form.docs.buttonLabel")}
         </Button>
       </DialogTrigger>
