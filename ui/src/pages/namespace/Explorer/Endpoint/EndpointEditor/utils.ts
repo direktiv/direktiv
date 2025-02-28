@@ -28,23 +28,22 @@ const defaultEndpointFileJson: EndpointFormSchemaType = {
  * it will make sure that all keys starting with x-direktiv- will always be at the top.
  */
 export const normalizeEndpointObject = (
-  data: DeepPartialSkipArrayKey<EndpointFormSchemaType>
-) => {
-  if (!data) {
-    return data;
+  endpointObject: DeepPartialSkipArrayKey<EndpointFormSchemaType>
+): DeepPartialSkipArrayKey<EndpointFormSchemaType> | null => {
+  if (!endpointObject) {
+    return endpointObject;
   }
 
-  return deepSortObject(data, (a, b) => {
-    if (a.startsWith("x-direktiv") && !b.startsWith("x-direktiv")) {
-      return -1;
-    }
-    if (b.startsWith("x-direktiv") && !a.startsWith("x-direktiv")) {
-      return 1;
-    }
-    return a.localeCompare(b);
+  return deepSortObject(endpointObject, (keyA, keyB) => {
+    const isDirektivKeyA = keyA.startsWith("x-direktiv-");
+    const isDirektivKeyB = keyB.startsWith("x-direktiv-");
+
+    if (isDirektivKeyA && !isDirektivKeyB) return -1;
+    if (!isDirektivKeyA && isDirektivKeyB) return 1;
+
+    return keyA.localeCompare(keyB);
   });
 };
-
 export const defaultEndpointFileYaml = jsonToYaml(defaultEndpointFileJson);
 
 export const deepSortObject = <T extends object>(
