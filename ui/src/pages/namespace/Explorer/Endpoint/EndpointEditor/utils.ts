@@ -29,7 +29,7 @@ const defaultEndpointFileJson: EndpointFormSchemaType = {
  */
 export const normalizeEndpointObject = (
   endpointObject: DeepPartialSkipArrayKey<EndpointFormSchemaType>
-): DeepPartialSkipArrayKey<EndpointFormSchemaType> | null => {
+) => {
   if (!endpointObject) {
     return endpointObject;
   }
