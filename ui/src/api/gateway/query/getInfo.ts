@@ -18,14 +18,16 @@ export const getInfo = apiFactory({
   }) => {
     const url = `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/gateway/info`;
 
+    if (!expand) {
+      return url;
+    }
+
     const serverParams = `${window.location.origin}/ns/${namespace}`;
     const queryParams = new URLSearchParams();
-    if (expand) {
-      queryParams.append("expand", "true");
-    }
+    queryParams.append("expand", "true");
     queryParams.append("server", serverParams);
 
-    return queryParams.toString() ? `${url}?${queryParams.toString()}` : url;
+    return `${url}?${queryParams.toString()}`;
   },
 
   method: "GET",

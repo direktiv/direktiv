@@ -51,7 +51,7 @@ const OpenapiDocPage: React.FC = () => {
               value={spec ? JSON.stringify(spec, null, 2) : ""}
               buttonProps={{
                 variant: "outline",
-                className: "min-w-58",
+                className: "w-36",
               }}
             >
               {(copied) =>
