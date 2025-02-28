@@ -443,6 +443,13 @@
                   "keyNamePlaceholder": "name of the key"
                 }
               }
+            },
+            "docs": {
+              "buttonLabel": "Edit OpenAPI Docs",
+              "modal": {
+                "title": "OpenAPI Docs",
+                "unsupportedMethods": "Unsupported keys detected in the docs. Please only use the following keys: {{methods}}"
+              }
             }
           },
           "saveBtn": "Save",

@@ -13,6 +13,7 @@ import { Fieldset } from "~/components/Form/Fieldset";
 import { InboundPluginForm } from "./plugins/Inbound";
 import Input from "~/design/Input";
 import { MethodCheckbox } from "./methodCheckbox";
+import { OpenAPIDocsForm } from "./openAPIDocs";
 import { OutboundPluginForm } from "./plugins/Outbound";
 import { Switch } from "~/design/Switch";
 import { TargetPluginForm } from "./plugins/Target";
@@ -79,9 +80,18 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
                 key={method}
                 control={control}
                 name={method}
-                render={({ field }) => (
-                  <MethodCheckbox method={method} field={field} />
-                )}
+                render={({ field }) => {
+                  const isChecked = !!values[method];
+                  return (
+                    <div className="flex items-center gap-2">
+                      <MethodCheckbox
+                        method={method}
+                        field={field}
+                        isChecked={isChecked}
+                      />
+                    </div>
+                  );
+                }}
               />
             ))}
           </div>
@@ -109,6 +119,17 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
         <InboundPluginForm form={formControls} onSave={onSave} />
         <OutboundPluginForm form={formControls} onSave={onSave} />
         <AuthPluginForm formControls={formControls} onSave={onSave} />
+        <OpenAPIDocsForm
+          form={formControls}
+          onSave={onSave}
+          /**
+           * the key attribute here is required to reset the component
+           * when the form changes after its initial load. For example,
+           * when the user changes the methods via the checkboxes, these
+           * changes would not be reflected in the editor
+           */
+          key={JSON.stringify(values)}
+        />
       </div>
     ),
   });
