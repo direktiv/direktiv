@@ -7,7 +7,6 @@ import {
 } from "~/design/Table";
 
 import Alert from "~/design/Alert";
-import { BookOpen } from "lucide-react";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { Link } from "@tanstack/react-router";
@@ -28,12 +27,6 @@ const InfoPage = () => {
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
-      <div className="flex flex-col gap-4 sm:flex-row">
-        <h3 className="flex grow items-center gap-x-2 pb-1 font-bold">
-          <BookOpen className="h-5" />
-          {t("pages.gateway.info.title")}
-        </h3>
-      </div>
       <div className="flex flex-col gap-4 sm:flex-row w-full">
         <Card className=" lg:h-[calc(100vh-15.5rem)] lg:overflow-y-scroll w-1/2">
           <Table className="border-gray-5 dark:border-gray-dark-5">

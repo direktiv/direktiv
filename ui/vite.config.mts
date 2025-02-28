@@ -31,6 +31,11 @@ export default ({ mode }) => {
               secure: false,
               changeOrigin: true,
             },
+            "/ns": {
+              target: apiDomain,
+              secure: false,
+              changeOrigin: true,
+            },
             "/dex": {
               target: apiDomain,
               secure: false,

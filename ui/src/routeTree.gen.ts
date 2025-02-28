@@ -37,6 +37,7 @@ import { Route as NNamespacePermissionsTokensImport } from './routes/n/$namespac
 import { Route as NNamespacePermissionsRolesImport } from './routes/n/$namespace/permissions/roles'
 import { Route as NNamespaceInstancesLayoutImport } from './routes/n/$namespace/instances/_layout'
 import { Route as NNamespaceInstancesIdImport } from './routes/n/$namespace/instances/$id'
+import { Route as NNamespaceGatewayOpenapiDocImport } from './routes/n/$namespace/gateway/openapiDoc'
 import { Route as NNamespaceGatewayGatewayInfoImport } from './routes/n/$namespace/gateway/gatewayInfo'
 import { Route as NNamespaceGatewayConsumersImport } from './routes/n/$namespace/gateway/consumers'
 import { Route as NNamespaceEventsListenersImport } from './routes/n/$namespace/events/listeners'
@@ -222,6 +223,13 @@ const NNamespaceInstancesIdRoute = NNamespaceInstancesIdImport.update({
   path: '/instances/$id',
   getParentRoute: () => NNamespaceRouteRoute,
 } as any)
+
+const NNamespaceGatewayOpenapiDocRoute =
+  NNamespaceGatewayOpenapiDocImport.update({
+    id: '/openapiDoc',
+    path: '/openapiDoc',
+    getParentRoute: () => NNamespaceGatewayRouteRoute,
+  } as any)
 
 const NNamespaceGatewayGatewayInfoRoute =
   NNamespaceGatewayGatewayInfoImport.update({
@@ -454,6 +462,13 @@ declare module '@tanstack/react-router' {
       path: '/gatewayInfo'
       fullPath: '/n/$namespace/gateway/gatewayInfo'
       preLoaderRoute: typeof NNamespaceGatewayGatewayInfoImport
+      parentRoute: typeof NNamespaceGatewayRouteImport
+    }
+    '/n/$namespace/gateway/openapiDoc': {
+      id: '/n/$namespace/gateway/openapiDoc'
+      path: '/openapiDoc'
+      fullPath: '/n/$namespace/gateway/openapiDoc'
+      preLoaderRoute: typeof NNamespaceGatewayOpenapiDocImport
       parentRoute: typeof NNamespaceGatewayRouteImport
     }
     '/n/$namespace/instances/$id': {
@@ -722,6 +737,7 @@ const NNamespaceExplorerRouteRouteWithChildren =
 interface NNamespaceGatewayRouteRouteChildren {
   NNamespaceGatewayConsumersRoute: typeof NNamespaceGatewayConsumersRoute
   NNamespaceGatewayGatewayInfoRoute: typeof NNamespaceGatewayGatewayInfoRoute
+  NNamespaceGatewayOpenapiDocRoute: typeof NNamespaceGatewayOpenapiDocRoute
   NNamespaceGatewayIndexRoute: typeof NNamespaceGatewayIndexRoute
   NNamespaceGatewayRoutesSplatRoute: typeof NNamespaceGatewayRoutesSplatRoute
   NNamespaceGatewayRoutesIndexRoute: typeof NNamespaceGatewayRoutesIndexRoute
@@ -731,6 +747,7 @@ const NNamespaceGatewayRouteRouteChildren: NNamespaceGatewayRouteRouteChildren =
   {
     NNamespaceGatewayConsumersRoute: NNamespaceGatewayConsumersRoute,
     NNamespaceGatewayGatewayInfoRoute: NNamespaceGatewayGatewayInfoRoute,
+    NNamespaceGatewayOpenapiDocRoute: NNamespaceGatewayOpenapiDocRoute,
     NNamespaceGatewayIndexRoute: NNamespaceGatewayIndexRoute,
     NNamespaceGatewayRoutesSplatRoute: NNamespaceGatewayRoutesSplatRoute,
     NNamespaceGatewayRoutesIndexRoute: NNamespaceGatewayRoutesIndexRoute,
@@ -851,6 +868,7 @@ export interface FileRoutesByFullPath {
   '/n/$namespace/events/listeners': typeof NNamespaceEventsListenersRoute
   '/n/$namespace/gateway/consumers': typeof NNamespaceGatewayConsumersRoute
   '/n/$namespace/gateway/gatewayInfo': typeof NNamespaceGatewayGatewayInfoRoute
+  '/n/$namespace/gateway/openapiDoc': typeof NNamespaceGatewayOpenapiDocRoute
   '/n/$namespace/instances/$id': typeof NNamespaceInstancesIdRoute
   '/n/$namespace/instances': typeof NNamespaceInstancesLayoutRoute
   '/n/$namespace/permissions/roles': typeof NNamespacePermissionsRolesRoute
@@ -890,6 +908,7 @@ export interface FileRoutesByTo {
   '/n/$namespace/events/listeners': typeof NNamespaceEventsListenersRoute
   '/n/$namespace/gateway/consumers': typeof NNamespaceGatewayConsumersRoute
   '/n/$namespace/gateway/gatewayInfo': typeof NNamespaceGatewayGatewayInfoRoute
+  '/n/$namespace/gateway/openapiDoc': typeof NNamespaceGatewayOpenapiDocRoute
   '/n/$namespace/instances/$id': typeof NNamespaceInstancesIdRoute
   '/n/$namespace/instances': typeof NNamespaceInstancesIndexRoute
   '/n/$namespace/permissions/roles': typeof NNamespacePermissionsRolesRoute
@@ -933,6 +952,7 @@ export interface FileRoutesById {
   '/n/$namespace/events/listeners': typeof NNamespaceEventsListenersRoute
   '/n/$namespace/gateway/consumers': typeof NNamespaceGatewayConsumersRoute
   '/n/$namespace/gateway/gatewayInfo': typeof NNamespaceGatewayGatewayInfoRoute
+  '/n/$namespace/gateway/openapiDoc': typeof NNamespaceGatewayOpenapiDocRoute
   '/n/$namespace/instances/$id': typeof NNamespaceInstancesIdRoute
   '/n/$namespace/instances': typeof NNamespaceInstancesRouteWithChildren
   '/n/$namespace/instances/_layout': typeof NNamespaceInstancesLayoutRoute
@@ -981,6 +1001,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/events/listeners'
     | '/n/$namespace/gateway/consumers'
     | '/n/$namespace/gateway/gatewayInfo'
+    | '/n/$namespace/gateway/openapiDoc'
     | '/n/$namespace/instances/$id'
     | '/n/$namespace/instances'
     | '/n/$namespace/permissions/roles'
@@ -1019,6 +1040,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/events/listeners'
     | '/n/$namespace/gateway/consumers'
     | '/n/$namespace/gateway/gatewayInfo'
+    | '/n/$namespace/gateway/openapiDoc'
     | '/n/$namespace/instances/$id'
     | '/n/$namespace/instances'
     | '/n/$namespace/permissions/roles'
@@ -1060,6 +1082,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/events/listeners'
     | '/n/$namespace/gateway/consumers'
     | '/n/$namespace/gateway/gatewayInfo'
+    | '/n/$namespace/gateway/openapiDoc'
     | '/n/$namespace/instances/$id'
     | '/n/$namespace/instances'
     | '/n/$namespace/instances/_layout'
@@ -1168,6 +1191,7 @@ export const routeTree = rootRoute
       "children": [
         "/n/$namespace/gateway/consumers",
         "/n/$namespace/gateway/gatewayInfo",
+        "/n/$namespace/gateway/openapiDoc",
         "/n/$namespace/gateway/",
         "/n/$namespace/gateway/routes/$",
         "/n/$namespace/gateway/routes/"
@@ -1226,6 +1250,10 @@ export const routeTree = rootRoute
     },
     "/n/$namespace/gateway/gatewayInfo": {
       "filePath": "n/$namespace/gateway/gatewayInfo.tsx",
+      "parent": "/n/$namespace/gateway"
+    },
+    "/n/$namespace/gateway/openapiDoc": {
+      "filePath": "n/$namespace/gateway/openapiDoc.tsx",
       "parent": "/n/$namespace/gateway"
     },
     "/n/$namespace/instances/$id": {

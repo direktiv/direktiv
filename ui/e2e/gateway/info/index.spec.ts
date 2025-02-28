@@ -25,8 +25,6 @@ test("Info page default view", async ({ page }) => {
     "it renders the 'Info' breadcrumb"
   ).toBeVisible();
 
-  await expect(page.getByText("Gateway Info")).toBeVisible();
-
   await expect(
     page.getByTestId("breadcrumb-namespace"),
     "it displays the current namespace in the breadcrumb"

@@ -25,26 +25,18 @@ test("the 404 error page shows, when the user opens a url that does not exist", 
 test("the back button on the 404 error page navigates the user back to the previous page", async ({
   page,
 }) => {
-  await page.goto("/", { waitUntil: "networkidle" });
-  const defaultNamespaceUrl = await page.url();
+  await page.goto(`/n/${namespace}/explorer/tree`, {
+    waitUntil: "networkidle",
+  });
 
-  expect(
-    defaultNamespaceUrl.endsWith("/explorer/tree"),
-    "the user was redirected to the file explorer of some default namespace"
-  ).toBe(true);
+  await expect(page).toHaveURL(`/n/${namespace}/explorer/tree`);
 
   await page.goto("/this/page/does/not/exist");
-  expect(
-    await page.url(),
-    "the user navigated to some different non existing url"
-  ).not.toBe(defaultNamespaceUrl);
+  await expect(page).not.toHaveURL(`/n/${namespace}/explorer/tree`);
 
   await page.getByTestId("error-back-btn").click();
 
-  expect(
-    await page.url(),
-    "clicking the back button on the 404 page navigates the user back to where they came from"
-  ).toBe(defaultNamespaceUrl);
+  await expect(page).toHaveURL(`/n/${namespace}/explorer/tree`);
 });
 
 test("the reload button on the error page reloads the current page", async ({

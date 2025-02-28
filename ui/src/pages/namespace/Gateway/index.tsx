@@ -1,4 +1,4 @@
-import { BookOpen, Users, Workflow } from "lucide-react";
+import { BookOpen, ScrollText, Users, Workflow } from "lucide-react";
 import { Link, Outlet, useMatch } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 
@@ -20,6 +20,10 @@ const GatewayPage = () => {
   });
   const isGatewayRoutesDetailPage = useMatch({
     from: "/n/$namespace/gateway/routes/$",
+    shouldThrow: false,
+  });
+  const isGatewayOpenapiDocPage = useMatch({
+    from: "/n/$namespace/gateway/openapiDoc",
     shouldThrow: false,
   });
 
@@ -44,6 +48,13 @@ const GatewayPage = () => {
       icon: <Users aria-hidden="true" />,
       title: t("pages.gateway.tabs.consumers"),
       link: "/n/$namespace/gateway/consumers",
+    },
+    {
+      value: "openapiDoc",
+      active: isGatewayOpenapiDocPage,
+      icon: <ScrollText aria-hidden="true" />,
+      title: t("pages.gateway.tabs.documentation"),
+      link: "/n/$namespace/gateway/openapiDoc",
     },
   ] as const;
 
