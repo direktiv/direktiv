@@ -3,6 +3,7 @@ import { Link, useMatches } from "@tanstack/react-router";
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import ConsumerBreadcrumb from "./Consumer";
 import { FileRoutesById } from "~/routeTree.gen";
+import GatewayDocumentationBreadcrumb from "./Documentation";
 import GatewayInfoBreadcrumb from "./GatewayInfo";
 import { Network } from "lucide-react";
 import RoutesBreadcrumb from "./Routes";
@@ -30,6 +31,7 @@ const GatewayBreadcrumb = () => {
       <RoutesBreadcrumb />
       <ConsumerBreadcrumb />
       <GatewayInfoBreadcrumb />
+      <GatewayDocumentationBreadcrumb />
     </>
   );
 };

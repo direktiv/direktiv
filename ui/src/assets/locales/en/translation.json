@@ -767,21 +767,19 @@
     },
     "permissions": {
       "tabs": {
-        "policy": "Policy",
         "tokens": "Tokens",
-        "groups": "Groups"
-      },
-      "policy": {
-        "unsavedNote": "unsaved changes",
-        "theresOneIssue": "There is an issue",
-        "saveBtn": "Save",
-        "permissionsHintTitle": "Available permissions"
+        "roles": "Roles"
       },
       "permissionsInfo": {
-        "all": "all permissions",
-        "partial": "{{count}} permisions",
-        "partial_one": "{{count}} permision",
-        "partial_zero": "no permissions"
+        "all": "all topics",
+        "partial": "{{count}} topics",
+        "partial_one": "{{count}} topic",
+        "noPermissions": "no permissions"
+      },
+      "OidcGroupsInfo": {
+        "title": "{{count}} OIDC Groups",
+        "title_one": "{{count}} OIDC Group",
+        "title_zero": "no OIDC Groups"
       },
       "durationHint": {
         "title": "Token lifetime",
@@ -794,50 +792,49 @@
       "permissionsSelector": {
         "permissions": "Permissions",
         "selectAll": "Select all",
-        "deselectAll": "Deselect all"
+        "noPermissions": "No permissions"
       },
-      "groups": {
+      "oidcGroupSelector": {
+        "label": "Oidc groups",
+        "placeholder": "enter-oidc-group"
+      },
+      "roles": {
         "tableHeader": {
           "name": "name",
           "description": "description",
-          "permissions": "permissions"
+          "oidcGroups": "oidc groups",
+          "permissions": "permissions",
+          "createdAt": "created at"
         },
-        "createBtn": "Create a new group",
-        "noGroups": "There are no groups yet.",
+        "createBtn": "Create a new role",
+        "noRoles": "There are no roles yet.",
         "contextMenu": {
           "edit": "Edit",
           "delete": "Delete"
         },
-        "create": {
-          "title": "Create a group",
-          "cancelBtn": "Cancel",
-          "createBtn": "Create",
-          "group": {
-            "label": "Name",
-            "placeholder": "groupname",
-            "alreadyExist": "The name already exists"
-          },
-          "description": {
-            "label": "Description",
-            "placeholder": "Enter a description for the group"
-          }
-        },
         "edit": {
-          "title": "Update group",
-          "cancelBtn": "Cancel",
-          "editBtn": "Save",
-          "group": {
+          "title": "Edit Role",
+          "saveBtn": "Save",
+          "cancelBtn": "Cancel"
+        },
+        "create": {
+          "title": "Create a Role",
+          "saveBtn": "Create",
+          "cancelBtn": "Cancel"
+        },
+        "form": {
+          "name": {
             "label": "Name",
-            "placeholder": "groupname",
+            "placeholder": "role-name",
             "alreadyExist": "The name already exists"
           },
           "description": {
             "label": "Description",
-            "placeholder": "Enter a description for the group"
+            "placeholder": "Enter a description for the role"
           }
         },
         "delete": {
-          "title": "Delete group",
+          "title": "Delete role",
           "msg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
           "cancelBtn": "Cancel",
           "deleteBtn": "Delete"
@@ -845,7 +842,9 @@
       },
       "tokens": {
         "tableHeader": {
+          "name": "name",
           "description": "description",
+          "prefix": "Secret hint",
           "permissions": "permissions",
           "created": "created",
           "expires": "expires"
@@ -862,13 +861,21 @@
           "title": "Create a token",
           "cancelBtn": "Cancel",
           "createBtn": "Create",
+          "name": {
+            "label": "Name",
+            "placeholder": "Enter a name for the token",
+            "alreadyExist": "The name already exists"
+          },
           "description": {
             "label": "Description",
-            "placeholder": "Enter a description for the group"
+            "placeholder": "Enter a description for the token"
           },
           "duration": {
             "label": "Duration",
             "placeholder": "Lifetime of the token in ISO 8601 like e.g P1Y (1 year) or PT12H (12 hours)"
+          },
+          "permissions": {
+            "noPermissions": "You must select at least one permission"
           },
           "success": {
             "title": "Token was Created",
@@ -983,7 +990,8 @@
       "tabs": {
         "routes": "Routes",
         "consumers": "Consumers",
-        "info": "Info"
+        "info": "Info",
+        "documentation": "Documentation"
       },
       "routes": {
         "columns": {
@@ -1045,6 +1053,12 @@
           "errors": "Errors",
           "errorSiblingFields": "The OpenAPI Specification contains unexpected fields. Please remove any extra fields that are not part of a valid OpenAPI structure."
         }
+      },
+      "documentation": {
+        "title": "OpenAPI Documentation",
+        "noDocumentation": "No documentation found",
+        "copySpec": "Copy Spec",
+        "copied": "Copied!"
       }
     },
     "jqPlayground": {
@@ -1103,11 +1117,12 @@
       "permissions": "Permissions",
       "permissionsPolicy": "Policy",
       "permissionsTokens": "Tokens",
-      "permissionsGroups": "Groups",
+      "permissionsRoles": "Roles",
       "settings": "Settings",
       "gateway": "Gateway",
       "gatewayRoutes": "Routes",
       "gatewayConsumers": "Consumers",
+      "gatewayDocumentation": "Documentation",
       "gatewayInfo": "Info",
       "jqPlayground": "jq Playground"
     },
@@ -1566,33 +1581,33 @@
         }
       }
     },
-    "groups": {
+    "roles": {
       "mutate": {
-        "createGroup": {
+        "createRole": {
           "success": {
-            "title": "Group created",
-            "description": "The group {{name}} was created"
+            "title": "Role created",
+            "description": "The role was created"
           },
           "error": {
-            "description": "The group could not be created 😢"
+            "description": "The role could not be created 😢"
           }
         },
-        "editGroup": {
+        "editRole": {
           "success": {
-            "title": "Group updated",
-            "description": "The group {{name}} was updated"
+            "title": "Role updated",
+            "description": "The role was updated"
           },
           "error": {
-            "description": "The group could not be updated 😢"
+            "description": "The role could not be updated 😢"
           }
         },
-        "deleteGroup": {
+        "deleteRole": {
           "success": {
-            "title": "Group deleted",
-            "description": "The group {{name}} was deleted"
+            "title": "Role deleted",
+            "description": "The role was deleted"
           },
           "error": {
-            "description": "The group could not be deleted 😢"
+            "description": "The role could not be deleted 😢"
           }
         }
       }

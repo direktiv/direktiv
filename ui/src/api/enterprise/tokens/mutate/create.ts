@@ -9,18 +9,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const createToken = apiFactory<TokenFormSchemaType>({
+const createToken = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
-    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/tokens`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/api_tokens`,
   method: "POST",
   schema: TokenCreatedSchema,
 });
 
-type ResolvedCreateToken = Awaited<ReturnType<typeof createToken>>;
-
 export const useCreateToken = ({
   onSuccess,
-}: { onSuccess?: (data: ResolvedCreateToken) => void } = {}) => {
+}: { onSuccess?: (secret: string) => void } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -35,18 +33,16 @@ export const useCreateToken = ({
     mutationFn: (tokenFormProps: TokenFormSchemaType) =>
       createToken({
         apiKey: apiKey ?? undefined,
-        urlParams: {
-          namespace,
-        },
+        urlParams: { namespace },
         payload: tokenFormProps,
       }),
     onSuccess(data) {
       queryClient.invalidateQueries({
-        queryKey: tokenKeys.tokenList(namespace, {
+        queryKey: tokenKeys.apiTokens(namespace, {
           apiKey: apiKey ?? undefined,
         }),
       });
-      onSuccess?.(data);
+      onSuccess?.(data.data.secret);
     },
     onError: () => {
       toast({

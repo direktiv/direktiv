@@ -1,8 +1,8 @@
 export const tokenKeys = {
-  tokenList: (namespace: string, { apiKey }: { apiKey?: string }) =>
+  apiTokens: (namespace: string, { apiKey }: { apiKey?: string }) =>
     [
       {
-        scope: "token-list",
+        scope: "api-tokens-list",
         apiKey,
         namespace,
       },
