@@ -1,6 +1,7 @@
+import { ControllerRenderProps, UseFormReturn } from "react-hook-form";
+
 import Badge from "~/design/Badge";
 import { Checkbox } from "~/design/Checkbox";
-import { ControllerRenderProps } from "react-hook-form";
 import { EndpointFormSchemaType } from "../schema";
 import { RouteMethod } from "~/api/gateway/schema";
 
@@ -8,6 +9,7 @@ interface MethodCheckboxProps {
   isChecked: boolean;
   method: RouteMethod;
   field: ControllerRenderProps<EndpointFormSchemaType>;
+  form: UseFormReturn<EndpointFormSchemaType>;
 }
 
 export const MethodCheckbox: React.FC<MethodCheckboxProps> = ({

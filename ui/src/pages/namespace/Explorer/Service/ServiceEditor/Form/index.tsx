@@ -40,7 +40,7 @@ type FormProps = {
   defaultConfig?: ServiceFormSchemaType;
   onSave: (value: ServiceFormSchemaType) => void;
   children: (args: {
-    formControls: UseFormReturn<ServiceFormSchemaType>;
+    form: UseFormReturn<ServiceFormSchemaType>;
     formMarkup: JSX.Element;
     values: DeepPartialSkipArrayKey<ServiceFormSchemaType>;
   }) => JSX.Element;
@@ -48,7 +48,7 @@ type FormProps = {
 
 export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
   const { t } = useTranslation();
-  const formControls = useForm<ServiceFormSchemaType>({
+  const form = useForm<ServiceFormSchemaType>({
     resolver: zodResolver(ServiceFormSchema),
     defaultValues: {
       ...defaultConfig,
@@ -58,7 +58,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
   const fieldsInOrder = ServiceFormSchema.keyof().options;
 
   const watchedValues = useWatch({
-    control: formControls.control,
+    control: form.control,
   });
 
   const values = fieldsInOrder.reduce(
@@ -66,10 +66,10 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
     {}
   );
 
-  const { register, control } = formControls;
+  const { register, control } = form;
 
   return children({
-    formControls,
+    form,
     values,
     formMarkup: (
       <div className="flex flex-col gap-8">
@@ -99,10 +99,8 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
               </TooltipProvider>
             </div>
             <Select
-              value={formControls.getValues("scale")?.toString()}
-              onValueChange={(value) =>
-                formControls.setValue("scale", Number(value))
-              }
+              value={form.getValues("scale")?.toString()}
+              onValueChange={(value) => form.setValue("scale", Number(value))}
             >
               <SelectTrigger variant="outline" id="scale">
                 <SelectValue
@@ -131,8 +129,8 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
             className="grow"
           >
             <Select
-              value={formControls.getValues("size")}
-              onValueChange={(value) => formControls.setValue("size", value)}
+              value={form.getValues("size")}
+              onValueChange={(value) => form.setValue("size", value)}
             >
               <SelectTrigger variant="outline" id="size">
                 <SelectValue
@@ -165,7 +163,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
           <Input {...register("cmd")} id="cmd" />
         </Fieldset>
 
-        <PatchesForm form={formControls} onSave={onSave} />
+        <PatchesForm form={form} onSave={onSave} />
 
         <Fieldset
           label={t("pages.explorer.service.editor.form.envs.label")}
