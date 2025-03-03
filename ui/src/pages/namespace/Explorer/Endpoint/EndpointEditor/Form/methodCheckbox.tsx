@@ -110,17 +110,20 @@ export const MethodCheckbox: React.FC<MethodCheckboxProps> = ({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-40">
                   {Array.from(routeMethods).map((method) => (
-                    <DropdownMenuItem
+                    <DialogClose
                       key={method}
                       onClick={() => {
                         form.setValue(method, previousValue);
                         field.onChange(undefined);
                         setDialogOpen(false);
                       }}
+                      className="w-full"
                     >
-                      <ClipboardPaste className="mr-2 size-4" /> copy to{" "}
-                      {method}
-                    </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <ClipboardPaste className="mr-2 size-4" /> copy to{" "}
+                        {method}
+                      </DropdownMenuItem>
+                    </DialogClose>
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
