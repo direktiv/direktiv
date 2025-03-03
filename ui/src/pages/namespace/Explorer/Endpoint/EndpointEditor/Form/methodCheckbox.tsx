@@ -19,14 +19,11 @@ import { RouteMethod, routeMethods } from "~/api/gateway/schema";
 import Badge from "~/design/Badge";
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
-import { Card } from "~/design/Card";
 import { Checkbox } from "~/design/Checkbox";
 import { CheckedState } from "@radix-ui/react-checkbox";
-import Editor from "~/design/Editor";
 import { EndpointFormSchemaType } from "../schema";
-import { jsonToYaml } from "../../../utils";
+import { OpenAPIDocsEditor } from "./OpenAPIDocsEditor";
 import { useState } from "react";
-import { useTheme } from "~/util/store/theme";
 
 interface MethodCheckboxProps {
   isChecked: boolean;
@@ -45,7 +42,6 @@ export const MethodCheckbox: React.FC<MethodCheckboxProps> = ({
   isChecked,
   form,
 }) => {
-  const theme = useTheme();
   const [dialogOpen, setDialogOpen] = useState(false);
   const previousValue = form.watch(method);
   const onCheckedChange = (checked: CheckedState) => {
@@ -62,18 +58,6 @@ export const MethodCheckbox: React.FC<MethodCheckboxProps> = ({
     }
   };
 
-  const editorContentJson = {
-    connect: form.getValues("connect"),
-    delete: form.getValues("delete"),
-    get: form.getValues("get"),
-    head: form.getValues("head"),
-    options: form.getValues("options"),
-    patch: form.getValues("patch"),
-    post: form.getValues("post"),
-    put: form.getValues("put"),
-    trace: form.getValues("trace"),
-  };
-
   return (
     <label className="flex items-center gap-2 text-sm" htmlFor={method}>
       <Checkbox
@@ -88,13 +72,20 @@ export const MethodCheckbox: React.FC<MethodCheckboxProps> = ({
             <DialogTitle>Are you sure?</DialogTitle>
           </DialogHeader>
           You are about to delete the documentation for the {method}.
-          <Card className="h-96 w-full p-4" noShadow background="weight-1">
-            <Editor
-              value={jsonToYaml(editorContentJson)}
-              theme={theme ?? undefined}
-              options={{ readOnly: true }}
-            />
-          </Card>
+          <OpenAPIDocsEditor
+            defaultValue={{
+              connect: form.getValues("connect"),
+              delete: form.getValues("delete"),
+              get: form.getValues("get"),
+              head: form.getValues("head"),
+              options: form.getValues("options"),
+              patch: form.getValues("patch"),
+              post: form.getValues("post"),
+              put: form.getValues("put"),
+              trace: form.getValues("trace"),
+            }}
+            readOnly
+          />
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="ghost">
