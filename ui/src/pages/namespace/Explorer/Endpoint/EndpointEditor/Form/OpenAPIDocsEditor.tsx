@@ -20,9 +20,11 @@ type HTMLFormProps = ButtonHTMLAttributes<HTMLFormElement>;
 
 type OpenAPIDocsFormProps = {
   defaultValue: MethodsSchemaType;
-  onSubmit: (value: MethodsSchemaType) => void;
-  readOnly?: boolean;
-} & Omit<HTMLFormProps, "onSubmit" | "defaultValue" | "readOnly">;
+} & (
+  | { onSubmit?: (value: MethodsSchemaType) => void; readOnly?: never }
+  | { onSubmit?: never; readOnly?: boolean }
+) &
+  Omit<HTMLFormProps, "onSubmit" | "defaultValue" | "readOnly">;
 
 const FormSchema = z.object({
   /**
@@ -71,7 +73,7 @@ export const OpenAPIDocsEditor = forwardRef<
   });
 
   const onEditorSubmit = (configuration: FormSchemaType) => {
-    onSubmit(configuration.editor);
+    onSubmit?.(configuration.editor);
   };
   return (
     <form onSubmit={handleSubmit(onEditorSubmit)} ref={ref} {...props}>
