@@ -5,7 +5,7 @@ import Button from "~/design/Button";
 import { EndpointFormSchemaType } from "../../schema";
 import { MethodsSchemaType } from "~/api/gateway/schema";
 import { ModalWrapper } from "~/components/ModalWrapper";
-import { OpenAPIDocsEditor } from "./OpenAPIDocsEditor";
+import { OpenAPIDocsEditor } from "../OpenAPIDocsEditor";
 import { ScrollText } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
