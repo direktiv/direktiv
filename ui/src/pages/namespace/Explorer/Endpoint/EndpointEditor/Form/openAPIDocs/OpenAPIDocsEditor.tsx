@@ -1,3 +1,4 @@
+import { ButtonHTMLAttributes, forwardRef } from "react";
 import {
   MethodsSchema,
   MethodsSchemaType,
@@ -8,7 +9,6 @@ import { jsonToYaml, yamlToJsonOrNull } from "~/pages/namespace/Explorer/utils";
 
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
-import { FC } from "react";
 import FormErrors from "~/components/FormErrors";
 import { useForm } from "react-hook-form";
 import { useTheme } from "~/util/store/theme";
@@ -16,11 +16,13 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+type HTMLFormProps = ButtonHTMLAttributes<HTMLFormElement>;
+
 type OpenAPIDocsFormProps = {
   defaultValue: MethodsSchemaType;
   onSubmit: (value: MethodsSchemaType) => void;
   readOnly?: boolean;
-};
+} & Omit<HTMLFormProps, "onSubmit" | "defaultValue" | "readOnly">;
 
 const FormSchema = z.object({
   /**
@@ -32,11 +34,10 @@ const FormSchema = z.object({
 
 type FormSchemaType = z.infer<typeof FormSchema>;
 
-export const OpenAPIDocsEditor: FC<OpenAPIDocsFormProps> = ({
-  readOnly,
-  defaultValue,
-  onSubmit,
-}) => {
+export const OpenAPIDocsEditor = forwardRef<
+  HTMLFormElement,
+  OpenAPIDocsFormProps
+>(({ readOnly, defaultValue, onSubmit, ...props }, ref) => {
   const theme = useTheme();
   const { t } = useTranslation();
   const {
@@ -72,11 +73,8 @@ export const OpenAPIDocsEditor: FC<OpenAPIDocsFormProps> = ({
   const onEditorSubmit = (configuration: FormSchemaType) => {
     onSubmit(configuration.editor);
   };
-
   return (
-    // TODO: this is a hack to get the form to work with the modal
-    // disabled
-    <form onSubmit={handleSubmit(onEditorSubmit)}>
+    <form onSubmit={handleSubmit(onEditorSubmit)} ref={ref} {...props}>
       <Card className="h-96 w-full p-4" noShadow background="weight-1">
         <FormErrors errors={errors} className="mb-5" />
         <Editor
@@ -93,4 +91,6 @@ export const OpenAPIDocsEditor: FC<OpenAPIDocsFormProps> = ({
       </Card>
     </form>
   );
-};
+});
+
+OpenAPIDocsEditor.displayName = "OpenAPIDocsEditor";
