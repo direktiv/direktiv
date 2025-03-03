@@ -32,50 +32,51 @@ export const Row: FC<RowProps> = ({ route }) => {
       className="cursor-pointer"
     >
       <TableCell>
-        <div className="flex flex-col items-start gap-3">
+        <div className="flex grow my-1">
           <Link
             onClick={(e) => {
               e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link
             }}
-            className="whitespace-normal break-all hover:underline"
+            className="whitespace-normal hover:underline"
             to="/n/$namespace/explorer/endpoint/$"
             from="/n/$namespace"
             params={{ _splat: route.file_path }}
           >
             {route.file_path}
           </Link>
-          <div className="flex gap-1">
-            <MessagesOverlay messages={route.errors} variant="error">
-              {(errorCount) => (
-                <Badge variant="destructive">
-                  {t("pages.gateway.routes.row.error.count", {
-                    count: errorCount,
-                  })}
-                </Badge>
-              )}
-            </MessagesOverlay>
-            <MessagesOverlay messages={route.warnings} variant="warning">
-              {(warningCount) => (
-                <Badge variant="secondary">
-                  {t("pages.gateway.routes.row.warnings.count", {
-                    count: warningCount,
-                  })}
-                </Badge>
-              )}
-            </MessagesOverlay>
-          </div>
+        </div>
+        <div className="flex flex-row items-start gap-1">
+          {/* badges */}
+
+          <MessagesOverlay messages={route.warnings} variant="warning">
+            {(warningCount) => (
+              <Badge variant="secondary">
+                {t("pages.gateway.routes.row.warnings.count", {
+                  count: warningCount,
+                })}
+              </Badge>
+            )}
+          </MessagesOverlay>
+          <Methods methods={getMethodsFromOpenApiSpec(route.spec)} />
+          <AllowAnonymous
+            allow={route.spec["x-direktiv-config"]?.allow_anonymous}
+          />
+
+          <MessagesOverlay messages={route.errors} variant="error">
+            {(errorCount) => (
+              <Badge variant="destructive">
+                {t("pages.gateway.routes.row.error.count", {
+                  count: errorCount,
+                })}
+              </Badge>
+            )}
+          </MessagesOverlay>
         </div>
       </TableCell>
-      <TableCell>
-        <Methods methods={getMethodsFromOpenApiSpec(route.spec)} />
-      </TableCell>
+      {/* badges end */}
+
       <TableCell>
         <Plugins plugins={route.spec["x-direktiv-config"]?.plugins} />
-      </TableCell>
-      <TableCell>
-        <AllowAnonymous
-          allow={route.spec["x-direktiv-config"]?.allow_anonymous}
-        />
       </TableCell>
       <TableCell className="whitespace-normal break-all">
         {route.server_path && <PublicPathInput path={route.server_path} />}

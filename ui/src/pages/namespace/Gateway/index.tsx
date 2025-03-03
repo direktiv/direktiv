@@ -10,10 +10,10 @@ const GatewayPage = () => {
     from: "/n/$namespace/gateway/gatewayInfo",
     shouldThrow: false,
   });
-  const isGatewayRoutesPage = useMatch({
-    from: "/n/$namespace/gateway/routes/",
-    shouldThrow: false,
-  });
+  // const isGatewayRoutesPage = useMatch({
+  //   from: "/n/$namespace/gateway/routes/",
+  //   shouldThrow: false,
+  // });
   const isGatewayConsumerPage = useMatch({
     from: "/n/$namespace/gateway/consumers",
     shouldThrow: false,
@@ -35,13 +35,13 @@ const GatewayPage = () => {
       title: t("pages.gateway.tabs.info"),
       link: "/n/$namespace/gateway/gatewayInfo",
     },
-    {
-      value: "endpoints",
-      active: isGatewayRoutesPage,
-      icon: <Workflow aria-hidden="true" />,
-      title: t("pages.gateway.tabs.routes"),
-      link: "/n/$namespace/gateway/routes",
-    },
+    // {
+    //   value: "endpoints",
+    //   active: isGatewayRoutesPage,
+    //   icon: <Workflow aria-hidden="true" />,
+    //   title: t("pages.gateway.tabs.routes"),
+    //   link: "/n/$namespace/gateway/routes",
+    // },
     {
       value: "consumers",
       active: isGatewayConsumerPage,

@@ -11,7 +11,8 @@ export const AllowAnonymous: FC<AllowAnonymousProps> = ({ allow }) => {
   return (
     <Badge
       icon={allow ? "complete" : "failed"}
-      variant={allow ? "success" : "destructive"}
+      // variant={allow ? "success" : "destructive"}
+      variant="outline"
     >
       {allow
         ? t("pages.gateway.routes.row.allowAnonymous.yes")

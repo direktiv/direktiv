@@ -26,7 +26,7 @@ const RoutesPage = () => {
   );
 
   return (
-    <Card className="m-5">
+    <Card className="w-full">
       <div className="flex justify-between gap-5 p-2">
         <Input
           className="sm:w-60"

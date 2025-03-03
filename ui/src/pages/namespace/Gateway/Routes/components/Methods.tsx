@@ -13,7 +13,7 @@ type AllowAnonymousProps = {
   methods: RouteMethod[];
 };
 
-const methodDisplayCount = 2;
+const methodDisplayCount = 0;
 
 export const Methods: FC<AllowAnonymousProps> = ({ methods }) => {
   const { t } = useTranslation();

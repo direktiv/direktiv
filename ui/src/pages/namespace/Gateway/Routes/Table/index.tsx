@@ -40,17 +40,12 @@ const RoutesTable = ({
     <Table className="border-t border-gray-5 dark:border-gray-dark-5">
       <TableHead>
         <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-          <TableHeaderCell className="w-60">
+          <TableHeaderCell className="w-60 grow">
             {t("pages.gateway.routes.columns.filePath")}
           </TableHeaderCell>
-          <TableHeaderCell className="w-32">
-            {t("pages.gateway.routes.columns.methods")}
-          </TableHeaderCell>
-          <TableHeaderCell className="w-32">
+
+          <TableHeaderCell className="w-24">
             {t("pages.gateway.routes.columns.plugins")}
-          </TableHeaderCell>
-          <TableHeaderCell className="w-40">
-            {t("pages.gateway.routes.columns.anonymous")}
           </TableHeaderCell>
           <TableHeaderCell className="grow">
             {t("pages.gateway.routes.columns.path")}

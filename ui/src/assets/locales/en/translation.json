@@ -983,12 +983,12 @@
       "tabs": {
         "routes": "Routes",
         "consumers": "Consumers",
-        "info": "Info",
+        "info": "Routes Info",
         "documentation": "Documentation"
       },
       "routes": {
         "columns": {
-          "filePath": "file path",
+          "filePath": "file path & routes info",
           "methods": "methods",
           "path": "path",
           "plugins": "plugins",
@@ -997,11 +997,11 @@
         "row": {
           "methods": {
             "none": "no methods set",
-            "tooltipLabel": "+{{count}}"
+            "tooltipLabel": "{{count}} methods"
           },
           "allowAnonymous": {
-            "yes": "yes",
-            "no": "no"
+            "yes": "public endpoint",
+            "no": "public endpoint"
           },
           "error": {
             "count": "{{count}} errors",

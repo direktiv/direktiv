@@ -10,6 +10,7 @@ import Alert from "~/design/Alert";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { Link } from "@tanstack/react-router";
+import RoutesPage from "../Routes";
 import { jsonToYaml } from "../../Explorer/utils";
 import { useInfo } from "~/api/gateway/query/getInfo";
 import { useTheme } from "~/util/store/theme";
@@ -28,69 +29,74 @@ const InfoPage = () => {
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
       <div className="flex flex-col gap-4 sm:flex-row w-full">
-        <Card className=" lg:h-[calc(100vh-15.5rem)] lg:overflow-y-scroll w-1/2">
-          <Table className="border-gray-5 dark:border-gray-dark-5">
-            <TableBody>
-              <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                <TableHeaderCell>
-                  {t("pages.gateway.info.columns.title")}
-                </TableHeaderCell>
-                <TableCell>{title}</TableCell>
-              </TableRow>
-              <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                <TableHeaderCell>
-                  {t("pages.gateway.info.columns.version")}
-                </TableHeaderCell>
-                <TableCell>{version}</TableCell>
-              </TableRow>
-              <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                <TableHeaderCell>
-                  {t("pages.gateway.info.columns.description")}
-                </TableHeaderCell>
-                <TableCell>{description}</TableCell>
-              </TableRow>
-              <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                <TableHeaderCell>
-                  {t("pages.gateway.info.columns.file")}
-                </TableHeaderCell>
-                <TableCell>
-                  {filePath === "virtual" || !filePath ? (
-                    <span>
-                      {filePath ||
-                        t(
-                          "pages.explorer.tree.openapiSpecification.unknownFilePath"
-                        )}
-                    </span>
-                  ) : (
-                    <Link
-                      className="whitespace-normal break-all hover:underline"
-                      to="/n/$namespace/explorer/openapiSpecification/$"
-                      from="/n/$namespace"
-                      params={{ _splat: filePath }}
-                    >
-                      {filePath}
-                    </Link>
-                  )}
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+        <div className="flex flex-col gap-4 w-2/3">
+          <Card className="">
+            <Table className="border-gray-5 dark:border-gray-dark-5">
+              <TableBody>
+                <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                  <TableHeaderCell>
+                    {t("pages.gateway.info.columns.title")}
+                  </TableHeaderCell>
+                  <TableCell>{title}</TableCell>
+                </TableRow>
+                <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                  <TableHeaderCell>
+                    {t("pages.gateway.info.columns.version")}
+                  </TableHeaderCell>
+                  <TableCell>{version}</TableCell>
+                </TableRow>
+                <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                  <TableHeaderCell>
+                    {t("pages.gateway.info.columns.description")}
+                  </TableHeaderCell>
+                  <TableCell>{description}</TableCell>
+                </TableRow>
+                <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                  <TableHeaderCell>
+                    {t("pages.gateway.info.columns.file")}
+                  </TableHeaderCell>
+                  <TableCell>
+                    {filePath === "virtual" || !filePath ? (
+                      <span>
+                        {filePath ||
+                          t(
+                            "pages.explorer.tree.openapiSpecification.unknownFilePath"
+                          )}
+                      </span>
+                    ) : (
+                      <Link
+                        className="whitespace-normal break-all hover:underline"
+                        to="/n/$namespace/explorer/openapiSpecification/$"
+                        from="/n/$namespace"
+                        params={{ _splat: filePath }}
+                      >
+                        {filePath}
+                      </Link>
+                    )}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
 
-          {errors?.length ? (
-            <Alert variant="error" className="m-2">
-              <h3>{t("pages.gateway.info.columns.errors")}</h3>
-              <p>
-                <ul className="list-disc pl-4">
-                  {errors.map((error, index) => (
-                    <li key={index}>{error}</li>
-                  ))}
-                </ul>
-              </p>
-            </Alert>
-          ) : null}
-        </Card>
+            {errors?.length ? (
+              <Alert variant="error" className="m-2">
+                <h3>{t("pages.gateway.info.columns.errors")}</h3>
+                <p>
+                  <ul className="list-disc pl-4">
+                    {errors.map((error, index) => (
+                      <li key={index}>{error}</li>
+                    ))}
+                  </ul>
+                </p>
+              </Alert>
+            ) : null}
+          </Card>
 
-        <Card className="flex grow p-4 max-lg:h-[500px] w-1/2">
+          <div className="flex grow max-lg:h-[500px]">
+            <RoutesPage />
+          </div>
+        </div>
+        <Card className="flex grow p-4 max-lg:h-[500px] w-1/3">
           <Editor
             value={specToYaml}
             theme={theme ?? undefined}
