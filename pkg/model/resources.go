@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -92,16 +93,7 @@ func LoadResource(data []byte) (interface{}, error) {
 		return sf, nil
 
 	case EndpointAPIV1:
-		ef := new(core.EndpointFile)
-		err = yaml.Unmarshal(data, &ef)
-		if err != nil {
-			return &core.EndpointFile{
-				DirektivAPI: s,
-			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
-		}
-
-		return ef, nil
-
+		return &core.EndpointConfig{}, fmt.Errorf("envpoint/v1 not supported anymore (%s)", s)
 	case ConsumerAPIV1:
 		ef := new(core.ConsumerFile)
 		err = yaml.Unmarshal(data, &ef)
@@ -116,26 +108,34 @@ func LoadResource(data []byte) (interface{}, error) {
 	case GatewayAPIV1:
 		loader := openapi3.NewLoader()
 		loader.IsExternalRefsAllowed = true
-
-		// don't follow any ref in this doc
 		loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
-			return nil, nil
+			return []byte(""), nil
 		}
+		_, err = loader.LoadFromData(data)
 
-		base, err := loader.LoadFromData(data)
-		if err != nil {
-			return &openapi3.T{
-				Extensions: map[string]any{
-					"x-direktiv-api": s,
-				},
-			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
-		}
-
-		return base, nil
+		return core.Gateway{}, err
 
 	case EndpointAPIV2:
-		// TODO:
-		fallthrough
+		var pi openapi3.PathItem
+
+		// its yaml but we need JSON
+		var interim map[string]interface{}
+		err := yaml.Unmarshal(data, &interim)
+		if err != nil {
+			return core.Endpoint{}, err
+		}
+		d, err := json.Marshal(interim)
+		if err != nil {
+			return core.Endpoint{}, err
+		}
+
+		err = pi.UnmarshalJSON(d)
+		if err != nil {
+			return core.Endpoint{}, err
+		}
+
+		return core.Endpoint{}, err
+
 	default:
 		return nil, fmt.Errorf("error parsing direktiv resource: invalid 'direktiv_api': \"%s\"", s)
 	}

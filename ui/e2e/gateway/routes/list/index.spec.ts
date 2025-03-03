@@ -20,10 +20,15 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("Route list is empty by default", async ({ page }) => {
+test("The route list can be visited", async ({ page }) => {
   await page.goto(`/n/${namespace}/gateway/routes`, {
     waitUntil: "networkidle",
   });
+
+  await expect(
+    page.getByTestId("breadcrumb-gateway"),
+    "it renders the 'Gateway' breadcrumb"
+  ).toBeVisible();
 
   await expect(
     page.getByTestId("breadcrumb-routes"),
@@ -84,18 +89,19 @@ test("Route list shows all available routes", async ({ page }) => {
   );
 
   await expect(
-    page.getByTestId("route-table").getByText("GET", { exact: true }),
+    page.getByTestId("route-table").getByText("connect", { exact: true }),
     "it renders the text for the method"
   ).toBeVisible();
 
   await page.getByTestId("route-table").getByText("+7").hover();
 
-  await expect(
-    page
-      .getByTestId("route-table")
-      .getByText("OPTIONSPUTPOSTHEADCONNECTPATCHTRACE"),
-    'it shows more methods when hovering over the "+7"'
-  ).toBeVisible();
+  const methods = ["get", "head", "options", "patch", "post", "put", "trace"];
+
+  for (const method of methods) {
+    await expect(
+      page.getByTestId("route-table").getByText(method)
+    ).toBeVisible();
+  }
 
   // hover over somethiing else to make the overlay disappear
   await page.getByTestId("route-table").getByText("yes").hover();
@@ -202,9 +208,7 @@ test("Route list shows an error", async ({ page }) => {
     .hover();
 
   await expect(
-    page
-      .getByTestId("route-table")
-      .getByText("plugin 'this-plugin-does-not-exist' err: doesn't exist"),
+    page.getByTestId("route-table").getByText("no valid http method"),
     "it shows the error detail on hover"
   ).toBeVisible();
 });

@@ -26,39 +26,48 @@ groups:
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
-direktiv_api: endpoint/v1
-path: /foo1
-allow_anonymous: false
-methods:
-  - POST
-plugins:
-  auth:
-    - type: basic-auth   
-  target:
-    type: debug-target
-  inbound:
-    - type: acl
-      configuration:
-        allow_groups: ["group2"]
-`)
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/foo1"
+    allow_anonymous: false
+    plugins:
+      auth:
+      - type: basic-auth  
+      target:
+        type: debug-target
+      inbound:
+      - type: acl
+        configuration:
+          allow_groups: ["group2"]
+post:
+   responses:
+      "200":
+        description: works
+`,
+	)
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep2.yaml', 'endpoint', `
-direktiv_api: endpoint/v1
-path: /foo2
-allow_anonymous: false
-methods:
-  - POST
-plugins:
-  auth:
-    - type: basic-auth   
-  target:
-    type: debug-target
-  inbound:
-    - type: acl
-      configuration:
-        allow_groups: ["group1"]
-`)
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/foo2"
+    allow_anonymous: false
+    plugins:
+      auth:
+      - type: basic-auth 
+      target:
+        type: debug-target
+      inbound:
+      - type: acl
+        configuration:
+          allow_groups: ["group1"]
+post:
+   responses:
+      "200":
+        description: works
+`,
+	)
+
 	retry10(`should denied ep1.yaml endpoint`, async () => {
 		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo1`)
 			.send({})

@@ -12,24 +12,28 @@ import {
 } from "~/api/enterprise/tokens/schema";
 
 import Button from "~/design/Button";
-import DurationHint from "../../components/DurationHint";
+import DurationHint from "./DurationHint";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
+import { PermissionsArray } from "~/api/enterprise/schema";
 import PermissionsSelector from "../../components/PermisionsSelector";
 import ShowToken from "./ShowToken";
 import { useCreateToken } from "~/api/enterprise/tokens/mutate/create";
-import { usePermissionKeys } from "~/api/enterprise/permissions/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const CreateToken = ({ close }: { close: () => void }) => {
+type CreateTokenProps = {
+  close: () => void;
+  unallowedNames?: string[];
+};
+
+const CreateToken = ({ unallowedNames, close }: CreateTokenProps) => {
   const { t } = useTranslation();
-  const { data: availablePermissions } = usePermissionKeys();
   const { mutate: createToken, isPending } = useCreateToken({
-    onSuccess: (data) => {
-      setCreatedToken(data.token);
+    onSuccess: (token) => {
+      setCreatedToken(token);
     },
   });
 
@@ -38,14 +42,39 @@ const CreateToken = ({ close }: { close: () => void }) => {
     setValue,
     handleSubmit,
     watch,
-    formState: { isDirty, errors, isValid, isSubmitted },
+    formState: { isDirty, errors },
   } = useForm<TokenFormSchemaType>({
     defaultValues: {
+      name: "",
       description: "",
       duration: "",
       permissions: [],
     },
-    resolver: zodResolver(TokenFormSchema),
+    resolver: zodResolver(
+      TokenFormSchema.refine(
+        (token) =>
+          /**
+           * the length of the array could also be restricted in the payload schema,
+           * but this would make it impossible to click the "select all" button for
+           * "no permissions", cause this would result in an invalid form. But for the
+           * user it might be handy to deselect all permissions and e.g. select one
+           * single permission afterwards
+           */
+          token.permissions.length > 0,
+        {
+          path: ["permissions"],
+          message: t(
+            "pages.permissions.tokens.create.permissions.noPermissions"
+          ),
+        }
+      ).refine(
+        (token) => !(unallowedNames ?? []).some((n) => n === token.name),
+        {
+          path: ["name"],
+          message: t("pages.permissions.tokens.create.name.alreadyExist"),
+        }
+      )
+    ),
   });
 
   const [createdToken, setCreatedToken] = useState<string>();
@@ -54,9 +83,7 @@ const CreateToken = ({ close }: { close: () => void }) => {
     createToken(params);
   };
 
-  // you can not submit if the form has not changed or if there are any errors and
-  // you have already submitted the form (errors will first show up after submit)
-  const disableSubmit = !isDirty || (isSubmitted && !isValid);
+  const disableSubmit = !isDirty;
 
   const formId = `new-token`;
 
@@ -80,7 +107,23 @@ const CreateToken = ({ close }: { close: () => void }) => {
             >
               <fieldset className="flex items-center gap-5">
                 <label
-                  className="w-[90px] text-right text-[14px]"
+                  className="w-[120px] text-right text-[14px]"
+                  htmlFor="name"
+                >
+                  {t("pages.permissions.tokens.create.name.label")}
+                </label>
+                <Input
+                  id="name"
+                  placeholder={t(
+                    "pages.permissions.tokens.create.name.placeholder"
+                  )}
+                  autoComplete="off"
+                  {...register("name")}
+                />
+              </fieldset>
+              <fieldset className="flex items-center gap-5">
+                <label
+                  className="w-[120px] text-right text-[14px]"
                   htmlFor="description"
                 >
                   {t("pages.permissions.tokens.create.description.label")}
@@ -96,7 +139,7 @@ const CreateToken = ({ close }: { close: () => void }) => {
               </fieldset>
               <fieldset className="flex items-center gap-5">
                 <label
-                  className="w-[90px] text-right text-[14px]"
+                  className="w-[120px] text-right text-[14px]"
                   htmlFor="duration"
                 >
                   {t("pages.permissions.tokens.create.duration.label")}
@@ -112,25 +155,23 @@ const CreateToken = ({ close }: { close: () => void }) => {
                   />
                   <DurationHint
                     onDurationSelect={(duration) => {
-                      setValue("duration", duration, {
-                        shouldDirty: true,
-                        shouldTouch: true,
-                        shouldValidate: true,
-                      });
+                      setValue("duration", duration, { shouldDirty: true });
                     }}
                   />
                 </InputWithButton>
               </fieldset>
               <PermissionsSelector
-                availablePermissions={availablePermissions ?? []}
-                selectedPermissions={watch("permissions")}
-                setPermissions={(permissions) =>
-                  setValue("permissions", permissions, {
-                    shouldDirty: true,
-                    shouldTouch: true,
-                    shouldValidate: true,
-                  })
-                }
+                permissions={watch("permissions")}
+                onChange={(permissions) => {
+                  const parsedPermissions =
+                    PermissionsArray.safeParse(permissions);
+                  if (parsedPermissions.success) {
+                    setValue("permissions", parsedPermissions.data, {
+                      shouldDirty: true,
+                      shouldTouch: true,
+                    });
+                  }
+                }}
               />
             </form>
           </div>

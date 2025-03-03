@@ -6,35 +6,37 @@ import { retry10 } from '../common/retry'
 
 const testNamespace = 'headers'
 
-const endpointJSFile = `
-direktiv_api: endpoint/v1
-allow_anonymous: true
-plugins:
-  target:
-    type: target-flow
-    configuration:
-        flow: /target.yaml
-        content_type: application/json
-  inbound:
-    - type: header-manipulation
-      configuration:
-        headers_to_add:
-        - name: hello
-          value: world
-        headers_to_modify: 
-        - name: header1
-          value: newvalue
-        headers_to_remove:
-          - name: header 
-    - type: "request-convert"
-      configuration:
-        omit_headers: false
-        omit_queries: true
-        omit_body: true
-        omit_consumer: true
-methods: 
-  - POST
-path: /target`
+const endpointJSFile = `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/target"
+    allow_anonymous: true
+    plugins:
+       inbound:
+       - type: header-manipulation
+         configuration:
+           headers_to_add:
+           - name: hello
+             value: world
+           headers_to_modify: 
+           - name: header1
+             value: newvalue
+           headers_to_remove:
+             - name: header 
+       - type: "request-convert"
+         configuration:
+           omit_headers: false
+           omit_queries: true
+           omit_body: true
+           omit_consumer: true
+       target:
+         type: target-flow
+         configuration:
+            flow: /target.yaml
+            content_type: application/json
+post:
+   responses:
+      "200":
+        description: works`
 
 const wf = `
 direktiv_api: workflow/v1

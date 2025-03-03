@@ -23,7 +23,7 @@ tests-api: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make tests-api [JES
 tests-ee-api: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make tests-api [JEST_PREFIX=/tests/namespaces]
 	kubectl wait --for=condition=ready pod -l "app=direktiv-flow"
 	docker run -it --rm \
-	-v `pwd`/cmd/ee/tests:/tests \
+	-v `pwd`/direktiv-ee/tests:/tests \
 	-e 'DIREKTIV_HOST=http://${DIREKTIV_HOST}' \
 	-e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
 	--network=host \
@@ -48,7 +48,7 @@ tests-godoc: ## Hosts a godoc server for the project on http port 6060.
 	godoc -http=:6060
 
 .PHONY: tests-lint 
-tests-lint: VERSION="v1.62"
+tests-lint: VERSION="v1.64.5"
 tests-lint: ## Runs very strict linting on the project.
 	docker run \
 	--rm \

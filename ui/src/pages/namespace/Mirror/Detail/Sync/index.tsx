@@ -2,17 +2,16 @@ import { Card } from "~/design/Card";
 import { LogStreamingSubscriber } from "~/api/logs/query/LogStreamingSubscriber";
 import { NoPermissions } from "~/design/Table";
 import SyncDetail from "./SyncDetail";
-import { usePages } from "~/util/router/pages";
+import { useParams } from "@tanstack/react-router";
 import { useSyncDetail } from "~/api/syncs/query/get";
 
 const Logs = () => {
-  const pages = usePages();
-  const { sync } = pages.mirror.useParams();
+  const { sync } = useParams({ from: "/n/$namespace/mirror/logs/$sync" });
+
   const { isAllowed, noPermissionMessage, isFetched } = useSyncDetail(
     sync || ""
   );
 
-  if (!sync) return null;
   if (!isFetched) return null;
   if (!isAllowed)
     return (
@@ -24,7 +23,7 @@ const Logs = () => {
   return (
     <>
       <LogStreamingSubscriber activity={sync} />
-      <SyncDetail syncId={sync} />
+      <SyncDetail />
     </>
   );
 };

@@ -4,11 +4,12 @@ dependencies:
   version: 4.9.0
 - name: fluent-bit
   repository: https://fluent.github.io/helm-charts
-  version: 0.46.7
+  version: 0.48.5
 - name: nats
   repository: https://nats-io.github.io/k8s/helm/charts
   version: 1.2.6
-- name: opensearch
-  repository: https://opensearch-project.github.io/helm-charts/
-  version: 2.27.1
-
+- name: victoria-logs-single
+  repository: https://victoriametrics.github.io/helm-charts/
+  version: 0.8.16
+digest: sha256:b7424c64232430c37908843e7c5b7f115b007e20dd864e5e9d8104fa9fdba49d
+generated: "2025-02-12T13:14:04.009302464+01:00"

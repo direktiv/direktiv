@@ -3,6 +3,10 @@ KIND_CONFIG ?= kind-config.yaml
 .PHONY: cluster-setup
 cluster-setup: cluster-create cluster-prep cluster-direktiv
 
+.PHONY: cluster-setup-ee
+cluster-setup-ee:
+	make cluster-setup IS_ENTERPRISE=true
+
 .PHONY: cluster-create
 cluster-create:
 	kind delete clusters --all
@@ -82,6 +86,8 @@ cluster-direktiv-delete: ## Deletes direktiv from cluster
 cluster-direktiv: ## Installs direktiv in cluster
 	kubectl wait -n ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
 	kubectl wait -n ingress-nginx --for=condition=complete job --selector=app.kubernetes.io/component=admission-webhook --timeout=120s
+
+	@if [ "$(IS_ENTERPRISE)" != "true" ]; then \
 	helm install --set database.host=postgres.default.svc \
 	--set database.port=5432 \
 	--set database.user=admin \
@@ -93,8 +99,28 @@ cluster-direktiv: ## Installs direktiv in cluster
 	--set image=direktiv \
 	--set registry=localhost:5001 \
 	--set tag=dev \
-	--set flow.sidecar=localhost:5001/direktiv:dev \
-	direktiv charts/direktiv
+	direktiv charts/direktiv; \
+	fi
+
+	@if [ "$(IS_ENTERPRISE)" == "true" ]; then \
+	helm install --set database.host=postgres.default.svc \
+	-f direktiv-ee/install/05_direktiv/keys.yaml \
+	--set database.port=5432 \
+	--set database.user=admin \
+	--set database.password=password \
+	--set database.name=direktiv \
+	--set database.sslmode=disable \
+	--set pullPolicy=Always \
+	--set ingress-nginx.install=false \
+	--set image=direktiv \
+	--set registry=localhost:5001 \
+	--set tag=dev \
+	--set flow.additionalEnvs[0].name=DIREKTIV_OIDC_ADMIN_GROUP \
+	--set flow.additionalEnvs[0].value="admin" \
+	--set flow.additionalEnvs[1].name=DIREKTIV_OIDC_DEV \
+	--set flow.additionalEnvs[1].value=true \
+	direktiv charts/direktiv; \
+	fi
 
 	kubectl wait --for=condition=ready pod -l app=direktiv-flow --timeout=60s
 
@@ -112,6 +138,7 @@ cluster-direktiv: ## Installs direktiv in cluster
 	done
 	@echo "Endpoint is ready!"
 
+
 .PHONY: cluster-image-cache-stop
 cluster-image-cache-stop:  
 	@docker kill kind-registry proxy-docker-hub proxy-quay proxy-gcr proxy-k8s-gcr proxy-registry-k8s-io proxy-cr-fluentbit-io 2>/dev/null || true
@@ -122,3 +149,30 @@ cluster-direktiv-run: cluster-build
 	kubectl delete pod -l app.kubernetes.io/name=direktiv,app.kubernetes.io/instance=direktiv 
 	kubectl wait --for=condition=ready pod -l "app=direktiv-flow"
 	kubectl logs -f -l "app=direktiv-flow"
+
+cluster-dev:
+	DOCKER_BUILDKIT=1 docker build --build-arg IS_ENTERPRISE=${IS_ENTERPRISE} --push -t localhost:5001/direktiv:dev .
+	kubectl delete pod -l app=direktiv-flow
+
+cluster-otel-install:
+	helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+	helm upgrade --install --set image.repository=otel/opentelemetry-collector-k8s  \
+	--set mode=deployment \
+	--set resources.limits.cpu=250m \
+	--set resources.limits.memory=512Mi \
+	otel-collector open-telemetry/opentelemetry-collector -n default;
+	kubectl wait --for=condition=ready pod -l "app.kubernetes.io/instance=otel-collector"
+	helm upgrade --set database.host=postgres.default.svc \
+	--set database.port=5432 \
+	--set database.user=admin \
+	--set database.password=password \
+	--set database.name=direktiv \
+	--set database.sslmode=disable \
+	--set pullPolicy=Always \
+	--set ingress-nginx.install=false \
+	--set image=direktiv \
+	--set registry=localhost:5001 \
+	--set tag=dev \
+	--set flow.sidecar=localhost:5001/direktiv:dev \
+	--set flow.opentelemetryBackend=otel-collector-opentelemetry-collector.default:4317 \
+	direktiv charts/direktiv; 

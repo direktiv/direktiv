@@ -14,15 +14,19 @@ describe('Test gateway basic call', () => {
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
-direktiv_api: endpoint/v1
-path: /foo
-allow_anonymous: true
-methods:
-  - POST
-plugins:
-  target:
-    type: debug-target
-`)
+    x-direktiv-api: endpoint/v2
+    x-direktiv-config:
+        path: "/foo"
+        allow_anonymous: true
+        plugins:
+          target:
+            type: debug-target
+    post:
+      responses:
+         "200":
+           description: works
+`,
+	)
 
 	retry10(`should execute gateway ep1.yaml endpoint`, async () => {
 		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)

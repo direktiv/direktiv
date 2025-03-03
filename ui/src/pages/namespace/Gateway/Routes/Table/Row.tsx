@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { TableCell, TableRow } from "~/design/Table";
 
 import { AllowAnonymous } from "../components/Anonymous";
@@ -9,8 +9,7 @@ import { Methods } from "../components/Methods";
 import Plugins from "../components/Plugins";
 import PublicPathInput from "../components/PublicPath";
 import { RouteSchemaType } from "~/api/gateway/schema";
-import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
+import { getMethodsFromOpenApiSpec } from "../utils";
 import { useTranslation } from "react-i18next";
 
 type RowProps = {
@@ -18,22 +17,17 @@ type RowProps = {
 };
 
 export const Row: FC<RowProps> = ({ route }) => {
-  const pages = usePages();
-  const namespace = useNamespace();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  if (!namespace) return null;
 
   return (
     <TableRow
       onClick={() => {
-        navigate(
-          pages.gateway.createHref({
-            namespace,
-            subpage: "routeDetail",
-            routePath: route.file_path,
-          })
-        );
+        navigate({
+          to: "/n/$namespace/gateway/routes/$",
+          from: "/n/$namespace",
+          params: { _splat: route.file_path },
+        });
       }}
       className="cursor-pointer"
     >
@@ -44,11 +38,9 @@ export const Row: FC<RowProps> = ({ route }) => {
               e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link
             }}
             className="whitespace-normal break-all hover:underline"
-            to={pages.explorer.createHref({
-              namespace,
-              path: route.file_path,
-              subpage: "endpoint",
-            })}
+            to="/n/$namespace/explorer/endpoint/$"
+            from="/n/$namespace"
+            params={{ _splat: route.file_path }}
           >
             {route.file_path}
           </Link>
@@ -75,13 +67,15 @@ export const Row: FC<RowProps> = ({ route }) => {
         </div>
       </TableCell>
       <TableCell>
-        <Methods methods={route.methods} />
+        <Methods methods={getMethodsFromOpenApiSpec(route.spec)} />
       </TableCell>
       <TableCell>
-        <Plugins plugins={route.plugins} />
+        <Plugins plugins={route.spec["x-direktiv-config"]?.plugins} />
       </TableCell>
       <TableCell>
-        <AllowAnonymous allow={route.allow_anonymous} />
+        <AllowAnonymous
+          allow={route.spec["x-direktiv-config"]?.allow_anonymous}
+        />
       </TableCell>
       <TableCell className="whitespace-normal break-all">
         {route.server_path && <PublicPathInput path={route.server_path} />}

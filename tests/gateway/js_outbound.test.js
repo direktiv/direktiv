@@ -6,26 +6,28 @@ import { retry10 } from '../common/retry'
 
 const testNamespace = 'js-outbound'
 
-const endpointJSFile = `
-direktiv_api: endpoint/v1
-allow_anonymous: true
-plugins:
-  target:
-    type: target-flow
-    configuration:
-        flow: /target.yaml
-        content_type: application/json
-  outbound:
-    - type: js-outbound
-      configuration:
-        script: |
-          input["Headers"].Add("Header2", "value2")
-          b = JSON.parse(input["Body"])
-          b["random"] = "data"
-          input["Body"] = JSON.stringify(b) 
-methods: 
-  - POST
-path: /target`
+const endpointJSFile = `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/target"
+    allow_anonymous: true
+    plugins:
+      outbound:
+      - type: js-outbound
+        configuration:
+          script: |
+            input["Headers"].Add("Header2", "value2")
+            b = JSON.parse(input["Body"])
+            b["random"] = "data"
+            input["Body"] = JSON.stringify(b) 
+      target:
+        type: target-flow
+        configuration:
+          flow: /target.yaml
+          content_type: application/json
+post:
+   responses:
+      "200":
+        description: works`
 
 const wf = `
 direktiv_api: workflow/v1

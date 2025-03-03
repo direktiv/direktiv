@@ -8,14 +8,14 @@ import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
 const getTokens = apiFactory({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
-    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/tokens`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/api_tokens`,
   method: "GET",
   schema: TokenListSchema,
 });
 
 const fetchTokens = async ({
   queryKey: [{ apiKey, namespace }],
-}: QueryFunctionContext<ReturnType<(typeof tokenKeys)["tokenList"]>>) =>
+}: QueryFunctionContext<ReturnType<(typeof tokenKeys)["apiTokens"]>>) =>
   getTokens({
     apiKey,
     urlParams: { namespace },
@@ -30,7 +30,7 @@ export const useTokens = () => {
   }
 
   return useQueryWithPermissions({
-    queryKey: tokenKeys.tokenList(namespace, {
+    queryKey: tokenKeys.apiTokens(namespace, {
       apiKey: apiKey ?? undefined,
     }),
     queryFn: fetchTokens,

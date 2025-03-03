@@ -19,43 +19,94 @@ const workflow = `
 `
 
 const endpointWorkflowVar = `
-  direktiv_api: endpoint/v1
-  allow_anonymous: true
-  plugins:
-    target:
-      type: target-flow-var
-      configuration:
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint1"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-flow-var
+        configuration:
           namespace: ` + testNamespace + `
           flow: /workflow.yaml
           variable: test
-  methods: 
-    - GET
-  path: /endpoint1`
+get:
+   responses:
+      "200":
+        description: works
+`
+
+// const endpointWorkflowVar = `
+//   direktiv_api: endpoint/v1
+//   allow_anonymous: true
+//   plugins:
+//     target:
+//       type: target-flow-var
+//       configuration:
+//           namespace: ` + testNamespace + `
+//           flow: /workflow.yaml
+//           variable: test
+//   methods:
+//     - GET
+//   path: /endpoint1`
 
 const endpointWorkflowVarAllowed = `
-  direktiv_api: endpoint/v1
-  allow_anonymous: true
-  plugins:
-    target:
-      type: target-flow-var
-      configuration:
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint2"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-flow-var
+        configuration:
           namespace: ` + limitedNamespace + `
           flow: /workflow.yaml
           variable: test
           content_type: text/test
-  methods: 
-    - GET
-  path: endpoint2`
+get:
+   responses:
+      "200":
+        description: works
+`
+
+// const endpointWorkflowVarAllowed = `
+//   direktiv_api: endpoint/v1
+//   allow_anonymous: true
+//   plugins:
+//     target:
+//       type: target-flow-var
+//       configuration:
+//           namespace: ` + limitedNamespace + `
+//           flow: /workflow.yaml
+//           variable: test
+//           content_type: text/test
+//   methods:
+//     - GET
+//   path: endpoint2`
 
 const endpointWorkflkowVarBroken = `
-  direktiv_api: endpoint/v1
-  allow_anonymous: true
-  plugins:
-    target:
-      type: target-flow-var
-  methods: 
-    - GET
-  path: ep3`
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/ep3"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-flow-var
+get:
+   responses:
+      "200":
+        description: works
+`
+
+// const endpointWorkflkowVarBroken = `
+//   direktiv_api: endpoint/v1
+//   allow_anonymous: true
+//   plugins:
+//     target:
+//       type: target-flow-var
+//   methods:
+//     - GET
+//   path: ep3`
 
 describe('Test target workflow var wrong config', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -77,15 +128,11 @@ describe('Test target workflow var wrong config', () => {
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
 		expect(listRes.body.data[0]).toEqual({
+			spec: expect.anything(),
 			file_path: '/ep3.yaml',
-			path: '/ep3',
-			methods: [ 'GET' ],
-			allow_anonymous: true,
-			timeout: 0,
 			server_path: '/ns/system/ep3',
 			errors: [ "plugin 'target-flow-var' err: variable required" ],
 			warnings: [],
-			plugins: { target: { type: 'target-flow-var' } },
 		})
 	})
 })

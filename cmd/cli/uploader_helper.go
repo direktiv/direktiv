@@ -20,6 +20,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 )
 
@@ -109,8 +110,10 @@ func (u *uploader) createFile(path, filePath string) error {
 		switch resource.(type) {
 		case *model.Workflow:
 			obj.Typ = string(filestore.FileTypeWorkflow)
-		case *core.EndpointFile:
+		case *openapi3.PathItem:
 			obj.Typ = string(filestore.FileTypeEndpoint)
+		case *openapi3.T:
+			obj.Typ = string(filestore.FileTypeGateway)
 		case *core.ConsumerFile:
 			obj.Typ = string(filestore.FileTypeConsumer)
 		case *core.ServiceFile:
@@ -195,7 +198,7 @@ func (u *uploader) createFileItem(path, method string, obj fileObject) error {
 			return err
 		}
 
-		return fmt.Errorf(errJson.Error.Message)
+		return errors.New(errJson.Error.Message)
 	}
 
 	return nil

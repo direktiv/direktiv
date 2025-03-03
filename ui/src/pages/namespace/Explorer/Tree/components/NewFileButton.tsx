@@ -1,4 +1,15 @@
 import {
+  BookOpen,
+  Folder,
+  Layers,
+  Network,
+  PanelTop,
+  Play,
+  PlusCircle,
+  Users,
+  Workflow,
+} from "lucide-react";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -11,16 +22,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
-import {
-  Folder,
-  Layers,
-  Network,
-  PanelTop,
-  Play,
-  PlusCircle,
-  Users,
-  Workflow,
-} from "lucide-react";
 
 import Button from "~/design/Button";
 import { DialogTrigger } from "@radix-ui/react-dialog";
@@ -34,7 +35,8 @@ export type FileTypeSelection =
   | "new-service"
   | "new-route"
   | "new-page"
-  | "new-consumer";
+  | "new-consumer"
+  | "new-openapiSpecification";
 
 type NewFileButtonProps = {
   setSelectedDialog: (fileType: FileTypeSelection) => void;
@@ -99,7 +101,7 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
               {t("pages.explorer.tree.newFileButton.items.gateway.label")}
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
-              <DropdownMenuSubContent className="w-40">
+              <DropdownMenuSubContent className="w-52">
                 <DialogTrigger
                   className="w-full"
                   onClick={() => {
@@ -124,6 +126,21 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
                     )}
                   </DropdownMenuItem>
                 </DialogTrigger>
+                <DialogTrigger
+                  className="w-full"
+                  onClick={() => {
+                    setSelectedDialog("new-openapiSpecification");
+                  }}
+                >
+                  <DropdownMenuItem className="flex items-center">
+                    <BookOpen className="mr-2 size-4" />
+                    <span className="flex-1 text-left">
+                      {t(
+                        "pages.explorer.tree.newFileButton.items.gateway.openapiSpecification"
+                      )}
+                    </span>
+                  </DropdownMenuItem>
+                </DialogTrigger>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
@@ -135,7 +152,7 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
           >
             <DropdownMenuItem>
               <PanelTop className="mr-2 size-4" />
-              {t("pages.explorer.tree.newFileButton.items.page.label")}
+              {t("pages.explorer.tree.newFileButton.items.page")}
             </DropdownMenuItem>
           </DialogTrigger>
         </DropdownMenuGroup>

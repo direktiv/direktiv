@@ -12,7 +12,7 @@ import Button from "~/design/Button";
 import Input from "~/design/Input";
 import { Trash } from "lucide-react";
 import { useDeleteNamespace } from "~/api/namespaces/mutate/deleteNamespace";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 type DeleteProps = {
@@ -35,7 +35,7 @@ const Delete = ({ close }: DeleteProps) => {
       setConfirmText("");
       close();
       setNamespace(null);
-      navigate("/");
+      navigate({ to: "/" });
     },
   });
 

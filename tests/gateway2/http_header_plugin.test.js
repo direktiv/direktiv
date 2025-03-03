@@ -26,31 +26,34 @@ groups:
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
-direktiv_api: endpoint/v1
-allow_anonymous: false
-plugins:
-  auth:
-    - type: basic-auth   
-  target:
-    type: target-flow
-    configuration:
-        flow: /target.yaml
-        content_type: application/json
-  inbound:
-    - type: header-manipulation
-      configuration:
-        headers_to_add:
-        - name: hello
-          value: world
-        headers_to_modify: 
-        - name: header1
-          value: newvalue
-        headers_to_remove:
-          - name: header 
-    - type: "request-convert"
-methods: 
-  - POST
-path: /target
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/target"
+    allow_anonymous: false
+    plugins:
+        auth:
+        - type: basic-auth  
+        target:
+            type: target-flow
+            configuration:
+                flow: /target.yaml
+                content_type: application/json
+        inbound:
+        - type: header-manipulation
+          configuration:
+                headers_to_add:
+                - name: hello
+                  value: world
+                headers_to_modify: 
+                - name: header1
+                  value: newvalue
+                headers_to_remove:
+                - name: header 
+        - type: "request-convert"
+post:
+    responses:
+        "200":
+        description: works
 `)
 
 	helpers.itShouldCreateYamlFile(
