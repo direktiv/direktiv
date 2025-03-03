@@ -6,11 +6,11 @@ import { PanelTop } from "lucide-react";
 import { analyzePath } from "~/util/router/utils";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
+import { useParams } from "@tanstack/react-router";
 
 const UIPage: FC = () => {
-  const pages = usePages();
-  const { path } = pages.explorer.useParams();
+  const { _splat: path } = useParams({ strict: false });
+
   const namespace = useNamespace();
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];

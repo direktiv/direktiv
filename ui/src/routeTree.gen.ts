@@ -48,6 +48,7 @@ import { Route as NNamespaceMirrorLogsSyncImport } from './routes/n/$namespace/m
 import { Route as NNamespaceGatewayRoutesSplatImport } from './routes/n/$namespace/gateway/routes/$'
 import { Route as NNamespaceExplorerTreeSplatImport } from './routes/n/$namespace/explorer/tree.$'
 import { Route as NNamespaceExplorerServiceSplatImport } from './routes/n/$namespace/explorer/service.$'
+import { Route as NNamespaceExplorerPageSplatImport } from './routes/n/$namespace/explorer/page.$'
 import { Route as NNamespaceExplorerOpenapiSpecificationSplatImport } from './routes/n/$namespace/explorer/openapiSpecification.$'
 import { Route as NNamespaceExplorerEndpointSplatImport } from './routes/n/$namespace/explorer/endpoint.$'
 import { Route as NNamespaceExplorerConsumerSplatImport } from './routes/n/$namespace/explorer/consumer.$'
@@ -296,6 +297,13 @@ const NNamespaceExplorerServiceSplatRoute =
   NNamespaceExplorerServiceSplatImport.update({
     id: '/service/$',
     path: '/service/$',
+    getParentRoute: () => NNamespaceExplorerRouteRoute,
+  } as any)
+
+const NNamespaceExplorerPageSplatRoute =
+  NNamespaceExplorerPageSplatImport.update({
+    id: '/page/$',
+    path: '/page/$',
     getParentRoute: () => NNamespaceExplorerRouteRoute,
   } as any)
 
@@ -597,6 +605,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NNamespaceExplorerOpenapiSpecificationSplatImport
       parentRoute: typeof NNamespaceExplorerRouteImport
     }
+    '/n/$namespace/explorer/page/$': {
+      id: '/n/$namespace/explorer/page/$'
+      path: '/page/$'
+      fullPath: '/n/$namespace/explorer/page/$'
+      preLoaderRoute: typeof NNamespaceExplorerPageSplatImport
+      parentRoute: typeof NNamespaceExplorerRouteImport
+    }
     '/n/$namespace/explorer/service/$': {
       id: '/n/$namespace/explorer/service/$'
       path: '/service/$'
@@ -712,6 +727,7 @@ interface NNamespaceExplorerRouteRouteChildren {
   NNamespaceExplorerConsumerSplatRoute: typeof NNamespaceExplorerConsumerSplatRoute
   NNamespaceExplorerEndpointSplatRoute: typeof NNamespaceExplorerEndpointSplatRoute
   NNamespaceExplorerOpenapiSpecificationSplatRoute: typeof NNamespaceExplorerOpenapiSpecificationSplatRoute
+  NNamespaceExplorerPageSplatRoute: typeof NNamespaceExplorerPageSplatRoute
   NNamespaceExplorerServiceSplatRoute: typeof NNamespaceExplorerServiceSplatRoute
   NNamespaceExplorerTreeSplatRoute: typeof NNamespaceExplorerTreeSplatRoute
 }
@@ -725,6 +741,7 @@ const NNamespaceExplorerRouteRouteChildren: NNamespaceExplorerRouteRouteChildren
     NNamespaceExplorerEndpointSplatRoute: NNamespaceExplorerEndpointSplatRoute,
     NNamespaceExplorerOpenapiSpecificationSplatRoute:
       NNamespaceExplorerOpenapiSpecificationSplatRoute,
+    NNamespaceExplorerPageSplatRoute: NNamespaceExplorerPageSplatRoute,
     NNamespaceExplorerServiceSplatRoute: NNamespaceExplorerServiceSplatRoute,
     NNamespaceExplorerTreeSplatRoute: NNamespaceExplorerTreeSplatRoute,
   }
@@ -885,6 +902,7 @@ export interface FileRoutesByFullPath {
   '/n/$namespace/explorer/consumer/$': typeof NNamespaceExplorerConsumerSplatRoute
   '/n/$namespace/explorer/endpoint/$': typeof NNamespaceExplorerEndpointSplatRoute
   '/n/$namespace/explorer/openapiSpecification/$': typeof NNamespaceExplorerOpenapiSpecificationSplatRoute
+  '/n/$namespace/explorer/page/$': typeof NNamespaceExplorerPageSplatRoute
   '/n/$namespace/explorer/service/$': typeof NNamespaceExplorerServiceSplatRoute
   '/n/$namespace/explorer/tree/$': typeof NNamespaceExplorerTreeSplatRoute
   '/n/$namespace/gateway/routes/$': typeof NNamespaceGatewayRoutesSplatRoute
@@ -923,6 +941,7 @@ export interface FileRoutesByTo {
   '/n/$namespace/explorer/consumer/$': typeof NNamespaceExplorerConsumerSplatRoute
   '/n/$namespace/explorer/endpoint/$': typeof NNamespaceExplorerEndpointSplatRoute
   '/n/$namespace/explorer/openapiSpecification/$': typeof NNamespaceExplorerOpenapiSpecificationSplatRoute
+  '/n/$namespace/explorer/page/$': typeof NNamespaceExplorerPageSplatRoute
   '/n/$namespace/explorer/service/$': typeof NNamespaceExplorerServiceSplatRoute
   '/n/$namespace/explorer/tree/$': typeof NNamespaceExplorerTreeSplatRoute
   '/n/$namespace/gateway/routes/$': typeof NNamespaceGatewayRoutesSplatRoute
@@ -971,6 +990,7 @@ export interface FileRoutesById {
   '/n/$namespace/explorer/consumer/$': typeof NNamespaceExplorerConsumerSplatRoute
   '/n/$namespace/explorer/endpoint/$': typeof NNamespaceExplorerEndpointSplatRoute
   '/n/$namespace/explorer/openapiSpecification/$': typeof NNamespaceExplorerOpenapiSpecificationSplatRoute
+  '/n/$namespace/explorer/page/$': typeof NNamespaceExplorerPageSplatRoute
   '/n/$namespace/explorer/service/$': typeof NNamespaceExplorerServiceSplatRoute
   '/n/$namespace/explorer/tree/$': typeof NNamespaceExplorerTreeSplatRoute
   '/n/$namespace/gateway/routes/$': typeof NNamespaceGatewayRoutesSplatRoute
@@ -1018,6 +1038,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/explorer/consumer/$'
     | '/n/$namespace/explorer/endpoint/$'
     | '/n/$namespace/explorer/openapiSpecification/$'
+    | '/n/$namespace/explorer/page/$'
     | '/n/$namespace/explorer/service/$'
     | '/n/$namespace/explorer/tree/$'
     | '/n/$namespace/gateway/routes/$'
@@ -1055,6 +1076,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/explorer/consumer/$'
     | '/n/$namespace/explorer/endpoint/$'
     | '/n/$namespace/explorer/openapiSpecification/$'
+    | '/n/$namespace/explorer/page/$'
     | '/n/$namespace/explorer/service/$'
     | '/n/$namespace/explorer/tree/$'
     | '/n/$namespace/gateway/routes/$'
@@ -1101,6 +1123,7 @@ export interface FileRouteTypes {
     | '/n/$namespace/explorer/consumer/$'
     | '/n/$namespace/explorer/endpoint/$'
     | '/n/$namespace/explorer/openapiSpecification/$'
+    | '/n/$namespace/explorer/page/$'
     | '/n/$namespace/explorer/service/$'
     | '/n/$namespace/explorer/tree/$'
     | '/n/$namespace/gateway/routes/$'
@@ -1181,6 +1204,7 @@ export const routeTree = rootRoute
         "/n/$namespace/explorer/consumer/$",
         "/n/$namespace/explorer/endpoint/$",
         "/n/$namespace/explorer/openapiSpecification/$",
+        "/n/$namespace/explorer/page/$",
         "/n/$namespace/explorer/service/$",
         "/n/$namespace/explorer/tree/$"
       ]
@@ -1334,6 +1358,10 @@ export const routeTree = rootRoute
     },
     "/n/$namespace/explorer/openapiSpecification/$": {
       "filePath": "n/$namespace/explorer/openapiSpecification.$.tsx",
+      "parent": "/n/$namespace/explorer"
+    },
+    "/n/$namespace/explorer/page/$": {
+      "filePath": "n/$namespace/explorer/page.$.tsx",
       "parent": "/n/$namespace/explorer"
     },
     "/n/$namespace/explorer/service/$": {
