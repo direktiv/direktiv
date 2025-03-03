@@ -96,7 +96,6 @@ export const MethodCheckbox: React.FC<MethodCheckboxProps> = ({
               <Button
                 type="button"
                 onClick={() => {
-                  form.setValue("patch", previousValue);
                   field.onChange(undefined);
                   setDialogOpen(false);
                 }}
