@@ -1,96 +1,40 @@
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
-import { MethodsSchema, RouteMethod, routeMethods } from "~/api/gateway/schema";
-import { UseFormReturn, useForm } from "react-hook-form";
-import { jsonToYaml, yamlToJsonOrNull } from "~/pages/namespace/Explorer/utils";
 
 import Button from "~/design/Button";
-import { Card } from "~/design/Card";
-import Editor from "~/design/Editor";
 import { EndpointFormSchemaType } from "../../schema";
-import FormErrors from "~/components/FormErrors";
+import { MethodsSchemaType } from "~/api/gateway/schema";
 import { ModalWrapper } from "~/components/ModalWrapper";
+import { OpenAPIDocsEditor } from "./OpenAPIDocsEditor";
 import { ScrollText } from "lucide-react";
-import { useTheme } from "~/util/store/theme";
+import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 
 type OpenAPIDocsFormProps = {
   form: UseFormReturn<EndpointFormSchemaType>;
   onSave: (value: EndpointFormSchemaType) => void;
 };
 
-const FormSchema = z.object({
-  /**
-   * Passthrough is required here to detect if the user adds some additional unallowed
-   * keys, that we will then restrict with an error message in the schemas refine function.
-   */
-  editor: MethodsSchema.passthrough(),
-});
-
-type FormSchemaType = z.infer<typeof FormSchema>;
-
 export const OpenAPIDocsForm: FC<OpenAPIDocsFormProps> = ({ form, onSave }) => {
-  const theme = useTheme();
   const { t } = useTranslation();
-  const { handleSubmit: handleParentSubmit, watch: getParentValues } = form;
-
-  const {
-    handleSubmit,
-    getValues,
-    setValue,
-    formState: { errors },
-  } = useForm<FormSchemaType>({
-    resolver: zodResolver(
-      FormSchema.refine(
-        (data) => {
-          const containsUnsupportedMethod = Object.keys(data.editor).some(
-            (method) => !routeMethods.has(method as RouteMethod)
-          );
-          if (containsUnsupportedMethod) return false;
-          return true;
-        },
-        {
-          message: t(
-            "pages.explorer.endpoint.editor.form.docs.modal.unsupportedMethods",
-            { methods: Array.from(routeMethods).join(", ") }
-          ),
-        }
-      )
-    ),
-    defaultValues: {
-      editor: {
-        connect: getParentValues("connect"),
-        delete: getParentValues("delete"),
-        get: getParentValues("get"),
-        head: getParentValues("head"),
-        options: getParentValues("options"),
-        patch: getParentValues("patch"),
-        post: getParentValues("post"),
-        put: getParentValues("put"),
-        trace: getParentValues("trace"),
-      },
-    },
-  });
-
+  const { handleSubmit, watch } = form;
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const formId = "openAPIDocsForm";
-
-  const onSubmit = (configuration: FormSchemaType) => {
+  const onSubmit = (configuration: MethodsSchemaType) => {
     setDialogOpen(false);
-    form.setValue("connect", configuration.editor.connect);
-    form.setValue("delete", configuration.editor.delete);
-    form.setValue("get", configuration.editor.get);
-    form.setValue("head", configuration.editor.head);
-    form.setValue("options", configuration.editor.options);
-    form.setValue("patch", configuration.editor.patch);
-    form.setValue("post", configuration.editor.post);
-    form.setValue("put", configuration.editor.put);
-    form.setValue("trace", configuration.editor.trace);
-    handleParentSubmit(onSave)();
+    form.setValue("connect", configuration.connect);
+    form.setValue("delete", configuration.delete);
+    form.setValue("get", configuration.get);
+    form.setValue("head", configuration.head);
+    form.setValue("options", configuration.options);
+    form.setValue("patch", configuration.patch);
+    form.setValue("post", configuration.post);
+    form.setValue("put", configuration.put);
+    form.setValue("trace", configuration.trace);
+    handleSubmit(onSave)();
   };
+
+  const formId = "openAPIDocsForm";
 
   return (
     <Dialog
@@ -113,21 +57,21 @@ export const OpenAPIDocsForm: FC<OpenAPIDocsFormProps> = ({ form, onSave }) => {
           setDialogOpen(false);
         }}
       >
-        <form id={formId} onSubmit={handleSubmit(onSubmit)}>
-          <Card className="h-96 w-full p-4" noShadow background="weight-1">
-            <FormErrors errors={errors} className="mb-5" />
-            <Editor
-              defaultValue={jsonToYaml(getValues("editor"))}
-              onChange={(newDocs) => {
-                if (newDocs !== undefined) {
-                  const docsAsJson = yamlToJsonOrNull(newDocs) ?? {};
-                  setValue("editor", docsAsJson);
-                }
-              }}
-              theme={theme ?? undefined}
-            />
-          </Card>
-        </form>
+        <OpenAPIDocsEditor
+          id={formId}
+          defaultValue={{
+            connect: watch("connect"),
+            delete: watch("delete"),
+            get: watch("get"),
+            head: watch("head"),
+            options: watch("options"),
+            patch: watch("patch"),
+            post: watch("post"),
+            put: watch("put"),
+            trace: watch("trace"),
+          }}
+          onSubmit={onSubmit}
+        />
       </ModalWrapper>
     </Dialog>
   );
