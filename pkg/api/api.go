@@ -105,7 +105,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 		}{
 			Version:      version.Version,
 			IsEnterprise: extensions.IsEnterprise,
-			RequiresAuth: os.Getenv("DIREKTIV_API_KEY") != "",
+			RequiresAuth: os.Getenv("DIREKTIV_UI_SET_API_KEY") == "true",
 		}
 
 		writeJSON(w, data)

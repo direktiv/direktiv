@@ -6,23 +6,23 @@ import {
 
 import Badge from "~/design/Badge";
 import { FC } from "react";
-import { RouteSchemaType } from "~/api/gateway/schema";
+import { RouteMethod } from "~/api/gateway/schema";
 import { useTranslation } from "react-i18next";
 
 type AllowAnonymousProps = {
-  methods: RouteSchemaType["methods"];
+  methods: RouteMethod[];
 };
 
 const methodDisplayCount = 2;
 
 export const Methods: FC<AllowAnonymousProps> = ({ methods }) => {
   const { t } = useTranslation();
-  const numberOfMethods = methods?.length ?? 0;
+  const numberOfMethods = methods.length;
   const numberOfHiddenMethods = numberOfMethods - methodDisplayCount;
   const needsTooltip = numberOfHiddenMethods > 0;
 
-  const methodsToDisplay = methods?.slice(0, methodDisplayCount) ?? [];
-  const methodsBehindTooltip = methods?.slice(methodDisplayCount) ?? [];
+  const methodsToDisplay = methods.slice(0, methodDisplayCount);
+  const methodsBehindTooltip = methods.slice(methodDisplayCount);
 
   return (
     <div className="flex gap-1">

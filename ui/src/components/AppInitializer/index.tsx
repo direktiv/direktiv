@@ -10,6 +10,7 @@ export const AppInitializer: FC<PropsWithChildren> = ({ children }) => {
     ...window._direktiv,
     isEnterprise: data?.data.isEnterprise,
     requiresAuth: data?.data.requiresAuth,
+    version: data?.data.version,
   };
 
   return <>{children}</>;

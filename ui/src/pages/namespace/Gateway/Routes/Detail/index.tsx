@@ -27,7 +27,10 @@ const RoutesDetailPage = () => {
 
   return (
     <div className="grid grow grid-rows-[auto_1fr]">
-      <LogStreamingSubscriber route={data.path} enabled={!!data.path} />
+      <LogStreamingSubscriber
+        route={data.spec["x-direktiv-config"]?.path}
+        enabled={!!data.spec["x-direktiv-config"]?.path}
+      />
       <Header />
       <div
         className={twMergeClsx(
@@ -38,7 +41,7 @@ const RoutesDetailPage = () => {
         )}
       >
         <Card className="relative grid grid-rows-[auto,1fr,auto] p-5">
-          <Logs path={data.path} />
+          <Logs path={data.spec["x-direktiv-config"]?.path} />
         </Card>
       </div>
     </div>

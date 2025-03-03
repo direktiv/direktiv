@@ -1,6 +1,6 @@
 run:
   timeout: 10m
-  go: 1.23.0
+  go: 1.24.0
   issues-exit-code: 1
   tests: false
 
@@ -21,7 +21,7 @@ linters-settings:
     # Default: 1
     block-size: 2
 
-  sloglint:
+    # sloglint:
     # Enforce not using global loggers.
     # Values:
     # - "": disabled
@@ -120,7 +120,7 @@ issues:
     - text: "context-as-argument:"
       linters:
         - revive
-    - text: "context-keys-type: should not use basic type string"
+    - text: "context-keys-type: should not use basic type"
       linters:
         - revive
     - text: "fmt.Errorf can be replaced"

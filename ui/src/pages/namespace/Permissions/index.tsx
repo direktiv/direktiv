@@ -1,4 +1,4 @@
-import { FileCheck, KeyRound, Users } from "lucide-react";
+import { KeyRound, Users } from "lucide-react";
 import { Link, Outlet, useMatch } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 
@@ -7,12 +7,8 @@ import { useTranslation } from "react-i18next";
 const PermissionsPage = () => {
   const { t } = useTranslation();
 
-  const isPermissionsPolicyPage = useMatch({
-    from: "/n/$namespace/permissions/",
-    shouldThrow: false,
-  });
-  const isPermissionsGroupsPage = useMatch({
-    from: "/n/$namespace/permissions/groups",
+  const isPermissionsRolesPage = useMatch({
+    from: "/n/$namespace/permissions/roles",
     shouldThrow: false,
   });
   const isPermissionsTokensPage = useMatch({
@@ -22,18 +18,11 @@ const PermissionsPage = () => {
 
   const tabs = [
     {
-      value: "policy",
-      active: isPermissionsPolicyPage,
-      icon: <FileCheck aria-hidden="true" />,
-      title: t("pages.permissions.tabs.policy"),
-      link: "/n/$namespace/permissions",
-    },
-    {
-      value: "groups",
-      active: isPermissionsGroupsPage,
+      value: "roles",
+      active: isPermissionsRolesPage,
       icon: <Users aria-hidden="true" />,
-      title: t("pages.permissions.tabs.groups"),
-      link: "/n/$namespace/permissions/groups",
+      title: t("pages.permissions.tabs.roles"),
+      link: "/n/$namespace/permissions/roles",
     },
     {
       value: "tokens",
