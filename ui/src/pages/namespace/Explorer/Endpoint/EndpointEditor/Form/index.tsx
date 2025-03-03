@@ -73,7 +73,9 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
             />
           </Fieldset>
         </div>
-        <Fieldset label={t("pages.explorer.endpoint.editor.form.methods")}>
+        <Fieldset
+          label={t("pages.explorer.endpoint.editor.form.methods.label")}
+        >
           <div className="grid grid-cols-3 gap-5">
             {Array.from(routeMethods).map((method) => (
               <Controller

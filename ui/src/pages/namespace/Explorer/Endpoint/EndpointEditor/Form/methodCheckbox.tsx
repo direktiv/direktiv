@@ -24,6 +24,7 @@ import { CheckedState } from "@radix-ui/react-checkbox";
 import { EndpointFormSchemaType } from "../schema";
 import { OpenAPIDocsEditor } from "./OpenAPIDocsEditor";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface MethodCheckboxProps {
   isChecked: boolean;
@@ -36,27 +37,31 @@ const defaultMethodValue = {
   responses: { "200": { description: "" } },
 } as const;
 
+const isDefaultValue = (value: unknown) =>
+  JSON.stringify(value) === JSON.stringify(defaultMethodValue);
+
 export const MethodCheckbox: React.FC<MethodCheckboxProps> = ({
   method,
   field,
   isChecked,
   form,
 }) => {
+  const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const previousValue = form.watch(method);
+  const currentValue = form.watch(method);
   const onCheckedChange = (checked: CheckedState) => {
     if (checked) {
       field.onChange(defaultMethodValue);
     } else {
-      const isCustomValue =
-        JSON.stringify(previousValue) !== JSON.stringify(defaultMethodValue);
-      if (isCustomValue) {
+      if (!isDefaultValue(currentValue)) {
         setDialogOpen(true);
       } else {
         field.onChange(undefined);
       }
     }
   };
+
+  const otherMethods = Array.from(routeMethods).filter((m) => m !== method);
 
   return (
     <label className="flex items-center gap-2 text-sm" htmlFor={method}>
@@ -69,9 +74,13 @@ export const MethodCheckbox: React.FC<MethodCheckboxProps> = ({
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Are you sure?</DialogTitle>
+            <DialogTitle>
+              {t("pages.explorer.endpoint.editor.form.methods.modal.headline")}
+            </DialogTitle>
           </DialogHeader>
-          You are about to delete the documentation for the {method}.
+          {t("pages.explorer.endpoint.editor.form.methods.modal.description", {
+            method,
+          })}
           <OpenAPIDocsEditor
             defaultValue={{
               connect: form.getValues("connect"),
@@ -89,7 +98,9 @@ export const MethodCheckbox: React.FC<MethodCheckboxProps> = ({
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="ghost">
-                Cancel
+                {t(
+                  "pages.explorer.endpoint.editor.form.methods.modal.cancelBtn"
+                )}
               </Button>
             </DialogClose>
             <ButtonBar>
@@ -100,7 +111,9 @@ export const MethodCheckbox: React.FC<MethodCheckboxProps> = ({
                   setDialogOpen(false);
                 }}
               >
-                Delete Documentation
+                {t(
+                  "pages.explorer.endpoint.editor.form.methods.modal.confirmBtn"
+                )}
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -108,23 +121,33 @@ export const MethodCheckbox: React.FC<MethodCheckboxProps> = ({
                     <ChevronDown />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-40">
-                  {Array.from(routeMethods).map((method) => (
-                    <DialogClose
-                      key={method}
-                      onClick={() => {
-                        form.setValue(method, previousValue);
-                        field.onChange(undefined);
-                        setDialogOpen(false);
-                      }}
-                      className="w-full"
-                    >
-                      <DropdownMenuItem>
-                        <ClipboardPaste className="mr-2 size-4" /> copy to{" "}
-                        {method}
-                      </DropdownMenuItem>
-                    </DialogClose>
-                  ))}
+                <DropdownMenuContent className="w-64">
+                  {otherMethods.map((method) => {
+                    const overwrite =
+                      form.watch(method) && !isDefaultValue(form.watch(method));
+
+                    return (
+                      <DialogClose
+                        key={method}
+                        onClick={() => {
+                          form.setValue(method, currentValue);
+                          field.onChange(undefined);
+                          setDialogOpen(false);
+                        }}
+                        className="w-full"
+                      >
+                        <DropdownMenuItem>
+                          <ClipboardPaste className="mr-2 size-4" />
+                          {t(
+                            overwrite
+                              ? "pages.explorer.endpoint.editor.form.methods.modal.overwrite"
+                              : "pages.explorer.endpoint.editor.form.methods.modal.copy",
+                            { method }
+                          )}
+                        </DropdownMenuItem>
+                      </DialogClose>
+                    );
+                  })}
                 </DropdownMenuContent>
               </DropdownMenu>
             </ButtonBar>
