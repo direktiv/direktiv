@@ -37,12 +37,7 @@ export const OpenAPIDocsForm: FC<OpenAPIDocsFormProps> = ({ form, onSave }) => {
   const formId = "openAPIDocsForm";
 
   return (
-    <Dialog
-      open={dialogOpen}
-      onOpenChange={(isOpen) => {
-        setDialogOpen(isOpen);
-      }}
-    >
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <Button icon variant="outline">
           <ScrollText />
