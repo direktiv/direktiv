@@ -28,8 +28,8 @@ const InfoPage = () => {
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
-      <div className="flex flex-col gap-4 sm:flex-row w-full">
-        <div className="flex flex-col gap-4 w-2/3">
+      <div className="flex flex-col gap-4 lg:flex-row w-full">
+        <div className="flex flex-col gap-4 w-full lg:w-2/3">
           <Card className="">
             <Table className="border-gray-5 dark:border-gray-dark-5">
               <TableBody>
@@ -92,11 +92,11 @@ const InfoPage = () => {
             ) : null}
           </Card>
 
-          <div className="flex grow max-lg:h-[500px]">
+          <div className="flex grow lg:h-[calc(100vh-25rem)]">
             <RoutesPage />
           </div>
         </div>
-        <Card className="flex grow p-4 max-lg:h-[500px] w-1/3">
+        <Card className="flex grow p-4 max-lg:h-[500px] lg:w-1/3 w-full">
           <Editor
             value={specToYaml}
             theme={theme ?? undefined}
