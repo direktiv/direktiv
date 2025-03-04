@@ -37,8 +37,8 @@ const RoutesTable = ({
     (isSuccess && filteredRoutes.length === 0);
 
   return (
-    <Table className="border-t border-gray-5 dark:border-gray-dark-5">
-      <TableHead className="sticky top-0 bg-white dark:bg-gray-dark-1 z-10 border-y border-gray-5 dark:border-gray-dark-5">
+    <Table>
+      <TableHead className="sticky top-0 bg-gray-1 z-10 dark:bg-gray-dark-1">
         <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
           <TableHeaderCell className="w-60 grow">
             {t("pages.gateway.routes.columns.filePath")}
