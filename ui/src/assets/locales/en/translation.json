@@ -1117,7 +1117,7 @@
       "gatewayRoutes": "Routes",
       "gatewayConsumers": "Consumers",
       "gatewayDocumentation": "Documentation",
-      "gatewayInfo": "Info",
+      "gatewayInfo": "Routes Info",
       "jqPlayground": "jq Playground"
     },
     "contextMenu": {

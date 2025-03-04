@@ -45,21 +45,9 @@ test("The consumer list can be visited", async ({ page }) => {
     "it renders an empty list of consumers"
   ).toBeVisible();
 
-  await page.getByRole("tab", { name: "Routes" }).click();
-
-  await expect(
-    page,
-    "it is possible to navigate to Routes by breadcrumb"
-  ).toHaveURL(`n/${namespace}/gateway/routes`);
-
   await expect(
     page.getByTestId("breadcrumb-gateway"),
     "it renders the 'Gateway' breadcrumb"
-  ).toBeVisible();
-
-  await expect(
-    page.getByTestId("breadcrumb-routes"),
-    "it renders the 'Routes' breadcrumb"
   ).toBeVisible();
 });
 

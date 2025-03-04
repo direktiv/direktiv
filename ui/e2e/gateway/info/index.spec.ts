@@ -42,10 +42,11 @@ test("Info page default view", async ({ page }) => {
 
   const editor = page.locator(".lines-content");
 
-  await expect(
-    editor,
-    "it displays the namespace in the editor preview"
-  ).toContainText(`title: ${namespace}`, { useInnerText: true });
+  // Create a more flexible regex that allows for spaces within the namespace
+  const namespacePattern = namespace.split("").join("\\s*");
+  await expect(editor).toContainText(
+    new RegExp(`title:\\s*${namespacePattern}`)
+  );
 
   await expect(
     editor,

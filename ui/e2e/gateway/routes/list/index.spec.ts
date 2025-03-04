@@ -21,7 +21,7 @@ test.afterEach(async () => {
 });
 
 test("The route list can be visited", async ({ page }) => {
-  await page.goto(`/n/${namespace}/gateway/routes`, {
+  await page.goto(`/n/${namespace}/gateway/gatewayInfo`, {
     waitUntil: "networkidle",
   });
 
@@ -31,8 +31,8 @@ test("The route list can be visited", async ({ page }) => {
   ).toBeVisible();
 
   await expect(
-    page.getByTestId("breadcrumb-routes"),
-    "it renders the 'Routes' breadcrumb"
+    page.getByTestId("breadcrumb-info"),
+    "it renders the 'Routes Info' breadcrumb"
   ).toBeVisible();
 
   await expect(
@@ -65,7 +65,7 @@ test("Route list shows all available routes", async ({ page }) => {
     )
     .toBeTruthy();
 
-  await page.goto(`/n/${namespace}/gateway/routes`, {
+  await page.goto(`/n/${namespace}/gateway/gatewayInfo`, {
     waitUntil: "networkidle",
   });
 
@@ -88,23 +88,25 @@ test("Route list shows all available routes", async ({ page }) => {
     `${process.env.PLAYWRIGHT_UI_BASE_URL}/ns/${namespace}/${path}`
   );
 
-  await expect(
-    page.getByTestId("route-table").getByText("connect", { exact: true }),
-    "it renders the text for the method"
-  ).toBeVisible();
+  await page.getByTestId("route-table").getByText("9 methods").hover();
 
-  await page.getByTestId("route-table").getByText("+7").hover();
-
-  const methods = ["get", "head", "options", "patch", "post", "put", "trace"];
+  const methods = [
+    "connect",
+    "delete",
+    "get",
+    "head",
+    "options",
+    "patch",
+    "post",
+    "put",
+    "trace",
+  ];
 
   for (const method of methods) {
     await expect(
       page.getByTestId("route-table").getByText(method)
     ).toBeVisible();
   }
-
-  // hover over somethiing else to make the overlay disappear
-  await page.getByTestId("route-table").getByText("yes").hover();
 
   await expect(
     page.getByTestId("route-table").getByRole("cell", { name: "1 plugin" }),
@@ -122,7 +124,7 @@ test("Route list shows all available routes", async ({ page }) => {
   ).toBeVisible();
 
   await expect(
-    page.getByTestId("route-table").getByText("yes"),
+    page.getByTestId("route-table").getByText("public endpoint"),
     "it renders the correct label for 'allow anonymous'"
   ).toBeVisible();
 });
