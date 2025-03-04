@@ -122,7 +122,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           build-args: |
             VERSION=${{ env.VERSION }}
-            GIT_SHA=$(git rev-parse --short=10 HEAD)
+            GIT_SHA=${GITHUB_SHA::10}
 
   build-ee:
     runs-on: ubuntu-latest
@@ -197,7 +197,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           build-args: |
             VERSION=${{ env.VERSION }}
-            GIT_SHA=$(git rev-parse --short=10 HEAD)
+            GIT_SHA=${GITHUB_SHA::10}
             IS_ENTERPRISE=true
 
   e2e:
