@@ -1,4 +1,6 @@
 package version
 
-var Version string
-var GitSha string
+var (
+	Version string
+	GitSha  string
+)
