@@ -988,7 +988,7 @@
       },
       "routes": {
         "columns": {
-          "filePath": "file path & routes info",
+          "filePath": "file path",
           "methods": "methods",
           "path": "path",
           "plugins": "plugins",
