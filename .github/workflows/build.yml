@@ -103,6 +103,8 @@ jobs:
 
       - name: Set Docker Arg VERSION
         run: |
+          echo "GIT_SHA=$(git rev-parse --short=10 HEAD)" >> $GITHUB_ENV
+
           if [[ $GITHUB_REF == refs/tags/* ]]; then
             echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           else
@@ -122,7 +124,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           build-args: |
             VERSION=${{ env.VERSION }}
-            GIT_SHA=${GITHUB_SHA::10}
+            GIT_SHA=${{ env.GIT_SHA }}
 
   build-ee:
     runs-on: ubuntu-latest
@@ -178,6 +180,8 @@ jobs:
 
       - name: Set Docker Arg VERSION
         run: |
+          echo "GIT_SHA=$(git rev-parse --short=10 HEAD)" >> $GITHUB_ENV
+
           if [[ $GITHUB_REF == refs/tags/* ]]; then
             echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           else
@@ -197,7 +201,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           build-args: |
             VERSION=${{ env.VERSION }}
-            GIT_SHA=${GITHUB_SHA::10}
+            GIT_SHA=${{ env.GIT_SHA }}
             IS_ENTERPRISE=true
 
   e2e:
