@@ -19,7 +19,7 @@ jobs:
 
       - name: Get Git Version
         run: |
-          VERSION=$(git describe --tags --exact-match | sed 's/^v//')
+          VERSION=$(git tag --points-at HEAD | head -n 1 | sed 's/^v//')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Update Chart.yaml with Git Version
