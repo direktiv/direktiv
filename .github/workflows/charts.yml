@@ -24,8 +24,8 @@ jobs:
 
       - name: Update Chart.yaml with Git Version
         run: |
-          sed -i "s/APP_VERSION/v${VERSION}/" direktiv/Chart.yaml
-          sed -i "s/VERSION/${VERSION}/" direktiv/Chart.yaml
+          sed -i "s/^version:.*/version: ${VERSION}/" direktiv/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: v${VERSION}/" direktiv/Chart.yaml
           cat direktiv/Chart.yaml  # Print for debugging
 
       - name: Configure Git
