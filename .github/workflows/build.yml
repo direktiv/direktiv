@@ -120,7 +120,9 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
-          build-args: VERSION=${{ env.VERSION }}
+          build-args: |
+            VERSION=${{ env.VERSION }}
+            GIT_SHA=$(git rev-parse --short=10 HEAD)
 
   build-ee:
     runs-on: ubuntu-latest
@@ -195,6 +197,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           build-args: |
             VERSION=${{ env.VERSION }}
+            GIT_SHA=$(git rev-parse --short=10 HEAD)
             IS_ENTERPRISE=true
 
   e2e:
