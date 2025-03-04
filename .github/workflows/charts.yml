@@ -21,6 +21,7 @@ jobs:
         run: |
           VERSION=$(git tag --points-at HEAD | head -n 1 | sed 's/^v//')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+          cat $GITHUB_ENV
 
       - name: Update Chart.yaml with Git Version
         run: |
