@@ -26,7 +26,7 @@ const RoutesPage = () => {
   );
 
   return (
-    <Card className="w-full overflow-y-auto">
+    <Card className="w-full flex flex-col">
       <div className="flex justify-between gap-5 p-2">
         <Input
           className="sm:w-60"
@@ -45,7 +45,9 @@ const RoutesPage = () => {
           }}
         />
       </div>
-      <RoutesTable search={search} filteredRoutes={filteredRoutes} />
+      <div className="overflow-y-auto flex-1">
+        <RoutesTable search={search} filteredRoutes={filteredRoutes} />
+      </div>
     </Card>
   );
 };
