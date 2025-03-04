@@ -19,7 +19,7 @@ export const getOidcConfig = (): AuthProviderProps => ({
   client_id,
   post_logout_redirect_uri: rootUrl,
   redirect_uri: rootUrl,
-  scope: "openid profile email groups",
+  scope: isDev() ? "openid profile email groups" : undefined,
 
   /**
    * removes code and state from url after signin
