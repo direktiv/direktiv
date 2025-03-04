@@ -88,6 +88,7 @@ export const OpenAPIDocsEditor = forwardRef<
     }
 
     const docsAsJson = yamlToJsonOrNull(newDocs);
+    // non empty string that result in null, are errors
     if (docsAsJson === null) {
       setError("root", {
         message: t(
