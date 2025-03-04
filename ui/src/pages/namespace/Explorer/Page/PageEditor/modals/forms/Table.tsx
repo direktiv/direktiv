@@ -235,11 +235,11 @@ const TableForm = ({
               </div>
             </fieldset>
             <Button
+              disabled={selectRoute.length <= 1}
               variant={variant}
               onClick={(e) => {
                 e.preventDefault();
                 isPending = true;
-
                 getOutput({ path: selectRoute, payload: "ha" });
               }}
             >

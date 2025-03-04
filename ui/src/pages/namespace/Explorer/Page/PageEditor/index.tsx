@@ -67,7 +67,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
 
   const footerDefault: PageElementSchemaType = {
     name: "Footer",
-    hidden: false,
+    hidden: true,
     content: "This is the footer",
     preview: "This is the footer",
   };
@@ -107,8 +107,12 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
     pageConfig?.layout ?? defaultLayout
   );
 
-  const [header, setHeader] = useState<PageElementSchemaType>(headerDefault);
-  const [footer, setFooter] = useState<PageElementSchemaType>(footerDefault);
+  const [header, setHeader] = useState<PageElementSchemaType>(
+    pageConfig?.header ?? headerDefault
+  );
+  const [footer, setFooter] = useState<PageElementSchemaType>(
+    pageConfig?.footer ?? footerDefault
+  );
 
   const updateHeader = (header: PageElementSchemaType) => {
     const newHeader = header;
