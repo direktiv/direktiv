@@ -98,7 +98,7 @@ const InfoPage = () => {
   );
 
   const rightPanel = (
-    <Card className="flex grow p-4 lg:h-[calc(100vh-11.8rem)] w-full">
+    <Card className="flex grow p-4 lg:h-[calc(100vh-11.8rem)] h-96 w-full">
       <Editor
         value={specToYaml}
         theme={theme ?? undefined}
@@ -110,7 +110,7 @@ const InfoPage = () => {
   );
 
   return (
-    <div className="flex grow flex-col gap-y-4 p-5">
+    <div className="flex grow flex-col gap-y-4 p-5 w-full">
       <ResizeablePanel
         leftPanel={leftPanel}
         rightPanel={rightPanel}

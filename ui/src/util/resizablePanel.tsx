@@ -23,6 +23,7 @@ const ResizablePanel: React.FC<ResizablePanelProps> = ({
 }) => {
   const [leftWidth, setLeftWidth] = useState(initialLeftWidth);
   const isDragging = useRef(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
 
   useEffect(() => {
     const resize = (e: MouseEvent) => {
@@ -50,6 +51,18 @@ const ResizablePanel: React.FC<ResizablePanelProps> = ({
     };
   }, [minLeftWidth, maxLeftWidth]);
 
+  useEffect(() => {
+    const checkScreenSize = () => {
+      // Purpose is to make component responsive and this adds breakpoint for lg screens
+      setIsLargeScreen(window.innerWidth >= 1024);
+    };
+
+    checkScreenSize(); // Check initially
+    window.addEventListener("resize", checkScreenSize);
+
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
+
   const startResize = () => {
     isDragging.current = true;
     document.body.style.cursor = "col-resize";
@@ -57,21 +70,33 @@ const ResizablePanel: React.FC<ResizablePanelProps> = ({
   };
 
   return (
-    <div className={twMergeClsx("flex w-full", className)}>
+    <div
+      className={twMergeClsx("lg:flex lg:flex-row flex-col w-full", className)}
+    >
       {/* Left panel */}
-      <div style={{ width: `${leftWidth}%` }}>{leftPanel}</div>
+      <div
+        className="lg:w-auto w-full"
+        style={isLargeScreen ? { width: `${leftWidth}%` } : {}}
+      >
+        {leftPanel}
+      </div>
 
-      {/* Resize handle */}
+      {/* Resize handle - only visible on lg screens and above */}
       <div
         className={twMergeClsx(
-          "w-1 min-h-full hover:bg-gray-100 cursor-col-resize shrink-0 mx-2",
+          "w-1 min-h-full hover:bg-gray-100 cursor-col-resize shrink-0 mx-2 hidden lg:block",
           handleClassName
         )}
         onMouseDown={startResize}
       />
 
       {/* Right panel */}
-      <div style={{ width: `${100 - leftWidth - 0.25}%` }}>{rightPanel}</div>
+      <div
+        className="lg:w-auto w-full lg:mt-0 mt-4"
+        style={isLargeScreen ? { width: `${100 - leftWidth - 0.25}%` } : {}}
+      >
+        {rightPanel}
+      </div>
     </div>
   );
 };

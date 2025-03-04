@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { TableCell, TableRow } from "~/design/Table";
 
-import { AllowAnonymous } from "../components/Anonymous";
 import Badge from "~/design/Badge";
 import { FC } from "react";
 import MessagesOverlay from "../components/MessagesOverlay";
@@ -47,7 +46,6 @@ export const Row: FC<RowProps> = ({ route }) => {
         </div>
         <div className="flex flex-row items-start gap-1">
           {/* badges */}
-
           <MessagesOverlay messages={route.warnings} variant="warning">
             {(warningCount) => (
               <Badge variant="secondary">
@@ -58,9 +56,11 @@ export const Row: FC<RowProps> = ({ route }) => {
             )}
           </MessagesOverlay>
           <Methods methods={getMethodsFromOpenApiSpec(route.spec)} />
-          <AllowAnonymous
-            allow={route.spec["x-direktiv-config"]?.allow_anonymous}
-          />
+          {route.spec["x-direktiv-config"]?.allow_anonymous && (
+            <Badge variant="outline">
+              {t("pages.gateway.routes.row.allowAnonymous.public")}
+            </Badge>
+          )}
 
           <MessagesOverlay messages={route.errors} variant="error">
             {(errorCount) => (

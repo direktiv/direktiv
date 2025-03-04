@@ -1000,8 +1000,9 @@
             "tooltipLabel": "{{count}} methods"
           },
           "allowAnonymous": {
-            "yes": "public endpoint",
-            "no": "public endpoint"
+            "yes": "yes",
+            "no": "no",
+            "public": "public endpoint"
           },
           "error": {
             "count": "{{count}} errors",

@@ -1,4 +1,4 @@
-import { BookOpen, ScrollText, Users, Workflow } from "lucide-react";
+import { BookOpen, ScrollText, Users } from "lucide-react";
 import { Link, Outlet, useMatch } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 
@@ -10,10 +10,6 @@ const GatewayPage = () => {
     from: "/n/$namespace/gateway/gatewayInfo",
     shouldThrow: false,
   });
-  // const isGatewayRoutesPage = useMatch({
-  //   from: "/n/$namespace/gateway/routes/",
-  //   shouldThrow: false,
-  // });
   const isGatewayConsumerPage = useMatch({
     from: "/n/$namespace/gateway/consumers",
     shouldThrow: false,
@@ -35,13 +31,6 @@ const GatewayPage = () => {
       title: t("pages.gateway.tabs.info"),
       link: "/n/$namespace/gateway/gatewayInfo",
     },
-    // {
-    //   value: "endpoints",
-    //   active: isGatewayRoutesPage,
-    //   icon: <Workflow aria-hidden="true" />,
-    //   title: t("pages.gateway.tabs.routes"),
-    //   link: "/n/$namespace/gateway/routes",
-    // },
     {
       value: "consumers",
       active: isGatewayConsumerPage,
