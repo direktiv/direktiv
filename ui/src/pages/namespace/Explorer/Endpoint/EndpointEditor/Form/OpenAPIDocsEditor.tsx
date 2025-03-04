@@ -46,6 +46,8 @@ export const OpenAPIDocsEditor = forwardRef<
     handleSubmit,
     getValues,
     setValue,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<FormSchemaType>({
     resolver: zodResolver(
@@ -75,18 +77,37 @@ export const OpenAPIDocsEditor = forwardRef<
   const onEditorSubmit = (configuration: FormSchemaType) => {
     onSubmit?.(configuration.editor);
   };
+
+  const onEditorChange = (newDocs: string | undefined) => {
+    if (newDocs === undefined) return;
+
+    // setting everything to an empty string will delete all docs
+    if (newDocs.trim() === "") {
+      setValue("editor", {});
+      return;
+    }
+
+    const docsAsJson = yamlToJsonOrNull(newDocs);
+    if (docsAsJson === null) {
+      setError("root", {
+        message: t(
+          "pages.explorer.endpoint.editor.form.docs.modal.invalidYaml"
+        ),
+      });
+      return;
+    }
+
+    clearErrors();
+    setValue("editor", docsAsJson);
+  };
+
   return (
     <form onSubmit={handleSubmit(onEditorSubmit)} ref={ref} {...props}>
+      <FormErrors errors={errors} className="mb-5" />
       <Card className="h-96 w-full p-4" noShadow background="weight-1">
-        <FormErrors errors={errors} className="mb-5" />
         <Editor
           defaultValue={jsonToYaml(getValues("editor"))}
-          onChange={(newDocs) => {
-            if (newDocs !== undefined) {
-              const docsAsJson = yamlToJsonOrNull(newDocs) ?? {};
-              setValue("editor", docsAsJson);
-            }
-          }}
+          onChange={onEditorChange}
           theme={theme ?? undefined}
           options={{ readOnly }}
         />

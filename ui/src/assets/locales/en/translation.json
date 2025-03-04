@@ -458,7 +458,8 @@
               "buttonLabel": "Edit OpenAPI Docs",
               "modal": {
                 "title": "OpenAPI Docs",
-                "unsupportedMethods": "Unsupported keys detected in the docs. Please only use the following keys: {{methods}}"
+                "unsupportedMethods": "Unsupported methods detected in the docs. Please only use one of the following methods: {{methods}}",
+                "invalidYaml": "The YAML file is invalid. Please check the syntax and structure for errors."
               }
             }
           },
