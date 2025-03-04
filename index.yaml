@@ -2,8 +2,8 @@ apiVersion: v1
 entries:
   direktiv:
   - apiVersion: v2
-    appVersion: v0.9.0-dev.19
-    created: "2025-03-04T16:32:55.105453338Z"
+    appVersion: v0.9.0-dev.21
+    created: "2025-03-04T16:35:34.849052211Z"
     dependencies:
     - condition: ingress-nginx.install
       name: ingress-nginx
@@ -21,13 +21,13 @@ entries:
       repository: https://victoriametrics.github.io/helm-charts/
       version: 0.8.16
     description: direktiv helm chart
-    digest: 28a0509ae6a662324a302ca46e695a51799e7a3083c4b551d3256c606a43a8ff
+    digest: fde5cc2beffcf0307b16d6e4a11fa461f2be7f0b27d843dfc253a8ea27c624ab
     icon: https://charts.direktiv.io/logo.png
     name: direktiv
     type: application
     urls:
-    - https://github.com/direktiv/direktiv/releases/download/direktiv-0.9.0-dev.19/direktiv-0.9.0-dev.19.tgz
-    version: 0.9.0-dev.19
+    - https://github.com/direktiv/direktiv/releases/download/direktiv-0.9.0-dev.21/direktiv-0.9.0-dev.21.tgz
+    version: 0.9.0-dev.21
   - apiVersion: v2
     appVersion: v0.9.0-dev.19
     created: "2025-03-04T16:02:43.295841128Z"
@@ -76,6 +76,33 @@ entries:
       version: 0.8.16
     description: direktiv helm chart
     digest: c656d936c1095661f12a3c85921e66a66bdfe62509e791112b6a140f378678a2
+    icon: https://charts.direktiv.io/logo.png
+    name: direktiv
+    type: application
+    urls:
+    - https://github.com/direktiv/direktiv/releases/download/direktiv-0.9.0-dev.19/direktiv-0.9.0-dev.19.tgz
+    version: 0.9.0-dev.19
+  - apiVersion: v2
+    appVersion: v0.9.0-dev.19
+    created: "2025-03-04T16:32:55.105453338Z"
+    dependencies:
+    - condition: ingress-nginx.install
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: 4.9.0
+    - condition: fluent-bit.install
+      name: fluent-bit
+      repository: https://fluent.github.io/helm-charts
+      version: 0.48.5
+    - condition: nats.install
+      name: nats
+      repository: https://nats-io.github.io/k8s/helm/charts
+      version: 1.2.6
+    - name: victoria-logs-single
+      repository: https://victoriametrics.github.io/helm-charts/
+      version: 0.8.16
+    description: direktiv helm chart
+    digest: 28a0509ae6a662324a302ca46e695a51799e7a3083c4b551d3256c606a43a8ff
     icon: https://charts.direktiv.io/logo.png
     name: direktiv
     type: application
@@ -551,4 +578,4 @@ entries:
     urls:
     - https://github.com/direktiv/direktiv/releases/download/direktiv-0.1.22/direktiv-0.1.22.tgz
     version: 0.1.22
-generated: "2025-03-04T16:32:55.105672107Z"
+generated: "2025-03-04T16:35:34.849248269Z"
