@@ -56,9 +56,14 @@ func (m *logController) mountRouter(r chi.Router, config *core.Config) {
 			return
 		}
 
+		// metaInfo := map[string]any{
+		// 	"previousPage": logs[0].Time.Format(time.RFC3339Nano),
+		// 	"startingFrom": now.Format(time.RFC3339Nano),
+		// }
+
 		metaInfo := map[string]any{
-			"previousPage": logs[0].Time.Format(time.RFC3339Nano),
-			"startingFrom": now.Format(time.RFC3339Nano),
+			"previousPage": nil,
+			"startingFrom": nil,
 		}
 
 		// writeJSONWithMeta(w, logs, metaInfo)
@@ -240,7 +245,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 	lastEventID := r.Header.Get("Last-Event-ID")
 	fmt.Printf("LAST EVENT ID >%v<\n", lastEventID)
 
-	// // TODO: we may need to replace with a SSE-Server library instead of using our custom implementation.
+	// TODO: we may need to replace with a SSE-Server library instead of using our custom implementation.
 	params := extractLogRequestParams(r)
 
 	rc := http.NewResponseController(w)
@@ -254,7 +259,6 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 		for i := range logs {
 			l := logs[i]
 			b, _ := json.Marshal(l)
-			fmt.Println("WRITE LOGS")
 			_, err = fmt.Fprintf(w, fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", l.ID, "message", string(b)))
 			if err != nil {
 				return time.Now(), err
@@ -264,7 +268,6 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("LOGS %d\n", len(logs))
 
 		// check time of last log
-		// checkTime := time.Now().UTC()
 		if len(logs) > 0 {
 			lastLog := logs[len(logs)-1]
 			cursor = lastLog.Time.UTC()
