@@ -34,6 +34,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
+
 	fsCtr := &fsController{
 		db:  db,
 		bus: bus,
@@ -112,7 +113,8 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 	})
 
 	logCtr := &logController{
-		store: db.DataStore().NewLogs(),
+		store:       db.DataStore().NewLogs(),
+		logsBackend: app.Config.LogsBackend,
 	}
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
 
@@ -158,7 +160,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 				regCtr.mountRouter(r)
 			})
 			r.Route("/namespaces/{namespace}/logs", func(r chi.Router) {
-				logCtr.mountRouter(r)
+				logCtr.mountRouter(r, app.Config)
 			})
 			r.Route("/namespaces/{namespace}/notifications", func(r chi.Router) {
 				notificationsCtr.mountRouter(r)

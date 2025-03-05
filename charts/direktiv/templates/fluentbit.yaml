@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-fluentbit
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+data:
+  fluent-bit.conf: |
+      [SERVICE]
+          Daemon Off
+          Flush 1
+          Log_Level INFO
+          HTTP_Server On
+          HTTP_Listen 0.0.0.0
+          HTTP_Port 2020
+          Health_Check On
+          Parsers_File /fluent-bit/etc/parsers.conf
+          Parsers_File /fluent-bit/etc/conf/custom_parsers.conf
+      [INPUT]
+          Name                    tail
+          Path                    /var/log/containers/*flow*.log,/var/log/containers/*direktiv-sidecar*.log
+          Mem_Buf_Limit           5MB
+          Skip_Long_Lines         Off
+          Tag                     input
+          multiline.parser        cri, docker
+          Refresh_Interval        1
+          Buffer_Max_Size         64k
+      [output]
+          Name stdout
+          Match *
+      [OUTPUT]
+          Name http
+          Match *
+          host direktiv-victoria-logs-single-server.{{ .Release.Namespace }}.svc
+          port 9428
+          uri /insert/jsonline?_stream_fields=stream&_msg_field=msg&_time_field=time
+          format json_lines
+          json_date_format iso8601
+      [FILTER]
+          Name                    parser
+          Match                   *
+          Parser                  json
+          Key_Name                log
+          Reserve_Data            on

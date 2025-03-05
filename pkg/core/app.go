@@ -57,9 +57,9 @@ type Config struct {
 	NatsUsername  string `env:"DIREKTIV_NATS_USERNAME"`
 	NatsPassword  string `env:"DIREKTIV_NATS_PASSWORD"`
 
-	OidcIssuerUrl        string `env:"DIREKTIV_OIDC_ISSUER_URL"`
-	OidcClientID         string `env:"DIREKTIV_OIDC_CLIENT_ID"`
-	VictoriaLogsEndpoint string `env:"DIREKTIV_VICTORIA_LOGS"`
+	OidcIssuerUrl string `env:"DIREKTIV_OIDC_ISSUER_URL"`
+	OidcClientID  string `env:"DIREKTIV_OIDC_CLIENT_ID"`
+	LogsBackend   string `env:"DIREKTIV_LOGS_BACKEND"`
 }
 
 func (conf *Config) GetFunctionsTimeout() time.Duration {
