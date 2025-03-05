@@ -6,6 +6,7 @@ import { FileRoutesById } from "~/routeTree.gen";
 import GatewayDocumentationBreadcrumb from "./Documentation";
 import GatewayInfoBreadcrumb from "./GatewayInfo";
 import { Network } from "lucide-react";
+import RoutesBreadcrumb from "./Routes";
 import { useTranslation } from "react-i18next";
 
 const GatewayBreadcrumb = () => {
@@ -27,6 +28,7 @@ const GatewayBreadcrumb = () => {
           {t("components.breadcrumb.gateway")}
         </Link>
       </BreadcrumbLink>
+      <RoutesBreadcrumb />
       <ConsumerBreadcrumb />
       <GatewayInfoBreadcrumb />
       <GatewayDocumentationBreadcrumb />

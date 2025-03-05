@@ -996,8 +996,9 @@
         },
         "row": {
           "methods": {
-            "none": "no methods set",
-            "tooltipLabel": "{{count}} methods"
+            "tooltipLabel": "{{count}} methods",
+            "tooltipLabel_one": "{{count}} method",
+            "tooltipLabel_zero": "no methods set"
           },
           "allowAnonymous": {
             "yes": "yes",

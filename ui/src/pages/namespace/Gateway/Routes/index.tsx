@@ -7,7 +7,7 @@ import RoutesTable from "./Table";
 import { t } from "i18next";
 import { useRoutes } from "~/api/gateway/query/getRoutes";
 
-const RoutesPage = () => {
+const RoutesComponent = () => {
   const { isFetching, refetch } = useRoutes();
   const [search, setSearch] = useState("");
   const { data: routes } = useRoutes();
@@ -52,4 +52,4 @@ const RoutesPage = () => {
   );
 };
 
-export default RoutesPage;
+export default RoutesComponent;

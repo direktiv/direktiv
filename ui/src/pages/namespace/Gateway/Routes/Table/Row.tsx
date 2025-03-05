@@ -45,7 +45,6 @@ export const Row: FC<RowProps> = ({ route }) => {
           </Link>
         </div>
         <div className="flex flex-row items-start gap-1">
-          {/* badges */}
           <MessagesOverlay messages={route.warnings} variant="warning">
             {(warningCount) => (
               <Badge variant="secondary">
@@ -73,7 +72,6 @@ export const Row: FC<RowProps> = ({ route }) => {
           </MessagesOverlay>
         </div>
       </TableCell>
-      {/* badges end */}
 
       <TableCell>
         <Plugins plugins={route.spec["x-direktiv-config"]?.plugins} />
