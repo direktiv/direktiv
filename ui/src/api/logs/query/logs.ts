@@ -57,16 +57,29 @@ import { useStreaming } from "~/api/streaming";
 */
 type LogsCache = InfiniteData<LogsSchemaType>;
 
+const initLogsCache = (pointer: string) => ({
+  pages: [
+    {
+      data: [],
+      meta: {
+        previousPage: pointer,
+        startingFrom: pointer,
+      },
+    },
+  ],
+  pageParams: [],
+});
+
 const updateCache = (
-  oldData: LogsCache | undefined,
+  oldDataParam: LogsCache | undefined,
   newLogEntry: LogEntryType
 ): LogsCache | undefined => {
-  if (oldData === undefined) return undefined;
+  const oldData = oldDataParam || initLogsCache(newLogEntry.time);
 
   const pages = oldData.pages;
   const olderPages = pages.slice(0, -1);
   const newestPage = pages[0];
-  if (newestPage === undefined) return undefined;
+  if (newestPage === undefined) throw Error("Could not initialize logs cache");
 
   const newestPageData = newestPage.data ?? [];
 
@@ -179,12 +192,16 @@ export const useLogsStream = ({ enabled, ...params }: UseLogsStreamParams) => {
 
 export type UseLogsParams = LogsQueryParams & { enabled?: boolean };
 
+/**
+ * Enabled is set to false per default, so no data is fetched initially.
+ * Data is only fetched when page param has been set based on the first entry received via streaming.
+ */
 export const useLogs = ({
   instance,
   route,
   activity,
   trace,
-  enabled = true,
+  enabled = false,
 }: UseLogsParams = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
