@@ -27,6 +27,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/pubsub"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 	"github.com/senseyeio/duration"
@@ -157,6 +158,18 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		WorkflowPath: args.CalledAs,
 		Status:       core.LogRunningStatus,
 	})
+
+	ctx2 := telemetry.InitInstanceLog(ctx, telemetry.InstanceInfo{
+		Namespace: args.Namespace.Name,
+		Instance:  args.ID.String(),
+		Invoker:   args.Invoker,
+		Callpath:  args.TelemetryInfo.CallPath,
+		Path:      args.CalledAs,
+		Status:    core.LogRunningStatus,
+		State:     "testme",
+	})
+	telemetry.LogInstance(ctx2, telemetry.LogLevelInfo, "TESTME")
+
 	ctx, cleanup, err2 := tracing.NewSpan(ctx, "creating a new Instance: "+args.ID.String()+", workflow: "+args.CalledAs)
 	if err2 != nil {
 		slog.Debug("failed in new instance", "error", err2)

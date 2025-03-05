@@ -265,8 +265,6 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		fmt.Printf("LOGS %d\n", len(logs))
-
 		// check time of last log
 		if len(logs) > 0 {
 			lastLog := logs[len(logs)-1]
@@ -318,7 +316,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 			// 	fmt.Println(logs[i])
 			// }
 			q := newLogQuerier(params.track).afterDate(cursor).withDateSortAsc()
-			fmt.Println(q.string())
+			// fmt.Println(q.string())
 			cursor, err = queryAndSend(q.string())
 			if err != nil {
 				fmt.Println(err)

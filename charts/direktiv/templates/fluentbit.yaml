@@ -5,6 +5,13 @@ metadata:
   labels:
     {{- include "direktiv.labels" . | nindent 4 }}
 data:
+  custom_parsers.conf: |
+      [PARSER]
+          Name direktiv
+          Format json
+          Time_Keep Off
+          Time_Key time
+          Time_Format %Y-%m-%dT%H:%M:%S.%L  
   fluent-bit.conf: |
       [SERVICE]
           Daemon Off
@@ -39,6 +46,7 @@ data:
       [FILTER]
           Name                    parser
           Match                   *
-          Parser                  json
+          Parser                  direktiv
           Key_Name                log
           Reserve_Data            on
+    

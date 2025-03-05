@@ -1,8 +1,11 @@
-package tracing
+package telemetry
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
+	"reflect"
+	"strings"
 )
 
 // ContextHandler wraps a slog.Handler (e.g., JSON handler) and processes slogFields from the context.
@@ -23,17 +26,29 @@ func (h *ContextHandler) Enabled(ctx context.Context, level slog.Level) bool {
 
 // Handle implements slog.Handler.
 func (h *ContextHandler) Handle(ctx context.Context, rec slog.Record) error {
-	if attrs := GetAttributes(ctx); len(attrs) > 0 {
-		res := make([]slog.Attr, 0, len(attrs)*2)
-		for k, v := range attrs {
-			res = append(res, slog.Attr{Key: k, Value: slog.AnyValue(v)})
+
+	instance := ctx.Value(DirektivInstance)
+
+	// only handle if there is something in the context
+	if instance != nil {
+		structVal := reflect.ValueOf(instance)
+		fieldNum := structVal.NumField()
+		structType := reflect.TypeOf(instance)
+
+		res := make([]slog.Attr, 0)
+
+		for i := 0; i < fieldNum; i++ {
+			field := structVal.Field(i)
+			fieldName := structType.Field(i).Name
+
+			fmt.Printf("%v %v\n", fieldName, field)
+			res = append(res, slog.Attr{Key: strings.ToLower(fieldName),
+				Value: slog.AnyValue(fmt.Sprintf("%v", field))})
 		}
 
-		// return h.innerHandler.WithAttrs(res).Handle(ctx, rec)
+		return h.innerHandler.WithAttrs(res).Handle(ctx, rec)
 	}
 
-	// Pass the record to the inner handler
-	// return h.innerHandler.Handle(ctx, rec)
 	return nil
 }
 

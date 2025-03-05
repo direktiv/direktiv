@@ -27,6 +27,7 @@ import (
 	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
 	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/service/registry"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -321,9 +322,15 @@ func initSLog(cfg *core.Config) {
 	handlers := tracing.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
 		Level: lvl,
 	}))
+
+	ctxHandler := telemetry.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+		Level: lvl,
+	}))
+
 	slogger := slog.New(
 		tracing.TeeHandler{
 			handlers,
+			ctxHandler,
 			tracing.EventHandler{},
 		})
 
