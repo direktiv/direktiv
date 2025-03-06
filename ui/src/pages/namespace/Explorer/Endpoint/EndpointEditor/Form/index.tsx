@@ -50,7 +50,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
     form,
     values,
     formMarkup: (
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-6">
         <div className="flex gap-3">
           <Fieldset
             label={t("pages.explorer.endpoint.editor.form.path")}

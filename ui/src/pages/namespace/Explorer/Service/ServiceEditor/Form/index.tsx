@@ -72,7 +72,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
     form,
     values,
     formMarkup: (
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-6">
         <Fieldset
           label={t("pages.explorer.service.editor.form.image")}
           htmlFor="image"
@@ -80,7 +80,6 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
         >
           <Input {...register("image")} id="image" />
         </Fieldset>
-
         <div className="grid grid-cols-2 gap-4">
           <fieldset className="mb-2 flex grow flex-col gap-2">
             <div className="inline-flex items-center">
@@ -154,7 +153,6 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
             </Select>
           </Fieldset>
         </div>
-
         <Fieldset
           label={t("pages.explorer.service.editor.form.cmd")}
           htmlFor="cmd"
@@ -162,9 +160,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
         >
           <Input {...register("cmd")} id="cmd" />
         </Fieldset>
-
         <PatchesForm form={form} onSave={onSave} />
-
         <Fieldset
           label={t("pages.explorer.service.editor.form.envs.label")}
           htmlFor="size"
