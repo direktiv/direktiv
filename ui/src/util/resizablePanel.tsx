@@ -1,5 +1,5 @@
 import React, { ReactNode, useRef } from "react";
-import { useLeftPanelWidth, useSetLeftPanelWidth } from "./store/panelSize";
+import { useLeftPanelWidth, usePanelSizeActions } from "./store/panelSize";
 
 import { useResizeDrag } from "../hooks/useResizeDrag";
 
@@ -13,7 +13,7 @@ const ResizablePanel: React.FC<ResizablePanelProps> = ({
   rightPanel,
 }) => {
   const leftPanelWidth = useLeftPanelWidth();
-  const setLeftPanelWidth = useSetLeftPanelWidth();
+  const { setLeftPanelWidth } = usePanelSizeActions();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const minLeftWidth = 30;

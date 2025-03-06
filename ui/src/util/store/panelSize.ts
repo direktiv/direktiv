@@ -1,31 +1,21 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
-type PanelState = {
+type PanelSizeState = {
   leftPanelWidth: number;
   actions: {
     setLeftPanelWidth: (width: number) => void;
   };
 };
 
-const panelSize = create<PanelState>()(
-  persist(
-    (set) => ({
-      leftPanelWidth: 65,
-      actions: {
-        setLeftPanelWidth: (width) =>
-          set(() => ({
-            leftPanelWidth: width,
-          })),
-      },
-    }),
-    {
-      name: "direktiv-store-panel-size",
-    }
-  )
-);
+const usePanelSizeStore = create<PanelSizeState>((set) => ({
+  leftPanelWidth: 65,
+  actions: {
+    setLeftPanelWidth: (width: number) => set({ leftPanelWidth: width }),
+  },
+}));
 
 export const useLeftPanelWidth = () =>
-  panelSize((state) => state.leftPanelWidth);
-export const useSetLeftPanelWidth = () =>
-  panelSize((state) => state.actions.setLeftPanelWidth);
+  usePanelSizeStore((state) => state.leftPanelWidth);
+
+export const usePanelSizeActions = () =>
+  usePanelSizeStore((state) => state.actions);
