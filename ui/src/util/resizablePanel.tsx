@@ -19,9 +19,9 @@ const ResizablePanel: React.FC<ResizablePanelProps> = ({
   const minLeftWidth = 30;
   const maxLeftWidth = 70;
 
-  const { startResize } = useResizeDrag({
-    minWidth: minLeftWidth,
-    maxWidth: maxLeftWidth,
+  const startResize = useResizeDrag({
+    minLeftWidth,
+    maxLeftWidth,
     onResize: setLeftPanelWidth,
     containerRef,
   });
