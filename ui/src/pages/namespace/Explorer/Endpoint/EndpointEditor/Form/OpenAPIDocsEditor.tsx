@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes, forwardRef } from "react";
+import { FormHTMLAttributes, forwardRef } from "react";
 import {
   MethodsSchema,
   MethodsSchemaType,
@@ -16,7 +16,7 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type HTMLFormProps = ButtonHTMLAttributes<HTMLFormElement>;
+type HTMLFormProps = FormHTMLAttributes<HTMLFormElement>;
 
 type OpenAPIDocsFormProps = {
   defaultValue: MethodsSchemaType;
