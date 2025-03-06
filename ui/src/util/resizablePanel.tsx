@@ -1,29 +1,28 @@
 import React, { ReactNode, useRef } from "react";
-import { usePanelSize, useSetPanelSize } from "./store/panelSize";
+import { useLeftPanelWidth, useSetLeftPanelWidth } from "./store/panelSize";
 
 import { useResizeDrag } from "../hooks/useResizeDrag";
 
 type ResizablePanelProps = {
   leftPanel: ReactNode;
   rightPanel: ReactNode;
-  minLeftWidth?: number; // percentage (0-100)
-  maxLeftWidth?: number; // percentage (0-100)
 };
 
 const ResizablePanel: React.FC<ResizablePanelProps> = ({
   leftPanel,
   rightPanel,
-  minLeftWidth = 30,
-  maxLeftWidth = 70,
 }) => {
-  const panelWidth = usePanelSize();
-  const setPanelWidth = useSetPanelSize();
+  const leftPanelWidth = useLeftPanelWidth();
+  const setLeftPanelWidth = useSetLeftPanelWidth();
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const minLeftWidth = 30;
+  const maxLeftWidth = 70;
 
   const { startResize } = useResizeDrag({
     minWidth: minLeftWidth,
     maxWidth: maxLeftWidth,
-    onResize: setPanelWidth,
+    onResize: setLeftPanelWidth,
     containerRef,
   });
 
@@ -32,21 +31,21 @@ const ResizablePanel: React.FC<ResizablePanelProps> = ({
       {/* Left panel */}
       <div
         className="max-lg:!w-full w-full"
-        style={{ width: `${panelWidth}%` }}
+        style={{ width: `${leftPanelWidth}%` }}
       >
         {leftPanel}
       </div>
 
       {/* Resize handle - only visible on lg screens and above */}
       <div
-        className="w-1 min-h-full hover:bg-gray-100 cursor-col-resize shrink-0 mx-2 hidden lg:block"
+        className="w-1 min-h-full hover:bg-gray-4 dark:hover:bg-gray-900 cursor-col-resize shrink-0 mx-2 hidden lg:block"
         onMouseDown={startResize}
       />
 
       {/* Right panel */}
       <div
         className="lg:mt-0 max-lg:!w-full mt-4"
-        style={{ width: `${100 - panelWidth - 0.25}%` }}
+        style={{ width: `${100 - leftPanelWidth - 0.25}%` }}
       >
         {rightPanel}
       </div>

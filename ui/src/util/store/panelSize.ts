@@ -2,17 +2,17 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 type PanelState = {
-  panelWidth: number;
-  setPanelWidth: (width: number) => void;
+  leftPanelWidth: number;
+  setLeftPanelWidth: (width: number) => void;
 };
 
 const panelSize = create<PanelState>()(
   persist(
     (set) => ({
-      panelWidth: 65,
-      setPanelWidth: (width) =>
+      leftPanelWidth: 65,
+      setLeftPanelWidth: (width) =>
         set(() => ({
-          panelWidth: width,
+          leftPanelWidth: width,
         })),
     }),
     {
@@ -21,5 +21,7 @@ const panelSize = create<PanelState>()(
   )
 );
 
-export const usePanelSize = () => panelSize((state) => state.panelWidth);
-export const useSetPanelSize = () => panelSize((state) => state.setPanelWidth);
+export const useLeftPanelWidth = () =>
+  panelSize((state) => state.leftPanelWidth);
+export const useSetLeftPanelWidth = () =>
+  panelSize((state) => state.setLeftPanelWidth);

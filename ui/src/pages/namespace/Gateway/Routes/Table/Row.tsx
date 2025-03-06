@@ -44,7 +44,7 @@ export const Row: FC<RowProps> = ({ route }) => {
             {route.file_path}
           </Link>
         </div>
-        <div className="flex flex-row items-start gap-1">
+        <div className="flex flex-row items-center gap-1">
           <MessagesOverlay messages={route.warnings} variant="warning">
             {(warningCount) => (
               <Badge variant="secondary">

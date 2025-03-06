@@ -5,17 +5,13 @@ import { SquareGanttChartIcon } from "lucide-react";
 
 const RoutesBreadcrumb = () => {
   const { _splat } = useParams({ strict: false });
-  const isGatewayRoutesPage = useMatch({
-    from: "/n/$namespace/gateway/routes/",
-    shouldThrow: false,
-  });
 
   const isGatewayRoutesDetailPage = useMatch({
     from: "/n/$namespace/gateway/routes/$",
     shouldThrow: false,
   });
 
-  if (!isGatewayRoutesPage && !isGatewayRoutesDetailPage) return null;
+  if (!isGatewayRoutesDetailPage) return null;
 
   return (
     <>

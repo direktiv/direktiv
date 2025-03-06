@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useRef } from "react";
 
 type UseResizeDragProps = {
-  minWidth: number;
-  maxWidth: number;
+  minLeftWidth: number;
+  maxLeftWidth: number;
   onResize: (width: number) => void;
   containerRef: React.RefObject<HTMLDivElement>;
 };
 
 export const useResizeDrag = ({
-  minWidth,
-  maxWidth,
+  minLeftWidth,
+  maxLeftWidth,
   onResize,
   containerRef,
 }: UseResizeDragProps) => {
@@ -27,9 +27,12 @@ export const useResizeDrag = ({
         const rect = containerRef.current.getBoundingClientRect();
         const relativeX = e.clientX - rect.left;
         const percentage = (relativeX / rect.width) * 100;
-        const newWidth = Math.max(minWidth, Math.min(maxWidth, percentage));
+        const newLeftWidth = Math.max(
+          minLeftWidth,
+          Math.min(maxLeftWidth, percentage)
+        );
 
-        onResize(newWidth);
+        onResize(newLeftWidth);
       }
     };
 
@@ -46,7 +49,7 @@ export const useResizeDrag = ({
       document.removeEventListener("mousemove", resize);
       document.removeEventListener("mouseup", stopResize);
     };
-  }, [minWidth, maxWidth, onResize, containerRef]);
+  }, [minLeftWidth, maxLeftWidth, onResize, containerRef]);
 
-  return { startResize };
+  return startResize;
 };
