@@ -6,7 +6,7 @@ type PanelState = {
   setPanelWidth: (width: number) => void;
 };
 
-export const panelStore = create<PanelState>()(
+const panelSize = create<PanelState>()(
   persist(
     (set) => ({
       panelWidth: 65,
@@ -16,7 +16,10 @@ export const panelStore = create<PanelState>()(
         })),
     }),
     {
-      name: "panel-store",
+      name: "direktiv-store-panel-size",
     }
   )
 );
+
+export const usePanelSize = () => panelSize((state) => state.panelWidth);
+export const useSetPanelSize = () => panelSize((state) => state.setPanelWidth);

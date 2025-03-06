@@ -1,6 +1,6 @@
 import React, { ReactNode, useRef } from "react";
+import { usePanelSize, useSetPanelSize } from "./store/panelSize";
 
-import { panelStore } from "./store/panelStore";
 import { useResizeDrag } from "../hooks/useResizeDrag";
 
 type ResizablePanelProps = {
@@ -16,7 +16,8 @@ const ResizablePanel: React.FC<ResizablePanelProps> = ({
   minLeftWidth = 30,
   maxLeftWidth = 70,
 }) => {
-  const { panelWidth, setPanelWidth } = panelStore();
+  const panelWidth = usePanelSize();
+  const setPanelWidth = useSetPanelSize();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { startResize } = useResizeDrag({

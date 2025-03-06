@@ -42,7 +42,9 @@ test("Info page default view", async ({ page }) => {
 
   const editor = page.locator(".lines-content");
 
-  // Create a more flexible regex that allows for spaces within the namespace
+  // Since the Routes Info page has flexible panels, the namespace
+  // is/can be displayed in different ways. With line breaks, etc.
+  // Therefore we need to use a regex to match the namespace.
   const namespacePattern = namespace.split("").join("\\s*");
   await expect(editor).toContainText(
     new RegExp(`title:\\s*${namespacePattern}`)

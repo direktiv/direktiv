@@ -39,13 +39,11 @@ export const Methods: FC<AllowAnonymousProps> = ({ methods }) => {
         </HoverCard>
       )}
     >
-      <>
-        <Badge variant="outline">
-          {t("pages.gateway.routes.row.methods.tooltipLabel", {
-            count: numberOfMethods,
-          })}
-        </Badge>
-      </>
+      <Badge variant="outline">
+        {t("pages.gateway.routes.row.methods.tooltipLabel", {
+          count: numberOfMethods,
+        })}
+      </Badge>
     </ConditionalWrapper>
   );
 };
