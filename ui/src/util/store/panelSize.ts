@@ -3,17 +3,21 @@ import { persist } from "zustand/middleware";
 
 type PanelState = {
   leftPanelWidth: number;
-  setLeftPanelWidth: (width: number) => void;
+  actions: {
+    setLeftPanelWidth: (width: number) => void;
+  };
 };
 
 const panelSize = create<PanelState>()(
   persist(
     (set) => ({
       leftPanelWidth: 65,
-      setLeftPanelWidth: (width) =>
-        set(() => ({
-          leftPanelWidth: width,
-        })),
+      actions: {
+        setLeftPanelWidth: (width) =>
+          set(() => ({
+            leftPanelWidth: width,
+          })),
+      },
     }),
     {
       name: "direktiv-store-panel-size",
@@ -24,4 +28,4 @@ const panelSize = create<PanelState>()(
 export const useLeftPanelWidth = () =>
   panelSize((state) => state.leftPanelWidth);
 export const useSetLeftPanelWidth = () =>
-  panelSize((state) => state.setLeftPanelWidth);
+  panelSize((state) => state.actions.setLeftPanelWidth);

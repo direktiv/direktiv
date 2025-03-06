@@ -38,7 +38,7 @@ const ResizablePanel: React.FC<ResizablePanelProps> = ({
 
       {/* Resize handle - only visible on lg screens and above */}
       <div
-        className="w-1 min-h-full hover:bg-gray-4 dark:hover:bg-gray-900 cursor-col-resize shrink-0 mx-2 hidden lg:block"
+        className="w-1 min-h-full hover:bg-gray-4 dark:hover:bg-gray-4 cursor-col-resize shrink-0 mx-2 hidden lg:block"
         onMouseDown={startResize}
       />
 
