@@ -282,7 +282,17 @@
             "serialisationError": "There was an error serializing the form data",
             "path": "path",
             "timeout": "timeout (optional)",
-            "methods": "methods",
+            "methods": {
+              "label": "methods",
+              "modal": {
+                "headline": "Remove this method with all its documentation?",
+                "description": "You are about to remove the {{method}} method. Removing this method will also delete all its documentation. Do you want to delete the documentation as well or move it to another method?",
+                "cancelBtn": "Cancel",
+                "confirmBtn": "Remove method with documentation",
+                "copy": "Move to {{method}}",
+                "overwrite": "Move to {{method}} (overwrite)"
+              }
+            },
             "allowAnonymous": "allow anonymous",
             "plugins": {
               "target": {
@@ -442,6 +452,14 @@
                   "keyName": "Key name (optional)",
                   "keyNamePlaceholder": "name of the key"
                 }
+              }
+            },
+            "docs": {
+              "buttonLabel": "Edit OpenAPI Docs",
+              "modal": {
+                "title": "OpenAPI Docs",
+                "unsupportedMethods": "Unsupported methods detected in the docs. Please only use one of the following methods: {{methods}}",
+                "invalidYaml": "The YAML file is invalid. Please check the syntax and structure for errors."
               }
             }
           },
