@@ -42,7 +42,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
   return (
     <Form defaultConfig={endpointConfig} onSave={save}>
       {({
-        formControls: {
+        form: {
           formState: { errors },
           handleSubmit,
         },
