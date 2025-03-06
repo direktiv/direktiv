@@ -12,7 +12,7 @@ import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { InboundPluginForm } from "./plugins/Inbound";
 import Input from "~/design/Input";
-import { MethodCheckbox } from "./methodCheckbox";
+import { MethodCheckbox } from "./MethodCheckbox";
 import { OpenAPIDocsForm } from "./openAPIDocs";
 import { OutboundPluginForm } from "./plugins/Outbound";
 import { Switch } from "~/design/Switch";
