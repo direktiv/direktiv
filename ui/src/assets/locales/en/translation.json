@@ -1001,7 +1001,7 @@
       "tabs": {
         "routes": "Routes",
         "consumers": "Consumers",
-        "info": "Info",
+        "info": "Routes Info",
         "documentation": "Documentation"
       },
       "routes": {
@@ -1014,12 +1014,14 @@
         },
         "row": {
           "methods": {
-            "none": "no methods set",
-            "tooltipLabel": "+{{count}}"
+            "tooltipLabel": "{{count}} methods",
+            "tooltipLabel_one": "{{count}} method",
+            "tooltipLabel_zero": "no methods set"
           },
           "allowAnonymous": {
             "yes": "yes",
-            "no": "no"
+            "no": "no",
+            "public": "public endpoint"
           },
           "error": {
             "count": "{{count}} errors",
@@ -1134,7 +1136,7 @@
       "gatewayRoutes": "Routes",
       "gatewayConsumers": "Consumers",
       "gatewayDocumentation": "Documentation",
-      "gatewayInfo": "Info",
+      "gatewayInfo": "Routes Info",
       "jqPlayground": "jq Playground"
     },
     "contextMenu": {
