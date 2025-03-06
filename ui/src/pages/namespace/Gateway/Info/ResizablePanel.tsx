@@ -1,7 +1,10 @@
 import React, { ReactNode, useRef } from "react";
-import { useLeftPanelWidth, usePanelSizeActions } from "./store/panelSize";
+import {
+  useLeftPanelWidth,
+  usePanelSizeActions,
+} from "../../../../util/store/panelSize";
 
-import { useResizeDrag } from "../hooks/useResizeDrag";
+import { useResizeDrag } from "./useResizeDrag";
 
 type ResizablePanelProps = {
   leftPanel: ReactNode;
