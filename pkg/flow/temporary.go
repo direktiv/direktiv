@@ -20,6 +20,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/service"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
@@ -53,10 +54,13 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 
 			switch selector.Scope {
 			case utils.VarScopeInstance:
+				telemetry.LogInstanceInfo(ctx, fmt.Sprintf("fetching instance variable %s", selector.Key))
 				item, err = tx.DataStore().RuntimeVariables().GetForInstance(ctx, im.instance.Instance.ID, selector.Key)
 			case utils.VarScopeWorkflow:
+				telemetry.LogInstanceInfo(ctx, fmt.Sprintf("fetching workflow variable %s", selector.Key))
 				item, err = tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, im.instance.Instance.Namespace, im.instance.Instance.WorkflowPath, selector.Key)
 			case utils.VarScopeNamespace:
+				telemetry.LogInstanceInfo(ctx, fmt.Sprintf("fetching namespace variable %s", selector.Key))
 				item, err = tx.DataStore().RuntimeVariables().GetForNamespace(ctx, im.instance.Instance.Namespace, selector.Key)
 			default:
 				return nil, derrors.NewInternalError(errors.New("invalid scope"))
@@ -85,6 +89,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 		}
 
 		if selector.Scope == utils.VarScopeFileSystem { //nolint:nestif
+			telemetry.LogInstanceInfo(ctx, fmt.Sprintf("fetching file %s", selector.Key))
 			file, err := tx.FileStore().ForNamespace(im.instance.Instance.Namespace).GetFile(ctx, selector.Key)
 			if errors.Is(err, filestore.ErrNotFound) {
 				x = append(x, states.Variable{
@@ -132,25 +137,24 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 }
 
 func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
-	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
-		Namespace:    im.Namespace().Name,
-		InstanceID:   im.GetInstanceID().String(),
-		Invoker:      im.instance.Instance.Invoker,
-		Callpath:     tracing.CreateCallpath(im.instance),
-		WorkflowPath: im.instance.Instance.WorkflowPath,
-		Status:       core.LogUnknownStatus,
-	}, im.GetState())
-	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrack(im.instance))
-
+	// ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+	// 	Namespace:    im.Namespace().Name,
+	// 	InstanceID:   im.GetInstanceID().String(),
+	// 	Invoker:      im.instance.Instance.Invoker,
+	// 	Callpath:     tracing.CreateCallpath(im.instance),
+	// 	WorkflowPath: im.instance.Instance.WorkflowPath,
+	// 	Status:       core.LogUnknownStatus,
+	// }, im.GetState())
+	// ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrack(im.instance))
 	switch level {
 	case log.Info:
-		slog.InfoContext(ctx, fmt.Sprintf(a, x...))
+		telemetry.LogInstanceInfo(ctx, fmt.Sprintf(a, x...))
 	case log.Debug:
-		slog.DebugContext(ctx, fmt.Sprintf(a, x...))
+		telemetry.LogInstanceDebug(ctx, fmt.Sprintf(a, x...))
 	case log.Error:
-		slog.ErrorContext(ctx, fmt.Sprintf(a, x...))
+		telemetry.LogInstanceError(ctx, fmt.Sprintf(a, x...), fmt.Errorf(a, x...))
 	case log.Panic:
-		slog.ErrorContext(ctx, fmt.Sprintf("Panic: "+a, x...))
+		telemetry.LogInstanceError(ctx, fmt.Sprintf(a, x...), fmt.Errorf(a, x...))
 	}
 }
 
@@ -205,13 +209,23 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		v := vars[idx]
 
 		var item *datastore.RuntimeVariable
+		d := string(v.Data)
+
+		action := "create"
+		if len(d) == 0 || "null" == d {
+			action = "delete"
+		}
 
 		switch v.Scope {
 		case utils.VarScopeInstance:
+			telemetry.LogInstanceInfo(ctx, fmt.Sprintf("setting instance variable %s (%s)", v.Key, action))
 			item, err = tx.DataStore().RuntimeVariables().GetForInstance(ctx, im.instance.Instance.ID, v.Key)
 		case utils.VarScopeWorkflow:
+			telemetry.LogInstanceInfo(ctx, fmt.Sprintf("setting workflow variable %s (%s)", v.Key, action))
 			item, err = tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, im.instance.Instance.Namespace, im.instance.Instance.WorkflowPath, v.Key)
 		case utils.VarScopeNamespace:
+			telemetry.LogInstanceInfo(ctx, fmt.Sprintf("setting namespace variable %s (%s)", v.Key, action))
+			telemetry.LogNamespaceInfo(ctx, fmt.Sprintf("setting namespace variable %s (%s)", v.Key, action), im.instance.Instance.Namespace)
 			item, err = tx.DataStore().RuntimeVariables().GetForNamespace(ctx, im.instance.Instance.Namespace, v.Key)
 		default:
 			return derrors.NewInternalError(errors.New("invalid scope"))
@@ -220,8 +234,6 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		if err != nil && !errors.Is(err, datastore.ErrNotFound) {
 			return err
 		}
-
-		d := string(v.Data)
 
 		if len(d) == 0 {
 			err = tx.DataStore().RuntimeVariables().Delete(ctx, item.ID)
@@ -422,6 +434,8 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateID string, time
 		Instance:    im.ID().String(),
 		Callpath:    callpath,
 		Action:      uid.String(),
+		Path:        im.instance.Instance.WorkflowPath,
+		Invoker:     im.instance.Instance.Invoker,
 	}
 	arReq.ActionContext = arCtx
 
@@ -496,19 +510,19 @@ func (child *knativeHandle) Info() states.ChildInfo {
 
 func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, arReq *enginerefactor.ActionRequest) {
 	// Log warning if timeout exceeds max allowed timeout.
-	ctx = tracing.AddInstanceAttr(ctx, tracing.InstanceAttributes{
-		Namespace:    arReq.Namespace,
-		InstanceID:   arReq.Instance,
-		Callpath:     arReq.Callpath,
-		WorkflowPath: arReq.Workflow,
-		Status:       core.LogUnknownStatus,
-	})
-	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(arReq.Callpath))
+	// ctx = tracing.AddInstanceAttr(ctx, tracing.InstanceAttributes{
+	// 	Namespace:    arReq.Namespace,
+	// 	InstanceID:   arReq.Instance,
+	// 	Callpath:     arReq.Callpath,
+	// 	WorkflowPath: arReq.Workflow,
+	// 	Status:       core.LogUnknownStatus,
+	// })
+
+	// ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(arReq.Callpath))
 
 	if actionTimeout := time.Duration(ar.Timeout) * time.Second; actionTimeout > engine.server.config.GetFunctionsTimeout() {
-		slog.WarnContext(ctx,
-			fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.config.GetFunctionsTimeout()),
-		)
+		telemetry.LogInstanceWarn(ctx,
+			fmt.Sprintf("action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.config.GetFunctionsTimeout()))
 	}
 
 	switch ar.Container.Type { //nolint:exhaustive
@@ -526,14 +540,14 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, 
 }
 
 func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
-	ar *functionRequest, arReq *enginerefactor.ActionRequest,
-) {
+	ar *functionRequest, arReq *enginerefactor.ActionRequest) {
+
 	ctx, spanEnd, err := tracing.NewSpan(ctx, "executing knative request to action")
 	if err != nil {
 		slog.Debug("failed in doKnativeHTTPRequest", "error", err)
 	}
 	defer spanEnd()
-	slog.DebugContext(ctx, "starting function request")
+	telemetry.LogInstanceDebug(ctx, "starting function request")
 	tr := engine.createTransport()
 	addr := ar.Container.Service
 
@@ -542,7 +556,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	rctx, cancel := context.WithDeadline(context.Background(), arReq.Deadline)
 	defer cancel()
 
-	slog.DebugContext(ctx, fmt.Sprintf("deadline for request is %s", time.Until(arReq.Deadline)), "deadline", time.Until(arReq.Deadline))
+	telemetry.LogInstanceDebug(ctx, fmt.Sprintf("deadline for request is %s", time.Until(arReq.Deadline)))
 
 	reader, err := enginerefactor.EncodeActionRequest(*arReq)
 	if err != nil {
@@ -570,19 +584,19 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 	//nolint:intrange
 	for i := 0; i < 300; i++ { // 5 minutes max retry
-		slog.Debug("attempting function request", "retry", i, "address", addr)
+		telemetry.LogInstanceDebug(ctx, fmt.Sprintf("attempting function request %d, %s", i, addr))
 
 		resp, err = client.Do(req)
 		if err != nil {
 			if ctxErr := rctx.Err(); ctxErr != nil {
-				slog.Debug("request canceled or deadline exceeded", "error", ctxErr)
+				telemetry.LogInstanceError(ctx, "request canceled or deadline exceeded", ctxErr)
 				engine.reportError(ctx, &arReq.ActionContext, fmt.Errorf("request timed out or was canceled: %w", ctxErr))
 
 				return
 			}
 
 			if i%10 == 0 {
-				slog.DebugContext(ctx, fmt.Sprintf("retrying function request for container '%s' (attempt %d)", ar.Container.ID, i), "image", ar.Container.Image, "image_id", ar.Container.ID, "error", err)
+				slog.Debug(fmt.Sprintf("retrying function request for container '%s' (attempt %d)", ar.Container.ID, i), err)
 			} else {
 				slog.Debug("retrying function request", "image", ar.Container.Image, "image_id", ar.Container.ID, "error", err)
 			}
@@ -643,23 +657,25 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	if resp.StatusCode != http.StatusOK {
 		engine.reportError(ctx, &arReq.ActionContext, fmt.Errorf("action error status: %d", resp.StatusCode))
 	}
-	slog.DebugContext(ctx, "function request done")
+	telemetry.LogInstanceDebug(ctx, "function request done")
 }
 
 func (engine *engine) reportError(ctx context.Context, ar *enginerefactor.ActionContext, err error) {
-	ctx = tracing.AddNamespace(ctx, ar.Namespace)
-	tracing.AddInstanceAttr(ctx, tracing.InstanceAttributes{
-		Namespace:    ar.Namespace,
-		InstanceID:   ar.Instance,
-		Callpath:     ar.Callpath,
-		WorkflowPath: ar.Workflow,
-		Status:       core.LogUnknownStatus,
-	})
-	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(ar.Callpath))
-	slog.ErrorContext(
-		ctx,
-		"action failed",
-		"error",
-		err,
-	)
+	// ctx = tracing.AddNamespace(ctx, ar.Namespace)
+	// tracing.AddInstanceAttr(ctx, tracing.InstanceAttributes{
+	// 	Namespace:    ar.Namespace,
+	// 	InstanceID:   ar.Instance,
+	// 	Callpath:     ar.Callpath,
+	// 	WorkflowPath: ar.Workflow,
+	// 	Status:       core.LogUnknownStatus,
+	// })
+	// ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(ar.Callpath))
+	// slog.ErrorContext(
+	// 	ctx,
+	// 	"action failed",
+	// 	"error",
+	// 	err,
+	// )
+
+	telemetry.LogInstanceError(ctx, "action failed", err)
 }

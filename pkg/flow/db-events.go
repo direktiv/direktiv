@@ -12,11 +12,13 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/google/uuid"
 )
 
 func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *datastore.Namespace) error {
-	slog.DebugContext(ctx, "Event-Bus registering event")
+	telemetry.LogNamespaceDebug(ctx, "event-bus registering event", ns.Name)
+
 	li := make([]*datastore.Event, 0)
 	if eventin.ID() == "" {
 		eventin.SetID(uuid.NewString())

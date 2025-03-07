@@ -28,7 +28,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/telemetry"
-	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 	"github.com/senseyeio/duration"
 )
@@ -63,28 +62,28 @@ func (engine *engine) instanceKicker() {
 func (engine *engine) kickWaitingInstances() {
 	ctx := context.Background()
 
-	slog.Debug("Starting to kick waiting (homeless) instances.")
+	slog.Debug("starting to kick waiting (homeless) instances")
 	tx, err := engine.beginSQLTx(ctx)
 	if err != nil {
-		slog.Error("Failed to begin SQL transaction in kickWaitingInstances.", "error", err)
+		slog.Error("failed to begin SQL transaction in kickWaitingInstances", "error", err)
 		return
 	}
 	defer tx.Rollback()
 
 	instances, err := tx.InstanceStore().GetHomelessInstances(ctx, time.Now().UTC().Add(-engineSchedulingTimeout))
 	if err != nil {
-		slog.Error("Failed to list homeless instances in kickWaitingInstances. Some instances may remain unprocessed.", "error", err)
+		slog.Error("failed to list homeless instances in kickWaitingInstances. Some instances may remain unprocessed", "error", err)
 		return
 	}
 	if len(instances) == 0 {
-		slog.Debug("No homeless instances found to kick.")
+		slog.Debug("no homeless instances found to kick")
 		return
 	}
-	slog.Info("Processing homeless instances.", "count", len(instances))
+	slog.Info("processing homeless instances", "count", len(instances))
 
 	for idx := range instances {
 		instance := instances[idx]
-		slog.Debug("Kicking instance.", "instance", instance.ID)
+		slog.Debug("kicking instance", "instance", instance.ID)
 
 		data, err := json.Marshal(&instanceMessageChannelData{
 			InstanceID:        instance.ID,
@@ -92,7 +91,7 @@ func (engine *engine) kickWaitingInstances() {
 			LastKnownUpdateAt: instance.UpdatedAt,
 		})
 		if err != nil {
-			slog.Error("Failed to marshal instance data in kickWaitingInstances.", "instance", instance.ID, "error", err)
+			slog.Error("failed to marshal instance data in kickWaitingInstances", "instance", instance.ID, "error", err)
 		}
 
 		engine.instanceMessagesChannelHandler(string(data))
@@ -150,32 +149,31 @@ func trim(s string) string {
 }
 
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
-	ctx = tracing.AddInstanceAttr(ctx, tracing.InstanceAttributes{
-		Namespace:    args.Namespace.Name,
-		InstanceID:   args.ID.String(),
-		Invoker:      args.Invoker,
-		Callpath:     args.TelemetryInfo.CallPath,
-		WorkflowPath: args.CalledAs,
-		Status:       core.LogRunningStatus,
-	})
+	// ctx = tracing.AddInstanceAttr(ctx, tracing.InstanceAttributes{
+	// 	Namespace:    args.Namespace.Name,
+	// 	InstanceID:   args.ID.String(),
+	// 	Invoker:      args.Invoker,
+	// 	Callpath:     args.TelemetryInfo.CallPath,
+	// 	WorkflowPath: args.CalledAs,
+	// 	Status:       core.LogRunningStatus,
+	// })
 
-	ctx2 := telemetry.InitInstanceLog(ctx, telemetry.InstanceInfo{
+	ctx = telemetry.LogInitInstance(ctx, telemetry.InstanceInfo{
 		Namespace: args.Namespace.Name,
 		Instance:  args.ID.String(),
 		Invoker:   args.Invoker,
 		Callpath:  args.TelemetryInfo.CallPath,
 		Path:      args.CalledAs,
 		Status:    core.LogRunningStatus,
-		State:     "testme",
+		State:     "new-instance",
 	})
-	telemetry.LogInstance(ctx2, telemetry.LogLevelInfo, "TESTME")
+	telemetry.LogInstanceDebug(ctx, "creating new instance")
 
-	ctx, cleanup, err2 := tracing.NewSpan(ctx, "creating a new Instance: "+args.ID.String()+", workflow: "+args.CalledAs)
-	if err2 != nil {
-		slog.Debug("failed in new instance", "error", err2)
-	}
-	defer cleanup()
-	slog.DebugContext(ctx, "Initializing new instance creation.")
+	// ctx, cleanup, err2 := tracing.NewSpan(ctx, "creating a new Instance: "+args.ID.String()+", workflow: "+args.CalledAs)
+	// if err2 != nil {
+	// 	slog.Debug("failed in new instance", "error", err2)
+	// }
+	// defer cleanup()
 	file, data, err := engine.mux(ctx, args.Namespace, args.CalledAs)
 	if err != nil {
 		return nil, err
@@ -184,7 +182,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	var wf model.Workflow
 	err = wf.Load(data)
 	if err != nil {
-		slog.ErrorContext(ctx, "Failed to parse workflow definition.", "error", err)
+		telemetry.LogInstanceError(ctx, "failed to parse workflow definition", err)
 		return nil, derrors.NewUncatchableError("direktiv.workflow.invalid", "cannot parse workflow '%s': %v", trim(file.Path), err)
 	}
 
@@ -210,11 +208,11 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	}
 
 	args.TelemetryInfo.NamespaceName = args.Namespace.Name
-	traceParent, err := tracing.ExtractTraceParent(ctx)
-	if err != nil {
-		slog.Debug("NewInstance telemetry failed", "error", err)
-	}
-	args.TelemetryInfo.TraceParent = traceParent
+	// traceParent, err := tracing.ExtractTraceParent(ctx)
+	// if err != nil {
+	// 	slog.Debug("telemetry failed for NewInstance", "error", err)
+	// }
+	// args.TelemetryInfo.TraceParent = traceParent
 	telemetryInfo, err := args.TelemetryInfo.MarshalJSON()
 	if err != nil {
 		panic(err)
@@ -242,7 +240,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		}
 		defer tx.Rollback()
 	}
-	slog.DebugContext(ctx, "Preparing to commit new instance transaction.")
+	telemetry.LogNamespaceDebug(ctx, "preparing to commit new instance transaction", args.Namespace.Name)
 
 	idata, err := tx.InstanceStore().CreateInstanceData(ctx, &instancestore.CreateInstanceDataArgs{
 		ID:             args.ID,
@@ -269,7 +267,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	if err != nil {
 		return nil, err
 	}
-	slog.DebugContext(ctx, "New instance transaction committed successfully.")
+	telemetry.LogNamespaceDebug(ctx, "new instance transaction committed", args.Namespace.Name)
 
 	instance, err := enginerefactor.ParseInstanceData(idata)
 	if err != nil {
@@ -295,8 +293,9 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	im.AddAttribute("loop-index", fmt.Sprintf("%d", iterator))
 
 	engine.pubsub.NotifyInstances(im.Namespace())
-	slog.InfoContext(ctx, "Workflow has been triggered")
-	slog.InfoContext(tracing.WithTrack(ctx, tracing.BuildNamespaceTrack(im.Namespace().Name)), "Workflow has been triggered")
+
+	telemetry.LogInstanceInfo(ctx, "workflow has been started")
+	telemetry.LogNamespaceInfo(ctx, "workflow has been started", im.Namespace().Name)
 
 	return im, nil
 }
@@ -329,11 +328,18 @@ func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
 }
 
 func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextState string, attempt int) *states.Transition {
-	ctx, cleanup, err := tracing.NewSpan(ctx, "engine transitions: "+nextState)
-	if err != nil {
-		slog.Debug("transition failed to init telemetry", "error", err)
+	// prepare log context
+	ctx = im.Context(ctx)
+
+	if im.GetState() != "" {
+		telemetry.LogSetState(ctx, im.GetState())
 	}
-	defer cleanup()
+
+	// ctx, cleanup, err := tracing.NewSpan(ctx, "engine transitions: "+nextState)
+	// if err != nil {
+	// 	slog.Debug("transition failed to init telemetry", "error", err)
+	// }
+	// defer cleanup()
 	workflow, err := im.Model()
 	if err != nil {
 		engine.CrashInstance(ctx, im, err)
@@ -394,15 +400,16 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 		engine.CrashInstance(ctx, im, err)
 		return nil
 	}
-	ctx = tracing.AddInstanceMemoryAttr(ctx,
-		tracing.InstanceAttributes{
-			Namespace:    im.Namespace().Name,
-			InstanceID:   im.GetInstanceID().String(),
-			Invoker:      im.instance.Instance.Invoker,
-			Callpath:     tracing.CreateCallpath(im.instance),
-			WorkflowPath: im.instance.Instance.WorkflowPath,
-			Status:       core.LogUnknownStatus,
-		}, im.GetState())
+	// ctx = tracing.AddInstanceMemoryAttr(ctx,
+	// 	tracing.InstanceAttributes{
+	// 		Namespace:    im.Namespace().Name,
+	// 		InstanceID:   im.GetInstanceID().String(),
+	// 		Invoker:      im.instance.Instance.Invoker,
+	// 		Callpath:     tracing.CreateCallpath(im.instance),
+	// 		WorkflowPath: im.instance.Instance.WorkflowPath,
+	// 		Status:       core.LogUnknownStatus,
+	// 	}, im.GetState())
+
 	t := time.Now().UTC()
 
 	im.instance.RuntimeInfo.Flow = flow
@@ -483,7 +490,7 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 		}
 
 		engine.forceFreeCriticalMemory(ctx, im)
-		slog.Debug("Failed to free memory during a crash", "error", err)
+		slog.Debug("failed to free memory during a crash", "error", err)
 	}
 
 	engine.WakeInstanceCaller(ctx, im)
@@ -491,20 +498,24 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 
 //nolint:gocognit
 func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) *states.Transition {
-	ctx = tracing.AddNamespace(ctx, im.Namespace().Name)
-	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrack(im.instance))
-	ctx, cleanup, err3 := tracing.NewSpan(ctx, "preparing instance for state execution")
-	if err != nil {
-		slog.Debug("failed to init telemery in runstate", "error", err3)
-	}
-	defer cleanup()
+	// prepare log context
+	ctx = im.Context(ctx)
 
-	slog.DebugContext(ctx, "Starting state execution.")
+	// ctx = tracing.AddNamespace(ctx, im.Namespace().Name)
+	// ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrack(im.instance))
+
+	// ctx, cleanup, err3 := tracing.NewSpan(ctx, "preparing instance for state execution")
+	// if err != nil {
+	// 	slog.Debug("failed to init telemery in runstate", "error", err3)
+	// }
+	// defer cleanup()
+
+	telemetry.LogInstanceDebug(ctx, "starting state execution")
 
 	var transition *states.Transition
 
 	if err != nil {
-		slog.ErrorContext(ctx, "Error before state execution.", "error", err)
+		telemetry.LogInstanceError(ctx, "error before state execution", err)
 
 		goto failure
 	}
@@ -513,8 +524,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		var object interface{}
 		object, err = jqOne(im.data, lq) //nolint:contextcheck
 		if err != nil {
-			slog.ErrorContext(ctx, "Failed to process jq query on state data.", "error", fmt.Errorf("query failed %v, err: %w", lq, err))
-
+			telemetry.LogInstanceError(ctx, "failed to process jq query on state data", fmt.Errorf("jq query failed %v, err: %w", lq, err))
 			goto failure
 		}
 
@@ -522,8 +532,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		data, err = json.MarshalIndent(object, "", "  ")
 		if err != nil {
 			err = derrors.NewInternalError(fmt.Errorf("failed to marshal state data: %w", err))
-			slog.ErrorContext(ctx, "Failed to marshal jq query result for logging.", "error", fmt.Errorf("failed to marshal state data: %w", err))
-
+			telemetry.LogInstanceError(ctx, "failed to marshal jq query result for logging", fmt.Errorf("failed to marshal state data: %w", err))
 			goto failure
 		}
 
@@ -534,8 +543,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		var object interface{}
 		object, err = jqOne(im.data, md) //nolint:contextcheck
 		if err != nil {
-			slog.ErrorContext(ctx, "Failed to execute jq query for metadata.", "error", err)
-
+			telemetry.LogInstanceError(ctx, "failed to execute jq query for metadata", err)
 			goto failure
 		}
 
@@ -543,66 +551,54 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		data, err = json.MarshalIndent(object, "", "  ")
 		if err != nil {
 			err = derrors.NewInternalError(fmt.Errorf("failed to marshal state data: %w", err))
-			slog.ErrorContext(ctx, "Failed to marshal metadata.", "error", err)
-
+			telemetry.LogInstanceError(ctx, "failed to marshal metadata", err)
 			goto failure
 		}
 
 		engine.StoreMetadata(ctx, im, string(data))
 	}
-	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
-		Namespace:    im.Namespace().Name,
-		InstanceID:   im.GetInstanceID().String(),
-		Invoker:      im.instance.Instance.Invoker,
-		Callpath:     tracing.CreateCallpath(im.instance),
-		WorkflowPath: im.instance.Instance.WorkflowPath,
-		Status:       core.LogUnknownStatus,
-	}, im.GetState())
-	slog.InfoContext(ctx, "Running state logic.")
+	telemetry.LogInstanceInfo(ctx, fmt.Sprintf("running state logic %s", im.GetState()))
 
 	transition, err = im.logic.Run(ctx, wakedata)
 	if err != nil {
-		slog.ErrorContext(ctx, "State logic execution failed.", "error", err)
+		telemetry.LogInstanceError(ctx, "state logic execution failed", err)
 
 		goto failure
 	}
-	slog.DebugContext(ctx, "Applying state transformation based on logic run.")
+	telemetry.LogInstanceDebug(ctx, "applying state transformation based on logic run")
 
 	err = engine.transformState(ctx, im, transition)
 	if err != nil {
-		slog.ErrorContext(ctx, "State transformation failed.", "error", err)
+		telemetry.LogInstanceError(ctx, "state transformation failed", err)
 
 		goto failure
 	}
 
-	slog.DebugContext(ctx, "State logic executed. Processing post-execution actions.")
-
 next:
-	slog.DebugContext(ctx, "Processing post-execution actions.")
+	telemetry.LogInstanceDebug(ctx, "processing post execution actions")
 
 	return engine.transitionState(ctx, im, transition)
 
 failure:
-	slog.ErrorContext(ctx, "State execution failed.", "error", err)
-	// traceStateError(ctx, err)
+	telemetry.LogInstanceError(ctx, "state execution failed", err)
 
 	var breaker int
 
 	if breaker > 10 {
 		err = derrors.NewInternalError(errors.New("somehow ended up in a catchable error loop"))
-		slog.ErrorContext(ctx, "Possible error loop detected.", "error", err)
+		telemetry.LogInstanceError(ctx, "possible error loop detected", err)
 	}
 
 	err1 := engine.CancelInstanceChildren(ctx, im)
 	if err1 != nil {
-		slog.ErrorContext(ctx, "Canceling Instance's children failed.", "error", err1)
+		telemetry.LogInstanceError(ctx, "canceling instance children failed", err)
 	}
 	cerr := new(derrors.CatchableError)
 
 	if errors.As(err, &cerr) {
 		err2 := im.StoreData("error", cerr)
 		if err2 != nil {
-			slog.ErrorContext(ctx, "Failed to store error data.", "error", err2)
+			telemetry.LogInstanceError(ctx, "failed to store error data", err)
 		}
 
 		for _, catch := range im.logic.ErrorDefinitions() {
@@ -613,12 +609,12 @@ failure:
 
 			matched, regErr := regexp.MatchString(errRegex, cerr.Code)
 			if regErr != nil {
-				slog.ErrorContext(ctx, "Regex compilation failed for error catch definition.", "error", regErr)
+				telemetry.LogInstanceError(ctx, "regex compilation failed for error catch definition", err)
 			}
 
 			if matched {
-				slog.InfoContext(ctx, "Catchable error matched; executing defined transition.")
-				slog.ErrorContext(ctx, "State failed with an error", "error", fmt.Errorf("state failed with an error '%s': %s", cerr.Code, cerr.Message))
+				telemetry.LogInstanceInfo(ctx, "executing defined transition with machting catchable error")
+				telemetry.LogInstanceError(ctx, fmt.Sprintf("state failed with an error '%s': %s", cerr.Code, cerr.Message), err)
 
 				transition = &states.Transition{
 					Transform: "",
@@ -629,7 +625,8 @@ failure:
 			}
 		}
 	}
-	slog.ErrorContext(ctx, "Unrecoverable error encountered; initiating instance crash.", "error", err)
+
+	telemetry.LogInstanceError(ctx, "unrecoverable error encountered; initiating instance crash", err)
 	engine.CrashInstance(ctx, im, err)
 
 	return nil
@@ -643,35 +640,37 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 	if s, ok := transition.Transform.(string); ok && (s == "" || s == ".") {
 		return nil
 	}
-	loggingCtx := tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
-		Namespace:    im.instance.Instance.Namespace,
-		InstanceID:   im.GetInstanceID().String(),
-		Invoker:      im.instance.Instance.Invoker,
-		Callpath:     tracing.CreateCallpath(im.instance),
-		WorkflowPath: im.instance.Instance.WorkflowPath,
-		Status:       core.LogUnknownStatus,
-	}, im.GetState())
-	loggingCtx = tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
-	slog.DebugContext(loggingCtx, "Transforming state data.")
+	// loggingCtx := tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+	// 	Namespace:    im.instance.Instance.Namespace,
+	// 	InstanceID:   im.GetInstanceID().String(),
+	// 	Invoker:      im.instance.Instance.Invoker,
+	// 	Callpath:     tracing.CreateCallpath(im.instance),
+	// 	WorkflowPath: im.instance.Instance.WorkflowPath,
+	// 	Status:       core.LogUnknownStatus,
+	// }, im.GetState())
+	// loggingCtx = tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
+	ctx = im.Context(ctx)
+	telemetry.LogInstanceDebug(ctx, "transforming state data")
 
 	x, err := jqObject(im.data, transition.Transform) //nolint:contextcheck
 	if err != nil {
-		slog.ErrorContext(loggingCtx, "Failed to apply jq to transform.", "error", err)
+		telemetry.LogInstanceError(ctx, "failed to apply jq to transform", err)
 
 		return derrors.WrapCatchableError("unable to apply transform: %v", err)
-		// return derrors.WrapCatchableError("Failed to apply jq transformation on state data. Transformation: '%v', Error: %v", transition.Transform, err)
 	}
 
 	im.replaceData(x)
-	slog.DebugContext(loggingCtx, "Successfully transformed state data.")
+	telemetry.LogInstanceDebug(ctx, "transformed state data")
 
 	return nil
 }
 
 func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, transition *states.Transition) *states.Transition {
+	ctx = im.Context(ctx)
+
 	e := im.flushUpdates(ctx)
 	if e != nil {
-		slog.Error("Failed to flush updates for instance.", "instance", im.ID(), "namespace", im.Namespace().Name, "error", e)
+		telemetry.LogInstanceError(ctx, fmt.Sprintf("failed to flush updates for instance %v (%v)", im.ID(), im.Namespace().Name), e)
 		engine.CrashInstance(ctx, im, e)
 
 		return nil
@@ -682,18 +681,18 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 
 		return nil
 	}
-	loggingCtx := tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
-		Namespace:    im.Namespace().Name,
-		InstanceID:   im.GetInstanceID().String(),
-		Invoker:      im.instance.Instance.Invoker,
-		Callpath:     tracing.CreateCallpath(im.instance),
-		WorkflowPath: im.instance.Instance.WorkflowPath,
-		Status:       core.LogUnknownStatus,
-	}, im.GetState())
-	instanceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
+	// loggingCtx := tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+	// 	Namespace:    im.Namespace().Name,
+	// 	InstanceID:   im.GetInstanceID().String(),
+	// 	Invoker:      im.instance.Instance.Invoker,
+	// 	Callpath:     tracing.CreateCallpath(im.instance),
+	// 	WorkflowPath: im.instance.Instance.WorkflowPath,
+	// 	Status:       core.LogUnknownStatus,
+	// }, im.GetState())
+	// instanceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
 
 	if transition.NextState != "" {
-		slog.DebugContext(instanceTrackCtx, "Transitioning to next state.")
+		telemetry.LogInstanceDebug(ctx, "transitioning to next state")
 
 		return transition
 	}
@@ -704,10 +703,10 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 		if im.ErrorCode() == "direktiv.cancels.parent" || im.ErrorCode() == "direktiv.cancels.api" {
 			status = instancestore.InstanceStatusCancelled
 		}
-		slog.ErrorContext(instanceTrackCtx, "Workflow failed with an error.", "error", fmt.Errorf("'%s': %s", im.ErrorCode(), im.instance.Instance.ErrorMessage))
+		telemetry.LogInstanceError(ctx, "workflow failed with error", fmt.Errorf("'%s': %s", im.ErrorCode(), im.instance.Instance.ErrorMessage))
 	}
 
-	slog.DebugContext(instanceTrackCtx, "Instance terminated", "instance", im.ID().String(), "namespace", im.Namespace().Name)
+	telemetry.LogInstanceDebug(ctx, fmt.Sprintf("instance %v terminated", im.ID().String()))
 
 	output := im.MarshalData()
 	im.instance.Instance.Output = []byte(output)
@@ -715,8 +714,8 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	im.instance.Instance.Status = status
 	im.updateArgs.Status = &im.instance.Instance.Status
 
-	slog.InfoContext(instanceTrackCtx, "Workflow completed.")
-	slog.InfoContext(tracing.WithTrack(ctx, tracing.BuildNamespaceTrack(im.Namespace().Name)), "Workflow completed.")
+	telemetry.LogInstanceInfo(ctx, "workflow completed")
+	telemetry.LogNamespaceInfo(ctx, "workflow completed", im.Namespace().Name)
 
 	defer engine.pubsub.NotifyInstance(im.instance.Instance.ID)
 	defer engine.pubsub.NotifyInstances(im.Namespace())
@@ -733,7 +732,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 		Descent: append(instance.DescentInfo.Descent, *pi),
 	}
 
-	slog.InfoContext(ctx, "Invoking a subflow")
+	telemetry.LogInstanceInfo(ctx, fmt.Sprintf("invoking subflow %s", name))
 
 	args := &newInstanceArgs{
 		ID: uuid.New(),
@@ -860,7 +859,7 @@ func (engine *engine) createTransport() *http.Transport {
 
 func (engine *engine) WakeEventsWaiter(instance uuid.UUID, events []*cloudevents.Event) {
 	ctx := context.Background()
-
+	fmt.Println("ENQUEUEUE")
 	err := engine.enqueueInstanceMessage(ctx, instance, "event", events)
 	if err != nil {
 		slog.Error("failed to enqueue instance message for wakeEventsWaiter", "error", err)
@@ -873,26 +872,26 @@ func (engine *engine) EventsInvoke(tctx context.Context, workflowID uuid.UUID, e
 
 	tx, err := engine.flow.beginSQLTx(ctx)
 	if err != nil {
-		slog.Error("Failed to begin SQL transaction in EventsInvoke.", "error", err)
+		slog.Error("failed to begin SQL transaction in EventsInvoke", "error", err)
 		return
 	}
 	defer tx.Rollback()
 
 	file, err := tx.FileStore().GetFileByID(ctx, workflowID)
 	if err != nil {
-		slog.Error("Failed to fetch file from database.", "workflowID", workflowID, "error", err)
+		slog.Error("failed to fetch file from database", "workflowID", workflowID, "error", err)
 		return
 	}
 
 	root, err := tx.FileStore().GetRoot(ctx, file.RootID)
 	if err != nil {
-		slog.Error("Failed to fetch Root from database.", "workflowID", workflowID, "error", err)
+		slog.Error("failed to fetch Root from database", "workflowID", workflowID, "error", err)
 		return
 	}
 
 	ns, err := tx.DataStore().Namespaces().GetByName(ctx, root.Namespace)
 	if err != nil {
-		slog.Error("Failed to fetch namespace from database.", "namespace", root.Namespace, "error", err)
+		slog.Error("failed to fetch namespace from database", "namespace", root.Namespace, "error", err)
 		return
 	}
 
@@ -910,18 +909,18 @@ func (engine *engine) EventsInvoke(tctx context.Context, workflowID uuid.UUID, e
 
 	input, err = json.Marshal(m)
 	if err != nil {
-		slog.Error("Failed to marshal event data in EventsInvoke.", "error", err)
+		slog.Error("failed to marshal event data in EventsInvoke", "error", err)
 		return
 	}
-	tctx, end, err2 := tracing.NewSpan(tctx, "engine invoked by event")
-	if err2 != nil {
-		slog.Debug("Failed to tracing.NewSpan.", "error", err)
-	}
-	defer end()
-	traceParent, err2 := tracing.ExtractTraceParent(tctx)
-	if err2 != nil {
-		slog.Debug("Failed to extract traceParent in EventsInvoke.", "error", err)
-	}
+	// tctx, end, err2 := tracing.NewSpan(tctx, "engine invoked by event")
+	// if err2 != nil {
+	// 	slog.Debug("failed to tracing.NewSpan", "error", err)
+	// }
+	// defer end()
+	// traceParent, err2 := tracing.ExtractTraceParent(tctx)
+	// if err2 != nil {
+	// 	slog.Debug("failed to extract traceParent in EventsInvoke.", "error", err)
+	// }
 	// TODO: tracing
 
 	args := &newInstanceArgs{
@@ -931,7 +930,7 @@ func (engine *engine) EventsInvoke(tctx context.Context, workflowID uuid.UUID, e
 		Input:     input,
 		Invoker:   "cloudevent",
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
-			TraceParent:   traceParent,
+			// TraceParent:   traceParent,
 			NamespaceName: ns.Name,
 		},
 	}
@@ -941,7 +940,7 @@ func (engine *engine) EventsInvoke(tctx context.Context, workflowID uuid.UUID, e
 		slog.Error("new instance", "error", err)
 		return
 	}
-	slog.Debug("Successfully invoked new workflow instance.", "instanceID", im.ID().String(), "workflowPath", file.Path)
+	slog.Debug("invoked new workflow instance", "instanceID", im.ID().String(), "workflowPath", file.Path)
 
 	go engine.start(im)
 }
@@ -961,33 +960,37 @@ func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x inter
 }
 
 func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMemory, typ, code string, err error) {
-	loggingCtx := tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
-		Namespace:    im.Namespace().Name,
-		InstanceID:   im.GetInstanceID().String(),
-		Invoker:      im.instance.Instance.Invoker,
-		Callpath:     tracing.CreateCallpath(im.instance),
-		WorkflowPath: im.instance.Instance.WorkflowPath,
-		Status:       core.LogUnknownStatus,
-	}, im.GetState())
-	instanceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
+	// loggingCtx := tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+	// 	Namespace:    im.Namespace().Name,
+	// 	InstanceID:   im.GetInstanceID().String(),
+	// 	Invoker:      im.instance.Instance.Invoker,
+	// 	Callpath:     tracing.CreateCallpath(im.instance),
+	// 	WorkflowPath: im.instance.Instance.WorkflowPath,
+	// 	Status:       core.LogUnknownStatus,
+	// }, im.GetState())
+	// instanceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
+	ctx = im.Context(ctx)
 
-	namespaceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildNamespaceTrack(im.Namespace().Name))
-	msg := fmt.Sprintf("Workflow failed with code = %v, type = %v, error = %v", typ, code, err.Error())
-	slog.ErrorContext(instanceTrackCtx, msg, "error", err)
-	slog.ErrorContext(namespaceTrackCtx, msg, "error", err)
+	// namespaceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildNamespaceTrack(im.Namespace().Name))
+	msg := fmt.Sprintf("workflow failed with code = %v, type = %v, error = %v", typ, code, err.Error())
+	telemetry.LogInstanceError(ctx, msg, err)
+	telemetry.LogNamespaceError(ctx, msg, im.Namespace().Name, err)
 }
 
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string) {
-	loggingCtx := tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
-		Namespace:    im.Namespace().Name,
-		InstanceID:   im.GetInstanceID().String(),
-		Invoker:      im.instance.Instance.Invoker,
-		Callpath:     tracing.CreateCallpath(im.instance),
-		WorkflowPath: im.instance.Instance.WorkflowPath,
-		Status:       core.LogUnknownStatus,
-	}, im.GetState())
-	instanceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
-	slog.InfoContext(instanceTrackCtx, msg)
+	// loggingCtx := tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+	// 	Namespace:    im.Namespace().Name,
+	// 	InstanceID:   im.GetInstanceID().String(),
+	// 	Invoker:      im.instance.Instance.Invoker,
+	// 	Callpath:     tracing.CreateCallpath(im.instance),
+	// 	WorkflowPath: im.instance.Instance.WorkflowPath,
+	// 	Status:       core.LogUnknownStatus,
+	// }, im.GetState())
+	// instanceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
+	// slog.InfoContext(instanceTrackCtx, msg)
+
+	ctx = im.Context(ctx)
+	telemetry.LogInstanceInfo(ctx, strings.Trim(msg, "\""))
 }
 
 // GetInodePath returns the exact path to a inode.

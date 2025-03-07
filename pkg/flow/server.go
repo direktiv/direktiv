@@ -20,7 +20,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/mirror"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
-	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"github.com/nats-io/nats.go"
@@ -115,49 +114,49 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 
 	var err error
 	slog.Debug("starting Flow server")
-	slog.Debug("initializing telemetry.")
-	telEnd, err := tracing.InitTelemetry(circuit.Context(), srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
-	if err != nil {
-		return nil, fmt.Errorf("telemetry init failed: %w", err)
-	}
-	slog.Info("Telemetry initialized successfully.")
+	slog.Debug("initializing telemetry")
+	// telEnd, err := tracing.InitTelemetry(circuit.Context(), srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
+	// if err != nil {
+	// 	return nil, fmt.Errorf("telemetry init failed: %w", err)
+	// }
+	slog.Info("telemetry initialized successfully")
 
-	slog.Debug("initializing pub-sub.")
+	slog.Debug("initializing pub-sub")
 
 	srv.pubsub, err = pubsub.InitPubSub(srv, config.DB)
 	if err != nil {
 		return nil, err
 	}
 
-	slog.Info("pub-sub was initialized successfully.")
+	slog.Info("pub-sub was initialized successfully")
 
-	slog.Debug("initializing timers.")
+	slog.Debug("initializing timers")
 
 	srv.timers, err = initTimers(srv.pubsub)
 	if err != nil {
 		return nil, err
 	}
-	slog.Info("timers where initialized successfully.")
+	slog.Info("timers where initialized successfully")
 
-	slog.Debug("initializing engine.")
+	slog.Debug("initializing engine")
 
 	srv.Engine = initEngine(srv)
-	slog.Info("engine was started.")
+	slog.Info("engine was started")
 
-	slog.Debug("initializing flow server.")
+	slog.Debug("initializing flow server")
 
 	srv.flow, err = initFlowServer(circuit.Context(), srv)
 	if err != nil {
 		return nil, err
 	}
 
-	slog.Debug("initializing mirror manager.")
-	slog.Debug("mirror manager was started.")
+	slog.Debug("initializing mirror manager")
+	slog.Debug("mirror manager was started")
 
-	slog.Debug("initializing events.")
+	slog.Debug("initializing events")
 	srv.events = initEvents(srv, db.DataStore().StagingEvents().Append)
 
-	slog.Debug("initializing EventWorkers.")
+	slog.Debug("initializing EventWorkers")
 
 	interval := 1 * time.Second // TODO: Adjust the polling interval
 	eventWorker := eventsstore.NewEventWorker(db.DataStore().StagingEvents(), interval, srv.events.handleEvent)
@@ -167,7 +166,7 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 
 		return nil
 	})
-	slog.Info("events-engine was started.")
+	slog.Info("events-engine was started")
 
 	cc := func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
 		err = srv.flow.configureWorkflowStarts(ctx, db, nsID, nsName, file)
@@ -201,12 +200,12 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 
 	circuit.Start(func() error {
 		<-circuit.Done()
-		telEnd()
+		// telEnd()
 		srv.cleanup(srv.pubsub.Close)
 		srv.cleanup(srv.timers.Close)
 		if srv.nats != nil {
 			srv.nats.Close()
-			slog.Info("NATS connection closed")
+			slog.Info("connection closed for NATS")
 		}
 
 		return nil
@@ -214,11 +213,11 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 
 	if config.NatsInstalled {
 		var err error
-		slog.Info("conecting to NATS", "config.NatsHost", config.NatsHost, "config.NatsPort", config.NatsPort)
+		slog.Info("conncting to NATS", "config.NatsHost", config.NatsHost, "config.NatsPort", config.NatsPort)
 		for i := range 12 {
 			err = srv.initNATS(config)
 			if err == nil {
-				slog.Info("NATS connection established successfully")
+				slog.Info("connection to NATS established")
 				break
 			}
 			slog.Error("failed to connect to NATS, retrying...", "attempt", i+1, "error", err)
@@ -258,7 +257,7 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 func (srv *server) cleanup(closer func() error) {
 	err := closer()
 	if err != nil {
-		slog.Error("Server cleanup failed.", "error", err)
+		slog.Error("server cleanup failed", "error", err)
 	}
 }
 
@@ -276,7 +275,7 @@ func (srv *server) NotifyCluster(msg string) error {
 	perr := new(pq.Error)
 
 	if errors.As(err, &perr) {
-		slog.Error("Database notification to cluster failed.", "error", perr)
+		slog.Error("database notification to cluster failed", "error", perr)
 		if perr.Code == "57014" {
 			return fmt.Errorf("canceled query")
 		}
@@ -390,7 +389,7 @@ func (srv *server) cronPoll() {
 func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database.DB, file *filestore.File) {
 	ms, err := validateRouter(ctx, tx, file)
 	if err != nil {
-		slog.Error("Failed to validate Routing for a cron schedule.", "error", err)
+		slog.Error("failed to validate Routing for a cron schedule", "error", err)
 		return
 	}
 
@@ -401,11 +400,11 @@ func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database.DB, file
 	if ms.Cron != "" {
 		err := srv.timers.addCron(file.ID.String(), wfCron, ms.Cron, []byte(file.ID.String()))
 		if err != nil {
-			slog.Error("Failed to add cron schedule for workflow", "error", err, "cron_expression", ms.Cron)
+			slog.Error("failed to add cron schedule for workflow", "error", err, "cron_expression", ms.Cron)
 			return
 		}
 
-		slog.Debug("Successfully loaded cron schedule for workflow", "workflow", file.Path, "cron_expression", ms.Cron)
+		slog.Debug("loaded cron schedule for workflow", "workflow", file.Path, "cron_expression", ms.Cron)
 	}
 }
 
@@ -439,7 +438,7 @@ func (srv *server) runSQLTx(ctx context.Context, fun func(tx *database.DB) error
 func (srv *server) initNATS(config *core.Config) error {
 	natsURL := config.NatsHost
 	if natsURL == "" {
-		return fmt.Errorf("NATS URL not set in environment")
+		return fmt.Errorf("environment for NATS URL")
 	}
 
 	// Connect to NATS

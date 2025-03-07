@@ -7,13 +7,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log/slog"
 	"time"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/senseyeio/duration"
 )
 
@@ -132,7 +130,7 @@ func (logic *forEachLogic) scheduleFirstActions(ctx context.Context) (*Transitio
 		}, nil
 	}
 
-	logic.Log(ctx, log.Info, "Generated %d objects to loop over.", len(array))
+	logic.Log(ctx, log.Info, "generated %d objects to loop over", len(array))
 
 	children := make([]*ChildInfo, 0)
 
@@ -203,7 +201,7 @@ func (logic *forEachLogic) scheduleAction(ctx context.Context, inputSource inter
 }
 
 func (logic *forEachLogic) scheduleRetryAction(ctx context.Context, retry *actionRetryInfo) error {
-	logic.Log(ctx, log.Info, "Retrying...")
+	logic.Log(ctx, log.Info, "retrying...")
 
 	x, err := jqOne(logic.GetInstanceData(), logic.Array) //nolint:contextcheck
 	if err != nil {
@@ -275,16 +273,16 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}
 	logic.AddAttribute("loop-index", fmt.Sprintf("%d", idx))
-	ctx = tracing.AddBranch(ctx, idx)
-	ctx, end, err := tracing.NewSpan(ctx, "processing action results")
-	if err != nil {
-		slog.Debug("tracing.NewSpan failed in processActionResults", "error", "err")
-	}
-	defer end()
-	logic.Log(ctx, log.Debug, "Child '%s' returned.", id)
+	// ctx = tracing.AddBranch(ctx, idx)
+	// ctx, end, err := tracing.NewSpan(ctx, "processing action results")
+	// if err != nil {
+	// 	slog.Debug("tracing.NewSpan failed in processActionResults", "error", "err")
+	// }
+	// defer end()
+	logic.Log(ctx, log.Debug, "child '%s' returned", id)
 
 	if results.ErrorCode != "" {
-		logic.Log(ctx, log.Error, "[%v] Action raised catchable error '%s': %s.", idx, results.ErrorCode, results.ErrorMessage)
+		logic.Log(ctx, log.Error, "[%v] action raised catchable error '%s': %s", idx, results.ErrorCode, results.ErrorMessage)
 
 		err = derrors.NewCatchableError(results.ErrorCode, "%s", results.ErrorMessage)
 		d, err := preprocessRetry(logic.Action.Retries, sd.Attempts, err)
@@ -292,19 +290,19 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 			return nil, err
 		}
 
-		logic.Log(ctx, log.Info, "[%v] Scheduling retry attempt in: %v.", idx, d)
+		logic.Log(ctx, log.Info, "[%v] scheduling retry attempt in: %v", idx, d)
 
 		return nil, scheduleRetry(ctx, logic.Instance, children, idx, d)
 	}
 
 	if results.ErrorMessage != "" {
-		logic.Log(ctx, log.Error, "Action crashed due to an internal error: %v", results.ErrorMessage)
+		logic.Log(ctx, log.Error, "action crashed due to an internal error: %v", results.ErrorMessage)
 		return nil, derrors.NewInternalError(errors.New(results.ErrorMessage))
 	}
 
 	children[idx].Complete = true
 	completed++
-	logic.Log(ctx, log.Info, "[%v] Action returned. (%d/%d)", idx, completed, len(children))
+	logic.Log(ctx, log.Info, "[%v] action returned (%d/%d)", idx, completed, len(children))
 
 	var x interface{}
 

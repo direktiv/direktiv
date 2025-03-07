@@ -164,7 +164,7 @@ func (timers *timers) addCron(name, fn, pattern string, data []byte) error {
 	timers.deleteCronForWorkflow(name)
 	name = fmt.Sprintf("cron:%s", name)
 
-	slog.Debug("Scheduling new cron job.", "cron_name", name, "cron_pattern", pattern)
+	slog.Debug("scheduling new cron job", "cron_name", name, "cron_pattern", pattern)
 
 	// check if cron pattern matches
 	c := cron.NewParser(cron.Minute | cron.Hour | cron.Dom |

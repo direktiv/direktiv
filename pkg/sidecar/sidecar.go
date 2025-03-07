@@ -25,7 +25,7 @@ func RunApplication(ctx context.Context) {
 
 	telend, err := tracing.InitTelemetry(ctx, openTelemetryBackend, "direktiv/sidecar", "direktiv")
 	if err != nil {
-		slog.Warn("Failed to initialize telemetry, but continuing", "error", err)
+		slog.Warn("failed to initialize telemetry, but continuing", "error", err)
 	} else {
 		defer telend()
 	}
@@ -42,7 +42,7 @@ func RunApplication(ctx context.Context) {
 	threads.Wait()
 
 	if code := threads.ExitStatus(); code != 0 {
-		slog.Error("Exiting with exit.", "status_code", code)
+		slog.Error("exiting with exit", "status_code", code)
 		os.Exit(code)
 	}
 }
@@ -58,6 +58,6 @@ func Shutdown(code int) {
 }
 
 func ForceQuit() {
-	slog.Warn("Performing force-quit.")
+	slog.Warn("performing force-quit")
 	os.Exit(1)
 }

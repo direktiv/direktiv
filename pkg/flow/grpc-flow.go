@@ -90,14 +90,14 @@ func (flow *flow) kickExpiredInstances() {
 
 	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
-		slog.Error("Failed to begin SQL transaction in kickExpiredInstances.", "error", err)
+		slog.Error("failed to begin SQL transaction in kickExpiredInstances", "error", err)
 		return
 	}
 	defer tx.Rollback()
 
 	list, err := tx.InstanceStore().GetHangingInstances(ctx)
 	if err != nil {
-		slog.Error("Failed to retrieve hanging instances.", "error", err)
+		slog.Error("failed to retrieve hanging instances", "error", err)
 		return
 	}
 
@@ -106,7 +106,7 @@ func (flow *flow) kickExpiredInstances() {
 			InstanceID: list[i].ID.String(),
 		})
 		if err != nil {
-			slog.Error("Failed to marshal retry message for instance.", "error", err)
+			slog.Error("failed to marshal retry message for instance", "error", err)
 			panic(err) // TODO ?
 		}
 

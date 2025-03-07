@@ -26,7 +26,6 @@ func (h *ContextHandler) Enabled(ctx context.Context, level slog.Level) bool {
 
 // Handle implements slog.Handler.
 func (h *ContextHandler) Handle(ctx context.Context, rec slog.Record) error {
-
 	instance := ctx.Value(DirektivInstance)
 
 	// only handle if there is something in the context
@@ -37,11 +36,9 @@ func (h *ContextHandler) Handle(ctx context.Context, rec slog.Record) error {
 
 		res := make([]slog.Attr, 0)
 
-		for i := 0; i < fieldNum; i++ {
+		for i := range fieldNum {
 			field := structVal.Field(i)
 			fieldName := structType.Field(i).Name
-
-			fmt.Printf("%v %v\n", fieldName, field)
 			res = append(res, slog.Attr{Key: strings.ToLower(fieldName),
 				Value: slog.AnyValue(fmt.Sprintf("%v", field))})
 		}
@@ -49,7 +46,7 @@ func (h *ContextHandler) Handle(ctx context.Context, rec slog.Record) error {
 		return h.innerHandler.WithAttrs(res).Handle(ctx, rec)
 	}
 
-	return nil
+	return h.innerHandler.Handle(ctx, rec)
 }
 
 // WithAttrs implements slog.Handler.

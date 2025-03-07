@@ -163,7 +163,7 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 		args.iterator = iterator
 	}
 	ctx = tracing.AddBranch(ctx, iterator)
-	ctx, end, err2 := tracing.NewSpan(ctx, "Scheduling a action branch")
+	ctx, end, err2 := tracing.NewSpan(ctx, "scheduling a action branch")
 	if err2 != nil {
 		slog.Debug("scheduleAction: tracing.NewSpan", "error", err2)
 	}
@@ -177,7 +177,7 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 		return nil
 	}
 
-	logic.Log(ctx, log.Info, "Sleeping until function %s returns (%s).", logic.label(), child.ID)
+	logic.Log(ctx, log.Info, "sleeping until function %s returns (%s)", logic.label(), child.ID)
 
 	var children []*ChildInfo
 
@@ -188,13 +188,13 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 		return err
 	}
 
-	logic.Log(ctx, log.Info, "function %s returned (%s).", logic.label(), child.ID)
+	logic.Log(ctx, log.Info, "function %s returned (%s)", logic.label(), child.ID)
 
 	return nil
 }
 
 func (logic *actionLogic) scheduleRetryAction(ctx context.Context, retry *actionRetryInfo) error {
-	logic.Log(ctx, log.Info, "Retrying %s...", logic.label())
+	logic.Log(ctx, log.Info, "retrying %s", logic.label())
 
 	err := logic.scheduleAction(ctx, retry.Children[retry.Idx].Attempts)
 	if err != nil {
@@ -214,10 +214,10 @@ func (logic *actionLogic) processActionResults(ctx context.Context, children []*
 	if results.ActionID != id {
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}
-	logic.Log(ctx, log.Info, "child %s returned, id: %s.", logic.label(), id)
+	logic.Log(ctx, log.Info, "child %s returned, id: %s", logic.label(), id)
 
 	if results.ErrorCode != "" {
-		logic.Log(ctx, log.Error, "Action %s raised catchable error '%s': %s.", logic.label(), results.ErrorCode, results.ErrorMessage)
+		logic.Log(ctx, log.Error, "action %s raised catchable error '%s': %s", logic.label(), results.ErrorCode, results.ErrorMessage)
 
 		err = derrors.NewCatchableError(results.ErrorCode, "%s", results.ErrorMessage)
 		d, err := preprocessRetry(logic.Action.Retries, sd.Attempts, err)
@@ -225,13 +225,13 @@ func (logic *actionLogic) processActionResults(ctx context.Context, children []*
 			return nil, err
 		}
 
-		logic.Log(ctx, log.Info, "Scheduling retry attempt in: %v for action %s", d, logic.label())
+		logic.Log(ctx, log.Info, "scheduling retry attempt in: %v for action %s", d, logic.label())
 
 		return nil, scheduleRetry(ctx, logic.Instance, children, 0, d)
 	}
 
 	if results.ErrorMessage != "" {
-		logic.Log(ctx, log.Error, "Action %s crashed due to an internal error: %v", logic.label(), results.ErrorMessage)
+		logic.Log(ctx, log.Error, "action %s crashed due to an internal error: %v", logic.label(), results.ErrorMessage)
 		return nil, derrors.NewInternalError(errors.New(results.ErrorMessage))
 	}
 

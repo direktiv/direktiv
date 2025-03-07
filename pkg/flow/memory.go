@@ -10,12 +10,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type instanceMemory struct {
@@ -320,7 +323,7 @@ func (engine *engine) freeArtefacts(im *instanceMemory) {
 
 	err := engine.events.deleteInstanceEventListeners(context.Background(), im)
 	if err != nil {
-		slog.Error("Failed to delete instance event listeners.", "error", err, "instance", im.instance, "namespace", im.Namespace().Name)
+		slog.Error("failed to delete instance event listeners", "error", err, "instance", im.instance, "namespace", im.Namespace().Name)
 	}
 }
 
@@ -337,7 +340,36 @@ func (engine *engine) freeMemory(ctx context.Context, im *instanceMemory) error 
 
 func (engine *engine) forceFreeCriticalMemory(ctx context.Context, im *instanceMemory) {
 	err := im.flushUpdates(ctx)
+	ctx = im.Context(ctx)
 	if err != nil {
-		slog.ErrorContext(ctx, "Failed to force flush updates for instance memory during critical memory release.", "instance", im.ID().String(), "namespace", im.Namespace().Name, "error", err)
+		telemetry.LogInstanceError(ctx, "failed to force flush updates for instance memory during critical memory release", err)
 	}
+}
+
+func (im *instanceMemory) Context(ctx context.Context) context.Context {
+
+	callpath := ""
+	for _, v := range im.instance.DescentInfo.Descent {
+		callpath += "/" + v.ID.String()
+	}
+
+	info := telemetry.InstanceInfo{
+		Namespace: im.Namespace().Name,
+		Instance:  im.GetInstanceID().String(),
+		Invoker:   im.instance.Instance.Invoker,
+		Callpath:  callpath,
+		Path:      im.instance.Instance.WorkflowPath,
+		Status:    core.LogRunningStatus,
+		State:     im.GetState(),
+	}
+
+	span := trace.SpanFromContext(ctx)
+	if span.SpanContext().TraceID().IsValid() {
+		info.Trace = span.SpanContext().TraceID().String()
+		info.Span = span.SpanContext().SpanID().String()
+	}
+
+	ctx = telemetry.LogInitInstance(ctx, info)
+
+	return ctx
 }

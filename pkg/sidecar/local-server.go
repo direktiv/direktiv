@@ -16,7 +16,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/engine"
-	"github.com/direktiv/direktiv/pkg/tracing"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/gorilla/mux"
 )
@@ -45,37 +45,37 @@ func (srv *LocalServer) Start() {
 	srv.flowAddr = fmt.Sprintf("%s:6665", os.Getenv(direktivFlowEndpoint))
 	fmt.Printf("flow server addr: %s\n", srv.flowAddr)
 
-	slog.Info("flow initialized successfully.")
+	slog.Info("flow initialized successfully")
 
 	// Create the inbound request queue
 	srv.queue = make(chan *inboundRequest, 100)
-	slog.Info("inbound request queue created with capacity of 100.")
+	slog.Info("inbound request queue created with capacity of 100")
 
 	// Initialize the requests map
 	srv.requests = make(map[string]*activeRequest)
-	slog.Info("active requests map initialized.")
+	slog.Info("active requests map initialized")
 
 	// Initialize the router and set up handlers
 	srv.router = mux.NewRouter()
-	slog.Info("router initialized.")
+	slog.Info("router initialized")
 
 	// Register handler functions
 	srv.router.HandleFunc("/log", srv.logHandler)
 	srv.router.HandleFunc("/var", srv.varHandler)
-	slog.Info("routes registered: /log and /var.")
+	slog.Info("routes registered: /log and /var")
 
 	// Configure the server's address
 	srv.server.Addr = "127.0.0.1:8889"
 	srv.server.Handler = srv.router
-	slog.Info("server address set to 127.0.0.1:8889.")
+	slog.Info("server address set to 127.0.0.1:8889")
 
 	// Create the stopper channel
 	srv.stopper = make(chan *time.Time, 1)
-	slog.Info("stopper channel initialized.")
+	slog.Info("stopper channel initialized")
 
 	// Register the server thread for shutdown handling
 	srv.end = threads.Register(srv.stopper)
-	slog.Info("localhost server thread registered.")
+	slog.Info("localhost server thread registered")
 
 	// Initialize worker threads
 	workers := make([]*inboundWorker, workerThreads)
@@ -93,9 +93,9 @@ func (srv *LocalServer) Start() {
 
 	// Start the main server functions
 	go srv.run()
-	slog.Info("main server run goroutine started.")
+	slog.Info("main server run goroutine started")
 	go srv.wait()
-	slog.Info("wait goroutine started.")
+	slog.Info("wait goroutine started")
 }
 
 func (srv *LocalServer) wait() {
@@ -105,7 +105,7 @@ func (srv *LocalServer) wait() {
 	t := <-srv.stopper
 	close(srv.queue)
 
-	slog.Info("localhost server shutting down.")
+	slog.Info("localhost server shutting down")
 
 	for req := range srv.queue {
 		go srv.drainRequest(req)
@@ -126,7 +126,7 @@ func (srv *LocalServer) wait() {
 		return
 	}
 
-	slog.Info("primary localhost server thread shut down successfully.")
+	slog.Info("primary localhost server thread shut down successfully")
 }
 
 func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
@@ -135,24 +135,50 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	srv.requestsLock.Lock()
 	req, ok := srv.requests[actionId]
 	srv.requestsLock.Unlock()
-	ctx := tracing.AddNamespace(r.Context(), req.Namespace)
-	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
-		Namespace:    req.Namespace,
-		InstanceID:   req.Instance,
-		Status:       core.LogUnknownStatus,
-		WorkflowPath: req.Workflow,
-		Callpath:     req.Callpath,
-	}, req.State)
-	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
-	ctx, span, err2 := tracing.InjectTraceParent(ctx, req.ActionContext.TraceParent, "writing logs in action: "+actionId+", workflow: "+req.Workflow)
-	if err2 != nil {
-		slog.Info("Failed to populate trace information.", "action", actionId, "error", err2)
+	// ctx := tracing.AddNamespace(r.Context(), req.Namespace)
+	// ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+	// 	Namespace:    req.Namespace,
+	// 	InstanceID:   req.Instance,
+	// 	Status:       core.LogUnknownStatus,
+	// 	WorkflowPath: req.Workflow,
+	// 	Callpath:     req.Callpath,
+	// }, req.State)
+	// ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
+	// ctx, span, err2 := tracing.InjectTraceParent(ctx, req.ActionContext.TraceParent, "writing logs in action: "+actionId+", workflow: "+req.Workflow)
+	// if err2 != nil {
+	// 	slog.Info("failed to populate trace information", "action", actionId, "error", err2)
+	// }
+	// defer span.End()
+
+	// ctx := telemetry.LogInitInstance(context.Background(), telemetry.InstanceInfo{
+	// 	Namespace: req.Namespace,
+	// 	Instance:  req.Instance,
+	// 	Invoker:   req.Invoker,
+	// 	Callpath:  req.Callpath,
+	// 	Path:      req.Workflow,
+	// 	State:     req.State,
+	// 	Status:    core.LogRunningStatus,
+	// 	// Trace: ,
+	// 	// Span: ,
+	// })
+
+	instanceInfo := telemetry.InstanceInfo{
+		Namespace: req.Namespace,
+		Instance:  req.Instance,
+		Invoker:   req.Invoker,
+		Callpath:  req.Callpath,
+		Path:      req.Workflow,
+		State:     req.State,
+		Status:    core.LogRunningStatus,
+		// Trace: ,
+		// Span: ,
 	}
-	defer span.End()
+
+	ctx := telemetry.LogInitInstance(r.Context(), instanceInfo)
 
 	reportError := func(code int, err error) {
 		http.Error(w, err.Error(), code)
-		slog.WarnContext(ctx, "Log handler error occurred.", "action", actionId, "action_err_code", code, "error", err)
+		telemetry.LogInstanceWarn(ctx, fmt.Sprintf("log handler error occurred, code %s, id: %s", code, actionId))
 	}
 
 	if !ok {
@@ -184,36 +210,42 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(msg) == 0 {
-		slog.Info("Log handler received an empty message body.", "action", actionId)
+		telemetry.LogInstanceWarn(ctx, fmt.Sprintf("log handler received an empty message body, id: %s", actionId))
 		return
 	}
 
-	entry := tracing.GetRawLogEntryWithStatus(ctx, tracing.LevelInfo, msg, core.LogRunningStatus)
-	d, err := json.Marshal(entry)
+	log := telemetry.HttpInstanceInfo{
+		InstanceInfo: instanceInfo,
+		Msg:          msg,
+		Level:        telemetry.LogLevelInfo,
+	}
+
+	d, err := json.Marshal(log)
 	if err != nil {
-		slog.Error("Failed to marshal log entry.", "action", actionId, "error", err)
+		telemetry.LogInstanceError(ctx, fmt.Sprintf("failed to marshal log entry, id: %s", actionId), err)
 		http.Error(w, "", http.StatusInternalServerError)
-
 		return
 	}
-	slog.InfoContext(ctx, "redirect log entry to flow", "org-msg", msg)
+
+	telemetry.LogInstanceDebug(ctx, "redirect log entry to flow")
+
 	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/logs?instance=%v", srv.flowAddr, req.Namespace, req.Instance)
 	resp, err := doRequest(req.ctx, http.MethodPost, srv.flowToken, addr, bytes.NewBuffer(d))
 	if err != nil {
-		slog.Error("Failed to forward log to Flow.", "action", actionId, "error", err)
+		telemetry.LogInstanceError(ctx, fmt.Sprintf("failed to forward log to flow, id: %s", actionId), err)
 		http.Error(w, "", http.StatusInternalServerError)
 
 		return
 	}
 
 	if _, err := handleResponse(resp, nil); err != nil {
-		slog.ErrorContext(ctx, "Failed to handle Flow response.", "action", actionId, "error", err)
+		telemetry.LogInstanceError(ctx, fmt.Sprintf("failed to handle flow response, id: %s", actionId), err)
 		http.Error(w, "", http.StatusInternalServerError)
 
 		return
 	}
 
-	slog.InfoContext(ctx, "Log handler successfully processed message.", "action", actionId)
+	telemetry.LogInstanceInfo(ctx, fmt.Sprintf("processed log message, id: %s", actionId))
 }
 
 // nolint:canonicalheader
@@ -223,27 +255,9 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 	srv.requestsLock.Lock()
 	req, ok := srv.requests[actionId]
 	srv.requestsLock.Unlock()
-	ctx := tracing.AddNamespace(r.Context(), req.Namespace)
-	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
-		Namespace:    req.Namespace,
-		InstanceID:   req.Instance,
-		Status:       core.LogUnknownStatus,
-		WorkflowPath: req.Workflow,
-		Callpath:     req.Callpath,
-	}, req.State)
-	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
-	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
+
 	reportError := func(code int, err error) {
 		http.Error(w, err.Error(), code)
-		slog.WarnContext(ctx, "Variable retrieval failed.", "action", actionId, "error", err)
-	}
-
-	if !ok {
-		err := errors.New("the action id went missing")
-		code := http.StatusInternalServerError
-		reportError(code, err)
-
-		return
 	}
 
 	if req == nil {
@@ -253,17 +267,49 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx = req.ctx
-	ctx = tracing.AddNamespace(ctx, req.Namespace)
-	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
-		Namespace:    req.Namespace,
-		InstanceID:   req.Instance,
-		Status:       core.LogUnknownStatus,
-		WorkflowPath: req.Workflow,
-		Callpath:     req.Callpath,
-	}, req.State)
-	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
-	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
+	// ctx := tracing.AddNamespace(r.Context(), req.Namespace)
+	// ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+	// 	Namespace:    req.Namespace,
+	// 	InstanceID:   req.Instance,
+	// 	Status:       core.LogUnknownStatus,
+	// 	WorkflowPath: req.Workflow,
+	// 	Callpath:     req.Callpath,
+	// }, req.State)
+	// ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
+	// ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
+
+	instanceInfo := telemetry.InstanceInfo{
+		Namespace: req.Namespace,
+		Instance:  req.Instance,
+		Invoker:   req.Invoker,
+		Callpath:  req.Callpath,
+		Path:      req.Workflow,
+		State:     req.State,
+		Status:    core.LogRunningStatus,
+		// Trace: ,
+		// Span: ,
+	}
+
+	ctx := telemetry.LogInitInstance(req.ctx, instanceInfo)
+	if !ok {
+		err := errors.New("the action id is missing")
+		code := http.StatusInternalServerError
+		reportError(code, err)
+
+		return
+	}
+
+	// ctx = req.ctx
+	// ctx = tracing.AddNamespace(ctx, req.Namespace)
+	// ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+	// 	Namespace:    req.Namespace,
+	// 	InstanceID:   req.Instance,
+	// 	Status:       core.LogUnknownStatus,
+	// 	WorkflowPath: req.Workflow,
+	// 	Callpath:     req.Callpath,
+	// }, req.State)
+	// ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
+	// ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
 
 	ir := req.functionRequest
 
@@ -271,50 +317,50 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 	key := r.URL.Query().Get("key")
 	vMimeType := r.Header.Get("content-type")
 
+	fmt.Printf(">>> %v\n", r.Method)
+
 	switch r.Method {
 	case http.MethodGet:
-
 		varMeta, statusCode, err := getVariableMetaFromFlow(ctx, srv.flowToken, srv.flowAddr, ir, scope, key)
 		if err != nil {
 			reportError(statusCode, err)
-			slog.WarnContext(ctx, "Failed retrieving a Variable.", "action", actionId, "key", key, "scope", scope)
+			slog.WarnContext(ctx, "failed retrieving a variable", "action", actionId, "key", key, "scope", scope)
 
 			return
 		}
 
-		varData, err := getVariableDataViaID(ctx, srv.flowToken, srv.flowAddr, ir.Namespace, varMeta.ID.String())
+		varData, err := getVariableDataViaID(ctx, srv.flowToken, srv.flowAddr, ir.Namespace, varMeta.ID)
 		if err != nil {
 			reportError(http.StatusInternalServerError, err)
-			slog.WarnContext(ctx, "Failed retrieving a Variable.", "action", actionId, "key", key, "scope", scope)
+			slog.WarnContext(ctx, "failed retrieving a variable", "action", actionId, "key", key, "scope", scope)
 
 			return
 		}
 		_, err = io.Copy(w, bytes.NewReader(varData.Data))
 		if err != nil {
 			reportError(http.StatusInternalServerError, err)
-			slog.Error("Failed retrieving a Variable.", "action", actionId, "key", key, "scope", scope)
+			slog.Error("failed retrieving a variable", "action", actionId, "key", key, "scope", scope)
 
 			return
 		}
 
-		slog.InfoContext(ctx, "Variable successfully retrieved.", "action", actionId, "key", key, "scope", scope)
+		slog.InfoContext(ctx, "variable successfully retrieved", "action", actionId, "key", key, "scope", scope)
 
 	case http.MethodPost:
-
 		statusCode, err := srv.setVar(ctx, ir, r.Body, scope, key, vMimeType)
 		if err != nil {
 			reportError(statusCode, err)
-			slog.WarnContext(ctx, "Failed to set a Variable.", "action", actionId, "key", key, "scope", scope)
+			slog.WarnContext(ctx, "failed to set a variable", "action", actionId, "key", key, "scope", scope)
 
 			return
 		}
 
-		slog.InfoContext(ctx, "Variable successfully stored.", "action", actionId, "key", key, "scope", scope, "mime_type", vMimeType)
+		slog.InfoContext(ctx, "variable successfully stored", "action", actionId, "key", key, "scope", scope, "mime_type", vMimeType)
 
 	default:
 		code := http.StatusMethodNotAllowed
 		reportError(code, errors.New(http.StatusText(code)))
-		slog.Warn("Unsupported HTTP method for var handler.", "action", actionId, "method", r.Method)
+		slog.Warn("unsupported http method for var handler", "action", actionId, "method", r.Method)
 
 		return
 	}
@@ -337,7 +383,7 @@ func (srv *LocalServer) registerActiveRequest(ir *functionRequest, ctx context.C
 
 	srv.requestsLock.Unlock()
 
-	slog.InfoContext(ctx, "Serving.", "action", ir.actionId)
+	slog.InfoContext(ctx, "serving", "action", ir.actionId)
 }
 
 func (srv *LocalServer) deregisterActiveRequest(actionId string) {
@@ -347,7 +393,7 @@ func (srv *LocalServer) deregisterActiveRequest(actionId string) {
 
 	srv.requestsLock.Unlock()
 
-	slog.Info("Request deregistered.", "action", actionId)
+	slog.Info("request deregistered", "action", actionId)
 }
 
 func (srv *LocalServer) cancelActiveRequest(ctx context.Context, actionId string) {
@@ -359,14 +405,14 @@ func (srv *LocalServer) cancelActiveRequest(ctx context.Context, actionId string
 		return
 	}
 
-	slog.InfoContext(ctx, "Attempting to cancel.", "action", actionId)
+	slog.InfoContext(ctx, "attempting to cancel", "action", actionId)
 
 	go srv.sendCancelToService(ctx, req.functionRequest)
 
 	select {
 	case <-req.ctx.Done():
 	case <-time.After(10 * time.Second):
-		slog.WarnContext(ctx, "Request failed to cancel punctually.", "action", actionId)
+		slog.WarnContext(ctx, "request failed to cancel punctually", "action", actionId)
 		req.cancel()
 	}
 }
@@ -376,7 +422,7 @@ func (srv *LocalServer) sendCancelToService(ctx context.Context, ir *functionReq
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
 	if err != nil {
-		slog.ErrorContext(ctx, "Failed to create cancel request.", "action", ir.actionId, "error", err)
+		slog.ErrorContext(ctx, "failed to create cancel request", "action", ir.actionId, "error", err)
 		return
 	}
 
@@ -384,13 +430,13 @@ func (srv *LocalServer) sendCancelToService(ctx context.Context, ir *functionReq
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		slog.ErrorContext(ctx, "Failed to send cancel to service.", "action", ir.actionId, "error", err)
+		slog.ErrorContext(ctx, "failed to send cancel to service", "action", ir.actionId, "error", err)
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		slog.WarnContext(ctx, "Service responded to cancel request.", "action", ir.actionId, "resp-code", resp.StatusCode)
+		slog.WarnContext(ctx, "service responded to cancel request", "action", ir.actionId, "resp-code", resp.StatusCode)
 	}
 }
 
@@ -408,7 +454,7 @@ func (srv *LocalServer) drainRequest(req *inboundRequest) {
 	http.Error(req.w, msg, code)
 
 	id := req.r.Header.Get(actionIDHeader)
-	slog.Warn("Request aborted due to server unavailability", "action", id, "http_status_code", code, "reason", msg)
+	slog.Warn("request aborted due to server unavailability", "action", id, "http_status_code", code, "reason", msg)
 
 	defer func() {
 		_ = recover()
@@ -418,11 +464,11 @@ func (srv *LocalServer) drainRequest(req *inboundRequest) {
 }
 
 func (srv *LocalServer) run() {
-	slog.Info("Starting localhost HTTP server.", "addr", srv.server.Addr)
+	slog.Info("starting localhost HTTP server", "addr", srv.server.Addr)
 
 	err := srv.server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		slog.Error("Error running local server", "error", err)
+		slog.Error("error running local server", "error", err)
 		Shutdown(ERROR)
 
 		return
@@ -449,6 +495,7 @@ const sharedDir = "/mnt/shared"
 
 func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, r io.Reader, scope, key, vMimeType string) (int, error) {
 	// Retrieve variable metadata
+	fmt.Printf("POST!!! %v %v %v\n", scope, key, vMimeType)
 	varMeta, statusCode, err := getVariableMetaFromFlow(ctx, srv.flowToken, srv.flowAddr, ir, scope, key)
 	if err != nil {
 		target := &RessourceNotFoundError{}
@@ -498,7 +545,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, r io.Re
 		MimeType: &vMimeType,
 		Data:     data,
 	}
-	patchStatusCode, patchErr := patchVarData(ctx, srv.flowToken, srv.flowAddr, ir.Namespace, varMeta.ID.String(), reqD)
+	patchStatusCode, patchErr := patchVarData(ctx, srv.flowToken, srv.flowAddr, ir.Namespace, varMeta.ID, reqD)
 	if patchErr != nil {
 		return patchStatusCode, fmt.Errorf("failed to patch variable data: %w", patchErr)
 	}

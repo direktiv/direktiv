@@ -11,7 +11,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/tracing"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -71,16 +71,17 @@ func (m *logController) mountRouter(r chi.Router, config *core.Config) {
 	})
 
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
-		namespace := extractContextNamespace(r)
+		// namespace := extractContextNamespace(r)
 		instanceID := r.URL.Query().Get("instance")
 
 		if instanceID == "" {
-			http.Error(w, "Missing instance ID", http.StatusBadRequest)
+			http.Error(w, "missing instance id", http.StatusBadRequest)
 
 			return
 		}
 
-		var logEntry map[string]interface{}
+		// var logEntry map[string]interface{}
+		var logEntry telemetry.HttpInstanceInfo
 		err := json.NewDecoder(r.Body).Decode(&logEntry)
 		if err != nil {
 			writeInternalError(w, err)
@@ -88,47 +89,68 @@ func (m *logController) mountRouter(r chi.Router, config *core.Config) {
 			return
 		}
 
-		if _, ok := logEntry[string(core.LogTrackKey)]; !ok {
-			writeBadrequestError(w, fmt.Errorf("missing 'track' field"))
+		// if _, ok := logEntry[string(core.LogTrackKey)]; !ok {
+		// 	writeBadrequestError(w, fmt.Errorf("missing 'track' field"))
 
-			return
+		// 	return
+		// }
+
+		// if v, ok := logEntry["namespace"].(string); !ok || v != namespace.Name {
+		// 	writeBadrequestError(w, fmt.Errorf("invalid or mismatched namespace"))
+
+		// 	return
+		// }
+
+		// msg, ok := logEntry["msg"].(string)
+		// if !ok {
+		// 	writeBadrequestError(w, fmt.Errorf("missing or invalid 'msg' field"))
+
+		// 	return
+		// }
+
+		// map[callpath:528a0556-333e-4562-b027-28e167981ac5 instance:528a0556-333e-4562-b027-28e167981ac5 invoker: level:INFO msg:Creating new request namespace:demo span:15adf9d1fb5ddad9 state:getter status:running trace:d7f4cba51f1730a295e3675ab3976c12 track:instance.528a0556-333e-4562-b027-28e167981ac5 workflow:/test.yaml]
+		//
+		// telemetry.LogInitInstance(r.Context(), telemetry.InstanceInfo{
+
+		// })
+
+		// slogF := slog.Info
+		// if v, ok := logEntry["level"].(tracing.LogLevel); ok {
+		// 	switch v {
+		// 	case tracing.LevelDebug:
+		// 		slogF = slog.Debug
+		// 	case tracing.LevelInfo:
+		// 		slogF = slog.Info
+		// 	case tracing.LevelWarn:
+		// 		slogF = slog.Warn
+		// 	case tracing.LevelError:
+		// 		slogF = slog.Error
+		// 	}
+		// }
+
+		// delete(logEntry, "level")
+
+		// attr := make([]interface{}, 0, len(logEntry))
+		// for k, v := range logEntry {
+		// 	attr = append(attr, k, v)
+		// }
+
+		// slogF(msg, attr...)
+
+		ctx := telemetry.LogInitInstance(r.Context(), logEntry.GetInstanceInfo())
+
+		// if v, ok := logEntry["level"].(tracing.LogLevel); ok {
+		switch logEntry.Level {
+		case telemetry.LogLevelDebug:
+			telemetry.LogInstanceDebug(ctx, logEntry.Msg)
+		case telemetry.LogLevelInfo:
+			telemetry.LogInstanceInfo(ctx, logEntry.Msg)
+		case telemetry.LogLevelWarn:
+			telemetry.LogInstanceWarn(ctx, logEntry.Msg)
+		case telemetry.LogLevelError:
+			telemetry.LogInstanceError(ctx, logEntry.Msg, fmt.Errorf(logEntry.Msg))
 		}
 
-		if v, ok := logEntry["namespace"].(string); !ok || v != namespace.Name {
-			writeBadrequestError(w, fmt.Errorf("invalid or mismatched namespace"))
-
-			return
-		}
-
-		msg, ok := logEntry["msg"].(string)
-		if !ok {
-			writeBadrequestError(w, fmt.Errorf("missing or invalid 'msg' field"))
-
-			return
-		}
-
-		slogF := slog.Info
-		if v, ok := logEntry["level"].(tracing.LogLevel); ok {
-			switch v {
-			case tracing.LevelDebug:
-				slogF = slog.Debug
-			case tracing.LevelInfo:
-				slogF = slog.Info
-			case tracing.LevelWarn:
-				slogF = slog.Warn
-			case tracing.LevelError:
-				slogF = slog.Error
-			}
-		}
-
-		delete(logEntry, "level")
-
-		attr := make([]interface{}, 0, len(logEntry))
-		for k, v := range logEntry {
-			attr = append(attr, k, v)
-		}
-
-		slogF(msg, attr...)
 		w.WriteHeader(http.StatusOK)
 	})
 }
