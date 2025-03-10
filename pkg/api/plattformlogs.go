@@ -7,7 +7,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"net/http/httputil"
 	"strings"
 	"time"
 
@@ -32,7 +31,6 @@ type logParams struct {
 }
 
 func (l logParams) toQuery() string {
-
 	queryParts := make([]string, 0)
 
 	limiter := "limit 100"
@@ -54,7 +52,6 @@ func (l logParams) toQuery() string {
 
 	timeSelector := ""
 	if l.after != "" {
-		// queryParts = append(queryParts, fmt.Sprintf("_time:>%s", l.after))
 		timeSelector = fmt.Sprintf(" _time:>%s ", l.after)
 	} else if l.before != "" {
 		timeSelector = fmt.Sprintf(" _time:<%s ", l.before)
@@ -186,92 +183,9 @@ func (m *logController) mountRouter(r chi.Router, config *core.Config) {
 	})
 }
 
-// func (m *logController) getNewer(ctx context.Context, t time.Time, params map[string]string) ([]logEntry, error) {
-// 	var logs []core.LogEntry
-// 	var err error
-
-// 	// Determine the track based on the provided parameters
-// 	stream, err := determineTrack(params)
-// 	if err != nil {
-// 		return []logEntry{}, err
-// 	}
-
-// 	// Call the appropriate LogStore method with cursorTime
-// 	lastID, hasLastID := params["lastID"]
-// 	_, isInstanceRequest := params["instance"]
-// 	if hasLastID && isInstanceRequest {
-// 		id, err := strconv.Atoi(lastID)
-// 		if err != nil {
-// 			return []logEntry{}, err
-// 		}
-// 		r, err := m.store.GetStartingIDUntilTimeInstance(ctx, stream, id, t)
-// 		if err != nil {
-// 			return []logEntry{}, err
-// 		}
-// 		logs = append(logs, r...)
-// 	}
-// 	if hasLastID && !isInstanceRequest {
-// 		id, err := strconv.Atoi(lastID)
-// 		if err != nil {
-// 			return []logEntry{}, err
-// 		}
-// 		r, err := m.store.GetStartingIDUntilTime(ctx, stream, id, t)
-// 		if err != nil {
-// 			return []logEntry{}, err
-// 		}
-// 		logs = append(logs, r...)
-// 	}
-
-// 	if _, ok := params["instance"]; ok {
-// 		r, err := m.store.GetNewerInstance(ctx, stream, t)
-// 		if err != nil {
-// 			return []logEntry{}, err
-// 		}
-// 		logs = append(logs, r...)
-// 	} else {
-// 		r, err := m.store.GetNewer(ctx, stream, t)
-// 		if err != nil {
-// 			return []logEntry{}, err
-// 		}
-// 		logs = append(logs, r...)
-// 	}
-
-// 	res := []logEntry{}
-// 	// for _, le := range logs {
-// 	// 	// e := toFeatureLogEntry(le)
-// 	// 	// res = append(res, e)
-// 	// }
-
-// 	return res, nil
-// }
-
 func (m *logController) get(query string) ([]logEntry, error) {
-	// var r []core.LogEntry
 	var err error
 
-	// fmt.Println(query)
-	// Determine the track based on the provided parameters
-	// stream, err := determineTrack(params)
-	// if err != nil {
-	// 	return []logEntry{}, time.Time{}, err
-	// }
-
-	// starting := time.Now().UTC()
-	// if t, ok := params["before"]; ok {
-	// 	co, err := time.Parse(time.RFC3339Nano, t)
-	// 	if err != nil {
-	// 		return []logEntry{}, time.Time{}, err
-	// 	}
-	// 	starting = co
-	// }
-
-	// compare := ">="
-	// if older {
-	// 	compare = "<="
-	// }
-
-	// out := fmt.Sprintf("query=track:=%s _time:%s%s  | sort by (_time) asc",
-	// 	stream, compare, starting.Format("2006-01-02T15:04:05.000Z"))
 	logs, err := m.fetchFromBackend(query)
 	if err != nil {
 		return []logEntry{}, err
@@ -289,16 +203,14 @@ func (m *logController) get(query string) ([]logEntry, error) {
 // stream handles log streaming requests using Server-Sent Events (SSE).
 // Clients subscribing to this endpoint will receive real-time log updates.
 func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
-	// cursor is set to multiple seconds before the current time to mitigate data loss
-	// that may occur due to delays between submitting and processing the request, or when a sequence of client requests is necessary.
-	// cursor := time.Now().Add(-48 * time.Hour)
-	// var err error
-
 	cursor := time.Now().UTC()
 
 	// Last-Event-ID header
 	lastEventID := r.Header.Get("Last-Event-ID")
 	fmt.Printf("LAST EVENT ID >%v<\n", lastEventID)
+	if lastEventID != "" {
+
+	}
 
 	// TODO: we may need to replace with a SSE-Server library instead of using our custom implementation.
 	params := extractLogRequestParams(r)
@@ -318,7 +230,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 		for i := range logs {
 			l := logs[i]
 			b, _ := json.Marshal(l)
-			_, err = fmt.Fprintf(w, fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", l.Time.Format("2006-01-02T15:04:05.000000000Z"), "message", string(b)))
+			_, err = fmt.Fprintf(w, fmt.Sprintf("id: %s\nevent: %s\ndata: %s\n\n", l.Time.Format("2006-01-02T15:04:05.000000000Z"), "message", string(b)))
 			if err != nil {
 				return time.Now(), err
 			}
@@ -341,7 +253,6 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 
 	// send initial data
 	var err error
-	// q := newLogQuerier(params.scope).withDateSortAsc()
 	cursor, err = queryAndSend(params.toQuery())
 	if err != nil {
 		// LOG ERROR
@@ -360,24 +271,10 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 		select {
 		case <-clientGone:
 			// disconnected
-			fmt.Println("DISCONNECTED!!")
+			slog.Debug("client disconnected")
 			return
 		case <-t.C:
 			var err error
-			// Send an event to the client
-			// Here we send only the "data" field, but there are few others
-			// _, err := fmt.Fprintf(w, "data: The time is %s\n\n", time.Now().Format(time.UnixDate))
-			// if err != nil {
-			// 	return
-			// }
-			// fmt.Println("DONE!!!")
-			// fmt.Println(cursor)
-			// logs, _, err := m.get(r.Context(), false, params)
-			// for i := range logs {
-			// 	fmt.Println(logs[i])
-			// }
-			// q := newLogQuerier(params.scope).afterDate(cursor).withDateSortAsc()
-			// fmt.Println(q.string())
 			params.last = ""
 			cursor, err = queryAndSend(params.toQuery())
 			if err != nil {
@@ -385,35 +282,6 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			params.after = cursor.Format("2006-01-02T15:04:05.000000000Z")
-
-			// logs, err := m.get(q.string())
-			// if err != nil {
-			// 	return
-			// }
-
-			// fmt.Println("LOGS!!!!!!!!!!!!!!!!!!!!!!")
-
-			// for i := range logs {
-			// 	l := logs[i]
-			// 	fmt.Println(l)
-			// 	// toFeatureLogEntry(l)
-
-			// 	// b, _ := json.Marshal(l)
-
-			// 	_, err := fmt.Fprintf(w, fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", l.ID, "message", string(b)))
-			// 	// if err != nil {
-			// 	// 	return
-			// 	// }
-			// }
-
-			// cursor = time.Now().UTC()
-			// handle different params here
-			// q = q.withDateSortAsc().beforeDate(now)
-
-			// err = rc.Flush()
-			// if err != nil {
-			// 	return
-			// }
 		}
 	}
 	// // Create a context with cancellation
@@ -493,6 +361,7 @@ func extractLogRequestParams(r *http.Request) logParams {
 		logParams.scope = "namespace." + v
 	}
 
+	// fetch all possible query params
 	logParams.limit = r.URL.Query().Get("limit")
 	logParams.direction = r.URL.Query().Get("direction")
 	logParams.after = r.URL.Query().Get("after")
@@ -503,21 +372,18 @@ func extractLogRequestParams(r *http.Request) logParams {
 	if r.URL.Query().Get("instance") != "" {
 		logParams.scope = "instance." + r.URL.Query().Get("instance")
 	}
+
+	if r.URL.Query().Get("activity") != "" {
+		logParams.scope = "activity." + r.URL.Query().Get("activity")
+	}
+
 	// } else if p, ok := params["route"]; ok {
 	// 	params["track"] = "route." + p
-	// } else if p, ok := params["activity"]; ok {
-	// 	params["track"] = "activity." + p
-	// } else if p, ok := params["namespace"]; ok {
-	// 	params["track"] = "namespace." + p
-	// } else if p, ok := params["trace"]; ok {
-	// 	params["track"] = "trace." + p
-	// }
 
 	return logParams
 }
 
 type logEntry struct {
-	// ID        int                   `json:"id"`
 	Time      time.Time             `json:"time"`
 	Msg       interface{}           `json:"msg"`
 	Level     interface{}           `json:"level"`
@@ -531,13 +397,13 @@ type logEntry struct {
 }
 
 type WorkflowEntryContext struct {
-	Status interface{} `json:"status"`
+	Status string `json:"status"`
 
-	State    interface{} `json:"state"`
-	Branch   interface{} `json:"branch"`
-	Path     interface{} `json:"workflow"`
-	CalledAs interface{} `json:"calledAs"`
-	Instance interface{} `json:"instance"`
+	State    string `json:"state"`
+	Branch   string `json:"branch"`
+	Path     string `json:"workflow"`
+	CalledAs string `json:"calledAs"`
+	Instance string `json:"instance"`
 }
 
 type ActivityEntryContext struct {
@@ -548,24 +414,36 @@ type RouteEntryContext struct {
 }
 
 // func toFeatureLogEntry(e core.LogEntry) logEntry {
-func toFeatureLogEntry(e LogEntry) logEntry {
+func toFeatureLogEntry(e logEntryBackend) logEntry {
 	featureLogEntry := logEntry{
-		// ID:    e.Time.Format("2006-01-02T15:04:05.000000000Z"),
 		Time:  e.Time,
 		Msg:   e.Msg,
 		Level: e.Level,
 		// Trace:     e.Trace,
 		// Span:      e.Span,
 		Namespace: e.Namespace,
-		// Workflow: &WorkflowEntryContext{
-		// 	State:    e.State,
-		// 	Path:     e.Workflow,
-		// 	Instance: e.Instance,
-		// 	// CalledAs: ,
-		// 	Status: e.Status,
-		// 	// Branch: ,
-		// },
 	}
+
+	// workflow data if instance
+	if strings.HasPrefix(e.Scope, "instance.") {
+		featureLogEntry.Workflow = &WorkflowEntryContext{
+			Status: e.Status,
+			// Branch: ,
+			Path:  e.Path,
+			State: e.State,
+			// CalledAs: ,
+			Instance: e.Instance,
+		}
+	}
+
+	if strings.HasPrefix(e.Scope, "activity.") {
+		featureLogEntry.Activity = &ActivityEntryContext{
+			ID: e.Instance,
+		}
+
+	}
+
+	// if strings.HasPrefix()
 	// featureLogEntry.Error = e.Data["error"]
 
 	// wfLogCtx := WorkflowEntryContext{}
@@ -589,7 +467,7 @@ func toFeatureLogEntry(e LogEntry) logEntry {
 	return featureLogEntry
 }
 
-type LogEntry struct {
+type logEntryBackend struct {
 	Time        time.Time `json:"_time"`
 	StreamID    string    `json:"_stream_id"`
 	Stream      string    `json:"_stream"`
@@ -607,28 +485,8 @@ type LogEntry struct {
 	State       string    `json:"state"`
 }
 
-// type Log struct {
-// 	Time      time.Time `json:"_time"`
-// 	StreamID  string    `json:"_stream_id"`
-// 	Stream    string    `json:"_stream"`
-// 	Msg       string    `json:"_msg"`
-// 	P         string    `json:"_p"`
-// 	Stream2   string    `json:"stream"`
-// 	Date      time.Time `json:"date"`
-// 	Instance  string    `json:"instance"`
-// 	Invoker   string    `json:"invoker"`
-// 	Level     string    `json:"level"`
-// 	Namespace string    `json:"namespace"`
-// 	Span      string    `json:"span"`
-// 	State     string    `json:"state"`
-// 	Status    string    `json:"status"`
-// 	Trace     string    `json:"trace"`
-// 	Track     string    `json:"track"`
-// 	Workflow  string    `json:"workflow"`
-// }
-
-func (m *logController) fetchFromBackend(query string) ([]LogEntry, error) {
-	var ret []LogEntry
+func (m *logController) fetchFromBackend(query string) ([]logEntryBackend, error) {
+	var ret []logEntryBackend
 
 	req, err := http.NewRequest(http.MethodPost,
 		fmt.Sprintf("http://%s:9428/select/logsql/query", m.logsBackend),
@@ -641,8 +499,8 @@ func (m *logController) fetchFromBackend(query string) ([]LogEntry, error) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	cli := &http.Client{Timeout: 30 * time.Second}
 
-	cc, _ := httputil.DumpRequest(req, true)
-	fmt.Println(string(cc))
+	// cc, _ := httputil.DumpRequest(req, true)
+	// fmt.Println(string(cc))
 
 	resp, err := cli.Do(req)
 	if err != nil {
@@ -650,12 +508,9 @@ func (m *logController) fetchFromBackend(query string) ([]LogEntry, error) {
 	}
 	defer resp.Body.Close()
 
-	// cc, _ := httputil.DumpResponse(resp, true)
-	// fmt.Println(string(cc))
-
 	dec := json.NewDecoder(resp.Body)
 	for {
-		var log LogEntry
+		var log logEntryBackend
 		err := dec.Decode(&log)
 		if err == io.EOF {
 			break
@@ -668,38 +523,3 @@ func (m *logController) fetchFromBackend(query string) ([]LogEntry, error) {
 
 	return ret, err
 }
-
-// type logQuerier struct {
-// 	query string
-// 	sort  string
-// }
-
-// func newLogQuerier(track string) logQuerier {
-// 	return logQuerier{
-// 		query: "query=track:=" + track,
-// 	}
-// }
-
-// func (l logQuerier) beforeDate(t time.Time) logQuerier {
-// 	l.query = l.query + " _time:<" + t.Format("2006-01-02T15:04:05.000000000Z")
-// 	return l
-// }
-
-// func (l logQuerier) afterDate(t time.Time) logQuerier {
-// 	l.query = l.query + " _time:>" + t.Format("2006-01-02T15:04:05.000000000Z")
-// 	return l
-// }
-
-// func (l logQuerier) withDateSortAsc() logQuerier {
-// 	l.sort = l.sort + " | sort by (_time) asc"
-// 	return l
-// }
-
-// func (l logQuerier) withDateSortDesc() logQuerier {
-// 	l.sort = l.sort + " | sort by (_time) desc"
-// 	return l
-// }
-
-// func (l logQuerier) string() string {
-// 	return fmt.Sprintf("%s %s", l.query, l.sort)
-// }

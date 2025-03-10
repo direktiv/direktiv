@@ -15,11 +15,11 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 )
 
 type Parser struct {
-	log     FormatLogger
 	matcher gitignore.Matcher
 	src     Source
 	tempDir string
@@ -33,17 +33,20 @@ type Parser struct {
 
 	DeprecatedNamespaceVars map[string][]byte
 	DeprecatedWorkflowVars  map[string]map[string][]byte
+
+	Namespace, PID string
 }
 
-func NewParser(log FormatLogger, src Source) (*Parser, error) {
+func NewParser(namespace, pid string, src Source) (*Parser, error) {
 	tempDir, err := os.MkdirTemp("", "direktiv_sync_*")
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("Processing repository in temporary directory: %s", tempDir)
+
+	telemetry.LogActivityDebug(fmt.Sprintf("processing repository in temporary directory: %s", tempDir),
+		namespace, pid)
 
 	p := &Parser{
-		log:     log,
 		matcher: gitignore.NewMatcher(nil),
 		src:     src,
 		tempDir: tempDir,
@@ -57,11 +60,15 @@ func NewParser(log FormatLogger, src Source) (*Parser, error) {
 
 		DeprecatedNamespaceVars: make(map[string][]byte),
 		DeprecatedWorkflowVars:  make(map[string]map[string][]byte),
+
+		Namespace: namespace,
+		PID:       pid,
 	}
 
 	err = p.parse()
 	if err != nil {
-		log.Errorf("Error processing repository: %v", err)
+		telemetry.LogActivityError("error processing repository",
+			namespace, pid, err)
 		_ = p.Close()
 
 		return nil, err
@@ -111,7 +118,7 @@ func (p *Parser) parse() error {
 func (p *Parser) loadIgnores() error {
 	f, err := p.src.FS().Open(".direktivignore")
 	if errors.Is(err, os.ErrNotExist) {
-		p.log.Infof("No .direktivignore file detected")
+		telemetry.LogActivityInfo("no .direktivignore file detected", p.Namespace, p.PID)
 
 		return nil
 	}
@@ -145,12 +152,14 @@ func (p *Parser) filterCopySourceWalkFunc(path string, d fs.DirEntry, _ error) e
 	isMatch := p.matcher.Match(strings.Split(path, "/"), d.IsDir())
 	if isMatch {
 		if d.IsDir() {
-			p.log.Infof("Skipping directory '%s': excluded by .direktivignore patterns", path)
+			telemetry.LogActivityInfo(fmt.Sprintf("skipping directory '%s': excluded by .direktivignore patterns", path),
+				p.Namespace, p.PID)
 
 			return fs.SkipDir
 		}
 
-		p.log.Infof("Skipping file '%s': excluded by .direktivignore patterns", path)
+		telemetry.LogActivityInfo(fmt.Sprintf("skipping file '%s': excluded by .direktivignore patterns", path),
+			p.Namespace, p.PID)
 
 		return nil
 	}
@@ -159,12 +168,14 @@ func (p *Parser) filterCopySourceWalkFunc(path string, d fs.DirEntry, _ error) e
 	_, err := filestore.SanitizePath(base)
 	if err != nil {
 		if d.IsDir() {
-			p.log.Infof("Skipping directory '%s': filename contains illegal characters", path)
+			telemetry.LogActivityInfo(fmt.Sprintf("skipping directory '%s': filename contains illegal characters", path),
+				p.Namespace, p.PID)
 
 			return fs.SkipDir
 		}
 
-		p.log.Infof("Skipping file '%s': filename contains illegal characters", path)
+		telemetry.LogActivityInfo(fmt.Sprintf("skipping file '%s': filename contains illegal characters", path),
+			p.Namespace, p.PID)
 
 		return nil
 	}
@@ -177,7 +188,8 @@ func (p *Parser) filterCopySourceWalkFunc(path string, d fs.DirEntry, _ error) e
 			return err
 		}
 
-		p.log.Debugf("Created directory '%s'", path)
+		telemetry.LogActivityDebug(fmt.Sprintf("created directory '%s'", path),
+			p.Namespace, p.PID)
 
 		return nil
 	}
@@ -211,7 +223,8 @@ func (p *Parser) filterCopySourceWalkFunc(path string, d fs.DirEntry, _ error) e
 		return err
 	}
 
-	p.log.Debugf("Created file '%s'", path)
+	telemetry.LogActivityDebug(fmt.Sprintf("created file '%s'", path),
+		p.Namespace, p.PID)
 
 	return nil
 }
@@ -261,7 +274,9 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		return nil
 	}
 	if err != nil {
-		p.log.Warnf("Error loading possible Direktiv resource definition '%s': %v", path, err)
+
+		telemetry.LogActivityWarn(fmt.Sprintf("error loading possible Direktiv resource definition '%s': %v", path, err),
+			p.Namespace, p.PID)
 
 		return nil
 	}
@@ -310,7 +325,8 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		return err
 	}
 
-	p.log.Debugf("Pruned Direktiv resource file '%s'", path)
+	telemetry.LogActivityDebug(fmt.Sprintf("pruned Direktiv resource file '%s'", path),
+		p.Namespace, p.PID)
 
 	return nil
 }
@@ -342,7 +358,8 @@ func (p *Parser) scanAndPruneAmbiguousDirektivWorkflowFile(path string) error {
 	wf := new(model.Workflow)
 	err = wf.Load(data)
 	if err != nil {
-		p.log.Warnf("Error loading possible Direktiv workflow definition (ambiguous) '%s': %v", path, err)
+		telemetry.LogActivityWarn(fmt.Sprintf("error loading possible Direktiv workflow definition (ambiguous) '%s': %v", path, err),
+			p.Namespace, p.PID)
 
 		return nil
 	}
@@ -357,7 +374,8 @@ func (p *Parser) scanAndPruneAmbiguousDirektivWorkflowFile(path string) error {
 		return err
 	}
 
-	p.log.Debugf("Pruned Direktiv workflow definition file '%s'", path)
+	telemetry.LogActivityDebug(fmt.Sprintf("pruned Direktiv workflow definition file '%s'", path),
+		p.Namespace, p.PID)
 
 	return nil
 }
@@ -379,7 +397,8 @@ func (p *Parser) scanAndPruneAmbiguousDirektivWorkflowFiles() error {
 }
 
 func (p *Parser) handleWorkflow(path string, data []byte) error {
-	p.log.Infof("Direktiv resource file containing a workflow definition found at '%s'", path)
+	telemetry.LogActivityInfo(fmt.Sprintf("direktiv resource file containing a workflow definition found at '%s'", path),
+		p.Namespace, p.PID)
 
 	p.Workflows[path] = data
 
@@ -387,7 +406,8 @@ func (p *Parser) handleWorkflow(path string, data []byte) error {
 }
 
 func (p *Parser) handleService(path string, data []byte) error {
-	p.log.Infof("Direktiv resource file containing a service definition found at '%s'", path)
+	telemetry.LogActivityInfo(fmt.Sprintf("direktiv resource file containing a service definition found at '%s'", path),
+		p.Namespace, p.PID)
 
 	p.Services[path] = data
 
@@ -395,7 +415,8 @@ func (p *Parser) handleService(path string, data []byte) error {
 }
 
 func (p *Parser) handleGateway(path string, data []byte) error {
-	p.log.Infof("Direktiv resource file containing a gateway definition found at '%s'", path)
+	telemetry.LogActivityInfo(fmt.Sprintf("direktiv resource file containing a gateway definition found at '%s'", path),
+		p.Namespace, p.PID)
 
 	p.Gateways[path] = data
 
@@ -403,7 +424,8 @@ func (p *Parser) handleGateway(path string, data []byte) error {
 }
 
 func (p *Parser) handleEndpoint(path string, data []byte) error {
-	p.log.Infof("Direktiv resource file containing an endpoint definition found at '%s'", path)
+	telemetry.LogActivityInfo(fmt.Sprintf("direktiv resource file containing an endpoint definition found at '%s'", path),
+		p.Namespace, p.PID)
 
 	p.Endpoints[path] = data
 
@@ -411,7 +433,8 @@ func (p *Parser) handleEndpoint(path string, data []byte) error {
 }
 
 func (p *Parser) handleConsumer(path string, data []byte) error {
-	p.log.Infof("Direktiv resource file containing a consumer definition found at '%s'", path)
+	telemetry.LogActivityInfo(fmt.Sprintf("direktiv resource file containing a consumer definition found at '%s'", path),
+		p.Namespace, p.PID)
 
 	p.Consumers[path] = data
 
@@ -419,7 +442,9 @@ func (p *Parser) handleConsumer(path string, data []byte) error {
 }
 
 func (p *Parser) handleFilters(path string, filters *model.Filters) error {
-	p.log.Infof("Direktiv resource file containing %d filter definitions found at '%s'", len(filters.Filters), path)
+	telemetry.LogActivityInfo(fmt.Sprintf("direktiv resource file containing %d filter definitions found at '%s'",
+		len(filters.Filters), path),
+		p.Namespace, p.PID)
 
 	for idx, filter := range filters.Filters {
 		if _, exists := p.Filters[filter.Name]; exists {
@@ -443,7 +468,8 @@ func (p *Parser) handleFilters(path string, filters *model.Filters) error {
 		}
 
 		p.Filters[filter.Name] = data
-		p.log.Infof("Filter '%s' loaded.", filter.Name)
+		telemetry.LogActivityInfo(fmt.Sprintf("filter '%s' loaded", filter.Name),
+			p.Namespace, p.PID)
 	}
 
 	return nil
@@ -457,7 +483,8 @@ func (p *Parser) logUnprunedFiles() error {
 			return nil
 		}
 
-		p.log.Infof("File '%s' loaded.", path)
+		telemetry.LogActivityInfo(fmt.Sprintf("file '%s' loaded", path),
+			p.Namespace, p.PID)
 
 		return nil
 	})
@@ -524,7 +551,8 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 		vname := strings.TrimPrefix(base, prefix)
 
 		if !regex.MatchString(vname) {
-			p.log.Warnf("Detected a possible deprecated namespace variable definition with an invalid name at: %s", fpath)
+			telemetry.LogActivityWarn(fmt.Sprintf("detected a possible deprecated namespace variable definition with an invalid name at: %s", fpath),
+				p.Namespace, p.PID)
 
 			continue
 		}
@@ -539,7 +567,8 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 
 			p.DeprecatedNamespaceVars[vname] = data
 
-			p.log.Warnf("Detected deprecated namespace variable definition at: %s", fpath)
+			telemetry.LogActivityWarn(fmt.Sprintf("detected deprecated namespace variable definition at: %s", fpath),
+				p.Namespace, p.PID)
 		}
 	}
 
@@ -553,7 +582,8 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 			prefix := wpath + "."
 			vname := strings.TrimPrefix(fpath, prefix)
 			if !regex.MatchString(vname) {
-				p.log.Warnf("Detected a possible deprecated workflow variable definition with an invalid name at: %s", fpath)
+				telemetry.LogActivityWarn(fmt.Sprintf("detected a possible deprecated workflow variable definition with an invalid name at: %s", fpath),
+					p.Namespace, p.PID)
 
 				continue
 			}
@@ -574,7 +604,8 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 
 				m[vname] = data
 
-				p.log.Warnf("Detected deprecated workflow variable definition at: %s", fpath)
+				telemetry.LogActivityWarn(fmt.Sprintf("detected deprecated workflow variable definition at: %s", fpath),
+					p.Namespace, p.PID)
 			}
 		}
 	}

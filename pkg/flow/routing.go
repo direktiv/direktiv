@@ -165,8 +165,6 @@ func (flow *flow) cronHandler(data []byte) {
 		return
 	}
 
-	telemetry.LogNamespaceInfo(ctx, fmt.Sprintf("running cron for %s", file.Path), ns.Name)
-
 	// ctx = tracing.AddNamespace(ctx, ns.Name)
 	// ctx, end, err := tracing.NewSpan(ctx, "starting cron handler")
 	// if err != nil {
@@ -195,6 +193,8 @@ func (flow *flow) cronHandler(data []byte) {
 		},
 		SyncHash: &hash,
 	}
+
+	telemetry.LogNamespaceInfo(ctx, fmt.Sprintf("running cron for %s", file.Path), ns.Name)
 
 	im, err := flow.Engine.NewInstance(ctx, args)
 	if err != nil {

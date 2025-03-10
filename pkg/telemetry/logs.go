@@ -23,6 +23,10 @@ type InstanceInfo struct {
 	Span      string         `json:"span"`
 }
 
+type NamespaceInfo struct {
+	Namespace string `json:"namespace"`
+}
+
 type HttpInstanceInfo struct {
 	InstanceInfo
 	Msg   string   `json:"msg"`
@@ -39,15 +43,13 @@ const (
 	LogLevelInfo
 	LogLevelError
 
-	errorKey = "error"
-	scopeKey = "scope"
+	errorKey     = "error"
+	scopeKey     = "scope"
+	namespaceKey = "namespace"
+	instanceKey  = "instance"
 
 	DirektivInstance = "instance-ctx"
 )
-
-func LogSetState(ctx context.Context, state string) {
-
-}
 
 func LogInitInstance(ctx context.Context, info InstanceInfo) context.Context {
 	// add opentelemtry if it exists
@@ -112,20 +114,44 @@ func LogInstanceWarn(ctx context.Context, msg string) {
 }
 
 func LogNamespaceInfo(ctx context.Context, msg, namespace string) {
-	slog.InfoContext(ctx, msg, slog.String(scopeKey, "namespace."+namespace))
+	slog.InfoContext(ctx, msg, slog.String(namespaceKey, namespace), slog.String(scopeKey, "namespace."+namespace))
 }
 
 func LogNamespaceDebug(ctx context.Context, msg, namespace string) {
-	slog.InfoContext(ctx, msg, slog.String(scopeKey, "namespace."+namespace))
+	slog.DebugContext(ctx, msg, slog.String(namespaceKey, namespace), slog.String(scopeKey, "namespace."+namespace))
 }
 
 func LogNamespaceWarn(ctx context.Context, msg, namespace string) {
-	slog.InfoContext(ctx, msg, slog.String(scopeKey, "namespace."+namespace))
+	slog.WarnContext(ctx, msg, slog.String(namespaceKey, namespace), slog.String(scopeKey, "namespace."+namespace))
 }
 
 func LogNamespaceError(ctx context.Context, msg, namespace string, err error) {
 	if err == nil {
 		err = fmt.Errorf("%s", msg)
 	}
-	slog.ErrorContext(ctx, msg, slog.Any(errorKey, err.Error()), slog.String(scopeKey, "namespace."+namespace))
+	slog.ErrorContext(ctx, msg, slog.String(namespaceKey, namespace),
+		slog.Any(errorKey, err.Error()), slog.String(scopeKey, "namespace."+namespace))
+}
+
+func LogActivityInfo(msg, namespace, pid string) {
+	slog.Info(msg, slog.String(namespaceKey, namespace),
+		slog.String(instanceKey, pid), slog.String(scopeKey, "activity."+pid))
+}
+
+func LogActivityDebug(msg, namespace, pid string) {
+	slog.Debug(msg, slog.String(namespaceKey, namespace), slog.String(instanceKey, pid),
+		slog.String(scopeKey, "activity."+pid))
+}
+
+func LogActivityWarn(msg, namespace, pid string) {
+	slog.Warn(msg, slog.String(namespaceKey, namespace), slog.String(instanceKey, pid),
+		slog.String(scopeKey, "activity."+pid))
+}
+
+func LogActivityError(msg, namespace, pid string, err error) {
+	if err == nil {
+		err = fmt.Errorf("%s", msg)
+	}
+	slog.Error(msg, slog.String(namespaceKey, namespace), slog.String(instanceKey, pid),
+		slog.Any(errorKey, err.Error()), slog.String(scopeKey, "activity."+pid))
 }

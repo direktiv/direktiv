@@ -331,9 +331,9 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	// prepare log context
 	ctx = im.Context(ctx)
 
-	if im.GetState() != "" {
-		telemetry.LogSetState(ctx, im.GetState())
-	}
+	// if im.GetState() != "" {
+	// 	telemetry.LogSetState(ctx, im.GetState())
+	// }
 
 	// ctx, cleanup, err := tracing.NewSpan(ctx, "engine transitions: "+nextState)
 	// if err != nil {

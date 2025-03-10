@@ -52,28 +52,7 @@ type server struct {
 	ConfigureWorkflow func(event *pubsub2.FileSystemChangeEvent) error
 }
 
-type mirrorProcessLogger struct{}
-
-func (log *mirrorProcessLogger) Debug(pid uuid.UUID, msg string, kv ...interface{}) {
-	slog.Debug(fmt.Sprintf(msg, kv...), "activity", pid, string(core.LogTrackKey), "activity."+pid.String())
-}
-
-func (log *mirrorProcessLogger) Info(pid uuid.UUID, msg string, kv ...interface{}) {
-	slog.Info(fmt.Sprintf(msg, kv...), "activity", pid, string(core.LogTrackKey), "activity."+pid.String())
-}
-
-func (log *mirrorProcessLogger) Warn(pid uuid.UUID, msg string, kv ...interface{}) {
-	slog.Warn(fmt.Sprintf(msg, kv...), "activity", pid, string(core.LogTrackKey), "activity"+"."+pid.String())
-}
-
-func (log *mirrorProcessLogger) Error(pid uuid.UUID, msg string, kv ...interface{}) {
-	slog.Error(fmt.Sprintf(msg, kv...), "activity", pid, string(core.LogTrackKey), "activity"+"."+pid.String())
-}
-
-var _ mirror.ProcessLogger = &mirrorProcessLogger{}
-
 type mirrorCallbacks struct {
-	logger   mirror.ProcessLogger
 	store    datastore.MirrorStore
 	fstore   filestore.FileStore
 	varstore datastore.RuntimeVariablesStore
@@ -84,9 +63,9 @@ func (c *mirrorCallbacks) ConfigureWorkflowFunc(ctx context.Context, nsID uuid.U
 	return c.wfconf(ctx, nsID, nsName, file)
 }
 
-func (c *mirrorCallbacks) ProcessLogger() mirror.ProcessLogger {
-	return c.logger
-}
+// func (c *mirrorCallbacks) ProcessLogger() mirror.ProcessLogger {
+// 	return c.logger
+// }
 
 func (c *mirrorCallbacks) Store() datastore.MirrorStore {
 	return c.store
@@ -184,9 +163,6 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 
 	srv.MirrorManager = mirror.NewManager(
 		&mirrorCallbacks{
-			logger: &mirrorProcessLogger{
-				// logger: srv.logger,
-			},
 			store:    db.DataStore().Mirror(),
 			fstore:   db.FileStore(),
 			varstore: db.DataStore().RuntimeVariables(),
