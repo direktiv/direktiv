@@ -205,13 +205,6 @@ func (m *logController) get(query string) ([]logEntry, error) {
 func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 	cursor := time.Now().UTC()
 
-	// Last-Event-ID header
-	lastEventID := r.Header.Get("Last-Event-ID")
-	fmt.Printf("LAST EVENT ID >%v<\n", lastEventID)
-	if lastEventID != "" {
-
-	}
-
 	// TODO: we may need to replace with a SSE-Server library instead of using our custom implementation.
 	params := extractLogRequestParams(r)
 	params.limit = ""
@@ -251,12 +244,21 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Accel-Buffering", "no")
 	rc.Flush()
 
+	// Last-Event-ID header
+	lastEventID := r.Header.Get("Last-Event-ID")
+	fmt.Printf("LAST EVENT ID >%v<\n", lastEventID)
+	if lastEventID != "" {
+		params.after = "2025-03-10T11:47:00.004554106Z"
+	}
+
 	// send initial data
 	var err error
 	cursor, err = queryAndSend(params.toQuery())
 	if err != nil {
-		// LOG ERROR
-		fmt.Println(err)
+		writeError(w, &Error{
+			Code:    "log request failed",
+			Message: err.Error(),
+		})
 		return
 	}
 	params.after = cursor.Format("2006-01-02T15:04:05.000000000Z")
@@ -278,73 +280,14 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 			params.last = ""
 			cursor, err = queryAndSend(params.toQuery())
 			if err != nil {
-				fmt.Println(err)
-				return
+				writeError(w, &Error{
+					Code:    "log request failed",
+					Message: err.Error(),
+				})
 			}
 			params.after = cursor.Format("2006-01-02T15:04:05.000000000Z")
 		}
 	}
-	// // Create a context with cancellation
-	// ctx, cancel := context.WithCancel(r.Context())
-	// defer cancel()
-
-	// // Create a channel to send SSE messages
-	// messageChannel := make(chan Event)
-
-	// var getCursoredStyle sseHandle = func(ctx context.Context, cursorTime time.Time) ([]CoursoredEvent, error) {
-	// 	logs, err := m.getNewer(ctx, cursorTime, params)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	res := make([]CoursoredEvent, 0, len(logs))
-	// 	for _, fle := range logs {
-	// 		b, err := json.Marshal(fle)
-	// 		if err != nil {
-	// 			return nil, err
-	// 		}
-	// 		dst := &bytes.Buffer{}
-	// 		if err := json.Compact(dst, b); err != nil {
-	// 			return nil, err
-	// 		}
-
-	// 		e := Event{
-	// 			ID:   strconv.Itoa(fle.ID),
-	// 			Data: dst.String(),
-	// 			Type: "message",
-	// 		}
-	// 		res = append(res, CoursoredEvent{
-	// 			Event: e,
-	// 			Time:  fle.Time,
-	// 		})
-	// 	}
-
-	// 	return res, nil
-	// }
-
-	// worker := seeWorker{
-	// 	Get:      getCursoredStyle,
-	// 	Interval: time.Second,
-	// 	Ch:       messageChannel,
-	// 	Cursor:   cursor,
-	// }
-	// go worker.start(ctx)
-
-	// for {
-	// 	select {
-	// 	case <-ctx.Done():
-	// 		return
-	// 	case message := <-messageChannel:beforeDate
-	// 			f.Flush()
-	// 		}
-	// 	}
-	// }
-}
-
-// determineTrack determines the log track based on provided parameters.
-// It constructs a track string used for filtering logs in datastore queries.
-func determineTrack(params map[string]string) (string, error) {
-
-	return "", fmt.Errorf("requested logs for an unknown type")
 }
 
 // nolint:canonicalheader
