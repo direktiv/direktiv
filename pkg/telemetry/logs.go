@@ -27,13 +27,13 @@ type NamespaceInfo struct {
 	Namespace string `json:"namespace"`
 }
 
-type HttpInstanceInfo struct {
+type HTTPInstanceInfo struct {
 	InstanceInfo
 	Msg   string   `json:"msg"`
 	Level LogLevel `json:"level"`
 }
 
-func (ii *HttpInstanceInfo) GetInstanceInfo() InstanceInfo {
+func (ii *HTTPInstanceInfo) GetInstanceInfo() InstanceInfo {
 	return ii.InstanceInfo
 }
 

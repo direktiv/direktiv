@@ -40,8 +40,10 @@ func (h *ContextHandler) Handle(ctx context.Context, rec slog.Record) error {
 			field := structVal.Field(i)
 			fieldName := structType.Field(i).Name
 
-			res = append(res, slog.Attr{Key: strings.ToLower(fieldName),
-				Value: slog.AnyValue(fmt.Sprintf("%v", field))})
+			res = append(res, slog.Attr{
+				Key:   strings.ToLower(fieldName),
+				Value: slog.AnyValue(fmt.Sprintf("%v", field)),
+			})
 		}
 
 		return h.innerHandler.WithAttrs(res).Handle(ctx, rec)

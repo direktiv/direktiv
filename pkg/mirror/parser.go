@@ -274,7 +274,6 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		return nil
 	}
 	if err != nil {
-
 		telemetry.LogActivityWarn(fmt.Sprintf("error loading possible Direktiv resource definition '%s': %v", path, err),
 			p.Namespace, p.PID)
 

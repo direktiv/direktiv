@@ -540,8 +540,8 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, 
 }
 
 func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
-	ar *functionRequest, arReq *enginerefactor.ActionRequest) {
-
+	ar *functionRequest, arReq *enginerefactor.ActionRequest,
+) {
 	ctx, spanEnd, err := tracing.NewSpan(ctx, "executing knative request to action")
 	if err != nil {
 		slog.Debug("failed in doKnativeHTTPRequest", "error", err)

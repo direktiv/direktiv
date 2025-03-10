@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"time"
-
-	"github.com/direktiv/direktiv/pkg/database"
 )
 
 type flow struct {
@@ -17,8 +15,6 @@ type flow struct {
 const srv = "server"
 
 func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
-	var err error
-
 	flow := &flow{server: srv}
 
 	go func() { //nolint:contextcheck
@@ -52,23 +48,6 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 			}
 
 			// TODO: alan: cleanup old instance variables.
-		}
-	}()
-
-	go func() {
-		// logs garbage collector
-		<-time.After(3 * time.Minute)
-		for {
-			<-time.After(time.Hour)
-			t := time.Now().UTC().Add(time.Hour * -48) // TODO make this a config option.
-			slog.Debug("deleting all logs since", "since", t)
-			err = srv.flow.runSQLTx(ctx, func(tx *database.DB) error {
-				return tx.DataStore().NewLogs().DeleteOldLogs(ctx, t)
-			})
-			if err != nil {
-				slog.Error("garbage collector", "error", fmt.Errorf("failed to cleanup old logs: %w", err))
-				continue
-			}
 		}
 	}()
 

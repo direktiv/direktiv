@@ -214,7 +214,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log := telemetry.HttpInstanceInfo{
+	log := telemetry.HTTPInstanceInfo{
 		InstanceInfo: instanceInfo,
 		Msg:          msg,
 		Level:        telemetry.LogLevelInfo,

@@ -347,7 +347,6 @@ func (engine *engine) forceFreeCriticalMemory(ctx context.Context, im *instanceM
 }
 
 func (im *instanceMemory) Context(ctx context.Context) context.Context {
-
 	callpath := ""
 	for _, v := range im.instance.DescentInfo.Descent {
 		callpath += "/" + v.ID.String()

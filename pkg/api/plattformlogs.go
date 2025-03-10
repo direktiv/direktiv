@@ -2,22 +2,21 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/go-chi/chi/v5"
 )
 
 type logController struct {
-	store       datastore.LogStore
 	logsBackend string
 }
 
@@ -59,10 +58,9 @@ func (l logParams) toQuery() string {
 
 	return fmt.Sprintf("query=scope:=%s%s| %s",
 		l.scope, timeSelector, strings.Join(queryParts, " | "))
-
 }
 
-func (m *logController) mountRouter(r chi.Router, config *core.Config) {
+func (m *logController) mountRouter(r chi.Router) {
 	r.Get("/subscribe", m.stream)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -109,7 +107,7 @@ func (m *logController) mountRouter(r chi.Router, config *core.Config) {
 		}
 
 		// var logEntry map[string]interface{}
-		var logEntry telemetry.HttpInstanceInfo
+		var logEntry telemetry.HTTPInstanceInfo
 		err := json.NewDecoder(r.Body).Decode(&logEntry)
 		if err != nil {
 			writeInternalError(w, err)
@@ -234,6 +232,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 			lastLog := logs[len(logs)-1]
 			cursor = lastLog.Time.UTC()
 		}
+
 		return cursor, rc.Flush()
 	}
 
@@ -246,7 +245,6 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 
 	// Last-Event-ID header
 	lastEventID := r.Header.Get("Last-Event-ID")
-	fmt.Printf("LAST EVENT ID >%v<\n", lastEventID)
 	if lastEventID != "" {
 		params.after = "2025-03-10T11:47:00.004554106Z"
 	}
@@ -259,6 +257,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 			Code:    "log request failed",
 			Message: err.Error(),
 		})
+
 		return
 	}
 	params.after = cursor.Format("2006-01-02T15:04:05.000000000Z")
@@ -356,7 +355,6 @@ type RouteEntryContext struct {
 	Path interface{} `json:"path,omitempty"`
 }
 
-// func toFeatureLogEntry(e core.LogEntry) logEntry {
 func toFeatureLogEntry(e logEntryBackend) logEntry {
 	featureLogEntry := logEntry{
 		Time:  e.Time,
@@ -383,7 +381,6 @@ func toFeatureLogEntry(e logEntryBackend) logEntry {
 		featureLogEntry.Activity = &ActivityEntryContext{
 			ID: e.Instance,
 		}
-
 	}
 
 	// if strings.HasPrefix()
@@ -431,8 +428,8 @@ type logEntryBackend struct {
 func (m *logController) fetchFromBackend(query string) ([]logEntryBackend, error) {
 	var ret []logEntryBackend
 
-	req, err := http.NewRequest(http.MethodPost,
-		fmt.Sprintf("http://%s:9428/select/logsql/query", m.logsBackend),
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost,
+		fmt.Sprintf("http://%s/select/logsql/query", net.JoinHostPort(m.logsBackend, "9428")),
 		bytes.NewBufferString(query))
 	if err != nil {
 		return ret, err

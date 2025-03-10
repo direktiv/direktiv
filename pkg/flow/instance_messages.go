@@ -199,7 +199,6 @@ func (engine *engine) handleCancelMessage(ctx context.Context, im *instanceMemor
 
 	err := json.Unmarshal(data, &args)
 	if err != nil {
-
 		slog.ErrorContext(ctx, "handleCancelMessage failed to unmarshal cancel message args", "error", err)
 		return nil
 	}

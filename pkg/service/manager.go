@@ -105,7 +105,6 @@ func (m *manager) runCycle() []error {
 	// }
 	errs := []error{}
 	for _, id := range result.Deletes {
-
 		slog.Debug(fmt.Sprintf("deleting service with id %s", id))
 		if err := m.runtimeClient.deleteService(id); err != nil {
 			slog.Error(fmt.Sprintf("failed to delete service with id %s", id), "error", err)
