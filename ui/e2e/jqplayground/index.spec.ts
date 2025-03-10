@@ -222,9 +222,11 @@ test("It will persist the input to be available after a page reload", async ({
   ).toBe(userInputText);
 
   // wait a second to make sure the input is persisted (this was flaky without the wait)
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(500);
 
   await page.reload({});
+
+  await page.waitForTimeout(500);
 
   expect(
     await inputTextArea.inputValue(),
