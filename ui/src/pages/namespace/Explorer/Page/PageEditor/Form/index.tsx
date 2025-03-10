@@ -6,9 +6,7 @@ import {
 import { PageFormSchema, PageFormSchemaType } from "../schema";
 
 import { FC } from "react";
-import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
-import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormProps = {
@@ -22,7 +20,6 @@ type FormProps = {
 };
 
 export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
-  const { t } = useTranslation();
   const formControls = useForm<PageFormSchemaType>({
     resolver: zodResolver(PageFormSchema),
     defaultValues: {
@@ -30,7 +27,6 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
     },
   });
 
-  // const values = useSortedValues(formControls.control);
   const values = defaultConfig;
   const { register } = formControls;
 
@@ -39,15 +35,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
     values,
     formMarkup: (
       <div className="flex flex-col gap-8">
-        <div className="flex gap-3">
-          <Fieldset
-            label={t("pages.explorer.endpoint.editor.form.path")}
-            htmlFor="path"
-            className="grow"
-          >
-            <Input {...register("path")} id="path" />
-          </Fieldset>
-        </div>
+        <Input className="hidden" {...register("layout")} id="layout" />
       </div>
     ),
   });
