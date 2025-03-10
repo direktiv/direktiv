@@ -189,11 +189,11 @@ test("it will update the diagram when the workflow is saved", async ({
   browserName,
 }) => {
   /**
-   * networkidle is required to avoid flaky tests. The monaco
+   * load is required to avoid flaky tests. The monaco
    * editor needs to be full loaded before we interact with it.
    */
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
   const { editor, diagram, splitVertBtn } = await getCommonPageElements(page);
 
@@ -263,7 +263,7 @@ test("it is possible to switch from Code View to Diagram View without loosing th
   await firstLine.click();
 
   const workflowChanges = "some changes to the workflows code";
-  await page.type("textarea", workflowChanges);
+  await page.locator("textarea").fill(workflowChanges);
   const recentlyChanges = page.getByText(workflowChanges);
   await expect(
     recentlyChanges,

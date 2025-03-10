@@ -17,7 +17,7 @@ test.afterEach(async () => {
 
 test("Notification Bell has an inactive state by default", async ({ page }) => {
   await page.goto(`/n/${namespace}/explorer/tree`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   const notificationBell = page.getByTestId("notification-bell").nth(1);
@@ -47,7 +47,7 @@ test("Notification Bell updates depending on the count of Notification Messages"
   });
 
   await page.goto(`/n/${namespace}/explorer/tree`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   const notificationBell = page.getByTestId("notification-bell").nth(1);

@@ -17,7 +17,7 @@ test.afterEach(async () => {
 
 test("Info page default view", async ({ page }) => {
   await page.goto(`/n/${namespace}/gateway/gatewayInfo`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await expect(
@@ -75,7 +75,7 @@ test("Info page when openAPI specification exists", async ({ page }) => {
   });
 
   await page.goto(`/n/${namespace}/gateway/gatewayInfo`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await expect(

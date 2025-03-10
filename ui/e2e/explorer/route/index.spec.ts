@@ -37,7 +37,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
 
   /* visit page */
   await page.goto(`/n/${namespace}/explorer/tree`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
   await expect(
     page.getByTestId("breadcrumb-namespace"),
@@ -109,7 +109,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
   ).not.toBeVisible();
 
   /* reload */
-  await page.reload({ waitUntil: "networkidle" });
+  await page.reload({ waitUntil: "load" });
 
   await expect(
     editor,
@@ -158,7 +158,7 @@ test.skip("it is possible to add plugins to a route file", async ({ page }) => {
   });
 
   await page.goto(`/n/${namespace}/explorer/endpoint/${filename}`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   /* configure inbound plugin: ACL */
@@ -362,7 +362,7 @@ test.skip("it is possible to add plugins to a route file", async ({ page }) => {
   ).not.toBeVisible();
 
   /* reload */
-  await page.reload({ waitUntil: "networkidle" });
+  await page.reload({ waitUntil: "load" });
   await expect(
     editor,
     "after reloading, the entered data is still in the editor preview"
@@ -459,7 +459,7 @@ test("it blocks navigation when there are unsaved changes", async ({
 
   /* visit page */
   await page.goto(`/n/${namespace}/explorer/endpoint/${filename}`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await page.getByLabel("path").fill("new_path");
@@ -534,7 +534,7 @@ test("it does not block navigation when only formatting has changed", async ({
 
   /* visit page */
   await page.goto(`/n/${namespace}/explorer/endpoint/${filename}`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   const formattedText = page
@@ -588,7 +588,7 @@ test("it shows a notification for outdated endpoint format", async ({
 
   /* visit page */
   await page.goto(`/n/${namespace}/explorer/endpoint/${filename}`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   const notification = page.getByText(

@@ -21,11 +21,11 @@ test("Documentation section show no documentation available when no route endpoi
   page,
 }) => {
   await page.goto(`/n/${namespace}/gateway/openapiDoc`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await page.goto(`/n/${namespace}/gateway/openapiDoc`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await expect(
@@ -63,7 +63,7 @@ test("Make sure Rapidoc component is displaying basic OpenAPI doc", async ({
   });
 
   await page.goto(`/n/${namespace}/gateway/openapiDoc`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await expect(
@@ -104,7 +104,7 @@ test("Make sure Rapidoc component is displaying basic OpenAPI doc", async ({
   });
 
   await page.goto(`/n/${namespace}/gateway/openapiDoc`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await expect(

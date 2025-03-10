@@ -208,7 +208,7 @@ test("it is possible to create and delete variables", async ({
 
   /* reload and make sure changes have been persisted */
   await page.reload({
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await page.getByTestId("dropdown-trg-item-awesome-variable").click();
@@ -355,7 +355,7 @@ test("it is possible to edit variables", async ({ page }) => {
 
   /* reload and make sure changes have been persisted */
   await page.reload({
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await page.getByTestId(`dropdown-trg-item-${newName}`).click();

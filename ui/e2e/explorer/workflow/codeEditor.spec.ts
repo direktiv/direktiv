@@ -65,7 +65,7 @@ test("it is possible to save the workflow", async ({ page }) => {
   await editorElement.click();
 
   const testText = faker.string.alphanumeric(9);
-  await page.type("textarea", testText);
+  await page.locator("textarea").fill(testText);
 
   // now click on Save
   const saveButton = page.getByTestId("workflow-editor-btn-save");
@@ -90,7 +90,7 @@ test("it is possible to save the workflow", async ({ page }) => {
     page.getByText(testText),
     "after saving, screen should have the updated text"
   ).toBeVisible();
-  await page.reload({ waitUntil: "networkidle" });
+  await page.reload({ waitUntil: "load" });
   await expect(
     page.getByText(testText),
     "after reloading, screen should have the updated text"
@@ -173,7 +173,7 @@ test("it prevents navigation to another route with unsaved changes", async ({
   await page.getByText(defaultDescription).click();
 
   const dirtyText = faker.string.alphanumeric(9);
-  await page.type("textarea", dirtyText);
+  await page.locator("textarea").fill(dirtyText);
 
   await page.getByRole("link", { name: "Settings" }).click();
   await expect(dialogTriggered).toBe(true);
@@ -206,7 +206,7 @@ test("with confirmation, it navigates to another route despite unsaved changes",
   await page.getByText(defaultDescription).click();
 
   const dirtyText = faker.string.alphanumeric(9);
-  await page.type("textarea", dirtyText);
+  await page.locator("textarea").fill(dirtyText);
 
   await page.getByRole("link", { name: "Settings" }).click();
   await expect(dialogTriggered).toBe(true);
@@ -236,7 +236,7 @@ test("it prevents navigation to another namespace with unsaved changes", async (
   await page.getByText(defaultDescription).click();
 
   const dirtyText = faker.string.alphanumeric(9);
-  await page.type("textarea", dirtyText);
+  await page.locator("textarea").fill(dirtyText);
 
   await page.getByTestId("dropdown-trg-namespace").click();
   await page.getByText(secondNamespace).click();
@@ -275,7 +275,7 @@ test("with confirmation, it navigates to another namespace despite unsaved chang
   await page.getByText(defaultDescription).click();
 
   const dirtyText = faker.string.alphanumeric(9);
-  await page.type("textarea", dirtyText);
+  await page.locator("textarea").fill(dirtyText);
 
   await page.getByTestId("dropdown-trg-namespace").click();
   await page.getByText(secondNamespace).click();
@@ -330,7 +330,7 @@ test("it prevents navigation away from the app with unsaved changes", async ({
   await page.getByText(defaultDescription).click();
 
   const dirtyText = faker.string.alphanumeric(9);
-  await page.type("textarea", dirtyText);
+  await page.locator("textarea").fill(dirtyText);
 
   try {
     await page.goto("/api/v2/status").catch();
@@ -366,7 +366,7 @@ test("with confirmation, it allows navigation away from the app with unsaved cha
   await page.getByText(defaultDescription).click();
 
   const dirtyText = faker.string.alphanumeric(9);
-  await page.type("textarea", dirtyText);
+  await page.locator("textarea").fill(dirtyText);
 
   await page.goto("/api/v2/status");
 

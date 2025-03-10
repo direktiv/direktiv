@@ -25,7 +25,7 @@ test("it is possible to navigate to a namespace via breadcrumbs", async ({
   page,
 }) => {
   // visit page
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/", { waitUntil: "load" });
 
   await expect(
     page.getByTestId("breadcrumb-namespace"),

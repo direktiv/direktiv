@@ -261,7 +261,7 @@ test("it paginates instances", async ({ page }) => {
      */
     await page.waitForTimeout(500);
 
-  await page.goto(`/n/${namespace}/instances/`, { waitUntil: "networkidle" });
+  await page.goto(`/n/${namespace}/instances/`, { waitUntil: "load" });
 
   await expect(
     page.getByTestId("pagination-wrapper"),
@@ -362,7 +362,7 @@ test("It will display child instances as well", async ({ page }) => {
     path: parentWorkflow,
   });
 
-  await page.goto(`/n/${namespace}/instances/`, { waitUntil: "networkidle" });
+  await page.goto(`/n/${namespace}/instances/`, { waitUntil: "load" });
 
   const instancesList = await getInstances({
     urlParams: {

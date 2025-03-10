@@ -16,10 +16,10 @@ test.beforeEach(async ({ page }) => {
   namespace = await createNamespace();
   await mockClipboardAPI(page);
   /**
-   * networkidle is required to avoid flaky tests. The monaco
+   * load is required to avoid flaky tests. The monaco
    * editor needs to be full loaded before we interact with it.
    */
-  await page.goto(`/n/${namespace}/jq`, { waitUntil: "networkidle" });
+  await page.goto(`/n/${namespace}/jq`, { waitUntil: "load" });
 });
 
 test.afterEach(async () => {

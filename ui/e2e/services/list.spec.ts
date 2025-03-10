@@ -24,7 +24,7 @@ test.afterEach(async () => {
 
 test("Service list is empty by default", async ({ page }) => {
   await page.goto(`/n/${namespace}/services`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await expect(
@@ -62,7 +62,7 @@ test("Service list shows all available services", async ({ page }) => {
     .toBeTruthy();
 
   await page.goto(`/n/${namespace}/services`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await expect(
@@ -133,7 +133,7 @@ test("Service list links the file name to the service file", async ({
   });
 
   await page.goto(`/n/${namespace}/services`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await page
@@ -181,7 +181,7 @@ test("Service list links the row to the service details page", async ({
   if (!createdService) throw new Error("could not find service");
 
   await page.goto(`/n/${namespace}/services`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await page.getByTestId("service-row").click();
@@ -230,7 +230,7 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
     .toBeTruthy();
 
   await page.goto(`/n/${namespace}/services`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await expect(
@@ -281,7 +281,7 @@ test("Service list highlights services that have errors", async ({ page }) => {
     .toBeTruthy();
 
   await page.goto(`/n/${namespace}/services`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await page
@@ -312,7 +312,7 @@ test("Service list will update the services when refetch button is clicked", asy
   });
 
   await page.goto(`/n/${namespace}/services`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await expect(
@@ -396,7 +396,7 @@ test.describe("system namespace", () => {
     page,
   }) => {
     await page.goto(`/n/${systemNamespaceName}/services`, {
-      waitUntil: "networkidle",
+      waitUntil: "load",
     });
 
     await expect(

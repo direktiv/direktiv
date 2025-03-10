@@ -117,7 +117,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     "the submit button is enabled by default"
   ).toEqual(true);
 
-  await page.type("textarea", "some invalid json");
+  await page.locator("textarea").fill("some invalid json");
 
   expect(
     await page.getByTestId("run-workflow-submit-btn").isEnabled(),
@@ -217,7 +217,7 @@ test("it is not possible to run the workflow when the editor has unsaved changes
   await expect(page.getByTestId("workflow-header-btn-run")).not.toBeDisabled();
   await expect(page.getByTestId("workflow-editor-btn-run")).not.toBeDisabled();
 
-  await page.type("textarea", faker.string.alphanumeric(1));
+  await page.locator("textarea").fill(faker.string.alphanumeric(1));
 
   await expect(page.getByTestId("workflow-header-btn-run")).toBeDisabled();
   await expect(page.getByTestId("workflow-editor-btn-run")).toBeDisabled();

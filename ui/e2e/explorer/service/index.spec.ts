@@ -54,7 +54,7 @@ test("it is possible to create a service", async ({ page }) => {
 
   /* visit page */
   await page.goto(`/n/${namespace}/explorer/tree`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
   await expect(
     page.getByTestId("breadcrumb-namespace"),
@@ -91,7 +91,7 @@ test("it is possible to create a service", async ({ page }) => {
     await page.getByLabel(item.op).click();
     await page.getByLabel("path").fill(item.path);
     await page.keyboard.press("Tab");
-    await page.type("textarea", item.value);
+    await page.locator("textarea").first().fill(item.value);
     await page.getByRole("button", { name: "Save" }).click();
   }
 
@@ -456,7 +456,7 @@ test("empty fields are omitted from the service file", async ({ page }) => {
 
   /* visit page */
   await page.goto(`/n/${namespace}/explorer/tree`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
   await expect(
     page.getByTestId("breadcrumb-namespace"),
@@ -499,7 +499,7 @@ test("empty fields are omitted from the service file", async ({ page }) => {
     await page.getByLabel(item.op).click();
     await page.getByLabel("path").fill(item.path);
     await page.keyboard.press("Tab");
-    await page.type("textarea", item.value);
+    await page.locator("textarea").fill(item.value);
     await page.getByRole("button", { name: "Save" }).click();
   }
 

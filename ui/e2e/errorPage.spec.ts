@@ -15,7 +15,7 @@ test.afterAll(async () => {
 test("the 404 error page shows, when the user opens a url that does not exist", async ({
   page,
 }) => {
-  await page.goto("/this/page/does/not/exist", { waitUntil: "networkidle" });
+  await page.goto("/this/page/does/not/exist", { waitUntil: "load" });
   await expect(page.getByTestId("error-title")).toHaveText("404");
   await expect(page.getByTestId("error-message")).toContainText(
     "The resource you are trying to access does not exist."
@@ -26,7 +26,7 @@ test("the back button on the 404 error page navigates the user back to the previ
   page,
 }) => {
   await page.goto(`/n/${namespace}/explorer/tree`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await expect(page).toHaveURL(`/n/${namespace}/explorer/tree`);
@@ -42,7 +42,7 @@ test("the back button on the 404 error page navigates the user back to the previ
 test("the reload button on the error page reloads the current page", async ({
   page,
 }) => {
-  await page.goto("/this/page/does/not/exist", { waitUntil: "networkidle" });
+  await page.goto("/this/page/does/not/exist", { waitUntil: "load" });
   await page.getByTestId("error-reload-btn").click();
 
   /**

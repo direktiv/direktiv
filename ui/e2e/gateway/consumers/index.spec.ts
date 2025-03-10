@@ -20,7 +20,7 @@ test.afterEach(async () => {
 
 test("The consumer list can be visited", async ({ page }) => {
   await page.goto(`/n/${namespace}/gateway/routes`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await page.getByRole("tab", { name: "Consumers" }).click();
@@ -86,7 +86,7 @@ test("Consumer list shows all available consumers", async ({ page }) => {
     .toBeTruthy();
 
   await page.goto(`/n/${namespace}/gateway/consumers`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await expect(
@@ -152,7 +152,7 @@ test("Consumer list will update the consumers when refetch button is clicked", a
   });
 
   await page.goto(`/n/${namespace}/gateway/consumers`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await expect(

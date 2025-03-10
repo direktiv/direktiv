@@ -22,7 +22,7 @@ test.afterEach(async () => {
 
 test("The route list can be visited", async ({ page }) => {
   await page.goto(`/n/${namespace}/gateway/routes`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await expect(
@@ -66,7 +66,7 @@ test("Route list shows all available routes", async ({ page }) => {
     .toBeTruthy();
 
   await page.goto(`/n/${namespace}/gateway/routes`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await expect(
@@ -147,7 +147,7 @@ test("Route list shows an error on no target plugin", async ({ page }) => {
     .toBeTruthy();
 
   await page.goto(`/n/${namespace}/gateway/routes`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await expect(
@@ -188,7 +188,7 @@ test("Route list shows an error", async ({ page }) => {
     .toBeTruthy();
 
   await page.goto(`/n/${namespace}/gateway/routes`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await expect(
@@ -222,7 +222,7 @@ test("Route list links the file name to the route file", async ({ page }) => {
   });
 
   await page.goto(`/n/${namespace}/gateway/routes`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   });
 
   await page
