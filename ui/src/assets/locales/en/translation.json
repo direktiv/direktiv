@@ -305,6 +305,7 @@
                 },
                 "types": {
                   "instant-response": "Instant Response",
+                  "target-page": "Page",
                   "target-flow": "Workflow",
                   "target-flow-var": "Workflow Variable",
                   "target-namespace-file": "Namespace File",
