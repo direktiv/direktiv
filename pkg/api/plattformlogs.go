@@ -7,6 +7,8 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/http/httputil"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
@@ -21,9 +23,46 @@ type logController struct {
 }
 
 type logParams struct {
-	namespace string
-	after     time.Time
-	track     string
+	namespace     string
+	scope         string
+	limit         string
+	direction     string
+	after, before string
+	last, first   string
+}
+
+func (l logParams) toQuery() string {
+
+	queryParts := make([]string, 0)
+
+	limiter := "limit 100"
+	if l.limit != "" {
+		limiter = fmt.Sprintf("limit %s", l.limit)
+	} else if l.first != "" {
+		limiter = fmt.Sprintf("first %s by (_time)", l.first)
+	} else if l.last != "" {
+		limiter = fmt.Sprintf("last %s by (_time)", l.last)
+	}
+	queryParts = append(queryParts, limiter)
+
+	if l.direction == "" || l.direction == "asc" {
+		l.direction = "asc"
+	} else {
+		l.direction = "desc"
+	}
+	queryParts = append(queryParts, fmt.Sprintf("sort by (_time) %s", l.direction))
+
+	timeSelector := ""
+	if l.after != "" {
+		// queryParts = append(queryParts, fmt.Sprintf("_time:>%s", l.after))
+		timeSelector = fmt.Sprintf(" _time:>%s ", l.after)
+	} else if l.before != "" {
+		timeSelector = fmt.Sprintf(" _time:<%s ", l.before)
+	}
+
+	return fmt.Sprintf("query=scope:=%s%s| %s",
+		l.scope, timeSelector, strings.Join(queryParts, " | "))
+
 }
 
 func (m *logController) mountRouter(r chi.Router, config *core.Config) {
@@ -31,15 +70,7 @@ func (m *logController) mountRouter(r chi.Router, config *core.Config) {
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		params := extractLogRequestParams(r)
-
-		now := time.Now().UTC()
-		q := newLogQuerier(params.track)
-
-		// handle different params here
-		q = q.withDateSortAsc().beforeDate(now)
-
-		logs, err := m.get(q.string())
-
+		logs, err := m.get(params.toQuery())
 		if err != nil {
 			slog.Error("fetching logs for request", "err", err)
 			writeInternalError(w, err)
@@ -66,8 +97,8 @@ func (m *logController) mountRouter(r chi.Router, config *core.Config) {
 			"startingFrom": nil,
 		}
 
-		// writeJSONWithMeta(w, logs, metaInfo)
-		writeJSONWithMeta(w, []logEntry{}, metaInfo)
+		writeJSONWithMeta(w, logs, metaInfo)
+		// writeJSONWithMeta(w, []logEntry{}, metaInfo)
 	})
 
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
@@ -260,8 +291,10 @@ func (m *logController) get(query string) ([]logEntry, error) {
 func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 	// cursor is set to multiple seconds before the current time to mitigate data loss
 	// that may occur due to delays between submitting and processing the request, or when a sequence of client requests is necessary.
-	cursor := time.Now().Add(-48 * time.Hour)
+	// cursor := time.Now().Add(-48 * time.Hour)
 	// var err error
+
+	cursor := time.Now().UTC()
 
 	// Last-Event-ID header
 	lastEventID := r.Header.Get("Last-Event-ID")
@@ -269,10 +302,14 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: we may need to replace with a SSE-Server library instead of using our custom implementation.
 	params := extractLogRequestParams(r)
+	params.limit = ""
+	params.last = "100"
 
 	rc := http.NewResponseController(w)
 
 	queryAndSend := func(queryString string) (time.Time, error) {
+		fmt.Println("QUERY AND SEND!")
+		fmt.Println(queryString)
 		logs, err := m.get(queryString)
 		if err != nil {
 			return time.Now(), err
@@ -281,7 +318,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 		for i := range logs {
 			l := logs[i]
 			b, _ := json.Marshal(l)
-			_, err = fmt.Fprintf(w, fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", l.ID, "message", string(b)))
+			_, err = fmt.Fprintf(w, fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", l.Time.Format("2006-01-02T15:04:05.000000000Z"), "message", string(b)))
 			if err != nil {
 				return time.Now(), err
 			}
@@ -304,13 +341,15 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 
 	// send initial data
 	var err error
-	q := newLogQuerier(params.track).withDateSortAsc()
-	cursor, err = queryAndSend(q.string())
+	// q := newLogQuerier(params.scope).withDateSortAsc()
+	cursor, err = queryAndSend(params.toQuery())
 	if err != nil {
 		// LOG ERROR
 		fmt.Println(err)
 		return
 	}
+	params.after = cursor.Format("2006-01-02T15:04:05.000000000Z")
+	params.last = "100"
 
 	clientGone := r.Context().Done()
 
@@ -337,13 +376,15 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 			// for i := range logs {
 			// 	fmt.Println(logs[i])
 			// }
-			q := newLogQuerier(params.track).afterDate(cursor).withDateSortAsc()
+			// q := newLogQuerier(params.scope).afterDate(cursor).withDateSortAsc()
 			// fmt.Println(q.string())
-			cursor, err = queryAndSend(q.string())
+			params.last = ""
+			cursor, err = queryAndSend(params.toQuery())
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
+			params.after = cursor.Format("2006-01-02T15:04:05.000000000Z")
 
 			// logs, err := m.get(q.string())
 			// if err != nil {
@@ -449,18 +490,19 @@ func extractLogRequestParams(r *http.Request) logParams {
 		logParams.namespace = v
 
 		// set track to namespace first, we can change it later
-		logParams.track = "namespace." + v
+		logParams.scope = "namespace." + v
 	}
 
-	// values := r.URL.Query()
-	// for k, v := range values {
-	// 	if len(v) > 0 {
-	// 		params[k] = v[0]
-	// 	}
-	// }
+	logParams.limit = r.URL.Query().Get("limit")
+	logParams.direction = r.URL.Query().Get("direction")
+	logParams.after = r.URL.Query().Get("after")
+	logParams.before = r.URL.Query().Get("before")
+	logParams.last = r.URL.Query().Get("last")
+	logParams.first = r.URL.Query().Get("first")
 
-	// if p, ok := params["instance"]; ok {
-	// 	params["track"] = "instance." + p
+	if r.URL.Query().Get("instance") != "" {
+		logParams.scope = "instance." + r.URL.Query().Get("instance")
+	}
 	// } else if p, ok := params["route"]; ok {
 	// 	params["track"] = "route." + p
 	// } else if p, ok := params["activity"]; ok {
@@ -475,7 +517,7 @@ func extractLogRequestParams(r *http.Request) logParams {
 }
 
 type logEntry struct {
-	ID        int                   `json:"id"`
+	// ID        int                   `json:"id"`
 	Time      time.Time             `json:"time"`
 	Msg       interface{}           `json:"msg"`
 	Level     interface{}           `json:"level"`
@@ -506,14 +548,14 @@ type RouteEntryContext struct {
 }
 
 // func toFeatureLogEntry(e core.LogEntry) logEntry {
-func toFeatureLogEntry(e Log) logEntry {
+func toFeatureLogEntry(e LogEntry) logEntry {
 	featureLogEntry := logEntry{
-		ID:        int(e.Time.UnixMilli()),
-		Time:      e.Time,
-		Msg:       e.Msg,
-		Level:     e.Level,
-		Trace:     e.Trace,
-		Span:      e.Span,
+		// ID:    e.Time.Format("2006-01-02T15:04:05.000000000Z"),
+		Time:  e.Time,
+		Msg:   e.Msg,
+		Level: e.Level,
+		// Trace:     e.Trace,
+		// Span:      e.Span,
 		Namespace: e.Namespace,
 		// Workflow: &WorkflowEntryContext{
 		// 	State:    e.State,
@@ -547,28 +589,46 @@ func toFeatureLogEntry(e Log) logEntry {
 	return featureLogEntry
 }
 
-type Log struct {
-	Time      time.Time `json:"_time"`
-	StreamID  string    `json:"_stream_id"`
-	Stream    string    `json:"_stream"`
-	Msg       string    `json:"_msg"`
-	P         string    `json:"_p"`
-	Stream2   string    `json:"stream"`
-	Date      time.Time `json:"date"`
-	Instance  string    `json:"instance"`
-	Invoker   string    `json:"invoker"`
-	Level     string    `json:"level"`
-	Namespace string    `json:"namespace"`
-	Span      string    `json:"span"`
-	State     string    `json:"state"`
-	Status    string    `json:"status"`
-	Trace     string    `json:"trace"`
-	Track     string    `json:"track"`
-	Workflow  string    `json:"workflow"`
+type LogEntry struct {
+	Time        time.Time `json:"_time"`
+	StreamID    string    `json:"_stream_id"`
+	Stream      string    `json:"_stream"`
+	Msg         string    `json:"_msg"`
+	P           string    `json:"_p"`
+	Instance    string    `json:"instance"`
+	Invoker     string    `json:"invoker"`
+	Level       string    `json:"level"`
+	Namespace   string    `json:"namespace"`
+	Status      string    `json:"status"`
+	StreamValue string    `json:"stream"`
+	Date        time.Time `json:"date"`
+	Path        string    `json:"path"`
+	Scope       string    `json:"scope"`
+	State       string    `json:"state"`
 }
 
-func (m *logController) fetchFromBackend(query string) ([]Log, error) {
-	var ret []Log
+// type Log struct {
+// 	Time      time.Time `json:"_time"`
+// 	StreamID  string    `json:"_stream_id"`
+// 	Stream    string    `json:"_stream"`
+// 	Msg       string    `json:"_msg"`
+// 	P         string    `json:"_p"`
+// 	Stream2   string    `json:"stream"`
+// 	Date      time.Time `json:"date"`
+// 	Instance  string    `json:"instance"`
+// 	Invoker   string    `json:"invoker"`
+// 	Level     string    `json:"level"`
+// 	Namespace string    `json:"namespace"`
+// 	Span      string    `json:"span"`
+// 	State     string    `json:"state"`
+// 	Status    string    `json:"status"`
+// 	Trace     string    `json:"trace"`
+// 	Track     string    `json:"track"`
+// 	Workflow  string    `json:"workflow"`
+// }
+
+func (m *logController) fetchFromBackend(query string) ([]LogEntry, error) {
+	var ret []LogEntry
 
 	req, err := http.NewRequest(http.MethodPost,
 		fmt.Sprintf("http://%s:9428/select/logsql/query", m.logsBackend),
@@ -581,15 +641,21 @@ func (m *logController) fetchFromBackend(query string) ([]Log, error) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	cli := &http.Client{Timeout: 30 * time.Second}
 
+	cc, _ := httputil.DumpRequest(req, true)
+	fmt.Println(string(cc))
+
 	resp, err := cli.Do(req)
 	if err != nil {
 		return ret, err
 	}
 	defer resp.Body.Close()
 
+	// cc, _ := httputil.DumpResponse(resp, true)
+	// fmt.Println(string(cc))
+
 	dec := json.NewDecoder(resp.Body)
 	for {
-		var log Log
+		var log LogEntry
 		err := dec.Decode(&log)
 		if err == io.EOF {
 			break
@@ -603,37 +669,37 @@ func (m *logController) fetchFromBackend(query string) ([]Log, error) {
 	return ret, err
 }
 
-type logQuerier struct {
-	query string
-	sort  string
-}
+// type logQuerier struct {
+// 	query string
+// 	sort  string
+// }
 
-func newLogQuerier(track string) logQuerier {
-	return logQuerier{
-		query: "query=track:=" + track,
-	}
-}
+// func newLogQuerier(track string) logQuerier {
+// 	return logQuerier{
+// 		query: "query=track:=" + track,
+// 	}
+// }
 
-func (l logQuerier) beforeDate(t time.Time) logQuerier {
-	l.query = l.query + " _time:<" + t.Format("2006-01-02T15:04:05.000000000Z")
-	return l
-}
+// func (l logQuerier) beforeDate(t time.Time) logQuerier {
+// 	l.query = l.query + " _time:<" + t.Format("2006-01-02T15:04:05.000000000Z")
+// 	return l
+// }
 
-func (l logQuerier) afterDate(t time.Time) logQuerier {
-	l.query = l.query + " _time:>" + t.Format("2006-01-02T15:04:05.000000000Z")
-	return l
-}
+// func (l logQuerier) afterDate(t time.Time) logQuerier {
+// 	l.query = l.query + " _time:>" + t.Format("2006-01-02T15:04:05.000000000Z")
+// 	return l
+// }
 
-func (l logQuerier) withDateSortAsc() logQuerier {
-	l.sort = l.sort + " | sort by (_time) asc"
-	return l
-}
+// func (l logQuerier) withDateSortAsc() logQuerier {
+// 	l.sort = l.sort + " | sort by (_time) asc"
+// 	return l
+// }
 
-func (l logQuerier) withDateSortDesc() logQuerier {
-	l.sort = l.sort + " | sort by (_time) desc"
-	return l
-}
+// func (l logQuerier) withDateSortDesc() logQuerier {
+// 	l.sort = l.sort + " | sort by (_time) desc"
+// 	return l
+// }
 
-func (l logQuerier) string() string {
-	return fmt.Sprintf("%s %s", l.query, l.sort)
-}
+// func (l logQuerier) string() string {
+// 	return fmt.Sprintf("%s %s", l.query, l.sort)
+// }
