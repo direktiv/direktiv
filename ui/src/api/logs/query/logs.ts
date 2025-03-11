@@ -67,7 +67,7 @@ const initLogsCache = (pointer: string) => ({
       },
     },
   ],
-  pageParams: [],
+  pageParams: [null],
 });
 
 const updateCache = (
@@ -76,15 +76,17 @@ const updateCache = (
 ): LogsCache | undefined => {
   const oldData = oldDataParam || initLogsCache(newLogEntry.time);
 
-  const pages = oldData.pages;
+  // Todo: why no ts error when I remove || [] below?
+  const pages = oldData.pages || [];
   const olderPages = pages.slice(0, -1);
   const newestPage = pages[0];
   if (newestPage === undefined) throw Error("Could not initialize logs cache");
 
   const newestPageData = newestPage.data ?? [];
 
-  // skip cache if the log entry is already in the cache
-  if (newestPageData.some((logEntry) => logEntry.id === newLogEntry.id)) {
+  // Todo: Remove or overhaul this. There may be duplicate time stamps.
+  // Skip cache if the log entry is already in the cache
+  if (newestPageData.some((logEntry) => logEntry.time === newLogEntry.time)) {
     return oldData;
   }
 
@@ -228,7 +230,15 @@ export const useLogs = ({
       trace,
     }),
     queryFn: fetchLogs,
-    getNextPageParam: (firstPage) => firstPage.meta?.previousPage,
+    getNextPageParam: (currentPage) => {
+      if (currentPage.data.length === 0) {
+        console.log("empty");
+        return null;
+      }
+      const oldestTime = currentPage.data.at(0)?.time;
+      console.log("oldestTime", oldestTime);
+      return oldestTime;
+    },
     enabled: !!namespace && enabled,
     initialPageParam: undefined,
     refetchOnWindowFocus: false,
