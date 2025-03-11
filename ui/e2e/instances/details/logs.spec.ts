@@ -302,8 +302,9 @@ test("log entries will be automatically scrolled to the end", async ({
 
   const scrollContainer = page.getByTestId("instance-logs-scroll-container");
 
-  await expect(scrollContainer, "Container is scrollable").toBeDefined();
+  expect(scrollContainer, "Container is scrollable").toBeDefined();
 
+  await page.waitForTimeout(500);
   await expect(
     scrollContainer.locator("pre").last().locator("span").last(),
     "The last log entry is in the view, so the page is scrolled down"
