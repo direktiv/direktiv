@@ -106,7 +106,7 @@ export const fileTypeToExplorerRoute = (type: BaseFileSchemaType["type"]) => {
     case "gateway":
       return "/n/$namespace/explorer/openapiSpecification/$";
     case "page":
-      return "page";
+      return "/n/$namespace/explorer/page/$";
     default:
       return "/n/$namespace/explorer/tree/$";
   }
