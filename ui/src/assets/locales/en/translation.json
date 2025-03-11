@@ -91,6 +91,7 @@
           "items": {
             "directory": "Directory",
             "workflow": "Workflow",
+            "page": "Page",
             "service": "Service",
             "gateway": {
               "label": "Gateway",
@@ -133,7 +134,14 @@
           "cancelBtn": "Cancel",
           "createBtn": "Create"
         },
-
+        "newPage": {
+          "title": "Create a new page",
+          "nameLabel": "Name",
+          "namePlaceholder": "page-name.yaml",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
+        },
         "openapiSpecification": {
           "title": "Create a new OpenAPI Specification",
           "nameLabel": "Name",
@@ -307,6 +315,7 @@
                 },
                 "types": {
                   "instant-response": "Instant Response",
+                  "target-page": "Page",
                   "target-flow": "Workflow",
                   "target-flow-var": "Workflow Variable",
                   "target-namespace-file": "Namespace File",

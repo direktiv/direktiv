@@ -27,6 +27,7 @@ import { TargetFlowForm } from "./TargetFlowForm";
 import { TargetFlowVarForm } from "./TargetFlowVarForm";
 import { TargetNamespaceFileForm } from "./TargetNamespaceFileForm";
 import { TargetNamespaceVarForm } from "./TargetNamespaceVarForm";
+import { TargetPageForm } from "./TargetPageForm";
 import { TargetPluginFormSchemaType } from "../../../schema/plugins/target/schema";
 import { useTranslation } from "react-i18next";
 
@@ -56,6 +57,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
 
   const {
     instantResponse,
+    targetPage,
     targetFlow,
     targetFlowVar,
     targetNamespaceFile,
@@ -72,6 +74,11 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
 
   const currentTargetEventConfig =
     currentConfiguration?.type === targetEvent.name
+      ? currentConfiguration.configuration
+      : undefined;
+
+  const currentTargetPageConfig =
+    currentConfiguration?.type === targetFlow.name
       ? currentConfiguration.configuration
       : undefined;
 
@@ -179,6 +186,13 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
           <InstantResponseForm
             formId={formId}
             defaultConfig={currentInstantResponseConfig}
+            onSubmit={handleSubmit}
+          />
+        )}
+        {selectedPlugin === targetPage.name && (
+          <TargetPageForm
+            formId={formId}
+            defaultConfig={currentTargetPageConfig}
             onSubmit={handleSubmit}
           />
         )}
