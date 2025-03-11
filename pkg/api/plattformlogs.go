@@ -383,6 +383,10 @@ func toFeatureLogEntry(e logEntryBackend) logEntry {
 		}
 	}
 
+	if strings.HasPrefix(e.Scope, "route.") {
+		featureLogEntry.Route = &RouteEntryContext{}
+	}
+
 	// if strings.HasPrefix()
 	// featureLogEntry.Error = e.Data["error"]
 

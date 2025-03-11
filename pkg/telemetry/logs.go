@@ -47,6 +47,7 @@ const (
 	scopeKey     = "scope"
 	namespaceKey = "namespace"
 	instanceKey  = "instance"
+	routeKey     = "route"
 
 	DirektivInstance = "instance-ctx"
 )
@@ -154,4 +155,24 @@ func LogActivityError(msg, namespace, pid string, err error) {
 	}
 	slog.Error(msg, slog.String(namespaceKey, namespace), slog.String(instanceKey, pid),
 		slog.Any(errorKey, err.Error()), slog.String(scopeKey, "activity."+pid))
+}
+
+func LogRouterInfo(msg, namespace, route string) {
+	slog.Info(msg, slog.String(namespaceKey, namespace), slog.String(scopeKey, "route."+route))
+}
+
+func LogRouterDebug(msg, namespace, route string) {
+	slog.Debug(msg, slog.String(namespaceKey, namespace), slog.String(scopeKey, "route."+route))
+}
+
+func LogRouterWarn(msg, namespace, route string) {
+	slog.Warn(msg, slog.String(namespaceKey, namespace), slog.String(scopeKey, "route."+route))
+}
+
+func LogRouterError(msg, namespace, route string, err error) {
+	if err == nil {
+		err = fmt.Errorf("%s", msg)
+	}
+	slog.Error(msg, slog.String(namespaceKey, namespace),
+		slog.Any(errorKey, err.Error()), slog.String(scopeKey, "route."+route))
 }
