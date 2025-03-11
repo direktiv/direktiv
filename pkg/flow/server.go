@@ -92,13 +92,13 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 	srv.Bus = bus
 
 	var err error
-	slog.Debug("starting Flow server")
-	slog.Debug("initializing telemetry")
+	slog.Debug("starting flow server")
+	// slog.Debug("initializing telemetry.")
 	// telEnd, err := tracing.InitTelemetry(circuit.Context(), srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
 	// if err != nil {
 	// 	return nil, fmt.Errorf("telemetry init failed: %w", err)
 	// }
-	slog.Info("telemetry initialized successfully")
+	// slog.Info("telemetry initialized successfully.")
 
 	slog.Debug("initializing pub-sub")
 

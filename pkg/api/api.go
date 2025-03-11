@@ -104,7 +104,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 			IsEnterprise bool   `json:"isEnterprise"`
 			RequiresAuth bool   `json:"requiresAuth"`
 		}{
-			Version:      version.Version,
+			Version:      version.Version + " " + version.GitSha,
 			IsEnterprise: extensions.IsEnterprise,
 			RequiresAuth: os.Getenv("DIREKTIV_UI_SET_API_KEY") == "true",
 		}

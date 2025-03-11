@@ -71,6 +71,14 @@ flow:
   opentelemetryBackend: ""
   sidecar:
 
+otel:
+  install: true
+
+opentelemetry-collector:
+  image:
+    repository: otel/opentelemetry-collector-k8s
+  mode: deployment
+
 database:
   # -- database host
   host: "postgres-postgresql-ha-pgpool.postgres"

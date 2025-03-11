@@ -67,14 +67,18 @@ test("Route details page shows all important information about the route", async
     "it renders the text for the file path"
   ).toBeVisible();
 
-  await expect(
-    page.getByTestId("route-details-header").getByText("connect"),
-    "it renders the text for the method"
-  ).toBeVisible();
+  await page.getByTestId("route-details-header").getByText("9 methods").hover();
 
-  await page.getByTestId("route-details-header").getByText("+7").hover();
-
-  const methods = ["get", "head", "options", "patch", "post", "put", "trace"];
+  const methods = [
+    "connect",
+    "get",
+    "head",
+    "options",
+    "patch",
+    "post",
+    "put",
+    "trace",
+  ];
 
   for (const method of methods) {
     await expect(
