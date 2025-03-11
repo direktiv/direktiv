@@ -1,7 +1,8 @@
 FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.24.0 as builder
 
-ARG VERSION=dev
 ARG IS_ENTERPRISE=false
+ARG VERSION
+ARG GIT_SHA
 
 COPY go.mod src/go.mod
 COPY go.sum src/go.sum
@@ -18,7 +19,10 @@ RUN if [ "$IS_ENTERPRISE" = "true" ]; then \
     fi
 
 RUN --mount=type=cache,target=/root/.cache/go-build cd src &&  \
-    CGO_ENABLED=false GOOS=linux GOARCH=$TARGETARCH go build -tags osusergo,netgo -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$VERSION" -o $(cat ../BUILD_PATH.txt);
+    CGO_ENABLED=false GOOS=linux GOARCH=$TARGETARCH go build \
+    -tags osusergo,netgo \
+    -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$VERSION -X github.com/direktiv/direktiv/pkg/version.GitSha=$GIT_SHA" \
+    -o $(cat ../BUILD_PATH.txt);
 
 #########################################################################################
 FROM --platform=$BUILDPLATFORM node:20-slim as ui-builder
