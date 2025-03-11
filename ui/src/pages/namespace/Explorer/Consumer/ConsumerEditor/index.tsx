@@ -42,7 +42,7 @@ const ConsumerEditor: FC<ConsumerEditorProps> = ({ data }) => {
   return (
     <Form defaultConfig={consumerConfig}>
       {({
-        formControls: {
+        form: {
           formState: { errors },
           handleSubmit,
         },

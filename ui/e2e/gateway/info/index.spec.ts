@@ -42,10 +42,13 @@ test("Info page default view", async ({ page }) => {
 
   const editor = page.locator(".lines-content");
 
-  await expect(
-    editor,
-    "it displays the namespace in the editor preview"
-  ).toContainText(`title: ${namespace}`, { useInnerText: true });
+  // Since the Routes Info page has flexible panels, the namespace
+  // is/can be displayed in different ways. With line breaks, etc.
+  // Therefore we need to use a regex to match the namespace.
+  const namespacePattern = namespace.split("").join("\\s*");
+  await expect(editor).toContainText(
+    new RegExp(`title:\\s*${namespacePattern}`)
+  );
 
   await expect(
     editor,

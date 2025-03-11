@@ -18,7 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 type FormProps = {
   defaultConfig?: ConsumerFormSchemaType;
   children: (args: {
-    formControls: UseFormReturn<ConsumerFormSchemaType>;
+    form: UseFormReturn<ConsumerFormSchemaType>;
     formMarkup: JSX.Element;
     values: DeepPartialSkipArrayKey<ConsumerFormSchemaType>;
   }) => JSX.Element;
@@ -26,7 +26,7 @@ type FormProps = {
 
 export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
   const { t } = useTranslation();
-  const formControls = useForm<ConsumerFormSchemaType>({
+  const form = useForm<ConsumerFormSchemaType>({
     resolver: zodResolver(ConsumerFormSchema),
     defaultValues: {
       ...defaultConfig,
@@ -36,7 +36,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
   const fieldsInOrder = ConsumerFormSchema.keyof().options;
 
   const watchedValues = useWatch({
-    control: formControls.control,
+    control: form.control,
   });
 
   const values = fieldsInOrder.reduce(
@@ -44,13 +44,13 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
     {}
   );
 
-  const { register, control } = formControls;
+  const { register, control } = form;
 
   return children({
-    formControls,
+    form,
     values,
     formMarkup: (
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-6">
         <div className="flex gap-3">
           <Fieldset
             label={t("pages.explorer.consumer.editor.form.username")}
