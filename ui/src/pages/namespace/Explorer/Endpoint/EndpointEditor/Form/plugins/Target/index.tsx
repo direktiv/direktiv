@@ -78,7 +78,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
       : undefined;
 
   const currentTargetPageConfig =
-    currentConfiguration?.type === targetFlow.name
+    currentConfiguration?.type === targetPage.name
       ? currentConfiguration.configuration
       : undefined;
 

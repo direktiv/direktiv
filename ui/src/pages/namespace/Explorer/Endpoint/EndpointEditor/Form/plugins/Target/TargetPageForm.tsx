@@ -2,9 +2,9 @@ import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
 import FormErrors, { errorsType } from "~/components/FormErrors";
 import {
-  TargetFlowFormSchema,
-  TargetFlowFormSchemaType,
-} from "../../../schema/plugins/target/targetFlow";
+  TargetPageFormSchema,
+  TargetPageFormSchemaType,
+} from "../../../schema/plugins/target/targetPage";
 
 import { Checkbox } from "~/design/Checkbox";
 import { DisableNamespaceSelectNote } from "./utils/DisableNamespaceSelectNote";
@@ -18,7 +18,7 @@ import { useIsSystemNamespace } from "./utils/useIsSystemNamespace";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type OptionalConfig = Partial<TargetFlowFormSchemaType["configuration"]>;
+type OptionalConfig = Partial<TargetPageFormSchemaType["configuration"]>;
 
 const predefinedConfig: OptionalConfig = {
   async: false,
@@ -27,7 +27,7 @@ const predefinedConfig: OptionalConfig = {
 type FormProps = {
   formId: string;
   defaultConfig?: OptionalConfig;
-  onSubmit: (data: TargetFlowFormSchemaType) => void;
+  onSubmit: (data: TargetPageFormSchemaType) => void;
 };
 
 export const TargetPageForm: FC<FormProps> = ({
@@ -44,10 +44,10 @@ export const TargetPageForm: FC<FormProps> = ({
     watch,
     control,
     formState: { errors },
-  } = useForm<TargetFlowFormSchemaType>({
-    resolver: zodResolver(TargetFlowFormSchema),
+  } = useForm<TargetPageFormSchemaType>({
+    resolver: zodResolver(TargetPageFormSchema),
     defaultValues: {
-      type: "target-flow",
+      type: "target-page",
       configuration: {
         ...predefinedConfig,
         ...defaultConfig,
@@ -98,7 +98,7 @@ export const TargetPageForm: FC<FormProps> = ({
         >
           <Controller
             control={control}
-            name="configuration.flow"
+            name="configuration.page"
             render={({ field }) => (
               <FilePicker
                 namespace={watch("configuration.namespace")}

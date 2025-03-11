@@ -5,7 +5,7 @@ export const TargetPageFormSchema = z.object({
   type: z.literal(targetPluginTypes.targetPage.name),
   configuration: z.object({
     namespace: z.string().optional(),
-    flow: z.string().nonempty(),
+    page: z.string().nonempty(),
     async: z.boolean().optional(),
     content_type: z.string().optional(),
   }),
