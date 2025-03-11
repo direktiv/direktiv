@@ -78,7 +78,7 @@ const updateCache = (
 
   // Todo: why no ts error when I remove || [] below?
   const pages = oldData.pages || [];
-  const olderPages = pages.slice(0, -1);
+  const olderPages = pages.slice(1, -1);
   const newestPage = pages[0];
   if (newestPage === undefined) throw Error("Could not initialize logs cache");
 
@@ -232,11 +232,9 @@ export const useLogs = ({
     queryFn: fetchLogs,
     getNextPageParam: (currentPage) => {
       if (currentPage.data.length === 0) {
-        console.log("empty");
         return null;
       }
       const oldestTime = currentPage.data.at(0)?.time;
-      console.log("oldestTime", oldestTime);
       return oldestTime;
     },
     enabled: !!namespace && enabled,
