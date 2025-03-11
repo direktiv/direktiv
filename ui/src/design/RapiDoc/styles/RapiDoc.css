@@ -1,11 +1,10 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+
 rapi-doc {
   @apply size-full p-2.5;
   @apply text-gray-12;
   @apply bg-white;
-  @font-face {
-    font-family: "Inter";
-    src: url();
-  }
+  @apply font-['Inter',sans-serif];
 }
 
 html[data-theme="dark"] rapi-doc {
