@@ -1,44 +1,104 @@
-import { NavLink, useMatches } from "react-router-dom";
+import {
+  ActivitySquare,
+  BadgeCheck,
+  Boxes,
+  FolderTree,
+  GitCompare,
+  Layers,
+  LucideIcon,
+  Network,
+  PlaySquare,
+  Radio,
+  Settings,
+} from "lucide-react";
 
 import { FC } from "react";
-import { checkHandlerInMatcher } from "~/util/router/utils";
-import { createClassNames } from "~/design/NavigationLink";
-import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
+import { FileRoutesByTo } from "~/routeTree.gen";
+import { RouterNavigationLink } from "../RouterNavigationLink";
+import { isEnterprise } from "~/config/env/utils";
 import { useTranslation } from "react-i18next";
 
+type NavigationItem = {
+  path: keyof FileRoutesByTo;
+  label: string;
+  icon: LucideIcon;
+};
+
 const Navigation: FC = () => {
-  const pages = usePages();
-  const namespace = useNamespace();
   const { t } = useTranslation();
-  const [, secondPathLevel] = useMatches();
 
-  if (!namespace) return null;
+  const enableEnterpriseItems = isEnterprise();
 
-  type PagesKeys = keyof typeof pages;
+  const enterpriseItems: NavigationItem[] = enableEnterpriseItems
+    ? [
+        {
+          path: "/n/$namespace/permissions/roles",
+          label: t("components.mainMenu.permissions"),
+          icon: BadgeCheck,
+        },
+      ]
+    : [];
+
+  const navigationItems: NavigationItem[] = [
+    {
+      path: "/n/$namespace/explorer",
+      label: t("components.mainMenu.explorer"),
+      icon: FolderTree,
+    },
+    {
+      path: "/n/$namespace/monitoring",
+      label: t("components.mainMenu.monitoring"),
+      icon: ActivitySquare,
+    },
+    {
+      path: "/n/$namespace/instances",
+      label: t("components.mainMenu.instances"),
+      icon: Boxes,
+    },
+    {
+      path: "/n/$namespace/events",
+      label: t("components.mainMenu.events"),
+      icon: Radio,
+    },
+    {
+      path: "/n/$namespace/gateway",
+      label: t("components.mainMenu.gateway"),
+      icon: Network,
+    },
+    {
+      path: "/n/$namespace/services",
+      label: t("components.mainMenu.services"),
+      icon: Layers,
+    },
+    {
+      path: "/n/$namespace/mirror",
+      label: t("components.mainMenu.mirror"),
+      icon: GitCompare,
+    },
+    ...enterpriseItems,
+    {
+      path: "/n/$namespace/settings",
+      label: t("components.mainMenu.settings"),
+      icon: Settings,
+    },
+    {
+      path: "/n/$namespace/jq",
+      label: t("components.mainMenu.jqPlayground"),
+      icon: PlaySquare,
+    },
+  ];
+
   return (
     <>
-      {Object.entries(pages).map(([key, item]) => {
-        // we should normaly avoid using "as" at this place, because we should not tell
-        // TS that we know better than it, but in this case we actually do and it can
-        // simply not infer the type of key at this point.
-        const typedKey = key as PagesKeys;
-        if (!item.icon || !item.name) return null;
-
-        const isActive = checkHandlerInMatcher(secondPathLevel, key);
-
-        return (
-          <NavLink
-            key={key}
-            to={item.createHref({ namespace })}
-            className={createClassNames(isActive)}
-            end={false}
-          >
-            <item.icon aria-hidden="true" />{" "}
-            {t(`components.mainMenu.${typedKey}`)}
-          </NavLink>
-        );
-      })}
+      {navigationItems.map((item) => (
+        <RouterNavigationLink
+          key={item.path}
+          to={item.path}
+          from="/n/$namespace"
+        >
+          <item.icon aria-hidden="true" /> {item.label}
+        </RouterNavigationLink>
+      ))}
     </>
   );
 };

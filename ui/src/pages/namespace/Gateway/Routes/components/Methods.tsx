@@ -3,61 +3,47 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "~/design/HoverCard";
+import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 
 import Badge from "~/design/Badge";
+import { ConditionalWrapper } from "~/util/helpers";
 import { FC } from "react";
-import { RouteSchemaType } from "~/api/gateway/schema";
+import { RouteMethod } from "~/api/gateway/schema";
 import { useTranslation } from "react-i18next";
 
 type AllowAnonymousProps = {
-  methods: RouteSchemaType["methods"];
+  methods: RouteMethod[];
 };
-
-const methodDisplayCount = 2;
 
 export const Methods: FC<AllowAnonymousProps> = ({ methods }) => {
   const { t } = useTranslation();
-  const numberOfMethods = methods?.length ?? 0;
-  const numberOfHiddenMethods = numberOfMethods - methodDisplayCount;
-  const needsTooltip = numberOfHiddenMethods > 0;
-
-  const methodsToDisplay = methods?.slice(0, methodDisplayCount) ?? [];
-  const methodsBehindTooltip = methods?.slice(methodDisplayCount) ?? [];
+  const numberOfMethods = methods.length;
 
   return (
-    <div className="flex gap-1">
-      {numberOfMethods === 0 && (
-        <Badge variant="secondary">
-          {t("pages.gateway.routes.row.methods.none")}
-        </Badge>
-      )}
-      {methodsToDisplay.map((method) => (
-        <Badge key={method} variant="outline">
-          {method}
-        </Badge>
-      ))}
-      {needsTooltip && (
+    <ConditionalWrapper
+      condition={numberOfMethods > 0}
+      wrapper={(children) => (
         <HoverCard>
-          <HoverCardTrigger>
-            <Badge variant="outline">
-              {t("pages.gateway.routes.row.methods.tooltipLabel", {
-                count: numberOfHiddenMethods,
-              })}
-            </Badge>
-          </HoverCardTrigger>
-          <HoverCardContent
-            align="center"
-            side="right"
-            className="grid gap-2 p-2"
-          >
-            {methodsBehindTooltip.map((method) => (
-              <Badge key={method} variant="outline">
-                {method}
-              </Badge>
-            ))}
+          <HoverCardTrigger>{children}</HoverCardTrigger>
+          <HoverCardContent align="center" side="right" className="p-1">
+            <Table>
+              <TableBody>
+                {methods.map((method) => (
+                  <TableRow key={method}>
+                    <TableCell>{method}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </HoverCardContent>
         </HoverCard>
       )}
-    </div>
+    >
+      <Badge variant="outline">
+        {t("pages.gateway.routes.row.methods.tooltipLabel", {
+          count: numberOfMethods,
+        })}
+      </Badge>
+    </ConditionalWrapper>
   );
 };

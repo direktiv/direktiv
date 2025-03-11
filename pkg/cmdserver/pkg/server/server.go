@@ -159,6 +159,7 @@ func prepareFile(path, content string, perm uint) error {
 		return err
 	}
 
+	//nolint:gosec
 	if err := file.Chmod(fs.FileMode(perm)); err != nil {
 		slog.Error("failed to set file permissions", slog.String("path", path), slog.String("error", err.Error()))
 		return err

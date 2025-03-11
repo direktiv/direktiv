@@ -6,18 +6,16 @@ import {
 } from "~/design/Dialog";
 
 import Button from "~/design/Button";
-import { TokenSchemaType } from "~/api/enterprise/tokens/schema";
 import { Trash } from "lucide-react";
 import { useDeleteToken } from "~/api/enterprise/tokens/mutate/delete";
 import { useTranslation } from "react-i18next";
 
-const Delete = ({
-  token,
-  close,
-}: {
-  token: TokenSchemaType;
+type DeleteProps = {
+  tokenName: string;
   close: () => void;
-}) => {
+};
+
+const Delete = ({ tokenName, close }: DeleteProps) => {
   const { t } = useTranslation();
   const { mutate: deleteToken, isPending } = useDeleteToken({
     onSuccess: () => {
@@ -41,7 +39,7 @@ const Delete = ({
         </DialogClose>
         <Button
           onClick={() => {
-            deleteToken(token);
+            deleteToken(tokenName);
           }}
           variant="destructive"
           loading={isPending}

@@ -10,17 +10,23 @@ import { useTranslation } from "react-i18next";
 import { varKeys } from "..";
 
 const deleteVar = apiFactory({
-  url: ({ namespace, variableID }: { namespace: string; variableID: string }) =>
-    `/api/v2/namespaces/${namespace}/variables/${variableID}`,
+  url: ({
+    namespace,
+    variableIDs,
+  }: {
+    namespace: string;
+    variableIDs: string[];
+  }) =>
+    variableIDs.length === 0
+      ? `/api/v2/namespaces/${namespace}/variables/${variableIDs[0]}`
+      : `/api/v2/namespaces/${namespace}/variables?ids=${variableIDs.join(",")}`,
   method: "DELETE",
   schema: VarDeletedSchema,
 });
 
 export const useDeleteVar = ({
   onSuccess,
-}: {
-  onSuccess?: () => void;
-} = {}) => {
+}: { onSuccess?: () => void } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -31,24 +37,24 @@ export const useDeleteVar = ({
     throw new Error("namespace is undefined");
   }
 
-  const mutationFn = ({ variable }: { variable: VarSchemaType }) =>
+  const mutationFn = (variables: VarSchemaType[]) =>
     deleteVar({
       apiKey: apiKey ?? undefined,
       urlParams: {
         namespace,
-        variableID: variable.id,
+        variableIDs: variables.map((v) => v.id),
       },
     });
 
   return useMutationWithPermissions({
     mutationFn,
-    onSuccess: (_, variables) => {
+    onSuccess: (_, input) => {
       queryClient.invalidateQueries({
         queryKey: varKeys.varList(namespace, {
           apiKey: apiKey ?? undefined,
           workflowPath:
-            variables.variable.type === "workflow-variable"
-              ? variables.variable.reference
+            input[0]?.type === "workflow-variable"
+              ? input[0].reference
               : undefined,
         }),
       });
@@ -56,7 +62,9 @@ export const useDeleteVar = ({
         title: t("api.variables.mutate.deleteVariable.success.title"),
         description: t(
           "api.variables.mutate.deleteVariable.success.description",
-          { name: variables.variable.name }
+          {
+            count: input.length,
+          }
         ),
         variant: "success",
       });

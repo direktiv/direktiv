@@ -6,32 +6,34 @@ import { retry10 } from '../common/retry'
 
 const testNamespace = 'js-inbound'
 
-const endpointJSFile = `
-direktiv_api: endpoint/v1
-allow_anonymous: true
-plugins:
-  target:
-    type: target-flow
-    configuration:
-        flow: /target.yaml
-        content_type: application/json
-  inbound:
-    - type: js-inbound
-      configuration:
-        script: |
-            input["Headers"].Del("Header1")
-            input["Headers"].Add("Header3", "value3")
-            input["Queries"].Del("Query2")
-            b = JSON.parse(input["Body"])
-            b["addquery"] = input["Queries"].Get("Query1")
-            b["addquerydel"] = input["Queries"].Get("Query2")
+const endpointJSFile = `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/target"
+    allow_anonymous: true
+    plugins:
+      inbound:
+      - type: js-inbound
+        configuration:
+          script: |
+              input["Headers"].Del("Header1")
+              input["Headers"].Add("Header3", "value3")
+              input["Queries"].Del("Query2")
+              b = JSON.parse(input["Body"])
+              b["addquery"] = input["Queries"].Get("Query1")
+              b["addquerydel"] = input["Queries"].Get("Query2")
 
-            b["addheader"] = input["Headers"].Get("Header3")
-            b["addheaderdel"] = input["Headers"].Get("Header1")
-            input["Body"] = JSON.stringify(b) 
-methods: 
-  - POST
-path: /target`
+              b["addheader"] = input["Headers"].Get("Header3")
+              b["addheaderdel"] = input["Headers"].Get("Header1")
+              input["Body"] = JSON.stringify(b) 
+      target:
+        type: target-flow
+        configuration:
+          flow: /target.yaml
+          content_type: application/json
+post:
+   responses:
+      "200":
+        description: works`
 
 const wf = `
 direktiv_api: workflow/v1
@@ -50,69 +52,75 @@ groups:
   - "group1"
 `
 
-const endpointConsumerFile = `
-direktiv_api: endpoint/v1
-allow_anonymous: false
-plugins:
-  target:
-    type: target-flow
-    configuration:
-        flow: /target.yaml
-        content_type: application/json
-  auth:
-    - type: key-auth
-  inbound:
-    - type: js-inbound
-      configuration:
-        script: |
-          b = JSON.parse(input["Body"])
-          b["user"] = input["Consumer"].Username
-          input["Body"] = JSON.stringify(b) 
-methods: 
-  - POST
-path: /target`
+const endpointConsumerFile = `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/target"
+    allow_anonymous: false
+    plugins:
+      auth:
+      - type: key-auth
+      inbound:
+      - type: js-inbound
+        configuration:
+          script: |
+            b = JSON.parse(input["Body"])
+            b["user"] = input["Consumer"].Username
+            input["Body"] = JSON.stringify(b) 
+      target:
+        type: target-flow
+        configuration:
+          flow: /target.yaml
+          content_type: application/json
+post:
+   responses:
+      "200":
+        description: works`
 
-const endpointParamFile = `
-direktiv_api: endpoint/v1
-allow_anonymous: true
-plugins:
-  target:
-    type: target-flow
-    configuration:
-        flow: /target.yaml
-        content_type: application/json
-  inbound:
-    - type: js-inbound
-      configuration:
-        script: |
-          b = JSON.parse(input["Body"])
-          b["params"] = input["URLParams"].id
-          input["Body"] = JSON.stringify(b) 
-methods: 
-  - POST
-path: /target/{id}`
+const endpointParamFile = `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/target/{id}"
+    allow_anonymous: true
+    plugins:
+      inbound:
+      - type: js-inbound
+        configuration:
+          script: |
+            b = JSON.parse(input["Body"])
+            b["params"] = input["URLParams"].id
+            input["Body"] = JSON.stringify(b) 
+      target:
+        type: target-flow
+        configuration:
+          flow: /target.yaml
+          content_type: application/json
+post:
+   responses:
+      "200":
+        description: works`
 
-const endpointErrorFile = `
-direktiv_api: endpoint/v1
-allow_anonymous: true
-plugins:
-  target:
-    type: target-flow
-    configuration:
-        flow: /target.yaml
-        content_type: application/json
-  inbound:
-    - type: js-inbound
-      configuration:
-        script: |
-          b = JSON.parse(input["Body"])
-          b["error"] = "no access" 
-          input["Body"] = JSON.stringify(b) 
-          input["Headers"].Add("permission", "denied")
-          input.Status = 403        
-methods: 
-  - POST
-path: /target`
+const endpointErrorFile = `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/target"
+    allow_anonymous: true
+    plugins:
+      inbound:
+      - type: js-inbound
+        configuration:
+          script: |
+            b = JSON.parse(input["Body"])
+            b["error"] = "no access" 
+            input["Body"] = JSON.stringify(b) 
+            input["Headers"].Add("permission", "denied")
+            input.Status = 403 
+      target:
+        type: target-flow
+        configuration:
+          flow: /target.yaml
+          content_type: application/json
+post:
+   responses:
+      "200":
+        description: works`
 
 describe('Test js inbound plugin', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)

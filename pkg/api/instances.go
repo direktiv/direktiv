@@ -104,7 +104,7 @@ func marshalForAPI(ctx context.Context, data *instancestore.InstanceData) *Insta
 }
 
 type instController struct {
-	db      *database.SQLStore
+	db      *database.DB
 	manager *instancestore.InstanceManager
 }
 
@@ -574,6 +574,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Query().Get("path")
 
 	wait := r.URL.Query().Get("wait") == "true"
+	output := r.URL.Query().Get("output") == "true"
 
 	input, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -595,7 +596,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if wait {
-		e.handleWait(ctx, w, r, data)
+		e.handleWait(ctx, w, r, data, output)
 
 		return
 	}
@@ -603,7 +604,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, marshalForAPI(ctx, data))
 }
 
-func (e *instController) handleWait(ctx context.Context, w http.ResponseWriter, r *http.Request, data *instancestore.InstanceData) {
+func (e *instController) handleWait(ctx context.Context, w http.ResponseWriter, r *http.Request, data *instancestore.InstanceData, withOutput bool) {
 	var err error
 
 	id := data.ID
@@ -628,6 +629,16 @@ recheck:
 
 	if data.Status == instancestore.InstanceStatusPending {
 		goto recheck
+	}
+	if withOutput {
+		resp := marshalForAPI(ctx, data)
+		resp.Output = data.Output
+		l := len(data.Output)
+		resp.OutputLength = &l
+
+		writeJSON(w, resp)
+
+		return
 	}
 
 	if data.Status > instancestore.InstanceStatusComplete {

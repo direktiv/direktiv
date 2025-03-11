@@ -8,6 +8,7 @@ import {
   CommandStaticItem,
 } from "~/design/Command";
 
+import InfoTooltip from "../NamespaceEdit/InfoTooltip";
 import { twMergeClsx } from "~/util/helpers";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNamespace } from "~/util/store/namespace";
@@ -68,7 +69,16 @@ export const NamespaceSelectorList = ({
                         namespace === ns.name ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    <span>{ns.name}</span>
+                    <span className="flex items-center gap-1 w-full">
+                      {ns.name}
+                      {ns.isSystemNamespace && (
+                        <InfoTooltip>
+                          {t(
+                            "components.namespaceSelector.systemNamespaceTooltip"
+                          )}
+                        </InfoTooltip>
+                      )}
+                    </span>
                   </>
                 )}
               </CommandItem>

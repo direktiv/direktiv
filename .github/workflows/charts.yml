@@ -1,12 +1,9 @@
 name: Build and Release Charts
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - main
-      - cycle*
-  pull_request:
+    tags:
+      - '*'
 
 jobs:
   release:
@@ -19,12 +16,26 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Get Git Version
+        run: |
+          VERSION=$(git tag --points-at HEAD | head -n 1 | sed 's/^v//' | sed 's/^direktiv-//')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          cat $GITHUB_ENV
+
+      - name: Update Chart.yaml with Git Version
+        run: |
+          sed -i "s/^version:.*/version: ${VERSION}/" direktiv/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: v${VERSION}/" direktiv/Chart.yaml
+          cat direktiv/Chart.yaml  # Print for debugging
+
       - name: Configure Git
         run: |
           helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
           helm repo add fluent-bit https://fluent.github.io/helm-charts
           helm repo add nats https://nats-io.github.io/k8s/helm/charts
           helm repo add opensearch https://opensearch-project.github.io/helm-charts/
+          helm repo add victoriametrics https://victoriametrics.github.io/helm-charts/
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
       - name: Helm Lint

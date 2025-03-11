@@ -17,9 +17,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/events"
+	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/instancestore"
-	"github.com/direktiv/direktiv/pkg/middlewares"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
 )
@@ -29,7 +30,7 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, wakeByEvents events.WakeEventsWaiter, startByEvents events.WorkflowStart, circuit *core.Circuit) error {
+func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, wakeByEvents events.WakeEventsWaiter, startByEvents events.WorkflowStart) error {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
@@ -77,6 +78,7 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 	mw := &appMiddlewares{dStore: db.DataStore()}
 
 	r := chi.NewRouter()
+	r.Use(tracing.OtelMiddleware())
 	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
 		writeError(w, &Error{
 			Code:    "request_method_not_allowed",
@@ -90,13 +92,6 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 		})
 	})
 
-	chiMiddlewares := make([]func(http.Handler) http.Handler, 0)
-	for i := range middlewares.GetMiddlewares() {
-		chiMiddlewares = append(chiMiddlewares, middlewares.GetMiddlewares()[i])
-	}
-
-	r.Use(chiMiddlewares...)
-
 	for _, extraRoute := range GetExtraRoutes() {
 		extraRoute(r)
 	}
@@ -108,9 +103,9 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 			IsEnterprise bool   `json:"isEnterprise"`
 			RequiresAuth bool   `json:"requiresAuth"`
 		}{
-			Version:      version.Version,
-			IsEnterprise: app.Config.IsEnterprise,
-			RequiresAuth: os.Getenv("DIREKTIV_API_KEY") != "",
+			Version:      version.Version + " " + version.GitSha,
+			IsEnterprise: extensions.IsEnterprise,
+			RequiresAuth: os.Getenv("DIREKTIV_UI_SET_API_KEY") == "true",
 		}
 
 		writeJSON(w, data)
@@ -123,12 +118,23 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Route("/namespaces", func(r chi.Router) {
-			r.Use(mw.checkAPIKey)
+			if extensions.CheckOidcMiddleware != nil {
+				r.Use(
+					extensions.CheckOidcMiddleware,
+					extensions.CheckAPITokenMiddleware,
+					extensions.CheckAPIKeyMiddleware)
+			}
 			nsCtr.mountRouter(r)
 		})
 
 		r.Group(func(r chi.Router) {
-			r.Use(mw.checkAPIKey, mw.injectNamespace)
+			if extensions.CheckOidcMiddleware != nil {
+				r.Use(
+					extensions.CheckOidcMiddleware,
+					extensions.CheckAPITokenMiddleware,
+					extensions.CheckAPIKeyMiddleware)
+			}
+			r.Use(mw.injectNamespace)
 
 			r.Route("/namespaces/{namespace}/instances", func(r chi.Router) {
 				instCtr.mountRouter(r)
@@ -170,6 +176,14 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 				eventsCtr.mountBroadcast(r)
 			})
 			r.Handle("/namespaces/{namespace}/gateway/*", app.GatewayManager)
+
+			if len(extensions.AdditionalAPIRoutes) > 0 {
+				for pattern, ctr := range extensions.AdditionalAPIRoutes {
+					r.Route(pattern, func(r chi.Router) {
+						ctr(r)
+					})
+				}
+			}
 		})
 
 		r.Route("/jx", func(r chi.Router) {
@@ -260,7 +274,7 @@ func writeOk(w http.ResponseWriter) {
 
 func extractContextNamespace(r *http.Request) *datastore.Namespace {
 	//nolint:forcetypeassert
-	ns := r.Context().Value(ctxKeyNamespace{}).(*datastore.Namespace)
+	ns := r.Context().Value(ctxKeyNamespace).(*datastore.Namespace)
 
 	return ns
 }

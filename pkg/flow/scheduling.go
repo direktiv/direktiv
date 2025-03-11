@@ -157,7 +157,7 @@ func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
 		// pop message
 		tx, err := engine.flow.beginSQLTx(ctx)
 		if err != nil {
-			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 			return
 		}
 		defer tx.Rollback()
@@ -169,14 +169,14 @@ func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
 				return
 			}
 
-			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 
 			return
 		}
 
 		err = tx.Commit(ctx)
 		if err != nil {
-			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 
 			return
 		}
@@ -190,7 +190,7 @@ func (engine *engine) InstanceYield(ctx context.Context, im *instanceMemory) {
 
 	err := engine.freeMemory(ctx, im)
 	if err != nil {
-		slog.ErrorContext(ctx, "Failed to free memory for instance. Initiating crash sequence.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", err)
+		slog.ErrorContext(ctx, "Failed to free memory for instance. Initiating crash sequence.", "instance", im.ID().String(), "namespace", im.Namespace().Name, "error", err)
 		engine.CrashInstance(ctx, im, err)
 
 		return
@@ -228,7 +228,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 		}
 		err := engine.ReportActionResults(ctx, msg)
 		if err != nil {
-			slog.ErrorContext(ctx, "Failed to report action results to caller workflow.", "namespace", im.Namespace(), "instance", im.ID(), "error", err)
+			slog.ErrorContext(ctx, "Failed to report action results to caller workflow.", "namespace", im.Namespace().Name, "instance", im.ID(), "error", err)
 
 			return
 		}

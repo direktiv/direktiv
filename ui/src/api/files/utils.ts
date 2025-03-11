@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   File,
   Folder,
   Layers,
@@ -9,7 +10,6 @@ import {
 } from "lucide-react";
 
 import { BaseFileSchemaType } from "./schema";
-import { ExplorerSubpages } from "~/util/router/pages";
 
 export const getFilenameFromPath = (path: string): string => {
   const fileName = path.split("/").pop();
@@ -82,27 +82,33 @@ export const fileTypeToIcon = (type: BaseFileSchemaType["type"]) => {
       return Users;
     case "page":
       return PanelTop;
+    case "gateway":
+      return BookOpen;
     default:
       return File;
   }
 };
 
-export const fileTypeToExplorerSubpage = (
-  type: BaseFileSchemaType["type"]
-): ExplorerSubpages | undefined => {
+/**
+ * This returns the appropriate route with the editor for the specified
+ * file type, defaulting to /tree (for directory).
+ */
+export const fileTypeToExplorerRoute = (type: BaseFileSchemaType["type"]) => {
   switch (type) {
     case "workflow":
-      return "workflow";
+      return "/n/$namespace/explorer/workflow/edit/$";
     case "service":
-      return "service";
+      return "/n/$namespace/explorer/service/$";
     case "endpoint":
-      return "endpoint";
+      return "/n/$namespace/explorer/endpoint/$";
     case "consumer":
-      return "consumer";
+      return "/n/$namespace/explorer/consumer/$";
+    case "gateway":
+      return "/n/$namespace/explorer/openapiSpecification/$";
     case "page":
       return "page";
     default:
-      return undefined;
+      return "/n/$namespace/explorer/tree/$";
   }
 };
 

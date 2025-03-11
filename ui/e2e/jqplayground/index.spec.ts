@@ -338,7 +338,7 @@ test("the user can copy the logs to the clipboard when there are some", async ({
   );
 });
 
-test("It will run every snippet succefully", async ({ page }) => {
+test("It will run every snippet successfully", async ({ page }) => {
   const { outputTextArea } = getCommonElements(page);
 
   for (const [snippetKey, expectedOutput] of Object.entries(

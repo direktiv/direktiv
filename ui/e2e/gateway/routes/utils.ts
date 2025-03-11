@@ -1,4 +1,9 @@
-import { RouteSchemaType } from "~/api/gateway/schema";
+import {
+  RouteMethod,
+  RouteSchemaType,
+  routeMethods,
+} from "~/api/gateway/schema";
+
 import { getRoutes } from "~/api/gateway/query/getRoutes";
 import { headers } from "e2e/utils/testutils";
 
@@ -6,68 +11,65 @@ type CreateRouteFileParams = {
   path?: string;
   targetType?: string;
   targetConfigurationStatus?: string;
+  enabledMethods?: RouteMethod[];
 };
 
 export const createRouteFile = ({
   path = "defaultPath",
   targetType = "instant-response",
   targetConfigurationStatus = "200",
-}: CreateRouteFileParams = {}) =>
-  `direktiv_api: "endpoint/v1"
-path: ${path}
-methods:
-  - "GET"
-  - "DELETE"
-  - "OPTIONS"
-  - "PUT"
-  - "POST"
-  - "HEAD"
-  - "CONNECT"
-  - "PATCH"
-  - "TRACE"
-allow_anonymous: true
-plugins:
-  inbound: []
-  outbound: []
-  auth: []
-  target:
-    type: ${targetType}
-    configuration:
-      status_code: ${targetConfigurationStatus}`;
+  enabledMethods = [...routeMethods],
+}: CreateRouteFileParams = {}) => {
+  const methodsYaml = enabledMethods
+    .map((method) => `${method}: { responses: { "200": { description: "" } } }`)
+    .join("\n");
 
-export const routeWithAWarning = `direktiv_api: "endpoint/v1"
-timeout: 10000
-methods:
-  - "CONNECT"
-  - "DELETE"
-allow_anonymous: true
-plugins:
-  inbound: []
-  outbound: []
-  auth: []`;
+  return `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+  allow_anonymous: true
+  path: ${path}
+  plugins:
+    inbound: []
+    outbound: []
+    auth: []
+    target:
+      type: ${targetType}
+      configuration:
+        status_code: ${targetConfigurationStatus}
+${methodsYaml ? "\n" + methodsYaml : ""}`;
+};
 
-export const routeWithAnError = `direktiv_api: "endpoint/v1"
-allow_anonymous: true
-path: "test"
-timeout: 10000
-methods: []
-plugins:
-  target:
-    type: "this-plugin-does-not-exist"
-    configuration:
-      status_code: 200
-      status_message: "Test"
-  inbound: []
-  outbound: []
-  auth: []
-`;
+export const routeWithAWarning = `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+  allow_anonymous: true
+  path: defaultPath
+  plugins:
+    inbound: []
+    outbound: []
+    auth: []
+delete: { responses: { "200": { description: "" } } }
+options: { responses: { "200": { description: "" } } }`;
+
+export const routeWithAnError = `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+  allow_anonymous: true
+  path: test
+  plugins:
+    target:
+      type: "this-plugin-does-not-exist"
+      configuration:
+        status_code: 200
+        status_message: "Test"
+    inbound: []
+    outbound: []
+    auth: []`;
 
 type FindRouteWithApiRequestParams = {
   namespace: string;
   match: (route: RouteSchemaType) => boolean;
 };
 
-// type ErrorType = { response: { status?: number } };
+type ErrorType = { response: { status?: number } };
 
 export const findRouteWithApiRequest = async ({
   namespace,
@@ -81,19 +83,15 @@ export const findRouteWithApiRequest = async ({
       },
       headers,
     });
+
     return routes.find(match);
   } catch (error) {
-    // Temporary workaround: Until DIR-1503 is resolved, fail silently even on
-    // 500 errors. Ideally, we should only catch 404s and still throw unexpected errors
-    // (as implemented in the commented code).
-    return false;
-    // const typedError = error as ErrorType;
-    // if (typedError.response.status === 404) {
-    //   // fail silently to allow for using poll() in tests
-    //   return false;
-    // }
-    // throw new Error(
-    //   `Unexpected error ${typedError?.response?.status} during lookup of service ${match} in namespace ${namespace}`
-    // );
+    const typedError = error as ErrorType;
+    if (typedError.response.status === 404) {
+      return false;
+    }
+    throw new Error(
+      `Unexpected error ${typedError?.response?.status} during lookup of route ${match} in namespace ${namespace}`
+    );
   }
 };

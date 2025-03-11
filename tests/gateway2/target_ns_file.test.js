@@ -16,24 +16,29 @@ describe('Test target-namespace-file plugin', () => {
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
-direktiv_api: endpoint/v1
-path: /ep1
-methods: 
-  - GET
-allow_anonymous: true
-plugins:
-  target:
-    type: target-namespace-file
-    configuration:
-        namespace: ${ namespace }
-        file: /some.text
-`)
+    x-direktiv-api: endpoint/v2
+    x-direktiv-config:
+        path: /ep1
+        allow_anonymous: true
+        plugins:
+            target:
+                type: target-namespace-file
+                configuration:
+                    namespace: ${ namespace }
+                    file: /some.text
+    get:
+        responses:
+            "200":
+            description: works
+    `,
+	)
+
 	retry10(`should fetch some.text file`, async () => {
-		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway/ep1`)
-		expect(res.statusCode).toEqual(200)
-		expect(res.text).toEqual('some content')
-		expect(res.headers['content-type']).toEqual('text/plain')
-		expect(res.headers['content-length']).toEqual('12')
+    	const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway/ep1`)
+    	expect(res.statusCode).toEqual(200)
+    	expect(res.text).toEqual('some content')
+    	expect(res.headers['content-type']).toEqual('text/plain')
+    	expect(res.headers['content-length']).toEqual('12')
 	})
 
 	// test system namespace access.
@@ -41,24 +46,29 @@ plugins:
 
 	helpers.itShouldCreateYamlFile(it, expect, 'system',
 		'/', 'ep2.yaml', 'endpoint', `
-direktiv_api: endpoint/v1
-path: /ep2
-methods: 
-  - GET
-allow_anonymous: true
-plugins:
-  target:
-    type: target-namespace-file
-    configuration:
-        namespace: ${ namespace }
-        file: /some.text
-`)
+    x-direktiv-api: endpoint/v2
+    x-direktiv-config:
+        path: /ep2
+        allow_anonymous: true
+        plugins:
+            target:
+                type: target-namespace-file
+                configuration:
+                    namespace: ${ namespace }
+                    file: /some.text
+    get:
+        responses:
+            "200":
+            description: works
+    `,
+	)
+
 	retry10(`should fetch some.text file from system namespace`, async () => {
-		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/system/gateway/ep2`)
-		expect(res.statusCode).toEqual(200)
-		expect(res.text).toEqual('some content')
-		expect(res.headers['content-type']).toEqual('text/plain')
-		expect(res.headers['content-length']).toEqual('12')
+    	const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/system/gateway/ep2`)
+    	expect(res.statusCode).toEqual(200)
+    	expect(res.text).toEqual('some content')
+    	expect(res.headers['content-type']).toEqual('text/plain')
+    	expect(res.headers['content-length']).toEqual('12')
 	})
 
 	// test access denied of different namespace
@@ -67,20 +77,25 @@ plugins:
 
 	helpers.itShouldCreateYamlFile(it, expect, otherNamespace,
 		'/', 'ep3.yaml', 'endpoint', `
-direktiv_api: endpoint/v1
-path: /ep3
-methods: 
-  - GET
-allow_anonymous: true
-plugins:
-  target:
-    type: target-namespace-file
-    configuration:
-        namespace: ${ namespace }
-        file: /some.text
-`)
+    x-direktiv-api: endpoint/v2
+    x-direktiv-config:
+        path: /ep3
+        allow_anonymous: true
+        plugins:
+            target:
+                type: target-namespace-file
+                configuration:
+                    namespace: ${ namespace }
+                    file: /some.text
+    get:
+        responses:
+            "200":
+            description: works
+    `,
+	)
+
 	retry10(`should deny access fetching some.text file from different namespace`, async () => {
-		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ otherNamespace }/gateway/ep3`)
-		expect(res.statusCode).toEqual(403)
+    	const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ otherNamespace }/gateway/ep3`)
+    	expect(res.statusCode).toEqual(403)
 	})
 })

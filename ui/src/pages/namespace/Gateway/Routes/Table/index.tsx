@@ -37,20 +37,15 @@ const RoutesTable = ({
     (isSuccess && filteredRoutes.length === 0);
 
   return (
-    <Table className="border-t border-gray-5 dark:border-gray-dark-5">
-      <TableHead>
+    <Table>
+      <TableHead className="sticky top-0 bg-gray-1 z-10 dark:bg-gray-dark-1">
         <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-          <TableHeaderCell className="w-60">
+          <TableHeaderCell className="w-60 grow">
             {t("pages.gateway.routes.columns.filePath")}
           </TableHeaderCell>
-          <TableHeaderCell className="w-32">
-            {t("pages.gateway.routes.columns.methods")}
-          </TableHeaderCell>
-          <TableHeaderCell className="w-32">
+
+          <TableHeaderCell className="w-24">
             {t("pages.gateway.routes.columns.plugins")}
-          </TableHeaderCell>
-          <TableHeaderCell className="w-40">
-            {t("pages.gateway.routes.columns.anonymous")}
           </TableHeaderCell>
           <TableHeaderCell className="grow">
             {t("pages.gateway.routes.columns.path")}
@@ -73,7 +68,7 @@ const RoutesTable = ({
                 </TableCell>
               </TableRow>
             ) : (
-              filteredRoutes?.map((route) => (
+              filteredRoutes.map((route) => (
                 <Row key={route.file_path} route={route} />
               ))
             )}

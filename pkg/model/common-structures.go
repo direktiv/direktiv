@@ -28,6 +28,7 @@ func (o *TimeoutDefinition) Validate() error {
 	if o.Kill != "" && !isISO8601(o.Kill) {
 		return errors.New("kill is not a ISO8601 string")
 	}
+
 	return nil
 }
 

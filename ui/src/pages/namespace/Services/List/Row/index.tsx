@@ -4,7 +4,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { MoreVertical, Trash } from "lucide-react";
 import { TableCell, TableRow } from "~/design/Table";
 
@@ -15,42 +15,35 @@ import { FC } from "react";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import { StatusBadge } from "../../components/StatusBadge";
 import { TooltipProvider } from "~/design/Tooltip";
-import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const ServicesTableRow: FC<{
   service: ServiceSchemaType;
   setRebuildService: (service: ServiceSchemaType) => void;
 }> = ({ service, setRebuildService }) => {
-  const pages = usePages();
-  const namespace = useNamespace();
+  const { _splat: path } = useParams({ strict: false });
   const navigate = useNavigate();
   const { t } = useTranslation();
-
-  if (!namespace) return null;
 
   return (
     <TooltipProvider>
       <TableRow
         data-testid="service-row"
         onClick={() => {
-          if (service.type === "workflow-service") {
-            return navigate(
-              pages.explorer.createHref({
-                namespace,
-                path: service.filePath,
-                subpage: "workflow-services",
-                serviceId: service.id,
-              })
-            );
+          if (service.type === "workflow-service" && path) {
+            return navigate({
+              to: "/n/$namespace/explorer/workflow/services/$",
+              from: "/n/$namespace",
+              params: { _splat: path },
+            });
           }
-          return navigate(
-            pages.services.createHref({
-              namespace,
+          return navigate({
+            to: "/n/$namespace/services/$service",
+            from: "/n/$namespace",
+            params: {
               service: service.id,
-            })
-          );
+            },
+          });
         }}
         className="cursor-pointer"
       >
@@ -58,20 +51,27 @@ const ServicesTableRow: FC<{
           <div className="flex flex-col gap-1">
             <div>
               <span className="whitespace-pre-wrap break-all">
-                <Link
-                  to={pages.explorer.createHref({
-                    namespace: service.namespace,
-                    path: service.filePath,
-                    subpage:
-                      service.type === "namespace-service"
-                        ? "service"
-                        : "workflow",
-                  })}
-                  onClick={(e) => e.stopPropagation()}
-                  className="hover:underline"
-                >
-                  {service.filePath}
-                </Link>
+                {service.type === "workflow-service" && path ? (
+                  <Link
+                    to="/n/$namespace/explorer/workflow/services/$"
+                    from="/n/$namespace"
+                    params={{ _splat: path }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="hover:underline"
+                  >
+                    {service.filePath}
+                  </Link>
+                ) : (
+                  <Link
+                    to="/n/$namespace/explorer/service/$"
+                    from="/n/$namespace"
+                    params={{ _splat: service.filePath }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="hover:underline"
+                  >
+                    {service.filePath}
+                  </Link>
+                )}
               </span>{" "}
               <span className="text-gray-9 dark:text-gray-dark-9">
                 {service.name}

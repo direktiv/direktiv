@@ -12,13 +12,22 @@ export const EndpointsPluginsSchema = z.object({
   auth: z.array(AuthPluginFormSchema).optional(),
 });
 
-export const EndpointFormSchema = z.object({
-  direktiv_api: z.literal("endpoint/v1"),
+export type EndpointsPluginsSchemaType = z.infer<typeof EndpointsPluginsSchema>;
+
+export const XDirektivConfigSchema = z.object({
   allow_anonymous: z.boolean().optional(),
   path: z.string().nonempty().optional(),
   timeout: z.number().int().positive().optional(),
-  methods: z.array(MethodsSchema).nonempty().optional(),
   plugins: EndpointsPluginsSchema.optional(),
 });
+
+export type XDirektivConfigSchemaType = z.infer<typeof XDirektivConfigSchema>;
+
+export const EndpointFormSchema = z
+  .object({
+    "x-direktiv-api": z.literal("endpoint/v2"),
+    "x-direktiv-config": XDirektivConfigSchema.optional(),
+  })
+  .merge(MethodsSchema);
 
 export type EndpointFormSchemaType = z.infer<typeof EndpointFormSchema>;

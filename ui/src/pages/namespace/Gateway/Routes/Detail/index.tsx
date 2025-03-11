@@ -4,15 +4,14 @@ import { LogStreamingSubscriber } from "~/api/logs/query/LogStreamingSubscriber"
 import Logs from "./Logs";
 import { NoPermissions } from "~/design/Table";
 import { twMergeClsx } from "~/util/helpers";
-import { usePages } from "~/util/router/pages";
+import { useParams } from "@tanstack/react-router";
 import { useRoute } from "~/api/gateway/query/getRoutes";
 
 const RoutesDetailPage = () => {
-  const pages = usePages();
-  const { routePath } = pages.gateway.useParams();
+  const { _splat } = useParams({ strict: false });
   const { data, isAllowed, isFetched, noPermissionMessage } = useRoute({
-    routePath: routePath ?? "",
-    enabled: !!routePath,
+    routePath: _splat ?? "",
+    enabled: !!_splat,
   });
 
   if (!isFetched) return null;
@@ -27,7 +26,10 @@ const RoutesDetailPage = () => {
 
   return (
     <div className="grid grow grid-rows-[auto_1fr]">
-      <LogStreamingSubscriber route={data.path} enabled={!!data.path} />
+      <LogStreamingSubscriber
+        route={data.spec["x-direktiv-config"]?.path}
+        enabled={!!data.spec["x-direktiv-config"]?.path}
+      />
       <Header />
       <div
         className={twMergeClsx(
@@ -38,7 +40,7 @@ const RoutesDetailPage = () => {
         )}
       >
         <Card className="relative grid grid-rows-[auto,1fr,auto] p-5">
-          <Logs path={data.path} />
+          <Logs path={data.spec["x-direktiv-config"]?.path} />
         </Card>
       </div>
     </div>

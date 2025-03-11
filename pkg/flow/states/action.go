@@ -219,7 +219,7 @@ func (logic *actionLogic) processActionResults(ctx context.Context, children []*
 	if results.ErrorCode != "" {
 		logic.Log(ctx, log.Error, "Action %s raised catchable error '%s': %s.", logic.label(), results.ErrorCode, results.ErrorMessage)
 
-		err = derrors.NewCatchableError(results.ErrorCode, results.ErrorMessage)
+		err = derrors.NewCatchableError(results.ErrorCode, "%s", results.ErrorMessage)
 		d, err := preprocessRetry(logic.Action.Retries, sd.Attempts, err)
 		if err != nil {
 			return nil, err
