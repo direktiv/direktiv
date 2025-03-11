@@ -40,3 +40,7 @@ dependencies:
   - name: victoria-logs-single
     repository: https://victoriametrics.github.io/helm-charts/
     version: 0.8.16
+  - name: opentelemetry-collector
+    condition: otel.install
+    repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+    version: 0.117.3

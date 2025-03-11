@@ -120,7 +120,7 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 	if err != nil {
 		return nil, fmt.Errorf("telemetry init failed: %w", err)
 	}
-	slog.Info("Telemetry initialized successfully.")
+	slog.Info("telemetry initialized successfully.")
 
 	slog.Debug("initializing pub-sub.")
 
