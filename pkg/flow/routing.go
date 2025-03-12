@@ -194,17 +194,20 @@ func (flow *flow) cronHandler(data []byte) {
 		SyncHash: &hash,
 	}
 
-	telemetry.LogNamespaceInfo(ctx, fmt.Sprintf("running cron for %s", file.Path), ns.Name)
+	telemetry.LogNamespace(telemetry.LogLevelInfo, ns.Name, fmt.Sprintf("running cron for %s", file.Path))
 
 	im, err := flow.Engine.NewInstance(ctx, args)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate") {
 			// this happens on a attempt to create an instance clashed with another server
-			telemetry.LogNamespaceDebug(ctx, "instance creation clash detected, likely due to parallel execution", ns.Name)
+			telemetry.LogNamespace(telemetry.LogLevelDebug, ns.Name,
+				"instance creation clash detected, likely due to parallel execution")
 			return
 		}
 
-		telemetry.LogNamespaceError(ctx, "failed to create new instance from cron job", ns.Name, fmt.Errorf("cron path error %s, %s", file.Path, err.Error()))
+		// telemetry.LogNamespace(telemetry.LogLevelError, ns.Name, msg)
+		telemetry.LogNamespace(telemetry.LogLevelError, ns.Name,
+			fmt.Sprintf("failed to create new instance from cron job %s, %s", file.Path, err.Error()))
 
 		return
 	}

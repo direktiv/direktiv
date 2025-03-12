@@ -251,7 +251,8 @@ func (engine *engine) start(im *instanceMemory) {
 	workflow, err := im.Model()
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError(ErrCodeWorkflowUnparsable, "failed to parse workflow YAML: %v", err))
-		telemetry.LogNamespaceError(ctx, "failed to parse workflow YAML, workflow execution halted", namespace, err)
+		telemetry.LogNamespace(telemetry.LogLevelError, namespace,
+			fmt.Sprintf("failed to parse workflow YAML, workflow execution halted %s", err.Error()))
 
 		return
 	}
@@ -260,8 +261,8 @@ func (engine *engine) start(im *instanceMemory) {
 
 	ctx, err = engine.registerScheduled(ctx, id)
 	if err != nil {
-		telemetry.LogNamespaceError(ctx, "failed to register workflow as scheduled, workflow execution may be delayed or halted", namespace, err)
-
+		telemetry.LogNamespace(telemetry.LogLevelError, namespace,
+			fmt.Sprintf("failed to register workflow as scheduled, workflow execution may be delayed or halted %s", err.Error()))
 		return
 	}
 
@@ -270,7 +271,8 @@ func (engine *engine) start(im *instanceMemory) {
 		"data": workflow.GetStartState().GetID(),
 	})
 	if err != nil {
-		telemetry.LogNamespaceError(ctx, "failed to marshal start state payload, halting workflow execution", namespace, err)
+		telemetry.LogNamespace(telemetry.LogLevelError, namespace,
+			fmt.Sprintf("failed to marshal start state payload, halting workflow execution %s", err.Error()))
 		panic(err) // TODO?
 	}
 

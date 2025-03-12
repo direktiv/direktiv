@@ -15,7 +15,7 @@ func LogToRoute(r *http.Request, txt interface{}) {
 	if len(items) > 3 {
 		ns := items[2]
 		path := filepath.Join("/", strings.Join(items[3:], "/"))
-		telemetry.LogRouterInfo(fmt.Sprintf("%v", txt), ns, path)
+		telemetry.LogRoute(telemetry.LogLevelInfo, ns, path, fmt.Sprintf("%v", txt))
 	} else {
 		slog.Error("can not parse route url in js log function")
 	}

@@ -163,22 +163,30 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	// })
 
 	instanceInfo := telemetry.InstanceInfo{
-		Namespace: req.Namespace,
-		Instance:  req.Instance,
-		Invoker:   req.Invoker,
-		Callpath:  req.Callpath,
-		Path:      req.Workflow,
-		State:     req.State,
-		Status:    core.LogRunningStatus,
+		Invoker:  req.Invoker,
+		Callpath: req.Callpath,
+		Path:     req.Workflow,
+		State:    req.State,
+		Status:   core.LogRunningStatus,
 		// Trace: ,
 		// Span: ,
 	}
 
-	ctx := telemetry.LogInitInstance(r.Context(), instanceInfo)
+	logObject := telemetry.LogObject{
+		Namespace:    req.Namespace,
+		ID:           req.Instance,
+		Scope:        telemetry.LogScopeInstance,
+		Trace:        "",
+		Span:         "",
+		InstanceInfo: instanceInfo,
+	}
+
+	ctx := telemetry.LogInitInstance(r.Context(), logObject)
 
 	reportError := func(code int, err error) {
 		http.Error(w, err.Error(), code)
-		telemetry.LogInstanceWarn(ctx, fmt.Sprintf("log handler error occurred, code %s, id: %s", code, actionId))
+		telemetry.LogInstance(ctx, telemetry.LogLevelWarn,
+			fmt.Sprintf("log handler error occurred, code %s, id: %s", code, actionId))
 	}
 
 	if !ok {
@@ -210,7 +218,8 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(msg) == 0 {
-		telemetry.LogInstanceWarn(ctx, fmt.Sprintf("log handler received an empty message body, id: %s", actionId))
+		telemetry.LogInstance(ctx, telemetry.LogLevelWarn,
+			fmt.Sprintf("log handler received an empty message body, id: %s", actionId))
 		return
 	}
 
@@ -222,7 +231,8 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 
 	d, err := json.Marshal(log)
 	if err != nil {
-		telemetry.LogInstanceError(ctx, fmt.Sprintf("failed to marshal log entry, id: %s", actionId), err)
+		telemetry.LogInstance(ctx, telemetry.LogLevelError,
+			fmt.Sprintf("failed to marshal log entry, id: %s, %s", actionId, err.Error()))
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
@@ -232,7 +242,8 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/logs?instance=%v", srv.flowAddr, req.Namespace, req.Instance)
 	resp, err := doRequest(req.ctx, http.MethodPost, srv.flowToken, addr, bytes.NewBuffer(d))
 	if err != nil {
-		telemetry.LogInstanceError(ctx, fmt.Sprintf("failed to forward log to flow, id: %s", actionId), err)
+		telemetry.LogInstance(ctx, telemetry.LogLevelError,
+			fmt.Sprintf("failed to forward log to flow, id: %s, %s", actionId, err.Error()))
 		http.Error(w, "", http.StatusInternalServerError)
 
 		return
@@ -278,19 +289,24 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 	// ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
 	// ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
 
-	instanceInfo := telemetry.InstanceInfo{
+	logObject := telemetry.LogObject{
 		Namespace: req.Namespace,
-		Instance:  req.Instance,
-		Invoker:   req.Invoker,
-		Callpath:  req.Callpath,
-		Path:      req.Workflow,
-		State:     req.State,
-		Status:    core.LogRunningStatus,
-		// Trace: ,
-		// Span: ,
+		ID:        req.Instance,
+		Scope:     telemetry.LogScopeInstance,
+		Trace:     "",
+		Span:      "",
+		InstanceInfo: telemetry.InstanceInfo{
+			Invoker:  req.Invoker,
+			Callpath: req.Callpath,
+			Path:     req.Workflow,
+			State:    req.State,
+			Status:   core.LogRunningStatus,
+			// Trace: ,
+			// Span: ,
+		},
 	}
 
-	ctx := telemetry.LogInitInstance(req.ctx, instanceInfo)
+	ctx := telemetry.LogInitInstance(req.ctx, logObject)
 	if !ok {
 		err := errors.New("the action id is missing")
 		code := http.StatusInternalServerError

@@ -565,17 +565,22 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 		return
 	}
 
-	rctx := telemetry.LogInitInstance(context.Background(), telemetry.InstanceInfo{
+	logObject := telemetry.LogObject{
 		Namespace: ir.Namespace,
-		Instance:  aid,
-		Invoker:   ir.Invoker,
-		Callpath:  ir.Callpath,
-		Path:      ir.Workflow,
-		State:     ir.State,
-		Status:    core.LogRunningStatus,
-		// Trace: ,
-		// Span: ,
-	})
+		ID:        aid,
+		Scope:     telemetry.LogScopeInstance,
+		Trace:     "",
+		Span:      "",
+		InstanceInfo: telemetry.InstanceInfo{
+			Invoker:  ir.Invoker,
+			Callpath: ir.Callpath,
+			Path:     ir.Workflow,
+			State:    ir.State,
+			Status:   core.LogRunningStatus,
+		},
+	}
+
+	rctx := telemetry.LogInitInstance(context.Background(), logObject)
 	// rctx = tracing.AddNamespace(rctx, ir.Namespace)
 	// rctx = tracing.AddInstanceMemoryAttr(rctx, tracing.InstanceAttributes{
 	// 	Namespace:    ir.Namespace,

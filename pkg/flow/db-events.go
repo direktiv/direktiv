@@ -17,7 +17,7 @@ import (
 )
 
 func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *datastore.Namespace) error {
-	telemetry.LogNamespaceDebug(ctx, "event-bus registering event", ns.Name)
+	telemetry.LogNamespace(telemetry.LogLevelDebug, ns.Name, "event-bus registering event")
 
 	li := make([]*datastore.Event, 0)
 	if eventin.ID() == "" {

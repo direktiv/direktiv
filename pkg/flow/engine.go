@@ -240,7 +240,8 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		}
 		defer tx.Rollback()
 	}
-	telemetry.LogNamespaceDebug(ctx, "preparing to commit new instance transaction", args.Namespace.Name)
+	telemetry.LogNamespace(telemetry.LogLevelDebug, args.Namespace.Name,
+		"preparing to commit new instance transaction")
 
 	idata, err := tx.InstanceStore().CreateInstanceData(ctx, &instancestore.CreateInstanceDataArgs{
 		ID:             args.ID,
@@ -267,7 +268,8 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	if err != nil {
 		return nil, err
 	}
-	telemetry.LogNamespaceDebug(ctx, "new instance transaction committed", args.Namespace.Name)
+	telemetry.LogNamespace(telemetry.LogLevelDebug, args.Namespace.Name,
+		"new instance transaction committed")
 
 	instance, err := enginerefactor.ParseInstanceData(idata)
 	if err != nil {
@@ -295,7 +297,8 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	engine.pubsub.NotifyInstances(im.Namespace())
 
 	telemetry.LogInstanceInfo(ctx, "workflow has been started")
-	telemetry.LogNamespaceInfo(ctx, "workflow has been started", im.Namespace().Name)
+	// telemetry.LogNamespaceInfo(ctx, "workflow has been started", im.Namespace().Name)
+	telemetry.LogNamespace(telemetry.LogLevelInfo, im.Namespace().Name, "workflow has been started")
 
 	return im, nil
 }
@@ -715,7 +718,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	im.updateArgs.Status = &im.instance.Instance.Status
 
 	telemetry.LogInstanceInfo(ctx, "workflow completed")
-	telemetry.LogNamespaceInfo(ctx, "workflow completed", im.Namespace().Name)
+	telemetry.LogNamespace(telemetry.LogLevelInfo, im.Namespace().Name, "workflow completed")
 
 	defer engine.pubsub.NotifyInstance(im.instance.Instance.ID)
 	defer engine.pubsub.NotifyInstances(im.Namespace())
@@ -974,7 +977,7 @@ func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMem
 	// namespaceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildNamespaceTrack(im.Namespace().Name))
 	msg := fmt.Sprintf("workflow failed with code = %v, type = %v, error = %v", typ, code, err.Error())
 	telemetry.LogInstanceError(ctx, msg, err)
-	telemetry.LogNamespaceError(ctx, msg, im.Namespace().Name, err)
+	telemetry.LogNamespace(telemetry.LogLevelError, im.Namespace().Name, msg)
 }
 
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string) {

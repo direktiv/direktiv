@@ -225,7 +225,8 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 			item, err = tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, im.instance.Instance.Namespace, im.instance.Instance.WorkflowPath, v.Key)
 		case utils.VarScopeNamespace:
 			telemetry.LogInstanceInfo(ctx, fmt.Sprintf("setting namespace variable %s (%s)", v.Key, action))
-			telemetry.LogNamespaceInfo(ctx, fmt.Sprintf("setting namespace variable %s (%s)", v.Key, action), im.instance.Instance.Namespace)
+			telemetry.LogNamespace(telemetry.LogLevelInfo, im.instance.Instance.Namespace,
+				fmt.Sprintf("setting namespace variable %s (%s)", v.Key, action))
 			item, err = tx.DataStore().RuntimeVariables().GetForNamespace(ctx, im.instance.Instance.Namespace, v.Key)
 		default:
 			return derrors.NewInternalError(errors.New("invalid scope"))

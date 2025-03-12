@@ -2,40 +2,44 @@ package telemetry
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type LogLevel int
+type LogScope string
+
+type LogObject struct {
+	Namespace string   `json:"namespace"`
+	ID        string   `json:"id"`
+	Trace     string   `json:"trace,omitempty"`
+	Span      string   `json:"span,omitempty"`
+	Scope     LogScope `json:"scope"`
+	InstanceInfo
+}
 
 type InstanceInfo struct {
-	Namespace string         `json:"namespace"`
-	Instance  string         `json:"instance"`
-	Invoker   string         `json:"invoker"`
-	Callpath  string         `json:"callpath"`
-	Path      string         `json:"path"`
-	State     string         `json:"state"`
-	Status    core.LogStatus `json:"status"`
-	Trace     string         `json:"trace"`
-	Span      string         `json:"span"`
+	// Namespace string         `json:"namespace2,omitempty"`
+	// Instance  string         `json:"instance,omitempty"`
+	Invoker  string         `json:"invoker,omitempty"`
+	Callpath string         `json:"callpath,omitempty"`
+	Path     string         `json:"path,omitempty"`
+	State    string         `json:"state,omitempty"`
+	Status   core.LogStatus `json:"status,omitempty"`
+	// Trace    string         `json:"trace2,omitempty"`
+	// Span     string         `json:"span2,omitempty"`
 }
 
-type NamespaceInfo struct {
-	Namespace string `json:"namespace"`
-}
+// type HTTPInstanceInfo struct {
+// 	InstanceInfo
+// 	Msg   string   `json:"msg"`
+// 	Level LogLevel `json:"level"`
+// }
 
-type HTTPInstanceInfo struct {
-	InstanceInfo
-	Msg   string   `json:"msg"`
-	Level LogLevel `json:"level"`
-}
-
-func (ii *HTTPInstanceInfo) GetInstanceInfo() InstanceInfo {
-	return ii.InstanceInfo
-}
+// func (ii *HTTPInstanceInfo) GetInstanceInfo() InstanceInfo {
+// 	return ii.InstanceInfo
+// }
 
 const (
 	LogLevelDebug LogLevel = iota
@@ -43,136 +47,128 @@ const (
 	LogLevelInfo
 	LogLevelError
 
+	LogScopeInstance  LogScope = "instance"
+	LogScopeNamespace LogScope = "namespace"
+	LogScopeActivity  LogScope = "activity"
+	LogScopeRoute     LogScope = "route"
+
 	errorKey     = "error"
 	scopeKey     = "scope"
 	namespaceKey = "namespace"
-	instanceKey  = "instance"
-	routeKey     = "route"
+	traceKey     = "trace"
+	spanKey      = "span"
+
+	instanceKey = "instance"
+	routeKey    = "route"
 
 	DirektivInstance = "instance-ctx"
+	LogObjectCtx     = "log-ctx"
 )
 
-func LogInitInstance(ctx context.Context, info InstanceInfo) context.Context {
-	// add opentelemtry if it exists
-	span := trace.SpanFromContext(ctx)
-	if span.SpanContext().TraceID().IsValid() {
-		info.Trace = span.SpanContext().TraceID().String()
-		info.Span = span.SpanContext().SpanID().String()
+func LogRoute(level LogLevel, namespace, route, msg string) {
+	ctx := context.WithValue(context.Background(), LogObjectCtx, LogObject{
+		Namespace: namespace,
+		ID:        route,
+		Scope:     LogScopeRoute,
+	})
+	logPublic(ctx, level, msg)
+}
+
+func LogActivity(level LogLevel, namespace, pid, msg string) {
+	ctx := context.WithValue(context.Background(), LogObjectCtx, LogObject{
+		Namespace: namespace,
+		ID:        pid,
+		Scope:     LogScopeActivity,
+	})
+	logPublic(ctx, level, msg)
+}
+
+func LogNamespace(level LogLevel, namespace, msg string) {
+	ctx := context.WithValue(context.Background(), LogObjectCtx, LogObject{
+		Namespace: namespace,
+		ID:        namespace,
+		Scope:     LogScopeNamespace,
+	})
+	logPublic(ctx, level, msg)
+}
+
+func LogInstance(ctx context.Context, level LogLevel, msg string) {
+	logPublic(ctx, level, msg)
+}
+
+func logPublic(ctx context.Context, level LogLevel, msg string) {
+	// set span and trace!!
+
+	switch level {
+	case LogLevelDebug:
+		slog.DebugContext(ctx, msg)
+	case LogLevelError:
+		slog.ErrorContext(ctx, msg)
+	case LogLevelWarn:
+		slog.WarnContext(ctx, msg)
+	default:
+		slog.InfoContext(ctx, msg)
 	}
+}
+
+func LogInitInstance(ctx context.Context, logObject LogObject) context.Context {
+	// add opentelemtry if it exists
+	// span := trace.SpanFromContext(ctx)
+	// if span.SpanContext().TraceID().IsValid() {
+	// 	// info.Trace = span.SpanContext().TraceID().String()
+	// 	// info.Span = span.SpanContext().SpanID().String()
+	// }
 
 	// check if required fields are set
-	return context.WithValue(ctx, DirektivInstance, info)
+	return context.WithValue(ctx, LogObjectCtx, logObject)
 }
 
-func logInstance(ctx context.Context, msg string, lvl LogLevel, err error) {
-	instanceID := ""
-	i := ctx.Value(DirektivInstance)
+// func logInstance(ctx context.Context, msg string, lvl LogLevel, err error) {
+// 	instanceID := ""
+// 	i := ctx.Value(DirektivInstance)
 
-	if i == nil {
-		fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!IT IS NIL")
-	}
+// 	if i == nil {
+// 		fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!IT IS NIL")
+// 	}
 
-	if i != nil {
-		info, ok := i.(InstanceInfo)
-		if !ok {
-			slog.Error("instance info not the expected type")
-			return
-		}
-		instanceID = info.Instance
-	}
+// 	if i != nil {
+// 		info, ok := i.(InstanceInfo)
+// 		if !ok {
+// 			slog.Error("instance info not the expected type")
+// 			return
+// 		}
+// 		instanceID = info.Instance
+// 	}
 
-	if instanceID == "" {
-		slog.Error("instance id is empty")
-		return
-	}
+// 	if instanceID == "" {
+// 		slog.Error("instance id is empty")
+// 		return
+// 	}
 
-	switch lvl {
-	case LogLevelInfo:
-		slog.InfoContext(ctx, msg, slog.String(scopeKey, "instance."+instanceID))
-	case LogLevelDebug:
-		slog.DebugContext(ctx, msg, slog.String(scopeKey, "instance."+instanceID))
-	case LogLevelWarn:
-		slog.WarnContext(ctx, msg, slog.String(scopeKey, "instance."+instanceID))
-	case LogLevelError:
-		slog.ErrorContext(ctx, msg, slog.Any(errorKey, err.Error()), slog.String(scopeKey, "instance."+instanceID))
-	}
-}
+// 	switch lvl {
+// 	case LogLevelInfo:
+// 		slog.InfoContext(ctx, msg, slog.String(scopeKey, "instance."+instanceID))
+// 	case LogLevelDebug:
+// 		slog.DebugContext(ctx, msg, slog.String(scopeKey, "instance."+instanceID))
+// 	case LogLevelWarn:
+// 		slog.WarnContext(ctx, msg, slog.String(scopeKey, "instance."+instanceID))
+// 	case LogLevelError:
+// 		slog.ErrorContext(ctx, msg, slog.Any(errorKey, err.Error()), slog.String(scopeKey, "instance."+instanceID))
+// 	}
+// }
 
-func LogInstanceError(ctx context.Context, msg string, err error) {
-	logInstance(ctx, msg, LogLevelError, err)
-}
+// func LogInstanceError(ctx context.Context, msg string, err error) {
+// 	logInstance(ctx, msg, LogLevelError, err)
+// }
 
-func LogInstanceInfo(ctx context.Context, msg string) {
-	logInstance(ctx, msg, LogLevelInfo, nil)
-}
+// func LogInstanceInfo(ctx context.Context, msg string) {
+// 	logInstance(ctx, msg, LogLevelInfo, nil)
+// }
 
-func LogInstanceDebug(ctx context.Context, msg string) {
-	logInstance(ctx, msg, LogLevelDebug, nil)
-}
+// func LogInstanceDebug(ctx context.Context, msg string) {
+// 	logInstance(ctx, msg, LogLevelDebug, nil)
+// }
 
-func LogInstanceWarn(ctx context.Context, msg string) {
-	logInstance(ctx, msg, LogLevelWarn, nil)
-}
-
-func LogNamespaceInfo(ctx context.Context, msg, namespace string) {
-	slog.InfoContext(ctx, msg, slog.String(namespaceKey, namespace), slog.String(scopeKey, "namespace."+namespace))
-}
-
-func LogNamespaceDebug(ctx context.Context, msg, namespace string) {
-	slog.DebugContext(ctx, msg, slog.String(namespaceKey, namespace), slog.String(scopeKey, "namespace."+namespace))
-}
-
-func LogNamespaceWarn(ctx context.Context, msg, namespace string) {
-	slog.WarnContext(ctx, msg, slog.String(namespaceKey, namespace), slog.String(scopeKey, "namespace."+namespace))
-}
-
-func LogNamespaceError(ctx context.Context, msg, namespace string, err error) {
-	if err == nil {
-		err = fmt.Errorf("%s", msg)
-	}
-	slog.ErrorContext(ctx, msg, slog.String(namespaceKey, namespace),
-		slog.Any(errorKey, err.Error()), slog.String(scopeKey, "namespace."+namespace))
-}
-
-func LogActivityInfo(msg, namespace, pid string) {
-	slog.Info(msg, slog.String(namespaceKey, namespace),
-		slog.String(instanceKey, pid), slog.String(scopeKey, "activity."+pid))
-}
-
-func LogActivityDebug(msg, namespace, pid string) {
-	slog.Debug(msg, slog.String(namespaceKey, namespace), slog.String(instanceKey, pid),
-		slog.String(scopeKey, "activity."+pid))
-}
-
-func LogActivityWarn(msg, namespace, pid string) {
-	slog.Warn(msg, slog.String(namespaceKey, namespace), slog.String(instanceKey, pid),
-		slog.String(scopeKey, "activity."+pid))
-}
-
-func LogActivityError(msg, namespace, pid string, err error) {
-	if err == nil {
-		err = fmt.Errorf("%s", msg)
-	}
-	slog.Error(msg, slog.String(namespaceKey, namespace), slog.String(instanceKey, pid),
-		slog.Any(errorKey, err.Error()), slog.String(scopeKey, "activity."+pid))
-}
-
-func LogRouterInfo(msg, namespace, route string) {
-	slog.Info(msg, slog.String(namespaceKey, namespace), slog.String(scopeKey, "route."+route))
-}
-
-func LogRouterDebug(msg, namespace, route string) {
-	slog.Debug(msg, slog.String(namespaceKey, namespace), slog.String(scopeKey, "route."+route))
-}
-
-func LogRouterWarn(msg, namespace, route string) {
-	slog.Warn(msg, slog.String(namespaceKey, namespace), slog.String(scopeKey, "route."+route))
-}
-
-func LogRouterError(msg, namespace, route string, err error) {
-	if err == nil {
-		err = fmt.Errorf("%s", msg)
-	}
-	slog.Error(msg, slog.String(namespaceKey, namespace),
-		slog.Any(errorKey, err.Error()), slog.String(scopeKey, "route."+route))
-}
+// func LogInstanceWarn(ctx context.Context, msg string) {
+// 	logInstance(ctx, msg, LogLevelWarn, nil)
+// }
