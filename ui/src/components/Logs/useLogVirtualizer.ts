@@ -39,7 +39,7 @@ export const useLogVirtualizer = ({
     estimateSize: () => defaultLogHeight,
     getItemKey: useCallback(
       (index: number) => {
-        const uniqueId = logLines[index]?.id;
+        const uniqueId = logLines[index]?.time;
         if (!uniqueId)
           throw new Error("Could not find a log line id for the virtualizer.");
         return uniqueId;
@@ -56,7 +56,7 @@ export const useLogVirtualizer = ({
     overscan: 40,
     onChange(instance) {
       prevNumberOfLogLines.current = numberOfLogLines;
-      prevOldestLogLineId.current = logLines?.[0]?.id ?? null;
+      prevOldestLogLineId.current = logLines?.[0]?.time ?? null;
       /**
        * when the last x log lines are visible in the list (x being
        * logLinesThreshold), the user is considered to be at the
@@ -115,7 +115,7 @@ export const useLogVirtualizer = ({
       prevNumberOfLogLines.current &&
       prevNumberOfLogLines.current !== numberOfLogLines &&
       // this will make sure the new received log lines were added at the top
-      prevOldestLogLineId.current !== (logLines?.[0]?.id ?? null)
+      prevOldestLogLineId.current !== (logLines?.[0]?.time ?? null)
     ) {
       /**
        * To maintain the old scroll position we need to know how many log

@@ -33,6 +33,7 @@ export const RouteData = z.object({
   path: z.string().nonempty(),
 });
 
+// Todo: Update
 /**
  * example
  * 
@@ -49,7 +50,7 @@ export const RouteData = z.object({
 }
  */
 export const LogEntrySchema = z.object({
-  id: z.number(),
+  // id: z.number(),
   time: z.string().nonempty(),
   msg: z.string().nonempty(),
   level: LogLevelSchema,

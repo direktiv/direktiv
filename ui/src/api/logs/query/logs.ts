@@ -71,7 +71,7 @@ const updateCache = (
   const newestPageData = newestPage.data ?? [];
 
   // skip cache if the log entry is already in the cache
-  if (newestPageData.some((logEntry) => logEntry.id === newLogEntry.id)) {
+  if (newestPageData.some((logEntry) => logEntry.time === newLogEntry.time)) {
     return oldData;
   }
 
