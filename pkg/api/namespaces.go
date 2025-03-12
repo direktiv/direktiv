@@ -335,6 +335,7 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 	var result []any
 	for _, ns := range namespaces {
 		settings := indexedMirrors[ns.Name]
+		//nolint:forcetypeassert
 		if allowedNamespaces != nil && !strings.Contains(allowedNamespaces.(string), ","+ns.Name+",") {
 			continue
 		}
