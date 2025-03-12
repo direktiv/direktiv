@@ -22,7 +22,7 @@ export const useLogVirtualizer = ({
   const [scrolledToBottom, setScrolledToBottom] = useState(true);
 
   const prevNumberOfLogLines = useRef<number | null>(null);
-  const prevOldestLogLineId = useRef<number | null>(null);
+  const prevOldestLogLineId = useRef<string | null>(null);
 
   const {
     data: logLines = [],
