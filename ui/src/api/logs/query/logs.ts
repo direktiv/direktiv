@@ -244,6 +244,19 @@ export const useLogs = ({
     const pagesReversed = [...queryReturn.data.pages].reverse();
     const pages = pagesReversed.map((page) => page.data ?? []) ?? [];
     logData = pages.flat();
+
+    // DEBUG: Throw error if time codes are not in correct order
+
+    // const timestamps = logData.map((item) => item.time);
+    // console.log(timestamps);
+
+    // for (let i = 1; i < timestamps.length; i++) {
+    //   if (timestamps[i] < timestamps[i - 1]) {
+    //     throw new Error(
+    //       `Timestamps are not in ascending order: ${timestamps[i - 1]} > ${timestamps[i]}`
+    //     );
+    //   }
+    // }
   }
 
   return {
