@@ -37,15 +37,12 @@ export const useLogVirtualizer = ({
     count: numberOfLogLines,
     getScrollElement: () => parentRef.current,
     estimateSize: () => defaultLogHeight,
-    getItemKey: useCallback(
-      (index: number) => {
-        const uniqueId = logLines[index]?.time;
-        if (!uniqueId)
-          throw new Error("Could not find a log line id for the virtualizer.");
-        return uniqueId;
-      },
-      [logLines]
-    ),
+    getItemKey: useCallback((index: number) => {
+      const uniqueId = index;
+      if (uniqueId === null || uniqueId === undefined)
+        throw new Error("Could not find a log line id for the virtualizer.");
+      return uniqueId;
+    }, []),
     /**
      * overscan is the number of items to render above and below
      * the visible window. More items = less flickering when

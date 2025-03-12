@@ -47,11 +47,11 @@ import { useStreaming } from "~/api/streaming";
         "data": []
       }
     ]
-    // all page pointers that were found in the page request results are stored here
+    // all page pointers are stored here
     "pageParams": [
+      null,
       "FIRST_TIMESTAMP",
       "SECOND_TIMESTAMP",
-      null
     ]
   }
 */
