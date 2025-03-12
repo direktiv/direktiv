@@ -32,7 +32,7 @@ type logParams struct {
 func (l logParams) toQuery() string {
 	queryParts := make([]string, 0)
 
-	limiter := "limit 100"
+	limiter := ""
 	if l.limit != "" {
 		limiter = fmt.Sprintf("limit %s", l.limit)
 	} else if l.first != "" {
@@ -40,7 +40,10 @@ func (l logParams) toQuery() string {
 	} else if l.last != "" {
 		limiter = fmt.Sprintf("last %s by (_time)", l.last)
 	}
-	queryParts = append(queryParts, limiter)
+
+	if limiter != "" {
+		queryParts = append(queryParts, limiter)
+	}
 
 	if l.direction == "" || l.direction == "asc" {
 		l.direction = "asc"
@@ -205,8 +208,14 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: we may need to replace with a SSE-Server library instead of using our custom implementation.
 	params := extractLogRequestParams(r)
-	params.limit = ""
-	params.last = "100"
+
+	// if nothing is set, we do the events from now
+	params.after = time.Now().Format("2006-01-02T15:04:05.000000000Z")
+
+	// if last is set we have to remove the `after` parameter
+	if params.last != "" {
+		params.after = ""
+	}
 
 	rc := http.NewResponseController(w)
 
@@ -246,7 +255,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 	// Last-Event-ID header
 	lastEventID := r.Header.Get("Last-Event-ID")
 	if lastEventID != "" {
-		params.after = "2025-03-10T11:47:00.004554106Z"
+		params.after = lastEventID
 	}
 
 	// send initial data
@@ -261,7 +270,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	params.after = cursor.Format("2006-01-02T15:04:05.000000000Z")
-	params.last = "100"
+	// params.last = "100"
 
 	clientGone := r.Context().Done()
 
@@ -310,6 +319,11 @@ func extractLogRequestParams(r *http.Request) logParams {
 	logParams.before = r.URL.Query().Get("before")
 	logParams.last = r.URL.Query().Get("last")
 	logParams.first = r.URL.Query().Get("first")
+
+	// use last event id if send on reconnect by a client
+	if r.URL.Query().Get("lastEventId") != "" {
+		logParams.after = r.URL.Query().Get("lastEventId")
+	}
 
 	if r.URL.Query().Get("instance") != "" {
 		logParams.scope = "instance." + r.URL.Query().Get("instance")

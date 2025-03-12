@@ -60,6 +60,7 @@ type Config struct {
 	OidcIssuerUrl string `env:"DIREKTIV_OIDC_ISSUER_URL"`
 	OidcClientID  string `env:"DIREKTIV_OIDC_CLIENT_ID"`
 	LogsBackend   string `env:"DIREKTIV_LOGS_BACKEND"`
+	OtelBackend   string `env:"DIREKTIV_OTEL_BACKEND"`
 }
 
 func (conf *Config) GetFunctionsTimeout() time.Duration {

@@ -20,6 +20,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/mirror"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"github.com/nats-io/nats.go"
@@ -93,11 +94,13 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 
 	var err error
 	slog.Debug("starting flow server")
+
+	otelProvider, err := telemetry.InitOpenTelemetry(circuit.Context(), config.OtelBackend)
 	// slog.Debug("initializing telemetry.")
 	// telEnd, err := tracing.InitTelemetry(circuit.Context(), srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
-	// if err != nil {
-	// 	return nil, fmt.Errorf("telemetry init failed: %w", err)
-	// }
+	if err != nil {
+		return nil, fmt.Errorf("telemetry init failed: %w", err)
+	}
 	// slog.Info("telemetry initialized successfully.")
 
 	slog.Debug("initializing pub-sub")
@@ -176,7 +179,10 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 
 	circuit.Start(func() error {
 		<-circuit.Done()
-		// telEnd()
+		err = otelProvider.Shutdown(circuit.Context())
+		if err != nil {
+			slog.Error("shutting down opentelemetry failed", slog.Any("error", err))
+		}
 		srv.cleanup(srv.pubsub.Close)
 		srv.cleanup(srv.timers.Close)
 		if srv.nats != nil {

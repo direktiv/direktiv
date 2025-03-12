@@ -1,0 +1,10 @@
+fluent-bit:
+  existingConfigMap: config-fluentbit
+  config:
+    outputs: |
+      [OUTPUT]
+          name   loki
+          match  *
+          host loki.default.svc
+          port 3100
+          labels job=fluentbit

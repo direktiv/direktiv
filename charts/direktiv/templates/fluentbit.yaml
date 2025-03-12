@@ -32,9 +32,10 @@ data:
           multiline.parser        cri, docker
           Refresh_Interval        1
           Buffer_Max_Size         64k
-      [output]
+      [OUTPUT]
           Name stdout
           Match *
+{{- index .Values "fluent-bit" "config" "outputs"  | nindent 6 }}
       [OUTPUT]
           Name http
           Match *

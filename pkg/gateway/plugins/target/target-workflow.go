@@ -63,6 +63,10 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 		return nil
 	}
 
+	// tracer := trace.SpanFromContext(r.Context()).TracerProvider().Tracer("direktiv/flow")
+	// tracer.Start(r.Context(), "target-workflow-plugin")
+
+	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 	tracer := trace.SpanFromContext(r.Context()).TracerProvider().Tracer("direktiv/flow")
 	ctx, childSpan := tracer.Start(r.Context(), "target-workflow-plugin")
 	defer childSpan.End()

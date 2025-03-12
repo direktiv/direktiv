@@ -78,6 +78,10 @@ opentelemetry-collector:
   image:
     repository: otel/opentelemetry-collector-k8s
   mode: deployment
+  config:
+    exporters:
+      debug: 
+        verbosity: detailed
 
 database:
   # -- database host
@@ -126,6 +130,10 @@ ingress-nginx:
 fluent-bit:
   existingConfigMap: config-fluentbit
 
+exporters:
+  - name: loki
+    match:  "*"
+    labels: job=fluentbit
 
 
 # -- service account for components. If preconfigured serviceaccounts are used the name ise the base

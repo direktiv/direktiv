@@ -39,9 +39,6 @@ dependencies:
     repository: "https://nats-io.github.io/k8s/helm/charts"
     version: "1.2.6"
     condition: nats.install
-  - name: victoria-logs-single
-    repository: https://victoriametrics.github.io/helm-charts/
-    version: 0.8.16
   - name: opentelemetry-collector
     condition: otel.install
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
