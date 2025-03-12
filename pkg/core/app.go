@@ -60,6 +60,10 @@ type Config struct {
 	OidcIssuerUrl        string `env:"DIREKTIV_OIDC_ISSUER_URL"`
 	OidcClientID         string `env:"DIREKTIV_OIDC_CLIENT_ID"`
 	VictoriaLogsEndpoint string `env:"DIREKTIV_VICTORIA_LOGS"`
+
+	LogHistoryHours      int `env:"DIREKTIV_LOG_HISTORY_HOURS"      envDefault:"48"`
+	MirrorHistoryHours   int `env:"DIREKTIV_MIRROR_HISTORY_HOURS"   envDefault:"192"`
+	InstanceHistoryHours int `env:"DIREKTIV_INSTANCE_HISTORY_HOURS" envDefault:"24"`
 }
 
 func (conf *Config) GetFunctionsTimeout() time.Duration {

@@ -28,7 +28,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 
 		for {
 			<-time.After(time.Hour)
-			t := time.Now().UTC().Add(time.Hour * -24)
+			t := time.Now().UTC().Add(time.Hour * -1 * time.Duration(srv.config.InstanceHistoryHours))
 
 			tx, err := srv.flow.beginSQLTx(ctx)
 			if err != nil {
@@ -60,7 +60,8 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		<-time.After(3 * time.Minute)
 		for {
 			<-time.After(time.Hour)
-			t := time.Now().UTC().Add(time.Hour * -48) // TODO make this a config option.
+
+			t := time.Now().UTC().Add(time.Hour * -1 * time.Duration(srv.config.LogHistoryHours))
 			slog.Debug("deleting all logs since", "since", t)
 			err = srv.flow.runSQLTx(ctx, func(tx *database.DB) error {
 				return tx.DataStore().NewLogs().DeleteOldLogs(ctx, t)
