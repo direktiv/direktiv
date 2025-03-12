@@ -210,11 +210,8 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 	params := extractLogRequestParams(r)
 
 	// if nothing is set, we do the events from now
-	params.after = time.Now().Format("2006-01-02T15:04:05.000000000Z")
-
-	// if last is set we have to remove the `after` parameter
-	if params.last != "" {
-		params.after = ""
+	if params.after == "" {
+		params.after = time.Now().Format("2006-01-02T15:04:05.000000000Z")
 	}
 
 	rc := http.NewResponseController(w)
