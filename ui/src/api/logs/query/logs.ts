@@ -64,7 +64,7 @@ const updateCache = (
   if (oldData === undefined) return undefined;
 
   const pages = oldData.pages;
-  const olderPages = pages.slice(0, -1);
+  const olderPages = pages.slice(1, -1);
   const newestPage = pages[0];
   if (newestPage === undefined) return undefined;
 
@@ -211,7 +211,13 @@ export const useLogs = ({
       trace,
     }),
     queryFn: fetchLogs,
-    getNextPageParam: (firstPage) => firstPage.meta?.previousPage,
+    getNextPageParam: (currentPage) => {
+      if (currentPage.data.length === 0) {
+        return null;
+      }
+      const oldestTime = currentPage.data.at(0)?.time;
+      return oldestTime;
+    },
     enabled: !!namespace && enabled,
     initialPageParam: undefined,
     refetchOnWindowFocus: false,
