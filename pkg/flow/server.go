@@ -194,6 +194,7 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 			wfconf:   cc,
 		},
 	)
+	srv.MirrorManager.SetMirrorHistoryHours(config.MirrorHistoryHours)
 
 	srv.registerFunctions()
 
