@@ -64,12 +64,13 @@ const updateCache = (
   if (oldData === undefined) return undefined;
 
   const pages = oldData.pages;
-  const olderPages = pages.slice(1, -1);
+  const olderPages = pages.slice(1);
   const newestPage = pages[0];
-  if (newestPage === undefined) return undefined;
+  if (newestPage === undefined) throw Error("Newest page not found");
 
   const newestPageData = newestPage.data ?? [];
 
+  // To do: do we still need deduplication?
   // skip cache if the log entry is already in the cache
   if (newestPageData.some((logEntry) => logEntry.time === newLogEntry.time)) {
     return oldData;
@@ -78,11 +79,11 @@ const updateCache = (
   return {
     ...oldData,
     pages: [
-      ...olderPages,
       {
         ...newestPage,
         data: [...newestPageData, newLogEntry],
       },
+      ...olderPages,
     ],
   };
 };
@@ -93,6 +94,7 @@ export type LogsQueryParams = {
   activity?: string;
   before?: string;
   trace?: string;
+  last?: number;
 };
 
 type LogsParams = {
@@ -110,6 +112,10 @@ const getUrl = (params: LogsParams) => {
     urlPath = `${urlPath}/subscribe`;
   }
 
+  if (!useStreaming) {
+    queryParams.last = 50;
+  }
+
   const queryParamsString = buildSearchParamsString({
     ...queryParams,
   });
@@ -125,7 +131,7 @@ const getLogs = apiFactory({
 
 const fetchLogs = async ({
   pageParam,
-  queryKey: [{ apiKey, namespace, instance, route, activity, trace }],
+  queryKey: [{ apiKey, namespace, instance, route, activity, trace, last }],
 }: QueryFunctionContext<
   ReturnType<(typeof logKeys)["detail"]>,
   LogsQueryParams["before"]
@@ -139,6 +145,7 @@ const fetchLogs = async ({
       activity,
       before: pageParam,
       trace,
+      last,
     },
   });
 
@@ -170,6 +177,7 @@ export const useLogsStream = ({ enabled, ...params }: UseLogsStreamParams) => {
           instance: params.instance,
           route: params.route,
           trace: params.trace,
+          last: params.last,
         }),
         (oldData) => updateCache(oldData, msg)
       );
@@ -185,6 +193,7 @@ export const useLogs = ({
   activity,
   trace,
   enabled = true,
+  last,
 }: UseLogsParams = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -209,13 +218,16 @@ export const useLogs = ({
       route,
       activity,
       trace,
+      last,
     }),
     queryFn: fetchLogs,
-    getNextPageParam: (currentPage) => {
-      if (currentPage.data.length === 0) {
+
+    getNextPageParam: (_, pages) => {
+      const lastPage = pages.at(-1);
+      if (lastPage?.data.length === 0) {
         return null;
       }
-      const oldestTime = currentPage.data.at(0)?.time;
+      const oldestTime = lastPage?.data.at(0)?.time;
       return oldestTime;
     },
     enabled: !!namespace && enabled,
