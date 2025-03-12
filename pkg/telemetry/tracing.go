@@ -20,6 +20,12 @@ const (
 )
 
 func InitOpenTelemetry(ctx context.Context, otelURL string) (*trace.TracerProvider, error) {
+	// skip telemetry
+	if otelURL == "" {
+		slog.Info("telemetry not configured")
+		return trace.NewTracerProvider(), nil
+	}
+
 	slog.Info("initializing opentelemetry")
 	fmt.Println(otelURL)
 	exporter, err := otlptracegrpc.New(
