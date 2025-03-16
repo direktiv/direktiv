@@ -2,42 +2,49 @@ package sidecar
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"os"
 	"time"
+
+	"github.com/direktiv/direktiv/pkg/telemetry"
 )
 
 const (
 	direktivFlowEndpoint  = "DIREKTIV_FLOW_ENDPOINT"
-	direktivOpentelemetry = "DIREKTIV_OTLP"
+	direktivOpentelemetry = "DIREKTIV_OTEL_BACKEND"
 )
 
 func RunApplication(ctx context.Context) {
 	sl := new(SignalListener)
 	sl.Start()
 
-	fmt.Printf("listener started\n")
+	slog.Info("listener started")
 
-	// openTelemetryBackend := os.Getenv(direktivOpentelemetry)
+	otelProvider, err := telemetry.InitOpenTelemetry(ctx, os.Getenv(direktivOpentelemetry))
+	if err != nil {
+		slog.Error("opentelemetry setup failed", slog.Any("error", err))
+	}
 
-	// telend, err := tracing.InitTelemetry(ctx, openTelemetryBackend, "direktiv/sidecar", "direktiv")
-	// if err != nil {
-	// 	slog.Warn("failed to initialize telemetry, but continuing", "error", err)
-	// } else {
-	// 	defer telend()
-	// }
+	slog.Info("opentelemtry", slog.String("server", os.Getenv(direktivOpentelemetry)))
 
 	local := new(LocalServer)
 	local.Start()
-	fmt.Printf("local started\n")
+	slog.Info("local started")
 
 	network := new(NetworkServer)
 	network.local = local
 	network.Start()
-	fmt.Printf("network started\n")
+	slog.Info("network started")
 
 	threads.Wait()
+
+	if otelProvider != nil {
+		err = otelProvider.Shutdown(ctx)
+	}
+
+	if err != nil {
+		slog.Error("shutting down opentelemetry failed", slog.Any("error", err))
+	}
 
 	if code := threads.ExitStatus(); code != 0 {
 		slog.Error("exiting with exit", "status_code", code)

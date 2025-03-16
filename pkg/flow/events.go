@@ -38,14 +38,14 @@ func initEvents(srv *server, appendStagingEvent func(ctx context.Context, events
 }
 
 func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, ce *cloudevents.Event) error {
-	slog.DebugContext(ctx, "handle cloudevent started")
+	slog.Debug("handle cloudevent started")
 	e := pkgevents.EventEngine{
 		WorkflowStart: func(ctx context.Context, workflowID uuid.UUID, ev ...*cloudevents.Event) {
-			slog.DebugContext(ctx, "starting workflow via cloudevents")
+			slog.Debug("starting workflow via cloudevents")
 			events.Engine.EventsInvoke(ctx, workflowID, ev...) //nolint:contextcheck
 		},
 		WakeInstance: func(instanceID uuid.UUID, ev []*cloudevents.Event) {
-			slog.DebugContext(ctx, "invoking instance via cloudevent")
+			slog.Debug("invoking instance via cloudevent")
 			events.Engine.WakeEventsWaiter(instanceID, ev) //nolint:contextcheck
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*datastore.EventListener, error) {
@@ -53,7 +53,7 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 			err := events.runSQLTx(ctx, func(tx *database.DB) error {
 				r, err := tx.DataStore().EventListenerTopics().GetListeners(ctx, s)
 				if err != nil {
-					slog.ErrorContext(ctx, "failed fetching event-listener-topics")
+					slog.Error("failed fetching event-listener-topics")
 					return err
 				}
 				res = r
@@ -71,7 +71,7 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 				errs := tx.DataStore().EventListener().UpdateOrDelete(ctx, listener)
 				for _, err2 := range errs {
 					if err2 != nil {
-						slog.DebugContext(ctx, "error updating listeners", "error", err2)
+						slog.Debug("error updating listeners", "error", err2)
 
 						return err2
 					}
@@ -80,19 +80,19 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 				return nil
 			})
 			if err != nil {
-				slog.ErrorContext(ctx, "failed processing events", "error", err)
+				slog.Error("failed processing events", "error", err)
 				return []error{fmt.Errorf("%w", err)}
 			}
-			slog.DebugContext(ctx, "updating listeners complete")
+			slog.Debug("updating listeners complete")
 
 			return nil
 		},
 	}
 
 	e.ProcessEvents(ctx, ns.ID, []event.Event{*ce}, func(template string, args ...interface{}) {
-		slog.ErrorContext(ctx, fmt.Sprintf(template, args...))
+		slog.Error(fmt.Sprintf(template, args...))
 	})
-	slog.DebugContext(ctx, "cloudevent handled")
+	slog.Debug("cloudevent handled")
 
 	return nil
 }

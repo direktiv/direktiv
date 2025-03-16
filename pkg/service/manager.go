@@ -282,7 +282,6 @@ func (m *manager) Rebuild(namespace string, serviceID string) error {
 
 func (m *manager) setServiceDefaults(sv *core.ServiceFileData) {
 	// empty size string defaults to medium
-	// ctx := tracing.AddNamespace(context.Background(), sv.Namespace)
 	if sv.Size == "" {
 		telemetry.LogNamespace(telemetry.LogLevelWarn, sv.Namespace,
 			fmt.Sprintf("empty service size for %s, defaulting to medium", sv.FilePath))

@@ -191,17 +191,12 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 		telemetry.LogInstance(ctx, telemetry.LogLevelInfo,
 			fmt.Sprintf("report result to calling workflow %s/%v", im.Namespace().Name, im.ID()))
 
-		callpath := im.instance.Instance.ID.String()
-		for _, v := range im.instance.DescentInfo.Descent {
-			callpath += "/" + v.ID.String()
-		}
 		msg := &actionResultMessage{
 			InstanceID: caller.ID.String(),
 			ActionContext: enginerefactor.ActionContext{
 				TraceParent: telemetry.TraceParent(ctx),
 				State:       caller.State,
 				Branch:      caller.Branch,
-				Callpath:    callpath,
 				Instance:    im.GetInstanceID().String(),
 				Workflow:    im.instance.Instance.WorkflowPath,
 				Namespace:   im.instance.Instance.Namespace,

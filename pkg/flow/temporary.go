@@ -23,6 +23,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -415,13 +417,6 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateID string, time
 		UserInput: inputData,
 		Deadline:  time.Now().UTC().Add(time.Duration(timeout) * time.Second), // TODO?
 	}
-	callpath := ""
-	if len(im.instance.DescentInfo.Descent) == 0 {
-		callpath = im.GetInstanceID().String()
-	}
-	for _, v := range im.instance.DescentInfo.Descent {
-		callpath += "/" + v.ID.String()
-	}
 
 	arCtx := enginerefactor.ActionContext{
 		TraceParent: im.instance.TelemetryInfo.TraceParent,
@@ -430,7 +425,6 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateID string, time
 		Namespace:   im.Namespace().Name,
 		Workflow:    im.instance.Instance.WorkflowPath,
 		Instance:    im.ID().String(),
-		Callpath:    callpath,
 		Action:      uid.String(),
 		Path:        im.instance.Instance.WorkflowPath,
 		Invoker:     im.instance.Instance.Invoker,
@@ -507,8 +501,6 @@ func (child *knativeHandle) Info() states.ChildInfo {
 }
 
 func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, arReq *enginerefactor.ActionRequest) {
-	fmt.Println("!!!!!!!!!!!TRACING doActionRequest")
-
 	if actionTimeout := time.Duration(ar.Timeout) * time.Second; actionTimeout > engine.server.config.GetFunctionsTimeout() {
 		telemetry.LogInstance(ctx, telemetry.LogLevelDebug,
 			fmt.Sprintf("action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.config.GetFunctionsTimeout()))
@@ -531,7 +523,27 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, 
 func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	ar *functionRequest, arReq *enginerefactor.ActionRequest,
 ) {
-	fmt.Println("!!!!!!!!!!!TRACING doKnativeHTTPRequest")
+	ctx, span := telemetry.Tracer.Start(ctx, "call-action")
+	defer span.End()
+
+	// create a new indepenedent context with traceparent
+	traceparent := telemetry.TraceParent(ctx)
+	traceparentCtx := telemetry.FromTraceParent(context.Background(), traceparent)
+
+	span.SetAttributes(
+		attribute.KeyValue{
+			Key:   "image",
+			Value: attribute.StringValue(ar.Container.Image),
+		},
+		attribute.KeyValue{
+			Key:   "id",
+			Value: attribute.StringValue(ar.Container.ID),
+		},
+		attribute.KeyValue{
+			Key:   "service",
+			Value: attribute.StringValue(ar.Container.Service),
+		},
+	)
 
 	telemetry.LogInstance(ctx, telemetry.LogLevelDebug,
 		"starting function request")
@@ -540,7 +552,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 	slog.Debug("function request for image", "name", ar.Container.Image, "addr", addr, "image_id", ar.Container.ID)
 
-	rctx, cancel := context.WithDeadline(context.Background(), arReq.Deadline)
+	rctx, cancel := context.WithDeadline(traceparentCtx, arReq.Deadline)
 	defer cancel()
 
 	telemetry.LogInstance(ctx, telemetry.LogLevelDebug,
@@ -560,9 +572,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	}
 	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
 
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := http.Client{Transport: otelhttp.NewTransport(tr)}
 
 	var resp *http.Response
 
@@ -651,6 +661,5 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 }
 
 func (engine *engine) reportError(ctx context.Context, ar *enginerefactor.ActionContext, err error) {
-	fmt.Println("!!!!!!!!!!!TRACING reportError")
 	telemetry.LogInstanceError(ctx, "action failed", err)
 }

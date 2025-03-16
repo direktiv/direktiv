@@ -82,11 +82,6 @@ func marshalForAPI(ctx context.Context, data *instancestore.InstanceData) *Insta
 	x, err := engine.ParseInstanceData(data)
 	if err == nil {
 		resp.Flow = x.RuntimeInfo.Flow
-		// traceID, err := tracing.TraceParentToTraceID(ctx, x.TelemetryInfo.TraceParent)
-		// if err != nil {
-		// 	slog.Debug("marshalForAPI: failed to convert to tracie-id", "error", err)
-		// }
-		// resp.TraceID = traceID
 		for i := range x.DescentInfo.Descent {
 			resp.Lineage = append(resp.Lineage, marshalLineage(&x.DescentInfo.Descent[i]))
 		}

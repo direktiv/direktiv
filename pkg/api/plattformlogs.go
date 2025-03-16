@@ -87,11 +87,6 @@ func (m *logController) mountRouter(r chi.Router) {
 			return
 		}
 
-		// metaInfo := map[string]any{
-		// 	"previousPage": logs[0].Time.Format(time.RFC3339Nano),
-		// 	"startingFrom": now.Format(time.RFC3339Nano),
-		// }
-
 		metaInfo := map[string]any{
 			"previousPage": nil,
 			"startingFrom": nil,
@@ -119,58 +114,6 @@ func (m *logController) mountRouter(r chi.Router) {
 
 			return
 		}
-
-		// if _, ok := logEntry[string(core.LogTrackKey)]; !ok {
-		// 	writeBadrequestError(w, fmt.Errorf("missing 'track' field"))
-
-		// 	return
-		// }
-
-		// if v, ok := logEntry["namespace"].(string); !ok || v != namespace.Name {
-		// 	writeBadrequestError(w, fmt.Errorf("invalid or mismatched namespace"))
-
-		// 	return
-		// }
-
-		// msg, ok := logEntry["msg"].(string)
-		// if !ok {
-		// 	writeBadrequestError(w, fmt.Errorf("missing or invalid 'msg' field"))
-
-		// 	return
-		// }
-
-		// map[callpath:528a0556-333e-4562-b027-28e167981ac5 instance:528a0556-333e-4562-b027-28e167981ac5 invoker: level:INFO msg:Creating new request namespace:demo span:15adf9d1fb5ddad9 state:getter status:running trace:d7f4cba51f1730a295e3675ab3976c12 track:instance.528a0556-333e-4562-b027-28e167981ac5 workflow:/test.yaml]
-		//
-		// telemetry.LogInitInstance(r.Context(), telemetry.InstanceInfo{
-
-		// })
-
-		// slogF := slog.Info
-		// if v, ok := logEntry["level"].(tracing.LogLevel); ok {
-		// 	switch v {
-		// 	case tracing.LevelDebug:
-		// 		slogF = slog.Debug
-		// 	case tracing.LevelInfo:
-		// 		slogF = slog.Info
-		// 	case tracing.LevelWarn:
-		// 		slogF = slog.Warn
-		// 	case tracing.LevelError:
-		// 		slogF = slog.Error
-		// 	}
-		// }
-
-		// delete(logEntry, "level")
-
-		// attr := make([]interface{}, 0, len(logEntry))
-		// for k, v := range logEntry {
-		// 	attr = append(attr, k, v)
-		// }
-
-		// slogF(msg, attr...)
-
-		// telemetry.LogObject{
-
-		// }
 
 		ctx := telemetry.LogInitCtx(r.Context(), logObject.LogObject)
 
@@ -350,8 +293,6 @@ type logEntry struct {
 	Msg       interface{}           `json:"msg"`
 	Level     interface{}           `json:"level"`
 	Namespace interface{}           `json:"namespace"`
-	Trace     interface{}           `json:"trace,omitempty"`
-	Span      interface{}           `json:"span,omitempty"`
 	Workflow  *WorkflowEntryContext `json:"workflow,omitempty"`
 	Activity  *ActivityEntryContext `json:"activity,omitempty"`
 	Route     *RouteEntryContext    `json:"route,omitempty"`
@@ -359,11 +300,9 @@ type logEntry struct {
 }
 
 type WorkflowEntryContext struct {
-	Status   string `json:"status"`
-	State    string `json:"state"`
-	Branch   string `json:"branch"`
-	Path     string `json:"workflow"`
-	CalledAs string `json:"calledAs"`
+	Status string `json:"status"`
+	State  string `json:"state"`
+	Path   string `json:"workflow"`
 }
 
 type ActivityEntryContext struct {
@@ -375,12 +314,10 @@ type RouteEntryContext struct {
 
 func toFeatureLogEntry(e logEntryBackend) logEntry {
 	featureLogEntry := logEntry{
-		Time:  e.Time,
-		Msg:   e.Msg,
-		Level: e.Level,
-		ID:    e.ID,
-		// Trace:     e.Trace,
-		// Span:      e.Span,
+		Time:      e.Time,
+		Msg:       e.Msg,
+		Level:     e.Level,
+		ID:        e.ID,
 		Namespace: e.Namespace,
 	}
 
@@ -388,10 +325,8 @@ func toFeatureLogEntry(e logEntryBackend) logEntry {
 	if e.Scope == string(telemetry.LogScopeInstance) {
 		featureLogEntry.Workflow = &WorkflowEntryContext{
 			Status: e.Status,
-			// Branch: ,
-			Path:  e.Path,
-			State: e.State,
-			// CalledAs: ,
+			Path:   e.Path,
+			State:  e.State,
 		}
 	}
 
@@ -404,27 +339,6 @@ func toFeatureLogEntry(e logEntryBackend) logEntry {
 	if strings.HasPrefix(e.Scope, "route.") {
 		featureLogEntry.Route = &RouteEntryContext{}
 	}
-
-	// if strings.HasPrefix()
-	// featureLogEntry.Error = e.Data["error"]
-
-	// wfLogCtx := WorkflowEntryContext{}
-	// wfLogCtx.State = e.Data["state"]
-	// wfLogCtx.Path = e.Data["workflow"]
-	// wfLogCtx.Instance = e.Data["instance"]
-	// wfLogCtx.CalledAs = e.Data["calledAs"]
-	// wfLogCtx.Status = e.Data["status"]
-	// wfLogCtx.Branch = e.Data["branch"]
-	// featureLogEntry.Workflow = &wfLogCtx
-	// if wfLogCtx.Path == nil && wfLogCtx.Instance == nil {
-	// 	featureLogEntry.Workflow = nil
-	// }
-	// if id, ok := e.Data["activity"]; ok && id != nil {
-	// 	featureLogEntry.Activity = &ActivityEntryContext{ID: id}
-	// }
-	// if path, ok := e.Data["route"]; ok && path != nil {
-	// 	featureLogEntry.Route = &RouteEntryContext{Path: path}
-	// }
 
 	return featureLogEntry
 }

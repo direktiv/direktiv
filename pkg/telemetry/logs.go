@@ -18,11 +18,10 @@ type LogObject struct {
 }
 
 type InstanceInfo struct {
-	Invoker  string         `json:"invoker,omitempty"`
-	Callpath string         `json:"callpath,omitempty"`
-	Path     string         `json:"path,omitempty"`
-	State    string         `json:"state,omitempty"`
-	Status   core.LogStatus `json:"status,omitempty"`
+	Invoker string         `json:"invoker,omitempty"`
+	Path    string         `json:"path,omitempty"`
+	State   string         `json:"state,omitempty"`
+	Status  core.LogStatus `json:"status,omitempty"`
 }
 
 // HTTPInstanceInfo is used to post logs from the sidecar
@@ -113,6 +112,7 @@ func LogInstance(ctx context.Context, level LogLevel, msg string) {
 }
 
 func LogInstanceError(ctx context.Context, msg string, err error) {
+	// TRACING LOG ERROR
 	logPublic(ctx, LogLevelError, msg, slog.Any(errorKey, err.Error()))
 }
 
