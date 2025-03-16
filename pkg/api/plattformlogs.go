@@ -23,6 +23,7 @@ type logController struct {
 type logParams struct {
 	namespace     string
 	scope         string
+	id            string
 	limit         string
 	direction     string
 	after, before string
@@ -59,8 +60,8 @@ func (l logParams) toQuery() string {
 		timeSelector = fmt.Sprintf(" _time:<%s ", l.before)
 	}
 
-	return fmt.Sprintf("query=scope:=%s%s| %s",
-		l.scope, timeSelector, strings.Join(queryParts, " | "))
+	return fmt.Sprintf("query=scope:=%s id:=%s%s| %s",
+		l.scope, l.id, timeSelector, strings.Join(queryParts, " | "))
 }
 
 func (m *logController) mountRouter(r chi.Router) {
@@ -68,6 +69,7 @@ func (m *logController) mountRouter(r chi.Router) {
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		params := extractLogRequestParams(r)
+		fmt.Println(params.toQuery())
 		logs, err := m.get(params.toQuery())
 		if err != nil {
 			slog.Error("fetching logs for request", "err", err)
@@ -110,8 +112,8 @@ func (m *logController) mountRouter(r chi.Router) {
 		}
 
 		// var logEntry map[string]interface{}
-		var logEntry telemetry.HTTPInstanceInfo
-		err := json.NewDecoder(r.Body).Decode(&logEntry)
+		var logObject telemetry.HTTPInstanceInfo
+		err := json.NewDecoder(r.Body).Decode(&logObject)
 		if err != nil {
 			writeInternalError(w, err)
 
@@ -166,18 +168,21 @@ func (m *logController) mountRouter(r chi.Router) {
 
 		// slogF(msg, attr...)
 
-		ctx := telemetry.LogInitInstance(r.Context(), logEntry.GetInstanceInfo())
+		// telemetry.LogObject{
 
-		// if v, ok := logEntry["level"].(tracing.LogLevel); ok {
-		switch logEntry.Level {
+		// }
+
+		ctx := telemetry.LogInitCtx(r.Context(), logObject.LogObject)
+
+		switch logObject.Level {
 		case telemetry.LogLevelDebug:
-			telemetry.LogInstanceDebug(ctx, logEntry.Msg)
+			telemetry.LogInstance(ctx, telemetry.LogLevelDebug, logObject.Msg)
 		case telemetry.LogLevelInfo:
-			telemetry.LogInstanceInfo(ctx, logEntry.Msg)
+			telemetry.LogInstance(ctx, telemetry.LogLevelInfo, logObject.Msg)
 		case telemetry.LogLevelWarn:
-			telemetry.LogInstanceWarn(ctx, logEntry.Msg)
+			telemetry.LogInstance(ctx, telemetry.LogLevelWarn, logObject.Msg)
 		case telemetry.LogLevelError:
-			telemetry.LogInstanceError(ctx, logEntry.Msg, fmt.Errorf(logEntry.Msg))
+			telemetry.LogInstanceError(ctx, logObject.Msg, fmt.Errorf(logObject.Msg))
 		}
 
 		w.WriteHeader(http.StatusOK)
@@ -306,7 +311,8 @@ func extractLogRequestParams(r *http.Request) logParams {
 		logParams.namespace = v
 
 		// set track to namespace first, we can change it later
-		logParams.scope = "namespace." + v
+		logParams.scope = "namespace"
+		logParams.id = v
 	}
 
 	// fetch all possible query params
@@ -323,11 +329,13 @@ func extractLogRequestParams(r *http.Request) logParams {
 	}
 
 	if r.URL.Query().Get("instance") != "" {
-		logParams.scope = "instance." + r.URL.Query().Get("instance")
+		logParams.scope = "instance"
+		logParams.id = r.URL.Query().Get("instance")
 	}
 
 	if r.URL.Query().Get("activity") != "" {
-		logParams.scope = "activity." + r.URL.Query().Get("activity")
+		logParams.scope = "activity"
+		logParams.id = r.URL.Query().Get("activity")
 	}
 
 	// } else if p, ok := params["route"]; ok {
@@ -338,25 +346,24 @@ func extractLogRequestParams(r *http.Request) logParams {
 
 type logEntry struct {
 	Time      time.Time             `json:"time"`
+	ID        string                `json:"id"`
 	Msg       interface{}           `json:"msg"`
 	Level     interface{}           `json:"level"`
 	Namespace interface{}           `json:"namespace"`
-	Trace     interface{}           `json:"trace"`
-	Span      interface{}           `json:"span"`
+	Trace     interface{}           `json:"trace,omitempty"`
+	Span      interface{}           `json:"span,omitempty"`
 	Workflow  *WorkflowEntryContext `json:"workflow,omitempty"`
 	Activity  *ActivityEntryContext `json:"activity,omitempty"`
 	Route     *RouteEntryContext    `json:"route,omitempty"`
-	Error     interface{}           `json:"error"`
+	Error     interface{}           `json:"error,omitempty"`
 }
 
 type WorkflowEntryContext struct {
-	Status string `json:"status"`
-
+	Status   string `json:"status"`
 	State    string `json:"state"`
 	Branch   string `json:"branch"`
 	Path     string `json:"workflow"`
 	CalledAs string `json:"calledAs"`
-	Instance string `json:"instance"`
 }
 
 type ActivityEntryContext struct {
@@ -371,26 +378,26 @@ func toFeatureLogEntry(e logEntryBackend) logEntry {
 		Time:  e.Time,
 		Msg:   e.Msg,
 		Level: e.Level,
+		ID:    e.ID,
 		// Trace:     e.Trace,
 		// Span:      e.Span,
 		Namespace: e.Namespace,
 	}
 
 	// workflow data if instance
-	if strings.HasPrefix(e.Scope, "instance.") {
+	if e.Scope == string(telemetry.LogScopeInstance) {
 		featureLogEntry.Workflow = &WorkflowEntryContext{
 			Status: e.Status,
 			// Branch: ,
 			Path:  e.Path,
 			State: e.State,
 			// CalledAs: ,
-			Instance: e.Instance,
 		}
 	}
 
 	if strings.HasPrefix(e.Scope, "activity.") {
 		featureLogEntry.Activity = &ActivityEntryContext{
-			ID: e.Instance,
+			ID: e.ID,
 		}
 	}
 
@@ -424,11 +431,11 @@ func toFeatureLogEntry(e logEntryBackend) logEntry {
 
 type logEntryBackend struct {
 	Time        time.Time `json:"_time"`
+	ID          string    `json:"id"`
 	StreamID    string    `json:"_stream_id"`
 	Stream      string    `json:"_stream"`
 	Msg         string    `json:"_msg"`
 	P           string    `json:"_p"`
-	Instance    string    `json:"instance"`
 	Invoker     string    `json:"invoker"`
 	Level       string    `json:"level"`
 	Namespace   string    `json:"namespace"`

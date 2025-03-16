@@ -6,8 +6,6 @@ import (
 	"log/slog"
 	"os"
 	"time"
-
-	"github.com/direktiv/direktiv/pkg/tracing"
 )
 
 const (
@@ -21,14 +19,14 @@ func RunApplication(ctx context.Context) {
 
 	fmt.Printf("listener started\n")
 
-	openTelemetryBackend := os.Getenv(direktivOpentelemetry)
+	// openTelemetryBackend := os.Getenv(direktivOpentelemetry)
 
-	telend, err := tracing.InitTelemetry(ctx, openTelemetryBackend, "direktiv/sidecar", "direktiv")
-	if err != nil {
-		slog.Warn("failed to initialize telemetry, but continuing", "error", err)
-	} else {
-		defer telend()
-	}
+	// telend, err := tracing.InitTelemetry(ctx, openTelemetryBackend, "direktiv/sidecar", "direktiv")
+	// if err != nil {
+	// 	slog.Warn("failed to initialize telemetry, but continuing", "error", err)
+	// } else {
+	// 	defer telend()
+	// }
 
 	local := new(LocalServer)
 	local.Start()

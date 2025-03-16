@@ -96,12 +96,9 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 	slog.Debug("starting flow server")
 
 	otelProvider, err := telemetry.InitOpenTelemetry(circuit.Context(), config.OtelBackend)
-	// slog.Debug("initializing telemetry.")
-	// telEnd, err := tracing.InitTelemetry(circuit.Context(), srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
 		return nil, fmt.Errorf("telemetry init failed: %w", err)
 	}
-	// slog.Info("telemetry initialized successfully.")
 
 	slog.Debug("initializing pub-sub")
 
@@ -158,7 +155,7 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 
 		err = srv.flow.placeholdSecrets(ctx, db, nsName, file)
 		if err != nil {
-			slog.Debug("failed setting up placeholder secrets", "error", err, string(core.LogTrackKey), "namespace."+nsName, "namespace", nsName, "file", file.Path)
+			slog.Debug("failed setting up placeholder secrets", "error", err, "namespace", nsName, "file", file.Path)
 		}
 
 		return nil

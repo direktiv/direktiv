@@ -67,8 +67,8 @@ func NewParser(namespace, pid string, src Source) (*Parser, error) {
 
 	err = p.parse()
 	if err != nil {
-		telemetry.LogActivity(telemetry.LogLevelError, namespace, pid,
-			fmt.Sprintf("error processing repository: %s", err.Error()))
+		telemetry.LogActivityError(namespace, pid,
+			"error processing repository", err)
 		_ = p.Close()
 
 		return nil, err

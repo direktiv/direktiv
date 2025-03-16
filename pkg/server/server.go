@@ -28,7 +28,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/service/registry"
 	"github.com/direktiv/direktiv/pkg/telemetry"
-	"github.com/direktiv/direktiv/pkg/tracing"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -319,20 +318,12 @@ func initSLog(cfg *core.Config) {
 		slog.Info("logging is set to debug")
 		lvl.Set(slog.LevelDebug)
 	}
-	handlers := tracing.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
-		Level: lvl,
-	}))
 
 	ctxHandler := telemetry.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
 		Level: lvl,
 	}))
 
-	slogger := slog.New(
-		tracing.TeeHandler{
-			handlers,
-			ctxHandler,
-			tracing.EventHandler{},
-		})
+	slogger := slog.New(ctxHandler)
 
 	slog.SetDefault(slogger)
 }

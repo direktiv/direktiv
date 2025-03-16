@@ -61,11 +61,6 @@ func (ee EventEngine) ProcessEvents(
 	cloudevents []cloudevents.Event,
 	handleErrors func(template string, args ...interface{}),
 ) {
-	// ctx, end, err2 := tracing.NewSpan(ctx, "Dispatching CloudEvents to handlers")
-	// if err2 != nil {
-	// 	slog.Debug("ProcessEvents: failed to init telemetry", "error", err2)
-	// }
-	// defer end()
 	// 1. Extract Topics: Retrieves relevant event topics from the provided CloudEvents
 	//    within the specified namespace.
 	topics := ee.getTopics(ctx, namespace, cloudevents)
@@ -243,7 +238,7 @@ func (EventEngine) handleEvents(ctx context.Context,
 			Event:       &eCopy,
 		})
 	}
-	// panic(len(h))
+
 	for _, eh := range h {
 		eh(ctx, events...)
 	}
@@ -360,6 +355,12 @@ func eventTypeAlreadyPresent(l *datastore.EventListener, event *datastore.Event)
 // singleConditionEventHandler creates an event handler for "Simple" type triggers.
 func (ee EventEngine) singleConditionEventHandler(l *datastore.EventListener, waitType bool) eventHandler {
 	return func(ctx context.Context, events ...*datastore.Event) {
+
+		// ctx, span := telemetry.Tracer.Start(ctx, "wqhate")
+		// defer span.End()
+
+		// fmt.Printf(">>>> %v\n", span.SpanContext().TraceID())
+
 		for _, event := range events {
 			if l.Deleted {
 				return // Skip processing for deleted listeners.

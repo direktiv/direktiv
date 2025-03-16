@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"reflect"
 	"strings"
 )
 
@@ -28,62 +27,28 @@ func (h *ContextHandler) Enabled(ctx context.Context, level slog.Level) bool {
 // Handle implements slog.Handler.
 func (h *ContextHandler) Handle(ctx context.Context, rec slog.Record) error {
 
-	l := ctx.Value(LogObjectCtx)
+	l := ctx.Value(logObjectCtx)
 	if l != nil {
-		// structVal := reflect.ValueOf(l)
-		// fieldNum := structVal.NumField()
-		// structType := reflect.TypeOf(l)
-
 		res := make([]slog.Attr, 0)
 
 		// double marshal
 		b, err := json.Marshal(l)
 		if err != nil {
-
+			slog.Error("can not marshal context", slog.Any("error", err))
+			return h.innerHandler.Handle(ctx, rec)
 		}
 
 		var attrs map[string]interface{}
 		err = json.Unmarshal(b, &attrs)
 		if err != nil {
-
+			slog.Error("can not unmarshal context", slog.Any("error", err))
+			return h.innerHandler.Handle(ctx, rec)
 		}
 
 		for k, v := range attrs {
 			res = append(res, slog.Attr{
 				Key:   strings.ToLower(k),
 				Value: slog.AnyValue(fmt.Sprintf("%v", v)),
-			})
-		}
-		// for i := range fieldNum {
-		// 	field := structVal.Field(i)
-		// 	fieldName := structType.Field(i).Name
-
-		// 	res = append(res, slog.Attr{
-		// 		Key:   strings.ToLower(fieldName),
-		// 		Value: slog.AnyValue(fmt.Sprintf("%v", field)),
-		// 	})
-		// }
-
-		return h.innerHandler.WithAttrs(res).Handle(ctx, rec)
-	}
-
-	instance := ctx.Value(DirektivInstance)
-
-	// only handle if there is something in the context
-	if instance != nil {
-		structVal := reflect.ValueOf(instance)
-		fieldNum := structVal.NumField()
-		structType := reflect.TypeOf(instance)
-
-		res := make([]slog.Attr, 0)
-
-		for i := range fieldNum {
-			field := structVal.Field(i)
-			fieldName := structType.Field(i).Name
-
-			res = append(res, slog.Attr{
-				Key:   strings.ToLower(fieldName),
-				Value: slog.AnyValue(fmt.Sprintf("%v", field)),
 			})
 		}
 

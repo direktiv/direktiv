@@ -15,7 +15,6 @@ import (
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/telemetry"
-	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 )
 
@@ -85,7 +84,7 @@ func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
 			}
 
 			// namespace
-			// telemetry.LogInstanceError(ctx, fmt.Sprint("failed to retrieve instance memory in executor, %s", id), err)
+			telemetry.LogInstanceError(ctx, fmt.Sprintf("failed to retrieve instance memory in executor, %s", id), err)
 
 			engine.deregisterScheduled(id)
 
@@ -103,21 +102,9 @@ func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
 	}
 
 	slog.Debug("beginning instance execution loop", "instance", id)
-	// ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
-	// 	Namespace:    im.Namespace().Name,
-	// 	InstanceID:   im.GetInstanceID().String(),
-	// 	Invoker:      im.instance.Instance.Invoker,
-	// 	Callpath:     tracing.CreateCallpath(im.instance),
-	// 	WorkflowPath: im.instance.Instance.WorkflowPath,
-	// 	Status:       core.LogUnknownStatus,
-	// }, im.GetState())
-	// ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrack(im.instance))
-	// ctx, span, err2 := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent, "scheduler continues instance: "+im.instance.Instance.WorkflowPath)
-	// if err2 != nil {
-	// 	slog.Warn("engine executor failed to inject trace parent", "error", err2)
-	// }
-	// defer span.End()
+
 	engine.executorLoop(ctx, im)
+
 	slog.Debug(fmt.Sprintf("deregistered instance after execution, %s", id))
 
 	engine.deregisterScheduled(id)
@@ -148,11 +135,6 @@ func (engine *engine) transitionLoop(ctx context.Context, im *instanceMemory, ms
 }
 
 func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
-	ctx, cleanup, err := tracing.NewSpan(ctx, "instance scheduling")
-	if err != nil {
-		slog.Debug("telemetry failed in scheduler", "error", err)
-	}
-	defer cleanup()
 	for {
 		// pop message
 		tx, err := engine.flow.beginSQLTx(ctx)
@@ -186,8 +168,12 @@ func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
 }
 
 func (engine *engine) InstanceYield(ctx context.Context, im *instanceMemory) {
+	// set parent before sleep
+	im.instance.TelemetryInfo.TraceParent = telemetry.TraceParent(ctx)
+
 	ctx = im.Context(ctx)
-	telemetry.LogInstanceDebug(ctx, fmt.Sprintf("instance preparing to yield and release resources, %s", im.ID().String()))
+	telemetry.LogInstance(ctx, telemetry.LogLevelDebug,
+		fmt.Sprintf("instance preparing to yield and release resources, %s", im.ID().String()))
 
 	err := engine.freeMemory(ctx, im)
 	if err != nil {
@@ -202,7 +188,8 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 	caller := engine.InstanceCaller(im)
 
 	if caller != nil {
-		telemetry.LogInstanceInfo(ctx, fmt.Sprintf("report result to calling workflow %s/%v", im.Namespace().Name, im.ID()))
+		telemetry.LogInstance(ctx, telemetry.LogLevelInfo,
+			fmt.Sprintf("report result to calling workflow %s/%v", im.Namespace().Name, im.ID()))
 
 		callpath := im.instance.Instance.ID.String()
 		for _, v := range im.instance.DescentInfo.Descent {
@@ -211,7 +198,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 		msg := &actionResultMessage{
 			InstanceID: caller.ID.String(),
 			ActionContext: enginerefactor.ActionContext{
-				TraceParent: im.instance.TelemetryInfo.TraceParent,
+				TraceParent: telemetry.TraceParent(ctx),
 				State:       caller.State,
 				Branch:      caller.Branch,
 				Callpath:    callpath,
@@ -230,29 +217,28 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 		}
 		err := engine.ReportActionResults(ctx, msg)
 		if err != nil {
-			telemetry.LogInstanceError(ctx, fmt.Sprintf("failed to report action results to caller workflow %s/%v", im.Namespace().Name, im.ID()), err)
+			telemetry.LogInstanceError(ctx,
+				fmt.Sprintf("failed to report action results to caller workflow %s/%v", im.Namespace().Name, im.ID()), err)
 			return
 		}
 	}
 }
 
 func (engine *engine) start(im *instanceMemory) {
-	namespace := im.instance.TelemetryInfo.NamespaceName
+	namespace := im.Namespace().Name
 	workflowPath := GetInodePath(im.instance.Instance.WorkflowPath)
 
 	ctx := im.Context(context.Background())
-	// ctx, span, err := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent, "scheduler starts instance: "+im.GetInstanceID().String()+", workflow: "+im.instance.Instance.WorkflowPath)
-	// if err != nil {
-	// 	slog.Debug("failed to populate tracing information. Workflow execution halted", "namespace", namespace, "workflow", workflowPath, "instance", im.ID(), "error", err)
-	// }
-	// defer span.End()
+	ctx, span := enginerefactor.TraceReconstruct(ctx, im.instance.TelemetryInfo, "start-workflow")
+	defer span.End()
+	span.AddEvent(fmt.Sprintf("flow %s", im.instance.Instance.WorkflowPath))
+
 	slog.Debug("workflow execution initiated", "namespace", namespace, "workflow", workflowPath, "instance", im.ID())
 
 	workflow, err := im.Model()
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError(ErrCodeWorkflowUnparsable, "failed to parse workflow YAML: %v", err))
-		telemetry.LogNamespace(telemetry.LogLevelError, namespace,
-			fmt.Sprintf("failed to parse workflow YAML, workflow execution halted %s", err.Error()))
+		telemetry.LogNamespaceError(namespace, "failed to parse workflow YAML, workflow execution halted", err)
 
 		return
 	}
@@ -261,8 +247,8 @@ func (engine *engine) start(im *instanceMemory) {
 
 	ctx, err = engine.registerScheduled(ctx, id)
 	if err != nil {
-		telemetry.LogNamespace(telemetry.LogLevelError, namespace,
-			fmt.Sprintf("failed to register workflow as scheduled, workflow execution may be delayed or halted %s", err.Error()))
+		telemetry.LogNamespaceError(namespace,
+			"failed to register workflow as scheduled, workflow execution may be delayed or halted", err)
 		return
 	}
 
@@ -271,8 +257,8 @@ func (engine *engine) start(im *instanceMemory) {
 		"data": workflow.GetStartState().GetID(),
 	})
 	if err != nil {
-		telemetry.LogNamespace(telemetry.LogLevelError, namespace,
-			fmt.Sprintf("failed to marshal start state payload, halting workflow execution %s", err.Error()))
+		telemetry.LogNamespaceError(namespace,
+			"failed to marshal start state payload, halting workflow execution", err)
 		panic(err) // TODO?
 	}
 

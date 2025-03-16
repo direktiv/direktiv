@@ -25,7 +25,6 @@ import (
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/telemetry"
-	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/direktiv/direktiv/pkg/utils"
 )
 
@@ -83,11 +82,11 @@ type outcome struct {
 
 // nolint:canonicalheader
 func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *functionRequest) (*outcome, error) {
-	ctx, spanEnd, err := tracing.NewSpan(ctx, "execting function request: "+ir.actionId+", workflow: "+ir.Workflow)
-	if err != nil {
-		slog.Debug("doFunctionRequest failed", "error", err)
-	}
-	defer spanEnd()
+	// ctx, spanEnd, err := tracing.NewSpan(ctx, "execting function request: "+ir.actionId+", workflow: "+ir.Workflow)
+	// if err != nil {
+	// 	slog.Debug("doFunctionRequest failed", "error", err)
+	// }
+	// defer spanEnd()
 
 	slog.Debug("forwarding request to service", "action-id", ir.actionId)
 
@@ -569,8 +568,6 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 		Namespace: ir.Namespace,
 		ID:        aid,
 		Scope:     telemetry.LogScopeInstance,
-		Trace:     "",
-		Span:      "",
 		InstanceInfo: telemetry.InstanceInfo{
 			Invoker:  ir.Invoker,
 			Callpath: ir.Callpath,
@@ -580,7 +577,7 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 		},
 	}
 
-	rctx := telemetry.LogInitInstance(context.Background(), logObject)
+	rctx := telemetry.LogInitCtx(context.Background(), logObject)
 	// rctx = tracing.AddNamespace(rctx, ir.Namespace)
 	// rctx = tracing.AddInstanceMemoryAttr(rctx, tracing.InstanceAttributes{
 	// 	Namespace:    ir.Namespace,

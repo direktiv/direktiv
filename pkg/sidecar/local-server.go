@@ -168,20 +168,16 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		Path:     req.Workflow,
 		State:    req.State,
 		Status:   core.LogRunningStatus,
-		// Trace: ,
-		// Span: ,
 	}
 
 	logObject := telemetry.LogObject{
 		Namespace:    req.Namespace,
 		ID:           req.Instance,
 		Scope:        telemetry.LogScopeInstance,
-		Trace:        "",
-		Span:         "",
 		InstanceInfo: instanceInfo,
 	}
 
-	ctx := telemetry.LogInitInstance(r.Context(), logObject)
+	ctx := telemetry.LogInitCtx(r.Context(), logObject)
 
 	reportError := func(code int, err error) {
 		http.Error(w, err.Error(), code)
@@ -224,39 +220,41 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log := telemetry.HTTPInstanceInfo{
-		InstanceInfo: instanceInfo,
-		Msg:          msg,
-		Level:        telemetry.LogLevelInfo,
+		LogObject: logObject,
+		Msg:       msg,
+		Level:     telemetry.LogLevelInfo,
 	}
 
 	d, err := json.Marshal(log)
 	if err != nil {
-		telemetry.LogInstance(ctx, telemetry.LogLevelError,
-			fmt.Sprintf("failed to marshal log entry, id: %s, %s", actionId, err.Error()))
+		telemetry.LogInstanceError(ctx,
+			fmt.Sprintf("failed to marshal log entry, id: %s", actionId), err)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 
-	telemetry.LogInstanceDebug(ctx, "redirect log entry to flow")
+	telemetry.LogInstance(ctx, telemetry.LogLevelDebug, "redirect log entry to flow")
 
 	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/logs?instance=%v", srv.flowAddr, req.Namespace, req.Instance)
 	resp, err := doRequest(req.ctx, http.MethodPost, srv.flowToken, addr, bytes.NewBuffer(d))
 	if err != nil {
-		telemetry.LogInstance(ctx, telemetry.LogLevelError,
-			fmt.Sprintf("failed to forward log to flow, id: %s, %s", actionId, err.Error()))
+		telemetry.LogInstanceError(ctx,
+			fmt.Sprintf("failed to forward log to flow, id: %s", actionId), err)
 		http.Error(w, "", http.StatusInternalServerError)
 
 		return
 	}
 
 	if _, err := handleResponse(resp, nil); err != nil {
-		telemetry.LogInstanceError(ctx, fmt.Sprintf("failed to handle flow response, id: %s", actionId), err)
+		telemetry.LogInstanceError(ctx,
+			fmt.Sprintf("failed to handle flow response, id: %s", actionId), err)
 		http.Error(w, "", http.StatusInternalServerError)
 
 		return
 	}
 
-	telemetry.LogInstanceInfo(ctx, fmt.Sprintf("processed log message, id: %s", actionId))
+	telemetry.LogInstance(ctx, telemetry.LogLevelInfo,
+		fmt.Sprintf("processed log message, id: %s", actionId))
 }
 
 // nolint:canonicalheader
@@ -293,8 +291,6 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 		Namespace: req.Namespace,
 		ID:        req.Instance,
 		Scope:     telemetry.LogScopeInstance,
-		Trace:     "",
-		Span:      "",
 		InstanceInfo: telemetry.InstanceInfo{
 			Invoker:  req.Invoker,
 			Callpath: req.Callpath,
@@ -306,7 +302,7 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	ctx := telemetry.LogInitInstance(req.ctx, logObject)
+	ctx := telemetry.LogInitCtx(req.ctx, logObject)
 	if !ok {
 		err := errors.New("the action id is missing")
 		code := http.StatusInternalServerError
@@ -332,8 +328,6 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 	scope := r.URL.Query().Get("scope")
 	key := r.URL.Query().Get("key")
 	vMimeType := r.Header.Get("content-type")
-
-	fmt.Printf(">>> %v\n", r.Method)
 
 	switch r.Method {
 	case http.MethodGet:

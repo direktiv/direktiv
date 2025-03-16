@@ -185,12 +185,6 @@ functions:
 
   # -- extra volumes for tasks and knative pods
   extraVolumes: []
-  #   - configMap:
-  #   name: otel-agent-conf
-  #   items:
-  #     - key: otel-agent-config
-  #       path: otel-agent-config.yaml
-  # name: otel-agent-config-vol
 
   # -- extra containers for tasks and knative pods
   extraContainers:

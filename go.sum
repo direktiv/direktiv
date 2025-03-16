@@ -296,6 +296,10 @@ github.com/rogpeppe/go-internal v1.13.1/go.mod h1:uMEvuHeurkdAXX61udpOXGD/AzZDWN
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/ryanuber/go-glob v1.0.0 h1:iQh3xXAumdQ+4Ufa5b25cRpC5TYKlno6hsv6Cb3pkBk=
 github.com/ryanuber/go-glob v1.0.0/go.mod h1:807d1WSdnB0XRJzKNil9Om6lcp/3a0v4qIHxIXzX/Yc=
+github.com/samber/lo v1.49.1 h1:4BIFyVfuQSEpluc7Fua+j1NolZHiEHEpaSEKdsH0tew=
+github.com/samber/lo v1.49.1/go.mod h1:dO6KHFzUKXgP8LDhU0oI8d2hekjXnGOu0DB8Jecxd6o=
+github.com/samber/slog-multi v1.4.0 h1:pwlPMIE7PrbTHQyKWDU+RIoxP1+HKTNOujk3/kdkbdg=
+github.com/samber/slog-multi v1.4.0/go.mod h1:FsQ4Uv2L+E/8TZt+/BVgYZ1LoDWCbfCU21wVIoMMrO8=
 github.com/senseyeio/duration v0.0.0-20180430131211-7c2a214ada46 h1:Dz0HrI1AtNSGCE8LXLLqoZU4iuOJXPWndenCsZfstA8=
 github.com/senseyeio/duration v0.0.0-20180430131211-7c2a214ada46/go.mod h1:is8FVkzSi7PYLWEXT5MgWhglFsyyiW8ffxAoJqfuFZo=
 github.com/sergi/go-diff v1.0.0/go.mod h1:0CfEIISq7TuYL3j771MWULgwwjU+GofnZX9QAmXWZgo=

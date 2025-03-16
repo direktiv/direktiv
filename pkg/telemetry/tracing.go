@@ -2,22 +2,26 @@ package telemetry
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
+	"net/http"
 	"time"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
 const (
 	serviceName = "direktiv"
 )
+
+var Tracer oteltrace.Tracer
 
 func InitOpenTelemetry(ctx context.Context, otelURL string) (*trace.TracerProvider, error) {
 	// skip telemetry
@@ -27,15 +31,19 @@ func InitOpenTelemetry(ctx context.Context, otelURL string) (*trace.TracerProvid
 	}
 
 	slog.Info("initializing opentelemetry")
-	fmt.Println(otelURL)
+
 	exporter, err := otlptracegrpc.New(
 		ctx,
 		otlptracegrpc.WithEndpoint(otelURL),
 		otlptracegrpc.WithInsecure(),
+		otlptracegrpc.WithReconnectionPeriod(time.Second*10),
+		otlptracegrpc.WithRetry(otlptracegrpc.RetryConfig{
+			Enabled:         true,
+			MaxInterval:     3 * time.Second,
+			InitialInterval: 1 * time.Second,
+			MaxElapsedTime:  1 * time.Minute,
+		}),
 	)
-
-	// WithReconnectionPeriod
-	// WithRetry
 
 	if err != nil {
 		slog.Error("opentelemetry setup failed", slog.Any("error", err))
@@ -50,13 +58,8 @@ func InitOpenTelemetry(ctx context.Context, otelURL string) (*trace.TracerProvid
 	provider := trace.NewTracerProvider(
 		trace.WithResource(resource),
 		trace.WithSampler(trace.ParentBased(trace.AlwaysSample())),
-		trace.WithSpanProcessor(trace.NewBatchSpanProcessor(exporter)),
 		trace.WithBatcher(exporter),
 	)
-	// otel.SetTracerProvider(provider)
-
-	// tp, err := newTraceProvider(ctx)
-	// fmt.Println(err)
 	otel.SetTracerProvider(provider)
 
 	otel.SetTextMapPropagator(
@@ -66,8 +69,8 @@ func InitOpenTelemetry(ctx context.Context, otelURL string) (*trace.TracerProvid
 		),
 	)
 
-	_, span := provider.Tracer("jens").Start(ctx, "ssss")
-	span.End()
+	// create tracer
+	Tracer = otel.Tracer(serviceName)
 
 	return provider, nil
 }
@@ -84,4 +87,33 @@ func newTraceProvider(ctx context.Context) (*trace.TracerProvider, error) {
 			trace.WithBatchTimeout(time.Second)),
 	)
 	return traceProvider, nil
+}
+
+func ReportError(span oteltrace.Span, err error) {
+	span.SetStatus(codes.Error, err.Error())
+	span.RecordError(err)
+}
+
+// GetContextFromRequest looks for the tracing parent in http header
+func GetContextFromRequest(r *http.Request) context.Context {
+	propagator := propagation.TraceContext{}
+	ctx := propagator.Extract(r.Context(), propagation.HeaderCarrier(r.Header))
+	return ctx
+}
+
+func FromTraceParent(ctx context.Context, traceparent string) context.Context {
+	mc := make(propagation.MapCarrier)
+	mc.Set("traceparent", traceparent)
+
+	tc := propagation.TraceContext{}
+	return tc.Extract(ctx, mc)
+}
+
+// TraceParent return the traceparent value from the context
+func TraceParent(ctx context.Context) string {
+	mc := make(propagation.MapCarrier)
+	tc := propagation.TraceContext{}
+	tc.Inject(ctx, mc)
+
+	return mc.Get("traceparent")
 }
