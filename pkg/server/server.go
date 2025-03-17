@@ -321,6 +321,14 @@ func initSLog(cfg *core.Config) {
 
 	ctxHandler := telemetry.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
 		Level: lvl,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			if a.Key == slog.TimeKey {
+				// force time format to full length with trainling zeros
+				a.Value = slog.StringValue(a.Value.Time().Format("2006-01-02T15:04:05.000000000Z"))
+			}
+
+			return a
+		},
 	}))
 
 	slogger := slog.New(ctxHandler)

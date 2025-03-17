@@ -112,7 +112,6 @@ func LogInstance(ctx context.Context, level LogLevel, msg string) {
 }
 
 func LogInstanceError(ctx context.Context, msg string, err error) {
-	// TRACING LOG ERROR
 	logPublic(ctx, LogLevelError, msg, slog.Any(errorKey, err.Error()))
 }
 

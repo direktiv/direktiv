@@ -93,7 +93,6 @@ func (m *logController) mountRouter(r chi.Router) {
 		}
 
 		writeJSONWithMeta(w, logs, metaInfo)
-		// writeJSONWithMeta(w, []logEntry{}, metaInfo)
 	})
 
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
@@ -288,15 +287,15 @@ func extractLogRequestParams(r *http.Request) logParams {
 }
 
 type logEntry struct {
-	Time      time.Time             `json:"time"`
-	ID        string                `json:"id"`
+	Time time.Time `json:"time"`
+	// ID        string                `json:"id"`
 	Msg       interface{}           `json:"msg"`
 	Level     interface{}           `json:"level"`
 	Namespace interface{}           `json:"namespace"`
 	Workflow  *WorkflowEntryContext `json:"workflow,omitempty"`
 	Activity  *ActivityEntryContext `json:"activity,omitempty"`
 	Route     *RouteEntryContext    `json:"route,omitempty"`
-	Error     interface{}           `json:"error,omitempty"`
+	Error     string                `json:"error,omitempty"`
 }
 
 type WorkflowEntryContext struct {
@@ -314,11 +313,12 @@ type RouteEntryContext struct {
 
 func toFeatureLogEntry(e logEntryBackend) logEntry {
 	featureLogEntry := logEntry{
-		Time:      e.Time,
+		Time: e.Time,
+		// ID:        e.Time.Format("2006-01-02T15:04:05.000000000Z"),
 		Msg:       e.Msg,
 		Level:     e.Level,
-		ID:        e.ID,
 		Namespace: e.Namespace,
+		Error:     e.Error,
 	}
 
 	// workflow data if instance
@@ -359,6 +359,7 @@ type logEntryBackend struct {
 	Path        string    `json:"path"`
 	Scope       string    `json:"scope"`
 	State       string    `json:"state"`
+	Error       string    `json:"error"`
 }
 
 func (m *logController) fetchFromBackend(query string) ([]logEntryBackend, error) {
