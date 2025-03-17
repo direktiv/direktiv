@@ -92,6 +92,7 @@ export type LogsQueryParams = {
   instance?: string;
   route?: string;
   activity?: string;
+  after?: string;
   before?: string;
   trace?: string;
   last?: number;
@@ -110,6 +111,11 @@ const getUrl = (params: LogsParams) => {
 
   if (useStreaming) {
     urlPath = `${urlPath}/subscribe`;
+
+    // Add after param from 3 seconds ago to close a potential
+    // gap between the GET request and the beginning of the stream
+    const threeSecondsAgo = new Date(Date.now() - 3000);
+    queryParams.after = threeSecondsAgo.toISOString();
   }
 
   if (!useStreaming) {
