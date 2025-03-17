@@ -8,7 +8,6 @@ export const getInstanceLogEntryForClipboard = (logEntry: LogEntryType) =>
     logEntry?.workflow?.workflow,
     logEntry?.workflow?.state ?? undefined,
     logEntry.msg,
-    logEntry.error ?? undefined,
   ]);
 
 export const getMirrorLogEntryForClipboard = (logEntry: LogEntryType) =>
@@ -16,7 +15,6 @@ export const getMirrorLogEntryForClipboard = (logEntry: LogEntryType) =>
     formatLogTime(logEntry.time),
     logEntry?.level,
     logEntry?.msg,
-    logEntry.error ?? undefined,
   ]);
 
 export const getMonitoringLogEntryForClipboard = (logEntry: LogEntryType) => {
@@ -29,7 +27,6 @@ export const getMonitoringLogEntryForClipboard = (logEntry: LogEntryType) => {
     formatLogTime(logEntry.time),
     logEntry?.level,
     logEntry.msg,
-    logEntry.error ?? undefined,
     ...workflowInfos,
   ]);
 };
@@ -40,7 +37,6 @@ export const getRouteLogEntryForClipboard = (logEntry: LogEntryType) =>
     logEntry?.level,
     logEntry?.route?.path,
     logEntry.msg,
-    logEntry.error ?? undefined,
   ]);
 
 const createLogEntryForClipboard = (parts: (string | number | undefined)[]) =>

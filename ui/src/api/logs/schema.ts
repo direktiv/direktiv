@@ -50,14 +50,10 @@ export const RouteData = z.object({
 }
  */
 export const LogEntrySchema = z.object({
-  // id: z.number(),
   time: z.string().nonempty(),
   msg: z.string().nonempty(),
   level: LogLevelSchema,
   namespace: z.string().nonempty().nullable(),
-  trace: z.string().nonempty().nullable(),
-  span: z.string().nonempty().nullable(),
-  error: z.string().nullable(),
   workflow: WorkflowStatusData.optional(),
   route: RouteData.optional(),
 });

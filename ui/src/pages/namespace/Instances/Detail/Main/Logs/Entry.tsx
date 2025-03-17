@@ -16,7 +16,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {
     const instanceId = useInstanceId();
     const { t } = useTranslation();
-    const { msg, error, level, time, workflow, namespace } = logEntry;
+    const { msg, level, time, workflow, namespace } = logEntry;
     const formattedTime = formatLogTime(time);
     const verbose = useLogsPreferencesVerboseLogs();
 
@@ -43,9 +43,6 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         </LogSegment>
         <LogSegment display={true}>
           {t("components.logs.logEntry.messageLabel")} {msg}
-        </LogSegment>
-        <LogSegment display={error ? true : false}>
-          {t("components.logs.logEntry.errorLabel")} {error}
         </LogSegment>
         <LogSegment display={isChildInstanceEntry && hasWorkflowInformation}>
           <span className="opacity-60">
