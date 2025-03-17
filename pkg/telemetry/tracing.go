@@ -27,6 +27,12 @@ func InitOpenTelemetry(ctx context.Context, otelURL string) (*trace.TracerProvid
 	// skip telemetry
 	if otelURL == "" {
 		slog.Info("telemetry not configured")
+
+		// create dummy doing nothing
+		provider := trace.NewTracerProvider()
+		otel.SetTracerProvider(provider)
+		Tracer = otel.Tracer(serviceName)
+
 		return trace.NewTracerProvider(), nil
 	}
 
