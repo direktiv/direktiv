@@ -55,17 +55,17 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
             >
               {workflowPath}
             </Link>{" "}
-            (
-            <Link
-              to="/n/$namespace/instances/$id"
-              params={{ namespace: namespace ?? "", id: instanceId }}
-              className="underline"
-              target="_blank"
-            >
-              {t("components.logs.logEntry.instanceLabel")}{" "}
-              {workflow?.instance.slice(0, 8)}
-            </Link>
-            )
+            {workflow?.instance && (
+              <Link
+                to="/n/$namespace/instances/$id"
+                params={{ namespace: namespace ?? "", id: instanceId }}
+                className="underline"
+                target="_blank"
+              >
+                {t("components.logs.logEntry.instanceLabel")}{" "}
+                {workflow?.instance.slice(0, 8)}
+              </Link>
+            )}
           </span>
         </LogSegment>
       </LogEntry>

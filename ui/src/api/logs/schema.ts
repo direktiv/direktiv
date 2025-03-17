@@ -17,9 +17,9 @@ export type LogLevelSchemaType = z.infer<typeof LogLevelSchema>;
 export const WorkflowStatusData = z.object({
   state: z.string().nonempty().nullable(),
   // branch: z.string().nullable(), // currently unused
-  workflow: z.string().nonempty(),
-  calledAs: z.string().nullable(),
-  instance: z.string().nonempty(),
+  workflow: z.string().nonempty().optional(),
+  calledAs: z.string().nullable().optional(),
+  instance: z.string().nonempty().optional(),
 });
 
 /**
