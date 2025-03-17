@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -185,7 +186,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 			lastLog := logs[len(logs)-1]
 			cursor = lastLog.Time.UTC()
 		} else {
-			cursor, err = time.Parse("2006-01-02T15:04:05.000000000Z", params.after)
+			cursor, err = parseQueryTime(params.after)
 
 			// can not do much about it, use `now`
 			if err != nil {
@@ -247,6 +248,18 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 			params.after = cursor.Format("2006-01-02T15:04:05.000000000Z")
 		}
 	}
+}
+
+var formats = []string{"2006-01-02T15:04:05.000000000Z", "2006-01-02T15:04:05.000Z"}
+
+func parseQueryTime(input string) (time.Time, error) {
+	for _, format := range formats {
+		t, err := time.Parse(format, input)
+		if err == nil {
+			return t, nil
+		}
+	}
+	return time.Time{}, errors.New("Unrecognized time format")
 }
 
 // nolint:canonicalheader
