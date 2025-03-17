@@ -158,7 +158,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 
 	// if nothing is set, we do the events from now
 	if params.after == "" {
-		params.after = time.Now().Format("2006-01-02T15:04:05.000000000Z")
+		params.after = time.Now().UTC().Format("2006-01-02T15:04:05.000000000Z")
 	}
 
 	rc := http.NewResponseController(w)
@@ -168,15 +168,15 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(queryString)
 		logs, err := m.get(queryString)
 		if err != nil {
-			return time.Now(), err
+			return time.Now().UTC(), err
 		}
 
 		for i := range logs {
 			l := logs[i]
 			b, _ := json.Marshal(l)
-			_, err = fmt.Fprintf(w, fmt.Sprintf("id: %s\nevent: %s\ndata: %s\n\n", l.Time.Format("2006-01-02T15:04:05.000000000Z"), "message", string(b)))
+			_, err = fmt.Fprintf(w, fmt.Sprintf("id: %s\nevent: %s\ndata: %s\n\n", l.Time.UTC().Format("2006-01-02T15:04:05.000000000Z"), "message", string(b)))
 			if err != nil {
-				return time.Now(), err
+				return time.Now().UTC(), err
 			}
 		}
 
@@ -184,6 +184,14 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 		if len(logs) > 0 {
 			lastLog := logs[len(logs)-1]
 			cursor = lastLog.Time.UTC()
+		} else {
+			cursor, err = time.Parse("2006-01-02T15:04:05.000000000Z", params.after)
+
+			// can not do much about it, use `now`
+			if err != nil {
+				slog.Error("can not parse params.after", slog.Any("error", err))
+				cursor = time.Now().UTC()
+			}
 		}
 
 		return cursor, rc.Flush()
@@ -214,7 +222,6 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	params.after = cursor.Format("2006-01-02T15:04:05.000000000Z")
-	// params.last = "100"
 
 	clientGone := r.Context().Done()
 
@@ -244,8 +251,6 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 
 // nolint:canonicalheader
 func extractLogRequestParams(r *http.Request) logParams {
-	// params := map[string]string{}
-
 	var logParams logParams
 
 	if v := chi.URLParam(r, "namespace"); v != "" {
@@ -313,8 +318,7 @@ type RouteEntryContext struct {
 
 func toFeatureLogEntry(e logEntryBackend) logEntry {
 	featureLogEntry := logEntry{
-		Time: e.Time,
-		// ID:        e.Time.Format("2006-01-02T15:04:05.000000000Z"),
+		Time:      e.Time.UTC(),
 		Msg:       e.Msg,
 		Level:     e.Level,
 		Namespace: e.Namespace,
@@ -375,9 +379,6 @@ func (m *logController) fetchFromBackend(query string) ([]logEntryBackend, error
 	// set headers
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	cli := &http.Client{Timeout: 30 * time.Second}
-
-	// cc, _ := httputil.DumpRequest(req, true)
-	// fmt.Println(string(cc))
 
 	resp, err := cli.Do(req)
 	if err != nil {
