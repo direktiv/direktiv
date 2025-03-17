@@ -25,7 +25,6 @@ import (
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/telemetry"
-	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/direktiv/direktiv/pkg/utils"
 )
 
@@ -83,11 +82,8 @@ type outcome struct {
 
 // nolint:canonicalheader
 func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *functionRequest) (*outcome, error) {
-	ctx, spanEnd, err := tracing.NewSpan(ctx, "execting function request: "+ir.actionId+", workflow: "+ir.Workflow)
-	if err != nil {
-		slog.Debug("doFunctionRequest failed", "error", err)
-	}
-	defer spanEnd()
+	ctx, span := telemetry.Tracer.Start(ctx, "executing-action")
+	defer span.End()
 
 	slog.Debug("forwarding request to service", "action-id", ir.actionId)
 
@@ -510,6 +506,10 @@ func determineVarType(fileScope string) (string, error) {
 }
 
 func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
+	ctx := telemetry.GetContextFromRequest(req.r)
+	ctx, span := telemetry.Tracer.Start(ctx, "receiving-action")
+	defer span.End()
+
 	defer func() {
 		close(req.end)
 	}()
@@ -553,7 +553,6 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 		ir.deadline = time.Now().Add(3 * time.Second)
 	}
 
-	ctx := req.r.Context()
 	ctx, cancel := context.WithDeadline(ctx, ir.deadline)
 	defer cancel()
 
@@ -565,39 +564,22 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 		return
 	}
 
-	rctx := telemetry.LogInitInstance(context.Background(), telemetry.InstanceInfo{
+	logObject := telemetry.LogObject{
 		Namespace: ir.Namespace,
-		Instance:  aid,
-		Invoker:   ir.Invoker,
-		Callpath:  ir.Callpath,
-		Path:      ir.Workflow,
-		State:     ir.State,
-		Status:    core.LogRunningStatus,
-		// Trace: ,
-		// Span: ,
-	})
-	// rctx = tracing.AddNamespace(rctx, ir.Namespace)
-	// rctx = tracing.AddInstanceMemoryAttr(rctx, tracing.InstanceAttributes{
-	// 	Namespace:    ir.Namespace,
-	// 	InstanceID:   ir.Instance,
-	// 	Status:       core.LogUnknownStatus,
-	// 	WorkflowPath: ir.Workflow,
-	// 	Callpath:     ir.Callpath,
-	// }, ir.State)
-	// rctx = tracing.WithTrack(rctx, tracing.BuildInstanceTrackViaCallpath(ir.Callpath))
-	// rctx = tracing.AddActionID(rctx, aid)
-	// rctx = tracing.AddNamespace(rctx, ir.Namespace)
-	// rctx = tracing.AddStateAttr(rctx, ir.State)
-	// rctx, end, err2 := tracing.NewSpan(rctx, "handle function request")
-	// if err2 != nil {
-	// 	slog.Debug("failed while doFunctionRequest", "error", err2)
-	// }
-	// defer end()
-	// rctx, span, err2 := tracing.InjectTraceParent(rctx, ir.ActionContext.TraceParent, "action registered for execution: "+ir.actionId+", workflow: "+ir.Workflow)
-	// if err2 != nil {
-	// 	slog.Warn("failed while doFunctionRequest", "error", err2)
-	// }
-	// defer span.End()
+		ID:        aid,
+		Scope:     telemetry.LogScopeInstance,
+		InstanceInfo: telemetry.InstanceInfo{
+			Invoker: ir.Invoker,
+			Path:    ir.Workflow,
+			State:   ir.State,
+			Status:  core.LogRunningStatus,
+		},
+	}
+
+	// create a new indepenedent context with traceparent
+	traceparent := telemetry.TraceParent(ctx)
+	traceparentCtx := telemetry.FromTraceParent(context.Background(), traceparent)
+	rctx := telemetry.LogInitCtx(traceparentCtx, logObject)
 
 	worker.srv.registerActiveRequest(ir, rctx, cancel)
 	defer worker.srv.deregisterActiveRequest(ir.actionId)

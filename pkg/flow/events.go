@@ -14,7 +14,6 @@ import (
 	pkgevents "github.com/direktiv/direktiv/pkg/events"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/telemetry"
-	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 )
@@ -39,48 +38,22 @@ func initEvents(srv *server, appendStagingEvent func(ctx context.Context, events
 }
 
 func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, ce *cloudevents.Event) error {
-	// ctx = tracing.WithTrack(tracing.AddNamespace(ctx, ns.Name), tracing.BuildNamespaceTrack(ns.Name))
-	// ctx, end, err := tracing.NewSpan(ctx, "handling event-messages")
-	// if err != nil {
-	// 	slog.Debug("getListenersByTopic failed to init telemetry", "error", err)
-	// }
-	// defer end()
-	slog.DebugContext(ctx, "handle cloudevent started")
+	slog.Debug("handle cloudevent started")
 	e := pkgevents.EventEngine{
 		WorkflowStart: func(ctx context.Context, workflowID uuid.UUID, ev ...*cloudevents.Event) {
-			ctx = tracing.WithTrack(tracing.AddNamespace(ctx, ns.Name), tracing.BuildNamespaceTrack(ns.Name))
-			ctx, end, err := tracing.NewSpan(ctx, "starting workflow via cloudevent")
-			if err != nil {
-				slog.Debug("workflowStart failed to init telemetry", "error", err)
-			}
-			defer end()
-			slog.DebugContext(ctx, "starting workflow via cloudevents")
+			slog.Debug("starting workflow via cloudevents")
 			events.Engine.EventsInvoke(ctx, workflowID, ev...) //nolint:contextcheck
 		},
 		WakeInstance: func(instanceID uuid.UUID, ev []*cloudevents.Event) {
-			// nolint:fatcontext
-			ctx = tracing.AddLoseInstanceIDAttr(ctx, instanceID.String())
-			ctx = tracing.WithTrack(tracing.AddNamespace(ctx, ns.Name), tracing.BuildNamespaceTrack(ns.Name))
-			ctx, end, err := tracing.NewSpan(ctx, "waking instance via cloudevent")
-			if err != nil {
-				slog.Debug("wakeInstance failed to init telemetry", "error", err)
-			}
-			defer end()
-			slog.DebugContext(ctx, "invoking instance via cloudevent")
+			slog.Debug("invoking instance via cloudevent")
 			events.Engine.WakeEventsWaiter(instanceID, ev) //nolint:contextcheck
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*datastore.EventListener, error) {
-			ctx = tracing.WithTrack(tracing.AddNamespace(ctx, ns.Name), tracing.BuildNamespaceTrack(ns.Name))
-			ctx, end, err := tracing.NewSpan(ctx, "fetching cloudevens from event bus")
-			if err != nil {
-				slog.Debug("getListenersByTopic failed to init telemetry", "error", err)
-			}
-			defer end()
 			res := make([]*datastore.EventListener, 0)
-			err = events.runSQLTx(ctx, func(tx *database.DB) error {
+			err := events.runSQLTx(ctx, func(tx *database.DB) error {
 				r, err := tx.DataStore().EventListenerTopics().GetListeners(ctx, s)
 				if err != nil {
-					slog.ErrorContext(ctx, "failed fetching event-listener-topics")
+					slog.Error("failed fetching event-listener-topics")
 					return err
 				}
 				res = r
@@ -94,17 +67,11 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 			return res, nil
 		},
 		UpdateListeners: func(ctx context.Context, listener []*datastore.EventListener) []error {
-			ctx = tracing.WithTrack(tracing.AddNamespace(ctx, ns.Name), tracing.BuildNamespaceTrack(ns.Name))
-			ctx, end, err := tracing.NewSpan(ctx, "updating even-listeners in the event bus")
-			if err != nil {
-				slog.Debug("updateListeners:c failed to init telemetry", "error", err)
-			}
-			defer end()
-			err = events.runSQLTx(ctx, func(tx *database.DB) error {
+			err := events.runSQLTx(ctx, func(tx *database.DB) error {
 				errs := tx.DataStore().EventListener().UpdateOrDelete(ctx, listener)
 				for _, err2 := range errs {
 					if err2 != nil {
-						slog.DebugContext(ctx, "error updating listeners", "error", err2)
+						slog.Debug("error updating listeners", "error", err2)
 
 						return err2
 					}
@@ -113,46 +80,40 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 				return nil
 			})
 			if err != nil {
-				slog.ErrorContext(ctx, "failed processing events", "error", err)
+				slog.Error("failed processing events", "error", err)
 				return []error{fmt.Errorf("%w", err)}
 			}
-			slog.DebugContext(ctx, "updating listeners complete")
+			slog.Debug("updating listeners complete")
 
 			return nil
 		},
 	}
 
 	e.ProcessEvents(ctx, ns.ID, []event.Event{*ce}, func(template string, args ...interface{}) {
-		slog.ErrorContext(ctx, fmt.Sprintf(template, args...))
+		slog.Error(fmt.Sprintf(template, args...))
 	})
-	slog.DebugContext(ctx, "cloudevent handled")
+	slog.Debug("cloudevent handled")
 
 	return nil
 }
 
 func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Namespace, event *cloudevents.Event, timer int64) error {
-	loggingCtx := tracing.WithTrack(tracing.AddNamespace(ctx, ns.Name), tracing.BuildNamespaceTrack(ns.Name))
-	loggingCtx, cleanup, err := tracing.NewSpan(loggingCtx, "adding cloudevent to the event bus with id: "+event.ID())
+	slog.Debug("received cloudevent")
+	err := events.addEvent(ctx, event, ns)
 	if err != nil {
-		slog.Debug("failed to popupate telemetry in broadcast-cloudevent", "error", err)
-	}
-	defer cleanup()
-	slog.DebugContext(loggingCtx, "received cloudevent")
-	err = events.addEvent(ctx, event, ns)
-	if err != nil {
-		slog.ErrorContext(loggingCtx, "failed to add event", "error", err)
+		slog.Error("failed to add event", "error", err)
 		return err
 	}
 	// handle event
 	if timer == 0 {
-		slog.DebugContext(loggingCtx, "handling event immediately")
+		slog.Debug("handling event immediately")
 		err = events.handleEvent(ctx, ns, event)
 		if err != nil {
-			slog.ErrorContext(loggingCtx, "failed to handle event", "error", err)
+			slog.Error("failed to handle event", "error", err)
 			return err
 		}
 	} else {
-		slog.DebugContext(loggingCtx, "scheduling delayed event", "delay-until", time.Unix(timer, 0))
+		slog.Debug("scheduling delayed event", "delay-until", time.Unix(timer, 0))
 		_, errs := events.appendStagingEvent(ctx, &datastore.StagingEvent{
 			Event: &datastore.Event{
 				NamespaceID: ns.ID,
@@ -165,26 +126,21 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Nam
 		})
 		for _, err2 := range errs {
 			if err2 != nil {
-				slog.ErrorContext(loggingCtx, "failed to create delayed event", "error", err2)
+				slog.Error("failed to create delayed event", "error", err2)
 			}
 		}
 	}
-	slog.DebugContext(loggingCtx, "processed cloudevent")
+	slog.Debug("processed cloudevent")
 
 	return nil
 }
 
 func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, ceds []*model.ConsumeEventDefinition, all bool) error {
 	var transformedEvents []*model.ConsumeEventDefinition
-	// loggingCtx := tracing.AddNamespace(ctx, im.Namespace().Name)
-	// instanceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
-	// instanceTrackCtx, end, err := tracing.NewSpan(instanceTrackCtx, "waiting for events")
-	// if err != nil {
-	// 	slog.Debug("telemetry failed", "error", err)
-	// }
-	// defer end()
 	ctx = im.Context(ctx)
-	telemetry.LogInstanceInfo(ctx, fmt.Sprintf("listening for %d events", len(ceds)))
+	telemetry.LogInstance(ctx, telemetry.LogLevelInfo,
+		fmt.Sprintf("listening for %d events", len(ceds)))
+
 	for i := range ceds {
 		ev := new(model.ConsumeEventDefinition)
 		ev.Context = make(map[string]interface{})
@@ -215,7 +171,9 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 
 		return err
 	}
-	telemetry.LogInstanceDebug(ctx, "registered to receive events")
+
+	telemetry.LogInstance(ctx, telemetry.LogLevelDebug,
+		"registered to receive events")
 
 	return nil
 }

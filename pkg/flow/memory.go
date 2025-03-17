@@ -40,7 +40,7 @@ type instanceMemory struct {
 func (im *instanceMemory) Namespace() *datastore.Namespace {
 	return &datastore.Namespace{
 		ID:   im.instance.Instance.NamespaceID,
-		Name: im.instance.TelemetryInfo.NamespaceName,
+		Name: im.instance.Instance.Namespace,
 	}
 }
 
@@ -52,6 +52,22 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 
 	if string(data) == `{}` {
 		return nil
+	}
+
+	span := trace.SpanFromContext(ctx)
+	if span.SpanContext().HasSpanID() {
+		tp := telemetry.TraceParent(ctx)
+		ti := enginerefactor.InstanceTelemetryInfo{
+			TraceParent: tp,
+		}
+		b, err := ti.MarshalJSON()
+		if err != nil {
+			slog.Warn("can not marshal telemetry info", slog.Any("error", err))
+		} else {
+			im.updateArgs.TelemetryInfo = &b
+		}
+	} else {
+		fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!HAS NO SPAN ID")
 	}
 
 	im.updateArgs.Server = im.engine.ID
@@ -347,28 +363,17 @@ func (engine *engine) forceFreeCriticalMemory(ctx context.Context, im *instanceM
 }
 
 func (im *instanceMemory) Context(ctx context.Context) context.Context {
-	callpath := ""
-	for _, v := range im.instance.DescentInfo.Descent {
-		callpath += "/" + v.ID.String()
-	}
-
-	info := telemetry.InstanceInfo{
+	logObject := telemetry.LogObject{
 		Namespace: im.Namespace().Name,
-		Instance:  im.GetInstanceID().String(),
-		Invoker:   im.instance.Instance.Invoker,
-		Callpath:  callpath,
-		Path:      im.instance.Instance.WorkflowPath,
-		Status:    core.LogRunningStatus,
-		State:     im.GetState(),
+		ID:        im.GetInstanceID().String(),
+		Scope:     telemetry.LogScopeInstance,
+		InstanceInfo: telemetry.InstanceInfo{
+			Invoker: im.instance.Instance.Invoker,
+			Path:    im.instance.Instance.WorkflowPath,
+			Status:  core.LogRunningStatus,
+			State:   im.GetState(),
+		},
 	}
 
-	span := trace.SpanFromContext(ctx)
-	if span.SpanContext().TraceID().IsValid() {
-		info.Trace = span.SpanContext().TraceID().String()
-		info.Span = span.SpanContext().SpanID().String()
-	}
-
-	ctx = telemetry.LogInitInstance(ctx, info)
-
-	return ctx
+	return telemetry.LogInitCtx(ctx, logObject)
 }

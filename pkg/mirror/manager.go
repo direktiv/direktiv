@@ -118,7 +118,8 @@ func (d *Manager) silentFailProcess(p *datastore.MirrorProcess) {
 
 func (d *Manager) failProcess(p *datastore.MirrorProcess, err error) {
 	d.silentFailProcess(p)
-	telemetry.LogActivityError("mirroring process failed", p.Namespace, p.ID.String(), err)
+	telemetry.LogActivityError(p.Namespace, p.ID.String(),
+		"mirror processing failed", err)
 }
 
 func (d *Manager) setProcessStatus(ctx context.Context, process *datastore.MirrorProcess, status string) error {

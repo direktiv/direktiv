@@ -158,68 +158,52 @@ cluster-dev:
 	DOCKER_BUILDKIT=1 docker build --build-arg IS_ENTERPRISE=${IS_ENTERPRISE} --push -t localhost:5001/direktiv:dev .
 	kubectl delete pod -l app=direktiv-flow
 
-cluster-portforward-tracing:
-	kubectl port-forward svc/grafana 7788:7788
-
-
 cluster-setup-tracing:
-	$(MAKE) cluster-direktiv TELEMETRY=true LOKI="-f scripts/telemetry/loki.yaml"
-	
-# helm install --set database.host=postgres.default.svc \
-# --set database.port=5432 \
-# --set database.user=admin \
-# --set database.password=password \
-# --set database.name=direktiv \
-# --set database.sslmode=disable \
-# --set pullPolicy=Always \
-# --set ingress-nginx.install=false \
-# --set image=direktiv \
-# --set registry=localhost:5001 \
-# --set tag=dev \
-# direktiv charts/direktiv
-# helm repo add grafana https://grafana.github.io/helm-charts
-# helm repo update
-# helm uninstall tempo || true
-# helm install tempo grafana/tempo
-# helm uninstall grafana || true
-# helm install \
-# --set service.port=7788 \
-# --set ingress.enabled=false \
-# --set ingress.path=/grafana \
-# --set adminPassword=admin \
-# --set ingress.hosts={} \
-# --set ingress.ingressClassName=nginx \
-# --set datasources."datasources\.yaml".apiVersion=1 \
-# --set datasources."datasources\.yaml".datasources[0].name=loki \
-# --set datasources."datasources\.yaml".datasources[0].type=loki \
-# --set datasources."datasources\.yaml".datasources[0].access=proxy \
-# --set datasources."datasources\.yaml".datasources[0].url=http://loki-gateway \
-# --set datasources."datasources\.yaml".datasources[1].name=tempo \
-# --set datasources."datasources\.yaml".datasources[1].type=tempo \
-# --set datasources."datasources\.yaml".datasources[0].access=proxy \
-# --set datasources."datasources\.yaml".datasources[0].url=http://tempo:3100 \
-# grafana grafana/grafana
-# helm uninstall loki || true
-# helm install \
-# --set loki.useTestSchema=true \
-# --set loki.commonConfig.replication_factor=1 \
-# --set loki.pattern_ingester.enabled=true \
-# --set loki.limits_config.allow_structured_metadata=true \
-# --set loki.limits_config.volume_enabled=true \
-# --set deploymentMode=SingleBinary \
-# --set singleBinary.replicas=1 \
-# --set loki.ruler.enable_api=true \
-# --set backend.replicas=0 \
-# --set read.replicas=0 \
-# --set write.replicas=0 \
-# --set ingester.replicas=0 \
-# --set querier.replicas=0 \
-# --set queryFrontend.replicas=0 \
-# --set queryScheduler.replicas=0 \
-# --set ingdistributorester.replicas=0 \
-# --set indexGateway.replicas=0 \
-# --set bloomCompactor.replicas=0 \
-# --set bloomGateway.replicas=0 \
-# --set minio.enabled=true \
-# --set loki.auth_enabled=false \
-# loki grafana/loki
+	$(MAKE) cluster-setup TELEMETRY=true LOKI="-f scripts/telemetry/telemetry.yaml"	
+	helm repo add grafana https://grafana.github.io/helm-charts
+	helm repo update
+	helm uninstall tempo || true
+	helm install tempo grafana/tempo
+	helm uninstall grafana || true
+	helm install \
+	--set ingress.enabled=false \
+	--set ingress.path=/grafana \
+	--set adminPassword=admin \
+	--set ingress.hosts={} \
+	--set ingress.ingressClassName=nginx \
+	--set datasources."datasources\.yaml".apiVersion=1 \
+	--set datasources."datasources\.yaml".datasources[0].name=loki \
+	--set datasources."datasources\.yaml".datasources[0].type=loki \
+	--set datasources."datasources\.yaml".datasources[0].access=proxy \
+	--set datasources."datasources\.yaml".datasources[0].url=http://loki-gateway \
+	--set datasources."datasources\.yaml".datasources[1].name=tempo \
+	--set datasources."datasources\.yaml".datasources[1].type=tempo \
+	--set datasources."datasources\.yaml".datasources[1].access=proxy \
+	--set datasources."datasources\.yaml".datasources[1].url=http://tempo:3100 \
+	--set service.nodePort=31788 \
+	--set service.type=NodePort \
+	grafana grafana/grafana
+	helm uninstall loki || true
+	helm install \
+	--set loki.useTestSchema=true \
+	--set loki.commonConfig.replication_factor=1 \
+	--set loki.pattern_ingester.enabled=true \
+	--set loki.limits_config.allow_structured_metadata=true \
+	--set loki.limits_config.volume_enabled=true \
+	--set deploymentMode=SingleBinary \
+	--set singleBinary.replicas=1 \
+	--set loki.ruler.enable_api=true \
+	--set backend.replicas=0 \
+	--set read.replicas=0 \
+	--set write.replicas=0 \
+	--set ingester.replicas=0 \
+	--set querier.replicas=0 \
+	--set queryFrontend.replicas=0 \
+	--set queryScheduler.replicas=0 \
+	--set ingdistributorester.replicas=0 \
+	--set indexGateway.replicas=0 \
+	--set bloomCompactor.replicas=0 \
+	--set bloomGateway.replicas=0 \
+	--set minio.enabled=true \
+	--set loki.auth_enabled=false \
+	loki grafana/loki

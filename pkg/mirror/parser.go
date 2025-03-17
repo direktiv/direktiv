@@ -43,8 +43,8 @@ func NewParser(namespace, pid string, src Source) (*Parser, error) {
 		return nil, err
 	}
 
-	telemetry.LogActivityDebug(fmt.Sprintf("processing repository in temporary directory: %s", tempDir),
-		namespace, pid)
+	telemetry.LogActivity(telemetry.LogLevelDebug, namespace, pid,
+		fmt.Sprintf("processing repository in temporary directory: %s", tempDir))
 
 	p := &Parser{
 		matcher: gitignore.NewMatcher(nil),
@@ -67,8 +67,8 @@ func NewParser(namespace, pid string, src Source) (*Parser, error) {
 
 	err = p.parse()
 	if err != nil {
-		telemetry.LogActivityError("error processing repository",
-			namespace, pid, err)
+		telemetry.LogActivityError(namespace, pid,
+			"error processing repository", err)
 		_ = p.Close()
 
 		return nil, err
@@ -118,7 +118,7 @@ func (p *Parser) parse() error {
 func (p *Parser) loadIgnores() error {
 	f, err := p.src.FS().Open(".direktivignore")
 	if errors.Is(err, os.ErrNotExist) {
-		telemetry.LogActivityInfo("no .direktivignore file detected", p.Namespace, p.PID)
+		telemetry.LogActivity(telemetry.LogLevelInfo, p.Namespace, p.PID, "no .direktivignore file detected")
 
 		return nil
 	}
@@ -152,14 +152,14 @@ func (p *Parser) filterCopySourceWalkFunc(path string, d fs.DirEntry, _ error) e
 	isMatch := p.matcher.Match(strings.Split(path, "/"), d.IsDir())
 	if isMatch {
 		if d.IsDir() {
-			telemetry.LogActivityInfo(fmt.Sprintf("skipping directory '%s': excluded by .direktivignore patterns", path),
-				p.Namespace, p.PID)
+			telemetry.LogActivity(telemetry.LogLevelInfo, p.Namespace, p.PID,
+				fmt.Sprintf("skipping directory '%s': excluded by .direktivignore patterns", path))
 
 			return fs.SkipDir
 		}
 
-		telemetry.LogActivityInfo(fmt.Sprintf("skipping file '%s': excluded by .direktivignore patterns", path),
-			p.Namespace, p.PID)
+		telemetry.LogActivity(telemetry.LogLevelInfo, p.Namespace, p.PID,
+			fmt.Sprintf("skipping file '%s': excluded by .direktivignore patterns", path))
 
 		return nil
 	}
@@ -168,14 +168,14 @@ func (p *Parser) filterCopySourceWalkFunc(path string, d fs.DirEntry, _ error) e
 	_, err := filestore.SanitizePath(base)
 	if err != nil {
 		if d.IsDir() {
-			telemetry.LogActivityInfo(fmt.Sprintf("skipping directory '%s': filename contains illegal characters", path),
-				p.Namespace, p.PID)
+			telemetry.LogActivity(telemetry.LogLevelInfo, p.Namespace, p.PID,
+				fmt.Sprintf("skipping directory '%s': filename contains illegal characters", path))
 
 			return fs.SkipDir
 		}
 
-		telemetry.LogActivityInfo(fmt.Sprintf("skipping file '%s': filename contains illegal characters", path),
-			p.Namespace, p.PID)
+		telemetry.LogActivity(telemetry.LogLevelInfo, p.Namespace, p.PID,
+			fmt.Sprintf("skipping file '%s': filename contains illegal characters", path))
 
 		return nil
 	}
@@ -188,8 +188,8 @@ func (p *Parser) filterCopySourceWalkFunc(path string, d fs.DirEntry, _ error) e
 			return err
 		}
 
-		telemetry.LogActivityDebug(fmt.Sprintf("created directory '%s'", path),
-			p.Namespace, p.PID)
+		telemetry.LogActivity(telemetry.LogLevelDebug, p.Namespace, p.PID,
+			fmt.Sprintf("created directory '%s'", path))
 
 		return nil
 	}
@@ -223,8 +223,8 @@ func (p *Parser) filterCopySourceWalkFunc(path string, d fs.DirEntry, _ error) e
 		return err
 	}
 
-	telemetry.LogActivityDebug(fmt.Sprintf("created file '%s'", path),
-		p.Namespace, p.PID)
+	telemetry.LogActivity(telemetry.LogLevelDebug, p.Namespace, p.PID,
+		fmt.Sprintf("created file '%s'", path))
 
 	return nil
 }
@@ -274,8 +274,8 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		return nil
 	}
 	if err != nil {
-		telemetry.LogActivityWarn(fmt.Sprintf("error loading possible Direktiv resource definition '%s': %v", path, err),
-			p.Namespace, p.PID)
+		telemetry.LogActivity(telemetry.LogLevelWarn, p.Namespace, p.PID,
+			fmt.Sprintf("error loading possible Direktiv resource definition '%s': %v", path, err))
 
 		return nil
 	}
@@ -324,8 +324,8 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		return err
 	}
 
-	telemetry.LogActivityDebug(fmt.Sprintf("pruned Direktiv resource file '%s'", path),
-		p.Namespace, p.PID)
+	telemetry.LogActivity(telemetry.LogLevelDebug, p.Namespace, p.PID,
+		fmt.Sprintf("pruned Direktiv resource file '%s'", path))
 
 	return nil
 }
@@ -357,8 +357,8 @@ func (p *Parser) scanAndPruneAmbiguousDirektivWorkflowFile(path string) error {
 	wf := new(model.Workflow)
 	err = wf.Load(data)
 	if err != nil {
-		telemetry.LogActivityWarn(fmt.Sprintf("error loading possible Direktiv workflow definition (ambiguous) '%s': %v", path, err),
-			p.Namespace, p.PID)
+		telemetry.LogActivity(telemetry.LogLevelWarn, p.Namespace, p.PID,
+			fmt.Sprintf("error loading possible Direktiv workflow definition (ambiguous) '%s': %v", path, err))
 
 		return nil
 	}
@@ -373,8 +373,8 @@ func (p *Parser) scanAndPruneAmbiguousDirektivWorkflowFile(path string) error {
 		return err
 	}
 
-	telemetry.LogActivityDebug(fmt.Sprintf("pruned Direktiv workflow definition file '%s'", path),
-		p.Namespace, p.PID)
+	telemetry.LogActivity(telemetry.LogLevelDebug, p.Namespace, p.PID,
+		fmt.Sprintf("pruned Direktiv workflow definition file '%s'", path))
 
 	return nil
 }
@@ -396,8 +396,8 @@ func (p *Parser) scanAndPruneAmbiguousDirektivWorkflowFiles() error {
 }
 
 func (p *Parser) handleWorkflow(path string, data []byte) error {
-	telemetry.LogActivityInfo(fmt.Sprintf("direktiv resource file containing a workflow definition found at '%s'", path),
-		p.Namespace, p.PID)
+	telemetry.LogActivity(telemetry.LogLevelInfo, p.Namespace, p.PID,
+		fmt.Sprintf("direktiv resource file containing a workflow definition found at '%s'", path))
 
 	p.Workflows[path] = data
 
@@ -405,8 +405,8 @@ func (p *Parser) handleWorkflow(path string, data []byte) error {
 }
 
 func (p *Parser) handleService(path string, data []byte) error {
-	telemetry.LogActivityInfo(fmt.Sprintf("direktiv resource file containing a service definition found at '%s'", path),
-		p.Namespace, p.PID)
+	telemetry.LogActivity(telemetry.LogLevelInfo, p.Namespace, p.PID,
+		fmt.Sprintf("direktiv resource file containing a service definition found at '%s'", path))
 
 	p.Services[path] = data
 
@@ -414,8 +414,8 @@ func (p *Parser) handleService(path string, data []byte) error {
 }
 
 func (p *Parser) handleGateway(path string, data []byte) error {
-	telemetry.LogActivityInfo(fmt.Sprintf("direktiv resource file containing a gateway definition found at '%s'", path),
-		p.Namespace, p.PID)
+	telemetry.LogActivity(telemetry.LogLevelInfo, p.Namespace, p.PID,
+		fmt.Sprintf("direktiv resource file containing a gateway definition found at '%s'", path))
 
 	p.Gateways[path] = data
 
@@ -423,8 +423,8 @@ func (p *Parser) handleGateway(path string, data []byte) error {
 }
 
 func (p *Parser) handleEndpoint(path string, data []byte) error {
-	telemetry.LogActivityInfo(fmt.Sprintf("direktiv resource file containing an endpoint definition found at '%s'", path),
-		p.Namespace, p.PID)
+	telemetry.LogActivity(telemetry.LogLevelInfo, p.Namespace, p.PID,
+		fmt.Sprintf("direktiv resource file containing an endpoint definition found at '%s'", path))
 
 	p.Endpoints[path] = data
 
@@ -432,8 +432,8 @@ func (p *Parser) handleEndpoint(path string, data []byte) error {
 }
 
 func (p *Parser) handleConsumer(path string, data []byte) error {
-	telemetry.LogActivityInfo(fmt.Sprintf("direktiv resource file containing a consumer definition found at '%s'", path),
-		p.Namespace, p.PID)
+	telemetry.LogActivity(telemetry.LogLevelInfo, p.Namespace, p.PID,
+		fmt.Sprintf("direktiv resource file containing a consumer definition found at '%s'", path))
 
 	p.Consumers[path] = data
 
@@ -441,9 +441,9 @@ func (p *Parser) handleConsumer(path string, data []byte) error {
 }
 
 func (p *Parser) handleFilters(path string, filters *model.Filters) error {
-	telemetry.LogActivityInfo(fmt.Sprintf("direktiv resource file containing %d filter definitions found at '%s'",
-		len(filters.Filters), path),
-		p.Namespace, p.PID)
+	telemetry.LogActivity(telemetry.LogLevelInfo, p.Namespace, p.PID,
+		fmt.Sprintf("direktiv resource file containing %d filter definitions found at '%s'",
+			len(filters.Filters), path))
 
 	for idx, filter := range filters.Filters {
 		if _, exists := p.Filters[filter.Name]; exists {
@@ -467,8 +467,8 @@ func (p *Parser) handleFilters(path string, filters *model.Filters) error {
 		}
 
 		p.Filters[filter.Name] = data
-		telemetry.LogActivityInfo(fmt.Sprintf("filter '%s' loaded", filter.Name),
-			p.Namespace, p.PID)
+		telemetry.LogActivity(telemetry.LogLevelInfo, p.Namespace, p.PID,
+			fmt.Sprintf("filter '%s' loaded", filter.Name))
 	}
 
 	return nil
@@ -482,8 +482,8 @@ func (p *Parser) logUnprunedFiles() error {
 			return nil
 		}
 
-		telemetry.LogActivityInfo(fmt.Sprintf("file '%s' loaded", path),
-			p.Namespace, p.PID)
+		telemetry.LogActivity(telemetry.LogLevelInfo, p.Namespace, p.PID,
+			fmt.Sprintf("file '%s' loaded", path))
 
 		return nil
 	})
@@ -550,8 +550,8 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 		vname := strings.TrimPrefix(base, prefix)
 
 		if !regex.MatchString(vname) {
-			telemetry.LogActivityWarn(fmt.Sprintf("detected a possible deprecated namespace variable definition with an invalid name at: %s", fpath),
-				p.Namespace, p.PID)
+			telemetry.LogActivity(telemetry.LogLevelWarn, p.Namespace, p.PID,
+				fmt.Sprintf("detected a possible deprecated namespace variable definition with an invalid name at: %s", fpath))
 
 			continue
 		}
@@ -566,8 +566,9 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 
 			p.DeprecatedNamespaceVars[vname] = data
 
-			telemetry.LogActivityWarn(fmt.Sprintf("detected deprecated namespace variable definition at: %s", fpath),
-				p.Namespace, p.PID)
+			telemetry.LogActivity(telemetry.LogLevelWarn, p.Namespace, p.PID,
+				fmt.Sprintf("detected deprecated namespace variable definition at: %s", fpath))
+
 		}
 	}
 
@@ -581,8 +582,8 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 			prefix := wpath + "."
 			vname := strings.TrimPrefix(fpath, prefix)
 			if !regex.MatchString(vname) {
-				telemetry.LogActivityWarn(fmt.Sprintf("detected a possible deprecated workflow variable definition with an invalid name at: %s", fpath),
-					p.Namespace, p.PID)
+				telemetry.LogActivity(telemetry.LogLevelWarn, p.Namespace, p.PID,
+					fmt.Sprintf("detected a possible deprecated workflow variable definition with an invalid name at: %s", fpath))
 
 				continue
 			}
@@ -603,8 +604,8 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 
 				m[vname] = data
 
-				telemetry.LogActivityWarn(fmt.Sprintf("detected deprecated workflow variable definition at: %s", fpath),
-					p.Namespace, p.PID)
+				telemetry.LogActivity(telemetry.LogLevelWarn, p.Namespace, p.PID,
+					fmt.Sprintf("detected deprecated workflow variable definition at: %s", fpath))
 			}
 		}
 	}

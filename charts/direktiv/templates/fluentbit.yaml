@@ -12,6 +12,10 @@ data:
           Time_Keep Off
           Time_Key time
           Time_Format %Y-%m-%dT%H:%M:%S.%L  
+          Retry_Limit 10
+          scheduler.base   3
+          scheduler.cap    30
+          log_level debug
   fluent-bit.conf: |
       [SERVICE]
           Daemon Off

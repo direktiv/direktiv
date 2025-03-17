@@ -19,8 +19,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/telemetry"
-	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type muxStart struct {
@@ -118,7 +118,8 @@ func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
 }
 
 func (flow *flow) cronHandler(data []byte) {
-	ctx := context.Background()
+	ctx, span := telemetry.Tracer.Start(context.Background(), "cron-job")
+	defer span.End()
 
 	t := time.Now().Truncate(time.Minute).UTC()
 
@@ -165,18 +166,23 @@ func (flow *flow) cronHandler(data []byte) {
 		return
 	}
 
-	// ctx = tracing.AddNamespace(ctx, ns.Name)
-	// ctx, end, err := tracing.NewSpan(ctx, "starting cron handler")
-	// if err != nil {
-	// 	slog.Debug("cronhandler failed to start span", "error", err)
-	// }
-	// defer end()
+	// set span attributes to identify the cron
+	span.SetAttributes(
+		attribute.KeyValue{
+			Key:   "namespace",
+			Value: attribute.StringValue(ns.Name),
+		},
+		attribute.KeyValue{
+			Key:   "path",
+			Value: attribute.StringValue(file.Path),
+		},
+	)
 
 	x, _ := json.Marshal([]string{ns.Name, file.Path, t.String()}) //nolint
 	unique := string(x)
 	md5sum := md5.Sum([]byte(unique))
 	hash := base64.StdEncoding.EncodeToString(md5sum[:])
-	traceParent, err := tracing.ExtractTraceParent(ctx)
+
 	if err != nil {
 		slog.Debug("cronhandler failed to init telemetry", "error", err)
 	}
@@ -188,23 +194,24 @@ func (flow *flow) cronHandler(data []byte) {
 		Input:     make([]byte, 0),
 		Invoker:   "cron",
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
-			TraceParent:   traceParent,
-			NamespaceName: ns.Name,
+			TraceParent: telemetry.TraceParent(ctx),
 		},
 		SyncHash: &hash,
 	}
 
-	telemetry.LogNamespaceInfo(ctx, fmt.Sprintf("running cron for %s", file.Path), ns.Name)
+	telemetry.LogNamespace(telemetry.LogLevelInfo, ns.Name, fmt.Sprintf("running cron for %s", file.Path))
 
 	im, err := flow.Engine.NewInstance(ctx, args)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate") {
 			// this happens on a attempt to create an instance clashed with another server
-			telemetry.LogNamespaceDebug(ctx, "instance creation clash detected, likely due to parallel execution", ns.Name)
+			telemetry.LogNamespace(telemetry.LogLevelDebug, ns.Name,
+				"instance creation clash detected, likely due to parallel execution")
 			return
 		}
 
-		telemetry.LogNamespaceError(ctx, "failed to create new instance from cron job", ns.Name, fmt.Errorf("cron path error %s, %s", file.Path, err.Error()))
+		telemetry.LogNamespaceError(ns.Name,
+			fmt.Sprintf("failed to create new instance from cron job %s", file.Path), err)
 
 		return
 	}

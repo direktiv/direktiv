@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -23,6 +24,7 @@ type logController struct {
 type logParams struct {
 	namespace     string
 	scope         string
+	id            string
 	limit         string
 	direction     string
 	after, before string
@@ -59,8 +61,8 @@ func (l logParams) toQuery() string {
 		timeSelector = fmt.Sprintf(" _time:<%s ", l.before)
 	}
 
-	return fmt.Sprintf("query=scope:=%s%s| %s",
-		l.scope, timeSelector, strings.Join(queryParts, " | "))
+	return fmt.Sprintf("query=scope:=%s id:=%s%s| %s",
+		l.scope, l.id, timeSelector, strings.Join(queryParts, " | "))
 }
 
 func (m *logController) mountRouter(r chi.Router) {
@@ -68,6 +70,7 @@ func (m *logController) mountRouter(r chi.Router) {
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		params := extractLogRequestParams(r)
+		fmt.Println(params.toQuery())
 		logs, err := m.get(params.toQuery())
 		if err != nil {
 			slog.Error("fetching logs for request", "err", err)
@@ -85,18 +88,12 @@ func (m *logController) mountRouter(r chi.Router) {
 			return
 		}
 
-		// metaInfo := map[string]any{
-		// 	"previousPage": logs[0].Time.Format(time.RFC3339Nano),
-		// 	"startingFrom": now.Format(time.RFC3339Nano),
-		// }
-
 		metaInfo := map[string]any{
 			"previousPage": nil,
 			"startingFrom": nil,
 		}
 
 		writeJSONWithMeta(w, logs, metaInfo)
-		// writeJSONWithMeta(w, []logEntry{}, metaInfo)
 	})
 
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
@@ -110,74 +107,25 @@ func (m *logController) mountRouter(r chi.Router) {
 		}
 
 		// var logEntry map[string]interface{}
-		var logEntry telemetry.HTTPInstanceInfo
-		err := json.NewDecoder(r.Body).Decode(&logEntry)
+		var logObject telemetry.HTTPInstanceInfo
+		err := json.NewDecoder(r.Body).Decode(&logObject)
 		if err != nil {
 			writeInternalError(w, err)
 
 			return
 		}
 
-		// if _, ok := logEntry[string(core.LogTrackKey)]; !ok {
-		// 	writeBadrequestError(w, fmt.Errorf("missing 'track' field"))
+		ctx := telemetry.LogInitCtx(r.Context(), logObject.LogObject)
 
-		// 	return
-		// }
-
-		// if v, ok := logEntry["namespace"].(string); !ok || v != namespace.Name {
-		// 	writeBadrequestError(w, fmt.Errorf("invalid or mismatched namespace"))
-
-		// 	return
-		// }
-
-		// msg, ok := logEntry["msg"].(string)
-		// if !ok {
-		// 	writeBadrequestError(w, fmt.Errorf("missing or invalid 'msg' field"))
-
-		// 	return
-		// }
-
-		// map[callpath:528a0556-333e-4562-b027-28e167981ac5 instance:528a0556-333e-4562-b027-28e167981ac5 invoker: level:INFO msg:Creating new request namespace:demo span:15adf9d1fb5ddad9 state:getter status:running trace:d7f4cba51f1730a295e3675ab3976c12 track:instance.528a0556-333e-4562-b027-28e167981ac5 workflow:/test.yaml]
-		//
-		// telemetry.LogInitInstance(r.Context(), telemetry.InstanceInfo{
-
-		// })
-
-		// slogF := slog.Info
-		// if v, ok := logEntry["level"].(tracing.LogLevel); ok {
-		// 	switch v {
-		// 	case tracing.LevelDebug:
-		// 		slogF = slog.Debug
-		// 	case tracing.LevelInfo:
-		// 		slogF = slog.Info
-		// 	case tracing.LevelWarn:
-		// 		slogF = slog.Warn
-		// 	case tracing.LevelError:
-		// 		slogF = slog.Error
-		// 	}
-		// }
-
-		// delete(logEntry, "level")
-
-		// attr := make([]interface{}, 0, len(logEntry))
-		// for k, v := range logEntry {
-		// 	attr = append(attr, k, v)
-		// }
-
-		// slogF(msg, attr...)
-
-		ctx := telemetry.LogInitInstance(r.Context(), logEntry.GetInstanceInfo())
-
-		// if v, ok := logEntry["level"].(tracing.LogLevel); ok {
-		switch logEntry.Level {
+		switch logObject.Level {
 		case telemetry.LogLevelDebug:
-			telemetry.LogInstanceDebug(ctx, logEntry.Msg)
+			telemetry.LogInstance(ctx, telemetry.LogLevelDebug, logObject.Msg)
 		case telemetry.LogLevelInfo:
-			telemetry.LogInstanceInfo(ctx, logEntry.Msg)
+			telemetry.LogInstance(ctx, telemetry.LogLevelInfo, logObject.Msg)
 		case telemetry.LogLevelWarn:
-			telemetry.LogInstanceWarn(ctx, logEntry.Msg)
+			telemetry.LogInstance(ctx, telemetry.LogLevelWarn, logObject.Msg)
 		case telemetry.LogLevelError:
-			telemetry.LogInstanceError(ctx, logEntry.Msg, fmt.Errorf(logEntry.Msg))
+			telemetry.LogInstanceError(ctx, logObject.Msg, fmt.Errorf(logObject.Msg))
 		}
 
 		w.WriteHeader(http.StatusOK)
@@ -211,7 +159,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 
 	// if nothing is set, we do the events from now
 	if params.after == "" {
-		params.after = time.Now().Format("2006-01-02T15:04:05.000000000Z")
+		params.after = time.Now().UTC().Format("2006-01-02T15:04:05.000000000Z")
 	}
 
 	rc := http.NewResponseController(w)
@@ -221,15 +169,15 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(queryString)
 		logs, err := m.get(queryString)
 		if err != nil {
-			return time.Now(), err
+			return time.Now().UTC(), err
 		}
 
 		for i := range logs {
 			l := logs[i]
 			b, _ := json.Marshal(l)
-			_, err = fmt.Fprintf(w, fmt.Sprintf("id: %s\nevent: %s\ndata: %s\n\n", l.Time.Format("2006-01-02T15:04:05.000000000Z"), "message", string(b)))
+			_, err = fmt.Fprintf(w, fmt.Sprintf("id: %s\nevent: %s\ndata: %s\n\n", l.Time.UTC().Format("2006-01-02T15:04:05.000000000Z"), "message", string(b)))
 			if err != nil {
-				return time.Now(), err
+				return time.Now().UTC(), err
 			}
 		}
 
@@ -237,6 +185,14 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 		if len(logs) > 0 {
 			lastLog := logs[len(logs)-1]
 			cursor = lastLog.Time.UTC()
+		} else {
+			cursor, err = parseQueryTime(params.after)
+
+			// can not do much about it, use `now`
+			if err != nil {
+				slog.Error("can not parse params.after", slog.Any("error", err))
+				cursor = time.Now().UTC()
+			}
 		}
 
 		return cursor, rc.Flush()
@@ -267,7 +223,6 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	params.after = cursor.Format("2006-01-02T15:04:05.000000000Z")
-	// params.last = "100"
 
 	clientGone := r.Context().Done()
 
@@ -295,10 +250,20 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+var formats = []string{"2006-01-02T15:04:05.000000000Z", "2006-01-02T15:04:05.000Z"}
+
+func parseQueryTime(input string) (time.Time, error) {
+	for _, format := range formats {
+		t, err := time.Parse(format, input)
+		if err == nil {
+			return t, nil
+		}
+	}
+	return time.Time{}, errors.New("Unrecognized time format")
+}
+
 // nolint:canonicalheader
 func extractLogRequestParams(r *http.Request) logParams {
-	// params := map[string]string{}
-
 	var logParams logParams
 
 	if v := chi.URLParam(r, "namespace"); v != "" {
@@ -306,7 +271,8 @@ func extractLogRequestParams(r *http.Request) logParams {
 		logParams.namespace = v
 
 		// set track to namespace first, we can change it later
-		logParams.scope = "namespace." + v
+		logParams.scope = "namespace"
+		logParams.id = v
 	}
 
 	// fetch all possible query params
@@ -323,11 +289,13 @@ func extractLogRequestParams(r *http.Request) logParams {
 	}
 
 	if r.URL.Query().Get("instance") != "" {
-		logParams.scope = "instance." + r.URL.Query().Get("instance")
+		logParams.scope = "instance"
+		logParams.id = r.URL.Query().Get("instance")
 	}
 
 	if r.URL.Query().Get("activity") != "" {
-		logParams.scope = "activity." + r.URL.Query().Get("activity")
+		logParams.scope = "activity"
+		logParams.id = r.URL.Query().Get("activity")
 	}
 
 	// } else if p, ok := params["route"]; ok {
@@ -337,26 +305,21 @@ func extractLogRequestParams(r *http.Request) logParams {
 }
 
 type logEntry struct {
-	Time      time.Time             `json:"time"`
+	Time time.Time `json:"time"`
+	// ID        string                `json:"id"`
 	Msg       interface{}           `json:"msg"`
 	Level     interface{}           `json:"level"`
 	Namespace interface{}           `json:"namespace"`
-	Trace     interface{}           `json:"trace"`
-	Span      interface{}           `json:"span"`
 	Workflow  *WorkflowEntryContext `json:"workflow,omitempty"`
 	Activity  *ActivityEntryContext `json:"activity,omitempty"`
 	Route     *RouteEntryContext    `json:"route,omitempty"`
-	Error     interface{}           `json:"error"`
+	Error     string                `json:"error,omitempty"`
 }
 
 type WorkflowEntryContext struct {
 	Status string `json:"status"`
-
-	State    string `json:"state"`
-	Branch   string `json:"branch"`
-	Path     string `json:"workflow"`
-	CalledAs string `json:"calledAs"`
-	Instance string `json:"instance"`
+	State  string `json:"state"`
+	Path   string `json:"workflow"`
 }
 
 type ActivityEntryContext struct {
@@ -368,29 +331,25 @@ type RouteEntryContext struct {
 
 func toFeatureLogEntry(e logEntryBackend) logEntry {
 	featureLogEntry := logEntry{
-		Time:  e.Time,
-		Msg:   e.Msg,
-		Level: e.Level,
-		// Trace:     e.Trace,
-		// Span:      e.Span,
+		Time:      e.Time.UTC(),
+		Msg:       e.Msg,
+		Level:     e.Level,
 		Namespace: e.Namespace,
+		Error:     e.Error,
 	}
 
 	// workflow data if instance
-	if strings.HasPrefix(e.Scope, "instance.") {
+	if e.Scope == string(telemetry.LogScopeInstance) {
 		featureLogEntry.Workflow = &WorkflowEntryContext{
 			Status: e.Status,
-			// Branch: ,
-			Path:  e.Path,
-			State: e.State,
-			// CalledAs: ,
-			Instance: e.Instance,
+			Path:   e.Path,
+			State:  e.State,
 		}
 	}
 
 	if strings.HasPrefix(e.Scope, "activity.") {
 		featureLogEntry.Activity = &ActivityEntryContext{
-			ID: e.Instance,
+			ID: e.ID,
 		}
 	}
 
@@ -398,37 +357,16 @@ func toFeatureLogEntry(e logEntryBackend) logEntry {
 		featureLogEntry.Route = &RouteEntryContext{}
 	}
 
-	// if strings.HasPrefix()
-	// featureLogEntry.Error = e.Data["error"]
-
-	// wfLogCtx := WorkflowEntryContext{}
-	// wfLogCtx.State = e.Data["state"]
-	// wfLogCtx.Path = e.Data["workflow"]
-	// wfLogCtx.Instance = e.Data["instance"]
-	// wfLogCtx.CalledAs = e.Data["calledAs"]
-	// wfLogCtx.Status = e.Data["status"]
-	// wfLogCtx.Branch = e.Data["branch"]
-	// featureLogEntry.Workflow = &wfLogCtx
-	// if wfLogCtx.Path == nil && wfLogCtx.Instance == nil {
-	// 	featureLogEntry.Workflow = nil
-	// }
-	// if id, ok := e.Data["activity"]; ok && id != nil {
-	// 	featureLogEntry.Activity = &ActivityEntryContext{ID: id}
-	// }
-	// if path, ok := e.Data["route"]; ok && path != nil {
-	// 	featureLogEntry.Route = &RouteEntryContext{Path: path}
-	// }
-
 	return featureLogEntry
 }
 
 type logEntryBackend struct {
 	Time        time.Time `json:"_time"`
+	ID          string    `json:"id"`
 	StreamID    string    `json:"_stream_id"`
 	Stream      string    `json:"_stream"`
 	Msg         string    `json:"_msg"`
 	P           string    `json:"_p"`
-	Instance    string    `json:"instance"`
 	Invoker     string    `json:"invoker"`
 	Level       string    `json:"level"`
 	Namespace   string    `json:"namespace"`
@@ -438,6 +376,7 @@ type logEntryBackend struct {
 	Path        string    `json:"path"`
 	Scope       string    `json:"scope"`
 	State       string    `json:"state"`
+	Error       string    `json:"error"`
 }
 
 func (m *logController) fetchFromBackend(query string) ([]logEntryBackend, error) {
@@ -453,9 +392,6 @@ func (m *logController) fetchFromBackend(query string) ([]logEntryBackend, error
 	// set headers
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	cli := &http.Client{Timeout: 30 * time.Second}
-
-	// cc, _ := httputil.DumpRequest(req, true)
-	// fmt.Println(string(cc))
 
 	resp, err := cli.Do(req)
 	if err != nil {

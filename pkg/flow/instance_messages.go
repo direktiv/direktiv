@@ -8,12 +8,14 @@ import (
 	"log/slog"
 	"time"
 
+	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 const (
@@ -114,23 +116,13 @@ func (engine *engine) instanceMessagesChannelHandler(data string) {
 }
 
 func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMemory, msg *instancestore.InstanceMessageData) *states.Transition {
-	// instanceCtx := tracing.AddInstanceMemoryAttr(ctx,
-	// 	tracing.InstanceAttributes{
-	// 		Namespace:    im.Namespace().Name,
-	// 		InstanceID:   im.GetInstanceID().String(),
-	// 		Invoker:      im.instance.Instance.Invoker,
-	// 		Callpath:     tracing.CreateCallpath(im.instance),
-	// 		WorkflowPath: im.instance.Instance.WorkflowPath,
-	// 		Status:       core.LogUnknownStatus,
-	// 	},
-	// 	im.GetState(),
-	// )
-	// nsCtx := tracing.WithTrack(instanceCtx, tracing.BuildNamespaceTrack(im.Namespace().Name))
-	// ctx = tracing.WithTrack(instanceCtx, tracing.BuildInstanceTrack(im.instance))
+	ctx, span := enginerefactor.TraceGet(ctx, im.instance.TelemetryInfo)
+
 	ctx = im.Context(ctx)
 
 	if im.instance.Instance.EndedAt != nil && !im.instance.Instance.EndedAt.IsZero() {
-		telemetry.LogInstanceWarn(ctx, "skipping message because instance has ended")
+		telemetry.LogInstance(ctx, telemetry.LogLevelDebug,
+			"skipping message because instance has ended")
 
 		return nil
 	}
@@ -168,6 +160,13 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 		return nil
 	}
 
+	span.SetAttributes(attribute.KeyValue{
+		Key:   "message",
+		Value: attribute.StringValue(msgType),
+	})
+
+	span.AddEvent(fmt.Sprintf("received %s", msgType))
+
 	data, _ := json.Marshal(x)
 	// TODO trace each of thos branches with spans
 	switch msgType {
@@ -199,7 +198,7 @@ func (engine *engine) handleCancelMessage(ctx context.Context, im *instanceMemor
 
 	err := json.Unmarshal(data, &args)
 	if err != nil {
-		slog.ErrorContext(ctx, "handleCancelMessage failed to unmarshal cancel message args", "error", err)
+		slog.Error("handleCancelMessage failed to unmarshal cancel message args", "error", err)
 		return nil
 	}
 
@@ -237,8 +236,6 @@ func (engine *engine) handleActionMessage(ctx context.Context, im *instanceMemor
 		return nil
 	}
 
-	// TODO: traceActionResult(ctx, &pl)
-
 	return engine.runState(ctx, im, data, nil)
 }
 
@@ -255,6 +252,11 @@ func (engine *engine) handleTransitionMessage(ctx context.Context, im *instanceM
 
 		return nil
 	}
+
+	// this is the main loop and we have to update the context for tracing
+	// the loop runs in the root context but for the transition we
+	// have to set it from the parent state
+	ctx = telemetry.FromTraceParent(ctx, im.instance.TelemetryInfo.TraceParent)
 
 	return engine.Transition(ctx, im, state, 0)
 }

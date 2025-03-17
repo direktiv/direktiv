@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -17,10 +16,11 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/instancestore"
-	"github.com/direktiv/direktiv/pkg/tracing"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type LineageData struct {
@@ -82,11 +82,6 @@ func marshalForAPI(ctx context.Context, data *instancestore.InstanceData) *Insta
 	x, err := engine.ParseInstanceData(data)
 	if err == nil {
 		resp.Flow = x.RuntimeInfo.Flow
-		traceID, err := tracing.TraceParentToTraceID(ctx, x.TelemetryInfo.TraceParent)
-		if err != nil {
-			slog.Debug("marshalForAPI: failed to convert to tracie-id", "error", err)
-		}
-		resp.TraceID = traceID
 		for i := range x.DescentInfo.Descent {
 			resp.Lineage = append(resp.Lineage, marshalLineage(&x.DescentInfo.Descent[i]))
 		}
@@ -569,12 +564,29 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *instController) create(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
 	ns := extractContextNamespace(r)
 	path := r.URL.Query().Get("path")
 
 	wait := r.URL.Query().Get("wait") == "true"
 	output := r.URL.Query().Get("output") == "true"
+
+	ctx := telemetry.GetContextFromRequest(r)
+	ctx, span := telemetry.Tracer.Start(ctx, "api-request")
+	span.SetAttributes(
+		attribute.KeyValue{
+			Key:   "namespace",
+			Value: attribute.StringValue(ns.Name),
+		},
+		attribute.KeyValue{
+			Key:   "path",
+			Value: attribute.StringValue(path),
+		},
+		attribute.KeyValue{
+			Key:   "wait",
+			Value: attribute.BoolValue(wait),
+		},
+	)
+	defer span.End()
 
 	input, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -587,6 +599,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 
 	data, err := e.manager.Start(ctx, ns.Name, path, input)
 	if err != nil {
+		// telemetry.ReportError(span, err)
 		writeError(w, &Error{
 			Code:    err.Error(),
 			Message: err.Error(),
