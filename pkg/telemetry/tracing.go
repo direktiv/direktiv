@@ -107,6 +107,7 @@ func GetContextFromRequest(r *http.Request) context.Context {
 	return ctx
 }
 
+// FromTraceParent create a context based on a traceparent string
 func FromTraceParent(ctx context.Context, traceparent string) context.Context {
 	mc := make(propagation.MapCarrier)
 	mc.Set("traceparent", traceparent)
@@ -115,7 +116,7 @@ func FromTraceParent(ctx context.Context, traceparent string) context.Context {
 	return tc.Extract(ctx, mc)
 }
 
-// TraceParent return the traceparent value from the context
+// TraceParent returns the traceparent value as string from context
 func TraceParent(ctx context.Context) string {
 	mc := make(propagation.MapCarrier)
 	tc := propagation.TraceContext{}

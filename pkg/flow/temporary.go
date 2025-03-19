@@ -344,6 +344,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 			Step:   im.Step(),
 			Branch: args.Iterator,
 		}
+
 		sfim, err := im.engine.subflowInvoke(ctx, pi, im.instance, args.Definition.(*model.SubflowFunctionDefinition).Workflow, args.Input)
 		if err != nil {
 			return nil, err

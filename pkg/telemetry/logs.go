@@ -18,10 +18,11 @@ type LogObject struct {
 }
 
 type InstanceInfo struct {
-	Invoker string         `json:"invoker,omitempty"`
-	Path    string         `json:"path,omitempty"`
-	State   string         `json:"state,omitempty"`
-	Status  core.LogStatus `json:"status,omitempty"`
+	Invoker   string         `json:"invoker,omitempty"`
+	Path      string         `json:"path,omitempty"`
+	State     string         `json:"state,omitempty"`
+	Status    core.LogStatus `json:"status,omitempty"`
+	SpanScope string         `json:"spanscope,omitempty"`
 }
 
 // HTTPInstanceInfo is used to post logs from the sidecar
