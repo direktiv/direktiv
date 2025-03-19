@@ -21,7 +21,7 @@ var ErrInvalidInstanceTelemetryInfo = errors.New("invalid instance telemetry inf
 type InstanceTelemetryInfo struct {
 	Version     string
 	TraceParent string
-	TracePath   string
+	CallPath    string
 }
 
 func (info *InstanceTelemetryInfo) MarshalJSON() ([]byte, error) {
@@ -33,7 +33,7 @@ func (info *InstanceTelemetryInfo) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&instanceTelemetryInfoV1{
 		Version:     telemetryInfoVersion1,
 		TraceParent: info.TraceParent,
-		TracePath:   info.TracePath,
+		CallPath:    info.CallPath,
 	})
 
 }
@@ -42,7 +42,7 @@ func (info *InstanceTelemetryInfo) MarshalJSON() ([]byte, error) {
 type instanceTelemetryInfoV1 struct {
 	Version     string `json:"version"`
 	TraceParent string `json:"traceparent"`
-	TracePath   string `json:"tracepath"`
+	CallPath    string `json:"callpath"`
 }
 
 // LoadInstanceTelemetryInfo deserializes data and handles different versions (v1 and v2).
@@ -74,7 +74,7 @@ func LoadInstanceTelemetryInfo(data []byte) (*InstanceTelemetryInfo, error) {
 		info = &InstanceTelemetryInfo{
 			Version:     v1.Version,
 			TraceParent: v1.TraceParent,
-			TracePath:   v1.TracePath,
+			CallPath:    v1.CallPath,
 		}
 
 	default:

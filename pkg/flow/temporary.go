@@ -410,6 +410,8 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateID string, time
 	ar := new(functionRequest)
 	ar.Timeout = timeout
 	ar.ActionID = uid.String()
+	ar.CallPath = im.instance.TelemetryInfo.CallPath
+
 	if ar.Timeout == 0 {
 		ar.Timeout = 5 * 60 // 5 mins default, knative's default
 	}
@@ -572,6 +574,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		return
 	}
 	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
+	req.Header.Add(DirektivCallPathHeader, ar.CallPath)
 
 	client := http.Client{Transport: otelhttp.NewTransport(tr)}
 

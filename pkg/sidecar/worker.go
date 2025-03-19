@@ -510,6 +510,9 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	ctx, span := telemetry.Tracer.Start(ctx, "receiving-action")
 	defer span.End()
 
+	// req.Header.Add(DirektivTracePathHeader, ar.TracePath)
+	// get header here and put it in the request so it can log in sidecar and in log handler
+
 	defer func() {
 		close(req.end)
 	}()
@@ -542,8 +545,12 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 			Permissions: f.Permissions,
 		}
 	}
+
+	callPath := req.r.Header.Get(flow.DirektivCallPathHeader)
+
 	ir := &functionRequest{
 		actionId:      aid,
+		callPath:      callPath,
 		deadline:      action.Deadline,
 		input:         action.UserInput,
 		files:         files,
@@ -569,10 +576,11 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 		ID:        aid,
 		Scope:     telemetry.LogScopeInstance,
 		InstanceInfo: telemetry.InstanceInfo{
-			Invoker: ir.Invoker,
-			Path:    ir.Workflow,
-			State:   ir.State,
-			Status:  core.LogRunningStatus,
+			Invoker:  ir.Invoker,
+			Path:     ir.Workflow,
+			State:    ir.State,
+			Status:   core.LogRunningStatus,
+			CallPath: callPath,
 		},
 	}
 

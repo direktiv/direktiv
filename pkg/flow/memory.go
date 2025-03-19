@@ -59,7 +59,7 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 		tp := telemetry.TraceParent(ctx)
 		ti := enginerefactor.InstanceTelemetryInfo{
 			TraceParent: tp,
-			TracePath:   im.instance.TelemetryInfo.TracePath,
+			CallPath:    im.instance.TelemetryInfo.CallPath,
 		}
 		b, err := ti.MarshalJSON()
 		if err != nil {
@@ -369,11 +369,11 @@ func (im *instanceMemory) Context(ctx context.Context) context.Context {
 		ID:        im.GetInstanceID().String(),
 		Scope:     telemetry.LogScopeInstance,
 		InstanceInfo: telemetry.InstanceInfo{
-			Invoker:   im.instance.Instance.Invoker,
-			Path:      im.instance.Instance.WorkflowPath,
-			Status:    core.LogRunningStatus,
-			State:     im.GetState(),
-			SpanScope: im.instance.TelemetryInfo.TracePath,
+			Invoker:  im.instance.Instance.Invoker,
+			Path:     im.instance.Instance.WorkflowPath,
+			Status:   core.LogRunningStatus,
+			State:    im.GetState(),
+			CallPath: im.instance.TelemetryInfo.CallPath,
 		},
 	}
 

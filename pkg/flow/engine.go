@@ -153,10 +153,10 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	ctx, span := enginerefactor.TraceReconstruct(ctx, args.TelemetryInfo, "new-instance")
 	defer span.End()
 
-	if args.TelemetryInfo.TracePath == "" {
-		args.TelemetryInfo.TracePath = span.SpanContext().SpanID().String()
+	if args.TelemetryInfo.CallPath == "" {
+		args.TelemetryInfo.CallPath = "/" + args.ID.String() + "/"
 	} else {
-		args.TelemetryInfo.TracePath = args.TelemetryInfo.TracePath + "." + span.SpanContext().SpanID().String()
+		args.TelemetryInfo.CallPath = args.TelemetryInfo.CallPath + args.ID.String() + "/"
 	}
 
 	traceParent := telemetry.TraceParent(ctx)
@@ -187,11 +187,11 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		ID:        args.ID.String(),
 		Scope:     telemetry.LogScopeInstance,
 		InstanceInfo: telemetry.InstanceInfo{
-			Invoker:   args.Invoker,
-			Status:    core.LogRunningStatus,
-			State:     "new-instance",
-			Path:      file.Path,
-			SpanScope: args.TelemetryInfo.TracePath,
+			Invoker:  args.Invoker,
+			Status:   core.LogRunningStatus,
+			State:    "new-instance",
+			Path:     file.Path,
+			CallPath: args.TelemetryInfo.CallPath,
 		},
 	})
 	telemetry.LogInstance(ctx, telemetry.LogLevelDebug, "creating new instance")
@@ -437,7 +437,7 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 
 	im.instance.TelemetryInfo = &enginerefactor.InstanceTelemetryInfo{
 		TraceParent: telemetry.TraceParent(ctx),
-		TracePath:   im.instance.TelemetryInfo.TracePath,
+		CallPath:    im.instance.TelemetryInfo.CallPath,
 	}
 
 	err = im.flushUpdates(ctx)
@@ -763,7 +763,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 		DescentInfo: di,
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
 			TraceParent: telemetry.TraceParent(ctx),
-			TracePath:   instance.TelemetryInfo.TracePath,
+			CallPath:    instance.TelemetryInfo.CallPath,
 		},
 	}
 

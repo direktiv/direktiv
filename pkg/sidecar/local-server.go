@@ -137,10 +137,11 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	srv.requestsLock.Unlock()
 
 	instanceInfo := telemetry.InstanceInfo{
-		Invoker: req.Invoker,
-		Path:    req.Workflow,
-		State:   req.State,
-		Status:  core.LogRunningStatus,
+		Invoker:  req.Invoker,
+		Path:     req.Workflow,
+		State:    req.State,
+		Status:   core.LogRunningStatus,
+		CallPath: req.callPath,
 	}
 
 	logObject := telemetry.LogObject{
@@ -254,10 +255,11 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 		ID:        req.Instance,
 		Scope:     telemetry.LogScopeInstance,
 		InstanceInfo: telemetry.InstanceInfo{
-			Invoker: req.Invoker,
-			Path:    req.Workflow,
-			State:   req.State,
-			Status:  core.LogRunningStatus,
+			Invoker:  req.Invoker,
+			Path:     req.Workflow,
+			State:    req.State,
+			Status:   core.LogRunningStatus,
+			CallPath: req.callPath,
 		},
 	}
 
@@ -434,6 +436,7 @@ func (srv *LocalServer) run() {
 
 type functionRequest struct {
 	actionId string
+	callPath string
 	engine.ActionContext
 	deadline time.Time
 	input    []byte
