@@ -153,6 +153,8 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	ctx, span := enginerefactor.TraceReconstruct(ctx, args.TelemetryInfo, "new-instance")
 	defer span.End()
 
+	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!TRACING ID %v\n", span.SpanContext().TraceID())
+
 	if args.TelemetryInfo.CallPath == "" {
 		args.TelemetryInfo.CallPath = "/" + args.ID.String() + "/"
 	} else {
@@ -876,6 +878,10 @@ func (engine *engine) createTransport() *http.Transport {
 
 func (engine *engine) WakeEventsWaiter(instance uuid.UUID, events []*cloudevents.Event) {
 	ctx := context.Background()
+
+	ctx, span := telemetry.Tracer.Start(ctx, "event-wake")
+	defer span.End()
+
 	err := engine.enqueueInstanceMessage(ctx, instance, "event", events)
 	if err != nil {
 		slog.Error("failed to enqueue instance message for wakeEventsWaiter", "error", err)

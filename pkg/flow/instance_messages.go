@@ -240,6 +240,14 @@ func (engine *engine) handleActionMessage(ctx context.Context, im *instanceMemor
 }
 
 func (engine *engine) handleEventMessage(ctx context.Context, im *instanceMemory, data []byte) *states.Transition {
+	ctx, span := telemetry.Tracer.Start(ctx, "event-received")
+	defer span.End()
+	span.AddEvent("cloud-event received")
+	span.SetAttributes(attribute.KeyValue{
+		Key:   "event",
+		Value: attribute.StringValue(string(data)),
+	})
+
 	return engine.runState(ctx, im, data, nil)
 }
 
