@@ -16,10 +16,10 @@ export type LogLevelSchemaType = z.infer<typeof LogLevelSchema>;
  */
 export const WorkflowStatusData = z.object({
   state: z.string().nonempty().nullable(),
-  branch: z.number().nullable(),
-  workflow: z.string().nonempty(),
-  calledAs: z.string().nullable(),
-  instance: z.string().nonempty(),
+  // branch: z.string().nullable(), // currently unused
+  workflow: z.string().nonempty().optional(),
+  calledAs: z.string().nullable().optional(),
+  instance: z.string().nonempty().optional(),
 });
 
 /**
@@ -33,7 +33,8 @@ export const RouteData = z.object({
   path: z.string().nonempty(),
 });
 
-/**
+// Todo: Update
+/**branch
  * example
  * 
 {
@@ -49,14 +50,10 @@ export const RouteData = z.object({
 }
  */
 export const LogEntrySchema = z.object({
-  id: z.number(),
   time: z.string().nonempty(),
   msg: z.string().nonempty(),
   level: LogLevelSchema,
   namespace: z.string().nonempty().nullable(),
-  trace: z.string().nonempty().nullable(),
-  span: z.string().nonempty().nullable(),
-  error: z.string().nullable(),
   workflow: WorkflowStatusData.optional(),
   route: RouteData.optional(),
 });

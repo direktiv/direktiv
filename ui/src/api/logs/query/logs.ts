@@ -47,11 +47,11 @@ import { useStreaming } from "~/api/streaming";
         "data": []
       }
     ]
-    // all page pointers that were found in the page request results are stored here
+    // all page pointers are stored here
     "pageParams": [
+      null,
       "FIRST_TIMESTAMP",
       "SECOND_TIMESTAMP",
-      null
     ]
   }
 */
@@ -64,25 +64,26 @@ const updateCache = (
   if (oldData === undefined) return undefined;
 
   const pages = oldData.pages;
-  const olderPages = pages.slice(0, -1);
+  const olderPages = pages.slice(1);
   const newestPage = pages[0];
-  if (newestPage === undefined) return undefined;
+  if (newestPage === undefined) throw Error("Newest page not found");
 
   const newestPageData = newestPage.data ?? [];
 
+  // To do: do we still need deduplication?
   // skip cache if the log entry is already in the cache
-  if (newestPageData.some((logEntry) => logEntry.id === newLogEntry.id)) {
+  if (newestPageData.some((logEntry) => logEntry.time === newLogEntry.time)) {
     return oldData;
   }
 
   return {
     ...oldData,
     pages: [
-      ...olderPages,
       {
         ...newestPage,
         data: [...newestPageData, newLogEntry],
       },
+      ...olderPages,
     ],
   };
 };
@@ -91,8 +92,10 @@ export type LogsQueryParams = {
   instance?: string;
   route?: string;
   activity?: string;
+  after?: string;
   before?: string;
   trace?: string;
+  last?: number;
 };
 
 type LogsParams = {
@@ -108,6 +111,15 @@ const getUrl = (params: LogsParams) => {
 
   if (useStreaming) {
     urlPath = `${urlPath}/subscribe`;
+
+    // Add after param from 3 seconds ago to close a potential
+    // gap between the GET request and the beginning of the stream
+    const threeSecondsAgo = new Date(Date.now() - 3000);
+    queryParams.after = threeSecondsAgo.toISOString();
+  }
+
+  if (!useStreaming) {
+    queryParams.last = 50;
   }
 
   const queryParamsString = buildSearchParamsString({
@@ -125,7 +137,7 @@ const getLogs = apiFactory({
 
 const fetchLogs = async ({
   pageParam,
-  queryKey: [{ apiKey, namespace, instance, route, activity, trace }],
+  queryKey: [{ apiKey, namespace, instance, route, activity, trace, last }],
 }: QueryFunctionContext<
   ReturnType<(typeof logKeys)["detail"]>,
   LogsQueryParams["before"]
@@ -139,6 +151,7 @@ const fetchLogs = async ({
       activity,
       before: pageParam,
       trace,
+      last,
     },
   });
 
@@ -170,6 +183,7 @@ export const useLogsStream = ({ enabled, ...params }: UseLogsStreamParams) => {
           instance: params.instance,
           route: params.route,
           trace: params.trace,
+          last: params.last,
         }),
         (oldData) => updateCache(oldData, msg)
       );
@@ -185,6 +199,7 @@ export const useLogs = ({
   activity,
   trace,
   enabled = true,
+  last,
 }: UseLogsParams = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -209,9 +224,18 @@ export const useLogs = ({
       route,
       activity,
       trace,
+      last,
     }),
     queryFn: fetchLogs,
-    getNextPageParam: (firstPage) => firstPage.meta?.previousPage,
+
+    getNextPageParam: (_, pages) => {
+      const lastPage = pages.at(-1);
+      if (lastPage?.data.length === 0) {
+        return null;
+      }
+      const oldestTime = lastPage?.data.at(0)?.time;
+      return oldestTime;
+    },
     enabled: !!namespace && enabled,
     initialPageParam: undefined,
     refetchOnWindowFocus: false,
@@ -226,6 +250,19 @@ export const useLogs = ({
     const pagesReversed = [...queryReturn.data.pages].reverse();
     const pages = pagesReversed.map((page) => page.data ?? []) ?? [];
     logData = pages.flat();
+
+    // DEBUG: Throw error if time codes are not in correct order
+
+    // const timestamps = logData.map((item) => item.time);
+    // console.log(timestamps);
+
+    // for (let i = 1; i < timestamps.length; i++) {
+    //   if (timestamps[i] < timestamps[i - 1]) {
+    //     throw new Error(
+    //       `Timestamps are not in ascending order: ${timestamps[i - 1]} > ${timestamps[i]}`
+    //     );
+    //   }
+    // }
   }
 
   return {
