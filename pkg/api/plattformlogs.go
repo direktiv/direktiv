@@ -322,10 +322,11 @@ type logEntry struct {
 }
 
 type WorkflowEntryContext struct {
-	Status  string `json:"status"`
-	State   string `json:"state"`
-	Path    string `json:"workflow"`
-	Invoker string `json:"invoker"`
+	Status   string `json:"status"`
+	State    string `json:"state"`
+	Path     string `json:"workflow"`
+	Instance string `json:"instance"`
+	CallPath string `json:"callpath"`
 }
 
 type ActivityEntryContext struct {
@@ -347,10 +348,11 @@ func toFeatureLogEntry(e logEntryBackend) logEntry {
 	// workflow data if instance
 	if e.Scope == string(telemetry.LogScopeInstance) {
 		featureLogEntry.Workflow = &WorkflowEntryContext{
-			Status:  e.Status,
-			Path:    e.Path,
-			State:   e.State,
-			Invoker: e.Invoker,
+			Status:   e.Status,
+			Path:     e.Path,
+			State:    e.State,
+			Instance: e.ID,
+			CallPath: e.CallPath,
 		}
 	}
 
@@ -375,6 +377,7 @@ type logEntryBackend struct {
 	Msg         string    `json:"_msg"`
 	P           string    `json:"_p"`
 	Invoker     string    `json:"invoker"`
+	CallPath    string    `json:"callpath"`
 	Level       string    `json:"level"`
 	Namespace   string    `json:"namespace"`
 	Status      string    `json:"status"`
