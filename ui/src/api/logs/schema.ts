@@ -70,10 +70,6 @@ export const LogEntrySchema = z.object({
   }
  */
 export const LogsSchema = z.object({
-  meta: z.object({
-    previousPage: z.string().nonempty().nullable(),
-    startingFrom: z.string().nonempty().nullable(),
-  }),
   data: z.array(LogEntrySchema),
 });
 
