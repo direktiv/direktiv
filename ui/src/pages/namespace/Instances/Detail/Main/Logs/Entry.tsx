@@ -58,7 +58,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
             {workflow?.instance && (
               <Link
                 to="/n/$namespace/instances/$id"
-                params={{ namespace: namespace ?? "", id: instanceId }}
+                params={{ namespace: namespace ?? "", id: workflow?.instance }}
                 className="underline"
                 target="_blank"
               >
