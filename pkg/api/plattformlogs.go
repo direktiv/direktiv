@@ -170,7 +170,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 	rc := http.NewResponseController(w)
 
 	queryAndSend := func(ctx context.Context, queryString string) (time.Time, error) {
-		// fmt.Println(queryString)
+		fmt.Println(queryString)
 		logs, err := m.get(ctx, queryString)
 		if err != nil {
 			return time.Now().UTC(), err
@@ -303,8 +303,10 @@ func extractLogRequestParams(r *http.Request) logParams {
 		logParams.id = r.URL.Query().Get("activity")
 	}
 
-	// } else if p, ok := params["route"]; ok {
-	// 	params["track"] = "route." + p
+	if r.URL.Query().Get("route") != "" {
+		logParams.scope = "route"
+		logParams.id = r.URL.Query().Get("route")
+	}
 
 	return logParams
 }
