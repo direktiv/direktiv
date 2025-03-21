@@ -68,7 +68,8 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 			im.updateArgs.TelemetryInfo = &b
 		}
 	} else {
-		fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!HAS NO SPAN ID")
+		slog.Warn("no span id in context", slog.String("path", im.instance.Instance.WorkflowPath),
+			slog.String("callpath", im.instance.TelemetryInfo.CallPath))
 	}
 
 	im.updateArgs.Server = im.engine.ID

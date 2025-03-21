@@ -114,7 +114,7 @@ func (c *eventsController) getEvent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *eventsController) replay(w http.ResponseWriter, r *http.Request) {
-	ctx := telemetry.GetContextFromRequest(r)
+	ctx := telemetry.GetContextFromRequest(r.Context(), r)
 	ctx, span := telemetry.Tracer.Start(ctx, "event-replay")
 	defer span.End()
 
@@ -273,7 +273,7 @@ func convertListenersForAPI(listener *datastore.EventListener) eventListenerEntr
 
 // nolint:canonicalheader
 func (c *eventsController) registerCoudEvent(w http.ResponseWriter, r *http.Request) {
-	ctx := telemetry.GetContextFromRequest(r)
+	ctx := telemetry.GetContextFromRequest(r.Context(), r)
 	ctx, span := telemetry.Tracer.Start(ctx, "event-request")
 	defer span.End()
 

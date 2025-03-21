@@ -76,9 +76,8 @@ func (m *logController) mountRouter(r chi.Router) {
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		params := extractLogRequestParams(r)
-		fmt.Println(params.toQuery())
 
-		logs, err := m.get(params.toQuery())
+		logs, err := m.get(r.Context(), params.toQuery())
 		if err != nil {
 			slog.Error("fetching logs for request", "err", err)
 			writeInternalError(w, err)
@@ -131,17 +130,17 @@ func (m *logController) mountRouter(r chi.Router) {
 		case telemetry.LogLevelWarn:
 			telemetry.LogInstance(ctx, telemetry.LogLevelWarn, logObject.Msg)
 		case telemetry.LogLevelError:
-			telemetry.LogInstanceError(ctx, logObject.Msg, fmt.Errorf(logObject.Msg))
+			telemetry.LogInstanceError(ctx, logObject.Msg, fmt.Errorf("%s", logObject.Msg))
 		}
 
 		w.WriteHeader(http.StatusOK)
 	})
 }
 
-func (m *logController) get(query string) ([]logEntry, error) {
+func (m *logController) get(ctx context.Context, query string) ([]logEntry, error) {
 	var err error
 
-	logs, err := m.fetchFromBackend(query)
+	logs, err := m.fetchFromBackend(ctx, query)
 	if err != nil {
 		return []logEntry{}, err
 	}
@@ -170,10 +169,9 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 
 	rc := http.NewResponseController(w)
 
-	queryAndSend := func(queryString string) (time.Time, error) {
-		fmt.Println("QUERY AND SEND!")
-		fmt.Println(queryString)
-		logs, err := m.get(queryString)
+	queryAndSend := func(ctx context.Context, queryString string) (time.Time, error) {
+		// fmt.Println(queryString)
+		logs, err := m.get(ctx, queryString)
 		if err != nil {
 			return time.Now().UTC(), err
 		}
@@ -181,7 +179,8 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 		for i := range logs {
 			l := logs[i]
 			b, _ := json.Marshal(l)
-			_, err = fmt.Fprintf(w, fmt.Sprintf("id: %s\nevent: %s\ndata: %s\n\n", l.Time.UTC().Format("2006-01-02T15:04:05.000000000Z"), "message", string(b)))
+
+			_, err = fmt.Fprintf(w, "id: %s\nevent: %s\ndata: %s\n\n", l.Time.UTC().Format("2006-01-02T15:04:05.000000000Z"), "message", string(b))
 			if err != nil {
 				return time.Now().UTC(), err
 			}
@@ -193,7 +192,6 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 			cursor = lastLog.Time.UTC()
 		} else {
 			cursor, err = parseQueryTime(params.after)
-
 			// can not do much about it, use `now`
 			if err != nil {
 				slog.Error("can not parse params.after", slog.Any("error", err))
@@ -219,7 +217,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 
 	// send initial data
 	var err error
-	cursor, err = queryAndSend(params.toQuery())
+	cursor, err = queryAndSend(r.Context(), params.toQuery())
 	if err != nil {
 		writeError(w, &Error{
 			Code:    "log request failed",
@@ -244,7 +242,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 		case <-t.C:
 			var err error
 			params.last = ""
-			cursor, err = queryAndSend(params.toQuery())
+			cursor, err = queryAndSend(r.Context(), params.toQuery())
 			if err != nil {
 				writeError(w, &Error{
 					Code:    "log request failed",
@@ -265,7 +263,8 @@ func parseQueryTime(input string) (time.Time, error) {
 			return t, nil
 		}
 	}
-	return time.Time{}, errors.New("Unrecognized time format")
+
+	return time.Time{}, errors.New("unrecognized time format")
 }
 
 // nolint:canonicalheader
@@ -389,10 +388,10 @@ type logEntryBackend struct {
 	Error       string    `json:"error"`
 }
 
-func (m *logController) fetchFromBackend(query string) ([]logEntryBackend, error) {
+func (m *logController) fetchFromBackend(ctx context.Context, query string) ([]logEntryBackend, error) {
 	var ret []logEntryBackend
 
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost,
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
 		fmt.Sprintf("http://%s/select/logsql/query", net.JoinHostPort(m.logsBackend, "9428")),
 		bytes.NewBufferString(query))
 	if err != nil {

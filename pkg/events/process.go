@@ -355,12 +355,6 @@ func eventTypeAlreadyPresent(l *datastore.EventListener, event *datastore.Event)
 // singleConditionEventHandler creates an event handler for "Simple" type triggers.
 func (ee EventEngine) singleConditionEventHandler(l *datastore.EventListener, waitType bool) eventHandler {
 	return func(ctx context.Context, events ...*datastore.Event) {
-
-		// ctx, span := telemetry.Tracer.Start(ctx, "wqhate")
-		// defer span.End()
-
-		// fmt.Printf(">>>> %v\n", span.SpanContext().TraceID())
-
 		for _, event := range events {
 			if l.Deleted {
 				return // Skip processing for deleted listeners.

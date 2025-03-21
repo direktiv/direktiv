@@ -168,6 +168,7 @@ func (d *Manager) Execute(ctx context.Context, p *datastore.MirrorProcess, m *da
 		}
 	}()
 
+	//nolint:contextcheck
 	parser, err := NewParser(p.Namespace, p.ID.String(), src)
 	if err != nil {
 		//nolint:contextcheck

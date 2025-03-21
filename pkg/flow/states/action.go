@@ -170,7 +170,7 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 		return nil
 	}
 
-	logic.Log(ctx, log.Info, "sleeping until function %s returns (%s)", logic.label(), child.ID)
+	logic.Log(ctx, log.Debug, "sleeping until function %s returns (%s)", logic.label(), child.ID)
 
 	var children []*ChildInfo
 
@@ -181,7 +181,7 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 		return err
 	}
 
-	logic.Log(ctx, log.Info, "function %s returned (%s)", logic.label(), child.ID)
+	logic.Log(ctx, log.Debug, "function %s returned (%s)", logic.label(), child.ID)
 
 	return nil
 }

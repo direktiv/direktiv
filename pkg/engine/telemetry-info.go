@@ -30,12 +30,12 @@ func (info *InstanceTelemetryInfo) MarshalJSON() ([]byte, error) {
 			Version: telemetryInfoVersion1,
 		})
 	}
+
 	return json.Marshal(&instanceTelemetryInfoV1{
 		Version:     telemetryInfoVersion1,
 		TraceParent: info.TraceParent,
 		CallPath:    info.CallPath,
 	})
-
 }
 
 // instanceTelemetryInfoV2 represents the v2 format, where we store traceparent.

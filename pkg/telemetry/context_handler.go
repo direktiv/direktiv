@@ -26,7 +26,6 @@ func (h *ContextHandler) Enabled(ctx context.Context, level slog.Level) bool {
 
 // Handle implements slog.Handler.
 func (h *ContextHandler) Handle(ctx context.Context, rec slog.Record) error {
-
 	l := ctx.Value(logObjectCtx)
 	if l != nil {
 		res := make([]slog.Attr, 0)

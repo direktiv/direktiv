@@ -153,8 +153,6 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	ctx, span := enginerefactor.TraceReconstruct(ctx, args.TelemetryInfo, "new-instance")
 	defer span.End()
 
-	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!TRACING ID %v\n", span.SpanContext().TraceID())
-
 	if args.TelemetryInfo.CallPath == "" {
 		args.TelemetryInfo.CallPath = "/" + args.ID.String() + "/"
 	} else {
@@ -534,7 +532,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		object, err = jqOne(im.data, lq) //nolint:contextcheck
 		if err != nil {
 			telemetry.LogInstanceError(ctx,
-				fmt.Sprintf("failed to process jq query on state data, %w", lq), err)
+				fmt.Sprintf("failed to process jq query on state data, %v", lq), err)
 
 			goto failure
 		}
@@ -557,7 +555,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		object, err = jqOne(im.data, md) //nolint:contextcheck
 		if err != nil {
 			telemetry.LogInstanceError(ctx,
-				fmt.Sprintf("failed to execute jq query for metadata, %w", md), err)
+				fmt.Sprintf("failed to execute jq query for metadata, %v", md), err)
 
 			goto failure
 		}
@@ -579,7 +577,6 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 
 	// set new parent during transition
 	transition, err = im.logic.Run(ctx, wakedata)
-
 	if err != nil {
 		telemetry.LogInstanceError(ctx,
 			"state logic execution failed", err)
@@ -703,7 +700,6 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	}
 
 	if transition.NextState != "" {
-
 		telemetry.LogInstance(ctx, telemetry.LogLevelDebug,
 			"transitioning to next state")
 

@@ -54,7 +54,7 @@ func (tf *FlowPlugin) Type() string {
 }
 
 func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
-	ctx := telemetry.GetContextFromRequest(r)
+	ctx := telemetry.GetContextFromRequest(r.Context(), r)
 	ctx, span := telemetry.Tracer.Start(ctx, "gateway-request")
 	defer span.End()
 

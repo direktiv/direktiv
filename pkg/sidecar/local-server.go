@@ -156,7 +156,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	reportError := func(code int, err error) {
 		http.Error(w, err.Error(), code)
 		telemetry.LogInstance(ctx, telemetry.LogLevelWarn,
-			fmt.Sprintf("log handler error occurred, code %s, id: %s", code, actionId))
+			fmt.Sprintf("log handler error occurred, code %d, id: %s", code, actionId))
 	}
 
 	if !ok {

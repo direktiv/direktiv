@@ -7,8 +7,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 )
 
-type LogLevel int
-type LogScope string
+type (
+	LogLevel int
+	LogScope string
+)
 
 type LogObject struct {
 	Namespace string   `json:"namespace"`
@@ -25,9 +27,8 @@ type InstanceInfo struct {
 	CallPath string         `json:"callpath,omitempty"`
 }
 
-// HTTPInstanceInfo is used to post logs from the sidecar
-// fluentbit can not be used because it is picking up the logs
-// of newly created pods too late
+// HTTPInstanceInfo is used to post logs from the sidecar.
+// fluentbit can not be used because it is picking up the logs of newly created pods too late.
 type HTTPInstanceInfo struct {
 	LogObject
 	Msg   string   `json:"msg"`
@@ -55,7 +56,7 @@ const (
 )
 
 func LogRoute(level LogLevel, namespace, route, msg string) {
-	ctx := context.WithValue(context.Background(), logObjectCtx, LogObject{
+	ctx := context.WithValue(context.TODO(), logObjectCtx, LogObject{
 		Namespace: namespace,
 		ID:        route,
 		Scope:     LogScopeRoute,
@@ -64,7 +65,7 @@ func LogRoute(level LogLevel, namespace, route, msg string) {
 }
 
 func LogRouteError(namespace, route, msg string, err error) {
-	ctx := context.WithValue(context.Background(), logObjectCtx, LogObject{
+	ctx := context.WithValue(context.TODO(), logObjectCtx, LogObject{
 		Namespace: namespace,
 		ID:        route,
 		Scope:     LogScopeRoute,
@@ -73,7 +74,7 @@ func LogRouteError(namespace, route, msg string, err error) {
 }
 
 func LogActivity(level LogLevel, namespace, pid, msg string) {
-	ctx := context.WithValue(context.Background(), logObjectCtx, LogObject{
+	ctx := context.WithValue(context.TODO(), logObjectCtx, LogObject{
 		Namespace: namespace,
 		ID:        pid,
 		Scope:     LogScopeActivity,
@@ -82,7 +83,7 @@ func LogActivity(level LogLevel, namespace, pid, msg string) {
 }
 
 func LogActivityError(namespace, pid, msg string, err error) {
-	ctx := context.WithValue(context.Background(), logObjectCtx, LogObject{
+	ctx := context.WithValue(context.TODO(), logObjectCtx, LogObject{
 		Namespace: namespace,
 		ID:        pid,
 		Scope:     LogScopeActivity,
@@ -91,7 +92,7 @@ func LogActivityError(namespace, pid, msg string, err error) {
 }
 
 func LogNamespace(level LogLevel, namespace, msg string) {
-	ctx := context.WithValue(context.Background(), logObjectCtx, LogObject{
+	ctx := context.WithValue(context.TODO(), logObjectCtx, LogObject{
 		Namespace: namespace,
 		ID:        namespace,
 		Scope:     LogScopeNamespace,
@@ -100,7 +101,7 @@ func LogNamespace(level LogLevel, namespace, msg string) {
 }
 
 func LogNamespaceError(namespace, msg string, err error) {
-	ctx := context.WithValue(context.Background(), logObjectCtx, LogObject{
+	ctx := context.WithValue(context.TODO(), logObjectCtx, LogObject{
 		Namespace: namespace,
 		ID:        namespace,
 		Scope:     LogScopeNamespace,
@@ -116,16 +117,16 @@ func LogInstanceError(ctx context.Context, msg string, err error) {
 	logPublic(ctx, LogLevelError, msg, slog.Any(errorKey, err.Error()))
 }
 
-func logPublic(ctx context.Context, level LogLevel, msg string, attrs ...slog.Attr) {
+func logPublic(ctx context.Context, level LogLevel, msg string, attrs ...any) {
 	switch level {
 	case LogLevelDebug:
-		slog.DebugContext(ctx, msg)
+		slog.DebugContext(ctx, msg, attrs...)
 	case LogLevelError:
-		slog.ErrorContext(ctx, msg)
+		slog.ErrorContext(ctx, msg, attrs...)
 	case LogLevelWarn:
-		slog.WarnContext(ctx, msg)
-	default:
-		slog.InfoContext(ctx, msg)
+		slog.WarnContext(ctx, msg, attrs...)
+	case LogLevelInfo:
+		slog.InfoContext(ctx, msg, attrs...)
 	}
 }
 
