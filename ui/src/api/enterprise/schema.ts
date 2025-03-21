@@ -13,6 +13,8 @@ export const permissionTopics = [
   "notifications",
   "metrics",
   "events",
+  "roles",
+  "api_tokens",
 ] as const;
 
 export type PermissionTopic = (typeof permissionTopics)[number];
