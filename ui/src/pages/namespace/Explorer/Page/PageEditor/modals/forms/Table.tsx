@@ -1,4 +1,3 @@
-import Button, { ButtonProps } from "~/design/Button";
 import {
   CircleCheck,
   CircleX,
@@ -6,7 +5,6 @@ import {
   Plus,
   Save,
   Settings,
-  Trash2,
   Unplug,
 } from "lucide-react";
 import {
@@ -22,16 +20,10 @@ import {
   PageElementContentSchema,
   PageElementContentSchemaType,
   TableContentSchemaType,
+  TableKeySchema,
+  TableKeySchemaType,
   TableSchemaType,
 } from "~/pages/namespace/Explorer/Page/PageEditor/schema";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/design/Select";
 import {
   Table,
   TableBody,
@@ -41,11 +33,11 @@ import {
   TableRow,
 } from "~/design/Table";
 
-import { Card } from "~/design/Card";
+import Button from "~/design/Button";
 import FilePicker from "~/components/FilePicker";
 import FormErrors from "~/components/FormErrors";
-import Input from "~/design/Input";
 import { Pagination } from "../../Pagination";
+import TableColumnForm from "../utils/TableColumnForm";
 import { useCreateInstanceWithOutput } from "~/api/instances/mutate/createWithOutput";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -61,155 +53,112 @@ const TableForm = ({
   onEdit: (content: TableContentSchemaType) => void;
   onChange: (newArray: string[]) => void;
 }) => {
+  const nonEmptyTable = [{ header: "TableHeader 1", cell: "TableCell 1" }];
+  const defaultTableData = { header: "TableHeader 1", cell: "TableCell 1" };
+
   const { t } = useTranslation();
   const [testSucceeded, setTestSucceeded] = useState<boolean | null>(null);
-  let variant: ButtonProps["variant"] = "outline";
-
   const [selectRoute, setSelectRoute] = useState<string>("");
-
-  const [output, setOutput] = useState<KeyWithDepth[]>([]);
-
-  let isPending;
-
-  const exampleTableData = [
-    {
-      header: "TableHeader 1",
-      cell: "TableCell 1",
-    },
-    {
-      header: "TableHeader 2",
-      cell: "TableCell 2",
-    },
-  ];
-  const hasTableData = layout[pageElementID]?.content?.content;
-
+  const [selectItems, setSelectItems] = useState<KeyWithDepth[]>([]);
   const [tableHeaderAndCells, setTableHeaderAndCells] =
-    useState<TableSchemaType>(hasTableData ?? exampleTableData);
-
+    useState<TableSchemaType>(
+      layout[pageElementID]?.content?.content ?? nonEmptyTable
+    );
   const [index, setIndex] = useState<number>(0);
+  const [isPending, setIsPending] = useState<boolean>(false);
 
-  const [tableHeader, setTableHeader] = useState<string>(
-    tableHeaderAndCells[index]?.header ?? ""
-  );
-  const [tableCell, setTableCell] = useState<string | undefined>(
-    tableHeaderAndCells[index]?.cell ?? ""
-  );
-
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    e.stopPropagation(); // prevent the parent form from submitting
-    //  handleSubmit(onSubmit)(e);
-    onEdit({ content: tableHeaderAndCells });
-  };
-
-  const defaultTableData = exampleTableData;
+  const [currentColumnValue, setCurrentColumnValue] =
+    useState<TableKeySchemaType>(
+      tableHeaderAndCells[index] ?? defaultTableData
+    );
 
   const formId = "edit-table-element";
-
   const {
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<PageElementContentSchemaType>({
     resolver: zodResolver(PageElementContentSchema),
-    defaultValues: {
-      content: hasTableData ?? { ...defaultTableData },
-    },
+    defaultValues: { content: tableHeaderAndCells },
   });
-
-  if (testSucceeded === false) {
-    variant = "destructive";
-  }
-
-  if (testSucceeded === true) {
-    variant = "outline";
-  }
 
   const { mutate: getOutput } = useCreateInstanceWithOutput({
     onError: () => {
-      isPending = false;
+      setIsPending(false);
       setTestSucceeded(false);
     },
     onSuccess: (namespace, data) => {
-      isPending = false;
+      setIsPending(false);
       setTestSucceeded(true);
-      const outputEntries = extractKeysWithDepth(data);
-
-      setOutput(outputEntries);
+      setSelectItems(extractKeysWithDepth(data));
     },
   });
 
-  const loadPaginationData = (index: number) => {
-    setTableCell(tableHeaderAndCells[index]?.cell);
-    setTableHeader(tableHeaderAndCells[index]?.header ?? "wasundefined");
+  const loadTableColumnIntoDisplay = (index: number) => {
+    const loadedValue = tableHeaderAndCells[index] ?? defaultTableData;
+    setCurrentColumnValue(loadedValue);
   };
 
-  let added = false;
+  const updateTableColumn = (
+    fieldName: "header" | "cell",
+    fieldValue: string
+  ) => {
+    fieldName === "header"
+      ? setValue(`content.${index}.header`, fieldValue)
+      : setValue(`content.${index}.cell`, fieldValue);
 
-  const addTableItem = () => {
-    added = true;
-    const newPage = tableHeaderAndCells.length;
+    const headerValue = getValues(`content.${index}.header`);
+    const cellValue = getValues(`content.${index}.cell`);
 
-    const newElement = {
-      header: `Example Header ${newPage + 1}`,
-      cell: "unset",
+    const valueAtIndex = {
+      header: String(headerValue) ?? "",
+      cell: String(cellValue) ?? "",
     };
 
-    setIndex(newPage);
+    const newValue =
+      typeof valueAtIndex === typeof TableKeySchema
+        ? valueAtIndex
+        : defaultTableData;
 
-    const copyArray = tableHeaderAndCells;
-    copyArray.splice(newPage, 0, newElement);
-    setTableHeaderAndCells(copyArray);
+    const prev = tableHeaderAndCells;
 
-    setTableHeader(newElement.header);
-    setTableCell(newElement.cell);
+    if (prev.length > 1) {
+      prev.splice(index, 1, newValue);
+      setTableHeaderAndCells(prev);
+    } else {
+      setTableHeaderAndCells([defaultTableData]);
+    }
   };
 
-  const deleteTableItem = () => {
-    const actualizedIndex =
-      index === tableHeaderAndCells.length - 1
+  const addTableColumn = () => {
+    const newElement = {
+      header: `Example Header ${tableHeaderAndCells.length + 1}`,
+      cell: "unset",
+    };
+    setTableHeaderAndCells((prev) => [...prev, newElement]);
+    setIndex(tableHeaderAndCells.length - 1);
+  };
+
+  const deleteTableColumn = () => {
+    const prev = tableHeaderAndCells;
+    if (prev.length > 1) {
+      prev.splice(index, 1);
+      setTableHeaderAndCells(prev);
+    } else {
+      setTableHeaderAndCells([defaultTableData]);
+    }
+
+    const newIndex =
+      index !== 0 && index === tableHeaderAndCells.length - 1
         ? tableHeaderAndCells.length - 2
         : index;
 
-    setIndex(actualizedIndex);
-
-    const copyArray = tableHeaderAndCells;
-    copyArray.splice(index, 1);
-    setTableHeaderAndCells(copyArray);
-
-    const actualizedElement =
-      tableHeaderAndCells[actualizedIndex] ?? exampleTableData[0];
-
-    const actualizedHeader =
-      actualizedElement !== undefined
-        ? actualizedElement.header
-        : "Example Header";
-    const actualizedCell =
-      actualizedElement !== undefined ? actualizedElement.cell : "unset";
-
-    setTableHeader(actualizedHeader);
-    setTableCell(actualizedCell);
+    setIndex(newIndex);
   };
 
-  const updateTable = (element: string, value: string) => {
-    if (added === true) return null;
-
-    let newElement;
-
-    if (element === "header") {
-      newElement = {
-        header: value,
-        cell: tableCell ?? "",
-      };
-    } else {
-      newElement = {
-        header: tableHeader,
-        cell: value,
-      };
-    }
-
-    const copyArray = tableHeaderAndCells;
-    copyArray.splice(index, 1, newElement);
-    setTableHeaderAndCells(copyArray);
+  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onEdit({ content: tableHeaderAndCells });
   };
 
   return (
@@ -222,24 +171,22 @@ const TableForm = ({
       <FormErrors errors={errors} className="mb-5" />
       <form id={formId} onSubmit={onSubmit}>
         <div className="my-3">
-          <div className="flex flex-row gap-5">
-            <fieldset className="flex items-start gap-5">
+          <div className="flex gap-5">
+            <fieldset className="flex gap-5">
               <label className="w-[120px] text-left text-[14px]" htmlFor="text">
                 Data Source:
               </label>
-              <div className="w-full flex-wrap">
-                <FilePicker
-                  onChange={(value) => setSelectRoute(value)}
-                  selectable={(file) => file.type === "workflow"}
-                />
-              </div>
+              <FilePicker
+                onChange={setSelectRoute}
+                selectable={(file) => file.type === "workflow"}
+              />
             </fieldset>
             <Button
               disabled={selectRoute.length <= 1}
-              variant={variant}
+              variant={testSucceeded === false ? "destructive" : "outline"}
               onClick={(e) => {
                 e.preventDefault();
-                isPending = true;
+                setIsPending(true);
                 getOutput({ path: selectRoute, payload: "ha" });
               }}
             >
@@ -259,131 +206,46 @@ const TableForm = ({
             </Button>
           </div>
           <div className="my-6">
-            <div className="flex flex-row gap-5">
-              <fieldset className="flex items-start gap-5">
+            <div className="flex gap-5">
+              <fieldset className="flex gap-5">
                 <label
                   className="w-[120px] text-left text-[14px]"
                   htmlFor="text"
                 >
                   Data Keys:
                 </label>
-
-                <div className="w-full flex-wrap m-0">
-                  <Card noShadow className="flex flex-row ">
-                    <div className="flex flex-col">
-                      <div className="flex flex-row">
-                        <Button
-                          className="w-32 rounded-none rounded-tl-md bg-gray-2"
-                          variant="outline"
-                          asChild
-                        >
-                          <label>Table Header</label>
-                        </Button>
-
-                        <Input
-                          placeholder="Insert a Caption for the data below"
-                          className="w-80 rounded-none rounded-tr-md"
-                          value={tableHeader}
-                          onChange={(e) => {
-                            setTableHeader(e.target.value);
-                            setValue(`content.${index}.header`, e.target.value);
-                            if (e.target.value !== tableHeader)
-                              updateTable("header", e.target.value);
-                          }}
-                        />
-                      </div>
-                      <div className="flex flex-row ">
-                        <Button
-                          className="w-32 rounded-none rounded-bl-md bg-gray-2"
-                          variant="outline"
-                          asChild
-                        >
-                          <label>Table Cell</label>
-                        </Button>
-                        <>
-                          {output.length ? (
-                            <Select
-                              value={tableCell}
-                              onValueChange={(newValue) => {
-                                setTableCell(newValue);
-                                setValue(`content.${index}.cell`, newValue);
-                                if (newValue !== tableCell)
-                                  updateTable("cell", newValue);
-                              }}
-                            >
-                              <SelectTrigger
-                                defaultValue="unset"
-                                className="w-80 justify-start rounded-none rounded-br-md"
-                                variant="outline"
-                                id="scale"
-                              >
-                                <SelectValue placeholder="Select Data" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectGroup>
-                                  {output?.map((element) => (
-                                    <SelectItem
-                                      key={element.key}
-                                      value={element.key}
-                                    >
-                                      {element.key}
-                                    </SelectItem>
-                                  ))}
-                                </SelectGroup>
-                              </SelectContent>
-                            </Select>
-                          ) : (
-                            <Select>
-                              <SelectTrigger
-                                className="w-80 justify-start"
-                                variant="outline"
-                                id="scale"
-                                disabled
-                              >
-                                Connect a Data Source first
-                              </SelectTrigger>
-                            </Select>
-                          )}
-                        </>
-                      </div>
-                      <div className="flex-col flex items-end m-0">
-                        <Button
-                          className="m-0"
-                          icon
-                          variant="outline"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            deleteTableItem();
-                          }}
-                        >
-                          <Trash2 />
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-
-                  <div className="flex flex-row pt-4 gap-4">
-                    <Pagination
-                      totalPages={tableHeaderAndCells.length}
-                      value={index + 1}
-                      onChange={(clickedPage) => {
-                        loadPaginationData(clickedPage - 1);
-                        setIndex(clickedPage - 1);
-                      }}
-                    />
-                    <Button
-                      icon
-                      variant="outline"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        addTableItem();
-                      }}
-                    >
-                      <Plus />
-                    </Button>
-                  </div>
-                </div>
+                <TableColumnForm
+                  value={currentColumnValue}
+                  setValue={setCurrentColumnValue}
+                  selectItems={selectItems}
+                  onChange={(fieldName, fieldValue) =>
+                    updateTableColumn(fieldName, fieldValue)
+                  }
+                  onDelete={deleteTableColumn}
+                />
               </fieldset>
+              <div className="w-full flex-wrap m-0">
+                <div className="flex pt-4 gap-4">
+                  <Pagination
+                    totalPages={tableHeaderAndCells.length}
+                    value={index + 1}
+                    onChange={(clickedPage) => {
+                      setIndex(clickedPage - 1);
+                      loadTableColumnIntoDisplay(clickedPage - 1);
+                    }}
+                  />
+                  <Button
+                    icon
+                    variant="outline"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      addTableColumn();
+                    }}
+                  >
+                    <Plus />
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -410,9 +272,8 @@ const TableForm = ({
               {t("pages.explorer.tree.delete.cancelBtn")}
             </Button>
           </DialogClose>
-          <Button type="submit" form={formId ?? undefined} variant="outline">
-            <Save />
-            Save
+          <Button type="submit" form={formId} variant="outline">
+            <Save /> Save
           </Button>
         </DialogFooter>
       </form>

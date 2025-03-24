@@ -5,9 +5,9 @@ export const TableKeySchema = z.object({
   cell: z.string(),
 });
 
-export type TableKeySchemaType = z.infer<typeof TableSchema>;
+export type TableKeySchemaType = z.infer<typeof TableKeySchema>;
 
-export const TableSchema = z.array(TableKeySchema);
+export const TableSchema = z.array(TableKeySchema).nonempty();
 
 export type TableSchemaType = z.infer<typeof TableSchema>;
 
