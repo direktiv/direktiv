@@ -85,21 +85,7 @@ func (m *logController) mountRouter(r chi.Router) {
 			return
 		}
 
-		if len(logs) == 0 {
-			writeJSONWithMeta(w, []logEntry{}, map[string]any{
-				"previousPage": nil,
-				"startingFrom": nil,
-			})
-
-			return
-		}
-
-		metaInfo := map[string]any{
-			"previousPage": nil,
-			"startingFrom": nil,
-		}
-
-		writeJSONWithMeta(w, logs, metaInfo)
+		writeJSON(w, logs)
 	})
 
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
@@ -170,7 +156,7 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 	rc := http.NewResponseController(w)
 
 	queryAndSend := func(ctx context.Context, queryString string) (time.Time, error) {
-		fmt.Println(queryString)
+		// fmt.Println(queryString)
 		logs, err := m.get(ctx, queryString)
 		if err != nil {
 			return time.Now().UTC(), err
