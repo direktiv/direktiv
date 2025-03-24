@@ -124,8 +124,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
   ).toHaveURL(`/n/${namespace}/gateway/routes/${filename}`);
 });
 
-// TODO: re-enable this test [DIR-1958]
-test.skip("it is possible to add plugins to a route file", async ({ page }) => {
+test("it is possible to add plugins to a route file", async ({ page }) => {
   /* prepare data */
   const filename = "myroute.yaml";
   const editor = page.locator(".lines-content");
@@ -206,7 +205,6 @@ test.skip("it is possible to add plugins to a route file", async ({ page }) => {
 
   /* check editor content */
   const inboundPluginsBeforeSorting = `
-    inbound:
       - configuration:
           allow_groups:
             - allow this group 1
@@ -217,13 +215,12 @@ test.skip("it is possible to add plugins to a route file", async ({ page }) => {
         type: acl
       - configuration:      
           omit_body: false
-          omit_consumer: trues
+          omit_consumer: true
           omit_headers: false
           omit_queries: true
         type: request-convert`;
 
   const inboundPluginsAfterSorting = `
-     inbound:
        - configuration:
           omit_body: false
           omit_consumer: true
@@ -266,7 +263,7 @@ test.skip("it is possible to add plugins to a route file", async ({ page }) => {
   await expect(
     editor,
     "the inbound plugins are represented in the editor preview"
-  ).toContainText(removeLines(expectedEditorContent, 7, "top"), {
+  ).toContainText(removeLines(expectedEditorContent, 11, "top"), {
     useInnerText: true,
   });
 
@@ -301,10 +298,9 @@ test.skip("it is possible to add plugins to a route file", async ({ page }) => {
 
   /* check editor content */
   const outboundPlugins = `
-    outbound:
-      - type: js-outbound
-        configuration:
-          script: // execute some JavaScript here`;
+      - configuration:
+          script: // execute some JavaScript here
+        type: js-outbound`;
 
   expectedEditorContent = createRouteYaml({
     ...minimalRouteConfig,
@@ -318,10 +314,9 @@ test.skip("it is possible to add plugins to a route file", async ({ page }) => {
   await expect(
     editor,
     "the outbound plugin is represented in the editor preview"
-  ).toContainText(
-    normalizeText(removeLines(expectedEditorContent, 16, "top")),
-    { useInnerText: true }
-  );
+  ).toContainText(removeLines(expectedEditorContent, 14, "top"), {
+    useInnerText: true,
+  });
 
   /* configure auth plugin: Github Webhook */
   await page.getByRole("button", { name: "add auth plugin" }).click();
@@ -332,10 +327,9 @@ test.skip("it is possible to add plugins to a route file", async ({ page }) => {
 
   /* check editor content */
   const authPlugins = `
-    auth:
-      - type: github-webhook-auth
-        configuration:
-          secret: my github secret`;
+      - configuration:
+          secret: my github secret
+        type: github-webhook-auth`;
 
   expectedEditorContent = createRouteYaml({
     ...minimalRouteConfig,
@@ -351,7 +345,7 @@ test.skip("it is possible to add plugins to a route file", async ({ page }) => {
     editor,
     "the auth plugin is represented in the editor preview"
   ).toContainText(
-    normalizeText(removeLines(expectedEditorContent, 18, "top")),
+    normalizeText(removeLines(expectedEditorContent, 17, "top")),
     { useInnerText: true }
   );
 
@@ -367,7 +361,7 @@ test.skip("it is possible to add plugins to a route file", async ({ page }) => {
     editor,
     "after reloading, the entered data is still in the editor preview"
   ).toContainText(
-    normalizeText(removeLines(expectedEditorContent, 18, "bottom")),
+    normalizeText(removeLines(expectedEditorContent, 16, "bottom")),
     { useInnerText: true }
   );
 
@@ -400,9 +394,9 @@ test.skip("it is possible to add plugins to a route file", async ({ page }) => {
     ...minimalRouteConfig,
     plugins: {
       target: basicTargetPlugin,
-      inbound: "inbound: []",
-      outbound: "outbound: []",
-      auth: "auth: []",
+      inbound: "[]",
+      outbound: "[]",
+      auth: "[]",
     },
   });
 
