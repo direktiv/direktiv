@@ -83,7 +83,9 @@ test("It displays a log message from the workflow yaml, one initial and one fina
   page.reload();
 
   await expect(
-    scrollContainer.locator("pre").locator("span").nth(5),
+    scrollContainer
+      .locator("pre")
+      .locator("span", { hasText: "msg: hello-world" }),
     "It displays the log message from the log field in the workflow yaml"
   ).toContainText("msg: hello-world");
 
