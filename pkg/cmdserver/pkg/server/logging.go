@@ -44,6 +44,8 @@ func (l *Logger) SetWriterState(enable bool) {
 
 	if enable {
 		writers = append(writers, os.Stdout, &l.LogData)
+	} else {
+		writers = append(writers, &l.LogData)
 	}
 
 	if enable && os.Getenv(devMode) == "" {

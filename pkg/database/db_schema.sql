@@ -254,3 +254,5 @@ CREATE TABLE IF NOT EXISTS "traces" (
 );
 
 CREATE INDEX IF NOT EXISTS "trace_id" ON "traces" USING hash("parent_span_id");
+
+DROP TABLE "fluentbit";

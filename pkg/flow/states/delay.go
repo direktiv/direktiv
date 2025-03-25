@@ -66,6 +66,9 @@ func (logic *delayLogic) Run(ctx context.Context, wakedata []byte) (*Transition,
 	}
 
 	if first {
+		// telemetry.LogInstanceInfo(ctx, fmt.Sprintf("instance sleeping for %s", logic.Duration))
+		logic.Log(ctx, log.Info, fmt.Sprintf("instance sleeping for %s", logic.Duration))
+
 		var d duration.Duration
 
 		d, err = duration.ParseISO8601(logic.Duration)
@@ -84,8 +87,7 @@ func (logic *delayLogic) Run(ctx context.Context, wakedata []byte) (*Transition,
 		//nolint:nilnil
 		return nil, nil
 	}
-
-	logic.Log(ctx, log.Info, "Waking up from sleep.")
+	logic.Log(ctx, log.Info, "waking up from sleep")
 
 	return &Transition{
 		Transform: logic.Transform,

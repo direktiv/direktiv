@@ -25,7 +25,7 @@ test("It will show the logs on the monitoring page", async ({ page }) => {
   });
 
   await expect(
-    page.getByText("msg: Workflow has been triggered"),
+    page.getByText("msg: workflow has been started"),
     "It will show a log message"
   ).toBeVisible();
 
@@ -45,7 +45,7 @@ test("It will show the logs on the monitoring page", async ({ page }) => {
   await page.waitForTimeout(3000);
 
   await expect(
-    page.getByText("msg: Workflow has been triggered"),
+    page.getByText("msg: workflow has been started"),
     "When coming back to the monitoring page, it still shows the same log message"
   ).toBeVisible();
 
@@ -58,14 +58,17 @@ test("It will show the logs on the monitoring page", async ({ page }) => {
 test("it renders an error when the api response returns an error", async ({
   page,
 }) => {
-  await page.route(`/api/v2/namespaces/${namespace}/logs`, async (route) => {
-    if (route.request().method() === "GET") {
-      const json = {
-        error: { code: 422, message: "oh no!" },
-      };
-      await route.fulfill({ status: 422, json });
-    } else route.continue();
-  });
+  await page.route(
+    `/api/v2/namespaces/${namespace}/logs?last=50`,
+    async (route) => {
+      if (route.request().method() === "GET") {
+        const json = {
+          error: { code: 422, message: "oh no!" },
+        };
+        await route.fulfill({ status: 422, json });
+      } else route.continue();
+    }
+  );
 
   await page.goto(`/n/${namespace}/monitoring`);
 

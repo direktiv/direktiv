@@ -17,6 +17,7 @@ import { OpenAPIDocsForm } from "./openAPIDocs";
 import { OutboundPluginForm } from "./plugins/Outbound";
 import { Switch } from "~/design/Switch";
 import { TargetPluginForm } from "./plugins/Target";
+import { forceLeadingSlash } from "~/api/files/utils";
 import { routeMethods } from "~/api/gateway/schema";
 import { treatAsNumberOrUndefined } from "../../../utils";
 import { useTranslation } from "react-i18next";
@@ -57,7 +58,16 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
             htmlFor="path"
             className="grow"
           >
-            <Input {...register("x-direktiv-config.path")} id="path" />
+            <Input
+              {...register("x-direktiv-config.path")}
+              id="path"
+              onChange={(event) =>
+                form.setValue(
+                  "x-direktiv-config.path",
+                  forceLeadingSlash(event.target.value)
+                )
+              }
+            />
           </Fieldset>
           <Fieldset
             label={t("pages.explorer.endpoint.editor.form.timeout")}

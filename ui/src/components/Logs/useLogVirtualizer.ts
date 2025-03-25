@@ -22,7 +22,7 @@ export const useLogVirtualizer = ({
   const [scrolledToBottom, setScrolledToBottom] = useState(true);
 
   const prevNumberOfLogLines = useRef<number | null>(null);
-  const prevOldestLogLineId = useRef<number | null>(null);
+  const prevOldestLogLineId = useRef<string | null>(null);
 
   const {
     data: logLines = [],
@@ -37,15 +37,12 @@ export const useLogVirtualizer = ({
     count: numberOfLogLines,
     getScrollElement: () => parentRef.current,
     estimateSize: () => defaultLogHeight,
-    getItemKey: useCallback(
-      (index: number) => {
-        const uniqueId = logLines[index]?.id;
-        if (!uniqueId)
-          throw new Error("Could not find a log line id for the virtualizer.");
-        return uniqueId;
-      },
-      [logLines]
-    ),
+    getItemKey: useCallback((index: number) => {
+      const uniqueId = index;
+      if (uniqueId === null || uniqueId === undefined)
+        throw new Error("Could not find a log line id for the virtualizer.");
+      return uniqueId;
+    }, []),
     /**
      * overscan is the number of items to render above and below
      * the visible window. More items = less flickering when
@@ -56,7 +53,7 @@ export const useLogVirtualizer = ({
     overscan: 40,
     onChange(instance) {
       prevNumberOfLogLines.current = numberOfLogLines;
-      prevOldestLogLineId.current = logLines?.[0]?.id ?? null;
+      prevOldestLogLineId.current = logLines?.[0]?.time ?? null;
       /**
        * when the last x log lines are visible in the list (x being
        * logLinesThreshold), the user is considered to be at the
@@ -115,7 +112,7 @@ export const useLogVirtualizer = ({
       prevNumberOfLogLines.current &&
       prevNumberOfLogLines.current !== numberOfLogLines &&
       // this will make sure the new received log lines were added at the top
-      prevOldestLogLineId.current !== (logLines?.[0]?.id ?? null)
+      prevOldestLogLineId.current !== (logLines?.[0]?.time ?? null)
     ) {
       /**
        * To maintain the old scroll position we need to know how many log

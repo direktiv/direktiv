@@ -23,8 +23,6 @@ type Config struct {
 
 	FunctionsTimeout int `env:"DIREKTIV_FUNCTIONS_TIMEOUT" envDefault:"7200"`
 
-	OpenTelemetry string `env:"DIREKTIV_OPEN_TELEMETRY_BACKEND"`
-
 	KnativeServiceAccount string `env:"DIREKTIV_KNATIVE_SERVICE_ACCOUNT"`
 	KnativeNamespace      string `env:"DIREKTIV_KNATIVE_NAMESPACE"`
 	KnativeIngressClass   string `env:"DIREKTIV_KNATIVE_INGRESS_CLASS"`
@@ -57,9 +55,10 @@ type Config struct {
 	NatsUsername  string `env:"DIREKTIV_NATS_USERNAME"`
 	NatsPassword  string `env:"DIREKTIV_NATS_PASSWORD"`
 
-	OidcIssuerUrl        string `env:"DIREKTIV_OIDC_ISSUER_URL"`
-	OidcClientID         string `env:"DIREKTIV_OIDC_CLIENT_ID"`
-	VictoriaLogsEndpoint string `env:"DIREKTIV_VICTORIA_LOGS"`
+	OidcIssuerUrl string `env:"DIREKTIV_OIDC_ISSUER_URL"`
+	OidcClientID  string `env:"DIREKTIV_OIDC_CLIENT_ID"`
+	LogsBackend   string `env:"DIREKTIV_LOGS_BACKEND"`
+	OtelBackend   string `env:"DIREKTIV_OTEL_BACKEND"`
 
 	LogHistoryHours      int `env:"DIREKTIV_LOG_HISTORY_HOURS"      envDefault:"48"`
 	MirrorHistoryHours   int `env:"DIREKTIV_MIRROR_HISTORY_HOURS"   envDefault:"192"`

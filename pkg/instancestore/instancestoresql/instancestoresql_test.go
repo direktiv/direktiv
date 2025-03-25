@@ -2,6 +2,7 @@ package instancestoresql_test
 
 import (
 	"context"
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -21,13 +22,11 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 	store := db.InstanceStore()
 
 	telemetryInfo := &engine.InstanceTelemetryInfo{
-		Version:       "v2",
-		TraceParent:   "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
-		CallPath:      "/some/path",
-		NamespaceName: "namespace1",
+		Version:     "v1",
+		TraceParent: "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
 	}
 
-	telemetryInfoBytes, err := telemetryInfo.MarshalJSON()
+	telemetryInfoBytes, err := json.Marshal(telemetryInfo)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +74,8 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 	}
 
 	if len(res.Results) > 0 {
-		storedTelemetry, err := engine.LoadInstanceTelemetryInfo(res.Results[0].TelemetryInfo)
+		var storedTelemetry engine.InstanceTelemetryInfo
+		err := json.Unmarshal(res.Results[0].TelemetryInfo, &storedTelemetry)
 		if err != nil {
 			t.Errorf("failed to unmarshal telemetry info: %v", err)
 		}

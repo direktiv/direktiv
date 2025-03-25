@@ -28,7 +28,6 @@ export const possibleTriggerValues = [
   }
  */
 const ParentInstanceSchema = z.object({
-  branch: z.number(),
   id: z.string(),
   state: z.string(),
   step: z.number(),

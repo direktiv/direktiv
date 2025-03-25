@@ -7,19 +7,19 @@ export type LogLevelSchemaType = z.infer<typeof LogLevelSchema>;
  * example
  * 
 {
-  "state": "loop",
-  "branch": null,
-  "workflow": "/wf.yaml",
-  "calledAs": null,
-  "instance": "f1242c40-3cd9-48bb-82aa-02275df6e1da" 
+  "status": "running",
+  "state": "input",
+  "workflow": "/error.yaml",
+  "instance": "64477403-24a6-481b-a871-9fb8bc19e648",
+  "callpath": "/454c7a14-77d5-4706-bc61-27d883a2dde0/64477403-24a6-481b-a871-9fb8bc19e648/"
 }
  */
 export const WorkflowStatusData = z.object({
+  status: z.string().nonempty().nullable(),
   state: z.string().nonempty().nullable(),
-  branch: z.number().nullable(),
-  workflow: z.string().nonempty(),
-  calledAs: z.string().nullable(),
-  instance: z.string().nonempty(),
+  workflow: z.string().nonempty().optional(),
+  instance: z.string().nonempty().optional(),
+  callpath: z.string().nullable().optional(),
 });
 
 /**
@@ -37,26 +37,17 @@ export const RouteData = z.object({
  * example
  * 
 {
-  "id": 1731,
-  "time": "2024-03-11T13:39:13.214148Z",
-  "msg": "Running state logic",
+  "time": "2025-03-24T08:30:38.782702844Z",
+  "msg": "running state logic prep",
   "level": "INFO",
-  "namespace": "test",
-  "trace": "00000000000000000000000000000000",
-  "span": "0000000000000000",
-  "workflow": {...},
-  "error": null
+  "namespace": "demo",
 }
  */
 export const LogEntrySchema = z.object({
-  id: z.number(),
   time: z.string().nonempty(),
   msg: z.string().nonempty(),
   level: LogLevelSchema,
   namespace: z.string().nonempty().nullable(),
-  trace: z.string().nonempty().nullable(),
-  span: z.string().nonempty().nullable(),
-  error: z.string().nullable(),
   workflow: WorkflowStatusData.optional(),
   route: RouteData.optional(),
 });
@@ -65,18 +56,10 @@ export const LogEntrySchema = z.object({
  * example
  * 
   {
-    "meta": {
-      "previousPage": null,
-      "startingFrom": "2024-03-11T13:35:33.318740761Z"
-    },
     "data": []
   }
  */
 export const LogsSchema = z.object({
-  meta: z.object({
-    previousPage: z.string().nonempty().nullable(),
-    startingFrom: z.string().nonempty().nullable(),
-  }),
   data: z.array(LogEntrySchema),
 });
 

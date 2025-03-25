@@ -71,6 +71,14 @@ flow:
   opentelemetryBackend: ""
   sidecar:
 
+otel:
+  install: true
+
+opentelemetry-collector:
+  image:
+    repository: otel/opentelemetry-collector-k8s
+  mode: deployment
+
 database:
   # -- database host
   host: "postgres-postgresql-ha-pgpool.postgres"
@@ -116,52 +124,9 @@ ingress-nginx:
           linkerd.io/inject: disabled
 
 fluent-bit:
-  install: true
-  envFrom:
-    - secretRef:
-        name: direktiv-fluentbit
+  existingConfigMap: config-fluentbit
   config:
-    inputs: |
-      [INPUT]
-          Name                    tail
-          Path                    /var/log/containers/*flow*.log,/var/log/containers/*direktiv-sidecar*.log
-          Mem_Buf_Limit           5MB
-          Skip_Long_Lines         Off
-          Tag                     input
-          multiline.parser        cri, docker
-          Refresh_Interval        1
-          Buffer_Max_Size         64k
-    outputs: |
-      [OUTPUT]
-          name                    pgsql
-          match                   flow.*
-          port                    ${PG_PORT}
-          table                   fluentbit
-          user                    ${PG_USER}
-          database                ${PG_DB_NAME}
-          host                    ${PG_HOST}
-          password                ${PG_PASSWORD}
-      [OUTPUT]
-          name                    loki
-          match                   *
-          host                    direktiv-victoria-logs-single-server.default.svc
-          uri                     /insert/loki/api/v1/push
-          port                    9428
-          label_keys              $path,$log,$time
-          header                  VL-Msg-Field log
-          header                  VL-Time-Field time
-          header                  VL-Stream-Fields path
-    filters: |
-      [FILTER]
-          Name                    rewrite_tag
-          Match                   input
-          Rule                    $log ^.*"track":"([^"]*).*$ flow.$1 true
-      [FILTER]
-          Name                    parser
-          Match                   *
-          Parser                  json
-          Key_Name                log
-          Reserve_Data            on
+    outputs: ""
 
 # -- service account for components. If preconfigured serviceaccounts are used the name ise the base
 # and two additional service accounts are needed, e.g. service account name is myaccount then another two
@@ -220,12 +185,6 @@ functions:
 
   # -- extra volumes for tasks and knative pods
   extraVolumes: []
-  #   - configMap:
-  #   name: otel-agent-conf
-  #   items:
-  #     - key: otel-agent-config
-  #       path: otel-agent-config.yaml
-  # name: otel-agent-config-vol
 
   # -- extra containers for tasks and knative pods
   extraContainers:
@@ -265,3 +224,10 @@ nats:
       port: 4222
       tls:
         enabled: false
+
+
+victoria-logs-single:
+  server:
+    image:
+      tag: v1.15.0-victorialogs
+    retentionPeriod: 7d

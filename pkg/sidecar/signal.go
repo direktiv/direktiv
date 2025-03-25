@@ -21,7 +21,7 @@ func (sl *SignalListener) Start() {
 	sl.stopper = make(chan *time.Time, 1)
 	signal.Notify(sl.signals, os.Interrupt, unix.SIGTERM)
 
-	slog.Debug("Listening for signals.")
+	slog.Debug("listening for signals")
 
 	end := threads.Register(sl.stopper)
 
@@ -33,10 +33,10 @@ func (sl *SignalListener) listen(end func()) {
 
 	select {
 	case <-sl.signals:
-		slog.Info("Received shutdown signal.")
+		slog.Info("received shutdown signal")
 		Shutdown(SUCCESS)
 	case <-sl.stopper:
-		slog.Debug("Stopping signal listener.")
+		slog.Debug("stopping signal listener")
 	}
 
 	go func() {

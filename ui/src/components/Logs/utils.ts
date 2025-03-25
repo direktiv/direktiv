@@ -3,22 +3,18 @@ import { formatLogTime } from "~/util/helpers";
 
 export const getInstanceLogEntryForClipboard = (logEntry: LogEntryType) =>
   createLogEntryForClipboard([
-    logEntry.id,
     formatLogTime(logEntry.time),
     logEntry?.level,
     logEntry?.workflow?.workflow,
     logEntry?.workflow?.state ?? undefined,
     logEntry.msg,
-    logEntry.error ?? undefined,
   ]);
 
 export const getMirrorLogEntryForClipboard = (logEntry: LogEntryType) =>
   createLogEntryForClipboard([
-    logEntry.id,
     formatLogTime(logEntry.time),
     logEntry?.level,
     logEntry?.msg,
-    logEntry.error ?? undefined,
   ]);
 
 export const getMonitoringLogEntryForClipboard = (logEntry: LogEntryType) => {
@@ -28,23 +24,19 @@ export const getMonitoringLogEntryForClipboard = (logEntry: LogEntryType) => {
     : [];
 
   return createLogEntryForClipboard([
-    logEntry.id,
     formatLogTime(logEntry.time),
     logEntry?.level,
     logEntry.msg,
-    logEntry.error ?? undefined,
     ...workflowInfos,
   ]);
 };
 
 export const getRouteLogEntryForClipboard = (logEntry: LogEntryType) =>
   createLogEntryForClipboard([
-    logEntry.id,
     formatLogTime(logEntry.time),
     logEntry?.level,
     logEntry?.route?.path,
     logEntry.msg,
-    logEntry.error ?? undefined,
   ]);
 
 const createLogEntryForClipboard = (parts: (string | number | undefined)[]) =>

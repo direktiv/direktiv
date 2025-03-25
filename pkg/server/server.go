@@ -27,7 +27,7 @@ import (
 	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
 	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/service/registry"
-	"github.com/direktiv/direktiv/pkg/tracing"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -318,14 +318,20 @@ func initSLog(cfg *core.Config) {
 		slog.Info("logging is set to debug")
 		lvl.Set(slog.LevelDebug)
 	}
-	handlers := tracing.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+
+	ctxHandler := telemetry.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
 		Level: lvl,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			if a.Key == slog.TimeKey {
+				// force time format to full length with trainling zeros
+				a.Value = slog.StringValue(a.Value.Time().Format("2006-01-02T15:04:05.000000000Z"))
+			}
+
+			return a
+		},
 	}))
-	slogger := slog.New(
-		tracing.TeeHandler{
-			handlers,
-			tracing.EventHandler{},
-		})
+
+	slogger := slog.New(ctxHandler)
 
 	slog.SetDefault(slogger)
 }

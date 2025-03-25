@@ -25,9 +25,10 @@ type ActionContext struct {
 	Instance    string `json:"instance"`
 	Workflow    string `json:"workflow"`
 	Namespace   string `json:"namespace"`
-	Callpath    string `json:"callpath"`
 	Action      string `json:"action"`
 	Step        int    `json:"step"`
+	Path        string `json:"path"`
+	Invoker     string `json:"invoker"`
 }
 
 type FunctionFileDefinition struct {

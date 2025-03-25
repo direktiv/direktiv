@@ -10,7 +10,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/gateway"
-	"go.opentelemetry.io/otel/trace"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 )
 
 // FlowPlugin executes a flow in a configured namespace.
@@ -54,6 +54,10 @@ func (tf *FlowPlugin) Type() string {
 }
 
 func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+	ctx := telemetry.GetContextFromRequest(r.Context(), r)
+	ctx, span := telemetry.Tracer.Start(ctx, "gateway-request")
+	defer span.End()
+
 	currentNS := gateway.ExtractContextEndpoint(r).Namespace
 	if tf.Namespace == "" {
 		tf.Namespace = currentNS
@@ -62,10 +66,6 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 		gateway.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
 		return nil
 	}
-
-	tracer := trace.SpanFromContext(r.Context()).TracerProvider().Tracer("direktiv/flow")
-	ctx, childSpan := tracer.Start(r.Context(), "target-workflow-plugin")
-	defer childSpan.End()
 
 	url := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/instances?path=%s&wait=%s",
 		os.Getenv("DIREKTIV_API_PORT"),
