@@ -26,26 +26,11 @@ import { useStreaming } from "~/api/streaming";
     // the result of every page request is stored here
     "pages": [
       {
-        "meta": {
-          "previousPage": "FIRST_TIMESTAMP",
-          "startingFrom": "..."
-        },
-        "data": []
+        "data": [ ... ]
       },
-      {
-        "meta": {
-          "previousPage": "SECOND_TIMESTAMP",
-          "startingFrom": "..."
-        },
-        "data": []
+        "data": [ ... ]
       },
-      {
-        "meta": {
-          "previousPage": null, // last page
-          "startingFrom": "..."
-        },
-        "data": []
-      }
+      ...
     ]
     // all page pointers are stored here
     "pageParams": [
@@ -70,7 +55,6 @@ const updateCache = (
 
   const newestPageData = newestPage.data ?? [];
 
-  // To do: do we still need deduplication?
   // skip cache if the log entry is already in the cache
   if (newestPageData.some((logEntry) => logEntry.time === newLogEntry.time)) {
     return oldData;
