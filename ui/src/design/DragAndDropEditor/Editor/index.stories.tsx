@@ -17,7 +17,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: () => <></>,
+  render: () => (
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}></Dialog>
+  ),
 };
 
 export const DragAndDrop = () => {

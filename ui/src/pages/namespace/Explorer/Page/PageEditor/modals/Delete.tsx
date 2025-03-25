@@ -40,7 +40,7 @@ const DeleteModal = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Trash /> Delete
+          <Trash /> {t("pages.explorer.page.editor.form.modals.delete.title")}
         </DialogTitle>
       </DialogHeader>
       <div className="my-3">
@@ -52,7 +52,7 @@ const DeleteModal = ({
       <DialogFooter>
         <DialogClose asChild>
           <Button variant="ghost">
-            {t("pages.explorer.tree.delete.cancelBtn")}
+            {t("pages.explorer.page.editor.form.modals.delete.cancelBtn")}
           </Button>
         </DialogClose>
         <Button
@@ -63,7 +63,7 @@ const DeleteModal = ({
           loading={isPending}
         >
           {!isPending && <Trash />}
-          {t("pages.explorer.tree.delete.deleteBtn")}
+          {t("pages.explorer.page.editor.form.modals.delete.deleteBtn")}
         </Button>
       </DialogFooter>
     </>

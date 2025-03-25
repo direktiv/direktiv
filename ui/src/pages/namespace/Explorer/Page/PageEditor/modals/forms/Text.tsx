@@ -43,13 +43,14 @@ const TextForm = ({
     },
   });
 
-  const formId = "edit-page-element";
+  const formId = "edit-text-element";
 
   return (
     <>
       <DialogHeader>
         <DialogTitle>
-          <Settings /> Edit text component
+          <Settings />
+          {t("pages.explorer.page.editor.form.modals.edit.text.title")}
         </DialogTitle>
       </DialogHeader>
 
@@ -58,11 +59,13 @@ const TextForm = ({
         <div className="my-3">
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[14px]" htmlFor="text">
-              Content:
+              {t("pages.explorer.page.editor.form.modals.edit.text.label")}
             </label>
             <Input
               id="text"
-              placeholder="Enter the new text"
+              placeholder={t(
+                "pages.explorer.page.editor.form.modals.edit.text.placeholder"
+              )}
               {...register("content")}
             />
           </fieldset>
@@ -70,12 +73,12 @@ const TextForm = ({
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="ghost">
-              {t("pages.explorer.tree.delete.cancelBtn")}
+              {t("pages.explorer.page.editor.form.modals.edit.text.cancelBtn")}
             </Button>
           </DialogClose>
           <Button type="submit" variant="outline">
             <Save />
-            Save
+            {t("pages.explorer.page.editor.form.modals.edit.text.saveBtn")}
           </Button>
         </DialogFooter>
       </form>

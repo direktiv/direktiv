@@ -16,13 +16,13 @@ import {
 import { FC, PropsWithChildren } from "react";
 import { HoverContainer, HoverElement } from "~/design/HoverContainer";
 import { LogEntry, Logs } from "~/design/Logs";
-import { useDndContext, useDroppable } from "@dnd-kit/core";
 
 import Badge from "~/design/Badge";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { DialogTrigger } from "~/design/Dialog";
 import { twMergeClsx } from "~/util/helpers";
+import { useDroppable } from "@dnd-kit/core";
 
 type DroppableProps = PropsWithChildren & {
   id: string;
@@ -144,51 +144,6 @@ export const DroppableElement: FC<DroppableProps> = ({
     </div>
   );
 };
-
-type DropableProps = PropsWithChildren & {
-  id: string;
-};
-
-export const Droppable3: FC<DropableProps> = ({ id, children }) => {
-  const { setNodeRef, isOver } = useDroppable({
-    id,
-  });
-
-  const { active } = useDndContext();
-
-  const canDrop = !!active;
-
-  return (
-    <div
-      ref={setNodeRef}
-      aria-label={id}
-      className={twMergeClsx(
-        "relative h-1 w-full bg-primary-200 transition-all",
-        isOver && "h-12 bg-primary-500"
-      )}
-    >
-      {children}
-      {canDrop && <DropZone id={id} isOver={isOver} />}
-    </div>
-  );
-};
-
-const DropZone = ({ isOver, id }: { isOver: boolean; id: string }) => (
-  <div className="absolute h-6 inset-0 flex flex-col items-center justify-center border-b-8">
-    <div className="flex flex-col">
-      <Badge variant="outline">
-        {isOver ? (
-          <>
-            <PlusCircle className="mr-2" size={16} />
-            {id}
-          </>
-        ) : (
-          <>{!id ? "empty" : id}</>
-        )}
-      </Badge>
-    </div>
-  </div>
-);
 
 type NonDroppableElementProps = PropsWithChildren & {
   name: string;

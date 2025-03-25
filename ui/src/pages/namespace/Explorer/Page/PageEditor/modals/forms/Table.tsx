@@ -165,7 +165,8 @@ const TableForm = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <Settings /> Edit table component
+          <Settings />
+          {t("pages.explorer.page.editor.form.modals.edit.table.title")}
         </DialogTitle>
       </DialogHeader>
       <FormErrors errors={errors} className="mb-5" />
@@ -174,7 +175,9 @@ const TableForm = ({
           <div className="flex gap-5">
             <fieldset className="flex gap-5">
               <label className="w-[120px] text-left text-[14px]" htmlFor="text">
-                Data Source:
+                {t(
+                  "pages.explorer.page.editor.form.modals.edit.table.connectBtn.label"
+                )}
               </label>
               <FilePicker
                 onChange={setSelectRoute}
@@ -202,7 +205,9 @@ const TableForm = ({
               {!isPending && testSucceeded === false && (
                 <CircleX aria-label="Failed" />
               )}
-              Connect Data Source
+              {t(
+                "pages.explorer.page.editor.form.modals.edit.table.connectBtn.text"
+              )}
             </Button>
           </div>
           <div className="my-6">
@@ -212,7 +217,7 @@ const TableForm = ({
                   className="w-[120px] text-left text-[14px]"
                   htmlFor="text"
                 >
-                  Data Keys:
+                  {t("pages.explorer.page.editor.form.modals.edit.table.label")}
                 </label>
                 <TableColumnForm
                   value={currentColumnValue}
@@ -269,11 +274,12 @@ const TableForm = ({
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="ghost">
-              {t("pages.explorer.tree.delete.cancelBtn")}
+              {t("pages.explorer.page.editor.form.modals.edit.table.cancelBtn")}
             </Button>
           </DialogClose>
           <Button type="submit" form={formId} variant="outline">
-            <Save /> Save
+            <Save />
+            {t("pages.explorer.page.editor.form.modals.edit.table.saveBtn")}
           </Button>
         </DialogFooter>
       </form>

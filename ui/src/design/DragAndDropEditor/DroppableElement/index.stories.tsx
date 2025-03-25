@@ -14,7 +14,11 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: ({ ...args }) => <DroppableElement {...args} />,
+  render: ({ ...args }) => (
+    <Dialog>
+      <DroppableElement {...args} />
+    </Dialog>
+  ),
   args: {
     preview: "Lorem ipsum dolor...",
     hidden: false,

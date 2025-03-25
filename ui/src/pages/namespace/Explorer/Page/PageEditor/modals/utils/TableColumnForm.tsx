@@ -15,6 +15,7 @@ import Input from "~/design/Input";
 import { KeyWithDepth } from "../../utils";
 import { Trash2 } from "lucide-react";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const TableColumnForm = ({
@@ -29,6 +30,7 @@ const TableColumnForm = ({
   onChange: (fieldName: "header" | "cell", fieldValue: string) => void;
   onDelete: () => void;
 }) => {
+  const { t } = useTranslation();
   const { control, reset } = useForm<TableKeySchemaType>({
     resolver: zodResolver(TableKeySchema),
     values: value,
@@ -52,7 +54,11 @@ const TableColumnForm = ({
               variant="outline"
               asChild
             >
-              <label>Table Header</label>
+              <label>
+                {t(
+                  "pages.explorer.page.editor.form.modals.edit.table.tableColumnForm.labelOne"
+                )}
+              </label>
             </Button>
             <Controller
               control={control}
@@ -64,7 +70,9 @@ const TableColumnForm = ({
                     field.onChange(e.target.value);
                     onChange("header", e.target.value);
                   }}
-                  placeholder="Insert a Caption for the data below"
+                  placeholder={t(
+                    "pages.explorer.page.editor.form.modals.edit.table.tableColumnForm.placeholderOne"
+                  )}
                   className="w-80 rounded-none rounded-tr-md"
                 />
               )}
@@ -76,7 +84,11 @@ const TableColumnForm = ({
               variant="outline"
               asChild
             >
-              <label>Table Cell</label>
+              <label>
+                {t(
+                  "pages.explorer.page.editor.form.modals.edit.table.tableColumnForm.labelTwo"
+                )}
+              </label>
             </Button>
             <>
               {selectItems.length ? (
@@ -97,7 +109,11 @@ const TableColumnForm = ({
                         variant="outline"
                         id="scale"
                       >
-                        <SelectValue placeholder="Select Data" />
+                        <SelectValue
+                          placeholder={t(
+                            "pages.explorer.page.editor.form.modals.edit.table.tableColumnForm.placeholderTwo"
+                          )}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
@@ -119,7 +135,9 @@ const TableColumnForm = ({
                     id="scale"
                     disabled
                   >
-                    Connect a Data Source first
+                    {t(
+                      "pages.explorer.page.editor.form.modals.edit.table.tableColumnForm.selectBtn"
+                    )}
                   </SelectTrigger>
                 </Select>
               )}

@@ -53,13 +53,14 @@ const FooterForm = ({
     },
   });
 
-  const formId = "edit-page-element";
+  const formId = "edit-footer-element";
 
   return (
     <>
       <DialogHeader>
         <DialogTitle>
-          <Settings /> Edit footer component
+          <Settings />
+          {t("pages.explorer.page.editor.form.modals.edit.footer.title")}
         </DialogTitle>
       </DialogHeader>
 
@@ -68,11 +69,13 @@ const FooterForm = ({
         <div className="my-3">
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[14px]" htmlFor="text">
-              Content:
+              {t("pages.explorer.page.editor.form.modals.edit.footer.label")}
             </label>
             <Input
               id="text"
-              placeholder="Enter the new text"
+              placeholder={t(
+                "pages.explorer.page.editor.form.modals.edit.footer.placeholder"
+              )}
               {...register("content")}
             />
           </fieldset>
@@ -80,12 +83,14 @@ const FooterForm = ({
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="ghost">
-              {t("pages.explorer.tree.delete.cancelBtn")}
+              {t(
+                "pages.explorer.page.editor.form.modals.edit.footer.cancelBtn"
+              )}
             </Button>
           </DialogClose>
           <Button type="submit" variant="outline">
             <Save />
-            Save
+            {t("pages.explorer.page.editor.form.modals.edit.footer.saveBtn")}
           </Button>
         </DialogFooter>
       </form>

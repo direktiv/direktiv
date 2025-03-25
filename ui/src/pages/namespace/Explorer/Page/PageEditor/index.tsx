@@ -191,7 +191,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                         <div className="flex flex-col gap-5 lg:overflow-y-scroll">
                           <Alert variant="error">
                             {t(
-                              "pages.explorer.endpoint.editor.form.serialisationError"
+                              "pages.explorer.page.editor.form.serialisationError"
                             )}
                           </Alert>
                           <ScrollArea className="size-full whitespace-nowrap">
@@ -206,16 +206,20 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                           <div className="pt-8 pb-4">
                             <h2 className="flex text-sm">
                               <ArrowDownFromLine size={20} className="mr-2" />
-                              Select Elements
+                              {t("pages.explorer.page.editor.form.sectionOne")}
                             </h2>
                           </div>
                           <Tabs defaultValue="data" className="w-full">
                             <TabsList variant="boxed">
                               <TabsTrigger variant="boxed" value="data">
-                                Data Collection
+                                {t(
+                                  "pages.explorer.page.editor.form.tabsPageOne"
+                                )}
                               </TabsTrigger>
                               <TabsTrigger variant="boxed" value="static">
-                                Static Elements
+                                {t(
+                                  "pages.explorer.page.editor.form.tabsPageTwo"
+                                )}
                               </TabsTrigger>
                             </TabsList>
                             <TabsContent value="data" asChild>
@@ -240,7 +244,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                           <div className="pt-8 pb-4">
                             <h2 className="flex text-sm">
                               <ArrowDownToLine size={20} className="mr-2" />
-                              Place Elements
+                              {t("pages.explorer.page.editor.form.sectionTwo")}
                             </h2>
                           </div>
                           <Card
@@ -383,7 +387,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                     {isDirty && (
                       <div className="text-sm text-gray-8 dark:text-gray-dark-8">
                         <span className="text-center">
-                          {t("pages.explorer.endpoint.editor.unsavedNote")}
+                          {t("pages.explorer.page.editor.unsavedNote")}
                         </span>
                       </div>
                     )}
@@ -393,7 +397,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                       type="submit"
                     >
                       <Save />
-                      {t("pages.explorer.endpoint.editor.saveBtn")}
+                      {t("pages.explorer.page.editor.saveBtn")}
                     </Button>
                   </div>
                 </div>

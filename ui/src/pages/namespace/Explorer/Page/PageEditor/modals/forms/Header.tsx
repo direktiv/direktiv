@@ -53,13 +53,14 @@ const HeaderForm = ({
     },
   });
 
-  const formId = "edit-page-element";
+  const formId = "edit-header-element";
 
   return (
     <>
       <DialogHeader>
         <DialogTitle>
-          <Settings /> Edit header component
+          <Settings />
+          {t("pages.explorer.page.editor.form.modals.edit.header.title")}
         </DialogTitle>
       </DialogHeader>
 
@@ -68,11 +69,13 @@ const HeaderForm = ({
         <div className="my-3">
           <fieldset className="flex items-center gap-5">
             <label className="w-[90px] text-right text-[14px]" htmlFor="text">
-              Content:
+              {t("pages.explorer.page.editor.form.modals.edit.header.label")}
             </label>
             <Input
               id="text"
-              placeholder="Enter the new text"
+              placeholder={t(
+                "pages.explorer.page.editor.form.modals.edit.header.placeholder"
+              )}
               {...register("content")}
             />
           </fieldset>
@@ -80,12 +83,14 @@ const HeaderForm = ({
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="ghost">
-              {t("pages.explorer.tree.delete.cancelBtn")}
+              {t(
+                "pages.explorer.page.editor.form.modals.edit.header.cancelBtn"
+              )}
             </Button>
           </DialogClose>
           <Button type="submit" variant="outline">
             <Save />
-            Save
+            {t("pages.explorer.page.editor.form.modals.edit.header.saveBtn")}
           </Button>
         </DialogFooter>
       </form>
