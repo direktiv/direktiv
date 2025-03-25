@@ -22,11 +22,6 @@ const processPath = (value: unknown) => {
       { message: "Path must be a string", path: ["path"], code: "custom" },
     ]);
   }
-  if (value.length === 0) {
-    throw new z.ZodError([
-      { message: "Path cannot be empty", path: ["path"], code: "custom" },
-    ]);
-  }
 
   return forceLeadingSlash(value);
 };
