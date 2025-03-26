@@ -12,7 +12,7 @@ export const TableSchema = z.array(TableKeySchema).nonempty();
 export type TableSchemaType = z.infer<typeof TableSchema>;
 
 export const TextContentSchema = z.object({
-  content: z.string(),
+  content: z.string().nonempty(),
 });
 
 export type TextContentSchemaType = z.infer<typeof TextContentSchema>;

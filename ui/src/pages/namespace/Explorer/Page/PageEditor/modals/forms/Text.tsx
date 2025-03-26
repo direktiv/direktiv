@@ -6,6 +6,7 @@ import {
 } from "~/design/Dialog";
 import {
   LayoutSchemaType,
+  TextContentSchema,
   TextContentSchemaType,
 } from "~/pages/namespace/Explorer/Page/PageEditor/schema";
 import { Save, Settings } from "lucide-react";
@@ -15,6 +16,7 @@ import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { useTranslation } from "react-i18next";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const TextForm = ({
   layout,
@@ -38,6 +40,7 @@ const TextForm = ({
     handleSubmit,
     formState: { errors },
   } = useForm<TextContentSchemaType>({
+    resolver: zodResolver(TextContentSchema),
     defaultValues: {
       content: oldContent,
     },
