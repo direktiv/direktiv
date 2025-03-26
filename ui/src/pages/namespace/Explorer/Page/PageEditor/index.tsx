@@ -1,7 +1,6 @@
 import {
   ArrowDownFromLine,
   ArrowDownToLine,
-  Image,
   Save,
   Table,
   Text,
@@ -20,6 +19,12 @@ import {
 } from "./schema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 import { decode, encode } from "js-base64";
+import {
+  defaultConfig,
+  footerDefault,
+  headerDefault,
+  serializePageFile,
+} from "./utils";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
@@ -37,7 +42,6 @@ import HeaderForm from "./modals/forms/Header";
 import NavigationBlocker from "~/components/NavigationBlocker";
 import { ScrollArea } from "~/design/ScrollArea";
 import { jsonToYaml } from "../../utils";
-import { serializePageFile } from "./utils";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
@@ -57,49 +61,6 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
   const [selectedElement, setSelectedElement] = useState<number>(0);
 
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-
-  const headerDefault: PageElementSchemaType = {
-    name: "Header",
-    hidden: true,
-    content: "This is the header",
-    preview: "This is the header",
-  };
-
-  const footerDefault: PageElementSchemaType = {
-    name: "Footer",
-    hidden: true,
-    content: "This is the footer",
-    preview: "This is the footer",
-  };
-
-  const placeholder1: PageElementSchemaType = {
-    name: "Text",
-    hidden: false,
-    content: "This is a Text...",
-    preview: "This is a Text...",
-  };
-
-  const placeholder2: PageElementSchemaType = {
-    name: "Table",
-    hidden: false,
-    content: [{ header: "Example Header", cell: "unset" }],
-    preview: "Placeholder Table",
-  };
-
-  const placeholder3: PageElementSchemaType = {
-    name: "Text",
-    hidden: true,
-    content: "some more info about...",
-    preview: "some more info about...",
-  };
-
-  const defaultConfig: PageFormSchemaType = {
-    header: headerDefault,
-    footer: footerDefault,
-    layout: [placeholder1, placeholder2, placeholder3],
-    direktiv_api: "page/v1",
-    path: undefined,
-  };
 
   const defaultLayout = defaultConfig.layout;
 
@@ -202,6 +163,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                         </div>
                       ) : (
                         <div>
+                          <FormErrors errors={errors} className="mb-5" />
                           {formMarkup}
                           <div className="pt-8 pb-4">
                             <h2 className="flex text-sm">
@@ -235,7 +197,6 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                                 className="p-4 text-sm bg-gray-2 dark:bg-gray-dark-2 flex row"
                                 noShadow
                               >
-                                <DraggableElement icon={Image} name="Image" />
                                 <DraggableElement icon={Text} name="Text" />
                               </Card>
                             </TabsContent>
@@ -336,8 +297,6 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                                 </Fragment>
                               );
                             })}
-                            <FormErrors errors={errors} className="mb-5" />
-
                             <NonDroppableElement
                               name="Footer"
                               preview={footer.preview}

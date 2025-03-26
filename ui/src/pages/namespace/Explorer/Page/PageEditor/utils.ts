@@ -1,4 +1,8 @@
-import { PageFormSchema, PageFormSchemaType } from "./schema";
+import {
+  PageElementSchemaType,
+  PageFormSchema,
+  PageFormSchemaType,
+} from "./schema";
 import { jsonToYaml, yamlToJsonOrNull } from "../../utils";
 
 import { ZodError } from "zod";
@@ -58,4 +62,47 @@ export const extractKeysWithDepth = (
   }
 
   return keysWithDepth;
+};
+
+export const headerDefault: PageElementSchemaType = {
+  name: "Header",
+  hidden: true,
+  content: "This is the header",
+  preview: "This is the header",
+};
+
+export const footerDefault: PageElementSchemaType = {
+  name: "Footer",
+  hidden: true,
+  content: "This is the footer",
+  preview: "This is the footer",
+};
+
+export const placeholder1: PageElementSchemaType = {
+  name: "Text",
+  hidden: false,
+  content: "This is a Text...",
+  preview: "This is a Text...",
+};
+
+export const placeholder2: PageElementSchemaType = {
+  name: "Table",
+  hidden: false,
+  content: [{ header: "Example Header", cell: "unset" }],
+  preview: "Placeholder Table",
+};
+
+export const placeholder3: PageElementSchemaType = {
+  name: "Text",
+  hidden: true,
+  content: "some more info about...",
+  preview: "some more info about...",
+};
+
+export const defaultConfig: PageFormSchemaType = {
+  header: headerDefault,
+  footer: footerDefault,
+  layout: [placeholder1, placeholder2, placeholder3],
+  direktiv_api: "page/v1",
+  path: undefined,
 };

@@ -8,8 +8,6 @@ import {
   TableRow,
 } from "~/design/Table";
 
-import { ImageIcon } from "lucide-react";
-
 export const DragAndDropPreview: FC<PropsWithChildren> = ({ children }) => (
   <div>{children}</div>
 );
@@ -24,8 +22,6 @@ export const getElementComponent = (
       return <DefaultHeader hidden={hidden} content={content} />;
     case "Footer":
       return <DefaultFooter hidden={hidden} content={content} />;
-    case "Image":
-      return <DefaultImage hidden={hidden} content={content} />;
     case "Text":
       return <DefaultText hidden={hidden} content={content} />;
     case "Table":
@@ -85,12 +81,6 @@ const DefaultTable: FC<previewTableProps> = ({ content, hidden }) => {
     </Table>
   );
 };
-
-const DefaultImage: FC<previewElementProps> = ({ content, hidden }) => (
-  <div hidden={hidden} className="p-2">
-    {content?.content === undefined ? <ImageIcon /> : <img src="test" />}
-  </div>
-);
 
 const DefaultText: FC<previewElementProps> = ({ content, hidden }) => (
   <p hidden={hidden} className="py-2">
