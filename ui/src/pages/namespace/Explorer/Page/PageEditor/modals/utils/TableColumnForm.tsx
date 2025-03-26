@@ -12,7 +12,6 @@ import { TableKeySchema, TableKeySchemaType } from "../../schema";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Input from "~/design/Input";
-import { KeyWithDepth } from "../../utils";
 import { Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -26,7 +25,7 @@ const TableColumnForm = ({
 }: {
   value: TableKeySchemaType;
   setValue: (val: TableKeySchemaType) => void;
-  selectItems: KeyWithDepth[];
+  selectItems: string[] | undefined;
   onChange: (fieldName: "header" | "cell", fieldValue: string) => void;
   onDelete: () => void;
 }) => {
@@ -91,7 +90,7 @@ const TableColumnForm = ({
               </label>
             </Button>
             <>
-              {selectItems.length ? (
+              {selectItems?.length ? (
                 <Controller
                   control={control}
                   name="cell"
@@ -118,8 +117,8 @@ const TableColumnForm = ({
                       <SelectContent>
                         <SelectGroup>
                           {selectItems?.map((element) => (
-                            <SelectItem key={element.key} value={element.key}>
-                              {element.key}
+                            <SelectItem key={element} value={element}>
+                              {element}
                             </SelectItem>
                           ))}
                         </SelectGroup>

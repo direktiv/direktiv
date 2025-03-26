@@ -17,7 +17,7 @@ export const createInstance = apiFactory<string>({
   }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/instances/?path=${path}/&wait=true`,
   method: "POST",
-  schema: z.any(), // to do change this to a good schema!
+  schema: z.any(), // to do: change this to a good schema!
 });
 
 export const useCreateInstanceWithOutput = ({
@@ -35,10 +35,9 @@ export const useCreateInstanceWithOutput = ({
   }
 
   return useMutationWithPermissions({
-    mutationFn: ({ path, payload }: { path: string; payload: string }) =>
+    mutationFn: ({ path }: { path: string }) =>
       createInstance({
         apiKey: apiKey ?? undefined,
-        payload,
         urlParams: {
           namespace,
           path,

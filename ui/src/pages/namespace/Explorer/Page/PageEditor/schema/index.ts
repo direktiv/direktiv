@@ -18,14 +18,15 @@ export const TextContentSchema = z.object({
 export type TextContentSchemaType = z.infer<typeof TextContentSchema>;
 
 export const TableContentSchema = z.object({
+  dataSourcePath: z.string().optional(),
+  dataSourceOutput: z.array(z.string()).optional(),
   content: TableSchema,
 });
 
 export type TableContentSchemaType = z.infer<typeof TableContentSchema>;
 
-export const PageElementContentSchema = z.object({
-  content: z.string().or(TableSchema),
-});
+export const PageElementContentSchema =
+  TextContentSchema.or(TableContentSchema);
 
 export type PageElementContentSchemaType = z.infer<
   typeof PageElementContentSchema

@@ -37,31 +37,23 @@ const defaultPageFileJson: PageFormSchemaType = {
 
 export const defaultPageFileYaml = jsonToYaml(defaultPageFileJson);
 
-export type KeyWithDepth = {
-  key: string;
-  depth: number;
-};
-
-export const extractKeysWithDepth = (
+export const extractKeysFromJSON = (
   obj: Record<string, string>,
-  depth = 0,
   parentKey = ""
-): KeyWithDepth[] => {
-  let keysWithDepth: KeyWithDepth[] = [];
+): string[] => {
+  let keys: string[] = [];
 
   for (const key in obj) {
     const fullKey = parentKey ? `${parentKey}.${key}` : key;
 
     if (typeof obj[key] === "object" && obj[key] !== null) {
-      keysWithDepth = keysWithDepth.concat(
-        extractKeysWithDepth(obj[key], depth + 1, fullKey)
-      );
+      keys = keys.concat(extractKeysFromJSON(obj[key], fullKey));
     } else {
-      keysWithDepth.push({ key: fullKey, depth });
+      keys.push(fullKey);
     }
   }
 
-  return keysWithDepth;
+  return keys;
 };
 
 export const headerDefault: PageElementSchemaType = {

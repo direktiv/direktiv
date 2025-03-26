@@ -14,11 +14,9 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import { FormEvent, useState } from "react";
-import { KeyWithDepth, extractKeysWithDepth } from "../../utils";
 import {
   LayoutSchemaType,
-  PageElementContentSchema,
-  PageElementContentSchemaType,
+  TableContentSchema,
   TableContentSchemaType,
   TableKeySchema,
   TableKeySchemaType,
@@ -38,6 +36,7 @@ import FilePicker from "~/components/FilePicker";
 import FormErrors from "~/components/FormErrors";
 import { Pagination } from "../../Pagination";
 import TableColumnForm from "../utils/TableColumnForm";
+import { extractKeysFromJSON } from "../../utils";
 import { useCreateInstanceWithOutput } from "~/api/instances/mutate/createWithOutput";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -57,9 +56,15 @@ const TableForm = ({
   const defaultTableData = { header: "TableHeader 1", cell: "TableCell 1" };
 
   const { t } = useTranslation();
+
   const [testSucceeded, setTestSucceeded] = useState<boolean | null>(null);
-  const [selectRoute, setSelectRoute] = useState<string>("");
-  const [selectItems, setSelectItems] = useState<KeyWithDepth[]>([]);
+  const [dataSourcePath, setDataSourcePath] = useState<string>(
+    layout[pageElementID]?.content.dataSourcePath ?? ""
+  );
+
+  const [dataSourceOutput, setDataSourceOutput] = useState<string[]>(
+    layout[pageElementID]?.content.dataSourceOutput ?? undefined
+  );
   const [tableHeaderAndCells, setTableHeaderAndCells] =
     useState<TableSchemaType>(
       layout[pageElementID]?.content?.content ?? nonEmptyTable
@@ -77,9 +82,13 @@ const TableForm = ({
     setValue,
     getValues,
     formState: { errors },
-  } = useForm<PageElementContentSchemaType>({
-    resolver: zodResolver(PageElementContentSchema),
-    defaultValues: { content: tableHeaderAndCells },
+  } = useForm<TableContentSchemaType>({
+    resolver: zodResolver(TableContentSchema),
+    defaultValues: {
+      dataSourcePath,
+      dataSourceOutput,
+      content: tableHeaderAndCells,
+    },
   });
 
   const { mutate: getOutput } = useCreateInstanceWithOutput({
@@ -90,7 +99,11 @@ const TableForm = ({
     onSuccess: (namespace, data) => {
       setIsPending(false);
       setTestSucceeded(true);
-      setSelectItems(extractKeysWithDepth(data));
+
+      const output = extractKeysFromJSON(data);
+
+      setValue("dataSourceOutput", output);
+      setDataSourceOutput(output);
     },
   });
 
@@ -158,7 +171,7 @@ const TableForm = ({
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onEdit({ content: tableHeaderAndCells });
+    onEdit({ dataSourcePath, dataSourceOutput, content: tableHeaderAndCells });
   };
 
   return (
@@ -180,17 +193,21 @@ const TableForm = ({
                 )}
               </label>
               <FilePicker
-                onChange={setSelectRoute}
+                defaultPath={String(getValues("dataSourcePath"))}
+                onChange={(value) => {
+                  setValue("dataSourcePath", value);
+                  setDataSourcePath(value);
+                }}
                 selectable={(file) => file.type === "workflow"}
               />
             </fieldset>
             <Button
-              disabled={selectRoute.length <= 1}
+              disabled={dataSourcePath.length <= 1}
               variant={testSucceeded === false ? "destructive" : "outline"}
               onClick={(e) => {
                 e.preventDefault();
                 setIsPending(true);
-                getOutput({ path: selectRoute, payload: "ha" });
+                getOutput({ path: dataSourcePath });
               }}
             >
               {isPending && (
@@ -222,7 +239,7 @@ const TableForm = ({
                 <TableColumnForm
                   value={currentColumnValue}
                   setValue={setCurrentColumnValue}
-                  selectItems={selectItems}
+                  selectItems={getValues("dataSourceOutput")}
                   onChange={(fieldName, fieldValue) =>
                     updateTableColumn(fieldName, fieldValue)
                   }
