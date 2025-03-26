@@ -211,7 +211,7 @@ const TableForm = ({
             </Button>
           </div>
           <div className="my-6">
-            <div className="flex gap-5">
+            <div className="flex-wrap gap-5">
               <fieldset className="flex gap-5">
                 <label
                   className="w-[120px] text-left text-[14px]"
@@ -229,7 +229,8 @@ const TableForm = ({
                   onDelete={deleteTableColumn}
                 />
               </fieldset>
-              <div className="w-full flex-wrap m-0">
+              <div className="flex gap-5">
+                <div className="w-[120px]"></div>
                 <div className="flex pt-4 gap-4">
                   <Pagination
                     totalPages={tableHeaderAndCells.length}
