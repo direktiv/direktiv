@@ -48,7 +48,7 @@ tests-godoc: ## Hosts a godoc server for the project on http port 6060.
 	godoc -http=:6060
 
 .PHONY: tests-lint 
-tests-lint: VERSION="v1.64.5"
+tests-lint: VERSION="v2.0"
 tests-lint: ## Runs very strict linting on the project.
 	docker run \
 	--rm \
