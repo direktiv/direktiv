@@ -35,6 +35,7 @@ func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 			continue
 		}
 		for _, file := range files {
+			//nolint:exhaustive
 			switch file.Typ {
 			case filestore.FileTypeConsumer:
 				consumers = append(consumers, core.ParseConsumerFile(ns.Name, file.Path, file.Data))
