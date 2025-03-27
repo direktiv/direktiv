@@ -72,7 +72,9 @@ func (p *postgresBus) Loop(done <-chan struct{}, handler func(channel string, da
 	for {
 		select {
 		case msg := <-p.listener.Notify:
-			handler(msg.Channel, msg.Extra)
+			if msg != nil {
+				handler(msg.Channel, msg.Extra)
+			}
 		case <-done:
 			return nil
 		case err := <-p.errorChan:
