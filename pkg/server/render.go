@@ -35,11 +35,12 @@ func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 			continue
 		}
 		for _, file := range files {
-			if file.Typ == filestore.FileTypeConsumer {
+			switch file.Typ {
+			case filestore.FileTypeConsumer:
 				consumers = append(consumers, core.ParseConsumerFile(ns.Name, file.Path, file.Data))
-			} else if file.Typ == filestore.FileTypeEndpoint {
+			case filestore.FileTypeEndpoint:
 				endpoints = append(endpoints, core.ParseEndpointFile(ns.Name, file.Path, file.Data))
-			} else if file.Typ == filestore.FileTypeGateway {
+			case filestore.FileTypeGateway:
 				gateways = append(gateways, core.ParseGatewayFile(ns.Name, file.Path, file.Data))
 			}
 		}
