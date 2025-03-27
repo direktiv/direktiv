@@ -3,10 +3,15 @@ run:
   go: 1.24.0
   issues-exit-code: 1
   tests: false
+<<<<<<< HEAD
 
 linters:
   default: all
 
+=======
+linters:
+  default: all
+>>>>>>> 699d6f97a (upgrade golang linter to v2)
   disable:
     - canonicalheader
     - cyclop
@@ -27,7 +32,6 @@ linters:
     - varnamelen
     - wrapcheck
     - wsl
-
   settings:
     nlreturn:
       block-size: 2
