@@ -3,8 +3,10 @@ run:
   go: 1.24.0
   issues-exit-code: 1
   tests: false
+
 linters:
   default: all
+
   disable:
     - canonicalheader
     - cyclop
@@ -25,6 +27,7 @@ linters:
     - varnamelen
     - wrapcheck
     - wsl
+
   settings:
     nlreturn:
       block-size: 2
