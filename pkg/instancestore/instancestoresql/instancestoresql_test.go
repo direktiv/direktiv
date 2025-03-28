@@ -79,7 +79,7 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 		if err != nil {
 			t.Errorf("failed to unmarshal telemetry info: %v", err)
 		}
-		if !reflect.DeepEqual(storedTelemetry, telemetryInfo) {
+		if !reflect.DeepEqual(storedTelemetry, *telemetryInfo) {
 			t.Errorf("telemetry info mismatch: got %+v, want %+v", storedTelemetry, telemetryInfo)
 		}
 	}
