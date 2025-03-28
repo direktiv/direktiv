@@ -39,9 +39,9 @@ func (l logParams) toQuery() string {
 	if l.limit != "" {
 		limiter = fmt.Sprintf("limit %s", l.limit)
 	} else if l.first != "" {
-		limiter = fmt.Sprintf("first %s by (_time)", l.first)
+		limiter = fmt.Sprintf("first %s", l.first)
 	} else if l.last != "" {
-		limiter = fmt.Sprintf("last %s by (_time)", l.last)
+		limiter = fmt.Sprintf("last %s", l.last)
 	}
 
 	if limiter != "" {
@@ -53,7 +53,7 @@ func (l logParams) toQuery() string {
 	} else {
 		l.direction = "desc"
 	}
-	queryParts = append(queryParts, fmt.Sprintf("sort by (_time) %s", l.direction))
+	queryParts = append(queryParts, fmt.Sprintf("sort by (_time %s)", l.direction))
 
 	timeSelector := ""
 	if l.after != "" {
@@ -76,7 +76,7 @@ func (m *logController) mountRouter(r chi.Router) {
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		params := extractLogRequestParams(r)
-
+		fmt.Println(params.toQuery())
 		logs, err := m.get(r.Context(), params.toQuery())
 		if err != nil {
 			slog.Error("fetching logs for request", "err", err)
