@@ -45,7 +45,7 @@ data:
           Match *
           host direktiv-victoria-logs-single-server.{{ .Release.Namespace }}.svc
           port 9428
-          uri /insert/jsonline?_stream_fields=stream&_msg_field=msg&_time_field=time
+          uri /insert/jsonline?_stream_fields=stream&_msg_field=msg&_time_field=nanos
           format json_lines
           json_date_format iso8601
       [FILTER]
