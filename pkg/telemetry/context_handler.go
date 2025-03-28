@@ -36,7 +36,6 @@ func (h *ContextHandler) Handle(ctx context.Context, rec slog.Record) error {
 	})
 
 	if l != nil {
-
 		// double marshal
 		b, err := json.Marshal(l)
 		if err != nil {
