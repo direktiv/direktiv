@@ -97,11 +97,11 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
       };
       const newLayout = [...layout];
 
-      if (target.includes("A")) {
+      if (target.includes("before")) {
         target = target.slice(0, -1);
         newLayout.splice(Number(target), 0, newElement);
       } else {
-        if (target.includes("B")) {
+        if (target.includes("after")) {
           target = target.slice(0, -1);
           newLayout.splice(Number(target + 1), 0, newElement);
         } else {
@@ -223,7 +223,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                               }}
                             />
                             {!layout.length && (
-                              <DroppableSeparator id={String(0) + "A"} />
+                              <DroppableSeparator id={String(0) + "before"} />
                             )}
                             {layout.map((element, index) => {
                               const isLastListItem =
@@ -233,7 +233,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                                   {isLastListItem ? (
                                     <>
                                       <DroppableSeparator
-                                        id={String(index) + "A"}
+                                        id={String(index) + "before"}
                                       />
                                       <DroppableElement
                                         id={String(index)}
@@ -260,13 +260,13 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                                         }}
                                       />
                                       <DroppableSeparator
-                                        id={String(index) + "B"}
+                                        id={String(index) + "after"}
                                       />
                                     </>
                                   ) : (
                                     <>
                                       <DroppableSeparator
-                                        id={String(index) + "A"}
+                                        id={String(index) + "before"}
                                       />
                                       <DroppableElement
                                         id={String(index)}

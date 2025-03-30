@@ -52,14 +52,16 @@ const TableForm = ({
   onEdit: (content: TableContentSchemaType) => void;
   onChange: (newArray: string[]) => void;
 }) => {
-  const nonEmptyTable = [{ header: "TableHeader 1", cell: "TableCell 1" }];
-  const defaultTableData = { header: "TableHeader 1", cell: "TableCell 1" };
+  const nonEmptyTable = [{ header: "Table Header 1", cell: "- no data -" }];
+  const defaultTableData = { header: "Table Header 1", cell: "- no data -" };
 
   const { t } = useTranslation();
-
-  const [testSucceeded, setTestSucceeded] = useState<boolean | null>(null);
   const [dataSourcePath, setDataSourcePath] = useState<string>(
     layout[pageElementID]?.content.dataSourcePath ?? ""
+  );
+
+  const [testSucceeded, setTestSucceeded] = useState<boolean | null>(
+    dataSourcePath.length > 0 ? true : null
   );
 
   const [dataSourceOutput, setDataSourceOutput] = useState<string[]>(
@@ -145,8 +147,8 @@ const TableForm = ({
 
   const addTableColumn = () => {
     const newElement = {
-      header: `Example Header ${tableHeaderAndCells.length + 1}`,
-      cell: "unset",
+      header: `Table Header ${tableHeaderAndCells.length + 1}`,
+      cell: "- no data -",
     };
     setTableHeaderAndCells((prev) => [...prev, newElement]);
     setIndex(tableHeaderAndCells.length - 1);
@@ -244,6 +246,7 @@ const TableForm = ({
                     updateTableColumn(fieldName, fieldValue)
                   }
                   onDelete={deleteTableColumn}
+                  lastElement={tableHeaderAndCells.length < 2}
                 />
               </fieldset>
               <div className="flex gap-5">

@@ -54,10 +54,9 @@ type previewElementProps = {
 const DefaultTable: FC<previewTableProps> = ({ content, hidden }) => {
   const placeholderData: tableData = [
     {
-      header: "TableHeader 1",
-      cell: "TableCell 1",
+      header: "Table Header 1",
+      cell: "- no data -",
     },
-    { header: "TableHeader 1", cell: "TableCell 2" },
   ];
 
   const data = content && Array.isArray(content) ? content : placeholderData;

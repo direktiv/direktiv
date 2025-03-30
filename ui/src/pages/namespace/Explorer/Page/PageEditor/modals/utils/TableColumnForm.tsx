@@ -22,12 +22,14 @@ const TableColumnForm = ({
   selectItems,
   onChange,
   onDelete,
+  lastElement,
 }: {
   value: TableKeySchemaType;
   setValue: (val: TableKeySchemaType) => void;
   selectItems: string[] | undefined;
   onChange: (fieldName: "header" | "cell", fieldValue: string) => void;
   onDelete: () => void;
+  lastElement: boolean;
 }) => {
   const { t } = useTranslation();
   const { control, reset } = useForm<TableKeySchemaType>({
@@ -147,6 +149,7 @@ const TableColumnForm = ({
               className="m-0"
               icon
               variant="outline"
+              disabled={lastElement}
               onClick={(e) => {
                 e.preventDefault();
                 onDelete();
