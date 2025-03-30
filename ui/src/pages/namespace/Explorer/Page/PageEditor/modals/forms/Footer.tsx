@@ -5,6 +5,7 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import {
+  PageElementContentSchema,
   PageElementContentSchemaType,
   PageElementSchemaType,
 } from "~/pages/namespace/Explorer/Page/PageEditor/schema";
@@ -15,6 +16,7 @@ import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { useTranslation } from "react-i18next";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const FooterForm = ({
   footer,
@@ -48,6 +50,7 @@ const FooterForm = ({
     handleSubmit,
     formState: { errors },
   } = useForm<PageElementContentSchemaType>({
+    resolver: zodResolver(PageElementContentSchema),
     defaultValues: {
       content: oldContent,
     },
