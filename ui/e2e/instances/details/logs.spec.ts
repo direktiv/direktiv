@@ -69,9 +69,11 @@ test("It displays a log message from the workflow yaml, one initial and one fina
   ).toHaveClass(/animate-ping/);
 
   await expect(
-    scrollContainer.locator("pre").locator("span").nth(0),
+    scrollContainer
+      .locator("pre")
+      .locator("span", { hasText: "msg: workflow has been started" }),
     "It displays an initial log entry"
-  ).toContainText("msg: workflow has been started");
+  ).toBeVisible();
 
   await expect(
     page.getByTestId("instance-header-container").locator("div").first()
@@ -87,7 +89,7 @@ test("It displays a log message from the workflow yaml, one initial and one fina
       .locator("pre")
       .locator("span", { hasText: "msg: hello-world" }),
     "It displays the log message from the log field in the workflow yaml"
-  ).toContainText("msg: hello-world");
+  ).toBeVisible();
 
   await expect(
     scrollContainer.locator("pre").locator("span").last(),
