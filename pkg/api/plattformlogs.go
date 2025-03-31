@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 
@@ -48,13 +49,6 @@ func (l logParams) toQuery() string {
 		queryParts = append(queryParts, limiter)
 	}
 
-	if l.direction == "" || l.direction == "asc" {
-		l.direction = "asc"
-	} else {
-		l.direction = "desc"
-	}
-	queryParts = append(queryParts, fmt.Sprintf("sort by (_time) %s", l.direction))
-
 	timeSelector := ""
 	if l.after != "" {
 		timeSelector = fmt.Sprintf(" _time:>%s ", l.after)
@@ -67,8 +61,13 @@ func (l logParams) toQuery() string {
 		idQuery = fmt.Sprintf("callpath:/%s/*", l.id)
 	}
 
-	return fmt.Sprintf("query=scope:=%s %s%s| %s",
-		l.scope, idQuery, timeSelector, strings.Join(queryParts, " | "))
+	pipe := ""
+	if len(queryParts) > 0 {
+		pipe = fmt.Sprintf("| %s", strings.Join(queryParts, " | "))
+	}
+
+	return fmt.Sprintf("query=scope:=%s %s%s %s",
+		l.scope, idQuery, timeSelector, pipe)
 }
 
 func (m *logController) mountRouter(r chi.Router) {
@@ -76,13 +75,24 @@ func (m *logController) mountRouter(r chi.Router) {
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		params := extractLogRequestParams(r)
-
 		logs, err := m.get(r.Context(), params.toQuery())
 		if err != nil {
 			slog.Error("fetching logs for request", "err", err)
 			writeInternalError(w, err)
 
 			return
+		}
+
+		// sort and last/first does not work well with victoria logs.
+		// we sort manually.
+		if params.direction == "" || params.direction == "asc" {
+			sort.Slice(logs, func(i, j int) bool {
+				return logs[i].Time.Before(logs[j].Time)
+			})
+		} else {
+			sort.Slice(logs, func(i, j int) bool {
+				return logs[i].Time.After(logs[j].Time)
+			})
 		}
 
 		writeJSON(w, logs)
@@ -145,7 +155,6 @@ func (m *logController) get(ctx context.Context, query string) ([]logEntry, erro
 func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 	cursor := time.Now().UTC()
 
-	// TODO: we may need to replace with a SSE-Server library instead of using our custom implementation.
 	params := extractLogRequestParams(r)
 
 	// if nothing is set, we do the events from now
@@ -156,7 +165,6 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 	rc := http.NewResponseController(w)
 
 	queryAndSend := func(ctx context.Context, queryString string) (time.Time, error) {
-		// fmt.Println(queryString)
 		logs, err := m.get(ctx, queryString)
 		if err != nil {
 			return time.Now().UTC(), err
@@ -205,10 +213,8 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 	var err error
 	cursor, err = queryAndSend(r.Context(), params.toQuery())
 	if err != nil {
-		writeError(w, &Error{
-			Code:    "log request failed",
-			Message: err.Error(),
-		})
+		slog.Error("error querying data", slog.Any("error", err))
+		http.Error(w, "error querying data", http.StatusInternalServerError)
 
 		return
 	}
@@ -230,10 +236,10 @@ func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 			params.last = ""
 			cursor, err = queryAndSend(r.Context(), params.toQuery())
 			if err != nil {
-				writeError(w, &Error{
-					Code:    "log request failed",
-					Message: err.Error(),
-				})
+				slog.Error("error querying data", slog.Any("error", err))
+				http.Error(w, "error querying data", http.StatusInternalServerError)
+
+				return
 			}
 			params.after = cursor.Format("2006-01-02T15:04:05.000000000Z")
 		}
