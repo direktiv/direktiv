@@ -66,8 +66,15 @@ func (l logParams) toQuery() string {
 		pipe = fmt.Sprintf("| %s", strings.Join(queryParts, " | "))
 	}
 
-	return fmt.Sprintf("query=scope:=%s %s%s %s",
-		l.scope, idQuery, timeSelector, pipe)
+	// if there is a namespace (should), add it to the query
+	// important for route requests
+	nsQuery := ""
+	if l.namespace != "" {
+		nsQuery = fmt.Sprintf("namespace:=%s", l.namespace)
+	}
+
+	return fmt.Sprintf("query=scope:=%s %s %s%s %s",
+		l.scope, nsQuery, idQuery, timeSelector, pipe)
 }
 
 func (m *logController) mountRouter(r chi.Router) {
@@ -266,7 +273,7 @@ func extractLogRequestParams(r *http.Request) logParams {
 	if v := chi.URLParam(r, "namespace"); v != "" {
 		logParams.namespace = v
 
-		// set track to namespace first, we can change it later
+		// set scope to namespace first, we can change it later
 		logParams.scope = "namespace"
 		logParams.id = v
 	}
