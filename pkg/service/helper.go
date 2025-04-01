@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"os"
 	"strconv"
 	"strings"
@@ -24,10 +25,10 @@ const (
 	direktivDebug         = "DIREKTIV_DEBUG"
 )
 
-func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*v1.Deployment, error) {
+func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*v1.Deployment, *corev1.Service, error) {
 	containers, err := buildContainers(c, sv)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	nonRoot := false
@@ -80,11 +81,26 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 		},
 	}
 
+	svc2 := &corev1.Service{
+		ObjectMeta: buildServiceMeta(c, sv),
+		Spec: corev1.ServiceSpec{
+			Selector: map[string]string{"direktiv-service": sv.GetID()},
+			Ports: []corev1.ServicePort{
+				{
+					Port:       80,
+					TargetPort: intstr.FromInt(8890),
+					Protocol:   corev1.ProtocolTCP,
+				},
+			},
+			Type: corev1.ServiceTypeClusterIP,
+		},
+	}
+
 	// Set Registry Secrets
 	svc.Spec.Template.Spec.ImagePullSecrets = registrySecrets
 	svc.Spec.Template.Spec.ImagePullSecrets = registrySecrets
 
-	return svc, nil
+	return svc, svc2, nil
 }
 
 func buildServiceMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMeta {

@@ -20,3 +20,6 @@ rules:
 - apiGroups: ["apps"]
   resources: ["deployments"]
   verbs: ["create", "list", "watch", "log", "delete"]
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["create", "list", "watch", "get", "delete", "update", "delete"]
