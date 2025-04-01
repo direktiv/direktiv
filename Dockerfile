@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.24.0 as builder
+FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.24.0 AS builder
 
 ARG IS_ENTERPRISE=false
 ARG VERSION
@@ -25,7 +25,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build cd src &&  \
     -o $(cat ../BUILD_PATH.txt);
 
 #########################################################################################
-FROM --platform=$BUILDPLATFORM node:20-slim as ui-builder
+FROM --platform=$BUILDPLATFORM node:20-slim AS ui-builder
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
