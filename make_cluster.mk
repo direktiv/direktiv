@@ -66,12 +66,6 @@ cluster-prep:
 	kubectl apply -f kind/postgres.yaml
 	kubectl apply -f kind/deploy-ingress-nginx.yaml
 	kubectl apply -f kind/svc-configmap.yaml
-	kubectl apply -f kind/knative-a-serving-operator.yaml
-	kubectl apply -f kind/knative-b-serving-ns.yaml
-	kubectl apply -f kind/knative-c-serving-basic.yaml
-	kubectl apply -f kind/knative-d-serving-countour.yaml
-	kubectl apply -f kind/knative-d-serving-countour.yaml
-	kubectl delete -f kind/knative-e-serving-ns-delete.yaml
 
 .PHONY: cluster-build
 cluster-build: ## Builds direktiv for cluster

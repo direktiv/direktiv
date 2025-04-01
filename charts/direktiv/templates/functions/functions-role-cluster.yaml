@@ -5,9 +5,6 @@ metadata:
  labels:
    {{- include "direktiv.labels" . | nindent 4 }}
 rules:
-- apiGroups: ["serving.knative.dev"]
-  resources: ["*"]
-  verbs: ["*"]
 - apiGroups: [""]
   resources: ["secrets"]
   verbs: ["get", "list", "update", "delete", "create", "deletecollection"]
