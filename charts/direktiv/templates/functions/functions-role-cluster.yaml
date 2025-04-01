@@ -20,3 +20,6 @@ rules:
 - apiGroups: [""]
   resources: ["pods/log"]
   verbs: ["list", "watch", "get"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["create", "list", "watch", "log", "delete"]

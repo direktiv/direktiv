@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	v1 "k8s.io/api/apps/v1"
 	"os"
 	"strconv"
 	"strings"
@@ -11,7 +12,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
 const (
@@ -24,7 +24,7 @@ const (
 	direktivDebug         = "DIREKTIV_DEBUG"
 )
 
-func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*servingv1.Service, error) {
+func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*v1.Deployment, error) {
 	containers, err := buildContainers(c, sv)
 	if err != nil {
 		return nil, err
@@ -47,33 +47,33 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 		})
 	}
 
-	svc := &servingv1.Service{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "serving.knative.dev/v1",
-			Kind:       "Service",
-		},
+	int32Ptr := func(i int32) *int32 { return &i }
+
+	svc := &v1.Deployment{
 		ObjectMeta: buildServiceMeta(c, sv),
-		Spec: servingv1.ServiceSpec{
-			ConfigurationSpec: servingv1.ConfigurationSpec{
-				Template: servingv1.RevisionTemplateSpec{
-					ObjectMeta: buildPodMeta(c, sv),
-					Spec: servingv1.RevisionSpec{
-						PodSpec: corev1.PodSpec{
-							SecurityContext: &corev1.PodSecurityContext{
-								RunAsNonRoot: &nonRoot,
-								SeccompProfile: &corev1.SeccompProfile{
-									// should we change it to runtime?
-									Type: corev1.SeccompProfileTypeUnconfined,
-								},
-							},
-							ServiceAccountName: c.KnativeServiceAccount,
-							Containers:         containers,
-							InitContainers:     initContainers,
-							Volumes:            buildVolumes(c, sv),
-							Affinity:           &corev1.Affinity{
-								// NodeAffinity: n,
-							},
+		Spec: v1.DeploymentSpec{
+			Replicas: int32Ptr(1),
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{"direktiv-service": sv.GetID()},
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{"direktiv-service": sv.GetID()},
+				},
+				Spec: corev1.PodSpec{
+					SecurityContext: &corev1.PodSecurityContext{
+						RunAsNonRoot: &nonRoot,
+						SeccompProfile: &corev1.SeccompProfile{
+							// should we change it to runtime?
+							Type: corev1.SeccompProfileTypeUnconfined,
 						},
+					},
+					ServiceAccountName: c.KnativeServiceAccount,
+					Containers:         containers,
+					InitContainers:     initContainers,
+					Volumes:            buildVolumes(c, sv),
+					Affinity:           &corev1.Affinity{
+						// NodeAffinity: n,
 					},
 				},
 			},
@@ -96,12 +96,14 @@ func buildServiceMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMet
 	}
 
 	meta.Annotations["direktiv.io/inputHash"] = sv.GetValueHash()
-	meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
-	meta.Annotations["networking.knative.dev/ingress.class"] = c.KnativeIngressClass
+	//xKnative
+	// meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
+	// meta.Annotations["networking.knative.dev/ingress.class"] = c.KnativeIngressClass
 
 	return meta
 }
 
+// xKnative
 func buildPodMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMeta {
 	metaSpec := metav1.ObjectMeta{
 		Namespace:   c.KnativeNamespace,
