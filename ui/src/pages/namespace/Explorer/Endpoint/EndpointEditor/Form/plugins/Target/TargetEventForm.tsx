@@ -6,9 +6,11 @@ import {
   TargetEventFormSchemaType,
 } from "../../../schema/plugins/target/targetEvent";
 
+import { DisableNamespaceSelectNote } from "./utils/DisableNamespaceSelectNote";
 import { Fieldset } from "~/components/Form/Fieldset";
-import NamespaceSelector from "~/components/NamespaceSelector";
+import { NamespaceSelectorListHandler } from "./components/NamespaceSelectorListHandler";
 import { PluginWrapper } from "../components/PluginSelector";
+import { useIsSystemNamespace } from "./utils/useIsSystemNamespace";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -26,9 +28,12 @@ export const TargetEventForm: FC<FormProps> = ({
   formId,
 }) => {
   const { t } = useTranslation();
+  const isSystemNamespace = useIsSystemNamespace();
+
   const {
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<TargetEventFormSchemaType>({
     resolver: zodResolver(TargetEventFormSchema),
@@ -61,17 +66,23 @@ export const TargetEventForm: FC<FormProps> = ({
           )}
           htmlFor="namespace"
         >
-          <Controller
-            control={control}
-            name="configuration.namespace"
-            render={({ field }) => (
-              <NamespaceSelector
-                id="namespace"
-                defaultValue={field.value}
-                onValueChange={field.onChange}
-              />
-            )}
-          />
+          {isSystemNamespace ? (
+            <Controller
+              control={control}
+              name="configuration.namespaces"
+              render={({ field }) => (
+                <NamespaceSelectorListHandler
+                  id="namespace"
+                  value={field.value}
+                  onValueChange={(value) =>
+                    setValue("configuration.namespaces", value)
+                  }
+                />
+              )}
+            />
+          ) : (
+            <DisableNamespaceSelectNote />
+          )}
         </Fieldset>
       </PluginWrapper>
     </form>

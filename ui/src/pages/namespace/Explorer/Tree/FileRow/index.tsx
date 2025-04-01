@@ -12,8 +12,8 @@ import { fileTypeToIcon, getFilenameFromPath } from "~/api/files/utils";
 
 import { BaseFileSchemaType } from "~/api/files/schema";
 import Button from "~/design/Button";
-import { ConditionalLink } from "./ConditionalLink";
 import { DialogTrigger } from "~/design/Dialog";
+import { FileLink } from "./FileLink";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
 
@@ -40,13 +40,13 @@ const FileRow = ({
       <TableCell>
         <div className="flex space-x-3">
           <Icon className="h-5" />
-          <ConditionalLink
+          <FileLink
             file={file}
             namespace={namespace}
             onPreviewClicked={onPreviewClicked}
           >
             {filename}
-          </ConditionalLink>
+          </FileLink>
           <span className="text-gray-9 dark:text-gray-dark-9">
             {moment(file.updatedAt).fromNow()}
           </span>
@@ -78,7 +78,7 @@ const FileRow = ({
               }}
             >
               <DropdownMenuItem>
-                <Trash className="mr-2 h-4 w-4" />
+                <Trash className="mr-2 size-4" />
                 {t("pages.explorer.tree.list.contextMenu.delete")}
               </DropdownMenuItem>
             </DialogTrigger>
@@ -90,7 +90,7 @@ const FileRow = ({
               }}
             >
               <DropdownMenuItem>
-                <TextCursorInput className="mr-2 h-4 w-4" />
+                <TextCursorInput className="mr-2 size-4" />
                 {t("pages.explorer.tree.list.contextMenu.rename")}
               </DropdownMenuItem>
             </DialogTrigger>

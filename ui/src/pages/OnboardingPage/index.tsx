@@ -10,12 +10,10 @@ import LogoutButton from "~/components/LogoutButton";
 import NamespaceEdit from "~/components/NamespaceEdit";
 import useApiKeyHandling from "~/hooks/useApiKeyHandling";
 import { useListNamespaces } from "~/api/namespaces/query/get";
-import { useNavigate } from "react-router-dom";
-import { usePages } from "~/util/router/pages";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 const Layout = () => {
-  const pages = usePages();
   const { t } = useTranslation();
   const { usesAccounts } = useApiKeyHandling();
   const {
@@ -67,24 +65,28 @@ const Layout = () => {
         activeNamespace &&
         availableNamespaces.data.some((ns) => ns.name === activeNamespace)
       ) {
-        navigate(pages.explorer.createHref({ namespace: activeNamespace }));
+        navigate({
+          to: "/n/$namespace/explorer",
+          params: {
+            namespace: activeNamespace,
+          },
+        });
         return;
       }
       // otherwise, redirect to the first namespace and store it in localStorage
       setNamespace(availableNamespaces.data[0].name);
-      navigate(
-        pages.explorer.createHref({
+      navigate({
+        to: "/n/$namespace/explorer",
+        params: {
           namespace: availableNamespaces.data[0].name,
-        })
-      );
-      return;
+        },
+      });
     }
   }, [
     activeNamespace,
     availableNamespaces,
     isRefetching,
     navigate,
-    pages.explorer,
     setNamespace,
   ]);
 
@@ -134,7 +136,7 @@ const Layout = () => {
             <li key={itemIdx}>
               <div className="group relative flex items-start space-x-3 py-4">
                 <div className="shrink-0">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg">
+                  <span className="inline-flex size-10 items-center justify-center rounded-lg">
                     {item.icon}
                   </span>
                 </div>

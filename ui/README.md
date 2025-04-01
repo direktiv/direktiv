@@ -15,31 +15,36 @@ This repository contains the user interface for [direktiv](https://github.com/di
   <img alt="direktiv ui" src="assets/images/screenshot-dark.png">
 </picture>
 
-# Setup development environment
+# Requirements
 
 - this repo requires a specific node version, to easily install the correct one, please install [nvm](https://github.com/nvm-sh/nvm)
 - in the root directory, run `nvm use` to automatically switch to the required version
   - which will be read from `.nvmrc` file
   - please note that you always must run `nvm use` in every terminal session
   - when the required nvm version is not installed on your machine yet, you have to run nvm install once to do so
-- run `yarn` to install all dependencies
+- this project uses [pnpm](https://pnpm.io/) as a package manager, make sure to install it via [`corepack`](https://pnpm.io/installation#using-corepack)
+
+# Setup development environment
+
+- run `pnpm` to install all dependencies
 - create a `.env` file, copy the content from `.env.example` and change the variables to your needs
-- run `yarn start` to start the dev server
+- run `pnpm dev` to start the dev server
 - when you are using VSCode, make sure to install the recommended extensions for the best dev experience
   - VSCode should suggest you the extensions when you open this folder in VSCode, but you can also check them in the `.vscode/extensions.json` file
 
 # Scripts you might want to run
 
-- `yarn run storybook` opens the storybook and documentation
-- `yarn run test` runs the tests in watch mode
-- `yarn run check` runs all the checks that will run in CI:
-  - `yarn run check:lint` runs the linter
-  - `yarn run check:types` checks all types
-  - `yarn run check:test` runs the tests in ci mode
-  - `yarn run check:prettier` checks if all prettier formatting was applied (`yarn run prettier`)
-- `yarn run e2e:headless` runs all Playwright e2e tests in headless mode
-- `yarn run e2e:ui` runs all Playwright e2e tests in ui mode
-- `yarn run preview` locally preview the production build (requires you to run `yarn build` first)
+- `pnpm run storybook` opens the storybook and documentation
+- `pnpm run test` runs the tests in watch mode
+- `pnpm run check` runs all the checks that will run in CI:
+  - `pnpm run check:lint` runs the linter
+  - `pnpm run check:types` checks all types
+  - `pnpm run check:test` runs the tests in ci mode
+  - `pnpm run check:prettier` checks if all prettier formatting was applied (`pnpm run prettier`)
+  - `pnpm run check:deps` checks if all dependencies are up to date
+- `pnpm run e2e:headless` runs all Playwright e2e tests in headless mode
+- `pnpm run e2e:ui` runs all Playwright e2e tests in ui mode
+- `pnpm run preview` locally preview the production build (requires you to run `pnpm build` first)
 
 # Customize Logos
 

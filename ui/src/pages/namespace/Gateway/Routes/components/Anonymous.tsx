@@ -3,7 +3,7 @@ import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 type AllowAnonymousProps = {
-  allow: boolean;
+  allow: boolean | undefined;
 };
 
 export const AllowAnonymous: FC<AllowAnonymousProps> = ({ allow }) => {

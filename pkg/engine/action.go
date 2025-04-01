@@ -19,16 +19,15 @@ type ActionRequest struct {
 }
 
 type ActionContext struct {
-	Trace     string `json:"trace"`
-	Span      string `json:"span"`
-	State     string `json:"state"`
-	Branch    int    `json:"branch"`
-	Instance  string `json:"instance"`
-	Workflow  string `json:"workflow"`
-	Namespace string `json:"namespace"`
-	Callpath  string `json:"callpath"`
-	Action    string `json:"action"`
-	Step      int    `json:"step"`
+	TraceParent string `json:"traceParent"`
+	State       string `json:"state"`
+	Branch      int    `json:"branch"`
+	Instance    string `json:"instance"`
+	Workflow    string `json:"workflow"`
+	Namespace   string `json:"namespace"`
+	Callpath    string `json:"callpath"`
+	Action      string `json:"action"`
+	Step        int    `json:"step"`
 }
 
 type FunctionFileDefinition struct {

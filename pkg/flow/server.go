@@ -5,30 +5,23 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"log/slog"
 	"os"
 	"runtime"
 	"strings"
 	"time"
 
-	"github.com/caarlos0/env/v10"
-	"github.com/direktiv/direktiv/pkg/cmd"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	eventsstore "github.com/direktiv/direktiv/pkg/events"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/mirror"
 	"github.com/direktiv/direktiv/pkg/pubsub"
-	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
-	"github.com/direktiv/direktiv/pkg/utils"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	"github.com/nats-io/nats.go"
 )
 
 type server struct {
@@ -36,122 +29,40 @@ type server struct {
 
 	config *core.Config
 
-	// the new pubsub bus
-	pBus *pubsub.Bus
+	Bus *pubsub.Bus
 
 	timers *timers
-	engine *engine
+	Engine *engine
 
-	gormDB *gorm.DB
-	rawDB  *sql.DB
+	rawDB *sql.DB
 
-	sqlStore *database.SQLStore
+	db *database.DB
 
-	mirrorManager *mirror.Manager
+	MirrorManager *mirror.Manager
 
 	flow   *flow
 	events *events
-}
+	nats   *nats.Conn
 
-func Run(circuit *core.Circuit) error {
-	config := &core.Config{}
-	if err := env.Parse(config); err != nil {
-		return fmt.Errorf("parsing env variables: %w", err)
-	}
-	if err := config.Init(); err != nil {
-		return fmt.Errorf("init config, err: %w", err)
-	}
-
-	slog.Info("initialize db connection")
-	db, err := initDB(config)
-	if err != nil {
-		return fmt.Errorf("initialize db, err: %w", err)
-	}
-	// TODO: yassir, use the new db to refactor old code.
-	dbManager := database.NewSQLStore(db, config.SecretKey)
-
-	slog.Info("initialize legacy server")
-	srv, err := initLegacyServer(circuit, config, db, dbManager)
-	if err != nil {
-		return fmt.Errorf("initialize legacy server, err: %w", err)
-	}
-
-	configureWorkflow := func(event *pubsub.FileSystemChangeEvent) error {
-		// If this is a delete workflow file
-		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
-			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.NamespaceID, event.DeleteFileID)
-		}
-		file, err := dbManager.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context(), event.FilePath)
-		if err != nil {
-			return err
-		}
-		err = srv.flow.configureWorkflowStarts(circuit.Context(), dbManager, event.NamespaceID, event.Namespace, file)
-		if err != nil {
-			return err
-		}
-
-		return srv.flow.placeholdSecrets(circuit.Context(), dbManager, event.Namespace, file)
-	}
-
-	instanceManager := &instancestore.InstanceManager{
-		Start:  srv.engine.StartWorkflow,
-		Cancel: srv.engine.CancelInstance,
-	}
-
-	err = cmd.NewMain(circuit, &cmd.NewMainArgs{
-		Config:              srv.config,
-		Database:            dbManager,
-		PubSubBus:           srv.pBus,
-		ConfigureWorkflow:   configureWorkflow,
-		InstanceManager:     instanceManager,
-		WakeInstanceByEvent: srv.engine.WakeEventsWaiter,
-		WorkflowStart:       srv.engine.EventsInvoke,
-		SyncNamespace: func(namespace any, mirrorConfig any) (any, error) {
-			ns := namespace.(*datastore.Namespace)            //nolint:forcetypeassert
-			mConfig := mirrorConfig.(*datastore.MirrorConfig) //nolint:forcetypeassert
-			proc, err := srv.mirrorManager.NewProcess(context.Background(), ns, datastore.ProcessTypeSync)
-			if err != nil {
-				return nil, err
-			}
-
-			go func() {
-				srv.mirrorManager.Execute(context.Background(), proc, mConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
-				err := srv.pBus.Publish(&pubsub.NamespacesChangeEvent{
-					Action: "sync",
-					Name:   ns.Name,
-				})
-				if err != nil {
-					slog.Error("pubsub publish", "error", err)
-				}
-			}()
-
-			return proc, nil
-		},
-		RenderAllStartEventListeners: renderAllStartEventListeners,
-	})
-	if err != nil {
-		return fmt.Errorf("lunching new main, err: %w", err)
-	}
-
-	return nil
+	ConfigureWorkflow func(event *pubsub.FileSystemChangeEvent) error
 }
 
 type mirrorProcessLogger struct{}
 
 func (log *mirrorProcessLogger) Debug(pid uuid.UUID, msg string, kv ...interface{}) {
-	slog.Debug(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity."+pid.String())
+	slog.Debug(fmt.Sprintf(msg, kv...), "activity", pid, string(core.LogTrackKey), "activity."+pid.String())
 }
 
 func (log *mirrorProcessLogger) Info(pid uuid.UUID, msg string, kv ...interface{}) {
-	slog.Info(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity."+pid.String())
+	slog.Info(fmt.Sprintf(msg, kv...), "activity", pid, string(core.LogTrackKey), "activity."+pid.String())
 }
 
 func (log *mirrorProcessLogger) Warn(pid uuid.UUID, msg string, kv ...interface{}) {
-	slog.Warn(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity"+"."+pid.String())
+	slog.Warn(fmt.Sprintf(msg, kv...), "activity", pid, string(core.LogTrackKey), "activity"+"."+pid.String())
 }
 
 func (log *mirrorProcessLogger) Error(pid uuid.UUID, msg string, kv ...interface{}) {
-	slog.Error(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity"+"."+pid.String())
+	slog.Error(fmt.Sprintf(msg, kv...), "activity", pid, string(core.LogTrackKey), "activity"+"."+pid.String())
 }
 
 var _ mirror.ProcessLogger = &mirrorProcessLogger{}
@@ -186,54 +97,28 @@ func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
-func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, dbManager *database.SQLStore) (*server, error) {
+//nolint:revive
+func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub.Bus, db *database.DB, rawDB *sql.DB) (*server, error) {
 	srv := new(server)
 	srv.ID = uuid.New()
 	srv.initJQ()
 	srv.config = config
+	srv.db = db
+	srv.rawDB = rawDB
+	srv.Bus = bus
 
 	var err error
 	slog.Debug("starting Flow server")
 	slog.Debug("initializing telemetry.")
-	telEnd, err := utils.InitTelemetry(srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
+	telEnd, err := tracing.InitTelemetry(circuit.Context(), srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("telemetry init failed: %w", err)
 	}
 	slog.Info("Telemetry initialized successfully.")
 
-	srv.gormDB = db
-	srv.sqlStore = dbManager
-
-	srv.rawDB, err = sql.Open("postgres", config.DB)
-	if err == nil {
-		err = srv.rawDB.Ping()
-	}
-	if err != nil {
-		return nil, fmt.Errorf("creating raw db driver, err: %w", err)
-	}
-	slog.Debug("successfully connected to database with raw driver")
-
-	slog.Debug("initializing pubsub routine.")
-	coreBus, err := pubsubSQL.NewPostgresCoreBus(srv.rawDB, srv.config.DB)
-	if err != nil {
-		return nil, fmt.Errorf("creating pubsub core bus, err: %w", err)
-	}
-	slog.Info("pubsub routine was initialized.")
-
-	srv.pBus = pubsub.NewBus(coreBus)
-
-	circuit.Start(func() error {
-		err := srv.pBus.Loop(circuit)
-		if err != nil {
-			return fmt.Errorf("pubsub bus loop, err: %w", err)
-		}
-
-		return nil
-	})
-
 	slog.Debug("initializing timers.")
 
-	srv.timers, err = initTimers(srv.pBus)
+	srv.timers, err = initTimers(srv.Bus)
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +126,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 
 	slog.Debug("initializing engine.")
 
-	srv.engine = initEngine(srv)
+	srv.Engine = initEngine(srv)
 	slog.Info("engine was started.")
 
 	slog.Debug("initializing flow server.")
@@ -254,46 +139,47 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	slog.Debug("initializing mirror manager.")
 	slog.Debug("mirror manager was started.")
 
-	slog.Debug("Initializing events.")
-	srv.events = initEvents(srv, dbManager.DataStore().StagingEvents().Append)
+	slog.Debug("initializing events.")
+	srv.events = initEvents(srv, db.DataStore().StagingEvents().Append)
 
-	slog.Debug("Initializing EventWorkers.")
+	slog.Debug("initializing EventWorkers.")
 
 	interval := 1 * time.Second // TODO: Adjust the polling interval
-	eventWorker := eventsstore.NewEventWorker(dbManager.DataStore().StagingEvents(), interval, srv.events.handleEvent)
+	eventWorker := eventsstore.NewEventWorker(db.DataStore().StagingEvents(), interval, srv.events.handleEvent)
 
 	circuit.Start(func() error {
 		eventWorker.Start(circuit.Context())
 
 		return nil
 	})
-	slog.Info("Events-engine was started.")
+	slog.Info("events-engine was started.")
 
 	cc := func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
-		err = srv.flow.configureWorkflowStarts(ctx, dbManager, nsID, nsName, file)
+		err = srv.flow.configureWorkflowStarts(ctx, db, nsID, nsName, file)
 		if err != nil {
 			return err
 		}
 
-		err = srv.flow.placeholdSecrets(ctx, dbManager, nsName, file)
+		err = srv.flow.placeholdSecrets(ctx, db, nsName, file)
 		if err != nil {
-			slog.Debug("Error setting up placeholder secrets", "error", err, "track", "namespace."+nsName, "namespace", nsName, "file", file.Path)
+			slog.Debug("failed setting up placeholder secrets", "error", err, string(core.LogTrackKey), "namespace."+nsName, "namespace", nsName, "file", file.Path)
 		}
 
 		return nil
 	}
 
-	srv.mirrorManager = mirror.NewManager(
+	srv.MirrorManager = mirror.NewManager(
 		&mirrorCallbacks{
 			logger: &mirrorProcessLogger{
 				// logger: srv.logger,
 			},
-			store:    dbManager.DataStore().Mirror(),
-			fstore:   dbManager.FileStore(),
-			varstore: dbManager.DataStore().RuntimeVariables(),
+			store:    db.DataStore().Mirror(),
+			fstore:   db.FileStore(),
+			varstore: db.DataStore().RuntimeVariables(),
 			wfconf:   cc,
 		},
 	)
+	srv.MirrorManager.SetMirrorHistoryHours(config.MirrorHistoryHours)
 
 	srv.registerFunctions()
 
@@ -303,63 +189,55 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 		<-circuit.Done()
 		telEnd()
 		srv.cleanup(srv.timers.Close)
+		if srv.nats != nil {
+			srv.nats.Close()
+			slog.Info("NATS connection closed")
+		}
 
 		return nil
 	})
 
-	return srv, nil
-}
-
-func initDB(config *core.Config) (*gorm.DB, error) {
-	gormConf := &gorm.Config{
-		Logger: logger.New(
-			log.New(os.Stdout, "\r\n", log.LstdFlags),
-			logger.Config{
-				LogLevel:                  logger.Silent,
-				IgnoreRecordNotFoundError: true,
-			},
-		),
-	}
-
-	var err error
-	var db *gorm.DB
-	//nolint:intrange
-	for i := 0; i < 10; i++ {
-		slog.Info("connecting to database...")
-
-		db, err = gorm.Open(postgres.New(postgres.Config{
-			DSN:                  config.DB,
-			PreferSimpleProtocol: false, // disables implicit prepared statement usage
-			// Conn:                 edb.SQLStore(),
-		}), gormConf)
-		if err == nil {
-			slog.Info("successfully connected to the database.")
-
-			break
+	if config.NatsInstalled {
+		var err error
+		slog.Info("conecting to NATS", "config.NatsHost", config.NatsHost, "config.NatsPort", config.NatsPort)
+		for i := range 12 {
+			err = srv.initNATS(config)
+			if err == nil {
+				slog.Info("NATS connection established successfully")
+				break
+			}
+			slog.Error("failed to connect to NATS, retrying...", "attempt", i+1, "error", err)
+			time.Sleep(time.Duration(i+2) * time.Second)
 		}
-		time.Sleep(time.Second)
+
+		if err != nil {
+			return nil, fmt.Errorf("initialize NATS connection, err: %w", err)
+		}
+
+		if err := srv.publishDemoMessage("test", "test-connection"); err != nil {
+			return nil, fmt.Errorf("testing NATS connection, err: %w", err)
+		}
+		slog.Info("connected to NATS")
 	}
 
-	if err != nil {
-		return nil, err
+	srv.ConfigureWorkflow = func(event *pubsub.FileSystemChangeEvent) error {
+		// If this is a delete workflow file
+		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
+			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.DeleteFileID)
+		}
+		file, err := db.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context(), event.FilePath)
+		if err != nil {
+			return err
+		}
+		err = srv.flow.configureWorkflowStarts(circuit.Context(), db, event.NamespaceID, event.Namespace, file)
+		if err != nil {
+			return err
+		}
+
+		return srv.flow.placeholdSecrets(circuit.Context(), db, event.Namespace, file)
 	}
 
-	res := db.Exec(database.Schema)
-	if res.Error != nil {
-		return nil, fmt.Errorf("provisioning schema, err: %w", res.Error)
-	}
-	slog.Info("Schema provisioned successfully")
-
-	gdb, err := db.DB()
-	if err != nil {
-		return nil, fmt.Errorf("modifying gorm driver, err: %w", err)
-	}
-
-	slog.Debug("Database connection pool limits set", "maxIdleConns", 32, "maxOpenConns", 16)
-	gdb.SetMaxIdleConns(32)
-	gdb.SetMaxOpenConns(16)
-
-	return db, nil
+	return srv, nil
 }
 
 func (srv *server) cleanup(closer func() error) {
@@ -397,9 +275,9 @@ func (srv *server) NotifyHostname(hostname, msg string) error {
 }
 
 func (srv *server) registerFunctions() {
-	srv.timers.registerFunction(timeoutFunction, srv.engine.timeoutHandler)
+	srv.timers.registerFunction(timeoutFunction, srv.Engine.timeoutHandler)
 	srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
-	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
+	srv.timers.registerFunction(retryWakeupFunction, srv.flow.Engine.retryWakeup)
 }
 
 func (srv *server) cronPoller() {
@@ -441,7 +319,7 @@ func (srv *server) cronPoll() {
 	}
 }
 
-func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database.SQLStore, file *filestore.File) {
+func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database.DB, file *filestore.File) {
 	ms, err := validateRouter(ctx, tx, file)
 	if err != nil {
 		slog.Error("Failed to validate Routing for a cron schedule.", "error", err)
@@ -471,11 +349,11 @@ func this() string {
 	return elems[len(elems)-1]
 }
 
-func (srv *server) beginSQLTx(ctx context.Context, opts ...*sql.TxOptions) (*database.SQLStore, error) {
-	return srv.sqlStore.BeginTx(ctx, opts...)
+func (srv *server) beginSQLTx(ctx context.Context, opts ...*sql.TxOptions) (*database.DB, error) {
+	return srv.db.BeginTx(ctx, opts...)
 }
 
-func (srv *server) runSQLTx(ctx context.Context, fun func(tx *database.SQLStore) error) error {
+func (srv *server) runSQLTx(ctx context.Context, fun func(tx *database.DB) error) error {
 	tx, err := srv.beginSQLTx(ctx)
 	if err != nil {
 		return err
@@ -487,4 +365,35 @@ func (srv *server) runSQLTx(ctx context.Context, fun func(tx *database.SQLStore)
 	}
 
 	return tx.Commit(ctx)
+}
+
+// Initialize NATS connection using environment variables.
+func (srv *server) initNATS(config *core.Config) error {
+	natsURL := config.NatsHost
+	if natsURL == "" {
+		return fmt.Errorf("NATS URL not set in environment")
+	}
+
+	// Connect to NATS
+	nc, err := nats.Connect(natsURL)
+	if err != nil {
+		return fmt.Errorf("failed to connect to NATS, err: %w", err)
+	}
+
+	// Store the NATS connection in the server struct
+	srv.nats = nc
+	slog.Info("successfully connected to NATS")
+
+	return nil
+}
+
+// Example of publishing a message to NATS.
+func (srv *server) publishDemoMessage(subject, msg string) error {
+	err := srv.nats.Publish(subject, []byte(msg))
+	if err != nil {
+		return fmt.Errorf("failed to publish message, err: %w", err)
+	}
+	slog.Info("message published", "subject", subject, "msg", msg)
+
+	return nil
 }

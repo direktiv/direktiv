@@ -83,7 +83,7 @@ func (c *jxController) handler(w http.ResponseWriter, r *http.Request) {
 
 	results, err := jqer.Evaluate(document, query) //nolint:contextcheck
 	if err != nil {
-		buf.WriteString(fmt.Sprintf("failure: %s\n", err.Error()))
+		fmt.Fprintf(buf, "failure: %s\n", err.Error())
 		failed = true
 	}
 

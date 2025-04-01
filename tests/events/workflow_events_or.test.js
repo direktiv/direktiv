@@ -169,7 +169,7 @@ describe('Test workflow events and', () => {
 		expect(instancesResponse.body.meta.total).toEqual(2)
 	})
 
-	it(`should kick off start event workflow`, async () => {
+	it(`should kick off start event workflow stage 1`, async () => {
 		await events.sendEventAndList(namespaceName, basevent('eventtype3', 'eventtype3', 'world1'))
 		const instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName, 'complete')
 
@@ -183,7 +183,9 @@ describe('Test workflow events and', () => {
 		expect(outputJSON.eventtype3.data.hello).toEqual('world')
 
 		await events.sendEventAndList(namespaceName, basevent('eventtype4', 'eventtype4', 'world2'))
+	})
 
+	retry10(`should kick off start event workflow stage 2`, async () => {
 		const instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0&filter.field=AS&filter.type=CONTAINS&filter.val=` + startWorkflowName)
 			.send()
 		expect(instancesResponse.body.meta.total).toEqual(2)

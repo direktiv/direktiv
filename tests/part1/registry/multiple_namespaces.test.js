@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../../common'
+import regex from '../../common/regex'
 import request from '../../common/request'
 
 describe('Test services crud operations', () => {
@@ -18,42 +19,52 @@ describe('Test services crud operations', () => {
 		const listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/test_namespace_a/registries`)
 		expect(listRes.statusCode).toEqual(200)
-		expect(listRes.body).toMatchObject({
-			data: [
-				{
-					namespace: 'test_namespace_a',
-					id: expect.stringMatching(/^secret-/),
-					url: 'a_domain_1.io',
-					user: 'a_name_1',
-				},
-				{
-					namespace: 'test_namespace_a',
-					id: expect.stringMatching(/^secret-/),
-					url: 'a_domain_2.io',
-					user: 'a_name_2',
-				} ],
-		})
+		expect(listRes.body.data).toEqual(
+			expect.arrayContaining(
+
+				[
+					{
+						createdAt: expect.stringMatching(regex.timestampRegex),
+						namespace: 'test_namespace_a',
+						id: expect.stringMatching(/^secret-/),
+						url: 'a_domain_1.io',
+						user: 'a_name_1',
+					},
+					{
+						createdAt: expect.stringMatching(regex.timestampRegex),
+						namespace: 'test_namespace_a',
+						id: expect.stringMatching(/^secret-/),
+						url: 'a_domain_2.io',
+						user: 'a_name_2',
+					},
+				],
+
+			),
+		)
 	})
 
 	it(`should list all registries in namespace test_namespace_b`, async () => {
 		const listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/test_namespace_b/registries`)
 		expect(listRes.statusCode).toEqual(200)
-		expect(listRes.body).toMatchObject({
-			data: [
+		expect(listRes.body.data).toEqual(
+			expect.arrayContaining([
 				{
+					createdAt: expect.stringMatching(regex.timestampRegex),
 					namespace: 'test_namespace_b',
 					id: expect.stringMatching(/^secret-/),
 					url: 'b_domain_1.io',
 					user: 'b_name_1',
 				},
 				{
+					createdAt: expect.stringMatching(regex.timestampRegex),
 					namespace: 'test_namespace_b',
 					id: expect.stringMatching(/^secret-/),
 					url: 'b_domain_2.io',
 					user: 'b_name_2',
 				} ],
-		})
+			),
+		)
 	})
 })
 
@@ -69,6 +80,7 @@ function itShouldCreateSecret (it, expect, namespace, url, user, password) {
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
 			data: {
+				createdAt: expect.stringMatching(regex.timestampRegex),
 				namespace,
 				id: expect.stringMatching(/^secret-/),
 				url,

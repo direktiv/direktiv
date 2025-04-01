@@ -3,7 +3,6 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "~/design/HoverCard";
-import { Link, useNavigate } from "react-router-dom";
 import { TableCell, TableRow } from "~/design/Table";
 import {
   Tooltip,
@@ -20,12 +19,11 @@ import TooltipCopyBadge from "~/design/TooltipCopyBadge";
 import moment from "moment";
 import { statusToBadgeVariant } from "../../Instances/utils";
 import { useNamespace } from "~/util/store/namespace";
-import { usePages } from "~/util/router/pages";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
-  const pages = usePages();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const isValidDate = moment(instance.endedAt).isValid();
@@ -38,39 +36,14 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
     <TooltipProvider>
       <TableRow
         onClick={() => {
-          navigate(
-            pages.instances.createHref({
-              namespace,
-              instance: instance.id,
-            })
-          );
+          navigate({
+            to: "/n/$namespace/instances/$id",
+            params: { namespace, id: instance.id },
+          });
         }}
         className="cursor-pointer"
       >
-        <TableCell className="grid pl-5">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                onClick={(e) => {
-                  e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link
-                }}
-                to={pages.explorer.createHref({
-                  namespace,
-                  path: instance.path,
-                  subpage: "workflow",
-                })}
-                className="overflow-hidden text-ellipsis hover:underline md:w-auto"
-              >
-                {instance.path}
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent>
-              {t("pages.monitoring.instances.openWorkflowTooltip", {
-                name: instance.path,
-              })}
-            </TooltipContent>
-          </Tooltip>
-        </TableCell>
+        <TableCell className="grid pl-5">{instance.path}</TableCell>
         <TableCell className="w-0">
           <TooltipCopyBadge value={instance.id} variant="outline">
             {instance.id.slice(0, 8)}

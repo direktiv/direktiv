@@ -1,4 +1,5 @@
 import { decode, encode } from "js-base64";
+import { omitEmptyFields, serializeServiceFile } from "./utils";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
@@ -13,7 +14,6 @@ import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { ServiceFormSchemaType } from "./schema";
 import { jsonToYaml } from "../../utils";
-import { serializeServiceFile } from "./utils";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
@@ -35,7 +35,8 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
   const { mutate: updateService, isPending } = useUpdateFile({});
 
   const save = (value: ServiceFormSchemaType) => {
-    const toSave = jsonToYaml(value);
+    const cleanedValues = omitEmptyFields(value);
+    const toSave = jsonToYaml(cleanedValues);
     updateService({
       path: data.path,
       payload: { data: encode(toSave) },
@@ -45,14 +46,15 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
   return (
     <Form defaultConfig={serviceConfig} onSave={save}>
       {({
-        formControls: {
+        form: {
           formState: { errors },
           handleSubmit,
         },
         formMarkup,
         values,
       }) => {
-        const preview = jsonToYaml(values);
+        const cleanedValues = omitEmptyFields(values);
+        const preview = jsonToYaml(cleanedValues);
         const parsedOriginal = serviceConfig && jsonToYaml(serviceConfig);
         const filehasChanged = preview !== parsedOriginal;
         const isDirty = !serviceConfigError && filehasChanged;
@@ -74,7 +76,7 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
                           "pages.explorer.service.editor.form.serialisationError"
                         )}
                       </Alert>
-                      <ScrollArea className="h-full w-full whitespace-nowrap">
+                      <ScrollArea className="size-full whitespace-nowrap">
                         <pre className="grow text-sm text-primary-500">
                           {JSON.stringify(serviceConfigError, null, 2)}
                         </pre>

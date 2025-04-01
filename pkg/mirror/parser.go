@@ -29,6 +29,7 @@ type Parser struct {
 	Services  map[string][]byte
 	Endpoints map[string][]byte
 	Consumers map[string][]byte
+	Gateways  map[string][]byte
 
 	DeprecatedNamespaceVars map[string][]byte
 	DeprecatedWorkflowVars  map[string]map[string][]byte
@@ -52,6 +53,7 @@ func NewParser(log FormatLogger, src Source) (*Parser, error) {
 		Services:  make(map[string][]byte),
 		Endpoints: make(map[string][]byte),
 		Consumers: make(map[string][]byte),
+		Gateways:  make(map[string][]byte),
 
 		DeprecatedNamespaceVars: make(map[string][]byte),
 		DeprecatedWorkflowVars:  make(map[string]map[string][]byte),
@@ -279,11 +281,6 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		if err != nil {
 			return err
 		}
-	case *core.EndpointFile:
-		err = p.handleEndpoint(path, data)
-		if err != nil {
-			return err
-		}
 	case *core.ConsumerFile:
 		err = p.handleConsumer(path, data)
 		if err != nil {
@@ -291,6 +288,16 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		}
 	case *core.ServiceFile:
 		err = p.handleService(path, data)
+		if err != nil {
+			return err
+		}
+	case core.Endpoint:
+		err = p.handleEndpoint(path, data)
+		if err != nil {
+			return err
+		}
+	case core.Gateway:
+		err = p.handleGateway(path, data)
 		if err != nil {
 			return err
 		}
@@ -383,6 +390,14 @@ func (p *Parser) handleService(path string, data []byte) error {
 	p.log.Infof("Direktiv resource file containing a service definition found at '%s'", path)
 
 	p.Services[path] = data
+
+	return nil
+}
+
+func (p *Parser) handleGateway(path string, data []byte) error {
+	p.log.Infof("Direktiv resource file containing a gateway definition found at '%s'", path)
+
+	p.Gateways[path] = data
 
 	return nil
 }

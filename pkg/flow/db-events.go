@@ -16,8 +16,7 @@ import (
 )
 
 func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *datastore.Namespace) error {
-	ctx, end := traceAddtoEventlog(ctx)
-	defer end()
+	slog.DebugContext(ctx, "Event-Bus registering event")
 	li := make([]*datastore.Event, 0)
 	if eventin.ID() == "" {
 		eventin.SetID(uuid.NewString())
@@ -28,7 +27,7 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 		Namespace:   ns.Name,
 		ReceivedAt:  time.Now().UTC(),
 	})
-	err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
+	err := events.runSQLTx(ctx, func(tx *database.DB) error {
 		_, errs := tx.DataStore().EventHistory().Append(ctx, li)
 		for _, err2 := range errs {
 			if err2 != nil {
@@ -45,8 +44,8 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 	return nil
 }
 
-func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uuid.UUID, fileID uuid.UUID) error {
-	err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
+func (events *events) deleteWorkflowEventListeners(ctx context.Context, fileID uuid.UUID) error {
+	err := events.runSQLTx(ctx, func(tx *database.DB) error {
 		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, fileID)
 		if err != nil {
 			return err
@@ -69,7 +68,7 @@ func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uui
 }
 
 func (events *events) deleteInstanceEventListeners(ctx context.Context, im *instanceMemory) error {
-	err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
+	err := events.runSQLTx(ctx, func(tx *database.DB) error {
 		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, im.instance.Instance.ID)
 		if err != nil {
 			return err
@@ -91,7 +90,7 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, im *inst
 	return nil
 }
 
-func renderAllStartEventListeners(ctx context.Context, tx *database.SQLStore) error {
+func RenderAllStartEventListeners(ctx context.Context, tx *database.DB) error {
 	nsList, err := tx.DataStore().Namespaces().GetAll(ctx)
 	if err != nil {
 		return err
@@ -119,7 +118,7 @@ func renderAllStartEventListeners(ctx context.Context, tx *database.SQLStore) er
 	return nil
 }
 
-func renderStartEventListener(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File, ms *muxStart, tx *database.SQLStore) error {
+func renderStartEventListener(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File, ms *muxStart, tx *database.DB) error {
 	_, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, file.ID)
 	if err != nil {
 		return err
@@ -147,7 +146,7 @@ func renderStartEventListener(ctx context.Context, nsID uuid.UUID, nsName string
 	return nil
 }
 
-func appendEventListenersToDB(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File, lifespan time.Duration, ms *muxStart, tx *database.SQLStore) error {
+func appendEventListenersToDB(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File, lifespan time.Duration, ms *muxStart, tx *database.DB) error {
 	fEv := &datastore.EventListener{
 		ID:                       uuid.New(),
 		CreatedAt:                time.Now().UTC(),
@@ -264,7 +263,7 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace uu
 		fEv.TriggerType = datastore.WaitOR
 	}
 
-	err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
+	err := events.runSQLTx(ctx, func(tx *database.DB) error {
 		err := tx.DataStore().EventListener().Append(ctx, fEv)
 		if err != nil {
 			return err

@@ -10,6 +10,7 @@ import {
 import { TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
+import { Checkbox } from "~/design/Checkbox";
 import { DialogTrigger } from "~/design/Dialog";
 import { useTranslation } from "react-i18next";
 
@@ -18,6 +19,8 @@ type ItemRowProps<TItem> = {
   onDelete: (item: TItem) => void;
   onEdit?: () => void;
   onDownload?: () => void;
+  onSelect?: (checked: boolean) => void;
+  isSelected?: boolean;
   children?: React.ReactNode;
 };
 
@@ -26,13 +29,28 @@ const ItemRow = <ItemType,>({
   onDelete,
   onDownload,
   onEdit,
+  onSelect,
+  isSelected,
   children,
 }: ItemRowProps<ItemType & { name: string }>) => {
   const { t } = useTranslation();
 
   return (
     <TableRow data-testid="variable-row">
-      <TableCell data-testid="item-name">{children}</TableCell>
+      <TableCell
+        data-testid="item-name"
+        className="flex items-center justify-between"
+      >
+        {onSelect && (
+          <Checkbox
+            className="mr-3"
+            data-testid="variable-checkbox"
+            checked={isSelected}
+            onCheckedChange={onSelect}
+          />
+        )}
+        <div className="grow">{children}</div>
+      </TableCell>
       <TableCell className="w-0">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -59,7 +77,7 @@ const ItemRow = <ItemType,>({
                 onClick={onEdit}
               >
                 <DropdownMenuItem>
-                  <Pencil className="mr-2 h-4 w-4" />
+                  <Pencil className="mr-2 size-4" />
                   {t("pages.settings.generic.contextMenu.edit")}
                 </DropdownMenuItem>
               </DialogTrigger>
@@ -73,7 +91,7 @@ const ItemRow = <ItemType,>({
                 onClick={onDownload}
               >
                 <DropdownMenuItem>
-                  <DownloadCloud className="mr-2 h-4 w-4" />
+                  <DownloadCloud className="mr-2 size-4" />
                   {t("pages.settings.generic.contextMenu.download")}
                 </DropdownMenuItem>
               </div>
@@ -85,7 +103,7 @@ const ItemRow = <ItemType,>({
               onClick={() => onDelete(item)}
             >
               <DropdownMenuItem>
-                <Trash className="mr-2 h-4 w-4" />
+                <Trash className="mr-2 size-4" />
                 {t("pages.settings.generic.contextMenu.delete")}
               </DropdownMenuItem>
             </DialogTrigger>

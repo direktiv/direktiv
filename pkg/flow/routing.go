@@ -17,8 +17,8 @@ import (
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type muxStart struct {
@@ -52,7 +52,7 @@ func newMuxStart(workflow *model.Workflow) *muxStart {
 	return ms
 }
 
-func validateRouter(ctx context.Context, tx *database.SQLStore, file *filestore.File) (*muxStart, error) {
+func validateRouter(ctx context.Context, tx *database.DB, file *filestore.File) (*muxStart, error) {
 	data, err := tx.FileStore().ForFile(file).GetData(ctx)
 	if err != nil {
 		return nil, err
@@ -166,14 +166,21 @@ func (flow *flow) cronHandler(data []byte) {
 
 		return
 	}
-
-	span := trace.SpanFromContext(ctx)
+	ctx = tracing.AddNamespace(ctx, ns.Name)
+	ctx, end, err := tracing.NewSpan(ctx, "starting cron handler")
+	if err != nil {
+		slog.Debug("cronhandler failed to start span", "error", err)
+	}
+	defer end()
 
 	x, _ := json.Marshal([]string{ns.Name, file.Path, t.String()}) //nolint
 	unique := string(x)
 	md5sum := md5.Sum([]byte(unique))
 	hash := base64.StdEncoding.EncodeToString(md5sum[:])
-
+	traceParent, err := tracing.ExtractTraceParent(ctx)
+	if err != nil {
+		slog.Debug("cronhandler failed to init telemetry", "error", err)
+	}
 	args := &newInstanceArgs{
 		tx:        tx,
 		ID:        uuid.New(),
@@ -182,31 +189,30 @@ func (flow *flow) cronHandler(data []byte) {
 		Input:     make([]byte, 0),
 		Invoker:   "cron",
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
-			TraceID:       span.SpanContext().TraceID().String(),
-			SpanID:        span.SpanContext().SpanID().String(),
+			TraceParent:   traceParent,
 			NamespaceName: ns.Name,
 		},
 		SyncHash: &hash,
 	}
 
-	im, err := flow.engine.NewInstance(ctx, args)
+	im, err := flow.Engine.NewInstance(ctx, args)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate") {
-			slog.Debug("Instance creation clash detected, likely due to parallel execution. This is not an error.")
+			slog.DebugContext(ctx, "Instance creation clash detected, likely due to parallel execution. This is not an error.")
 			// this happens on a attempt to create an instance clashed with another server
 
 			return
 		}
 
-		slog.Error("Failed to create new instance from cron job.", "workflow_path", file.Path, "error", err)
+		slog.ErrorContext(ctx, "Failed to create new instance from cron job.", "workflow_path", file.Path, "error", err)
 
 		return
 	}
 
-	go flow.engine.start(im)
+	go flow.Engine.start(im)
 }
 
-func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database.SQLStore, nsID uuid.UUID, nsName string, file *filestore.File) error {
+func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database.DB, nsID uuid.UUID, nsName string, file *filestore.File) error {
 	ms, err := validateRouter(ctx, tx, file)
 	if err != nil {
 		return err
@@ -217,7 +223,7 @@ func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database.SQLS
 		return err
 	}
 
-	err = flow.pBus.Publish(configureRouterMessage{
+	err = flow.Bus.Publish(configureRouterMessage{
 		ID:   file.ID.String(),
 		Cron: ms.Cron,
 	})

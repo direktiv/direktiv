@@ -1,20 +1,18 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 import {
-  workflowWithFewLogs as fewLogsWorkflowContent,
-  workflowWithManyLogs as manyLogsWorkflowContent,
-  simpleWorkflow as simpleWorkflowContent,
+  simpleWorkflow,
+  workflowWithFewLogs,
+  workflowWithManyLogs,
 } from "../utils/workflows";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils/index";
+import { error as errorWorkflowTemplate } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { faker } from "@faker-js/faker";
 import { mockClipboardAPI } from "e2e/utils/testutils";
 
 let namespace = "";
-const simpleWorkflowName = faker.system.commonFileName("yaml");
-const fewLogsWorkflowName = faker.system.commonFileName("yaml");
-const manyLogsWorkflowName = faker.system.commonFileName("yaml");
 
 test.beforeEach(async ({ page }) => {
   namespace = await createNamespace();
@@ -26,22 +24,26 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("the logs panel can be resized, it displays a log message from the workflow yaml, one initial and one final log entry", async ({
+test("It displays a log message from the workflow yaml, one initial and one final log entry", async ({
   page,
 }) => {
+  /* prepare data*/
+  const workflowName = faker.system.commonFileName("yaml");
   await createFile({
-    name: fewLogsWorkflowName,
+    name: workflowName,
     namespace,
     type: "workflow",
-    yaml: fewLogsWorkflowContent,
+    yaml: workflowWithFewLogs,
   });
 
   const instanceId = (
     await createInstance({
       namespace,
-      path: fewLogsWorkflowName,
+      path: workflowName,
     })
   ).data.id;
+
+  /* visit page and test */
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const logsPanel = page.getByTestId("instance-logs-container");
@@ -53,7 +55,7 @@ test("the logs panel can be resized, it displays a log message from the workflow
   await expect(
     logsPanel.locator("h3"),
     "The headline of the logs shows the name of the currently running workflow"
-  ).toContainText(`Logs for /${fewLogsWorkflowName}`);
+  ).toContainText(`Logs for /${workflowName}`);
 
   await expect(
     page.getByTestId("instance-header-container").locator("div").first()
@@ -65,6 +67,58 @@ test("the logs panel can be resized, it displays a log message from the workflow
     entriesCounter.locator("span").nth(1),
     "There is a loading spinner"
   ).toHaveClass(/animate-ping/);
+
+  await expect(
+    scrollContainer.locator("pre").locator("span").nth(0),
+    "It displays an initial log entry"
+  ).toContainText("Running state logic");
+
+  await expect(
+    page.getByTestId("instance-header-container").locator("div").first()
+  ).toContainText("complete");
+
+  // for some reason, logs do not update in the test at this point.
+  // Possibly streaming is interrupted in the test context? As a workaround,
+  // reload the page to ensure all logs are eventually rendered.
+  page.reload();
+
+  await expect(
+    scrollContainer.locator("pre").locator("span").nth(3),
+    "It displays the log message from the log field in the workflow yaml"
+  ).toContainText("hello-world");
+
+  await expect(
+    scrollContainer.locator("pre").locator("span").last(),
+    "It displays a final log entry"
+  ).toContainText("Workflow completed");
+
+  await expect(
+    entriesCounter,
+    "When the workflow finished running there are 6 log entries"
+  ).toContainText("received 6 log entries");
+});
+
+test("the logs panel can be maximized", async ({ page }) => {
+  /* prepare data */
+  const workflowName = faker.system.commonFileName("yaml");
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: simpleWorkflow,
+  });
+
+  const instanceId = (
+    await createInstance({
+      namespace,
+      path: workflowName,
+    })
+  ).data.id;
+
+  /* visit page and test */
+  await page.goto(`/n/${namespace}/instances/${instanceId}`);
+
+  const logsPanel = page.getByTestId("instance-logs-container");
 
   const resizeButton = page
     .getByTestId("instance-logs-container")
@@ -104,42 +158,23 @@ test("the logs panel can be resized, it displays a log message from the workflow
     page.getByText("minimize logs"),
     "It shows the text 'minimize logs' when hovering over the resize button"
   ).toBeVisible();
-
-  await expect(
-    scrollContainer.locator("pre").locator("span").nth(0),
-    "It displays an initial log entry"
-  ).toContainText("Running state logic");
-
-  await expect(
-    scrollContainer.locator("pre").locator("span").nth(2),
-    "It displays the log message from the log field in the workflow yaml"
-  ).toContainText("log-message");
-
-  await expect(
-    scrollContainer.locator("pre").locator("span").last(),
-    "It displays a final log entry"
-  ).toContainText("Workflow completed");
-
-  await expect(
-    entriesCounter,
-    "When the workflow finished running there are 6 log entries"
-  ).toContainText("received 6 log entries");
 });
 
 test("the logs panel can be toggled between verbose and non verbose logs", async ({
   page,
 }) => {
+  const workflowName = faker.system.commonFileName("yaml");
   await createFile({
-    name: simpleWorkflowName,
+    name: workflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflowContent,
+    yaml: simpleWorkflow,
   });
 
   const instanceId = (
     await createInstance({
       namespace,
-      path: simpleWorkflowName,
+      path: workflowName,
     })
   ).data.id;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
@@ -191,17 +226,19 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
 });
 
 test("the logs can be copied", async ({ page }) => {
+  const workflowName = faker.system.commonFileName("yaml");
+
   await createFile({
-    name: simpleWorkflowName,
+    name: workflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflowContent,
+    yaml: simpleWorkflow,
   });
 
   const instanceId = (
     await createInstance({
       namespace,
-      path: simpleWorkflowName,
+      path: workflowName,
     })
   ).data.id;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
@@ -235,17 +272,19 @@ test("the logs can be copied", async ({ page }) => {
 test("log entries will be automatically scrolled to the end", async ({
   page,
 }) => {
+  const workflowName = faker.system.commonFileName("yaml");
+
   await createFile({
-    name: manyLogsWorkflowName,
+    name: workflowName,
     namespace,
     type: "workflow",
-    yaml: manyLogsWorkflowContent,
+    yaml: workflowWithManyLogs,
   });
 
   const instanceId = (
     await createInstance({
       namespace,
-      path: manyLogsWorkflowName,
+      path: workflowName,
     })
   ).data.id;
 
@@ -291,7 +330,7 @@ test("log entries will be automatically scrolled to the end", async ({
     "After scrolling up, a button appeared"
   ).toBeVisible();
 
-  followButton.click();
+  await followButton.click();
 
   await expect(
     followButton,
@@ -331,23 +370,59 @@ test("log entries will be automatically scrolled to the end", async ({
   ).not.toBeVisible();
 });
 
-test("it renders an error when the api response returns an error", async ({
-  page,
-}) => {
+test("it renders error details for errors in the logs", async ({ page }) => {
   /* prepare data */
-  const simpleWorkflowName = faker.system.commonFileName("yaml");
+  const workflowName = faker.system.commonFileName("yaml");
 
   await createFile({
-    name: simpleWorkflowName,
+    name: workflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflowContent,
+    yaml: errorWorkflowTemplate.data,
   });
 
   const instanceId = (
     await createInstance({
       namespace,
-      path: simpleWorkflowName,
+      path: workflowName,
+    })
+  ).data.id;
+
+  /* perform test */
+  await page.goto(`/n/${namespace}/instances/${instanceId}`);
+
+  const logsPanel = page.getByTestId("instance-logs-container");
+
+  await expect(logsPanel).toBeVisible();
+
+  await expect(
+    page.getByTestId("instance-header-container").locator("div").first()
+  ).toContainText("failed");
+
+  await expect(
+    page.getByText(
+      "Workflow failed with an error.error: 'direktiv.schema.*': email '.email' is not valid"
+    )
+  ).toBeVisible();
+});
+
+test("it renders an error when the api response returns an error", async ({
+  page,
+}) => {
+  /* prepare data */
+  const workflowName = faker.system.commonFileName("yaml");
+
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: simpleWorkflow,
+  });
+
+  const instanceId = (
+    await createInstance({
+      namespace,
+      path: workflowName,
     })
   ).data.id;
 

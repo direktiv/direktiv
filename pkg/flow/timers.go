@@ -273,25 +273,7 @@ func (timers *timers) deleteTimersForInstanceNoBroadcast(name string) {
 	}
 }
 
-type deleteTimerMessage struct {
-	// timers.deleteTimerByName("", timers.pubsub.Hostname, req.Key)
-	Name string
-}
-
-func (timers *timers) deleteTimer(name string) {
-	_ = timers.pubsub.Publish(clusterDeleteInstanceTimersMessage{
-		Name: name,
-	})
-}
-
-func (timers *timers) deleteTimerHandler(data string) {
-	var msg deleteTimerMessage
-	_ = json.Unmarshal([]byte(data), &msg)
-	timers.deleteTimerByName(msg.Name)
-}
-
 func (timers *timers) deleteTimerByName(name string) {
-	// delete local timer
 	var key string
 
 	timers.mtx.Lock()

@@ -9,7 +9,12 @@
 *.dylib
 .vscode
 
-# certs for linkerd 
+cmd/ee
+pkg/ee
+direktiv-ee
+ee
+
+# certs for linkerd
 ca.*
 issuer.*
 
@@ -60,7 +65,6 @@ issuer.*
 build/docker/all/kubernetes
 build/docker/all/*.tar
 build/docker/all/*.tar.gz
-deploy*.yaml
 
 kubernetes/charts/knative/charts
 kubernetes/charts/knative/Chart.lock
@@ -99,7 +103,7 @@ direktivctl*
 *node_modules
 
 .draft
-
+tight.sh
 openapi/node_modules
 openapi/output
 

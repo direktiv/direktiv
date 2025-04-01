@@ -61,7 +61,7 @@ func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMe
 				slog.Warn("Isolate child missing service name.", "child_id", child.ID)
 			}
 		case "subflow":
-			err := engine.pBus.Publish(cancelInstanceMessage{
+			err := engine.Bus.Publish(cancelInstanceMessage{
 				ID:      child.ID,
 				Code:    ErrCodeCancelledByParent,
 				Message: "cancelled by parent workflow",

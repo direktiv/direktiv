@@ -20,7 +20,9 @@ RELEASE_VERSION := ${RELEASE}-${GIT_HASH}${GIT_DIRTY}
 
 .DEFAULT_GOAL := direktiv
 
-include make_direktiv.mk make_direktiv_ui.mk make_k3s.mk make_tests.mk make_composer.mk
+DIREKTIV_HOST ?= localhost:9090
+
+include make_direktiv.mk make_tests.mk make_cluster.mk
 
 .PHONY: help
 help: ## Prints usage information.

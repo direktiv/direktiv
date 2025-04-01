@@ -1,0 +1,85 @@
+/// <reference types="vitest" />
+import { defineConfig, loadEnv } from "vite";
+
+import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
+import { envVariablesSchema } from "./src/config/env/schema";
+import react from "@vitejs/plugin-react";
+import viteTsconfigPaths from "vite-tsconfig-paths";
+
+export default ({ mode }) => {
+  const env = loadEnv(mode, process.cwd());
+
+  const parsedEnv = envVariablesSchema.parse(env);
+
+  const { VITE_DEV_API_DOMAIN: apiDomain } = parsedEnv;
+
+  if (!apiDomain) {
+    console.warn("VITE_DEV_API_DOMAIN is not set, no API proxy will be used");
+  }
+
+  return defineConfig({
+    define: {
+      "process.env.VITE": parsedEnv,
+    },
+    server: {
+      host: "0.0.0.0",
+      port: 3000,
+      proxy: apiDomain
+        ? {
+            "/api": {
+              target: apiDomain,
+              secure: false,
+              changeOrigin: true,
+            },
+            "/ns": {
+              target: apiDomain,
+              secure: false,
+              changeOrigin: true,
+            },
+            "/dex": {
+              target: apiDomain,
+              secure: false,
+              changeOrigin: true,
+            },
+          }
+        : {},
+    },
+    build: {
+      commonjsOptions: {
+        // https://github.com/vitejs/vite/issues/2139#issuecomment-1405624744
+        defaultIsModuleExports(id) {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            const module = require(id);
+            if (module?.default) {
+              return false;
+            }
+            return "auto";
+          } catch (error) {
+            return "auto";
+          }
+        },
+      },
+    },
+    optimizeDeps: {
+      esbuildOptions: {
+        loader: {
+          ".js": "jsx",
+        },
+      },
+    },
+    plugins: [react(), viteTsconfigPaths(), TanStackRouterVite()],
+    test: {
+      globals: true,
+      environment: "jsdom",
+      exclude: [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/cypress/**",
+        "**/.{idea,git,cache,output,temp}/**",
+        "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+        "e2e/**", // playwright tests, vitest throws errors when parsing them.
+      ],
+    },
+  });
+};

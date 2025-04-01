@@ -10,31 +10,31 @@ import {
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
-import { useEffect, useState } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import CreateToken from "./Create";
 import Delete from "./Delete";
 import Row from "./Row";
-import { TokenSchemaType } from "~/api/enterprise/tokens/schema";
+import { useState } from "react";
 import { useTokens } from "~/api/enterprise/tokens/query/get";
 import { useTranslation } from "react-i18next";
 
 const TokensPage = () => {
   const { t } = useTranslation();
   const { data, isFetched, isAllowed, noPermissionMessage } = useTokens();
-  const noResults = isFetched && data?.tokens.length === 0;
+  const noResults = isFetched && data?.data.length === 0;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createToken, setCreateToken] = useState(false);
-  const [deleteToken, setDeleteToken] = useState<TokenSchemaType>();
+  const [deleteToken, setDeleteToken] = useState<string>();
 
-  useEffect(() => {
-    if (dialogOpen === false) {
+  const onOpenChange = (openState: boolean) => {
+    if (openState === false) {
       setCreateToken(false);
       setDeleteToken(undefined);
     }
-  }, [dialogOpen]);
+    setDialogOpen(openState);
+  };
 
   const createNewButton = (
     <DialogTrigger asChild>
@@ -47,22 +47,28 @@ const TokensPage = () => {
 
   return (
     <Card className="m-5">
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={onOpenChange}>
         <div className="flex justify-end gap-5 p-2">{createNewButton}</div>
         <Table className="border-t border-gray-5 dark:border-gray-dark-5">
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
               <TableHeaderCell>
+                {t("pages.permissions.tokens.tableHeader.name")}
+              </TableHeaderCell>
+              <TableHeaderCell>
                 {t("pages.permissions.tokens.tableHeader.description")}
               </TableHeaderCell>
-              <TableHeaderCell className="w-40">
-                {t("pages.permissions.tokens.tableHeader.created")}
+              <TableHeaderCell>
+                {t("pages.permissions.tokens.tableHeader.prefix")}
               </TableHeaderCell>
               <TableHeaderCell className="w-40">
                 {t("pages.permissions.tokens.tableHeader.expires")}
               </TableHeaderCell>
               <TableHeaderCell className="w-36">
                 {t("pages.permissions.tokens.tableHeader.permissions")}
+              </TableHeaderCell>
+              <TableHeaderCell className="w-40">
+                {t("pages.permissions.tokens.tableHeader.created")}
               </TableHeaderCell>
               <TableHeaderCell className="w-16" />
             </TableRow>
@@ -72,16 +78,16 @@ const TokensPage = () => {
               <>
                 {noResults ? (
                   <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                    <TableCell colSpan={4}>
+                    <TableCell colSpan={6}>
                       <NoResult icon={KeyRound} button={createNewButton}>
                         {t("pages.permissions.tokens.noTokens")}
                       </NoResult>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data?.tokens.map((token) => (
+                  data?.data.map((token) => (
                     <Row
-                      key={token.id}
+                      key={token.name}
                       token={token}
                       onDeleteClicked={setDeleteToken}
                     />
@@ -90,18 +96,23 @@ const TokensPage = () => {
               </>
             ) : (
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                <TableCell colSpan={4}>
+                <TableCell colSpan={6}>
                   <NoPermissions>{noPermissionMessage}</NoPermissions>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-        <DialogContent className="sm:max-w-2xl md:max-w-3xl">
+        <DialogContent className="sm:max-w-2xl">
           {deleteToken && (
-            <Delete token={deleteToken} close={() => setDialogOpen(false)} />
+            <Delete tokenName={deleteToken} close={() => onOpenChange(false)} />
           )}
-          {createToken && <CreateToken close={() => setDialogOpen(false)} />}
+          {createToken && (
+            <CreateToken
+              close={() => onOpenChange(false)}
+              unallowedNames={data?.data.map((token) => token.name)}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </Card>

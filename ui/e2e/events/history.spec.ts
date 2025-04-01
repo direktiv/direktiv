@@ -121,6 +121,32 @@ test("it renders, filters, and paginates events", async ({ page }) => {
   await expect(page.getByTestId("event-row")).toHaveCount(2);
 
   /**
+   * Test the select options for page size
+   */
+
+  const selectPagesize = page.getByRole("combobox");
+  await expect(selectPagesize).toBeVisible();
+  expect(selectPagesize).toHaveText("Show 10 rows");
+
+  selectPagesize.click();
+  page.getByLabel("Show 30 rows").click();
+
+  await expect(page.getByTestId("event-row")).toHaveCount(22);
+
+  /* reload the page and check if pagesize was remembered */
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(selectPagesize).toBeVisible();
+  expect(selectPagesize).toHaveText("Show 30 rows");
+
+  selectPagesize.click();
+  page.getByLabel("Show 20 rows").click();
+
+  await expect(page.getByTestId("event-row")).toHaveCount(20);
+
+  await paginationWrapper.getByRole("button", { name: "2" }).click();
+  await expect(page.getByTestId("event-row")).toHaveCount(2);
+
+  /**
    * Filter by event type and expect a subset of the events to be returned.
    */
 
@@ -144,8 +170,6 @@ test("it renders, filters, and paginates events", async ({ page }) => {
     page.getByTestId("event-row"),
     "when filtering by event type, it shows the correct number of events"
   ).toHaveCount(7);
-
-  await expect(page.getByTestId("pagination-wrapper")).not.toBeVisible();
 
   /**
    * Additionally filter by content, expect a smaller subset of results.

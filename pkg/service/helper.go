@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -36,18 +37,13 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 		initContainers = append(initContainers, corev1.Container{
 			Name:  "init",
 			Image: c.KnativeSidecar,
-			Env: []corev1.EnvVar{
-				{
-					Name:  "DIREKTIV_APP",
-					Value: "init",
-				},
-			},
 			VolumeMounts: []corev1.VolumeMount{
 				{
 					Name:      "bindir",
 					MountPath: "/usr/share/direktiv/",
 				},
 			},
+			Command: []string{"/app/direktiv", "start", "dinit"},
 		})
 	}
 
@@ -85,8 +81,8 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 	}
 
 	// Set Registry Secrets
-	svc.Spec.ConfigurationSpec.Template.Spec.ImagePullSecrets = registrySecrets
-	svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.ImagePullSecrets = registrySecrets
+	svc.Spec.Template.Spec.ImagePullSecrets = registrySecrets
+	svc.Spec.Template.Spec.ImagePullSecrets = registrySecrets
 
 	return svc, nil
 }
@@ -205,7 +201,7 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 
 	// direktiv sidecar
 	sidecarEnvs := buildEnvVars(true, c, sv)
-	sidecarEnvs = append(sidecarEnvs, corev1.EnvVar{Name: "API_KEY", Value: c.ApiKey})
+	sidecarEnvs = append(sidecarEnvs, corev1.EnvVar{Name: "API_KEY", Value: os.Getenv("DIREKTIV_API_KEY")})
 	sc := corev1.Container{
 		Name:         containerSidecar,
 		Image:        c.KnativeSidecar,
@@ -217,6 +213,7 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 			},
 		},
 		SecurityContext: secContext,
+		Command:         []string{"/app/direktiv", "start", "sidecar"},
 	}
 
 	return []corev1.Container{uc, sc}, nil
@@ -340,11 +337,6 @@ func buildEnvVars(forSidecar bool, c *core.Config, sv *core.ServiceFileData) []c
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 			Name:  direktivFlowEndpoint,
 			Value: fmt.Sprintf("direktiv-flow.%s", namespace),
-		})
-
-		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  "DIREKTIV_APP",
-			Value: "sidecar",
 		})
 	} else {
 		for _, v := range sv.Envs {

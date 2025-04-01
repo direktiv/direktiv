@@ -9,41 +9,52 @@ const testNamespace = 'system'
 const limitedNamespace = 'limited_namespace'
 
 const endpointNSVar = `
-  direktiv_api: endpoint/v1
-  allow_anonymous: true
-  plugins:
-    target:
-      type: target-namespace-var
-      configuration:
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint1"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-namespace-var
+        configuration:
           namespace: ` + testNamespace + `
           variable: plain
-  methods: 
-    - GET
-  path: endpoint1`
+get:
+   responses:
+      "200":
+        description: works
+`
 
 const endpointNSVarAllowed = `
-  direktiv_api: endpoint/v1
-  allow_anonymous: true
-  plugins:
-    target:
-      type: target-namespace-var
-      configuration:
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint2"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-namespace-var
+        configuration:
           namespace: ` + limitedNamespace + `
           variable: plain
           content_type: text/test
-  methods: 
-    - GET
-  path: /endpoint2`
+get:
+   responses:
+      "200":
+        description: works
+`
 
 const endpointNSVarBroken = `
-  direktiv_api: endpoint/v1
-  allow_anonymous: true
-  plugins:
-    target:
-      type: target-namespace-var
-  methods: 
-    - GET
-  path: ep3`
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "ep3"
+    allow_anonymous: true
+    plugins:
+      target:
+        type: target-namespace-var
+get:
+   responses:
+      "200":
+        description: works`
 
 describe('Test target workflow var wrong config', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -65,15 +76,11 @@ describe('Test target workflow var wrong config', () => {
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
 		expect(listRes.body.data[0]).toEqual({
+			spec: expect.anything(),
 			file_path: '/ep3.yaml',
-			path: '/ep3',
-			methods: [ 'GET' ],
-			allow_anonymous: true,
-			timeout: 0,
 			server_path: '/ns/system/ep3',
 			errors: [ "plugin 'target-namespace-var' err: variable required" ],
 			warnings: [],
-			plugins: { target: { type: 'target-namespace-var' } },
 		})
 	})
 })

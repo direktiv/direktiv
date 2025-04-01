@@ -7,16 +7,27 @@ tests-scan-ui: direktiv-ui
 	trivy image --exit-code 1 --ignore-unfixed localhost:5000/frontend
 
 
-DIREKTIV_HOST := $(shell kubectl -n direktiv get services direktiv-ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
-.PHONY: tests-k3s
-tests-k3s: k3s-wait
-tests-k3s: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test-k3s [JEST_PREFIX=/tests/namespaces]	
+# DIREKTIV_HOST := $(shell kubectl -n direktiv get services direktiv-ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
+.PHONY: tests-api
+tests-api: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make tests-api [JEST_PREFIX=/tests/namespaces]	
+	kubectl wait --for=condition=ready pod -l "app=direktiv-flow"
 	docker run -it --rm \
 	-v `pwd`/tests:/tests \
-	-e 'DIREKTIV_HOST=${DIREKTIV_HOST}' \
+	-e 'DIREKTIV_HOST=http://${DIREKTIV_HOST}' \
 	-e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
-	node:lts-alpine3.18 npm --prefix "/tests" run jest -- ${JEST_PREFIX}/ --runInBand
+	--network=host \
+	node:lts-alpine3.18 npm --prefix "/tests" run jest -- ${JEST_PREFIX} --runInBand
 
+# DIREKTIV_HOST := $(shell kubectl -n direktiv get services direktiv-ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
+.PHONY: tests-ee-api
+tests-ee-api: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make tests-api [JEST_PREFIX=/tests/namespaces]
+	kubectl wait --for=condition=ready pod -l "app=direktiv-flow"
+	docker run -it --rm \
+	-v `pwd`/direktiv-ee/tests:/tests \
+	-e 'DIREKTIV_HOST=http://${DIREKTIV_HOST}' \
+	-e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
+	--network=host \
+	node:lts-alpine3.18 npm --prefix "/tests" run jest -- ${JEST_PREFIX} --runInBand
 
 
 TEST_PACKAGES := $(shell find . -type f -name '*_test.go' | sed -e 's/^\.\///g' | sed -r 's|/[^/]+$$||'  |sort |uniq)
@@ -37,7 +48,7 @@ tests-godoc: ## Hosts a godoc server for the project on http port 6060.
 	godoc -http=:6060
 
 .PHONY: tests-lint 
-tests-lint: VERSION="v1.59"
+tests-lint: VERSION="v2.0"
 tests-lint: ## Runs very strict linting on the project.
 	docker run \
 	--rm \
@@ -45,3 +56,22 @@ tests-lint: ## Runs very strict linting on the project.
 	-w /app \
 	-e GOLANGCI_LINT_CACHE=/app/.cache/golangci-lint \
 	golangci/golangci-lint:${VERSION} golangci-lint run --verbose
+
+.PHONY: docker-playwright
+docker-e2e-playwright:
+	docker run \
+	-v $$PWD/ui:/app/ui \
+	-e NODE_TLS_REJECT_UNAUTHORIZED=0 \
+    -e PLAYWRIGHT_USE_VITE=FALSE \
+    -e PLAYWRIGHT_UI_BASE_URL=http://127.0.0.1 \
+    -e PLAYWRIGHT_SHARD=1/1 \
+    -e PLAYWRIGHT_CI=TRUE \
+	-w /app/ui \
+	--net=host \
+	node:20-slim \
+	bash -c "\
+		corepack enable && \
+		corepack prepare pnpm@9.15.4 --activate && \
+		pnpm install && \
+		pnpm exec playwright install --with-deps chromium && \
+		pnpm exec playwright test --shard=$${PLAYWRIGHT_SHARD} --project \"chromium\" --reporter=line"

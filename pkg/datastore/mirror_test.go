@@ -7,20 +7,19 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 
 	"github.com/direktiv/direktiv/pkg/database"
-	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
 	"github.com/google/uuid"
 )
 
 func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	ds := db.DataStore()
 
 	newProcess := &datastore.MirrorProcess{
 		ID:        uuid.New(),
-		Namespace: uuid.New().String(),
+		Namespace: ns.Name,
 		Status:    "new",
 	}
 
@@ -81,26 +80,26 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 	if len(list) != 2 {
 		t.Errorf("unexpected GetProcessesByConfig() length: got: %v, want %v", len(list), 2)
 	}
-
 	if list[0].ID != newProcess.ID {
 		t.Errorf("unexpected GetProcess().ID, want: %v, got %v", list[0].ID, newProcess.ID)
 	}
 	if list[1].ID != secondProcess.ID {
 		t.Errorf("unexpected GetProcess().ID, want: %v, got %v", list[1].ID, secondProcess.ID)
 	}
+
 }
 
 func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	ds := db.DataStore()
 
 	// test create.
 
 	newConfig := &datastore.MirrorConfig{
-		Namespace: uuid.New().String(),
+		Namespace: ns.Name,
 		URL:       "some_url",
 		GitRef:    "123",
 		AuthType:  "public",
@@ -115,8 +114,16 @@ func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
 	if newConfig.URL != config.URL {
 		t.Errorf("unexpected CreateConfig().Status, want: %v, got %v", newConfig.URL, config.URL)
 	}
+
+	ns2, err := ds.Namespaces().Create(context.Background(), &datastore.Namespace{
+		Name: uuid.New().String(),
+	})
+	if err != nil {
+		t.Fatalf("unexpected Create() error: %v", err)
+	}
+
 	secondConfig := &datastore.MirrorConfig{
-		Namespace: uuid.New().String(),
+		Namespace: ns2.Name,
 		URL:       "some_url",
 		GitRef:    "123",
 		AuthType:  "public",

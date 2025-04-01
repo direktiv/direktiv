@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/direktiv/direktiv/pkg/utils"
+	"github.com/direktiv/direktiv/pkg/tracing"
 )
 
 func doRequest(r *http.Request, method, url string, body io.ReadCloser) (*http.Response, error) {
@@ -13,7 +13,7 @@ func doRequest(r *http.Request, method, url string, body io.ReadCloser) (*http.R
 	ctx := r.Context()
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
 
-	endTrace := utils.TraceGWHTTPRequest(ctx, req, "direktiv/flow")
+	endTrace := tracing.TraceGWHTTPRequest(ctx, req, "direktiv/gateway")
 	defer endTrace()
 	if err != nil {
 		return nil, err
@@ -21,7 +21,7 @@ func doRequest(r *http.Request, method, url string, body io.ReadCloser) (*http.R
 
 	// add api key if required
 	if os.Getenv("DIREKTIV_API_KEY") != "" {
-		req.Header.Set("Direktiv-Token", os.Getenv("DIREKTIV_API_KEY"))
+		req.Header.Set("Direktiv-Api-Key", os.Getenv("DIREKTIV_API_KEY"))
 	}
 
 	resp, err := client.Do(req.WithContext(ctx))

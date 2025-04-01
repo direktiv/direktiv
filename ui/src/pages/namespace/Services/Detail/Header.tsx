@@ -7,22 +7,27 @@ import {
 } from "~/design/Tooltip";
 
 import EnvsVariables from "../components/EnvVariables";
-import { Link } from "react-router-dom";
+import { FileRoutesById } from "~/routeTree.gen";
+import { Link } from "@tanstack/react-router";
 import RefreshButton from "~/design/RefreshButton";
 import Scale from "./Scale";
 import { StatusBadge } from "../components/StatusBadge";
-import { usePages } from "~/util/router/pages";
 import { useService } from "~/api/services/query/services";
 import { useTranslation } from "react-i18next";
 
 const Header = ({ serviceId }: { serviceId: string }) => {
-  const pages = usePages();
   const { data: service, refetch, isFetching } = useService(serviceId);
 
   const { t } = useTranslation();
 
   if (!service) return null;
+
   const serviceTitle = service.name ? service.name : serviceId;
+
+  const link: keyof FileRoutesById =
+    service.type === "namespace-service"
+      ? "/n/$namespace/explorer/workflow/services/$"
+      : "/n/$namespace/explorer/service/$";
 
   return (
     <div
@@ -38,12 +43,9 @@ const Header = ({ serviceId }: { serviceId: string }) => {
         <div>
           <Link
             className="hover:underline"
-            to={pages.explorer.createHref({
-              namespace: service.namespace,
-              path: service.filePath,
-              subpage:
-                service.type === "namespace-service" ? "service" : "workflow",
-            })}
+            to={link}
+            from="/n/$namespace"
+            params={{ _splat: service.filePath }}
           >
             {service.filePath}
           </Link>
@@ -62,7 +64,7 @@ const Header = ({ serviceId }: { serviceId: string }) => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
-                  <HelpCircle className="ml-1 h-4 w-4" />
+                  <HelpCircle className="ml-1 size-4" />
                 </TooltipTrigger>
                 <TooltipContent>
                   {t("pages.services.list.tableHeader.tooltip")}

@@ -17,18 +17,24 @@ import (
 // TODO: validate credentials helper
 
 type Manager struct {
-	callbacks Callbacks
-	local     sync.Map
+	callbacks          Callbacks
+	local              sync.Map
+	mirrorHistoryHours int
 }
 
 func NewManager(callbacks Callbacks) *Manager {
 	mgr := &Manager{
-		callbacks: callbacks,
+		callbacks:          callbacks,
+		mirrorHistoryHours: 48,
 	}
 
 	go mgr.gc()
 
 	return mgr
+}
+
+func (d *Manager) SetMirrorHistoryHours(x int) {
+	d.mirrorHistoryHours = x
 }
 
 // Garbage collector.
@@ -38,7 +44,7 @@ func (d *Manager) gc() {
 	jitter := 1000
 	interval := time.Second * 10
 	maxRunTime := 5 * time.Minute
-	maxRecordTime := time.Hour * 48
+	maxRecordTime := time.Hour * time.Duration(d.mirrorHistoryHours)
 
 	// TODO: gracefully close the loop
 	for {

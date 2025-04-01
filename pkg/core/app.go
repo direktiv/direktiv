@@ -18,16 +18,12 @@ type Config struct {
 
 	ApiPort int `env:"DIREKTIV_API_PORT" envDefault:"6665"`
 
-	ApiKey    string `env:"DIREKTIV_API_KEY"`
 	SecretKey string `env:"DIREKTIV_SECRET_KEY,notEmpty"`
 	DB        string `env:"DIREKTIV_DB,notEmpty"`
 
 	FunctionsTimeout int `env:"DIREKTIV_FUNCTIONS_TIMEOUT" envDefault:"7200"`
 
-	Prometheus    string `env:"DIREKTIV_PROMETHEUS_BACKEND"`
 	OpenTelemetry string `env:"DIREKTIV_OPEN_TELEMETRY_BACKEND"`
-
-	DisableServices bool `env:"DIREKTIV_DISABLE_SERVICES" envDefault:"false"`
 
 	KnativeServiceAccount string `env:"DIREKTIV_KNATIVE_SERVICE_ACCOUNT"`
 	KnativeNamespace      string `env:"DIREKTIV_KNATIVE_NAMESPACE"`
@@ -54,7 +50,20 @@ type Config struct {
 
 	FunctionsReconcileInterval int `env:"DIREKTIV_FUNCTIONS_RECONCILE_INTERVAL" envDefault:"1"`
 
-	IsEnterprise bool `env:"DIREKTIV_IS_ENTERPRISE" envDefault:"false"`
+	NatsInstalled bool   `env:"DIREKTIV_NATS_INSTALLED"`
+	NatsHost      string `env:"DIREKTIV_NATS_HOST"`
+	NatsPort      int    `env:"DIREKTIV_NATS_PORT"      envDefault:"4222"`
+	NatsTLS       bool   `env:"DIREKTIV_NATS_TLS"       envDefault:"false"`
+	NatsUsername  string `env:"DIREKTIV_NATS_USERNAME"`
+	NatsPassword  string `env:"DIREKTIV_NATS_PASSWORD"`
+
+	OidcIssuerUrl        string `env:"DIREKTIV_OIDC_ISSUER_URL"`
+	OidcClientID         string `env:"DIREKTIV_OIDC_CLIENT_ID"`
+	VictoriaLogsEndpoint string `env:"DIREKTIV_VICTORIA_LOGS"`
+
+	LogHistoryHours      int `env:"DIREKTIV_LOG_HISTORY_HOURS"      envDefault:"48"`
+	MirrorHistoryHours   int `env:"DIREKTIV_MIRROR_HISTORY_HOURS"   envDefault:"192"`
+	InstanceHistoryHours int `env:"DIREKTIV_INSTANCE_HISTORY_HOURS" envDefault:"24"`
 }
 
 func (conf *Config) GetFunctionsTimeout() time.Duration {
@@ -81,20 +90,17 @@ func (conf *Config) Init() error {
 func (conf *Config) checkInvalidEmptyFields() error {
 	var invalidEmptyFields []string
 
-	// knative setting only required when docker mode is disabled.
-	if !conf.DisableServices {
-		if conf.KnativeServiceAccount == "" {
-			invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_SERVICE_ACCOUNT")
-		}
-		if conf.KnativeNamespace == "" {
-			invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_NAMESPACE")
-		}
-		if conf.KnativeIngressClass == "" {
-			invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_INGRESS_CLASS")
-		}
-		if conf.KnativeSidecar == "" {
-			invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_SIDECAR")
-		}
+	if conf.KnativeServiceAccount == "" {
+		invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_SERVICE_ACCOUNT")
+	}
+	if conf.KnativeNamespace == "" {
+		invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_NAMESPACE")
+	}
+	if conf.KnativeIngressClass == "" {
+		invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_INGRESS_CLASS")
+	}
+	if conf.KnativeSidecar == "" {
+		invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_SIDECAR")
 	}
 
 	if len(invalidEmptyFields) == 0 {

@@ -10,11 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
@@ -208,54 +206,12 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 	return nil
 }
 
-func (im *instanceMemory) GetAttributes() map[string]string {
-	tags := im.instance.GetAttributes(recipient.Instance)
-	for k, v := range im.tags {
-		tags[k] = v
-	}
-	if im.logic != nil {
-		tags["state-id"] = im.logic.GetID()
-		tags["state-type"] = im.logic.GetType().String()
-	}
-
-	pi := im.engine.InstanceCaller(im)
-	if pi != nil {
-		a := strings.Split(pi.State, ":")
-		if len(a) >= 1 && a[0] != "" {
-			tags["invoker-workflow"] = a[0]
-		}
-		if len(a) > 1 {
-			tags["invoker-state-id"] = a[1]
-		}
-	}
-
-	return tags
-}
-
-func (im *instanceMemory) WithTags(ctx context.Context) context.Context {
-	if im.instance != nil {
-		ctx = im.instance.WithTags(ctx)
-	}
-
-	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
-	if !ok {
-		tags = make(map[string]interface{})
-	}
-
-	if im.logic != nil {
-		tags["state"] = im.logic.GetID()
-	}
-
-	return context.WithValue(ctx, core.LogTagsKey, tags)
-}
-
 func (im *instanceMemory) GetState() string {
-	tags := im.instance.GetAttributes(recipient.Instance)
 	if im.logic != nil {
-		return fmt.Sprintf("%s:%s", tags["workflow"], im.logic.GetID())
+		return im.logic.GetID()
 	}
 
-	return tags["workflow"]
+	return ""
 }
 
 var errEngineSync = errors.New("instance appears to be under control of another node")
@@ -313,14 +269,14 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id uuid.UUID) (*ins
 
 	err = json.Unmarshal(im.instance.Instance.LiveData, &im.data)
 	if err != nil {
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 
 		return nil, err
 	}
 
 	err = json.Unmarshal(im.instance.Instance.StateMemory, &im.memory)
 	if err != nil {
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 
 		return nil, err
 	}
@@ -361,7 +317,7 @@ func (engine *engine) freeArtefacts(im *instanceMemory) {
 
 	err := engine.events.deleteInstanceEventListeners(context.Background(), im)
 	if err != nil {
-		slog.Error("Failed to delete instance event listeners.", "error", err, "instance", im.instance, "namespace", im.Namespace())
+		slog.Error("Failed to delete instance event listeners.", "error", err, "instance", im.instance, "namespace", im.Namespace().Name)
 	}
 }
 
@@ -379,6 +335,6 @@ func (engine *engine) freeMemory(ctx context.Context, im *instanceMemory) error 
 func (engine *engine) forceFreeCriticalMemory(ctx context.Context, im *instanceMemory) {
 	err := im.flushUpdates(ctx)
 	if err != nil {
-		slog.Error("Failed to force flush updates for instance memory during critical memory release.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", err)
+		slog.ErrorContext(ctx, "Failed to force flush updates for instance memory during critical memory release.", "instance", im.ID().String(), "namespace", im.Namespace().Name, "error", err)
 	}
 }

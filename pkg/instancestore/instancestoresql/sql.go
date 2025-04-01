@@ -232,6 +232,18 @@ func (s *sqlInstanceStore) DeleteOldInstances(ctx context.Context, before time.T
 		return res.Error
 	}
 
+	// NOTE: we perform a second delete on anything that exceeds the 'before' time by at least 48 hours to cleanup bugged hanging instances
+
+	query = fmt.Sprintf(`DELETE FROM %s WHERE %s < ?`, table, fieldEndedAt)
+
+	res = s.db.WithContext(ctx).Exec(
+		query,
+		before.Add(time.Hour*-48).UTC(),
+	)
+	if res.Error != nil {
+		return res.Error
+	}
+
 	return nil
 }
 

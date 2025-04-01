@@ -18,7 +18,7 @@ const Donut = ({ config }: { config: DonutConfigType }) => {
   return (
     <div className="flex flex-col items-center py-4">
       <DonutChart
-        className="h-36 w-36 pb-2"
+        className="size-36 pb-2"
         showAnimation={false}
         showLabel={false}
         data={chartData}

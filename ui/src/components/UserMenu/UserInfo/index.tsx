@@ -24,7 +24,7 @@ const UserInfo = () => {
       <LogoutButton
         button={(props) => (
           <DropdownMenuItem {...props} className="cursor-pointer">
-            <LogOut className="mr-2 h-4 w-4" />
+            <LogOut className="mr-2 size-4" />
             <span>{t("components.userMenu.logout")}</span>
           </DropdownMenuItem>
         )}

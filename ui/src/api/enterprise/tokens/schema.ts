@@ -1,48 +1,66 @@
+import { PermissionsArray } from "../schema";
 import { z } from "zod";
 
 /**
  * example:
  * 
-  {
-    "id": "13cbe5a1-3bc7-4f13-b5aa-658b046dabb4",
-    "description": "my first token",
-    "permissions": ["workflowView", "permissionsView"],
-    "created": "2023-08-30T07:27:35.296195769Z",
-    "expires": "2024-08-30T07:27:35.29614121Z",
-    "expired": false
-  }
+{
+  "name": "foo1",
+  "description": "foo1 description",
+  "prefix": "832e0b8e",
+  "permissions": [
+    {
+      "topic": "foo1_topic1",
+      "method": "foo1_method1"
+    },
+    {
+      "topic": "foo1_topic2",
+      "method": "foo1_method2"
+    }
+  ],
+  "isExpired": false,
+  "expiredAt": "2025-02-06T09:35:50.800122Z",
+  "createdAt": "2025-02-06T09:35:50.800122Z",
+  "updatedAt": "2025-02-06T09:35:50.800122Z"
+}
  */
 const TokenSchema = z.object({
-  id: z.string(),
+  name: z.string(),
   description: z.string(),
-  permissions: z.array(z.string()),
-  created: z.string(),
-  expires: z.string(),
-  expired: z.boolean(),
+  prefix: z.string(),
+  permissions: PermissionsArray,
+  isExpired: z.boolean(),
+  expiredAt: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 });
 
 /**
  * example:
  * 
   {
-    "tokens": [...]
+    "data": [...]
   }
  */
 export const TokenListSchema = z.object({
-  tokens: z.array(TokenSchema),
+  data: z.array(TokenSchema),
 });
 
 /**
  * example:
  * 
   {
-    "id": "7eff49c1-ec13-4d81-8278-9ad8e15ff1f5",
-    "token": "6656c247e8cb6cd6dc623e571956b29d1bc196869dc5f9a91fa19d03788a87e782818c22bc9c4fe3819fcc8ddf69501a829ebe07271b7ff63a49f124d2daf5854140"
+    "data": {
+      "apiToken": {...},
+      "secret": "6dcbe0b0-f824-423c-be17-f199e57e1653"
+    }
   }
  */
 export const TokenCreatedSchema = z.object({
-  id: z.string(),
-  token: z.string(),
+  data: z.object({
+    apiToken: TokenSchema,
+    secret: z.string(),
+  }),
 });
 
 export const ISO8601durationSchema = z
@@ -58,15 +76,19 @@ export const ISO8601durationSchema = z
  * example
  * 
   {
-    "description": "my first token",
-    "duration": "P1Y",
-    "permissions": ["permissionsView", "workflowView"]
+    "name": "token name",
+    "description": "token description",
+    "permissions": [
+      { "topic": "namespace", "method": "read" },
+      { "topic": "files", "method": "manage" }
+    ]
   }
  */
 export const TokenFormSchema = z.object({
-  description: z.string().nonempty(),
+  name: z.string().nonempty(),
+  description: z.string(),
   duration: ISO8601durationSchema,
-  permissions: z.array(z.string()),
+  permissions: PermissionsArray,
 });
 
 export const TokenDeletedSchema = z.null();

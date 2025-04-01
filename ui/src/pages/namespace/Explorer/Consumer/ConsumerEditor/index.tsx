@@ -42,7 +42,7 @@ const ConsumerEditor: FC<ConsumerEditorProps> = ({ data }) => {
   return (
     <Form defaultConfig={consumerConfig}>
       {({
-        formControls: {
+        form: {
           formState: { errors },
           handleSubmit,
         },
@@ -71,7 +71,7 @@ const ConsumerEditor: FC<ConsumerEditorProps> = ({ data }) => {
                           "pages.explorer.consumer.editor.form.serialisationError"
                         )}
                       </Alert>
-                      <ScrollArea className="h-full w-full whitespace-nowrap">
+                      <ScrollArea className="size-full whitespace-nowrap">
                         <pre className="grow text-sm text-primary-500">
                           {JSON.stringify(consumerConfigError, null, 2)}
                         </pre>

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -16,6 +17,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/instancestore"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -60,7 +62,7 @@ func marshalLineage(data *engine.ParentInfo) *LineageData {
 	}
 }
 
-func marshalForAPI(data *instancestore.InstanceData) *InstanceData {
+func marshalForAPI(ctx context.Context, data *instancestore.InstanceData) *InstanceData {
 	resp := &InstanceData{
 		ID:           data.ID,
 		CreatedAt:    data.CreatedAt,
@@ -80,7 +82,11 @@ func marshalForAPI(data *instancestore.InstanceData) *InstanceData {
 	x, err := engine.ParseInstanceData(data)
 	if err == nil {
 		resp.Flow = x.RuntimeInfo.Flow
-		resp.TraceID = x.TelemetryInfo.TraceID
+		traceID, err := tracing.TraceParentToTraceID(ctx, x.TelemetryInfo.TraceParent)
+		if err != nil {
+			slog.Debug("marshalForAPI: failed to convert to tracie-id", "error", err)
+		}
+		resp.TraceID = traceID
 		for i := range x.DescentInfo.Descent {
 			resp.Lineage = append(resp.Lineage, marshalLineage(&x.DescentInfo.Descent[i]))
 		}
@@ -98,7 +104,7 @@ func marshalForAPI(data *instancestore.InstanceData) *InstanceData {
 }
 
 type instController struct {
-	db      *database.SQLStore
+	db      *database.DB
 	manager *instancestore.InstanceManager
 }
 
@@ -147,7 +153,7 @@ func (e *instController) input(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: option to return the data raw
 
-	resp := marshalForAPI(data)
+	resp := marshalForAPI(ctx, data)
 
 	resp.Input = data.Input
 
@@ -188,7 +194,7 @@ func (e *instController) output(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: option to return the data raw
 
-	resp := marshalForAPI(data)
+	resp := marshalForAPI(ctx, data)
 
 	resp.Output = data.Output
 
@@ -229,7 +235,7 @@ func (e *instController) metadata(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: option to return the data raw
 
-	resp := marshalForAPI(data)
+	resp := marshalForAPI(ctx, data)
 
 	resp.Metadata = data.Metadata
 
@@ -275,7 +281,7 @@ func (e *instController) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := marshalForAPI(data)
+	resp := marshalForAPI(r.Context(), data)
 	resp.InputLength = &data.InputLength
 	resp.OutputLength = &data.OutputLength
 	resp.MetadataLength = &data.MetadataLength
@@ -552,7 +558,7 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 
 	respData := make([]*InstanceData, 0)
 	for i := range data.Results {
-		respData = append(respData, marshalForAPI(&data.Results[i]))
+		respData = append(respData, marshalForAPI(ctx, &data.Results[i]))
 	}
 
 	metaInfo := map[string]any{
@@ -568,6 +574,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Query().Get("path")
 
 	wait := r.URL.Query().Get("wait") == "true"
+	output := r.URL.Query().Get("output") == "true"
 
 	input, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -589,15 +596,15 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if wait {
-		e.handleWait(ctx, w, r, data)
+		e.handleWait(ctx, w, r, data, output)
 
 		return
 	}
 
-	writeJSON(w, marshalForAPI(data))
+	writeJSON(w, marshalForAPI(ctx, data))
 }
 
-func (e *instController) handleWait(ctx context.Context, w http.ResponseWriter, r *http.Request, data *instancestore.InstanceData) {
+func (e *instController) handleWait(ctx context.Context, w http.ResponseWriter, r *http.Request, data *instancestore.InstanceData, withOutput bool) {
 	var err error
 
 	id := data.ID
@@ -622,6 +629,16 @@ recheck:
 
 	if data.Status == instancestore.InstanceStatusPending {
 		goto recheck
+	}
+	if withOutput {
+		resp := marshalForAPI(ctx, data)
+		resp.Output = data.Output
+		l := len(data.Output)
+		resp.OutputLength = &l
+
+		writeJSON(w, resp)
+
+		return
 	}
 
 	if data.Status > instancestore.InstanceStatusComplete {
@@ -707,10 +724,10 @@ func (e *instController) stream(w http.ResponseWriter, r *http.Request) {
 	for {
 		data, err := e.getOnce(r, id)
 		if err != nil {
-			return // TODO: how are we supposed to report errors in SSE?
+			return // TODO: how are we supposed to report errors in SSE? We could publish a SSE of type "error-message"
 		}
 
-		resp := marshalForAPI(data)
+		resp := marshalForAPI(r.Context(), data)
 		resp.InputLength = &data.InputLength
 		resp.OutputLength = &data.OutputLength
 		resp.MetadataLength = &data.MetadataLength

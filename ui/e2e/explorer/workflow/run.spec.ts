@@ -159,7 +159,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     headers,
   });
 
-  const inputResponseString = decode(res.data.input);
+  const inputResponseString = decode(res.data.input ?? "");
 
   expect(
     inputResponseString,
@@ -217,7 +217,7 @@ test("it is not possible to run the workflow when the editor has unsaved changes
   await expect(page.getByTestId("workflow-header-btn-run")).not.toBeDisabled();
   await expect(page.getByTestId("workflow-editor-btn-run")).not.toBeDisabled();
 
-  await page.type("textarea", faker.random.alphaNumeric(1));
+  await page.type("textarea", faker.string.alphanumeric(1));
 
   await expect(page.getByTestId("workflow-header-btn-run")).toBeDisabled();
   await expect(page.getByTestId("workflow-editor-btn-run")).toBeDisabled();
@@ -348,7 +348,7 @@ test("it is possible to provide the input via generated form", async ({
     select: "guest",
     file: `data:text/plain;base64,SSBhbSBqdXN0IGEgdGVzdGZpbGUgdGhhdCBjYW4gYmUgdXNlZCB0byB0ZXN0IGFuIHVwbG9hZCBmb3JtIHdpdGhpbiBhIHBsYXl3cmlnaHQgdGVzdA==`,
   };
-  const inputResponseAsJson = JSON.parse(decode(res.data.input));
+  const inputResponseAsJson = JSON.parse(decode(res.data.input ?? ""));
   expect(inputResponseAsJson).toEqual(expectedJson);
 });
 
@@ -438,7 +438,7 @@ test("it is possible to provide the input via generated form and resolve form er
     lastName: "McFly",
     select: "guest",
   };
-  const inputResponseAsJson = JSON.parse(decode(res.data.input));
+  const inputResponseAsJson = JSON.parse(decode(res.data.input ?? ""));
   expect(inputResponseAsJson).toEqual(expectedJson);
 });
 

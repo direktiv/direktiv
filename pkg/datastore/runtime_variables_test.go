@@ -9,27 +9,23 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 
 	"github.com/direktiv/direktiv/pkg/database"
-	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
-	"github.com/direktiv/direktiv/pkg/filestore/filestoresql"
 	"github.com/google/uuid"
 )
 
 func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
 
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
-	fs := filestoresql.NewSQLFileStore(db)
-	file := createFile(t, fs)
-
-	ns := uuid.New()
+	ds := db.DataStore()
+	fs := db.FileStore()
+	file := createFile(t, fs, ns.Name)
 
 	expect := []byte("some data")
 
 	testVar := &datastore.RuntimeVariable{
-		Namespace:    ns.String(),
+		Namespace:    ns.Name,
 		WorkflowPath: file.Path,
 		Name:         "myvar",
 		MimeType:     "text/json",
@@ -65,7 +61,7 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 		return
 	}
 
-	variable, err = ds.RuntimeVariables().GetForWorkflow(context.Background(), ns.String(), file.Path, "myvar")
+	variable, err = ds.RuntimeVariables().GetForWorkflow(context.Background(), ns.Name, file.Path, "myvar")
 	if err != nil {
 		t.Errorf("unexpected GetForWorkflow() error: %v", err)
 
@@ -83,7 +79,7 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 		return
 	}
 
-	list, err := ds.RuntimeVariables().ListForWorkflow(context.Background(), ns.String(), file.Path)
+	list, err := ds.RuntimeVariables().ListForWorkflow(context.Background(), ns.Name, file.Path)
 	if err != nil {
 		t.Errorf("unexpected ListForWorkflow() error: %v", err)
 
@@ -98,17 +94,15 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 }
 
 func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
 
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
-
-	ns := uuid.New()
+	ds := db.DataStore()
 
 	testVar := &datastore.RuntimeVariable{
-		Namespace: ns.String(),
+		Namespace: ns.Name,
 		Name:      "myvar",
 		MimeType:  "text/json",
 		Data:      []byte("some data"),
@@ -127,7 +121,7 @@ func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
 
 	expect := []byte("some data 2")
 	testVar = &datastore.RuntimeVariable{
-		Namespace: ns.String(),
+		Namespace: ns.Name,
 		Name:      "myvar",
 		MimeType:  "text/json",
 		Data:      expect,
@@ -144,7 +138,7 @@ func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
 		return
 	}
 
-	variable, err = ds.RuntimeVariables().GetForNamespace(context.Background(), ns.String(), "myvar")
+	variable, err = ds.RuntimeVariables().GetForNamespace(context.Background(), ns.Name, "myvar")
 	if err != nil {
 		t.Errorf("unexpected GetForNamespace() error: %v", err)
 
@@ -164,17 +158,17 @@ func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
 }
 
 func Test_sqlRuntimeVariablesStore_InvalidName(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
 
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
-	fs := filestoresql.NewSQLFileStore(db)
-	file := createFile(t, fs)
+	ds := db.DataStore()
+	fs := db.FileStore()
+	file := createFile(t, fs, ns.Name)
 
 	testVar := &datastore.RuntimeVariable{
-		Namespace:    uuid.New().String(),
+		Namespace:    ns.Name,
 		WorkflowPath: file.Path,
 		Name:         "myvar$$",
 		MimeType:     "text/json",
@@ -189,20 +183,18 @@ func Test_sqlRuntimeVariablesStore_InvalidName(t *testing.T) {
 }
 
 func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
 
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
-	fs := filestoresql.NewSQLFileStore(db)
-	file := createFile(t, fs)
-
-	ns := uuid.New()
+	ds := db.DataStore()
+	fs := db.FileStore()
+	file := createFile(t, fs, ns.Name)
 
 	for _, i := range []int{0, 1, 2, 3} {
 		v := &datastore.RuntimeVariable{
-			Namespace:    ns.String(),
+			Namespace:    ns.Name,
 			WorkflowPath: file.Path,
 			Name:         fmt.Sprintf("var_%d", i),
 			MimeType:     "text/json",
@@ -217,7 +209,7 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 	}
 
 	// Test ListByWorkflowID().
-	vars, err := ds.RuntimeVariables().ListForWorkflow(context.Background(), ns.String(), file.Path)
+	vars, err := ds.RuntimeVariables().ListForWorkflow(context.Background(), ns.Name, file.Path)
 	if err != nil {
 		t.Errorf("unexpected ListForWorkflow() error: %v", err)
 
@@ -286,21 +278,19 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 }
 
 func Test_sqlRuntimeVariablesStore_CreateAndUpdate(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
 
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
-	fs := filestoresql.NewSQLFileStore(db)
-	file := createFile(t, fs)
-
-	ns := uuid.New()
+	ds := db.DataStore()
+	fs := db.FileStore()
+	file := createFile(t, fs, ns.Name)
 
 	expect := []byte("some data")
 
 	testVar := &datastore.RuntimeVariable{
-		Namespace:    ns.String(),
+		Namespace:    ns.Name,
 		WorkflowPath: file.Path,
 		Name:         "myvar",
 		MimeType:     "text/json",
@@ -335,7 +325,7 @@ func Test_sqlRuntimeVariablesStore_CreateAndUpdate(t *testing.T) {
 		return
 	}
 
-	variable, err = ds.RuntimeVariables().GetForWorkflow(context.Background(), ns.String(), file.Path, "myvar")
+	variable, err = ds.RuntimeVariables().GetForWorkflow(context.Background(), ns.Name, file.Path, "myvar")
 	if err != nil {
 		t.Errorf("unexpected GetForWorkflow() error: %v", err)
 
@@ -373,7 +363,7 @@ func Test_sqlRuntimeVariablesStore_CreateAndUpdate(t *testing.T) {
 		return
 	}
 
-	list, err := ds.RuntimeVariables().ListForWorkflow(context.Background(), ns.String(), file.Path)
+	list, err := ds.RuntimeVariables().ListForWorkflow(context.Background(), ns.Name, file.Path)
 	if err != nil {
 		t.Errorf("unexpected ListForWorkflow() error: %v", err)
 
@@ -387,12 +377,12 @@ func Test_sqlRuntimeVariablesStore_CreateAndUpdate(t *testing.T) {
 	}
 }
 
-func createFile(t *testing.T, fs filestore.FileStore) *filestore.File {
+func createFile(t *testing.T, fs filestore.FileStore, namespace string) *filestore.File {
 	t.Helper()
 
 	id := uuid.New()
 
-	_, err := fs.CreateRoot(context.Background(), id, uuid.New().String())
+	_, err := fs.CreateRoot(context.Background(), id, namespace)
 	if err != nil {
 		t.Fatalf("unexpected CreateRoot() error: %v", err)
 	}

@@ -18,6 +18,7 @@ type testerInstance struct {
 	tbuf []string
 
 	instanceID     uuid.UUID
+	traceID        string
 	instanceData   map[string]interface{}
 	instanceMemory interface{}
 	instanceModel  *model.Workflow
@@ -121,6 +122,10 @@ func (instance *testerInstance) GetInstanceData() interface{} {
 
 func (instance *testerInstance) GetInstanceID() uuid.UUID {
 	return instance.instanceID
+}
+
+func (instance *testerInstance) GetTraceID(ctx context.Context) string {
+	return instance.traceID
 }
 
 func (instance *testerInstance) GetMemory() interface{} {

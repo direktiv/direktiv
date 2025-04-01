@@ -57,26 +57,27 @@ describe('Test complex workflow events orchistration', () => {
 
 		await events.sendEventAndList(namespaceName, eventStream1)
 		let instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0`)
-		await helpers.sleep(300)
+		await helpers.sleep(500)
 		expect(instancesResponse.body.data.length).toBe(1)
 		const stream1InstanceId = instancesResponse.body.data[0].id
 
 		await events.sendEventAndList(namespaceName, eventStream2)
-		await helpers.sleep(300)
+		await helpers.sleep(500)
 		instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0`)
 		const stream2InstanceId = instancesResponse.body.data[0].id // assuming they are sorted
 		expect(instancesResponse.body.data.length).toBe(2)
 		expect(stream1InstanceId).not.toBe(stream2InstanceId)
 
 		await events.sendEventAndList(namespaceName, eventStream3)
-		await helpers.sleep(300)
+		await helpers.sleep(500)
+
 		instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0`)
 		const stream3InstanceId = instancesResponse.body.data[0].id // assuming they are sorted
 		expect(instancesResponse.body.data.length).toBe(3)
 		expect(stream3InstanceId).not.toBe(stream2InstanceId)
 
 		await events.sendEventAndList(namespaceName, eventStream1Stage2)
-		await helpers.sleep(300)
+		await helpers.sleep(500)
 
 		const statusStream1 = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream1InstanceId }`)
 		expect(statusStream1.body.data.status).toBe('complete')
@@ -96,7 +97,7 @@ describe('Test complex workflow events orchistration', () => {
 		expect(outputData1.hello.hello).toBe('condition1')
 
 		await events.sendEventAndList(namespaceName, eventStream2Stage2)
-		await helpers.sleep(300)
+		await helpers.sleep(500)
 
 		const resultsStream2 = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream2InstanceId }/output`)
 			.send()
@@ -112,7 +113,7 @@ describe('Test complex workflow events orchistration', () => {
 		expect(outputData2.hello.hello).toBe('condition2')
 
 		await events.sendEventAndList(namespaceName, eventStream3Stage2)
-		await helpers.sleep(300)
+		await helpers.sleep(500)
 
 		const resultsStream3 = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream3InstanceId }/output`)
 			.send()
