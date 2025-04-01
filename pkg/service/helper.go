@@ -2,13 +2,13 @@ package service
 
 import (
 	"fmt"
-	v1 "k8s.io/api/apps/v1"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/mattn/go-shellwords"
+	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -96,14 +96,16 @@ func buildServiceMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMet
 	}
 
 	meta.Annotations["direktiv.io/inputHash"] = sv.GetValueHash()
-	//xKnative
+	// xKnative
 	// meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
 	// meta.Annotations["networking.knative.dev/ingress.class"] = c.KnativeIngressClass
 
 	return meta
 }
 
-// xKnative
+// xKnative.
+//
+//nolint:unused
 func buildPodMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMeta {
 	metaSpec := metav1.ObjectMeta{
 		Namespace:   c.KnativeNamespace,
