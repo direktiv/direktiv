@@ -599,7 +599,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			}
 
 			if i%10 == 0 {
-				slog.Debug(fmt.Sprintf("retrying function request for container '%s' (attempt %d)", ar.Container.ID, i), err)
+				slog.Debug(fmt.Sprintf("retrying function request for container '%s' (attempt %d)", ar.Container.ID, i), slog.Any("error", err))
 			} else {
 				slog.Debug("retrying function request", "image", ar.Container.Image, "image_id", ar.Container.ID, "error", err)
 			}

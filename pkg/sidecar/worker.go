@@ -506,7 +506,7 @@ func determineVarType(fileScope string) (string, error) {
 }
 
 func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
-	ctx := telemetry.GetContextFromRequest(req.r)
+	ctx := telemetry.GetContextFromRequest(req.r.Context(), req.r)
 	ctx, span := telemetry.Tracer.Start(ctx, "receiving-action")
 	defer span.End()
 

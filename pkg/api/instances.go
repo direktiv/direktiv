@@ -62,7 +62,7 @@ func marshalLineage(data *engine.ParentInfo) *LineageData {
 	}
 }
 
-func marshalForAPI(ctx context.Context, data *instancestore.InstanceData) *InstanceData {
+func marshalForAPI(data *instancestore.InstanceData) *InstanceData {
 	resp := &InstanceData{
 		ID:           data.ID,
 		CreatedAt:    data.CreatedAt,
@@ -148,7 +148,7 @@ func (e *instController) input(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: option to return the data raw
 
-	resp := marshalForAPI(ctx, data)
+	resp := marshalForAPI(data)
 
 	resp.Input = data.Input
 
@@ -189,7 +189,7 @@ func (e *instController) output(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: option to return the data raw
 
-	resp := marshalForAPI(ctx, data)
+	resp := marshalForAPI(data)
 
 	resp.Output = data.Output
 
@@ -230,7 +230,7 @@ func (e *instController) metadata(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: option to return the data raw
 
-	resp := marshalForAPI(ctx, data)
+	resp := marshalForAPI(data)
 
 	resp.Metadata = data.Metadata
 
@@ -276,7 +276,7 @@ func (e *instController) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := marshalForAPI(r.Context(), data)
+	resp := marshalForAPI(data)
 	resp.InputLength = &data.InputLength
 	resp.OutputLength = &data.OutputLength
 	resp.MetadataLength = &data.MetadataLength
@@ -553,7 +553,7 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 
 	respData := make([]*InstanceData, 0)
 	for i := range data.Results {
-		respData = append(respData, marshalForAPI(ctx, &data.Results[i]))
+		respData = append(respData, marshalForAPI(&data.Results[i]))
 	}
 
 	metaInfo := map[string]any{
@@ -570,7 +570,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	wait := r.URL.Query().Get("wait") == "true"
 	output := r.URL.Query().Get("output") == "true"
 
-	ctx := telemetry.GetContextFromRequest(r)
+	ctx := telemetry.GetContextFromRequest(r.Context(), r)
 	ctx, span := telemetry.Tracer.Start(ctx, "api-request")
 	span.SetAttributes(
 		attribute.KeyValue{
@@ -614,7 +614,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, marshalForAPI(ctx, data))
+	writeJSON(w, marshalForAPI(data))
 }
 
 func (e *instController) handleWait(ctx context.Context, w http.ResponseWriter, r *http.Request, data *instancestore.InstanceData, withOutput bool) {
@@ -644,7 +644,7 @@ recheck:
 		goto recheck
 	}
 	if withOutput {
-		resp := marshalForAPI(ctx, data)
+		resp := marshalForAPI(data)
 		resp.Output = data.Output
 		l := len(data.Output)
 		resp.OutputLength = &l
@@ -740,7 +740,7 @@ func (e *instController) stream(w http.ResponseWriter, r *http.Request) {
 			return // TODO: how are we supposed to report errors in SSE? We could publish a SSE of type "error-message"
 		}
 
-		resp := marshalForAPI(r.Context(), data)
+		resp := marshalForAPI(data)
 		resp.InputLength = &data.InputLength
 		resp.OutputLength = &data.OutputLength
 		resp.MetadataLength = &data.MetadataLength

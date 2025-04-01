@@ -9,7 +9,6 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
@@ -50,7 +49,6 @@ func InitOpenTelemetry(ctx context.Context, otelURL string) (*trace.TracerProvid
 			MaxElapsedTime:  1 * time.Minute,
 		}),
 	)
-
 	if err != nil {
 		slog.Error("opentelemetry setup failed", slog.Any("error", err))
 		return nil, err
@@ -64,7 +62,7 @@ func InitOpenTelemetry(ctx context.Context, otelURL string) (*trace.TracerProvid
 	provider := trace.NewTracerProvider(
 		trace.WithResource(resource),
 		trace.WithSampler(trace.ParentBased(trace.AlwaysSample())),
-		trace.WithBatcher(exporter),
+		trace.WithBatcher(exporter, trace.WithBatchTimeout(time.Second)),
 	)
 	otel.SetTracerProvider(provider)
 
@@ -81,42 +79,30 @@ func InitOpenTelemetry(ctx context.Context, otelURL string) (*trace.TracerProvid
 	return provider, nil
 }
 
-func newTraceProvider(ctx context.Context) (*trace.TracerProvider, error) {
-	traceExporter, err := stdouttrace.New(
-		stdouttrace.WithPrettyPrint())
-	if err != nil {
-		return nil, err
-	}
-
-	traceProvider := trace.NewTracerProvider(
-		trace.WithBatcher(traceExporter,
-			trace.WithBatchTimeout(time.Second)),
-	)
-	return traceProvider, nil
-}
-
 func ReportError(span oteltrace.Span, err error) {
 	span.SetStatus(codes.Error, err.Error())
 	span.RecordError(err)
 }
 
-// GetContextFromRequest looks for the tracing parent in http header
-func GetContextFromRequest(r *http.Request) context.Context {
+// GetContextFromRequest looks for the tracing parent in http header.
+func GetContextFromRequest(ctx context.Context, r *http.Request) context.Context {
 	propagator := propagation.TraceContext{}
-	ctx := propagator.Extract(r.Context(), propagation.HeaderCarrier(r.Header))
+	ctx = propagator.Extract(ctx, propagation.HeaderCarrier(r.Header))
+
 	return ctx
 }
 
-// FromTraceParent create a context based on a traceparent string
+// FromTraceParent create a context based on a traceparent string.
 func FromTraceParent(ctx context.Context, traceparent string) context.Context {
 	mc := make(propagation.MapCarrier)
 	mc.Set("traceparent", traceparent)
 
 	tc := propagation.TraceContext{}
+
 	return tc.Extract(ctx, mc)
 }
 
-// TraceParent returns the traceparent value as string from context
+// TraceParent returns the traceparent value as string from context.
 func TraceParent(ctx context.Context) string {
 	mc := make(propagation.MapCarrier)
 	tc := propagation.TraceContext{}

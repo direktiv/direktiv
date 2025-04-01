@@ -24,7 +24,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 
 		for {
 			<-time.After(time.Hour)
-			t := time.Now().UTC().Add(time.Hour * -24)
+			t := time.Now().UTC().Add(time.Hour * -1 * time.Duration(srv.config.InstanceHistoryHours))
 
 			tx, err := srv.flow.beginSQLTx(ctx)
 			if err != nil {

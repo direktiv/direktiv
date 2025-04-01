@@ -568,7 +568,6 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 
 			telemetry.LogActivity(telemetry.LogLevelWarn, p.Namespace, p.PID,
 				fmt.Sprintf("detected deprecated namespace variable definition at: %s", fpath))
-
 		}
 	}
 

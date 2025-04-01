@@ -123,6 +123,7 @@ func (o *DirektivApplyer) copyFilesIntoRoot(ctx context.Context) error {
 				return err
 			}
 
+			//nolint: contextcheck
 			telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
 				fmt.Sprintf("Created directory in database: %s", path))
 
@@ -140,7 +141,7 @@ func (o *DirektivApplyer) copyFilesIntoRoot(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-
+		//nolint:contextcheck
 		telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
 			fmt.Sprintf("created file in database: %s", path))
 	}
@@ -162,7 +163,7 @@ func (o *DirektivApplyer) copyWorkflowsIntoRoot(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-
+		//nolint: contextcheck
 		telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
 			fmt.Sprintf("created workflow in database: %s", path))
 	}
@@ -184,7 +185,7 @@ func (o *DirektivApplyer) copyServicesIntoRoot(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-
+		//nolint: contextcheck
 		telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
 			fmt.Sprintf("created service in database: %s", path))
 	}
@@ -206,7 +207,7 @@ func (o *DirektivApplyer) copyEndpointsIntoRoot(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-
+		//nolint: contextcheck
 		telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
 			fmt.Sprintf("created endpoint in database: %s", path))
 	}
@@ -228,7 +229,7 @@ func (o *DirektivApplyer) copyConsumersIntoRoot(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-
+		//nolint: contextcheck
 		telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
 			fmt.Sprintf("created consumer in database: %s", path))
 	}
@@ -254,7 +255,7 @@ func (o *DirektivApplyer) configureWorkflows(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-
+		//nolint: contextcheck
 		telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
 			fmt.Sprintf("configured workflow in database: %s", path))
 	}
@@ -321,7 +322,7 @@ func (o *DirektivApplyer) copyGatewayIntoRoot(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-
+		//nolint:contextcheck
 		telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
 			fmt.Sprintf("created gateway in database: %s", path))
 	}

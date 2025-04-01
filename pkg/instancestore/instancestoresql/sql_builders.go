@@ -80,13 +80,14 @@ func generateGetInstancesFilters(opts *instancestore.ListOpts) ([]string, []inte
 				filter.Value = t.UTC()
 			}
 
-			if filter.Kind == instancestore.FilterKindBefore {
+			switch filter.Kind {
+			case instancestore.FilterKindBefore:
 				clause = fieldCreatedAt + " < ?"
 				val = filter.Value
-			} else if filter.Kind == instancestore.FilterKindAfter {
+			case instancestore.FilterKindAfter:
 				clause = fieldCreatedAt + " > ?"
 				val = filter.Value
-			} else {
+			default:
 				return nil, nil, fmt.Errorf("filter kind '%s' for use with field '%s': %w", filter.Kind, filter.Field, instancestore.ErrBadListOpts)
 			}
 
@@ -99,49 +100,53 @@ func generateGetInstancesFilters(opts *instancestore.ListOpts) ([]string, []inte
 				filter.Value = t.UTC()
 			}
 
-			if filter.Kind == instancestore.FilterKindBefore {
+			switch filter.Kind {
+			case instancestore.FilterKindBefore:
 				clause = fieldDeadline + " < ?"
 				val = filter.Value
-			} else if filter.Kind == instancestore.FilterKindAfter {
+			case instancestore.FilterKindAfter:
 				clause = fieldDeadline + " > ?"
 				val = filter.Value
-			} else {
+			default:
 				return nil, nil, fmt.Errorf("filter kind '%s' for use with field '%s': %w", filter.Kind, filter.Field, instancestore.ErrBadListOpts)
 			}
 
 		case instancestore.FieldWorkflowPath:
-			if filter.Kind == instancestore.FilterKindMatch {
+			switch filter.Kind {
+			case instancestore.FilterKindMatch:
 				clause = fieldWorkflowPath + " = ?"
 				val = fmt.Sprintf("%s", filter.Value)
-			} else if filter.Kind == instancestore.FilterKindPrefix {
+			case instancestore.FilterKindPrefix:
 				clause = fieldWorkflowPath + " LIKE ?"
 				val = fmt.Sprintf("%s", filter.Value) + "%"
-			} else if filter.Kind == instancestore.FilterKindContains {
+			case instancestore.FilterKindContains:
 				clause = fieldWorkflowPath + " LIKE ?"
 				val = "%" + fmt.Sprintf("%s", filter.Value) + "%"
-			} else {
+			default:
 				return nil, nil, fmt.Errorf("filter kind '%s' for use with field '%s': %w", filter.Kind, filter.Field, instancestore.ErrBadListOpts)
 			}
 
 		case instancestore.FieldStatus:
-			if filter.Kind == instancestore.FilterKindMatch {
+			switch filter.Kind {
+			case instancestore.FilterKindMatch:
 				clause = fieldStatus + " = ?"
 				val = filter.Value
-			} else if filter.Kind == "<" {
+			case "<":
 				clause = fieldStatus + " < ?"
 				val = filter.Value
-			} else {
+			default:
 				return nil, nil, fmt.Errorf("filter kind '%s' for use with field '%s': %w", filter.Kind, filter.Field, instancestore.ErrBadListOpts)
 			}
 
 		case instancestore.FieldInvoker:
-			if filter.Kind == instancestore.FilterKindMatch {
+			switch filter.Kind {
+			case instancestore.FilterKindMatch:
 				clause = fieldInvoker + " = ?"
 				val = fmt.Sprintf("%s", filter.Value)
-			} else if filter.Kind == instancestore.FilterKindContains {
+			case instancestore.FilterKindContains:
 				clause = fieldInvoker + " LIKE ?"
 				val = "%" + fmt.Sprintf("%s", filter.Value) + "%"
-			} else {
+			default:
 				return nil, nil, fmt.Errorf("filter kind '%s' for use with field '%s': %w", filter.Kind, filter.Field, instancestore.ErrBadListOpts)
 			}
 

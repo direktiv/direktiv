@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
+	"time"
 )
 
 // ContextHandler wraps a slog.Handler (e.g., JSON handler) and processes slogFields from the context.
@@ -26,11 +27,15 @@ func (h *ContextHandler) Enabled(ctx context.Context, level slog.Level) bool {
 
 // Handle implements slog.Handler.
 func (h *ContextHandler) Handle(ctx context.Context, rec slog.Record) error {
-
 	l := ctx.Value(logObjectCtx)
-	if l != nil {
-		res := make([]slog.Attr, 0)
 
+	res := make([]slog.Attr, 0)
+	res = append(res, slog.Attr{
+		Key:   "nanos",
+		Value: slog.AnyValue(time.Now().UTC().UnixNano()),
+	})
+
+	if l != nil {
 		// double marshal
 		b, err := json.Marshal(l)
 		if err != nil {
@@ -55,7 +60,7 @@ func (h *ContextHandler) Handle(ctx context.Context, rec slog.Record) error {
 		return h.innerHandler.WithAttrs(res).Handle(ctx, rec)
 	}
 
-	return h.innerHandler.Handle(ctx, rec)
+	return h.innerHandler.WithAttrs(res).Handle(ctx, rec)
 }
 
 // WithAttrs implements slog.Handler.

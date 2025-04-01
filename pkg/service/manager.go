@@ -289,7 +289,7 @@ func (m *manager) setServiceDefaults(sv *core.ServiceFileData) {
 	}
 	if sv.Scale > m.cfg.KnativeMaxScale {
 		telemetry.LogNamespace(telemetry.LogLevelWarn, sv.Namespace,
-			fmt.Sprintf("service_scale for %s is bigger than allowed max_scale, defaulting to max_scale %s",
+			fmt.Sprintf("service_scale for %s is bigger than allowed max_scale, defaulting to max_scale %d",
 				sv.FilePath, m.cfg.KnativeMaxScale))
 		sv.Scale = m.cfg.KnativeMaxScale
 	}
