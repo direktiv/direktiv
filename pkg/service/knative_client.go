@@ -180,7 +180,7 @@ func (c *knativeClient) listServicePods(id string) (any, error) {
 
 	pods := []*pod{}
 	for i := range l.Items {
-		if l.Items[i].Labels["serving.knative.dev/service"] != id {
+		if l.Items[i].Labels["direktiv-service"] != id {
 			continue
 		}
 		pods = append(pods, &pod{
