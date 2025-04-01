@@ -54,7 +54,7 @@ func (c *knativeClient) createService(sv *core.ServiceFileData) error {
 	// if err != nil {
 	//	return err
 	//}
-	//for _, s := range secrets.Items {
+	// for _, s := range secrets.Items {
 	//	registrySecrets = append(registrySecrets, v1.LocalObjectReference{
 	//		Name: s.Name,
 	//	})
