@@ -20,7 +20,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
   const filename = "myroute.yaml";
 
   const expectedYaml = createRouteYaml({
-    path: "path",
+    path: "/path",
     timeout: 3000,
     methods: {
       get: {},
@@ -131,7 +131,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   type CreateRouteYamlParam = Parameters<typeof createRouteYaml>[0];
   const minimalRouteConfig: Omit<CreateRouteYamlParam, "plugins"> = {
-    path: "path",
+    path: "/path",
     timeout: 3000,
     methods: {},
     allow_anonymous: true,

@@ -6,6 +6,7 @@ import (
 
 const (
 	DirektivActionIDHeader = "Direktiv-ActionID"
+	DirektivCallPathHeader = "direktiv-callpath"
 )
 
 // ServiceResponse is the response structure for internal knative services.
@@ -17,6 +18,7 @@ type ServiceResponse struct {
 
 type functionRequest struct {
 	ActionID  string
+	CallPath  string
 	Timeout   int
 	Container functionContainer
 }

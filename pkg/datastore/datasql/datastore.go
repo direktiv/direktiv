@@ -26,10 +26,6 @@ func (s *store) Mirror() datastore.MirrorStore {
 	return &sqlMirrorStore{db: s.db}
 }
 
-func (s *store) NewLogs() datastore.LogStore {
-	return &sqlLogNewStore{db: s.db}
-}
-
 func (s *store) Secrets() datastore.SecretsStore {
 	return &sqlSecretsStore{db: s.db}
 }
