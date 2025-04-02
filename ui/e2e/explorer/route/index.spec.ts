@@ -132,7 +132,7 @@ test.skip("it is possible to add plugins to a route file", async ({ page }) => {
 
   type CreateRouteYamlParam = Parameters<typeof createRouteYaml>[0];
   const minimalRouteConfig: Omit<CreateRouteYamlParam, "plugins"> = {
-    path: "path",
+    path: "/path",
     timeout: 3000,
     methods: {},
     allow_anonymous: true,
