@@ -52,7 +52,7 @@ get:
 		expect(logRes.body.data).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					msg: 'test123',
+					msg: 'test',
 				}),
 			]),
 		)
