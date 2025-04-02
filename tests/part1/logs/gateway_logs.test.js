@@ -25,7 +25,7 @@ x-direktiv-config:
     auth: []
     inbound:
       - configuration:
-          script: log("test")
+          script: log("four")
         type: js-inbound
     outbound: []
     target:
@@ -39,22 +39,17 @@ get:
       description: ""
 `))
 
-
-	it(`call gateway`, async () => {
+retry50(`call gateway`, async () => {
 		await request(common.config.getDirektivHost()).get(`/ns/${ namespace }/demo`)
-			.send()
-	})
 
-	retry50(`get route log messages`, async () => {
 		const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs?route=%2Fdemo`)
 		expect(logRes.statusCode).toEqual(200)
-
 		expect(logRes.body.data).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					msg: 'test',
+					msg: 'four',
 				}),
 			]),
-		)
+		)	
 	})
 })
