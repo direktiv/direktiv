@@ -19,6 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/events"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/instancestore"
+	"github.com/direktiv/direktiv/pkg/metastore/victoriametrics"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/direktiv/direktiv/pkg/version"
@@ -73,6 +74,8 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 		startWorkflow: startByEvents,
 	}
 
+	newLogs := newLogsCtr{meta: victoriametrics.NewVictoriaMetricsLogStore("http://"+app.Config.VictoriaLogsEndpoint+":9428", nil), db: db}
+
 	jxCtr := jxController{}
 
 	mw := &appMiddlewares{dStore: db.DataStore()}
@@ -115,9 +118,9 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 		writeJSON(w, data)
 	})
 
-	logCtr := &logController{
-		store: db.DataStore().NewLogs(),
-	}
+	// logCtr := &logController{
+	// 	store: db.DataStore().NewLogs(),
+	// }
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
 
 	r.Route("/api/v2", func(r chi.Router) {
@@ -162,7 +165,10 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 				regCtr.mountRouter(r)
 			})
 			r.Route("/namespaces/{namespace}/logs", func(r chi.Router) {
-				logCtr.mountRouter(r)
+				newLogs.mountRouter(r)
+			})
+			r.Route("/namespaces/{namespace}/new_logs", func(r chi.Router) {
+				newLogs.mountRouter(r)
 			})
 			r.Route("/namespaces/{namespace}/notifications", func(r chi.Router) {
 				notificationsCtr.mountRouter(r)
