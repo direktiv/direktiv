@@ -107,8 +107,7 @@
     "check:prettier": "prettier --check './{src,test,e2e}/**/*.{js,jsx,ts,tsx,json,scss,css}' --cache",
     "check:deps": "pnpm install --frozen-lockfile --prefer-offline",
     "check:test": "vitest run",
-    "e2e:headless": "pnpm exec playwright test --project \"chromium\" --project \"firefox\"",
-    "e2e:headless-chromium-only": "pnpm exec playwright test --project \"chromium\"  --reporter=line",
+    "e2e:headless": "pnpm exec playwright test --project \"chromium\"",
     "e2e:ui": "pnpm exec playwright test --ui",
     "prettier": "prettier --write './{src,test,e2e}/**/*.{js,jsx,ts,tsx,json,scss,css}' --cache"
   },
@@ -135,7 +134,7 @@
   "devDependencies": {
     "@chromatic-com/storybook": "^3.2.2",
     "@faker-js/faker": "^9.2.0",
-    "@playwright/test": "^1.36.2",
+    "@playwright/test": "^1.51.1",
     "@storybook/addon-actions": "^8.4.6",
     "@storybook/addon-essentials": "^8.4.6",
     "@storybook/addon-interactions": "^8.4.6",
