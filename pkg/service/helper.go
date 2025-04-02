@@ -81,8 +81,8 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 	}
 
 	// Set Registry Secrets
-	svc.Spec.ConfigurationSpec.Template.Spec.ImagePullSecrets = registrySecrets
-	svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.ImagePullSecrets = registrySecrets
+	svc.Spec.Template.Spec.ImagePullSecrets = registrySecrets
+	svc.Spec.Template.Spec.ImagePullSecrets = registrySecrets
 
 	return svc, nil
 }
