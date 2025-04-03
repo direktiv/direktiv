@@ -26,7 +26,7 @@ type Threads struct {
 // Wait waits until all the threads have been returned.
 func (t *Threads) Wait() {
 	<-t.finished
-	slog.Info("All threads returned.")
+	slog.Info("all threads returned")
 }
 
 // Register adds a new channel to the threads.

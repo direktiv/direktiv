@@ -48,7 +48,7 @@ states:
 		expect(logRes.body.data).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					msg: 'Workflow has been triggered',
+					msg: 'workflow has been started',
 				}),
 			]),
 		)

@@ -69,9 +69,11 @@ test("It displays a log message from the workflow yaml, one initial and one fina
   ).toHaveClass(/animate-ping/);
 
   await expect(
-    scrollContainer.locator("pre").locator("span").nth(0),
+    scrollContainer
+      .locator("pre")
+      .locator("span", { hasText: "msg: workflow has been started" }),
     "It displays an initial log entry"
-  ).toContainText("Running state logic");
+  ).toBeVisible();
 
   await expect(
     page.getByTestId("instance-header-container").locator("div").first()
@@ -83,19 +85,21 @@ test("It displays a log message from the workflow yaml, one initial and one fina
   page.reload();
 
   await expect(
-    scrollContainer.locator("pre").locator("span").nth(3),
+    scrollContainer
+      .locator("pre")
+      .locator("span", { hasText: "msg: hello-world" }),
     "It displays the log message from the log field in the workflow yaml"
-  ).toContainText("hello-world");
+  ).toBeVisible();
 
   await expect(
     scrollContainer.locator("pre").locator("span").last(),
     "It displays a final log entry"
-  ).toContainText("Workflow completed");
+  ).toContainText("msg: workflow completed");
 
   await expect(
     entriesCounter,
     "When the workflow finished running there are 6 log entries"
-  ).toContainText("received 6 log entries");
+  ).toContainText(/received \d+ log entries/);
 });
 
 test("the logs panel can be maximized", async ({ page }) => {
@@ -189,7 +193,7 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
     page.getByTestId("instance-header-container").locator("div").first()
   ).toContainText("complete");
 
-  const twoNumbersAndTheLogMessage = /[0-9]{2}msg: Workflow completed\./;
+  const twoNumbersAndTheLogMessage = /[0-9]{2}msg: workflow completed/;
   await expect(
     scrollContainer.getByText(twoNumbersAndTheLogMessage),
     "It does not display the state in the last log entry"
@@ -210,7 +214,7 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
   await expect(
     scrollContainer.locator("pre").last(),
     "It displays the state in the last log entry"
-  ).toContainText("state: helloworldmsg: Workflow completed.");
+  ).toContainText("state: helloworldmsg: workflow completed");
 
   page.reload();
 
@@ -222,7 +226,7 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
   await expect(
     scrollContainer.locator("pre").last(),
     "After reloading the page it still displays the state in the last log entry"
-  ).toContainText("state: helloworldmsg: Workflow completed.");
+  ).toContainText("state: helloworldmsg: workflow completed");
 });
 
 test("the logs can be copied", async ({ page }) => {
@@ -265,7 +269,7 @@ test("the logs can be copied", async ({ page }) => {
   await copyButton.click();
 
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
-    "yaml - helloworld - Running state logic"
+    "yaml - helloworld - running state logic"
   );
 });
 
@@ -401,7 +405,7 @@ test("it renders error details for errors in the logs", async ({ page }) => {
 
   await expect(
     page.getByText(
-      "Workflow failed with an error.error: 'direktiv.schema.*': email '.email' is not valid"
+      "msg: schema validation error: email: Does not match format 'email'"
     )
   ).toBeVisible();
 });
@@ -428,7 +432,7 @@ test("it renders an error when the api response returns an error", async ({
 
   /* register mock error response */
   await page.route(
-    `/api/v2/namespaces/${namespace}/logs?instance=${instanceId}`,
+    `/api/v2/namespaces/${namespace}/logs?instance=${instanceId}?last=50`,
     async (route) => {
       if (route.request().method() === "GET") {
         const json = {

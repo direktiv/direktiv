@@ -13,6 +13,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const pageSize = 200
+
 var _ datastore.EventHistoryStore = &sqlEventHistoryStore{}
 
 type sqlEventHistoryStore struct {
