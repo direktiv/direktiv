@@ -16,10 +16,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 	eventsstore "github.com/direktiv/direktiv/pkg/events"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/flow/nohome"
-	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/mirror"
-	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
+	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -31,11 +29,7 @@ type server struct {
 
 	config *core.Config
 
-	// db       *ent.Client
-	pubsub *pubsub.Pubsub
-
-	// the new pubsub bus
-	Bus *pubsub2.Bus
+	Bus *pubsub.Bus
 
 	timers *timers
 	Engine *engine
@@ -50,7 +44,7 @@ type server struct {
 	events *events
 	nats   *nats.Conn
 
-	ConfigureWorkflow func(event *pubsub2.FileSystemChangeEvent) error
+	ConfigureWorkflow func(event *pubsub.FileSystemChangeEvent) error
 }
 
 type mirrorProcessLogger struct{}
@@ -104,7 +98,7 @@ func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
 //nolint:revive
-func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.Bus, db *database.DB, rawDB *sql.DB) (*server, error) {
+func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub.Bus, db *database.DB, rawDB *sql.DB) (*server, error) {
 	srv := new(server)
 	srv.ID = uuid.New()
 	srv.initJQ()
@@ -122,18 +116,9 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 	}
 	slog.Info("Telemetry initialized successfully.")
 
-	slog.Debug("initializing pub-sub.")
-
-	srv.pubsub, err = pubsub.InitPubSub(srv, config.DB)
-	if err != nil {
-		return nil, err
-	}
-
-	slog.Info("pub-sub was initialized successfully.")
-
 	slog.Debug("initializing timers.")
 
-	srv.timers, err = initTimers(srv.pubsub)
+	srv.timers, err = initTimers(srv.Bus)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +188,6 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 	circuit.Start(func() error {
 		<-circuit.Done()
 		telEnd()
-		srv.cleanup(srv.pubsub.Close)
 		srv.cleanup(srv.timers.Close)
 		if srv.nats != nil {
 			srv.nats.Close()
@@ -236,10 +220,10 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 		slog.Info("connected to NATS")
 	}
 
-	srv.ConfigureWorkflow = func(event *pubsub2.FileSystemChangeEvent) error {
+	srv.ConfigureWorkflow = func(event *pubsub.FileSystemChangeEvent) error {
 		// If this is a delete workflow file
 		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
-			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.NamespaceID, event.DeleteFileID)
+			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.DeleteFileID)
 		}
 		file, err := db.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context(), event.FilePath)
 		if err != nil {
@@ -261,31 +245,6 @@ func (srv *server) cleanup(closer func() error) {
 	if err != nil {
 		slog.Error("Server cleanup failed.", "error", err)
 	}
-}
-
-func (srv *server) NotifyCluster(msg string) error {
-	ctx := context.Background()
-
-	conn, err := srv.rawDB.Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", pubsub.FlowSync, msg)
-
-	perr := new(pq.Error)
-
-	if errors.As(err, &perr) {
-		slog.Error("Database notification to cluster failed.", "error", perr)
-		if perr.Code == "57014" {
-			return fmt.Errorf("canceled query")
-		}
-
-		return err
-	}
-
-	return nil
 }
 
 func (srv *server) NotifyHostname(hostname, msg string) error {
@@ -315,38 +274,10 @@ func (srv *server) NotifyHostname(hostname, msg string) error {
 	return nil
 }
 
-func (srv *server) PublishToCluster(payload string) {
-	srv.pubsub.Publish(&pubsub.PubsubUpdate{
-		Handler: nohome.PubsubNotifyFunction,
-		Key:     payload,
-	})
-}
-
-func (srv *server) CacheNotify(req *pubsub.PubsubUpdate) {
-	if srv.ID.String() == req.Sender {
-		return
-	}
-
-	// TODO: Alan, needfix.
-	// srv.database.HandleNotification(req.Key)
-}
-
 func (srv *server) registerFunctions() {
-	srv.pubsub.RegisterFunction(nohome.PubsubNotifyFunction, srv.CacheNotify)
-
-	srv.pubsub.RegisterFunction(pubsub.PubsubNotifyFunction, srv.pubsub.Notify)
-	srv.pubsub.RegisterFunction(pubsub.PubsubDisconnectFunction, srv.pubsub.Disconnect)
-	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteTimerFunction, srv.timers.deleteTimerHandler)
-	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteInstanceTimersFunction, srv.timers.deleteInstanceTimersHandler)
-	srv.pubsub.RegisterFunction(pubsub.PubsubCancelWorkflowFunction, srv.Engine.finishCancelWorkflow)
-	srv.pubsub.RegisterFunction(pubsub.PubsubCancelMirrorProcessFunction, srv.Engine.finishCancelMirrorProcess)
-	srv.pubsub.RegisterFunction(pubsub.PubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
-
 	srv.timers.registerFunction(timeoutFunction, srv.Engine.timeoutHandler)
 	srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
 	srv.timers.registerFunction(retryWakeupFunction, srv.flow.Engine.retryWakeup)
-
-	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)
 }
 
 func (srv *server) cronPoller() {

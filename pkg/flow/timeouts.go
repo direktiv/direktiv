@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (engine *engine) scheduleTimeout(_ context.Context, im *instanceMemory, oldController string, t time.Time, soft bool) {
+func (engine *engine) scheduleTimeout(_ context.Context, im *instanceMemory, t time.Time, soft bool) {
 	var err error
 	deadline := t
 
@@ -27,8 +27,8 @@ func (engine *engine) scheduleTimeout(_ context.Context, im *instanceMemory, old
 	// cancel existing timeouts
 	slog.Debug("Cancelling existing timeouts.", "namespace", im.Namespace().Name, "instance", im.ID(), "timeout_type", prefix, "step", im.Step())
 
-	engine.timers.deleteTimerByName(oldController, engine.pubsub.Hostname, oldID)
-	engine.timers.deleteTimerByName(oldController, engine.pubsub.Hostname, id)
+	engine.timers.deleteTimerByName(oldID)
+	engine.timers.deleteTimerByName(id)
 
 	// schedule timeout
 
@@ -51,12 +51,12 @@ func (engine *engine) scheduleTimeout(_ context.Context, im *instanceMemory, old
 	}
 }
 
-func (engine *engine) ScheduleHardTimeout(ctx context.Context, im *instanceMemory, oldController string, t time.Time) {
-	engine.scheduleTimeout(ctx, im, oldController, t, false)
+func (engine *engine) ScheduleHardTimeout(ctx context.Context, im *instanceMemory, t time.Time) {
+	engine.scheduleTimeout(ctx, im, t, false)
 }
 
-func (engine *engine) ScheduleSoftTimeout(ctx context.Context, im *instanceMemory, oldController string, t time.Time) {
-	engine.scheduleTimeout(ctx, im, oldController, t, true)
+func (engine *engine) ScheduleSoftTimeout(ctx context.Context, im *instanceMemory, t time.Time) {
+	engine.scheduleTimeout(ctx, im, t, true)
 }
 
 type timeoutArgs struct {

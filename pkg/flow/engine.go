@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -46,6 +47,8 @@ func initEngine(srv *server) *engine {
 	engine.Bus.Subscribe(&pubsub.InstanceMessageEvent{}, engine.instanceMessagesChannelHandler)
 
 	go engine.instanceKicker()
+
+	srv.Bus.Subscribe(cancelInstanceMessage{}, engine.cancelInstanceHandler)
 
 	return engine
 }
@@ -281,7 +284,6 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	im.AddAttribute("loop-index", fmt.Sprintf("%d", iterator))
 
-	engine.pubsub.NotifyInstances(im.Namespace())
 	slog.InfoContext(ctx, "Workflow has been triggered")
 	slog.InfoContext(tracing.WithTrack(ctx, tracing.BuildNamespaceTrack(im.Namespace().Name)), "Workflow has been triggered")
 
@@ -327,8 +329,6 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 		return nil
 	}
 
-	oldController := im.Controller()
-
 	if im.Step() == 0 { //nolint:nestif
 		t := time.Now().UTC()
 		tSoft := time.Now().UTC().Add(time.Minute * 15)
@@ -359,8 +359,8 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 			}
 		}
 
-		engine.ScheduleSoftTimeout(ctx, im, oldController, tSoft)
-		engine.ScheduleHardTimeout(ctx, im, oldController, tHard)
+		engine.ScheduleSoftTimeout(ctx, im, tSoft)
+		engine.ScheduleHardTimeout(ctx, im, tHard)
 	}
 
 	if nextState == "" {
@@ -393,7 +393,12 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	t := time.Now().UTC()
 
 	im.instance.RuntimeInfo.Flow = flow
-	im.instance.RuntimeInfo.Controller = engine.pubsub.Hostname
+	im.instance.RuntimeInfo.Controller, err = os.Hostname()
+	if err != nil {
+		engine.CrashInstance(ctx, im, err)
+		return nil
+	}
+
 	im.instance.RuntimeInfo.Attempts = attempt
 	im.instance.RuntimeInfo.StateBeginTime = t
 	rtData, err := im.instance.RuntimeInfo.MarshalJSON()
@@ -411,7 +416,7 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 		return nil
 	}
 
-	engine.ScheduleSoftTimeout(ctx, im, oldController, deadline)
+	engine.ScheduleSoftTimeout(ctx, im, deadline)
 
 	return engine.runState(ctx, im, nil, nil)
 }
@@ -704,9 +709,6 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 
 	slog.InfoContext(instanceTrackCtx, "Workflow completed.")
 	slog.InfoContext(tracing.WithTrack(ctx, tracing.BuildNamespaceTrack(im.Namespace().Name)), "Workflow completed.")
-
-	defer engine.pubsub.NotifyInstance(im.instance.Instance.ID)
-	defer engine.pubsub.NotifyInstances(im.Namespace())
 
 	engine.TerminateInstance(ctx, im)
 

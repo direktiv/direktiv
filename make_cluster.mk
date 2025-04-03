@@ -87,49 +87,49 @@ cluster-direktiv: ## Installs direktiv in cluster
 	kubectl wait -n ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
 	kubectl wait -n ingress-nginx --for=condition=complete job --selector=app.kubernetes.io/component=admission-webhook --timeout=120s
 
-	@if [ "$(IS_ENTERPRISE)" != "true" ]; then \
-	helm install --set database.host=postgres.default.svc \
-	--set database.port=5432 \
-	--set database.user=admin \
-	--set database.password=password \
-	--set database.name=direktiv \
-	--set database.sslmode=disable \
-	--set pullPolicy=Always \
-	--set ingress-nginx.install=false \
-	--set image=direktiv \
-	--set registry=localhost:5001 \
-	--set tag=dev \
-	direktiv charts/direktiv; \
-	fi
+	@bash -c 'if [ "$(IS_ENTERPRISE)" != "true" ]; then \
+		helm install --set database.host=postgres.default.svc \
+		--set database.port=5432 \
+		--set database.user=admin \
+		--set database.password=password \
+		--set database.name=direktiv \
+		--set database.sslmode=disable \
+		--set pullPolicy=Always \
+		--set ingress-nginx.install=false \
+		--set image=direktiv \
+		--set registry=localhost:5001 \
+		--set tag=dev \
+		direktiv charts/direktiv; \
+	fi'
 
 	@if [ "$(IS_ENTERPRISE)" == "true" ]; then \
-	helm install --set database.host=postgres.default.svc \
-	-f direktiv-ee/install/05_direktiv/keys.yaml \
-	--set database.port=5432 \
-	--set database.user=admin \
-	--set database.password=password \
-	--set database.name=direktiv \
-	--set database.sslmode=disable \
-	--set pullPolicy=Always \
-	--set ingress-nginx.install=false \
-	--set image=direktiv \
-	--set registry=localhost:5001 \
-	--set tag=dev \
-	--set flow.additionalEnvs[0].name=DIREKTIV_OIDC_ADMIN_GROUP \
-	--set flow.additionalEnvs[0].value="admin" \
-	--set flow.additionalEnvs[1].name=DIREKTIV_OIDC_DEV \
-	--set flow.additionalEnvs[1].value=true \
-	direktiv charts/direktiv; \
+		helm install --set database.host=postgres.default.svc \
+		-f direktiv-ee/install/05_direktiv/keys.yaml \
+		--set database.port=5432 \
+		--set database.user=admin \
+		--set database.password=password \
+		--set database.name=direktiv \
+		--set database.sslmode=disable \
+		--set pullPolicy=Always \
+		--set ingress-nginx.install=false \
+		--set image=direktiv \
+		--set registry=localhost:5001 \
+		--set tag=dev \
+		--set flow.additionalEnvs[0].name=DIREKTIV_OIDC_ADMIN_GROUP \
+		--set flow.additionalEnvs[0].value="admin" \
+		--set flow.additionalEnvs[1].name=DIREKTIV_OIDC_DEV \
+		--set flow.additionalEnvs[1].value=true \
+		direktiv charts/direktiv; \
 	fi
 
 	kubectl wait --for=condition=ready pod -l app=direktiv-flow --timeout=60s
 
-	@if [ "$(IS_ENTERPRISE)" == "true" ]; then \
-	@echo "Installing Dex"; \
-	helm repo add dex https://charts.dexidp.io; \
-	helm repo update; \
-	helm install dex dex/dex -f kind/dex-values.yaml; \
-	fi
+	@bash -c 'if [ "$(IS_ENTERPRISE)" == "true" ]; then \
+		@echo "Installing Dex"; \
+		helm repo add dex https://charts.dexidp.io; \
+		helm repo update; \
+		helm install dex dex/dex -f kind/dex-values.yaml; \
+	fi'
 
 	@echo "Waiting for API endpoint to return 200..."
 	@until curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:9090/api/v2/status | grep -q 200; do \

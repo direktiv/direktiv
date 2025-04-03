@@ -4,6 +4,8 @@
 # Help information is automatically scraped from comments beginning with 
 # double-hash. Please add these lines to commands that deserve documentation.
 
+SHELL := /bin/bash
+
 DOCKER_REPO := localhost:5000
 
 # gets the git hash of the actual commit

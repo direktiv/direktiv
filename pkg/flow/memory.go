@@ -81,9 +81,6 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 	im.updateArgs = new(instancestore.UpdateInstanceDataArgs)
 	im.updateArgs.Server = im.engine.ID
 
-	im.engine.pubsub.NotifyInstance(im.instance.Instance.ID)
-	im.engine.pubsub.NotifyInstances(im.Namespace())
-
 	return nil
 }
 

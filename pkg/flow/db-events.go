@@ -44,7 +44,7 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 	return nil
 }
 
-func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uuid.UUID, fileID uuid.UUID) error {
+func (events *events) deleteWorkflowEventListeners(ctx context.Context, fileID uuid.UUID) error {
 	err := events.runSQLTx(ctx, func(tx *database.DB) error {
 		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, fileID)
 		if err != nil {
