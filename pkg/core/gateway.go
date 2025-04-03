@@ -169,7 +169,11 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 
 	// check for other errors
 	if config.Path != "" {
+		hasTrailingSlash := strings.HasSuffix(config.Path, "/")
 		config.Path = path.Clean("/" + config.Path)
+		if hasTrailingSlash && config.Path != "/" {
+			config.Path += "/"
+		}
 	} else {
 		ep.Errors = append(ep.Errors, "no path for route specified")
 	}
