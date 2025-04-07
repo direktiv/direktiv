@@ -36,6 +36,7 @@ jobs:
           helm repo add nats https://nats-io.github.io/k8s/helm/charts
           helm repo add opensearch https://opensearch-project.github.io/helm-charts/
           helm repo add victoriametrics https://victoriametrics.github.io/helm-charts/
+          helm repo add opentelemetry-collector https://open-telemetry.github.io/opentelemetry-helm-charts
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
       - name: Helm Lint
