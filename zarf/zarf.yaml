@@ -1,0 +1,160 @@
+kind: ZarfPackageConfig 
+metadata:
+  name: direktiv 
+  version: v0.8.10
+  description: "direktiv"
+
+components:
+# - name: linkerd
+#   required: false
+#   actions:
+#     onDeploy:
+#       before:
+#       - cmd: openssl ecparam -name prime256v1 -genkey -noout -out ca-private.pem
+#       - cmd: openssl ec -in ca-private.pem -pubout -out ca-public.pem
+#       - cmd: openssl req -x509 -new -key ca-private.pem -days 3650 -out ca.crt -subj "/CN=root.linkerd.cluster.local"
+#       - cmd: openssl ecparam -name prime256v1 -genkey -noout -out issuer-private.pem
+#       - cmd: openssl ec -in issuer-private.pem -pubout -out issuer-public.pem
+#       - cmd: openssl req -new -key issuer-private.pem -out issuer.csr -subj "/CN=identity.linkerd.cluster.local" -addext basicConstraints=critical,CA:TRUE
+#       - cmd: openssl x509 -req -in issuer.csr -days 3650 -CA ca.crt -CAkey ca-private.pem -CAcreateserial -out issuer.crt -copy_extensions copyall    
+#       - cmd: cat ca.crt
+#         setVariables:
+#         - name: CA_CRT
+#           sensitive: true
+#           autoIndent: true
+#       - cmd: cat issuer.crt
+#         setVariables:
+#         - name: ISSUER_CRT
+#           sensitive: true
+#           autoIndent: true
+#       - cmd: cat issuer-private.pem
+#         setVariables:
+#         - name: ISSUER_KEY
+#           sensitive: true
+#           autoIndent: true
+#       after:
+#       - cmd: rm -f ca-private.pem
+#       - cmd: rm -f ca-public.pem
+#       - cmd: rm -f ca.crt
+#       - cmd: rm -f issuer-private.pem
+#       - cmd: rm -f issuer-public.pem
+#       - cmd: rm -f issuer.csr
+#       - cmd: rm -f issuer.crt
+#   charts:
+#   - name: linkerd-crds
+#     namespace: linkerd
+#     version: 1.8.0
+#     url: https://helm.linkerd.io/stable
+#   - name: linkerd-control-plane
+#     version: 1.16.11
+#     namespace: linkerd
+#     url: https://helm.linkerd.io/stable
+#     variables:
+#     - name: CA_CRT
+#       description: ca certificate
+#       path: identityTrustAnchorsPEM
+#     - name: ISSUER_CRT
+#       description: issuer certificate
+#       path: identity.issuer.tls.crtPEM
+#     - name: ISSUER_KEY
+#       description: issuer certificate
+#       path: identity.issuer.tls.keyPEM
+#   images:
+#   - cr.l5d.io/linkerd/controller:stable-2.14.10
+#   - cr.l5d.io/linkerd/proxy-init:v2.2.3
+#   - cr.l5d.io/linkerd/proxy:stable-2.14.10
+#   - cr.l5d.io/linkerd/policy-controller:stable-2.14.10
+#   - cr.l5d.io/linkerd/controller:stable-2.14.10
+
+# - name: postgres
+#   description: postgres database
+#   required: false
+#   charts:
+#   - name: pg-operator
+#     namespace: postgres
+#     version: 2.3.1
+#     url: https://percona.github.io/percona-helm-charts/
+#   images:
+#   - percona/percona-postgresql-operator:2.3.0
+#   - perconalab/percona-postgresql-operator:main-ppg16-postgres
+#   - perconalab/percona-postgresql-operator:main-ppg16-pgbouncer
+#   - perconalab/percona-postgresql-operator:main-ppg16-pgbackrest
+#   - percona/pmm-client:2.41.0
+#   manifests:
+#   - name: instance
+#     namespace: postgres
+#     files:
+#     - https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/db/basic.yaml
+#   actions:
+#     onDeploy:
+#       after:
+#         - description: database secrets available
+#           maxTotalSeconds: 30
+#           wait:
+#             cluster:
+#               kind: secret
+#               name: direktiv-cluster-pguser-direktiv
+#               namespace: postgres
+
+- name: direktiv
+  required: true
+  actions:
+    onDeploy:
+      before:
+        - cmd: kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode
+          setVariables:
+            - name: DATABASE_HOST
+              sensitive: false
+        - cmd: kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "port"}}' | base64 --decode
+          setVariables:
+            - name: DATABASE_PORT
+              sensitive: false
+        - cmd: kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "user"}}' | base64 --decode
+          setVariables:
+            - name: DATABASE_USER
+              sensitive: false
+        - cmd: kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode
+          setVariables:
+            - name: DATABASE_PASSWORD
+              sensitive: true
+        - cmd: kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "dbname"}}' | base64 --decode
+          setVariables:
+            - name: DATABASE_DBNAME
+              sensitive: false
+  charts:
+    - name: direktiv
+      version: 0.1.30
+      # url: https://charts.direktiv.io
+      localPath: ../charts/direktiv
+      namespace: direktiv
+      valuesFiles:
+        - direktiv.yaml
+      variables:
+        - name: DATABASE_HOST
+          description: postgres database host 
+          path: database.host
+        - name: DATABASE_PORT
+          description: postgres database port 
+          path: database.port
+        - name: DATABASE_USER
+          description: postgres database user 
+          path: database.user
+        - name: DATABASE_PASSWORD
+          description: postgres database password 
+          path: database.password
+        - name: DATABASE_DBNAME
+          description: postgres database database name 
+          path: database.name
+  images:
+  - busybox:latest
+  - cr.fluentbit.io/fluent/fluent-bit:3.2.4
+  - docker.io/direktiv/direktiv:v0.0.1
+  - otel/opentelemetry-collector-k8s:0.120.0
+  - registry.k8s.io/ingress-nginx/controller:v1.12.0@sha256:e6b8de175acda6ca913891f0f727bca4527e797d52688cbe9fec9040d6f6b6fa
+  - registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.5.0@sha256:aaafd456bda110628b2d4ca6296f38731a3aaf0bf7581efae824a41c770a8fc4
+  - victoriametrics/victoria-logs:v1.15.0-victorialogs
+  # Cosign artifacts for images - direktiv - direktiv
+  - cr.fluentbit.io/fluent/fluent-bit:sha256-a185ac0516e1f35568ff0662f12c4ada0ea38c4300ed223d0fde485599dff5b5.sig
+  - index.docker.io/otel/opentelemetry-collector-k8s:sha256-1e45d9483faa7b20c584af1925893345f8ae189233c957404039513b44edbb31.sig
+  - registry.k8s.io/ingress-nginx/controller:sha256-e6b8de175acda6ca913891f0f727bca4527e797d52688cbe9fec9040d6f6b6fa.sig
+  - registry.k8s.io/ingress-nginx/kube-webhook-certgen:sha256-aaafd456bda110628b2d4ca6296f38731a3aaf0bf7581efae824a41c770a8fc4.sig
