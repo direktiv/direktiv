@@ -110,4 +110,5 @@ openapi/output
 direktiv.yaml
 .cache
 
-**/*.tar.zst
+zarf/**/*.tar.zst
+zarf/*.tar.zst

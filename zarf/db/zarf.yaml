@@ -11,14 +11,26 @@ variables:
   default: "1Gi"
 - name: DB_BOUNCER_COUNT
   default: "1"
+- name: DB_ADDITIONAL_USERS
+  autoIndent: true
+- name: DB_BACKUP_S3_VALUE
+  autoIndent: true
 - name: DB_BACKUP_SCHEDULE
   default: "0 0 * * 6"
 - name: DB_BACKUP_RETENTION
   default: "4"
 - name: DB_BACKUP_STORAGE
   default: "1Gi"
-- name: DB_BACKUP_S3_VALUE
+- name: DB_BACKUP_VALUE
   autoIndent: true
+  default: |
+    volume:
+      volumeClaimSpec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
 - name: DB_BACKUP_S3_KEY
   default: "dummyKey"
 - name: DB_BACKUP_S3_SECRET
@@ -26,28 +38,9 @@ variables:
   sensitive: true
 
 components:
-# - name: generate-secret
-#   actions:
-#     onDeploy:
-#       before:
-#       - cmd: |
-#           cat <<EOF | base64 --wrap=0
-#           [global]
-#           repo1-s3-key=`echo $ZARF_VAR_DB_BACKUP_S3_KEY`
-#           repo1-s3-key-secret=`echo $ZARF_VAR_DB_BACKUP_S3_SECRET`
-#           EOF
-#         setVariables:
-#         - name: S3_SECRET_CONFIG
-#           sensitive: true
-#   manifests:
-#   - name: s3-secret
-#     namespace: postgres
-#     files:
-#       # writes the s3 secrets in a kubernetes secret referenced in values
-#       - s3-secret.yaml
 - name: postgres
   description: postgres database
-  required: false
+  required: true
   actions:
     onDeploy:
       before:
@@ -60,17 +53,20 @@ components:
         setVariables:
         - name: S3_SECRET_CONFIG
           sensitive: true
-  files:
-    # this file will be copied to the target location and the cat, dog, and snake sounds will be replaced with their values
-    # requires the on-deploy-with-dynamic-variable and on-deploy-with-multiple-variables components
-    - source: s3-secret.yaml
-      target: s3-secret.yaml.txt
-  # manifests:
-  # - name: s3-secret
-  #   namespace: postgres
-  #   files:
-  #     # writes the s3 secrets in a kubernetes secret referenced in values
-  #     - s3-secret.yaml
+      after:
+        - description: database secrets available
+          maxTotalSeconds: 30
+          wait:
+            cluster:
+              kind: secret
+              name: pg-db-pguser-direktiv
+              namespace: postgres
+  manifests:
+  - name: s3-secret
+    namespace: postgres
+    files:
+      # writes the s3 secrets in a kubernetes secret referenced in values
+      - s3-secret.yaml
   charts:
   - name: pg-operator
     namespace: postgres
@@ -83,16 +79,7 @@ components:
     url: https://percona.github.io/percona-helm-charts/
     valuesFiles:
     - values.yaml
-  # actions:
-  #   onDeploy:
-  #     after:
-  #       - description: database secrets available
-  #         maxTotalSeconds: 30
-  #         wait:
-  #           cluster:
-  #             kind: secret
-  #             name: direktiv-cluster-pguser-direktiv
-  #             namespace: postgres
+
   images:
   - percona/percona-postgresql-operator:2.6.0
   - percona/pmm-client:2.41.0

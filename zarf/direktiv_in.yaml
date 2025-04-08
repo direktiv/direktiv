@@ -1,0 +1,12 @@
+tag: v0.9.0
+
+ingress-nginx:
+  controller:
+    image:
+      tag: v1.12.1
+      digest: ""
+    admissionWebhooks:
+      patch:
+        image:
+          tag: v1.5.2
+          digest: ""
