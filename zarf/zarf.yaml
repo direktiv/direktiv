@@ -2,7 +2,7 @@ kind: ZarfPackageConfig
 metadata:
   name: direktiv 
   version: v0.8.10
-  description: "direktiv"
+  description: "percona operator and database install"
 
 components:
 # - name: linkerd
