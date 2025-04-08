@@ -109,3 +109,5 @@ openapi/output
 
 direktiv.yaml
 .cache
+
+**/*.tar.zst

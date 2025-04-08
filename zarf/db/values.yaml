@@ -1,0 +1,34 @@
+instances:
+- name: instance1
+  replicas: ###ZARF_VAR_DB_REPLICA_COUNT###
+  dataVolumeClaimSpec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ###ZARF_VAR_DB_STORAGE###
+
+proxy:
+  pgBouncer:
+    replicas: ###ZARF_VAR_DB_BOUNCER_COUNT###
+
+backups:
+  pgbackrest:
+    global:
+      repo1-retention-full: "###ZARF_VAR_DB_BACKUP_RETENTION###"
+      repo1-retention-full-type: count
+    configuration:
+      - secret:
+          name: direktiv-pgbackrest-secrets
+    repos:
+    - name: repo1
+      ###ZARF_VAR_DB_BACKUP_S3_VALUE###
+      schedules:
+        full: "###ZARF_VAR_DB_BACKUP_SCHEDULE###"
+        volumeClaimSpec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: ###ZARF_VAR_DB_BACKUP_STORAGE###
+        
