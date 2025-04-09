@@ -100,7 +100,7 @@ spec:
         - name: operator-webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook@sha256:27e2c9847bd11d843c2943948d2439bbb517297b5ffd1c184052eaa2afc14205
+          image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook:v1.17.5
           resources:
             requests:
               cpu: 100m
@@ -130,7 +130,7 @@ spec:
             - name: METRICS_DOMAIN
               value: knative.dev/operator
             - name: KUBERNETES_MIN_VERSION
-              value: ""
+              value: "1.29.0"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -4733,7 +4733,7 @@ spec:
       serviceAccountName: knative-operator
       containers:
         - name: knative-operator
-          image: gcr.io/knative-releases/knative.dev/operator/cmd/operator@sha256:3e846b0259488dd83ed97e3ab04d659d01bbb11fbf4678b3805cda988bda4cb5
+          image: gcr.io/knative-releases/knative.dev/operator/cmd/operator:v1.17.5
           resources:
             requests:
               cpu: 100m
@@ -4758,7 +4758,7 @@ spec:
             - name: CONFIG_OBSERVABILITY_NAME
               value: config-observability
             - name: KUBERNETES_MIN_VERSION
-              value: ""
+              value: "1.29.0"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -4769,5 +4769,3 @@ spec:
           ports:
             - name: metrics
               containerPort: 9090
-
----

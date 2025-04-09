@@ -112,3 +112,5 @@ direktiv.yaml
 
 zarf/**/*.tar.zst
 zarf/*.tar.zst
+zarf/**/zarf-sbom
+zarf/zarf-sbom

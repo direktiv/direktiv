@@ -1,0 +1,79 @@
+kind: ZarfPackageConfig 
+metadata:
+  name: direktiv 
+  version: 0.9.1
+  description: "direktiv installation"
+
+# variables:
+# - name: KNATIVE_HTTP_PROXY
+#   default: ""
+# - name: KNATIVE_HTTPS_PROXY
+#   default: ""
+# - name: KNATIVE_NO_PROXY
+#   default: ""
+
+components:
+- name: direktiv
+  required: true
+  actions:
+    onDeploy:
+      before:
+        - cmd: zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode
+          setVariables:
+            - name: DATABASE_HOST
+              sensitive: false
+        - cmd: zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "port"}}' | base64 --decode
+          setVariables:
+            - name: DATABASE_PORT
+              sensitive: false
+        - cmd: zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "user"}}' | base64 --decode
+          setVariables:
+            - name: DATABASE_USER
+              sensitive: false
+        - cmd: zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode
+          setVariables:
+            - name: DATABASE_PASSWORD
+              sensitive: true
+        - cmd: zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "dbname"}}' | base64 --decode
+          setVariables:
+            - name: DATABASE_DBNAME
+              sensitive: false
+
+  charts:
+  - name: direktiv
+    namespace: direktiv
+    version: 0.9.1
+    url: https://charts.direktiv.io
+    valuesFiles:
+    - values.yaml
+    variables:
+    - name: DATABASE_HOST
+      description: postgres database host 
+      path: database.host
+    - name: DATABASE_PORT
+      description: postgres database port 
+      path: database.port
+    - name: DATABASE_USER
+      description: postgres database user 
+      path: database.user
+    - name: DATABASE_PASSWORD
+      description: postgres database password 
+      path: database.password
+    - name: DATABASE_DBNAME
+      description: postgres database database name 
+      path: database.name
+
+  images:
+  - busybox:latest
+  - cr.fluentbit.io/fluent/fluent-bit:3.2.4
+  - docker.io/direktiv/direktiv:v0.9.1
+  - otel/opentelemetry-collector-k8s:0.120.0
+  - registry.k8s.io/ingress-nginx/controller:v1.12.0
+  - registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.5.0
+  - victoriametrics/victoria-logs:v1.15.0-victorialogs
+
+
+
+
+  
+  

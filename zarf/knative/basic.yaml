@@ -5,6 +5,8 @@ metadata:
   namespace: knative-serving
 spec:
   version: "1.17.0"
+  registry: 
+    default: docker.io/direktiv/${NAME}:v1.16.3
   high-availability:
     replicas: 1
   ingress:
@@ -17,6 +19,15 @@ spec:
   - name: controller
     annotations:
       linkerd.io/inject: enabled
+    env:
+    - container: controller
+      envVars:
+      - name: HTTP_PROXY
+        value: "###ZARF_VAR_KNATIVE_HTTP_PROXY###"
+      - name: HTTPS_PROXY
+        value: "###ZARF_VAR_KNATIVE_HTTPS_PROXY###"
+      - name: NO_PROXY
+        value: "###ZARF_VAR_KNATIVE_NO_PROXY###"
   config:
     features:
       multi-container: "enabled"  
