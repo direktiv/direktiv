@@ -1,6 +1,6 @@
 # KNATIVE
 
-Installation of Knative operator and an Knative instance. Due to issues with Knative images the `prepare-images.sh` needs to be called before a version upgrade and the `registry/default` value changed to the new values.
+Installation of Knative operator and an Knative instance. 
 
 ## Variables
 

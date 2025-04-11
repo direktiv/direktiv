@@ -1,0 +1,7 @@
+log_level : 'info'
+
+package:
+  deploy:
+    components: 'direktiv'
+    set:
+      jens: "sjsj"

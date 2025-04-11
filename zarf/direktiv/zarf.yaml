@@ -18,6 +18,8 @@ components:
   actions:
     onDeploy:
       before:
+        - cmd: zarf tools kubectl create namespace direktiv || true
+        - cmd: zarf tools kubectl annotate namespaces direktiv linkerd.io/inject=enabled
         - cmd: zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode
           setVariables:
             - name: DATABASE_HOST
@@ -38,7 +40,6 @@ components:
           setVariables:
             - name: DATABASE_DBNAME
               sensitive: false
-
   charts:
   - name: direktiv
     namespace: direktiv
@@ -72,7 +73,8 @@ components:
   - registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.5.0
   - victoriametrics/victoria-logs:v1.15.0-victorialogs
 
-
+  # base images
+  - direktiv/request:v4
 
 
   

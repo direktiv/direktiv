@@ -6,7 +6,7 @@ sudo zarf init --components=git-server,k3s --confirm
 
 ## WITHOUT k3S
 
-sudo zarf init --components=git-server --confirm
+zarf init --components=git-server --confirm
 
 ## COPY KUBECONFIG
 
@@ -35,4 +35,9 @@ https://docs.zarf.dev/tutorials/package_create_init.html
 
 `zarf package create .`
 `zarf package deploy`
+
+
+
+
+# INSTALL ON EXISTING k3S
 

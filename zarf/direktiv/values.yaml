@@ -1,5 +1,8 @@
 tag: v0.9.1
 
+flow:
+  sidecar: docker.io/direktiv/direktiv@sha256:c35a5ec8f2751472dfae0e302241ce06e626bd394b0f26f82470f134a6684372
+
 ingress-nginx:
   controller:
     image:
