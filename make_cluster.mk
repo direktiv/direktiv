@@ -1,4 +1,6 @@
 KIND_CONFIG ?= kind-config.yaml
+TELEMETRY ?= false
+LOKI ?= 
 
 .PHONY: cluster-setup
 cluster-setup: cluster-create cluster-prep cluster-direktiv
@@ -82,21 +84,22 @@ cluster-direktiv: ## Installs direktiv in cluster
 	kubectl wait -n ingress-nginx --for=condition=complete job --selector=app.kubernetes.io/component=admission-webhook --timeout=120s
 
 	@if [ "$(IS_ENTERPRISE)" != "true" ]; then \
-	helm install --set database.host=postgres.default.svc \
-	--set database.port=5432 \
-	--set database.user=admin \
-	--set database.password=password \
-	--set database.name=direktiv \
-	--set database.sslmode=disable \
-	--set pullPolicy=Always \
-	--set ingress-nginx.install=false \
-	--set image=direktiv \
-	--set registry=localhost:5001 \
-	--set tag=dev \
-	direktiv charts/direktiv; \
+		helm install --set database.host=postgres.default.svc \
+		--set database.port=5432 \
+		--set database.user=admin \
+		--set database.password=password \
+		--set database.name=direktiv \
+		--set database.sslmode=disable \
+		--set pullPolicy=Always \
+		--set ingress-nginx.install=false \
+		--set image=direktiv \
+		--set registry=localhost:5001 \
+		--set tag=dev \
+		--set otel.install=${TELEMETRY} $(LOKI) \
+		direktiv charts/direktiv; \
 	fi
 
-	@if [ "$(IS_ENTERPRISE)" == "true" ]; then \
+	@if [ "$(IS_ENTERPRISE)" = "true" ]; then \
 	helm install --set database.host=postgres.default.svc \
 	-f direktiv-ee/install/05_direktiv/keys.yaml \
 	--set database.port=5432 \
@@ -113,12 +116,13 @@ cluster-direktiv: ## Installs direktiv in cluster
 	--set flow.additionalEnvs[0].value="admin" \
 	--set flow.additionalEnvs[1].name=DIREKTIV_OIDC_DEV \
 	--set flow.additionalEnvs[1].value=true \
+	--set otel.install=${TELEMETRY} \
 	direktiv charts/direktiv; \
 	fi
 
 	kubectl wait --for=condition=ready pod -l app=direktiv-flow --timeout=60s
 
-	@if [ "$(IS_ENTERPRISE)" == "true" ]; then \
+	@if [ "$(IS_ENTERPRISE)" = "true" ]; then \
 	@echo "Installing Dex"; \
 	helm repo add dex https://charts.dexidp.io; \
 	helm repo update; \
@@ -148,25 +152,52 @@ cluster-dev:
 	DOCKER_BUILDKIT=1 docker build --build-arg IS_ENTERPRISE=${IS_ENTERPRISE} --push -t localhost:5001/direktiv:dev .
 	kubectl delete pod -l app=direktiv-flow
 
-cluster-otel-install:
-	helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
-	helm upgrade --install --set image.repository=otel/opentelemetry-collector-k8s  \
-	--set mode=deployment \
-	--set resources.limits.cpu=250m \
-	--set resources.limits.memory=512Mi \
-	otel-collector open-telemetry/opentelemetry-collector -n default;
-	kubectl wait --for=condition=ready pod -l "app.kubernetes.io/instance=otel-collector"
-	helm upgrade --set database.host=postgres.default.svc \
-	--set database.port=5432 \
-	--set database.user=admin \
-	--set database.password=password \
-	--set database.name=direktiv \
-	--set database.sslmode=disable \
-	--set pullPolicy=Always \
-	--set ingress-nginx.install=false \
-	--set image=direktiv \
-	--set registry=localhost:5001 \
-	--set tag=dev \
-	--set flow.sidecar=localhost:5001/direktiv:dev \
-	--set flow.opentelemetryBackend=otel-collector-opentelemetry-collector.default:4317 \
-	direktiv charts/direktiv; 
+cluster-setup-tracing:
+	$(MAKE) cluster-setup TELEMETRY=true LOKI="-f scripts/telemetry/telemetry.yaml"	
+	helm repo add grafana https://grafana.github.io/helm-charts
+	helm repo update
+	helm uninstall tempo || true
+	helm install tempo grafana/tempo
+	helm uninstall grafana || true
+	helm install \
+	--set ingress.enabled=false \
+	--set ingress.path=/grafana \
+	--set adminPassword=admin \
+	--set ingress.hosts={} \
+	--set ingress.ingressClassName=nginx \
+	--set datasources."datasources\.yaml".apiVersion=1 \
+	--set datasources."datasources\.yaml".datasources[0].name=loki \
+	--set datasources."datasources\.yaml".datasources[0].type=loki \
+	--set datasources."datasources\.yaml".datasources[0].access=proxy \
+	--set datasources."datasources\.yaml".datasources[0].url=http://loki-gateway \
+	--set datasources."datasources\.yaml".datasources[1].name=tempo \
+	--set datasources."datasources\.yaml".datasources[1].type=tempo \
+	--set datasources."datasources\.yaml".datasources[1].access=proxy \
+	--set datasources."datasources\.yaml".datasources[1].url=http://tempo:3100 \
+	--set service.nodePort=31788 \
+	--set service.type=NodePort \
+	grafana grafana/grafana
+	helm uninstall loki || true
+	helm install \
+	--set loki.useTestSchema=true \
+	--set loki.commonConfig.replication_factor=1 \
+	--set loki.pattern_ingester.enabled=true \
+	--set loki.limits_config.allow_structured_metadata=true \
+	--set loki.limits_config.volume_enabled=true \
+	--set deploymentMode=SingleBinary \
+	--set singleBinary.replicas=1 \
+	--set loki.ruler.enable_api=true \
+	--set backend.replicas=0 \
+	--set read.replicas=0 \
+	--set write.replicas=0 \
+	--set ingester.replicas=0 \
+	--set querier.replicas=0 \
+	--set queryFrontend.replicas=0 \
+	--set queryScheduler.replicas=0 \
+	--set ingdistributorester.replicas=0 \
+	--set indexGateway.replicas=0 \
+	--set bloomCompactor.replicas=0 \
+	--set bloomGateway.replicas=0 \
+	--set minio.enabled=true \
+	--set loki.auth_enabled=false \
+	loki grafana/loki

@@ -20,7 +20,7 @@ const (
 	direktivProxyHTTPS    = "HTTPS_PROXY"
 	direktivProxyHTTP     = "HTTP_PROXY"
 	direktivProxyNO       = "NO_PROXY"
-	direktivOpentelemetry = "DIREKTIV_OTLP"
+	direktivOpentelemetry = "DIREKTIV_OTEL_BACKEND"
 	direktivFlowEndpoint  = "DIREKTIV_FLOW_ENDPOINT"
 	direktivDebug         = "DIREKTIV_DEBUG"
 )
@@ -348,7 +348,7 @@ func buildEnvVars(forSidecar bool, c *core.Config, sv *core.ServiceFileData) []c
 
 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 		Name:  direktivOpentelemetry,
-		Value: c.OpenTelemetry,
+		Value: c.OtelBackend,
 	})
 
 	if forSidecar {

@@ -3,6 +3,7 @@ import { InboundPluginFormSchema } from "./plugins/inbound/schema";
 import { MethodsSchema } from "~/api/gateway/schema";
 import { OutboundPluginFormSchema } from "./plugins/outbound/schema";
 import { TargetPluginFormSchema } from "./plugins/target/schema";
+import { forceLeadingSlash } from "~/api/files/utils";
 import { z } from "zod";
 
 export const EndpointsPluginsSchema = z.object({
@@ -14,9 +15,20 @@ export const EndpointsPluginsSchema = z.object({
 
 export type EndpointsPluginsSchemaType = z.infer<typeof EndpointsPluginsSchema>;
 
+const processPath = (value: unknown) => {
+  // adds leading slash to path when loading file that doesn't have it yet
+  if (typeof value !== "string") {
+    throw new z.ZodError([
+      { message: "Path must be a string", path: ["path"], code: "custom" },
+    ]);
+  }
+
+  return forceLeadingSlash(value);
+};
+
 export const XDirektivConfigSchema = z.object({
   allow_anonymous: z.boolean().optional(),
-  path: z.string().nonempty().optional(),
+  path: z.preprocess((value) => processPath(value), z.string().optional()),
   timeout: z.number().int().positive().optional(),
   plugins: EndpointsPluginsSchema.optional(),
 });

@@ -265,13 +265,12 @@ func invokeAction(ctx context.Context, args invokeActionArgs) (*ChildInfo, error
 	if err != nil {
 		return nil, err
 	}
-
 	defer child.Run(ctx)
 
 	ci := child.Info()
 
 	if args.async {
-		args.instance.Log(ctx, log.Debug, "Running child '%s' in fire-and-forget mode (async).", ci.ID)
+		args.instance.Log(ctx, log.Debug, "running child '%s' in fire-and-forget mode (async)", ci.ID)
 		//nolint:nilnil
 		return nil, nil
 	}
