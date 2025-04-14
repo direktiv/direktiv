@@ -61,23 +61,23 @@ components:
       before:
         - cmd: zarf tools kubectl create namespace direktiv || true
         - cmd: zarf tools kubectl annotate namespaces direktiv linkerd.io/inject=enabled
-        - cmd: (zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "host"}}' 2>/dev/null || (echo $ZARF_VAR_DATABASE_HOST | base64 -w0)  | base64 --decode)
+        - cmd: ((zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "host"}}' 2>/dev/null || (echo $ZARF_VAR_DATABASE_HOST | base64 -w0))  | base64 --decode)
           setVariables:
             - name: DATABASE_HOST
               sensitive: false
-        - cmd: (zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "port"}}' 2>/dev/null || (echo $ZARF_VAR_DATABASE_PORT | base64 -w0)  | base64 --decode)
+        - cmd: ((zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "port"}}' 2>/dev/null || (echo $ZARF_VAR_DATABASE_PORT | base64 -w0))  | base64 --decode)
           setVariables:
             - name: DATABASE_PORT
               sensitive: false
-        - cmd: (zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "user"}}' 2>/dev/null || (echo $ZARF_VAR_DATABASE_USER | base64 -w0)  | base64 --decode)
+        - cmd: ((zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "user"}}' 2>/dev/null || (echo $ZARF_VAR_DATABASE_USER | base64 -w0))  | base64 --decode)
           setVariables:
             - name: DATABASE_USER
               sensitive: false
-        - cmd: (zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "password"}}' 2>/dev/null || (echo $ZARF_VAR_DATABASE_PASSWORD | base64 -w0)  | base64 --decode)
+        - cmd: ((zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "password"}}' 2>/dev/null || (echo $ZARF_VAR_DATABASE_PASSWORD | base64 -w0))  | base64 --decode)
           setVariables:
             - name: DATABASE_PASSWORD
               sensitive: true
-        - cmd: (zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "dbname"}}' 2>/dev/null || (echo $ZARF_VAR_DATABASE_DBNAME | base64 -w0)  | base64 --decode)
+        - cmd: ((zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "dbname"}}' 2>/dev/null || (echo $ZARF_VAR_DATABASE_DBNAME | base64 -w0))  | base64 --decode)
           setVariables:
             - name: DATABASE_DBNAME
               sensitive: false

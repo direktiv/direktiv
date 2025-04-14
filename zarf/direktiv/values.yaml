@@ -34,6 +34,7 @@ functions:
   ###ZARF_VAR_DIREKTIV_FUNCTION_SIZES###
 
 fluent-bit:
+  existingConfigMap: config-fluentbit
   ###ZARF_VAR_DIREKTIV_FLUENTBIT_CONFIG###
 
 ###ZARF_VAR_DIREKTIV_OTEL_CONFIG###
