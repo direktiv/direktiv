@@ -11,24 +11,31 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/google/uuid"
 )
 
 // TODO: validate credentials helper
 
 type Manager struct {
-	callbacks Callbacks
-	local     sync.Map
+	callbacks          Callbacks
+	local              sync.Map
+	mirrorHistoryHours int
 }
 
 func NewManager(callbacks Callbacks) *Manager {
 	mgr := &Manager{
-		callbacks: callbacks,
+		callbacks:          callbacks,
+		mirrorHistoryHours: 48,
 	}
 
 	go mgr.gc()
 
 	return mgr
+}
+
+func (d *Manager) SetMirrorHistoryHours(x int) {
+	d.mirrorHistoryHours = x
 }
 
 // Garbage collector.
@@ -38,7 +45,7 @@ func (d *Manager) gc() {
 	jitter := 1000
 	interval := time.Second * 10
 	maxRunTime := 5 * time.Minute
-	maxRecordTime := time.Hour * 48
+	maxRecordTime := time.Hour * time.Duration(d.mirrorHistoryHours)
 
 	// TODO: gracefully close the loop
 	for {
@@ -49,19 +56,19 @@ func (d *Manager) gc() {
 		// this first loop looks for operations that seem to have timed out
 		procs, err := d.callbacks.Store().GetUnfinishedProcesses(ctx)
 		if err != nil {
-			slog.Error(fmt.Sprintf("Failed to query unfinished mirror processes: %v", err))
+			slog.Error(fmt.Sprintf("failed to query unfinished mirror processes: %v", err))
 
 			continue
 		}
 
 		for _, proc := range procs {
 			if time.Since(proc.CreatedAt) > maxRunTime {
-				slog.Error(fmt.Sprintf("Detected an old unfinished mirror process '%s' for namespace '%s'. Terminating...", proc.ID.String(), proc.Namespace))
+				slog.Error(fmt.Sprintf("detected an old unfinished mirror process '%s' for namespace '%s'. Terminating...", proc.ID.String(), proc.Namespace))
 				c, cancel := context.WithTimeout(ctx, 5*time.Second)
 				err = d.Cancel(c, proc.ID)
 				cancel()
 				if err != nil {
-					slog.Error(fmt.Sprintf("Error cancelling old unfinished mirror process '%s' for namespace '%s': %v", proc.ID.String(), proc.Namespace, err))
+					slog.Error(fmt.Sprintf("error cancelling old unfinished mirror process '%s' for namespace '%s': %v", proc.ID.String(), proc.Namespace, err))
 				}
 
 				p, err := d.callbacks.Store().GetProcess(ctx, proc.ID)
@@ -117,7 +124,8 @@ func (d *Manager) silentFailProcess(p *datastore.MirrorProcess) {
 
 func (d *Manager) failProcess(p *datastore.MirrorProcess, err error) {
 	d.silentFailProcess(p)
-	d.callbacks.ProcessLogger().Error(p.ID, fmt.Sprintf("Mirroring process failed %v", err), "process_id", p.ID)
+	telemetry.LogActivityError(p.Namespace, p.ID.String(),
+		"mirror processing failed", err)
 }
 
 func (d *Manager) setProcessStatus(ctx context.Context, process *datastore.MirrorProcess, status string) error {
@@ -166,7 +174,8 @@ func (d *Manager) Execute(ctx context.Context, p *datastore.MirrorProcess, m *da
 		}
 	}()
 
-	parser, err := NewParser(newPIDFormatLogger(d.callbacks.ProcessLogger(), p.ID), src)
+	//nolint:contextcheck
+	parser, err := NewParser(p.Namespace, p.ID.String(), src)
 	if err != nil {
 		//nolint:contextcheck
 		d.silentFailProcess(p)

@@ -20,7 +20,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
-	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
 )
@@ -34,6 +33,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
+
 	fsCtr := &fsController{
 		db:  db,
 		bus: bus,
@@ -78,7 +78,6 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 	mw := &appMiddlewares{dStore: db.DataStore()}
 
 	r := chi.NewRouter()
-	r.Use(tracing.OtelMiddleware())
 	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
 		writeError(w, &Error{
 			Code:    "request_method_not_allowed",
@@ -103,16 +102,20 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 			IsEnterprise bool   `json:"isEnterprise"`
 			RequiresAuth bool   `json:"requiresAuth"`
 		}{
-			Version:      version.Version + " " + version.GitSha,
 			IsEnterprise: extensions.IsEnterprise,
 			RequiresAuth: os.Getenv("DIREKTIV_UI_SET_API_KEY") == "true",
+		}
+		if version.Version != "" && version.GitSha != "" {
+			data.Version = version.Version + " " + version.GitSha
+		} else {
+			data.Version = "dev"
 		}
 
 		writeJSON(w, data)
 	})
 
 	logCtr := &logController{
-		store: db.DataStore().NewLogs(),
+		logsBackend: app.Config.LogsBackend,
 	}
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
 

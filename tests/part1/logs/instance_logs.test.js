@@ -39,7 +39,7 @@ states:
 		expect(logRes.body.data).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					msg: 'Workflow completed.',
+					msg: 'workflow completed',
 				}),
 			]),
 		)
@@ -47,7 +47,7 @@ states:
 		expect(logRes.body.data).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					msg: '"This Is A Test"',
+					msg: "This Is A Test",
 				}),
 			]),
 		)

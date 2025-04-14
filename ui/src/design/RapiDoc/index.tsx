@@ -28,6 +28,7 @@ export function RapiDoc({
         theme="light"
         schema-style="table" // table | tree
         primary-color="#5364FF"
+        regular-font="Inter"
       ></rapi-doc>
     </div>
   );

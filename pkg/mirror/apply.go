@@ -10,6 +10,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 )
@@ -26,17 +27,16 @@ func (o *DryrunApplyer) apply(_ context.Context, _ Callbacks, _ *datastore.Mirro
 
 type DirektivApplyer struct {
 	NamespaceID uuid.UUID
-	log         FormatLogger
-	callbacks   Callbacks
-	proc        *datastore.MirrorProcess
-	parser      *Parser
+	// log         FormatLogger
+	callbacks Callbacks
+	proc      *datastore.MirrorProcess
+	parser    *Parser
 
 	rootID uuid.UUID
 	notes  map[string]string
 }
 
 func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *datastore.MirrorProcess, parser *Parser, notes map[string]string) error {
-	o.log = newPIDFormatLogger(callbacks.ProcessLogger(), proc.ID)
 	o.callbacks = callbacks
 	o.proc = proc
 	o.parser = parser
@@ -123,7 +123,9 @@ func (o *DirektivApplyer) copyFilesIntoRoot(ctx context.Context) error {
 				return err
 			}
 
-			o.log.Debugf("Created directory in database: %s", path)
+			//nolint: contextcheck
+			telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
+				fmt.Sprintf("Created directory in database: %s", path))
 
 			continue
 		}
@@ -139,8 +141,9 @@ func (o *DirektivApplyer) copyFilesIntoRoot(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-
-		o.log.Debugf("Created file in database: %s", path)
+		//nolint:contextcheck
+		telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
+			fmt.Sprintf("created file in database: %s", path))
 	}
 
 	return nil
@@ -160,8 +163,9 @@ func (o *DirektivApplyer) copyWorkflowsIntoRoot(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-
-		o.log.Debugf("Created workflow in database: %s", path)
+		//nolint: contextcheck
+		telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
+			fmt.Sprintf("created workflow in database: %s", path))
 	}
 
 	return nil
@@ -181,8 +185,9 @@ func (o *DirektivApplyer) copyServicesIntoRoot(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-
-		o.log.Debugf("Created service in database: %s", path)
+		//nolint: contextcheck
+		telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
+			fmt.Sprintf("created service in database: %s", path))
 	}
 
 	return nil
@@ -202,8 +207,9 @@ func (o *DirektivApplyer) copyEndpointsIntoRoot(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-
-		o.log.Debugf("Created endpoint in database: %s", path)
+		//nolint: contextcheck
+		telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
+			fmt.Sprintf("created endpoint in database: %s", path))
 	}
 
 	return nil
@@ -223,8 +229,9 @@ func (o *DirektivApplyer) copyConsumersIntoRoot(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-
-		o.log.Debugf("Created consumer in database: %s", path)
+		//nolint: contextcheck
+		telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
+			fmt.Sprintf("created consumer in database: %s", path))
 	}
 
 	return nil
@@ -248,8 +255,9 @@ func (o *DirektivApplyer) configureWorkflows(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-
-		o.log.Debugf("Configured workflow in database: %s", path)
+		//nolint: contextcheck
+		telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
+			fmt.Sprintf("configured workflow in database: %s", path))
 	}
 
 	return nil
@@ -314,8 +322,9 @@ func (o *DirektivApplyer) copyGatewayIntoRoot(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-
-		o.log.Debugf("Created gateway in database: %s", path)
+		//nolint:contextcheck
+		telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
+			fmt.Sprintf("created gateway in database: %s", path))
 	}
 
 	return nil

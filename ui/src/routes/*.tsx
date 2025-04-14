@@ -1,16 +1,7 @@
-import { ApiErrorSchemaType } from "~/api/errorHandling";
-import ErrorPage from "~/util/router/ErrorPage";
+import NotFoundPage from "~/util/router/NotFoundPage";
 import { createFileRoute } from "@tanstack/react-router";
 
-const UnmatchedRoute = () => {
-  const error: Error & ApiErrorSchemaType = {
-    name: "invalid route",
-    message: "invalid route",
-    status: 404,
-  };
-
-  return <ErrorPage error={error}></ErrorPage>;
-};
+const UnmatchedRoute = () => <NotFoundPage />;
 
 export const Route = createFileRoute("/*")({
   component: UnmatchedRoute,
