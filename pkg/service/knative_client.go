@@ -76,11 +76,10 @@ func (c *knativeClient) createService(sv *core.ServiceFileData) error {
 		return err
 	}
 
-	// xKnative
-	// err = c.applyPatch(sv)
-	// if err != nil {
-	//	return fmt.Errorf("applying patch: %w", err)
-	//}
+	err = c.applyPatch(sv)
+	if err != nil {
+		return fmt.Errorf("applying patch: %w", err)
+	}
 
 	return nil
 }
@@ -121,7 +120,7 @@ func (c *knativeClient) applyPatch(sv *core.ServiceFileData) error {
 		return fmt.Errorf("marshalling patch: %w", err)
 	}
 
-	_, err = c.knativeCli.ServingV1().Services(c.config.KnativeNamespace).Patch(context.Background(), sv.GetID(), types.JSONPatchType, patchBytes, metav1.PatchOptions{})
+	_, err = c.k8sCli.AppsV1().Deployments(c.config.KnativeNamespace).Patch(context.Background(), sv.GetID(), types.JSONPatchType, patchBytes, metav1.PatchOptions{})
 	if err != nil {
 		return fmt.Errorf("applying patch: %w", err)
 	}
