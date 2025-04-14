@@ -12,10 +12,12 @@ import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { InboundPluginForm } from "./plugins/Inbound";
 import Input from "~/design/Input";
-import { MethodCheckbox } from "./methodCheckbox";
+import { MethodCheckbox } from "./MethodCheckbox";
+import { OpenAPIDocsForm } from "./openAPIDocs";
 import { OutboundPluginForm } from "./plugins/Outbound";
 import { Switch } from "~/design/Switch";
 import { TargetPluginForm } from "./plugins/Target";
+import { forceLeadingSlash } from "~/api/files/utils";
 import { routeMethods } from "~/api/gateway/schema";
 import { treatAsNumberOrUndefined } from "../../../utils";
 import { useTranslation } from "react-i18next";
@@ -25,7 +27,7 @@ type FormProps = {
   defaultConfig?: DeepPartialSkipArrayKey<EndpointFormSchemaType>;
   onSave: (value: EndpointFormSchemaType) => void;
   children: (args: {
-    formControls: UseFormReturn<EndpointFormSchemaType>;
+    form: UseFormReturn<EndpointFormSchemaType>;
     formMarkup: JSX.Element;
     values: DeepPartialSkipArrayKey<EndpointFormSchemaType>;
   }) => JSX.Element;
@@ -34,29 +36,38 @@ type FormProps = {
 export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
   const { t } = useTranslation();
 
-  const formControls = useForm<EndpointFormSchemaType>({
+  const form = useForm<EndpointFormSchemaType>({
     resolver: zodResolver(EndpointFormSchema),
     defaultValues: {
       ...defaultConfig,
     },
   });
 
-  const values = useWatch({ control: formControls.control });
+  const values = useWatch({ control: form.control });
 
-  const { register, control } = formControls;
+  const { register, control } = form;
 
   return children({
-    formControls,
+    form,
     values,
     formMarkup: (
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-6">
         <div className="flex gap-3">
           <Fieldset
             label={t("pages.explorer.endpoint.editor.form.path")}
             htmlFor="path"
             className="grow"
           >
-            <Input {...register("x-direktiv-config.path")} id="path" />
+            <Input
+              {...register("x-direktiv-config.path")}
+              id="path"
+              onChange={(event) =>
+                form.setValue(
+                  "x-direktiv-config.path",
+                  forceLeadingSlash(event.target.value)
+                )
+              }
+            />
           </Fieldset>
           <Fieldset
             label={t("pages.explorer.endpoint.editor.form.timeout")}
@@ -72,16 +83,28 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
             />
           </Fieldset>
         </div>
-        <Fieldset label={t("pages.explorer.endpoint.editor.form.methods")}>
+        <Fieldset
+          label={t("pages.explorer.endpoint.editor.form.methods.label")}
+        >
           <div className="grid grid-cols-3 gap-5">
             {Array.from(routeMethods).map((method) => (
               <Controller
                 key={method}
                 control={control}
                 name={method}
-                render={({ field }) => (
-                  <MethodCheckbox method={method} field={field} />
-                )}
+                render={({ field }) => {
+                  const isChecked = !!values[method];
+                  return (
+                    <div className="flex items-center gap-2">
+                      <MethodCheckbox
+                        method={method}
+                        field={field}
+                        isChecked={isChecked}
+                        form={form}
+                      />
+                    </div>
+                  );
+                }}
               />
             ))}
           </div>
@@ -105,10 +128,11 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
             )}
           />
         </Fieldset>
-        <TargetPluginForm form={formControls} onSave={onSave} />
-        <InboundPluginForm form={formControls} onSave={onSave} />
-        <OutboundPluginForm form={formControls} onSave={onSave} />
-        <AuthPluginForm formControls={formControls} onSave={onSave} />
+        <TargetPluginForm form={form} onSave={onSave} />
+        <InboundPluginForm form={form} onSave={onSave} />
+        <OutboundPluginForm form={form} onSave={onSave} />
+        <AuthPluginForm form={form} onSave={onSave} />
+        <OpenAPIDocsForm form={form} onSave={onSave} />
       </div>
     ),
   });

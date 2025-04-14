@@ -9,7 +9,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 	"github.com/ryanuber/go-glob"
 )
@@ -62,11 +61,6 @@ func (ee EventEngine) ProcessEvents(
 	cloudevents []cloudevents.Event,
 	handleErrors func(template string, args ...interface{}),
 ) {
-	ctx, end, err2 := tracing.NewSpan(ctx, "Dispatching CloudEvents to handlers")
-	if err2 != nil {
-		slog.Debug("ProcessEvents: failed to init telemetry", "error", err2)
-	}
-	defer end()
 	// 1. Extract Topics: Retrieves relevant event topics from the provided CloudEvents
 	//    within the specified namespace.
 	topics := ee.getTopics(ctx, namespace, cloudevents)
@@ -75,8 +69,10 @@ func (ee EventEngine) ProcessEvents(
 	if err != nil {
 		handleErrors("error getListeners %v", err)
 	}
+
 	// 3. Build Event Handlers: for each listener genererate a event handler.
 	handelerChain := ee.getEventHandlers(ctx, listeners)
+
 	// 4. Process Events: Dispatches all received CloudEvents to all event handlers in the chain.
 	ee.handleEvents(ctx, namespace, cloudevents, handelerChain)
 	// 5. Post-Processing: Executes post-processing logic for all listeners.
@@ -242,7 +238,7 @@ func (EventEngine) handleEvents(ctx context.Context,
 			Event:       &eCopy,
 		})
 	}
-	// panic(len(h))
+
 	for _, eh := range h {
 		eh(ctx, events...)
 	}

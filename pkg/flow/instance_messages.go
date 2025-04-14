@@ -8,13 +8,14 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/core"
+	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/pubsub"
-	"github.com/direktiv/direktiv/pkg/tracing"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 const (
@@ -42,7 +43,7 @@ func (engine *engine) enqueueInstanceMessage(ctx context.Context, id uuid.UUID, 
 	tx, err := engine.flow.beginSQLTx(ctx) /*&sql.TxOptions{
 		Isolation: sql.LevelSerializable,
 	}*/if err != nil {
-		slog.Error("Failed to begin SQL transaction.", "error", err)
+		slog.Error("failed to begin SQL transaction", "error", err)
 
 		return err
 	}
@@ -86,7 +87,7 @@ func (engine *engine) enqueueInstanceMessage(ctx context.Context, id uuid.UUID, 
 			Message: string(msg),
 		})
 		if err != nil {
-			slog.Error("Failed to publish message to bus.", "error", err)
+			slog.Error("failed to publish message to bus", "error", err)
 
 			return err
 		}
@@ -115,22 +116,13 @@ func (engine *engine) instanceMessagesChannelHandler(data string) {
 }
 
 func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMemory, msg *instancestore.InstanceMessageData) *states.Transition {
-	instanceCtx := tracing.AddInstanceMemoryAttr(ctx,
-		tracing.InstanceAttributes{
-			Namespace:    im.Namespace().Name,
-			InstanceID:   im.GetInstanceID().String(),
-			Invoker:      im.instance.Instance.Invoker,
-			Callpath:     tracing.CreateCallpath(im.instance),
-			WorkflowPath: im.instance.Instance.WorkflowPath,
-			Status:       core.LogUnknownStatus,
-		},
-		im.GetState(),
-	)
-	nsCtx := tracing.WithTrack(instanceCtx, tracing.BuildNamespaceTrack(im.Namespace().Name))
-	ctx = tracing.WithTrack(instanceCtx, tracing.BuildInstanceTrack(im.instance))
+	ctx, span := enginerefactor.TraceGet(ctx, im.instance.TelemetryInfo)
+
+	ctx = im.Context(ctx)
 
 	if im.instance.Instance.EndedAt != nil && !im.instance.Instance.EndedAt.IsZero() {
-		slog.WarnContext(nsCtx, "Skipping message because instance has ended.")
+		telemetry.LogInstance(ctx, telemetry.LogLevelDebug,
+			"skipping message because instance has ended")
 
 		return nil
 	}
@@ -139,7 +131,7 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 
 	err := json.Unmarshal(msg.Payload, &m)
 	if err != nil {
-		slog.ErrorContext(ctx, "Failed to unmarshal message payload", "error", err)
+		telemetry.LogInstanceError(ctx, "failed to unmarshal message payload", err)
 
 		return nil
 	}
@@ -149,24 +141,31 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 
 	x, ok := m["type"]
 	if !ok {
-		slog.ErrorContext(ctx, "Invalid message payload: missing 'type' field", "error", err)
+		telemetry.LogInstanceError(ctx, "invalid message payload: missing 'type' field", err)
 
 		return nil
 	}
 
 	msgType, ok = x.(string)
 	if !ok {
-		slog.ErrorContext(ctx, "failed to unmarshal message payload: 'type' field not a string", "error", err)
+		telemetry.LogInstanceError(ctx, "failed to unmarshal message payload: 'type' field not a string", err)
 
 		return nil
 	}
 
 	x, ok = m["data"]
 	if !ok {
-		slog.ErrorContext(ctx, "Invalid message payload: missing 'data' field", "error", err)
+		telemetry.LogInstanceError(ctx, "invalid message payload: missing 'data' field", err)
 
 		return nil
 	}
+
+	span.SetAttributes(attribute.KeyValue{
+		Key:   "message",
+		Value: attribute.StringValue(msgType),
+	})
+
+	span.AddEvent(fmt.Sprintf("received %s", msgType))
 
 	data, _ := json.Marshal(x)
 	// TODO trace each of thos branches with spans
@@ -182,7 +181,7 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 	case "transition":
 		return engine.handleTransitionMessage(ctx, im, data)
 	default:
-		slog.Error("Encountered unrecognized instance message type.", "msgType", msgType, "instance", im.ID(), "namespace", im.Namespace().Name)
+		slog.Error("encountered unrecognized instance message type", "msgType", msgType, "instance", im.ID(), "namespace", im.Namespace().Name)
 
 		panic(fmt.Sprintf("unrecognized instance message type: %s", msgType))
 	}
@@ -199,7 +198,7 @@ func (engine *engine) handleCancelMessage(ctx context.Context, im *instanceMemor
 
 	err := json.Unmarshal(data, &args)
 	if err != nil {
-		slog.ErrorContext(ctx, "handleCancelMessage failed to unmarshal cancel message args", "error", err)
+		slog.Error("handleCancelMessage failed to unmarshal cancel message args", "error", err)
 		return nil
 	}
 
@@ -215,9 +214,11 @@ func (engine *engine) handleCancelMessage(ctx context.Context, im *instanceMemor
 func (engine *engine) handleWakeMessage(ctx context.Context, im *instanceMemory, data []byte) *states.Transition {
 	var pl retryMessage
 
+	ctx = im.Context(ctx)
+
 	err := json.Unmarshal(data, &pl)
 	if err != nil {
-		slog.ErrorContext(ctx, "handleWakeMessage failed to unmarshal wakeup message args", "error", err)
+		telemetry.LogInstanceError(ctx, "handleWakeMessage failed to unmarshal wakeup message args", err)
 
 		return nil
 	}
@@ -230,17 +231,23 @@ func (engine *engine) handleActionMessage(ctx context.Context, im *instanceMemor
 
 	err := json.Unmarshal(data, &pl)
 	if err != nil {
-		slog.ErrorContext(ctx, "handleActionMessage failed to unmarshal action results message", "error", err)
+		telemetry.LogInstanceError(ctx, "handleActionMessage failed to unmarshal action results message", err)
 
 		return nil
 	}
-
-	// TODO: traceActionResult(ctx, &pl)
 
 	return engine.runState(ctx, im, data, nil)
 }
 
 func (engine *engine) handleEventMessage(ctx context.Context, im *instanceMemory, data []byte) *states.Transition {
+	ctx, span := telemetry.Tracer.Start(ctx, "event-received")
+	defer span.End()
+	span.AddEvent("cloud-event received")
+	span.SetAttributes(attribute.KeyValue{
+		Key:   "event",
+		Value: attribute.StringValue(string(data)),
+	})
+
 	return engine.runState(ctx, im, data, nil)
 }
 
@@ -249,10 +256,15 @@ func (engine *engine) handleTransitionMessage(ctx context.Context, im *instanceM
 
 	err := json.Unmarshal(data, &state)
 	if err != nil {
-		slog.ErrorContext(ctx, "handleTransitionMessage failed to unmarshal transition message args", "error", err)
+		telemetry.LogInstanceError(ctx, "handleTransitionMessage failed to unmarshal transition message args", err)
 
 		return nil
 	}
+
+	// this is the main loop and we have to update the context for tracing
+	// the loop runs in the root context but for the transition we
+	// have to set it from the parent state
+	ctx = telemetry.FromTraceParent(ctx, im.instance.TelemetryInfo.TraceParent)
 
 	return engine.Transition(ctx, im, state, 0)
 }

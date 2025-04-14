@@ -48,15 +48,19 @@ tests-godoc: ## Hosts a godoc server for the project on http port 6060.
 	godoc -http=:6060
 
 .PHONY: tests-lint 
-tests-lint: VERSION="v1.64.5"
+tests-lint: VERSION="v2.0"
 tests-lint: ## Runs very strict linting on the project.
 	docker run \
 	--rm \
+	--tty \
 	-v `pwd`:/app \
 	-w /app \
-	-e GOLANGCI_LINT_CACHE=/app/.cache/golangci-lint \
-	golangci/golangci-lint:${VERSION} golangci-lint run --verbose
-
+	-v /tmp/golangci:/root/.cache:rw \
+	-e GOCACHE=/root/.cache/  \
+	-e GOLANGCI_LINT_CACHE=/root/.cache/ \
+	-e GOMODCACHE=/root/.cache/go/pkg/mod  \
+	golangci/golangci-lint:${VERSION} golangci-lint run --verbose --config /app/.golangci.yaml
+#  -e GOCACHE=/root/.cache/  -e GOLANGCI_LINT_CACHE=/root/.cache/ -e GOMODCACHE=/root/.cache/go/pkg/mod 
 .PHONY: docker-playwright
 docker-e2e-playwright:
 	docker run \

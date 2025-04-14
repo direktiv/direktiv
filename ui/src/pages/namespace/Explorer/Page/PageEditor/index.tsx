@@ -75,28 +75,16 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
     pageConfig?.footer ?? footerDefault
   );
 
-  const updateElementVisibility = (
-    element: PageElementSchemaType,
-    index?: number
-  ) => {
-    const newLayout = [...layout];
-    const updatedElement = {
-      ...element,
-      hidden: !element.hidden,
-    };
+  const updateHeader = (header: PageElementSchemaType) => {
+    const newHeader = header;
+    newHeader.hidden = !header.hidden;
+    setHeader(newHeader);
+  };
 
-    if (index !== undefined) {
-      newLayout.splice(index, 1, updatedElement);
-    }
-
-    switch (element.name) {
-      case "Header":
-        return setHeader(updatedElement);
-      case "Footer":
-        return setFooter(updatedElement);
-      default:
-        return setLayout(newLayout);
-    }
+  const updateFooter = (footer: PageElementSchemaType) => {
+    const newFooter = footer;
+    newFooter.hidden = !footer.hidden;
+    setFooter(newFooter);
   };
 
   const onMove = (name: string, target: string) => {
@@ -228,9 +216,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                               name="Header"
                               preview={header.preview}
                               hidden={header.hidden}
-                              onHide={() => {
-                                updateElementVisibility(header);
-                              }}
+                              onHide={() => updateHeader(header)}
                               onEdit={() => {
                                 setSelectedDialog("editHeader");
                                 setDialogOpen(true);
@@ -255,10 +241,17 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                                         preview={element.preview}
                                         hidden={element.hidden}
                                         onHide={() => {
-                                          updateElementVisibility(
-                                            element,
-                                            index
+                                          const newLayout = [...layout];
+                                          const newElement = {
+                                            ...element,
+                                            hidden: !element.hidden,
+                                          };
+                                          newLayout.splice(
+                                            index,
+                                            1,
+                                            newElement
                                           );
+                                          setLayout(newLayout);
                                         }}
                                         setSelectedDialog={(dialogType) => {
                                           setSelectedDialog(dialogType);
@@ -281,10 +274,17 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                                         preview={element.preview}
                                         hidden={element.hidden}
                                         onHide={() => {
-                                          updateElementVisibility(
-                                            element,
-                                            index
+                                          const newLayout = [...layout];
+                                          const newElement = {
+                                            ...element,
+                                            hidden: !element.hidden,
+                                          };
+                                          newLayout.splice(
+                                            index,
+                                            1,
+                                            newElement
                                           );
+                                          setLayout(newLayout);
                                         }}
                                         setSelectedDialog={(dialogType) => {
                                           setSelectedDialog(dialogType);
@@ -301,9 +301,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                               name="Footer"
                               preview={footer.preview}
                               hidden={footer.hidden}
-                              onHide={() => {
-                                updateElementVisibility(footer);
-                              }}
+                              onHide={() => updateFooter(footer)}
                               onEdit={() => {
                                 setSelectedDialog("editFooter");
                                 setDialogOpen(true);

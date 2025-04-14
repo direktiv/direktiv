@@ -26,6 +26,56 @@ describe('Test namespace create calls', () => {
 		},
 		{
 			input: {
+				name: 'api',
+			},
+			want: {
+				name: 'api',
+				isSystemNamespace: false,
+				mirror: null,
+			},
+		},
+		{
+			input: {
+				name: 'v1',
+			},
+			want: {
+				name: 'v1',
+				isSystemNamespace: false,
+				mirror: null,
+			},
+		},
+		{
+			input: {
+				name: 'v2',
+			},
+			want: {
+				name: 'v2',
+				isSystemNamespace: false,
+				mirror: null,
+			},
+		},
+		{
+			input: {
+				name: 'namespace',
+			},
+			want: {
+				name: 'namespace',
+				isSystemNamespace: false,
+				mirror: null,
+			},
+		},
+		{
+			input: {
+				name: 'namespaces',
+			},
+			want: {
+				name: 'namespaces',
+				isSystemNamespace: false,
+				mirror: null,
+			},
+		},
+		{
+			input: {
 				name: 'foo1',
 			},
 			want: {

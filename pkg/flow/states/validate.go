@@ -72,7 +72,7 @@ func (logic *validateLogic) Run(ctx context.Context, wakedata []byte) (*Transiti
 
 	if !result.Valid() {
 		for _, reason := range result.Errors() {
-			logic.Log(ctx, log.Error, "Schema validation error: %s", reason.String())
+			logic.Log(ctx, log.Error, "schema validation error: %s", reason.String())
 		}
 
 		return nil, derrors.NewCatchableError(ErrCodeFailedSchemaValidation, "%s", fmt.Sprintf("subject failed its JSONSchema validation: %v", err))

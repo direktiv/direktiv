@@ -1,7 +1,6 @@
 package service
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -12,7 +11,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/service/reconcile"
-	"github.com/direktiv/direktiv/pkg/tracing"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"knative.dev/serving/pkg/client/clientset/versioned"
@@ -93,21 +92,13 @@ func (m *manager) runCycle() []error {
 		target[i] = v
 	}
 
-	// slog.Debug("services reconcile", "src", len(src), "target", len(target))
-
 	result := reconcile.Calculate(src, target)
-	tracingHelper := func(v *core.ServiceFileData) context.Context {
-		ctx := context.Background()
-		ctx = tracing.AddNamespace(ctx, v.Namespace)
-		ctx = tracing.WithTrack(ctx, tracing.BuildNamespaceTrack(v.Namespace))
 
-		return ctx
-	}
 	errs := []error{}
 	for _, id := range result.Deletes {
-		slog.DebugContext(context.Background(), fmt.Sprintf("deleting service with ID %s", id))
+		slog.Debug(fmt.Sprintf("deleting service with id %s", id))
 		if err := m.runtimeClient.deleteService(id); err != nil {
-			slog.ErrorContext(context.Background(), fmt.Sprintf("failed to delete service with ID %s", id), "error", err)
+			slog.Error(fmt.Sprintf("failed to delete service with id %s", id), "error", err)
 			errs = append(errs, fmt.Errorf("delete service id: %s %w", id, err))
 		}
 	}
@@ -116,9 +107,9 @@ func (m *manager) runCycle() []error {
 		v := searchSrc[id]
 		v.Error = nil
 		// v is passed un-cloned.
-		slog.DebugContext(tracingHelper(v), fmt.Sprintf("creating service %s with ID %s, type %s", v.FilePath, v.ID, v.Typ))
+		slog.Debug(fmt.Sprintf("creating service %s with id %s, type %s", v.FilePath, v.ID, v.Typ))
 		if err := m.runtimeClient.createService(v); err != nil {
-			slog.ErrorContext(tracingHelper(v), fmt.Sprintf("failed to create service %s with ID %s, type %s", v.FilePath, v.ID, v.Typ), "error", err)
+			slog.Error(fmt.Sprintf("failed to create service %s with id %s, type %s", v.FilePath, v.ID, v.Typ), "error", err)
 			errs = append(errs, fmt.Errorf("create service id: %s %w", id, err))
 			errStr := err.Error()
 			v.Error = &errStr
@@ -129,9 +120,9 @@ func (m *manager) runCycle() []error {
 		v := searchSrc[id]
 		v.Error = nil
 		// v is passed un-cloned.
-		slog.DebugContext(tracingHelper(v), fmt.Sprintf("updating service %s with ID %s, type %s", v.FilePath, v.ID, v.Typ))
+		slog.Debug(fmt.Sprintf("updating service %s with ID %s, type %s", v.FilePath, v.ID, v.Typ))
 		if err := m.runtimeClient.updateService(v); err != nil {
-			slog.ErrorContext(tracingHelper(v), fmt.Sprintf("failed to update service %s with ID %s, type %s", v.FilePath, v.ID, v.Typ), "error", err)
+			slog.Error(fmt.Sprintf("failed to update service %s with ID %s, type %s", v.FilePath, v.ID, v.Typ), "error", err)
 			errs = append(errs, fmt.Errorf("update service id: %s %w", id, err))
 			errStr := err.Error()
 			v.Error = &errStr
@@ -291,16 +282,15 @@ func (m *manager) Rebuild(namespace string, serviceID string) error {
 
 func (m *manager) setServiceDefaults(sv *core.ServiceFileData) {
 	// empty size string defaults to medium
-	ctx := tracing.AddNamespace(context.Background(), sv.Namespace)
 	if sv.Size == "" {
-		slog.WarnContext(ctx, "empty service size, defaulting to medium", "service_file", sv.FilePath)
+		telemetry.LogNamespace(telemetry.LogLevelWarn, sv.Namespace,
+			fmt.Sprintf("empty service size for %s, defaulting to medium", sv.FilePath))
 		sv.Size = "medium"
 	}
 	if sv.Scale > m.cfg.KnativeMaxScale {
-		slog.WarnContext(ctx, "service_scale is bigger than allowed max_scale, defaulting to max_scale",
-			"service_scale", sv.Scale,
-			"max_scale", m.cfg.KnativeMaxScale,
-			"service_file", sv.FilePath)
+		telemetry.LogNamespace(telemetry.LogLevelWarn, sv.Namespace,
+			fmt.Sprintf("service_scale for %s is bigger than allowed max_scale, defaulting to max_scale %d",
+				sv.FilePath, m.cfg.KnativeMaxScale))
 		sv.Scale = m.cfg.KnativeMaxScale
 	}
 	if len(sv.Envs) == 0 {

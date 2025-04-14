@@ -24,42 +24,47 @@ const defaultEndpointFileJson: EndpointFormSchemaType = {
 };
 
 /**
- * this fucntion parses the endpoint config and sorts all the keys recursively.
- * However, it will only start sorting starting at x-direktiv-config if it exists.
- * This ensures that x-direktiv-api: endpoint/v2 always stays at the top.
+ * this fucntion parses the endpoint config and sorts all the keys recursively. However,
+ * it will make sure that all keys starting with x-direktiv- will always be at the top.
  */
 export const normalizeEndpointObject = (
-  data: DeepPartialSkipArrayKey<EndpointFormSchemaType>
+  endpointObject: DeepPartialSkipArrayKey<EndpointFormSchemaType>
 ) => {
-  if (!data) {
-    return data;
+  if (!endpointObject) {
+    return endpointObject;
   }
 
-  const config = data["x-direktiv-config"]
-    ? { "x-direktiv-config": deepSortObject(data["x-direktiv-config"]) }
-    : {};
+  return deepSortObject(endpointObject, (keyA, keyB) => {
+    const isDirektivKeyA = keyA.startsWith("x-direktiv-");
+    const isDirektivKeyB = keyB.startsWith("x-direktiv-");
 
-  return { ...data, ...config };
+    if (isDirektivKeyA && !isDirektivKeyB) return -1;
+    if (!isDirektivKeyA && isDirektivKeyB) return 1;
+
+    return keyA.localeCompare(keyB);
+  });
 };
-
 export const defaultEndpointFileYaml = jsonToYaml(defaultEndpointFileJson);
 
-export const deepSortObject = <T extends object>(obj: T): T => {
+export const deepSortObject = <T extends object>(
+  obj: T,
+  compare?: (a: string, b: string) => number
+): T => {
   if (typeof obj !== "object" || obj === null) {
     return obj; // Return primitives and null as is
   }
 
   if (Array.isArray(obj)) {
-    return obj.map(deepSortObject) as T; // recursively sort array values
+    return obj.map((item) => deepSortObject(item, compare)) as T; // recursively sort array values
   }
 
-  const sortedKeys = Object.keys(obj).sort();
+  const sortedKeys = Object.keys(obj).sort(compare);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sortedObj: { [key: string]: any } = {}; // Use index signature
 
   for (const key of sortedKeys) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sortedObj[key] = deepSortObject((obj as any)[key]); // recursively sort object values
+    sortedObj[key] = deepSortObject((obj as any)[key], compare); // recursively sort object values
   }
 
   return sortedObj as T;

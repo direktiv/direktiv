@@ -1,0 +1,40 @@
+fluent-bit:
+  existingConfigMap: config-fluentbit
+  config:
+    outputs: |
+      [OUTPUT]
+          name loki
+          match  *
+          host loki-gateway
+          port 80
+          labels app=direktiv
+
+opentelemetry-collector:
+  config:
+    exporters:
+      debug/noop:
+        verbosity: normal
+        sampling_initial: 0
+        sampling_thereafter: 0
+      debug: 
+        verbosity: detailed
+      otlp: 
+        endpoint: "tempo:4317" 
+        tls: 
+          insecure: true 
+    service:
+      telemetry:
+        metrics:
+          level: none
+      pipelines:
+        logs: 
+          exporters:
+          - debug/noop
+        metrics:
+          exporters:
+          - debug/noop
+        traces: 
+          exporters:
+          - otlp
+          - debug
+
