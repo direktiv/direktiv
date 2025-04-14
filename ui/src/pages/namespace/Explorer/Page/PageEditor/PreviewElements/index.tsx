@@ -8,6 +8,8 @@ import {
   TableRow,
 } from "~/design/Table";
 
+import { PageElementContentSchemaType } from "../schema";
+
 export const DragAndDropPreview: FC<PropsWithChildren> = ({ children }) => (
   <div>{children}</div>
 );
@@ -15,25 +17,20 @@ export const DragAndDropPreview: FC<PropsWithChildren> = ({ children }) => (
 export const getElementComponent = (
   element: string,
   hidden: boolean,
-  content: contentType
+  content: PageElementContentSchemaType
 ) => {
   switch (element) {
     case "Header":
-      return <DefaultHeader hidden={hidden} content={content} />;
+      return <DefaultHeader hidden={hidden} content={content.content} />;
     case "Footer":
-      return <DefaultFooter hidden={hidden} content={content} />;
+      return <DefaultFooter hidden={hidden} content={content.content} />;
     case "Text":
-      return <DefaultText hidden={hidden} content={content} />;
+      return <DefaultText hidden={hidden} content={content.content} />;
     case "Table":
       return <DefaultTable hidden={hidden} content={content.content} />;
     default:
       return <></>;
   }
-};
-
-type contentType = {
-  content?: string;
-  tableData?: tableData;
 };
 
 type tableData = {
@@ -43,11 +40,6 @@ type tableData = {
 
 type previewTableProps = {
   content: tableData | string | undefined;
-  hidden: boolean;
-};
-
-type previewElementProps = {
-  content: contentType;
   hidden: boolean;
 };
 
@@ -81,19 +73,19 @@ const DefaultTable: FC<previewTableProps> = ({ content, hidden }) => {
   );
 };
 
-const DefaultText: FC<previewElementProps> = ({ content, hidden }) => (
+const DefaultText: FC<previewTableProps> = ({ content, hidden }) => (
   <p hidden={hidden} className="py-2">
     {typeof content !== "string" ? <>Placeholder Text</> : <>{content}</>}
   </p>
 );
 
-const DefaultHeader: FC<previewElementProps> = ({ content, hidden }) => (
+const DefaultHeader: FC<previewTableProps> = ({ content, hidden }) => (
   <p hidden={hidden} className="border-b-4 my-2 text-lg font-semibold p-2">
     {typeof content !== "string" ? <>Placeholder Text</> : <>{content}</>}
   </p>
 );
 
-const DefaultFooter: FC<previewElementProps> = ({ content, hidden }) => (
+const DefaultFooter: FC<previewTableProps> = ({ content, hidden }) => (
   <p hidden={hidden} className="border-t-4 my-2 text-lg font-semibold p-2">
     {typeof content !== "string" ? <>Placeholder Text</> : <>{content}</>}
   </p>

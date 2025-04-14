@@ -4,36 +4,33 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import {
-  PageElementContentSchemaType,
-  PageElementSchemaType,
-} from "~/pages/namespace/Explorer/Page/PageEditor/schema";
 import { Save, Settings } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import {
+  TextContentSchema,
+  TextContentSchemaType,
+} from "~/pages/namespace/Explorer/Page/PageEditor/schema";
 
 import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { useTranslation } from "react-i18next";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const HeaderForm = ({
   header,
   onEdit,
   close,
 }: {
-  header: PageElementSchemaType;
-  onEdit: (content: PageElementSchemaType) => void;
+  header: TextContentSchemaType;
+  onEdit: (content: TextContentSchemaType) => void;
   close: () => void;
 }) => {
   const { t } = useTranslation();
 
-  const onSubmit: SubmitHandler<PageElementContentSchemaType> = ({
-    content,
-  }) => {
+  const onSubmit: SubmitHandler<TextContentSchemaType> = ({ content }) => {
     const newHeader = {
-      name: header?.name,
-      hidden: header?.hidden,
-      preview: content,
+      type: header.type,
       content,
     };
 
@@ -41,15 +38,23 @@ const HeaderForm = ({
     close();
   };
 
-  const oldContent = header ? header?.content : "";
+  const defaultHeaderElement: TextContentSchemaType = {
+    type: "Text",
+    content: "This is a Header...",
+  };
+
+  const oldHeaderElement =
+    header?.type === "Text" ? header : defaultHeaderElement;
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<PageElementContentSchemaType>({
+  } = useForm<TextContentSchemaType>({
+    resolver: zodResolver(TextContentSchema),
     defaultValues: {
-      content: oldContent,
+      type: "Text",
+      content: oldHeaderElement.content,
     },
   });
 

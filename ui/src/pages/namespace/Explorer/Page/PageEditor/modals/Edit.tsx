@@ -1,5 +1,6 @@
 import {
   LayoutSchemaType,
+  PageElementSchemaType,
   TableContentSchemaType,
   TextContentSchemaType,
 } from "~/pages/namespace/Explorer/Page/PageEditor/schema";
@@ -20,14 +21,21 @@ const EditModal = ({
   success: (newLayout: LayoutSchemaType) => void;
   onChange: () => void;
 }) => {
-  const oldElement = layout ? layout[pageElementID] : { content: "nothing" };
+  const placeholder1: PageElementSchemaType = {
+    name: "Text",
+    hidden: false,
+    content: { type: "Text", content: "This is a Text..." },
+    preview: "This is a Text...",
+  };
+
+  const oldElement = layout?.[pageElementID] ?? placeholder1;
 
   const onEditText = (content: TextContentSchemaType) => {
     const newElement = {
-      name: oldElement?.name,
-      hidden: oldElement?.hidden,
+      name: oldElement.name,
+      hidden: oldElement.hidden,
       preview: content.content,
-      content: content.content,
+      content: { type: content.type, content: content.content },
     };
 
     const newLayout = [...layout];
@@ -39,29 +47,19 @@ const EditModal = ({
   };
 
   const onEditTable = (content: TableContentSchemaType) => {
-    let newElement;
-    if (type === "Table") {
-      const ObjectToString =
-        content.content === undefined
-          ? ""
-          : content.content.map(
-              (element) => `${element.header}:${element.cell}, `
-            );
+    const ObjectToString =
+      content.content === undefined
+        ? ""
+        : content.content
+            .map((element) => `${element.header}:${element.cell}, `)
+            .join("");
 
-      newElement = {
-        name: oldElement?.name,
-        hidden: oldElement?.hidden,
-        preview: ObjectToString,
-        content,
-      };
-    } else {
-      newElement = {
-        name: oldElement?.name,
-        hidden: oldElement?.hidden,
-        preview: content,
-        content,
-      };
-    }
+    const newElement = {
+      name: oldElement.name,
+      hidden: oldElement.hidden,
+      preview: ObjectToString,
+      content,
+    };
 
     const newLayout = [...layout];
 
@@ -71,7 +69,7 @@ const EditModal = ({
     close();
   };
 
-  const type = layout ? layout[pageElementID]?.name : "nothing";
+  const type = layout ? layout[pageElementID]?.name : "Text";
 
   return (
     <>

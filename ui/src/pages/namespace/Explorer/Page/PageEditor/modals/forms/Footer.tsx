@@ -4,36 +4,33 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import {
-  PageElementContentSchemaType,
-  PageElementSchemaType,
-} from "~/pages/namespace/Explorer/Page/PageEditor/schema";
 import { Save, Settings } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import {
+  TextContentSchema,
+  TextContentSchemaType,
+} from "~/pages/namespace/Explorer/Page/PageEditor/schema";
 
 import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { useTranslation } from "react-i18next";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const FooterForm = ({
   footer,
   onEdit,
   close,
 }: {
-  footer: PageElementSchemaType;
-  onEdit: (content: PageElementSchemaType) => void;
+  footer: TextContentSchemaType;
+  onEdit: (content: TextContentSchemaType) => void;
   close: () => void;
 }) => {
   const { t } = useTranslation();
 
-  const onSubmit: SubmitHandler<PageElementContentSchemaType> = ({
-    content,
-  }) => {
+  const onSubmit: SubmitHandler<TextContentSchemaType> = ({ content }) => {
     const newFooter = {
-      name: footer?.name,
-      hidden: footer?.hidden,
-      preview: content,
+      type: footer.type,
       content,
     };
 
@@ -41,15 +38,23 @@ const FooterForm = ({
     close();
   };
 
-  const oldContent = footer ? footer?.content : "";
+  const defaultFooterElement: TextContentSchemaType = {
+    type: "Text",
+    content: "This is a Footer...",
+  };
+
+  const oldFooterElement: TextContentSchemaType =
+    footer?.type === "Text" ? footer : defaultFooterElement;
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<PageElementContentSchemaType>({
+  } = useForm<TextContentSchemaType>({
+    resolver: zodResolver(TextContentSchema),
     defaultValues: {
-      content: oldContent,
+      type: "Text",
+      content: oldFooterElement.content,
     },
   });
 

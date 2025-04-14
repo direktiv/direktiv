@@ -29,7 +29,7 @@ const defaultPageFileJson: PageFormSchemaType = {
     {
       name: "Text",
       preview: "Example Text",
-      content: "Example Text",
+      content: { type: "Text", content: "Example Text" },
       hidden: true,
     },
   ],
@@ -59,35 +59,38 @@ export const extractKeysFromJSON = (
 export const headerDefault: PageElementSchemaType = {
   name: "Header",
   hidden: true,
-  content: "This is the header",
+  content: { type: "Text", content: "This is the header" },
   preview: "This is the header",
 };
 
 export const footerDefault: PageElementSchemaType = {
   name: "Footer",
   hidden: true,
-  content: "This is the footer",
+  content: { type: "Text", content: "This is the footer" },
   preview: "This is the footer",
 };
 
 export const placeholder1: PageElementSchemaType = {
   name: "Text",
   hidden: false,
-  content: "This is a Text...",
+  content: { type: "Text", content: "This is a Text..." },
   preview: "This is a Text...",
 };
 
 export const placeholder2: PageElementSchemaType = {
   name: "Table",
   hidden: false,
-  content: [{ header: "Example Header", cell: "unset" }],
+  content: {
+    type: "Table",
+    content: [{ header: "Example Header", cell: "- no data -" }],
+  },
   preview: "Placeholder Table",
 };
 
 export const placeholder3: PageElementSchemaType = {
   name: "Text",
   hidden: true,
-  content: "some more info about...",
+  content: { type: "Text", content: "some more info about..." },
   preview: "some more info about...",
 };
 

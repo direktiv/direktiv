@@ -14,8 +14,10 @@ import {
 import { FC, Fragment, useState } from "react";
 import {
   LayoutSchemaType,
+  PageElementContentSchemaType,
   PageElementSchemaType,
   PageFormSchemaType,
+  TextContentSchema,
 } from "./schema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 import { decode, encode } from "js-base64";
@@ -44,6 +46,7 @@ import { ScrollArea } from "~/design/ScrollArea";
 import { jsonToYaml } from "../../utils";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
+import { z } from "zod";
 
 type PageEditorProps = {
   data: NonNullable<FileSchemaType>;
@@ -71,20 +74,43 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
   const [header, setHeader] = useState<PageElementSchemaType>(
     pageConfig?.header ?? headerDefault
   );
+
+  const header3 = TextContentSchema.parse({
+    type: "Text",
+    content: header.content.content,
+  }) as unknown as z.infer<typeof TextContentSchema>;
+
   const [footer, setFooter] = useState<PageElementSchemaType>(
     pageConfig?.footer ?? footerDefault
   );
 
-  const updateHeader = (header: PageElementSchemaType) => {
-    const newHeader = header;
-    newHeader.hidden = !header.hidden;
-    setHeader(newHeader);
-  };
+  const footer3 = TextContentSchema.parse({
+    type: "Text",
+    content: footer.content.content,
+  }) as unknown as z.infer<typeof TextContentSchema>;
 
-  const updateFooter = (footer: PageElementSchemaType) => {
-    const newFooter = footer;
-    newFooter.hidden = !footer.hidden;
-    setFooter(newFooter);
+  const updateElementVisibility = (
+    element: PageElementSchemaType,
+    index?: number
+  ) => {
+    const newLayout = [...layout];
+    const updatedElement = {
+      ...element,
+      hidden: !element.hidden,
+    };
+
+    if (index !== undefined) {
+      newLayout.splice(index, 1, updatedElement);
+    }
+
+    switch (element.name) {
+      case "Header":
+        return setHeader(updatedElement);
+      case "Footer":
+        return setFooter(updatedElement);
+      default:
+        return setLayout(newLayout);
+    }
   };
 
   const onMove = (name: string, target: string) => {
@@ -92,7 +118,10 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
       const newElement = {
         name,
         hidden: false,
-        content: `Placeholder ${name} `,
+        content: {
+          type: name,
+          content: `Placeholder ${name} `,
+        } as unknown as PageElementContentSchemaType,
         preview: `Placeholder ${name} `,
       };
       const newLayout = [...layout];
@@ -216,7 +245,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                               name="Header"
                               preview={header.preview}
                               hidden={header.hidden}
-                              onHide={() => updateHeader(header)}
+                              onHide={() => updateElementVisibility(header)}
                               onEdit={() => {
                                 setSelectedDialog("editHeader");
                                 setDialogOpen(true);
@@ -301,7 +330,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                               name="Footer"
                               preview={footer.preview}
                               hidden={footer.hidden}
-                              onHide={() => updateFooter(footer)}
+                              onHide={() => updateElementVisibility(footer)}
                               onEdit={() => {
                                 setSelectedDialog("editFooter");
                                 setDialogOpen(true);
@@ -369,8 +398,13 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
       <DialogContent className="overflow-auto min-w-[950px]">
         {selectedDialog === "editHeader" && (
           <HeaderForm
-            header={header}
-            onEdit={(newHeader) => setHeader(newHeader)}
+            header={header3}
+            onEdit={(newHeader) =>
+              setHeader({
+                ...headerDefault,
+                content: { type: newHeader.type, content: newHeader.content },
+              })
+            }
             close={() => {
               setDialogOpen(false);
             }}
@@ -378,8 +412,13 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
         )}
         {selectedDialog === "editFooter" && (
           <FooterForm
-            footer={footer}
-            onEdit={(newFooter) => setFooter(newFooter)}
+            footer={footer3}
+            onEdit={(newFooter) =>
+              setFooter({
+                ...footerDefault,
+                content: { type: newFooter.type, content: newFooter.content },
+              })
+            }
             close={() => {
               setDialogOpen(false);
             }}

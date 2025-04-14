@@ -1,5 +1,16 @@
 import { z } from "zod";
 
+export const pageElementTypes = {
+  text: "Text",
+  table: "Table",
+} as const;
+
+const commonFields = {
+  name: z.string().min(1),
+  hidden: z.any(),
+  preview: z.string(),
+};
+
 export const TableKeySchema = z.object({
   header: z.string(),
   cell: z.string(),
@@ -7,17 +18,19 @@ export const TableKeySchema = z.object({
 
 export type TableKeySchemaType = z.infer<typeof TableKeySchema>;
 
-export const TableSchema = z.array(TableKeySchema).nonempty();
+export const TableSchema = z.array(TableKeySchema);
 
 export type TableSchemaType = z.infer<typeof TableSchema>;
 
 export const TextContentSchema = z.object({
+  type: z.literal(pageElementTypes.text),
   content: z.string().nonempty(),
 });
 
 export type TextContentSchemaType = z.infer<typeof TextContentSchema>;
 
 export const TableContentSchema = z.object({
+  type: z.literal(pageElementTypes.table),
   dataSourcePath: z.string().optional(),
   dataSourceOutput: z.array(z.string()).optional(),
   content: TableSchema,
@@ -25,18 +38,18 @@ export const TableContentSchema = z.object({
 
 export type TableContentSchemaType = z.infer<typeof TableContentSchema>;
 
-export const PageElementContentSchema =
-  TextContentSchema.or(TableContentSchema);
+export const PageElementContentSchema = z.discriminatedUnion("type", [
+  TextContentSchema,
+  TableContentSchema,
+]);
 
 export type PageElementContentSchemaType = z.infer<
   typeof PageElementContentSchema
 >;
 
 export const PageElementSchema = z.object({
-  name: z.any(),
-  hidden: z.any(),
-  content: z.any(),
-  preview: z.any(),
+  ...commonFields,
+  content: PageElementContentSchema,
 });
 
 export type PageElementSchemaType = z.infer<typeof PageElementSchema>;

@@ -54,23 +54,35 @@ const TableForm = ({
 }) => {
   const nonEmptyTable = [{ header: "Table Header 1", cell: "- no data -" }];
   const defaultTableData = { header: "Table Header 1", cell: "- no data -" };
+  const defaultTable: TableContentSchemaType = {
+    type: "Table",
+    content: nonEmptyTable,
+  };
 
   const { t } = useTranslation();
+
+  const oldTableElement: TableContentSchemaType =
+    layout?.[pageElementID]?.content.type === "Table"
+      ? layout?.[pageElementID]?.content
+      : defaultTable;
+
   const [dataSourcePath, setDataSourcePath] = useState<string>(
-    layout[pageElementID]?.content.dataSourcePath ?? ""
+    oldTableElement.dataSourcePath ?? ""
   );
 
   const [testSucceeded, setTestSucceeded] = useState<boolean | null>(
     dataSourcePath.length > 0 ? true : null
   );
 
-  const [dataSourceOutput, setDataSourceOutput] = useState<string[]>(
-    layout[pageElementID]?.content.dataSourceOutput ?? undefined
-  );
+  const [dataSourceOutput, setDataSourceOutput] = useState<
+    string[] | undefined
+  >(oldTableElement.dataSourceOutput ?? undefined);
   const [tableHeaderAndCells, setTableHeaderAndCells] =
-    useState<TableSchemaType>(
-      layout[pageElementID]?.content?.content ?? nonEmptyTable
-    );
+    useState<TableSchemaType>(nonEmptyTable);
+
+  // const [tableHeaderAndCells, setTableHeaderAndCells] =
+  // useState<TableSchemaType>(oldTableElement.content ?? nonEmptyTable);
+
   const [index, setIndex] = useState<number>(0);
   const [isPending, setIsPending] = useState<boolean>(false);
 
@@ -87,6 +99,7 @@ const TableForm = ({
   } = useForm<TableContentSchemaType>({
     resolver: zodResolver(TableContentSchema),
     defaultValues: {
+      type: "Table",
       dataSourcePath,
       dataSourceOutput,
       content: tableHeaderAndCells,
@@ -173,7 +186,15 @@ const TableForm = ({
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onEdit({ dataSourcePath, dataSourceOutput, content: tableHeaderAndCells });
+
+    const newTable = {
+      type: oldTableElement.type,
+      dataSourcePath,
+      dataSourceOutput,
+      content: tableHeaderAndCells,
+    };
+
+    onEdit(newTable);
   };
 
   return (

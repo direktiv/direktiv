@@ -30,10 +30,18 @@ const TextForm = ({
   const { t } = useTranslation();
 
   const onSubmit: SubmitHandler<TextContentSchemaType> = ({ content }) => {
-    onEdit({ content });
+    onEdit({ type: "Text", content });
   };
 
-  const oldContent = layout ? layout[pageElementID]?.content : "nothing";
+  const defaultTextElement: TextContentSchemaType = {
+    type: "Text",
+    content: "This is a Text...",
+  };
+
+  const oldTextElement: TextContentSchemaType =
+    layout?.[pageElementID]?.content.type === "Text"
+      ? layout?.[pageElementID]?.content
+      : defaultTextElement;
 
   const {
     register,
@@ -42,7 +50,8 @@ const TextForm = ({
   } = useForm<TextContentSchemaType>({
     resolver: zodResolver(TextContentSchema),
     defaultValues: {
-      content: oldContent,
+      type: "Text",
+      content: oldTextElement.content,
     },
   });
 
