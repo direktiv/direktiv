@@ -1,0 +1,122 @@
+kind: ZarfPackageConfig 
+metadata:
+  name: direktiv 
+  version: 0.9.1
+  description: "direktiv installation"
+
+variables:
+- name: DATABASE_HOST
+  default: ""
+- name: DATABASE_PORT
+  default: "5432"
+- name: DATABASE_USER
+  default: ""
+- name: DATABASE_PASSWORD
+  default: ""
+- name: DATABASE_DBNAME
+  default: ""
+- name: DATABASE_SSLMODE
+  default: "require"
+- name: DIREKTIV_HTTP_PROXY
+  default: ""
+- name: DIREKTIV_HTTPS_PROXY
+  default: ""
+- name: DIREKTIV_NO_PROXY
+  default: ""
+- name: DIREKTIV_REPLICAS
+  default: "1"
+- name: DIREKTIV_INGRESS_INSTALL
+  default: "true"
+- name: DIREKTIV_IMAGE
+  default: "direktiv/direktiv"
+- name: DIREKTIV_REQUEST_TIMEOUT
+  default: "7200"
+- name: DIREKTIV_FUNCTION_SIZES
+  autoIndent: true
+  default: |
+    limits:
+      memory:
+        small: 512
+        medium: 1024
+        large: 2048
+      cpu:
+        small: 250m
+        medium: 500m
+        large: 1
+      disk:
+        small: 256
+        medium: 1024
+        large: 4096
+- name: DIREKTIV_FLUENTBIT_CONFIG
+  autoIndent: true
+- name: DIREKTIV_OTEL_CONFIG
+  autoIndent: true
+
+components:
+- name: direktiv
+  required: true
+  
+  actions:
+    onDeploy:
+      before:
+        - cmd: zarf tools kubectl create namespace direktiv || true
+        - cmd: zarf tools kubectl annotate namespaces direktiv linkerd.io/inject=enabled
+        - cmd: (zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "host"}}' 2>/dev/null || (echo $ZARF_VAR_DATABASE_HOST | base64 -w0)  | base64 --decode)
+          setVariables:
+            - name: DATABASE_HOST
+              sensitive: false
+        - cmd: (zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "port"}}' 2>/dev/null || (echo $ZARF_VAR_DATABASE_PORT | base64 -w0)  | base64 --decode)
+          setVariables:
+            - name: DATABASE_PORT
+              sensitive: false
+        - cmd: (zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "user"}}' 2>/dev/null || (echo $ZARF_VAR_DATABASE_USER | base64 -w0)  | base64 --decode)
+          setVariables:
+            - name: DATABASE_USER
+              sensitive: false
+        - cmd: (zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "password"}}' 2>/dev/null || (echo $ZARF_VAR_DATABASE_PASSWORD | base64 -w0)  | base64 --decode)
+          setVariables:
+            - name: DATABASE_PASSWORD
+              sensitive: true
+        - cmd: (zarf tools kubectl get secrets -n postgres pg-db-pguser-direktiv -o 'go-template={{index .data "dbname"}}' 2>/dev/null || (echo $ZARF_VAR_DATABASE_DBNAME | base64 -w0)  | base64 --decode)
+          setVariables:
+            - name: DATABASE_DBNAME
+              sensitive: false
+  charts:
+  - name: direktiv
+    namespace: direktiv
+    version: 0.9.1
+    url: https://charts.direktiv.io
+    valuesFiles:
+    - values.yaml
+    variables:
+    - name: DATABASE_HOST
+      description: postgres database host 
+      path: database.host
+    - name: DATABASE_PORT
+      description: postgres database port 
+      path: database.port
+    - name: DATABASE_USER
+      description: postgres database user 
+      path: database.user
+    - name: DATABASE_PASSWORD
+      description: postgres database password 
+      path: database.password
+    - name: DATABASE_DBNAME
+      description: postgres database database name 
+      path: database.name
+
+  images:
+  - busybox:latest
+  - cr.fluentbit.io/fluent/fluent-bit:3.2.4
+  - docker.io/direktiv/direktiv:v0.9.1
+  - otel/opentelemetry-collector-k8s:0.120.0
+  - registry.k8s.io/ingress-nginx/controller:v1.12.0
+  - registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.5.0
+  - victoriametrics/victoria-logs:v1.15.0-victorialogs
+
+  # base images
+  - direktiv/request:v4
+
+
+  
+  

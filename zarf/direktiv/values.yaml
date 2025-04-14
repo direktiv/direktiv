@@ -1,0 +1,39 @@
+tag: v0.9.1
+
+image: "###ZARF_VAR_DIREKTIV_IMAGE###"
+
+requestTimeout: "###ZARF_VAR_DIREKTIV_REQUEST_TIMEOUT###"
+
+flow:
+  sidecar: docker.io/direktiv/direktiv@sha256:c35a5ec8f2751472dfae0e302241ce06e626bd394b0f26f82470f134a6684372
+  replicas: ###ZARF_VAR_DIREKTIV_REPLICAS###
+
+database:
+  sslmode: ###ZARF_VAR_DATABASE_SSLMODE###
+
+ingress-nginx:
+  install: ###ZARF_VAR_DIREKTIV_INGRESS_INSTALL###
+  controller:
+    image:
+      tag: v1.12.0
+      digest: ""
+    admissionWebhooks:
+      patch:
+        image:
+          tag: v1.5.0
+          digest: ""
+
+# -- http proxy settings
+http_proxy: "###ZARF_VAR_DIREKTIV_HTTP_PROXY###"
+# -- https proxy settings
+https_proxy: "###ZARF_VAR_DIREKTIV_HTTPS_PROXY###"
+# -- no proxy proxy settings
+no_proxy: "###ZARF_VAR_DIREKTIV_NO_PROXY###"
+
+functions:
+  ###ZARF_VAR_DIREKTIV_FUNCTION_SIZES###
+
+fluent-bit:
+  ###ZARF_VAR_DIREKTIV_FLUENTBIT_CONFIG###
+
+###ZARF_VAR_DIREKTIV_OTEL_CONFIG###

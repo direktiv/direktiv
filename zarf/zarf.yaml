@@ -1,0 +1,23 @@
+kind: ZarfPackageConfig 
+metadata:
+  name: direktiv-full
+  version: v0.9.1
+  description: "direktiv open source full installation"
+
+components:
+- name: linkerd
+  required: false
+  import:
+    path: linkerd/
+- name: postgres
+  required: false
+  import:
+    path: db/
+- name: knative
+  required: true
+  import:
+    path: knative/
+- name: direktiv
+  required: true
+  import:
+    path: direktiv/
