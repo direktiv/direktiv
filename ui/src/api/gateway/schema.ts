@@ -62,10 +62,7 @@ export type PluginsSchemaType = z.infer<typeof PluginsSchema>;
 
 export type PluginType = keyof PluginsSchemaType;
 
-export const OperationSchema = z.object({
-  description: z.string().optional(),
-  responses: z.record(z.any()).optional(),
-});
+export const OperationSchema = z.record(z.any());
 
 export const MethodsSchema = z.object({
   connect: OperationSchema.optional(),
@@ -79,7 +76,7 @@ export const MethodsSchema = z.object({
   trace: OperationSchema.optional(),
 });
 
-type MethodsSchemaType = z.infer<typeof MethodsSchema>;
+export type MethodsSchemaType = z.infer<typeof MethodsSchema>;
 export type RouteMethod = keyof MethodsSchemaType;
 
 export const routeMethods: Set<RouteMethod> = new Set([
@@ -109,7 +106,7 @@ export const routeMethods: Set<RouteMethod> = new Set([
  */
 const DirektivOpenApiSpecSchema = z
   .object({
-    "x-direktiv-api": z.literal("endpoint/v2"),
+    "x-direktiv-api": z.literal("endpoint/v2").optional(),
     "x-direktiv-config": z
       .object({
         allow_anonymous: z.boolean().optional(),

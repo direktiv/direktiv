@@ -7,7 +7,7 @@ import RoutesTable from "./Table";
 import { t } from "i18next";
 import { useRoutes } from "~/api/gateway/query/getRoutes";
 
-const RoutesPage = () => {
+const RoutesComponent = () => {
   const { isFetching, refetch } = useRoutes();
   const [search, setSearch] = useState("");
   const { data: routes } = useRoutes();
@@ -26,7 +26,7 @@ const RoutesPage = () => {
   );
 
   return (
-    <Card className="m-5">
+    <Card className="w-full flex flex-col">
       <div className="flex justify-between gap-5 p-2">
         <Input
           className="sm:w-60"
@@ -45,9 +45,11 @@ const RoutesPage = () => {
           }}
         />
       </div>
-      <RoutesTable search={search} filteredRoutes={filteredRoutes} />
+      <div className="overflow-y-auto flex-1">
+        <RoutesTable search={search} filteredRoutes={filteredRoutes} />
+      </div>
     </Card>
   );
 };
 
-export default RoutesPage;
+export default RoutesComponent;

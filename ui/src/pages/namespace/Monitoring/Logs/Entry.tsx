@@ -12,7 +12,7 @@ type Props = { logEntry: LogEntryType } & LogEntryProps;
 export const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {
     const { t } = useTranslation();
-    const { msg, error, level, time, workflow, namespace } = logEntry;
+    const { msg, level, time, workflow, namespace } = logEntry;
     const formattedTime = formatLogTime(time);
     const hasNamespaceInformation = !!namespace;
 
@@ -29,9 +29,6 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         <LogSegment display={true}>
           {t("components.logs.logEntry.messageLabel")} {msg}
         </LogSegment>
-        <LogSegment display={error ? true : false}>
-          {t("components.logs.logEntry.errorLabel")} {error}
-        </LogSegment>
         <LogSegment display={isWorkflowLog && hasNamespaceInformation}>
           <span className="opacity-60">
             <Link
@@ -44,18 +41,20 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
               {workflowPath}
             </Link>{" "}
             (
-            <Link
-              to="/n/$namespace/instances/$id"
-              params={{
-                namespace: namespace ?? "",
-                id: workflow?.instance ?? "",
-              }}
-              className="underline"
-              target="_blank"
-            >
-              {t("components.logs.logEntry.instanceLabel")}{" "}
-              {workflow?.instance.slice(0, 8)}
-            </Link>
+            {workflow?.instance && (
+              <Link
+                to="/n/$namespace/instances/$id"
+                params={{
+                  namespace: namespace ?? "",
+                  id: workflow?.instance ?? "",
+                }}
+                className="underline"
+                target="_blank"
+              >
+                {t("components.logs.logEntry.instanceLabel")}{" "}
+                {workflow?.instance.slice(0, 8)}
+              </Link>
+            )}
             )
           </span>
         </LogSegment>

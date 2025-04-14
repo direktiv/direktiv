@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"time"
-
-	"github.com/direktiv/direktiv/pkg/database"
 )
 
 type flow struct {
@@ -17,8 +15,6 @@ type flow struct {
 const srv = "server"
 
 func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
-	var err error
-
 	flow := &flow{server: srv}
 
 	go func() { //nolint:contextcheck
@@ -28,7 +24,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 
 		for {
 			<-time.After(time.Hour)
-			t := time.Now().UTC().Add(time.Hour * -24)
+			t := time.Now().UTC().Add(time.Hour * -1 * time.Duration(srv.config.InstanceHistoryHours))
 
 			tx, err := srv.flow.beginSQLTx(ctx)
 			if err != nil {
@@ -55,23 +51,6 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		}
 	}()
 
-	go func() {
-		// logs garbage collector
-		<-time.After(3 * time.Minute)
-		for {
-			<-time.After(time.Hour)
-			t := time.Now().UTC().Add(time.Hour * -48) // TODO make this a config option.
-			slog.Debug("deleting all logs since", "since", t)
-			err = srv.flow.runSQLTx(ctx, func(tx *database.DB) error {
-				return tx.DataStore().NewLogs().DeleteOldLogs(ctx, t)
-			})
-			if err != nil {
-				slog.Error("garbage collector", "error", fmt.Errorf("failed to cleanup old logs: %w", err))
-				continue
-			}
-		}
-	}()
-
 	go func() { //nolint:contextcheck
 		// timed-out instance retrier
 		<-time.After(1 * time.Minute)
@@ -90,14 +69,14 @@ func (flow *flow) kickExpiredInstances() {
 
 	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
-		slog.Error("Failed to begin SQL transaction in kickExpiredInstances.", "error", err)
+		slog.Error("failed to begin SQL transaction in kickExpiredInstances", "error", err)
 		return
 	}
 	defer tx.Rollback()
 
 	list, err := tx.InstanceStore().GetHangingInstances(ctx)
 	if err != nil {
-		slog.Error("Failed to retrieve hanging instances.", "error", err)
+		slog.Error("failed to retrieve hanging instances", "error", err)
 		return
 	}
 
@@ -106,7 +85,7 @@ func (flow *flow) kickExpiredInstances() {
 			InstanceID: list[i].ID.String(),
 		})
 		if err != nil {
-			slog.Error("Failed to marshal retry message for instance.", "error", err)
+			slog.Error("failed to marshal retry message for instance", "error", err)
 			panic(err) // TODO ?
 		}
 

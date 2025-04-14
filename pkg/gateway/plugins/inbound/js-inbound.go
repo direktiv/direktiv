@@ -3,7 +3,6 @@ package inbound
 import (
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/gateway"
+	"github.com/direktiv/direktiv/pkg/gateway/plugins"
 	"github.com/dop251/goja"
 )
 
@@ -116,7 +116,7 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 	}
 
 	err = vm.Set("log", func(txt interface{}) {
-		slog.Info("js log", slog.Any("log", txt))
+		plugins.LogToRoute(r, txt)
 	})
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "can not set log function")

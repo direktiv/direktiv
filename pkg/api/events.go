@@ -18,6 +18,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/events"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -113,19 +114,24 @@ func (c *eventsController) getEvent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *eventsController) replay(w http.ResponseWriter, r *http.Request) {
-	eventID := ""
+	ctx := telemetry.GetContextFromRequest(r.Context(), r)
+	ctx, span := telemetry.Tracer.Start(ctx, "event-replay")
+	defer span.End()
+
+	eventID := chi.URLParam(r, "eventID")
+	if eventID == "" {
+		writeBadrequestError(w, fmt.Errorf("no event id provided"))
+		return
+	}
 	ns := extractContextNamespace(r)
 
-	if v := chi.URLParam(r, "eventID"); v != "" {
-		eventID = v
-	}
 	d, err := c.store.EventHistory().GetByID(r.Context(), eventID)
 	if err != nil {
 		writeInternalError(w, err)
 
 		return
 	}
-	processEvents(c, r, ns, *d.Event)
+	processEvents(ctx, c, ns, *d.Event)
 }
 
 func (c *eventsController) subscribe(w http.ResponseWriter, r *http.Request) {
@@ -267,6 +273,10 @@ func convertListenersForAPI(listener *datastore.EventListener) eventListenerEntr
 
 // nolint:canonicalheader
 func (c *eventsController) registerCoudEvent(w http.ResponseWriter, r *http.Request) {
+	ctx := telemetry.GetContextFromRequest(r.Context(), r)
+	ctx, span := telemetry.Tracer.Start(ctx, "event-request")
+	defer span.End()
+
 	ns := extractContextNamespace(r)
 	cType := r.Header.Get("Content-type")
 	limit := int64(1024 * 1024 * 32)
@@ -328,19 +338,19 @@ func (c *eventsController) registerCoudEvent(w http.ResponseWriter, r *http.Requ
 			}
 		}
 
-		processEvents(c, r, ns, ev)
+		processEvents(ctx, c, ns, ev)
 		// status ok here.
 	}
 }
 
-func processEvents(c *eventsController, r *http.Request, ns *datastore.Namespace, ev event.Event) {
+func processEvents(ctx context.Context, c *eventsController, ns *datastore.Namespace, ev event.Event) {
 	engine := events.EventEngine{
 		WorkflowStart:       c.startWorkflow,
 		WakeInstance:        c.wakeInstance,
 		GetListenersByTopic: c.store.EventListenerTopics().GetListeners,
 		UpdateListeners:     c.store.EventListener().UpdateOrDelete,
 	}
-	engine.ProcessEvents(r.Context(), ns.ID, []event.Event{ev}, func(template string, args ...interface{}) {
+	engine.ProcessEvents(ctx, ns.ID, []event.Event{ev}, func(template string, args ...interface{}) {
 		slog.Error(fmt.Sprintf(template, args...))
 	})
 }
