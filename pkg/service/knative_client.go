@@ -19,6 +19,8 @@ import (
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
 
+const annotationNamespace = "direktiv.io/namespace"
+
 type knativeClient struct {
 	config *core.Config
 
@@ -48,17 +50,17 @@ func (c *knativeClient) createService(sv *core.ServiceFileData) error {
 	// Step1: prepare registry secrets
 	var registrySecrets []coreV1.LocalObjectReference
 	// xKnative
-	// secrets, err := c.k8sCli.CoreV1().Secrets(c.config.KnativeNamespace).
-	//	List(context.Background(),
-	//		metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, sv.Namespace)})
-	// if err != nil {
-	//	return err
-	//}
-	// for _, s := range secrets.Items {
-	//	registrySecrets = append(registrySecrets, v1.LocalObjectReference{
-	//		Name: s.Name,
-	//	})
-	//}
+	secrets, err := c.k8sCli.CoreV1().Secrets(c.config.KnativeNamespace).
+		List(context.Background(),
+			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, sv.Namespace)})
+	if err != nil {
+		return err
+	}
+	for _, s := range secrets.Items {
+		registrySecrets = append(registrySecrets, coreV1.LocalObjectReference{
+			Name: s.Name,
+		})
+	}
 
 	// Step2: build service object
 	depDef, svcDef, err := buildService(c.config, sv, registrySecrets)
