@@ -115,12 +115,19 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
 
   const onMove = (name: string, target: string) => {
     if (target) {
+      const defaultTableData = [
+        {
+          header: "Table Header 1",
+          cell: "- no data -",
+        },
+      ];
+
       const newElement = {
         name,
         hidden: false,
         content: {
           type: name,
-          content: `Placeholder ${name} `,
+          content: name === "Table" ? defaultTableData : `Placeholder ${name} `,
         } as unknown as PageElementContentSchemaType,
         preview: `Placeholder ${name} `,
       };
