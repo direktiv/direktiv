@@ -2,14 +2,14 @@ package service
 
 import (
 	"fmt"
-	autoscalingV2 "k8s.io/api/autoscaling/v2"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/mattn/go-shellwords"
-	v1 "k8s.io/api/apps/v1"
+	appsV1 "k8s.io/api/apps/v1"
+	autoscalingV2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,7 +26,7 @@ const (
 	direktivDebug         = "DIREKTIV_DEBUG"
 )
 
-func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*v1.Deployment, *corev1.Service, *autoscalingV2.HorizontalPodAutoscaler, error) {
+func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*appsV1.Deployment, *corev1.Service, *autoscalingV2.HorizontalPodAutoscaler, error) {
 	containers, err := buildContainers(c, sv)
 	if err != nil {
 		return nil, nil, nil, err
@@ -51,9 +51,9 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 
 	int32Ptr := func(i int32) *int32 { return &i }
 
-	dep := &v1.Deployment{
+	dep := &appsV1.Deployment{
 		ObjectMeta: buildServiceMeta(c, sv),
-		Spec: v1.DeploymentSpec{
+		Spec: appsV1.DeploymentSpec{
 			Replicas: int32Ptr(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{"direktiv-service": sv.GetID()},
@@ -106,6 +106,7 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 				Name:       sv.GetID(),
 			},
 			MinReplicas: int32Ptr(1),
+			//nolint:gosec
 			MaxReplicas: int32(sv.Scale),
 			Metrics: []autoscalingV2.MetricSpec{
 				{
