@@ -63,7 +63,7 @@ func (c *knativeClient) createService(sv *core.ServiceFileData) error {
 	}
 
 	// Step2: build service object
-	depDef, svcDef, err := buildService(c.config, sv, registrySecrets)
+	depDef, svcDef, hpaDef, err := buildService(c.config, sv, registrySecrets)
 	if err != nil {
 		return err
 	}
@@ -74,6 +74,11 @@ func (c *knativeClient) createService(sv *core.ServiceFileData) error {
 	}
 
 	_, err = c.k8sCli.CoreV1().Services(c.config.KnativeNamespace).Create(context.Background(), svcDef, metav1.CreateOptions{})
+	if err != nil {
+		return err
+	}
+
+	_, err = c.k8sCli.AutoscalingV2().HorizontalPodAutoscalers(c.config.KnativeNamespace).Create(context.Background(), hpaDef, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
@@ -146,6 +151,10 @@ func (c *knativeClient) deleteService(id string) error {
 		return err
 	}
 	err = c.k8sCli.CoreV1().Services(c.config.KnativeNamespace).Delete(context.Background(), id, metav1.DeleteOptions{})
+	if err != nil {
+		return err
+	}
+	err = c.k8sCli.AutoscalingV2().HorizontalPodAutoscalers(c.config.KnativeNamespace).Delete(context.Background(), id, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}
