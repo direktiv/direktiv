@@ -2,7 +2,7 @@ package service
 
 import (
 	"fmt"
-	hpaV2 "k8s.io/api/autoscaling/v2"
+	autoscalingV2 "k8s.io/api/autoscaling/v2"
 	"os"
 	"strconv"
 	"strings"
@@ -26,7 +26,7 @@ const (
 	direktivDebug         = "DIREKTIV_DEBUG"
 )
 
-func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*v1.Deployment, *corev1.Service, *hpaV2.HorizontalPodAutoscaler, error) {
+func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*v1.Deployment, *corev1.Service, *autoscalingV2.HorizontalPodAutoscaler, error) {
 	containers, err := buildContainers(c, sv)
 	if err != nil {
 		return nil, nil, nil, err
@@ -97,23 +97,23 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 		},
 	}
 
-	hpa := &hpaV2.HorizontalPodAutoscaler{
+	hpa := &autoscalingV2.HorizontalPodAutoscaler{
 		ObjectMeta: buildServiceMeta(c, sv),
-		Spec: hpaV2.HorizontalPodAutoscalerSpec{
-			ScaleTargetRef: hpaV2.CrossVersionObjectReference{
+		Spec: autoscalingV2.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: autoscalingV2.CrossVersionObjectReference{
 				APIVersion: "apps/v1",
 				Kind:       "Deployment",
 				Name:       sv.GetID(),
 			},
 			MinReplicas: int32Ptr(1),
 			MaxReplicas: int32(sv.Scale),
-			Metrics: []hpaV2.MetricSpec{
+			Metrics: []autoscalingV2.MetricSpec{
 				{
-					Type: hpaV2.ResourceMetricSourceType,
-					Resource: &hpaV2.ResourceMetricSource{
+					Type: autoscalingV2.ResourceMetricSourceType,
+					Resource: &autoscalingV2.ResourceMetricSource{
 						Name: "cpu",
-						Target: hpaV2.MetricTarget{
-							Type:               hpaV2.UtilizationMetricType,
+						Target: autoscalingV2.MetricTarget{
+							Type:               autoscalingV2.UtilizationMetricType,
 							AverageUtilization: int32Ptr(50),
 						},
 					},
