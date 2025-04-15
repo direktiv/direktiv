@@ -23,3 +23,6 @@ rules:
 - apiGroups: [""]
   resources: ["services"]
   verbs: ["patch", "create", "list", "watch", "get", "delete", "update", "delete"]
+- apiGroups: ["autoscaling"]
+  resources: ["horizontalpodautoscalers"]
+  verbs: ["patch", "create", "list", "watch", "get", "delete", "update"]
