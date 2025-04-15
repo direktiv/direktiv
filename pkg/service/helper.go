@@ -252,6 +252,7 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 		Name:         containerSidecar,
 		Image:        c.KnativeSidecar,
 		Env:          sidecarEnvs,
+		Resources:    *rl,
 		VolumeMounts: vMounts,
 		Ports: []corev1.ContainerPort{
 			{
