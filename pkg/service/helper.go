@@ -50,7 +50,7 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 
 	int32Ptr := func(i int32) *int32 { return &i }
 
-	svc := &v1.Deployment{
+	dep := &v1.Deployment{
 		ObjectMeta: buildServiceMeta(c, sv),
 		Spec: v1.DeploymentSpec{
 			Replicas: int32Ptr(1),
@@ -81,7 +81,7 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 		},
 	}
 
-	svc2 := &corev1.Service{
+	svc := &corev1.Service{
 		ObjectMeta: buildServiceMeta(c, sv),
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{"direktiv-service": sv.GetID()},
@@ -97,9 +97,9 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 	}
 
 	// Set Registry Secrets
-	svc.Spec.Template.Spec.ImagePullSecrets = registrySecrets
+	dep.Spec.Template.Spec.ImagePullSecrets = registrySecrets
 
-	return svc, svc2, nil
+	return dep, svc, nil
 }
 
 func buildServiceMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMeta {
