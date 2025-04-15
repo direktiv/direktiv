@@ -80,9 +80,6 @@ const TableForm = ({
   const [tableHeaderAndCells, setTableHeaderAndCells] =
     useState<TableSchemaType>(nonEmptyTable);
 
-  // const [tableHeaderAndCells, setTableHeaderAndCells] =
-  // useState<TableSchemaType>(oldTableElement.content ?? nonEmptyTable);
-
   const [index, setIndex] = useState<number>(0);
   const [isPending, setIsPending] = useState<boolean>(false);
 
