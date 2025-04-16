@@ -1,9 +1,9 @@
-import { DroppableElement, NonDroppableElement } from "../DroppableElement";
 import type { Meta, StoryObj } from "@storybook/react";
 import { Table, Text } from "lucide-react";
 import { Dialog } from "~/design/Dialog";
 import { DndContext } from "../Context.tsx";
 import { DraggableElement } from "../DraggableElement";
+import { DroppableElement } from "../DroppableElement";
 import { DroppableSeparator } from "../DroppableSeparator/index.js";
 import { EditModal } from "../EditModal";
 import { useState } from "react";
@@ -51,11 +51,6 @@ export const DragAndDrop = () => {
 
           <h3>Droppable:</h3>
           <div className="space-y-0">
-            <NonDroppableElement
-              name="Header"
-              hidden={false}
-              preview="This is the header"
-            />
             <DroppableSeparator id="1" />
             <DroppableElement
               preview={preview}
@@ -66,11 +61,6 @@ export const DragAndDrop = () => {
               setSelectedDialog={() => setDialogOpen(true)}
             />
             <DroppableSeparator id="3" />
-            <NonDroppableElement
-              name="Footer"
-              hidden={false}
-              preview="This is the footer"
-            />
           </div>
         </div>
         <EditModal />

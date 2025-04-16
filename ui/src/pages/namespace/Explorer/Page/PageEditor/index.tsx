@@ -7,26 +7,15 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent } from "~/design/Dialog";
 import { DragAndDropPreview, getElementComponent } from "./PreviewElements";
-import {
-  DroppableElement,
-  NonDroppableElement,
-} from "~/design/DragAndDropEditor/DroppableElement";
 import { FC, Fragment, useState } from "react";
 import {
   LayoutSchemaType,
   PageElementContentSchemaType,
-  PageElementSchemaType,
   PageFormSchemaType,
-  TextContentSchema,
 } from "./schema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 import { decode, encode } from "js-base64";
-import {
-  defaultConfig,
-  footerDefault,
-  headerDefault,
-  serializePageFile,
-} from "./utils";
+import { defaultConfig, serializePageFile } from "./utils";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
@@ -34,13 +23,12 @@ import { Card } from "~/design/Card";
 import DeleteModal from "./modals/Delete";
 import { DndContext } from "~/design/DragAndDropEditor/Context.tsx";
 import { DraggableElement } from "~/design/DragAndDropEditor/DraggableElement";
+import { DroppableElement } from "~/design/DragAndDropEditor/DroppableElement";
 import { DroppableSeparator } from "~/design/DragAndDropEditor/DroppableSeparator";
 import EditModal from "./modals/Edit";
 import { FileSchemaType } from "~/api/files/schema";
-import FooterForm from "./modals/forms/Footer";
 import { Form } from "./Form";
 import FormErrors from "~/components/FormErrors";
-import HeaderForm from "./modals/forms/Header";
 import NavigationBlocker from "~/components/NavigationBlocker";
 import { ScrollArea } from "~/design/ScrollArea";
 import { jsonToYaml } from "../../utils";
@@ -69,49 +57,6 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
   const [layout, setLayout] = useState<LayoutSchemaType>(
     pageConfig?.layout ?? defaultLayout
   );
-
-  const [header, setHeader] = useState<PageElementSchemaType>(
-    pageConfig?.header ?? headerDefault
-  );
-
-  const header3 = TextContentSchema.parse({
-    type: "Text",
-    content: header.content.content,
-  });
-
-  const [footer, setFooter] = useState<PageElementSchemaType>(
-    pageConfig?.footer ?? footerDefault
-  );
-
-  const footer3 = TextContentSchema.parse({
-    type: "Text",
-    content: footer.content.content,
-  });
-
-  const updateElementVisibility = (
-    element: PageElementSchemaType,
-    index?: number
-  ) => {
-    const newLayout = [...layout];
-    const updatedElement = {
-      ...element,
-      hidden: !element.hidden,
-    };
-
-    if (index !== undefined) {
-      newLayout.splice(index, 1, updatedElement);
-    }
-
-    switch (element.name) {
-      // TODO: [suggestion] can we somehow update the schema so that we have type safety on element.name?
-      case "Header":
-        return setHeader(updatedElement);
-      case "Footer":
-        return setFooter(updatedElement);
-      default:
-        return setLayout(newLayout);
-    }
-  };
 
   // TODO: [suggestion] it would be nice if target would be a string literal here, like e.g "before" | "after"
   const onMove = (name: string, target: string) => {
@@ -151,7 +96,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
   };
 
   const save = (value: PageFormSchemaType) => {
-    const newValue = { ...value, header, footer, layout };
+    const newValue = { ...value, layout };
     const toSave = jsonToYaml(newValue);
 
     updateRoute({
@@ -249,16 +194,6 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                             noShadow
                             className="relative w-full bg-gray-2 dark:bg-gray-dark-2 rounded-md p-4"
                           >
-                            <NonDroppableElement
-                              name="Header"
-                              preview={header.preview}
-                              hidden={header.hidden}
-                              onHide={() => updateElementVisibility(header)}
-                              onEdit={() => {
-                                setSelectedDialog("editHeader");
-                                setDialogOpen(true);
-                              }}
-                            />
                             {!layout.length && (
                               <DroppableSeparator id={String(0) + "before"} />
                             )}
@@ -334,16 +269,6 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                                 </Fragment>
                               );
                             })}
-                            <NonDroppableElement
-                              name="Footer"
-                              preview={footer.preview}
-                              hidden={footer.hidden}
-                              onHide={() => updateElementVisibility(footer)}
-                              onEdit={() => {
-                                setSelectedDialog("editFooter");
-                                setDialogOpen(true);
-                              }}
-                            />
                           </Card>
                         </div>
                       )}
@@ -353,13 +278,6 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                         noShadow
                         className="ring-0 size-full bg-white dark:bg-black p-4"
                       >
-                        <DragAndDropPreview>
-                          {getElementComponent(
-                            header.name,
-                            header.hidden,
-                            header.content
-                          )}
-                        </DragAndDropPreview>
                         {layout.map((element, index) => (
                           <DragAndDropPreview key={index}>
                             {getElementComponent(
@@ -369,13 +287,6 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                             )}
                           </DragAndDropPreview>
                         ))}
-                        <DragAndDropPreview>
-                          {getElementComponent(
-                            footer.name,
-                            footer.hidden,
-                            footer.content
-                          )}
-                        </DragAndDropPreview>
                       </Card>
                     </Card>
                   </div>
@@ -404,34 +315,6 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
       </DndContext>
 
       <DialogContent className="overflow-auto min-w-[950px]">
-        {selectedDialog === "editHeader" && (
-          <HeaderForm
-            header={header3}
-            onEdit={(newHeader) =>
-              setHeader({
-                ...headerDefault,
-                content: { type: newHeader.type, content: newHeader.content },
-              })
-            }
-            close={() => {
-              setDialogOpen(false);
-            }}
-          />
-        )}
-        {selectedDialog === "editFooter" && (
-          <FooterForm
-            footer={footer3}
-            onEdit={(newFooter) =>
-              setFooter({
-                ...footerDefault,
-                content: { type: newFooter.type, content: newFooter.content },
-              })
-            }
-            close={() => {
-              setDialogOpen(false);
-            }}
-          />
-        )}
         {selectedDialog === "edit" && (
           <EditModal
             onChange={() => setSelectedElement(0)}

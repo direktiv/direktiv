@@ -56,20 +56,6 @@ export const extractKeysFromJSON = (
   return keys;
 };
 
-export const headerDefault: PageElementSchemaType = {
-  name: "Header",
-  hidden: true,
-  content: { type: "Text", content: "This is the header" },
-  preview: "This is the header",
-};
-
-export const footerDefault: PageElementSchemaType = {
-  name: "Footer",
-  hidden: true,
-  content: { type: "Text", content: "This is the footer" },
-  preview: "This is the footer",
-};
-
 export const placeholder1: PageElementSchemaType = {
   name: "Text",
   hidden: false,
@@ -95,8 +81,6 @@ export const placeholder3: PageElementSchemaType = {
 };
 
 export const defaultConfig: PageFormSchemaType = {
-  header: headerDefault,
-  footer: footerDefault,
   layout: [placeholder1, placeholder2, placeholder3],
   direktiv_api: "page/v1",
   path: undefined,

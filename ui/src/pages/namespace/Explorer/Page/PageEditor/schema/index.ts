@@ -63,8 +63,6 @@ export const PageFormSchema = z.object({
   // TODO: [suggestion] is path still needed?
   path: z.string().nonempty().optional(),
   layout: z.array(PageElementSchema),
-  header: PageElementSchema.optional(),
-  footer: PageElementSchema.optional(),
 });
 
 export type PageFormSchemaType = z.infer<typeof PageFormSchema>;
