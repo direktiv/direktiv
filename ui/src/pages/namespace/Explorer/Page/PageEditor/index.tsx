@@ -103,6 +103,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
     }
 
     switch (element.name) {
+      // TODO: [suggestion] can we somehow update the schema so that we have type safety on element.name?
       case "Header":
         return setHeader(updatedElement);
       case "Footer":
@@ -112,6 +113,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
     }
   };
 
+  // TODO: [suggestion] it would be nice if target would be a string literal here, like e.g "before" | "after"
   const onMove = (name: string, target: string) => {
     if (target) {
       const defaultTableData = [
