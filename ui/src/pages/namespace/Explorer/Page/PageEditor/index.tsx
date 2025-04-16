@@ -46,15 +46,14 @@ import { ScrollArea } from "~/design/ScrollArea";
 import { jsonToYaml } from "../../utils";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
-import { z } from "zod";
 
 type PageEditorProps = {
-  data: NonNullable<FileSchemaType>;
+  data: FileSchemaType;
 };
 
 const PageEditor: FC<PageEditorProps> = ({ data }) => {
   const { t } = useTranslation();
-  const fileContentFromServer = decode(data.data ?? "");
+  const fileContentFromServer = decode(data.data);
   const [pageConfig, pageConfigError] = serializePageFile(
     fileContentFromServer
   );
@@ -78,7 +77,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
   const header3 = TextContentSchema.parse({
     type: "Text",
     content: header.content.content,
-  }) as unknown as z.infer<typeof TextContentSchema>;
+  });
 
   const [footer, setFooter] = useState<PageElementSchemaType>(
     pageConfig?.footer ?? footerDefault
@@ -87,7 +86,7 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
   const footer3 = TextContentSchema.parse({
     type: "Text",
     content: footer.content.content,
-  }) as unknown as z.infer<typeof TextContentSchema>;
+  });
 
   const updateElementVisibility = (
     element: PageElementSchemaType,
