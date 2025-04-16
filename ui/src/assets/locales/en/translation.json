@@ -91,17 +91,13 @@
           "items": {
             "directory": "Directory",
             "workflow": "Workflow",
+            "page": "Page",
             "service": "Service",
             "gateway": {
               "label": "Gateway",
-              "route": "New Route",
-              "consumer": "New Consumer",
-              "openapiSpecification": "OpenAPI Specification"
-            },
-            "page": {
-              "label": "New Page",
               "route": "Route",
-              "consumer": "Consumer"
+              "consumer": "Consumer",
+              "openapiSpecification": "OpenAPI Specification"
             }
           }
         },
@@ -243,6 +239,66 @@
           }
         }
       },
+      "page": {
+        "editor": {
+          "form": {
+            "sectionOne": "Select Elements",
+            "sectionTwo": "Place Elements",
+            "tabsPageOne": "Data Collection",
+            "tabsPageTwo": "Static Elements",
+            "serialisationError": "There was an error serializing the form data",
+            "modals": {
+              "edit": {
+                "header": {
+                  "title": "Edit header component",
+                  "label": "Content",
+                  "placeholder": "Enter the new text",
+                  "saveBtn": "Save",
+                  "cancelBtn": "Cancel"
+                },
+                "footer": {
+                  "title": "Edit footer component",
+                  "label": "Content",
+                  "placeholder": "Enter the new text",
+                  "saveBtn": "Save",
+                  "cancelBtn": "Cancel"
+                },
+                "text": {
+                  "title": "Edit text component",
+                  "label": "Content",
+                  "placeholder": "Enter the new text",
+                  "saveBtn": "Save",
+                  "cancelBtn": "Cancel"
+                },
+                "table": {
+                  "title": "Edit table component",
+                  "label": "Data Keys",
+                  "connectBtn": {
+                    "label": "Data Source",
+                    "text": "Connect Data Source"
+                  },
+                  "tableColumnForm": {
+                    "labelOne": "Table Header",
+                    "labelTwo": "Table Cell",
+                    "placeholderOne": "Insert a Caption for the data below",
+                    "placeholderTwo": "Select Data",
+                    "selectBtn": "Connect a Data Source first"
+                  },
+                  "saveBtn": "Save",
+                  "cancelBtn": "Cancel"
+                }
+              },
+              "delete": {
+                "title": "Delete",
+                "deleteBtn": "Delete",
+                "cancelBtn": "Cancel"
+              }
+            }
+          },
+          "saveBtn": "Save",
+          "unsavedNote": "unsaved changes"
+        }
+      },
       "service": {
         "goToService": "Go to service",
         "goToServices": "Go to services",
@@ -319,6 +375,7 @@
                 },
                 "types": {
                   "instant-response": "Instant Response",
+                  "target-page": "Page",
                   "target-flow": "Workflow",
                   "target-flow-var": "Workflow Variable",
                   "target-namespace-file": "Namespace File",

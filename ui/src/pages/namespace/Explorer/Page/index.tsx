@@ -10,6 +10,7 @@ import { useParams } from "@tanstack/react-router";
 
 const UIPage: FC = () => {
   const { _splat: path } = useParams({ strict: false });
+
   const namespace = useNamespace();
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];
@@ -17,13 +18,13 @@ const UIPage: FC = () => {
   const {
     isAllowed,
     noPermissionMessage,
-    data: endpointData,
+    data: pageData,
     isFetched: isPermissionCheckFetched,
   } = useFile({ path });
 
   if (!namespace) return null;
   if (!path) return null;
-  if (endpointData?.type !== "endpoint") return null;
+  if (pageData?.type !== "page") return null;
   if (!isPermissionCheckFetched) return null;
 
   if (isAllowed === false)
@@ -44,7 +45,7 @@ const UIPage: FC = () => {
         </div>
       </div>
 
-      <PageEditor data={endpointData} />
+      <PageEditor data={pageData} />
     </>
   );
 };

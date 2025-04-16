@@ -61,4 +61,16 @@ export const instanceKeys = {
         instanceId,
       },
     ] as const,
+  instanceOutputForPath: (
+    namespace: string,
+    { apiKey, path }: { apiKey?: string; path: string }
+  ) =>
+    [
+      {
+        scope: "instance-output",
+        apiKey,
+        namespace,
+        path,
+      },
+    ] as const,
 };

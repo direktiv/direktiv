@@ -28,10 +28,10 @@ export const Pagination: React.FC<PaginationProps> = ({ children, align }) => (
 );
 Pagination.displayName = "Pagination";
 export interface PaginationLinkProps {
-  onClick?: () => void;
   active?: boolean;
   icon?: "left" | "right";
 }
+
 export const PaginationLink = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement> & PaginationLinkProps
