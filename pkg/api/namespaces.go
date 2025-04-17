@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
@@ -16,7 +17,7 @@ import (
 )
 
 type nsController struct {
-	db              *database.SQLStore
+	db              *database.DB
 	registryManager core.RegistryManager
 	bus             *pubsub.Bus
 }
@@ -329,9 +330,15 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 		indexedMirrors[m.Namespace] = m
 	}
 
+	allowedNamespaces := r.Context().Value("allowedNamespaces")
+
 	var result []any
 	for _, ns := range namespaces {
 		settings := indexedMirrors[ns.Name]
+		//nolint:forcetypeassert
+		if allowedNamespaces != nil && !strings.Contains(allowedNamespaces.(string), ","+ns.Name+",") {
+			continue
+		}
 		result = append(result, namespaceAPIObject(ns, settings))
 	}
 

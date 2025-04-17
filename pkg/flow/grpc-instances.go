@@ -2,15 +2,13 @@ package flow
 
 import (
 	"context"
-	"fmt"
-	"log/slog"
 	"os"
 
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/instancestore"
-	"github.com/direktiv/direktiv/pkg/tracing"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/google/uuid"
 )
 
@@ -52,25 +50,15 @@ func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string,
 	var err error
 	var ns *datastore.Namespace
 
-	err = engine.runSQLTx(ctx, func(tx *database.SQLStore) error {
+	ctx, span := telemetry.Tracer.Start(ctx, "start-workflow")
+	defer span.End()
+
+	err = engine.runSQLTx(ctx, func(tx *database.DB) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
 		return err
 	})
 	if err != nil {
 		return nil, err
-	}
-
-	// TODO tracing
-	// TODO logging
-	ctx, end, err := tracing.NewSpan(ctx, "starting workflow")
-	if err != nil {
-		slog.Debug("failed tracing.NewSpan()", "error", fmt.Errorf("StartWorkflow %w", err))
-	}
-	defer end()
-	calledAs := path
-	traceParent, err := tracing.ExtractTraceParent(ctx)
-	if err != nil {
-		slog.Debug("failed tracing.ExtractTraceParent", "error", fmt.Errorf("StartWorkflow %w", err))
 	}
 
 	if input == nil {
@@ -80,12 +68,11 @@ func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string,
 	args := &newInstanceArgs{
 		ID:        uuid.New(),
 		Namespace: ns,
-		CalledAs:  calledAs,
+		CalledAs:  path,
 		Input:     input,
 		Invoker:   apiCaller,
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
-			TraceParent:   traceParent,
-			NamespaceName: ns.Name,
+			TraceParent: telemetry.TraceParent(ctx),
 		},
 	}
 

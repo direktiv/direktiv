@@ -16,7 +16,9 @@ test.afterAll(async () => {
   namespace = "";
 });
 
-test("it is possible to create and sync a mirror", async ({ page }) => {
+test("it is possible to create and sync a mirror, view logs", async ({
+  page,
+}) => {
   /* prepare test data */
   const mirrorName = createNamespaceName();
 
@@ -37,7 +39,7 @@ test("it is possible to create and sync a mirror", async ({ page }) => {
 
   /* assert mirror page is rendered and sync is listed */
   await expect(page, "it redirects to the mirror route").toHaveURL(
-    `/n/${mirrorName}/mirror/`
+    `/n/${mirrorName}/mirror`
   );
 
   await expect(
@@ -59,6 +61,13 @@ test("it is possible to create and sync a mirror", async ({ page }) => {
     page.getByTestId("sync-row").getByTestId("createdAt-relative"),
     "It renders the relative time"
   ).toContainText("seconds ago");
+
+  /* visit detail page and ensure logs are rendered */
+  await page.getByTestId("sync-row").click();
+  await expect(
+    page.getByText("msg: error loading possible Direktiv workflow definition")
+  ).toBeVisible();
+  await page.getByRole("main").getByRole("link", { name: "Mirror" }).click();
 
   /* update mirror to be invalid */
   await page.getByRole("button", { name: "Edit mirror" }).click();

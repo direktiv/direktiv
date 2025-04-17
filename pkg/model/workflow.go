@@ -364,11 +364,22 @@ func (o *Workflow) GetSecretReferences() []string {
 	for _, state := range o.GetStates() {
 		sType := state.GetType()
 
-		// handle action secret references
 		if sType == StateTypeAction {
-			actionState := state.(*ActionState)
-			for j := range actionState.Action.Secrets {
-				refsMap[actionState.Action.Secrets[j]] = true
+			s := state.(*ActionState)
+			for j := range s.Action.Secrets {
+				refsMap[s.Action.Secrets[j]] = true
+			}
+		} else if sType == StateTypeForEach {
+			s := state.(*ForEachState)
+			for j := range s.Action.Secrets {
+				refsMap[s.Action.Secrets[j]] = true
+			}
+		} else if sType == StateTypeParallel {
+			s := state.(*ParallelState)
+			for _, action := range s.Actions {
+				for j := range action.Secrets {
+					refsMap[action.Secrets[j]] = true
+				}
 			}
 		}
 	}

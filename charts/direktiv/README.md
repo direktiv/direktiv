@@ -111,7 +111,7 @@ $ helm install direktiv direktiv/direktiv
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
-| apikey | string | `"none"` | enabled api key for API authentication with the `direktiv-token` header |
+| apikey | string | `"none"` | enabled api key for API authentication with the `Direktiv-Api-Key`header|
 | database.additional | string | `""` | additional connection attributes, e.g. target_session_attrs |
 | database.host | string | `"postgres-postgresql-ha-pgpool.postgres"` | database host |
 | database.name | string | `"direktiv"` | database name, has to be created before installation |
@@ -132,7 +132,7 @@ $ helm install direktiv direktiv/direktiv
 | flow.replicas | int | `1` | number of flow replicas |
 | fluent-bit | object | `{"config":{"filters":"[FILTER]\n    Name                    rewrite_tag\n    Match                   input\n    Rule                    $log ^.*\"track\":\"([^\"]*).*$ flow.$1 true\n[FILTER]\n    Name parser\n    Match *\n    Parser json\n    Key_Name log\n    Reserve_Data on\n","inputs":"[INPUT]\n    Name                    tail\n    Path                    /var/log/containers/*flow*.log,/var/log/containers/*direktiv-sidecar*.log\n    Mem_Buf_Limit           5MB\n    Skip_Long_Lines         Off\n    Tag                     input\n    multiline.parser        cri, docker\n    Refresh_Interval        1\n    Buffer_Max_Size         64k\n","outputs":"[OUTPUT]\n    name                    pgsql\n    match                   flow.*\n    port                    ${PG_PORT}\n    table                   fluentbit\n    user                    ${PG_USER}\n    database                ${PG_DB_NAME}\n    host                    ${PG_HOST}\n    password                ${PG_PASSWORD}\n"},"envFrom":[{"secretRef":{"name":"direktiv-fluentbit"}}],"install":true}` | fluentbit configuration |
 | fluentbit.extraConfig | string | `""` | postgres for direktiv services Append extra output to fluentbit configuration. There are two log types: application (system), functions (workflows) these can be matched to new outputs. |
-| frontend | object | `{"additionalAnnotations":{},"additionalLabels":{},"additionalSecEnvs":{},"backend":{"skip-verify":false,"url":null},"certificate":null,"command":"","extraConfig":null,"extraVariables":[],"image":"direktiv/frontend","logging":{"debug":true,"json":true},"logos":{"favicon":null,"icon-dark":null,"icon-light":null,"logo-dark":null,"logo-light":null},"replicas":1,"resources":{"limits":{"memory":"512Mi"},"requests":{"memory":"128Mi"}},"tag":""}` | Frontend configuration |
+| frontend | object | `{"additionalAnnotations":{},"additionalLabels":{},"additionalSecEnvs":{},"backend":{"skip-verify":false,"url":null},"certificate":null,"command":"","extraConfig":null,"extraVariables":[],"image":"direktiv/frontend","logging":{"debug":true,"json":true},"replicas":1,"resources":{"limits":{"memory":"512Mi"},"requests":{"memory":"128Mi"}},"tag":""}` | Frontend configuration |
 | frontend.additionalAnnotations | object | `{}` | Additional Annotations for frontend |
 | frontend.additionalLabels | object | `{}` | Additional Labels for frontend |
 | frontend.additionalSecEnvs | object | `{}` | Additional secret environment variables |
@@ -143,11 +143,6 @@ $ helm install direktiv direktiv/direktiv
 | frontend.logging | object | `{"debug":true,"json":true}` | Logging setting for the UI |
 | frontend.logging.debug | bool | `true` | Enable/Disable debug mode |
 | frontend.logging.json | bool | `true` | Logging in JSON or console format |
-| frontend.logos.favicon | string | `nil` | Path to favicon |
-| frontend.logos.icon-dark | string | `nil` | Path to small, dark icon |
-| frontend.logos.icon-light | string | `nil` | Path to small, light icon |
-| frontend.logos.logo-dark | string | `nil` | Path to dark logo |
-| frontend.logos.logo-light | string | `nil` | Path to light logo |
 | functions.affinity | object | `{}` |  |
 | functions.extraContainers | list | `[]` | extra containers for tasks and knative pods |
 | functions.extraContainersPod | list | `[]` | extra containers for function controller, e.g. database containers for google cloud or logging |

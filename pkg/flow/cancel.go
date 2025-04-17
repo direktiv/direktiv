@@ -59,12 +59,12 @@ func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMe
 			if child.ServiceName != "" {
 				// TODO: yassir handle workflow children services.
 			} else {
-				slog.Warn("Isolate child missing service name.", "child_id", child.ID)
+				slog.Warn("isolate child missing service name", "child_id", child.ID)
 			}
 		case "subflow":
 			engine.pubsub.CancelWorkflow(child.ID, ErrCodeCancelledByParent, "cancelled by parent workflow", false)
 		default:
-			slog.Error("Encountered unrecognized child type.", "error", child.Type)
+			slog.Error("encountered unrecognized child type", "error", child.Type)
 		}
 	}
 
@@ -76,7 +76,7 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		slog.Error("Failed to parse instance UUID.", "error", err)
+		slog.Error("failed to parse instance UUID", "error", err)
 		return
 	}
 
@@ -86,7 +86,7 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 		Message: message,
 	})
 	if err != nil {
-		slog.Error("Failed to enqueue cancel instance message", "error", err, "instance", uid)
+		slog.Error("failed to enqueue cancel instance message", "error", err, "instance", uid)
 		return
 	}
 
@@ -100,7 +100,7 @@ func (engine *engine) finishCancelWorkflow(req *pubsub.PubsubUpdate) {
 
 	err := json.Unmarshal([]byte(req.Key), &args)
 	if err != nil {
-		slog.Error("Failed to unmarshal pubsub update for finishing cancel workflow.", "error", err)
+		slog.Error("failed to unmarshal pubsub update for finishing cancel workflow", "error", err)
 		return
 	}
 
@@ -108,7 +108,7 @@ func (engine *engine) finishCancelWorkflow(req *pubsub.PubsubUpdate) {
 	var id, code, msg string
 
 	if len(args) != 4 {
-		slog.Error("Invalid input received for canceling a workflow via pubsub: incorrect argument count.", "expected", 4, "actual", len(args))
+		slog.Error("invalid input received for canceling a workflow via pubsub: incorrect argument count", "expected", 4, "actual", len(args))
 		return
 	}
 
@@ -142,7 +142,7 @@ func (engine *engine) finishCancelWorkflow(req *pubsub.PubsubUpdate) {
 
 bad:
 
-	slog.Error("Invalid input received for canceling a workflow via pubsub.", "input", req.Key)
+	slog.Error("invalid input received for canceling a workflow via pubsub", "input", req.Key)
 }
 
 func (engine *engine) cancelRunning(id string) {
@@ -159,27 +159,27 @@ func (engine *engine) finishCancelMirrorProcess(req *pubsub.PubsubUpdate) {
 
 	err := json.Unmarshal([]byte(req.Key), &args)
 	if err != nil {
-		slog.Error("Failed to unmarshal pubsub update for canceling mirror process.", "error", err)
+		slog.Error("failed to unmarshal pubsub update for canceling mirror process", "error", err)
 		return
 	}
 
 	if len(args) != 1 {
-		slog.Error("Invalid input received for canceling mirror process: incorrect number of arguments.", "expected", 1, "actual", len(args))
+		slog.Error("invalid input received for canceling mirror process: incorrect number of arguments", "expected", 1, "actual", len(args))
 		return
 	}
 
 	id, ok := args[0].(string)
 	if !ok {
-		slog.Error("Invalid input received for canceling mirror process: argument is not a string.", "arg", args[0])
+		slog.Error("invalid input received for canceling mirror process: argument is not a string", "arg", args[0])
 		return
 	}
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		slog.Error("Failed to parse UUID for mirror process cancellation.", "activity_id", id, "error", err)
+		slog.Error("failed to parse UUID for mirror process cancellation", "activity_id", id, "error", err)
 		return
 	}
 
-	_ = engine.mirrorManager.Cancel(context.Background(), uid)
-	slog.Info("Requested cancellation of mirror process.", "activity_id", uid)
+	_ = engine.MirrorManager.Cancel(context.Background(), uid)
+	slog.Info("requested cancellation of mirror process", "activity_id", uid)
 }

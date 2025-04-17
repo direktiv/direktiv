@@ -6,7 +6,7 @@ direktiv-build:
 .PHONY: direktiv
 direktiv:
 	@echo "building and pushing direktiv ${RELEASE_VERSION}"
-	DOCKER_BUILDKIT=1 docker build --build-arg RELEASE_VERSION=${RELEASE_VERSION} -t ${DOCKER_REPO}/direktiv:${RELEASE} . --push
+	DOCKER_BUILDKIT=1 docker build --build-arg IS_ENTERPRISE=${IS_ENTERPRISE} --build-arg RELEASE_VERSION=${RELEASE_VERSION} -t ${DOCKER_REPO}/direktiv:${RELEASE} . --push
 
 .PHONY: direktiv-build-cross
 direktiv-build-cross:
@@ -15,6 +15,10 @@ direktiv-build-cross:
 	docker buildx build --build-arg RELEASE_VERSION=${RELEASE_VERSION} --platform linux/amd64,linux/arm64 \
 		-t ${DOCKER_REPO}/direktiv:${RELEASE} --push . 
 
+.PHONY: direktiv-merge-main
+direktiv-merge-main:
+	@git fetch origin
+	@git merge -S origin/main
 
 CGO_LDFLAGS := "CGO_LDFLAGS=-static -w -s"
 GO_BUILD_TAGS := "osusergo,netgo"

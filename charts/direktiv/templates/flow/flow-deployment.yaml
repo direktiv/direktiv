@@ -41,12 +41,6 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "direktiv.serviceAccountName" . }}-functions
       containers:
-{{- if .Values.opentelemetry.enabled }}
-{{ include "direktiv.opentelemetry" . | indent 8 }}
-{{- end }}
-{{- if .Values.flow.extraContainers }}
-{{ toYaml .Values.flow.extraContainers | indent 8}}
-{{- end }}
         - name: flow
           securityContext:
             readOnlyRootFilesystem: false
@@ -100,10 +94,14 @@ spec:
               secretKeyRef:
                 name: {{ include "direktiv.fullname" . }}
                 key: db
+        {{- if .Values.license }}
+          - name: DIREKTIV_LICENSE
+            value: {{ .Values.license | quote }}
+        {{- end}}
           - name: DIREKTIV_FUNCTIONS_TIMEOUT
             value: {{ .Values.requestTimeout | quote }}
           - name: DIREKTIV_OPEN_TELEMETRY_BACKEND
-            value: {{ include "direktiv.opentelemetry-backend" . }}
+            value: {{ .Values.flow.opentelemetryBackend | quote }}
           - name: DIREKTIV_KNATIVE_SERVICE_ACCOUNT
             value: "{{ include "direktiv.serviceAccountName" . }}-functions-pod"
           - name: DIREKTIV_KNATIVE_NAMESPACE
@@ -180,23 +178,13 @@ spec:
             value: "{{ .Values.nats.config.routeURLs.user }}"
           - name: DIREKTIV_NATS_PASSWORD
             value: "{{ .Values.nats.config.routeURLs.password }}"
-          - name: DIREKTIV_OPENSEARCH_INSTALLED
-            value: "{{ .Values.opensearch.install }}"
-          - name: DIREKTIV_OPENSEARCH_HOST
-            value: "opensearch-cluster-master.{{ .Release.Namespace }}.svc" 
-          - name: DIREKTIV_OPENSEARCH_PORT
-            value: "{{ .Values.opensearch.httpPort }}"
-          - name: DIREKTIV_OPENSEARCH_PROTOCOL
-            value: "{{ .Values.opensearch.protocol }}"
-          - name: DIREKTIV_OPENSEARCH_USERNAME
-            value: "admin"
-          - name: DIREKTIV_OPENSEARCH_PASSWORD
-            value: "{{ (index .Values.opensearch.extraEnvs 0).value }}"
-
+          - name: DIREKTIV_LOGS_BACKEND
+            value: "direktiv-victoria-logs-single-server.{{ .Release.Namespace }}.svc"
+          {{- if .Values.otel.install }}
+          - name: DIREKTIV_OTEL_BACKEND
+            value: direktiv-opentelemetry-collector.{{ .Release.Namespace }}.svc:4317
+          {{- end }}
       volumes:
-{{- if .Values.opentelemetry.enabled }}
-{{ include "direktiv.opentelemetry.volume" . | indent 8 }}
-{{- end }}
         {{- if .Values.flow.extraVolumes }}
         {{ toYaml .Values.flow.extraVolumes | nindent 8 }}
         {{- end }}

@@ -2,41 +2,38 @@ package instancestoresql_test
 
 import (
 	"context"
+	"encoding/json"
 	"reflect"
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/instancestore"
-	"github.com/direktiv/direktiv/pkg/instancestore/instancestoresql"
 	"github.com/google/uuid"
 )
 
 func Test_NewSQLInstanceStore(t *testing.T) {
-	db, err := database.NewMockGorm()
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatal(err)
 	}
-	ns := uuid.New()
 	server := uuid.New()
 
-	store := instancestoresql.NewSQLInstanceStore(db)
+	store := db.InstanceStore()
 
 	telemetryInfo := &engine.InstanceTelemetryInfo{
-		Version:       "v2",
-		TraceParent:   "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
-		CallPath:      "/some/path",
-		NamespaceName: "namespace1",
+		Version:     "v1",
+		TraceParent: "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
 	}
 
-	telemetryInfoBytes, err := telemetryInfo.MarshalJSON()
+	telemetryInfoBytes, err := json.Marshal(telemetryInfo)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	_, err = store.CreateInstanceData(context.Background(), &instancestore.CreateInstanceDataArgs{
 		ID:             uuid.New(),
-		NamespaceID:    ns,
+		NamespaceID:    ns.ID,
 		RootInstanceID: uuid.New(),
 		Server:         server,
 		Invoker:        "api",
@@ -64,7 +61,7 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 			},
 		},
 	}
-	res, err := store.GetNamespaceInstances(context.Background(), ns, opts)
+	res, err := store.GetNamespaceInstances(context.Background(), ns.ID, opts)
 	if err != nil {
 		t.Error(err)
 		return
@@ -77,11 +74,12 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 	}
 
 	if len(res.Results) > 0 {
-		storedTelemetry, err := engine.LoadInstanceTelemetryInfo(res.Results[0].TelemetryInfo)
+		var storedTelemetry engine.InstanceTelemetryInfo
+		err := json.Unmarshal(res.Results[0].TelemetryInfo, &storedTelemetry)
 		if err != nil {
 			t.Errorf("failed to unmarshal telemetry info: %v", err)
 		}
-		if !reflect.DeepEqual(storedTelemetry, telemetryInfo) {
+		if !reflect.DeepEqual(storedTelemetry, *telemetryInfo) {
 			t.Errorf("telemetry info mismatch: got %+v, want %+v", storedTelemetry, telemetryInfo)
 		}
 	}

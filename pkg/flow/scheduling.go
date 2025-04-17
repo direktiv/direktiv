@@ -5,16 +5,16 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"math/big"
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/instancestore"
-	"github.com/direktiv/direktiv/pkg/tracing"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/google/uuid"
 )
 
@@ -64,28 +64,27 @@ func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
 		ctx2, err := engine.registerScheduled(ctx, id)
 		if err != nil {
 			if errors.Is(err, errEngineSync) {
-				slog.DebugContext(ctx, "Failed to register instance for scheduled execution.", "instance", id, "error", err)
+				slog.Error("failed to register instance for scheduled execution", slog.Any("error", err))
 				continue
 			}
-
-			slog.ErrorContext(ctx, "Failed to register instance for scheduled execution.", "instance", id, "error", err)
+			slog.Error("failed to register instance for scheduled execution", slog.Any("error", err))
 
 			return
 		}
-		slog.DebugContext(ctx, "Successfully registered instance for scheduled execution.", "instance", id)
 
 		im, err = engine.getInstanceMemory(ctx2, id)
 		if err != nil {
 			if strings.Contains(err.Error(), "could not serialize") ||
 				strings.Contains(err.Error(), "database records instance terminated") ||
 				errors.Is(err, errEngineSync) {
-				slog.Debug("Failed to retrieve instance memory in executor.", "instance", id, "error", err)
+				slog.Debug("failed to retrieve instance memory in executor", "instance", id, "error", err)
 				engine.deregisterScheduled(id)
 
 				continue
 			}
 
-			slog.ErrorContext(ctx, "Failed to retrieve instance memory in executor.", "instance", id, "error", err)
+			// namespace
+			telemetry.LogInstanceError(ctx, fmt.Sprintf("failed to retrieve instance memory in executor, %s", id), err)
 
 			engine.deregisterScheduled(id)
 
@@ -102,23 +101,11 @@ func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
 		return
 	}
 
-	slog.Debug("Beginning instance execution loop.", "instance", id)
-	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
-		Namespace:    im.Namespace().Name,
-		InstanceID:   im.GetInstanceID().String(),
-		Invoker:      im.instance.Instance.Invoker,
-		Callpath:     tracing.CreateCallpath(im.instance),
-		WorkflowPath: im.instance.Instance.WorkflowPath,
-		Status:       core.LogUnknownStatus,
-	}, im.GetState())
-	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrack(im.instance))
-	ctx, span, err2 := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent, "scheduler continues instance: "+im.instance.Instance.WorkflowPath)
-	if err2 != nil {
-		slog.Warn("engine executor failed to inject trace parent", "error", err2)
-	}
-	defer span.End()
+	slog.Debug("beginning instance execution loop", "instance", id)
+
 	engine.executorLoop(ctx, im)
-	slog.DebugContext(ctx, "Successfully deregistered instance after execution.", "instance", id)
+
+	slog.Debug(fmt.Sprintf("deregistered instance after execution, %s", id))
 
 	engine.deregisterScheduled(id)
 }
@@ -148,16 +135,11 @@ func (engine *engine) transitionLoop(ctx context.Context, im *instanceMemory, ms
 }
 
 func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
-	ctx, cleanup, err := tracing.NewSpan(ctx, "instance scheduling")
-	if err != nil {
-		slog.Debug("telemetry failed in scheduler", "error", err)
-	}
-	defer cleanup()
 	for {
 		// pop message
 		tx, err := engine.flow.beginSQLTx(ctx)
 		if err != nil {
-			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 			return
 		}
 		defer tx.Rollback()
@@ -169,14 +151,14 @@ func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
 				return
 			}
 
-			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 
 			return
 		}
 
 		err = tx.Commit(ctx)
 		if err != nil {
-			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 
 			return
 		}
@@ -186,11 +168,16 @@ func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
 }
 
 func (engine *engine) InstanceYield(ctx context.Context, im *instanceMemory) {
-	slog.DebugContext(ctx, "Instance preparing to yield and release resources.", "instance", im.ID().String(), "namespace", im.Namespace().Name)
+	// set parent before sleep
+	im.instance.TelemetryInfo.TraceParent = telemetry.TraceParent(ctx)
+
+	ctx = im.Context(ctx)
+	telemetry.LogInstance(ctx, telemetry.LogLevelDebug,
+		fmt.Sprintf("instance preparing to yield and release resources, %s", im.ID().String()))
 
 	err := engine.freeMemory(ctx, im)
 	if err != nil {
-		slog.ErrorContext(ctx, "Failed to free memory for instance. Initiating crash sequence.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", err)
+		telemetry.LogInstanceError(ctx, "failed to free memory for instance, initiating crash sequence", err)
 		engine.CrashInstance(ctx, im, err)
 
 		return
@@ -201,18 +188,15 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 	caller := engine.InstanceCaller(im)
 
 	if caller != nil {
-		slog.DebugContext(ctx, "Initiating result report to calling workflow.", "namespace", im.Namespace().Name, "instance", im.ID())
-		callpath := im.instance.Instance.ID.String()
-		for _, v := range im.instance.DescentInfo.Descent {
-			callpath += "/" + v.ID.String()
-		}
+		telemetry.LogInstance(ctx, telemetry.LogLevelInfo,
+			fmt.Sprintf("report result to calling workflow %s/%v", im.Namespace().Name, im.ID()))
+
 		msg := &actionResultMessage{
 			InstanceID: caller.ID.String(),
 			ActionContext: enginerefactor.ActionContext{
-				TraceParent: im.instance.TelemetryInfo.TraceParent,
+				TraceParent: telemetry.TraceParent(ctx),
 				State:       caller.State,
 				Branch:      caller.Branch,
-				Callpath:    callpath,
 				Instance:    im.GetInstanceID().String(),
 				Workflow:    im.instance.Instance.WorkflowPath,
 				Namespace:   im.instance.Instance.Namespace,
@@ -228,29 +212,28 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 		}
 		err := engine.ReportActionResults(ctx, msg)
 		if err != nil {
-			slog.ErrorContext(ctx, "Failed to report action results to caller workflow.", "namespace", im.Namespace(), "instance", im.ID(), "error", err)
-
+			telemetry.LogInstanceError(ctx,
+				fmt.Sprintf("failed to report action results to caller workflow %s/%v", im.Namespace().Name, im.ID()), err)
 			return
 		}
 	}
 }
 
 func (engine *engine) start(im *instanceMemory) {
-	namespace := im.instance.TelemetryInfo.NamespaceName
+	namespace := im.Namespace().Name
 	workflowPath := GetInodePath(im.instance.Instance.WorkflowPath)
 
-	ctx := context.Background()
-	ctx, span, err := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent, "scheduler starts instance: "+im.GetInstanceID().String()+", workflow: "+im.instance.Instance.WorkflowPath)
-	if err != nil {
-		slog.Debug("Failed to populate tracing information. Workflow execution halted.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID(), "error", err)
-	}
+	ctx := im.Context(context.Background())
+	ctx, span := enginerefactor.TraceReconstruct(ctx, im.instance.TelemetryInfo, "start-workflow")
 	defer span.End()
-	slog.Debug("Workflow execution initiated.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID())
+	span.AddEvent(fmt.Sprintf("flow %s", im.instance.Instance.WorkflowPath))
+
+	slog.Debug("workflow execution initiated", "namespace", namespace, "workflow", workflowPath, "instance", im.ID())
 
 	workflow, err := im.Model()
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError(ErrCodeWorkflowUnparsable, "failed to parse workflow YAML: %v", err))
-		slog.ErrorContext(ctx, "Failed to parse workflow YAML. Workflow execution halted.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID(), "error", err)
+		telemetry.LogNamespaceError(namespace, "failed to parse workflow YAML, workflow execution halted", err)
 
 		return
 	}
@@ -259,8 +242,8 @@ func (engine *engine) start(im *instanceMemory) {
 
 	ctx, err = engine.registerScheduled(ctx, id)
 	if err != nil {
-		slog.DebugContext(ctx, "Failed to register workflow as scheduled. Workflow execution may be delayed or halted.", "namespace", namespace, "workflow", workflowPath, "instance", id, "error", err)
-
+		telemetry.LogNamespaceError(namespace,
+			"failed to register workflow as scheduled, workflow execution may be delayed or halted", err)
 		return
 	}
 
@@ -269,7 +252,8 @@ func (engine *engine) start(im *instanceMemory) {
 		"data": workflow.GetStartState().GetID(),
 	})
 	if err != nil {
-		slog.ErrorContext(ctx, "Failed to marshal start state payload. Halting workflow execution.", "namespace", namespace, "workflow", workflowPath, "instance", id, "error", err)
+		telemetry.LogNamespaceError(namespace,
+			"failed to marshal start state payload, halting workflow execution", err)
 		panic(err) // TODO?
 	}
 
@@ -293,13 +277,13 @@ func (engine *engine) ReportActionResults(ctx context.Context, req *actionResult
 
 	uid, err := uuid.Parse(req.InstanceID)
 	if err != nil {
-		slog.DebugContext(ctx, "failed in ReportActionResults", "this", this(), "error", err)
+		telemetry.LogInstanceError(ctx, "failed reporting action results", err)
 		return err
 	}
 
 	err = engine.enqueueInstanceMessage(ctx, uid, "action", payload)
 	if err != nil {
-		slog.DebugContext(ctx, "failed to enqueque ReportActionResults", "this", this(), "error", err)
+		telemetry.LogInstanceError(ctx, "failed reporting action results", err)
 		return err
 	}
 

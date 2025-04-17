@@ -24,7 +24,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/flow"
-	"github.com/direktiv/direktiv/pkg/tracing"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/direktiv/direktiv/pkg/utils"
 )
 
@@ -39,7 +39,7 @@ func (worker *inboundWorker) Cancel() {
 	worker.lock.Lock()
 
 	if worker.cancel != nil {
-		slog.Debug("Cancelling worker.", "worker", worker.id)
+		slog.Debug("cancelling worker", "worker", worker.id)
 		worker.cancel()
 	}
 
@@ -47,7 +47,7 @@ func (worker *inboundWorker) Cancel() {
 }
 
 func (worker *inboundWorker) run() {
-	slog.Debug("Starting worker", "worker", worker.id)
+	slog.Debug("starting worker", "worker", worker.id)
 
 	for {
 		worker.lock.Lock()
@@ -66,12 +66,12 @@ func (worker *inboundWorker) run() {
 		worker.lock.Unlock()
 
 		id := req.r.Header.Get(actionIDHeader)
-		slog.Debug("Worker picked up request.", "worker", worker.id, "action-id", id)
+		slog.Debug("worker picked up request", "worker", worker.id, "action-id", id)
 
 		worker.handleFunctionRequest(req)
 	}
 
-	slog.Debug("Worker shut down.", "worker", worker.id)
+	slog.Debug("worker shut down", "worker", worker.id)
 }
 
 type outcome struct {
@@ -82,13 +82,10 @@ type outcome struct {
 
 // nolint:canonicalheader
 func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *functionRequest) (*outcome, error) {
-	ctx, spanEnd, err := tracing.NewSpan(ctx, "execting function request: "+ir.actionId+", workflow: "+ir.Workflow)
-	if err != nil {
-		slog.Debug("doFunctionRequest failed", "error", err)
-	}
-	defer spanEnd()
+	ctx, span := telemetry.Tracer.Start(ctx, "executing-action")
+	defer span.End()
 
-	slog.DebugContext(ctx, "Forwarding request to service.", "action-id", ir.actionId)
+	slog.Debug("forwarding request to service", "action-id", ir.actionId)
 
 	url := "http://localhost:8080"
 
@@ -443,15 +440,16 @@ func fetchFunctionFiles(ctx context.Context, flowToken string, flowAddr string, 
 			}
 
 			if idx > -1 {
-				slog.Info("starting request API routine", "file", file, "idx", idx, "id", vars[idx].ID)
+				slog.Info("starting request api routine", "file", file, "idx", idx, "id", vars[idx].ID)
 				addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables/%v", flowAddr, namespace, vars[idx].ID)
+
 				client := &http.Client{}
 				req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
 				if err != nil {
 					pw.CloseWithError(fmt.Errorf("failed to create new request: %w", err))
 					return
 				}
-				req.Header.Set("Direktiv-Token", flowToken)
+				req.Header.Set("Direktiv-Api-Key", flowToken)
 				resp, err := client.Do(req)
 				if err != nil {
 					pw.CloseWithError(fmt.Errorf("failed to execute request: %w", err))
@@ -508,6 +506,13 @@ func determineVarType(fileScope string) (string, error) {
 }
 
 func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
+	ctx := telemetry.GetContextFromRequest(req.r.Context(), req.r)
+	ctx, span := telemetry.Tracer.Start(ctx, "receiving-action")
+	defer span.End()
+
+	// req.Header.Add(DirektivTracePathHeader, ar.TracePath)
+	// get header here and put it in the request so it can log in sidecar and in log handler
+
 	defer func() {
 		close(req.end)
 	}()
@@ -540,8 +545,12 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 			Permissions: f.Permissions,
 		}
 	}
+
+	callPath := req.r.Header.Get(flow.DirektivCallPathHeader)
+
 	ir := &functionRequest{
 		actionId:      aid,
+		callPath:      callPath,
 		deadline:      action.Deadline,
 		input:         action.UserInput,
 		files:         files,
@@ -551,7 +560,6 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 		ir.deadline = time.Now().Add(3 * time.Second)
 	}
 
-	ctx := req.r.Context()
 	ctx, cancel := context.WithDeadline(ctx, ir.deadline)
 	defer cancel()
 
@@ -563,31 +571,23 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 		return
 	}
 
-	// NOTE: rctx exists because we don't want to immediately cancel the function request if our context is cancelled
-	rctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	rctx = tracing.AddNamespace(rctx, ir.Namespace)
-	rctx = tracing.AddInstanceMemoryAttr(rctx, tracing.InstanceAttributes{
-		Namespace:    ir.Namespace,
-		InstanceID:   ir.Instance,
-		Status:       core.LogUnknownStatus,
-		WorkflowPath: ir.Workflow,
-		Callpath:     ir.Callpath,
-	}, ir.State)
-	rctx = tracing.WithTrack(rctx, tracing.BuildInstanceTrackViaCallpath(ir.Callpath))
-	rctx = tracing.AddActionID(rctx, aid)
-	rctx = tracing.AddNamespace(rctx, ir.Namespace)
-	rctx = tracing.AddStateAttr(rctx, ir.State)
-	rctx, end, err2 := tracing.NewSpan(rctx, "handle function request")
-	if err2 != nil {
-		slog.Debug("failed while doFunctionRequest", "error", err2)
+	logObject := telemetry.LogObject{
+		Namespace: ir.Namespace,
+		ID:        aid,
+		Scope:     telemetry.LogScopeInstance,
+		InstanceInfo: telemetry.InstanceInfo{
+			Invoker:  ir.Invoker,
+			Path:     ir.Workflow,
+			State:    ir.State,
+			Status:   core.LogRunningStatus,
+			CallPath: callPath,
+		},
 	}
-	defer end()
-	rctx, span, err2 := tracing.InjectTraceParent(rctx, ir.ActionContext.TraceParent, "action registered for execution: "+ir.actionId+", workflow: "+ir.Workflow)
-	if err2 != nil {
-		slog.Warn("failed while doFunctionRequest", "error", err2)
-	}
-	defer span.End()
+
+	// create a new indepenedent context with traceparent
+	traceparent := telemetry.TraceParent(ctx)
+	traceparentCtx := telemetry.FromTraceParent(context.Background(), traceparent)
+	rctx := telemetry.LogInitCtx(traceparentCtx, logObject)
 
 	worker.srv.registerActiveRequest(ir, rctx, cancel)
 	defer worker.srv.deregisterActiveRequest(ir.actionId)
@@ -746,20 +746,20 @@ func (worker *inboundWorker) respondToFlow(w http.ResponseWriter, actionId strin
 	w.Header().Add(flow.DirektivActionIDHeader, actionId)
 	b, err := json.Marshal(ar)
 	if err != nil {
-		slog.Error("Failed to report results for request.", "action_id", actionId, "error", err)
+		slog.Error("failed to report results for request", "action_id", actionId, "error", err)
 		return
 	}
 	_, err = w.Write(b)
 	if err != nil {
-		slog.Error("Failed to write results for request.", "action_id", actionId, "error", err)
+		slog.Error("failed to write results for request", "action_id", actionId, "error", err)
 		return
 	}
 	if out.errCode != "" {
-		slog.Error("Request failed with catchable", "action_id", actionId, "action_err_code", out.errCode, "error", out.errMsg)
+		slog.Error("request failed with catchable", "action_id", actionId, "action_err_code", out.errCode, "error", out.errMsg)
 	} else if out.errMsg != "" {
-		slog.Error("Request failed with uncatchable service error.", "action_id", actionId, "error", out.errMsg)
+		slog.Error("request failed with uncatchable service error", "action_id", actionId, "error", out.errMsg)
 	} else {
-		slog.Info("Request completed successfully.", "action_id", actionId)
+		slog.Info("request completed successfully", "action_id", actionId)
 	}
 }
 
@@ -772,5 +772,5 @@ func (worker *inboundWorker) reportSidecarError(w http.ResponseWriter, ir *funct
 func (worker *inboundWorker) reportValidationError(id string, w http.ResponseWriter, code int, err error) {
 	msg := err.Error()
 	http.Error(w, msg, code)
-	slog.Warn("Request returned due to failed validation.", "action_id", id, "action_err_code", code, "error", err)
+	slog.Warn("request returned due to failed validation", "action_id", id, "action_err_code", code, "error", err)
 }

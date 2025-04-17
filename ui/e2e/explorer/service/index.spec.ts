@@ -63,7 +63,7 @@ test("it is possible to create a service", async ({ page }) => {
 
   /* create service */
   await page.getByRole("button", { name: "New" }).first().click();
-  await page.getByRole("button", { name: "New Service" }).click();
+  await page.getByRole("button", { name: "Service" }).click();
 
   await expect(page.getByRole("button", { name: "Create" })).toBeDisabled();
   await page.getByPlaceholder("service-name.yaml").fill(service.name);
@@ -280,7 +280,10 @@ test("it is possible to edit patches", async ({ page }) => {
     });
 
   await editorTarget.click();
-  await page.locator("textarea").last().fill(updatedPatch.value);
+
+  await page.keyboard.press("Control+a");
+  await page.keyboard.press("Delete");
+  await page.keyboard.type(updatedPatch.value);
 
   await page.getByRole("button", { name: "Save" }).click();
 
@@ -310,7 +313,7 @@ test("it is possible to edit patches", async ({ page }) => {
 
   const expectedYaml = createServiceYaml(updatedService);
 
-  const editor = page.locator(".lines-content");
+  const editor = page.locator(".lines-content").first();
 
   await expect(
     editor,
@@ -418,4 +421,132 @@ test("it is possible to edit environment variables", async ({ page }) => {
     page.getByTestId("unsaved-note"),
     "it does not render a hint that there are unsaved changes"
   ).not.toBeVisible();
+});
+
+test("empty fields are omitted from the service file", async ({ page }) => {
+  /* prepare data */
+
+  /**
+   * note: keep number of variables and patches low because we only
+   * compare the yaml that is visible in the editor at one time
+   **/
+
+  const envs = Array.from({ length: 3 }, () => ({
+    name: faker.lorem.word(),
+    value: faker.git.commitSha({ length: 7 }),
+  }));
+
+  const patches = Array.from({ length: 2 }, () => ({
+    op: PatchOperations[Math.floor(Math.random() * 3)] as PatchOperationType,
+    path: faker.internet.url(),
+    value: faker.lorem.words(3),
+  }));
+
+  const service = {
+    name: "mynewservice.yaml",
+    image: "bash",
+    scale: 2,
+    size: "medium",
+    cmd: "hello",
+    envs,
+    patches,
+  };
+
+  const expectedYaml = createServiceYaml(service);
+
+  /* visit page */
+  await page.goto(`/n/${namespace}/explorer/tree`, {
+    waitUntil: "networkidle",
+  });
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "it navigates to the test namespace in the explorer"
+  ).toHaveText(namespace);
+
+  /* create service */
+  await page.getByRole("button", { name: "New" }).first().click();
+  await page.getByRole("button", { name: "Service" }).click();
+
+  await expect(page.getByRole("button", { name: "Create" })).toBeDisabled();
+  await page.getByPlaceholder("service-name.yaml").fill(service.name);
+  await page.getByRole("button", { name: "Create" }).click();
+
+  await expect(
+    page,
+    "it creates the service and opens the file in the explorer"
+  ).toHaveURL(`/n/${namespace}/explorer/service/${service.name}`);
+
+  const editor = page.locator(".lines-content");
+
+  await expect(editor).toContainText("direktiv_api: service/v1", {
+    useInnerText: true,
+  });
+
+  /* fill in form */
+  await page.getByLabel("Image").fill("bash");
+  await page.locator("button").filter({ hasText: "Select a scale" }).click();
+  await page.getByLabel(service.scale.toString()).click();
+  await page.locator("button").filter({ hasText: "Select a size" }).click();
+  await page.getByLabel(service.size).click();
+
+  await page.getByLabel("Cmd").fill(service.cmd);
+
+  /* add patches */
+  for (let i = 0; i < patches.length; i++) {
+    const item = patches[i] as PatchSchemaType;
+    await page.getByRole("button", { name: "add patch" }).click();
+    await page.getByLabel("Operation").click();
+    await page.getByLabel(item.op).click();
+    await page.getByLabel("path").fill(item.path);
+    await page.keyboard.press("Tab");
+    await page.type("textarea", item.value);
+    await page.getByRole("button", { name: "Save" }).click();
+  }
+
+  /* add env variables */
+  const envsElement = page
+    .locator("fieldset")
+    .filter({ hasText: "Environment variables" });
+
+  for (let i = 0; i < envs.length; i++) {
+    const item = envs[i] as EnvVarSchemaType;
+    await expect(
+      envsElement.getByPlaceholder("NAME"),
+      "it renders one set of inputs for every existing env +1 empty set"
+    ).toHaveCount(i + 1);
+
+    await envsElement.getByPlaceholder("NAME").last().fill(item.name);
+    await envsElement.getByPlaceholder("VALUE").last().fill(item.value);
+    await envsElement.getByRole("button").last().click();
+  }
+
+  await expect(
+    editor,
+    "all entered data is represented in the editor preview"
+  ).toContainText(expectedYaml, { useInnerText: true });
+
+  await page.getByTestId("patch-row").nth(1).getByRole("button").click();
+  await page.getByRole("button", { name: "Delete" }).click();
+  await page.getByTestId("patch-row").nth(0).getByRole("button").click();
+  await page.getByRole("button", { name: "Delete" }).click();
+
+  /* delete items and assert rendered list is updated*/
+  await page.getByTestId("env-item-form").getByRole("button").nth(2).click();
+  await page.getByTestId("env-item-form").getByRole("button").nth(1).click();
+  await page.getByTestId("env-item-form").getByRole("button").nth(0).click();
+
+  await page.getByLabel("Cmd").click();
+  await page.getByLabel("Cmd").fill("");
+
+  await expect(editor).toContainText(
+    `direktiv_api: service/v1
+image: bash
+scale: 2
+size: medium`,
+    { useInnerText: true }
+  );
+
+  await expect(editor).not.toContainText(`cmd: hello`, {
+    useInnerText: true,
+  });
 });

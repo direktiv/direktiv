@@ -8,3 +8,11 @@ export const isEnterprise = () => {
   }
   return isEnterprise;
 };
+
+export const isDev = () => {
+  let isDev = false;
+  if (typeof window !== "undefined") {
+    isDev = window._direktiv?.version === "dev";
+  }
+  return isDev;
+};

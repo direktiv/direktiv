@@ -7,12 +7,14 @@ export const logKeys = {
       route,
       activity,
       trace,
+      last,
     }: {
       apiKey?: string;
       instance?: string;
       route?: string;
       activity?: string;
       trace?: string;
+      last?: number;
     }
   ) =>
     [
@@ -24,6 +26,7 @@ export const logKeys = {
         route,
         activity,
         trace,
+        last,
       },
     ] as const,
 };

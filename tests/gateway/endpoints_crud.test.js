@@ -6,71 +6,81 @@ import { retry10 } from '../common/retry'
 
 const testNamespace = 'system'
 
-const endpoint1 = `
-direktiv_api: endpoint/v1
-plugins:
-  auth:
-  - type: key-auth
-    configuration:
-        key_name: secret
-  target:
-    type: instant-response
-    configuration:
+const endpoint1 = `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+  path: "/endpoint1"
+  allow_anonymous: false
+  plugins:
+    auth:
+    - type: key-auth
+      configuration:
+         key_name: secret
+    target:
+      type: instant-response
+      configuration:
         status_code: 201
         status_message: "TEST1"
-methods: 
-  - GET
-path: /endpoint1`
+get:
+  responses:
+    "200":
+      description: works`
 
-const endpoint2 = `
-direktiv_api: endpoint/v1
-allow_anonymous: true
-plugins:
-  auth:
-  - type: basic-auth
-  - type: key-auth
-    configuration:
-        key_name: secret
-  target:
-    type: instant-response
-    configuration:
-        status_code: 202
-        status_message: "TEST2"
-methods: 
-  - GET
-path: /endpoint2`
+const endpoint2 = `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint2"
+    allow_anonymous: true
+    plugins:
+      auth:
+      - type: key-auth
+        configuration:
+           key_name: secret
+      target:
+        type: instant-response
+        configuration:
+          status_code: 202
+          status_message: "TEST2"
+get:
+   responses:
+      "200":
+          description: works`
 
-const endpoint3 = `
-direktiv_api: endpoint/v1
-plugins:
-  auth:
-  - type: key-auth
-    configuration:
-        key_name: secret
-  target:
-    type: instant-response
-    configuration:
-        status_code: 201
-        status_message: "TEST1"
-methods: 
-  - GET
-path: /endpoint3/longer/path`
+const endpoint3 = `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint3/longer/path"
+    allow_anonymous: true
+    plugins:
+      auth:
+      - type: key-auth
+        configuration:
+           key_name: secret
+      target:
+        type: instant-response
+        configuration:
+          status_code: 201
+          status_message: "TEST1"
+get:
+   responses:
+      "200":
+        description: works`
 
-const endpoint4 = `
-direktiv_api: endpoint/v1
-plugins:
-  auth:
-  - type: key-auth
-    configuration:
-        key_name: secret
-  target:
-    type: instant-response
-    configuration:
-        status_code: 201
-        status_message: "TEST1"
-methods: 
-  - GET
-path: /endpoint4/longer/path/{id}`
+const endpoint4 = `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+    path: "/endpoint4/longer/path/{id}"
+    allow_anonymous: true
+    plugins:
+      auth:
+      - type: key-auth
+        configuration:
+           key_name: secret
+      target:
+        type: instant-response
+        configuration:
+          status_code: 201
+          status_message: "TEST1"
+get:
+   responses:
+      "200":
+        description: works`
 
 const consumer1 = `
 direktiv_api: "consumer/v1"
@@ -92,14 +102,17 @@ tags:
 groups:
 - group2`
 
-const endpointBroken = `direktiv_api: endpoint/v1
-allow_anonymous: true
-plugins:
-  outbound:
-    type: js-outbound
-methods: 
-  - GET
-path: ep4`
+const endpointBroken = `x-direktiv-api: endpoint/v2
+x-direktiv-config:
+  path: "ep4"
+  allow_anonymous: true
+  plugins:
+    outbound: 
+      type: js-outbound
+get:
+  responses:
+    "200":
+      description: works`
 
 describe('Test wrong endpoint config', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -122,16 +135,11 @@ describe('Test wrong endpoint config', () => {
 		expect(listRes.body.data.length).toEqual(1)
 		expect(listRes.body.data[0]).toEqual(
 			{
-				methods: null,
+				spec: expect.anything(),
 				file_path: '/endpointbroken.yaml',
-				allow_anonymous: false,
-				timeout: 0,
 				errors: [ 'yaml: unmarshal errors:\n  line 5: cannot unmarshal !!map into []core.PluginConfig' ],
 				warnings: [],
 				server_path: '',
-				plugins: { target: {
-					type: '',
-				} },
 			},
 		)
 	})
@@ -199,29 +207,36 @@ describe('Test gateway get single endpoint', () => {
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
-		expect(listRes.body.data[0]).toEqual({
-			allow_anonymous: false,
+		expect(listRes.body.data[0]).toEqual(expect.objectContaining({
+			spec: expect.objectContaining({
+				get: expect.anything(),
+				'x-direktiv-config': {
+					allow_anonymous: false,
+					path: '/endpoint1',
+					plugins: {
+						auth: [
+							{
+								configuration: {
+									key_name: 'secret',
+								},
+								type: 'key-auth',
+							},
+						],
+						target: {
+							configuration: {
+								status_code: 201,
+								status_message: 'TEST1',
+							},
+							type: 'instant-response',
+						},
+					},
+				},
+			}),
 			errors: [],
 			warnings: [],
 			server_path: '/ns/system/endpoint1',
 			file_path: '/endpoint1.yaml',
-			methods: [ 'GET' ],
-			path: '/endpoint1',
-			plugins: {
-				auth: [ {
-					configuration: { key_name: 'secret' },
-					type: 'key-auth',
-				} ],
-				target: {
-					configuration: {
-						status_code: 201,
-						status_message: 'TEST1',
-					},
-					type: 'instant-response',
-				},
-			},
-			timeout: 0,
-		})
+		}))
 	})
 
 	retry10(`should list long path endpoint`, async () => {
@@ -230,29 +245,7 @@ describe('Test gateway get single endpoint', () => {
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
-		expect(listRes.body.data[0]).toEqual({
-			allow_anonymous: false,
-			errors: [],
-			warnings: [],
-			server_path: '/ns/system/endpoint3/longer/path',
-			file_path: '/endpoint3.yaml',
-			methods: [ 'GET' ],
-			path: '/endpoint3/longer/path',
-			plugins: {
-				auth: [ {
-					configuration: { key_name: 'secret' },
-					type: 'key-auth',
-				} ],
-				target: {
-					configuration: {
-						status_code: 201,
-						status_message: 'TEST1',
-					},
-					type: 'instant-response',
-				},
-			},
-			timeout: 0,
-		})
+		expect(listRes.body.data[0].spec['x-direktiv-config'].path).toEqual('/endpoint3/longer/path')
 	})
 
 	retry10(`should list long path endpoint with var`, async () => {
@@ -261,29 +254,7 @@ describe('Test gateway get single endpoint', () => {
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
-		expect(listRes.body.data[0]).toEqual({
-			allow_anonymous: false,
-			errors: [],
-			warnings: [],
-			server_path: '/ns/system/endpoint4/longer/path/{id}',
-			file_path: '/endpoint4.yaml',
-			methods: [ 'GET' ],
-			path: '/endpoint4/longer/path/{id}',
-			plugins: {
-				auth: [ {
-					configuration: { key_name: 'secret' },
-					type: 'key-auth',
-				} ],
-				target: {
-					configuration: {
-						status_code: 201,
-						status_message: 'TEST1',
-					},
-					type: 'instant-response',
-				},
-			},
-			timeout: 0,
-		})
+		expect(listRes.body.data[0].spec['x-direktiv-config'].path).toEqual('/endpoint4/longer/path/{id}')
 	})
 })
 
@@ -333,52 +304,17 @@ describe('Test gateway endpoints crud operations', () => {
 		expect(listRes.body.data).toEqual(
 			[
 				{
-					allow_anonymous: false,
+					spec: expect.anything(),
 					errors: [],
 					warnings: [],
 					server_path: '/ns/system/endpoint1',
 					file_path: '/endpoint1.yaml',
-					methods: [ 'GET' ],
-					path: '/endpoint1',
-					plugins: {
-						auth: [ {
-							configuration: { key_name: 'secret' },
-							type: 'key-auth',
-						} ],
-						target: {
-							configuration: {
-								status_code: 201,
-								status_message: 'TEST1',
-							},
-							type: 'instant-response',
-						},
-					},
-					timeout: 0,
 				}, {
-					allow_anonymous: true,
+					spec: expect.anything(),
 					errors: [],
 					warnings: [],
 					server_path: '/ns/system/endpoint2',
 					file_path: '/endpoint2.yaml',
-					methods: [ 'GET' ],
-					path: '/endpoint2',
-					plugins: {
-						auth: [
-							{ type: 'basic-auth' },
-							{
-								configuration: { key_name: 'secret' },
-								type: 'key-auth',
-							},
-						],
-						target: {
-							configuration: {
-								status_code: 202,
-								status_message: 'TEST2',
-							},
-							type: 'instant-response',
-						},
-					},
-					timeout: 0,
 				},
 			],
 		)

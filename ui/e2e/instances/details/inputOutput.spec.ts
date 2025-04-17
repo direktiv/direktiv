@@ -1,11 +1,6 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
-import {
-  workflowWithDelay as delayedWorkflowContent,
-  workflowWithFewLogs as fewLogsWorkflowContent,
-  workflowWithManyLogs as manyLogsWorkflowContent,
-  simpleWorkflow as simpleWorkflowContent,
-} from "../utils/workflows";
 import { expect, test } from "@playwright/test";
+import { simpleWorkflow, workflowWithDelay } from "../utils/workflows";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils/index";
@@ -13,42 +8,9 @@ import { faker } from "@faker-js/faker";
 import { mockClipboardAPI } from "e2e/utils/testutils";
 
 let namespace = "";
-const simpleWorkflowName = faker.system.commonFileName("yaml");
-const delayedWorkflowName = faker.system.commonFileName("yaml");
-const fewLogsWorkflowName = faker.system.commonFileName("yaml");
-const manyLogsWorkflowName = faker.system.commonFileName("yaml");
 
 test.beforeEach(async ({ page }) => {
   namespace = await createNamespace();
-  /* create workflows we can use to create instances later */
-  await createFile({
-    name: simpleWorkflowName,
-    namespace,
-    type: "workflow",
-    yaml: simpleWorkflowContent,
-  });
-
-  await createFile({
-    name: delayedWorkflowName,
-    namespace,
-    type: "workflow",
-    yaml: delayedWorkflowContent,
-  });
-
-  await createFile({
-    name: fewLogsWorkflowName,
-    namespace,
-    type: "workflow",
-    yaml: fewLogsWorkflowContent,
-  });
-
-  await createFile({
-    name: manyLogsWorkflowName,
-    namespace,
-    type: "workflow",
-    yaml: manyLogsWorkflowContent,
-  });
-
   await mockClipboardAPI(page);
 });
 
@@ -60,10 +22,18 @@ test.afterEach(async () => {
 test("the input/output panel responds to user interaction", async ({
   page,
 }) => {
+  const workflowName = faker.system.commonFileName("yaml");
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: simpleWorkflow,
+  });
+
   const instanceId = (
     await createInstance({
       namespace,
-      path: simpleWorkflowName,
+      path: workflowName,
     })
   ).data.id;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
@@ -155,10 +125,17 @@ test("the input/output panel responds to user interaction", async ({
 test("the output is shown when the workflow finished running", async ({
   page,
 }) => {
+  const workflowName = faker.system.commonFileName("yaml");
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: workflowWithDelay,
+  });
   const instanceId = (
     await createInstance({
       namespace,
-      path: delayedWorkflowName,
+      path: workflowName,
     })
   ).data.id;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
@@ -199,10 +176,17 @@ test("the output is shown when the workflow finished running", async ({
 test("after a running instance finishes, the output tab is automatically selected", async ({
   page,
 }) => {
+  const workflowName = faker.system.commonFileName("yaml");
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: workflowWithDelay,
+  });
   const instanceId = (
     await createInstance({
       namespace,
-      path: delayedWorkflowName,
+      path: workflowName,
     })
   ).data.id;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);

@@ -1,6 +1,5 @@
 import { FC, useEffect, useMemo, useState } from "react";
 import { NoPermissions, NoResult, Table, TableBody } from "~/design/Table";
-import { Pagination, PaginationLink } from "~/design/Pagination";
 
 import { Card } from "~/design/Card";
 import { Container } from "lucide-react";
@@ -10,6 +9,7 @@ import Delete from "./Delete";
 import { Dialog } from "~/design/Dialog";
 import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
+import { Pagination } from "~/components/Pagination";
 import PaginationProvider from "~/components/PaginationProvider";
 import { RegistrySchemaType } from "~/api/registries/schema";
 import { useDeleteRegistry } from "~/api/registries/mutate/deleteRegistry";
@@ -60,10 +60,7 @@ const RegistriesList: FC = () => {
           currentItems,
           goToFirstPage,
           goToPage,
-          goToNextPage,
-          goToPreviousPage,
           currentPage,
-          pagesList,
           totalPages,
         }) => (
           <>
@@ -72,25 +69,27 @@ const RegistriesList: FC = () => {
                 <Container className="h-5" />
                 {t("pages.settings.registries.list.title")}
               </h3>
-              <Input
-                className="sm:w-60"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  goToFirstPage();
-                }}
-                placeholder={t(
-                  "pages.settings.registries.list.searchPlaceholder"
-                )}
-              />
-              <CreateItemButton
-                onClick={() => setCreateRegistry(true)}
-                data-testid="registry-create"
-              >
-                {t("pages.settings.registries.list.createBtn")}
-              </CreateItemButton>
             </div>
             <Card className="mb-4">
+              <div className="flex justify-end gap-5 p-2 border-b border-gray-5 dark:border-gray-dark-5">
+                <Input
+                  className="sm:w-60"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    goToFirstPage();
+                  }}
+                  placeholder={t(
+                    "pages.settings.registries.list.searchPlaceholder"
+                  )}
+                />
+                <CreateItemButton
+                  onClick={() => setCreateRegistry(true)}
+                  data-testid="registry-create"
+                >
+                  {t("pages.settings.registries.list.createBtn")}
+                </CreateItemButton>
+              </div>
               {isAllowed ? (
                 <>
                   {currentItems.length ? (
@@ -130,24 +129,11 @@ const RegistriesList: FC = () => {
                 <NoPermissions>{noPermissionMessage}</NoPermissions>
               )}
             </Card>
-            {totalPages > 1 && (
-              <Pagination>
-                <PaginationLink
-                  icon="left"
-                  onClick={() => goToPreviousPage()}
-                />
-                {pagesList.map((page) => (
-                  <PaginationLink
-                    active={currentPage === page}
-                    key={`${page}`}
-                    onClick={() => goToPage(page)}
-                  >
-                    {page}
-                  </PaginationLink>
-                ))}
-                <PaginationLink icon="right" onClick={() => goToNextPage()} />
-              </Pagination>
-            )}
+            <Pagination
+              totalPages={totalPages}
+              value={currentPage}
+              onChange={goToPage}
+            />
           </>
         )}
       </PaginationProvider>

@@ -6,7 +6,7 @@ import Logs from "./Logs";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 
-const InstancesPage = () => {
+const MonitoringPage = () => {
   const { t } = useTranslation();
   return (
     <>
@@ -34,4 +34,4 @@ const InstancesPage = () => {
   );
 };
 
-export default InstancesPage;
+export default MonitoringPage;

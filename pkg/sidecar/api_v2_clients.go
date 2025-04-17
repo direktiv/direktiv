@@ -44,6 +44,8 @@ func getVariables(ctx context.Context, flowToken, addr string) (*variablesRespon
 	}
 	variables := variablesResponse{}
 
+	// f, _ := httputil.DumpResponse(resp, true)
+	// fmt.Println(string(f))
 	statusCode, err := handleResponse(resp, func(resp *http.Response) (int, error) {
 		decoder := json.NewDecoder(resp.Body)
 		if err = decoder.Decode(&variables); err != nil {
@@ -136,7 +138,6 @@ func getVariableMetaFromFlow(ctx context.Context, flowToken string, flowAddr str
 			return variable{}, statusCode, fmt.Errorf("failed to get namespace variables: %w", err)
 		}
 		typ = "namespace-variable"
-
 	default:
 		return variable{}, statusCode, fmt.Errorf("unknown scope: %s", scope)
 	}
@@ -156,7 +157,7 @@ func getVariableDataViaID(ctx context.Context, flowToken string, flowAddr string
 	if err != nil {
 		return variable{}, err
 	}
-	req.Header.Set("Direktiv-Token", flowToken)
+	req.Header.Set("Direktiv-Api-Key", flowToken)
 	resp, err := client.Do(req)
 	if err != nil {
 		return variable{}, err
@@ -167,13 +168,13 @@ func getVariableDataViaID(ctx context.Context, flowToken string, flowAddr string
 		return variable{}, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	v := variable{}
+	v := variableResponse{}
 	decoder := json.NewDecoder(resp.Body)
 	if err = decoder.Decode(&v); err != nil {
 		return variable{}, err
 	}
 
-	return v, nil
+	return v.Data, nil
 }
 
 func postVarData(ctx context.Context, flowToken string, flowAddr string, namespace string, body createVarRequest) (int, error) {
@@ -230,7 +231,7 @@ func doRequest(ctx context.Context, method, flowToken, url string, body io.Reade
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new request: %w", err)
 	}
-	req.Header.Set("Direktiv-Token", flowToken)
+	req.Header.Set("Direktiv-Api-Key", flowToken)
 
 	resp, err := client.Do(req)
 	if err != nil {

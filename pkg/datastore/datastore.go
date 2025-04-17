@@ -16,8 +16,6 @@ type Store interface {
 	// Mirror returns datastore.MirrorStore, is responsible for reading and writing mirrors information.
 	Mirror() MirrorStore
 
-	NewLogs() LogStore
-
 	Secrets() SecretsStore
 
 	RuntimeVariables() RuntimeVariablesStore
@@ -26,6 +24,7 @@ type Store interface {
 	EventListener() EventListenerStore
 	EventListenerTopics() EventTopicsStore
 	StagingEvents() StagingEventStore
+	Traces() TracesStore
 }
 
 type ValidationError map[string]string
@@ -39,3 +38,6 @@ var (
 	// when tying to violate unique constraints.
 	ErrDuplication = errors.New("ErrDuplication")
 )
+
+// SymmetricEncryptionKey a symmetric encryption key to encrypt and decrypt sensitive data in the database.
+var SymmetricEncryptionKey = "some_secret_key_"

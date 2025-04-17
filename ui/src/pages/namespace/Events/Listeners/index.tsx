@@ -1,20 +1,36 @@
 import { NoPermissions, NoResult, TableCell, TableRow } from "~/design/Table";
+import {
+  getOffsetByPageNumber,
+  getTotalPages,
+} from "~/components/Pagination/utils";
+import {
+  useEventListenersPageSize,
+  usePageSizeActions,
+} from "~/util/store/pagesize";
+import { useMemo, useState } from "react";
 
 import { Antenna } from "lucide-react";
 import { Card } from "~/design/Card";
 import ListenersTable from "./Table";
 import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
+import { SelectPageSize } from "../../../../components/SelectPageSize";
 import { useEventListeners } from "~/api/eventListeners/query/get";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-const pageSize = 10;
-
 const ListenersList = () => {
-  const [offset, setOffset] = useState(0);
+  const pageSize = useEventListenersPageSize();
+  const { setEventListenersPageSize } = usePageSizeActions();
+  const [page, setPage] = useState(1);
+  const offset = useMemo(
+    () => getOffsetByPageNumber(page, Number(pageSize)),
+    [page, pageSize]
+  );
   const { data, isFetched, isAllowed, noPermissionMessage } = useEventListeners(
-    { limit: pageSize, offset }
+    {
+      limit: parseInt(pageSize),
+      offset,
+    }
   );
 
   const { t } = useTranslation();
@@ -23,7 +39,6 @@ const ListenersList = () => {
 
   const numberOfResults = data?.meta?.total ?? 0;
   const noResults = isFetched && numberOfResults === 0;
-  const showPagination = numberOfResults > pageSize;
 
   return (
     <div className="flex grow flex-col gap-y-3 p-5">
@@ -59,14 +74,22 @@ const ListenersList = () => {
           )}
         </ListenersTable>
       </Card>
-      {showPagination && (
-        <Pagination
-          itemsPerPage={pageSize}
-          offset={offset}
-          setOffset={(value) => setOffset(value)}
-          totalItems={numberOfResults}
+      <div className="flex items-center justify-end gap-2">
+        <SelectPageSize
+          initialPageSize={pageSize}
+          onSelect={(selectedSize) => {
+            setEventListenersPageSize(selectedSize);
+            setPage(1);
+          }}
         />
-      )}
+        <Pagination
+          value={page}
+          onChange={(value) => {
+            setPage(value);
+          }}
+          totalPages={getTotalPages(numberOfResults, Number(pageSize))}
+        />
+      </div>
     </div>
   );
 };

@@ -1,36 +1,23 @@
 import { ComponentPropsWithoutRef, forwardRef } from "react";
 import { formatLogTime, logLevelToLogEntryVariant } from "~/util/helpers";
 
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { LogEntry } from "~/design/Logs";
 import { LogEntryType } from "~/api/logs/schema";
 import { LogSegment } from "~/components/Logs/LogSegment";
-import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 type LogEntryProps = ComponentPropsWithoutRef<typeof LogEntry>;
 type Props = { logEntry: LogEntryType } & LogEntryProps;
 export const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {
-    const pages = usePages();
     const { t } = useTranslation();
-    const { msg, error, level, time, workflow, namespace } = logEntry;
+    const { msg, level, time, workflow, namespace } = logEntry;
     const formattedTime = formatLogTime(time);
     const hasNamespaceInformation = !!namespace;
 
     const isWorkflowLog = !!workflow;
     const workflowPath = workflow?.workflow;
-
-    const workflowLink = pages.explorer.createHref({
-      path: workflow?.workflow,
-      namespace: namespace ?? "",
-      subpage: "workflow",
-    });
-
-    const instanceLink = pages.instances.createHref({
-      namespace: namespace ?? "",
-      instance: workflow?.instance,
-    });
 
     return (
       <LogEntry
@@ -42,19 +29,32 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         <LogSegment display={true}>
           {t("components.logs.logEntry.messageLabel")} {msg}
         </LogSegment>
-        <LogSegment display={error ? true : false}>
-          {t("components.logs.logEntry.errorLabel")} {error}
-        </LogSegment>
         <LogSegment display={isWorkflowLog && hasNamespaceInformation}>
           <span className="opacity-60">
-            <Link to={workflowLink} className="underline" target="_blank">
+            <Link
+              to="/n/$namespace/explorer/workflow/edit/$"
+              params={{
+                namespace: namespace ?? "",
+                _splat: workflowPath ?? "",
+              }}
+            >
               {workflowPath}
             </Link>{" "}
             (
-            <Link to={instanceLink} className="underline" target="_blank">
-              {t("components.logs.logEntry.instanceLabel")}{" "}
-              {workflow?.instance.slice(0, 8)}
-            </Link>
+            {workflow?.instance && (
+              <Link
+                to="/n/$namespace/instances/$id"
+                params={{
+                  namespace: namespace ?? "",
+                  id: workflow?.instance ?? "",
+                }}
+                className="underline"
+                target="_blank"
+              >
+                {t("components.logs.logEntry.instanceLabel")}{" "}
+                {workflow?.instance.slice(0, 8)}
+              </Link>
+            )}
             )
           </span>
         </LogSegment>

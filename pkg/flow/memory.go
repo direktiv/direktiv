@@ -10,12 +10,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type instanceMemory struct {
@@ -37,7 +40,7 @@ type instanceMemory struct {
 func (im *instanceMemory) Namespace() *datastore.Namespace {
 	return &datastore.Namespace{
 		ID:   im.instance.Instance.NamespaceID,
-		Name: im.instance.TelemetryInfo.NamespaceName,
+		Name: im.instance.Instance.Namespace,
 	}
 }
 
@@ -49,6 +52,24 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 
 	if string(data) == `{}` {
 		return nil
+	}
+
+	span := trace.SpanFromContext(ctx)
+	if span.SpanContext().HasSpanID() {
+		tp := telemetry.TraceParent(ctx)
+		ti := enginerefactor.InstanceTelemetryInfo{
+			TraceParent: tp,
+			CallPath:    im.instance.TelemetryInfo.CallPath,
+		}
+		b, err := ti.MarshalJSON()
+		if err != nil {
+			slog.Warn("can not marshal telemetry info", slog.Any("error", err))
+		} else {
+			im.updateArgs.TelemetryInfo = &b
+		}
+	} else {
+		slog.Warn("no span id in context", slog.String("path", im.instance.Instance.WorkflowPath),
+			slog.String("callpath", im.instance.TelemetryInfo.CallPath))
 	}
 
 	im.updateArgs.Server = im.engine.ID
@@ -272,14 +293,14 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id uuid.UUID) (*ins
 
 	err = json.Unmarshal(im.instance.Instance.LiveData, &im.data)
 	if err != nil {
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 
 		return nil, err
 	}
 
 	err = json.Unmarshal(im.instance.Instance.StateMemory, &im.memory)
 	if err != nil {
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "%s", err.Error()))
 
 		return nil, err
 	}
@@ -320,7 +341,7 @@ func (engine *engine) freeArtefacts(im *instanceMemory) {
 
 	err := engine.events.deleteInstanceEventListeners(context.Background(), im)
 	if err != nil {
-		slog.Error("Failed to delete instance event listeners.", "error", err, "instance", im.instance, "namespace", im.Namespace())
+		slog.Error("failed to delete instance event listeners", "error", err, "instance", im.instance, "namespace", im.Namespace().Name)
 	}
 }
 
@@ -337,7 +358,25 @@ func (engine *engine) freeMemory(ctx context.Context, im *instanceMemory) error 
 
 func (engine *engine) forceFreeCriticalMemory(ctx context.Context, im *instanceMemory) {
 	err := im.flushUpdates(ctx)
+	ctx = im.Context(ctx)
 	if err != nil {
-		slog.ErrorContext(ctx, "Failed to force flush updates for instance memory during critical memory release.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", err)
+		telemetry.LogInstanceError(ctx, "failed to force flush updates for instance memory during critical memory release", err)
 	}
+}
+
+func (im *instanceMemory) Context(ctx context.Context) context.Context {
+	logObject := telemetry.LogObject{
+		Namespace: im.Namespace().Name,
+		ID:        im.GetInstanceID().String(),
+		Scope:     telemetry.LogScopeInstance,
+		InstanceInfo: telemetry.InstanceInfo{
+			Invoker:  im.instance.Instance.Invoker,
+			Path:     im.instance.Instance.WorkflowPath,
+			Status:   core.LogRunningStatus,
+			State:    im.GetState(),
+			CallPath: im.instance.TelemetryInfo.CallPath,
+		},
+	}
+
+	return telemetry.LogInitCtx(ctx, logObject)
 }

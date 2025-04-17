@@ -18,8 +18,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/tracing"
+	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type muxStart struct {
@@ -53,7 +54,7 @@ func newMuxStart(workflow *model.Workflow) *muxStart {
 	return ms
 }
 
-func validateRouter(ctx context.Context, tx *database.SQLStore, file *filestore.File) (*muxStart, error) {
+func validateRouter(ctx context.Context, tx *database.DB, file *filestore.File) (*muxStart, error) {
 	data, err := tx.FileStore().ForFile(file).GetData(ctx)
 	if err != nil {
 		return nil, err
@@ -99,7 +100,7 @@ func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
 
 	err := json.Unmarshal([]byte(req.Key), msg)
 	if err != nil {
-		slog.Error("Failed to unmarshal router configuration message.", "error", err)
+		slog.Error("failed to unmarshal router configuration message", "error", err)
 		return
 	}
 
@@ -110,20 +111,21 @@ func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
 	if msg.Cron != "" {
 		err = flow.timers.addCron(msg.ID, wfCron, msg.Cron, []byte(msg.ID))
 		if err != nil {
-			slog.Error("Failed to add cron schedule for workflow.", "error", err, "cron_expression", msg.Cron)
+			slog.Error("failed to add cron schedule for workflow", "error", err, "cron_expression", msg.Cron)
 			return
 		}
 	}
 }
 
 func (flow *flow) cronHandler(data []byte) {
-	ctx := context.Background()
+	ctx, span := telemetry.Tracer.Start(context.Background(), "cron-job")
+	defer span.End()
 
 	t := time.Now().Truncate(time.Minute).UTC()
 
 	id, err := uuid.Parse(string(data))
 	if err != nil {
-		slog.Error("Failed to parse UUID from cron data.", "error", err, "data", string(data))
+		slog.Error("failed to parse UUID from cron data", "error", err, "data", string(data))
 		return
 	}
 
@@ -132,7 +134,7 @@ func (flow *flow) cronHandler(data []byte) {
 		// Isolation: sql.LevelSerializable,
 	})
 	if err != nil {
-		slog.Error("Failed to begin SQL transaction in cron handler.", "error", err)
+		slog.Error("failed to begin SQL transaction in cron handler", "error", err)
 		return
 	}
 	defer tx.Rollback()
@@ -140,12 +142,12 @@ func (flow *flow) cronHandler(data []byte) {
 	file, err := tx.FileStore().GetFileByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, filestore.ErrNotFound) {
-			slog.Info("Workflow for cron not found, deleting associated cron entry.")
+			slog.Info("workflow for cron not found, deleting associated cron entry")
 			flow.timers.deleteCronForWorkflow(id.String())
 
 			return
 		}
-		slog.Error("Failed to retrieve file by ID in cron handler.", "error", err)
+		slog.Error("failed to retrieve file by ID in cron handler", "error", err)
 
 		return
 	}
@@ -159,22 +161,28 @@ func (flow *flow) cronHandler(data []byte) {
 
 	ns, err := tx.DataStore().Namespaces().GetByName(ctx, root.Namespace)
 	if err != nil {
-		slog.Error("Failed to retrieve namespace in cron handler.", "error", err, "namespace", root.Namespace)
+		slog.Error("failed to retrieve namespace in cron handler", "error", err, "namespace", root.Namespace)
 
 		return
 	}
-	ctx = tracing.AddNamespace(ctx, ns.Name)
-	ctx, end, err := tracing.NewSpan(ctx, "starting cron handler")
-	if err != nil {
-		slog.Debug("cronhandler failed to start span", "error", err)
-	}
-	defer end()
+
+	// set span attributes to identify the cron
+	span.SetAttributes(
+		attribute.KeyValue{
+			Key:   "namespace",
+			Value: attribute.StringValue(ns.Name),
+		},
+		attribute.KeyValue{
+			Key:   "path",
+			Value: attribute.StringValue(file.Path),
+		},
+	)
 
 	x, _ := json.Marshal([]string{ns.Name, file.Path, t.String()}) //nolint
 	unique := string(x)
 	md5sum := md5.Sum([]byte(unique))
 	hash := base64.StdEncoding.EncodeToString(md5sum[:])
-	traceParent, err := tracing.ExtractTraceParent(ctx)
+
 	if err != nil {
 		slog.Debug("cronhandler failed to init telemetry", "error", err)
 	}
@@ -186,30 +194,32 @@ func (flow *flow) cronHandler(data []byte) {
 		Input:     make([]byte, 0),
 		Invoker:   "cron",
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
-			TraceParent:   traceParent,
-			NamespaceName: ns.Name,
+			TraceParent: telemetry.TraceParent(ctx),
 		},
 		SyncHash: &hash,
 	}
 
-	im, err := flow.engine.NewInstance(ctx, args)
+	telemetry.LogNamespace(telemetry.LogLevelInfo, ns.Name, fmt.Sprintf("running cron for %s", file.Path))
+
+	im, err := flow.Engine.NewInstance(ctx, args)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate") {
-			slog.DebugContext(ctx, "Instance creation clash detected, likely due to parallel execution. This is not an error.")
 			// this happens on a attempt to create an instance clashed with another server
-
+			telemetry.LogNamespace(telemetry.LogLevelDebug, ns.Name,
+				"instance creation clash detected, likely due to parallel execution")
 			return
 		}
 
-		slog.ErrorContext(ctx, "Failed to create new instance from cron job.", "workflow_path", file.Path, "error", err)
+		telemetry.LogNamespaceError(ns.Name,
+			fmt.Sprintf("failed to create new instance from cron job %s", file.Path), err)
 
 		return
 	}
 
-	go flow.engine.start(im)
+	go flow.Engine.start(im)
 }
 
-func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database.SQLStore, nsID uuid.UUID, nsName string, file *filestore.File) error {
+func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database.DB, nsID uuid.UUID, nsName string, file *filestore.File) error {
 	ms, err := validateRouter(ctx, tx, file)
 	if err != nil {
 		return err

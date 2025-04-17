@@ -1,152 +1,149 @@
+version: "2"
 run:
-  timeout: 10m
-  go: 1.23.0
+  go: 1.24.0
   issues-exit-code: 1
   tests: false
 
-linters-settings:
-  tagliatelle:
-    # Check the struck tag name case.
-    case:
-      # Use the struct field name to check the name of the struct tag.
-      # Default: false
-      use-field-name: true
-      rules:
-        json: snake
-        yaml: snake
-
-  nlreturn:
-    # Size of the block (including return statement that is still "OK")
-    # so no return split required.
-    # Default: 1
-    block-size: 2
-
-  sloglint:
-    # Enforce not using global loggers.
-    # Values:
-    # - "": disabled
-    # - "all": report all global loggers
-    # - "default": report only the default slog logger
-    # Default: ""
-    # no-global: "all"
-
 linters:
-  enable-all: true
+  default: all
+
   disable:
+    - canonicalheader
+    - cyclop
     - depguard
+    - err113 # TODO: This ensures no dynamic errors.
     - exhaustruct
-    - wsl
-    - lll
-    - varnamelen
-    - wrapcheck
-    - nolintlint # must fix before release.
-    - ireturn
     - funlen
     - gochecknoglobals
-    - cyclop
-    - godox # must fix before release.
-
-    - tagliatelle
+    - godox
+    - ireturn
+    - lll
+    - mnd
     - musttag
+    - nolintlint
     - prealloc
     - spancheck # TODO: Alan, enable this one as it helps you fixing some telemetry bugs.
-    - err113 # TODO: This ensures no dynamic errors.
-    - mnd
-    - canonicalheader
+    - tagliatelle
+    - varnamelen
+    - wrapcheck
+    - wsl
 
-    # TODO: these need to be removed.
-    - gosimple
-    - govet
-    - gosec
+  settings:
+    nlreturn:
+      block-size: 2
+    tagliatelle:
+      case:
+        rules:
+          json: snake
+          yaml: snake
+        use-field-name: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - asasalint
+          - contextcheck
+          - dogsled
+          - dupl
+          - exhaustive
+          - forbidigo
+          - forcetypeassert
+          - gochecknoinits
+          - gocognit
+          - gocritic
+          - gocyclo
+          - gosec
+          - interfacebloat
+          - maintidx
+          - makezero
+          - nakedret
+          - nestif
+          - nlreturn
+          - nonamedreturns
+          - paralleltest
+          - perfsprint
+          - prealloc
+          - predeclared
+          - promlinter
+          - protogetter
+          - rowserrcheck
+          - staticcheck
+          - tagliatelle
+          - testpackage
+          - unparam
+          - wastedassign
+        path: (pkg)\/(model|sidecar|utils|jqer|flow)\/.*
+      - linters:
+          - err113
+        text: 'do not define dynamic errors, use wrapped static errors instead:'
+      - linters:
+          - gocritic
+        text: 'ifElseChain: rewrite if-else to switch statement'
+      - linters:
+          - errcheck
+        text: Rollback` is not checked
+      - linters:
+          - errchkjson
+        text: encoding/json.Encoder
+      - linters:
+          - errchkjson
+        text: encoding/json.Marshal
+      - linters:
+          - staticcheck
+        text: 'SA1029: should not use built-in type string as key for value'
+      - linters:
+          - revive
+        text: 'unused-parameter:'
+      - linters:
+          - revive
+        text: 'empty-block:'
+      - linters:
+          - revive
+        text: 'var-naming:'
+      - linters:
+          - revive
+        text: 'context-as-argument:'
+      - linters:
+          - revive
+        text: 'context-keys-type: should not use basic type'
+      - linters:
+          - perfsprint
+        text: fmt.Errorf can be replaced
+      - linters:
+          - perfsprint
+        text: fmt.Sprintf can be replaced
+      - linters:
+          - init
+        text: don't use `init` function
+      - linters:
+          - goconst
+        text: string `true`
+      - linters:
+          - goconst
+        text: string `false`
+      - linters:
+          - gochecknoinits
+        path: pkg/gateway/plugins/.*
 
-issues:
-  exclude-files: [ ".pb.go" ]
-  exclude-rules:
-    - path: '(pkg|cmd)\/(model|sidecar|exec|utils|jqer|flow)\/.*'
-      linters:
-        - paralleltest
-        - forbidigo
-        - protogetter
-        - perfsprint
-        - nlreturn
-        - nonamedreturns
-        - stylecheck
-        - tagliatelle
-        - wastedassign
-        - testpackage
-        - asasalint
-        - predeclared
-        - maintidx
-        - interfacebloat
-        - forcetypeassert
-        - exhaustive
-        - contextcheck
-        - unparam
-        - promlinter
-        - prealloc
-        - nestif
-        - makezero
-        - dogsled
-        - dupl
-        - gochecknoinits
-        - gocognit
-        - gosec
-        - gocritic
-        - rowserrcheck
-        - nakedret
-        - gocyclo
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 
-    - text: "do not define dynamic errors, use wrapped static errors instead:"
-      linters:
-        - goerr113
-    - text: "ifElseChain: rewrite if-else to switch statement"
-      linters:
-        - gocritic
-    - text: "Rollback` is not checked"
-      linters:
-        - errcheck
-    - text: "encoding/json.Encoder"
-      linters:
-        - errchkjson
-    - text: "encoding/json.Marshal"
-      linters:
-        - errchkjson
-    - text: "SA1029: should not use built-in type string as key for value"
-      linters:
-        - staticcheck
-    - text: "unused-parameter:"
-      linters:
-        - revive
-    - text: "empty-block:"
-      linters:
-        - revive
-    - text: "var-naming:"
-      linters:
-        - revive
-    - text: "context-as-argument:"
-      linters:
-        - revive
-    - text: "context-keys-type: should not use basic type string"
-      linters:
-        - revive
-    - text: "fmt.Errorf can be replaced"
-      linters:
-        - perfsprint
-    - text: "fmt.Sprintf can be replaced"
-      linters:
-        - perfsprint
-    - text: "don't use `init` function"
-      linters:
-        - init
-
-    - text: "string `true`"
-      linters:
-        - goconst
-    - text: "string `false`"
-      linters:
-        - goconst
-
-    # gateway plugins need to user init() function
-    - path: 'pkg/gateway/plugins/.*'
-      linters:
-        - gochecknoinits
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

@@ -17,7 +17,7 @@ import (
 )
 
 type fsController struct {
-	db  *database.SQLStore
+	db  *database.DB
 	bus *pubsub.Bus
 }
 
@@ -335,10 +335,18 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	dStore := db.DataStore()
+
 	if req.Path != "" {
 		err = fStore.ForFile(oldFile).SetPath(r.Context(), req.Path)
 		if err != nil {
 			writeFileStoreError(w, err)
+			return
+		}
+		// Update workflow_path of all associated runtime variables.
+		err = dStore.RuntimeVariables().SetWorkflowPath(r.Context(), ns.Name, path, req.Path)
+		if err != nil {
+			writeInternalError(w, err)
 			return
 		}
 		oldFile.Path = req.Path
@@ -350,14 +358,6 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	updatedFile.Data = decodedBytes
-
-	// Update workflow_path of all associated runtime variables.
-	dStore := db.DataStore()
-	err = dStore.RuntimeVariables().SetWorkflowPath(r.Context(), ns.Name, path, req.Path)
-	if err != nil {
-		writeInternalError(w, err)
-		return
-	}
 
 	err = db.Commit(r.Context())
 	if err != nil {

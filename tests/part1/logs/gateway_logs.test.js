@@ -8,29 +8,48 @@ import { retry50 } from '../../common/retry'
 
 const namespace = basename(__filename)
 
-describe('Test gateway api calls', () => {
+describe('Test namespace log api calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
+	helpers.itShouldCreateFile(it, expect, namespace,
+		'',
+		'gw.yaml',
+		'endpoint',
+		'text/plain',
+		btoa(`
+x-direktiv-api: endpoint/v2
+x-direktiv-config:
+  path: /demo
+  allow_anonymous: true
+  plugins:
+    auth: []
+    inbound:
+      - configuration:
+          script: log("four")
+        type: js-inbound
+    outbound: []
+    target:
+      configuration:
+        status_code: 200
+        status_message: Hello
+      type: instant-response
+get:
+  responses:
+    "200":
+      description: ""
+`))
 
-	it(`create endpoint`, async () => {
-		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/files/`)
-			.set('Content-Type', 'application/json')
-			.send(`{"name":"route.yaml","type":"endpoint","mimeType":"application/yaml","data":"ZGlyZWt0aXZfYXBpOiBlbmRwb2ludC92MQo="}`)
-		expect(res.statusCode).toEqual(200)
+retry50(`call gateway`, async () => {
+		await request(common.config.getDirektivHost()).get(`/ns/${ namespace }/demo`)
 
-		const resPatch = await request(common.config.getDirektivHost()).patch(`/api/v2/namespaces/${ namespace }/files/route.yaml`)
-			.set('Content-Type', 'application/json')
-			.send(`{"data":"ZGlyZWt0aXZfYXBpOiBlbmRwb2ludC92MQphbGxvd19hbm9ueW1vdXM6IHRydWUKcGF0aDogL3Rlc3QKbWV0aG9kczoKICAtIEdFVApwbHVnaW5zOgogIHRhcmdldDoKICAgIHR5cGU6IGluc3RhbnQtcmVzcG9uc2UKICAgIGNvbmZpZ3VyYXRpb246CiAgICAgIHN0YXR1c19jb2RlOiAyMDAKICAgICAgc3RhdHVzX21lc3NhZ2U6IEhlbGxvCiAgaW5ib3VuZDogW10KICBvdXRib3VuZDogW10KICBhdXRoOiBbXQo="}`)
-		expect(resPatch.statusCode).toEqual(200)
-	})
-
-	retry50(`create namespace`, async () => {
-		const gwRes = await request(common.config.getDirektivHost()).get(`/ns/${ namespace }/test`)
-		expect(gwRes.statusCode).toEqual(200)
-
-		const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs?route=%2Ftest`)
+		const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs?route=%2Fdemo`)
 		expect(logRes.statusCode).toEqual(200)
-
-		// TODO: check logs, we just disabled the info logging for the plugins
+		expect(logRes.body.data).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					msg: 'four',
+				}),
+			]),
+		)	
 	})
 })

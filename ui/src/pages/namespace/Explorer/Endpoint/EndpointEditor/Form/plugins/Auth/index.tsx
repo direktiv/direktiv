@@ -40,17 +40,14 @@ import { WebhookAuthForm } from "./WebhookAuthForm";
 import { useTranslation } from "react-i18next";
 
 type AuthPluginFormProps = {
-  formControls: UseFormReturn<EndpointFormSchemaType>;
+  form: UseFormReturn<EndpointFormSchemaType>;
   onSave: (value: EndpointFormSchemaType) => void;
 };
 
-export const AuthPluginForm: FC<AuthPluginFormProps> = ({
-  formControls,
-  onSave,
-}) => {
+export const AuthPluginForm: FC<AuthPluginFormProps> = ({ form, onSave }) => {
   const { t } = useTranslation();
   const availablePlugins = useAvailablePlugins();
-  const { control, handleSubmit: handleParentSubmit } = formControls;
+  const { control, handleSubmit: handleParentSubmit } = form;
   const {
     append: addPlugin,
     remove: deletePlugin,
@@ -59,7 +56,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({
     fields,
   } = useFieldArray({
     control,
-    name: "plugins.auth",
+    name: "x-direktiv-config.plugins.auth",
   });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editIndex, setEditIndex] = useState<number>();

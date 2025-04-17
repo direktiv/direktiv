@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -18,7 +19,7 @@ const (
 	direktivProxyHTTPS    = "HTTPS_PROXY"
 	direktivProxyHTTP     = "HTTP_PROXY"
 	direktivProxyNO       = "NO_PROXY"
-	direktivOpentelemetry = "DIREKTIV_OTLP"
+	direktivOpentelemetry = "DIREKTIV_OTEL_BACKEND"
 	direktivFlowEndpoint  = "DIREKTIV_FLOW_ENDPOINT"
 	direktivDebug         = "DIREKTIV_DEBUG"
 )
@@ -80,8 +81,8 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 	}
 
 	// Set Registry Secrets
-	svc.Spec.ConfigurationSpec.Template.Spec.ImagePullSecrets = registrySecrets
-	svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.ImagePullSecrets = registrySecrets
+	svc.Spec.Template.Spec.ImagePullSecrets = registrySecrets
+	svc.Spec.Template.Spec.ImagePullSecrets = registrySecrets
 
 	return svc, nil
 }
@@ -200,7 +201,7 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 
 	// direktiv sidecar
 	sidecarEnvs := buildEnvVars(true, c, sv)
-	sidecarEnvs = append(sidecarEnvs, corev1.EnvVar{Name: "API_KEY", Value: c.ApiKey})
+	sidecarEnvs = append(sidecarEnvs, corev1.EnvVar{Name: "API_KEY", Value: os.Getenv("DIREKTIV_API_KEY")})
 	sc := corev1.Container{
 		Name:         containerSidecar,
 		Image:        c.KnativeSidecar,
@@ -327,7 +328,7 @@ func buildEnvVars(forSidecar bool, c *core.Config, sv *core.ServiceFileData) []c
 
 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 		Name:  direktivOpentelemetry,
-		Value: c.OpenTelemetry,
+		Value: c.OtelBackend,
 	})
 
 	if forSidecar {

@@ -20,14 +20,19 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("Route list is empty by default", async ({ page }) => {
-  await page.goto(`/n/${namespace}/gateway/routes`, {
+test("The route list can be visited", async ({ page }) => {
+  await page.goto(`/n/${namespace}/gateway/gatewayInfo`, {
     waitUntil: "networkidle",
   });
 
   await expect(
-    page.getByTestId("breadcrumb-routes"),
-    "it renders the 'Routes' breadcrumb"
+    page.getByTestId("breadcrumb-gateway"),
+    "it renders the 'Gateway' breadcrumb"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId("breadcrumb-info"),
+    "it renders the 'Routes Info' breadcrumb"
   ).toBeVisible();
 
   await expect(
@@ -60,7 +65,7 @@ test("Route list shows all available routes", async ({ page }) => {
     )
     .toBeTruthy();
 
-  await page.goto(`/n/${namespace}/gateway/routes`, {
+  await page.goto(`/n/${namespace}/gateway/gatewayInfo`, {
     waitUntil: "networkidle",
   });
 
@@ -83,22 +88,25 @@ test("Route list shows all available routes", async ({ page }) => {
     `${process.env.PLAYWRIGHT_UI_BASE_URL}/ns/${namespace}/${path}`
   );
 
-  await expect(
-    page.getByTestId("route-table").getByText("GET", { exact: true }),
-    "it renders the text for the method"
-  ).toBeVisible();
+  await page.getByTestId("route-table").getByText("9 methods").hover();
 
-  await page.getByTestId("route-table").getByText("+7").hover();
+  const methods = [
+    "connect",
+    "delete",
+    "get",
+    "head",
+    "options",
+    "patch",
+    "post",
+    "put",
+    "trace",
+  ];
 
-  await expect(
-    page
-      .getByTestId("route-table")
-      .getByText("OPTIONSPUTPOSTHEADCONNECTPATCHTRACE"),
-    'it shows more methods when hovering over the "+7"'
-  ).toBeVisible();
-
-  // hover over somethiing else to make the overlay disappear
-  await page.getByTestId("route-table").getByText("yes").hover();
+  for (const method of methods) {
+    await expect(
+      page.getByTestId("route-table").getByText(method)
+    ).toBeVisible();
+  }
 
   await expect(
     page.getByTestId("route-table").getByRole("cell", { name: "1 plugin" }),
@@ -116,7 +124,7 @@ test("Route list shows all available routes", async ({ page }) => {
   ).toBeVisible();
 
   await expect(
-    page.getByTestId("route-table").getByText("yes"),
+    page.getByTestId("route-table").getByText("public endpoint"),
     "it renders the correct label for 'allow anonymous'"
   ).toBeVisible();
 });
@@ -202,9 +210,7 @@ test("Route list shows an error", async ({ page }) => {
     .hover();
 
   await expect(
-    page
-      .getByTestId("route-table")
-      .getByText("plugin 'this-plugin-does-not-exist' err: doesn't exist"),
+    page.getByTestId("route-table").getByText("no valid http method"),
     "it shows the error detail on hover"
   ).toBeVisible();
 });

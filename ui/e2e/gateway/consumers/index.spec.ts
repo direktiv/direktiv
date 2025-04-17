@@ -18,10 +18,22 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("Consumer list is empty by default", async ({ page }) => {
-  await page.goto(`/n/${namespace}/gateway/consumers`, {
+test("The consumer list can be visited", async ({ page }) => {
+  await page.goto(`/n/${namespace}/gateway/routes`, {
     waitUntil: "networkidle",
   });
+
+  await page.getByRole("tab", { name: "Consumers" }).click();
+
+  await expect(
+    page,
+    "it is possible to navigate to Consumers by breadcrumb"
+  ).toHaveURL(`n/${namespace}/gateway/consumers`);
+
+  await expect(
+    page.getByTestId("breadcrumb-gateway"),
+    "it renders the 'Gateway' breadcrumb"
+  ).toBeVisible();
 
   await expect(
     page.getByTestId("breadcrumb-consumers"),
@@ -31,6 +43,11 @@ test("Consumer list is empty by default", async ({ page }) => {
   await expect(
     page.getByText("No consumers exist yet"),
     "it renders an empty list of consumers"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId("breadcrumb-gateway"),
+    "it renders the 'Gateway' breadcrumb"
   ).toBeVisible();
 });
 

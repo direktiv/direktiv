@@ -14,19 +14,23 @@ describe('Test gateway gitlab-webhook-auth plugin', () => {
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
-direktiv_api: endpoint/v1
-path: /foo
-methods: 
-  - POST
-allow_anonymous: false
-plugins:
-  target:
-    type: debug-target
-  auth:
-    - type: gitlab-webhook-auth
-      configuration:
-        secret: secret
-`)
+    x-direktiv-api: endpoint/v2
+    x-direktiv-config:
+        path: "/foo"
+        allow_anonymous: false
+        plugins:
+          auth:
+          - type: gitlab-webhook-auth
+            configuration:
+                secret: secret
+          target:
+            type: debug-target
+    post:
+      responses:
+         "200":
+           description: works
+`,
+	)
 
 	retry10(`should access ep1.yaml endpoint`, async () => {
 		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)

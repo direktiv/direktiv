@@ -16,6 +16,7 @@ const (
 	FileTypeWorkflow  FileType = "workflow"
 	FileTypeEndpoint  FileType = "endpoint"
 	FileTypeConsumer  FileType = "consumer"
+	FileTypeGateway   FileType = "gateway"
 	FileTypeService   FileType = "service"
 	FileTypeFile      FileType = "file"
 	FileTypeDirectory FileType = "directory"
@@ -26,6 +27,7 @@ var AllFileTypes = []FileType{
 	FileTypeWorkflow,
 	FileTypeEndpoint,
 	FileTypeConsumer,
+	FileTypeGateway,
 	FileTypeService,
 	FileTypeFile,
 	FileTypeDirectory,

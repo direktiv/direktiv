@@ -3,30 +3,31 @@ import {
   DeepPartialSkipArrayKey,
   UseFormReturn,
   useForm,
+  useWatch,
 } from "react-hook-form";
 import { EndpointFormSchema, EndpointFormSchemaType } from "../schema";
 
 import { AuthPluginForm } from "./plugins/Auth";
-import Badge from "~/design/Badge";
-import { Checkbox } from "~/design/Checkbox";
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { InboundPluginForm } from "./plugins/Inbound";
 import Input from "~/design/Input";
+import { MethodCheckbox } from "./MethodCheckbox";
+import { OpenAPIDocsForm } from "./openAPIDocs";
 import { OutboundPluginForm } from "./plugins/Outbound";
 import { Switch } from "~/design/Switch";
 import { TargetPluginForm } from "./plugins/Target";
+import { forceLeadingSlash } from "~/api/files/utils";
 import { routeMethods } from "~/api/gateway/schema";
 import { treatAsNumberOrUndefined } from "../../../utils";
-import { useSortedValues } from "./utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormProps = {
-  defaultConfig?: EndpointFormSchemaType;
+  defaultConfig?: DeepPartialSkipArrayKey<EndpointFormSchemaType>;
   onSave: (value: EndpointFormSchemaType) => void;
   children: (args: {
-    formControls: UseFormReturn<EndpointFormSchemaType>;
+    form: UseFormReturn<EndpointFormSchemaType>;
     formMarkup: JSX.Element;
     values: DeepPartialSkipArrayKey<EndpointFormSchemaType>;
   }) => JSX.Element;
@@ -34,28 +35,39 @@ type FormProps = {
 
 export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
   const { t } = useTranslation();
-  const formControls = useForm<EndpointFormSchemaType>({
+
+  const form = useForm<EndpointFormSchemaType>({
     resolver: zodResolver(EndpointFormSchema),
     defaultValues: {
       ...defaultConfig,
     },
   });
 
-  const values = useSortedValues(formControls.control);
-  const { register, control } = formControls;
+  const values = useWatch({ control: form.control });
+
+  const { register, control } = form;
 
   return children({
-    formControls,
+    form,
     values,
     formMarkup: (
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-6">
         <div className="flex gap-3">
           <Fieldset
             label={t("pages.explorer.endpoint.editor.form.path")}
             htmlFor="path"
             className="grow"
           >
-            <Input {...register("path")} id="path" />
+            <Input
+              {...register("x-direktiv-config.path")}
+              id="path"
+              onChange={(event) =>
+                form.setValue(
+                  "x-direktiv-config.path",
+                  forceLeadingSlash(event.target.value)
+                )
+              }
+            />
           </Fieldset>
           <Fieldset
             label={t("pages.explorer.endpoint.editor.form.timeout")}
@@ -63,7 +75,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
             className="w-32"
           >
             <Input
-              {...register("timeout", {
+              {...register("x-direktiv-config.timeout", {
                 setValueAs: treatAsNumberOrUndefined,
               })}
               type="number"
@@ -71,68 +83,56 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
             />
           </Fieldset>
         </div>
-        <Fieldset label={t("pages.explorer.endpoint.editor.form.methods")}>
-          <Controller
-            control={control}
-            name="methods"
-            render={({ field }) => (
-              <div className="grid grid-cols-3 gap-5">
-                {routeMethods.map((method) => {
-                  const isChecked = field.value?.includes(method);
+        <Fieldset
+          label={t("pages.explorer.endpoint.editor.form.methods.label")}
+        >
+          <div className="grid grid-cols-3 gap-5">
+            {Array.from(routeMethods).map((method) => (
+              <Controller
+                key={method}
+                control={control}
+                name={method}
+                render={({ field }) => {
+                  const isChecked = !!values[method];
                   return (
-                    <label
-                      key={method}
-                      className="flex items-center gap-2 text-sm"
-                      htmlFor={method}
-                    >
-                      <Checkbox
-                        id={method}
-                        value={method}
-                        checked={isChecked}
-                        onCheckedChange={(checked) => {
-                          if (checked === true) {
-                            field.onChange([...(field.value ?? []), method]);
-                          }
-                          if (checked === false && field.value) {
-                            field.onChange(
-                              field.value.filter((v) => v !== method)
-                            );
-                          }
-                        }}
+                    <div className="flex items-center gap-2">
+                      <MethodCheckbox
+                        method={method}
+                        field={field}
+                        isChecked={isChecked}
+                        form={form}
                       />
-                      <Badge variant={isChecked ? undefined : "secondary"}>
-                        {method}
-                      </Badge>
-                    </label>
+                    </div>
                   );
-                })}
-              </div>
-            )}
-          />
+                }}
+              />
+            ))}
+          </div>
         </Fieldset>
         <Fieldset
           label={t("pages.explorer.endpoint.editor.form.allowAnonymous")}
-          htmlFor="allow_anonymous"
+          htmlFor="x-direktiv-config.allow_anonymous"
           horizontal
         >
           <Controller
             control={control}
-            name="allow_anonymous"
+            name="x-direktiv-config.allow_anonymous"
             render={({ field }) => (
               <Switch
-                defaultChecked={field.value ?? false}
+                checked={field.value ?? false}
                 onCheckedChange={(value) => {
                   field.onChange(value);
                 }}
-                id="allow_anonymous"
+                id="x-direktiv-config.allow_anonymous"
               />
             )}
           />
         </Fieldset>
-        <TargetPluginForm form={formControls} onSave={onSave} />
-        <InboundPluginForm form={formControls} onSave={onSave} />
-        <OutboundPluginForm form={formControls} onSave={onSave} />
-        <AuthPluginForm formControls={formControls} onSave={onSave} />
+        <TargetPluginForm form={form} onSave={onSave} />
+        <InboundPluginForm form={form} onSave={onSave} />
+        <OutboundPluginForm form={form} onSave={onSave} />
+        <AuthPluginForm form={form} onSave={onSave} />
+        <OpenAPIDocsForm form={form} onSave={onSave} />
       </div>
     ),
   });
