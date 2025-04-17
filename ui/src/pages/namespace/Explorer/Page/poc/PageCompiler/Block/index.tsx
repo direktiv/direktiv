@@ -1,4 +1,7 @@
 import { AllBlocksType } from "../../schema/blocks";
+import { Headline } from "./Headline";
+import { Text } from "./Text";
+import { TwoColumns } from "./TwoColumns";
 
 type BlockProps = {
   block: AllBlocksType;
@@ -7,23 +10,13 @@ type BlockProps = {
 export const Block = ({ block }: BlockProps) => {
   switch (block.type) {
     case "headline":
-      return <div className="text-xl">headline</div>;
+      return <Headline {...block} />;
+      break;
+    case "text":
+      return <Text {...block} />;
       break;
     case "two-columns":
-      return (
-        <div className="grid grid-cols-2">
-          <div>
-            {block.leftBlocks.map((block, index) => (
-              <Block key={index} block={block} />
-            ))}
-          </div>
-          <div>
-            {block.rightBlocks.map((block, index) => (
-              <Block key={index} block={block} />
-            ))}
-          </div>
-        </div>
-      );
+      return <TwoColumns {...block} />;
       break;
     default:
       return <div>not implemented yet: {block.type}</div>;
