@@ -22,6 +22,7 @@ export default {
           label: "Some text goes here",
         },
       ],
+
       rightBlocks: [
         {
           type: "query-provider",
