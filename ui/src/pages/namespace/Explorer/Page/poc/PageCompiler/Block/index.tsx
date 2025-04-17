@@ -1,3 +1,4 @@
+import Alert from "~/design/Alert";
 import { AllBlocksType } from "../../schema/blocks";
 import { BlockWrapper } from "./utils/BlockWrapper";
 import { Headline } from "./Headline";
@@ -23,8 +24,11 @@ export const Block = ({ block }: BlockProps) => {
     case "query-provider":
       return <QueryProvider {...block} />;
       break;
-
     default:
-      return <BlockWrapper>not implemented yet: {block.type}</BlockWrapper>;
+      return (
+        <BlockWrapper>
+          <Alert variant="warning">not implemented yet: {block.type}</Alert>
+        </BlockWrapper>
+      );
   }
 };
