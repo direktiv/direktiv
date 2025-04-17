@@ -23,7 +23,7 @@ const UIPage: FC = () => {
 
   if (!namespace) return null;
   if (!path) return null;
-  if (endpointData?.type !== "endpoint") return null;
+  if (endpointData?.type !== "page") return null;
   if (!isPermissionCheckFetched) return null;
 
   if (isAllowed === false)
