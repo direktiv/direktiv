@@ -5,7 +5,7 @@ import { TwoColumnsType } from "../../schema/blocks/twoColumns";
 
 export const TwoColumns = ({ leftBlocks, rightBlocks }: TwoColumnsType) => (
   <BlockWrapper>
-    <div className="grid grid-cols-2">
+    <div className="grid grid-cols-2 gap-3">
       <BlocksWrapper>
         {leftBlocks.map((block, index) => (
           <Block key={index} block={block} />
