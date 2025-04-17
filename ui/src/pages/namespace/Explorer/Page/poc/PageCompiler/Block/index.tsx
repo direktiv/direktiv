@@ -2,6 +2,7 @@ import Alert from "~/design/Alert";
 import { AllBlocksType } from "../../schema/blocks";
 import { BlockWrapper } from "./utils/BlockWrapper";
 import { Headline } from "./Headline";
+import { Modal } from "./Modal";
 import { QueryProvider } from "./QueryProvider";
 import { Text } from "./Text";
 import { TwoColumns } from "./TwoColumns";
@@ -23,6 +24,9 @@ export const Block = ({ block }: BlockProps) => {
       break;
     case "query-provider":
       return <QueryProvider {...block} />;
+      break;
+    case "modal":
+      return <Modal {...block} />;
       break;
     default:
       return (
