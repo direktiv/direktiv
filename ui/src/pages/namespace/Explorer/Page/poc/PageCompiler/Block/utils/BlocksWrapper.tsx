@@ -1,9 +1,21 @@
 import { PropsWithChildren, Suspense } from "react";
 
 import { Loading } from "./Loading";
+import { twMergeClsx } from "~/util/helpers";
 
-export const BlocksWrapper = ({ children }: PropsWithChildren) => (
-  <div className="flex flex-col gap-3">
+type BlocksWrapperProps = {
+  horizontal?: boolean;
+} & PropsWithChildren;
+
+export const BlocksWrapper = ({ horizontal, children }: BlocksWrapperProps) => (
+  <div
+    className={twMergeClsx(
+      "gap-3",
+      horizontal
+        ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))]"
+        : "flex flex-col"
+    )}
+  >
     <Suspense fallback={<Loading />}>{children}</Suspense>
   </div>
 );
