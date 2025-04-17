@@ -1,5 +1,9 @@
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, Suspense } from "react";
+
+import { Loading } from "./Loading";
 
 export const BlocksWrapper = ({ children }: PropsWithChildren) => (
-  <div className="flex flex-col gap-3">{children}</div>
+  <div className="flex flex-col gap-3">
+    <Suspense fallback={<Loading />}>{children}</Suspense>
+  </div>
 );
