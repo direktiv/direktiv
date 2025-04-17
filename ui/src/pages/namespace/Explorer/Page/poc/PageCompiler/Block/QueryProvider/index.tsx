@@ -7,7 +7,7 @@ import { QueryProviderType } from "../../../schema/blocks/queryProvider";
 export const QueryProvider = ({ blocks, query }: QueryProviderType) => {
   const { data } = useSuspenseQuery(
     queryOptions({
-      queryKey: ["query", query],
+      queryKey: [query.id],
       queryFn: () =>
         new Promise<QueryProviderType["query"]>((resolve) =>
           setTimeout(() => resolve(query), 1000)
