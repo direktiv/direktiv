@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"slices"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -309,9 +310,15 @@ func (m *manager) GetServiceURL(namespace string, typ string, file string, name 
 	return fmt.Sprintf("http://%s.%s.svc.cluster.local", id, m.cfg.KnativeNamespace)
 }
 
-func (m *manager) IgniteService(serviceID string) error {
+func (m *manager) IgniteService(serviceURL string) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
+
+	serviceID := serviceURL
+	serviceID = strings.TrimPrefix(serviceID, "http://")
+	serviceID = strings.TrimPrefix(serviceID, "https://")
+	serviceID = strings.TrimSuffix(serviceID, ".svc.cluster.local")
+	serviceID = strings.TrimSuffix(serviceID, ".direktiv-services-direktiv")
 
 	err := m.runtimeClient.igniteService(serviceID)
 	if err != nil {

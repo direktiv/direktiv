@@ -601,14 +601,16 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		resp, err = client.Do(req)
 
 		if err != nil {
-			// Try to ignite the service if it was down.
-			if strings.Contains(err.Error(), "no such host") ||
-				strings.Contains(err.Error(), "connection refused") {
-				igErr := engine.ServiceManager.IgniteService(ar.Container.Service)
-				if igErr != nil {
-					engine.reportError(ctx, &arReq.ActionContext, igErr)
+			// Try to ignite the service if it was down (only once, hence i==0).
+			if i == 0 {
+				if strings.Contains(err.Error(), "no such host") ||
+					strings.Contains(err.Error(), "connection refused") {
+					igErr := engine.ServiceManager.IgniteService(ar.Container.Service)
+					if igErr != nil {
+						engine.reportError(ctx, &arReq.ActionContext, igErr)
 
-					return
+						return
+					}
 				}
 			}
 
