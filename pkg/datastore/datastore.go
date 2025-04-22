@@ -17,6 +17,7 @@ type Store interface {
 	Mirror() MirrorStore
 
 	Secrets() SecretsStore
+	HeartBeats() HeartBeatsStore
 
 	RuntimeVariables() RuntimeVariablesStore
 
