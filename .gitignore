@@ -114,3 +114,7 @@ zarf/**/*.tar.zst
 zarf/*.tar.zst
 zarf/**/zarf-sbom
 zarf/zarf-sbom
+zarf/server.crt
+zarf/server.key
+zarf/**/server.crt
+zarf/**/server.key
