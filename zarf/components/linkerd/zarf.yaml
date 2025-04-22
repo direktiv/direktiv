@@ -1,0 +1,66 @@
+kind: ZarfPackageConfig 
+metadata:
+  name: linkerd 
+  version: 1.16.11
+  description: "linkerd installation"
+  yolo: true
+
+components:
+- name: linkerd
+  required: true
+  actions:
+    onDeploy:
+      before:
+      - cmd: openssl ecparam -name prime256v1 -genkey -noout -out ca-private.pem
+      - cmd: openssl ec -in ca-private.pem -pubout -out ca-public.pem
+      - cmd: openssl req -x509 -new -key ca-private.pem -days 3650 -out ca.crt -subj "/CN=root.linkerd.cluster.local"
+      - cmd: openssl ecparam -name prime256v1 -genkey -noout -out issuer-private.pem
+      - cmd: openssl ec -in issuer-private.pem -pubout -out issuer-public.pem
+      - cmd: openssl req -new -key issuer-private.pem -out issuer.csr -subj "/CN=identity.linkerd.cluster.local" -addext basicConstraints=critical,CA:TRUE
+      - cmd: openssl x509 -req -in issuer.csr -days 3650 -CA ca.crt -CAkey ca-private.pem -CAcreateserial -out issuer.crt -copy_extensions copyall    
+      - cmd: cat ca.crt
+        mute: true
+        setVariables:
+        - name: CA_CRT
+          sensitive: true
+          autoIndent: true
+      - cmd: cat issuer.crt
+        mute: true
+        setVariables:
+        - name: ISSUER_CRT
+          sensitive: true
+          autoIndent: true
+      - cmd: cat issuer-private.pem
+        mute: true
+        setVariables:
+        - name: ISSUER_KEY
+          sensitive: true
+          autoIndent: true
+      after:
+      - cmd: rm -f ca-private.pem
+      - cmd: rm -f ca-public.pem
+      - cmd: rm -f ca.crt
+      - cmd: rm -f issuer-private.pem
+      - cmd: rm -f issuer-public.pem
+      - cmd: rm -f issuer.csr
+      - cmd: rm -f issuer.crt
+      - cmd: rm -f ca.srl
+  charts:
+  - name: linkerd-crds
+    namespace: linkerd
+    version: 1.8.0
+    url: https://helm.linkerd.io/stable
+  - name: linkerd-control-plane
+    version: 1.16.11
+    namespace: linkerd
+    url: https://helm.linkerd.io/stable
+    variables:
+    - name: CA_CRT
+      description: ca certificate
+      path: identityTrustAnchorsPEM
+    - name: ISSUER_CRT
+      description: issuer certificate
+      path: identity.issuer.tls.crtPEM
+    - name: ISSUER_KEY
+      description: issuer certificate
+      path: identity.issuer.tls.keyPEM

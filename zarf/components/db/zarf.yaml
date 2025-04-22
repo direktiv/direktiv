@@ -1,0 +1,81 @@
+kind: ZarfPackageConfig 
+metadata:
+  name: percona 
+  version: v2.6.0
+  description: "percona operator and database install"
+
+variables:
+- name: DB_REPLICA_COUNT
+  default: "1"
+- name: DB_STORAGE
+  default: "1Gi"
+- name: DB_BOUNCER_COUNT
+  default: "1"
+- name: DB_ADDITIONAL_USERS
+  autoIndent: true
+- name: DB_BACKUP_S3_VALUE
+  autoIndent: true
+- name: DB_BACKUP_SCHEDULE
+  default: "0 0 * * 6"
+- name: DB_BACKUP_RETENTION
+  default: "4"
+- name: DB_BACKUP_STORAGE
+  default: "1Gi"
+- name: DB_BACKUP_VALUE
+  autoIndent: true
+  default: |
+    volume:
+      volumeClaimSpec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+- name: DB_BACKUP_S3_KEY
+  default: "dummyKey"
+- name: DB_BACKUP_S3_SECRET
+  default: "dummySecret"
+  sensitive: true
+
+components:
+- name: postgres
+  description: postgres database
+  required: true
+  actions:
+    onDeploy:
+      before:
+      - cmd: |
+          cat <<EOF | base64 --wrap=0
+          [global]
+          repo1-s3-key=`echo $ZARF_VAR_DB_BACKUP_S3_KEY`
+          repo1-s3-key-secret=`echo $ZARF_VAR_DB_BACKUP_S3_SECRET`
+          EOF
+        setVariables:
+        - name: S3_SECRET_CONFIG
+          sensitive: true
+      after:
+        - description: database secrets available
+          maxTotalSeconds: 120
+          wait:
+            cluster:
+              kind: secret
+              name: pg-db-pguser-direktiv
+              namespace: postgres
+  manifests:
+  - name: s3-secret
+    namespace: postgres
+    files:
+      # writes the s3 secrets in a kubernetes secret referenced in values
+      - s3-secret.yaml
+  charts:
+  - name: pg-operator
+    namespace: postgres
+    version: 2.6.0
+    url: https://percona.github.io/percona-helm-charts/
+
+  - name: pg-db
+    namespace: postgres
+    version: 2.6.0
+    url: https://percona.github.io/percona-helm-charts/
+    valuesFiles:
+    - values.yaml
