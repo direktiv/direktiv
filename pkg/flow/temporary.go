@@ -599,12 +599,19 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			return
 		}
 		resp, err = client.Do(req)
-		if err != nil && strings.Contains(err.Error(), "connection refused") {
-		}
-		if err != nil && strings.Contains(err.Error(), "no such host") {
-		}
 
 		if err != nil {
+			// Try to ignite the service if it was down.
+			if strings.Contains(err.Error(), "no such host") ||
+				strings.Contains(err.Error(), "connection refused") {
+				igErr := engine.ServiceManager.IgniteService(ar.Container.Service)
+				if igErr != nil {
+					engine.reportError(ctx, &arReq.ActionContext, igErr)
+
+					return
+				}
+			}
+
 			if ctxErr := rctx.Err(); ctxErr != nil {
 				telemetry.LogInstanceError(ctx, "request canceled or deadline exceeded", ctxErr)
 				engine.reportError(ctx, &arReq.ActionContext, fmt.Errorf("request timed out or was canceled: %w", ctxErr))

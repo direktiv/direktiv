@@ -12,6 +12,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	appsV1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/autoscaling/v1"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -155,6 +156,25 @@ func (c *knativeClient) deleteService(id string) error {
 		return err
 	}
 	err = c.k8sCli.AutoscalingV2().HorizontalPodAutoscalers(c.config.KnativeNamespace).Delete(context.Background(), id, metaV1.DeleteOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *knativeClient) igniteService(id string) error {
+	scale := &v1.Scale{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name:      id,
+			Namespace: c.config.KnativeNamespace,
+		},
+		Spec: v1.ScaleSpec{
+			Replicas: 1,
+		},
+	}
+
+	_, err := c.k8sCli.AppsV1().Deployments(c.config.KnativeNamespace).UpdateScale(context.TODO(), id, scale, metaV1.UpdateOptions{})
 	if err != nil {
 		return err
 	}

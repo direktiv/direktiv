@@ -308,3 +308,15 @@ func (m *manager) GetServiceURL(namespace string, typ string, file string, name 
 
 	return fmt.Sprintf("http://%s.%s.svc.cluster.local", id, m.cfg.KnativeNamespace)
 }
+
+func (m *manager) IgniteService(serviceID string) error {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	err := m.runtimeClient.igniteService(serviceID)
+	if err != nil {
+		return fmt.Errorf("ignite service %s error: %v", serviceID, err)
+	}
+
+	return nil
+}
