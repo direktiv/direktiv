@@ -590,6 +590,15 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		telemetry.LogInstance(ctx, telemetry.LogLevelDebug,
 			fmt.Sprintf("attempting function request %d, %s", i, addr))
 
+		err = engine.db.DataStore().HeartBeats().Set(context.Background(), &datastore.HeartBeat{
+			Group: "life_services",
+			Key:   ar.Container.Service,
+		})
+		if err != nil {
+			engine.reportError(ctx, &arReq.ActionContext, err)
+
+			return
+		}
 		resp, err = client.Do(req)
 		if err != nil && strings.Contains(err.Error(), "connection refused") {
 		}
