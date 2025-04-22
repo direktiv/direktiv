@@ -24,7 +24,6 @@ export const serializePageFile = (yaml: string): SerializeReturnType => {
 
 const defaultPageFileJson: PageFormSchemaType = {
   direktiv_api: "page/v1",
-  path: "/",
   layout: [
     {
       name: "Text",
@@ -83,5 +82,4 @@ export const placeholder3: PageElementSchemaType = {
 export const defaultConfig: PageFormSchemaType = {
   layout: [placeholder1, placeholder2, placeholder3],
   direktiv_api: "page/v1",
-  path: undefined,
 };

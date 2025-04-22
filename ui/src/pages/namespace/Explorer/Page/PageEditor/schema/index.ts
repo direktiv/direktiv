@@ -60,8 +60,6 @@ export type LayoutSchemaType = z.infer<typeof LayoutSchema>;
 
 export const PageFormSchema = z.object({
   direktiv_api: z.literal("page/v1"),
-  // TODO: [suggestion] is path still needed?
-  path: z.string().nonempty().optional(),
   layout: z.array(PageElementSchema),
 });
 
