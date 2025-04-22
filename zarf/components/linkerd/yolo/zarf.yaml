@@ -1,0 +1,12 @@
+kind: ZarfPackageConfig 
+metadata:
+  name: linkerd-no-images
+  version: 1.16.11
+  description: "linkerd installation without images"
+  yolo: true
+
+components:
+- name: linkerd
+  required: true
+  import:
+    path: ../

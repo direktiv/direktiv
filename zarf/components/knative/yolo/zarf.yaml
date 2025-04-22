@@ -1,0 +1,12 @@
+kind: ZarfPackageConfig 
+metadata:
+  name: knative-no-images
+  version: 1.17.0
+  description: "knative installation without images"
+  yolo: true
+
+components:
+- name: knative
+  required: true
+  import:
+    path: ../

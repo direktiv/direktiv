@@ -1,0 +1,23 @@
+kind: ZarfPackageConfig 
+metadata:
+  name: direktiv-no-images
+  version: 0.9.1
+  description: "direktiv installation"
+
+components:
+- name: direktiv
+  required: true
+  import:
+    path: ../
+
+  images:
+  - busybox:latest
+  - cr.fluentbit.io/fluent/fluent-bit:3.2.4
+  - docker.io/direktiv/direktiv:v0.9.1
+  - otel/opentelemetry-collector-k8s:0.120.0
+  - registry.k8s.io/ingress-nginx/controller:v1.12.0
+  - registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.5.0
+  - victoriametrics/victoria-logs:v1.15.0-victorialogs
+
+  # base images
+  - direktiv/request:v4
