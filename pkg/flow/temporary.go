@@ -586,8 +586,8 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 	//nolint:intrange
 	for i := 0; i < 300; i++ { // 5 minutes max retry
-		telemetry.LogInstance(ctx, telemetry.LogLevelDebug,
-			fmt.Sprintf("attempting function request %d, %s", i, addr))
+		telemetry.LogInstance(ctx, telemetry.LogLevelInfo,
+			fmt.Sprintf("attempting service request %d, %s", i, addr))
 
 		err = engine.db.DataStore().HeartBeats().Set(context.Background(), &datastore.HeartBeat{
 			Group: "life_services",
@@ -601,16 +601,23 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		resp, err = client.Do(req)
 
 		if err != nil {
+			isServiceDown := strings.Contains(err.Error(), "no such host") ||
+				strings.Contains(err.Error(), "connection refused")
+
+			if isServiceDown {
+				telemetry.LogInstanceError(ctx, "service is scaled to zero", err)
+			}
+
 			// Try to ignite the service if it was down (only once, hence i==0).
 			if i == 0 {
-				if strings.Contains(err.Error(), "no such host") ||
-					strings.Contains(err.Error(), "connection refused") {
+				if isServiceDown {
 					igErr := engine.ServiceManager.IgniteService(ar.Container.Service)
 					if igErr != nil {
 						engine.reportError(ctx, &arReq.ActionContext, igErr)
 
 						return
 					}
+					telemetry.LogInstance(ctx, telemetry.LogLevelInfo, "service ignition triggered")
 				}
 			}
 
