@@ -2,11 +2,15 @@
 
 ## WITH k3S
 
-sudo zarf init --components=git-server,k3s --confirm
+`sudo zarf init --components=git-server,k3s --confirm`
+
+To delete k3s: 
+
+`sudo zarf destroy --confirm`
 
 ## WITHOUT k3S
 
-zarf init --components=git-server --confirm
+`zarf init --components=git-server --confirm`
 
 ## COPY KUBECONFIG (INTERNAL K3S)
 

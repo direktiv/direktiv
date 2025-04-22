@@ -38,3 +38,5 @@ fluent-bit:
   ###ZARF_VAR_DIREKTIV_FLUENTBIT_CONFIG###
 
 ###ZARF_VAR_DIREKTIV_OTEL_CONFIG###
+
+ingress:

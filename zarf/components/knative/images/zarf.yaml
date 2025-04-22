@@ -1,38 +1,14 @@
 kind: ZarfPackageConfig 
 metadata:
-  name: knative 
+  name: knative
   version: 1.17.0
-  description: "knative installation"
-
-variables:
-- name: KNATIVE_HTTP_PROXY
-  default: ""
-- name: KNATIVE_HTTPS_PROXY
-  default: ""
-- name: KNATIVE_NO_PROXY
-  default: ""
+  description: "knative installation with images"
 
 components:
 - name: knative
   required: true
-  actions:
-    onDeploy:
-      after:
-      - cmd: zarf tools kubectl delete namespace contour-external
-  manifests:
-  - name: operator
-    namespace: knative-operator
-    files:
-      - operator.yaml
-  - name: knative
-    namespace: knative-serving
-    files:
-      - basic.yaml
-  - name: contour
-    namespace: contour-internal
-    files:
-      - contour.yaml
-    noWait: true
+  import:
+    path: ../
   images:
   - gcr.io/knative-releases/knative.dev/operator/cmd/operator:v1.17.5
   - gcr.io/knative-releases/knative.dev/operator/cmd/webhook:v1.17.5
@@ -47,8 +23,3 @@ components:
   - gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:f9779359ec560349596eea99a7446eac0db2436339e0586a3656c978b95b0266
   - ghcr.io/projectcontour/contour:v1.30.1
   - docker.io/envoyproxy/envoy:v1.31.3
-
-
-
-  
-  

@@ -55,7 +55,7 @@ components:
           sensitive: true
       after:
         - description: database secrets available
-          maxTotalSeconds: 30
+          maxTotalSeconds: 120
           wait:
             cluster:
               kind: secret
@@ -79,13 +79,3 @@ components:
     url: https://percona.github.io/percona-helm-charts/
     valuesFiles:
     - values.yaml
-
-  images:
-  - percona/percona-postgresql-operator:2.6.0
-  - percona/pmm-client:2.41.0
-  - perconalab/percona-postgresql-operator:main-ppg16-pgbackrest
-  - perconalab/percona-postgresql-operator:main-ppg16-pgbouncer
-  - perconalab/percona-postgresql-operator:main-ppg16-postgres
-  - percona/percona-postgresql-operator:2.6.0-ppg16.8-postgres
-  - percona/percona-postgresql-operator:2.6.0-ppg16.8-pgbouncer1.24.0
-  - percona/percona-postgresql-operator:2.6.0-ppg16.8-pgbackrest2.54.2
