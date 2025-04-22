@@ -91,7 +91,7 @@ func (logic *setterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 		if encodedData, ok := x.(string); ok && v.MimeType == "application/octet-stream" {
 			decodedData, decodeErr := b64.StdEncoding.DecodeString(encodedData)
 			if decodeErr != nil {
-				return nil, derrors.NewInternalError(fmt.Errorf("could not decode variable '%s' base64 string %w", v.Key, err))
+				return nil, derrors.NewInternalError(fmt.Errorf("could not decode variable '%s' base64 string %w", v.Key, decodeErr))
 			}
 			data = decodedData
 		} else if v.MimeType == "text/plain; charset=utf-8" || v.MimeType == "text/plain" {
