@@ -3,6 +3,7 @@ package datasql
 import (
 	"context"
 	"fmt"
+
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"gorm.io/gorm"
 )
