@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -590,6 +591,11 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			fmt.Sprintf("attempting function request %d, %s", i, addr))
 
 		resp, err = client.Do(req)
+		if err != nil && strings.Contains(err.Error(), "connection refused") {
+		}
+		if err != nil && strings.Contains(err.Error(), "no such host") {
+		}
+
 		if err != nil {
 			if ctxErr := rctx.Err(); ctxErr != nil {
 				telemetry.LogInstanceError(ctx, "request canceled or deadline exceeded", ctxErr)
