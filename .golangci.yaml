@@ -27,6 +27,7 @@ linters:
     - varnamelen
     - wrapcheck
     - wsl
+    - funcorder
 
   settings:
     nlreturn:
@@ -46,6 +47,7 @@ linters:
       - std-error-handling
     rules:
       - linters:
+          - funcorder
           - asasalint
           - contextcheck
           - dogsled
