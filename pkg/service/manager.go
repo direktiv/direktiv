@@ -322,7 +322,7 @@ func (m *manager) IgniteService(serviceURL string) error {
 
 	err := m.runtimeClient.igniteService(serviceID)
 	if err != nil {
-		return fmt.Errorf("ignite service %s error: %v", serviceID, err)
+		return fmt.Errorf("ignite service %s error: %w", serviceID, err)
 	}
 
 	return nil
