@@ -126,9 +126,16 @@ func Run(circuit *core.Circuit) error {
 		return nil
 	})
 
+	// Create service manager
+	slog.Info("initializing service manager")
+	app.ServiceManager, err = service.NewManager(config)
+	if err != nil {
+		return fmt.Errorf("initializing service manager, err: %w", err)
+	}
+
 	// Initialize legacy server
 	slog.Info("initializing legacy server")
-	srv, err := flow.InitLegacyServer(circuit, config, bus, db, rawDB)
+	srv, err := flow.InitLegacyServer(circuit, config, bus, db, rawDB, app.ServiceManager)
 	if err != nil {
 		return fmt.Errorf("initialize legacy server, err: %w", err)
 	}
@@ -137,16 +144,6 @@ func Run(circuit *core.Circuit) error {
 		Start:  srv.Engine.StartWorkflow,
 		Cancel: srv.Engine.CancelInstance,
 	}
-
-	// Create service manager
-	slog.Info("initializing service manager")
-	app.ServiceManager, err = service.NewManager(config)
-	if err != nil {
-		return fmt.Errorf("initializing service manager, err: %w", err)
-	}
-
-	// Setup GetServiceURL function
-	service.SetupGetServiceURLFunc(config)
 
 	circuit.Start(func() error {
 		err := app.ServiceManager.Run(circuit)

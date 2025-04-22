@@ -297,3 +297,14 @@ func (m *manager) setServiceDefaults(sv *core.ServiceFileData) {
 		sv.Envs = make([]core.EnvironmentVariable, 0)
 	}
 }
+
+func (m *manager) GetServiceURL(namespace string, typ string, file string, name string) string {
+	id := (&core.ServiceFileData{
+		Typ:       typ,
+		Namespace: namespace,
+		FilePath:  file,
+		Name:      name,
+	}).GetID()
+
+	return fmt.Sprintf("http://%s.%s.svc.cluster.local", id, m.cfg.KnativeNamespace)
+}

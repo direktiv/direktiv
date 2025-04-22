@@ -24,6 +24,10 @@ const (
 	direktivOpentelemetry = "DIREKTIV_OTEL_BACKEND"
 	direktivFlowEndpoint  = "DIREKTIV_FLOW_ENDPOINT"
 	direktivDebug         = "DIREKTIV_DEBUG"
+
+	containerUser        = "direktiv-container"
+	containerSidecar     = "direktiv-sidecar"
+	containerSidecarPort = 8890
 )
 
 func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*appsV1.Deployment, *corev1.Service, *autoscalingV2.HorizontalPodAutoscaler, error) {

@@ -20,7 +20,6 @@ import (
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
@@ -446,15 +445,15 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateID string, time
 		ar.Container.Size = con.Size
 		ar.Container.Scale = int(scale)
 		ar.Container.ID = con.ID
-		ar.Container.Service = service.GetServiceURL(arCtx.Namespace, core.ServiceTypeWorkflow, arCtx.Workflow, con.ID)
+		ar.Container.Service = engine.ServiceManager.GetServiceURL(arCtx.Namespace, core.ServiceTypeWorkflow, arCtx.Workflow, con.ID)
 	case model.NamespacedKnativeFunctionType:
 		con := fn.(*model.NamespacedFunctionDefinition) //nolint:forcetypeassert
 		ar.Container.ID = con.ID
-		ar.Container.Service = service.GetServiceURL(arCtx.Namespace, core.ServiceTypeNamespace, con.Path, "")
+		ar.Container.Service = engine.ServiceManager.GetServiceURL(arCtx.Namespace, core.ServiceTypeNamespace, con.Path, "")
 	case model.SystemKnativeFunctionType:
 		con := fn.(*model.SystemFunctionDefinition) //nolint:forcetypeassert
 		ar.Container.ID = con.ID
-		ar.Container.Service = service.GetServiceURL(core.SystemNamespace, core.ServiceTypeSystem, con.Path, "")
+		ar.Container.Service = engine.ServiceManager.GetServiceURL(core.SystemNamespace, core.ServiceTypeSystem, con.Path, "")
 	default:
 		return nil, nil, fmt.Errorf("unexpected function type: %v", fn)
 	}
