@@ -318,7 +318,7 @@ func (m *Manager) IgniteService(serviceURL string) error {
 	serviceID = strings.TrimPrefix(serviceID, "http://")
 	serviceID = strings.TrimPrefix(serviceID, "https://")
 	serviceID = strings.TrimSuffix(serviceID, ".svc.cluster.local")
-	serviceID = strings.TrimSuffix(serviceID, ".direktiv-services-direktiv")
+	serviceID = strings.TrimSuffix(serviceID, "."+m.Cfg.KnativeNamespace)
 
 	err := m.runtimeClient.igniteService(serviceID)
 	if err != nil {
