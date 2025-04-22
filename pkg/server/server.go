@@ -65,7 +65,7 @@ func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *file
 				Size:    serviceDef.Size.String(),
 				Envs:    serviceDef.Envs,
 				Patches: serviceDef.Patches,
-				Scale:   1,
+				Scale:   0,
 			},
 		})
 	}
