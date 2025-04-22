@@ -53,12 +53,15 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 		})
 	}
 
-	int32Ptr := func(i int32) *int32 { return &i }
+	int32Ptr := func(i int) *int32 {
+		i32 := int32(i)
+		return &i32
+	}
 
 	dep := &appsV1.Deployment{
 		ObjectMeta: buildServiceMeta(c, sv),
 		Spec: appsV1.DeploymentSpec{
-			Replicas: int32Ptr(1),
+			Replicas: int32Ptr(sv.Scale),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{"direktiv-service": sv.GetID()},
 			},
@@ -101,6 +104,11 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 		},
 	}
 
+	minReplicas := int32Ptr(sv.Scale)
+	if sv.Scale == 0 {
+		minReplicas = int32Ptr(1)
+	}
+
 	hpa := &autoscalingV2.HorizontalPodAutoscaler{
 		ObjectMeta: buildServiceMeta(c, sv),
 		Spec: autoscalingV2.HorizontalPodAutoscalerSpec{
@@ -109,9 +117,9 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 				Kind:       "Deployment",
 				Name:       sv.GetID(),
 			},
-			MinReplicas: int32Ptr(1),
+			MinReplicas: minReplicas,
 			//nolint:gosec
-			MaxReplicas: int32(sv.Scale),
+			MaxReplicas: int32(c.KnativeMaxScale),
 			Metrics: []autoscalingV2.MetricSpec{
 				{
 					Type: autoscalingV2.ResourceMetricSourceType,
