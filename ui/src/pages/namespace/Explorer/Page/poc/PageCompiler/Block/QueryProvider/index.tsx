@@ -1,10 +1,18 @@
+import { BlockPath, addSegmentsToPath } from "../utils/blockPath";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
 import { Block } from "..";
-import { BlockWrapper } from "../utils/BlockWrapper";
 import { QueryProviderType } from "../../../schema/blocks/queryProvider";
 
-export const QueryProvider = ({ blocks, query }: QueryProviderType) => {
+type QueryProviderProps = {
+  blockProps: QueryProviderType;
+  blockPath: BlockPath;
+};
+
+export const QueryProvider = ({
+  blockProps: { blocks, query },
+  blockPath,
+}: QueryProviderProps) => {
   const { data } = useSuspenseQuery(
     queryOptions({
       queryKey: [query.id],
@@ -16,11 +24,15 @@ export const QueryProvider = ({ blocks, query }: QueryProviderType) => {
   );
 
   return (
-    <BlockWrapper>
+    <>
       <pre>{JSON.stringify(data, null, 2)}</pre>
       {blocks.map((block, index) => (
-        <Block key={index} block={block} />
+        <Block
+          key={index}
+          block={block}
+          blockPath={addSegmentsToPath(blockPath, index)}
+        />
       ))}
-    </BlockWrapper>
+    </>
   );
 };

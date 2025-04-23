@@ -25,7 +25,7 @@ export const PageCompiler = ({ page }: PageCompilerProps) => (
   <QueryClientProvider client={queryClient}>
     <BlocksWrapper>
       {page.blocks.map((block, index) => (
-        <Block key={index} block={block} />
+        <Block key={index} block={block} blockPath={`${index}`} />
       ))}
     </BlocksWrapper>
   </QueryClientProvider>

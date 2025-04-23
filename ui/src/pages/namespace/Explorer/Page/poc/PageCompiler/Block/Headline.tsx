@@ -1,9 +1,14 @@
-import { BlockWrapper } from "./utils/BlockWrapper";
 import { HeadlineType } from "../../schema/blocks/headline";
 
-export const Headline = ({ label, description }: HeadlineType) => (
-  <BlockWrapper>
+type HeadlineProps = {
+  blockProps: HeadlineType;
+};
+
+export const Headline = ({
+  blockProps: { label, description },
+}: HeadlineProps) => (
+  <>
     <h1 className="text-xl">{label}</h1>
     {description && <p>{description}</p>}
-  </BlockWrapper>
+  </>
 );

@@ -1,8 +1,7 @@
-import { BlockWrapper } from "./utils/BlockWrapper";
 import { TextType } from "../../schema/blocks/text";
 
-export const Text = ({ label }: TextType) => (
-  <BlockWrapper>
-    <p>{label}</p>
-  </BlockWrapper>
-);
+type TextProps = {
+  blockProps: TextType;
+};
+
+export const Text = ({ blockProps: { label } }: TextProps) => <p>{label}</p>;

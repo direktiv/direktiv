@@ -1,5 +1,6 @@
 import Alert from "~/design/Alert";
 import { AllBlocksType } from "../../schema/blocks";
+import { BlockPath } from "./utils/blockPath";
 import { BlockWrapper } from "./utils/BlockWrapper";
 import { Headline } from "./Headline";
 import { Modal } from "./Modal";
@@ -9,30 +10,28 @@ import { TwoColumns } from "./TwoColumns";
 
 type BlockProps = {
   block: AllBlocksType;
+  blockPath: BlockPath;
 };
 
-export const Block = ({ block }: BlockProps) => {
-  switch (block.type) {
-    case "headline":
-      return <Headline {...block} />;
-      break;
-    case "text":
-      return <Text {...block} />;
-      break;
-    case "two-columns":
-      return <TwoColumns {...block} />;
-      break;
-    case "query-provider":
-      return <QueryProvider {...block} />;
-      break;
-    case "modal":
-      return <Modal {...block} />;
-      break;
-    default:
-      return (
-        <BlockWrapper>
+export const Block = ({ block, blockPath }: BlockProps) => {
+  const renderContent = () => {
+    switch (block.type) {
+      case "headline":
+        return <Headline blockProps={block} />;
+      case "text":
+        return <Text blockProps={block} />;
+      case "two-columns":
+        return <TwoColumns blockProps={block} blockPath={blockPath} />;
+      case "query-provider":
+        return <QueryProvider blockProps={block} blockPath={blockPath} />;
+      case "modal":
+        return <Modal blockProps={block} blockPath={blockPath} />;
+      default:
+        return (
           <Alert variant="warning">not implemented yet: {block.type}</Alert>
-        </BlockWrapper>
-      );
-  }
+        );
+    }
+  };
+
+  return <BlockWrapper blockPath={blockPath}>{renderContent()}</BlockWrapper>;
 };
