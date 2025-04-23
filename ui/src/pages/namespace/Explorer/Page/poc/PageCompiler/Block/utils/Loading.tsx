@@ -1,3 +1,16 @@
-import { Loader2 } from "lucide-react";
+import { ElementRef, forwardRef } from "react";
+import { Loader2, LucideIcon, LucideProps } from "lucide-react";
 
-export const Loading = () => <Loader2 className="mr-2 size-4 animate-spin" />;
+import { twMergeClsx } from "~/util/helpers";
+
+export const Loading = forwardRef<ElementRef<LucideIcon>, LucideProps>(
+  ({ className, ...props }, ref) => (
+    <Loader2
+      className={twMergeClsx("size-4 animate-spin", className)}
+      ref={ref}
+      {...props}
+    />
+  )
+);
+
+Loading.displayName = "Loading";
