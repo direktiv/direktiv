@@ -1,21 +1,30 @@
-import { PropsWithChildren, Suspense } from "react";
+import { PropsWithChildren, Suspense, useState } from "react";
 
+import Badge from "~/design/Badge";
 import { BlockPath } from "./blockPath";
 import { Loading } from "./Loading";
-
-/**
- * TODO:
- * [] a path to the wrapper
- */
 
 type BlockWrapperProps = {
   blockPath: BlockPath;
 } & PropsWithChildren;
-export const BlockWrapper = ({ children, blockPath }: BlockWrapperProps) => (
-  <div className="border p-3 border-dashed relative group">
-    <div className="absolute  group-hover:block text-sm bg-slate-400 rounded-full px-2">
-      {blockPath}
+export const BlockWrapper = ({ children, blockPath }: BlockWrapperProps) => {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <div
+      className="border p-3 border-dashed relative"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <Badge
+        className="-m-6 absolute"
+        variant="secondary"
+        style={{
+          display: isHovered ? "block" : "none",
+        }}
+      >
+        {blockPath}
+      </Badge>
+      <Suspense fallback={<Loading />}>{children}</Suspense>
     </div>
-    <Suspense fallback={<Loading />}>{children}</Suspense>
-  </div>
-);
+  );
+};
