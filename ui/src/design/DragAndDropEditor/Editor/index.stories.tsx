@@ -51,7 +51,7 @@ export const DragAndDrop = () => {
 
           <h3>Droppable:</h3>
           <div className="space-y-0">
-            <DroppableSeparator id="1" />
+            <DroppableSeparator id="1" position="before" />
             <DroppableElement
               preview={preview}
               hidden={hidden}
@@ -60,7 +60,7 @@ export const DragAndDrop = () => {
               onHide={() => setHidden(!hidden)}
               setSelectedDialog={() => setDialogOpen(true)}
             />
-            <DroppableSeparator id="3" />
+            <DroppableSeparator id="3" position="after" />
           </div>
         </div>
         <EditModal />

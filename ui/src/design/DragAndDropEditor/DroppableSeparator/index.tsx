@@ -7,6 +7,7 @@ import { twMergeClsx } from "~/util/helpers";
 
 type DroppableProps = PropsWithChildren & {
   id: string;
+  position: "before" | "after" | undefined;
 };
 
 export const DroppableSeparator: FC<DroppableProps> = ({ id, children }) => {

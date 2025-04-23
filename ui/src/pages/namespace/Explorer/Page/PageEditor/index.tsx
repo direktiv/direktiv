@@ -58,8 +58,11 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
     pageConfig?.layout ?? defaultLayout
   );
 
-  // TODO: [suggestion] it would be nice if target would be a string literal here, like e.g "before" | "after"
-  const onMove = (name: string, target: string) => {
+  const onMove = (
+    name: string,
+    target: string,
+    position: "before" | "after" | undefined
+  ) => {
     if (target) {
       const defaultTableData = [
         {
@@ -79,12 +82,10 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
       };
       const newLayout = [...layout];
 
-      if (target.includes("before")) {
-        target = target.slice(0, -1);
+      if (position === "before") {
         newLayout.splice(Number(target), 0, newElement);
       } else {
-        if (target.includes("after")) {
-          target = target.slice(0, -1);
+        if (position === "after") {
           newLayout.splice(Number(target + 1), 0, newElement);
         } else {
           newLayout[Number(target)] = newElement;
@@ -195,7 +196,10 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                             className="relative w-full bg-gray-2 dark:bg-gray-dark-2 rounded-md p-4"
                           >
                             {!layout.length && (
-                              <DroppableSeparator id={String(0) + "before"} />
+                              <DroppableSeparator
+                                id={`${String(0)}-before`}
+                                position="before"
+                              />
                             )}
                             {layout.map((element, index) => {
                               const isLastListItem =
@@ -205,7 +209,8 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                                   {isLastListItem ? (
                                     <>
                                       <DroppableSeparator
-                                        id={String(index) + "before"}
+                                        id={`${index}-before`}
+                                        position="before"
                                       />
                                       <DroppableElement
                                         id={String(index)}
@@ -232,13 +237,15 @@ const PageEditor: FC<PageEditorProps> = ({ data }) => {
                                         }}
                                       />
                                       <DroppableSeparator
-                                        id={String(index) + "after"}
+                                        id={`${index}-after`}
+                                        position="after"
                                       />
                                     </>
                                   ) : (
                                     <>
                                       <DroppableSeparator
-                                        id={String(index) + "before"}
+                                        id={`${index}-before`}
+                                        position="before"
                                       />
                                       <DroppableElement
                                         id={String(index)}

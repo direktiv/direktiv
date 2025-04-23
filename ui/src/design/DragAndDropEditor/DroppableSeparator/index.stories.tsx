@@ -14,6 +14,7 @@ export const Default: Story = {
   render: ({ ...args }) => <DroppableSeparator {...args} />,
   args: {
     id: "1",
+    position: "before",
   },
   argTypes: {
     id: {
