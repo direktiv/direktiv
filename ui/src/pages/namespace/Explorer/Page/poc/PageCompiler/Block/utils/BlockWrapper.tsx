@@ -16,21 +16,17 @@ type BlockWrapperProps = {
 
 export const BlockWrapper = ({ children, blockPath }: BlockWrapperProps) => {
   const [isHovered, setIsHovered] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (wrapperRef.current) {
-        const containingWrappers = Array.from(
+      if (containerRef.current) {
+        const allBlockWrapper = Array.from(
           document.querySelectorAll("[data-block-wrapper]")
-        ).filter((wrapper) => wrapper.contains(e.target as Node));
+        ).filter((element) => element.contains(e.target as Node));
 
-        // This wrapper is the deepest if it's the last one in the containing wrappers array
-        const isDeepest =
-          containingWrappers[containingWrappers.length - 1] ===
-          wrapperRef.current;
-
-        setIsHovered(!!isDeepest);
+        const deepestChildren = allBlockWrapper.at(-1);
+        setIsHovered(containerRef.current === deepestChildren);
       }
     };
 
@@ -38,20 +34,17 @@ export const BlockWrapper = ({ children, blockPath }: BlockWrapperProps) => {
     return () => document.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  // Only show badge if this wrapper is hovered and none of its children are
-  const showBadge = isHovered;
-
   return (
     <div
-      ref={wrapperRef}
-      className="border p-3 border-dashed relative"
+      ref={containerRef}
+      className="relative border border-dashed p-3"
       data-block-wrapper
     >
       <Badge
         className="-m-6 absolute"
         variant="secondary"
         style={{
-          display: showBadge ? "block" : "none",
+          display: isHovered ? "block" : "none",
         }}
       >
         {blockPath}
