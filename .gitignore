@@ -118,3 +118,4 @@ zarf/server.crt
 zarf/server.key
 zarf/**/server.crt
 zarf/**/server.key
+zarf/**/zarf-config.yaml

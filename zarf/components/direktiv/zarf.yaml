@@ -64,7 +64,6 @@ components:
   actions:
     onDeploy:
       before:
-      - cmd: env | grep CERT
       - cmd: if [ "${ZARF_VAR_DIREKTIV_WITH_CERTIFICATE}" = "true" ] && [ ! -f server.key ]; then openssl req -x509 -newkey rsa:4096 -keyout server.key -out server.crt -sha256 -days 3650 -nodes -subj "/CN=`echo $ZARF_VAR_DIREKTIV_HOST`"; fi
       - cmd: zarf tools kubectl create namespace direktiv || true
       - cmd: if [ "${ZARF_VAR_DIREKTIV_WITH_CERTIFICATE}" = "true" ] && [ -f server.key ]; then zarf tools kubectl create secret tls -n direktiv --cert=server.crt --key=server.key direktiv-tls || true; fi
@@ -122,7 +121,12 @@ components:
     - name: DIREKTIV_CERTIFICATE
       description: tls certificate
       path: ingress.certificate
-    
+    - name: DIREKTIV_API_KEY
+      description: direktiv api key
+      path: apikey
+    - name: DIREKTIV_LICENSE
+      description: direktiv license
+      path: license    
 
   
   
