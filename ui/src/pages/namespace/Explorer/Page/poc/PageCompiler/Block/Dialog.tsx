@@ -1,8 +1,8 @@
 import { BlockPath, addSegmentsToPath } from "./utils/blockPath";
 import {
-  Dialog,
   DialogClose,
   DialogContent,
+  Dialog as DialogDesignComponent,
   DialogFooter,
   DialogTrigger,
 } from "~/design/Dialog";
@@ -10,28 +10,26 @@ import {
 import { Block } from ".";
 import { BlocksWrapper } from "./utils/BlocksWrapper";
 import Button from "~/design/Button";
-import { ModalType } from "../../schema/blocks/modal";
+import { DialogType } from "../../schema/blocks/dialog";
 
 /**
  *
  * TODO:
- * [] rename Modal to Dialog
  * [] add title
  * [] add a concept for a submit and cancel as soon as the form is implemented
  * [] optionally there could always be an X icon at the top right corner
  * [] only render modal children when open
- *
  */
 
-type ModalProps = {
-  blockProps: ModalType;
+type DialogProps = {
+  blockProps: DialogType;
   blockPath: BlockPath;
 };
-export const Modal = ({
+export const Dialog = ({
   blockProps: { blocks, trigger },
   blockPath,
-}: ModalProps) => (
-  <Dialog>
+}: DialogProps) => (
+  <DialogDesignComponent>
     <DialogTrigger>Open</DialogTrigger>
     <DialogContent>
       <BlocksWrapper>
@@ -49,5 +47,5 @@ export const Modal = ({
         </DialogClose>
       </DialogFooter>
     </DialogContent>
-  </Dialog>
+  </DialogDesignComponent>
 );

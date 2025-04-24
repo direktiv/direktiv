@@ -1,7 +1,7 @@
 import { Button, ButtonType } from "./button";
+import { Dialog, DialogType } from "./dialog";
 import { Form, FormType } from "./form";
 import { Headline, HeadlineType } from "./headline";
-import { Modal, ModalType } from "./modal";
 import { QueryProvider, QueryProviderType } from "./queryProvider";
 import { Text, TextType } from "./text";
 import { TwoColumns, TwoColumnsType } from "./twoColumns";
@@ -18,7 +18,7 @@ export type AllBlocksType =
   | ButtonType
   | FormType
   | HeadlineType
-  | ModalType
+  | DialogType
   | QueryProviderType
   | TextType
   | TwoColumnsType;
@@ -28,7 +28,7 @@ export const AllBlocks: z.ZodType<AllBlocksType> = z.lazy(() =>
     Button,
     Form,
     Headline,
-    Modal,
+    Dialog,
     QueryProvider,
     Text,
     TwoColumns,

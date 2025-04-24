@@ -42,10 +42,10 @@ const examplePage = {
           },
           blocks: [
             {
-              type: "modal",
+              type: "dialog",
               trigger: {
                 type: "button",
-                label: "open modal",
+                label: "open dialog",
               },
               blocks: [
                 {

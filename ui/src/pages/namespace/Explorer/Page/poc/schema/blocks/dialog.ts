@@ -8,14 +8,14 @@ import { z } from "zod";
  * It is currently possible to extend the schema without updating the type.
  * The schema needs to get the type input to avoid circular dependencies.
  */
-export type ModalType = {
-  type: "modal";
+export type DialogType = {
+  type: "dialog";
   trigger: TriggerBlocksType;
   blocks: AllBlocksType[];
 };
 
-export const Modal = z.object({
-  type: z.literal("modal"),
+export const Dialog = z.object({
+  type: z.literal("dialog"),
   trigger: z.lazy(() => TriggerBlocks),
   blocks: z.array(z.lazy(() => AllBlocks)),
-}) satisfies z.ZodType<ModalType>;
+}) satisfies z.ZodType<DialogType>;
