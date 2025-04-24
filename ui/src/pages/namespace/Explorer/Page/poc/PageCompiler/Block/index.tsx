@@ -1,4 +1,3 @@
-import Alert from "~/design/Alert";
 import { AllBlocksType } from "../../schema/blocks";
 import { BlockPath } from "./utils/blockPath";
 import { BlockWrapper } from "./utils/BlockWrapper";
@@ -7,6 +6,7 @@ import { Headline } from "./Headline";
 import { QueryProvider } from "./QueryProvider";
 import { Text } from "./Text";
 import { TwoColumns } from "./TwoColumns";
+import { UserError } from "./utils/UserError";
 
 type BlockProps = {
   block: AllBlocksType;
@@ -28,7 +28,9 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         return <Dialog blockProps={block} blockPath={blockPath} />;
       default:
         return (
-          <Alert variant="warning">not implemented yet: {block.type}</Alert>
+          <UserError
+            title={`The block type ${block.type} is not implemented yet`}
+          />
         );
     }
   };
