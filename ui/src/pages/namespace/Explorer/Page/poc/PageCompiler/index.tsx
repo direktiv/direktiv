@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { Block } from "./Block";
 import { BlocksWrapper } from "./Block/utils/BlocksWrapper";
+import { PageCompilerContextProvider } from "./context/pageCompilerContext";
 import { UserError } from "./Block/utils/UserError";
 import { addSegmentsToPath } from "./Block/utils/blockPath";
 
@@ -23,15 +24,6 @@ const queryClient = new QueryClient({
   },
 });
 
-/**
- *
- * TODO:
- * [] add context provider
- * [] - mode is either "preview" | "live"
- * [] - containing the json in a variable
- * [] - add button to switv
- */
-
 export const PageCompiler = ({ page }: PageCompilerProps) => {
   const parsedPage = DirektivPagesSchema.safeParse(page);
 
@@ -44,16 +36,18 @@ export const PageCompiler = ({ page }: PageCompilerProps) => {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <BlocksWrapper>
-        {page.blocks.map((block, index) => (
-          <Block
-            key={index}
-            block={block}
-            blockPath={addSegmentsToPath("blocks", index)}
-          />
-        ))}
-      </BlocksWrapper>
-    </QueryClientProvider>
+    <PageCompilerContextProvider mode="preview" page={page}>
+      <QueryClientProvider client={queryClient}>
+        <BlocksWrapper>
+          {page.blocks.map((block, index) => (
+            <Block
+              key={index}
+              block={block}
+              blockPath={addSegmentsToPath("blocks", index)}
+            />
+          ))}
+        </BlocksWrapper>
+      </QueryClientProvider>
+    </PageCompilerContextProvider>
   );
 };
