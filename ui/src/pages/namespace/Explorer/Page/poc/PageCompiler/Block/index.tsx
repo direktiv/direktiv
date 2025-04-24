@@ -1,6 +1,7 @@
 import { AllBlocksType } from "../../schema/blocks";
 import { BlockPath } from "./utils/blockPath";
 import { BlockWrapper } from "./utils/BlockWrapper";
+import { Button } from "./Button";
 import { Dialog } from "./Dialog";
 import { Headline } from "./Headline";
 import { QueryProvider } from "./QueryProvider";
@@ -20,6 +21,8 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         return <Headline blockProps={block} />;
       case "text":
         return <Text blockProps={block} />;
+      case "button":
+        return <Button blockProps={block} />;
       case "two-columns":
         return <TwoColumns blockProps={block} blockPath={blockPath} />;
       case "query-provider":

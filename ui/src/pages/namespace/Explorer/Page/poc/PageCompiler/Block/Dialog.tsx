@@ -9,7 +9,8 @@ import {
 
 import { Block } from ".";
 import { BlocksWrapper } from "./utils/BlocksWrapper";
-import Button from "~/design/Button";
+import { Button } from "./Button";
+import ButtonDesignComponent from "~/design/Button";
 import { DialogType } from "../../schema/blocks/dialog";
 
 /**
@@ -24,12 +25,12 @@ type DialogProps = {
   blockPath: BlockPath;
 };
 export const Dialog = ({
-  blockProps: { blocks, trigger: _trigger },
+  blockProps: { blocks, trigger },
   blockPath,
 }: DialogProps) => (
   <DialogDesignComponent>
     <DialogTrigger>
-      <Button>Open</Button>
+      <Button blockProps={trigger} />
     </DialogTrigger>
     <DialogContent>
       <BlocksWrapper>
@@ -43,7 +44,7 @@ export const Dialog = ({
       </BlocksWrapper>
       <DialogFooter>
         <DialogClose asChild>
-          <Button variant="ghost">Cancel</Button>
+          <ButtonDesignComponent variant="ghost">Cancel</ButtonDesignComponent>
         </DialogClose>
       </DialogFooter>
     </DialogContent>
