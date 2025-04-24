@@ -17,17 +17,29 @@ export const QueryProvider = ({
     queries: queries.map((q) =>
       queryOptions({
         queryKey: [q.id],
-        queryFn: () =>
-          new Promise<QueryProviderType["queries"][number]>((resolve) =>
-            setTimeout(() => resolve(q), 1000)
-          ),
+        queryFn: async () => {
+          const response = await fetch(q.endpoint);
+          if (!response.ok) {
+            throw new Error(
+              `Error in query with the id  ${q.id}. Failed to fetch test data, API responded with ${response.status}`
+            );
+          }
+          try {
+            return await response.json();
+          } catch (e) {
+            throw new Error(
+              `Error in query with the id  ${q.id}. Data is not valid JSON`
+            );
+          }
+        },
       })
     ),
   });
+
   const result = data.map((d) => d.data);
+
   return (
     <>
-      <pre>{JSON.stringify(result, null, 2)}</pre>
       {blocks.map((block, index) => (
         <Block
           key={index}
@@ -35,6 +47,7 @@ export const QueryProvider = ({
           blockPath={addSegmentsToPath(blockPath, index)}
         />
       ))}
+      <pre>{JSON.stringify(result, null, 2)}</pre>
     </>
   );
 };

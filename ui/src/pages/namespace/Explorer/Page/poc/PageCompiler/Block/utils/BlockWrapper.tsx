@@ -8,7 +8,9 @@ import {
 
 import Badge from "~/design/Badge";
 import { BlockPath } from "./blockPath";
+import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
+import { UserError } from "./UserError";
 
 type BlockWrapperProps = {
   blockPath: BlockPath;
@@ -49,7 +51,17 @@ export const BlockWrapper = ({ children, blockPath }: BlockWrapperProps) => {
       >
         {blockPath}
       </Badge>
-      <Suspense fallback={<Loading />}>{children}</Suspense>
+      <Suspense fallback={<Loading />}>
+        <ErrorBoundary
+          fallbackRender={({ error }) => (
+            <UserError title="There was an error fetching data from the API">
+              {error.message}
+            </UserError>
+          )}
+        >
+          {children}
+        </ErrorBoundary>
+      </Suspense>
     </div>
   );
 };
