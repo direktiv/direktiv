@@ -32,7 +32,7 @@ const examplePage = {
           queries: [
             {
               id: "fetching-resources",
-              endpoint: "/api/get/resources",
+              endpoint: "/ns/demo/companies",
               queryParams: [
                 {
                   key: "query",
