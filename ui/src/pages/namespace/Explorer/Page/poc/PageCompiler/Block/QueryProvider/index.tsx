@@ -21,14 +21,14 @@ export const QueryProvider = ({
           const response = await fetch(q.endpoint);
           if (!response.ok) {
             throw new Error(
-              `Error in query with the id  ${q.id}. Failed to fetch test data, API responded with ${response.status}`
+              `Error in query #${q.id}. GET ${q.endpoint} responded with ${response.status}`
             );
           }
           try {
             return await response.json();
           } catch (e) {
             throw new Error(
-              `Error in query with the id  ${q.id}. Data is not valid JSON`
+              `Error in query #${q.id}. GET ${q.endpoint} returned invalid JSON`
             );
           }
         },
