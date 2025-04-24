@@ -28,7 +28,9 @@ export const Dialog = ({
   blockPath,
 }: DialogProps) => (
   <DialogDesignComponent>
-    <DialogTrigger>Open</DialogTrigger>
+    <DialogTrigger>
+      <Button>Open</Button>
+    </DialogTrigger>
     <DialogContent>
       <BlocksWrapper>
         {blocks.map((block, index) => (
