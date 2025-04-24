@@ -1,7 +1,10 @@
+import { ComponentProps, useState } from "react";
 import { Card } from "~/design/Card";
 import { DirektivPagesType } from "./schema";
 import Editor from "~/design/Editor";
 import { PageCompiler } from "./PageCompiler";
+import { Separator } from "~/design/Separator";
+import { Switch } from "~/design/Switch";
 import { jsonToYaml } from "../../utils";
 import { useTheme } from "~/util/store/theme";
 
@@ -99,8 +102,11 @@ const examplePage = {
   ],
 } satisfies DirektivPagesType;
 
+type Mode = ComponentProps<typeof PageCompiler>["mode"];
+
 const PageEditor = () => {
   const theme = useTheme();
+  const [mode, setMode] = useState<Mode>("preview");
   return (
     <div className="grid grid-cols-2 gap-5 grow p-5">
       <Card className="p-4">
@@ -110,8 +116,20 @@ const PageEditor = () => {
           options={{ readOnly: true }}
         />
       </Card>
-      <Card className="p-4">
-        <PageCompiler page={examplePage} />
+      <Card className="p-4 flex flex-col gap-4">
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="mode"
+            checked={mode === "preview"}
+            onCheckedChange={(value) => {
+              setMode(value ? "preview" : "live");
+            }}
+          />
+
+          <label htmlFor="mode">Preview</label>
+        </div>
+        <Separator />
+        <PageCompiler page={examplePage} mode={mode} />
       </Card>
     </div>
   );

@@ -12,6 +12,8 @@ import { BlockPath } from "./blockPath";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { UserError } from "./UserError";
+import { twMergeClsx } from "~/util/helpers";
+import { useMode } from "../../context/pageCompilerContext";
 
 type BlockWrapperProps = {
   blockPath: BlockPath;
@@ -23,10 +25,15 @@ export const BlockWrapper = ({
   block: { type },
   blockPath,
 }: BlockWrapperProps) => {
+  const mode = useMode();
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (mode !== "preview") {
+      return;
+    }
+
     const handleMouseMove = (e: MouseEvent) => {
       if (containerRef.current) {
         const allBlockWrapper = Array.from(
@@ -40,23 +47,31 @@ export const BlockWrapper = ({
 
     document.addEventListener("mousemove", handleMouseMove);
     return () => document.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [mode]);
 
   return (
     <div
       ref={containerRef}
-      className="relative border border-dashed p-3"
+      className={twMergeClsx(
+        mode === "preview" &&
+          "rounded-md relative p-3 border-2 border-gray-4 border-dashed dark:border-gray-dark-4 bg-white dark:bg-black",
+        isHovered &&
+          mode === "preview" &&
+          "border-solid bg-gray-2 dark:bg-gray-dark-2"
+      )}
       data-block-wrapper
     >
-      <Badge
-        className="-m-6 absolute"
-        variant="secondary"
-        style={{
-          display: isHovered ? "block" : "none",
-        }}
-      >
-        <b>{type}</b> {blockPath}
-      </Badge>
+      {mode === "preview" && (
+        <Badge
+          className="-m-6 absolute z-50"
+          variant="secondary"
+          style={{
+            display: isHovered ? "block" : "none",
+          }}
+        >
+          <b>{type}</b> {blockPath}
+        </Badge>
+      )}
       <Suspense fallback={<Loading />}>
         <ErrorBoundary
           fallbackRender={({ error }) => (
