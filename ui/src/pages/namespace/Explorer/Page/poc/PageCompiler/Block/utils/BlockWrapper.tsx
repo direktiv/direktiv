@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 
+import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockPath } from "./blockPath";
 import { ErrorBoundary } from "react-error-boundary";
@@ -14,9 +15,14 @@ import { UserError } from "./UserError";
 
 type BlockWrapperProps = {
   blockPath: BlockPath;
+  block: AllBlocksType;
 } & PropsWithChildren;
 
-export const BlockWrapper = ({ children, blockPath }: BlockWrapperProps) => {
+export const BlockWrapper = ({
+  children,
+  block: { type },
+  blockPath,
+}: BlockWrapperProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -49,7 +55,7 @@ export const BlockWrapper = ({ children, blockPath }: BlockWrapperProps) => {
           display: isHovered ? "block" : "none",
         }}
       >
-        {blockPath}
+        <b>{type}</b> {blockPath}
       </Badge>
       <Suspense fallback={<Loading />}>
         <ErrorBoundary

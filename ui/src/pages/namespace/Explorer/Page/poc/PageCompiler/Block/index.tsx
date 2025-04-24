@@ -38,5 +38,9 @@ export const Block = ({ block, blockPath }: BlockProps) => {
     }
   };
 
-  return <BlockWrapper blockPath={blockPath}>{renderContent()}</BlockWrapper>;
+  return (
+    <BlockWrapper blockPath={blockPath} block={block}>
+      {renderContent()}
+    </BlockWrapper>
+  );
 };
