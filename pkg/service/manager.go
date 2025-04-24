@@ -22,8 +22,8 @@ import (
 // services in the system in a declarative manner. This implementation spans up a goroutine (via Start())
 // to Run the services in list param versus what is running in the runtime.
 type Manager struct {
-	Cfg                 *core.Config
-	FetchActiveServices FetchActiveServices
+	Cfg     *core.Config
+	FasFunc FetchActiveServices
 
 	// this list maintains all the service configurations that need to be running.
 	list []*core.ServiceFileData
@@ -64,10 +64,10 @@ func newKnativeManager(c *core.Config, fasFunc FetchActiveServices) (*Manager, e
 	}
 
 	return &Manager{
-		Cfg:                 c,
-		FetchActiveServices: fasFunc,
-		list:                make([]*core.ServiceFileData, 0),
-		runtimeClient:       client,
+		Cfg:           c,
+		FasFunc:       fasFunc,
+		list:          make([]*core.ServiceFileData, 0),
+		runtimeClient: client,
 
 		lock: &sync.Mutex{},
 	}, nil
@@ -135,7 +135,16 @@ func (m *Manager) runCycle() []error {
 		}
 	}
 
-	cleanErrs := m.runtimeClient.cleanIdleServices(nil)
+	activeList, err := m.FasFunc()
+	if err != nil {
+		errs = append(errs, fmt.Errorf("fetch active services id: %w", err))
+		return errs
+	}
+	for i := range activeList {
+		activeList[i] = serviceUrlToID(activeList[i], m.Cfg.KnativeNamespace)
+	}
+
+	cleanErrs := m.runtimeClient.cleanIdleServices(activeList)
 	if len(cleanErrs) != 0 {
 		errs = append(errs, cleanErrs...)
 	}
@@ -324,11 +333,7 @@ func (m *Manager) IgniteService(serviceURL string) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	serviceID := serviceURL
-	serviceID = strings.TrimPrefix(serviceID, "http://")
-	serviceID = strings.TrimPrefix(serviceID, "https://")
-	serviceID = strings.TrimSuffix(serviceID, ".svc.cluster.local")
-	serviceID = strings.TrimSuffix(serviceID, "."+m.Cfg.KnativeNamespace)
+	serviceID := serviceUrlToID(serviceURL, m.Cfg.KnativeNamespace)
 
 	err := m.runtimeClient.scaleService(serviceID, 1)
 	if err != nil {
@@ -336,4 +341,14 @@ func (m *Manager) IgniteService(serviceURL string) error {
 	}
 
 	return nil
+}
+
+func serviceUrlToID(serviceURL string, k8sNamespace string) string {
+	serviceID := serviceURL
+	serviceID = strings.TrimPrefix(serviceID, "http://")
+	serviceID = strings.TrimPrefix(serviceID, "https://")
+	serviceID = strings.TrimSuffix(serviceID, ".svc.cluster.local")
+	serviceID = strings.TrimSuffix(serviceID, "."+k8sNamespace)
+
+	return serviceID
 }
