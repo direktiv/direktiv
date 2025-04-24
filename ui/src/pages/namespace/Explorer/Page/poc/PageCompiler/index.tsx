@@ -37,11 +37,9 @@ export const PageCompiler = ({ page }: PageCompilerProps) => {
 
   if (!parsedPage.success) {
     return (
-      <div className="p-4 flex flex-col gap-4">
-        <UserError title="The page has an invalid configuration">
-          <pre>{JSON.stringify(parsedPage.error.issues, null, 2)}</pre>
-        </UserError>
-      </div>
+      <UserError title="The page has an invalid configuration">
+        <pre>{JSON.stringify(parsedPage.error.issues, null, 2)}</pre>
+      </UserError>
     );
   }
 
