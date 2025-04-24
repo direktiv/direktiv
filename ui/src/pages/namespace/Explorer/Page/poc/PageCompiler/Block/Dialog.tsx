@@ -26,7 +26,7 @@ type DialogProps = {
   blockPath: BlockPath;
 };
 export const Dialog = ({
-  blockProps: { blocks, trigger },
+  blockProps: { blocks, trigger: _trigger },
   blockPath,
 }: DialogProps) => (
   <DialogDesignComponent>
