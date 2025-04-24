@@ -7,7 +7,6 @@ import { useTheme } from "~/util/store/theme";
 
 const examplePage = {
   direktiv_api: "pages/v1",
-  path: "/som/path",
   blocks: [
     {
       type: "headline",

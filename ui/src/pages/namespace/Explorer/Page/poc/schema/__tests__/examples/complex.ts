@@ -2,7 +2,6 @@ import { DirektivPagesType } from "../..";
 
 export default {
   direktiv_api: "pages/v1",
-  path: "/som/path",
   blocks: [
     {
       type: "headline",
@@ -26,16 +25,18 @@ export default {
       rightBlocks: [
         {
           type: "query-provider",
-          query: {
-            id: "fetching-resources",
-            endpoint: "/api/get/resources",
-            queryParams: [
-              {
-                key: "query",
-                value: "my-search-query",
-              },
-            ],
-          },
+          queries: [
+            {
+              id: "fetching-resources",
+              endpoint: "/api/get/resources",
+              queryParams: [
+                {
+                  key: "query",
+                  value: "my-search-query",
+                },
+              ],
+            },
+          ],
           blocks: [
             {
               type: "dialog",

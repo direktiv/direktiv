@@ -2,7 +2,6 @@ import { DirektivPagesType } from "../..";
 
 export default {
   direktiv_api: "pages/v1",
-  path: "hello/world",
   blocks: [
     {
       type: "headline",
