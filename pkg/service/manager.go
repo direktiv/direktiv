@@ -22,7 +22,9 @@ import (
 // services in the system in a declarative manner. This implementation spans up a goroutine (via Start())
 // to Run the services in list param versus what is running in the runtime.
 type Manager struct {
-	Cfg *core.Config
+	Cfg                 *core.Config
+	FetchActiveServices FetchActiveServices
+
 	// this list maintains all the service configurations that need to be running.
 	list []*core.ServiceFileData
 
@@ -34,11 +36,13 @@ type Manager struct {
 	servicesListHasBeenSet bool // NOTE: set to true the first time SetServices is called, and used to prevent any reconciles before that has happened.
 }
 
-func NewManager(c *core.Config) (core.ServiceManager, error) {
-	return newKnativeManager(c)
+type FetchActiveServices func() ([]string, error)
+
+func NewManager(c *core.Config, fasFunc FetchActiveServices) (core.ServiceManager, error) {
+	return newKnativeManager(c, fasFunc)
 }
 
-func newKnativeManager(c *core.Config) (*Manager, error) {
+func newKnativeManager(c *core.Config, fasFunc FetchActiveServices) (*Manager, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -60,9 +64,10 @@ func newKnativeManager(c *core.Config) (*Manager, error) {
 	}
 
 	return &Manager{
-		Cfg:           c,
-		list:          make([]*core.ServiceFileData, 0),
-		runtimeClient: client,
+		Cfg:                 c,
+		FetchActiveServices: fasFunc,
+		list:                make([]*core.ServiceFileData, 0),
+		runtimeClient:       client,
 
 		lock: &sync.Mutex{},
 	}, nil

@@ -128,7 +128,18 @@ func Run(circuit *core.Circuit) error {
 
 	// Create service manager
 	slog.Info("initializing service manager")
-	app.ServiceManager, err = service.NewManager(config)
+	app.ServiceManager, err = service.NewManager(config, func() ([]string, error) {
+		beats, err := db.DataStore().HeartBeats().Since(context.Background(), "life_services", 30)
+		if err != nil {
+			return nil, err
+		}
+		list := make([]string, len(beats))
+		for i, _ := range beats {
+			list[i] = beats[i].Key
+		}
+
+		return list, nil
+	})
 	if err != nil {
 		return fmt.Errorf("initializing service manager, err: %w", err)
 	}
