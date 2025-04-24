@@ -13,8 +13,9 @@ type runtimeClient interface {
 	createService(sv *core.ServiceFileData) error
 	updateService(sv *core.ServiceFileData) error
 	deleteService(id string) error
-	igniteService(id string) error
+	scaleService(id string, scale int32) error
 	listServices() ([]status, error)
+	cleanIdleServices(activeList []string) []error
 	streamServiceLogs(id string, podID string) (io.ReadCloser, error)
 	listServicePods(id string) (any, error)
 	rebuildService(id string) error

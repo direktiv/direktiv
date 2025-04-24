@@ -130,6 +130,11 @@ func (m *Manager) runCycle() []error {
 		}
 	}
 
+	cleanErrs := m.runtimeClient.cleanIdleServices(nil)
+	if len(cleanErrs) != 0 {
+		errs = append(errs, cleanErrs...)
+	}
+
 	return errs
 }
 
@@ -320,7 +325,7 @@ func (m *Manager) IgniteService(serviceURL string) error {
 	serviceID = strings.TrimSuffix(serviceID, ".svc.cluster.local")
 	serviceID = strings.TrimSuffix(serviceID, "."+m.Cfg.KnativeNamespace)
 
-	err := m.runtimeClient.igniteService(serviceID)
+	err := m.runtimeClient.scaleService(serviceID, 1)
 	if err != nil {
 		return fmt.Errorf("ignite service %s error: %w", serviceID, err)
 	}

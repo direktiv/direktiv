@@ -150,6 +150,7 @@ func buildServiceMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMet
 	}
 
 	meta.Annotations["direktiv.io/inputHash"] = sv.GetValueHash()
+	meta.Annotations[annotationMinScale] = strconv.Itoa(sv.Scale)
 	// xKnative
 	// meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
 	// meta.Annotations["networking.knative.dev/ingress.class"] = c.KnativeIngressClass

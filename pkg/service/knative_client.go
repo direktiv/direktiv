@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -21,12 +22,58 @@ import (
 )
 
 const annotationNamespace = "direktiv.io/namespace"
+const annotationMinScale = "direktiv.io/minScale"
 
 type knativeClient struct {
 	config *core.Config
 
 	k8sCli     *kubernetes.Clientset
 	knativeCli versioned.Interface
+}
+
+func (c *knativeClient) cleanIdleServices(activeList []string) []error {
+	var errs []error
+
+	deps, err := c.k8sCli.AppsV1().Deployments(c.config.KnativeNamespace).List(context.TODO(), metaV1.ListOptions{})
+	if err != nil {
+		return []error{err}
+	}
+
+	if len(deps.Items) == 0 {
+		return errs
+	}
+
+	//filtersDeps := []appsV1.Deployment{}
+	for _, d := range deps.Items {
+		if d.Spec.Replicas == nil {
+			errs = append(errs, fmt.Errorf("deployment %s has nil replicas field", d.Name))
+			continue
+		}
+		if *d.Spec.Replicas != 1 {
+			fmt.Printf("deployment %s has %d (none 1) replicas field\n", d.Name, *d.Spec.Replicas)
+			continue
+		}
+		minScale, ok := d.Annotations[annotationMinScale]
+		if !ok {
+			errs = append(errs, fmt.Errorf("deployment %s has no minScale annotation", d.Name))
+			continue
+		}
+		if minScale != "0" {
+			fmt.Printf("deployment %s has %d (none zero) minScale annotation\n", d.Name, *d.Spec.Replicas)
+			continue
+		}
+		if slices.Contains(activeList, d.Name) {
+			fmt.Printf("deployment %s is in active list\n", d.Name)
+			continue
+		}
+		err = c.scaleService(d.Name, 0)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("deployment %s fail to scale to zero: %v", d.Name, err))
+		}
+		fmt.Printf("deployment %s is scaled to zero\n", d.Name)
+	}
+
+	return errs
 }
 
 func (c *knativeClient) streamServiceLogs(_ string, podID string) (io.ReadCloser, error) {
@@ -163,18 +210,18 @@ func (c *knativeClient) deleteService(id string) error {
 	return nil
 }
 
-func (c *knativeClient) igniteService(id string) error {
-	scale := &v1.Scale{
+func (c *knativeClient) scaleService(id string, scale int32) error {
+	s := &v1.Scale{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      id,
 			Namespace: c.config.KnativeNamespace,
 		},
 		Spec: v1.ScaleSpec{
-			Replicas: 1,
+			Replicas: scale,
 		},
 	}
 
-	_, err := c.k8sCli.AppsV1().Deployments(c.config.KnativeNamespace).UpdateScale(context.TODO(), id, scale, metaV1.UpdateOptions{})
+	_, err := c.k8sCli.AppsV1().Deployments(c.config.KnativeNamespace).UpdateScale(context.TODO(), id, s, metaV1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
