@@ -134,7 +134,7 @@ func Run(circuit *core.Circuit) error {
 			return nil, err
 		}
 		list := make([]string, len(beats))
-		for i, _ := range beats {
+		for i := range beats {
 			list[i] = beats[i].Key
 		}
 

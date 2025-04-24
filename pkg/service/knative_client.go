@@ -21,8 +21,10 @@ import (
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
 
-const annotationNamespace = "direktiv.io/namespace"
-const annotationMinScale = "direktiv.io/minScale"
+const (
+	annotationNamespace = "direktiv.io/namespace"
+	annotationMinScale  = "direktiv.io/minScale"
+)
 
 type knativeClient struct {
 	config *core.Config
@@ -43,7 +45,6 @@ func (c *knativeClient) cleanIdleServices(activeList []string) []error {
 		return errs
 	}
 
-	//filtersDeps := []appsV1.Deployment{}
 	for _, d := range deps.Items {
 		if d.Spec.Replicas == nil {
 			errs = append(errs, fmt.Errorf("deployment %s has nil replicas field", d.Name))
@@ -68,7 +69,7 @@ func (c *knativeClient) cleanIdleServices(activeList []string) []error {
 		}
 		err = c.scaleService(d.Name, 0)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("deployment %s fail to scale to zero: %v", d.Name, err))
+			errs = append(errs, fmt.Errorf("deployment %s fail to scale to zero: %w", d.Name, err))
 		}
 		fmt.Printf("deployment %s is scaled to zero\n", d.Name)
 	}
