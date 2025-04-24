@@ -13,7 +13,7 @@ export const QueryProvider = ({
   blockProps: { blocks, queries },
   blockPath,
 }: QueryProviderProps) => {
-  const data = useSuspenseQueries({
+  useSuspenseQueries({
     queries: queries.map((q) =>
       queryOptions({
         queryKey: [q.id],
@@ -36,8 +36,6 @@ export const QueryProvider = ({
     ),
   });
 
-  const result = data.map((d) => d.data);
-
   return (
     <>
       {blocks.map((block, index) => (
@@ -47,7 +45,6 @@ export const QueryProvider = ({
           blockPath={addSegmentsToPath(blockPath, index)}
         />
       ))}
-      <pre>{JSON.stringify(result, null, 2)}</pre>
     </>
   );
 };
