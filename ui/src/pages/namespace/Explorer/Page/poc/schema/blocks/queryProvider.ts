@@ -10,12 +10,12 @@ import { z } from "zod";
  */
 export type QueryProviderType = {
   type: "query-provider";
-  query: QueryType;
+  queries: QueryType[];
   blocks: AllBlocksType[];
 };
 
 export const QueryProvider = z.object({
   type: z.literal("query-provider"),
-  query: Query,
+  queries: z.array(Query),
   blocks: z.array(z.lazy(() => AllBlocks)),
 }) satisfies z.ZodType<QueryProviderType>;

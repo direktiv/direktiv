@@ -30,16 +30,18 @@ const examplePage = {
       rightBlocks: [
         {
           type: "query-provider",
-          query: {
-            id: "fetching-resources",
-            endpoint: "/api/get/resources",
-            queryParams: [
-              {
-                key: "query",
-                value: "my-search-query",
-              },
-            ],
-          },
+          queries: [
+            {
+              id: "fetching-resources",
+              endpoint: "/api/get/resources",
+              queryParams: [
+                {
+                  key: "query",
+                  value: "my-search-query",
+                },
+              ],
+            },
+          ],
           blocks: [
             {
               type: "dialog",
@@ -59,16 +61,18 @@ const examplePage = {
                   rightBlocks: [
                     {
                       type: "query-provider",
-                      query: {
-                        id: "fetching-resources-2",
-                        endpoint: "/api/get/resources",
-                        queryParams: [
-                          {
-                            key: "query",
-                            value: "my-search-query",
-                          },
-                        ],
-                      },
+                      queries: [
+                        {
+                          id: "fetching-resources-2",
+                          endpoint: "/api/get/resources",
+                          queryParams: [
+                            {
+                              key: "query",
+                              value: "my-search-query",
+                            },
+                          ],
+                        },
+                      ],
                       blocks: [],
                     },
                   ],

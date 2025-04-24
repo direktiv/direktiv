@@ -28,6 +28,7 @@ const queryClient = new QueryClient({
  * [] add context provider
  * [] - mode is either "preview" | "live"
  * [] - containing the json in a variable
+ * [] - add button to switv
  */
 
 export const PageCompiler = ({ page }: PageCompilerProps) => (
