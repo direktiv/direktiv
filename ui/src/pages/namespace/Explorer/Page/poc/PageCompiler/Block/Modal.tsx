@@ -19,6 +19,7 @@ import { ModalType } from "../../schema/blocks/modal";
  * [] add title
  * [] add a concept for a submit and cancel as soon as the form is implemented
  * [] optionally there could always be an X icon at the top right corner
+ * [] only render modal children when open
  *
  */
 

@@ -49,6 +49,32 @@ const examplePage = {
               },
               blocks: [
                 {
+                  type: "two-columns",
+                  leftBlocks: [
+                    {
+                      type: "text",
+                      label: "Some text goes here",
+                    },
+                  ],
+                  rightBlocks: [
+                    {
+                      type: "query-provider",
+                      query: {
+                        id: "fetching-resources",
+                        endpoint: "/api/get/resources",
+                        queryParams: [
+                          {
+                            key: "query",
+                            value: "my-search-query",
+                          },
+                        ],
+                      },
+                      blocks: [],
+                    },
+                  ],
+                },
+
+                {
                   type: "form",
                   trigger: {
                     type: "button",
