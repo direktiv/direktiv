@@ -60,7 +60,7 @@ const examplePage = {
                     {
                       type: "query-provider",
                       query: {
-                        id: "fetching-resources",
+                        id: "fetching-resources-2",
                         endpoint: "/api/get/resources",
                         queryParams: [
                           {
