@@ -1,7 +1,7 @@
-import { DynamicString } from "./dynamicString";
+import { TemplateString } from "./templateString";
 import { z } from "zod";
 
 export const KeyValue = z.object({
   key: z.string().min(1),
-  value: DynamicString,
+  value: TemplateString,
 });

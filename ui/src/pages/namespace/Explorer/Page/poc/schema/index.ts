@@ -1,10 +1,10 @@
 import { AllBlocks } from "./blocks";
-import { DynamicString } from "./primitives/dynamicString";
+import { TemplateString } from "./primitives/templateString";
 import { z } from "zod";
 
 export const DirektivPagesSchema = z.object({
   direktiv_api: z.literal("pages/v1"),
-  path: DynamicString,
+  path: TemplateString,
   blocks: z.array(AllBlocks),
 });
 
