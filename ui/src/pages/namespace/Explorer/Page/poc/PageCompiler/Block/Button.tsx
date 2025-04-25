@@ -1,3 +1,5 @@
+import { ElementRef, forwardRef } from "react";
+
 import ButtonDesignComponent from "~/design/Button";
 import { ButtonType } from "../../schema/blocks/button";
 
@@ -5,7 +7,19 @@ type ButtonProps = {
   blockProps: ButtonType;
 };
 
-export const Button = ({
-  // TODO: implement the submit
-  blockProps: { label, submit: _submit },
-}: ButtonProps) => <ButtonDesignComponent>{label}</ButtonDesignComponent>;
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      // TODO: implement the submit
+      blockProps: { label, submit: _submit },
+      ...props
+    },
+    ref
+  ) => (
+    <ButtonDesignComponent ref={ref} {...props}>
+      {label}
+    </ButtonDesignComponent>
+  )
+);
+
+Button.displayName = "Button";
