@@ -4,6 +4,7 @@ import { BlockWrapper } from "./utils/BlockWrapper";
 import { Button } from "./Button";
 import { Dialog } from "./Dialog";
 import { Headline } from "./Headline";
+import { Loop } from "./Loop";
 import { QueryProvider } from "./QueryProvider";
 import { Text } from "./Text";
 import { TwoColumns } from "./TwoColumns";
@@ -25,6 +26,8 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         return <Button blockProps={block} />;
       case "two-columns":
         return <TwoColumns blockProps={block} blockPath={blockPath} />;
+      case "loop":
+        return <Loop blockProps={block} blockPath={blockPath} />;
       case "query-provider":
         return <QueryProvider blockProps={block} blockPath={blockPath} />;
       case "dialog":
