@@ -6,8 +6,8 @@ import { DirektivPagesType } from "./schema";
 import Editor from "~/design/Editor";
 import { PageCompiler } from "./PageCompiler";
 import { Switch } from "~/design/Switch";
-import { useTheme } from "~/util/store/theme";
 import { twMergeClsx } from "~/util/helpers";
+import { useTheme } from "~/util/store/theme";
 
 const examplePage = {
   direktiv_api: "pages/v1",
