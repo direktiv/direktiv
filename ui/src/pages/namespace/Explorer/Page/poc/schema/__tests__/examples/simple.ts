@@ -6,7 +6,6 @@ export default {
     {
       type: "headline",
       label: "Welcome to Direktiv",
-      description: "This is a headline block inside a Direktiv page",
     },
     {
       type: "text",

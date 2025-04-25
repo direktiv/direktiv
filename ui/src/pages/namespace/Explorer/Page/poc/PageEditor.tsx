@@ -15,14 +15,12 @@ const examplePage = {
     {
       type: "headline",
       label: "Welcome to Direktiv",
-      description: "This is a headline block inside a Direktiv page",
     },
     {
       type: "text",
       label:
         "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
     },
-
     {
       type: "query-provider",
       queries: [
