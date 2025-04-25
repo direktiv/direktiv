@@ -125,7 +125,7 @@ const PageEditor = () => {
   const theme = useTheme();
   const [mode, setMode] = useState<Mode>("preview");
   const [page, setPage] = useState(examplePage);
-  const [showEditor, setShowEditor] = useState(true);
+  const [showEditor, setShowEditor] = useState(false);
 
   return (
     <div
@@ -134,8 +134,8 @@ const PageEditor = () => {
         showEditor && "grid-cols-2"
       )}
     >
-      <div className="right-5 -top-12 absolute gap-5 flex">
-        <div className="flex gap-2">
+      <div className="right-5 -top-12 absolute gap-5 flex text-sm">
+        <div className="flex gap-2 items-center">
           <Switch
             id="mode"
             checked={mode === "preview"}
@@ -145,7 +145,7 @@ const PageEditor = () => {
           />
           <label htmlFor="mode">Preview</label>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <Switch
             id="show-editor"
             checked={showEditor}
