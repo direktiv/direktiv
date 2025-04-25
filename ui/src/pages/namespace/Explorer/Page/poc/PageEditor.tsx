@@ -22,30 +22,46 @@ const examplePage = {
       label:
         "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
     },
+
     {
-      type: "two-columns",
-      leftBlocks: [
+      type: "query-provider",
+      queries: [
         {
-          type: "text",
-          label: "Some text goes here",
+          id: "company-list",
+          endpoint: "/ns/demo/companies",
+          queryParams: [
+            {
+              key: "query",
+              value: "my-search-query",
+            },
+          ],
         },
       ],
-      rightBlocks: [
+      blocks: [
         {
-          type: "query-provider",
-          queries: [
+          type: "two-columns",
+          leftBlocks: [
             {
-              id: "fetching-resources",
-              endpoint: "/ns/demo/companies",
-              queryParams: [
+              type: "text",
+              label: "I am the left column",
+            },
+            {
+              type: "loop",
+              id: "comapny",
+              variable: "query.company-list.data.name",
+              blocks: [
                 {
-                  key: "query",
-                  value: "my-search-query",
+                  type: "text",
+                  label: "I am the loop",
                 },
               ],
             },
           ],
-          blocks: [
+          rightBlocks: [
+            {
+              type: "text",
+              label: "I am the right column",
+            },
             {
               type: "dialog",
               trigger: {
