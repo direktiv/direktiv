@@ -29,7 +29,7 @@ export const Dialog = ({
   blockPath,
 }: DialogProps) => (
   <DialogDesignComponent>
-    <DialogTrigger>
+    <DialogTrigger asChild>
       <Button blockProps={trigger} />
     </DialogTrigger>
     <DialogContent>
