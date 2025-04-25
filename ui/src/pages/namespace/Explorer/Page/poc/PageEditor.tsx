@@ -41,7 +41,7 @@ const examplePage = {
           leftBlocks: [
             {
               type: "text",
-              label: "I am the left column",
+              label: "I am the left column {{query.company-list.data.name}}",
             },
             {
               type: "loop",
