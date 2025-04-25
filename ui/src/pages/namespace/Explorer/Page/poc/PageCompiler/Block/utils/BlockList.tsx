@@ -3,11 +3,11 @@ import { PropsWithChildren, Suspense } from "react";
 import { Loading } from "./Loading";
 import { twMergeClsx } from "~/util/helpers";
 
-type BlocksWrapperProps = PropsWithChildren<{
+type BlockListProps = PropsWithChildren<{
   horizontal?: boolean;
 }>;
 
-export const BlocksWrapper = ({ horizontal, children }: BlocksWrapperProps) => (
+export const BlockList = ({ horizontal, children }: BlockListProps) => (
   <div
     className={twMergeClsx(
       "gap-3",

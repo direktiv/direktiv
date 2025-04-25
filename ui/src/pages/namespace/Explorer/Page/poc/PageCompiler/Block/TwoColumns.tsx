@@ -1,7 +1,7 @@
 import { BlockPath, addSegmentsToPath } from "./utils/blockPath";
 
 import { Block } from ".";
-import { BlocksWrapper } from "./utils/BlocksWrapper";
+import { BlockList } from "./utils/BlockList";
 import { TwoColumnsType } from "../../schema/blocks/twoColumns";
 
 type TwoColumnsProps = {
@@ -13,8 +13,8 @@ export const TwoColumns = ({
   blockProps: { leftBlocks, rightBlocks },
   blockPath,
 }: TwoColumnsProps) => (
-  <BlocksWrapper horizontal>
-    <BlocksWrapper>
+  <BlockList horizontal>
+    <BlockList>
       {leftBlocks.map((block, index) => (
         <Block
           key={index}
@@ -22,8 +22,8 @@ export const TwoColumns = ({
           blockPath={addSegmentsToPath(blockPath, ["leftBlocks", index])}
         />
       ))}
-    </BlocksWrapper>
-    <BlocksWrapper>
+    </BlockList>
+    <BlockList>
       {rightBlocks.map((block, index) => (
         <Block
           key={index}
@@ -31,6 +31,6 @@ export const TwoColumns = ({
           blockPath={addSegmentsToPath(blockPath, ["rightBlocks", index])}
         />
       ))}
-    </BlocksWrapper>
-  </BlocksWrapper>
+    </BlockList>
+  </BlockList>
 );

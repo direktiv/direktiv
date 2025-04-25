@@ -8,7 +8,7 @@ import {
 } from "~/design/Dialog";
 
 import { Block } from ".";
-import { BlocksWrapper } from "./utils/BlocksWrapper";
+import { BlockList } from "./utils/BlockList";
 import { Button } from "./Button";
 import ButtonDesignComponent from "~/design/Button";
 import { DialogType } from "../../schema/blocks/dialog";
@@ -33,7 +33,7 @@ export const Dialog = ({
       <Button blockProps={trigger} />
     </DialogTrigger>
     <DialogContent>
-      <BlocksWrapper>
+      <BlockList>
         {blocks.map((block, index) => (
           <Block
             key={index}
@@ -41,7 +41,7 @@ export const Dialog = ({
             blockPath={addSegmentsToPath(blockPath, index)}
           />
         ))}
-      </BlocksWrapper>
+      </BlockList>
       <DialogFooter>
         <DialogClose asChild>
           <ButtonDesignComponent variant="ghost">Cancel</ButtonDesignComponent>
