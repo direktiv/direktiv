@@ -5,8 +5,8 @@ type TextProps = {
   blockProps: TextType;
 };
 
-export const Text = ({ blockProps: { label } }: TextProps) => (
+export const Text = ({ blockProps }: TextProps) => (
   <p>
-    <TemplateString value={label} />
+    <TemplateString value={blockProps.label} />
   </p>
 );

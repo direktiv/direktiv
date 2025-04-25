@@ -22,7 +22,7 @@ type BlockWrapperProps = PropsWithChildren<{
 
 export const BlockWrapper = ({
   children,
-  block: { type },
+  block,
   blockPath,
 }: BlockWrapperProps) => {
   const mode = useMode();
@@ -69,7 +69,7 @@ export const BlockWrapper = ({
             display: isHovered ? "block" : "none",
           }}
         >
-          <b>{type}</b> {blockPath}
+          <b>{block.type}</b> {blockPath}
         </Badge>
       )}
       <Suspense fallback={<Loading />}>

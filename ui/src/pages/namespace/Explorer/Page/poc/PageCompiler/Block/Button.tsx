@@ -7,18 +7,15 @@ type ButtonProps = {
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      // TODO: implement the submit
-      blockProps: { label, submit: _submit },
-      ...props
-    },
-    ref
-  ) => (
-    <ButtonDesignComponent ref={ref} {...props}>
-      {label}
-    </ButtonDesignComponent>
-  )
+  ({ blockProps, ...props }, ref) => {
+    // TODO: implement the submit
+    const { label, submit: _submit } = blockProps;
+    return (
+      <ButtonDesignComponent ref={ref} {...props}>
+        {label}
+      </ButtonDesignComponent>
+    );
+  }
 );
 
 Button.displayName = "Button";

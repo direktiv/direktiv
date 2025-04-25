@@ -5,8 +5,8 @@ type HeadlineProps = {
   blockProps: HeadlineType;
 };
 
-export const Headline = ({ blockProps: { label } }: HeadlineProps) => (
+export const Headline = ({ blockProps }: HeadlineProps) => (
   <h1 className="text-xl">
-    <TemplateString value={label} />
+    <TemplateString value={blockProps.label} />
   </h1>
 );

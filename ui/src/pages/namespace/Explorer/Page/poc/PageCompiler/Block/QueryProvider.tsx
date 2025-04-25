@@ -10,9 +10,10 @@ type QueryProviderProps = {
 };
 
 export const QueryProvider = ({
-  blockProps: { blocks, queries },
+  blockProps,
   blockPath,
 }: QueryProviderProps) => {
+  const { blocks, queries } = blockProps;
   useSuspenseQueries({
     queries: queries.map((q) =>
       queryOptions({

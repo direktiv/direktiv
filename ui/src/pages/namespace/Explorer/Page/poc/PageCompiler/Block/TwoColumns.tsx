@@ -9,28 +9,28 @@ type TwoColumnsProps = {
   blockPath: BlockPath;
 };
 
-export const TwoColumns = ({
-  blockProps: { leftBlocks, rightBlocks },
-  blockPath,
-}: TwoColumnsProps) => (
-  <BlockList horizontal>
-    <BlockList>
-      {leftBlocks.map((block, index) => (
-        <Block
-          key={index}
-          block={block}
-          blockPath={addSegmentsToPath(blockPath, ["leftBlocks", index])}
-        />
-      ))}
+export const TwoColumns = ({ blockProps, blockPath }: TwoColumnsProps) => {
+  const { leftBlocks, rightBlocks } = blockProps;
+  return (
+    <BlockList horizontal>
+      <BlockList>
+        {leftBlocks.map((block, index) => (
+          <Block
+            key={index}
+            block={block}
+            blockPath={addSegmentsToPath(blockPath, ["leftBlocks", index])}
+          />
+        ))}
+      </BlockList>
+      <BlockList>
+        {rightBlocks.map((block, index) => (
+          <Block
+            key={index}
+            block={block}
+            blockPath={addSegmentsToPath(blockPath, ["rightBlocks", index])}
+          />
+        ))}
+      </BlockList>
     </BlockList>
-    <BlockList>
-      {rightBlocks.map((block, index) => (
-        <Block
-          key={index}
-          block={block}
-          blockPath={addSegmentsToPath(blockPath, ["rightBlocks", index])}
-        />
-      ))}
-    </BlockList>
-  </BlockList>
-);
+  );
+};
