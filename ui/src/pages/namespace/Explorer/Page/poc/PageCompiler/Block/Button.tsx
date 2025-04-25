@@ -9,7 +9,7 @@ type ButtonProps = {
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ blockProps, ...props }, ref) => {
     // TODO: implement the submit
-    const { label, submit: _submit } = blockProps;
+    const { label } = blockProps;
     return (
       <ButtonDesignComponent ref={ref} {...props}>
         {label}

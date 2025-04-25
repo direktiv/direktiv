@@ -4,7 +4,7 @@ import Button from "~/design/Button";
 import { Link } from "@tanstack/react-router";
 import Logo from "~/components/Logo";
 import { isApiErrorSchema } from "~/api/errorHandling";
-import { twMergeClsx } from "../helpers";
+import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 
 type ErrorPageProps = {
