@@ -1,12 +1,13 @@
 import { ComponentProps, useState } from "react";
+import { jsonToYaml, yamlToJsonOrNull } from "../../utils";
+
 import { Card } from "~/design/Card";
 import { DirektivPagesType } from "./schema";
 import Editor from "~/design/Editor";
 import { PageCompiler } from "./PageCompiler";
-import { Separator } from "~/design/Separator";
 import { Switch } from "~/design/Switch";
-import { jsonToYaml } from "../../utils";
 import { useTheme } from "~/util/store/theme";
+import { twMergeClsx } from "~/util/helpers";
 
 const examplePage = {
   direktiv_api: "pages/v1",
@@ -107,17 +108,18 @@ type Mode = ComponentProps<typeof PageCompiler>["mode"];
 const PageEditor = () => {
   const theme = useTheme();
   const [mode, setMode] = useState<Mode>("preview");
+  const [page, setPage] = useState(examplePage);
+  const [showEditor, setShowEditor] = useState(true);
+
   return (
-    <div className="grid grid-cols-2 gap-5 grow p-5">
-      <Card className="p-4">
-        <Editor
-          value={jsonToYaml(examplePage)}
-          theme={theme ?? undefined}
-          options={{ readOnly: true }}
-        />
-      </Card>
-      <Card className="p-4 flex flex-col gap-4">
-        <div className="flex items-center space-x-2">
+    <div
+      className={twMergeClsx(
+        "grid gap-5 grow p-5 relative",
+        showEditor && "grid-cols-2"
+      )}
+    >
+      <div className="right-5 -top-12 absolute gap-5 flex">
+        <div className="flex gap-2">
           <Switch
             id="mode"
             checked={mode === "preview"}
@@ -125,11 +127,34 @@ const PageEditor = () => {
               setMode(value ? "preview" : "live");
             }}
           />
-
           <label htmlFor="mode">Preview</label>
         </div>
-        <Separator />
-        <PageCompiler page={examplePage} mode={mode} />
+        <div className="flex gap-2">
+          <Switch
+            id="show-editor"
+            checked={showEditor}
+            onCheckedChange={(value) => {
+              setShowEditor(value);
+            }}
+          />
+          <label htmlFor="show-editor">Show Editor</label>
+        </div>
+      </div>
+      {showEditor && (
+        <Card className="p-4">
+          <Editor
+            value={jsonToYaml(examplePage)}
+            theme={theme ?? undefined}
+            onChange={(newValue) => {
+              if (newValue) {
+                setPage(yamlToJsonOrNull(newValue));
+              }
+            }}
+          />
+        </Card>
+      )}
+      <Card className="p-4 flex flex-col gap-4">
+        <PageCompiler page={page} mode={mode} />
       </Card>
     </div>
   );
