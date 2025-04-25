@@ -8,3 +8,5 @@ import { z } from "zod";
  * API query, etc.
  */
 export const TemplateString = z.string().min(1);
+
+export type TemplateStringType = z.infer<typeof TemplateString>;
