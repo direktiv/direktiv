@@ -9,4 +9,6 @@ import { z } from "zod";
  */
 export const TemplateString = z.string().min(1);
 
+export const TemplateStringSeparator = ".";
+
 export type TemplateStringType = z.infer<typeof TemplateString>;
