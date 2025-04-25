@@ -1,8 +1,8 @@
 import { ComponentProps, useState } from "react";
+import { DirektivPagesSchema, DirektivPagesType } from "./schema";
 import { jsonToYaml, yamlToJsonOrNull } from "../../utils";
 
 import { Card } from "~/design/Card";
-import { DirektivPagesType } from "./schema";
 import Editor from "~/design/Editor";
 import { PageCompiler } from "./PageCompiler";
 import { Switch } from "~/design/Switch";
@@ -125,6 +125,7 @@ const PageEditor = () => {
   const theme = useTheme();
   const [mode, setMode] = useState<Mode>("preview");
   const [page, setPage] = useState(examplePage);
+  const [validate, setValidate] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
 
   return (
@@ -155,6 +156,17 @@ const PageEditor = () => {
           />
           <label htmlFor="show-editor">Show Editor</label>
         </div>
+        <div className="flex gap-2 items-center">
+          <Switch
+            disabled={!showEditor}
+            id="validate"
+            checked={validate}
+            onCheckedChange={(value) => {
+              setValidate(value);
+            }}
+          />
+          <label htmlFor="validate">Validate</label>
+        </div>
       </div>
       {showEditor && (
         <Card className="p-4">
@@ -163,7 +175,14 @@ const PageEditor = () => {
             theme={theme ?? undefined}
             onChange={(newValue) => {
               if (newValue) {
-                setPage(yamlToJsonOrNull(newValue));
+                const newValueJson = yamlToJsonOrNull(newValue);
+                if (
+                  validate &&
+                  !DirektivPagesSchema.safeParse(newValueJson).success
+                ) {
+                  return;
+                }
+                setPage(newValueJson);
               }
             }}
           />
