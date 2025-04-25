@@ -1,10 +1,15 @@
 import { TemplateStringType } from "../../../../schema/primitives/templateString";
-import { replaceVariables } from "./utils";
+import { replaceVariablesInTemplateString } from "./utils";
 
 type TemplateStringProps = {
   value: TemplateStringType;
 };
 
 export const TemplateString = ({ value }: TemplateStringProps) => (
-  <span>{replaceVariables(value)}</span>
+  <span>
+    {replaceVariablesInTemplateString(
+      value,
+      (variableName) => `{{${variableName}}}`
+    )}
+  </span>
 );
