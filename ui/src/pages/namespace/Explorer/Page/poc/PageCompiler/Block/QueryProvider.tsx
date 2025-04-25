@@ -1,8 +1,8 @@
-import { BlockPath, addSegmentsToPath } from "../utils/blockPath";
+import { BlockPath, addSegmentsToPath } from "./utils/blockPath";
 import { queryOptions, useSuspenseQueries } from "@tanstack/react-query";
 
-import { Block } from "..";
-import { QueryProviderType } from "../../../schema/blocks/queryProvider";
+import { Block } from ".";
+import { QueryProviderType } from "../../schema/blocks/queryProvider";
 
 type QueryProviderProps = {
   blockProps: QueryProviderType;
