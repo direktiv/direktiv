@@ -15,10 +15,10 @@ import { UserError } from "./UserError";
 import { twMergeClsx } from "~/util/helpers";
 import { useMode } from "../../context/pageCompilerContext";
 
-type BlockWrapperProps = {
+type BlockWrapperProps = PropsWithChildren<{
   blockPath: BlockPath;
   block: AllBlocksType;
-} & PropsWithChildren;
+}>;
 
 export const BlockWrapper = ({
   children,

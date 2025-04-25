@@ -3,9 +3,9 @@ import { PropsWithChildren, Suspense } from "react";
 import { Loading } from "./Loading";
 import { twMergeClsx } from "~/util/helpers";
 
-type BlocksWrapperProps = {
+type BlocksWrapperProps = PropsWithChildren<{
   horizontal?: boolean;
-} & PropsWithChildren;
+}>;
 
 export const BlocksWrapper = ({ horizontal, children }: BlocksWrapperProps) => (
   <div
