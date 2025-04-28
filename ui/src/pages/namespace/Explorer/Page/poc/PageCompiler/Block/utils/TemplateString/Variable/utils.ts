@@ -4,6 +4,8 @@ import {
   VariableType,
 } from "../../../../../schema/primitives/variable";
 
+import { TemplateStringSeparator } from "../../../../../schema/primitives/templateString";
+
 /**
  * Regex to match variables enclosed in double curly braces, like {{ variable }}.
  *
@@ -45,4 +47,31 @@ export const parseVariable = (variableString: VariableType): VariableObject => {
     id,
     pointer: pointer.length > 0 ? pointer.join(".") : undefined,
   };
+};
+
+export const getObjectValueByPath = (
+  obj: unknown,
+  path: string
+): string | undefined => {
+  if (!obj || !path || typeof obj !== "object") {
+    return undefined;
+  }
+
+  const pathParts = path.split(TemplateStringSeparator);
+  let current = obj;
+
+  for (const part of pathParts) {
+    if (
+      current &&
+      typeof current === "object" &&
+      current !== null &&
+      part in current
+    ) {
+      current = (current as Record<string, unknown>)[part];
+    } else {
+      return undefined; // Path not found
+    }
+  }
+
+  return current;
 };
