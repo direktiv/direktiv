@@ -1,4 +1,5 @@
 import { Button, ButtonType } from "./button";
+import { Card, CardType } from "./card";
 import { Dialog, DialogType } from "./dialog";
 import { Form, FormType } from "./form";
 import { Headline, HeadlineType } from "./headline";
@@ -17,23 +18,25 @@ import { z } from "zod";
  */
 export type AllBlocksType =
   | ButtonType
+  | CardType
+  | DialogType
   | FormType
   | HeadlineType
-  | DialogType
+  | LoopType
   | QueryProviderType
   | TextType
-  | TwoColumnsType
-  | LoopType;
+  | TwoColumnsType;
 
 export const AllBlocks: z.ZodType<AllBlocksType> = z.lazy(() =>
   z.discriminatedUnion("type", [
     Button,
+    Card,
+    Dialog,
     Form,
     Headline,
-    Dialog,
+    Loop,
     QueryProvider,
     Text,
-    Loop,
     TwoColumns,
   ])
 );
