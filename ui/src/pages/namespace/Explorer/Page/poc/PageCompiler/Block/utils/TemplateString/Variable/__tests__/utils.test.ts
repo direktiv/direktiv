@@ -1,6 +1,5 @@
 import { describe, expect, test } from "vitest";
-
-import { variablePattern } from "../utils";
+import { parseVariable, variablePattern } from "../utils";
 
 describe("Template string variable regex", () => {
   test("it should match the basic variable syntax", () => {
@@ -91,5 +90,52 @@ describe("Template string variable regex", () => {
     expect(matches.length).toBe(1);
     expect(matches[0]?.[0]).toBe("{{ name }}");
     expect(matches[0]?.[1]).toBe("name");
+  });
+});
+
+describe("parseVariable", () => {
+  test("it should parse a complete variable with namespace, id and pointer", () => {
+    const result = parseVariable("query.company-list.data.0.name");
+    expect(result).toEqual({
+      namespace: "query",
+      id: "company-list",
+      pointer: "data.0.name",
+    });
+  });
+
+  test("it should handle unknown namespaces", () => {
+    const result = parseVariable("unknown.company-list.data");
+    expect(result).toEqual({
+      namespace: undefined,
+      id: "company-list",
+      pointer: "data",
+    });
+  });
+
+  test("it should handle variables with just namespace and id", () => {
+    const result = parseVariable("query.company-list");
+    expect(result).toEqual({
+      namespace: "query",
+      id: "company-list",
+      pointer: undefined,
+    });
+  });
+
+  test("it should handle variables with just namespace", () => {
+    const result = parseVariable("query");
+    expect(result).toEqual({
+      namespace: "query",
+      id: undefined,
+      pointer: undefined,
+    });
+  });
+
+  test("it should handle emopty variables", () => {
+    const result = parseVariable("");
+    expect(result).toEqual({
+      namespace: undefined,
+      id: undefined,
+      pointer: undefined,
+    });
   });
 });

@@ -18,7 +18,6 @@ import {
  */
 export const variablePattern = /{{\s*([^{}]+?)\s*}}/g;
 
-// TODO: add unit tests
 /**
  * Parses a variable string into its individual components.
  *
@@ -28,6 +27,15 @@ export const variablePattern = /{{\s*([^{}]+?)\s*}}/g;
  *   id: "company-list",
  *   pointer: "data.0.name"
  * }
+ *
+ * Note: there is an intentional limitation for the pointer segment here. Arrays
+ * will be addressed like this: "data.0.addresses.0.streetName"
+ *
+ * Meaning that an array position will be treated as if the index of the array were
+ * the key in the object. That makes it a lot easier to parse than, for example, the
+ * coresponding JavaScript syntax some.data[0].addresses[0].streetName. However, it
+ * comes with the limitation that the parser cannot handle JSON data that uses numbers
+ * as keys.
  */
 export const parseVariable = (variableString: VariableType): VariableObject => {
   const [namespace, id, ...pointer] = variableString.split(".");
