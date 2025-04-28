@@ -15,6 +15,7 @@ const examplePage = {
     {
       type: "headline",
       label: "Welcome to Direktiv",
+      size: "h3",
     },
     {
       type: "text",
@@ -41,7 +42,8 @@ const examplePage = {
           leftBlocks: [
             {
               type: "text",
-              label: "I am the left column {{query.company-list.data.3.name}}",
+              label:
+                "I am the left column {{query.company-list.data.5.addresses.0.streetName}}",
             },
             {
               type: "loop",

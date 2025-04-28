@@ -5,6 +5,7 @@ export default {
   blocks: [
     {
       type: "headline",
+      size: "h1",
       label: "Welcome to Direktiv",
     },
     {
