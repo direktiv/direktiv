@@ -54,25 +54,31 @@ const AnyObjectSchema = z.object({}).passthrough();
 const AnyArraySchema = z.array(z.unknown());
 const AnyObjectOrArraySchema = z.union([AnyObjectSchema, AnyArraySchema]);
 
+/**
+ * getValueFromJsonPath will get a JSON input and a path to a value in that JSON.
+ *
+ * It will return a string representation of the value, or a special string if the
+ * value is not found or the input is invalid.
+ */
 export const getValueFromJsonPath = (
-  obj: unknown,
+  json: unknown,
   path: string
 ): string | undefined => {
-  if (!AnyObjectOrArraySchema.safeParse(obj).success) {
+  if (!AnyObjectOrArraySchema.safeParse(json).success) {
     return "<InvalidObject>";
   }
 
   const pathSegments = path.split(TemplateStringSeparator);
 
-  let currentSegment: unknown = obj;
+  let currentSegment: unknown = json;
 
   for (const segment of pathSegments) {
     const parsed = AnyObjectOrArraySchema.safeParse(currentSegment);
     if (parsed.success && segment in parsed.data) {
-      currentSegment = (currentSegment as Record<string, unknown>)[segment];
-    } else {
-      return "<InvalidPath>";
+      currentSegment = (parsed.data as Record<string, unknown>)[segment];
+      continue;
     }
+    return "<InvalidPath>";
   }
 
   if (currentSegment === null || currentSegment === undefined) {
