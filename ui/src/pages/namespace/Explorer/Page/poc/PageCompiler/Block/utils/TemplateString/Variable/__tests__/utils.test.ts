@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { getObjectValueByPath, parseVariable, variablePattern } from "../utils";
+import { getValueFromJsonPath, parseVariable, variablePattern } from "../utils";
 
 describe("Template string variable regex", () => {
   test("it should match the basic variable syntax", () => {
@@ -140,10 +140,10 @@ describe("parseVariable", () => {
   });
 });
 
-describe("getObjectValueByPath", () => {
+describe("getValueFromJsonPath", () => {
   describe("objects", () => {
     test("it should get values from a flat object", () => {
-      expect(getObjectValueByPath({ key: "value" }, "key")).toBe("value");
+      expect(getValueFromJsonPath({ key: "value" }, "key")).toBe("value");
     });
 
     test("it should get values from nested objects", () => {
@@ -154,8 +154,8 @@ describe("getObjectValueByPath", () => {
         },
       };
 
-      expect(getObjectValueByPath(nestedObject, "user.name")).toBe("John");
-      expect(getObjectValueByPath(nestedObject, "user.address.street")).toBe(
+      expect(getValueFromJsonPath(nestedObject, "user.name")).toBe("John");
+      expect(getValueFromJsonPath(nestedObject, "user.address.street")).toBe(
         "123 Main St"
       );
     });
@@ -167,14 +167,14 @@ describe("getObjectValueByPath", () => {
           2: "two",
         },
       };
-      expect(getObjectValueByPath(obj, "1")).toBe("one");
-      expect(getObjectValueByPath(obj, "nested.2")).toBe("two");
+      expect(getValueFromJsonPath(obj, "1")).toBe("one");
+      expect(getValueFromJsonPath(obj, "nested.2")).toBe("two");
     });
   });
 
   describe("arrays", () => {
     test("it should get values from a flat array", () => {
-      expect(getObjectValueByPath(["value"], "0")).toBe("value");
+      expect(getValueFromJsonPath(["value"], "0")).toBe("value");
     });
 
     test("it should get values from a nested array", () => {
@@ -186,10 +186,10 @@ describe("getObjectValueByPath", () => {
         ],
       ];
 
-      expect(getObjectValueByPath(oneLevelNestedArray, "0.0")).toBe("a");
-      expect(getObjectValueByPath(oneLevelNestedArray, "0.1")).toBe("b");
-      expect(getObjectValueByPath(multiLevelNestedArray, "0.0.1")).toBe("b");
-      expect(getObjectValueByPath(multiLevelNestedArray, "0.1.2")).toBe("e");
+      expect(getValueFromJsonPath(oneLevelNestedArray, "0.0")).toBe("a");
+      expect(getValueFromJsonPath(oneLevelNestedArray, "0.1")).toBe("b");
+      expect(getValueFromJsonPath(multiLevelNestedArray, "0.0.1")).toBe("b");
+      expect(getValueFromJsonPath(multiLevelNestedArray, "0.1.2")).toBe("e");
     });
 
     test("it should handle array indices in the path", () => {
@@ -201,8 +201,8 @@ describe("getObjectValueByPath", () => {
           ],
         },
       };
-      expect(getObjectValueByPath(obj, "data.items.0.name")).toBe("first");
-      expect(getObjectValueByPath(obj, "data.items.1.id")).toBe("2");
+      expect(getValueFromJsonPath(obj, "data.items.0.name")).toBe("first");
+      expect(getValueFromJsonPath(obj, "data.items.1.id")).toBe("2");
     });
   });
 
@@ -214,21 +214,19 @@ describe("getObjectValueByPath", () => {
         number: 42,
         zero: 0,
       };
-      expect(getObjectValueByPath(obj, "true")).toBe("true");
-      expect(getObjectValueByPath(obj, "false")).toBe("false");
-      expect(getObjectValueByPath(obj, "number")).toBe("42");
-      expect(getObjectValueByPath(obj, "zero")).toBe("0");
+      expect(getValueFromJsonPath(obj, "true")).toBe("true");
+      expect(getValueFromJsonPath(obj, "false")).toBe("false");
+      expect(getValueFromJsonPath(obj, "number")).toBe("42");
+      expect(getValueFromJsonPath(obj, "zero")).toBe("0");
     });
 
-    test("it should return undefined if values are null or undefined", () => {
+    test("it should return undefined if values are null", () => {
       const obj = {
         nullValue: null,
-        undefinedValue: undefined,
         nested: { nullValue: null },
       };
-      expect(getObjectValueByPath(obj, "nullValue")).toBe(undefined);
-      expect(getObjectValueByPath(obj, "undefinedValue")).toBe(undefined);
-      expect(getObjectValueByPath(obj, "nested.nullValue")).toBe(undefined);
+      expect(getValueFromJsonPath(obj, "nullValue")).toBe(undefined);
+      expect(getValueFromJsonPath(obj, "nested.nullValue")).toBe(undefined);
     });
 
     test("it should return <Array> if value is in array", () => {
@@ -236,8 +234,8 @@ describe("getObjectValueByPath", () => {
         array: { empty: [], nonEmpty: ["value"] },
       };
 
-      expect(getObjectValueByPath(obj, "array.empty")).toBe("<Array>");
-      expect(getObjectValueByPath(obj, "array.nonEmpty")).toBe("<Array>");
+      expect(getValueFromJsonPath(obj, "array.empty")).toBe("<Array>");
+      expect(getValueFromJsonPath(obj, "array.nonEmpty")).toBe("<Array>");
     });
 
     test("it should return <Object> if value is in object", () => {
@@ -245,26 +243,31 @@ describe("getObjectValueByPath", () => {
         object: { empty: {}, nonEmpty: { key: "value" } },
       };
 
-      expect(getObjectValueByPath(obj, "object.empty")).toBe("<Object>");
-      expect(getObjectValueByPath(obj, "object.nonEmpty")).toBe("<Object>");
+      expect(getValueFromJsonPath(obj, "object.empty")).toBe("<Object>");
+      expect(getValueFromJsonPath(obj, "object.nonEmpty")).toBe("<Object>");
     });
   });
 
   describe("invalid data", () => {
     test("it should return undefined for invalid paths", () => {
-      const obj = { data: { name: "test" } };
-      expect(getObjectValueByPath(obj, "invalid.path")).toBe(undefined);
-      expect(getObjectValueByPath(obj, "")).toBe(undefined);
+      const obj = { data: { name: "test" }, undefinedValue: undefined };
+      expect(getValueFromJsonPath(obj, "invalid.path")).toBe("<InvalidPath>");
+      expect(getValueFromJsonPath(obj, "undefinedValue")).toBe("<InvalidPath>");
+      expect(getValueFromJsonPath(obj, "")).toBe("<InvalidPath>");
     });
 
     test("it should return undefined for invalid inputs", () => {
-      expect(getObjectValueByPath(false, "some.key")).toBe(undefined);
-      expect(getObjectValueByPath(true, "some.key")).toBe(undefined);
-      expect(getObjectValueByPath(undefined, "some.key")).toBe(undefined);
-      expect(getObjectValueByPath(null, "some.key")).toBe(undefined);
-      expect(getObjectValueByPath("string", "some.key")).toBe(undefined);
-      expect(getObjectValueByPath("", "some.key")).toBe(undefined);
-      expect(getObjectValueByPath(1, "some.key")).toBe(undefined);
+      expect(getValueFromJsonPath(false, "some.key")).toBe("<InvalidObject>");
+      expect(getValueFromJsonPath(true, "some.key")).toBe("<InvalidObject>");
+      expect(getValueFromJsonPath(undefined, "some.key")).toBe(
+        "<InvalidObject>"
+      );
+      expect(getValueFromJsonPath(null, "some.key")).toBe("<InvalidObject>");
+      expect(getValueFromJsonPath("string", "some.key")).toBe(
+        "<InvalidObject>"
+      );
+      expect(getValueFromJsonPath("", "some.key")).toBe("<InvalidObject>");
+      expect(getValueFromJsonPath(1, "some.key")).toBe("<InvalidObject>");
     });
   });
 });

@@ -5,7 +5,7 @@ import {
 } from "../../../../../schema/primitives/variable";
 
 import { TemplateStringSeparator } from "../../../../../schema/primitives/templateString";
-import { n } from "msw/lib/core/GraphQLHandler-Cjm7JNGi";
+import { z } from "zod";
 
 /**
  * Regex to match variables enclosed in double curly braces, like {{ variable }}.
@@ -50,41 +50,42 @@ export const parseVariable = (variableString: VariableType): VariableObject => {
   };
 };
 
-export const getObjectValueByPath = (
+const AnyObjectSchema = z.object({}).passthrough();
+const AnyArraySchema = z.array(z.unknown());
+const AnyObjectOrArraySchema = z.union([AnyObjectSchema, AnyArraySchema]);
+
+export const getValueFromJsonPath = (
   obj: unknown,
   path: string
 ): string | undefined => {
-  if (!obj || typeof obj !== "object" || !path) {
-    return undefined;
+  if (!AnyObjectOrArraySchema.safeParse(obj).success) {
+    return "<InvalidObject>";
   }
 
-  const pathParts = path.split(TemplateStringSeparator);
-  let current: unknown = obj;
+  const pathSegments = path.split(TemplateStringSeparator);
 
-  for (const part of pathParts) {
-    if (
-      current &&
-      typeof current === "object" &&
-      current !== null &&
-      part in current
-    ) {
-      current = (current as Record<string, unknown>)[part];
+  let currentSegment: unknown = obj;
+
+  for (const segment of pathSegments) {
+    const parsed = AnyObjectOrArraySchema.safeParse(currentSegment);
+    if (parsed.success && segment in parsed.data) {
+      currentSegment = (currentSegment as Record<string, unknown>)[segment];
     } else {
-      // path not found
-      return undefined;
+      return "<InvalidPath>";
     }
   }
 
-  // Add type checking for the return value
-  if (current === null || current === undefined) {
+  if (currentSegment === null || currentSegment === undefined) {
     return undefined;
   }
 
-  // If a user is pointing to an array
-  if (Array.isArray(current)) {
+  if (AnyArraySchema.safeParse(currentSegment).success) {
     return "<Array>";
   }
 
-  // Convert to string if it's not already
-  return String(current);
+  if (AnyObjectSchema.safeParse(currentSegment).success) {
+    return "<Object>";
+  }
+
+  return String(currentSegment);
 };
