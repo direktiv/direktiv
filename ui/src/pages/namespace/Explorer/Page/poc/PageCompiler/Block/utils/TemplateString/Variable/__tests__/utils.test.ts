@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { parseVariable, variablePattern } from "../utils";
+import { getObjectValueByPath, parseVariable, variablePattern } from "../utils";
 
 describe("Template string variable regex", () => {
   test("it should match the basic variable syntax", () => {
@@ -82,7 +82,7 @@ describe("Template string variable regex", () => {
     expect(matches.length).toBe(0);
   });
 
-  test("it is valid to use {{ or }}outside of a variable", () => {
+  test("it is valid to use {{ or }} outside of a variable", () => {
     const template =
       "Hello {{ name }}, these are not variables: {{}}, }}  and {{";
     const matches = Array.from(template.matchAll(variablePattern));
@@ -136,6 +136,135 @@ describe("parseVariable", () => {
       namespace: undefined,
       id: undefined,
       pointer: undefined,
+    });
+  });
+});
+
+describe("getObjectValueByPath", () => {
+  describe("objects", () => {
+    test("it should get values from a flat object", () => {
+      expect(getObjectValueByPath({ key: "value" }, "key")).toBe("value");
+    });
+
+    test("it should get values from nested objects", () => {
+      const nestedObject = {
+        user: {
+          name: "John",
+          address: { street: "123 Main St" },
+        },
+      };
+
+      expect(getObjectValueByPath(nestedObject, "user.name")).toBe("John");
+      expect(getObjectValueByPath(nestedObject, "user.address.street")).toBe(
+        "123 Main St"
+      );
+    });
+
+    test("it address keys that are numbers", () => {
+      const obj = {
+        "1": "one",
+        nested: {
+          2: "two",
+        },
+      };
+      expect(getObjectValueByPath(obj, "1")).toBe("one");
+      expect(getObjectValueByPath(obj, "nested.2")).toBe("two");
+    });
+  });
+
+  describe("arrays", () => {
+    test("it should get values from a flat array", () => {
+      expect(getObjectValueByPath(["value"], "0")).toBe("value");
+    });
+
+    test("it should get values from a nested array", () => {
+      const oneLevelNestedArray = [["a", "b"]];
+      const multiLevelNestedArray = [
+        [
+          ["a", "b"],
+          ["c", "d", "e"],
+        ],
+      ];
+
+      expect(getObjectValueByPath(oneLevelNestedArray, "0.0")).toBe("a");
+      expect(getObjectValueByPath(oneLevelNestedArray, "0.1")).toBe("b");
+      expect(getObjectValueByPath(multiLevelNestedArray, "0.0.1")).toBe("b");
+      expect(getObjectValueByPath(multiLevelNestedArray, "0.1.2")).toBe("e");
+    });
+
+    test("it should handle array indices in the path", () => {
+      const obj = {
+        data: {
+          items: [
+            { id: 1, name: "first" },
+            { id: 2, name: "second" },
+          ],
+        },
+      };
+      expect(getObjectValueByPath(obj, "data.items.0.name")).toBe("first");
+      expect(getObjectValueByPath(obj, "data.items.1.id")).toBe("2");
+    });
+  });
+
+  describe("type casting", () => {
+    test("it should stringify numbers and booleans", () => {
+      const obj = {
+        true: true,
+        false: false,
+        number: 42,
+        zero: 0,
+      };
+      expect(getObjectValueByPath(obj, "true")).toBe("true");
+      expect(getObjectValueByPath(obj, "false")).toBe("false");
+      expect(getObjectValueByPath(obj, "number")).toBe("42");
+      expect(getObjectValueByPath(obj, "zero")).toBe("0");
+    });
+
+    test("it should return undefined if values are null or undefined", () => {
+      const obj = {
+        nullValue: null,
+        undefinedValue: undefined,
+        nested: { nullValue: null },
+      };
+      expect(getObjectValueByPath(obj, "nullValue")).toBe(undefined);
+      expect(getObjectValueByPath(obj, "undefinedValue")).toBe(undefined);
+      expect(getObjectValueByPath(obj, "nested.nullValue")).toBe(undefined);
+    });
+
+    test("it should return <Array> if value is in array", () => {
+      const obj = {
+        array: { empty: [], nonEmpty: ["value"] },
+      };
+
+      expect(getObjectValueByPath(obj, "array.empty")).toBe("<Array>");
+      expect(getObjectValueByPath(obj, "array.nonEmpty")).toBe("<Array>");
+    });
+
+    test("it should return <Object> if value is in object", () => {
+      const obj = {
+        object: { empty: {}, nonEmpty: { key: "value" } },
+      };
+
+      expect(getObjectValueByPath(obj, "object.empty")).toBe("<Object>");
+      expect(getObjectValueByPath(obj, "object.nonEmpty")).toBe("<Object>");
+    });
+  });
+
+  describe("invalid data", () => {
+    test("it should return undefined for invalid paths", () => {
+      const obj = { data: { name: "test" } };
+      expect(getObjectValueByPath(obj, "invalid.path")).toBe(undefined);
+      expect(getObjectValueByPath(obj, "")).toBe(undefined);
+    });
+
+    test("it should return undefined for invalid inputs", () => {
+      expect(getObjectValueByPath(false, "some.key")).toBe(undefined);
+      expect(getObjectValueByPath(true, "some.key")).toBe(undefined);
+      expect(getObjectValueByPath(undefined, "some.key")).toBe(undefined);
+      expect(getObjectValueByPath(null, "some.key")).toBe(undefined);
+      expect(getObjectValueByPath("string", "some.key")).toBe(undefined);
+      expect(getObjectValueByPath("", "some.key")).toBe(undefined);
+      expect(getObjectValueByPath(1, "some.key")).toBe(undefined);
     });
   });
 });

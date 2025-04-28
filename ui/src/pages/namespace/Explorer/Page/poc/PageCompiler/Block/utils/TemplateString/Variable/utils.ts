@@ -5,6 +5,7 @@ import {
 } from "../../../../../schema/primitives/variable";
 
 import { TemplateStringSeparator } from "../../../../../schema/primitives/templateString";
+import { n } from "msw/lib/core/GraphQLHandler-Cjm7JNGi";
 
 /**
  * Regex to match variables enclosed in double curly braces, like {{ variable }}.
@@ -53,12 +54,12 @@ export const getObjectValueByPath = (
   obj: unknown,
   path: string
 ): string | undefined => {
-  if (!obj || !path || typeof obj !== "object") {
+  if (!obj || typeof obj !== "object" || !path) {
     return undefined;
   }
 
   const pathParts = path.split(TemplateStringSeparator);
-  let current = obj;
+  let current: unknown = obj;
 
   for (const part of pathParts) {
     if (
@@ -69,9 +70,21 @@ export const getObjectValueByPath = (
     ) {
       current = (current as Record<string, unknown>)[part];
     } else {
-      return undefined; // Path not found
+      // path not found
+      return undefined;
     }
   }
 
-  return current;
+  // Add type checking for the return value
+  if (current === null || current === undefined) {
+    return undefined;
+  }
+
+  // If a user is pointing to an array
+  if (Array.isArray(current)) {
+    return "<Array>";
+  }
+
+  // Convert to string if it's not already
+  return String(current);
 };
