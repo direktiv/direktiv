@@ -23,92 +23,97 @@ const examplePage = {
         "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
     },
     {
-      type: "query-provider",
-      queries: [
-        {
-          id: "company-list",
-          endpoint: "/ns/demo/companies",
-          queryParams: [
-            {
-              key: "query",
-              value: "my-search-query",
-            },
-          ],
-        },
-      ],
+      type: "card",
       blocks: [
         {
-          type: "two-columns",
-          leftBlocks: [
+          type: "query-provider",
+          queries: [
             {
-              type: "text",
-              label:
-                "I am the left column {{query.company-list.data.5.addresses.0.streetName}}",
-            },
-            {
-              type: "loop",
-              id: "company",
-              variable: "query.company-list.data.name",
-              blocks: [
+              id: "company-list",
+              endpoint: "/ns/demo/companies",
+              queryParams: [
                 {
-                  type: "text",
-                  label: "I am the loop",
+                  key: "query",
+                  value: "my-search-query",
                 },
               ],
             },
           ],
-          rightBlocks: [
+          blocks: [
             {
-              type: "text",
-              label: "I am the right column",
-            },
-            {
-              type: "dialog",
-              trigger: {
-                type: "button",
-                label: "open dialog",
-              },
-              blocks: [
+              type: "two-columns",
+              leftBlocks: [
                 {
-                  type: "two-columns",
-                  leftBlocks: [
+                  type: "text",
+                  label:
+                    "I am the left column {{query.company-list.data.5.addresses.0.streetName}}",
+                },
+                {
+                  type: "loop",
+                  id: "company",
+                  variable: "query.company-list.data.name",
+                  blocks: [
                     {
                       type: "text",
-                      label: "Some text goes here",
-                    },
-                  ],
-                  rightBlocks: [
-                    {
-                      type: "query-provider",
-                      queries: [
-                        {
-                          id: "fetching-resources-2",
-                          endpoint: "/api/get/resources",
-                          queryParams: [
-                            {
-                              key: "query",
-                              value: "my-search-query",
-                            },
-                          ],
-                        },
-                      ],
-                      blocks: [],
+                      label: "I am the loop",
                     },
                   ],
                 },
-
+              ],
+              rightBlocks: [
                 {
-                  type: "form",
+                  type: "text",
+                  label: "I am the right column",
+                },
+                {
+                  type: "dialog",
                   trigger: {
                     type: "button",
-                    label: "delte",
+                    label: "open dialog",
                   },
-                  mutation: {
-                    id: "my-delete",
-                    endpoint: "/api/delete/",
-                    method: "DELETE",
-                  },
-                  blocks: [],
+                  blocks: [
+                    {
+                      type: "two-columns",
+                      leftBlocks: [
+                        {
+                          type: "text",
+                          label: "Some text goes here",
+                        },
+                      ],
+                      rightBlocks: [
+                        {
+                          type: "query-provider",
+                          queries: [
+                            {
+                              id: "fetching-resources-2",
+                              endpoint: "/api/get/resources",
+                              queryParams: [
+                                {
+                                  key: "query",
+                                  value: "my-search-query",
+                                },
+                              ],
+                            },
+                          ],
+                          blocks: [],
+                        },
+                      ],
+                    },
+
+                    {
+                      type: "form",
+                      trigger: {
+                        type: "button",
+                        label: "delte",
+                      },
+                      mutation: {
+                        id: "my-delete",
+                        endpoint: "/api/delete/",
+                        method: "DELETE",
+                      },
+                      blocks: [],
+                    },
+                  ],
                 },
               ],
             },

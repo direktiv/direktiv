@@ -2,6 +2,7 @@ import { AllBlocksType } from "../../schema/blocks";
 import { BlockPath } from "./utils/blockPath";
 import { BlockWrapper } from "./utils/BlockWrapper";
 import { Button } from "./Button";
+import { Card } from "./Card";
 import { Dialog } from "./Dialog";
 import { Headline } from "./Headline";
 import { Loop } from "./Loop";
@@ -22,6 +23,8 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         return <Headline blockProps={block} />;
       case "text":
         return <Text blockProps={block} />;
+      case "card":
+        return <Card blockProps={block} blockPath={blockPath} />;
       case "button":
         return <Button blockProps={block} />;
       case "two-columns":
