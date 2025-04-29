@@ -39,6 +39,9 @@ export const variablePattern = /{{\s*([^{}]+?)\s*}}/g;
  * coresponding JavaScript syntax some.data[0].addresses[0].streetName. However, it
  * comes with the limitation that the parser cannot handle JSON data that uses numbers
  * as keys.
+ *
+ * The syntax also does not allow for keys that have dots in them.
+ *
  */
 export const parseVariable = (variableString: VariableType): VariableObject => {
   const [namespace, id, ...pointer] = variableString.split(".");

@@ -180,6 +180,20 @@ describe("getValueFromJsonPath", () => {
         undefined,
       ]);
     });
+
+    test("it will ignore keys that have dots in them", () => {
+      const obj = {
+        "some.key": "value",
+        some: {
+          key: "another value",
+        },
+      };
+
+      expect(getValueFromJsonPath(obj, "some.key")).toStrictEqual([
+        "another value",
+        undefined,
+      ]);
+    });
   });
 
   describe("arrays", () => {
@@ -303,6 +317,12 @@ describe("getValueFromJsonPath", () => {
     test("it should return an invalidPath error when the path points to an undefined value", () => {
       expect(
         getValueFromJsonPath({ undefinedValue: undefined }, "undefinedValue")
+      ).toStrictEqual([undefined, "invalidPath"]);
+    });
+
+    test("it should return an invalidPath error when trying to point to a key with a dot in it", () => {
+      expect(
+        getValueFromJsonPath({ "some.path": "value" }, "some.path")
       ).toStrictEqual([undefined, "invalidPath"]);
     });
 
