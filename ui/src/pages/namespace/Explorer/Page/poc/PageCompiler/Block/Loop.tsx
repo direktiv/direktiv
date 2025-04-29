@@ -10,7 +10,6 @@ type LoopProps = {
 
 export const Loop = ({ blockProps, blockPath }: LoopProps) => (
   <>
-    {/* TODO: add iteration logic */}
     {blockProps.blocks.map((block, index) => (
       <Block
         key={index}

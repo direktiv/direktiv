@@ -13,13 +13,6 @@ import { Button } from "./Button";
 import ButtonDesignComponent from "~/design/Button";
 import { DialogType } from "../../schema/blocks/dialog";
 
-/**
- *
- * TODO:
- * [] add title
- * [] add a concept for a submit and cancel as soon as the form is implemented
- * [] optionally there could always be an X icon at the top right corner
- */
 type DialogProps = {
   blockProps: DialogType;
   blockPath: BlockPath;

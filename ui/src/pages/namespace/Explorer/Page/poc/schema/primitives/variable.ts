@@ -11,7 +11,7 @@ export const VariableNamespaceSchema = z.enum(supportedVariableNamespaces);
 export type VariableNamespace = z.infer<typeof VariableNamespaceSchema>;
 
 /**
- * structured representation of a variable a variable string.
+ * structured representation of a variable string.
  *
  * Example: "query.company-list.data.0.name" will be represented as:
  * {
