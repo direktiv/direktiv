@@ -143,7 +143,10 @@ describe("parseVariable", () => {
 describe("getValueFromJsonPath", () => {
   describe("objects", () => {
     test("it should get values from a flat object", () => {
-      expect(getValueFromJsonPath({ key: "value" }, "key")).toBe("value");
+      expect(getValueFromJsonPath({ key: "value" }, "key")).toStrictEqual([
+        "value",
+        undefined,
+      ]);
     });
 
     test("it should get values from nested objects", () => {
@@ -154,10 +157,14 @@ describe("getValueFromJsonPath", () => {
         },
       };
 
-      expect(getValueFromJsonPath(nestedObject, "user.name")).toBe("John");
-      expect(getValueFromJsonPath(nestedObject, "user.address.street")).toBe(
-        "123 Main St"
-      );
+      expect(getValueFromJsonPath(nestedObject, "user.name")).toStrictEqual([
+        "John",
+        undefined,
+      ]);
+
+      expect(
+        getValueFromJsonPath(nestedObject, "user.address.street")
+      ).toStrictEqual(["123 Main St", undefined]);
     });
 
     test("it address keys that are numbers", () => {
@@ -167,14 +174,20 @@ describe("getValueFromJsonPath", () => {
           2: "two",
         },
       };
-      expect(getValueFromJsonPath(obj, "1")).toBe("one");
-      expect(getValueFromJsonPath(obj, "nested.2")).toBe("two");
+      expect(getValueFromJsonPath(obj, "1")).toStrictEqual(["one", undefined]);
+      expect(getValueFromJsonPath(obj, "nested.2")).toStrictEqual([
+        "two",
+        undefined,
+      ]);
     });
   });
 
   describe("arrays", () => {
     test("it should get values from a flat array", () => {
-      expect(getValueFromJsonPath(["value"], "0")).toBe("value");
+      expect(getValueFromJsonPath(["value"], "0")).toStrictEqual([
+        "value",
+        undefined,
+      ]);
     });
 
     test("it should get values from a nested array", () => {
@@ -186,10 +199,23 @@ describe("getValueFromJsonPath", () => {
         ],
       ];
 
-      expect(getValueFromJsonPath(oneLevelNestedArray, "0.0")).toBe("a");
-      expect(getValueFromJsonPath(oneLevelNestedArray, "0.1")).toBe("b");
-      expect(getValueFromJsonPath(multiLevelNestedArray, "0.0.1")).toBe("b");
-      expect(getValueFromJsonPath(multiLevelNestedArray, "0.1.2")).toBe("e");
+      expect(getValueFromJsonPath(oneLevelNestedArray, "0.0")).toStrictEqual([
+        "a",
+        undefined,
+      ]);
+
+      expect(getValueFromJsonPath(oneLevelNestedArray, "0.1")).toStrictEqual([
+        "b",
+        undefined,
+      ]);
+
+      expect(
+        getValueFromJsonPath(multiLevelNestedArray, "0.0.1")
+      ).toStrictEqual(["b", undefined]);
+
+      expect(
+        getValueFromJsonPath(multiLevelNestedArray, "0.1.2")
+      ).toStrictEqual(["e", undefined]);
     });
 
     test("it should handle array indices in the path", () => {
@@ -201,73 +227,113 @@ describe("getValueFromJsonPath", () => {
           ],
         },
       };
-      expect(getValueFromJsonPath(obj, "data.items.0.name")).toBe("first");
-      expect(getValueFromJsonPath(obj, "data.items.1.id")).toBe("2");
+      expect(getValueFromJsonPath(obj, "data.items.0.name")).toStrictEqual([
+        "first",
+        undefined,
+      ]);
+      expect(getValueFromJsonPath(obj, "data.items.1.id")).toStrictEqual([
+        2,
+        undefined,
+      ]);
     });
   });
 
-  describe("type casting", () => {
-    test("it should stringify numbers and booleans", () => {
-      const obj = {
-        true: true,
-        false: false,
-        number: 42,
-        zero: 0,
-      };
-      expect(getValueFromJsonPath(obj, "true")).toBe("true");
-      expect(getValueFromJsonPath(obj, "false")).toBe("false");
-      expect(getValueFromJsonPath(obj, "number")).toBe("42");
-      expect(getValueFromJsonPath(obj, "zero")).toBe("0");
-    });
+  test("it should preserve the type of the value", () => {
+    const obj = {
+      string: "value",
+      true: true,
+      false: false,
+      number: 42,
+      zero: 0,
+      null: null,
+      array: ["value"],
+      object: { key: "value" },
+    };
 
-    test("it should return undefined if values are null", () => {
-      const obj = {
-        nullValue: null,
-        nested: { nullValue: null },
-      };
-      expect(getValueFromJsonPath(obj, "nullValue")).toBe(undefined);
-      expect(getValueFromJsonPath(obj, "nested.nullValue")).toBe(undefined);
-    });
+    expect(getValueFromJsonPath(obj, "string")).toStrictEqual([
+      "value",
+      undefined,
+    ]);
 
-    test("it should return <Array> if value is in array", () => {
-      const obj = {
-        array: { empty: [], nonEmpty: ["value"] },
-      };
+    expect(getValueFromJsonPath(obj, "true")).toStrictEqual([true, undefined]);
 
-      expect(getValueFromJsonPath(obj, "array.empty")).toBe("<Array>");
-      expect(getValueFromJsonPath(obj, "array.nonEmpty")).toBe("<Array>");
-    });
+    expect(getValueFromJsonPath(obj, "false")).toStrictEqual([
+      false,
+      undefined,
+    ]);
 
-    test("it should return <Object> if value is in object", () => {
-      const obj = {
-        object: { empty: {}, nonEmpty: { key: "value" } },
-      };
+    expect(getValueFromJsonPath(obj, "number")).toStrictEqual([42, undefined]);
 
-      expect(getValueFromJsonPath(obj, "object.empty")).toBe("<Object>");
-      expect(getValueFromJsonPath(obj, "object.nonEmpty")).toBe("<Object>");
-    });
+    expect(getValueFromJsonPath(obj, "zero")).toStrictEqual([0, undefined]);
+
+    expect(getValueFromJsonPath(obj, "null")).toStrictEqual([null, undefined]);
+
+    expect(getValueFromJsonPath(obj, "array")).toStrictEqual([
+      ["value"],
+      undefined,
+    ]);
+
+    expect(getValueFromJsonPath(obj, "object")).toStrictEqual([
+      { key: "value" },
+      undefined,
+    ]);
   });
 
   describe("invalid data", () => {
-    test("it should return undefined for invalid paths", () => {
-      const obj = { data: { name: "test" }, undefinedValue: undefined };
-      expect(getValueFromJsonPath(obj, "invalid.path")).toBe("<InvalidPath>");
-      expect(getValueFromJsonPath(obj, "undefinedValue")).toBe("<InvalidPath>");
-      expect(getValueFromJsonPath(obj, "")).toBe("<InvalidPath>");
+    test("it should return an invalidPath error when the path does not exist", () => {
+      const obj = { some: "object" };
+      expect(getValueFromJsonPath(obj, "invalid.path")).toStrictEqual([
+        undefined,
+        "invalidPath",
+      ]);
+
+      expect(getValueFromJsonPath(obj, "")).toStrictEqual([
+        undefined,
+        "invalidPath",
+      ]);
     });
 
-    test("it should return undefined for invalid inputs", () => {
-      expect(getValueFromJsonPath(false, "some.key")).toBe("<InvalidObject>");
-      expect(getValueFromJsonPath(true, "some.key")).toBe("<InvalidObject>");
-      expect(getValueFromJsonPath(undefined, "some.key")).toBe(
-        "<InvalidObject>"
-      );
-      expect(getValueFromJsonPath(null, "some.key")).toBe("<InvalidObject>");
-      expect(getValueFromJsonPath("string", "some.key")).toBe(
-        "<InvalidObject>"
-      );
-      expect(getValueFromJsonPath("", "some.key")).toBe("<InvalidObject>");
-      expect(getValueFromJsonPath(1, "some.key")).toBe("<InvalidObject>");
+    test("it should return an invalidPath error when the path points to an undefined value", () => {
+      expect(
+        getValueFromJsonPath({ undefinedValue: undefined }, "undefinedValue")
+      ).toStrictEqual([undefined, "invalidPath"]);
+    });
+
+    test("it should return an invalidJson error when the path points to an undefined value", () => {
+      expect(getValueFromJsonPath(false, "some.key")).toStrictEqual([
+        undefined,
+        "invalidJson",
+      ]);
+
+      expect(getValueFromJsonPath(true, "some.key")).toStrictEqual([
+        undefined,
+        "invalidJson",
+      ]);
+
+      expect(getValueFromJsonPath(undefined, "some.key")).toStrictEqual([
+        undefined,
+        "invalidJson",
+      ]);
+
+      expect(getValueFromJsonPath(null, "some.key")).toStrictEqual([
+        undefined,
+        "invalidJson",
+      ]);
+
+      expect(getValueFromJsonPath("string", "some.key")).toStrictEqual([
+        undefined,
+        "invalidJson",
+      ]);
+
+      expect(getValueFromJsonPath("", "some.key")).toStrictEqual([
+        undefined,
+        "invalidJson",
+      ]);
+
+      expect(getValueFromJsonPath(1, "some.key")).toStrictEqual([
+        undefined,
+        "invalidJson",
+      ]);
     });
   });
 });

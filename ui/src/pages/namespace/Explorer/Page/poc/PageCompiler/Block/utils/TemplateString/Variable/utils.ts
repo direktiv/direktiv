@@ -8,7 +8,7 @@ import { TemplateStringSeparator } from "../../../../../schema/primitives/templa
 import { z } from "zod";
 
 /**
- * Regex to match variables enclosed in double curly braces, like {{ variable }}.
+ * Regex pattern to match variables enclosed in double curly braces, like {{ variable }}.
  *
  * Explanation:
  * - {{         : Matches the opening double curly braces.
@@ -60,38 +60,28 @@ const AnyObjectOrArraySchema = z.union([AnyObjectSchema, AnyArraySchema]);
  * It will return a string representation of the value, or a special string if the
  * value is not found or the input is invalid.
  */
+type GetValueFromJsonPathSuccess = [unknown, undefined];
+type GetValueFromJsonPathFailure = [undefined, "invalidJson" | "invalidPath"];
+
 export const getValueFromJsonPath = (
   json: unknown,
   path: string
-): string | undefined => {
+): GetValueFromJsonPathSuccess | GetValueFromJsonPathFailure => {
   if (!AnyObjectOrArraySchema.safeParse(json).success) {
-    return "<InvalidObject>";
+    return [undefined, "invalidJson"];
   }
 
   const pathSegments = path.split(TemplateStringSeparator);
 
   let currentSegment: unknown = json;
-
   for (const segment of pathSegments) {
     const parsed = AnyObjectOrArraySchema.safeParse(currentSegment);
     if (parsed.success && segment in parsed.data) {
       currentSegment = (parsed.data as Record<string, unknown>)[segment];
       continue;
     }
-    return "<InvalidPath>";
+    return [undefined, "invalidPath"];
   }
 
-  if (currentSegment === null || currentSegment === undefined) {
-    return undefined;
-  }
-
-  if (AnyArraySchema.safeParse(currentSegment).success) {
-    return "<Array>";
-  }
-
-  if (AnyObjectSchema.safeParse(currentSegment).success) {
-    return "<Object>";
-  }
-
-  return String(currentSegment);
+  return [currentSegment, undefined];
 };
