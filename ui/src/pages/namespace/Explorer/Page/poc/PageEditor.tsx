@@ -128,7 +128,7 @@ type Mode = ComponentProps<typeof PageCompiler>["mode"];
 
 const PageEditor = () => {
   const theme = useTheme();
-  const [mode, setMode] = useState<Mode>("preview");
+  const [mode, setMode] = useState<Mode>("live");
   const [page, setPage] = useState(examplePage);
   const [validate, setValidate] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
