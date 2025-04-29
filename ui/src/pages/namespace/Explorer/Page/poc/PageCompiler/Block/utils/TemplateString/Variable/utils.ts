@@ -45,11 +45,12 @@ const AnyObjectSchema = z.object({}).passthrough();
 const AnyArraySchema = z.array(z.unknown());
 const AnyObjectOrArraySchema = z.union([AnyObjectSchema, AnyArraySchema]);
 
-type GetValueFromJsonPathSuccess = [unknown, undefined];
+type PossibleValues = object | string | number | boolean | null;
+type GetValueFromJsonPathSuccess = [PossibleValues, undefined];
 type GetValueFromJsonPathFailure = [undefined, "invalidJson" | "invalidPath"];
 
 /**
- * Retrieves a JSON-like input and a path that points to a value in that input.
+ * Retrieves a JSON-like input and a path that points to a key in the input.
  *
  * It will return an array of two elements:
  *
@@ -72,25 +73,30 @@ export const getValueFromJsonPath = (
   json: unknown,
   path: string
 ): GetValueFromJsonPathSuccess | GetValueFromJsonPathFailure => {
-  if (path === "") {
-    return [json, undefined];
+  const jsonParsed = AnyObjectOrArraySchema.safeParse(json);
+  if (!jsonParsed.success) {
+    return [undefined, "invalidJson"];
   }
 
-  if (!AnyObjectOrArraySchema.safeParse(json).success) {
-    return [undefined, "invalidJson"];
+  if (path === "") {
+    return [jsonParsed.data, undefined];
   }
 
   const pathSegments = path.split(TemplateStringSeparator);
 
-  let currentSegment: unknown = json;
+  let returnValue: PossibleValues = jsonParsed.data;
+
   for (const segment of pathSegments) {
-    const parsed = AnyObjectOrArraySchema.safeParse(currentSegment);
-    if (parsed.success && segment in parsed.data) {
-      currentSegment = (parsed.data as Record<string, unknown>)[segment];
+    const returnValueParsed = AnyObjectOrArraySchema.safeParse(returnValue);
+    if (returnValueParsed.success && segment in returnValueParsed.data) {
+      returnValue = (returnValueParsed.data as Record<string, unknown>)[
+        segment
+      ] as PossibleValues;
       continue;
     }
+
     return [undefined, "invalidPath"];
   }
 
-  return [currentSegment, undefined];
+  return [returnValue, undefined];
 };
