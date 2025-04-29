@@ -67,6 +67,10 @@ export const getValueFromJsonPath = (
   json: unknown,
   path: string
 ): GetValueFromJsonPathSuccess | GetValueFromJsonPathFailure => {
+  if (path === "") {
+    return [json, undefined];
+  }
+
   if (!AnyObjectOrArraySchema.safeParse(json).success) {
     return [undefined, "invalidJson"];
   }

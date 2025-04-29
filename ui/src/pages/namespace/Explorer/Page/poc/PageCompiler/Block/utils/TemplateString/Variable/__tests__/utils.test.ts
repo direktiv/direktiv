@@ -167,7 +167,7 @@ describe("getValueFromJsonPath", () => {
       ).toStrictEqual(["123 Main St", undefined]);
     });
 
-    test("it address keys that are numbers", () => {
+    test("it should handle object keys that are numbers", () => {
       const obj = {
         "1": "one",
         nested: {
@@ -238,6 +238,18 @@ describe("getValueFromJsonPath", () => {
     });
   });
 
+  test("it should accept an empty string to point to the root object", () => {
+    expect(getValueFromJsonPath({ some: "object" }, "")).toStrictEqual([
+      { some: "object" },
+      undefined,
+    ]);
+
+    expect(getValueFromJsonPath(["some", "array"], "")).toStrictEqual([
+      ["some", "array"],
+      undefined,
+    ]);
+  });
+
   test("it should preserve the type of the value", () => {
     const obj = {
       string: "value",
@@ -283,11 +295,6 @@ describe("getValueFromJsonPath", () => {
     test("it should return an invalidPath error when the path does not exist", () => {
       const obj = { some: "object" };
       expect(getValueFromJsonPath(obj, "invalid.path")).toStrictEqual([
-        undefined,
-        "invalidPath",
-      ]);
-
-      expect(getValueFromJsonPath(obj, "")).toStrictEqual([
         undefined,
         "invalidPath",
       ]);
