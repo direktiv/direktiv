@@ -30,18 +30,6 @@ export const variablePattern = /{{\s*([^{}]+?)\s*}}/g;
  *   id: "company-list",
  *   pointer: "data.0.name"
  * }
- *
- * Note: there is an intentional limitation for the pointer segment here. Arrays
- * will be addressed like this: "data.0.addresses.0.streetName"
- *
- * Meaning that an array position will be treated as if the index of the array were
- * the key in the object. That makes it a lot easier to parse than, for example, the
- * coresponding JavaScript syntax some.data[0].addresses[0].streetName. However, it
- * comes with the limitation that the parser cannot handle JSON data that uses numbers
- * as keys.
- *
- * The syntax also does not allow for keys that have dots in them.
- *
  */
 export const parseVariable = (variableString: VariableType): VariableObject => {
   const [namespace, id, ...pointer] = variableString.split(".");
@@ -57,15 +45,29 @@ const AnyObjectSchema = z.object({}).passthrough();
 const AnyArraySchema = z.array(z.unknown());
 const AnyObjectOrArraySchema = z.union([AnyObjectSchema, AnyArraySchema]);
 
-/**
- * getValueFromJsonPath will get a JSON input and a path to a value in that JSON.
- *
- * It will return a string representation of the value, or a special string if the
- * value is not found or the input is invalid.
- */
 type GetValueFromJsonPathSuccess = [unknown, undefined];
 type GetValueFromJsonPathFailure = [undefined, "invalidJson" | "invalidPath"];
 
+/**
+ * Retrieves a JSON-like input and a path that points to a value in that input.
+ *
+ * It will return an array of two elements:
+ *
+ * - The first element is the value at the specified path, or undefined if the
+ *   path does not exist or the input is invalid.
+ * - The second element is an optional error string if the input or path is invalid.
+ *
+ * Path notation:
+ * - Arrays are addressed as if their indices are object keys, e.g.,
+ *   "data.0.addresses.0.streetName".
+ * - This simplifies parsing compared to standard JavaScript syntax like
+ *   `data[0].addresses[0].streetName`.
+ *
+ * Limitations:
+ * - If a path contains numbered keys as explained above, it is unclear whether the
+ *   numbers are indices or keys
+ * - Keys containing dots (".") are not supported.
+ */
 export const getValueFromJsonPath = (
   json: unknown,
   path: string
