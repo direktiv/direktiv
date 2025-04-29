@@ -100,3 +100,11 @@ export const getValueFromJsonPath = (
 
   return [returnValue, undefined];
 };
+
+export const JSXValueSchema = z.union([
+  z.string(),
+  z.number(),
+  z.boolean(),
+  z.null(),
+  z.undefined(),
+]);
