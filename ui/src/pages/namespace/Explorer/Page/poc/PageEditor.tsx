@@ -46,7 +46,7 @@ const examplePage = {
                 {
                   type: "text",
                   label:
-                    "I am the left column {{query.company-list.data.5.addresses.0.streetName}}",
+                    "I can access text from a query: {{query.company-list.data.5.addresses.0.streetName}}. I can also handle some edge caes like {{query.company-list.data.5.addresses}} {{query.company-list.i.made.this.up}}",
                 },
                 {
                   type: "loop",
@@ -55,7 +55,7 @@ const examplePage = {
                   blocks: [
                     {
                       type: "text",
-                      label: "I am the loop",
+                      label: "I am a loop, but I don't work yet",
                     },
                   ],
                 },
@@ -73,33 +73,35 @@ const examplePage = {
                   },
                   blocks: [
                     {
-                      type: "two-columns",
-                      leftBlocks: [
+                      type: "headline",
+                      label: "Hello",
+                      size: "h3",
+                    },
+                    {
+                      type: "text",
+                      label:
+                        "This modal will only fetch data when opened. Slow down your network to see a loading spinner (this query will fail intentionally)",
+                    },
+                    {
+                      type: "query-provider",
+                      queries: [
                         {
-                          type: "text",
-                          label: "Some text goes here",
-                        },
-                      ],
-                      rightBlocks: [
-                        {
-                          type: "query-provider",
-                          queries: [
+                          id: "fetching-resources-2",
+                          endpoint: "/api/get/resources",
+                          queryParams: [
                             {
-                              id: "fetching-resources-2",
-                              endpoint: "/api/get/resources",
-                              queryParams: [
-                                {
-                                  key: "query",
-                                  value: "my-search-query",
-                                },
-                              ],
+                              key: "query",
+                              value: "my-search-query",
                             },
                           ],
-                          blocks: [],
                         },
                       ],
+                      blocks: [],
                     },
-
+                    {
+                      type: "text",
+                      label: "This component is not implemented yet",
+                    },
                     {
                       type: "form",
                       trigger: {
