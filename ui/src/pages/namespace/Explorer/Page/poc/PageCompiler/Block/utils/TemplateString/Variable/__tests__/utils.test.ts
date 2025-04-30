@@ -97,6 +97,7 @@ describe("parseVariable", () => {
   test("it should parse a complete variable with namespace, id and pointer", () => {
     const result = parseVariable("query.company-list.data.0.name");
     expect(result).toEqual({
+      src: "query.company-list.data.0.name",
       namespace: "query",
       id: "company-list",
       pointer: "data.0.name",
@@ -106,6 +107,7 @@ describe("parseVariable", () => {
   test("it should handle unknown namespaces", () => {
     const result = parseVariable("unknown.company-list.data");
     expect(result).toEqual({
+      src: "unknown.company-list.data",
       namespace: undefined,
       id: "company-list",
       pointer: "data",
@@ -115,6 +117,7 @@ describe("parseVariable", () => {
   test("it should handle variables with just namespace and id", () => {
     const result = parseVariable("query.company-list");
     expect(result).toEqual({
+      src: "query.company-list",
       namespace: "query",
       id: "company-list",
       pointer: undefined,
@@ -124,6 +127,7 @@ describe("parseVariable", () => {
   test("it should handle variables with just namespace", () => {
     const result = parseVariable("query");
     expect(result).toEqual({
+      src: "query",
       namespace: "query",
       id: undefined,
       pointer: undefined,
@@ -133,6 +137,7 @@ describe("parseVariable", () => {
   test("it should handle emopty variables", () => {
     const result = parseVariable("");
     expect(result).toEqual({
+      src: "",
       namespace: undefined,
       id: undefined,
       pointer: undefined,
@@ -326,7 +331,7 @@ describe("getValueFromJsonPath", () => {
       ).toStrictEqual([undefined, "invalidPath"]);
     });
 
-    test("it should return an invalidJson error when the path points to an undefined value", () => {
+    test("it should return an invalidJson error when the input is  not a JSON", () => {
       expect(getValueFromJsonPath(false, "some.key")).toStrictEqual([
         undefined,
         "invalidJson",
