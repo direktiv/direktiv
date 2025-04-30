@@ -12,9 +12,20 @@ type TemplateStringProps = {
 
 export const QueryVariable = ({ id, pointer }: TemplateStringProps) => {
   const mode = useMode();
-  const client = useQueryClient();
-  const cachedData = client.getQueryData([id]);
+  const cacheKey = [id];
+
+  const queryClient = useQueryClient();
+
+  const queryState = queryClient.getQueryState(cacheKey);
+  const cachedData = queryClient.getQueryData(cacheKey);
   const [data, error] = getValueFromJsonPath(cachedData, pointer);
+
+  if (queryState === undefined)
+    return (
+      <Error value="queryIdNotFound">
+        Could not find a query with id <code>{id}</code>.
+      </Error>
+    );
 
   if (error) {
     return (
