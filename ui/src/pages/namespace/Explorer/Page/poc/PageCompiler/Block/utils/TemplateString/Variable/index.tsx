@@ -40,7 +40,7 @@ export const Variable = ({ value }: VariablesProps) => {
   if (!pointer)
     return (
       <Error value={value}>
-        Could not find a any variable pointer. Please add a path to a variable
+        Could not find any variable pointer. Please add a path to a variable
         that is available in the <code>{namespace}</code> with the id{" "}
         <code>{id}</code>.
       </Error>
