@@ -27,14 +27,5 @@ export const Variable = ({ value }: VariablesProps) => {
     case "query":
       return <QueryVariable variable={variable} />;
       break;
-    default:
-      return (
-        <Error value={value}>
-          {t("direktivPage.error.templateString.namespaceNotImplemented", {
-            namespace,
-          })}
-        </Error>
-      );
-      break;
   }
 };

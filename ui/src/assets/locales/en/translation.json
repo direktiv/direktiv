@@ -1640,9 +1640,10 @@
   },
   "direktivPage": {
     "error": {
-      "invalidSchema": "The page can not be rendred because it has an invalid configuration",
-      "blockNotImplemented": "The block type {{type}} is not implemented yet",
+      "invalidSchema": "The page can not be rendered because it has an invalid configuration",
+      "blockNotImplemented": "The block type \"{{type}}\" is not implemented yet",
       "queryProvider": {
+        "apiError": "There was an error fetching data from the API",
         "queryFailed": "Error in query with id {{id}}: {{endpoint}} responded with {{status}}",
         "invalidJson": "Error in query with id {{id}}: {{endpoint}} returned an invalid JSON"
       },
@@ -1650,7 +1651,6 @@
         "namespaceUndefined": "The template string is missing a namespace.",
         "idUndefined": "The template string is missing an id.",
         "pointerUndefined": "The template string is missing a pointer.",
-        "namespaceNotImplemented": "There is no implementation for {{namespace}} yet.",
         "query": {
           "queryIdNotFound": "The query with id {{id}} could not be found in one of its parent blocks",
           "couldNotStringify": "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null.",
