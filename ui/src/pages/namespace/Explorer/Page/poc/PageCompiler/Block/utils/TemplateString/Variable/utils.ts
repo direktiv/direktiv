@@ -36,6 +36,7 @@ export const parseVariable = (variableString: VariableType): VariableObject => {
   const [namespace, id, ...pointer] = variableString.split(".");
   const parsedNamespace = VariableNamespaceSchema.safeParse(namespace);
   return {
+    src: variableString,
     namespace: parsedNamespace.success ? parsedNamespace.data : undefined,
     id,
     pointer: pointer.length > 0 ? pointer.join(".") : undefined,
@@ -51,13 +52,13 @@ type ValidateVariableFailure = [
 export const validateVariable = (
   variable: VariableObject
 ): ValidateVariableSuccess | ValidateVariableFailure => {
-  const { namespace, id, pointer } = variable;
+  const { namespace, id, pointer, src } = variable;
 
   if (!namespace) return [undefined, "namespaceUndefined"];
   if (!id) return [undefined, "idUndefined"];
   if (!pointer) return [undefined, "pointerUndefined"];
 
-  return [{ namespace, id, pointer }, undefined];
+  return [{ src, namespace, id, pointer }, undefined];
 };
 
 const AnyObjectSchema = z.object({}).passthrough();

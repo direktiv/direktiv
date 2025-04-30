@@ -15,10 +15,11 @@ export const Variable = ({ value }: VariablesProps) => {
     return <Error value={value}>{error}</Error>;
   }
 
-  const { id, namespace, pointer } = variable;
+  const { namespace } = variable;
+
   switch (namespace) {
     case "query":
-      return <QueryVariable id={id} pointer={pointer} />;
+      return <QueryVariable variable={variable} />;
       break;
     default:
       return (
