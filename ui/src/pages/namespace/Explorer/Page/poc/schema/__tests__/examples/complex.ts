@@ -49,7 +49,7 @@ export default {
                   type: "form",
                   trigger: {
                     type: "button",
-                    label: "delte",
+                    label: "delete",
                   },
                   mutation: {
                     id: "my-delete",
