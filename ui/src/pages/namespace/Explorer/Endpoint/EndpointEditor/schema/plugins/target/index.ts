@@ -6,6 +6,10 @@ export const targetPluginTypes = {
     name: "instant-response",
     enterpriseOnly: false,
   },
+  targetPage: {
+    name: "target-page",
+    enterpriseOnly: false,
+  },
   targetFlow: {
     name: "target-flow",
     enterpriseOnly: false,

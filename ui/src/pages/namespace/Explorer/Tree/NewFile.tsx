@@ -77,7 +77,6 @@ export const NewFileDialog: FC<NewFileDialogProps> = ({ path }) => {
             close={() => setDialogOpen(false)}
           />
         )}
-
         {selectedDialog === "new-page" && (
           <NewPage
             path={data?.path}
