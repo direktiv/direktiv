@@ -25,3 +25,9 @@ export type VariableObject = {
   id: string | undefined;
   pointer: string | undefined;
 };
+
+export type VariableObjectValidated = {
+  namespace: VariableNamespace;
+  id: string;
+  pointer: string;
+};

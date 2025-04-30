@@ -1,6 +1,7 @@
 import {
   VariableNamespaceSchema,
   VariableObject,
+  VariableObjectValidated,
   VariableType,
 } from "../../../../../schema/primitives/variable";
 
@@ -39,6 +40,24 @@ export const parseVariable = (variableString: VariableType): VariableObject => {
     id,
     pointer: pointer.length > 0 ? pointer.join(".") : undefined,
   };
+};
+
+type ValidateVariableSuccess = [VariableObjectValidated, undefined];
+type ValidateVariableFailure = [
+  undefined,
+  "namespaceUndefined" | "idUndefined" | "pointerUndefined",
+];
+
+export const validateVariable = (
+  variable: VariableObject
+): ValidateVariableSuccess | ValidateVariableFailure => {
+  const { namespace, id, pointer } = variable;
+
+  if (!namespace) return [undefined, "namespaceUndefined"];
+  if (!id) return [undefined, "idUndefined"];
+  if (!pointer) return [undefined, "pointerUndefined"];
+
+  return [{ namespace, id, pointer }, undefined];
 };
 
 const AnyObjectSchema = z.object({}).passthrough();
