@@ -46,7 +46,7 @@ const examplePage = {
                 {
                   type: "text",
                   label:
-                    "I can access text from a query: {{query.company-list.data.5.addresses.0.streetName}}. I can also handle some edge caes like {{query.company-list.data.5.addresses}} {{query.company-list.i.made.this.up}}",
+                    "I can access text from a query: {{query.company-list.data.5.addresses.0.streetName}}. I can also handle some edge cases like {{query.company-list.data.5.addresses}}, {{query.company-list.i.made.this.up}}, {{query.not-existing.i.made.this.up}} {{query.not-existing}}",
                 },
                 {
                   type: "loop",
