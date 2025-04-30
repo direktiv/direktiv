@@ -3,6 +3,7 @@ import { queryOptions, useSuspenseQueries } from "@tanstack/react-query";
 
 import { Block } from ".";
 import { QueryProviderType } from "../../schema/blocks/queryProvider";
+import { useTranslation } from "react-i18next";
 
 type QueryProviderProps = {
   blockProps: QueryProviderType;
@@ -14,6 +15,7 @@ export const QueryProvider = ({
   blockPath,
 }: QueryProviderProps) => {
   const { blocks, queries } = blockProps;
+  const { t } = useTranslation();
   useSuspenseQueries({
     queries: queries.map((q) =>
       queryOptions({
@@ -22,14 +24,21 @@ export const QueryProvider = ({
           const response = await fetch(q.endpoint);
           if (!response.ok) {
             throw new Error(
-              `Error in query with id ${q.id}. GET ${q.endpoint} responded with ${response.status}`
+              t("direktivPage.error.queryProvider.queryFailed", {
+                id: q.id,
+                endpoint: q.endpoint,
+                status: response.status,
+              })
             );
           }
           try {
             return await response.json();
           } catch (e) {
             throw new Error(
-              `Error in query with id ${q.id}. GET ${q.endpoint} returned invalid JSON`
+              t("direktivPage.error.queryProvider.invalidJson", {
+                id: q.id,
+                endpoint: q.endpoint,
+              })
             );
           }
         },

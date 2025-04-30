@@ -3,16 +3,22 @@ import { parseVariable, validateVariable } from "./utils";
 import { Error } from "./Error";
 import { QueryVariable } from "./Query";
 import { VariableType } from "../../../../../schema/primitives/variable";
+import { useTranslation } from "react-i18next";
 
 type VariablesProps = {
   value: VariableType;
 };
 
 export const Variable = ({ value }: VariablesProps) => {
+  const { t } = useTranslation();
   const [variable, error] = validateVariable(parseVariable(value));
 
   if (error) {
-    return <Error value={value}>{error}</Error>;
+    return (
+      <Error value={value}>
+        {t(`direktivPage.error.templateString.${error}`)}
+      </Error>
+    );
   }
 
   const { namespace } = variable;
@@ -24,7 +30,9 @@ export const Variable = ({ value }: VariablesProps) => {
     default:
       return (
         <Error value={value}>
-          There is no implementation for <code>{namespace}</code> yet.
+          {t("direktivPage.error.templateString.namespaceNotImplemented", {
+            namespace,
+          })}
         </Error>
       );
       break;
