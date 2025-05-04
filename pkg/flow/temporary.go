@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -19,7 +20,6 @@ import (
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
@@ -445,15 +445,15 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateID string, time
 		ar.Container.Size = con.Size
 		ar.Container.Scale = int(scale)
 		ar.Container.ID = con.ID
-		ar.Container.Service = service.GetServiceURL(arCtx.Namespace, core.ServiceTypeWorkflow, arCtx.Workflow, con.ID)
+		ar.Container.Service = engine.ServiceManager.GetServiceURL(arCtx.Namespace, core.ServiceTypeWorkflow, arCtx.Workflow, con.ID)
 	case model.NamespacedKnativeFunctionType:
 		con := fn.(*model.NamespacedFunctionDefinition) //nolint:forcetypeassert
 		ar.Container.ID = con.ID
-		ar.Container.Service = service.GetServiceURL(arCtx.Namespace, core.ServiceTypeNamespace, con.Path, "")
+		ar.Container.Service = engine.ServiceManager.GetServiceURL(arCtx.Namespace, core.ServiceTypeNamespace, con.Path, "")
 	case model.SystemKnativeFunctionType:
 		con := fn.(*model.SystemFunctionDefinition) //nolint:forcetypeassert
 		ar.Container.ID = con.ID
-		ar.Container.Service = service.GetServiceURL(core.SystemNamespace, core.ServiceTypeSystem, con.Path, "")
+		ar.Container.Service = engine.ServiceManager.GetServiceURL(core.SystemNamespace, core.ServiceTypeSystem, con.Path, "")
 	default:
 		return nil, nil, fmt.Errorf("unexpected function type: %v", fn)
 	}
@@ -586,11 +586,41 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 	//nolint:intrange
 	for i := 0; i < 300; i++ { // 5 minutes max retry
-		telemetry.LogInstance(ctx, telemetry.LogLevelDebug,
-			fmt.Sprintf("attempting function request %d, %s", i, addr))
+		telemetry.LogInstance(ctx, telemetry.LogLevelInfo,
+			fmt.Sprintf("attempting service request %d, %s", i, addr))
 
-		resp, err = client.Do(req)
+		err = engine.db.DataStore().HeartBeats().Set(context.Background(), &datastore.HeartBeat{
+			Group: "life_services",
+			Key:   ar.Container.Service,
+		})
 		if err != nil {
+			engine.reportError(ctx, &arReq.ActionContext, err)
+
+			return
+		}
+		resp, err = client.Do(req)
+
+		if err != nil {
+			isServiceDown := strings.Contains(err.Error(), "no such host") ||
+				strings.Contains(err.Error(), "connection refused")
+
+			if isServiceDown {
+				telemetry.LogInstanceError(ctx, "service is scaled to zero", err)
+			}
+
+			// Try to ignite the service if it was down (only once, hence i==0).
+			if i == 0 {
+				if isServiceDown {
+					igErr := engine.ServiceManager.IgniteService(ar.Container.Service)
+					if igErr != nil {
+						engine.reportError(ctx, &arReq.ActionContext, igErr)
+
+						return
+					}
+					telemetry.LogInstance(ctx, telemetry.LogLevelInfo, "service ignition triggered")
+				}
+			}
+
 			if ctxErr := rctx.Err(); ctxErr != nil {
 				telemetry.LogInstanceError(ctx, "request canceled or deadline exceeded", ctxErr)
 				engine.reportError(ctx, &arReq.ActionContext, fmt.Errorf("request timed out or was canceled: %w", ctxErr))

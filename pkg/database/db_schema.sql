@@ -6,6 +6,15 @@ CREATE TABLE IF NOT EXISTS  "namespaces" (
     PRIMARY KEY ("id")
 );
 
+CREATE TABLE IF NOT EXISTS  "system_heart_beats" (
+    "group" text,
+    "key" text,
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ("group", "key")
+);
+
+
 CREATE TABLE IF NOT EXISTS  "filesystem_roots" (
     "id" uuid,
     "namespace" text UNIQUE,
