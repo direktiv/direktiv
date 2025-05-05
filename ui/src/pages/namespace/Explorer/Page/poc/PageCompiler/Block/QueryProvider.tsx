@@ -2,6 +2,7 @@ import { BlockPath, addSegmentsToPath } from "./utils/blockPath";
 import { queryOptions, useSuspenseQueries } from "@tanstack/react-query";
 
 import { Block } from ".";
+import { BlockList } from "./utils/BlockList";
 import { QueryProviderType } from "../../schema/blocks/queryProvider";
 import { useTranslation } from "react-i18next";
 
@@ -47,7 +48,7 @@ export const QueryProvider = ({
   });
 
   return (
-    <>
+    <BlockList>
       {blocks.map((block, index) => (
         <Block
           key={index}
@@ -55,6 +56,6 @@ export const QueryProvider = ({
           blockPath={addSegmentsToPath(blockPath, index)}
         />
       ))}
-    </>
+    </BlockList>
   );
 };
