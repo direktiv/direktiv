@@ -65,9 +65,12 @@ const AnyObjectSchema = z.object({}).passthrough();
 const AnyArraySchema = z.array(z.unknown());
 const AnyObjectOrArraySchema = z.union([AnyObjectSchema, AnyArraySchema]);
 
-type PossibleValues = object | string | number | boolean | null;
+export type PossibleValues = object | string | number | boolean | null;
 type GetValueFromJsonPathSuccess = [PossibleValues, undefined];
-type GetValueFromJsonPathFailure = [undefined, "invalidJson" | "invalidPath"];
+export type GetValueFromJsonPathFailure = [
+  undefined,
+  "invalidJson" | "invalidPath",
+];
 
 /**
  * Retrieves a JSON-like input and a path that points to a key in the input.
@@ -128,3 +131,5 @@ export const JSXValueSchema = z.union([
   z.null(),
   z.undefined(),
 ]);
+
+export type JSXValueType = z.infer<typeof JSXValueSchema>;
