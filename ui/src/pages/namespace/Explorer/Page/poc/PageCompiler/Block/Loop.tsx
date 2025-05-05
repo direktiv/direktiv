@@ -8,14 +8,19 @@ type LoopProps = {
   blockPath: BlockPath;
 };
 
-export const Loop = ({ blockProps, blockPath }: LoopProps) => (
-  <>
-    {blockProps.blocks.map((block, index) => (
-      <Block
-        key={index}
-        block={block}
-        blockPath={addSegmentsToPath(blockPath, index)}
-      />
-    ))}
-  </>
-);
+export const Loop = ({ blockProps, blockPath }: LoopProps) => {
+  const { blocks, variable } = blockProps;
+
+  return (
+    <>
+      looping over {variable}
+      {blocks.map((block, index) => (
+        <Block
+          key={index}
+          block={block}
+          blockPath={addSegmentsToPath(blockPath, index)}
+        />
+      ))}
+    </>
+  );
+};

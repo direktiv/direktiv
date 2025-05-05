@@ -3,7 +3,7 @@ import { VariableType } from "../../../../../schema/primitives/variable";
 import { twMergeClsx } from "~/util/helpers";
 import { useMode } from "../../../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
-import { useVariableJSX } from "./utils";
+import { useVariableJSX } from "./utils/useVariableJSX";
 
 type TemplateStringProps = {
   variable: VariableType;
