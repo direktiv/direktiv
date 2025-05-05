@@ -1,10 +1,12 @@
 import { BlockPath, addSegmentsToPath } from "./utils/blockPath";
+import { useEffect, useRef } from "react";
 
 import { Block } from ".";
 import { BlockList } from "./utils/BlockList";
 import { Error } from "../Block/utils/TemplateString/Variable/Error";
 import { LoopType } from "../../schema/blocks/loop";
 import { useTranslation } from "react-i18next";
+import { useVariableActions } from "../store/variables";
 import { useVariableArray } from "./utils/TemplateString/Variable/utils/useVariableArray";
 
 type LoopProps = {
@@ -13,10 +15,25 @@ type LoopProps = {
 };
 
 export const Loop = ({ blockProps, blockPath }: LoopProps) => {
-  const { blocks, variable } = blockProps;
+  const { blocks, variable, id } = blockProps;
+  const isDone = useRef(false);
   const { t } = useTranslation();
 
   const [variableContent, error] = useVariableArray(variable);
+
+  const variableActions = useVariableActions();
+
+  // TODO: this is a hack to get the variable to update
+  useEffect(() => {
+    if (variableContent && !isDone.current) {
+      isDone.current = true;
+      variableActions.setVariable({
+        namespace: "loop",
+        id,
+        content: variableContent,
+      });
+    }
+  }, [id, variableActions, variableContent]);
 
   if (error) {
     return (

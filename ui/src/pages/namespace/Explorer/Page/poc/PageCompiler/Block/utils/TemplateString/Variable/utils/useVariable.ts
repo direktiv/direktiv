@@ -9,9 +9,10 @@ import {
 
 import { VariableType } from "../../../../../../schema/primitives/variable";
 import { useQueryClient } from "@tanstack/react-query";
+import { useVariables } from "../../../../../store/variables";
 
 type UseVariableSuccess = [PossibleValues, undefined];
-export type VariableFailure = [undefined, "queryIdNotFound"];
+export type VariableFailure = [undefined, "queryIdNotFound" | "loopIdNotFound"];
 
 export type UseVariableFailure =
   | GetValueFromJsonPathFailure
@@ -26,9 +27,12 @@ export const useVariable = (
   value: VariableType
 ): UseVariableSuccess | UseVariableFailure => {
   const queryClient = useQueryClient();
+
   const [variableObject, validationError] = validateVariable(
     parseVariable(value)
   );
+
+  const variables = useVariables();
 
   if (validationError) {
     return [undefined, validationError];
@@ -46,13 +50,31 @@ export const useVariable = (
       }
 
       const cachedData = queryClient.getQueryData(cacheKey);
-      const [data, error] = getValueFromJsonPath(cachedData, pointer);
+      const [queryData, queryError] = getValueFromJsonPath(cachedData, pointer);
 
-      if (error) {
-        return [undefined, error];
+      if (queryError) {
+        return [undefined, queryError];
       }
 
-      return [data, undefined];
+      return [queryData, undefined];
+    }
+
+    case "loop": {
+      if (!variables["loop"][id]) {
+        return [undefined, "loopIdNotFound"];
+      }
+
+      const [loopData, loopError] = getValueFromJsonPath(
+        variables["loop"][id],
+        // TODO: make index dynamic here, by using a react context?
+        `0.${pointer}`
+      );
+
+      if (loopError) {
+        return [undefined, loopError];
+      }
+
+      return [loopData, undefined];
     }
   }
 };

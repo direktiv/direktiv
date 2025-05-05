@@ -4,9 +4,25 @@ export const Variable = z.string().min(1);
 
 export type VariableType = z.infer<typeof Variable>;
 
-export const supportedVariableNamespaces = ["query"] as const;
+export const asynchronousVariableNamespaces = ["query"] as const;
+export const synchronousVariableNamespaces = ["loop"] as const;
 
-export const VariableNamespaceSchema = z.enum(supportedVariableNamespaces);
+const AsynchronousVariableNamespacesSchema = z.enum(
+  asynchronousVariableNamespaces
+);
+
+const SynchronousVariableNamespacesSchema = z.enum(
+  synchronousVariableNamespaces
+);
+
+export type SynchronousVariableNamespace = z.infer<
+  typeof SynchronousVariableNamespacesSchema
+>;
+
+export const VariableNamespaceSchema = z.union([
+  AsynchronousVariableNamespacesSchema,
+  SynchronousVariableNamespacesSchema,
+]);
 
 export type VariableNamespace = z.infer<typeof VariableNamespaceSchema>;
 
