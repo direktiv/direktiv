@@ -1,31 +1,35 @@
-import { parseVariable, validateVariable } from "./utils";
-
 import { Error } from "./Error";
-import { QueryVariable } from "./Query";
 import { VariableType } from "../../../../../schema/primitives/variable";
+import { twMergeClsx } from "~/util/helpers";
+import { useMode } from "../../../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
+import { useVariableJSX } from "./utils";
 
-type VariablesProps = {
-  value: VariableType;
+type TemplateStringProps = {
+  variable: VariableType;
 };
 
-export const Variable = ({ value }: VariablesProps) => {
+export const Variable = ({ variable }: TemplateStringProps) => {
   const { t } = useTranslation();
-  const [variable, error] = validateVariable(parseVariable(value));
+  const mode = useMode();
+  const [variableContent, error] = useVariableJSX(variable);
 
   if (error) {
     return (
-      <Error value={value}>
+      <Error value={variable}>
         {t(`direktivPage.error.templateString.${error}`)}
       </Error>
     );
   }
 
-  const { namespace } = variable;
-
-  switch (namespace) {
-    case "query":
-      return <QueryVariable variable={variable} />;
-      break;
-  }
+  return (
+    <span
+      className={twMergeClsx(
+        mode === "preview" &&
+          "border border-gray-9 bg-gray-4 dark:bg-gray-dark-4 dark:border-gray-dark-9"
+      )}
+    >
+      {variableContent}
+    </span>
+  );
 };
