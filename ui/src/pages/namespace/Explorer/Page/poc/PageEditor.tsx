@@ -51,8 +51,13 @@ const examplePage = {
                 {
                   type: "loop",
                   id: "company",
-                  variable: "query.company-list.data.name",
+                  variable: "query.company-list.data",
                   blocks: [
+                    {
+                      type: "headline",
+                      size: "h3",
+                      label: "headline {{loop.company.email}}",
+                    },
                     {
                       type: "text",
                       label: "I am a loop, but I don't work yet",
