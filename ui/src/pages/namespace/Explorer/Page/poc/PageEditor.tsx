@@ -51,7 +51,7 @@ const examplePage = {
                 {
                   type: "loop",
                   id: "company",
-                  variable: "query.company-list.data.name",
+                  data: "query.company-list.data.name",
                   blocks: [
                     {
                       type: "text",

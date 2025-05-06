@@ -12,13 +12,13 @@ import { z } from "zod";
 export type LoopType = {
   type: "loop";
   id: string;
-  variable: VariableType;
+  data: VariableType;
   blocks: AllBlocksType[];
 };
 
 export const Loop = z.object({
   type: z.literal("loop"),
   id: z.string().min(1),
-  variable: Variable,
+  data: Variable,
   blocks: z.array(z.lazy(() => AllBlocks)),
 }) satisfies z.ZodType<LoopType>;
