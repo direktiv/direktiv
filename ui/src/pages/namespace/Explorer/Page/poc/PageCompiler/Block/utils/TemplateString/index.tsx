@@ -14,7 +14,7 @@ export const TemplateString = ({ value }: TemplateStringProps) => {
         const isVariable = index % 2 === 1;
 
         if (isVariable) {
-          return <Variable key={index} variable={fragment} />;
+          return <Variable key={index} value={fragment} />;
         }
 
         return fragment;

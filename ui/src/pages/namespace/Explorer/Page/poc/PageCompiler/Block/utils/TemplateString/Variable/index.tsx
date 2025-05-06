@@ -6,17 +6,17 @@ import { useTranslation } from "react-i18next";
 import { useVariableJSX } from "./utils/useVariableJSX";
 
 type TemplateStringProps = {
-  variable: VariableType;
+  value: VariableType;
 };
 
-export const Variable = ({ variable }: TemplateStringProps) => {
+export const Variable = ({ value }: TemplateStringProps) => {
   const { t } = useTranslation();
   const mode = useMode();
-  const [variableContent, error] = useVariableJSX(variable);
+  const [variableContent, error] = useVariableJSX(value);
 
   if (error) {
     return (
-      <Error value={variable}>
+      <Error value={value}>
         {t(`direktivPage.error.templateString.${error}`)}
       </Error>
     );
