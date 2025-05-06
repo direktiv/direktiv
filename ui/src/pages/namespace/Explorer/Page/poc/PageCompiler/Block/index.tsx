@@ -6,10 +6,10 @@ import { Card } from "./Card";
 import { Dialog } from "./Dialog";
 import { Headline } from "./Headline";
 import { Loop } from "./Loop";
+import { ParsingError } from "./utils/ParsingError";
 import { QueryProvider } from "./QueryProvider";
 import { Text } from "./Text";
 import { TwoColumns } from "./TwoColumns";
-import { UserError } from "./utils/UserError";
 
 type BlockProps = {
   block: AllBlocksType;
@@ -37,7 +37,7 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         return <Dialog blockProps={block} blockPath={blockPath} />;
       default:
         return (
-          <UserError
+          <ParsingError
             title={`The block type ${block.type} is not implemented yet`}
           />
         );

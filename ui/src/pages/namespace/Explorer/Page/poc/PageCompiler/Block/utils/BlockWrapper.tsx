@@ -11,7 +11,7 @@ import Badge from "~/design/Badge";
 import { BlockPath } from "./blockPath";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
-import { UserError } from "./UserError";
+import { ParsingError } from "./ParsingError";
 import { twMergeClsx } from "~/util/helpers";
 import { useMode } from "../../context/pageCompilerContext";
 
@@ -75,9 +75,9 @@ export const BlockWrapper = ({
       <Suspense fallback={<Loading />}>
         <ErrorBoundary
           fallbackRender={({ error }) => (
-            <UserError title="There was an error fetching data from the API">
+            <ParsingError title="There was an error fetching data from the API">
               {error.message}
-            </UserError>
+            </ParsingError>
           )}
         >
           {children}
