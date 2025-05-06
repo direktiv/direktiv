@@ -14,54 +14,55 @@ export default {
         "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
     },
     {
-      type: "two-columns",
-      leftBlocks: [
-        {
-          type: "text",
-          label: "Some text goes here",
-        },
-      ],
-
-      rightBlocks: [
-        {
-          type: "query-provider",
-          queries: [
-            {
-              id: "fetching-resources",
-              endpoint: "/api/get/resources",
-              queryParams: [
-                {
-                  key: "query",
-                  value: "my-search-query",
-                },
-              ],
-            },
-          ],
-          blocks: [
-            {
-              type: "dialog",
-              trigger: {
-                type: "button",
-                label: "open dialog",
+      type: "columns",
+      columns: [
+        [
+          {
+            type: "text",
+            label: "Some text goes here",
+          },
+        ],
+        [
+          {
+            type: "query-provider",
+            queries: [
+              {
+                id: "fetching-resources",
+                endpoint: "/api/get/resources",
+                queryParams: [
+                  {
+                    key: "query",
+                    value: "my-search-query",
+                  },
+                ],
               },
-              blocks: [
-                {
-                  type: "form",
-                  trigger: {
-                    type: "button",
-                    label: "delete",
-                  },
-                  mutation: {
-                    id: "my-delete",
-                    endpoint: "/api/delete/",
-                    method: "DELETE",
-                  },
-                  blocks: [],
+            ],
+            blocks: [
+              {
+                type: "dialog",
+                trigger: {
+                  type: "button",
+                  label: "open dialog",
                 },
-              ],
-            },
-          ],
-        },
+                blocks: [
+                  {
+                    type: "form",
+                    trigger: {
+                      type: "button",
+                      label: "delete",
+                    },
+                    mutation: {
+                      id: "my-delete",
+                      endpoint: "/api/delete/",
+                      method: "DELETE",
+                    },
+                    blocks: [],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
       ],
     },
   ],

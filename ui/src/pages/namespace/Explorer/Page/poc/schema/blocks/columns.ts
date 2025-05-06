@@ -7,14 +7,12 @@ import { z } from "zod";
  * It is currently possible to extend the schema without updating the type.
  * The schema needs to get the type input to avoid circular dependencies.
  */
-export type TwoColumnsType = {
-  type: "two-columns";
-  leftBlocks: AllBlocksType[];
-  rightBlocks: AllBlocksType[];
+export type ColumnsType = {
+  type: "columns";
+  columns: AllBlocksType[][];
 };
 
-export const TwoColumns = z.object({
-  type: z.literal("two-columns"),
-  leftBlocks: z.array(z.lazy(() => AllBlocks)),
-  rightBlocks: z.array(z.lazy(() => AllBlocks)),
-}) satisfies z.ZodType<TwoColumnsType>;
+export const Columns = z.object({
+  type: z.literal("columns"),
+  columns: z.array(z.array(z.lazy(() => AllBlocks))),
+}) satisfies z.ZodType<ColumnsType>;
