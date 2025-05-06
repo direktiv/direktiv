@@ -1,4 +1,5 @@
 import { BlockPath, addSegmentsToPath } from "../utils/blockPath";
+import { LoopIdContextProvider, useLoopIndex } from "./LoopIdContext";
 
 import { Block } from "..";
 import { BlockList } from "../utils/BlockList";
@@ -17,6 +18,7 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   const { blocks, data, id } = blockProps;
   const { t } = useTranslation();
   const [variableContent, error] = useVariableArray(data);
+  const parentLoopIndex = useLoopIndex();
 
   useInitLoopVariable(id, variableContent);
 
@@ -31,18 +33,26 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   return (
     <BlockList>
       {variableContent.map((item, variableIndex) => (
-        <BlockList key={variableIndex}>
-          {blocks.map((block, blockIndex) => (
-            <Block
-              key={blockIndex}
-              block={block}
-              blockPath={addSegmentsToPath(blockPath, [
-                `loop#${variableIndex}`,
-                blockIndex,
-              ])}
-            />
-          ))}
-        </BlockList>
+        <LoopIdContextProvider
+          key={variableIndex}
+          value={{
+            ...parentLoopIndex,
+            [id]: variableIndex,
+          }}
+        >
+          <BlockList>
+            {blocks.map((block, blockIndex) => (
+              <Block
+                key={blockIndex}
+                block={block}
+                blockPath={addSegmentsToPath(blockPath, [
+                  `loop#${variableIndex}`,
+                  blockIndex,
+                ])}
+              />
+            ))}
+          </BlockList>
+        </LoopIdContextProvider>
       ))}
     </BlockList>
   );

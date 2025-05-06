@@ -20,7 +20,7 @@ const examplePage = {
     {
       type: "text",
       content:
-        "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
+        "This is a block that contains longer text. You might write some Terms and Conditions here or something similar {{loop.cool.id}} {{loop.company.id}}",
     },
     {
       type: "card",
@@ -55,18 +55,31 @@ const examplePage = {
                     data: "query.company-list.data",
                     blocks: [
                       {
-                        type: "headline",
-                        size: "h3",
-                        label: "headline {{loop.company.email}}",
-                      },
-                      {
-                        type: "text",
-                        content: "I am a loop, but I don't work yet",
+                        type: "card",
+                        blocks: [
+                          {
+                            type: "headline",
+                            size: "h3",
+                            label:
+                              "headline {{loop.company.id}} {{loop.cool.id}}",
+                          },
+                          {
+                            type: "loop",
+                            id: "company-2",
+                            data: "query.company-list.data",
+                            blocks: [
+                              {
+                                type: "text",
+                                content:
+                                  "company: {{loop.company.id}} company-2 {{loop.company-2.id}}",
+                              },
+                            ],
+                          },
+                        ],
                       },
                     ],
                   },
                 ],
-
                 [
                   {
                     type: "text",
