@@ -15,11 +15,11 @@ type LoopProps = {
 };
 
 export const Loop = ({ blockProps, blockPath }: LoopProps) => {
-  const { blocks, variable, id } = blockProps;
+  const { blocks, data, id } = blockProps;
   const isDone = useRef(false);
   const { t } = useTranslation();
 
-  const [variableContent, error] = useVariableArray(variable);
+  const [variableContent, error] = useVariableArray(data);
 
   const variableActions = useVariableActions();
 
@@ -37,7 +37,7 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
 
   if (error) {
     return (
-      <Error value={variable}>
+      <Error value={data}>
         {t(`direktivPage.error.templateString.${error}`)}
       </Error>
     );

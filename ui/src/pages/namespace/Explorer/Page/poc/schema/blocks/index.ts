@@ -1,12 +1,12 @@
 import { Button, ButtonType } from "./button";
 import { Card, CardType } from "./card";
+import { Columns, ColumnsType } from "./columns";
 import { Dialog, DialogType } from "./dialog";
 import { Form, FormType } from "./form";
 import { Headline, HeadlineType } from "./headline";
 import { Loop, LoopType } from "./loop";
 import { QueryProvider, QueryProviderType } from "./queryProvider";
 import { Text, TextType } from "./text";
-import { TwoColumns, TwoColumnsType } from "./twoColumns";
 
 import { z } from "zod";
 
@@ -25,7 +25,7 @@ export type AllBlocksType =
   | LoopType
   | QueryProviderType
   | TextType
-  | TwoColumnsType;
+  | ColumnsType;
 
 export const AllBlocks: z.ZodType<AllBlocksType> = z.lazy(() =>
   z.discriminatedUnion("type", [
@@ -37,7 +37,7 @@ export const AllBlocks: z.ZodType<AllBlocksType> = z.lazy(() =>
     Loop,
     QueryProvider,
     Text,
-    TwoColumns,
+    Columns,
   ])
 );
 

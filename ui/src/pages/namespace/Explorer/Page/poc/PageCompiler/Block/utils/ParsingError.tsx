@@ -6,11 +6,11 @@ import { Card } from "~/design/Card";
 import { PropsWithChildren } from "react";
 import { TriangleAlert } from "lucide-react";
 
-type UserErrorProps = PropsWithChildren<{
+type ParsingErrorProps = PropsWithChildren<{
   title: string;
 }>;
 
-export const UserError = ({ title, children }: UserErrorProps) => (
+export const ParsingError = ({ title, children }: ParsingErrorProps) => (
   <Popover>
     <PopoverTrigger asChild>
       <Button variant="destructive" size="sm" icon>

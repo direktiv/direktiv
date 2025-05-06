@@ -3,13 +3,13 @@ import { BlockPath } from "./utils/blockPath";
 import { BlockWrapper } from "./utils/BlockWrapper";
 import { Button } from "./Button";
 import { Card } from "./Card";
+import { Columns } from "./Columns";
 import { Dialog } from "./Dialog";
 import { Headline } from "./Headline";
 import { Loop } from "./Loop";
+import { ParsingError } from "./utils/ParsingError";
 import { QueryProvider } from "./QueryProvider";
 import { Text } from "./Text";
-import { TwoColumns } from "./TwoColumns";
-import { UserError } from "./utils/UserError";
 import { useTranslation } from "react-i18next";
 
 type BlockProps = {
@@ -29,8 +29,8 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         return <Card blockProps={block} blockPath={blockPath} />;
       case "button":
         return <Button blockProps={block} />;
-      case "two-columns":
-        return <TwoColumns blockProps={block} blockPath={blockPath} />;
+      case "columns":
+        return <Columns blockProps={block} blockPath={blockPath} />;
       case "loop":
         return <Loop blockProps={block} blockPath={blockPath} />;
       case "query-provider":
@@ -39,7 +39,7 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         return <Dialog blockProps={block} blockPath={blockPath} />;
       default:
         return (
-          <UserError
+          <ParsingError
             title={t("direktivPage.error.blockNotImplemented", {
               type: block.type,
             })}

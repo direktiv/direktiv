@@ -3,7 +3,7 @@ import { FC, PropsWithChildren, createContext, useContext } from "react";
 import { DirektivPagesType } from "../../schema";
 
 export type State = {
-  mode: "preview" | "live";
+  mode: "inspect" | "live";
   page: DirektivPagesType;
 };
 

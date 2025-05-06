@@ -11,7 +11,7 @@ import Badge from "~/design/Badge";
 import { BlockPath } from "./blockPath";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
-import { UserError } from "./UserError";
+import { ParsingError } from "./ParsingError";
 import { twMergeClsx } from "~/util/helpers";
 import { useMode } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
@@ -32,7 +32,7 @@ export const BlockWrapper = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (mode !== "preview") {
+    if (mode !== "inspect") {
       return;
     }
 
@@ -55,15 +55,15 @@ export const BlockWrapper = ({
     <div
       ref={containerRef}
       className={twMergeClsx(
-        mode === "preview" &&
+        mode === "inspect" &&
           "rounded-md relative p-3 border-2 border-gray-4 border-dashed dark:border-gray-dark-4 bg-white dark:bg-black",
         isHovered &&
-          mode === "preview" &&
+          mode === "inspect" &&
           "border-solid bg-gray-2 dark:bg-gray-dark-2"
       )}
       data-block-wrapper
     >
-      {mode === "preview" && (
+      {mode === "inspect" && (
         <Badge
           className="-m-6 absolute z-50"
           variant="secondary"
@@ -77,9 +77,11 @@ export const BlockWrapper = ({
       <Suspense fallback={<Loading />}>
         <ErrorBoundary
           fallbackRender={({ error }) => (
-            <UserError title={t("direktivPage.error.queryProvider.apiError")}>
+            <ParsingError
+              title={t("direktivPage.error.queryProvider.apiError")}
+            >
               {error.message}
-            </UserError>
+            </ParsingError>
           )}
         >
           {children}

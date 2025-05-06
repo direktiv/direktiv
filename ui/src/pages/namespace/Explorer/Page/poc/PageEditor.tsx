@@ -19,7 +19,7 @@ const examplePage = {
     },
     {
       type: "text",
-      label:
+      content:
         "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
     },
     {
@@ -41,87 +41,90 @@ const examplePage = {
           ],
           blocks: [
             {
-              type: "two-columns",
-              leftBlocks: [
-                {
-                  type: "text",
-                  label:
-                    "I can access text from a query: {{query.company-list.data.0.addresses.0.streetName}}. I can also handle some edge cases like {{query.company-list.data.0.addresses}}, {{query.company-list.i.made.this.up}}, {{query.not-existing.i.made.this.up}} {{query.not-existing}}",
-                },
-                {
-                  type: "loop",
-                  id: "company",
-                  variable: "query.company-list.data",
-                  blocks: [
-                    {
-                      type: "headline",
-                      size: "h3",
-                      label: "headline {{loop.company.email}}",
-                    },
-                    {
-                      type: "text",
-                      label: "I am a loop, but I don't work yet",
-                    },
-                  ],
-                },
-              ],
-              rightBlocks: [
-                {
-                  type: "text",
-                  label: "I am the right column",
-                },
-                {
-                  type: "dialog",
-                  trigger: {
-                    type: "button",
-                    label: "open dialog",
+              type: "columns",
+              columns: [
+                [
+                  {
+                    type: "text",
+                    content:
+                      "I can access text from a query: {{query.company-list.data.0.addresses.0.streetName}}. I can also handle some edge cases like {{query.company-list.data.0.addresses}}, {{query.company-list.i.made.this.up}}, {{query.not-existing.i.made.this.up}} {{query.not-existing}}",
                   },
-                  blocks: [
-                    {
-                      type: "headline",
-                      label: "Hello",
-                      size: "h3",
+                  {
+                    type: "loop",
+                    id: "company",
+                    data: "query.company-list.data",
+                    blocks: [
+                      {
+                        type: "headline",
+                        size: "h3",
+                        label: "headline {{loop.company.email}}",
+                      },
+                      {
+                        type: "text",
+                        content: "I am a loop, but I don't work yet",
+                      },
+                    ],
+                  },
+                ],
+
+                [
+                  {
+                    type: "text",
+                    content: "I am the right column",
+                  },
+                  {
+                    type: "dialog",
+                    trigger: {
+                      type: "button",
+                      label: "open dialog",
                     },
-                    {
-                      type: "text",
-                      label:
-                        "This modal will only fetch data when opened. Slow down your network to see a loading spinner (this query will fail intentionally)",
-                    },
-                    {
-                      type: "query-provider",
-                      queries: [
-                        {
-                          id: "fetching-resources-2",
-                          endpoint: "/api/get/resources",
-                          queryParams: [
-                            {
-                              key: "query",
-                              value: "my-search-query",
-                            },
-                          ],
+                    blocks: [
+                      {
+                        type: "headline",
+                        label: "Hello",
+                        size: "h3",
+                      },
+                      {
+                        type: "text",
+                        content:
+                          "This modal will only fetch data when opened. Slow down your network to see a loading spinner (this query will fail intentionally)",
+                      },
+                      {
+                        type: "query-provider",
+                        queries: [
+                          {
+                            id: "fetching-resources-2",
+                            endpoint: "/api/get/resources",
+                            queryParams: [
+                              {
+                                key: "query",
+                                value: "my-search-query",
+                              },
+                            ],
+                          },
+                        ],
+                        blocks: [],
+                      },
+                      {
+                        type: "text",
+                        content: "This component is not implemented yet",
+                      },
+                      {
+                        type: "form",
+                        trigger: {
+                          type: "button",
+                          label: "delete",
                         },
-                      ],
-                      blocks: [],
-                    },
-                    {
-                      type: "text",
-                      label: "This component is not implemented yet",
-                    },
-                    {
-                      type: "form",
-                      trigger: {
-                        type: "button",
-                        label: "delete",
+                        mutation: {
+                          id: "my-delete",
+                          endpoint: "/api/delete/",
+                          method: "DELETE",
+                        },
+                        blocks: [],
                       },
-                      mutation: {
-                        id: "my-delete",
-                        endpoint: "/api/delete/",
-                        method: "DELETE",
-                      },
-                      blocks: [],
-                    },
-                  ],
-                },
+                    ],
+                  },
+                ],
               ],
             },
           ],
@@ -151,12 +154,12 @@ const PageEditor = () => {
         <div className="flex gap-2 items-center">
           <Switch
             id="mode"
-            checked={mode === "preview"}
+            checked={mode === "inspect"}
             onCheckedChange={(value) => {
-              setMode(value ? "preview" : "live");
+              setMode(value ? "inspect" : "live");
             }}
           />
-          <label htmlFor="mode">Preview</label>
+          <label htmlFor="mode">Inspect</label>
         </div>
         <div className="flex gap-2 items-center">
           <Switch

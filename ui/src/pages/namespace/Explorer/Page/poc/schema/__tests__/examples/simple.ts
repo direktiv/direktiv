@@ -10,22 +10,24 @@ export default {
     },
     {
       type: "text",
-      label:
+      content:
         "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
     },
     {
-      type: "two-columns",
-      leftBlocks: [
-        {
-          type: "text",
-          label: "Some text goes here",
-        },
-      ],
-      rightBlocks: [
-        {
-          type: "text",
-          label: "Some text goes here",
-        },
+      type: "columns",
+      columns: [
+        [
+          {
+            type: "text",
+            content: "Some text goes here",
+          },
+        ],
+        [
+          {
+            type: "text",
+            content: "Some text goes here",
+          },
+        ],
       ],
     },
   ],

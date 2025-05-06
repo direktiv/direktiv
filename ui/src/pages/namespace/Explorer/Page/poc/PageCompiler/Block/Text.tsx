@@ -7,6 +7,6 @@ type TextProps = {
 
 export const Text = ({ blockProps }: TextProps) => (
   <p>
-    <TemplateString value={blockProps.label} />
+    <TemplateString value={blockProps.content} />
   </p>
 );
