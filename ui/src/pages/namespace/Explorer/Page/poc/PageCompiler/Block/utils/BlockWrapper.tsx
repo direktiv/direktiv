@@ -30,7 +30,7 @@ export const BlockWrapper = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (mode !== "preview") {
+    if (mode !== "inspect") {
       return;
     }
 
@@ -53,15 +53,15 @@ export const BlockWrapper = ({
     <div
       ref={containerRef}
       className={twMergeClsx(
-        mode === "preview" &&
+        mode === "inspect" &&
           "rounded-md relative p-3 border-2 border-gray-4 border-dashed dark:border-gray-dark-4 bg-white dark:bg-black",
         isHovered &&
-          mode === "preview" &&
+          mode === "inspect" &&
           "border-solid bg-gray-2 dark:bg-gray-dark-2"
       )}
       data-block-wrapper
     >
-      {mode === "preview" && (
+      {mode === "inspect" && (
         <Badge
           className="-m-6 absolute z-50"
           variant="secondary"

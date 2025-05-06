@@ -146,12 +146,12 @@ const PageEditor = () => {
         <div className="flex gap-2 items-center">
           <Switch
             id="mode"
-            checked={mode === "preview"}
+            checked={mode === "inspect"}
             onCheckedChange={(value) => {
-              setMode(value ? "preview" : "live");
+              setMode(value ? "inspect" : "live");
             }}
           />
-          <label htmlFor="mode">Preview</label>
+          <label htmlFor="mode">Inspect</label>
         </div>
         <div className="flex gap-2 items-center">
           <Switch
