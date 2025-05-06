@@ -10,7 +10,7 @@ export default {
     },
     {
       type: "text",
-      label:
+      content:
         "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
     },
     {
@@ -19,13 +19,13 @@ export default {
         [
           {
             type: "text",
-            label: "Some text goes here",
+            content: "Some text goes here",
           },
         ],
         [
           {
             type: "text",
-            label: "Some text goes here",
+            content: "Some text goes here",
           },
         ],
       ],

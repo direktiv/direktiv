@@ -19,7 +19,7 @@ const examplePage = {
     },
     {
       type: "text",
-      label:
+      content:
         "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
     },
     {
@@ -46,7 +46,7 @@ const examplePage = {
                 [
                   {
                     type: "text",
-                    label:
+                    content:
                       "I can access text from a query: {{query.company-list.data.0.addresses.0.streetName}}. I can also handle some edge cases like {{query.company-list.data.0.addresses}}, {{query.company-list.i.made.this.up}}, {{query.not-existing.i.made.this.up}} {{query.not-existing}}",
                   },
                   {
@@ -56,7 +56,7 @@ const examplePage = {
                     blocks: [
                       {
                         type: "text",
-                        label: "I am a loop, but I don't work yet",
+                        content: "I am a loop, but I don't work yet",
                       },
                     ],
                   },
@@ -64,7 +64,7 @@ const examplePage = {
                 [
                   {
                     type: "text",
-                    label: "I am the right column",
+                    content: "I am the right column",
                   },
                   {
                     type: "dialog",
@@ -80,7 +80,7 @@ const examplePage = {
                       },
                       {
                         type: "text",
-                        label:
+                        content:
                           "This modal will only fetch data when opened. Slow down your network to see a loading spinner (this query will fail intentionally)",
                       },
                       {
@@ -101,7 +101,7 @@ const examplePage = {
                       },
                       {
                         type: "text",
-                        label: "This component is not implemented yet",
+                        content: "This component is not implemented yet",
                       },
                       {
                         type: "form",
