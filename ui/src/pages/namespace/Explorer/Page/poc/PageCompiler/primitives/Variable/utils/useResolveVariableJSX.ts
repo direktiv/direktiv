@@ -1,6 +1,7 @@
-import { ResolveVariableError, useResolveVariable } from "./useResolveVariable";
-
+import { ResolveVariableJSXError } from "./errors";
+import { Result } from "./types";
 import { VariableType } from "../../../../schema/primitives/variable";
+import { useResolveVariable } from "./useResolveVariable";
 import { z } from "zod";
 
 export const JSXValueSchema = z.union([
@@ -13,23 +14,19 @@ export const JSXValueSchema = z.union([
 
 export type JSXValueType = z.infer<typeof JSXValueSchema>;
 
-type ResolveVariableJSXResult = [JSXValueType, undefined];
-type JSXError = [undefined, "couldNotStringify"];
-type ResolveVariableJSXError = ResolveVariableError | JSXError;
-
 export const useResolveVariableJSX = (
   value: VariableType
-): ResolveVariableJSXResult | ResolveVariableJSXError => {
-  const [data, error] = useResolveVariable(value);
+): Result<JSXValueType, ResolveVariableJSXError> => {
+  const variableResult = useResolveVariable(value);
 
-  if (error) {
-    return [undefined, error];
+  if (!variableResult.success) {
+    return { success: false, error: variableResult.error };
   }
 
-  const dataParsed = JSXValueSchema.safeParse(data);
+  const dataParsed = JSXValueSchema.safeParse(variableResult.data);
   if (!dataParsed.success) {
-    return [undefined, "couldNotStringify"];
+    return { success: false, error: "couldNotStringify" };
   }
 
-  return [dataParsed.data, undefined];
+  return { success: true, data: dataParsed.data };
 };

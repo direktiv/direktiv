@@ -1,3 +1,4 @@
+import { JsonPathError, ValidateVariableError } from "./errors";
 import {
   VariableNamespaceSchema,
   VariableObject,
@@ -5,6 +6,7 @@ import {
   VariableType,
 } from "../../../../schema/primitives/variable";
 
+import { Result } from "./types";
 import { TemplateStringSeparator } from "../../../../schema/primitives/templateString";
 import { z } from "zod";
 
@@ -43,23 +45,16 @@ export const parseVariable = (variableString: VariableType): VariableObject => {
   };
 };
 
-type ValidateVariableResult = [VariableObjectValidated, undefined];
-
-export type ValidateVariableError = [
-  undefined,
-  "namespaceUndefined" | "idUndefined" | "pointerUndefined",
-];
-
 export const validateVariable = (
   variable: VariableObject
-): ValidateVariableResult | ValidateVariableError => {
+): Result<VariableObjectValidated, ValidateVariableError> => {
   const { namespace, id, pointer, src } = variable;
 
-  if (!namespace) return [undefined, "namespaceUndefined"];
-  if (!id) return [undefined, "idUndefined"];
-  if (!pointer) return [undefined, "pointerUndefined"];
+  if (!namespace) return { success: false, error: "namespaceUndefined" };
+  if (!id) return { success: false, error: "idUndefined" };
+  if (!pointer) return { success: false, error: "pointerUndefined" };
 
-  return [{ src, namespace, id, pointer }, undefined];
+  return { success: true, data: { src, namespace, id, pointer } };
 };
 
 const AnyObjectSchema = z.object({}).passthrough();
@@ -67,20 +62,13 @@ const AnyArraySchema = z.array(z.unknown());
 const AnyObjectOrArraySchema = z.union([AnyObjectSchema, AnyArraySchema]);
 
 export type PossibleValues = object | string | number | boolean | null;
-type GetValueFromJsonPathResult = [PossibleValues, undefined];
-export type GetValueFromJsonPathError = [
-  undefined,
-  "invalidJson" | "invalidPath",
-];
 
 /**
  * Retrieves a JSON-like input and a path that points to a key in the input.
  *
- * It will return an array of two elements:
- *
- * - The first element is the value at the specified path, or undefined if the
- *   path does not exist or the input is invalid.
- * - The second element is an optional error string if the input or path is invalid.
+ * It will return a Result object with either:
+ * - The value at the specified path on success
+ * - An error string if the input or path is invalid
  *
  * Path notation:
  * - Arrays are addressed as if their indices are object keys, e.g.,
@@ -96,14 +84,14 @@ export type GetValueFromJsonPathError = [
 export const getValueFromJsonPath = (
   json: unknown,
   path: string
-): GetValueFromJsonPathResult | GetValueFromJsonPathError => {
+): Result<PossibleValues, JsonPathError> => {
   const jsonParsed = AnyObjectOrArraySchema.safeParse(json);
   if (!jsonParsed.success) {
-    return [undefined, "invalidJson"];
+    return { success: false, error: "invalidJson" };
   }
 
   if (path === "") {
-    return [jsonParsed.data, undefined];
+    return { success: true, data: jsonParsed.data };
   }
 
   const pathSegments = path.split(TemplateStringSeparator);
@@ -119,8 +107,8 @@ export const getValueFromJsonPath = (
       continue;
     }
 
-    return [undefined, "invalidPath"];
+    return { success: false, error: "invalidPath" };
   }
 
-  return [returnValue, undefined];
+  return { success: true, data: returnValue };
 };

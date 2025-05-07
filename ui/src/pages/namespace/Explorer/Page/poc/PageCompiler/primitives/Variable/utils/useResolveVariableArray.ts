@@ -1,29 +1,25 @@
-import { ResolveVariableError, useResolveVariable } from "./useResolveVariable";
-
+import { ResolveVariableArrayError } from "./errors";
+import { Result } from "./types";
 import { VariableType } from "../../../../schema/primitives/variable";
+import { useResolveVariable } from "./useResolveVariable";
 import { z } from "zod";
 
-export const ArraySchema = z.array(z.unknown());
-
-export type ArrayType = z.infer<typeof ArraySchema>;
-
-type ResolveVariableArrayResult = [ArrayType, undefined];
-type ArrayError = [undefined, "notAnArray"];
-type ResolveVariableArrayError = ResolveVariableError | ArrayError;
+export const UnknownArraySchema = z.array(z.unknown());
+export type UnknownArray = z.infer<typeof UnknownArraySchema>;
 
 export const useResolveVariableArray = (
   value: VariableType
-): ResolveVariableArrayResult | ResolveVariableArrayError => {
-  const [data, error] = useResolveVariable(value);
+): Result<UnknownArray, ResolveVariableArrayError> => {
+  const variableResult = useResolveVariable(value);
 
-  if (error) {
-    return [undefined, error];
+  if (!variableResult.success) {
+    return { success: false, error: variableResult.error };
   }
 
-  const dataParsed = ArraySchema.safeParse(data);
+  const dataParsed = UnknownArraySchema.safeParse(variableResult.data);
   if (!dataParsed.success) {
-    return [undefined, "notAnArray"];
+    return { success: false, error: "notAnArray" };
   }
 
-  return [dataParsed.data, undefined];
+  return { success: true, data: dataParsed.data };
 };

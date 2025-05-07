@@ -1,23 +1,14 @@
 import {
-  GetValueFromJsonPathError,
   PossibleValues,
-  ValidateVariableError,
   getValueFromJsonPath,
   parseVariable,
   validateVariable,
 } from ".";
 
+import { ResolveVariableError } from "./errors";
+import { Result } from "./types";
 import { VariableType } from "../../../../schema/primitives/variable";
 import { useVariables } from "../VariableContext";
-
-type ResolveVariableResult = [PossibleValues, undefined];
-
-export type VariableError = [undefined, "NoStateForId"];
-
-export type ResolveVariableError =
-  | GetValueFromJsonPathError
-  | ValidateVariableError
-  | VariableError;
 
 /**
  * Resolves a variable path string to its corresponding value stored in React context.
@@ -25,32 +16,34 @@ export type ResolveVariableError =
  * Takes a variable string (e.g. "query.company-list.data.0.name") that specifies the
  * namespace, ID, and JSON pointer to retrieve the value.
  *
- * returns a tuple containing either [value, undefined] on success or [undefined, error]
- * on error, where error code describes the reason
+ * Returns a Result object that indicates either success with the resolved value
+ * or failure with an error code describing the reason
  */
 export const useResolveVariable = (
   value: VariableType
-): ResolveVariableResult | ResolveVariableError => {
-  const [variableObject, validationError] = validateVariable(
-    parseVariable(value)
-  );
+): Result<PossibleValues, ResolveVariableError> => {
+  const variableObject = parseVariable(value);
+  const validationResult = validateVariable(variableObject);
   const variables = useVariables();
 
-  if (validationError) {
-    return [undefined, validationError];
+  if (!validationResult.success) {
+    return { success: false, error: validationResult.error };
   }
 
-  const { id, pointer, namespace } = variableObject;
+  const { id, pointer, namespace } = validationResult.data;
 
   if (!variables[namespace][id]) {
-    return [undefined, "NoStateForId"];
+    return { success: false, error: "NoStateForId" };
   }
 
-  const [data, error] = getValueFromJsonPath(variables[namespace][id], pointer);
+  const jsonPathResult = getValueFromJsonPath(
+    variables[namespace][id],
+    pointer
+  );
 
-  if (error) {
-    return [undefined, error];
+  if (!jsonPathResult.success) {
+    return { success: false, error: jsonPathResult.error };
   }
 
-  return [data, undefined];
+  return { success: true, data: jsonPathResult.data };
 };

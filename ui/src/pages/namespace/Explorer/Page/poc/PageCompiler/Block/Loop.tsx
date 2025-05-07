@@ -19,21 +19,21 @@ type LoopProps = {
 export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   const { blocks, data, id } = blockProps;
   const { t } = useTranslation();
-  const [variableContent, error] = useResolveVariableArray(data);
+  const arrayVariable = useResolveVariableArray(data);
 
   const parentVariables = useVariables();
 
-  if (error) {
+  if (!arrayVariable.success) {
     return (
       <Error value={data}>
-        {t(`direktivPage.error.templateString.${error}`)}
+        {t(`direktivPage.error.templateString.${arrayVariable.error}`)}
       </Error>
     );
   }
 
   return (
     <BlockList>
-      {variableContent.map((item, variableIndex) => (
+      {arrayVariable.data.map((item, variableIndex) => (
         <VariableContextProvider
           key={variableIndex}
           value={{
