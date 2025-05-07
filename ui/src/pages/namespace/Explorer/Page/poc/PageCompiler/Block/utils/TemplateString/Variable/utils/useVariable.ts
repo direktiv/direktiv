@@ -8,9 +8,8 @@ import {
 } from ".";
 
 import { VariableType } from "../../../../../../schema/primitives/variable";
-import { useLoopIndex } from "../../../../Loop/LoopIdContext";
 import { useQueryClient } from "@tanstack/react-query";
-import { useVariables } from "../../../../../store/variables";
+import { useVariables } from "../VariableContext";
 
 type UseVariableSuccess = [PossibleValues, undefined];
 export type VariableFailure = [undefined, "queryNotFound" | "loopNotFound"];
@@ -24,11 +23,11 @@ export type UseVariableFailure =
  * useVariable takes a variable string like "query.company-list.data.0.name" and
  * returns the value at the specified path.
  */
+// TODO: rename
 export const useVariable = (
   value: VariableType
 ): UseVariableSuccess | UseVariableFailure => {
   const queryClient = useQueryClient();
-  const loopIndex = useLoopIndex();
 
   const [variableObject, validationError] = validateVariable(
     parseVariable(value)
@@ -62,13 +61,14 @@ export const useVariable = (
     }
 
     case "loop": {
-      if (!variables["loop"][id] || loopIndex?.[id] === undefined) {
+      if (!variables["loop"][id]) {
         return [undefined, "loopNotFound"];
       }
 
       const [loopData, loopError] = getValueFromJsonPath(
         variables["loop"][id],
-        `${loopIndex[id]}.${pointer}`
+        // `${loopIndex[id]}.${pointer}`
+        pointer
       );
 
       if (loopError) {
@@ -77,5 +77,9 @@ export const useVariable = (
 
       return [loopData, undefined];
     }
+
+    // TODO: remove this case
+    case "form":
+      return [undefined, "loopNotFound"];
   }
 };

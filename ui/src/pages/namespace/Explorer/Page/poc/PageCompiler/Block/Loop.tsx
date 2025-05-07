@@ -1,13 +1,15 @@
-import { BlockPath, addSegmentsToPath } from "../utils/blockPath";
-import { LoopIdContextProvider, useLoopIndex } from "./LoopIdContext";
+import { BlockPath, addSegmentsToPath } from "./utils/blockPath";
+import {
+  VariableContextProvider,
+  useVariables,
+} from "./utils/TemplateString/Variable/VariableContext";
 
-import { Block } from "..";
-import { BlockList } from "../utils/BlockList";
-import { Error } from "../utils/TemplateString/Variable/Error";
-import { LoopType } from "../../../schema/blocks/loop";
-import { useInitLoopVariable } from "./useInitLoopVariable";
+import { Block } from ".";
+import { BlockList } from "./utils/BlockList";
+import { Error } from "./utils/TemplateString/Variable/Error";
+import { LoopType } from "../../schema/blocks/loop";
 import { useTranslation } from "react-i18next";
-import { useVariableArray } from "../utils/TemplateString/Variable/utils/useVariableArray";
+import { useVariableArray } from "./utils/TemplateString/Variable/utils/useVariableArray";
 
 type LoopProps = {
   blockProps: LoopType;
@@ -18,9 +20,8 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   const { blocks, data, id } = blockProps;
   const { t } = useTranslation();
   const [variableContent, error] = useVariableArray(data);
-  const parentLoopIndex = useLoopIndex();
 
-  useInitLoopVariable(id, variableContent);
+  const parentVariables = useVariables();
 
   if (error) {
     return (
@@ -33,11 +34,14 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   return (
     <BlockList>
       {variableContent.map((item, variableIndex) => (
-        <LoopIdContextProvider
+        <VariableContextProvider
           key={variableIndex}
           value={{
-            ...parentLoopIndex,
-            [id]: variableIndex,
+            ...parentVariables,
+            loop: {
+              ...parentVariables.loop,
+              [id]: item,
+            },
           }}
         >
           <BlockList>
@@ -52,7 +56,7 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
               />
             ))}
           </BlockList>
-        </LoopIdContextProvider>
+        </VariableContextProvider>
       ))}
     </BlockList>
   );
