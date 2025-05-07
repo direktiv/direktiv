@@ -1,4 +1,8 @@
 import { BlockPath, addSegmentsToPath } from "./utils/blockPath";
+import {
+  VariableContextProvider,
+  useVariables,
+} from "../primitives/Variable/VariableContext";
 import { queryOptions, useSuspenseQueries } from "@tanstack/react-query";
 
 import { Block } from ".";
@@ -17,7 +21,8 @@ export const QueryProvider = ({
 }: QueryProviderProps) => {
   const { blocks, queries } = blockProps;
   const { t } = useTranslation();
-  useSuspenseQueries({
+  const parentVariables = useVariables();
+  const data = useSuspenseQueries({
     queries: queries.map((q) =>
       queryOptions({
         queryKey: [q.id],
@@ -47,15 +52,33 @@ export const QueryProvider = ({
     ),
   });
 
+  let test = {};
+
+  queries.forEach((q, i) => {
+    test = { ...test, [q.id]: data[i].data };
+  });
+
+  console.log("🚀", test);
+
   return (
-    <BlockList>
-      {blocks.map((block, index) => (
-        <Block
-          key={index}
-          block={block}
-          blockPath={addSegmentsToPath(blockPath, index)}
-        />
-      ))}
-    </BlockList>
+    <VariableContextProvider
+      value={{
+        ...parentVariables,
+        query: {
+          ...parentVariables.query,
+          ...test,
+        },
+      }}
+    >
+      <BlockList>
+        {blocks.map((block, index) => (
+          <Block
+            key={index}
+            block={block}
+            blockPath={addSegmentsToPath(blockPath, index)}
+          />
+        ))}
+      </BlockList>
+    </VariableContextProvider>
   );
 };

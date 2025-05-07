@@ -31,7 +31,6 @@ const useVariableContext = () => {
   return context;
 };
 
-// TODO: give this a better name
 const useVariables = () => useVariableContext() ?? defaultState;
 
 export { VariableContextProvider, useVariables };

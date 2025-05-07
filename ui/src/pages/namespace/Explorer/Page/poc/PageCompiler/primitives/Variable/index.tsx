@@ -2,8 +2,8 @@ import { Error } from "./Error";
 import { VariableType } from "../../../schema/primitives/variable";
 import { twMergeClsx } from "~/util/helpers";
 import { useMode } from "../../context/pageCompilerContext";
+import { useResolveVariableJSX } from "./utils/useResolveVariableJSX";
 import { useTranslation } from "react-i18next";
-import { useVariableJSX } from "./utils/useVariableJSX";
 
 type TemplateStringProps = {
   value: VariableType;
@@ -12,7 +12,7 @@ type TemplateStringProps = {
 export const Variable = ({ value }: TemplateStringProps) => {
   const { t } = useTranslation();
   const mode = useMode();
-  const [variableContent, error] = useVariableJSX(value);
+  const [variableContent, error] = useResolveVariableJSX(value);
 
   if (error) {
     return (

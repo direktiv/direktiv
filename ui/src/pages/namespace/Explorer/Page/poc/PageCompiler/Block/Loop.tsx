@@ -8,8 +8,8 @@ import { Block } from ".";
 import { BlockList } from "./utils/BlockList";
 import { Error } from "../primitives/Variable/Error";
 import { LoopType } from "../../schema/blocks/loop";
+import { useResolveVariableArray } from "../primitives/Variable/utils/useResolveVariableArray";
 import { useTranslation } from "react-i18next";
-import { useVariableArray } from "../primitives/Variable/utils/useVariableArray";
 
 type LoopProps = {
   blockProps: LoopType;
@@ -19,7 +19,7 @@ type LoopProps = {
 export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   const { blocks, data, id } = blockProps;
   const { t } = useTranslation();
-  const [variableContent, error] = useVariableArray(data);
+  const [variableContent, error] = useResolveVariableArray(data);
 
   const parentVariables = useVariables();
 

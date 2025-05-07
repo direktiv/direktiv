@@ -1,4 +1,7 @@
-import { UseVariableFailure, useVariable } from "./useVariable";
+import {
+  ResolveVariableFailure,
+  useResolveVariable,
+} from "./useResolveVariable";
 
 import { VariableType } from "../../../../schema/primitives/variable";
 import { z } from "zod";
@@ -13,18 +16,14 @@ export const JSXValueSchema = z.union([
 
 export type JSXValueType = z.infer<typeof JSXValueSchema>;
 
-type UseVariableJSXSuccess = [JSXValueType, undefined];
+type ResolveVariableJSXSuccess = [JSXValueType, undefined];
 type JSXFailure = [undefined, "couldNotStringify"];
-type UseVariableJSXFailure = UseVariableFailure | JSXFailure;
+type ResolveVariableJSXFailure = ResolveVariableFailure | JSXFailure;
 
-/**
- * useVariableJSX does the same as useVariable, but it will add a validation
- * layer on top to ensure that the value returned is JSX compatible.
- */
-export const useVariableJSX = (
+export const useResolveVariableJSX = (
   value: VariableType
-): UseVariableJSXSuccess | UseVariableJSXFailure => {
-  const [data, error] = useVariable(value);
+): ResolveVariableJSXSuccess | ResolveVariableJSXFailure => {
+  const [data, error] = useResolveVariable(value);
 
   if (error) {
     return [undefined, error];
