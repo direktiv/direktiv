@@ -1,0 +1,28 @@
+log_level : 'info'
+
+package:
+  deploy:
+    components: 'postgres'
+    set:
+      db_replica_count: "1"
+      db_additional_users: |
+        - name: mydatabase
+          databases:
+            - mydatabase
+          options: "SUPERUSER"
+      # db_backup_value: |
+      #   s3:
+      #     bucket: direktiv-backup
+      #     endpoint: "https://eu-central-1.linodeobjects.com"
+      #     region: "US"
+      db_backup_value: |
+        volume:
+          volumeClaimSpec:
+            accessModes:
+            - ReadWriteOnce
+            resources:
+              requests:
+                storage: 5Gi
+      db_backup_schedule: "* * * * *"
+      db_backup_s3_key: mykey
+      db_backup_s3_secret: mysecret

@@ -1,0 +1,7 @@
+log_level : 'info'
+
+package:
+  deploy:
+    set:
+      REGISTRY_PVC_SIZE: "40Gi"
+      GIT_SERVER_PVC_SIZE: "2Gi"

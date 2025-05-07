@@ -1,0 +1,39 @@
+users:
+  - name: direktiv
+    databases:
+      - direktiv
+    # access to public schema
+    # if no superuser is required, grant privileges manually: GRANT ALL ON SCHEMA public TO direktiv;
+    options: "SUPERUSER"
+  ###ZARF_VAR_DB_ADDITIONAL_USERS###
+  - name: postgres
+
+instances:
+- name: instance1
+  replicas: ###ZARF_VAR_DB_REPLICA_COUNT###
+  dataVolumeClaimSpec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ###ZARF_VAR_DB_STORAGE###
+
+proxy:
+  pgBouncer:
+    replicas: ###ZARF_VAR_DB_BOUNCER_COUNT###
+
+backups:
+  pgbackrest:
+    global:
+      repo1-retention-full: "###ZARF_VAR_DB_BACKUP_RETENTION###"
+      repo1-retention-full-type: count
+    configuration:
+      - secret:
+          name: direktiv-pgbackrest-secrets
+    repos:
+    - name: repo1
+      schedules:
+        full: "###ZARF_VAR_DB_BACKUP_SCHEDULE###"
+      ###ZARF_VAR_DB_BACKUP_VALUE###
+
+        
