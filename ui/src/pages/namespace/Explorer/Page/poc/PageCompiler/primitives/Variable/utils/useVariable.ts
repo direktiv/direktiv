@@ -7,7 +7,7 @@ import {
   validateVariable,
 } from ".";
 
-import { VariableType } from "../../../../../../schema/primitives/variable";
+import { VariableType } from "../../../../schema/primitives/variable";
 import { useQueryClient } from "@tanstack/react-query";
 import { useVariables } from "../VariableContext";
 

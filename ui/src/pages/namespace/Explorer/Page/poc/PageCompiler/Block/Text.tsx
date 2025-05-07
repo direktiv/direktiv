@@ -1,4 +1,4 @@
-import { TemplateString } from "./utils/TemplateString";
+import { TemplateString } from "../primitives/TemplateString";
 import { TextType } from "../../schema/blocks/text";
 
 type TextProps = {

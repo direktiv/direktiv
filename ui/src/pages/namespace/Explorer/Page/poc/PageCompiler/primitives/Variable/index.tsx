@@ -1,7 +1,7 @@
 import { Error } from "./Error";
-import { VariableType } from "../../../../../schema/primitives/variable";
+import { VariableType } from "../../../schema/primitives/variable";
 import { twMergeClsx } from "~/util/helpers";
-import { useMode } from "../../../../context/pageCompilerContext";
+import { useMode } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 import { useVariableJSX } from "./utils/useVariableJSX";
 

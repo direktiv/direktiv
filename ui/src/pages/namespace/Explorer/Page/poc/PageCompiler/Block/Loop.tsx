@@ -2,14 +2,14 @@ import { BlockPath, addSegmentsToPath } from "./utils/blockPath";
 import {
   VariableContextProvider,
   useVariables,
-} from "./utils/TemplateString/Variable/VariableContext";
+} from "../primitives/Variable/VariableContext";
 
 import { Block } from ".";
 import { BlockList } from "./utils/BlockList";
-import { Error } from "./utils/TemplateString/Variable/Error";
+import { Error } from "../primitives/Variable/Error";
 import { LoopType } from "../../schema/blocks/loop";
 import { useTranslation } from "react-i18next";
-import { useVariableArray } from "./utils/TemplateString/Variable/utils/useVariableArray";
+import { useVariableArray } from "../primitives/Variable/utils/useVariableArray";
 
 type LoopProps = {
   blockProps: LoopType;

@@ -1,6 +1,6 @@
 import { UseVariableFailure, useVariable } from "./useVariable";
 
-import { VariableType } from "../../../../../../schema/primitives/variable";
+import { VariableType } from "../../../../schema/primitives/variable";
 import { z } from "zod";
 
 export const ArraySchema = z.array(z.unknown());

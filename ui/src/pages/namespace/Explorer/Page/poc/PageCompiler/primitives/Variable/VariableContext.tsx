@@ -1,6 +1,6 @@
 import { FC, PropsWithChildren, createContext, useContext } from "react";
 
-import { VariableNamespace } from "../../../../../schema/primitives/variable";
+import { VariableNamespace } from "../../../schema/primitives/variable";
 
 type VariableId = string;
 type DefinedValue = Exclude<unknown, undefined>;

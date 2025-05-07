@@ -3,9 +3,9 @@ import {
   VariableObject,
   VariableObjectValidated,
   VariableType,
-} from "../../../../../../schema/primitives/variable";
+} from "../../../../schema/primitives/variable";
 
-import { TemplateStringSeparator } from "../../../../../../schema/primitives/templateString";
+import { TemplateStringSeparator } from "../../../../schema/primitives/templateString";
 import { z } from "zod";
 
 /**
