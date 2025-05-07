@@ -1,0 +1,12 @@
+kind: ZarfPackageConfig 
+metadata:
+  name: direktiv-no-images
+  version: 0.9.1
+  description: "direktiv installation"
+  yolo: true
+
+components:
+- name: direktiv
+  required: true
+  import:
+    path: ../

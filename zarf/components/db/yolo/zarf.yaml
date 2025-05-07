@@ -1,0 +1,12 @@
+kind: ZarfPackageConfig 
+metadata:
+  name: percona-no-images
+  version: v2.6.0
+  description: "percona operator and database install without images"
+  yolo: true
+
+components:
+- name: postgres
+  required: true
+  import:
+    path: ../
