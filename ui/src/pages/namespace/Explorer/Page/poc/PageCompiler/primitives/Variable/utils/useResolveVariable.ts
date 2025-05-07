@@ -19,10 +19,14 @@ export type ResolveVariableFailure =
   | ValidateVariableFailure
   | VariableFailure;
 
-// TODO: refine comment
 /**
- * useResolveVariable takes a variable string like "query.company-list.data.0.name"
- * and returns the value at the specified path that is stored in react context.
+ * Resolves a variable path string to its corresponding value stored in React context.
+ *
+ * Takes a variable string (e.g. "query.company-list.data.0.name") that specifies the
+ * namespace, ID, and JSON pointer to retrieve the value.
+ *
+ * returns a tuple containing either [value, undefined] on success or [undefined, error]
+ * on failure, where error code describes the failure reason
  */
 export const useResolveVariable = (
   value: VariableType
