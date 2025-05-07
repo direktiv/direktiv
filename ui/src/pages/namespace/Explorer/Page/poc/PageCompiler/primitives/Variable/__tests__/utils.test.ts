@@ -134,7 +134,7 @@ describe("parseVariable", () => {
     });
   });
 
-  test("it should handle emopty variables", () => {
+  test("it should handle empty variables", () => {
     const result = parseVariable("");
     expect(result).toEqual({
       src: "",

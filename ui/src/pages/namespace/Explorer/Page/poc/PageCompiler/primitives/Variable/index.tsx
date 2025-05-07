@@ -5,11 +5,11 @@ import { useMode } from "../../context/pageCompilerContext";
 import { useResolveVariableJSX } from "./utils/useResolveVariableJSX";
 import { useTranslation } from "react-i18next";
 
-type TemplateStringProps = {
+type VariableProps = {
   value: VariableType;
 };
 
-export const Variable = ({ value }: TemplateStringProps) => {
+export const Variable = ({ value }: VariableProps) => {
   const { t } = useTranslation();
   const mode = useMode();
   const [variableContent, error] = useResolveVariableJSX(value);

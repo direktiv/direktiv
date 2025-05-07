@@ -1,7 +1,7 @@
 import {
-  GetValueFromJsonPathFailure,
+  GetValueFromJsonPathError,
   PossibleValues,
-  ValidateVariableFailure,
+  ValidateVariableError,
   getValueFromJsonPath,
   parseVariable,
   validateVariable,
@@ -10,14 +10,14 @@ import {
 import { VariableType } from "../../../../schema/primitives/variable";
 import { useVariables } from "../VariableContext";
 
-type ResolveVariableSuccess = [PossibleValues, undefined];
+type ResolveVariableResult = [PossibleValues, undefined];
 
-export type VariableFailure = [undefined, "NoStateForId"];
+export type VariableError = [undefined, "NoStateForId"];
 
-export type ResolveVariableFailure =
-  | GetValueFromJsonPathFailure
-  | ValidateVariableFailure
-  | VariableFailure;
+export type ResolveVariableError =
+  | GetValueFromJsonPathError
+  | ValidateVariableError
+  | VariableError;
 
 /**
  * Resolves a variable path string to its corresponding value stored in React context.
@@ -26,11 +26,11 @@ export type ResolveVariableFailure =
  * namespace, ID, and JSON pointer to retrieve the value.
  *
  * returns a tuple containing either [value, undefined] on success or [undefined, error]
- * on failure, where error code describes the failure reason
+ * on error, where error code describes the reason
  */
 export const useResolveVariable = (
   value: VariableType
-): ResolveVariableSuccess | ResolveVariableFailure => {
+): ResolveVariableResult | ResolveVariableError => {
   const [variableObject, validationError] = validateVariable(
     parseVariable(value)
   );

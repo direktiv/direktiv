@@ -43,16 +43,16 @@ export const parseVariable = (variableString: VariableType): VariableObject => {
   };
 };
 
-type ValidateVariableSuccess = [VariableObjectValidated, undefined];
+type ValidateVariableResult = [VariableObjectValidated, undefined];
 
-export type ValidateVariableFailure = [
+export type ValidateVariableError = [
   undefined,
   "namespaceUndefined" | "idUndefined" | "pointerUndefined",
 ];
 
 export const validateVariable = (
   variable: VariableObject
-): ValidateVariableSuccess | ValidateVariableFailure => {
+): ValidateVariableResult | ValidateVariableError => {
   const { namespace, id, pointer, src } = variable;
 
   if (!namespace) return [undefined, "namespaceUndefined"];
@@ -67,8 +67,8 @@ const AnyArraySchema = z.array(z.unknown());
 const AnyObjectOrArraySchema = z.union([AnyObjectSchema, AnyArraySchema]);
 
 export type PossibleValues = object | string | number | boolean | null;
-type GetValueFromJsonPathSuccess = [PossibleValues, undefined];
-export type GetValueFromJsonPathFailure = [
+type GetValueFromJsonPathResult = [PossibleValues, undefined];
+export type GetValueFromJsonPathError = [
   undefined,
   "invalidJson" | "invalidPath",
 ];
@@ -96,7 +96,7 @@ export type GetValueFromJsonPathFailure = [
 export const getValueFromJsonPath = (
   json: unknown,
   path: string
-): GetValueFromJsonPathSuccess | GetValueFromJsonPathFailure => {
+): GetValueFromJsonPathResult | GetValueFromJsonPathError => {
   const jsonParsed = AnyObjectOrArraySchema.safeParse(json);
   if (!jsonParsed.success) {
     return [undefined, "invalidJson"];
