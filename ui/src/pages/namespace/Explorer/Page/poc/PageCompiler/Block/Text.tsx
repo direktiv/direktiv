@@ -6,7 +6,7 @@ type TextProps = {
 };
 
 export const Text = ({ blockProps }: TextProps) => (
-  <div>
+  <p>
     <TemplateString value={blockProps.content} />
-  </div>
+  </p>
 );
