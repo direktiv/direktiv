@@ -5,7 +5,7 @@ import { VariableNamespace } from "../../../schema/primitives/variable";
 type VariableId = string;
 type DefinedValue = Exclude<unknown, undefined>;
 
-type State = {
+export type State = {
   [keys in VariableNamespace]: Record<VariableId, DefinedValue>;
 };
 

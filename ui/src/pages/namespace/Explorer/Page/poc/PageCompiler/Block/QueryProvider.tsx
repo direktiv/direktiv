@@ -1,5 +1,6 @@
 import { BlockPath, addSegmentsToPath } from "./utils/blockPath";
 import {
+  State,
   VariableContextProvider,
   useVariables,
 } from "../primitives/Variable/VariableContext";
@@ -52,13 +53,9 @@ export const QueryProvider = ({
     ),
   });
 
-  let test = {};
-
-  queries.forEach((q, i) => {
-    test = { ...test, [q.id]: data[i].data };
-  });
-
-  console.log("🚀", test);
+  const queryResults: State["query"] = Object.fromEntries(
+    queries.map((query, index) => [query.id, data[index]?.data])
+  );
 
   return (
     <VariableContextProvider
@@ -66,7 +63,7 @@ export const QueryProvider = ({
         ...parentVariables,
         query: {
           ...parentVariables.query,
-          ...test,
+          ...queryResults,
         },
       }}
     >
