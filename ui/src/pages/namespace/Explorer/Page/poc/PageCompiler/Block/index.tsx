@@ -10,6 +10,7 @@ import { Loop } from "./Loop";
 import { ParsingError } from "./utils/ParsingError";
 import { QueryProvider } from "./QueryProvider";
 import { Text } from "./Text";
+import { useTranslation } from "react-i18next";
 
 type BlockProps = {
   block: AllBlocksType;
@@ -17,6 +18,7 @@ type BlockProps = {
 };
 
 export const Block = ({ block, blockPath }: BlockProps) => {
+  const { t } = useTranslation();
   const renderContent = () => {
     switch (block.type) {
       case "headline":
@@ -38,7 +40,9 @@ export const Block = ({ block, blockPath }: BlockProps) => {
       default:
         return (
           <ParsingError
-            title={`The block type ${block.type} is not implemented yet`}
+            title={t("direktivPage.error.blockNotImplemented", {
+              type: block.type,
+            })}
           />
         );
     }

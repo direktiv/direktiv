@@ -1,5 +1,5 @@
 import { HeadlineType } from "../../schema/blocks/headline";
-import { TemplateString } from "./utils/TemplateString";
+import { TemplateString } from "../primitives/TemplateString";
 import { twMergeClsx } from "~/util/helpers";
 
 type HeadlineProps = {
