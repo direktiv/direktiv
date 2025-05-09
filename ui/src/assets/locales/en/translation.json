@@ -1648,7 +1648,7 @@
         "invalidJson": "Error in query with id {{id}}: {{endpoint}} returned an invalid JSON"
       },
       "templateString": {
-        "namespaceUndefined": "The template string does not have a valid namespace.",
+        "namespaceInvalid": "The template string does not have a valid namespace.",
         "idUndefined": "The template string is missing an id.",
         "pointerUndefined": "The template string is missing a pointer.",
         "NoStateForId": "Could not find any state for the id",

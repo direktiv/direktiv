@@ -50,7 +50,7 @@ export const validateVariable = (
 ): Result<VariableObjectValidated, ValidateVariableError> => {
   const { namespace, id, pointer, src } = variable;
 
-  if (!namespace) return { success: false, error: "namespaceUndefined" };
+  if (!namespace) return { success: false, error: "namespaceInvalid" };
   if (!id) return { success: false, error: "idUndefined" };
   if (!pointer) return { success: false, error: "pointerUndefined" };
 

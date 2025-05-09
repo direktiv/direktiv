@@ -1,5 +1,5 @@
 export type ValidateVariableError =
-  | "namespaceUndefined"
+  | "namespaceInvalid"
   | "idUndefined"
   | "pointerUndefined";
 
