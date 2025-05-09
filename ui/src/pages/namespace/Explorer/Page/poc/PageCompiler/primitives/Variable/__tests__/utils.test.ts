@@ -82,6 +82,12 @@ describe("Template string variable regex", () => {
     expect(matches.length).toBe(0);
   });
 
+  test("it should not match variables that contain an empty string", () => {
+    const template = "{{}} {{ }} {{  }}";
+    const matches = Array.from(template.matchAll(variablePattern));
+    expect(matches.length).toBe(0);
+  });
+
   test("it is valid to use {{ or }} outside of a variable", () => {
     const template =
       "Hello {{ name }}, these are not variables: {{}}, }}  and {{";

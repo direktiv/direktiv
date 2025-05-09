@@ -11,18 +11,18 @@ import { TemplateStringSeparator } from "../../../../schema/primitives/templateS
 import { z } from "zod";
 
 /**
- * Regex pattern to match variables enclosed in double curly braces, like {{ variable }}.
+ * Regex pattern to match variables enclosed in double curly braces, like {{variable}}.
  *
  * Explanation:
  * - {{         : Matches the opening double curly braces.
  * - \s*        : Allows optional whitespace after the opening braces.
- * - ([^{}]+?)  : Captures one or more characters that are not { or }.
+ * - ([^\s{}]+) : Captures one or more characters that are not whitespace, {, or }.
  * - \s*        : Allows optional whitespace before the closing braces.
  * - }}         : Matches the closing double curly braces literally.
  *
  * The 'g' (global) flag ensures all variable patterns in the string are matched.
  */
-export const variablePattern = /{{\s*([^{}]+?)\s*}}/g;
+export const variablePattern = /{{\s*([^\s{}]+)\s*}}/g;
 
 /**
  * Parses a variable string into its individual components.
