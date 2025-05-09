@@ -30,7 +30,7 @@ const examplePage = {
         {
           type: "headline",
           size: "h3",
-          label: "Found {{query.company-list.total}} companies ",
+          label: "Found {{query.company-list.total}} companies",
         },
         {
           type: "loop",
@@ -40,6 +40,12 @@ const examplePage = {
             {
               type: "card",
               blocks: [
+                {
+                  type: "loop",
+                  id: "company",
+                  data: "query.company-list.data",
+                  blocks: [],
+                },
                 {
                   type: "text",
                   content:

@@ -1646,7 +1646,7 @@
       "queryProvider": {
         "queryFailed": "Error in query with id {{id}}: {{endpoint}} responded with {{status}}",
         "invalidJson": "Error in query with id {{id}}: {{endpoint}} returned an invalid JSON",
-        "dublicateId": "Error in query with id {{id}}: The id is already used in by one of the parent blcoks"
+        "dublicateId": "Error in query with id {{id}}: The id is already used in by one of the parent blocks"
       },
       "templateString": {
         "namespaceInvalid": "The template string does not have a valid namespace.",
