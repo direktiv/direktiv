@@ -1643,9 +1643,10 @@
       "invalidSchema": "The page can not be rendered because it has an invalid configuration",
       "blockNotImplemented": "The block type \"{{type}}\" is not implemented yet",
       "queryProvider": {
-        "apiError": "There was an error fetching data from the API",
+        "apiError": "There was an error in the query provider",
         "queryFailed": "Error in query with id {{id}}: {{endpoint}} responded with {{status}}",
-        "invalidJson": "Error in query with id {{id}}: {{endpoint}} returned an invalid JSON"
+        "invalidJson": "Error in query with id {{id}}: {{endpoint}} returned an invalid JSON",
+        "dublicateId": "Error in query with id {{id}}: The id is already used in by one of the parent blcoks"
       },
       "templateString": {
         "namespaceInvalid": "The template string does not have a valid namespace.",

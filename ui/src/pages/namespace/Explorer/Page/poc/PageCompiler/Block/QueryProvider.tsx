@@ -53,6 +53,18 @@ export const QueryProvider = ({
     ),
   });
 
+  const queryWithDublicateId = queries.find(
+    (query) => !!parentVariables.query[query.id]
+  );
+
+  if (queryWithDublicateId) {
+    throw new Error(
+      t("direktivPage.error.queryProvider.dublicateId", {
+        id: queryWithDublicateId.id,
+      })
+    );
+  }
+
   const queryResults: State["query"] = Object.fromEntries(
     queries.map((query, index) => [query.id, data[index]?.data])
   );
