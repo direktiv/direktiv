@@ -1,3 +1,4 @@
+import { ButtonHTMLAttributes, PropsWithChildren, forwardRef } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -5,21 +6,24 @@ import {
   TooltipTrigger,
 } from "~/design/Tooltip";
 
-import { PropsWithChildren } from "react";
+type ErrorProps = ButtonHTMLAttributes<HTMLButtonElement> &
+  PropsWithChildren<{
+    value: string;
+  }>;
 
-type ErrorProps = PropsWithChildren<{
-  value: string;
-}>;
-
-export const Error = ({ value, children }: ErrorProps) => (
-  <TooltipProvider>
-    <Tooltip>
-      <TooltipTrigger>
-        <span className="bg-danger-4 text-danger-11 dark:bg-danger-dark-4 dark:text-danger-dark-11">
-          {value}
-        </span>
-      </TooltipTrigger>
-      <TooltipContent className="w-[450px]">{children}</TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
+export const Error = forwardRef<HTMLButtonElement, ErrorProps>(
+  ({ value, children, ...props }, ref) => (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger ref={ref} asChild {...props}>
+          <span className="bg-danger-4 text-danger-11 dark:bg-danger-dark-4 dark:text-danger-dark-11">
+            {value}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="w-[450px]">{children}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
 );
+
+Error.displayName = "Error";
