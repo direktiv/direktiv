@@ -8,16 +8,17 @@ import {
 
 type ErrorProps = ButtonHTMLAttributes<HTMLButtonElement> &
   PropsWithChildren<{
+    errorCode: string;
     value: string;
   }>;
 
 export const Error = forwardRef<HTMLButtonElement, ErrorProps>(
-  ({ value, children, ...props }, ref) => (
+  ({ value, errorCode, children, ...props }, ref) => (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger ref={ref} asChild {...props}>
           <span className="bg-danger-4 text-danger-11 dark:bg-danger-dark-4 dark:text-danger-dark-11">
-            {value}
+            {value} ({errorCode})
           </span>
         </TooltipTrigger>
         <TooltipContent className="w-[450px]">{children}</TooltipContent>

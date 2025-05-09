@@ -16,7 +16,7 @@ export const Variable = ({ value }: VariableProps) => {
 
   if (!variableJSX.success) {
     return (
-      <Error value={value} data-error-code={variableJSX.error}>
+      <Error value={value} errorCode={variableJSX.error}>
         {t(`direktivPage.error.templateString.${variableJSX.error}`)}
       </Error>
     );

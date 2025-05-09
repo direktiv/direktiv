@@ -25,8 +25,9 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
 
   if (!arrayVariable.success) {
     return (
-      <Error value={data} data-error-code={arrayVariable.error}>
-        {t(`direktivPage.error.templateString.${arrayVariable.error}`)}
+      <Error value={data} errorCode={arrayVariable.error}>
+        {t(`direktivPage.error.templateString.${arrayVariable.error}`)} (
+        {arrayVariable.error})
       </Error>
     );
   }
