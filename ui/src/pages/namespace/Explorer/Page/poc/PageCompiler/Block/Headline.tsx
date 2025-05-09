@@ -8,8 +8,11 @@ type HeadlineProps = {
 
 export const Headline = ({ blockProps }: HeadlineProps) => {
   const { label, size } = blockProps;
+
+  const HeadlineTag = size;
+
   return (
-    <h1
+    <HeadlineTag
       className={twMergeClsx([
         size === "h1" && "text-4xl",
         size === "h2" && "text-3xl",
@@ -17,6 +20,6 @@ export const Headline = ({ blockProps }: HeadlineProps) => {
       ])}
     >
       <TemplateString value={label} />
-    </h1>
+    </HeadlineTag>
   );
 };
