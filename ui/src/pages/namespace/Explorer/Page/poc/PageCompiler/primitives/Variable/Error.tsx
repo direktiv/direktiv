@@ -12,7 +12,7 @@ type ErrorProps = ButtonHTMLAttributes<HTMLButtonElement> &
     value: string;
   }>;
 
-export const Error = forwardRef<HTMLButtonElement, ErrorProps>(
+export const VariableError = forwardRef<HTMLButtonElement, ErrorProps>(
   ({ value, errorCode, children, ...props }, ref) => (
     <TooltipProvider>
       <Tooltip>
@@ -27,4 +27,4 @@ export const Error = forwardRef<HTMLButtonElement, ErrorProps>(
   )
 );
 
-Error.displayName = "Error";
+VariableError.displayName = "VariableError";

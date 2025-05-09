@@ -1,4 +1,4 @@
-import { Error } from "./Error";
+import { VariableError } from "./Error";
 import { VariableType } from "../../../schema/primitives/variable";
 import { twMergeClsx } from "~/util/helpers";
 import { useMode } from "../../context/pageCompilerContext";
@@ -16,9 +16,9 @@ export const Variable = ({ value }: VariableProps) => {
 
   if (!variableJSX.success) {
     return (
-      <Error value={value} errorCode={variableJSX.error}>
+      <VariableError value={value} errorCode={variableJSX.error}>
         {t(`direktivPage.error.templateString.${variableJSX.error}`)}
-      </Error>
+      </VariableError>
     );
   }
 

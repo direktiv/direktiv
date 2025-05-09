@@ -77,9 +77,7 @@ export const BlockWrapper = ({
       <Suspense fallback={<Loading />}>
         <ErrorBoundary
           fallbackRender={({ error }) => (
-            <ParsingError
-              title={t("direktivPage.error.queryProvider.apiError")}
-            >
+            <ParsingError title={t("direktivPage.error.genericError")}>
               {error.message}
             </ParsingError>
           )}
