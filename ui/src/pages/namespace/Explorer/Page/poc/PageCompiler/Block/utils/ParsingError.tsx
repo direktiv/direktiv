@@ -13,7 +13,7 @@ type ParsingErrorProps = PropsWithChildren<{
 export const ParsingError = ({ title, children }: ParsingErrorProps) => (
   <Popover>
     <PopoverTrigger asChild>
-      <Button variant="destructive" size="sm" icon>
+      <Button variant="destructive" size="sm" icon aria-label="parsing-error">
         <TriangleAlert />
       </Button>
     </PopoverTrigger>

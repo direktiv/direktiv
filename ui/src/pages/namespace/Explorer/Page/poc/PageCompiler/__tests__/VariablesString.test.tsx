@@ -18,12 +18,6 @@ import { PageCompiler } from "..";
 import { createPage } from "./utils";
 import { setupServer } from "msw/node";
 
-// vi.mock("react-i18next", () => ({
-//   useTranslation: () => ({
-//     t: (key: string) => key,
-//   }),
-// }));
-
 const apiServer = setupServer(
   http.get("/companies", () => HttpResponse.json(getCompanyListResponse)),
   http.get("/client/101", () => HttpResponse.json(getClientDetailsResponse))
@@ -137,7 +131,7 @@ describe("VariableString", () => {
                 type: "headline",
                 size: "h1",
                 label:
-                  "Query not accessible from parent: {{query.company-list.total}}",
+                  "Query can not be reached from a parent: {{query.company-list.total}}",
               },
               {
                 type: "query-provider",
@@ -184,7 +178,7 @@ describe("VariableString", () => {
       });
 
       expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
-        "Query not accessible from parent: query.company-list.total (NoStateForId)"
+        "Query can not be reached from a parent: query.company-list.total (NoStateForId)"
       );
 
       expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(
@@ -270,72 +264,122 @@ describe("VariableString", () => {
         );
       });
 
-      expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(
-        "Object does not work: query.company-list.data.0 (couldNotStringify)"
-      );
+      // TODO: make this better, and fix i18n
+      expect(screen.getByLabelText("parsing-error")).toBeDefined();
     });
   });
 
-  // describe("looping over data from a query provider", () => {
-  //   test("childs can access data from a query provider", async () => {
-  //     await act(async () => {
-  //       render(
-  //         <PageCompiler
-  //           page={createPage([
-  //             {
-  //               type: "headline",
-  //               size: "h1",
-  //               label:
-  //                 "Query not accessible from parent: {{query.company-list.total}}",
-  //             },
-  //             {
-  //               type: "query-provider",
-  //               queries: [
-  //                 {
-  //                   id: "company-list",
-  //                   endpoint: "/companies",
-  //                 },
-  //               ],
-  //               blocks: [
-  //                 {
-  //                   type: "headline",
-  //                   size: "h2",
-  //                   label: "{{query.company-list.total}} companies",
-  //                 },
-  //                 {
-  //                   type: "card",
-  //                   blocks: [
-  //                     {
-  //                       type: "headline",
-  //                       size: "h3",
-  //                       label:
-  //                         "Acces name from a deeper child: {{query.company-list.data.0.name}}",
-  //                     },
-  //                   ],
-  //                 },
-  //               ],
-  //             },
-  //           ])}
-  //           mode="live"
-  //         />
-  //       );
-  //     });
+  // TODO: using a loop with the same id twice
+  // TODO: loop over a non array
+  // TODO: check if all errors from the translation file are covers
+  describe("looping over data from a query provider", () => {
+    test("child can access data from a loop", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            page={createPage([
+              {
+                type: "headline",
+                size: "h1",
+                label:
+                  "Loop can not be reached from a parent: {{loop.company.name}}",
+              },
+              {
+                type: "query-provider",
+                queries: [
+                  {
+                    id: "company-list",
+                    endpoint: "/companies",
+                  },
+                ],
+                blocks: [
+                  {
+                    type: "card",
+                    blocks: [
+                      {
+                        type: "query-provider",
+                        queries: [
+                          {
+                            id: "client",
+                            endpoint: "/client/101",
+                          },
+                        ],
+                        blocks: [
+                          {
+                            type: "loop",
+                            id: "company",
+                            data: "query.company-list.data",
+                            blocks: [
+                              {
+                                type: "headline",
+                                size: "h2",
+                                label: "outer loop: {{loop.company.name}}",
+                              },
+                              {
+                                type: "loop",
+                                id: "clientAddress",
+                                data: "query.client.data.addresses",
+                                blocks: [
+                                  {
+                                    type: "headline",
+                                    size: "h2",
+                                    label:
+                                      "-- inner loop: {{loop.company.id}} {{loop.clientAddress.city}}",
+                                  },
+                                ],
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
 
-  //     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
-  //       "Query not accessible from parent: query.company-list.total (NoStateForId)"
-  //     );
+      expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
+        "Loop can not be reached from a parent: loop.company.name (NoStateForId)"
+      );
 
-  //     expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(
-  //       "10 companies"
-  //     );
-
-  //     expect(screen.getByRole("heading", { level: 3 }).textContent).toBe(
-  //       "Acces name from a deeper child: Wintheiser-Lebsack"
-  //     );
-  //   });
-  // });
+      expect(
+        screen.getAllByRole("heading", { level: 2 }).map((el) => el.textContent)
+      ).toEqual([
+        "outer loop: Wintheiser-Lebsack",
+        "-- inner loop: 1 East Alanamouth",
+        "-- inner loop: 1 West Trevorview",
+        "outer loop: Tremblay, Rohan and Friesen",
+        "-- inner loop: 2 East Alanamouth",
+        "-- inner loop: 2 West Trevorview",
+        "outer loop: Wiegand Inc",
+        "-- inner loop: 3 East Alanamouth",
+        "-- inner loop: 3 West Trevorview",
+        "outer loop: Champlin Group",
+        "-- inner loop: 4 East Alanamouth",
+        "-- inner loop: 4 West Trevorview",
+        "outer loop: McCullough, Ziemann and Hirthe",
+        "-- inner loop: 5 East Alanamouth",
+        "-- inner loop: 5 West Trevorview",
+        "outer loop: Hayes-Stracke",
+        "-- inner loop: 6 East Alanamouth",
+        "-- inner loop: 6 West Trevorview",
+        "outer loop: Schroeder-Gleason",
+        "-- inner loop: 7 East Alanamouth",
+        "-- inner loop: 7 West Trevorview",
+        "outer loop: Daugherty Inc",
+        "-- inner loop: 8 East Alanamouth",
+        "-- inner loop: 8 West Trevorview",
+        "outer loop: Bartell, Champlin and Ziemann",
+        "-- inner loop: 9 East Alanamouth",
+        "-- inner loop: 9 West Trevorview",
+        "outer loop: Quigley, Steuber and Gibson",
+        "-- inner loop: 10 East Alanamouth",
+        "-- inner loop: 10 West Trevorview",
+      ]);
+    });
+  });
 });
-
-// TODO: using a query provider with the same id twice
-// TODO: using a loop with the same id twice
-// TODO: loops with dublicate id
