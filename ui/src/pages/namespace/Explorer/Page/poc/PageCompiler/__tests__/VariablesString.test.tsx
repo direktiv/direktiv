@@ -121,7 +121,7 @@ describe("VariableString", () => {
     });
   });
 
-  describe("displaying data from a query provider", () => {
+  describe("display data from a query provider", () => {
     test("childs can access data from a query provider", async () => {
       await act(async () => {
         render(
@@ -269,11 +269,10 @@ describe("VariableString", () => {
     });
   });
 
-  // TODO: using a loop with the same id twice
-  // TODO: loop over a non array
-  // TODO: check if all errors from the translation file are covers
-  describe("looping over data from a query provider", () => {
-    test("child can access data from a loop", async () => {
+  // TODO: check if all errors from the translation file are covered
+  // TODO: check if all screen. are as specific as possible
+  describe("loop over data from a query provider", () => {
+    test("children can access data from a loop", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -284,6 +283,65 @@ describe("VariableString", () => {
                 label:
                   "Loop can not be reached from a parent: {{loop.company.name}}",
               },
+              {
+                type: "query-provider",
+                queries: [
+                  {
+                    id: "company-list",
+                    endpoint: "/companies",
+                  },
+                ],
+                blocks: [
+                  {
+                    type: "card",
+                    blocks: [
+                      {
+                        type: "loop",
+                        id: "company",
+                        data: "query.company-list.data",
+                        blocks: [
+                          {
+                            type: "headline",
+                            size: "h2",
+                            label: "Company name: {{loop.company.name}}",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+
+      expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
+        "Loop can not be reached from a parent: loop.company.name (NoStateForId)"
+      );
+
+      expect(
+        screen.getAllByRole("heading", { level: 2 }).map((el) => el.textContent)
+      ).toEqual([
+        "Company name: Wintheiser-Lebsack",
+        "Company name: Tremblay, Rohan and Friesen",
+        "Company name: Wiegand Inc",
+        "Company name: Champlin Group",
+        "Company name: McCullough, Ziemann and Hirthe",
+        "Company name: Hayes-Stracke",
+        "Company name: Schroeder-Gleason",
+        "Company name: Daugherty Inc",
+        "Company name: Bartell, Champlin and Ziemann",
+        "Company name: Quigley, Steuber and Gibson",
+      ]);
+    });
+
+    test("children can access data from nested loops", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            page={createPage([
               {
                 type: "query-provider",
                 queries: [
@@ -342,10 +400,6 @@ describe("VariableString", () => {
         );
       });
 
-      expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
-        "Loop can not be reached from a parent: loop.company.name (NoStateForId)"
-      );
-
       expect(
         screen.getAllByRole("heading", { level: 2 }).map((el) => el.textContent)
       ).toEqual([
@@ -380,6 +434,115 @@ describe("VariableString", () => {
         "-- inner loop: 10 East Alanamouth",
         "-- inner loop: 10 West Trevorview",
       ]);
+    });
+
+    test("loop does not work with non array data", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            page={createPage([
+              {
+                type: "query-provider",
+                queries: [
+                  {
+                    id: "company-list",
+                    endpoint: "/companies",
+                  },
+                ],
+                blocks: [
+                  {
+                    type: "card",
+                    blocks: [
+                      {
+                        type: "loop",
+                        id: "company",
+                        data: "query.company-list.total",
+                        blocks: [
+                          {
+                            type: "headline",
+                            size: "h1",
+                            label: "This will not be rendered",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+
+      expect(screen.getByRole("alert").textContent).toBe(
+        "query.company-list.total (notAnArray)"
+      );
+
+      expect(
+        screen.queryByRole("heading", { level: 1 }),
+        "Child blocks of the loop are not rendered"
+      ).toBeNull();
+    });
+
+    test("can not reuse a loop id in one tree branch", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            page={createPage([
+              {
+                type: "query-provider",
+                queries: [
+                  {
+                    id: "company-list",
+                    endpoint: "/companies",
+                  },
+                ],
+                blocks: [
+                  {
+                    type: "card",
+                    blocks: [
+                      {
+                        type: "loop",
+                        id: "company",
+                        data: "query.company-list.data",
+                        blocks: [
+                          {
+                            type: "loop",
+                            id: "company",
+                            data: "query.company-list.data",
+                            blocks: [
+                              {
+                                type: "headline",
+                                size: "h1",
+                                label: "This will not be rendered",
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+
+      screen.debug();
+
+      // TODO: make this better, and fix i18n
+      expect(
+        screen.getAllByLabelText("parsing-error").length,
+        "It renders the parsing error for every loop"
+      ).toBe(10);
+
+      expect(
+        screen.queryByRole("heading", { level: 1 }),
+        "Child blocks of the loop are not rendered"
+      ).toBeNull();
     });
   });
 });
