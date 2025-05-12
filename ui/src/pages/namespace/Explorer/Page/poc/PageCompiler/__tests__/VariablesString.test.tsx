@@ -15,7 +15,7 @@ import {
 } from "./api/samples";
 
 import { PageCompiler } from "..";
-import { createPage } from "./utils";
+import { createDirektivPage } from "./utils";
 import { setupServer } from "msw/node";
 
 const apiServer = setupServer(
@@ -40,7 +40,7 @@ describe("VariableString", () => {
       await act(async () => {
         render(
           <PageCompiler
-            page={createPage([
+            page={createDirektivPage([
               {
                 type: "headline",
                 size: "h1",
@@ -61,7 +61,7 @@ describe("VariableString", () => {
       await act(async () => {
         render(
           <PageCompiler
-            page={createPage([
+            page={createDirektivPage([
               {
                 type: "headline",
                 size: "h1",
@@ -82,7 +82,7 @@ describe("VariableString", () => {
       await act(async () => {
         render(
           <PageCompiler
-            page={createPage([
+            page={createDirektivPage([
               {
                 type: "headline",
                 size: "h1",
@@ -103,7 +103,7 @@ describe("VariableString", () => {
       await act(async () => {
         render(
           <PageCompiler
-            page={createPage([
+            page={createDirektivPage([
               {
                 type: "headline",
                 size: "h1",
@@ -126,7 +126,7 @@ describe("VariableString", () => {
       await act(async () => {
         render(
           <PageCompiler
-            page={createPage([
+            page={createDirektivPage([
               {
                 type: "headline",
                 size: "h1",
@@ -194,7 +194,7 @@ describe("VariableString", () => {
       await act(async () => {
         render(
           <PageCompiler
-            page={createPage([
+            page={createDirektivPage([
               {
                 type: "query-provider",
                 queries: [
@@ -236,7 +236,7 @@ describe("VariableString", () => {
       await act(async () => {
         render(
           <PageCompiler
-            page={createPage([
+            page={createDirektivPage([
               {
                 type: "query-provider",
                 queries: [
@@ -269,14 +269,12 @@ describe("VariableString", () => {
     });
   });
 
-  // TODO: check if all errors from the translation file are covered
-  // TODO: check if all screen. are as specific as possible
   describe("loop over data from a query provider", () => {
     test("children can access data from a loop", async () => {
       await act(async () => {
         render(
           <PageCompiler
-            page={createPage([
+            page={createDirektivPage([
               {
                 type: "headline",
                 size: "h1",
@@ -341,7 +339,7 @@ describe("VariableString", () => {
       await act(async () => {
         render(
           <PageCompiler
-            page={createPage([
+            page={createDirektivPage([
               {
                 type: "query-provider",
                 queries: [
@@ -440,7 +438,7 @@ describe("VariableString", () => {
       await act(async () => {
         render(
           <PageCompiler
-            page={createPage([
+            page={createDirektivPage([
               {
                 type: "query-provider",
                 queries: [
@@ -489,7 +487,7 @@ describe("VariableString", () => {
       await act(async () => {
         render(
           <PageCompiler
-            page={createPage([
+            page={createDirektivPage([
               {
                 type: "query-provider",
                 queries: [
