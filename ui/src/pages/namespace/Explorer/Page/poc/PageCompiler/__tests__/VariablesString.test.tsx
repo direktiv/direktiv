@@ -52,8 +52,8 @@ describe("VariableString", () => {
         );
       });
 
-      expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
-        "template string without id: thisDoesNotExist (namespaceInvalid)"
+      expect(screen.getByRole("alert").textContent).toBe(
+        "thisDoesNotExist (namespaceInvalid)"
       );
     });
 
@@ -73,9 +73,7 @@ describe("VariableString", () => {
         );
       });
 
-      expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
-        "template string without id: query (idUndefined)"
-      );
+      expect(screen.getByRole("alert").textContent).toBe("query (idUndefined)");
     });
 
     test("shows an error when the variable has no pointer", async () => {
@@ -94,12 +92,12 @@ describe("VariableString", () => {
         );
       });
 
-      expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
-        "template string without id: query.id (pointerUndefined)"
+      expect(screen.getByRole("alert").textContent).toBe(
+        "query.id (pointerUndefined)"
       );
     });
 
-    test("shows an error when the variable points to an undefined value", async () => {
+    test("shows an error when the variable points to an undefined id", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -115,8 +113,41 @@ describe("VariableString", () => {
         );
       });
 
-      expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
-        "template string without id: query.id.nothing (NoStateForId)"
+      expect(screen.getByRole("alert").textContent).toBe(
+        "query.id.nothing (NoStateForId)"
+      );
+    });
+
+    test("shows an error when the variable points to an undefined value", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            page={createDirektivPage([
+              {
+                type: "query-provider",
+                queries: [
+                  {
+                    id: "company-list",
+                    endpoint: "/companies",
+                  },
+                ],
+                blocks: [
+                  {
+                    type: "headline",
+                    size: "h2",
+                    label:
+                      "{{query.company-list.this-does-not-exist}} companies",
+                  },
+                ],
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+
+      expect(screen.getByRole("alert").textContent).toBe(
+        "query.company-list.this-does-not-exist (invalidPath)"
       );
     });
   });
@@ -163,7 +194,7 @@ describe("VariableString", () => {
                             type: "headline",
                             size: "h3",
                             label:
-                              "Acces name from a deeper child: {{query.company-list.data.0.name}}, access another query: {{query.client.data.email}}",
+                              "Access name from a deeper child: {{query.company-list.data.0.name}}, access another query: {{query.client.data.email}}",
                           },
                         ],
                       },
@@ -186,7 +217,7 @@ describe("VariableString", () => {
       );
 
       expect(screen.getByRole("heading", { level: 3 }).textContent).toBe(
-        "Acces name from a deeper child: Wintheiser-Lebsack, access another query: marisol.reichert@example.com"
+        "Access name from a deeper child: Wintheiser-Lebsack, access another query: marisol.reichert@example.com"
       );
     });
 
