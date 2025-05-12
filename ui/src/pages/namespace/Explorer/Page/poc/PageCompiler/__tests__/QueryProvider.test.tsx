@@ -56,7 +56,7 @@ describe("QueryProvider", () => {
               blocks: [
                 {
                   type: "headline",
-                  size: "h1",
+                  level: "h1",
                   label:
                     "This comes from the query provider: {{query.json-response.data.message}}",
                 },
@@ -89,7 +89,7 @@ describe("QueryProvider", () => {
               blocks: [
                 {
                   type: "headline",
-                  size: "h1",
+                  level: "h1",
                   label: "This will not be rendered",
                 },
               ],
@@ -126,7 +126,7 @@ describe("QueryProvider", () => {
               blocks: [
                 {
                   type: "headline",
-                  size: "h1",
+                  level: "h1",
                   label: "This will not be rendered",
                 },
               ],

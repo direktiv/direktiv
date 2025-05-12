@@ -43,7 +43,7 @@ describe("VariableString", () => {
             page={createDirektivPage([
               {
                 type: "headline",
-                size: "h1",
+                level: "h1",
                 label: "template string without id: {{thisDoesNotExist}}",
               },
             ])}
@@ -64,7 +64,7 @@ describe("VariableString", () => {
             page={createDirektivPage([
               {
                 type: "headline",
-                size: "h1",
+                level: "h1",
                 label: "template string without id: {{query}}",
               },
             ])}
@@ -83,7 +83,7 @@ describe("VariableString", () => {
             page={createDirektivPage([
               {
                 type: "headline",
-                size: "h1",
+                level: "h1",
                 label: "template string without id: {{query.id}}",
               },
             ])}
@@ -104,7 +104,7 @@ describe("VariableString", () => {
             page={createDirektivPage([
               {
                 type: "headline",
-                size: "h1",
+                level: "h1",
                 label: "template string without id: {{query.id.nothing}}",
               },
             ])}
@@ -134,7 +134,7 @@ describe("VariableString", () => {
                 blocks: [
                   {
                     type: "headline",
-                    size: "h2",
+                    level: "h2",
                     label:
                       "{{query.company-list.this-does-not-exist}} companies",
                   },
@@ -160,7 +160,7 @@ describe("VariableString", () => {
             page={createDirektivPage([
               {
                 type: "headline",
-                size: "h1",
+                level: "h1",
                 label:
                   "Query cannot be reached from a parent: {{query.company-list.total}}",
               },
@@ -175,7 +175,7 @@ describe("VariableString", () => {
                 blocks: [
                   {
                     type: "headline",
-                    size: "h2",
+                    level: "h2",
                     label: "{{query.company-list.total}} companies",
                   },
                   {
@@ -192,7 +192,7 @@ describe("VariableString", () => {
                         blocks: [
                           {
                             type: "headline",
-                            size: "h3",
+                            level: "h3",
                             label:
                               "Access name from a deeper child: {{query.company-list.data.0.name}}, access another query: {{query.client.data.email}}",
                           },
@@ -237,12 +237,12 @@ describe("VariableString", () => {
                 blocks: [
                   {
                     type: "headline",
-                    size: "h1",
+                    level: "h1",
                     label: "Array does not work: {{query.company-list.data}}",
                   },
                   {
                     type: "headline",
-                    size: "h2",
+                    level: "h2",
                     label:
                       "Object does not work: {{query.company-list.data.0}}",
                   },
@@ -309,7 +309,7 @@ describe("VariableString", () => {
             page={createDirektivPage([
               {
                 type: "headline",
-                size: "h1",
+                level: "h1",
                 label:
                   "Loop cannot be reached from a parent: {{loop.company.name}}",
               },
@@ -332,7 +332,7 @@ describe("VariableString", () => {
                         blocks: [
                           {
                             type: "headline",
-                            size: "h2",
+                            level: "h2",
                             label: "Company name: {{loop.company.name}}",
                           },
                         ],
@@ -400,7 +400,7 @@ describe("VariableString", () => {
                             blocks: [
                               {
                                 type: "headline",
-                                size: "h2",
+                                level: "h2",
                                 label: "outer loop: {{loop.company.name}}",
                               },
                               {
@@ -410,7 +410,7 @@ describe("VariableString", () => {
                                 blocks: [
                                   {
                                     type: "headline",
-                                    size: "h2",
+                                    level: "h2",
                                     label:
                                       "-- inner loop: {{loop.company.id}} {{loop.clientAddress.city}}",
                                   },
@@ -490,7 +490,7 @@ describe("VariableString", () => {
                         blocks: [
                           {
                             type: "headline",
-                            size: "h1",
+                            level: "h1",
                             label: "This will not be rendered",
                           },
                         ],
@@ -544,7 +544,7 @@ describe("VariableString", () => {
                             blocks: [
                               {
                                 type: "headline",
-                                size: "h1",
+                                level: "h1",
                                 label: "This will not be rendered",
                               },
                             ],

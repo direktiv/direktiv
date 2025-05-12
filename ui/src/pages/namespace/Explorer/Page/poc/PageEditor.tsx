@@ -29,7 +29,7 @@ const examplePage = {
       blocks: [
         {
           type: "headline",
-          size: "h3",
+          level: "h3",
           label: "Found {{query.company-list.total}} companies",
         },
         {
