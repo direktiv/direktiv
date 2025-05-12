@@ -36,7 +36,7 @@ afterEach(() => {
 
 describe("VariableString", () => {
   describe("invalid placeholders", () => {
-    test("will show an error when the variable has an invalid namespace", async () => {
+    test("shows an error when the variable has an invalid namespace", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -57,7 +57,7 @@ describe("VariableString", () => {
       );
     });
 
-    test("will show an error when the variable has no id", async () => {
+    test("shows an error when the variable has no id", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -78,7 +78,7 @@ describe("VariableString", () => {
       );
     });
 
-    test("will show an error when the variable has no pointer", async () => {
+    test("shows an error when the variable has no pointer", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -99,7 +99,7 @@ describe("VariableString", () => {
       );
     });
 
-    test("will show an error when the variable will point to an undefined value", async () => {
+    test("shows an error when the variable points to an undefined value", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -122,7 +122,7 @@ describe("VariableString", () => {
   });
 
   describe("display data from a query provider", () => {
-    test("childs can access data from a query provider", async () => {
+    test("children can access data from a query provider", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -131,7 +131,7 @@ describe("VariableString", () => {
                 type: "headline",
                 size: "h1",
                 label:
-                  "Query can not be reached from a parent: {{query.company-list.total}}",
+                  "Query cannot be reached from a parent: {{query.company-list.total}}",
               },
               {
                 type: "query-provider",
@@ -178,7 +178,7 @@ describe("VariableString", () => {
       });
 
       expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
-        "Query can not be reached from a parent: query.company-list.total (NoStateForId)"
+        "Query cannot be reached from a parent: query.company-list.total (NoStateForId)"
       );
 
       expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(
@@ -190,7 +190,7 @@ describe("VariableString", () => {
       );
     });
 
-    test("only data that can be stringified is accessible from a query provider", async () => {
+    test("only serializable data is accessible from a query provider", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -232,7 +232,7 @@ describe("VariableString", () => {
       );
     });
 
-    test("can not reuse a query id in one tree branch", async () => {
+    test("reusing a query ID within the same branch is disallowed", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -281,7 +281,7 @@ describe("VariableString", () => {
                 type: "headline",
                 size: "h1",
                 label:
-                  "Loop can not be reached from a parent: {{loop.company.name}}",
+                  "Loop cannot be reached from a parent: {{loop.company.name}}",
               },
               {
                 type: "query-provider",
@@ -318,7 +318,7 @@ describe("VariableString", () => {
       });
 
       expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
-        "Loop can not be reached from a parent: loop.company.name (NoStateForId)"
+        "Loop cannot be reached from a parent: loop.company.name (NoStateForId)"
       );
 
       expect(
@@ -436,7 +436,7 @@ describe("VariableString", () => {
       ]);
     });
 
-    test("loop does not work with non array data", async () => {
+    test("shows an error when loop data is not an array", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -485,7 +485,7 @@ describe("VariableString", () => {
       ).toBeNull();
     });
 
-    test("can not reuse a loop id in one tree branch", async () => {
+    test("reusing a loop ID within the same branch is disallowed", async () => {
       await act(async () => {
         render(
           <PageCompiler
