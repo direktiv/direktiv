@@ -41,12 +41,6 @@ const examplePage = {
               type: "card",
               blocks: [
                 {
-                  type: "loop",
-                  id: "company",
-                  data: "query.company-list.data",
-                  blocks: [],
-                },
-                {
                   type: "text",
                   content:
                     "Company {{loop.company.id}} of {{query.company-list.total}}: {{loop.company.name}}",
