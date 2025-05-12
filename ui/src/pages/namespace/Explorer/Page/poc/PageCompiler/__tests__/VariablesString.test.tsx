@@ -295,8 +295,9 @@ describe("VariableString", () => {
         );
       });
 
-      // TODO: make this better, and fix i18n
-      expect(screen.getByLabelText("parsing-error")).toBeDefined();
+      expect(
+        screen.getByLabelText("There was an unexpected error")
+      ).toBeDefined();
     });
   });
 
@@ -560,9 +561,8 @@ describe("VariableString", () => {
         );
       });
 
-      // TODO: make this better, and fix i18n
       expect(
-        screen.getAllByLabelText("parsing-error").length,
+        screen.getAllByLabelText("There was an unexpected error").length,
         "It renders the parsing error for every loop"
       ).toBe(10);
 

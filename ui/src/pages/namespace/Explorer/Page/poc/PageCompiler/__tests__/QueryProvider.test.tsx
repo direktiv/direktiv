@@ -100,8 +100,9 @@ describe("QueryProvider", () => {
       );
     });
 
-    // TODO: make this better, and fix i18n
-    expect(screen.getByLabelText("parsing-error")).toBeDefined();
+    expect(
+      screen.getByLabelText("There was an unexpected error")
+    ).toBeDefined();
 
     expect(
       screen.queryByRole("heading", { level: 1 }),
@@ -136,8 +137,9 @@ describe("QueryProvider", () => {
       );
     });
 
-    // TODO: make this better, and fix i18n
-    expect(screen.getByLabelText("parsing-error")).toBeDefined();
+    expect(
+      screen.getByLabelText("There was an unexpected error")
+    ).toBeDefined();
 
     expect(
       screen.queryByRole("heading", { level: 1 }),
