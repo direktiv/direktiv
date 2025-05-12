@@ -1643,10 +1643,10 @@
       "invalidSchema": "The page can not be rendered because it has an invalid configuration",
       "blockNotImplemented": "The block type \"{{type}}\" is not implemented yet",
       "genericError": "There was an unexpected error",
+      "dublicateId": "Error in block with id {{id}}: The id is already used in by one of the parent blocks",
       "queryProvider": {
         "queryFailed": "Error in query with id {{id}}: {{endpoint}} responded with {{status}}",
-        "invalidJson": "Error in query with id {{id}}: {{endpoint}} returned an invalid JSON",
-        "dublicateId": "Error in query with id {{id}}: The id is already used in by one of the parent blocks"
+        "invalidJson": "Error in query with id {{id}}: {{endpoint}} returned an invalid JSON"
       },
       "templateString": {
         "namespaceInvalid": "The template string does not have a valid namespace.",

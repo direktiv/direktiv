@@ -59,7 +59,7 @@ export const QueryProvider = ({
 
   if (queryWithDublicateId) {
     throw new Error(
-      t("direktivPage.error.queryProvider.dublicateId", {
+      t("direktivPage.error.dublicateId", {
         id: queryWithDublicateId.id,
       })
     );

@@ -24,7 +24,7 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   const parentVariables = useVariables();
 
   if (parentVariables.loop[id]) {
-    throw new Error(t("direktivPage.error.queryProvider.dublicateId", { id }));
+    throw new Error(t("direktivPage.error.dublicateId", { id }));
   }
 
   if (!arrayVariable.success) {
