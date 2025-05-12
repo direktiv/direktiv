@@ -12,7 +12,7 @@ import {
 import {
   getClientDetailsResponse,
   getCompanyListResponse,
-} from "./api/samples";
+} from "./utils/api/samples";
 
 import { PageCompiler } from "..";
 import { createDirektivPage } from "./utils";
