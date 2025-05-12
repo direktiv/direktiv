@@ -529,8 +529,6 @@ describe("VariableString", () => {
         );
       });
 
-      screen.debug();
-
       // TODO: make this better, and fix i18n
       expect(
         screen.getAllByLabelText("parsing-error").length,
