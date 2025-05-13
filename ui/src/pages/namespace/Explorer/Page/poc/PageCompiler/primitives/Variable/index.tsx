@@ -2,7 +2,7 @@ import { VariableError } from "./Error";
 import { VariableType } from "../../../schema/primitives/variable";
 import { twMergeClsx } from "~/util/helpers";
 import { useMode } from "../../context/pageCompilerContext";
-import { useResolveVariableJSX } from "./utils/useResolveVariableJSX";
+import { useResolveVariableString } from "./utils/useResolveVariableJSX";
 import { useTranslation } from "react-i18next";
 
 type VariableProps = {
@@ -12,7 +12,7 @@ type VariableProps = {
 export const Variable = ({ value }: VariableProps) => {
   const { t } = useTranslation();
   const mode = useMode();
-  const variableJSX = useResolveVariableJSX(value);
+  const variableJSX = useResolveVariableString(value);
 
   if (!variableJSX.success) {
     return (

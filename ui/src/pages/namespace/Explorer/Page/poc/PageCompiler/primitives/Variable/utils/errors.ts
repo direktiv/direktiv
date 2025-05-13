@@ -9,7 +9,7 @@ type VariableError = "NoStateForId";
 
 type ArrayError = "notAnArray";
 
-type JSXError = "couldNotStringify";
+type StringifyError = "couldNotStringify";
 
 export type ResolveVariableError =
   | ValidateVariableError
@@ -18,4 +18,4 @@ export type ResolveVariableError =
 
 export type ResolveVariableArrayError = ResolveVariableError | ArrayError;
 
-export type ResolveVariableJSXError = ResolveVariableError | JSXError;
+export type ResolveVariableStringError = ResolveVariableError | StringifyError;

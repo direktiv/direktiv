@@ -1,32 +1,31 @@
-import { ResolveVariableJSXError } from "./errors";
+import { ResolveVariableStringError } from "./errors";
 import { Result } from "./types";
 import { VariableType } from "../../../../schema/primitives/variable";
 import { useResolveVariable } from "./useResolveVariable";
 import { z } from "zod";
 
-export const JSXValueSchema = z.union([
+export const StringCompatible = z.union([
   z.string(),
   z.number(),
   z.boolean(),
   z.null(),
-  z.undefined(),
 ]);
 
-export type JSXValueType = z.infer<typeof JSXValueSchema>;
+export type StringCompatibleType = z.infer<typeof StringCompatible>;
 
-export const useResolveVariableJSX = (
+export const useResolveVariableString = (
   value: VariableType
-): Result<JSXValueType, ResolveVariableJSXError> => {
+): Result<StringCompatibleType, ResolveVariableStringError> => {
   const variableResult = useResolveVariable(value);
 
   if (!variableResult.success) {
     return { success: false, error: variableResult.error };
   }
 
-  const dataParsed = JSXValueSchema.safeParse(variableResult.data);
+  const dataParsed = StringCompatible.safeParse(variableResult.data);
   if (!dataParsed.success) {
     return { success: false, error: "couldNotStringify" };
   }
 
-  return { success: true, data: dataParsed.data };
+  return { success: true, data: `${dataParsed.data}` };
 };
