@@ -635,3 +635,13 @@ export const getClientDetailsResponse = {
     ],
   },
 };
+
+export const dataTypesResponse = {
+  array: ["hello", "world"],
+  boolean: true,
+  null: null,
+  number: 123,
+  object: { hello: "world" },
+  string: "hello world",
+  undefined,
+};

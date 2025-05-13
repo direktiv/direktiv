@@ -10,6 +10,7 @@ import {
   vi,
 } from "vitest";
 import {
+  dataTypesResponse,
   getClientDetailsResponse,
   getCompanyListResponse,
 } from "./utils/api/samples";
@@ -20,7 +21,8 @@ import { setupServer } from "msw/node";
 
 const apiServer = setupServer(
   http.get("/companies", () => HttpResponse.json(getCompanyListResponse)),
-  http.get("/client/101", () => HttpResponse.json(getClientDetailsResponse))
+  http.get("/client/101", () => HttpResponse.json(getClientDetailsResponse)),
+  http.get("/data-types", () => HttpResponse.json(dataTypesResponse))
 );
 
 beforeAll(() => {
@@ -230,21 +232,46 @@ describe("VariableString", () => {
                 type: "query-provider",
                 queries: [
                   {
-                    id: "company-list",
-                    endpoint: "/companies",
+                    id: "data-types",
+                    endpoint: "/data-types",
                   },
                 ],
                 blocks: [
                   {
                     type: "headline",
                     level: "h1",
-                    label: "Array does not work: {{query.company-list.data}}",
+                    label: "Array does not work: {{query.data-types.array}}",
+                  },
+                  {
+                    type: "headline",
+                    level: "h1",
+                    label: "Object does not work: {{query.data-types.object}}",
+                  },
+                  {
+                    type: "headline",
+                    level: "h1",
+                    label:
+                      "undefiend does not work: {{query.data-types.object}}",
                   },
                   {
                     type: "headline",
                     level: "h2",
-                    label:
-                      "Object does not work: {{query.company-list.data.0}}",
+                    label: "string does work: {{query.data-types.string}}",
+                  },
+                  {
+                    type: "headline",
+                    level: "h2",
+                    label: "boolean does work: {{query.data-types.boolean}}",
+                  },
+                  {
+                    type: "headline",
+                    level: "h2",
+                    label: "null does work: {{query.data-types.null}}",
+                  },
+                  {
+                    type: "headline",
+                    level: "h2",
+                    label: "number does work: {{query.data-types.number}}",
                   },
                 ],
               },
@@ -254,13 +281,22 @@ describe("VariableString", () => {
         );
       });
 
-      expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
-        "Array does not work: query.company-list.data (couldNotStringify)"
-      );
+      expect(
+        screen.getAllByRole("heading", { level: 1 }).map((el) => el.textContent)
+      ).toEqual([
+        "Array does not work: query.data-types.array (couldNotStringify)",
+        "Object does not work: query.data-types.object (couldNotStringify)",
+        "undefiend does not work: query.data-types.object (couldNotStringify)",
+      ]);
 
-      expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(
-        "Object does not work: query.company-list.data.0 (couldNotStringify)"
-      );
+      expect(
+        screen.getAllByRole("heading", { level: 2 }).map((el) => el.textContent)
+      ).toEqual([
+        "string does work: hello world",
+        "boolean does work: true",
+        "null does work: null",
+        "number does work: 123",
+      ]);
     });
 
     test("reusing a query ID within the same branch is disallowed", async () => {
