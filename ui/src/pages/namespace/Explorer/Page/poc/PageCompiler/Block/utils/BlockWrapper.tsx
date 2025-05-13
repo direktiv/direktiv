@@ -1,3 +1,4 @@
+import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
   PropsWithChildren,
   Suspense,
@@ -5,20 +6,52 @@ import {
   useRef,
   useState,
 } from "react";
+import { useMode, usePage } from "../../context/pageCompilerContext";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockPath } from "./blockPath";
+import Button from "~/design/Button";
+import { DirektivPagesType } from "../../../schema";
+import { Edit } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { twMergeClsx } from "~/util/helpers";
-import { useMode } from "../../context/pageCompilerContext";
+
+const cloneBlocks = (blocks: AllBlocksType[]): AllBlocksType[] =>
+  structuredClone(blocks);
 
 type BlockWrapperProps = PropsWithChildren<{
   blockPath: BlockPath;
   block: AllBlocksType;
 }>;
+
+const getBlock = (
+  page: DirektivPagesType,
+  path: string
+): DirektivPagesType | AllBlocksType => {
+  const pathArray = path.split(".");
+
+  return pathArray.reduce((acc, id) => {
+    const next = acc[id];
+
+    if (!next) {
+      throw new Error(`Item with id "${id}" not found in "${acc}"`);
+    }
+    return next;
+  }, page);
+};
+
+const BlockForm = ({ path }: { path: string }) => {
+  const page = usePage();
+  const block = getBlock(page, path);
+  return (
+    <div>
+      Block form for {path} from {JSON.stringify(block)}
+    </div>
+  );
+};
 
 export const BlockWrapper = ({
   children,
@@ -50,39 +83,59 @@ export const BlockWrapper = ({
   }, [mode]);
 
   return (
-    <div
-      ref={containerRef}
-      className={twMergeClsx(
-        mode === "inspect" &&
-          "rounded-md relative p-3 border-2 border-gray-4 border-dashed dark:border-gray-dark-4 bg-white dark:bg-black",
-        isHovered &&
+    <>
+      <div
+        ref={containerRef}
+        className={twMergeClsx(
           mode === "inspect" &&
-          "border-solid bg-gray-2 dark:bg-gray-dark-2"
-      )}
-      data-block-wrapper
-    >
+            "rounded-md relative p-3 border-2 border-gray-4 border-dashed dark:border-gray-dark-4 bg-white dark:bg-black",
+          isHovered &&
+            mode === "inspect" &&
+            "border-solid bg-gray-2 dark:bg-gray-dark-2"
+        )}
+        data-block-wrapper
+      >
+        {mode === "inspect" && (
+          <Dialog>
+            <Badge
+              className="-m-6 absolute z-50"
+              variant="secondary"
+              style={{
+                display: isHovered ? "block" : "none",
+              }}
+            >
+              <b>{block.type}</b> {blockPath}
+            </Badge>
+            <DialogTrigger className="float-right">
+              <Button
+                variant="ghost"
+                style={{ display: isHovered ? "block" : "none" }}
+              >
+                <Edit />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <BlockForm path={blockPath}></BlockForm>
+            </DialogContent>
+          </Dialog>
+        )}
+        <Suspense fallback={<Loading />}>
+          <ErrorBoundary
+            fallbackRender={({ error }) => (
+              <ParsingError title="There was an error fetching data from the API">
+                {error.message}
+              </ParsingError>
+            )}
+          >
+            {children}
+          </ErrorBoundary>
+        </Suspense>
+      </div>
       {mode === "inspect" && (
-        <Badge
-          className="-m-6 absolute z-50"
-          variant="secondary"
-          style={{
-            display: isHovered ? "block" : "none",
-          }}
-        >
-          <b>{block.type}</b> {blockPath}
-        </Badge>
+        <div className="rounded-md border border-gray-7 bg-gray-3 p-1 text-xs text-gray-8">
+          Drop Area
+        </div>
       )}
-      <Suspense fallback={<Loading />}>
-        <ErrorBoundary
-          fallbackRender={({ error }) => (
-            <ParsingError title="There was an error fetching data from the API">
-              {error.message}
-            </ParsingError>
-          )}
-        >
-          {children}
-        </ErrorBoundary>
-      </Suspense>
-    </div>
+    </>
   );
 };

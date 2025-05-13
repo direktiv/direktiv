@@ -43,7 +43,7 @@ export const QueryProvider = ({
         <Block
           key={index}
           block={block}
-          blockPath={addSegmentsToPath(blockPath, index)}
+          blockPath={addSegmentsToPath(blockPath, ["blocks", index])}
         />
       ))}
     </>

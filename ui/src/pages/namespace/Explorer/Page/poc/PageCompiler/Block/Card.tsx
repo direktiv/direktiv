@@ -17,7 +17,7 @@ export const Card = ({ blockProps, blockPath }: CardProps) => (
         <Block
           key={index}
           block={block}
-          blockPath={addSegmentsToPath(blockPath, index)}
+          blockPath={addSegmentsToPath(blockPath, ["blocks", index])}
         />
       ))}
     </BlockList>
