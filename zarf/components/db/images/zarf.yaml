@@ -1,0 +1,20 @@
+kind: ZarfPackageConfig 
+metadata:
+  name: percona
+  version: v2.6.0
+  description: "percona operator and database install without images"
+
+components:
+- name: postgres
+  required: true
+  import:
+    path: ../
+  images:
+  - percona/percona-postgresql-operator:2.6.0
+  - percona/pmm-client:2.41.0
+  - perconalab/percona-postgresql-operator:main-ppg16-pgbackrest
+  - perconalab/percona-postgresql-operator:main-ppg16-pgbouncer
+  - perconalab/percona-postgresql-operator:main-ppg16-postgres
+  - percona/percona-postgresql-operator:2.6.0-ppg16.8-postgres
+  - percona/percona-postgresql-operator:2.6.0-ppg16.8-pgbouncer1.24.0
+  - percona/percona-postgresql-operator:2.6.0-ppg16.8-pgbackrest2.54.2
