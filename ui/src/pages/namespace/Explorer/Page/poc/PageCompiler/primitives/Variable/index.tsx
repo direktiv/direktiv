@@ -2,7 +2,7 @@ import { VariableError } from "./Error";
 import { VariableType } from "../../../schema/primitives/variable";
 import { twMergeClsx } from "~/util/helpers";
 import { useMode } from "../../context/pageCompilerContext";
-import { useResolveVariableString } from "./utils/useResolveVariableJSX";
+import { useResolveVariableString } from "./utils/useResolveVariableString";
 import { useTranslation } from "react-i18next";
 
 type VariableProps = {
