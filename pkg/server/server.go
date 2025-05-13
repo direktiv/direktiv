@@ -73,6 +73,7 @@ func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *file
 	return list, nil
 }
 
+//nolint:gocognit
 func Run(circuit *core.Circuit) error {
 	var err error
 	config := &core.Config{}

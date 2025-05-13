@@ -54,6 +54,7 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 	}
 
 	int32Ptr := func(i int) *int32 {
+		//nolint:gosec
 		i32 := int32(i)
 		return &i32
 	}
