@@ -73,7 +73,7 @@ Blocks are the main elements that the user can use to compose a Direktiv page.
 
 ### QueryProvider `Block`
 
-A QueryProvider is a block that is responsible for fetching data from one or multiple APIs and providing the result to its child blocks. It will display a loading indicator until all data is fetched successfully. Every child block can access the data in fields of type `TemplateString` by using the `id` of the corensponding `Query` inside the `QueryProvider` as a reference.
+A QueryProvider is a block that is responsible for fetching data from one or multiple APIs and providing the result to its child blocks. It will display a loading indicator until all data is fetched successfully. Every child block can access the data in fields of type `TemplateString` by using the `id` of the corresponding `Query` inside the `QueryProvider` as a reference.
 
 | Attribute | Type               | Description                      |
 | --------- | ------------------ | -------------------------------- |
@@ -102,7 +102,7 @@ Procedures are types that can be used in various blocks that will handle API req
 
 ### `Mutation`
 
-A mutation is a API request that modifies data on the server
+A mutation is an API request that modifies data on the server
 
 | Attribute         | Type             | Description               |
 | ----------------- | ---------------- | ------------------------- |
@@ -115,7 +115,7 @@ A mutation is a API request that modifies data on the server
 
 ### `MutationMethod`
 
-`"POST"`, `"PUT"`, `"PATCH",` `"DELETE"`
+`"POST"`, `"PUT"`, `"PATCH"`, `"DELETE"`
 
 ## `Query`
 
@@ -136,7 +136,7 @@ A Variable can be sourced from special parent blocks like e.g. a `form` or a `qu
 **Examples**
 
 - `query.pokemon.data.name`
-  This looks for a parent `query` block, with the name `pokemon` and points to the `data.name` attribute of the JSON response of that request)
+  This looks for a parent `query` block, with the name `pokemon` and points to the `data.name` attribute of the JSON response of that request
 
 _\*the exact syntax is still TBD_
 
