@@ -54,6 +54,23 @@ Blocks are the main elements that the user can use to compose a Direktiv page.
 | `trigger` | `Block<trigger>` | Opens the dialog when clicked   |
 | `blocks`  | `Block[]`        | Content shown inside the dialog |
 
+### Table `Block`
+
+| Attribute | Type                   | Description                                               |
+| --------- | ---------------------- | --------------------------------------------------------- |
+| `type`    | `"table"`              |                                                           |
+| `data`    | `Block<Loop>`          | the loop block to interate on                             |
+| `actions` | `Block<Button>[]`      | List of actions that will be available in the last column |
+| `columns` | `Block<TableColumn>[]` | List of table columns                                     |
+
+### TableColumn `Block`
+
+| Attribute | Type             | Description            |
+| --------- | ---------------- | ---------------------- |
+| `type`    | `"table-column"` |                        |
+| `label`   | `TemplateString` | Headline of the column |
+| `content` | `TemplateString` | Cell content           |
+
 ### Button `Block<trigger>`
 
 | Attribute | Type       | Description                                                                                                        |
