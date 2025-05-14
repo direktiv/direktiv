@@ -1,3 +1,4 @@
+import { AllBlocksType, ParentBlockUnion } from "../../../schema/blocks";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
   PropsWithChildren,
@@ -8,7 +9,6 @@ import {
 } from "react";
 import { useMode, usePage } from "../../context/pageCompilerContext";
 
-import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockPath } from "./blockPath";
 import Button from "~/design/Button";
@@ -17,6 +17,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { twMergeClsx } from "~/util/helpers";
+import { z } from "zod";
 
 // const cloneBlocks = (blocks: AllBlocksType[]): AllBlocksType[] =>
 //   structuredClone(blocks);
@@ -30,18 +31,18 @@ type Block = AllBlocksType;
 type List = AllBlocksType[];
 type BlockOrList = Block | List;
 
+const isParentBlock = (
+  block: AllBlocksType
+): block is z.infer<typeof ParentBlockUnion> =>
+  ParentBlockUnion.safeParse(block).success;
+
 const getBlock = (list: BlockOrList, path: BlockPath): BlockOrList => {
   const result = path.reduce<BlockOrList>((acc, index) => {
     let next;
 
     if (Array.isArray(acc)) {
       next = acc[index];
-    } else if (
-      acc.type === "card" ||
-      acc.type === "columns" ||
-      acc.type === "query-provider" ||
-      acc.type === "loop"
-    ) {
+    } else if (isParentBlock(acc)) {
       next = acc.blocks[index];
     }
 
@@ -49,7 +50,7 @@ const getBlock = (list: BlockOrList, path: BlockPath): BlockOrList => {
       return next;
     }
 
-    throw Error(`Index ${index} not found in ${acc}`);
+    throw Error(`index ${index} not found in ${JSON.stringify(acc)}`);
   }, list);
   return result;
 };
