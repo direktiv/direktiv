@@ -1,3 +1,4 @@
+import { MoreVertical, PackageOpen } from "lucide-react";
 import {
   NoResult,
   TableBody,
@@ -12,8 +13,8 @@ import {
   useVariables,
 } from "../../primitives/Variable/VariableContext";
 
+import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import { PackageOpen } from "lucide-react";
 import { TableCell } from "./TableCell";
 import { TableType } from "../../../schema/blocks/table";
 import { VariableError } from "../../primitives/Variable/Error";
@@ -85,6 +86,13 @@ export const Table = ({ blockProps }: TableProps) => {
                 {columns.map((column, columnIndex) => (
                   <TableCell key={columnIndex} blockProps={column} />
                 ))}
+                {hasActionsColumn && (
+                  <TableHeaderCell>
+                    <Button variant="ghost" size="sm" icon>
+                      <MoreVertical />
+                    </Button>
+                  </TableHeaderCell>
+                )}
               </TableRow>
             </VariableContextProvider>
           ))}
