@@ -585,6 +585,8 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// one minute wait max
 
 	//nolint:intrange
+
+	serviceIgnited := false
 	for i := 0; i < 300; i++ { // 5 minutes max retry
 		telemetry.LogInstance(ctx, telemetry.LogLevelInfo,
 			fmt.Sprintf("attempting service request %d, %s", i, addr))
@@ -608,15 +610,13 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 				telemetry.LogInstanceError(ctx, "service is scaled to zero", err)
 			}
 
-			// Try to ignite the service if it was down (only once, hence i==0).
-			if i == 0 {
-				if isServiceDown {
-					igErr := engine.ServiceManager.IgniteService(ar.Container.Service)
-					if igErr != nil {
-						engine.reportError(ctx, &arReq.ActionContext, igErr)
-
-						return
-					}
+			// Try to ignite the service if it was down.
+			if isServiceDown && !serviceIgnited {
+				igErr := engine.ServiceManager.IgniteService(ar.Container.Service)
+				if igErr != nil {
+					engine.reportError(ctx, &arReq.ActionContext, igErr)
+				} else {
+					serviceIgnited = true
 					telemetry.LogInstance(ctx, telemetry.LogLevelInfo, "service ignition triggered")
 				}
 			}
