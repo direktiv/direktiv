@@ -1,6 +1,6 @@
-import { BlocklessLoop, BlocklessLoopType } from "./loop";
+import { BlocklessLoop, BlocklessLoopType } from "../loop";
 import { TableColumn, TableColumnType } from "./tableColumn";
-import { TriggerBlocks, TriggerBlocksType } from ".";
+import { TriggerBlocks, TriggerBlocksType } from "..";
 
 import { z } from "zod";
 

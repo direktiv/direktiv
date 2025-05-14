@@ -1,4 +1,4 @@
-import { TemplateString } from "../primitives/templateString";
+import { TemplateString } from "../../primitives/templateString";
 import { z } from "zod";
 
 export const TableColumn = z.object({
