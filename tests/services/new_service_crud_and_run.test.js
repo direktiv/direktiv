@@ -76,8 +76,7 @@ scale: 2
 		expect(res.body).toMatchObject({
 			data: [
 				{ id: expect.stringMatching(`^${ sID }(_|-)`) },
-				//xKnative, the scale is currently always 1
-				// { id: expect.stringMatching(`^${ sID }(_|-)`) },
+				{ id: expect.stringMatching(`^${ sID }(_|-)`) },
 			],
 		})
 	})
