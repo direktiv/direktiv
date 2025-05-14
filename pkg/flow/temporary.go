@@ -587,7 +587,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	//nolint:intrange
 
 	serviceIgnited := false
-	for i := 0; i < 300; i++ { // 5 minutes max retry
+	for i := range 300 { // 5 minutes max retry
 		telemetry.LogInstance(ctx, telemetry.LogLevelInfo,
 			fmt.Sprintf("attempting service request %d, %s", i, addr))
 
