@@ -1,16 +1,23 @@
 import {
   NoResult,
   TableBody,
-  TableCell,
+  TableCell as TableCellDesignComopnent,
   Table as TableDesignComponent,
   TableHead,
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
+import {
+  VariableContextProvider,
+  useVariables,
+} from "../../primitives/Variable/VariableContext";
 
 import { Card } from "~/design/Card";
 import { PackageOpen } from "lucide-react";
+import { TableCell } from "./TableCell";
 import { TableType } from "../../../schema/blocks/table";
+import { VariableError } from "../../primitives/Variable/Error";
+import { useResolveVariableArray } from "../../primitives/Variable/utils/useResolveVariableArray";
 import { useTranslation } from "react-i18next";
 
 type TableProps = {
@@ -18,11 +25,28 @@ type TableProps = {
 };
 
 export const Table = ({ blockProps }: TableProps) => {
+  const { columns, actions, data: loop } = blockProps;
   const { t } = useTranslation();
-  const { columns, actions } = blockProps;
+  const arrayVariable = useResolveVariableArray(loop.data);
+
+  const parentVariables = useVariables();
+
+  if (parentVariables.loop[loop.id]) {
+    throw new Error(t("direktivPage.error.dublicateId", { id: loop.id }));
+  }
+
+  if (!arrayVariable.success) {
+    return (
+      <VariableError value={loop.data} errorCode={arrayVariable.error}>
+        {t(`direktivPage.error.templateString.${arrayVariable.error}`)} (
+        {arrayVariable.error})
+      </VariableError>
+    );
+  }
 
   const hasActionsColumn = actions.length > 0;
   const numberOfColumns = columns.length + (hasActionsColumn ? 1 : 0);
+  const noResult = arrayVariable.data.length === 0;
 
   return (
     <Card>
@@ -36,11 +60,34 @@ export const Table = ({ blockProps }: TableProps) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          <TableCell colSpan={numberOfColumns}>
-            <NoResult icon={PackageOpen}>
-              {t("direktivPage.error.blocks.table.noResult")}
-            </NoResult>
-          </TableCell>
+          {noResult && (
+            <TableRow>
+              <TableCellDesignComopnent colSpan={numberOfColumns}>
+                <NoResult icon={PackageOpen}>
+                  {arrayVariable.success && arrayVariable.data.length}
+                  {t("direktivPage.error.blocks.table.noResult")}
+                </NoResult>
+              </TableCellDesignComopnent>
+            </TableRow>
+          )}
+          {arrayVariable.data.map((item, index) => (
+            <VariableContextProvider
+              key={index}
+              value={{
+                ...parentVariables,
+                loop: {
+                  ...parentVariables.loop,
+                  [loop.id]: item,
+                },
+              }}
+            >
+              <TableRow key={index}>
+                {columns.map((column, columnIndex) => (
+                  <TableCell key={columnIndex} blockProps={column} />
+                ))}
+              </TableRow>
+            </VariableContextProvider>
+          ))}
         </TableBody>
       </TableDesignComponent>
     </Card>
