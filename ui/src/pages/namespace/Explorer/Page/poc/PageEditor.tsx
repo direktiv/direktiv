@@ -33,36 +33,28 @@ const examplePage = {
           label: "Found {{query.company-list.total}} companies",
         },
         {
-          type: "loop",
-          id: "company",
-          data: "query.company-list.data",
-          blocks: [
+          type: "table",
+          data: {
+            type: "loop",
+            data: "query.company-list.data",
+            id: "company",
+          },
+          actions: [
             {
-              type: "card",
-              blocks: [
-                {
-                  type: "text",
-                  content:
-                    "Company {{loop.company.id}} of {{query.company-list.total}}: {{loop.company.name}}",
-                },
-                {
-                  type: "dialog",
-                  trigger: {
-                    type: "button",
-                    label: "show address",
-                  },
-                  blocks: [
-                    {
-                      type: "text",
-                      content: "{{loop.company.addresses.0.street}}",
-                    },
-                    {
-                      type: "text",
-                      content: "{{loop.company.addresses.0.city}}",
-                    },
-                  ],
-                },
-              ],
+              type: "button",
+              label: "Edit",
+            },
+          ],
+          columns: [
+            {
+              type: "table-column",
+              label: "#",
+              content: "{{loop.company.id}} of {{query.company-list.total}}",
+            },
+            {
+              type: "table-column",
+              label: "Company Name",
+              content: "{{loop.company.name}}",
             },
           ],
         },
