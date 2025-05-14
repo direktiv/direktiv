@@ -27,8 +27,8 @@ export default {
             type: "query-provider",
             queries: [
               {
-                id: "fetching-resources",
-                endpoint: "/api/get/resources",
+                id: "company-list",
+                endpoint: "/api/get/companies",
                 queryParams: [
                   {
                     key: "query",
@@ -38,6 +38,37 @@ export default {
               },
             ],
             blocks: [
+              {
+                type: "table",
+                data: {
+                  type: "loop",
+                  id: "company",
+                  data: "query.company-list.data",
+                  blocks: [],
+                },
+                actions: [
+                  {
+                    type: "button",
+                    label: "delete",
+                  },
+                  {
+                    type: "button",
+                    label: "edit",
+                  },
+                ],
+                columns: [
+                  {
+                    type: "table-column",
+                    label: "name",
+                    content: "{{loop.company.name}}",
+                  },
+                  {
+                    type: "table-column",
+                    label: "email",
+                    content: "{{loop.company.email}}",
+                  },
+                ],
+              },
               {
                 type: "dialog",
                 trigger: {
