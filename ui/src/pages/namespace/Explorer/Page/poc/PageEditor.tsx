@@ -55,7 +55,7 @@ const examplePage = {
           blocks: [
             {
               type: "columns",
-              columns: [
+              blocks: [
                 [
                   {
                     type: "text",

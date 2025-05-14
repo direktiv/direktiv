@@ -1,7 +1,7 @@
-import { BlockPath, addSegmentsToPath } from "./utils/blockPath";
 import { queryOptions, useSuspenseQueries } from "@tanstack/react-query";
 
 import { Block } from ".";
+import { BlockPath } from "./utils/blockPath";
 import { QueryProviderType } from "../../schema/blocks/queryProvider";
 
 type QueryProviderProps = {
@@ -40,11 +40,7 @@ export const QueryProvider = ({
   return (
     <>
       {blocks.map((block, index) => (
-        <Block
-          key={index}
-          block={block}
-          blockPath={addSegmentsToPath(blockPath, ["blocks", index])}
-        />
+        <Block key={index} block={block} blockPath={[...blockPath, index]} />
       ))}
     </>
   );

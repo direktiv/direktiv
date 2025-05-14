@@ -1,7 +1,6 @@
-import { BlockPath, addSegmentsToPath } from "./utils/blockPath";
-
 import { Block } from ".";
 import { BlockList } from "./utils/BlockList";
+import { BlockPath } from "./utils/blockPath";
 import { Card as CardDesignComponent } from "~/design/Card";
 import { CardType } from "../../schema/blocks/card";
 
@@ -14,11 +13,7 @@ export const Card = ({ blockProps, blockPath }: CardProps) => (
   <CardDesignComponent className="p-5">
     <BlockList>
       {blockProps.blocks.map((block, index) => (
-        <Block
-          key={index}
-          block={block}
-          blockPath={addSegmentsToPath(blockPath, ["blocks", index])}
-        />
+        <Block key={index} block={block} blockPath={[...blockPath, index]} />
       ))}
     </BlockList>
   </CardDesignComponent>

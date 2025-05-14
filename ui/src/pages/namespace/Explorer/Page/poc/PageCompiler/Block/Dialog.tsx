@@ -1,4 +1,3 @@
-import { BlockPath, addSegmentsToPath } from "./utils/blockPath";
 import {
   DialogClose,
   DialogContent,
@@ -9,6 +8,7 @@ import {
 
 import { Block } from ".";
 import { BlockList } from "./utils/BlockList";
+import { BlockPath } from "./utils/blockPath";
 import { Button } from "./Button";
 import ButtonDesignComponent from "~/design/Button";
 import { DialogType } from "../../schema/blocks/dialog";
@@ -30,7 +30,7 @@ export const Dialog = ({ blockProps, blockPath }: DialogProps) => {
             <Block
               key={index}
               block={block}
-              blockPath={addSegmentsToPath(blockPath, index)}
+              blockPath={[...blockPath, index]}
             />
           ))}
         </BlockList>

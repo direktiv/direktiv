@@ -12,40 +12,51 @@ import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockPath } from "./blockPath";
 import Button from "~/design/Button";
-import { DirektivPagesType } from "../../../schema";
 import { Edit } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { twMergeClsx } from "~/util/helpers";
 
-const cloneBlocks = (blocks: AllBlocksType[]): AllBlocksType[] =>
-  structuredClone(blocks);
+// const cloneBlocks = (blocks: AllBlocksType[]): AllBlocksType[] =>
+//   structuredClone(blocks);
 
 type BlockWrapperProps = PropsWithChildren<{
   blockPath: BlockPath;
   block: AllBlocksType;
 }>;
 
-const getBlock = (
-  page: DirektivPagesType,
-  path: string
-): DirektivPagesType | AllBlocksType => {
-  const pathArray = path.split(".");
+type Block = AllBlocksType;
+type List = AllBlocksType[];
+type BlockOrList = Block | List;
 
-  return pathArray.reduce((acc, id) => {
-    const next = acc[id];
+const getBlock = (list: BlockOrList, path: BlockPath): BlockOrList => {
+  const result = path.reduce<BlockOrList>((acc, index) => {
+    let next;
 
-    if (!next) {
-      throw new Error(`Item with id "${id}" not found in "${acc}"`);
+    if (Array.isArray(acc)) {
+      next = acc[index];
+    } else if (
+      acc.type === "card" ||
+      acc.type === "columns" ||
+      acc.type === "query-provider" ||
+      acc.type === "loop"
+    ) {
+      next = acc.blocks[index];
     }
-    return next;
-  }, page);
+
+    if (next) {
+      return next;
+    }
+
+    throw Error(`Index ${index} not found in ${acc}`);
+  }, list);
+  return result;
 };
 
-const BlockForm = ({ path }: { path: string }) => {
+const BlockForm = ({ path }: { path: BlockPath }) => {
   const page = usePage();
-  const block = getBlock(page, path);
+  const block = getBlock(page.blocks, path);
   return (
     <div>
       Block form for {path} from {JSON.stringify(block)}

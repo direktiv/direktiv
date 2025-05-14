@@ -8,7 +8,6 @@ import { Block } from "./Block";
 import { BlockList } from "./Block/utils/BlockList";
 import { DirektivPagesSchema } from "../schema";
 import { ParsingError } from "./Block/utils/ParsingError";
-import { addSegmentsToPath } from "./Block/utils/blockPath";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,11 +38,7 @@ export const PageCompiler = ({ page, mode }: PageCompilerProps) => {
       <QueryClientProvider client={queryClient}>
         <BlockList>
           {page.blocks.map((block, index) => (
-            <Block
-              key={index}
-              block={block}
-              blockPath={addSegmentsToPath("blocks", index)}
-            />
+            <Block key={index} block={block} blockPath={[index]} />
           ))}
         </BlockList>
       </QueryClientProvider>

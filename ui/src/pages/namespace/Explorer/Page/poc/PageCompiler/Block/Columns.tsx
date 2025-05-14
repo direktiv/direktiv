@@ -1,7 +1,6 @@
-import { BlockPath, addSegmentsToPath } from "./utils/blockPath";
-
 import { Block } from ".";
 import { BlockList } from "./utils/BlockList";
+import { BlockPath } from "./utils/blockPath";
 import { ColumnsType } from "../../schema/blocks/columns";
 
 type ColumnsProps = {
@@ -11,17 +10,13 @@ type ColumnsProps = {
 
 export const Columns = ({ blockProps, blockPath }: ColumnsProps) => (
   <BlockList horizontal>
-    {blockProps.columns.map((column, columnIndex) => (
+    {blockProps.blocks.map((column, columnIndex) => (
       <BlockList key={columnIndex}>
         {column.map((block, blockIndex) => (
           <Block
             key={blockIndex}
             block={block}
-            blockPath={addSegmentsToPath(blockPath, [
-              "columns",
-              columnIndex,
-              blockIndex,
-            ])}
+            blockPath={[...blockPath, columnIndex, blockIndex]}
           />
         ))}
       </BlockList>
