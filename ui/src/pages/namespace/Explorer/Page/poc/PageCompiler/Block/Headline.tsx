@@ -1,5 +1,5 @@
 import { HeadlineType } from "../../schema/blocks/headline";
-import { TemplateString } from "./utils/TemplateString";
+import { TemplateString } from "../primitives/TemplateString";
 import { twMergeClsx } from "~/util/helpers";
 
 type HeadlineProps = {
@@ -7,16 +7,19 @@ type HeadlineProps = {
 };
 
 export const Headline = ({ blockProps }: HeadlineProps) => {
-  const { label, size } = blockProps;
+  const { label, level } = blockProps;
+
+  const HeadlineTag = level;
+
   return (
-    <h1
+    <HeadlineTag
       className={twMergeClsx([
-        size === "h1" && "text-4xl",
-        size === "h2" && "text-3xl",
-        size === "h3" && "text-2xl",
+        level === "h1" && "text-4xl",
+        level === "h2" && "text-3xl",
+        level === "h3" && "text-2xl",
       ])}
     >
       <TemplateString value={label} />
-    </h1>
+    </HeadlineTag>
   );
 };

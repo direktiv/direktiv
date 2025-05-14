@@ -13,112 +13,55 @@ const examplePage = {
   direktiv_api: "pages/v1",
   blocks: [
     {
-      type: "headline",
-      label: "Welcome to Direktiv",
-      size: "h3",
-    },
-    {
-      type: "text",
-      content:
-        "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
-    },
-    {
-      type: "card",
-      blocks: [
+      type: "query-provider",
+      queries: [
         {
-          type: "query-provider",
-          queries: [
+          id: "company-list",
+          endpoint: "/ns/demo/companies",
+          queryParams: [
             {
-              id: "company-list",
-              endpoint: "/ns/demo/companies",
-              queryParams: [
-                {
-                  key: "query",
-                  value: "my-search-query",
-                },
-              ],
+              key: "query",
+              value: "my-search-query",
             },
           ],
+        },
+      ],
+      blocks: [
+        {
+          type: "headline",
+          level: "h3",
+          label: "Found {{query.company-list.total}} companies",
+        },
+        {
+          type: "loop",
+          id: "company",
+          data: "query.company-list.data",
           blocks: [
             {
-              type: "columns",
-              columns: [
-                [
-                  {
-                    type: "text",
-                    content:
-                      "I can access text from a query: {{query.company-list.data.0.addresses.0.streetName}}. I can also handle some edge cases like {{query.company-list.data.0.addresses}}, {{query.company-list.i.made.this.up}}, {{query.not-existing.i.made.this.up}} {{query.not-existing}}",
+              type: "card",
+              blocks: [
+                {
+                  type: "text",
+                  content:
+                    "Company {{loop.company.id}} of {{query.company-list.total}}: {{loop.company.name}}",
+                },
+                {
+                  type: "dialog",
+                  trigger: {
+                    type: "button",
+                    label: "show address",
                   },
-                  {
-                    type: "loop",
-                    id: "company",
-                    data: "query.company-list.data.name",
-                    blocks: [
-                      {
-                        type: "text",
-                        content: "I am a loop, but I don't work yet",
-                      },
-                    ],
-                  },
-                ],
-                [
-                  {
-                    type: "text",
-                    content: "I am the right column",
-                  },
-                  {
-                    type: "dialog",
-                    trigger: {
-                      type: "button",
-                      label: "open dialog",
+                  blocks: [
+                    {
+                      type: "text",
+                      content: "{{loop.company.addresses.0.street}}",
                     },
-                    blocks: [
-                      {
-                        type: "headline",
-                        label: "Hello",
-                        size: "h3",
-                      },
-                      {
-                        type: "text",
-                        content:
-                          "This modal will only fetch data when opened. Slow down your network to see a loading spinner (this query will fail intentionally)",
-                      },
-                      {
-                        type: "query-provider",
-                        queries: [
-                          {
-                            id: "fetching-resources-2",
-                            endpoint: "/api/get/resources",
-                            queryParams: [
-                              {
-                                key: "query",
-                                value: "my-search-query",
-                              },
-                            ],
-                          },
-                        ],
-                        blocks: [],
-                      },
-                      {
-                        type: "text",
-                        content: "This component is not implemented yet",
-                      },
-                      {
-                        type: "form",
-                        trigger: {
-                          type: "button",
-                          label: "delete",
-                        },
-                        mutation: {
-                          id: "my-delete",
-                          endpoint: "/api/delete/",
-                          method: "DELETE",
-                        },
-                        blocks: [],
-                      },
-                    ],
-                  },
-                ],
+                    {
+                      type: "text",
+                      content: "{{loop.company.addresses.0.city}}",
+                    },
+                  ],
+                },
               ],
             },
           ],

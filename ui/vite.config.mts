@@ -72,6 +72,7 @@ export default ({ mode }) => {
     test: {
       globals: true,
       environment: "jsdom",
+      setupFiles: "./test/vitest.setup.ts",
       exclude: [
         "**/node_modules/**",
         "**/dist/**",

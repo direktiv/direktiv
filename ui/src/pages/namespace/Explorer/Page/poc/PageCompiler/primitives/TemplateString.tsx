@@ -1,4 +1,4 @@
-import { TemplateStringType } from "../../../../schema/primitives/templateString";
+import { TemplateStringType } from "../../schema/primitives/templateString";
 import { Variable } from "./Variable";
 import { variablePattern } from "./Variable/utils";
 
