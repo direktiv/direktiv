@@ -44,7 +44,6 @@ export default {
                   type: "loop",
                   id: "company",
                   data: "query.company-list.data",
-                  blocks: [],
                 },
                 actions: [
                   {

@@ -1,4 +1,4 @@
-import { Loop, LoopType } from "./loop";
+import { BlocklessLoop, BlocklessLoopType } from "./loop";
 import { TableColumn, TableColumnType } from "./tableColumn";
 import { TriggerBlocks, TriggerBlocksType } from ".";
 
@@ -12,14 +12,14 @@ import { z } from "zod";
  */
 export type TableType = {
   type: "table";
-  data: LoopType;
+  data: BlocklessLoopType;
   actions: TriggerBlocksType[];
   columns: TableColumnType[];
 };
 
 export const Table = z.object({
   type: z.literal("table"),
-  data: Loop,
+  data: BlocklessLoop,
   actions: z.array(z.lazy(() => TriggerBlocks)),
   columns: z.array(TableColumn),
 }) satisfies z.ZodType<TableType>;
