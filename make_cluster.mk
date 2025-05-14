@@ -68,12 +68,14 @@ cluster-prep:
 	kubectl apply -f kind/postgres.yaml
 	kubectl apply -f kind/deploy-ingress-nginx.yaml
 	kubectl apply -f kind/svc-configmap.yaml
-	kubectl apply -f kind/knative-a-serving-operator.yaml
-	kubectl apply -f kind/knative-b-serving-ns.yaml
-	kubectl apply -f kind/knative-c-serving-basic.yaml
-	kubectl apply -f kind/knative-d-serving-countour.yaml
-	kubectl apply -f kind/knative-d-serving-countour.yaml
-	kubectl delete -f kind/knative-e-serving-ns-delete.yaml
+	kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+	# This is a workaround so that the metrics server works in KIND setup
+	# disable tls in metrics-server
+	kubectl patch deployment metrics-server -n kube-system \
+  	--type=json \
+  	-p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+
 
 .PHONY: cluster-build
 cluster-build: ## Builds direktiv for cluster

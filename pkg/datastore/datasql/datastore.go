@@ -30,6 +30,10 @@ func (s *store) Secrets() datastore.SecretsStore {
 	return &sqlSecretsStore{db: s.db}
 }
 
+func (s *store) HeartBeats() datastore.HeartBeatsStore {
+	return &sqlHeartBeatsStore{db: s.db}
+}
+
 func (s *store) RuntimeVariables() datastore.RuntimeVariablesStore {
 	return &sqlRuntimeVariablesStore{db: s.db}
 }
