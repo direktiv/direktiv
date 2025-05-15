@@ -1,3 +1,4 @@
+import { Block, BlockPath } from ".";
 import {
   DialogClose,
   DialogContent,
@@ -6,9 +7,7 @@ import {
   DialogTrigger,
 } from "~/design/Dialog";
 
-import { Block } from ".";
 import { BlockList } from "./utils/BlockList";
-import { BlockPath } from "./utils/blockPath";
 import { Button } from "./Button";
 import ButtonDesignComponent from "~/design/Button";
 import { DialogType } from "../../schema/blocks/dialog";

@@ -1,7 +1,7 @@
 import { AllBlocksType, ParentBlockUnion } from "../../schema/blocks";
 import { FC, PropsWithChildren, createContext, useContext } from "react";
 
-import { BlockPath } from "../Block/utils/blockPath";
+import { BlockPath } from "../Block";
 import { DirektivPagesType } from "../../schema";
 import { z } from "zod";
 

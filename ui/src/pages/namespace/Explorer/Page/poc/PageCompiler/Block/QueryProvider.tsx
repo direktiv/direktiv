@@ -1,7 +1,6 @@
+import { Block, BlockPath } from ".";
 import { queryOptions, useSuspenseQueries } from "@tanstack/react-query";
 
-import { Block } from ".";
-import { BlockPath } from "./utils/blockPath";
 import { QueryProviderType } from "../../schema/blocks/queryProvider";
 
 type QueryProviderProps = {

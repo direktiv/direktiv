@@ -1,5 +1,5 @@
-import { Block } from ".";
-import { BlockPath } from "./utils/blockPath";
+import { Block, BlockPath } from ".";
+
 import { LoopType } from "../../schema/blocks/loop";
 
 type LoopProps = {
