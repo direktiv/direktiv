@@ -561,23 +561,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	telemetry.LogInstance(ctx, telemetry.LogLevelDebug,
 		fmt.Sprintf("deadline for request is %s", time.Until(arReq.Deadline)))
 
-	reader, err := enginerefactor.EncodeActionRequest(*arReq)
-	if err != nil {
-		engine.reportError(ctx, &arReq.ActionContext, err)
-
-		return
-	}
-	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr, reader)
-	if err != nil {
-		engine.reportError(ctx, &arReq.ActionContext, err)
-
-		return
-	}
-	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
-	req.Header.Add(DirektivCallPathHeader, ar.CallPath)
-
-	client := http.Client{Transport: otelhttp.NewTransport(tr)}
-
 	var resp *http.Response
 
 	// potentially dns error for a brand new service
@@ -588,6 +571,21 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 	serviceIgnited := false
 	for i := range 300 { // 5 minutes max retry
+		reader, err := enginerefactor.EncodeActionRequest(*arReq)
+		if err != nil {
+			engine.reportError(ctx, &arReq.ActionContext, err)
+
+			return
+		}
+		req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr, reader)
+		if err != nil {
+			engine.reportError(ctx, &arReq.ActionContext, err)
+
+			return
+		}
+		req.Header.Add(DirektivActionIDHeader, ar.ActionID)
+		req.Header.Add(DirektivCallPathHeader, ar.CallPath)
+		client := http.Client{Transport: otelhttp.NewTransport(tr)}
 		telemetry.LogInstance(ctx, telemetry.LogLevelInfo,
 			fmt.Sprintf("attempting service request %d, %s", i, addr))
 
@@ -601,16 +599,21 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			return
 		}
 		resp, err = client.Do(req)
+		isBadGatewayCode := resp != nil && resp.StatusCode >= 502 && resp.StatusCode <= 504
 
+		if isBadGatewayCode {
+			err = fmt.Errorf("bad gateway status code (%d)", resp.StatusCode)
+		}
 		if err != nil {
-			isServiceDown := strings.Contains(err.Error(), "no such host") ||
+			isServiceDown := strings.Contains(err.Error(), "bad gateway status code") ||
+				strings.Contains(err.Error(), "no such host") ||
 				strings.Contains(err.Error(), "connection refused")
 
 			if isServiceDown {
 				telemetry.LogInstanceError(ctx, "service is scaled to zero", err)
 			}
 
-			// Try to ignite the service if it was down.
+			// Try to ignite (once) the service if it was down.
 			if isServiceDown && !serviceIgnited {
 				igErr := engine.ServiceManager.IgniteService(ar.Container.Service)
 				if igErr != nil {
@@ -632,6 +635,11 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 				slog.Debug(fmt.Sprintf("retrying function request for container '%s' (attempt %d)", ar.Container.ID, i), slog.Any("error", err))
 			} else {
 				slog.Debug("retrying function request", "image", ar.Container.Image, "image_id", ar.Container.ID, "error", err)
+			}
+
+			if resp != nil {
+				resp.Body.Close()
+				resp = nil
 			}
 
 			time.Sleep(time.Second)
@@ -678,13 +686,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 			break
 		}
-	}
-
-	if err != nil {
-		err := fmt.Errorf("failed creating function with image %s name %s with error: %w", ar.Container.Image, ar.Container.ID, err)
-		engine.reportError(ctx, &arReq.ActionContext, err)
-
-		return
 	}
 
 	if resp.StatusCode != http.StatusOK {
