@@ -92,12 +92,11 @@ export const Table = ({ blockProps }: TableProps) => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-40">
-                          <DropdownMenuItem>
-                            {t("pages.explorer.tree.list.contextMenu.delete")}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            {t("pages.explorer.tree.list.contextMenu.rename")}
-                          </DropdownMenuItem>
+                          {actions.map((action, index) => (
+                            <DropdownMenuItem key={index}>
+                              {action.label}
+                            </DropdownMenuItem>
+                          ))}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableHeaderCell>

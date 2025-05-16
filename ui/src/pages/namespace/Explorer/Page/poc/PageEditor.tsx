@@ -44,6 +44,10 @@ const examplePage = {
               type: "button",
               label: "Edit",
             },
+            {
+              type: "button",
+              label: "Delete",
+            },
           ],
           columns: [
             {
