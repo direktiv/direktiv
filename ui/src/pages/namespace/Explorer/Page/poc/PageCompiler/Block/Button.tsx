@@ -3,7 +3,7 @@ import { ButtonHTMLAttributes, forwardRef } from "react";
 import ButtonDesignComponent from "~/design/Button";
 import { ButtonType } from "../../schema/blocks/button";
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> & {
   blockProps: ButtonType;
 };
 
