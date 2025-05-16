@@ -8,7 +8,7 @@ import { MoreVertical, PackageOpen } from "lucide-react";
 import {
   NoResult,
   TableBody,
-  TableCell as TableCellDesignComopnent,
+  TableCell as TableCellDesignComponent,
   Table as TableDesignComponent,
   TableHead,
   TableHeaderCell,
@@ -80,7 +80,7 @@ export const Table = ({ blockProps }: TableProps) => {
                   },
                 }}
               >
-                <TableRow key={index}>
+                <TableRow>
                   {columns.map((column, columnIndex) => (
                     <TableCell key={columnIndex} blockProps={column} />
                   ))}
@@ -107,12 +107,11 @@ export const Table = ({ blockProps }: TableProps) => {
             ))
           ) : (
             <TableRow>
-              <TableCellDesignComopnent colSpan={numberOfColumns}>
+              <TableCellDesignComponent colSpan={numberOfColumns}>
                 <NoResult icon={PackageOpen}>
-                  {arrayVariable.success && arrayVariable.data.length}
                   {t("direktivPage.error.blocks.table.noResult")}
                 </NoResult>
-              </TableCellDesignComopnent>
+              </TableCellDesignComponent>
             </TableRow>
           )}
         </TableBody>
