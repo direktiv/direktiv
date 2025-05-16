@@ -1,20 +1,23 @@
-import { ButtonHTMLAttributes, forwardRef } from "react";
+import { ElementType, forwardRef } from "react";
 
 import ButtonDesignComponent from "~/design/Button";
 import { ButtonType } from "../../schema/blocks/button";
 
-type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> & {
-  blockProps: ButtonType;
-};
+type AsComponent = ElementType | typeof ButtonDesignComponent;
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ blockProps, ...props }, ref) => {
-    // TODO: implement the submit
+interface ButtonProps {
+  as?: AsComponent;
+  blockProps: ButtonType;
+}
+
+export const Button = forwardRef<HTMLElement, ButtonProps>(
+  ({ as, blockProps, ...props }, ref) => {
     const { label } = blockProps;
+    const Component = as || ButtonDesignComponent;
     return (
-      <ButtonDesignComponent ref={ref} {...props}>
+      <Component ref={ref} {...props}>
         {label}
-      </ButtonDesignComponent>
+      </Component>
     );
   }
 );

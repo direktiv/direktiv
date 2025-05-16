@@ -95,7 +95,7 @@ export const Table = ({ blockProps }: TableProps) => {
                         <DropdownMenuContent className="w-40">
                           {actions.map((action, index) => (
                             <DropdownMenuItem key={index}>
-                              <Button blockProps={action} />
+                              <Button blockProps={action} as="span" />
                             </DropdownMenuItem>
                           ))}
                         </DropdownMenuContent>
