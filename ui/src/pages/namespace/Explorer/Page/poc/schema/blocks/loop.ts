@@ -22,3 +22,6 @@ export const Loop = z.object({
   data: Variable,
   blocks: z.array(z.lazy(() => AllBlocks)),
 }) satisfies z.ZodType<LoopType>;
+
+export const BlocklessLoop = Loop.omit({ blocks: true });
+export type BlocklessLoopType = z.infer<typeof BlocklessLoop>;

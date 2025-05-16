@@ -9,6 +9,7 @@ import { Headline } from "./Headline";
 import { Loop } from "./Loop";
 import { ParsingError } from "./utils/ParsingError";
 import { QueryProvider } from "./QueryProvider";
+import { Table } from "./Table";
 import { Text } from "./Text";
 import { useTranslation } from "react-i18next";
 
@@ -37,6 +38,8 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         return <QueryProvider blockProps={block} blockPath={blockPath} />;
       case "dialog":
         return <Dialog blockProps={block} blockPath={blockPath} />;
+      case "table":
+        return <Table blockProps={block} />;
       default:
         return (
           <ParsingError
