@@ -13,6 +13,10 @@ const examplePage = {
   direktiv_api: "pages/v1",
   blocks: [
     {
+      type: "text",
+      content: "Lorem Ipsum",
+    },
+    {
       type: "query-provider",
       queries: [
         {
@@ -45,23 +49,23 @@ const examplePage = {
                   content:
                     "Company {{loop.company.id}} of {{query.company-list.total}}: {{loop.company.name}}",
                 },
-                {
-                  type: "dialog",
-                  trigger: {
-                    type: "button",
-                    label: "show address",
-                  },
-                  blocks: [
-                    {
-                      type: "text",
-                      content: "{{loop.company.addresses.0.street}}",
-                    },
-                    {
-                      type: "text",
-                      content: "{{loop.company.addresses.0.city}}",
-                    },
-                  ],
-                },
+                // {
+                //   type: "dialog",
+                //   trigger: {
+                //     type: "button",
+                //     label: "show address",
+                //   },
+                //   blocks: [
+                //     {
+                //       type: "text",
+                //       content: "{{loop.company.addresses.0.street}}",
+                //     },
+                //     {
+                //       type: "text",
+                //       content: "{{loop.company.addresses.0.city}}",
+                //     },
+                //   ],
+                // },
               ],
             },
           ],
@@ -75,7 +79,7 @@ type Mode = ComponentProps<typeof PageCompiler>["mode"];
 
 const PageEditor = () => {
   const theme = useTheme();
-  const [mode, setMode] = useState<Mode>("live");
+  const [mode, setMode] = useState<Mode>("inspect");
   const [page, setPage] = useState(examplePage);
   const [validate, setValidate] = useState(true);
   const [showEditor, setShowEditor] = useState(false);

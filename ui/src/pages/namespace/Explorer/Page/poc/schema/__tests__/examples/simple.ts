@@ -15,7 +15,7 @@ export default {
     },
     {
       type: "columns",
-      columns: [
+      blocks: [
         [
           {
             type: "text",

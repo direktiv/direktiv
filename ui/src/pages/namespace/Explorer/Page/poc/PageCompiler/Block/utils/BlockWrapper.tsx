@@ -1,3 +1,4 @@
+import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
   PropsWithChildren,
   Suspense,
@@ -8,7 +9,10 @@ import {
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
-import { BlockPath } from "./blockPath";
+import { BlockForm } from "../../../BlockEditor";
+import { BlockPath } from "..";
+import Button from "~/design/Button";
+import { Edit } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
@@ -52,39 +56,59 @@ export const BlockWrapper = ({
   }, [mode]);
 
   return (
-    <div
-      ref={containerRef}
-      className={twMergeClsx(
-        mode === "inspect" &&
-          "rounded-md relative p-3 border-2 border-gray-4 border-dashed dark:border-gray-dark-4 bg-white dark:bg-black",
-        isHovered &&
+    <>
+      <div
+        ref={containerRef}
+        className={twMergeClsx(
           mode === "inspect" &&
-          "border-solid bg-gray-2 dark:bg-gray-dark-2"
-      )}
-      data-block-wrapper
-    >
+            "rounded-md relative p-3 border-2 border-gray-4 border-dashed dark:border-gray-dark-4 bg-white dark:bg-black",
+          isHovered &&
+            mode === "inspect" &&
+            "border-solid bg-gray-2 dark:bg-gray-dark-2"
+        )}
+        data-block-wrapper
+      >
+        {mode === "inspect" && (
+          <Dialog>
+            <Badge
+              className="-m-6 absolute z-50"
+              variant="secondary"
+              style={{
+                display: isHovered ? "block" : "none",
+              }}
+            >
+              <b>{block.type}</b> {blockPath.join(".")}
+            </Badge>
+            <DialogTrigger className="float-right">
+              <Button
+                variant="ghost"
+                style={{ display: isHovered ? "block" : "none" }}
+              >
+                <Edit />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <BlockForm path={blockPath}></BlockForm>
+            </DialogContent>
+          </Dialog>
+        )}
+        <Suspense fallback={<Loading />}>
+          <ErrorBoundary
+            fallbackRender={({ error }) => (
+              <ParsingError title={t("direktivPage.error.genericError")}>
+                {error.message}
+              </ParsingError>
+            )}
+          >
+            {children}
+          </ErrorBoundary>
+        </Suspense>
+      </div>
       {mode === "inspect" && (
-        <Badge
-          className="-m-6 absolute z-50"
-          variant="secondary"
-          style={{
-            display: isHovered ? "block" : "none",
-          }}
-        >
-          <b>{block.type}</b> {blockPath}
-        </Badge>
+        <div className="rounded-md border border-gray-7 bg-gray-3 p-1 text-xs text-gray-8">
+          Drop Area
+        </div>
       )}
-      <Suspense fallback={<Loading />}>
-        <ErrorBoundary
-          fallbackRender={({ error }) => (
-            <ParsingError title={t("direktivPage.error.genericError")}>
-              {error.message}
-            </ParsingError>
-          )}
-        >
-          {children}
-        </ErrorBoundary>
-      </Suspense>
-    </div>
+    </>
   );
 };

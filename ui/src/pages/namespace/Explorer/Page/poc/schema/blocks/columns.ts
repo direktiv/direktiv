@@ -9,10 +9,10 @@ import { z } from "zod";
  */
 export type ColumnsType = {
   type: "columns";
-  columns: AllBlocksType[][];
+  blocks: AllBlocksType[][];
 };
 
 export const Columns = z.object({
   type: z.literal("columns"),
-  columns: z.array(z.array(z.lazy(() => AllBlocks))),
+  blocks: z.array(z.array(z.lazy(() => AllBlocks))),
 }) satisfies z.ZodType<ColumnsType>;
