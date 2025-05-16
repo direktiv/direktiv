@@ -19,7 +19,8 @@ import {
   useVariables,
 } from "../../primitives/Variable/VariableContext";
 
-import Button from "~/design/Button";
+import { Button } from "../Button";
+import ButtonDesignComponent from "~/design/Button";
 import { Card } from "~/design/Card";
 import { TableCell } from "./TableCell";
 import { TableType } from "../../../schema/blocks/table";
@@ -87,14 +88,14 @@ export const Table = ({ blockProps }: TableProps) => {
                     <TableHeaderCell className="w-0">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" icon>
+                          <ButtonDesignComponent variant="ghost" size="sm" icon>
                             <MoreVertical />
-                          </Button>
+                          </ButtonDesignComponent>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-40">
                           {actions.map((action, index) => (
                             <DropdownMenuItem key={index}>
-                              {action.label}
+                              <Button blockProps={action} />
                             </DropdownMenuItem>
                           ))}
                         </DropdownMenuContent>
