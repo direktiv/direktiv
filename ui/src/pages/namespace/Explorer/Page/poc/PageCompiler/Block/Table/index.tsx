@@ -1,3 +1,9 @@
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/design/Dropdown";
 import { MoreVertical, PackageOpen } from "lucide-react";
 import {
   NoResult,
@@ -47,7 +53,7 @@ export const Table = ({ blockProps }: TableProps) => {
 
   const hasActionsColumn = actions.length > 0;
   const numberOfColumns = columns.length + (hasActionsColumn ? 1 : 0);
-  const noResult = arrayVariable.data.length === 0;
+  const hasResults = arrayVariable.data.length > 0;
 
   return (
     <Card>
@@ -57,11 +63,49 @@ export const Table = ({ blockProps }: TableProps) => {
             {columns.map((column, index) => (
               <TableHeaderCell key={index}>{column.label}</TableHeaderCell>
             ))}
-            {hasActionsColumn && <TableHeaderCell className="w-0" />}
+            {hasActionsColumn && <TableHeaderCell />}
           </TableRow>
         </TableHead>
         <TableBody>
-          {noResult && (
+          {hasResults ? (
+            arrayVariable.data.map((item, index) => (
+              <VariableContextProvider
+                key={index}
+                value={{
+                  ...parentVariables,
+                  loop: {
+                    ...parentVariables.loop,
+                    [loop.id]: item,
+                  },
+                }}
+              >
+                <TableRow key={index}>
+                  {columns.map((column, columnIndex) => (
+                    <TableCell key={columnIndex} blockProps={column} />
+                  ))}
+                  {hasActionsColumn && (
+                    <TableHeaderCell className="w-0">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" icon>
+                            <MoreVertical />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-40">
+                          <DropdownMenuItem>
+                            {t("pages.explorer.tree.list.contextMenu.delete")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            {t("pages.explorer.tree.list.contextMenu.rename")}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableHeaderCell>
+                  )}
+                </TableRow>
+              </VariableContextProvider>
+            ))
+          ) : (
             <TableRow>
               <TableCellDesignComopnent colSpan={numberOfColumns}>
                 <NoResult icon={PackageOpen}>
@@ -71,31 +115,6 @@ export const Table = ({ blockProps }: TableProps) => {
               </TableCellDesignComopnent>
             </TableRow>
           )}
-          {arrayVariable.data.map((item, index) => (
-            <VariableContextProvider
-              key={index}
-              value={{
-                ...parentVariables,
-                loop: {
-                  ...parentVariables.loop,
-                  [loop.id]: item,
-                },
-              }}
-            >
-              <TableRow key={index}>
-                {columns.map((column, columnIndex) => (
-                  <TableCell key={columnIndex} blockProps={column} />
-                ))}
-                {hasActionsColumn && (
-                  <TableHeaderCell>
-                    <Button variant="ghost" size="sm" icon>
-                      <MoreVertical />
-                    </Button>
-                  </TableHeaderCell>
-                )}
-              </TableRow>
-            </VariableContextProvider>
-          ))}
         </TableBody>
       </TableDesignComponent>
     </Card>
