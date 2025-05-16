@@ -57,7 +57,7 @@ export const Table = ({ blockProps }: TableProps) => {
             {columns.map((column, index) => (
               <TableHeaderCell key={index}>{column.label}</TableHeaderCell>
             ))}
-            {hasActionsColumn && <TableHeaderCell />}
+            {hasActionsColumn && <TableHeaderCell className="w-0" />}
           </TableRow>
         </TableHead>
         <TableBody>

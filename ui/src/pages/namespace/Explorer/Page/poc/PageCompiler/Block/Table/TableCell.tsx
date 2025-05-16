@@ -9,7 +9,7 @@ type TableCellProps = {
 export const TableCell = ({ blockProps }: TableCellProps) => {
   const { content } = blockProps;
   return (
-    <TableCellDesignComponent className="p-5">
+    <TableCellDesignComponent>
       <TemplateString value={content} />
     </TableCellDesignComponent>
   );
