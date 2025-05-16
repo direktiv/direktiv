@@ -1,7 +1,14 @@
 import { Block, BlockPath } from ".";
+import {
+  State,
+  VariableContextProvider,
+  useVariables,
+} from "../primitives/Variable/VariableContext";
 import { queryOptions, useSuspenseQueries } from "@tanstack/react-query";
 
+import { BlockList } from "./utils/BlockList";
 import { QueryProviderType } from "../../schema/blocks/queryProvider";
+import { useTranslation } from "react-i18next";
 
 type QueryProviderProps = {
   blockProps: QueryProviderType;
@@ -13,7 +20,9 @@ export const QueryProvider = ({
   blockPath,
 }: QueryProviderProps) => {
   const { blocks, queries } = blockProps;
-  useSuspenseQueries({
+  const { t } = useTranslation();
+  const parentVariables = useVariables();
+  const data = useSuspenseQueries({
     queries: queries.map((q) =>
       queryOptions({
         queryKey: [q.id],
@@ -21,14 +30,21 @@ export const QueryProvider = ({
           const response = await fetch(q.endpoint);
           if (!response.ok) {
             throw new Error(
-              `Error in query with id ${q.id}. GET ${q.endpoint} responded with ${response.status}`
+              t("direktivPage.error.queryProvider.queryFailed", {
+                id: q.id,
+                endpoint: q.endpoint,
+                status: response.status,
+              })
             );
           }
           try {
             return await response.json();
           } catch (e) {
             throw new Error(
-              `Error in query with id ${q.id}. GET ${q.endpoint} returned invalid JSON`
+              t("direktivPage.error.queryProvider.invalidJson", {
+                id: q.id,
+                endpoint: q.endpoint,
+              })
             );
           }
         },
@@ -36,11 +52,37 @@ export const QueryProvider = ({
     ),
   });
 
+  const queryWithDublicateId = queries.find(
+    (query) => !!parentVariables.query[query.id]
+  );
+
+  if (queryWithDublicateId) {
+    throw new Error(
+      t("direktivPage.error.dublicateId", {
+        id: queryWithDublicateId.id,
+      })
+    );
+  }
+
+  const queryResults: State["query"] = Object.fromEntries(
+    queries.map((query, index) => [query.id, data[index]?.data])
+  );
+
   return (
-    <>
-      {blocks.map((block, index) => (
-        <Block key={index} block={block} blockPath={[...blockPath, index]} />
-      ))}
-    </>
+    <VariableContextProvider
+      value={{
+        ...parentVariables,
+        query: {
+          ...parentVariables.query,
+          ...queryResults,
+        },
+      }}
+    >
+      <BlockList>
+        {blocks.map((block, index) => (
+          <Block key={index} block={block} blockPath={[...blockPath, index]} />
+        ))}
+      </BlockList>
+    </VariableContextProvider>
   );
 };

@@ -1,8 +1,9 @@
+import { ButtonHTMLAttributes, forwardRef } from "react";
+
 import ButtonDesignComponent from "~/design/Button";
 import { ButtonType } from "../../schema/blocks/button";
-import { forwardRef } from "react";
 
-type ButtonProps = {
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   blockProps: ButtonType;
 };
 

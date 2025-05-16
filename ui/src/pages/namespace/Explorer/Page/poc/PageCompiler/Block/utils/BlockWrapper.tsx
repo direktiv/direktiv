@@ -18,6 +18,7 @@ import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { twMergeClsx } from "~/util/helpers";
 import { useMode } from "../../context/pageCompilerContext";
+import { useTranslation } from "react-i18next";
 
 type BlockWrapperProps = PropsWithChildren<{
   blockPath: BlockPath;
@@ -29,6 +30,7 @@ export const BlockWrapper = ({
   block,
   blockPath,
 }: BlockWrapperProps) => {
+  const { t } = useTranslation();
   const mode = useMode();
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -93,7 +95,7 @@ export const BlockWrapper = ({
         <Suspense fallback={<Loading />}>
           <ErrorBoundary
             fallbackRender={({ error }) => (
-              <ParsingError title="There was an error fetching data from the API">
+              <ParsingError title={t("direktivPage.error.genericError")}>
                 {error.message}
               </ParsingError>
             )}

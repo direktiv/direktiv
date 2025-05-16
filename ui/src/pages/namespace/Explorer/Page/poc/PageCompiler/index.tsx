@@ -8,6 +8,7 @@ import { Block } from "./Block";
 import { BlockList } from "./Block/utils/BlockList";
 import { DirektivPagesSchema } from "../schema";
 import { ParsingError } from "./Block/utils/ParsingError";
+import { useTranslation } from "react-i18next";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,10 +25,11 @@ const queryClient = new QueryClient({
 
 export const PageCompiler = ({ page, mode }: PageCompilerProps) => {
   const parsedPage = DirektivPagesSchema.safeParse(page);
+  const { t } = useTranslation();
 
   if (!parsedPage.success) {
     return (
-      <ParsingError title="The page has an invalid configuration">
+      <ParsingError title={t("direktivPage.error.invalidSchema")}>
         <pre>{JSON.stringify(parsedPage.error.issues, null, 2)}</pre>
       </ParsingError>
     );
