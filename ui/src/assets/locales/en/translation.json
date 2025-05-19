@@ -1658,6 +1658,11 @@
         "couldNotStringify": "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null.",
         "notAnArray": "Pointing to a value that is not an array."
       }
+    },
+    "blockEditor": {
+      "Text": {
+        "modalTitle": "Edit Text Block @{{path}}"
+      }
     }
   }
 }
