@@ -25,7 +25,10 @@ const queryClient = new QueryClient({
   },
 });
 
-export const PageCompiler = ({ initialPage, mode }: PageCompilerProps) => {
+export const PageCompiler = ({
+  page: initialPage,
+  mode,
+}: PageCompilerProps) => {
   const [page, setPage] = useState<DirektivPagesType>(initialPage ?? "");
   const parsedPage = DirektivPagesSchema.safeParse(page);
   const { t } = useTranslation();
@@ -39,12 +42,7 @@ export const PageCompiler = ({ initialPage, mode }: PageCompilerProps) => {
   }
 
   return (
-    <PageCompilerContextProvider
-      initialPage={initialPage}
-      setPage={setPage}
-      page={page}
-      mode={mode}
-    >
+    <PageCompilerContextProvider setPage={setPage} page={page} mode={mode}>
       <QueryClientProvider client={queryClient}>
         <BlockList>
           {page.blocks.map((block, index) => (

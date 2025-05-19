@@ -4,7 +4,6 @@ import { DirektivPagesType } from "../../schema";
 
 export type State = {
   mode: "inspect" | "live";
-  initialPage: DirektivPagesType;
   page: DirektivPagesType;
   setPage: (page: DirektivPagesType) => void;
 };

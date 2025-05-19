@@ -141,12 +141,7 @@ const PageEditor = () => {
         </Card>
       )}
       <Card className="p-4 flex flex-col gap-4">
-        <PageCompiler
-          page={page}
-          initialPage={page}
-          setPage={setPage}
-          mode={mode}
-        />
+        <PageCompiler page={page} setPage={setPage} mode={mode} />
       </Card>
     </div>
   );
