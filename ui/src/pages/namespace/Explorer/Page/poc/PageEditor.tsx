@@ -49,23 +49,23 @@ const examplePage = {
                   content:
                     "Company {{loop.company.id}} of {{query.company-list.total}}: {{loop.company.name}}",
                 },
-                // {
-                //   type: "dialog",
-                //   trigger: {
-                //     type: "button",
-                //     label: "show address",
-                //   },
-                //   blocks: [
-                //     {
-                //       type: "text",
-                //       content: "{{loop.company.addresses.0.street}}",
-                //     },
-                //     {
-                //       type: "text",
-                //       content: "{{loop.company.addresses.0.city}}",
-                //     },
-                //   ],
-                // },
+                {
+                  type: "dialog",
+                  trigger: {
+                    type: "button",
+                    label: "show address",
+                  },
+                  blocks: [
+                    {
+                      type: "text",
+                      content: "{{loop.company.addresses.0.street}}",
+                    },
+                    {
+                      type: "text",
+                      content: "{{loop.company.addresses.0.city}}",
+                    },
+                  ],
+                },
               ],
             },
           ],
