@@ -229,7 +229,9 @@ func Run(circuit *core.Circuit) error {
 		renderGatewayFiles(db, app.GatewayManager)
 	})
 	// initial loading of routes and consumers
+	fmt.Println("initial loading of routes and consumers")
 	renderGatewayFiles(db, app.GatewayManager)
+	fmt.Println("initial loading of routes and consumers: done")
 
 	// initialize extensions
 	if extensions.Initialize != nil {
