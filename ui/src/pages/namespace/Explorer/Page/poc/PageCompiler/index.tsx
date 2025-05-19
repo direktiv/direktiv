@@ -1,3 +1,4 @@
+import { DirektivPagesSchema, DirektivPagesType } from "../schema";
 import {
   PageCompilerContextProvider,
   State as PageCompilerProps,
@@ -6,9 +7,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { Block } from "./Block";
 import { BlockList } from "./Block/utils/BlockList";
-import { DirektivPagesSchema } from "../schema";
 import { ParsingError } from "./Block/utils/ParsingError";
 import { addSegmentsToPath } from "./Block/utils/blockPath";
+import { useState } from "react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,7 +24,8 @@ const queryClient = new QueryClient({
   },
 });
 
-export const PageCompiler = ({ page, mode }: PageCompilerProps) => {
+export const PageCompiler = ({ initialPage, mode }: PageCompilerProps) => {
+  const [page, setPage] = useState<DirektivPagesType>(initialPage ?? "");
   const parsedPage = DirektivPagesSchema.safeParse(page);
 
   if (!parsedPage.success) {
@@ -35,7 +37,12 @@ export const PageCompiler = ({ page, mode }: PageCompilerProps) => {
   }
 
   return (
-    <PageCompilerContextProvider page={page} mode={mode}>
+    <PageCompilerContextProvider
+      initialPage={initialPage}
+      setPage={setPage}
+      page={page}
+      mode={mode}
+    >
       <QueryClientProvider client={queryClient}>
         <BlockList>
           {page.blocks.map((block, index) => (
