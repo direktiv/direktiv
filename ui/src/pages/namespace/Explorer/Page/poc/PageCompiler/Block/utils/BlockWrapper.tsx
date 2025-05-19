@@ -1,4 +1,3 @@
-import { Plus, Settings } from "lucide-react";
 import {
   PropsWithChildren,
   Suspense,
@@ -20,7 +19,9 @@ import { ErrorBoundary } from "react-error-boundary";
 import { HeadlineType } from "../../../schema/blocks/headline";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
+import { Plus } from "lucide-react";
 import { twMergeClsx } from "~/util/helpers";
+import { useTranslation } from "react-i18next";
 
 type BlockWrapperProps = PropsWithChildren<{
   blockPath: BlockPath;
@@ -32,6 +33,7 @@ export const BlockWrapper = ({
   block,
   blockPath,
 }: BlockWrapperProps) => {
+  const { t } = useTranslation();
   const mode = useMode();
   const page = usePage();
   const setPage = useSetPage();
@@ -44,7 +46,7 @@ export const BlockWrapper = ({
   const exampleBlock: HeadlineType = {
     type: "headline",
     label: "example",
-    size: "h2",
+    level: "h2",
   };
 
   const addSelectedBlockToPage = (block: HeadlineType, index: number) => {
@@ -97,38 +99,25 @@ export const BlockWrapper = ({
       <div
         ref={containerRef}
         className={twMergeClsx(
-          mode === "inspect" &&
-            "rounded-md relative p-3 border-2 border-gray-4 border-dashed dark:border-gray-dark-4 bg-white dark:bg-black",
-          isHovered &&
-            mode === "inspect" &&
-            "border-solid bg-gray-2 dark:bg-gray-dark-2"
+          mode === "inspect" && "border-solid bg-gray-2 dark:bg-gray-dark-2"
         )}
         data-block-wrapper
       >
         {mode === "inspect" && (
-          <>
-            <Badge
-              className="-m-6 absolute z-50"
-              variant="secondary"
-              style={{
-                display: isHovered ? "block" : "none",
-              }}
-            >
-              <b>{block.type}</b> {blockPath}
-            </Badge>
-            <Button
-              variant="ghost"
-              style={{ display: isHovered ? "block" : "none" }}
-              className="float-right"
-            >
-              <Settings />
-            </Button>
-          </>
+          <Badge
+            className="-m-6 absolute z-50"
+            variant="secondary"
+            style={{
+              display: isHovered ? "block" : "none",
+            }}
+          >
+            <b>{block.type}</b> {blockPath}
+          </Badge>
         )}
         <Suspense fallback={<Loading />}>
           <ErrorBoundary
             fallbackRender={({ error }) => (
-              <ParsingError title="There was an error fetching data from the API">
+              <ParsingError title={t("direktivPage.error.genericError")}>
                 {error.message}
               </ParsingError>
             )}
