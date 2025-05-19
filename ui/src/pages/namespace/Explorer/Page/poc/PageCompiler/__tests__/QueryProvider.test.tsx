@@ -10,9 +10,12 @@ import {
   vi,
 } from "vitest";
 
+import { DirektivPagesType } from "../../schema";
 import { PageCompiler } from "..";
 import { createDirektivPage } from "./utils";
 import { setupServer } from "msw/node";
+
+const setPage = (page: DirektivPagesType) => page;
 
 const apiServer = setupServer(
   http.get("/json-response", () =>
@@ -44,6 +47,7 @@ describe("QueryProvider", () => {
     await act(async () => {
       render(
         <PageCompiler
+          setPage={setPage}
           page={createDirektivPage([
             {
               type: "query-provider",
@@ -77,6 +81,7 @@ describe("QueryProvider", () => {
     await act(async () => {
       render(
         <PageCompiler
+          setPage={setPage}
           page={createDirektivPage([
             {
               type: "query-provider",
@@ -114,6 +119,7 @@ describe("QueryProvider", () => {
     await act(async () => {
       render(
         <PageCompiler
+          setPage={setPage}
           page={createDirektivPage([
             {
               type: "query-provider",

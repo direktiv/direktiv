@@ -1,4 +1,5 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
+import { Edit, Plus } from "lucide-react";
 import {
   PropsWithChildren,
   Suspense,
@@ -6,18 +7,22 @@ import {
   useRef,
   useState,
 } from "react";
+import {
+  useMode,
+  usePage,
+  useSetPage,
+} from "../../context/pageCompilerContext";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockForm } from "../../../BlockEditor";
 import { BlockPath } from "..";
 import Button from "~/design/Button";
-import { Edit } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
+import { HeadlineType } from "../../../schema/blocks/headline";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { twMergeClsx } from "~/util/helpers";
-import { useMode } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
 type BlockWrapperProps = PropsWithChildren<{
@@ -32,8 +37,37 @@ export const BlockWrapper = ({
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
   const mode = useMode();
+  const page = usePage();
+  const setPage = useSetPage();
+
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const blockPathNumber = Number(blockPath.slice(7));
+
+  const exampleBlock: HeadlineType = {
+    type: "headline",
+    label: "example",
+    level: "h2",
+  };
+
+  const addSelectedBlockToPage = (block: HeadlineType, index: number) => {
+    const newPage = {
+      ...page,
+      blocks: [
+        ...page.blocks.slice(0, index),
+        block,
+        ...page.blocks.slice(index),
+      ],
+    };
+
+    setPage(newPage);
+    return newPage;
+  };
+
+  const addBlockToPage = () => {
+    addSelectedBlockToPage(exampleBlock, blockPathNumber);
+  };
 
   useEffect(() => {
     if (mode !== "inspect") {
@@ -57,6 +91,14 @@ export const BlockWrapper = ({
 
   return (
     <>
+      <Button
+        variant="outline"
+        className="w-fit"
+        onClick={() => addBlockToPage()}
+      >
+        <Plus className="size-4 mr-2" />
+        Add Element
+      </Button>
       <div
         ref={containerRef}
         className={twMergeClsx(
@@ -104,11 +146,6 @@ export const BlockWrapper = ({
           </ErrorBoundary>
         </Suspense>
       </div>
-      {mode === "inspect" && (
-        <div className="rounded-md border border-gray-7 bg-gray-3 p-1 text-xs text-gray-8">
-          Drop Area
-        </div>
-      )}
     </>
   );
 };

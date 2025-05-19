@@ -8,6 +8,7 @@ import { z } from "zod";
 export type State = {
   mode: "inspect" | "live";
   page: DirektivPagesType;
+  setPage: (page: DirektivPagesType) => void;
 };
 
 const PageCompilerContext = createContext<State | null>(null);
@@ -76,4 +77,9 @@ const useBlock = (path: BlockPath) => {
   return getBlock(page.blocks, path);
 };
 
-export { PageCompilerContextProvider, useMode, usePage, useBlock };
+const useSetPage = () => {
+  const { setPage } = usePageStateContext();
+  return setPage;
+};
+
+export { PageCompilerContextProvider, useMode, usePage, useSetPage, useBlock };
