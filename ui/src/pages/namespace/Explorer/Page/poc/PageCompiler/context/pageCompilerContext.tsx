@@ -5,6 +5,7 @@ import { DirektivPagesType } from "../../schema";
 export type State = {
   mode: "inspect" | "live";
   page: DirektivPagesType;
+  setPage: (page: DirektivPagesType) => void;
 };
 
 const PageCompilerContext = createContext<State | null>(null);
@@ -40,4 +41,9 @@ const usePage = () => {
   return page;
 };
 
-export { PageCompilerContextProvider, useMode, usePage };
+const useSetPage = () => {
+  const { setPage } = usePageStateContext();
+  return setPage;
+};
+
+export { PageCompilerContextProvider, useMode, usePage, useSetPage };

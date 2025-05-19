@@ -9,7 +9,7 @@ import { Switch } from "~/design/Switch";
 import { twMergeClsx } from "~/util/helpers";
 import { useTheme } from "~/util/store/theme";
 
-const examplePage = {
+const examplePage: DirektivPagesType = {
   direktiv_api: "pages/v1",
   blocks: [
     {
@@ -141,7 +141,7 @@ const PageEditor = () => {
         </Card>
       )}
       <Card className="p-4 flex flex-col gap-4">
-        <PageCompiler page={page} mode={mode} />
+        <PageCompiler page={page} setPage={setPage} mode={mode} />
       </Card>
     </div>
   );
