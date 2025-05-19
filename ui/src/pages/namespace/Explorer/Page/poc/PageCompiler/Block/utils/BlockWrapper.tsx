@@ -79,7 +79,7 @@ export const BlockWrapper = ({
             >
               <b>{block.type}</b> {blockPath.join(".")}
             </Badge>
-            <DialogTrigger className="float-right">
+            <DialogTrigger className="float-right" asChild>
               <Button
                 variant="ghost"
                 style={{ display: isHovered ? "block" : "none" }}
