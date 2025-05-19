@@ -49,10 +49,10 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
           }}
         >
           <BlockList>
-            {blocks.map((foo, blockIndex) => {
+            {blocks.map((block, blockIndex) => {
               const path = [...blockPath, blockIndex];
               return (
-                <Block key={path.join(".")} block={foo} blockPath={path} />
+                <Block key={path.join(".")} block={block} blockPath={path} />
               );
             })}
           </BlockList>
