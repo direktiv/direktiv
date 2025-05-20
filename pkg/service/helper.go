@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -54,8 +55,12 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 	}
 
 	int32Ptr := func(i int) *int32 {
+		if i < math.MinInt32 || i > math.MaxInt32 {
+			i = 0
+		}
 		//nolint:gosec
 		i32 := int32(i)
+
 		return &i32
 	}
 
