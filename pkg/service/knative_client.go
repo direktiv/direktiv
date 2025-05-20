@@ -1,4 +1,3 @@
-// nolint
 package service
 
 import (
@@ -7,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"slices"
 	"sort"
 	"strings"
@@ -52,7 +52,7 @@ func (c *knativeClient) cleanIdleServices(activeList []string) []error {
 			continue
 		}
 		if *d.Spec.Replicas != 1 {
-			fmt.Printf("deployment %s has %d (none 1) replicas field\n", d.Name, *d.Spec.Replicas)
+			slog.Debug("deployment has (none 1) replicas field", "name", d.Name, "replicas", *d.Spec.Replicas)
 			continue
 		}
 		minScale, ok := d.Annotations[annotationMinScale]
@@ -61,18 +61,18 @@ func (c *knativeClient) cleanIdleServices(activeList []string) []error {
 			continue
 		}
 		if minScale != "0" {
-			fmt.Printf("deployment %s has %d (none zero) minScale annotation\n", d.Name, *d.Spec.Replicas)
+			slog.Debug("deployment has (none zero) minScale annotation", "name", d.Name, "replicas", *d.Spec.Replicas)
 			continue
 		}
 		if slices.Contains(activeList, d.Name) {
-			fmt.Printf("deployment %s is in active list\n", d.Name)
+			slog.Debug("deployment is in active list", "name", d.Name)
 			continue
 		}
 		err = c.scaleService(d.Name, 0)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("deployment %s fail to scale to zero: %w", d.Name, err))
 		}
-		fmt.Printf("deployment %s is scaled to zero\n", d.Name)
+		slog.Debug("deployment is scaled to zero", "name", d.Name)
 	}
 
 	return errs
