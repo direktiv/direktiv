@@ -1,4 +1,4 @@
-import { Block, BlockPath } from ".";
+import { Block, BlockPathType } from ".";
 import {
   VariableContextProvider,
   useVariables,
@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next";
 
 type LoopProps = {
   blockProps: LoopType;
-  blockPath: BlockPath;
+  blockPath: BlockPathType;
 };
 
 export const Loop = ({ blockProps, blockPath }: LoopProps) => {

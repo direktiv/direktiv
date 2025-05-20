@@ -1,4 +1,6 @@
+import { AllBlocksType, ParentBlockUnion } from "../../../schema/blocks";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
+import { DirektivPagesSchema, DirektivPagesType } from "../../../schema";
 import { Edit, Plus } from "lucide-react";
 import {
   PropsWithChildren,
@@ -13,10 +15,9 @@ import {
   useSetPage,
 } from "../../context/pageCompilerContext";
 
-import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockForm } from "../../../BlockEditor";
-import { BlockPath } from "..";
+import { BlockPathType } from "..";
 import Button from "~/design/Button";
 import { ErrorBoundary } from "react-error-boundary";
 import { HeadlineType } from "../../../schema/blocks/headline";
@@ -24,9 +25,10 @@ import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 
 type BlockWrapperProps = PropsWithChildren<{
-  blockPath: BlockPath;
+  blockPath: BlockPathType;
   block: AllBlocksType;
 }>;
 
@@ -65,9 +67,36 @@ export const BlockWrapper = ({
     return newPage;
   };
 
-  const addBlockToPage = () => {
-    addSelectedBlockToPage(exampleBlock, blockPathNumber);
-  };
+  const isParentBlock = (
+    block: AllBlocksType
+  ): block is z.infer<typeof ParentBlockUnion> =>
+    ParentBlockUnion.safeParse(block).success;
+
+  const isPage = (
+    page: AllBlocksType | DirektivPagesType
+  ): page is z.infer<typeof DirektivPagesSchema> =>
+    DirektivPagesSchema.safeParse(page).success;
+
+  const findParentBlock = (
+    block: AllBlocksType | DirektivPagesType,
+    path: number[]
+  ) =>
+    path
+      .slice(0, -1)
+      .reduce<AllBlocksType | DirektivPagesType>((acc, index) => {
+        if (isPage(acc)) {
+          return acc.blocks[index] as AllBlocksType;
+        }
+        if (!isParentBlock(acc)) {
+          throw new Error("Unexpected non-parent block while parsing path");
+        }
+        return acc.blocks[index] as AllBlocksType;
+      }, block);
+
+  const list = findParentBlock(page, [1, 0]);
+  console.log(list);
+
+  // const addBlockToPage = (block: AllBlocksType, path: BlockPathType) => {};
 
   useEffect(() => {
     if (mode !== "inspect") {

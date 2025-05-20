@@ -14,7 +14,16 @@ const examplePage: DirektivPagesType = {
   blocks: [
     {
       type: "text",
-      content: "Lorem Ipsum",
+      content: "Text block 1",
+    },
+    {
+      type: "card",
+      blocks: [
+        {
+          type: "card",
+          blocks: [{ type: "text", content: "text block in 2 cards" }],
+        },
+      ],
     },
     {
       type: "query-provider",

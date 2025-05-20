@@ -1,4 +1,4 @@
-import { Block, BlockPath } from ".";
+import { Block, BlockPathType } from ".";
 import {
   DialogClose,
   DialogContent,
@@ -14,7 +14,7 @@ import { DialogType } from "../../schema/blocks/dialog";
 
 type DialogProps = {
   blockProps: DialogType;
-  blockPath: BlockPath;
+  blockPath: BlockPathType;
 };
 export const Dialog = ({ blockProps, blockPath }: DialogProps) => {
   const { blocks, trigger } = blockProps;

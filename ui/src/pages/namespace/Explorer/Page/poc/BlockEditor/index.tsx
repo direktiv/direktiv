@@ -1,13 +1,13 @@
 import { AllBlocksType } from "../schema/blocks";
-import { BlockPath } from "../PageCompiler/Block";
+import { BlockPathType } from "../PageCompiler/Block";
 import { Text } from "../BlockEditor/Text";
 import { useBlock } from "../PageCompiler/context/pageCompilerContext";
 
-export type BlockFormProps = { path: BlockPath };
+export type BlockFormProps = { path: BlockPathType };
 
-export type BlockEditFormProps = { block: AllBlocksType; path: BlockPath };
+export type BlockEditFormProps = { block: AllBlocksType; path: BlockPathType };
 
-export const BlockForm = ({ path }: { path: BlockPath }) => {
+export const BlockForm = ({ path }: { path: BlockPathType }) => {
   const block = useBlock(path);
 
   if (Array.isArray(block)) {

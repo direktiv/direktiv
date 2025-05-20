@@ -13,10 +13,10 @@ import { useTranslation } from "react-i18next";
 
 type BlockProps = {
   block: AllBlocksType;
-  blockPath: BlockPath;
+  blockPath: BlockPathType;
 };
 
-export type BlockPath = number[];
+export type BlockPathType = number[];
 
 export const Block = ({ block, blockPath }: BlockProps) => {
   const { t } = useTranslation();

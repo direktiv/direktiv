@@ -1,7 +1,7 @@
 import { AllBlocksType, ParentBlockUnion } from "../../schema/blocks";
 import { FC, PropsWithChildren, createContext, useContext } from "react";
 
-import { BlockPath } from "../Block";
+import { BlockPathType } from "../Block";
 import { DirektivPagesType } from "../../schema";
 import { z } from "zod";
 
@@ -53,7 +53,7 @@ const isParentBlock = (
 ): block is z.infer<typeof ParentBlockUnion> =>
   ParentBlockUnion.safeParse(block).success;
 
-const getBlock = (list: BlockOrList, path: BlockPath): BlockOrList => {
+const getBlock = (list: BlockOrList, path: BlockPathType): BlockOrList => {
   const result = path.reduce<BlockOrList>((acc, index) => {
     let next;
 
@@ -72,7 +72,7 @@ const getBlock = (list: BlockOrList, path: BlockPath): BlockOrList => {
   return result;
 };
 
-const useBlock = (path: BlockPath) => {
+const useBlock = (path: BlockPathType) => {
   const page = usePage();
   return getBlock(page.blocks, path);
 };

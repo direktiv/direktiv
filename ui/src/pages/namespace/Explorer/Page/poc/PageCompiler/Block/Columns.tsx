@@ -1,11 +1,11 @@
-import { Block, BlockPath } from ".";
+import { Block, BlockPathType } from ".";
 
 import { BlockList } from "./utils/BlockList";
 import { ColumnsType } from "../../schema/blocks/columns";
 
 type ColumnsProps = {
   blockProps: ColumnsType;
-  blockPath: BlockPath;
+  blockPath: BlockPathType;
 };
 
 export const Columns = ({ blockProps, blockPath }: ColumnsProps) => (
