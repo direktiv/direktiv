@@ -1,6 +1,6 @@
 import { Button, ButtonType } from "./button";
 import { Card, CardType } from "./card";
-import { Columns, ColumnsType } from "./columns";
+import { Column, ColumnType, Columns, ColumnsType } from "./columns";
 import { Dialog, DialogType } from "./dialog";
 import { Form, FormType } from "./form";
 import { Headline, HeadlineType } from "./headline";
@@ -28,6 +28,7 @@ export const ParentBlockUnion = z.discriminatedUnion("type", [
   Form,
   Loop,
   QueryProvider,
+  Column,
   Columns,
 ]);
 
@@ -38,6 +39,7 @@ export type ParentBlocksType =
   | FormType
   | LoopType
   | QueryProviderType
+  | ColumnType
   | ColumnsType;
 
 export type AllBlocksType = SimpleBlocksType | ParentBlocksType;

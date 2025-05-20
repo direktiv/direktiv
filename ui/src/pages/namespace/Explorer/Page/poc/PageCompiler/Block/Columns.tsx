@@ -12,7 +12,7 @@ export const Columns = ({ blockProps, blockPath }: ColumnsProps) => (
   <BlockList horizontal>
     {blockProps.blocks.map((column, columnIndex) => (
       <BlockList key={columnIndex}>
-        {column.map((block, blockIndex) => (
+        {column.blocks.map((block, blockIndex) => (
           <Block
             key={blockIndex}
             block={block}

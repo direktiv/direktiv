@@ -95,8 +95,27 @@ export const BlockWrapper = ({
     content: "This is the updated text",
   });
 
-  const addBlockToPage = (block: AllBlocksType, path: BlockPathType) => {
-    `TBD ${block} ${path}`;
+  const addBlock = (
+    page: DirektivPagesType,
+    block: AllBlocksType,
+    path: BlockPathType
+  ) => {
+    const newPage = clonePage(page);
+    const parent = findBlock(newPage, path.slice(0, -1));
+    const index = path[path.length] as number;
+
+    if (isPage(parent) || isParentBlock(parent)) {
+      const newList: AllBlocksType[] = [
+        ...parent.blocks.slice(0, index - 1),
+        block,
+        ...parent.blocks.slice(index),
+      ];
+
+      parent.blocks = newList;
+      return newPage;
+    }
+
+    throw new Error("Could not update block");
   };
 
   useEffect(() => {
@@ -124,13 +143,17 @@ export const BlockWrapper = ({
       <Button
         variant="outline"
         className="w-fit"
-        onClick={
-          () => setPage(updatedPage)
-          // addBlockToPage({ type: "text", content: "Added text" }, [0])
-        }
+        onClick={() => {
+          const newPage = addBlock(
+            page,
+            { type: "text", content: "New block!" },
+            blockPath
+          );
+          setPage(newPage);
+        }}
       >
         <Plus className="size-4 mr-2" />
-        Test
+        Add Block
       </Button>
       <div
         ref={containerRef}
