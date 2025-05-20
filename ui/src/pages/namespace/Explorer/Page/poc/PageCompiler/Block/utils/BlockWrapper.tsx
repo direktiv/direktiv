@@ -20,9 +20,9 @@ import { BlockForm } from "../../../BlockEditor";
 import { BlockPathType } from "..";
 import Button from "~/design/Button";
 import { ErrorBoundary } from "react-error-boundary";
-import { HeadlineType } from "../../../schema/blocks/headline";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
+import { clonePage } from "../../../BlockEditor/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -45,28 +45,6 @@ export const BlockWrapper = ({
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const blockPathNumber = Number(blockPath.slice(7));
-
-  const exampleBlock: HeadlineType = {
-    type: "headline",
-    label: "example",
-    level: "h2",
-  };
-
-  const addSelectedBlockToPage = (block: HeadlineType, index: number) => {
-    const newPage = {
-      ...page,
-      blocks: [
-        ...page.blocks.slice(0, index),
-        block,
-        ...page.blocks.slice(index),
-      ],
-    };
-
-    setPage(newPage);
-    return newPage;
-  };
-
   const isParentBlock = (
     block: AllBlocksType
   ): block is z.infer<typeof ParentBlockUnion> =>
@@ -77,26 +55,49 @@ export const BlockWrapper = ({
   ): page is z.infer<typeof DirektivPagesSchema> =>
     DirektivPagesSchema.safeParse(page).success;
 
-  const findParentBlock = (
-    block: AllBlocksType | DirektivPagesType,
-    path: number[]
+  const findBlock = (
+    parent: AllBlocksType | DirektivPagesType,
+    path: BlockPathType
   ) =>
-    path
-      .slice(0, -1)
-      .reduce<AllBlocksType | DirektivPagesType>((acc, index) => {
-        if (isPage(acc)) {
-          return acc.blocks[index] as AllBlocksType;
-        }
-        if (isParentBlock(acc)) {
-          return acc.blocks[index] as AllBlocksType;
-        }
-        throw new Error("Unexpected non-parent block while parsing path");
-      }, block);
+    path.reduce<AllBlocksType | DirektivPagesType>((acc, index) => {
+      let next;
 
-  const list = findParentBlock(page, [1, 0]);
-  console.log(list);
+      if (isPage(acc) || isParentBlock(acc)) {
+        next = acc.blocks[index] as AllBlocksType;
+      }
 
-  // const addBlockToPage = (block: AllBlocksType, path: BlockPathType) => {};
+      if (next) {
+        return next;
+      }
+
+      throw new Error(`index ${index} not found in ${JSON.stringify(acc)}`);
+    }, parent);
+
+  const updateBlock = (
+    page: DirektivPagesType,
+    path: BlockPathType,
+    block: AllBlocksType
+  ): DirektivPagesType => {
+    const newPage = clonePage(page);
+    const parent = findBlock(newPage, path.slice(0, -1));
+    const targetIndex = path[path.length - 1] as number;
+
+    if (isPage(parent) || isParentBlock(parent)) {
+      parent.blocks[targetIndex] = block;
+      return newPage;
+    }
+
+    throw new Error("Could not update block");
+  };
+
+  const updatedPage = updateBlock(page, [1, 0, 0], {
+    type: "text",
+    content: "This is the updated text",
+  });
+
+  const addBlockToPage = (block: AllBlocksType, path: BlockPathType) => {
+    `TBD ${block} ${path}`;
+  };
 
   useEffect(() => {
     if (mode !== "inspect") {
@@ -123,10 +124,13 @@ export const BlockWrapper = ({
       <Button
         variant="outline"
         className="w-fit"
-        onClick={() => addBlockToPage()}
+        onClick={
+          () => setPage(updatedPage)
+          // addBlockToPage({ type: "text", content: "Added text" }, [0])
+        }
       >
         <Plus className="size-4 mr-2" />
-        Add Element
+        Test
       </Button>
       <div
         ref={containerRef}
