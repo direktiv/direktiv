@@ -141,9 +141,6 @@ func (c *knativeClient) createService(sv *core.ServiceFileData) error {
 	return nil
 }
 
-// xKnative
-//
-//nolint:unused
 func (c *knativeClient) applyPatch(sv *core.ServiceFileData) error {
 	pathWhiteList := []string{
 		"/spec/template/metadata/labels",
