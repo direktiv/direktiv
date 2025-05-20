@@ -152,33 +152,8 @@ func buildServiceMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMet
 
 	meta.Annotations["direktiv.io/inputHash"] = sv.GetValueHash()
 	meta.Annotations[annotationMinScale] = strconv.Itoa(sv.Scale)
-	// xKnative
-	// meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
-	// meta.Annotations["networking.knative.dev/ingress.class"] = c.KnativeIngressClass
 
 	return meta
-}
-
-// xKnative.
-//
-//nolint:unused
-func buildPodMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMeta {
-	metaSpec := metav1.ObjectMeta{
-		Namespace:   c.KnativeNamespace,
-		Labels:      make(map[string]string),
-		Annotations: make(map[string]string),
-	}
-	metaSpec.Labels["direktiv-app"] = "direktiv"
-
-	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = strconv.Itoa(sv.Scale)
-	metaSpec.Annotations["autoscaling.knative.dev/maxScale"] = strconv.Itoa(c.KnativeMaxScale)
-
-	if len(c.KnativeNetShape) > 0 {
-		metaSpec.Annotations["kubernetes.io/ingress-bandwidth"] = c.KnativeNetShape
-		metaSpec.Annotations["kubernetes.io/egress-bandwidth"] = c.KnativeNetShape
-	}
-
-	return metaSpec
 }
 
 func buildVolumes(_ *core.Config, sv *core.ServiceFileData) []corev1.Volume {

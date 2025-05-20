@@ -99,7 +99,6 @@ func (c *knativeClient) createService(sv *core.ServiceFileData) error {
 
 	// Step1: prepare registry secrets
 	var registrySecrets []coreV1.LocalObjectReference
-	// xKnative
 	secrets, err := c.k8sCli.CoreV1().Secrets(c.config.KnativeNamespace).
 		List(context.Background(),
 			metaV1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, sv.Namespace)})
