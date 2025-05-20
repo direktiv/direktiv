@@ -16,29 +16,34 @@ import { z } from "zod";
  * It is currently possible to extend the type without updating the schema.
  * The schema needs to get the type input to avoid circular dependencies.
  */
-export type AllBlocksType =
-  | ButtonType
+
+export const SimpleBlockUnion = z.discriminatedUnion("type", [
+  Button,
+  Text,
+  Headline,
+]);
+export const ParentBlockUnion = z.discriminatedUnion("type", [
+  Card,
+  Dialog,
+  Form,
+  Loop,
+  QueryProvider,
+  Columns,
+]);
+
+export type SimpleBlocksType = ButtonType | HeadlineType | TextType;
+export type ParentBlocksType =
   | CardType
   | DialogType
   | FormType
-  | HeadlineType
   | LoopType
   | QueryProviderType
-  | TextType
   | ColumnsType;
 
+export type AllBlocksType = SimpleBlocksType | ParentBlocksType;
+
 export const AllBlocks: z.ZodType<AllBlocksType> = z.lazy(() =>
-  z.discriminatedUnion("type", [
-    Button,
-    Card,
-    Dialog,
-    Form,
-    Headline,
-    Loop,
-    QueryProvider,
-    Text,
-    Columns,
-  ])
+  z.union([SimpleBlockUnion, ParentBlockUnion])
 );
 
 export const TriggerBlocks = z.discriminatedUnion("type", [Button]);

@@ -13,6 +13,10 @@ const examplePage: DirektivPagesType = {
   direktiv_api: "pages/v1",
   blocks: [
     {
+      type: "text",
+      content: "Lorem Ipsum",
+    },
+    {
       type: "query-provider",
       queries: [
         {
@@ -75,7 +79,7 @@ type Mode = ComponentProps<typeof PageCompiler>["mode"];
 
 const PageEditor = () => {
   const theme = useTheme();
-  const [mode, setMode] = useState<Mode>("live");
+  const [mode, setMode] = useState<Mode>("inspect");
   const [page, setPage] = useState(examplePage);
   const [validate, setValidate] = useState(true);
   const [showEditor, setShowEditor] = useState(false);

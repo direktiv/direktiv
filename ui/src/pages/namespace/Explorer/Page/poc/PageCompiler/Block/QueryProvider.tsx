@@ -1,4 +1,4 @@
-import { BlockPath, addSegmentsToPath } from "./utils/blockPath";
+import { Block, BlockPath } from ".";
 import {
   State,
   VariableContextProvider,
@@ -6,7 +6,6 @@ import {
 } from "../primitives/Variable/VariableContext";
 import { queryOptions, useSuspenseQueries } from "@tanstack/react-query";
 
-import { Block } from ".";
 import { BlockList } from "./utils/BlockList";
 import { QueryProviderType } from "../../schema/blocks/queryProvider";
 import { useTranslation } from "react-i18next";
@@ -81,11 +80,7 @@ export const QueryProvider = ({
     >
       <BlockList>
         {blocks.map((block, index) => (
-          <Block
-            key={index}
-            block={block}
-            blockPath={addSegmentsToPath(blockPath, index)}
-          />
+          <Block key={index} block={block} blockPath={[...blockPath, index]} />
         ))}
       </BlockList>
     </VariableContextProvider>

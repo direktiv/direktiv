@@ -1,5 +1,4 @@
 import { AllBlocksType } from "../../schema/blocks";
-import { BlockPath } from "./utils/blockPath";
 import { BlockWrapper } from "./utils/BlockWrapper";
 import { Button } from "./Button";
 import { Card } from "./Card";
@@ -16,6 +15,8 @@ type BlockProps = {
   block: AllBlocksType;
   blockPath: BlockPath;
 };
+
+export type BlockPath = number[];
 
 export const Block = ({ block, blockPath }: BlockProps) => {
   const { t } = useTranslation();

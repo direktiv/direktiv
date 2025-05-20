@@ -1,10 +1,9 @@
-import { BlockPath, addSegmentsToPath } from "./utils/blockPath";
+import { Block, BlockPath } from ".";
 import {
   VariableContextProvider,
   useVariables,
 } from "../primitives/Variable/VariableContext";
 
-import { Block } from ".";
 import { BlockList } from "./utils/BlockList";
 import { LoopType } from "../../schema/blocks/loop";
 import { VariableError } from "../primitives/Variable/Error";
@@ -50,16 +49,12 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
           }}
         >
           <BlockList>
-            {blocks.map((block, blockIndex) => (
-              <Block
-                key={blockIndex}
-                block={block}
-                blockPath={addSegmentsToPath(blockPath, [
-                  `loop#${variableIndex}`,
-                  blockIndex,
-                ])}
-              />
-            ))}
+            {blocks.map((block, blockIndex) => {
+              const path = [...blockPath, blockIndex];
+              return (
+                <Block key={path.join(".")} block={block} blockPath={path} />
+              );
+            })}
           </BlockList>
         </VariableContextProvider>
       ))}

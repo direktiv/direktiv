@@ -1,3 +1,5 @@
+import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
+import { Edit, Plus } from "lucide-react";
 import {
   PropsWithChildren,
   Suspense,
@@ -13,13 +15,13 @@ import {
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
-import { BlockPath } from "./blockPath";
+import { BlockForm } from "../../../BlockEditor";
+import { BlockPath } from "..";
 import Button from "~/design/Button";
 import { ErrorBoundary } from "react-error-boundary";
 import { HeadlineType } from "../../../schema/blocks/headline";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
-import { Plus } from "lucide-react";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 
@@ -94,25 +96,43 @@ export const BlockWrapper = ({
         className="w-fit"
         onClick={() => addBlockToPage()}
       >
-        <Plus className="size-4 mr-2" /> Add Element
+        <Plus className="size-4 mr-2" />
+        Add Element
       </Button>
       <div
         ref={containerRef}
         className={twMergeClsx(
-          mode === "inspect" && "border-solid bg-gray-2 dark:bg-gray-dark-2"
+          mode === "inspect" &&
+            "rounded-md relative p-3 border-2 border-gray-4 border-dashed dark:border-gray-dark-4 bg-white dark:bg-black",
+          isHovered &&
+            mode === "inspect" &&
+            "border-solid bg-gray-2 dark:bg-gray-dark-2"
         )}
         data-block-wrapper
       >
         {mode === "inspect" && (
-          <Badge
-            className="-m-6 absolute z-50"
-            variant="secondary"
-            style={{
-              display: isHovered ? "block" : "none",
-            }}
-          >
-            <b>{block.type}</b> {blockPath}
-          </Badge>
+          <Dialog>
+            <Badge
+              className="-m-6 absolute z-50"
+              variant="secondary"
+              style={{
+                display: isHovered ? "block" : "none",
+              }}
+            >
+              <b>{block.type}</b> {blockPath.join(".")}
+            </Badge>
+            <DialogTrigger className="float-right" asChild>
+              <Button
+                variant="ghost"
+                style={{ display: isHovered ? "block" : "none" }}
+              >
+                <Edit />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <BlockForm path={blockPath}></BlockForm>
+            </DialogContent>
+          </Dialog>
         )}
         <Suspense fallback={<Loading />}>
           <ErrorBoundary

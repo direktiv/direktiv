@@ -8,7 +8,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Block } from "./Block";
 import { BlockList } from "./Block/utils/BlockList";
 import { ParsingError } from "./Block/utils/ParsingError";
-import { addSegmentsToPath } from "./Block/utils/blockPath";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -46,11 +45,7 @@ export const PageCompiler = ({
       <QueryClientProvider client={queryClient}>
         <BlockList>
           {page.blocks.map((block, index) => (
-            <Block
-              key={index}
-              block={block}
-              blockPath={addSegmentsToPath("blocks", index)}
-            />
+            <Block key={index} block={block} blockPath={[index]} />
           ))}
         </BlockList>
       </QueryClientProvider>
