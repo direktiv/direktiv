@@ -18,7 +18,6 @@ type runtimeClient interface {
 	cleanIdleServices(activeList []string) []error
 	streamServiceLogs(id string, podID string) (io.ReadCloser, error)
 	listServicePods(id string) (any, error)
-	rebuildService(id string) error
 }
 
 type status interface {

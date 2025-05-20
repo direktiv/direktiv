@@ -272,11 +272,6 @@ func (c *knativeClient) listServicePods(id string) (any, error) {
 	return pods, nil
 }
 
-func (c *knativeClient) rebuildService(id string) error {
-	return c.k8sCli.AppsV1().Deployments(c.config.KnativeNamespace).Delete(context.Background(), id,
-		metaV1.DeleteOptions{})
-}
-
 var _ runtimeClient = &knativeClient{}
 
 type knativeStatus struct {

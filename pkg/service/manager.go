@@ -297,7 +297,7 @@ func (m *Manager) Rebuild(namespace string, serviceID string) error {
 		return err
 	}
 
-	return m.runtimeClient.rebuildService(serviceID)
+	return m.runtimeClient.deleteService(serviceID)
 }
 
 func (m *Manager) setServiceDefaults(sv *core.ServiceFileData) {
