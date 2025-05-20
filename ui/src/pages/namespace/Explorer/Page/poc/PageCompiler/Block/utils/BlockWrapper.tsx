@@ -87,10 +87,10 @@ export const BlockWrapper = ({
         if (isPage(acc)) {
           return acc.blocks[index] as AllBlocksType;
         }
-        if (!isParentBlock(acc)) {
-          throw new Error("Unexpected non-parent block while parsing path");
+        if (isParentBlock(acc)) {
+          return acc.blocks[index] as AllBlocksType;
         }
-        return acc.blocks[index] as AllBlocksType;
+        throw new Error("Unexpected non-parent block while parsing path");
       }, block);
 
   const list = findParentBlock(page, [1, 0]);
