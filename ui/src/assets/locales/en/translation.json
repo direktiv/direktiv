@@ -1660,6 +1660,9 @@
       }
     },
     "blockEditor": {
+      "generic": {
+        "saveButton": "Save"
+      },
       "Text": {
         "modalTitle": "Edit Text Block @{{path}}"
       }
