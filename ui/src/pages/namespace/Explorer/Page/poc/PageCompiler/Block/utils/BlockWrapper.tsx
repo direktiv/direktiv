@@ -90,11 +90,6 @@ export const BlockWrapper = ({
     throw new Error("Could not update block");
   };
 
-  const updatedPage = updateBlock(page, [1, 0, 0], {
-    type: "text",
-    content: "This is the updated text",
-  });
-
   const addBlock = (
     page: DirektivPagesType,
     block: AllBlocksType,
