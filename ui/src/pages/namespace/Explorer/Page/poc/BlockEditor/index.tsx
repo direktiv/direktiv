@@ -1,14 +1,23 @@
+import {
+  useBlock,
+  useUpdateBlock,
+} from "../PageCompiler/context/pageCompilerContext";
+
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
 import { Text } from "../BlockEditor/Text";
-import { useBlock } from "../PageCompiler/context/pageCompilerContext";
 
 export type BlockFormProps = { path: BlockPathType };
 
-export type BlockEditFormProps = { block: AllBlocksType; path: BlockPathType };
+export type BlockEditFormProps = {
+  block: AllBlocksType;
+  path: BlockPathType;
+  onSave: (newBlock: AllBlocksType) => void;
+};
 
 export const BlockForm = ({ path }: { path: BlockPathType }) => {
   const block = useBlock(path);
+  const { updateBlock } = useUpdateBlock();
 
   if (Array.isArray(block)) {
     throw Error("Can not load list into block editor");
@@ -16,7 +25,15 @@ export const BlockForm = ({ path }: { path: BlockPathType }) => {
 
   switch (block.type) {
     case "text": {
-      return <Text block={block} path={path} />;
+      return (
+        <Text
+          block={block}
+          path={path}
+          onSave={(newBlock) => {
+            updateBlock(path, newBlock);
+          }}
+        />
+      );
     }
   }
 

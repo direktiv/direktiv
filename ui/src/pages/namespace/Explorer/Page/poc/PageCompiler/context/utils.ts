@@ -43,7 +43,7 @@ export const findBlock = (
   }, parent) as AllBlocksType;
 };
 
-export const updateBlock = (
+export const updateBlockInPage = (
   page: DirektivPagesType,
   path: BlockPathType,
   block: AllBlocksType

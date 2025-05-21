@@ -11,7 +11,11 @@ type TextBlockEditFormProps = Omit<BlockEditFormProps, "block"> & {
   block: TextType;
 };
 
-export const Text = ({ block: propBlock, path }: TextBlockEditFormProps) => {
+export const Text = ({
+  block: propBlock,
+  path,
+  onSave,
+}: TextBlockEditFormProps) => {
   const { t } = useTranslation();
 
   const [block, setBlock] = useState<TextType>(structuredClone(propBlock));
@@ -37,7 +41,7 @@ export const Text = ({ block: propBlock, path }: TextBlockEditFormProps) => {
       <div>Debug Info {JSON.stringify(block)}</div>
 
       <DialogFooter>
-        <Button variant="primary" onClick={() => "TBD"}>
+        <Button variant="primary" onClick={() => onSave(block)}>
           {t("direktivPage.blockEditor.generic.saveButton")}
         </Button>
       </DialogFooter>

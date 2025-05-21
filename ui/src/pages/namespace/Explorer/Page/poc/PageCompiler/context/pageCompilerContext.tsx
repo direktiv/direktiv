@@ -1,8 +1,9 @@
 import { FC, PropsWithChildren, createContext, useContext } from "react";
+import { findBlock, updateBlockInPage } from "./utils";
 
+import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../Block";
 import { DirektivPagesType } from "../../schema";
-import { findBlock } from "./utils";
 
 export type State = {
   mode: "inspect" | "live";
@@ -51,6 +52,19 @@ const useBlock = (path: BlockPathType) => {
 const useSetPage = () => {
   const { setPage } = usePageStateContext();
   return setPage;
+};
+
+export const useUpdateBlock = () => {
+  const page = usePage();
+  const setPage = useSetPage();
+  const updateBlock = (path: BlockPathType, newBlock: AllBlocksType) => {
+    const newPage = updateBlockInPage(page, path, newBlock);
+    setPage(newPage);
+  };
+
+  return {
+    updateBlock,
+  };
 };
 
 export { PageCompilerContextProvider, useMode, usePage, useSetPage, useBlock };
