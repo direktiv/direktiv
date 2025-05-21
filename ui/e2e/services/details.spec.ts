@@ -37,10 +37,10 @@ test("Service details page provides information about the service", async ({
           match: (service) =>
             service.filePath === serviceFile.data.path &&
             (service.conditions ?? []).some(
-              (c) => c.type === "ConfigurationsReady" && c.status === "True"
+              (c) => c.type === "Available" && c.status === "True"
             ),
         }),
-      "the service in the backend is in state ConfigurationsReady"
+      "the service in the backend is in state Available"
     )
     .toBeTruthy();
 
@@ -79,10 +79,8 @@ test("Service details page provides information about the service", async ({
   ).toBeVisible();
 
   await expect(
-    page
-      .getByTestId("service-detail-header")
-      .filter({ hasText: "ConfigurationsReady" }),
-    "it renders the ConfigurationsReady status"
+    page.getByTestId("service-detail-header").filter({ hasText: "Available" }),
+    "it renders the Available status"
   ).toBeVisible();
 
   await expect(
@@ -174,7 +172,7 @@ test("Service details page renders no logs when the service did not mount", asyn
           match: (service) =>
             service.filePath === serviceFile.data.path &&
             (service.conditions ?? []).some(
-              (c) => c.type === "ConfigurationsReady" && c.status === "False"
+              (c) => c.type === "Available" && c.status === "False"
             ),
         }),
       "the service in the backend is in an Error state"

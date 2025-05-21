@@ -54,10 +54,10 @@ test("Service list shows all available services", async ({ page }) => {
           match: (service) =>
             service.filePath === serviceFile.data.path &&
             (service.conditions ?? []).some(
-              (c) => c.type === "ConfigurationsReady" && c.status === "True"
+              (c) => c.type === "Available" && c.status === "True"
             ),
         }),
-      "the service in the backend is in state ConfigurationsReady"
+      "the service in the backend is in state Available"
     )
     .toBeTruthy();
 
@@ -78,8 +78,8 @@ test("Service list shows all available services", async ({ page }) => {
   ).toBeVisible();
 
   await expect(
-    page.getByTestId("service-row").filter({ hasText: "ConfigurationsReady" }),
-    "it renders the ConfigurationsReady status of the service"
+    page.getByTestId("service-row").filter({ hasText: "Available" }),
+    "it renders the Available status of the service"
   ).toBeVisible();
 
   await expect(
@@ -222,10 +222,10 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
           match: (service) =>
             service.filePath === serviceFile.data.path &&
             (service.conditions ?? []).some(
-              (c) => c.type === "ConfigurationsReady" && c.status === "True"
+              (c) => c.type === "Available" && c.status === "True"
             ),
         }),
-      "the service in the backend is in state ConfigurationsReady"
+      "the service in the backend is in state Available"
     )
     .toBeTruthy();
 
@@ -234,8 +234,8 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
   });
 
   await expect(
-    page.getByTestId("service-row").filter({ hasText: "ConfigurationsReady" }),
-    "it renders the ConfigurationsReady status of the service"
+    page.getByTestId("service-row").filter({ hasText: "Available" }),
+    "it renders the Available status of the service"
   ).toBeVisible();
 
   await page.getByTestId("service-row").getByRole("button").click();
@@ -273,7 +273,7 @@ test("Service list highlights services that have errors", async ({ page }) => {
           match: (service) =>
             service.filePath === serviceFile.data.path &&
             (service.conditions ?? []).some(
-              (c) => c.type === "ConfigurationsReady" && c.status === "False"
+              (c) => c.type === "Available" && c.status === "False"
             ),
         }),
       "the service in the backend is in an error state"
@@ -287,7 +287,7 @@ test("Service list highlights services that have errors", async ({ page }) => {
   await page
     .getByTestId("service-row")
     .locator("a")
-    .filter({ hasText: "ConfigurationsReady" })
+    .filter({ hasText: "Available" })
     .hover();
 
   await await expect(
