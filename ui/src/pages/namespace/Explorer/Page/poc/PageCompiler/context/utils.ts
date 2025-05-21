@@ -15,11 +15,6 @@ export const isPage = (
 ): page is z.infer<typeof DirektivPagesSchema> =>
   DirektivPagesSchema.safeParse(page).success;
 
-/**
- * Note: This function cannot logically return a page, but TypeScript doesn't
- * recognize that the type is narrowed down in the Array.prototype.reduce()
- * function. Thus we need to explicitly typecast the return.
- */
 export const findBlock = (
   parent: AllBlocksType | DirektivPagesType,
   path: BlockPathType
@@ -75,5 +70,5 @@ export const addBlockToPage = (
     return newPage;
   }
 
-  throw new Error("Could not update block");
+  throw new Error("Could not add block");
 };
