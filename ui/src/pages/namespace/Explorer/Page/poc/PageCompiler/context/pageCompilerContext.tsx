@@ -1,9 +1,8 @@
-import { AllBlocksType, ParentBlockUnion } from "../../schema/blocks";
 import { FC, PropsWithChildren, createContext, useContext } from "react";
 
 import { BlockPathType } from "../Block";
 import { DirektivPagesType } from "../../schema";
-import { z } from "zod";
+import { findBlock } from "./utils";
 
 export type State = {
   mode: "inspect" | "live";
@@ -44,37 +43,9 @@ const usePage = () => {
   return page;
 };
 
-type Block = AllBlocksType;
-type List = AllBlocksType[];
-type BlockOrList = Block | List;
-
-const isParentBlock = (
-  block: AllBlocksType
-): block is z.infer<typeof ParentBlockUnion> =>
-  ParentBlockUnion.safeParse(block).success;
-
-const getBlock = (list: BlockOrList, path: BlockPathType): BlockOrList => {
-  const result = path.reduce<BlockOrList>((acc, index) => {
-    let next;
-
-    if (Array.isArray(acc)) {
-      next = acc[index];
-    } else if (isParentBlock(acc)) {
-      next = acc.blocks[index];
-    }
-
-    if (next) {
-      return next;
-    }
-
-    throw Error(`index ${index} not found in ${JSON.stringify(acc)}`);
-  }, list);
-  return result;
-};
-
 const useBlock = (path: BlockPathType) => {
   const page = usePage();
-  return getBlock(page.blocks, path);
+  return findBlock(page, path);
 };
 
 const useSetPage = () => {

@@ -1,6 +1,4 @@
-import { AllBlocksType, ParentBlockUnion } from "../../../schema/blocks";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import { DirektivPagesSchema, DirektivPagesType } from "../../../schema";
 import { Edit, Plus } from "lucide-react";
 import {
   PropsWithChildren,
@@ -15,6 +13,7 @@ import {
   useSetPage,
 } from "../../context/pageCompilerContext";
 
+import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockForm } from "../../../BlockEditor";
 import { BlockPathType } from "..";
@@ -22,10 +21,9 @@ import Button from "~/design/Button";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
-import { clonePage } from "../../../BlockEditor/utils";
+import { addBlock } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
 
 type BlockWrapperProps = PropsWithChildren<{
   blockPath: BlockPathType;
@@ -44,74 +42,6 @@ export const BlockWrapper = ({
 
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const isParentBlock = (
-    block: AllBlocksType
-  ): block is z.infer<typeof ParentBlockUnion> =>
-    ParentBlockUnion.safeParse(block).success;
-
-  const isPage = (
-    page: AllBlocksType | DirektivPagesType
-  ): page is z.infer<typeof DirektivPagesSchema> =>
-    DirektivPagesSchema.safeParse(page).success;
-
-  const findBlock = (
-    parent: AllBlocksType | DirektivPagesType,
-    path: BlockPathType
-  ) =>
-    path.reduce<AllBlocksType | DirektivPagesType>((acc, index) => {
-      let next;
-
-      if (isPage(acc) || isParentBlock(acc)) {
-        next = acc.blocks[index] as AllBlocksType;
-      }
-
-      if (next) {
-        return next;
-      }
-
-      throw new Error(`index ${index} not found in ${JSON.stringify(acc)}`);
-    }, parent);
-
-  const updateBlock = (
-    page: DirektivPagesType,
-    path: BlockPathType,
-    block: AllBlocksType
-  ): DirektivPagesType => {
-    const newPage = clonePage(page);
-    const parent = findBlock(newPage, path.slice(0, -1));
-    const targetIndex = path[path.length - 1] as number;
-
-    if (isPage(parent) || isParentBlock(parent)) {
-      parent.blocks[targetIndex] = block;
-      return newPage;
-    }
-
-    throw new Error("Could not update block");
-  };
-
-  const addBlock = (
-    page: DirektivPagesType,
-    block: AllBlocksType,
-    path: BlockPathType
-  ) => {
-    const newPage = clonePage(page);
-    const parent = findBlock(newPage, path.slice(0, -1));
-    const index = path[path.length] as number;
-
-    if (isPage(parent) || isParentBlock(parent)) {
-      const newList: AllBlocksType[] = [
-        ...parent.blocks.slice(0, index - 1),
-        block,
-        ...parent.blocks.slice(index),
-      ];
-
-      parent.blocks = newList;
-      return newPage;
-    }
-
-    throw new Error("Could not update block");
-  };
 
   useEffect(() => {
     if (mode !== "inspect") {

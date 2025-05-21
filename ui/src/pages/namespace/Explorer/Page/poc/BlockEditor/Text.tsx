@@ -20,7 +20,6 @@ export const Text = ({ block: propBlock, path }: TextBlockEditFormProps) => {
     <>
       <DialogHeader>
         <DialogTitle>
-          {" "}
           {t("direktivPage.blockEditor.Text.modalTitle", {
             path: path.join("."),
           })}
