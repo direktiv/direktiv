@@ -293,7 +293,7 @@ test("Service list highlights services that have errors", async ({ page }) => {
   await await expect(
     page
       .getByTestId("service-row")
-      .getByText("failed with message: Unable to fetch image"),
+      .getByText("not have minimum availability"),
     "it renders the error in a tooltip"
   ).toBeVisible();
 });
