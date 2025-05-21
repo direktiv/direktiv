@@ -7,11 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  useMode,
-  usePage,
-  useSetPage,
-} from "../../context/pageCompilerContext";
+import { useAddBlock, useMode } from "../../context/pageCompilerContext";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
@@ -21,7 +17,6 @@ import Button from "~/design/Button";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
-import { addBlock } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 
@@ -37,11 +32,10 @@ export const BlockWrapper = ({
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
   const mode = useMode();
-  const page = usePage();
-  const setPage = useSetPage();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { addBlock } = useAddBlock();
 
   useEffect(() => {
     if (mode !== "inspect") {
@@ -68,14 +62,12 @@ export const BlockWrapper = ({
       <Button
         variant="outline"
         className="w-fit"
-        onClick={() => {
-          const newPage = addBlock(
-            page,
-            { type: "text", content: "New block!" },
-            blockPath
-          );
-          setPage(newPage);
-        }}
+        onClick={() =>
+          addBlock(blockPath, {
+            type: "text",
+            content: "New block!",
+          })
+        }
       >
         <Plus className="size-4 mr-2" />
         Add Block

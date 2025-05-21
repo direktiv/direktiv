@@ -1,5 +1,5 @@
 import { FC, PropsWithChildren, createContext, useContext } from "react";
-import { findBlock, updateBlockInPage } from "./utils";
+import { addBlockToPage, findBlock, updateBlockInPage } from "./utils";
 
 import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../Block";
@@ -64,6 +64,19 @@ export const useUpdateBlock = () => {
 
   return {
     updateBlock,
+  };
+};
+
+export const useAddBlock = () => {
+  const page = usePage();
+  const setPage = useSetPage();
+  const addBlock = (path: BlockPathType, block: AllBlocksType) => {
+    const newPage = addBlockToPage(page, path, block);
+    setPage(newPage);
+  };
+
+  return {
+    addBlock,
   };
 };
 

@@ -23,12 +23,8 @@ export const isPage = (
 export const findBlock = (
   parent: AllBlocksType | DirektivPagesType,
   path: BlockPathType
-): AllBlocksType => {
-  if (path.length === 0) {
-    throw new Error("Path must not be empty");
-  }
-
-  return path.reduce<AllBlocksType | DirektivPagesType>((acc, index) => {
+) =>
+  path.reduce<AllBlocksType | DirektivPagesType>((acc, index) => {
     let next;
 
     if (isPage(acc) || isParentBlock(acc)) {
@@ -40,8 +36,7 @@ export const findBlock = (
     }
 
     return next;
-  }, parent) as AllBlocksType;
-};
+  }, parent);
 
 export const updateBlockInPage = (
   page: DirektivPagesType,
@@ -60,18 +55,18 @@ export const updateBlockInPage = (
   throw new Error("Could not update block");
 };
 
-export const addBlock = (
+export const addBlockToPage = (
   page: DirektivPagesType,
-  block: AllBlocksType,
-  path: BlockPathType
+  path: BlockPathType,
+  block: AllBlocksType
 ) => {
   const newPage = clonePage(page);
   const parent = findBlock(newPage, path.slice(0, -1));
-  const index = path[path.length] as number;
+  const index = path[path.length - 1] as number;
 
   if (isPage(parent) || isParentBlock(parent)) {
     const newList: AllBlocksType[] = [
-      ...parent.blocks.slice(0, index - 1),
+      ...parent.blocks.slice(0, index),
       block,
       ...parent.blocks.slice(index),
     ];

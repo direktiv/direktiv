@@ -6,6 +6,7 @@ import {
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
 import { Text } from "../BlockEditor/Text";
+import { isPage } from "../PageCompiler/context/utils";
 
 export type BlockFormProps = { path: BlockPathType; close: () => void };
 
@@ -23,18 +24,18 @@ export const BlockForm = ({ path, close }: BlockFormProps) => {
     throw Error("Can not load list into block editor");
   }
 
+  if (isPage(block)) {
+    throw Error("Unexpected page object when parsing block");
+  }
+
+  const handleUpdate = (newBlock: AllBlocksType) => {
+    updateBlock(path, newBlock);
+    close();
+  };
+
   switch (block.type) {
     case "text": {
-      return (
-        <Text
-          block={block}
-          path={path}
-          onSave={(newBlock) => {
-            updateBlock(path, newBlock);
-            close();
-          }}
-        />
-      );
+      return <Text block={block} path={path} onSave={handleUpdate} />;
     }
   }
 
