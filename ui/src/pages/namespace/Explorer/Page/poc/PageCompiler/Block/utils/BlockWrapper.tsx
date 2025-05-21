@@ -39,7 +39,7 @@ export const BlockWrapper = ({
   const mode = useMode();
   const page = usePage();
   const setPage = useSetPage();
-
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -92,7 +92,7 @@ export const BlockWrapper = ({
         data-block-wrapper
       >
         {mode === "inspect" && (
-          <Dialog>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <Badge
               className="-m-6 absolute z-50"
               variant="secondary"
@@ -111,7 +111,10 @@ export const BlockWrapper = ({
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <BlockForm path={blockPath}></BlockForm>
+              <BlockForm
+                path={blockPath}
+                close={() => setDialogOpen(false)}
+              ></BlockForm>
             </DialogContent>
           </Dialog>
         )}

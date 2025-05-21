@@ -7,7 +7,7 @@ import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
 import { Text } from "../BlockEditor/Text";
 
-export type BlockFormProps = { path: BlockPathType };
+export type BlockFormProps = { path: BlockPathType; close: () => void };
 
 export type BlockEditFormProps = {
   block: AllBlocksType;
@@ -15,7 +15,7 @@ export type BlockEditFormProps = {
   onSave: (newBlock: AllBlocksType) => void;
 };
 
-export const BlockForm = ({ path }: { path: BlockPathType }) => {
+export const BlockForm = ({ path, close }: BlockFormProps) => {
   const block = useBlock(path);
   const { updateBlock } = useUpdateBlock();
 
@@ -31,6 +31,7 @@ export const BlockForm = ({ path }: { path: BlockPathType }) => {
           path={path}
           onSave={(newBlock) => {
             updateBlock(path, newBlock);
+            close();
           }}
         />
       );
