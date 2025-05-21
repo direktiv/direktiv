@@ -325,6 +325,7 @@ jobs:
 
           echo "API failed to be healthy";
           kubectl get pods;
+          kubectl describe pod -l app=direktiv-flow;
           kubectl logs deployments/direktiv-flow;
           exit 1;
 
