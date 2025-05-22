@@ -1,18 +1,18 @@
-import { Block, BlockPath } from ".";
+import { Block, BlockPathType } from ".";
 
 import { BlockList } from "./utils/BlockList";
 import { ColumnsType } from "../../schema/blocks/columns";
 
 type ColumnsProps = {
   blockProps: ColumnsType;
-  blockPath: BlockPath;
+  blockPath: BlockPathType;
 };
 
 export const Columns = ({ blockProps, blockPath }: ColumnsProps) => (
   <BlockList horizontal>
     {blockProps.blocks.map((column, columnIndex) => (
       <BlockList key={columnIndex}>
-        {column.map((block, blockIndex) => (
+        {column.blocks.map((block, blockIndex) => (
           <Block
             key={blockIndex}
             block={block}

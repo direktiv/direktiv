@@ -1,9 +1,9 @@
-import { AllBlocksType, ParentBlockUnion } from "../../schema/blocks";
 import { FC, PropsWithChildren, createContext, useContext } from "react";
+import { addBlockToPage, findBlock, updateBlockInPage } from "./utils";
 
-import { BlockPath } from "../Block";
+import { AllBlocksType } from "../../schema/blocks";
+import { BlockPathType } from "../Block";
 import { DirektivPagesType } from "../../schema";
-import { z } from "zod";
 
 export type State = {
   mode: "inspect" | "live";
@@ -44,42 +44,40 @@ const usePage = () => {
   return page;
 };
 
-type Block = AllBlocksType;
-type List = AllBlocksType[];
-type BlockOrList = Block | List;
-
-const isParentBlock = (
-  block: AllBlocksType
-): block is z.infer<typeof ParentBlockUnion> =>
-  ParentBlockUnion.safeParse(block).success;
-
-const getBlock = (list: BlockOrList, path: BlockPath): BlockOrList => {
-  const result = path.reduce<BlockOrList>((acc, index) => {
-    let next;
-
-    if (Array.isArray(acc)) {
-      next = acc[index];
-    } else if (isParentBlock(acc)) {
-      next = acc.blocks[index];
-    }
-
-    if (next) {
-      return next;
-    }
-
-    throw Error(`index ${index} not found in ${JSON.stringify(acc)}`);
-  }, list);
-  return result;
-};
-
-const useBlock = (path: BlockPath) => {
+const useBlock = (path: BlockPathType) => {
   const page = usePage();
-  return getBlock(page.blocks, path);
+  return findBlock(page, path);
 };
 
 const useSetPage = () => {
   const { setPage } = usePageStateContext();
   return setPage;
+};
+
+export const useUpdateBlock = () => {
+  const page = usePage();
+  const setPage = useSetPage();
+  const updateBlock = (path: BlockPathType, newBlock: AllBlocksType) => {
+    const newPage = updateBlockInPage(page, path, newBlock);
+    setPage(newPage);
+  };
+
+  return {
+    updateBlock,
+  };
+};
+
+export const useAddBlock = () => {
+  const page = usePage();
+  const setPage = useSetPage();
+  const addBlock = (path: BlockPathType, block: AllBlocksType) => {
+    const newPage = addBlockToPage(page, path, block);
+    setPage(newPage);
+  };
+
+  return {
+    addBlock,
+  };
 };
 
 export { PageCompilerContextProvider, useMode, usePage, useSetPage, useBlock };
