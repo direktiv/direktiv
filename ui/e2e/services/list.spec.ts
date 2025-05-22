@@ -293,7 +293,7 @@ test("Service list highlights services that have errors", async ({ page }) => {
   await await expect(
     page
       .getByTestId("service-row")
-      .getByText("not have minimum availability"),
+      .getByText("Deployment does not have minimum availability"),
     "it renders the error in a tooltip"
   ).toBeVisible();
 });

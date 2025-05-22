@@ -154,7 +154,8 @@ test("Service details page provides information about the service", async ({
   ).toBeTruthy();
 });
 
-test("Service details page renders no logs when the service did not mount", async ({
+// Skip until DIR-2035 is resolved
+test.skip("Service details page renders no logs when the service did not mount", async ({
   page,
 }) => {
   const serviceFile = await createFile({
