@@ -251,8 +251,10 @@ jobs:
       - name: Setup k3s
         run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
 
-      - name: Install Helm
-        run: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      - name: Install Helm v3.17.3
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.17.3
 
       - name: Create namespace for the DB
         run: kubectl create ns postgres
@@ -323,6 +325,7 @@ jobs:
 
           echo "API failed to be healthy";
           kubectl get pods;
+          kubectl describe pod -l app=direktiv-flow;
           kubectl logs deployments/direktiv-flow;
           exit 1;
 
