@@ -109,4 +109,6 @@ type ServiceManager interface {
 	GetPods(namespace string, serviceID string) (any, error)
 	StreamLogs(namespace string, serviceID string, podID string) (io.ReadCloser, error)
 	Rebuild(namespace string, serviceID string) error
+	GetServiceURL(namespace string, typ string, file string, name string) string
+	IgniteService(serviceURL string) error
 }
