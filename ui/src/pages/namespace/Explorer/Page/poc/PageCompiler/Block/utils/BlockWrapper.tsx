@@ -18,6 +18,7 @@ import Badge from "~/design/Badge";
 import { BlockForm } from "../../../BlockEditor";
 import { BlockPath } from "..";
 import Button from "~/design/Button";
+import { CreateBlockForm } from "../../../BlockEditor/create";
 import { ErrorBoundary } from "react-error-boundary";
 import { HeadlineType } from "../../../schema/blocks/headline";
 import { Loading } from "./Loading";
@@ -45,12 +46,6 @@ export const BlockWrapper = ({
 
   const blockPathNumber = Number(blockPath.slice(7));
 
-  const exampleBlock: HeadlineType = {
-    type: "headline",
-    label: "example",
-    level: "h2",
-  };
-
   const addSelectedBlockToPage = (block: HeadlineType, index: number) => {
     const newPage = {
       ...page,
@@ -65,8 +60,8 @@ export const BlockWrapper = ({
     return newPage;
   };
 
-  const addBlockToPage = () => {
-    addSelectedBlockToPage(exampleBlock, blockPathNumber);
+  const addBlockToPage = (newBlock: HeadlineType) => {
+    addSelectedBlockToPage(newBlock, blockPathNumber + 1);
   };
 
   useEffect(() => {
@@ -91,14 +86,6 @@ export const BlockWrapper = ({
 
   return (
     <>
-      <Button
-        variant="outline"
-        className="w-fit"
-        onClick={() => addBlockToPage()}
-      >
-        <Plus className="size-4 mr-2" />
-        Add Element
-      </Button>
       <div
         ref={containerRef}
         className={twMergeClsx(
@@ -111,28 +98,52 @@ export const BlockWrapper = ({
         data-block-wrapper
       >
         {mode === "inspect" && (
-          <Dialog>
-            <Badge
-              className="-m-6 absolute z-50"
-              variant="secondary"
-              style={{
-                display: isHovered ? "block" : "none",
-              }}
-            >
-              <b>{block.type}</b> {blockPath.join(".")}
-            </Badge>
-            <DialogTrigger className="float-right" asChild>
-              <Button
-                variant="ghost"
-                style={{ display: isHovered ? "block" : "none" }}
+          <>
+            <Dialog>
+              <Badge
+                className="-m-6 absolute z-50"
+                variant="secondary"
+                style={{
+                  display: isHovered ? "block" : "none",
+                }}
               >
-                <Edit />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <BlockForm path={blockPath}></BlockForm>
-            </DialogContent>
-          </Dialog>
+                <b>{block.type}</b> {blockPath.join(".")}
+              </Badge>
+              <DialogTrigger className="float-right" asChild>
+                <Button
+                  variant="ghost"
+                  style={{ display: isHovered ? "block" : "none" }}
+                >
+                  <Edit />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <BlockForm path={blockPath}></BlockForm>
+              </DialogContent>
+            </Dialog>
+            <Dialog>
+              <DialogTrigger
+                style={{
+                  display: isHovered ? "block" : "none",
+                }}
+                className="float-right"
+                asChild
+              >
+                <Button variant="outline" className="w-fit">
+                  <Plus className="size-4 mr-2" />
+                  Add Element
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <CreateBlockForm
+                  setSelectedBlock={(newBlock) => {
+                    addBlockToPage(newBlock);
+                  }}
+                  path={blockPath}
+                />
+              </DialogContent>
+            </Dialog>
+          </>
         )}
         <Suspense fallback={<Loading />}>
           <ErrorBoundary
