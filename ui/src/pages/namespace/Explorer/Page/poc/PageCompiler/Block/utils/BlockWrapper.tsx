@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import { Edit, Plus } from "lucide-react";
+import { Edit, SquarePlus } from "lucide-react";
 import {
   PropsWithChildren,
   Suspense,
@@ -106,9 +106,11 @@ export const BlockWrapper = ({
                 className="float-right"
                 asChild
               >
-                <Button variant="outline" className="w-fit">
-                  <Plus className="size-4 mr-2" />
-                  Add Element
+                <Button
+                  variant="ghost"
+                  style={{ display: isHovered ? "block" : "none" }}
+                >
+                  <SquarePlus />
                 </Button>
               </DialogTrigger>
               <DialogContent>

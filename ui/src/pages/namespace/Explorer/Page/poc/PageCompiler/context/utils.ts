@@ -58,12 +58,11 @@ export const addBlockToPage = (
   const newPage = clonePage(page);
   const parent = findBlock(newPage, path.slice(0, -1));
   const index = path[path.length - 1] as number;
-
   if (isPage(parent) || isParentBlock(parent)) {
     const newList: AllBlocksType[] = [
-      ...parent.blocks.slice(0, index),
+      ...parent.blocks.slice(0, index + 1),
       block,
-      ...parent.blocks.slice(index),
+      ...parent.blocks.slice(index + 1),
     ];
 
     parent.blocks = newList;
