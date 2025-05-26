@@ -13,8 +13,26 @@ const examplePage: DirektivPagesType = {
   direktiv_api: "pages/v1",
   blocks: [
     {
-      type: "text",
-      content: "Lorem Ipsum",
+      type: "columns",
+      blocks: [
+        {
+          type: "column",
+          blocks: [{ type: "text", content: "column 1 text" }],
+        },
+        {
+          type: "column",
+          blocks: [{ type: "text", content: "column 2 text" }],
+        },
+      ],
+    },
+    {
+      type: "card",
+      blocks: [
+        {
+          type: "card",
+          blocks: [{ type: "text", content: "text block in 2 cards" }],
+        },
+      ],
     },
     {
       type: "query-provider",

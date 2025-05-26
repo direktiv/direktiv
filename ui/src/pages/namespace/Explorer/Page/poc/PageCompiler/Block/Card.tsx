@@ -1,4 +1,4 @@
-import { Block, BlockPath } from ".";
+import { Block, BlockPathType } from ".";
 
 import { BlockList } from "./utils/BlockList";
 import { Card as CardDesignComponent } from "~/design/Card";
@@ -6,7 +6,7 @@ import { CardType } from "../../schema/blocks/card";
 
 type CardProps = {
   blockProps: CardType;
-  blockPath: BlockPath;
+  blockPath: BlockPathType;
 };
 
 export const Card = ({ blockProps, blockPath }: CardProps) => (

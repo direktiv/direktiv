@@ -16,18 +16,14 @@ export default {
     {
       type: "columns",
       blocks: [
-        [
-          {
-            type: "text",
-            content: "Some text goes here",
-          },
-        ],
-        [
-          {
-            type: "text",
-            content: "Some text goes here",
-          },
-        ],
+        {
+          type: "column",
+          blocks: [{ type: "text", content: "some text goes here" }],
+        },
+        {
+          type: "column",
+          blocks: [{ type: "text", content: "some text goes here" }],
+        },
       ],
     },
   ],

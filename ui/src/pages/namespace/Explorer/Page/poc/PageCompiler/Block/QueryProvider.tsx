@@ -1,4 +1,4 @@
-import { Block, BlockPath } from ".";
+import { Block, BlockPathType } from ".";
 import {
   State,
   VariableContextProvider,
@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next";
 
 type QueryProviderProps = {
   blockProps: QueryProviderType;
-  blockPath: BlockPath;
+  blockPath: BlockPathType;
 };
 
 export const QueryProvider = ({

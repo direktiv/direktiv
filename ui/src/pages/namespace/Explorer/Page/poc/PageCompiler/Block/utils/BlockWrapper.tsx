@@ -7,27 +7,22 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  useMode,
-  usePage,
-  useSetPage,
-} from "../../context/pageCompilerContext";
+import { useAddBlock, useMode } from "../../context/pageCompilerContext";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockForm } from "../../../BlockEditor";
-import { BlockPath } from "..";
+import { BlockPathType } from "..";
 import Button from "~/design/Button";
 import { CreateBlockForm } from "../../../BlockEditor/create";
 import { ErrorBoundary } from "react-error-boundary";
-import { HeadlineType } from "../../../schema/blocks/headline";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 
 type BlockWrapperProps = PropsWithChildren<{
-  blockPath: BlockPath;
+  blockPath: BlockPathType;
   block: AllBlocksType;
 }>;
 
@@ -38,31 +33,10 @@ export const BlockWrapper = ({
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
   const mode = useMode();
-  const page = usePage();
-  const setPage = useSetPage();
-
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const blockPathNumber = Number(blockPath.slice(7));
-
-  const addSelectedBlockToPage = (block: HeadlineType, index: number) => {
-    const newPage = {
-      ...page,
-      blocks: [
-        ...page.blocks.slice(0, index),
-        block,
-        ...page.blocks.slice(index),
-      ],
-    };
-
-    setPage(newPage);
-    return newPage;
-  };
-
-  const addBlockToPage = (newBlock: HeadlineType) => {
-    addSelectedBlockToPage(newBlock, blockPathNumber + 1);
-  };
+  const { addBlock } = useAddBlock();
 
   useEffect(() => {
     if (mode !== "inspect") {
@@ -118,7 +92,10 @@ export const BlockWrapper = ({
                 </Button>
               </DialogTrigger>
               <DialogContent>
-                <BlockForm path={blockPath}></BlockForm>
+                <BlockForm
+                  path={blockPath}
+                  close={() => setDialogOpen(false)}
+                ></BlockForm>
               </DialogContent>
             </Dialog>
             <Dialog>
@@ -137,7 +114,9 @@ export const BlockWrapper = ({
               <DialogContent>
                 <CreateBlockForm
                   setSelectedBlock={(newBlock) => {
-                    addBlockToPage(newBlock);
+                    addBlock(blockPath, {
+                      ...newBlock,
+                    });
                   }}
                   path={blockPath}
                 />
