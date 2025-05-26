@@ -1,5 +1,5 @@
+import { CirclePlus, Edit } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import { Edit, SquarePlus } from "lucide-react";
 import {
   PropsWithChildren,
   Suspense,
@@ -73,7 +73,7 @@ export const BlockWrapper = ({
       >
         {mode === "inspect" && (
           <>
-            <Dialog>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <Badge
                 className="-m-6 absolute z-50"
                 variant="secondary"
@@ -107,10 +107,11 @@ export const BlockWrapper = ({
                 asChild
               >
                 <Button
-                  variant="ghost"
+                  size="sm"
+                  className="absolute -bottom-4 z-50 right-1/2"
                   style={{ display: isHovered ? "block" : "none" }}
                 >
-                  <SquarePlus />
+                  <CirclePlus />
                 </Button>
               </DialogTrigger>
               <DialogContent>
