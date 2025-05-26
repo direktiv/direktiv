@@ -14,10 +14,6 @@ components:
   required: false
   import:
     path: ../components/db/yolo
-- name: knative
-  required: true
-  import:
-    path: ../components/knative/yolo
 - name: direktiv
   required: true
   import:
