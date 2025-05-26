@@ -130,7 +130,7 @@ func Run(circuit *core.Circuit) error {
 	// Create service manager
 	slog.Info("initializing service manager")
 	app.ServiceManager, err = service.NewManager(config, func() ([]string, error) {
-		beats, err := db.DataStore().HeartBeats().Since(context.Background(), "life_services", 30)
+		beats, err := db.DataStore().HeartBeats().Since(context.Background(), "life_services", 100)
 		if err != nil {
 			return nil, err
 		}
