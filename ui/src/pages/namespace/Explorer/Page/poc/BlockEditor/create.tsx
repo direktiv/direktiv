@@ -7,16 +7,16 @@ import {
   SelectValue,
 } from "~/design/Select";
 
-import { BlockPath } from "../PageCompiler/Block";
+import { BlockPathType } from "../PageCompiler/Block";
 import Button from "~/design/Button";
 import { HeadlineType } from "../schema/blocks/headline";
 import Input from "~/design/Input";
 import { useBlock } from "../PageCompiler/context/pageCompilerContext";
 import { useState } from "react";
 
-export type BlockFormProps = { path: BlockPath };
+export type BlockFormProps = { path: BlockPathType };
 
-export type BlockEditFormProps = { block: HeadlineType; path: BlockPath };
+export type BlockEditFormProps = { block: HeadlineType; path: BlockPathType };
 
 const HeadlineLevelOne: HeadlineType["level"] = "h1";
 const HeadlineLevelTwo: HeadlineType["level"] = "h2";
@@ -32,7 +32,7 @@ export const CreateBlockForm = ({
   path,
   setSelectedBlock,
 }: {
-  path: BlockPath;
+  path: BlockPathType;
   setSelectedBlock: (block: HeadlineType) => void;
 }) => {
   const block = useBlock(path);
