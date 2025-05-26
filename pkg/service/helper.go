@@ -2,16 +2,19 @@ package service
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/mattn/go-shellwords"
+	appsV1 "k8s.io/api/apps/v1"
+	autoscalingV2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 const (
@@ -22,12 +25,16 @@ const (
 	direktivOpentelemetry = "DIREKTIV_OTEL_BACKEND"
 	direktivFlowEndpoint  = "DIREKTIV_FLOW_ENDPOINT"
 	direktivDebug         = "DIREKTIV_DEBUG"
+
+	containerUser        = "direktiv-container"
+	containerSidecar     = "direktiv-sidecar"
+	containerSidecarPort = 8890
 )
 
-func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*servingv1.Service, error) {
+func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*appsV1.Deployment, *corev1.Service, *autoscalingV2.HorizontalPodAutoscaler, error) {
 	containers, err := buildContainers(c, sv)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	nonRoot := false
@@ -47,32 +54,86 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 		})
 	}
 
-	svc := &servingv1.Service{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "serving.knative.dev/v1",
-			Kind:       "Service",
-		},
+	int32Ptr := func(i int) *int32 {
+		if i < math.MinInt32 || i > math.MaxInt32 {
+			i = 0
+		}
+		//nolint:gosec
+		i32 := int32(i)
+
+		return &i32
+	}
+
+	dep := &appsV1.Deployment{
 		ObjectMeta: buildServiceMeta(c, sv),
-		Spec: servingv1.ServiceSpec{
-			ConfigurationSpec: servingv1.ConfigurationSpec{
-				Template: servingv1.RevisionTemplateSpec{
-					ObjectMeta: buildPodMeta(c, sv),
-					Spec: servingv1.RevisionSpec{
-						PodSpec: corev1.PodSpec{
-							SecurityContext: &corev1.PodSecurityContext{
-								RunAsNonRoot: &nonRoot,
-								SeccompProfile: &corev1.SeccompProfile{
-									// should we change it to runtime?
-									Type: corev1.SeccompProfileTypeUnconfined,
-								},
-							},
-							ServiceAccountName: c.KnativeServiceAccount,
-							Containers:         containers,
-							InitContainers:     initContainers,
-							Volumes:            buildVolumes(c, sv),
-							Affinity:           &corev1.Affinity{
-								// NodeAffinity: n,
-							},
+		Spec: appsV1.DeploymentSpec{
+			Replicas: int32Ptr(sv.Scale),
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{"direktiv-service": sv.GetID()},
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{"direktiv-service": sv.GetID()},
+				},
+				Spec: corev1.PodSpec{
+					SecurityContext: &corev1.PodSecurityContext{
+						RunAsNonRoot: &nonRoot,
+						SeccompProfile: &corev1.SeccompProfile{
+							// should we change it to runtime?
+							Type: corev1.SeccompProfileTypeUnconfined,
+						},
+					},
+					ServiceAccountName: c.KnativeServiceAccount,
+					Containers:         containers,
+					InitContainers:     initContainers,
+					Volumes:            buildVolumes(c, sv),
+					Affinity:           &corev1.Affinity{
+						// NodeAffinity: n,
+					},
+				},
+			},
+		},
+	}
+
+	svc := &corev1.Service{
+		ObjectMeta: buildServiceMeta(c, sv),
+		Spec: corev1.ServiceSpec{
+			Selector: map[string]string{"direktiv-service": sv.GetID()},
+			Ports: []corev1.ServicePort{
+				{
+					Port:       80,
+					TargetPort: intstr.FromInt(8890),
+					Protocol:   corev1.ProtocolTCP,
+				},
+			},
+			Type: corev1.ServiceTypeClusterIP,
+		},
+	}
+
+	minReplicas := int32Ptr(sv.Scale)
+	if sv.Scale == 0 {
+		minReplicas = int32Ptr(1)
+	}
+
+	hpa := &autoscalingV2.HorizontalPodAutoscaler{
+		ObjectMeta: buildServiceMeta(c, sv),
+		Spec: autoscalingV2.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: autoscalingV2.CrossVersionObjectReference{
+				APIVersion: "apps/v1",
+				Kind:       "Deployment",
+				Name:       sv.GetID(),
+			},
+			MinReplicas: minReplicas,
+			//nolint:gosec
+			MaxReplicas: int32(c.KnativeMaxScale),
+			Metrics: []autoscalingV2.MetricSpec{
+				{
+					Type: autoscalingV2.ResourceMetricSourceType,
+					Resource: &autoscalingV2.ResourceMetricSource{
+						Name: "cpu",
+						Target: autoscalingV2.MetricTarget{
+							Type:               autoscalingV2.UtilizationMetricType,
+							AverageUtilization: int32Ptr(50),
 						},
 					},
 				},
@@ -81,10 +142,9 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 	}
 
 	// Set Registry Secrets
-	svc.Spec.Template.Spec.ImagePullSecrets = registrySecrets
-	svc.Spec.Template.Spec.ImagePullSecrets = registrySecrets
+	dep.Spec.Template.Spec.ImagePullSecrets = registrySecrets
 
-	return svc, nil
+	return dep, svc, hpa, nil
 }
 
 func buildServiceMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMeta {
@@ -96,29 +156,9 @@ func buildServiceMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMet
 	}
 
 	meta.Annotations["direktiv.io/inputHash"] = sv.GetValueHash()
-	meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
-	meta.Annotations["networking.knative.dev/ingress.class"] = c.KnativeIngressClass
+	meta.Annotations[annotationMinScale] = strconv.Itoa(sv.Scale)
 
 	return meta
-}
-
-func buildPodMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMeta {
-	metaSpec := metav1.ObjectMeta{
-		Namespace:   c.KnativeNamespace,
-		Labels:      make(map[string]string),
-		Annotations: make(map[string]string),
-	}
-	metaSpec.Labels["direktiv-app"] = "direktiv"
-
-	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = strconv.Itoa(sv.Scale)
-	metaSpec.Annotations["autoscaling.knative.dev/maxScale"] = strconv.Itoa(c.KnativeMaxScale)
-
-	if len(c.KnativeNetShape) > 0 {
-		metaSpec.Annotations["kubernetes.io/ingress-bandwidth"] = c.KnativeNetShape
-		metaSpec.Annotations["kubernetes.io/egress-bandwidth"] = c.KnativeNetShape
-	}
-
-	return metaSpec
 }
 
 func buildVolumes(_ *core.Config, sv *core.ServiceFileData) []corev1.Volume {
@@ -206,6 +246,7 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 		Name:         containerSidecar,
 		Image:        c.KnativeSidecar,
 		Env:          sidecarEnvs,
+		Resources:    *rl,
 		VolumeMounts: vMounts,
 		Ports: []corev1.ContainerPort{
 			{
