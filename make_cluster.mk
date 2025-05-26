@@ -109,7 +109,7 @@ cluster-direktiv: ## Installs direktiv in cluster
 
 	@if [ "$(IS_ENTERPRISE)" = "true" ]; then \
 	helm install --set database.host=postgres.default.svc \
-	-f direktiv-ee/install/05_direktiv/keys.yaml \
+	-f direktiv-ee/install/04_direktiv/keys.yaml \
 	--set database.port=5432 \
 	--set database.user=admin \
 	--set database.password=password \
