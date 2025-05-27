@@ -64,7 +64,7 @@ export const BlockWrapper = ({
         ref={containerRef}
         className={twMergeClsx(
           mode === "inspect" &&
-            "rounded-md relative p-3 border-2 border-gray-4 border-dashed dark:border-gray-dark-4 bg-white dark:bg-black",
+            "relative rounded-md p-3 border-2 border-gray-4 border-dashed dark:border-gray-dark-4 bg-white dark:bg-black",
           isHovered &&
             mode === "inspect" &&
             "border-solid bg-gray-2 dark:bg-gray-dark-2"
@@ -83,7 +83,7 @@ export const BlockWrapper = ({
               >
                 <b>{block.type}</b> {blockPath.join(".")}
               </Badge>
-              <DialogTrigger className="float-right" asChild>
+              <DialogTrigger className="absolute right-2 top-2" asChild>
                 <Button
                   variant="ghost"
                   style={{ display: isHovered ? "block" : "none" }}
