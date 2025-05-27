@@ -92,7 +92,7 @@ export const Table = ({ blockProps }: TableProps) => {
                             <MoreVertical />
                           </ButtonDesignComponent>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-40">
+                        <DropdownMenuContent className="w-40" align="end">
                           {actions.map((action, index) => (
                             <DropdownMenuItem key={index}>
                               <Button blockProps={action} as="span" />
