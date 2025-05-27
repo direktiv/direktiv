@@ -23,7 +23,7 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   const parentVariables = useVariables();
 
   if (parentVariables.loop[id]) {
-    throw new Error(t("direktivPage.error.dublicateId", { id }));
+    throw new Error(t("direktivPage.error.duplicateId", { id }));
   }
 
   if (!arrayVariable.success) {

@@ -40,7 +40,7 @@ export const Table = ({ blockProps }: TableProps) => {
   const parentVariables = useVariables();
 
   if (parentVariables.loop[loop.id]) {
-    throw new Error(t("direktivPage.error.dublicateId", { id: loop.id }));
+    throw new Error(t("direktivPage.error.duplicateId", { id: loop.id }));
   }
 
   if (!arrayVariable.success) {
