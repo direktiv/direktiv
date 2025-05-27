@@ -71,3 +71,10 @@ export const addBlockToPage = (
 
   throw new Error("Could not add block");
 };
+
+export const pathsEqual = (a: BlockPathType | null, b: BlockPathType) => {
+  if (!a) {
+    return false;
+  }
+  return a.length === b.length && a.every((val, index) => val === b[index]);
+};
