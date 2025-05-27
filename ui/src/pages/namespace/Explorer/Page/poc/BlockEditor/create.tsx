@@ -1,4 +1,9 @@
-import { DialogClose, DialogFooter } from "~/design/Dialog";
+import {
+  DialogClose,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/design/Dialog";
 import {
   Select,
   SelectContent,
@@ -13,6 +18,7 @@ import { HeadlineType } from "../schema/blocks/headline";
 import Input from "~/design/Input";
 import { useBlock } from "../PageCompiler/context/pageCompilerContext";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export type BlockFormProps = { path: BlockPathType };
 
@@ -35,6 +41,7 @@ export const CreateBlockForm = ({
   path: BlockPathType;
   setSelectedBlock: (block: HeadlineType) => void;
 }) => {
+  const { t } = useTranslation();
   const block = useBlock(path);
 
   const [label, setLabel] = useState("example");
@@ -58,8 +65,18 @@ export const CreateBlockForm = ({
 
   return (
     <div>
-      Creating at position {path}
-      <Input value={label} onChange={(e) => setLabel(e.target.value)} />
+      <DialogHeader>
+        <DialogTitle>
+          {t("direktivPage.blockEditor.create.Headline.modalTitle", {
+            path: path.join("."),
+          })}
+        </DialogTitle>
+      </DialogHeader>
+      <Input
+        className="my-4"
+        value={label}
+        onChange={(e) => setLabel(e.target.value)}
+      />
       <Select
         value={level}
         onValueChange={(value) => findLevel(value)}
