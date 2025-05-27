@@ -1,11 +1,4 @@
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/design/Dropdown";
-import { MoreVertical, PackageOpen } from "lucide-react";
-import {
   NoResult,
   TableBody,
   TableCell as TableCellDesignComponent,
@@ -19,9 +12,9 @@ import {
   useVariables,
 } from "../../primitives/Variable/VariableContext";
 
-import { Button } from "../Button";
-import ButtonDesignComponent from "~/design/Button";
+import { ActionsCell } from "./ActionsCell";
 import { Card } from "~/design/Card";
+import { PackageOpen } from "lucide-react";
 import { TableCell } from "./TableCell";
 import { TableType } from "../../../schema/blocks/table";
 import { VariableError } from "../../primitives/Variable/Error";
@@ -84,24 +77,7 @@ export const Table = ({ blockProps }: TableProps) => {
                   {columns.map((column, columnIndex) => (
                     <TableCell key={columnIndex} blockProps={column} />
                   ))}
-                  {hasActionsColumn && (
-                    <TableHeaderCell className="w-0">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <ButtonDesignComponent variant="ghost" size="sm" icon>
-                            <MoreVertical />
-                          </ButtonDesignComponent>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-40" align="end">
-                          {actions.map((action, index) => (
-                            <DropdownMenuItem key={index}>
-                              <Button blockProps={action} as="span" />
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableHeaderCell>
-                  )}
+                  {hasActionsColumn && <ActionsCell actions={actions} />}
                 </TableRow>
               </VariableContextProvider>
             ))
