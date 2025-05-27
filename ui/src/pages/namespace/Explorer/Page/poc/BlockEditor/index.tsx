@@ -8,7 +8,10 @@ import { BlockPathType } from "../PageCompiler/Block";
 import { Text } from "../BlockEditor/Text";
 import { isPage } from "../PageCompiler/context/utils";
 
-export type BlockFormProps = { path: BlockPathType; close: () => void };
+export type BlockFormProps = {
+  path: BlockPathType;
+  close: () => void;
+};
 
 export type BlockEditFormProps = {
   block: AllBlocksType;

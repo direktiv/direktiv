@@ -1,5 +1,10 @@
 import { FC, PropsWithChildren, createContext, useContext } from "react";
-import { addBlockToPage, findBlock, updateBlockInPage } from "./utils";
+import {
+  addBlockToPage,
+  findBlock,
+  pathsEqual,
+  updateBlockInPage,
+} from "./utils";
 
 import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../Block";
@@ -9,6 +14,8 @@ export type State = {
   mode: "inspect" | "live";
   page: DirektivPagesType;
   setPage: (page: DirektivPagesType) => void;
+  focus: BlockPathType | null;
+  setFocus: (path: BlockPathType | null) => void;
 };
 
 const PageCompilerContext = createContext<State | null>(null);
@@ -80,4 +87,29 @@ export const useAddBlock = () => {
   };
 };
 
-export { PageCompilerContextProvider, useMode, usePage, useSetPage, useBlock };
+const useFocus = () => {
+  const { focus } = usePageStateContext();
+  return { focus };
+};
+
+const useSetFocus = () => {
+  const { focus, setFocus: contextSetFocus } = usePageStateContext();
+  const setFocus = (path: BlockPathType) => {
+    if (pathsEqual(focus, path)) {
+      return contextSetFocus(null);
+    }
+    return contextSetFocus(path);
+  };
+
+  return setFocus;
+};
+
+export {
+  PageCompilerContextProvider,
+  useMode,
+  usePage,
+  useSetPage,
+  useBlock,
+  useFocus,
+  useSetFocus,
+};
