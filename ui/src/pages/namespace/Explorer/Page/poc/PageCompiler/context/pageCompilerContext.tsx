@@ -1,10 +1,14 @@
 import { FC, PropsWithChildren, createContext, useContext } from "react";
+import { addBlockToPage, findBlock, updateBlockInPage } from "./utils";
 
+import { AllBlocksType } from "../../schema/blocks";
+import { BlockPathType } from "../Block";
 import { DirektivPagesType } from "../../schema";
 
 export type State = {
   mode: "inspect" | "live";
   page: DirektivPagesType;
+  setPage: (page: DirektivPagesType) => void;
 };
 
 const PageCompilerContext = createContext<State | null>(null);
@@ -40,4 +44,40 @@ const usePage = () => {
   return page;
 };
 
-export { PageCompilerContextProvider, useMode, usePage };
+const useBlock = (path: BlockPathType) => {
+  const page = usePage();
+  return findBlock(page, path);
+};
+
+const useSetPage = () => {
+  const { setPage } = usePageStateContext();
+  return setPage;
+};
+
+export const useUpdateBlock = () => {
+  const page = usePage();
+  const setPage = useSetPage();
+  const updateBlock = (path: BlockPathType, newBlock: AllBlocksType) => {
+    const newPage = updateBlockInPage(page, path, newBlock);
+    setPage(newPage);
+  };
+
+  return {
+    updateBlock,
+  };
+};
+
+export const useAddBlock = () => {
+  const page = usePage();
+  const setPage = useSetPage();
+  const addBlock = (path: BlockPathType, block: AllBlocksType) => {
+    const newPage = addBlockToPage(page, path, block);
+    setPage(newPage);
+  };
+
+  return {
+    addBlock,
+  };
+};
+
+export { PageCompilerContextProvider, useMode, usePage, useSetPage, useBlock };

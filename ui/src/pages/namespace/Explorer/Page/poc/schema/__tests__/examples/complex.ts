@@ -15,84 +15,60 @@ export default {
     },
     {
       type: "columns",
-      columns: [
-        [
-          {
-            type: "text",
-            content: "Some text goes here",
-          },
-        ],
-        [
-          {
-            type: "query-provider",
-            queries: [
-              {
-                id: "company-list",
-                endpoint: "/api/get/companies",
-                queryParams: [
-                  {
-                    key: "query",
-                    value: "my-search-query",
-                  },
-                ],
-              },
-            ],
-            blocks: [
-              {
-                type: "table",
-                data: {
-                  type: "loop",
-                  id: "company",
-                  data: "query.company-list.data",
-                },
-                actions: [
-                  {
-                    type: "button",
-                    label: "delete",
-                  },
-                  {
-                    type: "button",
-                    label: "edit",
-                  },
-                ],
-                columns: [
-                  {
-                    type: "table-column",
-                    label: "name",
-                    content: "{{loop.company.name}}",
-                  },
-                  {
-                    type: "table-column",
-                    label: "email",
-                    content: "{{loop.company.email}}",
-                  },
-                ],
-              },
-              {
-                type: "dialog",
-                trigger: {
-                  type: "button",
-                  label: "open dialog",
-                },
-                blocks: [
-                  {
-                    type: "form",
-                    trigger: {
-                      type: "button",
-                      label: "delete",
+      blocks: [
+        {
+          type: "column",
+          blocks: [
+            {
+              type: "text",
+              content: "Some text goes here",
+            },
+          ],
+        },
+        {
+          type: "column",
+          blocks: [
+            {
+              type: "query-provider",
+              queries: [
+                {
+                  id: "fetching-resources",
+                  endpoint: "/api/get/resources",
+                  queryParams: [
+                    {
+                      key: "query",
+                      value: "my-search-query",
                     },
-                    mutation: {
-                      id: "my-delete",
-                      endpoint: "/api/delete/",
-                      method: "DELETE",
-                    },
-                    blocks: [],
+                  ],
+                },
+              ],
+              blocks: [
+                {
+                  type: "dialog",
+                  trigger: {
+                    type: "button",
+                    label: "open dialog",
                   },
-                ],
-              },
-            ],
-          },
-        ],
+                  blocks: [
+                    {
+                      type: "form",
+                      trigger: {
+                        type: "button",
+                        label: "delete",
+                      },
+                      mutation: {
+                        id: "my-delete",
+                        endpoint: "/api/delete/",
+                        method: "DELETE",
+                      },
+                      blocks: [],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
       ],
     },
   ],

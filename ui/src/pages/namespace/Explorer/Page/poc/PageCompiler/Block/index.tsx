@@ -1,5 +1,4 @@
 import { AllBlocksType } from "../../schema/blocks";
-import { BlockPath } from "./utils/blockPath";
 import { BlockWrapper } from "./utils/BlockWrapper";
 import { Button } from "./Button";
 import { Card } from "./Card";
@@ -15,8 +14,10 @@ import { useTranslation } from "react-i18next";
 
 type BlockProps = {
   block: AllBlocksType;
-  blockPath: BlockPath;
+  blockPath: BlockPathType;
 };
+
+export type BlockPathType = number[];
 
 export const Block = ({ block, blockPath }: BlockProps) => {
   const { t } = useTranslation();

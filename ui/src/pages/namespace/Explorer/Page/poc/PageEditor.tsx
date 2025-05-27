@@ -9,9 +9,31 @@ import { Switch } from "~/design/Switch";
 import { twMergeClsx } from "~/util/helpers";
 import { useTheme } from "~/util/store/theme";
 
-const examplePage = {
+const examplePage: DirektivPagesType = {
   direktiv_api: "pages/v1",
   blocks: [
+    {
+      type: "columns",
+      blocks: [
+        {
+          type: "column",
+          blocks: [{ type: "text", content: "column 1 text" }],
+        },
+        {
+          type: "column",
+          blocks: [{ type: "text", content: "column 2 text" }],
+        },
+      ],
+    },
+    {
+      type: "card",
+      blocks: [
+        {
+          type: "card",
+          blocks: [{ type: "text", content: "text block in 2 cards" }],
+        },
+      ],
+    },
     {
       type: "query-provider",
       queries: [
@@ -71,7 +93,7 @@ type Mode = ComponentProps<typeof PageCompiler>["mode"];
 
 const PageEditor = () => {
   const theme = useTheme();
-  const [mode, setMode] = useState<Mode>("live");
+  const [mode, setMode] = useState<Mode>("inspect");
   const [page, setPage] = useState(examplePage);
   const [validate, setValidate] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
@@ -137,7 +159,7 @@ const PageEditor = () => {
         </Card>
       )}
       <Card className="p-4 flex flex-col gap-4">
-        <PageCompiler page={page} mode={mode} />
+        <PageCompiler page={page} setPage={setPage} mode={mode} />
       </Card>
     </div>
   );

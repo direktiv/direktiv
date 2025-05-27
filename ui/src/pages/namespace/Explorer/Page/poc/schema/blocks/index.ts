@@ -1,12 +1,13 @@
 import { Button, ButtonType } from "./button";
 import { Card, CardType } from "./card";
-import { Columns, ColumnsType } from "./columns";
+import { Column, ColumnType, Columns, ColumnsType } from "./columns";
 import { Dialog, DialogType } from "./dialog";
 import { Form, FormType } from "./form";
 import { Headline, HeadlineType } from "./headline";
 import { Loop, LoopType } from "./loop";
 import { QueryProvider, QueryProviderType } from "./queryProvider";
 import { Table, TableType } from "./table";
+import { TableColumn, TableColumnType } from "./table/tableColumn";
 import { Text, TextType } from "./text";
 
 import { z } from "zod";
@@ -17,32 +18,50 @@ import { z } from "zod";
  * It is currently possible to extend the type without updating the schema.
  * The schema needs to get the type input to avoid circular dependencies.
  */
-export type AllBlocksType =
+
+export const SimpleBlockUnion = z.discriminatedUnion("type", [
+  Button,
+  Headline,
+  Table,
+  TableColumn,
+  Text,
+]);
+
+export const ParentBlockUnion = z.discriminatedUnion("type", [
+  Card,
+  Dialog,
+  Form,
+  Loop,
+  QueryProvider,
+  Column,
+  Columns,
+]);
+
+export type SimpleBlocksType =
   | ButtonType
+  | HeadlineType
+  | TextType
+  | TableType
+  | TableColumnType;
+
+export type ParentBlocksType =
   | CardType
   | DialogType
   | FormType
-  | HeadlineType
   | LoopType
   | QueryProviderType
-  | TextType
-  | ColumnsType
-  | TableType;
+  | ColumnType
+  | ColumnsType;
+
+export type AllBlocksType = SimpleBlocksType | ParentBlocksType;
 
 export const AllBlocks: z.ZodType<AllBlocksType> = z.lazy(() =>
-  z.discriminatedUnion("type", [
-    Button,
-    Card,
-    Columns,
-    Dialog,
-    Form,
-    Headline,
-    Loop,
-    QueryProvider,
-    Table,
-    Text,
-  ])
+  z.union([SimpleBlockUnion, ParentBlockUnion])
 );
+
+export const BlockList = z.array(AllBlocks);
+
+export type BlockListType = z.infer<typeof BlockList>;
 
 export const TriggerBlocks = z.discriminatedUnion("type", [Button]);
 
