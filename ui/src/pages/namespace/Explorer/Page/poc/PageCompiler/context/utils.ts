@@ -42,27 +42,35 @@ export const updateBlockInPage = (
   const parent = findBlock(newPage, path.slice(0, -1));
   const targetIndex = path[path.length - 1] as number;
 
-  if (isPage(parent) || isParentBlock(parent)) {
-    parent.blocks[targetIndex] = block;
-    return newPage;
+  if (!(isPage(parent) || isParentBlock(parent))) {
+    throw new Error("Invalid parent block");
   }
-
-  throw new Error("Could not update block");
+  if (!(targetIndex >= 0 && targetIndex < parent.blocks.length)) {
+    throw new Error("Index for updating block out of bounds");
+  }
+  parent.blocks[targetIndex] = block;
+  return newPage;
 };
 
 export const addBlockToPage = (
   page: DirektivPagesType,
   path: BlockPathType,
-  block: AllBlocksType
+  block: AllBlocksType,
+  after = false
 ) => {
   const newPage = clonePage(page);
   const parent = findBlock(newPage, path.slice(0, -1));
-  const index = path[path.length - 1] as number;
+  let index = path[path.length - 1] as number;
+
+  if (after) {
+    index++;
+  }
+
   if (isPage(parent) || isParentBlock(parent)) {
     const newList: AllBlocksType[] = [
-      ...parent.blocks.slice(0, index + 1),
+      ...parent.blocks.slice(0, index),
       block,
-      ...parent.blocks.slice(index + 1),
+      ...parent.blocks.slice(index),
     ];
 
     parent.blocks = newList;
@@ -72,9 +80,11 @@ export const addBlockToPage = (
   throw new Error("Could not add block");
 };
 
-export const pathsEqual = (a: BlockPathType | null, b: BlockPathType) => {
-  if (!a) {
-    return false;
+type PathOrNull = BlockPathType | null;
+
+export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
+  if (!a || !b) {
+    return a === b;
   }
   return a.length === b.length && a.every((val, index) => val === b[index]);
 };

@@ -14,8 +14,8 @@ export type State = {
   mode: "inspect" | "live";
   page: DirektivPagesType;
   setPage: (page: DirektivPagesType) => void;
-  focus: BlockPathType | null;
-  setFocus: (path: BlockPathType | null) => void;
+  focus?: BlockPathType | null;
+  setFocus?: (path: BlockPathType | null) => void;
 };
 
 const PageCompilerContext = createContext<State | null>(null);
@@ -77,8 +77,12 @@ export const useUpdateBlock = () => {
 export const useAddBlock = () => {
   const page = usePage();
   const setPage = useSetPage();
-  const addBlock = (path: BlockPathType, block: AllBlocksType) => {
-    const newPage = addBlockToPage(page, path, block);
+  const addBlock = (
+    path: BlockPathType,
+    block: AllBlocksType,
+    after = false
+  ) => {
+    const newPage = addBlockToPage(page, path, block, after);
     setPage(newPage);
   };
 
@@ -94,6 +98,13 @@ const useFocus = () => {
 
 const useSetFocus = () => {
   const { focus, setFocus: contextSetFocus } = usePageStateContext();
+
+  if (!focus || !contextSetFocus) {
+    throw new Error(
+      "focus and useFocus must exist in context when using useSetFocus"
+    );
+  }
+
   const setFocus = (path: BlockPathType) => {
     if (pathsEqual(focus, path)) {
       return contextSetFocus(null);

@@ -74,7 +74,7 @@ export const BlockWrapper = ({
     return setFocus(blockPath);
   };
 
-  const isFocused = pathsEqual(focus, blockPath);
+  const isFocused = focus && pathsEqual(focus, blockPath);
 
   return (
     <>
@@ -129,9 +129,13 @@ export const BlockWrapper = ({
               <DialogContent>
                 <CreateBlockForm
                   setSelectedBlock={(newBlock) => {
-                    addBlock(blockPath, {
-                      ...newBlock,
-                    });
+                    addBlock(
+                      blockPath,
+                      {
+                        ...newBlock,
+                      },
+                      true
+                    );
                   }}
                   path={blockPath}
                 />
