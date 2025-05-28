@@ -1,4 +1,12 @@
-import { FC, PropsWithChildren, createContext, useContext } from "react";
+import {
+  Dispatch,
+  FC,
+  PropsWithChildren,
+  SetStateAction,
+  createContext,
+  useContext,
+  useState,
+} from "react";
 import {
   addBlockToPage,
   findBlock,
@@ -10,26 +18,32 @@ import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../Block";
 import { DirektivPagesType } from "../../schema";
 
-export type State = {
+export type PageCompilerProps = {
   mode: "inspect" | "live";
   page: DirektivPagesType;
   setPage: (page: DirektivPagesType) => void;
-  focus?: BlockPathType | null;
-  setFocus?: (path: BlockPathType | null) => void;
 };
 
-const PageCompilerContext = createContext<State | null>(null);
+export type PageCompilerState = PageCompilerProps & {
+  focus: BlockPathType | null;
+  setFocus: Dispatch<SetStateAction<BlockPathType | null>>;
+};
 
-type PageCompilerContextProviderProps = PropsWithChildren<State>;
+const PageCompilerContext = createContext<PageCompilerState | null>(null);
+
+type PageCompilerContextProviderProps = PropsWithChildren<PageCompilerProps>;
 
 const PageCompilerContextProvider: FC<PageCompilerContextProviderProps> = ({
   children,
   ...value
-}) => (
-  <PageCompilerContext.Provider value={value}>
-    {children}
-  </PageCompilerContext.Provider>
-);
+}) => {
+  const [focus, setFocus] = useState<BlockPathType | null>(null);
+  return (
+    <PageCompilerContext.Provider value={{ ...value, focus, setFocus }}>
+      {children}
+    </PageCompilerContext.Provider>
+  );
+};
 
 const usePageStateContext = () => {
   const context = useContext(PageCompilerContext);
@@ -98,12 +112,6 @@ const useFocus = () => {
 
 const useSetFocus = () => {
   const { focus, setFocus: contextSetFocus } = usePageStateContext();
-
-  if (!focus || !contextSetFocus) {
-    throw new Error(
-      "focus and useFocus must exist in context when using useSetFocus"
-    );
-  }
 
   const setFocus = (path: BlockPathType) => {
     if (pathsEqual(focus, path)) {
