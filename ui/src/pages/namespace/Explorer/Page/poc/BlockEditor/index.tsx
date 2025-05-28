@@ -25,7 +25,7 @@ export type BlockEditFormProps = {
 };
 
 export const BlockForm = ({ action, path, close }: BlockFormProps) => {
-  const block = useBlock(path);
+  const block = useBlock(path); // TODO: only needed when editing!
   const { updateBlock } = useUpdateBlock();
   const { addBlock } = useAddBlock();
 
@@ -40,7 +40,7 @@ export const BlockForm = ({ action, path, close }: BlockFormProps) => {
   const handleUpdate = (newBlock: AllBlocksType) => {
     switch (action) {
       case "create":
-        addBlock(path, newBlock);
+        addBlock(path, newBlock); // TODO: add block after (requires merge first)
         break;
       case "edit":
         updateBlock(path, newBlock);

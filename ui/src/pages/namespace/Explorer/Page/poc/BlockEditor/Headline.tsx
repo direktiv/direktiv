@@ -5,6 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
+import { HeadlineType, headlineLevels } from "../schema/blocks/headline";
 import {
   Select,
   SelectContent,
@@ -14,7 +15,6 @@ import {
 } from "~/design/Select";
 
 import Button from "~/design/Button";
-import { HeadlineType } from "../schema/blocks/headline";
 import Input from "~/design/Input";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -32,17 +32,9 @@ export const Headline = ({
 }: HeadlineEditFormProps) => {
   const { t } = useTranslation();
 
+  const defaultLevel = headlineLevels[1];
+
   const [block, setBlock] = useState<HeadlineType>(structuredClone(propBlock));
-
-  const HeadlineLevelOne: HeadlineType["level"] = "h1";
-  const HeadlineLevelTwo: HeadlineType["level"] = "h2";
-  const HeadlineLevelThree: HeadlineType["level"] = "h3";
-
-  const HeadlineLevels: HeadlineType["level"][] = [
-    HeadlineLevelOne,
-    HeadlineLevelTwo,
-    HeadlineLevelThree,
-  ];
 
   return (
     <>
@@ -68,13 +60,13 @@ export const Headline = ({
             level: value,
           })
         }
-        defaultValue={HeadlineLevelThree}
+        defaultValue={defaultLevel}
       >
         <SelectTrigger variant="outline">
           <SelectValue placeholder="something" />
         </SelectTrigger>
         <SelectContent>
-          {HeadlineLevels.map((item) => (
+          {headlineLevels.map((item) => (
             <SelectItem key={item} value={item}>
               <span>{item}</span>
             </SelectItem>
