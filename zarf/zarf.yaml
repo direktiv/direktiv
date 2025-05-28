@@ -13,10 +13,6 @@ components:
   required: false
   import:
     path: components/db/images
-- name: knative
-  required: true
-  import:
-    path: components/knative/images
 - name: direktiv
   required: true
   import:

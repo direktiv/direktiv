@@ -5,9 +5,6 @@ metadata:
  labels:
    {{- include "direktiv.labels" . | nindent 4 }}
 rules:
-- apiGroups: ["serving.knative.dev"]
-  resources: ["*"]
-  verbs: ["*"]
 - apiGroups: [""]
   resources: ["secrets"]
   verbs: ["get", "list", "update", "delete", "create", "deletecollection"]
@@ -20,3 +17,15 @@ rules:
 - apiGroups: [""]
   resources: ["pods/log"]
   verbs: ["list", "watch", "get"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["patch", "create", "list", "watch", "log", "delete"]
+- apiGroups: ["apps"]
+  resources: ["deployments/scale"]
+  verbs: ["update"]
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["patch", "create", "list", "watch", "get", "delete", "update", "delete"]
+- apiGroups: ["autoscaling"]
+  resources: ["horizontalpodautoscalers"]
+  verbs: ["patch", "create", "list", "watch", "get", "delete", "update"]
