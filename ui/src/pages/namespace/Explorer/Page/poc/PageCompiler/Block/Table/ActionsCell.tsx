@@ -26,7 +26,7 @@ export const ActionsCell = ({ actions }: ActionsCellProps) => (
       <DropdownMenuContent className="w-40" align="end">
         {actions.map((action, index) => (
           <DropdownMenuItem key={index}>
-            <Button blockProps={action} as="span" />
+            <Button blockProps={action} as="text" />
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
