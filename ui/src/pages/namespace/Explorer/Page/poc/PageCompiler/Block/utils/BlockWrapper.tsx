@@ -32,6 +32,8 @@ type BlockWrapperProps = PropsWithChildren<{
   block: AllBlocksType;
 }>;
 
+type DialogState = "create" | "edit" | null;
+
 export const BlockWrapper = ({
   block,
   blockPath,
@@ -39,13 +41,24 @@ export const BlockWrapper = ({
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
   const mode = useMode();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogType, setDialogType] = useState<"create" | "edit" | null>(null);
+  const [dialog, setDialog] = useState<DialogState>(null);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { addBlock } = useAddBlock();
   const { focus } = useFocus();
   const setFocus = useSetFocus();
+
+  const dialogOpen = !!dialog;
+
+  /**
+   * This handler is only used for closing the dialog. For opening a dialog,
+   * we add custom onClick events to the trigger buttons.
+   */
+  const handleOnOpenChange = (open: boolean) => {
+    if (open === false) {
+      setDialog(null);
+    }
+  };
 
   useEffect(() => {
     if (mode !== "inspect") {
@@ -102,24 +115,23 @@ export const BlockWrapper = ({
         )}
         {mode === "inspect" && isFocused && (
           <>
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <Dialog open={dialogOpen} onOpenChange={handleOnOpenChange}>
               <DialogTrigger
                 asChild
                 onClick={(event) => {
                   event.stopPropagation();
-                  setDialogType("edit");
-                  setDialogOpen(true);
+                  setDialog("edit");
                 }}
               >
                 <Button variant="ghost" className="absolute right-1 top-1 z-30">
                   <Edit />
                 </Button>
               </DialogTrigger>
-              {dialogType === "edit" && (
+              {dialog === "edit" && (
                 <DialogContent className="z-50">
                   <BlockForm
                     path={blockPath}
-                    close={() => setDialogOpen(false)}
+                    close={() => setDialog(null)}
                   ></BlockForm>
                 </DialogContent>
               )}
@@ -129,14 +141,13 @@ export const BlockWrapper = ({
                   className="absolute -bottom-4 z-30 right-1/2"
                   onClick={(event) => {
                     event.stopPropagation();
-                    setDialogType("create");
-                    setDialogOpen(true);
+                    setDialog("create");
                   }}
                 >
                   <CirclePlus />
                 </Button>
               </DialogTrigger>
-              {dialogType === "create" && (
+              {dialog === "create" && (
                 <DialogContent>
                   <CreateBlockForm
                     setSelectedBlock={(newBlock) => {
