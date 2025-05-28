@@ -67,8 +67,10 @@ export const CreateBlockForm = ({
     <div>
       <DialogHeader>
         <DialogTitle>
-          {t("direktivPage.blockEditor.create.Headline.modalTitle", {
+          {t("direktivPage.blockEditor.dialogTitle", {
             path: path.join("."),
+            action: "create",
+            type: "headline",
           })}
         </DialogTitle>
       </DialogHeader>

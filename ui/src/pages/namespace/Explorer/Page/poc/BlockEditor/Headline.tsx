@@ -1,0 +1,95 @@
+import { BlockEditFormProps, BlockEditorAction } from ".";
+import {
+  DialogClose,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/design/Dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/design/Select";
+
+import Button from "~/design/Button";
+import { HeadlineType } from "../schema/blocks/headline";
+import Input from "~/design/Input";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+
+type HeadlineEditFormProps = Omit<BlockEditFormProps, "block"> & {
+  action: BlockEditorAction;
+  block: HeadlineType;
+};
+
+export const Headline = ({
+  action,
+  block: propBlock,
+  path,
+  onSave,
+}: HeadlineEditFormProps) => {
+  const { t } = useTranslation();
+
+  const [block, setBlock] = useState<HeadlineType>(structuredClone(propBlock));
+
+  const HeadlineLevelOne: HeadlineType["level"] = "h1";
+  const HeadlineLevelTwo: HeadlineType["level"] = "h2";
+  const HeadlineLevelThree: HeadlineType["level"] = "h3";
+
+  const HeadlineLevels: HeadlineType["level"][] = [
+    HeadlineLevelOne,
+    HeadlineLevelTwo,
+    HeadlineLevelThree,
+  ];
+
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>
+          {t("direktivPage.blockEditor.dialogTitle", {
+            path: path.join("."),
+            action,
+            type: "headline",
+          })}
+        </DialogTitle>
+      </DialogHeader>
+      <Input
+        className="my-4"
+        value={block.label}
+        onChange={(e) => setBlock({ ...block, label: e.target.value })}
+      />
+      <Select
+        value={block.level}
+        onValueChange={(value: HeadlineType["level"]) =>
+          setBlock({
+            ...block,
+            level: value,
+          })
+        }
+        defaultValue={HeadlineLevelThree}
+      >
+        <SelectTrigger variant="outline">
+          <SelectValue placeholder="something" />
+        </SelectTrigger>
+        <SelectContent>
+          {HeadlineLevels.map((item) => (
+            <SelectItem key={item} value={item}>
+              <span>{item}</span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button variant="ghost">Cancel</Button>
+        </DialogClose>
+
+        <DialogClose asChild>
+          <Button onClick={() => onSave(block)}>Save</Button>
+        </DialogClose>
+      </DialogFooter>
+    </>
+  );
+};

@@ -8,7 +8,6 @@ import {
   useState,
 } from "react";
 import {
-  useAddBlock,
   useFocus,
   useMode,
   useSetFocus,
@@ -19,7 +18,6 @@ import Badge from "~/design/Badge";
 import { BlockForm } from "../../../BlockEditor";
 import { BlockPathType } from "..";
 import Button from "~/design/Button";
-import { CreateBlockForm } from "../../../BlockEditor/create";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
@@ -44,7 +42,6 @@ export const BlockWrapper = ({
   const [dialog, setDialog] = useState<DialogState>(null);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { addBlock } = useAddBlock();
   const { focus } = useFocus();
   const setFocus = useSetFocus();
 
@@ -114,51 +111,42 @@ export const BlockWrapper = ({
           </Badge>
         )}
         {mode === "inspect" && isFocused && (
-          <Dialog open={dialogOpen} onOpenChange={handleOnOpenChange}>
-            <DialogTrigger
-              asChild
-              onClick={(event) => {
-                event.stopPropagation();
-                setDialog("edit");
-              }}
-            >
-              <Button variant="ghost" className="absolute right-1 top-1 z-30">
-                <Edit />
-              </Button>
-            </DialogTrigger>
-            {dialog === "edit" && (
-              <DialogContent className="z-50">
-                <BlockForm
-                  path={blockPath}
-                  close={() => setDialog(null)}
-                ></BlockForm>
-              </DialogContent>
-            )}
-            <DialogTrigger className="float-right" asChild>
-              <Button
-                size="sm"
-                className="absolute -bottom-4 z-30 right-1/2"
+          <div onClick={(event) => event.stopPropagation()}>
+            <Dialog open={dialogOpen} onOpenChange={handleOnOpenChange}>
+              <DialogTrigger
+                asChild
                 onClick={(event) => {
                   event.stopPropagation();
-                  setDialog("create");
+                  setDialog("edit");
                 }}
               >
-                <CirclePlus />
-              </Button>
-            </DialogTrigger>
-            {dialog === "create" && (
-              <DialogContent>
-                <CreateBlockForm
-                  setSelectedBlock={(newBlock) => {
-                    addBlock(blockPath, {
-                      ...newBlock,
-                    });
+                <Button variant="ghost" className="absolute right-1 top-1 z-30">
+                  <Edit />
+                </Button>
+              </DialogTrigger>
+              <DialogTrigger className="float-right" asChild>
+                <Button
+                  size="sm"
+                  className="absolute -bottom-4 z-30 right-1/2"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setDialog("create");
                   }}
-                  path={blockPath}
-                />
-              </DialogContent>
-            )}
-          </Dialog>
+                >
+                  <CirclePlus />
+                </Button>
+              </DialogTrigger>
+              {dialog !== null && (
+                <DialogContent className="z-50">
+                  <BlockForm
+                    action={dialog}
+                    path={blockPath}
+                    close={() => setDialog(null)}
+                  />
+                </DialogContent>
+              )}
+            </Dialog>
+          </div>
         )}
         <Suspense fallback={<Loading />}>
           <ErrorBoundary

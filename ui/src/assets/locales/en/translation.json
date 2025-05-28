@@ -1663,13 +1663,14 @@
       "generic": {
         "saveButton": "Save"
       },
-      "create": {
-        "Headline": {
-          "modalTitle": "Create Headline Block @{{path}}"
-        }
+      "dialogTitle": "{{action}} {{type}} @{{path}}",
+      "action": {
+        "create": "create",
+        "edit": "edit"
       },
-      "Text": {
-        "modalTitle": "Edit Text Block @{{path}}"
+      "blockType": {
+        "text": "text block",
+        "headline": "headline block"
       }
     }
   }

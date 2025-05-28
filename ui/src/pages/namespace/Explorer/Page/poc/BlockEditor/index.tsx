@@ -1,14 +1,19 @@
 import {
+  useAddBlock,
   useBlock,
   useUpdateBlock,
 } from "../PageCompiler/context/pageCompilerContext";
 
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
+import { Headline } from "./Headline";
 import { Text } from "../BlockEditor/Text";
 import { isPage } from "../PageCompiler/context/utils";
 
+export type BlockEditorAction = "create" | "edit";
+
 export type BlockFormProps = {
+  action: BlockEditorAction;
   path: BlockPathType;
   close: () => void;
 };
@@ -19,9 +24,10 @@ export type BlockEditFormProps = {
   onSave: (newBlock: AllBlocksType) => void;
 };
 
-export const BlockForm = ({ path, close }: BlockFormProps) => {
+export const BlockForm = ({ action, path, close }: BlockFormProps) => {
   const block = useBlock(path);
   const { updateBlock } = useUpdateBlock();
+  const { addBlock } = useAddBlock();
 
   if (Array.isArray(block)) {
     throw Error("Can not load list into block editor");
@@ -32,19 +38,38 @@ export const BlockForm = ({ path, close }: BlockFormProps) => {
   }
 
   const handleUpdate = (newBlock: AllBlocksType) => {
-    updateBlock(path, newBlock);
+    switch (action) {
+      case "create":
+        addBlock(path, newBlock);
+        break;
+      case "edit":
+        updateBlock(path, newBlock);
+        break;
+    }
     close();
   };
 
   switch (block.type) {
     case "text": {
-      return <Text block={block} path={path} onSave={handleUpdate} />;
+      return (
+        <Text action={action} block={block} path={path} onSave={handleUpdate} />
+      );
+    }
+    case "headline": {
+      return (
+        <Headline
+          action={action}
+          block={block}
+          path={path}
+          onSave={handleUpdate}
+        />
+      );
     }
   }
 
   return (
     <div>
-      Block form for {path} from {JSON.stringify(block)}
+      Fallback form for {path} from {JSON.stringify(block)}
     </div>
   );
 };

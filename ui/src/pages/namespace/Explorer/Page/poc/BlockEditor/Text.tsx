@@ -1,6 +1,6 @@
+import { BlockEditFormProps, BlockEditorAction } from ".";
 import { DialogFooter, DialogHeader, DialogTitle } from "~/design/Dialog";
 
-import { BlockEditFormProps } from ".";
 import Button from "~/design/Button";
 import { TextType } from "../schema/blocks/text";
 import { Textarea } from "~/design/TextArea";
@@ -8,10 +8,12 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 type TextBlockEditFormProps = Omit<BlockEditFormProps, "block"> & {
+  action: BlockEditorAction;
   block: TextType;
 };
 
 export const Text = ({
+  action,
   block: propBlock,
   path,
   onSave,
@@ -24,7 +26,9 @@ export const Text = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          {t("direktivPage.blockEditor.Text.modalTitle", {
+          {t("direktivPage.blockEditor.dialogTitle", {
+            action,
+            type: "text",
             path: path.join("."),
           })}
         </DialogTitle>
