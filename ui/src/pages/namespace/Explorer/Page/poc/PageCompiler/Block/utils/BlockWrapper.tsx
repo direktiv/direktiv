@@ -114,53 +114,51 @@ export const BlockWrapper = ({
           </Badge>
         )}
         {mode === "inspect" && isFocused && (
-          <>
-            <Dialog open={dialogOpen} onOpenChange={handleOnOpenChange}>
-              <DialogTrigger
-                asChild
+          <Dialog open={dialogOpen} onOpenChange={handleOnOpenChange}>
+            <DialogTrigger
+              asChild
+              onClick={(event) => {
+                event.stopPropagation();
+                setDialog("edit");
+              }}
+            >
+              <Button variant="ghost" className="absolute right-1 top-1 z-30">
+                <Edit />
+              </Button>
+            </DialogTrigger>
+            {dialog === "edit" && (
+              <DialogContent className="z-50">
+                <BlockForm
+                  path={blockPath}
+                  close={() => setDialog(null)}
+                ></BlockForm>
+              </DialogContent>
+            )}
+            <DialogTrigger className="float-right" asChild>
+              <Button
+                size="sm"
+                className="absolute -bottom-4 z-30 right-1/2"
                 onClick={(event) => {
                   event.stopPropagation();
-                  setDialog("edit");
+                  setDialog("create");
                 }}
               >
-                <Button variant="ghost" className="absolute right-1 top-1 z-30">
-                  <Edit />
-                </Button>
-              </DialogTrigger>
-              {dialog === "edit" && (
-                <DialogContent className="z-50">
-                  <BlockForm
-                    path={blockPath}
-                    close={() => setDialog(null)}
-                  ></BlockForm>
-                </DialogContent>
-              )}
-              <DialogTrigger className="float-right" asChild>
-                <Button
-                  size="sm"
-                  className="absolute -bottom-4 z-30 right-1/2"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setDialog("create");
+                <CirclePlus />
+              </Button>
+            </DialogTrigger>
+            {dialog === "create" && (
+              <DialogContent>
+                <CreateBlockForm
+                  setSelectedBlock={(newBlock) => {
+                    addBlock(blockPath, {
+                      ...newBlock,
+                    });
                   }}
-                >
-                  <CirclePlus />
-                </Button>
-              </DialogTrigger>
-              {dialog === "create" && (
-                <DialogContent>
-                  <CreateBlockForm
-                    setSelectedBlock={(newBlock) => {
-                      addBlock(blockPath, {
-                        ...newBlock,
-                      });
-                    }}
-                    path={blockPath}
-                  />
-                </DialogContent>
-              )}
-            </Dialog>
-          </>
+                  path={blockPath}
+                />
+              </DialogContent>
+            )}
+          </Dialog>
         )}
         <Suspense fallback={<Loading />}>
           <ErrorBoundary
