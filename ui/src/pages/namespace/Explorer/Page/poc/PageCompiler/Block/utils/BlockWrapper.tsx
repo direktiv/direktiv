@@ -40,6 +40,7 @@ export const BlockWrapper = ({
   const { t } = useTranslation();
   const mode = useMode();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogType, setDialogType] = useState<"create" | "edit" | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { addBlock } = useAddBlock();
@@ -74,7 +75,7 @@ export const BlockWrapper = ({
     return setFocus(blockPath);
   };
 
-  const isFocused = pathsEqual(focus, blockPath);
+  const isFocused = focus && pathsEqual(focus, blockPath);
 
   return (
     <>
@@ -106,6 +107,7 @@ export const BlockWrapper = ({
                 asChild
                 onClick={(event) => {
                   event.stopPropagation();
+                  setDialogType("edit");
                   setDialogOpen(true);
                 }}
               >
@@ -113,29 +115,39 @@ export const BlockWrapper = ({
                   <Edit />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="z-50">
-                <BlockForm
-                  path={blockPath}
-                  close={() => setDialogOpen(false)}
-                ></BlockForm>
-              </DialogContent>
-            </Dialog>
-            <Dialog>
+              {dialogType === "edit" && (
+                <DialogContent className="z-50">
+                  <BlockForm
+                    path={blockPath}
+                    close={() => setDialogOpen(false)}
+                  ></BlockForm>
+                </DialogContent>
+              )}
               <DialogTrigger className="float-right" asChild>
-                <Button size="sm" className="absolute -bottom-4 z-30 right-1/2">
+                <Button
+                  size="sm"
+                  className="absolute -bottom-4 z-30 right-1/2"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setDialogType("create");
+                    setDialogOpen(true);
+                  }}
+                >
                   <CirclePlus />
                 </Button>
               </DialogTrigger>
-              <DialogContent>
-                <CreateBlockForm
-                  setSelectedBlock={(newBlock) => {
-                    addBlock(blockPath, {
-                      ...newBlock,
-                    });
-                  }}
-                  path={blockPath}
-                />
-              </DialogContent>
+              {dialogType === "create" && (
+                <DialogContent>
+                  <CreateBlockForm
+                    setSelectedBlock={(newBlock) => {
+                      addBlock(blockPath, {
+                        ...newBlock,
+                      });
+                    }}
+                    path={blockPath}
+                  />
+                </DialogContent>
+              )}
             </Dialog>
           </>
         )}

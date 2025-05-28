@@ -14,8 +14,8 @@ export type State = {
   mode: "inspect" | "live";
   page: DirektivPagesType;
   setPage: (page: DirektivPagesType) => void;
-  focus: BlockPathType | null;
-  setFocus: (path: BlockPathType | null) => void;
+  focus?: BlockPathType | null;
+  setFocus?: (path: BlockPathType | null) => void;
 };
 
 const PageCompilerContext = createContext<State | null>(null);
@@ -95,10 +95,10 @@ const useFocus = () => {
 const useSetFocus = () => {
   const { focus, setFocus: contextSetFocus } = usePageStateContext();
   const setFocus = (path: BlockPathType) => {
-    if (pathsEqual(focus, path)) {
-      return contextSetFocus(null);
+    if (focus && pathsEqual(focus, path)) {
+      return !!contextSetFocus && contextSetFocus(null);
     }
-    return contextSetFocus(path);
+    return !!contextSetFocus && contextSetFocus(path);
   };
 
   return setFocus;
