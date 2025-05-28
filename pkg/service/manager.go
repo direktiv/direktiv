@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"slices"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -17,11 +18,13 @@ import (
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
 
-// manager struct implements core.ServiceManager by wrapping runtimeClient. manager implementation manages
+// Manager struct implements core.ServiceManager by wrapping runtimeClient. Manager implementation manages
 // services in the system in a declarative manner. This implementation spans up a goroutine (via Start())
 // to Run the services in list param versus what is running in the runtime.
-type manager struct {
-	cfg *core.Config
+type Manager struct {
+	Cfg     *core.Config
+	FasFunc FetchActiveServices
+
 	// this list maintains all the service configurations that need to be running.
 	list []*core.ServiceFileData
 
@@ -33,11 +36,13 @@ type manager struct {
 	servicesListHasBeenSet bool // NOTE: set to true the first time SetServices is called, and used to prevent any reconciles before that has happened.
 }
 
-func NewManager(c *core.Config) (core.ServiceManager, error) {
-	return newKnativeManager(c)
+type FetchActiveServices func() ([]string, error)
+
+func NewManager(c *core.Config, fasFunc FetchActiveServices) (core.ServiceManager, error) {
+	return newKnativeManager(c, fasFunc)
 }
 
-func newKnativeManager(c *core.Config) (*manager, error) {
+func newKnativeManager(c *core.Config, fasFunc FetchActiveServices) (*Manager, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -58,8 +63,9 @@ func newKnativeManager(c *core.Config) (*manager, error) {
 		k8sCli:     k8sCli,
 	}
 
-	return &manager{
-		cfg:           c,
+	return &Manager{
+		Cfg:           c,
+		FasFunc:       fasFunc,
 		list:          make([]*core.ServiceFileData, 0),
 		runtimeClient: client,
 
@@ -67,7 +73,7 @@ func newKnativeManager(c *core.Config) (*manager, error) {
 	}, nil
 }
 
-func (m *manager) runCycle() []error {
+func (m *Manager) runCycle() []error {
 	if !m.servicesListHasBeenSet {
 		return nil
 	}
@@ -129,11 +135,25 @@ func (m *manager) runCycle() []error {
 		}
 	}
 
+	activeList, err := m.FasFunc()
+	if err != nil {
+		errs = append(errs, fmt.Errorf("fetch active services id: %w", err))
+		return errs
+	}
+	for i := range activeList {
+		activeList[i] = serviceUrlToID(activeList[i], m.Cfg.KnativeNamespace)
+	}
+
+	cleanErrs := m.runtimeClient.cleanIdleServices(activeList)
+	if len(cleanErrs) != 0 {
+		errs = append(errs, cleanErrs...)
+	}
+
 	return errs
 }
 
-func (m *manager) Run(circuit *core.Circuit) error {
-	cycleTime := m.cfg.GetFunctionsReconcileInterval()
+func (m *Manager) Run(circuit *core.Circuit) error {
+	cycleTime := m.Cfg.GetFunctionsReconcileInterval()
 	for {
 		if circuit.IsDone() {
 			return nil
@@ -149,7 +169,7 @@ func (m *manager) Run(circuit *core.Circuit) error {
 	}
 }
 
-func (m *manager) SetServices(list []*core.ServiceFileData) {
+func (m *Manager) SetServices(list []*core.ServiceFileData) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -163,7 +183,7 @@ func (m *manager) SetServices(list []*core.ServiceFileData) {
 	}
 }
 
-func (m *manager) getList(filterNamespace string, filterTyp string, filterPath string, filterName string) ([]*core.ServiceFileData, error) {
+func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath string, filterName string) ([]*core.ServiceFileData, error) {
 	// clone the list
 	sList := make([]*core.ServiceFileData, 0)
 	for i, v := range m.list {
@@ -213,7 +233,7 @@ func (m *manager) getList(filterNamespace string, filterTyp string, filterPath s
 }
 
 // nolint:unparam
-func (m *manager) getOne(namespace string, serviceID string) (*core.ServiceFileData, error) {
+func (m *Manager) getOne(namespace string, serviceID string) (*core.ServiceFileData, error) {
 	list, err := m.getList(namespace, "", "", "")
 	if err != nil {
 		return nil, err
@@ -229,14 +249,14 @@ func (m *manager) getOne(namespace string, serviceID string) (*core.ServiceFileD
 	return nil, core.ErrNotFound
 }
 
-func (m *manager) GeAll(namespace string) ([]*core.ServiceFileData, error) {
+func (m *Manager) GeAll(namespace string) ([]*core.ServiceFileData, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
 	return m.getList(namespace, "", "", "")
 }
 
-func (m *manager) GetPods(namespace string, serviceID string) (any, error) {
+func (m *Manager) GetPods(namespace string, serviceID string) (any, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -254,7 +274,7 @@ func (m *manager) GetPods(namespace string, serviceID string) (any, error) {
 	return pods, nil
 }
 
-func (m *manager) StreamLogs(namespace string, serviceID string, podID string) (io.ReadCloser, error) {
+func (m *Manager) StreamLogs(namespace string, serviceID string, podID string) (io.ReadCloser, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -267,7 +287,7 @@ func (m *manager) StreamLogs(namespace string, serviceID string, podID string) (
 	return m.runtimeClient.streamServiceLogs(serviceID, podID)
 }
 
-func (m *manager) Rebuild(namespace string, serviceID string) error {
+func (m *Manager) Rebuild(namespace string, serviceID string) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -277,23 +297,58 @@ func (m *manager) Rebuild(namespace string, serviceID string) error {
 		return err
 	}
 
-	return m.runtimeClient.rebuildService(serviceID)
+	return m.runtimeClient.deleteService(serviceID)
 }
 
-func (m *manager) setServiceDefaults(sv *core.ServiceFileData) {
+func (m *Manager) setServiceDefaults(sv *core.ServiceFileData) {
 	// empty size string defaults to medium
 	if sv.Size == "" {
 		telemetry.LogNamespace(telemetry.LogLevelWarn, sv.Namespace,
 			fmt.Sprintf("empty service size for %s, defaulting to medium", sv.FilePath))
 		sv.Size = "medium"
 	}
-	if sv.Scale > m.cfg.KnativeMaxScale {
+	if sv.Scale > m.Cfg.KnativeMaxScale {
 		telemetry.LogNamespace(telemetry.LogLevelWarn, sv.Namespace,
 			fmt.Sprintf("service_scale for %s is bigger than allowed max_scale, defaulting to max_scale %d",
-				sv.FilePath, m.cfg.KnativeMaxScale))
-		sv.Scale = m.cfg.KnativeMaxScale
+				sv.FilePath, m.Cfg.KnativeMaxScale))
+		sv.Scale = m.Cfg.KnativeMaxScale
 	}
 	if len(sv.Envs) == 0 {
 		sv.Envs = make([]core.EnvironmentVariable, 0)
 	}
+}
+
+func (m *Manager) GetServiceURL(namespace string, typ string, file string, name string) string {
+	id := (&core.ServiceFileData{
+		Typ:       typ,
+		Namespace: namespace,
+		FilePath:  file,
+		Name:      name,
+	}).GetID()
+
+	return fmt.Sprintf("http://%s.%s.svc.cluster.local", id, m.Cfg.KnativeNamespace)
+}
+
+func (m *Manager) IgniteService(serviceURL string) error {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	serviceID := serviceUrlToID(serviceURL, m.Cfg.KnativeNamespace)
+
+	err := m.runtimeClient.scaleService(serviceID, 1)
+	if err != nil {
+		return fmt.Errorf("ignite service %s error: %w", serviceID, err)
+	}
+
+	return nil
+}
+
+func serviceUrlToID(serviceURL string, k8sNamespace string) string {
+	serviceID := serviceURL
+	serviceID = strings.TrimPrefix(serviceID, "http://")
+	serviceID = strings.TrimPrefix(serviceID, "https://")
+	serviceID = strings.TrimSuffix(serviceID, ".svc.cluster.local")
+	serviceID = strings.TrimSuffix(serviceID, "."+k8sNamespace)
+
+	return serviceID
 }

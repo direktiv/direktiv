@@ -35,11 +35,13 @@ func TestGetServiceURL_Knative(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run("valid_case", func(t *testing.T) {
-			service.SetupGetServiceURLFunc(&core.Config{
-				KnativeNamespace: tt.knativeNamespace,
-			})
+			manager := &service.Manager{
+				Cfg: &core.Config{
+					KnativeNamespace: tt.knativeNamespace,
+				},
+			}
 
-			gotURL := service.GetServiceURL(tt.namespace, tt.typ, tt.filePath, tt.name)
+			gotURL := manager.GetServiceURL(tt.namespace, tt.typ, tt.filePath, tt.name)
 			if gotURL != tt.wantURL {
 				t.Errorf("service.GetServiceURL() got: %s, want: %s", gotURL, tt.wantURL)
 			}

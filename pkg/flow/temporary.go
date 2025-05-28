@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -19,7 +20,6 @@ import (
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
@@ -445,15 +445,15 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateID string, time
 		ar.Container.Size = con.Size
 		ar.Container.Scale = int(scale)
 		ar.Container.ID = con.ID
-		ar.Container.Service = service.GetServiceURL(arCtx.Namespace, core.ServiceTypeWorkflow, arCtx.Workflow, con.ID)
+		ar.Container.Service = engine.ServiceManager.GetServiceURL(arCtx.Namespace, core.ServiceTypeWorkflow, arCtx.Workflow, con.ID)
 	case model.NamespacedKnativeFunctionType:
 		con := fn.(*model.NamespacedFunctionDefinition) //nolint:forcetypeassert
 		ar.Container.ID = con.ID
-		ar.Container.Service = service.GetServiceURL(arCtx.Namespace, core.ServiceTypeNamespace, con.Path, "")
+		ar.Container.Service = engine.ServiceManager.GetServiceURL(arCtx.Namespace, core.ServiceTypeNamespace, con.Path, "")
 	case model.SystemKnativeFunctionType:
 		con := fn.(*model.SystemFunctionDefinition) //nolint:forcetypeassert
 		ar.Container.ID = con.ID
-		ar.Container.Service = service.GetServiceURL(core.SystemNamespace, core.ServiceTypeSystem, con.Path, "")
+		ar.Container.Service = engine.ServiceManager.GetServiceURL(core.SystemNamespace, core.ServiceTypeSystem, con.Path, "")
 	default:
 		return nil, nil, fmt.Errorf("unexpected function type: %v", fn)
 	}
@@ -561,23 +561,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	telemetry.LogInstance(ctx, telemetry.LogLevelDebug,
 		fmt.Sprintf("deadline for request is %s", time.Until(arReq.Deadline)))
 
-	reader, err := enginerefactor.EncodeActionRequest(*arReq)
-	if err != nil {
-		engine.reportError(ctx, &arReq.ActionContext, err)
-
-		return
-	}
-	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr, reader)
-	if err != nil {
-		engine.reportError(ctx, &arReq.ActionContext, err)
-
-		return
-	}
-	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
-	req.Header.Add(DirektivCallPathHeader, ar.CallPath)
-
-	client := http.Client{Transport: otelhttp.NewTransport(tr)}
-
 	var resp *http.Response
 
 	// potentially dns error for a brand new service
@@ -585,12 +568,62 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// one minute wait max
 
 	//nolint:intrange
-	for i := 0; i < 300; i++ { // 5 minutes max retry
-		telemetry.LogInstance(ctx, telemetry.LogLevelDebug,
-			fmt.Sprintf("attempting function request %d, %s", i, addr))
 
-		resp, err = client.Do(req)
+	serviceIgnited := false
+	for i := range 300 { // 5 minutes max retry
+		reader, err := enginerefactor.EncodeActionRequest(*arReq)
 		if err != nil {
+			engine.reportError(ctx, &arReq.ActionContext, err)
+
+			return
+		}
+		req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr, reader)
+		if err != nil {
+			engine.reportError(ctx, &arReq.ActionContext, err)
+
+			return
+		}
+		req.Header.Add(DirektivActionIDHeader, ar.ActionID)
+		req.Header.Add(DirektivCallPathHeader, ar.CallPath)
+		client := http.Client{Transport: otelhttp.NewTransport(tr)}
+		telemetry.LogInstance(ctx, telemetry.LogLevelInfo,
+			fmt.Sprintf("attempting service request %d, %s", i, addr))
+
+		err = engine.db.DataStore().HeartBeats().Set(context.Background(), &datastore.HeartBeat{
+			Group: "life_services",
+			Key:   ar.Container.Service,
+		})
+		if err != nil {
+			engine.reportError(ctx, &arReq.ActionContext, err)
+
+			return
+		}
+		resp, err = client.Do(req)
+		isBadGatewayCode := resp != nil && resp.StatusCode >= 502 && resp.StatusCode <= 504
+
+		if isBadGatewayCode {
+			err = fmt.Errorf("bad gateway status code (%d)", resp.StatusCode)
+		}
+		if err != nil {
+			isServiceDown := strings.Contains(err.Error(), "bad gateway status code") ||
+				strings.Contains(err.Error(), "no such host") ||
+				strings.Contains(err.Error(), "connection refused")
+
+			if isServiceDown {
+				telemetry.LogInstanceError(ctx, "service is scaled to zero", err)
+			}
+
+			// Try to ignite (once) the service if it was down.
+			if isServiceDown && !serviceIgnited {
+				igErr := engine.ServiceManager.IgniteService(ar.Container.Service)
+				if igErr != nil {
+					engine.reportError(ctx, &arReq.ActionContext, igErr)
+				} else {
+					serviceIgnited = true
+					telemetry.LogInstance(ctx, telemetry.LogLevelInfo, "service ignition triggered")
+				}
+			}
+
 			if ctxErr := rctx.Err(); ctxErr != nil {
 				telemetry.LogInstanceError(ctx, "request canceled or deadline exceeded", ctxErr)
 				engine.reportError(ctx, &arReq.ActionContext, fmt.Errorf("request timed out or was canceled: %w", ctxErr))
@@ -602,6 +635,11 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 				slog.Debug(fmt.Sprintf("retrying function request for container '%s' (attempt %d)", ar.Container.ID, i), slog.Any("error", err))
 			} else {
 				slog.Debug("retrying function request", "image", ar.Container.Image, "image_id", ar.Container.ID, "error", err)
+			}
+
+			if resp != nil {
+				resp.Body.Close()
+				resp = nil
 			}
 
 			time.Sleep(time.Second)
@@ -648,13 +686,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 			break
 		}
-	}
-
-	if err != nil {
-		err := fmt.Errorf("failed creating function with image %s name %s with error: %w", ar.Container.Image, ar.Container.ID, err)
-		engine.reportError(ctx, &arReq.ActionContext, err)
-
-		return
 	}
 
 	if resp.StatusCode != http.StatusOK {

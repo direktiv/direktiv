@@ -46,6 +46,8 @@ type server struct {
 
 	MirrorManager *mirror.Manager
 
+	ServiceManager core.ServiceManager
+
 	flow   *flow
 	events *events
 	nats   *nats.Conn
@@ -83,7 +85,7 @@ func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
 //nolint:revive
-func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.Bus, db *database.DB, rawDB *sql.DB) (*server, error) {
+func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.Bus, db *database.DB, rawDB *sql.DB, serviceManager core.ServiceManager) (*server, error) {
 	srv := new(server)
 	srv.ID = uuid.New()
 	srv.initJQ()
@@ -91,6 +93,7 @@ func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.B
 	srv.db = db
 	srv.rawDB = rawDB
 	srv.Bus = bus
+	srv.ServiceManager = serviceManager
 
 	var err error
 	slog.Debug("starting flow server")
