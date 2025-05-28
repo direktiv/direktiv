@@ -1,5 +1,4 @@
 {
-  "packageManager": "pnpm@9.15.4",
   "compilerOptions": {
     "target": "ES2022",
     "moduleResolution": "Node",
