@@ -1,6 +1,6 @@
 import {
   useBlock,
-  useUpdateBlock,
+  usePageEditor,
 } from "../PageCompiler/context/pageCompilerContext";
 
 import { AllBlocksType } from "../schema/blocks";
@@ -21,7 +21,7 @@ export type BlockEditFormProps = {
 
 export const BlockForm = ({ path, close }: BlockFormProps) => {
   const block = useBlock(path);
-  const { updateBlock } = useUpdateBlock();
+  const { updateBlock } = usePageEditor();
 
   if (Array.isArray(block)) {
     throw Error("Can not load list into block editor");

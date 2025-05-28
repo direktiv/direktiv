@@ -7,12 +7,6 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  useAddBlock,
-  useFocus,
-  useMode,
-  useSetFocus,
-} from "../../context/pageCompilerContext";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
@@ -25,6 +19,7 @@ import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { pathsEqual } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
+import { usePageEditor } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
 type BlockWrapperProps = PropsWithChildren<{
@@ -38,13 +33,10 @@ export const BlockWrapper = ({
   children,
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
-  const mode = useMode();
+  const { mode, focus, setFocus, addBlock } = usePageEditor();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { addBlock } = useAddBlock();
-  const { focus } = useFocus();
-  const setFocus = useSetFocus();
 
   useEffect(() => {
     if (mode !== "inspect") {
