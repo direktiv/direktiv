@@ -1,42 +1,63 @@
 import ButtonDesignComponent, {
   ButtonProps as ButtonDesignComponentProps,
 } from "~/design/Button";
+import { HTMLAttributes, forwardRef } from "react";
 
 import { ButtonType } from "../../schema/blocks/button";
-import { forwardRef } from "react";
 
-type SpanButtonProps = {
-  as: "span";
-} & React.HTMLAttributes<HTMLSpanElement>;
-
-type DefaultButtonProps = {
-  as?: "button";
-} & React.HTMLAttributes<HTMLButtonElement> &
-  ButtonDesignComponentProps;
-
-type ButtonProps<T extends "span" | "button" = "button"> = {
+/**
+ * BUTTON
+ */
+type ButtonAProps = ButtonDesignComponentProps & {
   blockProps: ButtonType;
-} & (T extends "span" ? SpanButtonProps : DefaultButtonProps);
+};
 
-export const Button = forwardRef<
-  HTMLElement,
-  ButtonProps<"span"> | ButtonProps<"button">
->(({ as, blockProps, ...props }, ref) => {
-  const { label } = blockProps;
+const ButtonA = forwardRef<HTMLButtonElement, ButtonAProps>(
+  ({ blockProps, ...props }, ref) => (
+    <ButtonDesignComponent ref={ref} {...props}>
+      {blockProps.label}
+    </ButtonDesignComponent>
+  )
+);
+ButtonA.displayName = "Button";
 
-  if (as === "span") {
+/**
+ * SPAN
+ */
+type ButtonSpanProps = HTMLAttributes<HTMLSpanElement> & {
+  blockProps: ButtonType;
+};
+
+const ButtonSpan = forwardRef<HTMLSpanElement, ButtonSpanProps>(
+  ({ blockProps, ...props }, ref) => (
+    <span ref={ref} {...props}>
+      {blockProps.label}
+    </span>
+  )
+);
+ButtonSpan.displayName = "Span";
+
+type ButtonCompoundProps =
+  | ({ as?: "button" } & ButtonAProps)
+  | ({ as: "span" } & ButtonSpanProps);
+
+export const Button = forwardRef<HTMLElement, ButtonCompoundProps>(
+  ({ as, ...props }, ref) => {
+    if (as === "span") {
+      return (
+        <ButtonSpan
+          {...(props as ButtonSpanProps)}
+          ref={ref as React.Ref<HTMLSpanElement>}
+        />
+      );
+    }
     return (
-      <span ref={ref as React.Ref<HTMLSpanElement>} {...props}>
-        {label}
-      </span>
+      <ButtonA
+        {...(props as ButtonAProps)}
+        ref={ref as React.Ref<HTMLButtonElement>}
+      />
     );
   }
-
-  return (
-    <ButtonDesignComponent ref={ref as React.Ref<HTMLButtonElement>} {...props}>
-      {label}
-    </ButtonDesignComponent>
-  );
-});
+);
 
 Button.displayName = "Button";
