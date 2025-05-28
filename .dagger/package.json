@@ -5,9 +5,5 @@
   },
   "devDependencies": {
     "@dagger.io/dagger": "^0.18.9"
-  },
-  "engines": {
-    "npm": "9.14.4",
-    "node": "20.18.1"
   }
 }
