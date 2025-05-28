@@ -1,0 +1,8 @@
+{
+  "name": "hello-dagger",
+  "engineVersion": "v0.18.8",
+  "sdk": {
+    "source": "typescript"
+  },
+  "source": ".dagger"
+}
