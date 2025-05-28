@@ -6,23 +6,14 @@ type ButtonCompoundProps =
   | ({ as?: "button" } & DefaultButtonProps)
   | ({ as: "text" } & TextButtonProps);
 
-export const Button = forwardRef<HTMLElement, ButtonCompoundProps>(
-  ({ as, ...props }, ref) => {
-    if (as === "text") {
-      return (
-        <TextButton
-          {...(props as TextButtonProps)}
-          ref={ref as Ref<HTMLSpanElement>}
-        />
-      );
-    }
-    return (
-      <DefaultButton
-        {...(props as DefaultButtonProps)}
-        ref={ref as Ref<HTMLButtonElement>}
-      />
-    );
+export const Button = forwardRef<
+  HTMLButtonElement | HTMLSpanElement,
+  ButtonCompoundProps
+>(({ as, ...props }, ref) => {
+  if (as === "text") {
+    return <TextButton {...props} ref={ref as Ref<HTMLSpanElement>} />;
   }
-);
+  return <DefaultButton {...props} ref={ref as Ref<HTMLButtonElement>} />;
+});
 
 Button.displayName = "Button";
