@@ -118,7 +118,7 @@ const PageEditor = () => {
               setMode(value ? "edit" : "live");
             }}
           />
-          <label htmlFor="mode">Inspect</label>
+          <label htmlFor="mode">Editor</label>
         </div>
         <div className="flex gap-2 items-center">
           <Switch
@@ -128,7 +128,7 @@ const PageEditor = () => {
               setShowEditor(value);
             }}
           />
-          <label htmlFor="show-editor">Show Editor</label>
+          <label htmlFor="show-editor">Show Code</label>
         </div>
         <div className="flex gap-2 items-center">
           <Switch

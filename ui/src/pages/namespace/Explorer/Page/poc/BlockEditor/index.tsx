@@ -33,10 +33,9 @@ export const BlockForm = ({ action, path, close, block }: BlockFormProps) => {
   }
 
   const handleUpdate = (newBlock: AllBlocksType) => {
-    // Todo: add "after" to addBlock args after merging DIR-2034
     switch (action) {
       case "create":
-        addBlock(path, newBlock);
+        addBlock(path, newBlock, true);
         break;
       case "edit":
         updateBlock(path, newBlock);
