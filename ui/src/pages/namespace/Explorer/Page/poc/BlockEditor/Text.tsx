@@ -1,11 +1,9 @@
-import { DialogFooter, DialogHeader, DialogTitle } from "~/design/Dialog";
-
 import { BlockEditFormProps } from ".";
-import Button from "~/design/Button";
+import { DialogFooter } from "./components/Footer";
+import { DialogHeader } from "./components/Header";
 import { TextType } from "../schema/blocks/text";
 import { Textarea } from "~/design/TextArea";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 
 /**
  * Please follow this pattern when adding editor components for new block types:
@@ -22,21 +20,11 @@ export const Text = ({
   path,
   onSave,
 }: TextBlockEditFormProps) => {
-  const { t } = useTranslation();
-
   const [block, setBlock] = useState<TextType>(structuredClone(propBlock));
 
   return (
     <>
-      <DialogHeader>
-        <DialogTitle>
-          {t("direktivPage.blockEditor.dialogTitle", {
-            action,
-            type: "text",
-            path: path.join("."),
-          })}
-        </DialogTitle>
-      </DialogHeader>
+      <DialogHeader action={action} path={path} type="text" />
       <Textarea
         value={block.content}
         onChange={(event) =>
@@ -48,11 +36,7 @@ export const Text = ({
       />
       <div>Debug Info {JSON.stringify(block)}</div>
 
-      <DialogFooter>
-        <Button variant="primary" onClick={() => onSave(block)}>
-          {t("direktivPage.blockEditor.generic.saveButton")}
-        </Button>
-      </DialogFooter>
+      <DialogFooter onSave={() => onSave(block)} />
     </>
   );
 };

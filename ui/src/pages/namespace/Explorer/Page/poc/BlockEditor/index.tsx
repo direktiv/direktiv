@@ -24,10 +24,9 @@ export type BlockFormProps = {
   block: AllBlocksType | DirektivPagesType;
   action: BlockEditorAction;
   path: BlockPathType;
-  close: () => void;
 };
 
-export const BlockForm = ({ action, path, close, block }: BlockFormProps) => {
+export const BlockForm = ({ action, path, block }: BlockFormProps) => {
   const { addBlock, updateBlock } = usePageEditor();
 
   if (Array.isArray(block)) {
@@ -47,7 +46,6 @@ export const BlockForm = ({ action, path, close, block }: BlockFormProps) => {
         updateBlock(path, newBlock);
         break;
     }
-    close();
   };
 
   switch (block.type) {

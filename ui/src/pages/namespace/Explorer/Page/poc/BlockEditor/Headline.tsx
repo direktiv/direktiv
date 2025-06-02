@@ -1,9 +1,3 @@
-import {
-  DialogClose,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "~/design/Dialog";
 import { HeadlineType, headlineLevels } from "../schema/blocks/headline";
 import {
   Select,
@@ -14,10 +8,10 @@ import {
 } from "~/design/Select";
 
 import { BlockEditFormProps } from ".";
-import Button from "~/design/Button";
+import { DialogFooter } from "./components/Footer";
+import { DialogHeader } from "./components/Header";
 import Input from "~/design/Input";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 
 /**
  * Please follow this pattern when adding editor components for new block types:
@@ -34,23 +28,13 @@ export const Headline = ({
   path,
   onSave,
 }: HeadlineEditFormProps) => {
-  const { t } = useTranslation();
-
   const defaultLevel = headlineLevels[1];
 
   const [block, setBlock] = useState<HeadlineType>(structuredClone(propBlock));
 
   return (
     <>
-      <DialogHeader>
-        <DialogTitle>
-          {t("direktivPage.blockEditor.dialogTitle", {
-            path: path.join("."),
-            action,
-            type: "headline",
-          })}
-        </DialogTitle>
-      </DialogHeader>
+      <DialogHeader action={action} path={path} type="headline" />
       <Input
         className="my-4"
         value={block.label}
@@ -77,15 +61,7 @@ export const Headline = ({
           ))}
         </SelectContent>
       </Select>
-      <DialogFooter>
-        <DialogClose asChild>
-          <Button variant="ghost">Cancel</Button>
-        </DialogClose>
-
-        <DialogClose asChild>
-          <Button onClick={() => onSave(block)}>Save</Button>
-        </DialogClose>
-      </DialogFooter>
+      <DialogFooter onSave={() => onSave(block)} />
     </>
   );
 };

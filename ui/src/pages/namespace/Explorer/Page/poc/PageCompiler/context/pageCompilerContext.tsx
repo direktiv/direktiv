@@ -13,8 +13,10 @@ import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../Block";
 import { DirektivPagesType } from "../../schema";
 
+export type PageCompilerMode = "edit" | "live";
+
 export type PageCompilerProps = {
-  mode: "edit" | "live";
+  mode: PageCompilerMode;
   page: DirektivPagesType;
   setPage: (page: DirektivPagesType) => void;
   focus?: BlockPathType | null;

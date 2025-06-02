@@ -26,7 +26,7 @@ type BlockWrapperProps = PropsWithChildren<{
   block: AllBlocksType;
 }>;
 
-type DialogState = "create" | "edit" | null;
+export type DialogState = "create" | "edit" | null;
 
 export const BlockWrapper = ({
   block,
@@ -122,19 +122,13 @@ export const BlockWrapper = ({
               {dialog !== null && (
                 <DialogContent className="z-50">
                   {dialog === "edit" && (
-                    <BlockForm
-                      block={block}
-                      action={dialog}
-                      path={blockPath}
-                      close={() => setDialog(null)}
-                    />
+                    <BlockForm block={block} action={dialog} path={blockPath} />
                   )}
                   {dialog === "create" && (
                     <BlockForm
                       block={{ type: "text", content: "dummy block" }}
                       action={dialog}
                       path={blockPath}
-                      close={() => setDialog(null)}
                     />
                   )}
                 </DialogContent>
