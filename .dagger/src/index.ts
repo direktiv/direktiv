@@ -6,7 +6,7 @@ export class HelloDagger {
    * Build the UI application
    */
   @func()
-  async build(
+  async buildUI(
     /**
      * Source directory containing the ui folder
      */
