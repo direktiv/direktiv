@@ -1,7 +1,7 @@
 import { Container, Directory, dag, func, object } from "@dagger.io/dagger";
 
 @object()
-export class HelloDagger {
+export class Direktiv {
   /**
    * Build the UI application
    */

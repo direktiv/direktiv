@@ -1,5 +1,5 @@
 {
-  "name": "hello-dagger",
+  "name": "direktiv",
   "engineVersion": "v0.18.8",
   "sdk": {
     "source": "typescript"
