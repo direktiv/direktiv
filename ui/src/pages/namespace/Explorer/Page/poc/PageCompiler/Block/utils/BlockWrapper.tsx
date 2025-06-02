@@ -1,13 +1,16 @@
 import { CirclePlus, Edit } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
+  FC,
   PropsWithChildren,
+  ReactNode,
   Suspense,
   useEffect,
   useRef,
   useState,
 } from "react";
 import {
+  useBlock,
   useFocus,
   useMode,
   useSetFocus,
@@ -24,6 +27,17 @@ import { ParsingError } from "./ParsingError";
 import { pathsEqual } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
+
+type BlockProviderProps = {
+  path: BlockPathType;
+  children: (block: ReturnType<typeof useBlock>) => ReactNode;
+};
+
+const BlockProvider: FC<BlockProviderProps> = ({ children, path }) => {
+  const block = useBlock(path);
+
+  return <>{children(block)}</>;
+};
 
 type BlockWrapperProps = PropsWithChildren<{
   blockPath: BlockPathType;
@@ -138,11 +152,26 @@ export const BlockWrapper = ({
               </DialogTrigger>
               {dialog !== null && (
                 <DialogContent className="z-50">
-                  <BlockForm
-                    action={dialog}
-                    path={blockPath}
-                    close={() => setDialog(null)}
-                  />
+                  {dialog === "edit" && (
+                    <BlockProvider path={blockPath}>
+                      {(block) => (
+                        <BlockForm
+                          block={block}
+                          action={dialog}
+                          path={blockPath}
+                          close={() => setDialog(null)}
+                        />
+                      )}
+                    </BlockProvider>
+                  )}
+                  {dialog === "create" && (
+                    <BlockForm
+                      block={{ type: "text", content: "dummy block" }}
+                      action={dialog}
+                      path={blockPath}
+                      close={() => setDialog(null)}
+                    />
+                  )}
                 </DialogContent>
               )}
             </Dialog>

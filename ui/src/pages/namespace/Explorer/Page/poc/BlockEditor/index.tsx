@@ -1,11 +1,11 @@
 import {
   useAddBlock,
-  useBlock,
   useUpdateBlock,
 } from "../PageCompiler/context/pageCompilerContext";
 
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
+import { DirektivPagesType } from "../schema";
 import { Headline } from "./Headline";
 import { Text } from "../BlockEditor/Text";
 import { isPage } from "../PageCompiler/context/utils";
@@ -13,6 +13,7 @@ import { isPage } from "../PageCompiler/context/utils";
 export type BlockEditorAction = "create" | "edit";
 
 export type BlockFormProps = {
+  block: AllBlocksType | DirektivPagesType;
   action: BlockEditorAction;
   path: BlockPathType;
   close: () => void;
@@ -24,13 +25,12 @@ export type BlockEditFormProps = {
   onSave: (newBlock: AllBlocksType) => void;
 };
 
-export const BlockForm = ({ action, path, close }: BlockFormProps) => {
-  const block = useBlock(path); // TODO: only needed when editing!
+export const BlockForm = ({ action, path, close, block }: BlockFormProps) => {
   const { updateBlock } = useUpdateBlock();
   const { addBlock } = useAddBlock();
 
   if (Array.isArray(block)) {
-    throw Error("Can not load list into block editor");
+    throw Error("Cannot load list into block editor");
   }
 
   if (isPage(block)) {
