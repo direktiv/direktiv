@@ -25,7 +25,7 @@ export const Variable = ({ value }: VariableProps) => {
   return (
     <span
       className={twMergeClsx(
-        mode === "inspect" &&
+        mode === "edit" &&
           "border border-gray-9 bg-gray-4 dark:bg-gray-dark-4 dark:border-gray-dark-9"
       )}
     >

@@ -59,6 +59,7 @@ export const addBlockToPage = (
   const parent = findBlock(newPage, path.slice(0, -1));
   const index = path[path.length - 1] as number;
   if (isPage(parent) || isParentBlock(parent)) {
+    // Todo: Remove +1 in slice methods after merging DIR-2034
     const newList: AllBlocksType[] = [
       ...parent.blocks.slice(0, index + 1),
       block,

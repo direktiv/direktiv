@@ -97,7 +97,7 @@ type Mode = ComponentProps<typeof PageCompiler>["mode"];
 
 const PageEditor = () => {
   const theme = useTheme();
-  const [mode, setMode] = useState<Mode>("inspect");
+  const [mode, setMode] = useState<Mode>("edit");
   const [page, setPage] = useState(examplePage);
   const [validate, setValidate] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
@@ -113,9 +113,9 @@ const PageEditor = () => {
         <div className="flex gap-2 items-center">
           <Switch
             id="mode"
-            checked={mode === "inspect"}
+            checked={mode === "edit"}
             onCheckedChange={(value) => {
-              setMode(value ? "inspect" : "live");
+              setMode(value ? "edit" : "live");
             }}
           />
           <label htmlFor="mode">Inspect</label>

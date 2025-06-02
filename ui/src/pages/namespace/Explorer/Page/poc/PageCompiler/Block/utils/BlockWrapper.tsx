@@ -58,7 +58,7 @@ export const BlockWrapper = ({
   };
 
   useEffect(() => {
-    if (mode !== "inspect") {
+    if (mode !== "edit") {
       return;
     }
 
@@ -79,7 +79,7 @@ export const BlockWrapper = ({
 
   const handleClickBlock = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
-    if (mode !== "inspect") {
+    if (mode !== "edit") {
       return;
     }
     return setFocus(blockPath);
@@ -92,25 +92,25 @@ export const BlockWrapper = ({
       <div
         ref={containerRef}
         className={twMergeClsx(
-          mode === "inspect" &&
+          mode === "edit" &&
             "relative rounded-md p-3 border-2 border-gray-4 border-dashed dark:border-gray-dark-4 bg-white dark:bg-black",
           isHovered &&
-            mode === "inspect" &&
+            mode === "edit" &&
             "border-solid bg-gray-2 dark:bg-gray-dark-2",
           isFocused &&
-            mode === "inspect" &&
+            mode === "edit" &&
             "border-solid border-gray-8 dark:border-gray-10"
         )}
         data-block-wrapper
         onClick={handleClickBlock}
       >
-        {mode === "inspect" && (isHovered || isFocused) && (
+        {mode === "edit" && (isHovered || isFocused) && (
           <Badge className="-m-6 absolute z-30" variant="secondary">
             <b>{block.type}</b>
             {blockPath.join(".")}
           </Badge>
         )}
-        {mode === "inspect" && isFocused && (
+        {mode === "edit" && isFocused && (
           <div onClick={(event) => event.stopPropagation()}>
             <Dialog open={dialogOpen} onOpenChange={handleOnOpenChange}>
               <DialogTrigger
