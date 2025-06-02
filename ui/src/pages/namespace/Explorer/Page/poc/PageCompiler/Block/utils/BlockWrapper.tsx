@@ -113,13 +113,7 @@ export const BlockWrapper = ({
         {mode === "edit" && isFocused && (
           <div onClick={(event) => event.stopPropagation()}>
             <Dialog open={dialogOpen} onOpenChange={handleOnOpenChange}>
-              <DialogTrigger
-                asChild
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setDialog("edit");
-                }}
-              >
+              <DialogTrigger asChild onClick={() => setDialog("edit")}>
                 <Button variant="ghost" className="absolute right-1 top-1 z-30">
                   <Edit />
                 </Button>
@@ -128,10 +122,7 @@ export const BlockWrapper = ({
                 <Button
                   size="sm"
                   className="absolute -bottom-4 z-30 right-1/2"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setDialog("create");
-                  }}
+                  onClick={() => setDialog("create")}
                 >
                   <CirclePlus />
                 </Button>
