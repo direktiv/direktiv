@@ -12,10 +12,12 @@ jobs:
     name: Dagger
     runs-on: ubuntu-latest
     steps:
-      - name: Call Dagger Function
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Call local Dagger Function
         uses: dagger/dagger-for-github@8.0.0
         with:
           version: "latest"
-          module: github.com/shykes/daggerverse/hello@v0.1.2
+          module: .dagger
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: build-ui --source=.
