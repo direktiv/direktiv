@@ -40,7 +40,7 @@ export const BlockForm = ({ action, path, close, block }: BlockFormProps) => {
   const handleUpdate = (newBlock: AllBlocksType) => {
     switch (action) {
       case "create":
-        addBlock(path, newBlock); // TODO: add block after (requires merge first)
+        addBlock(path, newBlock);
         break;
       case "edit":
         updateBlock(path, newBlock);

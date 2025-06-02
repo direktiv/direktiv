@@ -17,7 +17,6 @@ import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockForm } from "../../../BlockEditor";
 import { BlockPathType } from "..";
-import { BlockProvider } from "./BlockProvider";
 import Button from "~/design/Button";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
@@ -140,16 +139,12 @@ export const BlockWrapper = ({
               {dialog !== null && (
                 <DialogContent className="z-50">
                   {dialog === "edit" && (
-                    <BlockProvider path={blockPath}>
-                      {(block) => (
-                        <BlockForm
-                          block={block}
-                          action={dialog}
-                          path={blockPath}
-                          close={() => setDialog(null)}
-                        />
-                      )}
-                    </BlockProvider>
+                    <BlockForm
+                      block={block}
+                      action={dialog}
+                      path={blockPath}
+                      close={() => setDialog(null)}
+                    />
                   )}
                   {dialog === "create" && (
                     <BlockForm

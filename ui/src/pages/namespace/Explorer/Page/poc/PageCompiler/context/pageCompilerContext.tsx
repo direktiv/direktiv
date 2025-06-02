@@ -1,10 +1,5 @@
 import { FC, PropsWithChildren, createContext, useContext } from "react";
-import {
-  addBlockToPage,
-  findBlock,
-  pathsEqual,
-  updateBlockInPage,
-} from "./utils";
+import { addBlockToPage, pathsEqual, updateBlockInPage } from "./utils";
 
 import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../Block";
@@ -51,10 +46,12 @@ const usePage = () => {
   return page;
 };
 
-const useBlock = (path: BlockPathType) => {
-  const page = usePage();
-  return findBlock(page, path);
-};
+// Todo: Currently not used. Remove it if we don't need it later.
+
+// const useBlock = (path: BlockPathType) => {
+//   const page = usePage();
+//   return findBlock(page, path);
+// };
 
 const useSetPage = () => {
   const { setPage } = usePageStateContext();
@@ -109,7 +106,7 @@ export {
   useMode,
   usePage,
   useSetPage,
-  useBlock,
+  // useBlock,
   useFocus,
   useSetFocus,
 };
