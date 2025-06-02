@@ -1,11 +1,11 @@
-import { Block, BlockPathType } from "./Block";
 import { DirektivPagesSchema, DirektivPagesType } from "../schema";
 import {
   PageCompilerContextProvider,
-  State as PageCompilerProps,
+  PageCompilerProps,
 } from "./context/pageCompilerContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+import { Block } from "./Block";
 import { BlockList } from "./Block/utils/BlockList";
 import { ParsingError } from "./Block/utils/ParsingError";
 import { useState } from "react";
@@ -29,7 +29,6 @@ export const PageCompiler = ({
   mode,
 }: PageCompilerProps) => {
   const [page, setPage] = useState<DirektivPagesType>(initialPage ?? "");
-  const [focus, setFocus] = useState<BlockPathType | null>(null);
   const parsedPage = DirektivPagesSchema.safeParse(page);
   const { t } = useTranslation();
 
@@ -42,13 +41,7 @@ export const PageCompiler = ({
   }
 
   return (
-    <PageCompilerContextProvider
-      setPage={setPage}
-      setFocus={setFocus}
-      page={page}
-      focus={focus}
-      mode={mode}
-    >
+    <PageCompilerContextProvider setPage={setPage} page={page} mode={mode}>
       <QueryClientProvider client={queryClient}>
         <BlockList>
           {page.blocks.map((block, index) => (

@@ -7,11 +7,6 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  useFocus,
-  useMode,
-  useSetFocus,
-} from "../../context/pageCompilerContext";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
@@ -23,6 +18,7 @@ import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { pathsEqual } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
+import { usePageEditor } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
 type BlockWrapperProps = PropsWithChildren<{
@@ -38,14 +34,10 @@ export const BlockWrapper = ({
   children,
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
-  const mode = useMode();
+  const { mode, focus, setFocus } = usePageEditor();
   const [dialog, setDialog] = useState<DialogState>(null);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { focus } = useFocus();
-  const setFocus = useSetFocus();
-
-  const dialogOpen = !!dialog;
 
   /**
    * This handler is only used for closing the dialog. For opening a dialog,
@@ -112,7 +104,7 @@ export const BlockWrapper = ({
         )}
         {mode === "edit" && isFocused && (
           <div onClick={(event) => event.stopPropagation()}>
-            <Dialog open={dialogOpen} onOpenChange={handleOnOpenChange}>
+            <Dialog open={!!dialog} onOpenChange={handleOnOpenChange}>
               <DialogTrigger asChild onClick={() => setDialog("edit")}>
                 <Button variant="ghost" className="absolute right-1 top-1 z-30">
                   <Edit />
