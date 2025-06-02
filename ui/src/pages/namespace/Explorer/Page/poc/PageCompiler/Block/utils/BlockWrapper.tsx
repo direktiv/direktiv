@@ -1,16 +1,13 @@
 import { CirclePlus, Edit } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
-  FC,
   PropsWithChildren,
-  ReactNode,
   Suspense,
   useEffect,
   useRef,
   useState,
 } from "react";
 import {
-  useBlock,
   useFocus,
   useMode,
   useSetFocus,
@@ -20,6 +17,7 @@ import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockForm } from "../../../BlockEditor";
 import { BlockPathType } from "..";
+import { BlockProvider } from "./BlockProvider";
 import Button from "~/design/Button";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
@@ -27,17 +25,6 @@ import { ParsingError } from "./ParsingError";
 import { pathsEqual } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
-
-type BlockProviderProps = {
-  path: BlockPathType;
-  children: (block: ReturnType<typeof useBlock>) => ReactNode;
-};
-
-const BlockProvider: FC<BlockProviderProps> = ({ children, path }) => {
-  const block = useBlock(path);
-
-  return <>{children(block)}</>;
-};
 
 type BlockWrapperProps = PropsWithChildren<{
   blockPath: BlockPathType;
