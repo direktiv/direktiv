@@ -1,4 +1,3 @@
-import { BlockEditFormProps, BlockEditorAction } from ".";
 import {
   DialogClose,
   DialogFooter,
@@ -14,13 +13,18 @@ import {
   SelectValue,
 } from "~/design/Select";
 
+import { BlockEditFormProps } from ".";
 import Button from "~/design/Button";
 import Input from "~/design/Input";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+/**
+ * Please follow this pattern when adding editor components for new block types:
+ * Omit the generic blocks type from BlockEditFormProps, and set it to the specific
+ * block type this component is intended for.
+ */
 type HeadlineEditFormProps = Omit<BlockEditFormProps, "block"> & {
-  action: BlockEditorAction;
   block: HeadlineType;
 };
 

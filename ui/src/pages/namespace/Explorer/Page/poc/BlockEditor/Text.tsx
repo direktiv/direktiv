@@ -1,14 +1,18 @@
-import { BlockEditFormProps, BlockEditorAction } from ".";
 import { DialogFooter, DialogHeader, DialogTitle } from "~/design/Dialog";
 
+import { BlockEditFormProps } from ".";
 import Button from "~/design/Button";
 import { TextType } from "../schema/blocks/text";
 import { Textarea } from "~/design/TextArea";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+/**
+ * Please follow this pattern when adding editor components for new block types:
+ * Omit the generic blocks type from BlockEditFormProps, and set it to the specific
+ * block type this component is intended for.
+ */
 type TextBlockEditFormProps = Omit<BlockEditFormProps, "block"> & {
-  action: BlockEditorAction;
   block: TextType;
 };
 

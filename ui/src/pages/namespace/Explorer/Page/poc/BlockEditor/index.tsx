@@ -8,17 +8,23 @@ import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
 
 export type BlockEditorAction = "create" | "edit";
 
+/**
+ * Please use this exported type for components that edit blocks. Omit the
+ * generic blocks type from BlockEditFormProps, and set it to the specific
+ * block type.
+ */
+export type BlockEditFormProps = {
+  action: BlockEditorAction;
+  block: AllBlocksType;
+  path: BlockPathType;
+  onSave: (newBlock: AllBlocksType) => void;
+};
+
 export type BlockFormProps = {
   block: AllBlocksType | DirektivPagesType;
   action: BlockEditorAction;
   path: BlockPathType;
   close: () => void;
-};
-
-export type BlockEditFormProps = {
-  block: AllBlocksType;
-  path: BlockPathType;
-  onSave: (newBlock: AllBlocksType) => void;
 };
 
 export const BlockForm = ({ action, path, close, block }: BlockFormProps) => {
