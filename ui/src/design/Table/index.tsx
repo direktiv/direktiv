@@ -68,7 +68,7 @@ export const TableCell = React.forwardRef<
 ));
 TableCell.displayName = "TableCell";
 
-export interface TableHeaderCellProps {
+interface TableHeaderCellProps {
   sticky?: boolean;
 }
 

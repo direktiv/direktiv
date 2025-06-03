@@ -49,7 +49,7 @@ import { z } from "zod";
   }
  */
 
-export const fileTypes = [
+const fileTypes = [
   "consumer",
   "directory",
   "endpoint",
@@ -78,7 +78,7 @@ const FileSchema = BaseFileSchema.extend({
 });
 
 /* Additional properties exist on files in "children", but aren't currently used. */
-export const DirectorySchema = BaseFileSchema.extend({
+const DirectorySchema = BaseFileSchema.extend({
   type: z.literal("directory"),
   children: z.array(BaseFileSchema).optional(),
 });
@@ -162,9 +162,9 @@ export const FileNameSchema = z
   });
 
 export type BaseFileSchemaType = z.infer<typeof BaseFileSchema>;
-export type DirectorySchemaType = z.infer<typeof DirectorySchema>;
+type DirectorySchemaType = z.infer<typeof DirectorySchema>;
 export type FileSchemaType = z.infer<typeof FileSchema>;
-export type FileTypeType = z.infer<typeof FileTypeSchema>;
+type FileTypeType = z.infer<typeof FileTypeSchema>;
 
 export type UpdateFileSchemaType = z.infer<typeof UpdateFileSchema>;
 export type RenameFileSchemaType = z.infer<typeof RenameFileSchema>;

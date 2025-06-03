@@ -62,7 +62,7 @@ export type PluginsSchemaType = z.infer<typeof PluginsSchema>;
 
 export type PluginType = keyof PluginsSchemaType;
 
-export const OperationSchema = z.record(z.any());
+const OperationSchema = z.record(z.any());
 
 export const MethodsSchema = z.object({
   connect: OperationSchema.optional(),
@@ -121,8 +121,8 @@ export type DirektivOpenApiSpecSchemaType = z.infer<
   typeof DirektivOpenApiSpecSchema
 >;
 
-export type MethodsKeys = keyof DirektivOpenApiSpecSchemaType;
-export type MethodsObject = Partial<
+type MethodsKeys = keyof DirektivOpenApiSpecSchemaType;
+type MethodsObject = Partial<
   Pick<DirektivOpenApiSpecSchemaType, MethodsKeys>
 >;
 
@@ -136,7 +136,7 @@ export type MethodsObject = Partial<
     "warnings": []
   }
  */
-export const RouteSchema = z.object({
+const RouteSchema = z.object({
   spec: DirektivOpenApiSpecSchema,
   file_path: z.string(),
   errors: z.array(z.string()),
@@ -233,6 +233,6 @@ export const OpenapiSpecificationSchema = z.object({
   }),
 });
 
-export type OpenapiSpecificationSchemaType = z.infer<
+type OpenapiSpecificationSchemaType = z.infer<
   typeof OpenapiSpecificationSchema
 >;

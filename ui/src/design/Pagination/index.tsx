@@ -27,7 +27,7 @@ export const Pagination: React.FC<PaginationProps> = ({ children, align }) => (
   </div>
 );
 Pagination.displayName = "Pagination";
-export interface PaginationLinkProps {
+interface PaginationLinkProps {
   onClick?: () => void;
   active?: boolean;
   icon?: "left" | "right";

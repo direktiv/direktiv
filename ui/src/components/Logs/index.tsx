@@ -17,7 +17,7 @@ type LogsContainerProps = {
   setScrolledToBottom: (scrolledToBottom: boolean) => void;
 } & ComponentProps<typeof Logs>;
 
-export const LogList = forwardRef<LogRef, LogsContainerProps>(
+const LogList = forwardRef<LogRef, LogsContainerProps>(
   (
     {
       height,

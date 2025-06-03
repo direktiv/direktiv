@@ -27,4 +27,4 @@ export const NotificationListSchema = z.object({
 });
 
 export type NotificationSchemaType = z.infer<typeof NotificationSchema>;
-export type NotificationListSchemaType = z.infer<typeof NotificationListSchema>;
+type NotificationListSchemaType = z.infer<typeof NotificationListSchema>;

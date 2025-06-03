@@ -12,7 +12,7 @@ type InstanceDetailsQueryParams = {
   instanceId: string;
 };
 
-export const getInstanceDetails = apiFactory({
+const getInstanceDetails = apiFactory({
   url: ({ namespace, baseUrl, instanceId }: InstanceDetailsQueryParams) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/instances/${instanceId}`,
   method: "GET",

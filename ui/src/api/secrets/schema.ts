@@ -8,7 +8,7 @@ import { z } from "zod";
     "updatedAt": "2024-04-02T06:22:21.766541Z"
   }
  */
-export const SecretSchema = z.object({
+const SecretSchema = z.object({
   name: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -33,7 +33,7 @@ export const SecretCreatedUpdatedSchema = z.object({
   data: SecretSchema,
 });
 
-export type SecretCreatedUpdatedSchemaType = z.infer<
+type SecretCreatedUpdatedSchemaType = z.infer<
   typeof SecretCreatedUpdatedSchema
 >;
 

@@ -10,7 +10,7 @@ import { getMessageFromApiError } from "~/api/errorHandling";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 
-export const executeJxQuery = apiFactory<ExecuteJxQueryPayloadType>({
+const executeJxQuery = apiFactory<ExecuteJxQueryPayloadType>({
   url: ({ baseUrl }: { baseUrl?: string }) => `${baseUrl ?? ""}/api/v2/jx`,
   method: "POST",
   schema: JxQueryResult,

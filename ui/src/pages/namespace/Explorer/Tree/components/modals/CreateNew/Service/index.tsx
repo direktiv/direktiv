@@ -20,7 +20,7 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-export type FormInput = {
+type FormInput = {
   name: string;
   fileContent: string;
 };

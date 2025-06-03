@@ -111,4 +111,3 @@ export const SecretForm = ({
   );
 };
 
-export default SecretFormProps;

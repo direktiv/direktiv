@@ -6,14 +6,14 @@ import { TargetPluginFormSchema } from "./plugins/target/schema";
 import { forceLeadingSlash } from "~/api/files/utils";
 import { z } from "zod";
 
-export const EndpointsPluginsSchema = z.object({
+const EndpointsPluginsSchema = z.object({
   target: TargetPluginFormSchema,
   inbound: z.array(InboundPluginFormSchema).optional(),
   outbound: z.array(OutboundPluginFormSchema).optional(),
   auth: z.array(AuthPluginFormSchema).optional(),
 });
 
-export type EndpointsPluginsSchemaType = z.infer<typeof EndpointsPluginsSchema>;
+type EndpointsPluginsSchemaType = z.infer<typeof EndpointsPluginsSchema>;
 
 const processPath = (value: unknown) => {
   // adds leading slash to path when loading file that doesn't have it yet
@@ -26,14 +26,14 @@ const processPath = (value: unknown) => {
   return forceLeadingSlash(value);
 };
 
-export const XDirektivConfigSchema = z.object({
+const XDirektivConfigSchema = z.object({
   allow_anonymous: z.boolean().optional(),
   path: z.preprocess((value) => processPath(value), z.string().optional()),
   timeout: z.number().int().positive().optional(),
   plugins: EndpointsPluginsSchema.optional(),
 });
 
-export type XDirektivConfigSchemaType = z.infer<typeof XDirektivConfigSchema>;
+type XDirektivConfigSchemaType = z.infer<typeof XDirektivConfigSchema>;
 
 export const EndpointFormSchema = z
   .object({

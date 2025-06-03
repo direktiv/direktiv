@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { twMergeClsx } from "~/util/helpers";
 
-export interface TextareaProps
+interface TextareaProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   custom?: boolean; // just to avoid  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-interface
 }

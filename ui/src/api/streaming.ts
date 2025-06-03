@@ -13,7 +13,7 @@ import { z } from "zod";
  * to the onopen, onerror and onmessage callback. It provides a flag to
  * enable/disable the streaming
  */
-export const useEventSource = ({
+const useEventSource = ({
   url,
   apiKey,
   onOpen,

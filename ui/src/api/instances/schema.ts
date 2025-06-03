@@ -87,7 +87,7 @@ export const InstanceCreatedResponseSchema = z.object({
   data: InstanceSchema,
 });
 
-export const InstanceCancelPayload = z.object({
+const InstanceCancelPayload = z.object({
   status: z.literal("cancelled"),
 });
 

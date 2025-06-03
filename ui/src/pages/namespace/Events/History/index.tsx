@@ -3,7 +3,7 @@ import EventsList from "./EventsList";
 import { FiltersSchemaType } from "~/api/events/schema/filters";
 import { useState } from "react";
 
-export const itemsPerPage = 10;
+const itemsPerPage = 10;
 
 const History = () => {
   const [filters, setFilters] = useState<FiltersSchemaType>({});

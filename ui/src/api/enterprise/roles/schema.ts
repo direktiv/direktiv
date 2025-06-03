@@ -78,5 +78,5 @@ export const RoleFormSchema = z.object({
 export const RoleDeletedSchema = z.null();
 
 export type RoleSchemaType = z.infer<typeof RoleSchema>;
-export type RolesListSchemaType = z.infer<typeof RolesListSchema>;
+type RolesListSchemaType = z.infer<typeof RolesListSchema>;
 export type RoleFormSchemaType = z.infer<typeof RoleFormSchema>;

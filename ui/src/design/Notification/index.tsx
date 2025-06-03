@@ -112,5 +112,5 @@ export {
   NotificationMessage,
   NotificationMenuSeparator,
   NotificationTitle,
-  NotificationText,
+  
 };

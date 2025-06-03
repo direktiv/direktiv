@@ -2,7 +2,7 @@ import React, { FC, HTMLAttributes } from "react";
 
 import { twMergeClsx } from "~/util/helpers";
 
-export type AvatarProps = HTMLAttributes<HTMLDivElement> & {
+type AvatarProps = HTMLAttributes<HTMLDivElement> & {
   className?: string;
   children?: React.ReactNode;
 };

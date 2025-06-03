@@ -49,7 +49,7 @@ export const checkIfNamespaceExists = async (namespace: string) => {
 // E.g., see the beforeEach and afterEach implementation in e2e/explorer.spec.ts.
 // If you have spammed namespaces while writing tests, call this temporarily:
 // await cleanupNamespace();
-export const cleanupNamespaces = async () => {
+const cleanupNamespaces = async () => {
   const response = await fetch(`${apiUrl}/api/v2/namespaces`, { headers });
   const namespaces = await response
     .json()

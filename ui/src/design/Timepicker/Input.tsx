@@ -11,7 +11,7 @@ import { twMergeClsx } from "~/util/helpers";
 
 // this component is mostly copied from https://time.openstatus.dev/
 
-export interface TimePickerInputProps
+interface TimePickerInputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   picker: TimePickerType;
   date: Date | undefined;

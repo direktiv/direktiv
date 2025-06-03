@@ -59,7 +59,7 @@ states:
   message: this is my error message
 `;
 
-export const workflowThatWaitsAndFails = `direktiv_api: workflow/v1
+const workflowThatWaitsAndFails = `direktiv_api: workflow/v1
 states:
 - id: delay
   type: delay

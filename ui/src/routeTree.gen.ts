@@ -851,7 +851,7 @@ const NNamespaceRouteRouteWithChildren = NNamespaceRouteRoute._addFileChildren(
   NNamespaceRouteRouteChildren,
 )
 
-export interface FileRoutesByFullPath {
+interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/*': typeof Route
   '/n/$namespace': typeof NNamespaceRouteRouteWithChildren
@@ -982,7 +982,7 @@ export interface FileRoutesById {
   '/n/$namespace/explorer/workflow/settings/$': typeof NNamespaceExplorerWorkflowSettingsSplatRoute
 }
 
-export interface FileRouteTypes {
+interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
@@ -1113,7 +1113,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 
-export interface RootRouteChildren {
+interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   Route: typeof Route
   NNamespaceRouteRoute: typeof NNamespaceRouteRouteWithChildren

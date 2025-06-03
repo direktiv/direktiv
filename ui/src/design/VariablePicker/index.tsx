@@ -104,7 +104,7 @@ const VariablepickerItem: FC<VariablepickerItemProps> = ({
 
 export {
   Variablepicker,
-  VariablepickerClose,
+  
   VariablepickerError,
   VariablepickerHeading,
   VariablepickerItem,

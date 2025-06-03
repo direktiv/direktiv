@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const LogLevelSchema = z.enum(["INFO", "ERROR", "WARN", "DEBUG"]);
+const LogLevelSchema = z.enum(["INFO", "ERROR", "WARN", "DEBUG"]);
 export type LogLevelSchemaType = z.infer<typeof LogLevelSchema>;
 
 /**
@@ -14,7 +14,7 @@ export type LogLevelSchemaType = z.infer<typeof LogLevelSchema>;
   "callpath": "/454c7a14-77d5-4706-bc61-27d883a2dde0/64477403-24a6-481b-a871-9fb8bc19e648/"
 }
  */
-export const WorkflowStatusData = z.object({
+const WorkflowStatusData = z.object({
   status: z.string().nonempty().nullable(),
   state: z.string().nonempty().nullable(),
   workflow: z.string().nonempty().optional(),
@@ -29,7 +29,7 @@ export const WorkflowStatusData = z.object({
   "path": "/mypath" 
 }
  */
-export const RouteData = z.object({
+const RouteData = z.object({
   path: z.string().nonempty(),
 });
 
