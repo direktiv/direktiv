@@ -47,7 +47,7 @@ export const Table = ({ blockProps }: TableProps) => {
 
   const hasActionsColumn = actions.length > 0;
   const numberOfColumns = columns.length + (hasActionsColumn ? 1 : 0);
-  const hasResults = arrayVariable.data.length > 0;
+  const hasRows = arrayVariable.data.length > 0;
 
   return (
     <Card>
@@ -61,7 +61,7 @@ export const Table = ({ blockProps }: TableProps) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {hasResults ? (
+          {hasRows ? (
             arrayVariable.data.map((item, index) => (
               <VariableContextProvider
                 key={index}
