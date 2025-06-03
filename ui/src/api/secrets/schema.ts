@@ -33,10 +33,6 @@ export const SecretCreatedUpdatedSchema = z.object({
   data: SecretSchema,
 });
 
-type SecretCreatedUpdatedSchemaType = z.infer<
-  typeof SecretCreatedUpdatedSchema
->;
-
 export const SecretFormCreateEditSchema = z.object({
   name: z.string().nonempty(),
   data: z.string().nonempty(),

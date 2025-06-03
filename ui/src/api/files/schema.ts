@@ -162,10 +162,7 @@ export const FileNameSchema = z
   });
 
 export type BaseFileSchemaType = z.infer<typeof BaseFileSchema>;
-type DirectorySchemaType = z.infer<typeof DirectorySchema>;
 export type FileSchemaType = z.infer<typeof FileSchema>;
-type FileTypeType = z.infer<typeof FileTypeSchema>;
-
 export type UpdateFileSchemaType = z.infer<typeof UpdateFileSchema>;
 export type RenameFileSchemaType = z.infer<typeof RenameFileSchema>;
 export type CreateFileSchemaType = z.infer<typeof CreateFileSchema>;

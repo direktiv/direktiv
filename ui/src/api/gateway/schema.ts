@@ -121,11 +121,6 @@ export type DirektivOpenApiSpecSchemaType = z.infer<
   typeof DirektivOpenApiSpecSchema
 >;
 
-type MethodsKeys = keyof DirektivOpenApiSpecSchemaType;
-type MethodsObject = Partial<
-  Pick<DirektivOpenApiSpecSchemaType, MethodsKeys>
->;
-
 /**
  * example
   {
@@ -232,7 +227,3 @@ export const OpenapiSpecificationSchema = z.object({
     errors: z.array(z.string()),
   }),
 });
-
-type OpenapiSpecificationSchemaType = z.infer<
-  typeof OpenapiSpecificationSchema
->;

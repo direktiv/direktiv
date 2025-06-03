@@ -44,23 +44,3 @@ export const checkIfNamespaceExists = async (namespace: string) => {
     );
   return !!namespaceInResponse;
 };
-
-// Not intended for regular use. Namespaces should be cleaned up after every test.
-// E.g., see the beforeEach and afterEach implementation in e2e/explorer.spec.ts.
-// If you have spammed namespaces while writing tests, call this temporarily:
-// await cleanupNamespace();
-const cleanupNamespaces = async () => {
-  const response = await fetch(`${apiUrl}/api/v2/namespaces`, { headers });
-  const namespaces = await response
-    .json()
-    .then((json: NamespaceListSchemaType) =>
-      json.data.filter((ns) => ns.name.includes("playwright"))
-    );
-  const requests = namespaces.map((ns) =>
-    fetch(`${apiUrl}/api/v2/namespaces/${ns.name}`, {
-      method: "DELETE",
-    })
-  );
-
-  return Promise.all(requests);
-};

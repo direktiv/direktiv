@@ -56,10 +56,6 @@ export const VarCreatedUpdatedSchema = z.object({
   data: VarSchema,
 });
 
-type VarCreatedUpdatedSchemaType = z.infer<
-  typeof VarCreatedUpdatedSchema
->;
-
 export const VarFormCreateEditSchema = z.object({
   name: z.string().nonempty(),
   /**

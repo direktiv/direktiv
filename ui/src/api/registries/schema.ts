@@ -39,6 +39,6 @@ export const RegistryCreatedSchema = z.object({
 export const RegistryDeletedSchema = z.null();
 
 export type RegistrySchemaType = z.infer<typeof RegistrySchema>;
-type RegistryCreatedSchemaType = z.infer<typeof RegistryCreatedSchema>;
+
 export type RegistryListSchemaType = z.infer<typeof RegistryListSchema>;
 export type RegistryFormSchemaType = z.infer<typeof RegistryFormSchema>;

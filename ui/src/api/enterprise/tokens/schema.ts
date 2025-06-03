@@ -94,5 +94,5 @@ export const TokenFormSchema = z.object({
 export const TokenDeletedSchema = z.null();
 
 export type TokenSchemaType = z.infer<typeof TokenSchema>;
-type TokenListSchemaType = z.infer<typeof TokenListSchema>;
+
 export type TokenFormSchemaType = z.infer<typeof TokenFormSchema>;

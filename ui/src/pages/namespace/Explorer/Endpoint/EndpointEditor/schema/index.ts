@@ -13,8 +13,6 @@ const EndpointsPluginsSchema = z.object({
   auth: z.array(AuthPluginFormSchema).optional(),
 });
 
-type EndpointsPluginsSchemaType = z.infer<typeof EndpointsPluginsSchema>;
-
 const processPath = (value: unknown) => {
   // adds leading slash to path when loading file that doesn't have it yet
   if (typeof value !== "string") {
@@ -32,8 +30,6 @@ const XDirektivConfigSchema = z.object({
   timeout: z.number().int().positive().optional(),
   plugins: EndpointsPluginsSchema.optional(),
 });
-
-type XDirektivConfigSchemaType = z.infer<typeof XDirektivConfigSchema>;
 
 export const EndpointFormSchema = z
   .object({

@@ -66,9 +66,7 @@ export const EventListenersResponseSchema = z.object({
 });
 
 export type EventListenerSchemaType = z.infer<typeof EventListenerSchema>;
-type EventListenersResponseSchemaType = z.infer<
-  typeof EventListenersResponseSchema
->;
+
 export type EventContextFilterSchemaType = z.infer<
   typeof EventContextFilterSchema
 >;
