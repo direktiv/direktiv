@@ -113,7 +113,7 @@ export const BlockWrapper = ({
               <DialogTrigger className="float-right" asChild>
                 <Button
                   size="sm"
-                  className="absolute -bottom-4 z-30 right-1/2"
+                  className="absolute -bottom-4 z-30 left-1/2 -translate-x-1/2"
                   onClick={() => setDialog("create")}
                 >
                   <CirclePlus />
