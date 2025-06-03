@@ -65,7 +65,6 @@
     "postcss": "^8.4.21",
     "postcss-nesting": "^13.0.1",
     "prettier": "^3.4.1",
-    "prettier-plugin-tailwindcss": "^0.6.9",
     "rapidoc": "^9.3.8",
     "react": "^18.2.0",
     "react-day-picker": "^8.7.1",
@@ -97,9 +96,12 @@
     "check:prettier": "prettier --check './{src,test,e2e}/**/*.{js,jsx,ts,tsx,json,scss,css}' --cache",
     "check:deps": "pnpm install --frozen-lockfile --prefer-offline",
     "check:test": "vitest run",
+    "check:knip": "knip",
+    "fix": "run-p fix:*",
+    "fix:prettier": "prettier --write './{src,test,e2e}/**/*.{js,jsx,ts,tsx,json,scss,css}' --cache",
+    "fix:knip": "knip --fix --allow-remove-files",
     "e2e:headless": "pnpm exec playwright test --project \"chromium\"",
-    "e2e:ui": "pnpm exec playwright test --ui",
-    "prettier": "prettier --write './{src,test,e2e}/**/*.{js,jsx,ts,tsx,json,scss,css}' --cache"
+    "e2e:ui": "pnpm exec playwright test --ui"
   },
   "resolutions": {
     "babel-loader": "8.1.0",
