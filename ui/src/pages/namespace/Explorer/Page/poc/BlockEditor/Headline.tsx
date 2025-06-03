@@ -13,14 +13,7 @@ import { DialogHeader } from "./components/Header";
 import Input from "~/design/Input";
 import { useState } from "react";
 
-/**
- * Please follow this pattern when adding editor components for new block types:
- * Omit the generic blocks type from BlockEditFormProps, and set it to the specific
- * block type this component is intended for.
- */
-type HeadlineEditFormProps = Omit<BlockEditFormProps, "block"> & {
-  block: HeadlineType;
-};
+type HeadlineEditFormProps = BlockEditFormProps<HeadlineType>;
 
 export const Headline = ({
   action,

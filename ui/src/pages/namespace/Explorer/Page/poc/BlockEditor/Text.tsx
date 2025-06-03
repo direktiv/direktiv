@@ -5,14 +5,7 @@ import { TextType } from "../schema/blocks/text";
 import { Textarea } from "~/design/TextArea";
 import { useState } from "react";
 
-/**
- * Please follow this pattern when adding editor components for new block types:
- * Omit the generic blocks type from BlockEditFormProps, and set it to the specific
- * block type this component is intended for.
- */
-type TextBlockEditFormProps = Omit<BlockEditFormProps, "block"> & {
-  block: TextType;
-};
+type TextBlockEditFormProps = BlockEditFormProps<TextType>;
 
 export const Text = ({
   action,
