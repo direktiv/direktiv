@@ -18,7 +18,7 @@ export const Text = ({
   action,
   block: propBlock,
   path,
-  onSave,
+  onSubmit,
 }: TextBlockEditFormProps) => {
   const [block, setBlock] = useState<TextType>(structuredClone(propBlock));
 
@@ -36,7 +36,7 @@ export const Text = ({
       />
       <div>Debug Info {JSON.stringify(block)}</div>
 
-      <DialogFooter onSave={() => onSave(block)} />
+      <DialogFooter onSubmit={() => onSubmit(block)} />
     </>
   );
 };

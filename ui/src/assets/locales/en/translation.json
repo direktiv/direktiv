@@ -1661,7 +1661,8 @@
     },
     "blockEditor": {
       "generic": {
-        "saveButton": "Save"
+        "saveButton": "Save",
+        "cancelButton": "Cancel"
       },
       "dialogTitle": "{{action}} {{type}} @{{path}}",
       "action": {

@@ -17,7 +17,7 @@ export type BlockEditFormProps = {
   action: BlockEditorAction;
   block: AllBlocksType;
   path: BlockPathType;
-  onSave: (newBlock: AllBlocksType) => void;
+  onSubmit: (newBlock: AllBlocksType) => void;
 };
 
 export type BlockFormProps = {
@@ -51,7 +51,12 @@ export const BlockForm = ({ action, path, block }: BlockFormProps) => {
   switch (block.type) {
     case "text": {
       return (
-        <Text action={action} block={block} path={path} onSave={handleUpdate} />
+        <Text
+          action={action}
+          block={block}
+          path={path}
+          onSubmit={handleUpdate}
+        />
       );
     }
     case "headline": {
@@ -60,7 +65,7 @@ export const BlockForm = ({ action, path, block }: BlockFormProps) => {
           action={action}
           block={block}
           path={path}
-          onSave={handleUpdate}
+          onSubmit={handleUpdate}
         />
       );
     }

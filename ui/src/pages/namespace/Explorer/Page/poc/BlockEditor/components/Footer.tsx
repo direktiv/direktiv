@@ -7,19 +7,21 @@ import Button from "~/design/Button";
 import { useTranslation } from "react-i18next";
 
 type BlockEditorFooterProps = {
-  onSave: () => void;
+  onSubmit: () => void;
 };
 
-export const DialogFooter = ({ onSave }: BlockEditorFooterProps) => {
+export const DialogFooter = ({ onSubmit }: BlockEditorFooterProps) => {
   const { t } = useTranslation();
 
   return (
     <DesignDialogFooter>
       <DialogClose>
-        <Button variant="ghost">Cancel</Button>
+        <Button variant="ghost">
+          {t("direktivPage.blockEditor.generic.cancelButton")}
+        </Button>
       </DialogClose>
       <DialogClose>
-        <Button variant="primary" onClick={onSave}>
+        <Button variant="primary" onClick={onSubmit}>
           {t("direktivPage.blockEditor.generic.saveButton")}
         </Button>
       </DialogClose>

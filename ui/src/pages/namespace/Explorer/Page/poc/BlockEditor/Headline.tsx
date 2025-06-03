@@ -26,7 +26,7 @@ export const Headline = ({
   action,
   block: propBlock,
   path,
-  onSave,
+  onSubmit,
 }: HeadlineEditFormProps) => {
   const defaultLevel = headlineLevels[1];
 
@@ -61,7 +61,7 @@ export const Headline = ({
           ))}
         </SelectContent>
       </Select>
-      <DialogFooter onSave={() => onSave(block)} />
+      <DialogFooter onSubmit={() => onSubmit(block)} />
     </>
   );
 };
