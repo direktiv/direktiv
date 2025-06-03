@@ -335,17 +335,4 @@ function Toaster() {
   );
 }
 
-export {
-  
-  
-  
-  
-  Toast,
-  
-  
-  
-  ToastAction,
-  useToast,
-  toast,
-  Toaster,
-};
+export { Toast, ToastAction, useToast, toast, Toaster };

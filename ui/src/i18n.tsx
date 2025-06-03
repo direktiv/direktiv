@@ -20,4 +20,3 @@ i18n
       escapeValue: false, // react already safes from xss
     },
   });
-
