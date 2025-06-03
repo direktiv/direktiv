@@ -100,13 +100,13 @@ const PageEditor = () => {
   const [mode, setMode] = useState<Mode>("edit");
   const [page, setPage] = useState(examplePage);
   const [validate, setValidate] = useState(true);
-  const [showEditor, setShowEditor] = useState(false);
+  const [showCode, setShowCode] = useState(false);
 
   return (
     <div
       className={twMergeClsx(
         "grid gap-5 grow p-5 relative",
-        showEditor && "grid-cols-2"
+        showCode && "grid-cols-2"
       )}
     >
       <div className="right-5 -top-12 absolute gap-5 flex text-sm">
@@ -123,16 +123,16 @@ const PageEditor = () => {
         <div className="flex gap-2 items-center">
           <Switch
             id="show-code"
-            checked={showEditor}
+            checked={showCode}
             onCheckedChange={(value) => {
-              setShowEditor(value);
+              setShowCode(value);
             }}
           />
           <label htmlFor="show-code">Show Code</label>
         </div>
         <div className="flex gap-2 items-center">
           <Switch
-            disabled={!showEditor}
+            disabled={!showCode}
             id="validate"
             checked={validate}
             onCheckedChange={(value) => {
@@ -142,7 +142,7 @@ const PageEditor = () => {
           <label htmlFor="validate">Validate</label>
         </div>
       </div>
-      {showEditor && (
+      {showCode && (
         <Card className="p-4">
           <Editor
             value={jsonToYaml(examplePage)}
