@@ -100,7 +100,7 @@ A QueryProvider is a block that is responsible for fetching data from one or mul
 
 ### Loop `Block`
 
-A Block that allows to iterate over a variable. It renders its blocks for each item.
+A Block that allows to iterate over an array variable. It renders its blocks for each item.
 
 | Attribute | Type              | Description                    |
 | --------- | ----------------- | ------------------------------ |
