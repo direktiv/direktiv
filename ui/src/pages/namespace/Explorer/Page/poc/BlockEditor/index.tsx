@@ -24,10 +24,6 @@ export type BlockFormProps = {
 export const BlockForm = ({ action, path, block }: BlockFormProps) => {
   const { addBlock, updateBlock } = usePageEditor();
 
-  if (Array.isArray(block)) {
-    throw Error("Cannot load list into block editor");
-  }
-
   if (isPage(block)) {
     throw Error("Unexpected page object when parsing block");
   }
