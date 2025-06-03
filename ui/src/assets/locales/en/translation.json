@@ -1670,7 +1670,15 @@
       },
       "blockType": {
         "text": "text block",
-        "headline": "headline block"
+        "headline": "headline block",
+        "button": "button block",
+        "card": "card block",
+        "dialog": "dialog block",
+        "form": "form block",
+        "loop": "loop block",
+        "query-provider": "query provider",
+        "column": "set of columns",
+        "columns": "column block"
       }
     }
   }
