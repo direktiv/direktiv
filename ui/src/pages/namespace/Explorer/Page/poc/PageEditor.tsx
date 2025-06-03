@@ -122,13 +122,13 @@ const PageEditor = () => {
         </div>
         <div className="flex gap-2 items-center">
           <Switch
-            id="show-editor"
+            id="show-code"
             checked={showEditor}
             onCheckedChange={(value) => {
               setShowEditor(value);
             }}
           />
-          <label htmlFor="show-editor">Show Code</label>
+          <label htmlFor="show-code">Show Code</label>
         </div>
         <div className="flex gap-2 items-center">
           <Switch
