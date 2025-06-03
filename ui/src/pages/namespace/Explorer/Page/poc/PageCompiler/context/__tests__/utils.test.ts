@@ -106,6 +106,15 @@ describe("updateBlockInPage", () => {
     });
   });
 
+  test("it throws an error if the specified index is empty", () => {
+    expect(() =>
+      updateBlockInPage(simple, [], {
+        type: "text",
+        content: "I am now a text block",
+      })
+    ).toThrow("Invalid path, could not extract index for target block");
+  });
+
   test("it throws an error if the target block index is out of bounds", () => {
     expect(() =>
       updateBlockInPage(complex, [2, 1, 9], {
@@ -174,6 +183,12 @@ describe("addBlockToPage", () => {
       ],
     });
   });
+
+  test("it throws an error if the specified index is empty", () => {
+    expect(() => addBlockToPage(simple, [], headline)).toThrow(
+      "Invalid path, could not extract index for new block"
+    );
+  });
 });
 
 describe("pathsEqual", () => {
@@ -204,6 +219,11 @@ describe("pathsEqual", () => {
 
   test("it accepts null values (and returns true if they match)", () => {
     const result = pathsEqual(null, null);
+    expect(result).toEqual(true);
+  });
+
+  test("it accepts empty arrays (and returns true if they match)", () => {
+    const result = pathsEqual([], []);
     expect(result).toEqual(true);
   });
 });

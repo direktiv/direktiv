@@ -38,9 +38,14 @@ export const updateBlockInPage = (
   path: BlockPathType,
   block: AllBlocksType
 ): DirektivPagesType => {
+  const targetIndex = path[path.length - 1];
+
+  if (targetIndex === undefined) {
+    throw new Error("Invalid path, could not extract index for target block");
+  }
+
   const newPage = clonePage(page);
   const parent = findBlock(newPage, path.slice(0, -1));
-  const targetIndex = path[path.length - 1] as number;
 
   if (!(isPage(parent) || isParentBlock(parent))) {
     throw new Error("Invalid parent block");
@@ -58,9 +63,14 @@ export const addBlockToPage = (
   block: AllBlocksType,
   after = false
 ) => {
+  let index = path[path.length - 1];
+
+  if (index === undefined) {
+    throw new Error("Invalid path, could not extract index for new block");
+  }
+
   const newPage = clonePage(page);
   const parent = findBlock(newPage, path.slice(0, -1));
-  let index = path[path.length - 1] as number;
 
   if (after) {
     index++;
