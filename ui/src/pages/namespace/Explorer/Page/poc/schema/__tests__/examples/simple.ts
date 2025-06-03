@@ -18,11 +18,11 @@ export default {
       blocks: [
         {
           type: "column",
-          blocks: [{ type: "text", content: "some text goes here" }],
+          blocks: [{ type: "text", content: "first column text" }],
         },
         {
           type: "column",
-          blocks: [{ type: "text", content: "some text goes here" }],
+          blocks: [{ type: "text", content: "second column text" }],
         },
       ],
     },

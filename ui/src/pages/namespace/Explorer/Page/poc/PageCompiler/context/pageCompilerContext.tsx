@@ -1,28 +1,46 @@
-import { FC, PropsWithChildren, createContext, useContext } from "react";
-import { addBlockToPage, findBlock, updateBlockInPage } from "./utils";
+import {
+  Dispatch,
+  FC,
+  PropsWithChildren,
+  SetStateAction,
+  createContext,
+  useContext,
+  useState,
+} from "react";
+import { addBlockToPage, pathsEqual, updateBlockInPage } from "./utils";
 
 import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../Block";
 import { DirektivPagesType } from "../../schema";
 
-export type State = {
-  mode: "inspect" | "live";
+export type PageCompilerMode = "edit" | "live";
+
+export type PageCompilerProps = {
+  mode: PageCompilerMode;
   page: DirektivPagesType;
   setPage: (page: DirektivPagesType) => void;
 };
 
-const PageCompilerContext = createContext<State | null>(null);
+export type PageCompilerState = PageCompilerProps & {
+  focus: BlockPathType | null;
+  setFocus: Dispatch<SetStateAction<BlockPathType | null>>;
+};
 
-type PageCompilerContextProviderProps = PropsWithChildren<State>;
+const PageCompilerContext = createContext<PageCompilerState | null>(null);
+
+type PageCompilerContextProviderProps = PropsWithChildren<PageCompilerProps>;
 
 const PageCompilerContextProvider: FC<PageCompilerContextProviderProps> = ({
   children,
   ...value
-}) => (
-  <PageCompilerContext.Provider value={value}>
-    {children}
-  </PageCompilerContext.Provider>
-);
+}) => {
+  const [focus, setFocus] = useState<BlockPathType | null>(null);
+  return (
+    <PageCompilerContext.Provider value={{ ...value, focus, setFocus }}>
+      {children}
+    </PageCompilerContext.Provider>
+  );
+};
 
 const usePageStateContext = () => {
   const context = useContext(PageCompilerContext);
@@ -34,50 +52,56 @@ const usePageStateContext = () => {
   return context;
 };
 
-const useMode = () => {
-  const { mode } = usePageStateContext();
-  return mode;
-};
-
 const usePage = () => {
   const { page } = usePageStateContext();
   return page;
 };
 
-const useBlock = (path: BlockPathType) => {
-  const page = usePage();
-  return findBlock(page, path);
-};
+// Todo: Currently not used. Remove it if we don't need it later.
 
-const useSetPage = () => {
-  const { setPage } = usePageStateContext();
-  return setPage;
-};
+// const useBlock = (path: BlockPathType) => {
+//   const page = usePage();
+//   return findBlock(page, path);
+// };
 
-export const useUpdateBlock = () => {
+export const usePageEditor = () => {
   const page = usePage();
-  const setPage = useSetPage();
+  const {
+    focus,
+    mode,
+    setFocus: contextSetFocus,
+    setPage,
+  } = usePageStateContext();
+
+  const setFocus = (path: BlockPathType) => {
+    if (focus && pathsEqual(focus, path)) {
+      return !!contextSetFocus && contextSetFocus(null);
+    }
+    return !!contextSetFocus && contextSetFocus(path);
+  };
+
   const updateBlock = (path: BlockPathType, newBlock: AllBlocksType) => {
     const newPage = updateBlockInPage(page, path, newBlock);
     setPage(newPage);
   };
 
-  return {
-    updateBlock,
-  };
-};
-
-export const useAddBlock = () => {
-  const page = usePage();
-  const setPage = useSetPage();
-  const addBlock = (path: BlockPathType, block: AllBlocksType) => {
-    const newPage = addBlockToPage(page, path, block);
+  const addBlock = (
+    path: BlockPathType,
+    block: AllBlocksType,
+    after = false
+  ) => {
+    const newPage = addBlockToPage(page, path, block, after);
     setPage(newPage);
   };
 
   return {
+    focus,
+    mode,
+    setFocus,
     addBlock,
+    updateBlock,
+    setPage,
   };
 };
 
-export { PageCompilerContextProvider, useMode, usePage, useSetPage, useBlock };
+export { PageCompilerContextProvider, usePage };
