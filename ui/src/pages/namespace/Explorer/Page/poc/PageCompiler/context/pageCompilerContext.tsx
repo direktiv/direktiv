@@ -19,8 +19,6 @@ export type PageCompilerProps = {
   mode: PageCompilerMode;
   page: DirektivPagesType;
   setPage: (page: DirektivPagesType) => void;
-  focus?: BlockPathType | null;
-  setFocus?: (path: BlockPathType | null) => void;
 };
 
 export type PageCompilerState = PageCompilerProps & {
