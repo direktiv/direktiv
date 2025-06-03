@@ -1643,7 +1643,7 @@
       "invalidSchema": "The page can not be rendered because it has an invalid configuration",
       "blockNotImplemented": "The block type \"{{type}}\" is not implemented yet",
       "genericError": "There was an unexpected error",
-      "duplicateId": "Error in block with id {{id}}: The id is already used in by one of the parent blocks",
+      "duplicateId": "Error in block with id {{id}}: The id is already used by one of the parent blocks",
       "queryProvider": {
         "queryFailed": "Error in query with id {{id}}: {{endpoint}} responded with {{status}}",
         "invalidJson": "Error in query with id {{id}}: {{endpoint}} returned an invalid JSON"
