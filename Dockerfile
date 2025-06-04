@@ -38,18 +38,7 @@ COPY ui/pnpm-lock.yaml .
 
 RUN pnpm install --frozen-lockfile
 
-COPY ui/.eslintrc.js .
-COPY ui/.prettierrc.mjs .
-COPY ui/.prettierignore .
-COPY ui/index.html .
-COPY ui/postcss.config.cjs .
-COPY ui/tailwind.config.cjs .
-COPY ui/tsconfig.json .
-COPY ui/vite.config.mts .
-COPY ui/assets assets
-COPY ui/public public
-COPY ui/src src
-COPY ui/test test
+COPY ui/ ./
 
 RUN pnpm run build
 
