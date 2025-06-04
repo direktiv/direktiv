@@ -6,10 +6,12 @@ import { storageState } from "./e2e/setup/auth";
 
 dotenv.config();
 
-if (!process.env.PLAYWRIGHT_UI_BASE_URL)
-  throw new Error("PLAYWRIGHT_UI_BASE_URL is not set");
+if (process.env && !process.env.PLAYWRIGHT_UI_BASE_URL)
+  throw new Error("PLAYWRIGHT_UI_BASE_URL is not set!!!");
 
-const baseURL = new URL(`${process.env.PLAYWRIGHT_UI_BASE_URL}`);
+const baseURL = process.env.PLAYWRIGHT_UI_BASE_URL
+  ? new URL(`${process.env.PLAYWRIGHT_UI_BASE_URL}`)
+  : undefined;
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -30,7 +32,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: baseURL.toString(),
+    baseURL: baseURL?.toString(),
     storageState,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     // trace: "on-first-retry",
@@ -74,8 +76,8 @@ export default defineConfig({
     process.env.PLAYWRIGHT_USE_VITE === "TRUE"
       ? {
           timeout: 60000,
-          command: `pnpm exec vite --port ${baseURL.port}`,
-          url: baseURL.toString(),
+          command: `pnpm exec vite ${baseURL && `--port ${baseURL.port}`}`,
+          url: baseURL?.toString(),
           reuseExistingServer: !process.env.PLAYWRIGHT_CI,
         }
       : undefined,
