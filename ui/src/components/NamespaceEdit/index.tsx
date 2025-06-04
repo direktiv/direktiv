@@ -262,7 +262,7 @@ const NamespaceEdit = ({
         </Tabs>
       )}
 
-      <div className="mt-1 mb-3">
+      <div className="mb-3 mt-1">
         <FormErrors errors={errors} className="mb-5" />
         <form
           id={formId}
@@ -270,7 +270,7 @@ const NamespaceEdit = ({
           className="flex flex-col gap-y-5"
         >
           {isNew && (
-            <fieldset className="flex gap-2 items-center">
+            <fieldset className="flex items-center gap-2">
               <label
                 className="w-[112px] overflow-hidden text-right text-[14px]"
                 htmlFor="name"

@@ -89,7 +89,7 @@ const Notification: FC<NotificationPropsType> = ({
                 data-testid="notification-indicator"
                 data-state="open"
                 className={twMergeClsx(
-                  "absolute top-0 right-0 rounded-full border-2 border-white bg-danger-10 p-1 transition-colors dark:border-black dark:bg-danger-dark-10",
+                  "absolute right-0 top-0 rounded-full border-2 border-white bg-danger-10 p-1 transition-colors dark:border-black dark:bg-danger-dark-10",
                   "group-hover:border-gray-3 group-data-[state=open]:border-white",
                   "dark:group-hover:border-gray-dark-3 dark:group-data-[state=open]:border-black"
                 )}

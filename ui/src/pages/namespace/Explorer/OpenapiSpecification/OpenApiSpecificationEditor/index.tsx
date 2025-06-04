@@ -94,11 +94,11 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
   return (
     <form
       onSubmit={handleFormSubmit}
-      className="relative flex-col gap-4 p-5 size-full"
+      className="relative size-full flex-col gap-4 p-5"
     >
-      <div className="flex flex-col gap-4 size-full">
-        <div className="grid grow  size-full">
-          <div className="flex flex-col gap-5 grow size-full">
+      <div className="flex size-full flex-col gap-4">
+        <div className="grid size-full grow">
+          <div className="flex size-full grow flex-col gap-5">
             <CodeEditor
               value={editorContent}
               onValueChange={handleEditorChange}

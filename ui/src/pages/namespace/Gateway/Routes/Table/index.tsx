@@ -38,7 +38,7 @@ const RoutesTable = ({
 
   return (
     <Table>
-      <TableHead className="sticky top-0 bg-gray-1 z-10 dark:bg-gray-dark-1">
+      <TableHead className="sticky top-0 z-10 bg-gray-1 dark:bg-gray-dark-1">
         <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
           <TableHeaderCell className="w-60 grow">
             {t("pages.gateway.routes.columns.filePath")}

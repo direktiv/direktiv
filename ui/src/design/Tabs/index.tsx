@@ -33,9 +33,9 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     className={twMergeClsx(
       variant === "boxed" &&
-        "inline-flex min-w-[100px] items-center justify-center gap-x-2 rounded-[0.185rem] px-3  py-1.5 text-sm font-medium  transition-all disabled:pointer-events-none  disabled:opacity-50 data-[state=active]:shadow-sm",
+        "inline-flex min-w-[100px] items-center justify-center gap-x-2 rounded-[0.185rem] px-3 py-1.5 text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm",
       variant === "boxed" &&
-        "text-gray-10 data-[state=active]:bg-white data-[state=active]:text-gray-12 ",
+        "text-gray-10 data-[state=active]:bg-white data-[state=active]:text-gray-12",
       variant === "boxed" &&
         "dark:text-gray-dark-10 dark:data-[state=active]:bg-black dark:data-[state=active]:text-gray-dark-12",
       !variant &&

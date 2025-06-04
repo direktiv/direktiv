@@ -70,7 +70,7 @@ const Button = React.forwardRef<
             "dark:border-gray-dark-4 dark:hover:bg-gray-dark-2",
           ],
           variant === "primary" && [
-            "bg-primary-500  text-gray-1 hover:bg-primary-600",
+            "bg-primary-500 text-gray-1 hover:bg-primary-600",
             "dark:text-gray-dark-1",
           ],
           variant === "ghost" && [

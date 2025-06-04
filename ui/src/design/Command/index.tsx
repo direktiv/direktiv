@@ -91,7 +91,7 @@ const CommandGroup = React.forwardRef<
   <CommandPrimitive.Group
     ref={ref}
     className={twMergeClsx(
-      "overflow-hidden p-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium ",
+      "overflow-hidden p-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium",
       "text-gray-11 [&_[cmdk-group-heading]]:text-gray-10",
       "dark:text-gray-dark-11 dark:[&_[cmdk-group-heading]]:text-gray-dark-10",
       className
@@ -135,7 +135,7 @@ const CommandItem = React.forwardRef<
     className={twMergeClsx(
       "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       "aria-selected:bg-gray-3",
-      "dark:aria-selected:bg-gray-dark-3 ",
+      "dark:aria-selected:bg-gray-dark-3",
       className
     )}
     {...props}
@@ -160,7 +160,7 @@ const CommandStaticItem = React.forwardRef<
       className={twMergeClsx(
         "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         "hover:bg-gray-3",
-        "dark:hover:bg-gray-dark-3 ",
+        "dark:hover:bg-gray-dark-3",
         className
       )}
       {...props}
