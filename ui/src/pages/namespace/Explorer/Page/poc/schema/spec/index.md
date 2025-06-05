@@ -41,10 +41,17 @@ Blocks are the main elements that the user can use to compose a Direktiv page.
 
 ### Columns `Block`
 
-| Attribute | Type        | Description                                        |
-| --------- | ----------- | -------------------------------------------------- |
-| `type`    | `"columns"` |                                                    |
-| `columns` | `Block[][]` | Array of columns, each containing a list of blocks |
+| Attribute | Type           | Description                                        |
+| --------- | -------------- | -------------------------------------------------- |
+| `type`    | `"columns"`    |                                                    |
+| `blocks`  | `Column[]`     | Array of column blocks                             |
+
+### Column `Block`
+
+| Attribute | Type       | Description                    |
+| --------- | ---------- | ------------------------------ |
+| `type`    | `"column"` |                                |
+| `blocks`  | `Block[]`  | Content blocks within the column |
 
 ### Dialog `Block`
 
