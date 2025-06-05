@@ -13,7 +13,15 @@ export class Direktiv {
     source: Directory
   ): Promise<Directory> {
     // Get the ui subdirectory from source
-    const uiDir = source.directory("ui");
+    const uiDir = source
+      .directory("ui")
+      .withoutDirectory("dist")
+      .withoutDirectory("node_modules")
+      .withoutDirectory("test-results")
+      .withoutFile(".tsbuildinfo")
+      .withoutFile(".eslintcache")
+      .withoutFile("*.log")
+      .withoutFile("**/.env*");
 
     // Start with Node.js 20 slim image
     const container = dag
