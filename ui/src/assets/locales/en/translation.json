@@ -1682,7 +1682,8 @@
         "loop": "loop block",
         "query-provider": "query provider",
         "column": "set of columns",
-        "columns": "column block"
+        "columns": "column block",
+        "table": "table block"
       }
     }
   }
