@@ -38,26 +38,43 @@ export const updateBlockInPage = (
   path: BlockPathType,
   block: AllBlocksType
 ): DirektivPagesType => {
-  const newPage = clonePage(page);
-  const parent = findBlock(newPage, path.slice(0, -1));
-  const targetIndex = path[path.length - 1] as number;
+  const targetIndex = path[path.length - 1];
 
-  if (isPage(parent) || isParentBlock(parent)) {
-    parent.blocks[targetIndex] = block;
-    return newPage;
+  if (targetIndex === undefined) {
+    throw new Error("Invalid path, could not extract index for target block");
   }
 
-  throw new Error("Could not update block");
+  const newPage = clonePage(page);
+  const parent = findBlock(newPage, path.slice(0, -1));
+
+  if (!(isPage(parent) || isParentBlock(parent))) {
+    throw new Error("Invalid parent block");
+  }
+  if (!(targetIndex >= 0 && targetIndex < parent.blocks.length)) {
+    throw new Error("Index for updating block out of bounds");
+  }
+  parent.blocks[targetIndex] = block;
+  return newPage;
 };
 
 export const addBlockToPage = (
   page: DirektivPagesType,
   path: BlockPathType,
-  block: AllBlocksType
+  block: AllBlocksType,
+  after = false
 ) => {
+  let index = path[path.length - 1];
+
+  if (index === undefined) {
+    throw new Error("Invalid path, could not extract index for new block");
+  }
+
   const newPage = clonePage(page);
   const parent = findBlock(newPage, path.slice(0, -1));
-  const index = path[path.length - 1] as number;
+
+  if (after) {
+    index++;
+  }
 
   if (isPage(parent) || isParentBlock(parent)) {
     const newList: AllBlocksType[] = [
@@ -71,4 +88,13 @@ export const addBlockToPage = (
   }
 
   throw new Error("Could not add block");
+};
+
+type PathOrNull = BlockPathType | null;
+
+export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
+  if (!a || !b) {
+    return a === b;
+  }
+  return a.length === b.length && a.every((val, index) => val === b[index]);
 };

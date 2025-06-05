@@ -1,7 +1,7 @@
 import { DirektivPagesSchema, DirektivPagesType } from "../schema";
 import {
   PageCompilerContextProvider,
-  State as PageCompilerProps,
+  PageCompilerProps,
 } from "./context/pageCompilerContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 

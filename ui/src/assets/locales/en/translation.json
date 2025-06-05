@@ -1664,10 +1664,25 @@
     },
     "blockEditor": {
       "generic": {
-        "saveButton": "Save"
+        "saveButton": "Save",
+        "cancelButton": "Cancel"
       },
-      "Text": {
-        "modalTitle": "Edit Text Block @{{path}}"
+      "dialogTitle": "{{action}} {{type}} @{{path}}",
+      "action": {
+        "create": "create",
+        "edit": "edit"
+      },
+      "blockType": {
+        "text": "text block",
+        "headline": "headline block",
+        "button": "button block",
+        "card": "card block",
+        "dialog": "dialog block",
+        "form": "form block",
+        "loop": "loop block",
+        "query-provider": "query provider",
+        "column": "set of columns",
+        "columns": "column block"
       }
     }
   }

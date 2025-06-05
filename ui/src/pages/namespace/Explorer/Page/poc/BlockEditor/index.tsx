@@ -1,47 +1,70 @@
-import {
-  useBlock,
-  useUpdateBlock,
-} from "../PageCompiler/context/pageCompilerContext";
-
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
+import { DirektivPagesType } from "../schema";
+import { Headline } from "./Headline";
 import { Text } from "../BlockEditor/Text";
 import { isPage } from "../PageCompiler/context/utils";
+import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
 
-export type BlockFormProps = { path: BlockPathType; close: () => void };
+export type BlockEditorAction = "create" | "edit";
 
-export type BlockEditFormProps = {
-  block: AllBlocksType;
+export type BlockEditFormProps<T> = {
+  action: BlockEditorAction;
+  block: T;
   path: BlockPathType;
-  onSave: (newBlock: AllBlocksType) => void;
+  onSubmit: (newBlock: AllBlocksType) => void;
 };
 
-export const BlockForm = ({ path, close }: BlockFormProps) => {
-  const block = useBlock(path);
-  const { updateBlock } = useUpdateBlock();
+export type BlockFormProps = {
+  block: AllBlocksType | DirektivPagesType;
+  action: BlockEditorAction;
+  path: BlockPathType;
+};
 
-  if (Array.isArray(block)) {
-    throw Error("Can not load list into block editor");
-  }
+export const BlockForm = ({ action, path, block }: BlockFormProps) => {
+  const { addBlock, updateBlock } = usePageEditor();
 
   if (isPage(block)) {
     throw Error("Unexpected page object when parsing block");
   }
 
   const handleUpdate = (newBlock: AllBlocksType) => {
-    updateBlock(path, newBlock);
-    close();
+    switch (action) {
+      case "create":
+        addBlock(path, newBlock, true);
+        break;
+      case "edit":
+        updateBlock(path, newBlock);
+        break;
+    }
   };
 
   switch (block.type) {
     case "text": {
-      return <Text block={block} path={path} onSave={handleUpdate} />;
+      return (
+        <Text
+          action={action}
+          block={block}
+          path={path}
+          onSubmit={handleUpdate}
+        />
+      );
+    }
+    case "headline": {
+      return (
+        <Headline
+          action={action}
+          block={block}
+          path={path}
+          onSubmit={handleUpdate}
+        />
+      );
     }
   }
 
   return (
     <div>
-      Block form for {path} from {JSON.stringify(block)}
+      Fallback form for {path} from {JSON.stringify(block)}
     </div>
   );
 };

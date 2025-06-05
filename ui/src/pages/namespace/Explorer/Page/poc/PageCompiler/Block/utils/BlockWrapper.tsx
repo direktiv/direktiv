@@ -1,5 +1,5 @@
+import { CirclePlus, Edit } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import { Edit, Plus } from "lucide-react";
 import {
   PropsWithChildren,
   Suspense,
@@ -7,7 +7,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { useAddBlock, useMode } from "../../context/pageCompilerContext";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
@@ -17,7 +16,9 @@ import Button from "~/design/Button";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
+import { pathsEqual } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
+import { usePageEditor } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
 type BlockWrapperProps = PropsWithChildren<{
@@ -25,20 +26,31 @@ type BlockWrapperProps = PropsWithChildren<{
   block: AllBlocksType;
 }>;
 
+export type DialogState = "create" | "edit" | null;
+
 export const BlockWrapper = ({
-  children,
   block,
   blockPath,
+  children,
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
-  const mode = useMode();
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const { mode, focus, setFocus } = usePageEditor();
+  const [dialog, setDialog] = useState<DialogState>(null);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { addBlock } = useAddBlock();
+
+  /**
+   * This handler is only used for closing the dialog. For opening a dialog,
+   * we add custom onClick events to the trigger buttons.
+   */
+  const handleOnOpenChange = (open: boolean) => {
+    if (open === false) {
+      setDialog(null);
+    }
+  };
 
   useEffect(() => {
-    if (mode !== "inspect") {
+    if (mode !== "edit") {
       return;
     }
 
@@ -57,58 +69,72 @@ export const BlockWrapper = ({
     return () => document.removeEventListener("mousemove", handleMouseMove);
   }, [mode]);
 
+  const handleClickBlock = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.stopPropagation();
+    if (mode !== "edit") {
+      return;
+    }
+    return setFocus(blockPath);
+  };
+
+  const isFocused = focus && pathsEqual(focus, blockPath);
+
   return (
     <>
-      <Button
-        variant="outline"
-        className="w-fit"
-        onClick={() =>
-          addBlock(blockPath, {
-            type: "text",
-            content: "New block!",
-          })
-        }
-      >
-        <Plus className="size-4 mr-2" />
-        Add Block
-      </Button>
       <div
         ref={containerRef}
         className={twMergeClsx(
-          mode === "inspect" &&
-            "rounded-md relative p-3 border-2 border-gray-4 border-dashed dark:border-gray-dark-4 bg-white dark:bg-black",
+          mode === "edit" &&
+            "relative rounded-md p-3 border-2 border-gray-4 border-dashed dark:border-gray-dark-4 bg-white dark:bg-black",
           isHovered &&
-            mode === "inspect" &&
-            "border-solid bg-gray-2 dark:bg-gray-dark-2"
+            mode === "edit" &&
+            "border-solid bg-gray-2 dark:bg-gray-dark-2",
+          isFocused &&
+            mode === "edit" &&
+            "border-solid border-gray-8 dark:border-gray-10"
         )}
         data-block-wrapper
+        onClick={handleClickBlock}
       >
-        {mode === "inspect" && (
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <Badge
-              className="-m-6 absolute z-50"
-              variant="secondary"
-              style={{
-                display: isHovered ? "block" : "none",
-              }}
-            >
-              <b>{block.type}</b> {blockPath.join(".")}
-            </Badge>
-            <DialogTrigger className="float-right" asChild>
-              <Button
-                variant="ghost"
-                style={{ display: isHovered ? "block" : "none" }}
-              >
-                <Edit />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <BlockForm
-                path={blockPath}
-                close={() => setDialogOpen(false)}
-              ></BlockForm>
-            </DialogContent>
-          </Dialog>
+        {mode === "edit" && (isHovered || isFocused) && (
+          <Badge className="-m-6 absolute z-30" variant="secondary">
+            <b>{block.type}</b>
+            {blockPath.join(".")}
+          </Badge>
+        )}
+        {mode === "edit" && isFocused && (
+          <div onClick={(event) => event.stopPropagation()}>
+            <Dialog open={!!dialog} onOpenChange={handleOnOpenChange}>
+              <DialogTrigger asChild onClick={() => setDialog("edit")}>
+                <Button variant="ghost" className="absolute right-1 top-1 z-30">
+                  <Edit />
+                </Button>
+              </DialogTrigger>
+              <DialogTrigger className="float-right" asChild>
+                <Button
+                  size="sm"
+                  className="absolute -bottom-4 z-30 left-1/2 -translate-x-1/2"
+                  onClick={() => setDialog("create")}
+                >
+                  <CirclePlus />
+                </Button>
+              </DialogTrigger>
+              {dialog !== null && (
+                <DialogContent className="z-50">
+                  {dialog === "edit" && (
+                    <BlockForm block={block} action={dialog} path={blockPath} />
+                  )}
+                  {dialog === "create" && (
+                    <BlockForm
+                      block={{ type: "text", content: "dummy block" }}
+                      action={dialog}
+                      path={blockPath}
+                    />
+                  )}
+                </DialogContent>
+              )}
+            </Dialog>
+          </div>
         )}
         <Suspense fallback={<Loading />}>
           <ErrorBoundary

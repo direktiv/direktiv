@@ -1,7 +1,7 @@
 import { VariableError } from "./Error";
 import { VariableType } from "../../../schema/primitives/variable";
 import { twMergeClsx } from "~/util/helpers";
-import { useMode } from "../../context/pageCompilerContext";
+import { usePageEditor } from "../../context/pageCompilerContext";
 import { useResolveVariableString } from "./utils/useResolveVariableString";
 import { useTranslation } from "react-i18next";
 
@@ -11,7 +11,7 @@ type VariableProps = {
 
 export const Variable = ({ value }: VariableProps) => {
   const { t } = useTranslation();
-  const mode = useMode();
+  const { mode } = usePageEditor();
   const variableJSX = useResolveVariableString(value);
 
   if (!variableJSX.success) {
@@ -25,7 +25,7 @@ export const Variable = ({ value }: VariableProps) => {
   return (
     <span
       className={twMergeClsx(
-        mode === "inspect" &&
+        mode === "edit" &&
           "border border-gray-9 bg-gray-4 dark:bg-gray-dark-4 dark:border-gray-dark-9"
       )}
     >
