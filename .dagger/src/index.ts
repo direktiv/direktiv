@@ -22,7 +22,7 @@ export class Direktiv {
       .withoutFile("*.log")
       .withoutFile("**/.env*");
 
-    const container = dag
+    const buildContainer = dag
       .container()
       .from("node:20.18.1-slim")
       .withEnvVariable("PNPM_HOME", "/pnpm")
@@ -34,6 +34,41 @@ export class Direktiv {
       .withExec(["pnpm", "install", "--frozen-lockfile"])
       .withExec(["pnpm", "build"]);
 
-    return container.directory("/app/dist");
+    // Return the built "dist" directory
+    return buildContainer.directory("/app/dist");
+  }
+
+  /**
+   * Run the UI application in a container
+   */
+  @func()
+  async nginx(
+    /**
+     * server directory
+     */
+    builtUI: Directory
+  ): Promise<Container> {
+    const runtimeContainer = dag
+      .container()
+      .from("nginx:alpine") // Use Nginx to serve the built files
+      .withWorkdir("/usr/share/nginx/html")
+      .withDirectory(".", builtUI) // Copy the built files to the Nginx container
+      .withExposedPort(8080) // Expose port 8080
+      .withExec(["nginx", "-g", "daemon off;"]); // Start the Nginx server
+
+    // Return the container
+    return runtimeContainer;
+  }
+
+  /**
+   * serve UI
+   */
+  @func()
+  async serveUi(source: Directory): Promise<void> {
+    const builtApp = await this.buildUI(source);
+    const container = await this.nginx(builtApp);
+
+    // Log the exposed port for debugging or access
+    console.log("Server is running and exposed on port 8080");
   }
 }
