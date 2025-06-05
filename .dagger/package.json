@@ -1,0 +1,10 @@
+{
+  "type": "module",
+  "packageManager": "pnpm@9.15.4",
+  "dependencies": {
+    "typescript": "^5.7.2"
+  },
+  "devDependencies": {
+    "@dagger.io/dagger": "^0.18.9"
+  }
+}
