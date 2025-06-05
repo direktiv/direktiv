@@ -6,6 +6,7 @@ import { Form, FormType } from "./form";
 import { Headline, HeadlineType } from "./headline";
 import { Loop, LoopType } from "./loop";
 import { QueryProvider, QueryProviderType } from "./queryProvider";
+import { Table, TableType } from "./table";
 import { Text, TextType } from "./text";
 
 import { z } from "zod";
@@ -19,9 +20,11 @@ import { z } from "zod";
 
 export const SimpleBlockUnion = z.discriminatedUnion("type", [
   Button,
-  Text,
   Headline,
+  Table,
+  Text,
 ]);
+
 export const ParentBlockUnion = z.discriminatedUnion("type", [
   Card,
   Dialog,
@@ -32,7 +35,8 @@ export const ParentBlockUnion = z.discriminatedUnion("type", [
   Columns,
 ]);
 
-export type SimpleBlocksType = ButtonType | HeadlineType | TextType;
+export type SimpleBlocksType = ButtonType | HeadlineType | TextType | TableType;
+
 export type ParentBlocksType =
   | CardType
   | DialogType

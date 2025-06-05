@@ -52,14 +52,14 @@ export const QueryProvider = ({
     ),
   });
 
-  const queryWithDublicateId = queries.find(
+  const queryWithDuplicateId = queries.find(
     (query) => !!parentVariables.query[query.id]
   );
 
-  if (queryWithDublicateId) {
+  if (queryWithDuplicateId) {
     throw new Error(
-      t("direktivPage.error.dublicateId", {
-        id: queryWithDublicateId.id,
+      t("direktivPage.error.duplicateId", {
+        id: queryWithDuplicateId.id,
       })
     );
   }
