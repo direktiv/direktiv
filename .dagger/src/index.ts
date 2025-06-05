@@ -6,13 +6,8 @@ export class Direktiv {
    * Build the UI application
    */
   @func()
-  async buildUI(
-    /**
-     * source directory
-     */
-    source: Directory
-  ): Promise<Directory> {
-    const uiDir = source
+  async buildUI(): Promise<Directory> {
+    const uiDir = dag
       .directory("ui")
       .withoutDirectory("dist")
       .withoutDirectory("node_modules")
