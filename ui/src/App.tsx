@@ -15,7 +15,6 @@ import queryClient from "./util/queryClient";
 import { useEffect } from "react";
 
 const App = () => {
-  const thisBrakesTheCI: any;
   const theme = useTheme();
 
   const { setSystemTheme } = useThemeActions();
