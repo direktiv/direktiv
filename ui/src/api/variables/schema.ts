@@ -19,7 +19,7 @@ const VarTypeSchema = z.enum([
     "updatedAt": "2024-04-02T06:22:21.766541Z"
   }
  */
-export const VarSchema = z.object({
+const VarSchema = z.object({
   id: z.string(),
   type: VarTypeSchema,
   reference: z.string(),
@@ -55,10 +55,6 @@ export const VarDeletedSchema = z.null();
 export const VarCreatedUpdatedSchema = z.object({
   data: VarSchema,
 });
-
-export type VarCreatedUpdatedSchemaType = z.infer<
-  typeof VarCreatedUpdatedSchema
->;
 
 export const VarFormCreateEditSchema = z.object({
   name: z.string().nonempty(),

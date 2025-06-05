@@ -1,0 +1,28 @@
+# Development tools and IDE files
+**/.vscode/
+
+# OS files
+**/.DS_Store
+**/Thumbs.db
+
+# Git and Docker files
+**/.git/
+**/.gitignore
+**/.dockerignore
+
+# Environment
+**/.env*
+
+# Logs
+**/*.log
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+
+# Build artifacts and cache
+ui/dist/
+ui/.tsbuildinfo
+ui/.eslintcache
+ui/node_modules/
+ui/test-results/
+ui/playwright-report/

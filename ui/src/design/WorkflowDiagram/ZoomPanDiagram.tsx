@@ -77,7 +77,7 @@ export function ZoomPanDiagram(props: ZoomPanDiagramProps) {
       maxZoom={maxZoom}
       minZoom={minZoom}
     >
-      <ButtonBar className="absolute top-5 left-5 z-50 bg-white dark:bg-black">
+      <ButtonBar className="absolute left-5 top-5 z-50 bg-white dark:bg-black">
         <Button
           size="sm"
           variant="outline"

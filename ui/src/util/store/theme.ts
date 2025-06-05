@@ -15,7 +15,7 @@ interface ThemeState {
   };
 }
 
-export const useThemeState = create<ThemeState>()(
+const useThemeState = create<ThemeState>()(
   persist(
     (set) => ({
       storedTheme: null,

@@ -32,7 +32,7 @@ type VariableFormProps = {
   onMutate: (data: VarFormCreateEditSchemaType) => void;
 };
 
-export const VariableForm = ({
+const VariableForm = ({
   defaultValues,
   dialogTitle,
   dialogFooter,

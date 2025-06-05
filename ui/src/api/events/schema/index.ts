@@ -20,7 +20,7 @@ import { z } from "zod";
  * the declared properties are mandatory (cloudevent spec);
  * additional properties may exist.
  */
-export const EventSchema = z
+const EventSchema = z
   .object({
     id: z.string(),
     specversion: z.string(),
@@ -47,7 +47,7 @@ export const EventListItem = z.object({
   }
  */
 
-export const MetaData = z.object({
+const MetaData = z.object({
   previousPage: z.string().nullable(),
   startingFrom: z.string().nullable(),
 });

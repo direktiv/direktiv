@@ -16,7 +16,7 @@ const Separator = React.forwardRef<
     orientation={vertical ? "vertical" : "horizontal"}
     className={twMergeClsx(
       "bg-gray-4",
-      " dark:bg-gray-dark-4",
+      "dark:bg-gray-dark-4",
       vertical ? "h-full w-px" : "h-px w-full",
       className
     )}

@@ -1,7 +1,7 @@
 import { MirrorSchema } from "./mirror";
 import { z } from "zod";
 
-export const NamespaceSchema = z.object({
+const NamespaceSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   name: z.string(),

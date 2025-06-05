@@ -31,7 +31,7 @@ const getUrl = ({
   return url;
 };
 
-export const getEvents = apiFactory({
+const getEvents = apiFactory({
   url: getUrl,
   method: "GET",
   schema: EventsListResponseSchema,

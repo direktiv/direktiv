@@ -7,7 +7,7 @@ import { z } from "zod";
   }
  */
 
-export const PodSchema = z.object({
+const PodSchema = z.object({
   id: z.string(),
 });
 

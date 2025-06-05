@@ -69,7 +69,7 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
               variant={statusToBadgeVariant(instance.status)}
               icon={instance.status}
             >
-              <span className="max-lg:hidden ">{instance.status}</span>
+              <span className="max-lg:hidden">{instance.status}</span>
             </Badge>
           </ConditionalWrapper>
         </TableCell>

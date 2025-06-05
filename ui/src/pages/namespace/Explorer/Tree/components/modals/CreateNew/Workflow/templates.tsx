@@ -10,7 +10,7 @@ states:
 `,
 };
 
-export const action = {
+const action = {
   name: "action",
   data: `direktiv_api: workflow/v1
 description: A simple 'action' state that sends a get request
@@ -54,7 +54,7 @@ states:
 `,
 };
 
-export const delay = {
+const delay = {
   name: "delay",
   data: `direktiv_api: workflow/v1
 description: A simple 'delay' state that waits for 5 seconds
@@ -99,7 +99,7 @@ states:
 `,
 };
 
-export const foreach = {
+const foreach = {
   name: "foreach",
   data: `direktiv_api: workflow/v1
 description: A simple 'foreach' state that solves expressions
@@ -125,7 +125,7 @@ states:
 `,
 };
 
-export const generateEvent = {
+const generateEvent = {
   name: "generateEvent",
   data: `direktiv_api: workflow/v1
 description: A simple 'generateEvent' state that sends data to a greeting listener.
@@ -140,7 +140,7 @@ states:
 `,
 };
 
-export const generateSolveEvent = {
+const generateSolveEvent = {
   name: "generateSolveEvent",
   data: `direktiv_api: workflow/v1
 description: A simple 'generateEvent' state that sends an expression to a solve listener.
@@ -155,7 +155,7 @@ states:
 `,
 };
 
-export const getAndSet = {
+const getAndSet = {
   name: "getAndSet",
   data: `direktiv_api: workflow/v1
 description: "Simple Counter getter and setter variable example"
@@ -176,7 +176,7 @@ states:
 `,
 };
 
-export const parallel = {
+const parallel = {
   name: "parallel",
   data: `direktiv_api: workflow/v1
 description: A simple 'parallel' state workflow that runs solve container to solve expressions.
@@ -206,7 +206,7 @@ states:
 `,
 };
 
-export const validate = {
+const validate = {
   name: "validate",
   data: `direktiv_api: workflow/v1
 description: A simple 'validate' state workflow that checks an email
@@ -240,7 +240,7 @@ states:
 `,
 };
 
-export const switchState = {
+const switchState = {
   name: "switch",
   data: `direktiv_api: workflow/v1
 description: A simple 'switch' state that checks whether the age provided is older than 18.
@@ -267,7 +267,7 @@ states:
 `,
 };
 
-export const eventXor = {
+const eventXor = {
   name: "eventXor",
   data: `direktiv_api: workflow/v1
 functions:
@@ -306,7 +306,7 @@ states:
 `,
 };
 
-export const eventAnd = {
+const eventAnd = {
   name: "eventAnd",
   data: `direktiv_api: workflow/v1
 functions:

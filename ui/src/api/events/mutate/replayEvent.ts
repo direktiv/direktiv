@@ -7,7 +7,7 @@ import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-export const replayEvent = apiFactory({
+const replayEvent = apiFactory({
   url: ({
     baseUrl,
     namespace,

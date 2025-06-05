@@ -7,7 +7,7 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useStreaming } from "~/api/httpStreaming";
 
-export const usePodLogsStream = (
+const usePodLogsStream = (
   {
     namespace,
     service,

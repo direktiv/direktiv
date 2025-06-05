@@ -56,8 +56,8 @@ const DrawerContent = React.forwardRef<
     <DrawerPrimitive.Content
       ref={ref}
       className={twMergeClsx(
-        "fixed inset-0 z-50 scale-100 gap-4 bg-gray-1 opacity-100 shadow-lg dark:bg-gray-dark-1 ",
-        "h-full animate-in slide-in-from-left duration-300",
+        "fixed inset-0 z-50 scale-100 gap-4 bg-gray-1 opacity-100 shadow-lg dark:bg-gray-dark-1",
+        "h-full duration-300 animate-in slide-in-from-left",
         "w-52 p-4 focus:outline-none",
         className
       )}
@@ -124,12 +124,4 @@ const DrawerDescription = React.forwardRef<
 ));
 DrawerDescription.displayName = DrawerPrimitive.Description.displayName;
 
-export {
-  Drawer,
-  DrawerTrigger,
-  DrawerContent,
-  DrawerHeader,
-  DrawerFooter,
-  DrawerTitle,
-  DrawerDescription,
-};
+export { Drawer, DrawerTrigger, DrawerContent };

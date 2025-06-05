@@ -4,9 +4,7 @@ export const statusValues = possibleInstanceStatuses;
 
 export const triggerValues = possibleTriggerValues;
 
-export type triggerValuesType =
-  | typeof possibleTriggerValues
-  | `instance:${string}`;
+type triggerValuesType = typeof possibleTriggerValues | `instance:${string}`;
 
 export type TriggerValue = triggerValuesType[number];
 export type StatusValue = (typeof statusValues)[number];

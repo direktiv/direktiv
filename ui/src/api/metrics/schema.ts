@@ -15,7 +15,7 @@ import { z } from "zod";
   }
  */
 
-export const MetricsObjectSchema = z.object({
+const MetricsObjectSchema = z.object({
   cancelled: z.number(),
   complete: z.number(),
   crashed: z.number(),

@@ -1,7 +1,7 @@
 import React from "react";
 import { twMergeClsx } from "~/util/helpers";
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   background?: "none" | "weight-1" | "weight-2";
   noShadow?: boolean;
 }

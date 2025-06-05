@@ -16,14 +16,14 @@ export const MirrorSchema = z.object({
 });
 
 // the schemas below are used in POST/PATCH payloads
-export const MirrorPublicPostSchema = z.object({
+const MirrorPublicPostSchema = z.object({
   authType: z.literal("public"),
   url: z.string().url().nonempty(),
   gitRef: z.string().nonempty(),
   insecure: z.boolean(),
 });
 
-export const MirrorTokenPostSchema = z.object({
+const MirrorTokenPostSchema = z.object({
   authType: z.literal("token"),
   url: z.string().url().nonempty(),
   gitRef: z.string().nonempty(),
@@ -31,7 +31,7 @@ export const MirrorTokenPostSchema = z.object({
   insecure: z.boolean(),
 });
 
-export const MirrorSshPostSchema = z.object({
+const MirrorSshPostSchema = z.object({
   authType: z.literal("ssh"),
   url: gitUrlSchema.nonempty({
     message: "format must be git@host:path when using SSH",
@@ -43,14 +43,14 @@ export const MirrorSshPostSchema = z.object({
   insecure: z.boolean(),
 });
 
-export const MirrorKeepTokenPatchSchema = z.object({
+const MirrorKeepTokenPatchSchema = z.object({
   authType: z.undefined(),
   gitRef: z.string().nonempty(),
   url: z.string().url().nonempty(),
   insecure: z.boolean(),
 });
 
-export const MirrorKeepSshPatchSchema = z.object({
+const MirrorKeepSshPatchSchema = z.object({
   authType: z.undefined(),
   gitRef: z.string().nonempty(),
   url: gitUrlSchema.nonempty({
@@ -59,7 +59,7 @@ export const MirrorKeepSshPatchSchema = z.object({
   insecure: z.boolean(),
 });
 
-export const MirrorPostPatchSchema = z.union([
+const MirrorPostPatchSchema = z.union([
   MirrorPublicPostSchema,
   MirrorTokenPostSchema,
   MirrorSshPostSchema,

@@ -4,7 +4,7 @@ import { LinkComponentProps } from "@tanstack/react-router";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
-export type NotificationConfig = {
+type NotificationConfig = {
   linkProps: LinkComponentProps;
   description: string;
   icon: LucideIcon;

@@ -114,7 +114,7 @@ const VariablesList: FC = () => {
               </h3>
             </div>
             <Card className="mb-4">
-              <div className="flex justify-between gap-5 p-2 border-b border-gray-5 dark:border-gray-dark-5">
+              <div className="flex justify-between gap-5 border-b border-gray-5 p-2 dark:border-gray-dark-5">
                 <div className="flex items-center">
                   {currentItems.length > 0 && (
                     <Checkbox
@@ -136,7 +136,7 @@ const VariablesList: FC = () => {
                         setDialogOpen(true);
                       }}
                     >
-                      <Trash className=" size-4" />
+                      <Trash className="size-4" />
                       {t(
                         "pages.explorer.tree.workflow.settings.variables.list.deleteSelected"
                       )}
