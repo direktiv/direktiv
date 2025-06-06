@@ -1,0 +1,10 @@
+import { Mutation } from "../procedures/mutation";
+import { z } from "zod";
+
+export const Button = z.object({
+  type: z.literal("button"),
+  label: z.string().min(1),
+  submit: Mutation.optional(),
+});
+
+export type ButtonType = z.infer<typeof Button>;

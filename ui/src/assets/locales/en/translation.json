@@ -94,9 +94,14 @@
             "service": "Service",
             "gateway": {
               "label": "Gateway",
-              "route": "Route",
-              "consumer": "Consumer",
+              "route": "New Route",
+              "consumer": "New Consumer",
               "openapiSpecification": "OpenAPI Specification"
+            },
+            "page": {
+              "label": "New Page",
+              "route": "Route",
+              "consumer": "Consumer"
             }
           }
         },
@@ -133,7 +138,14 @@
           "cancelBtn": "Cancel",
           "createBtn": "Create"
         },
-
+        "newPage": {
+          "title": "Create a new page",
+          "nameLabel": "Name",
+          "namePlaceholder": "page-name.yaml",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
+        },
         "openapiSpecification": {
           "title": "Create a new OpenAPI Specification",
           "nameLabel": "Name",
@@ -1623,6 +1635,55 @@
             "description": "The role could not be deleted 😢"
           }
         }
+      }
+    }
+  },
+  "direktivPage": {
+    "error": {
+      "invalidSchema": "The page can not be rendered because it has an invalid configuration",
+      "blockNotImplemented": "The block type \"{{type}}\" is not implemented yet",
+      "genericError": "There was an unexpected error",
+      "duplicateId": "Error in block with id {{id}}: The id is already used by one of the parent blocks",
+      "queryProvider": {
+        "queryFailed": "Error in query with id {{id}}: {{endpoint}} responded with {{status}}",
+        "invalidJson": "Error in query with id {{id}}: {{endpoint}} returned an invalid JSON"
+      },
+      "blocks": {
+        "table": { "noResult": "No entries to show" }
+      },
+      "templateString": {
+        "namespaceInvalid": "The template string does not have a valid namespace.",
+        "idUndefined": "The template string is missing an id.",
+        "pointerUndefined": "The template string is missing a pointer.",
+        "NoStateForId": "Could not find any state for the id",
+        "invalidJson": "Trying to process a template string on an invalid JSON object",
+        "invalidPath": "The path is not ivalid. It points to an undefined value",
+        "couldNotStringify": "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null.",
+        "notAnArray": "Pointing to a value that is not an array."
+      }
+    },
+    "blockEditor": {
+      "generic": {
+        "saveButton": "Save",
+        "cancelButton": "Cancel"
+      },
+      "dialogTitle": "{{action}} {{type}} @{{path}}",
+      "action": {
+        "create": "create",
+        "edit": "edit"
+      },
+      "blockType": {
+        "text": "text block",
+        "headline": "headline block",
+        "button": "button block",
+        "card": "card block",
+        "dialog": "dialog block",
+        "form": "form block",
+        "loop": "loop block",
+        "query-provider": "query provider",
+        "column": "set of columns",
+        "columns": "column block",
+        "table": "table block"
       }
     }
   }
