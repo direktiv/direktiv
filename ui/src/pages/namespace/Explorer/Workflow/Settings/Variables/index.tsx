@@ -101,7 +101,7 @@ const VariablesList = ({ path }: { path: string }) => {
           totalPages,
         }) => (
           <>
-            <div className="mb-4 flex flex-col gap-4 sm:flex-row items-center">
+            <div className="mb-4 flex flex-col items-center gap-4 sm:flex-row">
               <h3 className="flex grow items-center gap-x-2 pb-2 pt-1 font-bold">
                 <FileJson className="h-5" />
                 {t(
@@ -110,7 +110,7 @@ const VariablesList = ({ path }: { path: string }) => {
               </h3>
             </div>
             <Card className="mb-4">
-              <div className="flex justify-between gap-5 p-2 border-b border-gray-5 dark:border-gray-dark-5">
+              <div className="flex justify-between gap-5 border-b border-gray-5 p-2 dark:border-gray-dark-5">
                 {currentItems.length > 0 && (
                   <div className="flex items-center">
                     <Checkbox
@@ -132,7 +132,7 @@ const VariablesList = ({ path }: { path: string }) => {
                         setDialogOpen(true);
                       }}
                     >
-                      <Trash className=" size-4" />
+                      <Trash className="size-4" />
                       {t(
                         "pages.explorer.tree.workflow.settings.variables.list.deleteSelected"
                       )}

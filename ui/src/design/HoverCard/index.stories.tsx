@@ -20,7 +20,7 @@ export const Default: Story = {
 };
 
 export const ContentAlignment = () => (
-  <div className=" flex w-full flex-row justify-around">
+  <div className="flex w-full flex-row justify-around">
     <HoverCard>
       <HoverCardTrigger>Hover, Align Start</HoverCardTrigger>
       <HoverCardContent align="start">Content goes here</HoverCardContent>
@@ -37,7 +37,7 @@ export const ContentAlignment = () => (
 );
 
 export const ContentSide = () => (
-  <div className=" flex h-64 w-full flex-row items-center justify-around">
+  <div className="flex h-64 w-full flex-row items-center justify-around">
     <HoverCard>
       <HoverCardTrigger>Hover Me, to see right</HoverCardTrigger>
       <HoverCardContent side="right">Content goes here</HoverCardContent>
@@ -75,7 +75,7 @@ export const ContentSideOffset = () => (
 );
 
 export const OpenCloseDelay = () => (
-  <div className=" flex h-64 w-full flex-row items-center justify-around">
+  <div className="flex h-64 w-full flex-row items-center justify-around">
     <HoverCard openDelay={3000} closeDelay={3000}>
       <HoverCardTrigger>Hover Me, to see in 3 secs</HoverCardTrigger>
       <HoverCardContent>Content goes here</HoverCardContent>

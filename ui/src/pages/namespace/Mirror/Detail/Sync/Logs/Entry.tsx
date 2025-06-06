@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 type LogEntryProps = ComponentPropsWithoutRef<typeof LogEntry>;
 type Props = { logEntry: LogEntryType } & LogEntryProps;
 
-export const Entry = forwardRef<HTMLDivElement, Props>(
+const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {
     const { t } = useTranslation();
     const { msg, level, time } = logEntry;

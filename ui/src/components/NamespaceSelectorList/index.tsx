@@ -69,7 +69,7 @@ export const NamespaceSelectorList = ({
                         namespace === ns.name ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    <span className="flex items-center gap-1 w-full">
+                    <span className="flex w-full items-center gap-1">
                       {ns.name}
                       {ns.isSystemNamespace && (
                         <InfoTooltip>

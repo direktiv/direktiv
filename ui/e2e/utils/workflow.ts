@@ -1,6 +1,6 @@
 import { createFile } from "./files";
 
-export const noopYaml = `\
+const noopYaml = `\
 description: A simple 'no-op' state that returns 'Hello world!'
 states:
 - id: helloworld

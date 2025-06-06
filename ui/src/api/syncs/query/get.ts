@@ -22,7 +22,7 @@ const fetchSyncs = async ({
     urlParams: { namespace },
   });
 
-export const useSyncs = <T>({
+const useSyncs = <T>({
   filter,
 }: {
   filter: (apiResponse: SyncListSchemaType) => T;

@@ -31,7 +31,7 @@ export const Row: FC<RowProps> = ({ route }) => {
       className="cursor-pointer"
     >
       <TableCell>
-        <div className="flex grow my-1">
+        <div className="my-1 flex grow">
           <Link
             onClick={(e) => {
               e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link

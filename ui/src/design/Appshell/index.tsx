@@ -49,7 +49,7 @@ export const MainTopLeft: FC<PropsWithChildren> = ({ children }) => (
 );
 
 export const MainTopRight: FC<PropsWithChildren> = ({ children }) => (
-  <div className="mt-4 flex space-x-3 sm:mt-0 sm:ml-4">{children}</div>
+  <div className="mt-4 flex space-x-3 sm:ml-4 sm:mt-0">{children}</div>
 );
 
 export const MainContent: FC<PropsWithChildren> = ({ children }) => (

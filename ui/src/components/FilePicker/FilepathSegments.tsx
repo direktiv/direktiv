@@ -3,7 +3,7 @@ import { Breadcrumb, BreadcrumbRoot } from "~/design/Breadcrumbs";
 import { FC } from "react";
 import { Home } from "lucide-react";
 
-export type FilePathSegmentsProps = {
+type FilePathSegmentsProps = {
   segments: {
     relative: string;
     absolute: string;

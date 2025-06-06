@@ -21,7 +21,7 @@ const getUrl = ({
     baseUrl ?? ""
   }/api/v2/namespaces/${namespace}/events/listeners?limit=${limit}&offset=${offset}`;
 
-export const getEventListeners = apiFactory({
+const getEventListeners = apiFactory({
   url: getUrl,
   method: "GET",
   schema: EventListenersResponseSchema,

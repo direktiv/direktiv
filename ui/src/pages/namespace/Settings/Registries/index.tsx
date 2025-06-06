@@ -71,7 +71,7 @@ const RegistriesList: FC = () => {
               </h3>
             </div>
             <Card className="mb-4">
-              <div className="flex justify-end gap-5 p-2 border-b border-gray-5 dark:border-gray-dark-5">
+              <div className="flex justify-end gap-5 border-b border-gray-5 p-2 dark:border-gray-dark-5">
                 <Input
                   className="sm:w-60"
                   value={search}

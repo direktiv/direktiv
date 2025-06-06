@@ -34,7 +34,7 @@ const PermissionsInfo = ({ permissions }: PermissionsInfoProps) => {
                 })}
           </Badge>
         </TooltipTrigger>
-        <TooltipContent className="flex flex-col max-w-xl flex-wrap gap-3 text-inherit">
+        <TooltipContent className="flex max-w-xl flex-col flex-wrap gap-3 text-inherit">
           <Table>
             <TableBody>
               {permissionTopics.map((permission) => {

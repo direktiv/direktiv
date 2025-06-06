@@ -72,7 +72,7 @@ const updateCache = (
   };
 };
 
-export type LogsQueryParams = {
+type LogsQueryParams = {
   instance?: string;
   route?: string;
   activity?: string;

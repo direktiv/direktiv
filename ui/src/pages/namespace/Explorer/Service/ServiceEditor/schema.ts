@@ -23,7 +23,7 @@ export const sizeOptions = ["small", "medium", "large"] as const;
 
 export const PatchOperations = ["add", "replace", "remove"] as const;
 
-export const PatchOperationSchema = z.enum(PatchOperations);
+const PatchOperationSchema = z.enum(PatchOperations);
 
 export const PatchSchema = z.object({
   op: PatchOperationSchema,

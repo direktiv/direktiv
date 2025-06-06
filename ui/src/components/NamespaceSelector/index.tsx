@@ -12,7 +12,7 @@ import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
-export type ButtonProps = ComponentProps<typeof SelectTrigger> & {
+type ButtonProps = ComponentProps<typeof SelectTrigger> & {
   defaultValue?: string;
   onValueChange?: (value: string) => void;
 };

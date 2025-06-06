@@ -18,15 +18,6 @@ import { RxChevronDown } from "react-icons/rx";
 
 const VariablepickerSeparator = DropdownMenuSeparator;
 
-type VariablepickerCloseProps = PropsWithChildren & {
-  onClick: React.MouseEventHandler;
-};
-
-const VariablepickerClose: FC<VariablepickerCloseProps> = ({
-  children,
-  onClick,
-}) => <Button onClick={onClick}>{children}</Button>;
-
 type VariablepickerProps = PropsWithChildren & {
   buttonText: string;
   value?: string;
@@ -104,7 +95,6 @@ const VariablepickerItem: FC<VariablepickerItemProps> = ({
 
 export {
   Variablepicker,
-  VariablepickerClose,
   VariablepickerError,
   VariablepickerHeading,
   VariablepickerItem,
