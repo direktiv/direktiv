@@ -1,4 +1,11 @@
-import { Container, Directory, dag, func, object } from "@dagger.io/dagger";
+import {
+  Container,
+  Directory,
+  Service,
+  dag,
+  func,
+  object,
+} from "@dagger.io/dagger";
 
 @object()
 export class Direktiv {
@@ -42,33 +49,27 @@ export class Direktiv {
    * Run the UI application in a container
    */
   @func()
-  async nginx(
+  nginx(
     /**
      * server directory
      */
     builtUI: Directory
-  ): Promise<Container> {
-    const runtimeContainer = dag
+  ): Service {
+    return dag
       .container()
-      .from("nginx:alpine") // Use Nginx to serve the built files
+      .from("nginx:alpine")
       .withWorkdir("/usr/share/nginx/html")
-      .withDirectory(".", builtUI) // Copy the built files to the Nginx container
-      .withExposedPort(8080) // Expose port 8080
-      .withExec(["nginx", "-g", "daemon off;"]); // Start the Nginx server
-
-    // Return the container
-    return runtimeContainer;
+      .withDirectory(".", builtUI)
+      .withExposedPort(80)
+      .asService({ useEntrypoint: true });
   }
 
   /**
    * serve UI
    */
   @func()
-  async serveUi(source: Directory): Promise<void> {
+  async serveUi(source: Directory): Promise<Service> {
     const builtApp = await this.buildUI(source);
-    const container = await this.nginx(builtApp);
-
-    // Log the exposed port for debugging or access
-    console.log("Server is running and exposed on port 8080");
+    return this.nginx(builtApp);
   }
 }
