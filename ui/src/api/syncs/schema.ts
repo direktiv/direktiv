@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const SyncStatusSchema = z.enum(["pending", "executing", "complete", "failed"]);
 
-export const SyncObjectSchema = z.object({
+const SyncObjectSchema = z.object({
   id: z.string(),
   status: SyncStatusSchema,
   endedAt: z.string(),

@@ -13,7 +13,7 @@ const ToastViewport = React.forwardRef<
   <ToastPrimitives.Viewport
     ref={ref}
     className={twMergeClsx(
-      "fixed top-0 right-0 z-[100] flex max-h-screen max-w-[350px] flex-col-reverse pt-4 pr-4 sm:top-auto sm:bottom-0 sm:max-w-[420px] sm:flex-col sm:pb-4",
+      "fixed right-0 top-0 z-[100] flex max-h-screen max-w-[350px] flex-col-reverse pr-4 pt-4 sm:bottom-0 sm:top-auto sm:max-w-[420px] sm:flex-col sm:pb-4",
       className
     )}
     {...props}
@@ -86,7 +86,7 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={twMergeClsx(
-      "absolute top-2 right-2 rounded-md p-1 opacity-0 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 group-hover:opacity-100",
+      "absolute right-2 top-2 rounded-md p-1 opacity-0 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 group-hover:opacity-100",
       className
     )}
     toast-close=""
@@ -194,7 +194,7 @@ const addToRemoveQueue = (toastId: string) => {
   toastTimeouts.set(toastId, timeout);
 };
 
-export const reducer = (state: State, action: Action): State => {
+const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "ADD_TOAST":
       return {
@@ -335,17 +335,4 @@ function Toaster() {
   );
 }
 
-export {
-  type ToastProps,
-  type ToastActionElement,
-  ToastProvider,
-  ToastViewport,
-  Toast,
-  ToastTitle,
-  ToastDescription,
-  ToastClose,
-  ToastAction,
-  useToast,
-  toast,
-  Toaster,
-};
+export { Toast, ToastAction, useToast, toast, Toaster };

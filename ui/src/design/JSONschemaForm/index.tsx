@@ -195,7 +195,7 @@ const ErrorListTemplate = (props: ErrorListProps) => {
 };
 
 const CustomCheckbox = (props: WidgetProps) => (
-  <div className="flex space-x-2 p-2 ">
+  <div className="flex space-x-2 p-2">
     <Checkbox
       onClick={() => props.onChange(!props.value)}
       id={`wgt-checkbox-${props.id}`}

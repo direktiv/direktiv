@@ -3,7 +3,7 @@ import * as TogglePrimitive from "@radix-ui/react-toggle";
 
 import { twMergeClsx } from "~/util/helpers";
 
-export interface VariantProps {
+interface VariantProps {
   size?: "sm" | "lg";
 }
 const Toggle = React.forwardRef<

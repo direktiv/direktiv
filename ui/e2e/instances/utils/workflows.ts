@@ -59,20 +59,6 @@ states:
   message: this is my error message
 `;
 
-export const workflowThatWaitsAndFails = `direktiv_api: workflow/v1
-states:
-- id: delay
-  type: delay
-  duration: PT5S
-  transition: handle-error
-- id: handle-error
-  type: error
-  error: i-am-an-error
-  message: error-message
-  transform:
-    result: an error occurred
-  `;
-
 export const parentWorkflow = ({
   childPath,
   children = 1,

@@ -38,10 +38,7 @@ const persons: Person[] = [
 export const Default = () => {
   const [pageSize, setPageSize] = useState(3);
   return (
-    <div
-      className="flex flex-col items-center space-y-5 p-5
-    "
-    >
+    <div className="flex flex-col items-center space-y-5 p-5">
       <PaginationProvider items={persons} pageSize={pageSize}>
         {({
           currentItems,

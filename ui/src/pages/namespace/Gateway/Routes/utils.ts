@@ -4,7 +4,7 @@ import {
   routeMethods,
 } from "src/api/gateway/schema";
 
-export function isRouteMethod(key: string): key is RouteMethod {
+function isRouteMethod(key: string): key is RouteMethod {
   return routeMethods.has(key as RouteMethod);
 }
 

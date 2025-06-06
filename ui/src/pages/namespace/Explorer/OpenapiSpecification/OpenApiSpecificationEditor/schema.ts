@@ -12,7 +12,3 @@ export const OpenapiSpecificationFormSchema = z
       .passthrough(),
   })
   .passthrough();
-
-export type OpenapiSpecificationFormSchemaType = z.infer<
-  typeof OpenapiSpecificationFormSchema
->;

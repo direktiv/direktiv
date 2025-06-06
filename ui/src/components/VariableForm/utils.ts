@@ -35,7 +35,7 @@ export const EditorMimeTypeSchema = z.enum([
   "text/css",
 ]);
 
-export type TextMimeTypeType = z.infer<typeof EditorMimeTypeSchema>;
+type TextMimeTypeType = z.infer<typeof EditorMimeTypeSchema>;
 
 export const isMimeTypeEditable = (
   mimeType: string

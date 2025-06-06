@@ -23,7 +23,7 @@ const GatewayInfo = () => {
   const { title, version, description = "" } = spec?.info || {};
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex w-full flex-col gap-4">
       <Card className="">
         <Table className="border-gray-5 dark:border-gray-dark-5">
           <TableBody>

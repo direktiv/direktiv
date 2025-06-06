@@ -22,7 +22,7 @@ const OidcGroupsInfo = ({ groups }: OidcGroupsInfoProps) => {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>{children}</TooltipTrigger>
-            <TooltipContent className="flex flex-row max-w-xl flex-wrap gap-3 text-inherit">
+            <TooltipContent className="flex max-w-xl flex-row flex-wrap gap-3 text-inherit">
               {groups.map((group) => (
                 <Badge key={group} className="cursor-pointer" variant="outline">
                   {group}

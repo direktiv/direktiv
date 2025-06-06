@@ -77,8 +77,8 @@ const SelectLabel = React.forwardRef<
   <SelectPrimitive.Label
     ref={ref}
     className={twMergeClsx(
-      "py-1.5 pr-2 pl-8 text-sm font-medium",
-      "text-gray-8 ",
+      "py-1.5 pl-8 pr-2 text-sm font-medium",
+      "text-gray-8",
       "dark:text-gray-dark-8",
       className
     )}
@@ -94,9 +94,9 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={twMergeClsx(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pr-2 pl-8 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      " focus:bg-gray-3 ",
-      " dark:focus:bg-gray-dark-3 ",
+      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "focus:bg-gray-3",
+      "dark:focus:bg-gray-dark-3",
       "hover:outline-none",
       "focus:outline-none",
       className
@@ -122,8 +122,8 @@ const SelectSeparator = React.forwardRef<
     ref={ref}
     className={twMergeClsx(
       "my-1 h-px",
-      " bg-gray-3",
-      " dark:bg-gray-dark-3",
+      "bg-gray-3",
+      "dark:bg-gray-dark-3",
       className
     )}
     {...props}

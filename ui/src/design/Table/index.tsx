@@ -68,7 +68,7 @@ export const TableCell = React.forwardRef<
 ));
 TableCell.displayName = "TableCell";
 
-export interface TableHeaderCellProps {
+interface TableHeaderCellProps {
   sticky?: boolean;
 }
 
@@ -84,8 +84,8 @@ export const TableHeaderCell = React.forwardRef<
       "text-gray-12",
       "dark:text-gray-dark-12",
       sticky && "sticky top-0 z-10 border-b backdrop-blur",
-      sticky && " border-gray-3 bg-white/75",
-      sticky && " dark:border-gray-dark-3 dark:bg-black/75",
+      sticky && "border-gray-3 bg-white/75",
+      sticky && "dark:border-gray-dark-3 dark:bg-black/75",
       className
     )}
   >

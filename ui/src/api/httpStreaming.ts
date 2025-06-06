@@ -47,7 +47,7 @@ const processStream = async ({
  * a react hook that handles a connection to an http endpoint and streams
  * the response. All messages are forwarded to the onMessage callback.
  */
-export const useHttpStreaming = ({
+const useHttpStreaming = ({
   url,
   apiKey,
   onMessage,

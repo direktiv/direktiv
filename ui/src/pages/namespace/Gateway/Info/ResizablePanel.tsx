@@ -30,10 +30,10 @@ const ResizablePanel: React.FC<ResizablePanelProps> = ({
   });
 
   return (
-    <div ref={containerRef} className="lg:flex lg:flex-row flex-col w-full">
+    <div ref={containerRef} className="w-full flex-col lg:flex lg:flex-row">
       {/* Left panel */}
       <div
-        className="max-lg:!w-full w-full"
+        className="w-full max-lg:!w-full"
         style={{ width: `${leftPanelWidth}%` }}
       >
         {leftPanel}
@@ -41,13 +41,13 @@ const ResizablePanel: React.FC<ResizablePanelProps> = ({
 
       {/* Resize handle - only visible on lg screens and above */}
       <div
-        className="w-1 min-h-full hover:bg-gray-4 dark:hover:bg-gray-4 cursor-col-resize shrink-0 mx-2 hidden lg:block"
+        className="mx-2 hidden min-h-full w-1 shrink-0 cursor-col-resize hover:bg-gray-4 dark:hover:bg-gray-4 lg:block"
         onMouseDown={startResize}
       />
 
       {/* Right panel */}
       <div
-        className="lg:mt-0 max-lg:!w-full mt-4"
+        className="mt-4 max-lg:!w-full lg:mt-0"
         style={{ width: `${100 - leftPanelWidth - 0.25}%` }}
       >
         {rightPanel}

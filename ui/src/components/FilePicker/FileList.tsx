@@ -13,7 +13,7 @@ import {
 import { BaseFileSchemaType } from "~/api/files/schema";
 import { twMergeClsx } from "~/util/helpers";
 
-export type FileListProps = {
+type FileListProps = {
   files: BaseFileSchemaType[];
   selectable: ((file: BaseFileSchemaType) => boolean) | undefined;
   setPath: (path: string) => void;
