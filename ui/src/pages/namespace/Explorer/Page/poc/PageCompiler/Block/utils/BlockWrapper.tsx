@@ -26,7 +26,7 @@ type BlockWrapperProps = PropsWithChildren<{
   block: AllBlocksType;
 }>;
 
-export type DialogState = "create" | "edit" | null;
+type DialogState = "create" | "edit" | null;
 
 export const BlockWrapper = ({
   block,
@@ -85,7 +85,7 @@ export const BlockWrapper = ({
         ref={containerRef}
         className={twMergeClsx(
           mode === "edit" &&
-            "relative rounded-md p-3 border-2 border-gray-4 border-dashed dark:border-gray-dark-4 bg-white dark:bg-black",
+            "relative rounded-md border-2 border-dashed border-gray-4 bg-white p-3 dark:border-gray-dark-4 dark:bg-black",
           isHovered &&
             mode === "edit" &&
             "border-solid bg-gray-2 dark:bg-gray-dark-2",
@@ -97,7 +97,7 @@ export const BlockWrapper = ({
         onClick={handleClickBlock}
       >
         {mode === "edit" && (isHovered || isFocused) && (
-          <Badge className="-m-6 absolute z-30" variant="secondary">
+          <Badge className="absolute z-30 -m-6" variant="secondary">
             <b>{block.type}</b>
             {blockPath.join(".")}
           </Badge>
@@ -113,7 +113,7 @@ export const BlockWrapper = ({
               <DialogTrigger className="float-right" asChild>
                 <Button
                   size="sm"
-                  className="absolute -bottom-4 z-30 left-1/2 -translate-x-1/2"
+                  className="absolute -bottom-4 left-1/2 z-30 -translate-x-1/2"
                   onClick={() => setDialog("create")}
                 >
                   <CirclePlus />

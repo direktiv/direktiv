@@ -13,7 +13,7 @@ import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../Block";
 import { DirektivPagesType } from "../../schema";
 
-export type PageCompilerMode = "edit" | "live";
+type PageCompilerMode = "edit" | "live";
 
 export type PageCompilerProps = {
   mode: PageCompilerMode;
@@ -21,7 +21,7 @@ export type PageCompilerProps = {
   setPage: (page: DirektivPagesType) => void;
 };
 
-export type PageCompilerState = PageCompilerProps & {
+type PageCompilerState = PageCompilerProps & {
   focus: BlockPathType | null;
   setFocus: Dispatch<SetStateAction<BlockPathType | null>>;
 };
@@ -104,4 +104,4 @@ export const usePageEditor = () => {
   };
 };
 
-export { PageCompilerContextProvider, usePage };
+export { PageCompilerContextProvider,  };

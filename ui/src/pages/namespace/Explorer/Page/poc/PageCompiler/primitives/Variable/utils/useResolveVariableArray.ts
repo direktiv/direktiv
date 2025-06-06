@@ -4,8 +4,8 @@ import { VariableType } from "../../../../schema/primitives/variable";
 import { useResolveVariable } from "./useResolveVariable";
 import { z } from "zod";
 
-export const UnknownArraySchema = z.array(z.unknown());
-export type UnknownArray = z.infer<typeof UnknownArraySchema>;
+const UnknownArraySchema = z.array(z.unknown());
+type UnknownArray = z.infer<typeof UnknownArraySchema>;
 
 export const useResolveVariableArray = (
   value: VariableType

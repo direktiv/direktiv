@@ -17,9 +17,9 @@ export const ParsingError = ({ title, children }: ParsingErrorProps) => (
         <TriangleAlert />
       </Button>
     </PopoverTrigger>
-    <PopoverContent className="w-[600px] p-5 flex flex-col gap-5">
+    <PopoverContent className="flex w-[600px] flex-col gap-5 p-5">
       <Alert variant="error">{title}</Alert>
-      {children && <Card className="p-5 overflow-scroll">{children}</Card>}
+      {children && <Card className="overflow-scroll p-5">{children}</Card>}
     </PopoverContent>
   </Popover>
 );

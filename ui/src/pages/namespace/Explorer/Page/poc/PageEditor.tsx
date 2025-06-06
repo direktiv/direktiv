@@ -101,12 +101,12 @@ const PageEditor = () => {
   return (
     <div
       className={twMergeClsx(
-        "grid gap-5 grow p-5 relative",
+        "relative grid grow gap-5 p-5",
         showCode && "grid-cols-2"
       )}
     >
-      <div className="right-5 -top-12 absolute gap-5 flex text-sm">
-        <div className="flex gap-2 items-center">
+      <div className="absolute -top-12 right-5 flex gap-5 text-sm">
+        <div className="flex items-center gap-2">
           <Switch
             id="mode"
             checked={mode === "edit"}
@@ -116,7 +116,7 @@ const PageEditor = () => {
           />
           <label htmlFor="mode">Editor</label>
         </div>
-        <div className="flex gap-2 items-center">
+        <div className="flex items-center gap-2">
           <Switch
             id="show-code"
             checked={showCode}
@@ -126,7 +126,7 @@ const PageEditor = () => {
           />
           <label htmlFor="show-code">Show Code</label>
         </div>
-        <div className="flex gap-2 items-center">
+        <div className="flex items-center gap-2">
           <Switch
             disabled={!showCode}
             id="validate"
@@ -158,7 +158,7 @@ const PageEditor = () => {
           />
         </Card>
       )}
-      <Card className="p-4 flex flex-col gap-4">
+      <Card className="flex flex-col gap-4 p-4">
         <PageCompiler mode={mode} page={page} setPage={setPage} />
       </Card>
     </div>

@@ -4,7 +4,7 @@ export const Variable = z.string().min(1);
 
 export type VariableType = z.infer<typeof Variable>;
 
-export const variableNamespaces = ["query", "loop", "form"] as const;
+const variableNamespaces = ["query", "loop", "form"] as const;
 
 export const VariableNamespaceSchema = z.enum(variableNamespaces);
 

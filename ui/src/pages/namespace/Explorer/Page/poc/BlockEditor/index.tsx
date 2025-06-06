@@ -15,7 +15,7 @@ export type BlockEditFormProps<T> = {
   onSubmit: (newBlock: AllBlocksType) => void;
 };
 
-export type BlockFormProps = {
+type BlockFormProps = {
   block: AllBlocksType | DirektivPagesType;
   action: BlockEditorAction;
   path: BlockPathType;

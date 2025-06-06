@@ -4,14 +4,14 @@ import { VariableType } from "../../../../schema/primitives/variable";
 import { useResolveVariable } from "./useResolveVariable";
 import { z } from "zod";
 
-export const StringCompatible = z.union([
+const StringCompatible = z.union([
   z.string(),
   z.number(),
   z.boolean(),
   z.null(),
 ]);
 
-export type StringCompatibleType = z.infer<typeof StringCompatible>;
+type StringCompatibleType = z.infer<typeof StringCompatible>;
 
 export const useResolveVariableString = (
   value: VariableType
