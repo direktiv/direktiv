@@ -10,15 +10,10 @@ import {
 @object()
 export class Direktiv {
   /**
-   * Build the UI application
+   * Build the UI application with pre built checks
    */
   @func()
-  async buildUI(
-    /**
-     * source directory
-     */
-    source: Directory
-  ): Promise<Directory> {
+  async buildUI(source: Directory): Promise<Directory> {
     const uiDir = source
       .directory("ui")
       .withoutDirectory("dist")
@@ -46,30 +41,17 @@ export class Direktiv {
   }
 
   /**
-   * Run the UI application in a container
-   */
-  @func()
-  nginx(
-    /**
-     * server directory
-     */
-    builtUI: Directory
-  ): Service {
-    return dag
-      .container()
-      .from("nginx:alpine")
-      .withWorkdir("/usr/share/nginx/html")
-      .withDirectory(".", builtUI)
-      .withExposedPort(80)
-      .asService({ useEntrypoint: true });
-  }
-
-  /**
-   * serve UI
+   * Build and serve the UI application
    */
   @func()
   async serveUi(source: Directory): Promise<Service> {
     const builtApp = await this.buildUI(source);
-    return this.nginx(builtApp);
+    return dag
+      .container()
+      .from("nginx:alpine")
+      .withWorkdir("/usr/share/nginx/html")
+      .withDirectory(".", builtApp)
+      .withExposedPort(80)
+      .asService({ useEntrypoint: true });
   }
 }
