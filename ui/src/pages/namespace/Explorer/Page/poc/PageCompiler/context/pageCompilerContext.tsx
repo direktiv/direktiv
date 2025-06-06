@@ -104,4 +104,4 @@ export const usePageEditor = () => {
   };
 };
 
-export { PageCompilerContextProvider,  };
+export { PageCompilerContextProvider };
