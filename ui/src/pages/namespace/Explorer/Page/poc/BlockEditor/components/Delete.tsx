@@ -1,6 +1,8 @@
+import { DialogClose, DialogFooter } from "~/design/Dialog";
+
 import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../../PageCompiler/Block";
-import { DialogFooter } from "../components/Footer";
+import Button from "~/design/Button";
 import { DialogHeader } from "../components/Header";
 import { useTranslation } from "react-i18next";
 
@@ -23,7 +25,18 @@ export const BlockDeleteForm = ({
     <>
       <DialogHeader action={action} path={path} type={type} />
       <div>{t("direktivPage.blockEditor.delete.warning")}</div>
-      <DialogFooter onSubmit={() => onSubmit(path)} />
+      <DialogFooter>
+        <DialogClose>
+          <Button variant="ghost">
+            {t("direktivPage.blockEditor.generic.cancelButton")}
+          </Button>
+        </DialogClose>
+        <DialogClose>
+          <Button variant="primary" onClick={() => onSubmit(path)}>
+            {t("direktivPage.blockEditor.generic.confirmButton")}
+          </Button>
+        </DialogClose>
+      </DialogFooter>
     </>
   );
 };
