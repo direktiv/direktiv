@@ -90,6 +90,31 @@ export const addBlockToPage = (
   throw new Error("Could not add block");
 };
 
+export const deleteBlockFromPage = (
+  page: DirektivPagesType,
+  path: BlockPathType
+) => {
+  const index = path[path.length - 1];
+
+  if (index === undefined) {
+    throw new Error("Invalid path, could not extract index for new block");
+  }
+
+  const newPage = clonePage(page);
+  const parent = findBlock(newPage, path.slice(0, -1));
+
+  if (isPage(parent) || isParentBlock(parent)) {
+    const newList: AllBlocksType[] = [
+      ...parent.blocks.slice(0, index),
+      ...parent.blocks.slice(index + 1),
+    ];
+
+    parent.blocks = newList;
+    return newPage;
+  }
+  throw new Error("Could not remove block");
+};
+
 type PathOrNull = BlockPathType | null;
 
 export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {

@@ -1665,12 +1665,14 @@
     "blockEditor": {
       "generic": {
         "saveButton": "Save",
-        "cancelButton": "Cancel"
+        "cancelButton": "Cancel",
+        "confirmButton": "Confirm"
       },
       "dialogTitle": "{{action}} {{type}} @{{path}}",
       "action": {
         "create": "create",
-        "edit": "edit"
+        "edit": "edit",
+        "delete": "delete"
       },
       "blockType": {
         "text": "text block",
@@ -1684,6 +1686,9 @@
         "column": "set of columns",
         "columns": "column block",
         "table": "table block"
+      },
+      "delete": {
+        "warning": "This will remove the current block and all content (including blocks nested into it). Are you sure you want to proceed?"
       }
     }
   }
