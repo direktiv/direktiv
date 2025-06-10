@@ -12,92 +12,18 @@ import { twMergeClsx } from "~/util/helpers";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
-const examplePage: DirektivPagesType = {
-  direktiv_api: "pages/v1",
-  blocks: [
-    {
-      type: "columns",
-      blocks: [
-        {
-          type: "column",
-          blocks: [{ type: "text", content: "column 1 text" }],
-        },
-        {
-          type: "column",
-          blocks: [{ type: "text", content: "column 2 text" }],
-        },
-      ],
-    },
-    {
-      type: "card",
-      blocks: [
-        {
-          type: "card",
-          blocks: [{ type: "text", content: "text block in 2 cards" }],
-        },
-      ],
-    },
-    {
-      type: "query-provider",
-      queries: [
-        {
-          id: "company-list",
-          endpoint: "/ns/demo/companies",
-          queryParams: [
-            {
-              key: "query",
-              value: "my-search-query",
-            },
-          ],
-        },
-      ],
-      blocks: [
-        {
-          type: "headline",
-          level: "h3",
-          label: "Found {{query.company-list.total}} companies",
-        },
-        {
-          type: "table",
-          data: {
-            type: "loop",
-            data: "query.company-list.data",
-            id: "company",
-          },
-          actions: [
-            {
-              type: "button",
-              label: "Edit",
-            },
-            {
-              type: "button",
-              label: "Delete",
-            },
-          ],
-          columns: [
-            {
-              type: "table-column",
-              label: "#",
-              content: "{{loop.company.id}} of {{query.company-list.total}}",
-            },
-            {
-              type: "table-column",
-              label: "Company Name",
-              content: "{{loop.company.name}}",
-            },
-          ],
-        },
-      ],
-    },
-  ],
-} satisfies DirektivPagesType;
-
 type Mode = ComponentProps<typeof PageCompiler>["mode"];
 
-const PageEditor = () => {
+type PageEditorProps = {
+  isPending: boolean;
+  page: DirektivPagesType;
+  onSave: (page: DirektivPagesType) => void;
+};
+
+const PageEditor = ({ isPending, page: pageProp, onSave }: PageEditorProps) => {
   const theme = useTheme();
   const [mode, setMode] = useState<Mode>("edit");
-  const [page, setPage] = useState(examplePage);
+  const [page, setPage] = useState(pageProp);
   const [validate, setValidate] = useState(true);
   const [showCode, setShowCode] = useState(false);
   const { t } = useTranslation();
@@ -113,7 +39,7 @@ const PageEditor = () => {
         {showCode && (
           <Card className="p-4">
             <Editor
-              value={jsonToYaml(examplePage)}
+              value={jsonToYaml(page)}
               theme={theme ?? undefined}
               onChange={(newValue) => {
                 if (newValue) {
@@ -170,8 +96,8 @@ const PageEditor = () => {
         </div>
         <Button
           variant="outline"
-          // disabled={isPending}
-          onClick={() => "TBD"}
+          disabled={isPending}
+          onClick={() => onSave(page)}
           data-testid="page-editor-btn-save"
         >
           <Save />
