@@ -1,4 +1,3 @@
-import { CirclePlus, Edit, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
   PropsWithChildren,
@@ -10,6 +9,7 @@ import {
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
+import { BlockContextMenu } from "../../../BlockEditor/components/ContextMenu";
 import { BlockDeleteForm } from "../../../BlockEditor/components/Delete";
 import { BlockForm } from "../../../BlockEditor";
 import { BlockPathType } from "..";
@@ -17,6 +17,8 @@ import Button from "~/design/Button";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
+import { Plus } from "lucide-react";
+import clsx from "clsx";
 import { pathsEqual } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { usePageEditor } from "../../context/pageCompilerContext";
@@ -109,25 +111,23 @@ export const BlockWrapper = ({
           <div onClick={(event) => event.stopPropagation()}>
             <Dialog open={!!dialog} onOpenChange={handleOnOpenChange}>
               <div className="absolute right-1 top-1 z-30">
-                <DialogTrigger asChild onClick={() => setDialog("edit")}>
-                  <Button variant="ghost">
-                    <Edit />
-                  </Button>
-                </DialogTrigger>
-                <DialogTrigger asChild onClick={() => setDialog("delete")}>
-                  <Button variant="ghost">
-                    <X />
-                  </Button>
-                </DialogTrigger>
+                <BlockContextMenu
+                  onEdit={() => setDialog("edit")}
+                  onDelete={() => setDialog("delete")}
+                />
               </div>
 
-              <DialogTrigger className="float-right" asChild>
+              <DialogTrigger asChild>
                 <Button
                   size="sm"
-                  className="absolute -bottom-4 left-1/2 z-30 -translate-x-1/2"
+                  variant="outline"
+                  className={clsx(
+                    "border-2 border-gray-8 bg-white dark:border-gray-10 dark:bg-black",
+                    "absolute -bottom-4 left-1/2 z-30 -translate-x-1/2"
+                  )}
                   onClick={() => setDialog("create")}
                 >
-                  <CirclePlus />
+                  <Plus />
                 </Button>
               </DialogTrigger>
               {dialog !== null && (

@@ -1668,6 +1668,10 @@
         "cancelButton": "Cancel",
         "confirmButton": "Confirm"
       },
+      "contextMenu": {
+        "deleteButton": "Delete",
+        "editButton": "Edit"
+      },
       "dialogTitle": "{{action}} {{type}} @{{path}}",
       "action": {
         "create": "create",
