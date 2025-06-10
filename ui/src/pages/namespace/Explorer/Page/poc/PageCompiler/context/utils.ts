@@ -97,7 +97,7 @@ export const deleteBlockFromPage = (
   const index = path[path.length - 1];
 
   if (index === undefined) {
-    throw new Error("Invalid path, could not extract index for new block");
+    throw new Error("Invalid path, could not extract index for target block");
   }
 
   const newPage = clonePage(page);
@@ -112,6 +112,7 @@ export const deleteBlockFromPage = (
     parent.blocks = newList;
     return newPage;
   }
+
   throw new Error("Could not remove block");
 };
 

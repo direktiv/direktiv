@@ -107,7 +107,7 @@ describe("updateBlockInPage", () => {
     });
   });
 
-  test("it throws an error if the specified index is empty", () => {
+  test("it throws an error if an empty array is given as index", () => {
     expect(() =>
       updateBlockInPage(simple, [], {
         type: "text",
@@ -208,6 +208,12 @@ describe("deleteBlockFromPage", () => {
         },
       ],
     });
+  });
+
+  test("it throws an error if an empty array is given as index", () => {
+    expect(() => deleteBlockFromPage(simple, [])).toThrow(
+      "Invalid path, could not extract index for target block"
+    );
   });
 });
 
