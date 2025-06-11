@@ -57,7 +57,11 @@ const PageEditor = ({ isPending, page: pageProp, onSave }: PageEditorProps) => {
           </Card>
         )}
         <Card className="flex flex-col gap-4 p-4">
-          <PageCompiler mode={mode} page={page} setPage={setPage} />
+          <PageCompiler
+            mode={mode}
+            page={page}
+            setPage={(page) => setPage(page)}
+          />
         </Card>
       </div>
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -96,6 +100,7 @@ const PageEditor = ({ isPending, page: pageProp, onSave }: PageEditorProps) => {
         </div>
         <Button
           variant="outline"
+          type="button"
           disabled={isPending}
           onClick={() => onSave(page)}
           data-testid="page-editor-btn-save"
