@@ -129,22 +129,6 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 								break
 							}
 						}
-						if p.Type() == "js-outbound" {
-							// Inject the output in the request so that the outbound plugin can process it.
-							//nolint:forcetypeassert
-							w := w.(*httptest.ResponseRecorder)
-							newReq, err := http.NewRequest(http.MethodGet, "/writer", w.Body)
-							if err != nil {
-								slog.With("component", "gateway").
-									Error("creating js-outbound plugin request", "err", err)
-							}
-							newReq.Response = &http.Response{
-								StatusCode: w.Code,
-							}
-							//nolint:contextcheck
-							newReq = newReq.WithContext(r.Context())
-							r = newReq
-						}
 						if r = p.Execute(w, r); r == nil {
 							break
 						}
@@ -156,14 +140,11 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 						// Copy headers to the original writer.
 						for key, values := range w.Header() {
 							for _, value := range values {
-								originalWriter.Header().Add(key, value)
+								originalWriter.Header().Set(key, value)
 							}
 						}
 						// Set the new content length.
 						originalWriter.Header().Set("Content-Length", strconv.Itoa(w.Body.Len()))
-						// Copy status code to the original writer.
-						originalWriter.WriteHeader(w.Code)
-
 						// Copy body to the original writer.
 						if _, err := io.Copy(originalWriter, w.Body); err != nil {
 							slog.With("component", "gateway").

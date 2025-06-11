@@ -2,9 +2,9 @@ package outbound
 
 import (
 	"fmt"
-	"io"
 	"log/slog"
 	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"time"
 
@@ -39,30 +39,16 @@ type response struct {
 }
 
 func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
-	var (
-		err error
-		b   []byte
-	)
 
-	if r.Body != nil {
-		b, err = io.ReadAll(r.Body)
-		if err != nil {
-			gateway.WriteInternalError(r, w, err, "can not set read body for js plugin")
-			return nil
-		}
-		defer r.Body.Close()
-	}
+	rr := w.(*httptest.ResponseRecorder)
+	w = httptest.NewRecorder()
 
-	if r.Response == nil {
-		r.Response = &http.Response{
-			StatusCode: http.StatusOK,
-		}
-	}
+	var err error
 
 	resp := response{
-		Headers: r.Header,
-		Body:    string(b),
-		Code:    r.Response.StatusCode,
+		Headers: rr.Header(),
+		Body:    string(rr.Body.Bytes()),
+		Code:    rr.Code,
 	}
 
 	// extract all response headers and body
@@ -93,8 +79,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 		return nil
 	}
 
-	script := fmt.Sprintf("function run() { %s; return input } run()",
-		js.Script)
+	script := fmt.Sprintf("function run() { %s; return input } run()", js.Script)
 
 	val, err := vm.RunScript("plugin", script)
 	if err != nil {
@@ -110,13 +95,11 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 			responseDone := o.Export().(response)
 			for k, v := range responseDone.Headers {
 				for a := range v {
-					w.Header().Add(k, v[a])
+					w.Header().Set(k, v[a])
 				}
 			}
-
-			// nolint
-			w.Write([]byte(responseDone.Body))
 			w.WriteHeader(responseDone.Code)
+			w.Write([]byte(responseDone.Body))
 		}
 	}
 
