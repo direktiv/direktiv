@@ -29,7 +29,7 @@ func (hp *HeaderManipulationPlugin) NewInstance(config core.PluginConfig) (core.
 	return pl, nil
 }
 
-func (hp *HeaderManipulationPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+func (hp *HeaderManipulationPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
 	for a := range hp.HeadersToAdd {
 		h := hp.HeadersToAdd[a]
 		r.Header.Add(h.Name, h.Value)
@@ -45,7 +45,7 @@ func (hp *HeaderManipulationPlugin) Execute(w http.ResponseWriter, r *http.Reque
 		r.Header.Del(h.Name)
 	}
 
-	return r
+	return w, r
 }
 
 func (hp *HeaderManipulationPlugin) Type() string {

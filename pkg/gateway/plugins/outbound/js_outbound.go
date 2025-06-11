@@ -2,9 +2,9 @@ package outbound
 
 import (
 	"fmt"
-	"io"
 	"log/slog"
 	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"time"
 
@@ -38,31 +38,17 @@ type response struct {
 	Code    int
 }
 
-func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
-	var (
-		err error
-		b   []byte
-	)
+func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
+	//nolint:forcetypeassert
+	rr := w.(*httptest.ResponseRecorder)
+	w = httptest.NewRecorder()
 
-	if r.Body != nil {
-		b, err = io.ReadAll(r.Body)
-		if err != nil {
-			gateway.WriteInternalError(r, w, err, "can not set read body for js plugin")
-			return nil
-		}
-		defer r.Body.Close()
-	}
-
-	if r.Response == nil {
-		r.Response = &http.Response{
-			StatusCode: http.StatusOK,
-		}
-	}
+	var err error
 
 	resp := response{
-		Headers: r.Header,
-		Body:    string(b),
-		Code:    r.Response.StatusCode,
+		Headers: rr.Header(),
+		Body:    rr.Body.String(),
+		Code:    rr.Code,
 	}
 
 	// extract all response headers and body
@@ -70,7 +56,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 	err = vm.Set("input", resp)
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "can not set input object")
-		return nil
+		return nil, nil
 	}
 
 	err = vm.Set("log", func(txt interface{}) {
@@ -78,7 +64,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 	})
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "can not set log function")
-		return nil
+		return nil, nil
 	}
 
 	err = vm.Set("sleep", func(t interface{}) {
@@ -90,16 +76,15 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 	})
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "can not set sleep function")
-		return nil
+		return nil, nil
 	}
 
-	script := fmt.Sprintf("function run() { %s; return input } run()",
-		js.Script)
+	script := fmt.Sprintf("function run() { %s; return input } run()", js.Script)
 
 	val, err := vm.RunScript("plugin", script)
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "can not execute script")
-		return nil
+		return nil, nil
 	}
 
 	if val != nil && !val.Equals(goja.Undefined()) {
@@ -110,17 +95,15 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 			responseDone := o.Export().(response)
 			for k, v := range responseDone.Headers {
 				for a := range v {
-					w.Header().Add(k, v[a])
+					w.Header().Set(k, v[a])
 				}
 			}
-
-			// nolint
-			w.Write([]byte(responseDone.Body))
 			w.WriteHeader(responseDone.Code)
+			_, _ = w.Write([]byte(responseDone.Body))
 		}
 	}
 
-	return r
+	return w, r
 }
 
 func init() {
