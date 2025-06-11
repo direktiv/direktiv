@@ -99,20 +99,22 @@ export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
   return a.length === b.length && a.every((val, index) => val === b[index]);
 };
 
-export const getPlaceholderBlock = (type: AllBlocksType["type"]) => {
+export const getPlaceholderBlock = (
+  type: AllBlocksType["type"]
+): AllBlocksType => {
   switch (type) {
     case "headline":
       return {
         type: "headline",
         level: "h1",
         label: "",
-      } as AllBlocksType;
+      };
     case "text":
       return {
         type: "text",
         content: "",
-      } as AllBlocksType;
+      };
     default:
-      return { type: "text", content: "" } as AllBlocksType;
+      return { type: "text", content: "" };
   }
 };
