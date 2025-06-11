@@ -31,14 +31,14 @@ func (tnv *NamespaceVarPlugin) NewInstance(config core.PluginConfig) (core.Plugi
 	return pl, nil
 }
 
-func (tnv *NamespaceVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+func (tnv *NamespaceVarPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
 	currentNS := gateway.ExtractContextEndpoint(r).Namespace
 	if tnv.Namespace == "" {
 		tnv.Namespace = currentNS
 	}
 	if tnv.Namespace != currentNS && currentNS != core.SystemNamespace {
 		gateway.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
-		return nil
+		return nil, nil
 	}
 
 	uri := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables?name=%s&raw=true",
@@ -47,11 +47,11 @@ func (tnv *NamespaceVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *
 	resp, err := doRequest(r, http.MethodGet, uri, nil)
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "couldn't execute downstream request")
-		return nil
+		return nil, nil
 	}
 	if resp.StatusCode != http.StatusOK {
 		gateway.WriteInternalError(r, w, nil, "none ok downstream request: "+resp.Status)
-		return nil
+		return nil, nil
 	}
 	defer resp.Body.Close()
 
@@ -70,10 +70,10 @@ func (tnv *NamespaceVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *
 	// copy the response body
 	if _, err := io.Copy(w, resp.Body); err != nil {
 		gateway.WriteInternalError(r, w, nil, "couldn't write downstream response")
-		return nil
+		return nil, nil
 	}
 
-	return r
+	return w, r
 }
 
 func (tnv *NamespaceVarPlugin) Type() string {

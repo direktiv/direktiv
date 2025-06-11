@@ -38,7 +38,7 @@ type response struct {
 	Code    int
 }
 
-func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
 
 	rr := w.(*httptest.ResponseRecorder)
 	w = httptest.NewRecorder()
@@ -56,7 +56,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 	err = vm.Set("input", resp)
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "can not set input object")
-		return nil
+		return nil, nil
 	}
 
 	err = vm.Set("log", func(txt interface{}) {
@@ -64,7 +64,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 	})
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "can not set log function")
-		return nil
+		return nil, nil
 	}
 
 	err = vm.Set("sleep", func(t interface{}) {
@@ -76,7 +76,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 	})
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "can not set sleep function")
-		return nil
+		return nil, nil
 	}
 
 	script := fmt.Sprintf("function run() { %s; return input } run()", js.Script)
@@ -84,7 +84,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 	val, err := vm.RunScript("plugin", script)
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "can not execute script")
-		return nil
+		return nil, nil
 	}
 
 	if val != nil && !val.Equals(goja.Undefined()) {
@@ -103,7 +103,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 		}
 	}
 
-	return r
+	return w, r
 }
 
 func init() {

@@ -35,30 +35,30 @@ func (ka *KeyAuthPlugin) NewInstance(config core.PluginConfig) (core.Plugin, err
 	return pl, nil
 }
 
-func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
 	// check request is already authenticated
 	if gateway.ExtractContextActiveConsumer(r) != nil {
-		return r
+		return w, r
 	}
 
 	key := r.Header.Get(ka.KeyName)
 	// no basic auth provided
 	if key == "" {
-		return r
+		return w, r
 	}
 
 	consumerList := gateway.ExtractContextConsumersList(r)
 	if consumerList == nil {
 		slog.Debug("no consumer configured for api key")
 
-		return r
+		return w, r
 	}
 	c := gateway.FindConsumerByAPIKey(consumerList, key)
 	// no consumer matching auth name
 	if c == nil {
 		slog.Debug("no consumer configured for api key")
 
-		return r
+		return w, r
 	}
 
 	if c.APIKey == key {
@@ -79,7 +79,7 @@ func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.R
 		}
 	}
 
-	return r
+	return w, r
 }
 
 func (ka *KeyAuthPlugin) Type() string {
