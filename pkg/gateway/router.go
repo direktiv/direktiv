@@ -129,7 +129,7 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 								break
 							}
 						}
-						if r = p.Execute(w, r); r == nil {
+						if w, r = p.Execute(w, r); r == nil {
 							break
 						}
 					}
