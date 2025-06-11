@@ -1,13 +1,25 @@
-import { PropsWithChildren, Suspense } from "react";
+import {
+  PageCompilerMode,
+  usePageEditor,
+} from "../../context/pageCompilerContext";
+import { ReactElement, Suspense } from "react";
 
+import { BlockPlaceholder } from "../../../BlockEditor/components/Placeholder";
 import { Loading } from "./Loading";
 import { twMergeClsx } from "~/util/helpers";
 
-type BlockListProps = PropsWithChildren<{
+type BlockListProps = {
   horizontal?: boolean;
-}>;
+  children: ReactElement[];
+};
 
-export const BlockList = ({ horizontal, children }: BlockListProps) => (
+type BlockListComponentProps = BlockListProps & { mode?: PageCompilerMode };
+
+const BlockListComponent = ({
+  horizontal,
+  children,
+  mode,
+}: BlockListComponentProps) => (
   <div
     className={twMergeClsx(
       "gap-3",
@@ -16,6 +28,15 @@ export const BlockList = ({ horizontal, children }: BlockListProps) => (
         : "flex flex-col"
     )}
   >
-    <Suspense fallback={<Loading />}>{children}</Suspense>
+    <Suspense fallback={<Loading />}>
+      {mode === "edit" && !children.length && <BlockPlaceholder />}
+      {children}
+    </Suspense>
   </div>
 );
+
+export const BlockList = (args: BlockListProps) => {
+  const { mode } = usePageEditor();
+
+  return <BlockListComponent {...{ ...args, mode }} />;
+};
