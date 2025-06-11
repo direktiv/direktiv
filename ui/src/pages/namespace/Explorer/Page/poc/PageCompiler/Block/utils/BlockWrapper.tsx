@@ -1,4 +1,3 @@
-import { CirclePlus, Edit } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
   PropsWithChildren,
@@ -10,12 +9,16 @@ import {
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
+import { BlockContextMenu } from "../../../BlockEditor/components/ContextMenu";
+import { BlockDeleteForm } from "../../../BlockEditor/components/Delete";
 import { BlockForm } from "../../../BlockEditor";
 import { BlockPathType } from "..";
 import Button from "~/design/Button";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
+import { Plus } from "lucide-react";
+import clsx from "clsx";
 import { pathsEqual } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { usePageEditor } from "../../context/pageCompilerContext";
@@ -26,7 +29,7 @@ type BlockWrapperProps = PropsWithChildren<{
   block: AllBlocksType;
 }>;
 
-type DialogState = "create" | "edit" | null;
+type DialogState = "create" | "edit" | "delete" | null;
 
 export const BlockWrapper = ({
   block,
@@ -38,6 +41,8 @@ export const BlockWrapper = ({
   const [dialog, setDialog] = useState<DialogState>(null);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const { deleteBlock } = usePageEditor();
 
   /**
    * This handler is only used for closing the dialog. For opening a dialog,
@@ -105,18 +110,24 @@ export const BlockWrapper = ({
         {mode === "edit" && isFocused && (
           <div onClick={(event) => event.stopPropagation()}>
             <Dialog open={!!dialog} onOpenChange={handleOnOpenChange}>
-              <DialogTrigger asChild onClick={() => setDialog("edit")}>
-                <Button variant="ghost" className="absolute right-1 top-1 z-30">
-                  <Edit />
-                </Button>
-              </DialogTrigger>
-              <DialogTrigger className="float-right" asChild>
+              <div className="absolute right-1 top-1 z-30">
+                <BlockContextMenu
+                  onEdit={() => setDialog("edit")}
+                  onDelete={() => setDialog("delete")}
+                />
+              </div>
+
+              <DialogTrigger asChild>
                 <Button
                   size="sm"
-                  className="absolute -bottom-4 left-1/2 z-30 -translate-x-1/2"
+                  variant="outline"
+                  className={clsx(
+                    "border-2 border-gray-8 bg-white dark:border-gray-10 dark:bg-black",
+                    "absolute -bottom-4 left-1/2 z-30 -translate-x-1/2"
+                  )}
                   onClick={() => setDialog("create")}
                 >
-                  <CirclePlus />
+                  <Plus />
                 </Button>
               </DialogTrigger>
               {dialog !== null && (
@@ -129,6 +140,14 @@ export const BlockWrapper = ({
                       block={{ type: "text", content: "dummy block" }}
                       action={dialog}
                       path={blockPath}
+                    />
+                  )}
+                  {dialog === "delete" && (
+                    <BlockDeleteForm
+                      type={block.type}
+                      action={dialog}
+                      path={blockPath}
+                      onSubmit={(path) => deleteBlock(path)}
                     />
                   )}
                 </DialogContent>

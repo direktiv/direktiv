@@ -6,7 +6,7 @@ import { Text } from "../BlockEditor/Text";
 import { isPage } from "../PageCompiler/context/utils";
 import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
 
-export type BlockEditorAction = "create" | "edit";
+export type BlockEditorAction = "create" | "edit" | "delete";
 
 export type BlockEditFormProps<T> = {
   action: BlockEditorAction;
