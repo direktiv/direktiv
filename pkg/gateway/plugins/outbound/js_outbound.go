@@ -39,6 +39,7 @@ type response struct {
 }
 
 func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
+	//nolint:forcetypeassert
 	rr := w.(*httptest.ResponseRecorder)
 	w = httptest.NewRecorder()
 
@@ -98,7 +99,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (htt
 				}
 			}
 			w.WriteHeader(responseDone.Code)
-			w.Write([]byte(responseDone.Body))
+			_, _ = w.Write([]byte(responseDone.Body))
 		}
 	}
 
