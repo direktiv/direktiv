@@ -41,7 +41,6 @@ This repository contains the user interface for [direktiv](https://github.com/di
   - `pnpm run check:types` checks all types
   - `pnpm run check:test` runs the tests in ci mode
   - `pnpm run check:prettier` checks if all prettier formatting was applied (`pnpm run prettier`)
-  - `pnpm run check:prettier` checks if all prettier formatting was applied (`pnpm run prettier`)
   - `pnpm run check:deps` checks if all dependencies are up to date
   - `pnpm run check:knip` checks for unused code
 - `pnpm run fix` fixes all autofixable issues:
