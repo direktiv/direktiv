@@ -4,6 +4,6 @@ import { DirektivPagesType } from "../../../schema";
 export const createDirektivPage = (
   blocks: AllBlocksType[]
 ): DirektivPagesType => ({
-  direktiv_api: "pages/v1",
+  direktiv_api: "page/v1",
   blocks,
 });

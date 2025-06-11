@@ -1,11 +1,11 @@
 import { ComponentProps, useState } from "react";
-import { DirektivPagesSchema, DirektivPagesType } from "./schema";
-import { jsonToYaml, yamlToJsonOrNull } from "../../utils";
+import { DirektivPagesSchema, DirektivPagesType } from "../schema";
+import { jsonToYaml, yamlToJsonOrNull } from "../../../utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
-import { PageCompiler } from "./PageCompiler";
+import { PageCompiler } from "../PageCompiler";
 import { Save } from "lucide-react";
 import { Switch } from "~/design/Switch";
 import { twMergeClsx } from "~/util/helpers";
