@@ -39,7 +39,6 @@ type response struct {
 }
 
 func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
-
 	rr := w.(*httptest.ResponseRecorder)
 	w = httptest.NewRecorder()
 
@@ -47,7 +46,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (htt
 
 	resp := response{
 		Headers: rr.Header(),
-		Body:    string(rr.Body.Bytes()),
+		Body:    rr.Body.String(),
 		Code:    rr.Code,
 	}
 
