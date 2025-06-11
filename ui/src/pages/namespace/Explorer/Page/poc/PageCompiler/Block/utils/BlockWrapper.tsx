@@ -1,5 +1,6 @@
-import { CirclePlus, Edit } from "lucide-react";
+import { CirclePlus, Edit, Heading1, Text } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import {
   PropsWithChildren,
   Suspense,
@@ -7,16 +8,17 @@ import {
   useRef,
   useState,
 } from "react";
+import { getPlaceholderBlock, pathsEqual } from "../../context/utils";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockForm } from "../../../BlockEditor";
 import { BlockPathType } from "..";
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
-import { pathsEqual } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { usePageEditor } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
@@ -36,6 +38,8 @@ export const BlockWrapper = ({
   const { t } = useTranslation();
   const { mode, focus, setFocus } = usePageEditor();
   const [dialog, setDialog] = useState<DialogState>(null);
+  const [popover, setPopover] = useState<boolean>(false);
+  const [type, setType] = useState<AllBlocksType["type"]>(block.type);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -110,15 +114,43 @@ export const BlockWrapper = ({
                   <Edit />
                 </Button>
               </DialogTrigger>
-              <DialogTrigger className="float-right" asChild>
-                <Button
-                  size="sm"
-                  className="absolute -bottom-4 left-1/2 z-30 -translate-x-1/2"
-                  onClick={() => setDialog("create")}
-                >
-                  <CirclePlus />
-                </Button>
-              </DialogTrigger>
+              <Popover open={popover} onOpenChange={setPopover}>
+                <PopoverTrigger asChild>
+                  <Button
+                    size="sm"
+                    className="absolute -bottom-4 left-1/2 z-30 -translate-x-1/2"
+                  >
+                    <CirclePlus />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent asChild>
+                  <Card
+                    className="z-10 -mt-2 flex w-fit flex-col p-2 text-center dark:bg-gray-dark-2"
+                    noShadow
+                  >
+                    <Button
+                      className="my-1 w-36 justify-start text-xs"
+                      onClick={() => {
+                        setType("headline");
+                        setDialog("create");
+                      }}
+                    >
+                      <Heading1 size={16} />
+                      Headline
+                    </Button>
+                    <Button
+                      className="my-1 w-36 justify-start text-xs"
+                      onClick={() => {
+                        setType("text");
+                        setDialog("create");
+                      }}
+                    >
+                      <Text size={16} />
+                      Text
+                    </Button>
+                  </Card>
+                </PopoverContent>
+              </Popover>
               {dialog !== null && (
                 <DialogContent className="z-50">
                   {dialog === "edit" && (
@@ -126,7 +158,7 @@ export const BlockWrapper = ({
                   )}
                   {dialog === "create" && (
                     <BlockForm
-                      block={{ type: "text", content: "dummy block" }}
+                      block={getPlaceholderBlock(type)}
                       action={dialog}
                       path={blockPath}
                     />
