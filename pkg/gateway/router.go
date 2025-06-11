@@ -143,8 +143,8 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 								originalWriter.Header().Set(key, value)
 							}
 						}
-						// Set the new content length.
 						originalWriter.Header().Set("Content-Length", strconv.Itoa(w.Body.Len()))
+						originalWriter.WriteHeader(w.Code)
 						// Copy body to the original writer.
 						if _, err := io.Copy(originalWriter, w.Body); err != nil {
 							slog.With("component", "gateway").

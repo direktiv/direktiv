@@ -18,7 +18,8 @@ x-direktiv-config:
             input["Headers"].Add("Header2", "value2")
             b = JSON.parse(input["Body"])
             b["random"] = "data"
-            input["Body"] = JSON.stringify(b) 
+            input["Body"] = JSON.stringify(b)
+            input["Code"] = 201
       target:
         type: target-flow
         configuration:
@@ -66,7 +67,7 @@ describe('Test js outbound plugin', () => {
 		)
 			.set('Header1', 'Value1')
 			.send({ hello: 'world' })
-		expect(req.statusCode).toEqual(200)
+		expect(req.statusCode).toEqual(201)
 
 		// added header in the script
 		expect(req.header.header2).toEqual('value2')
