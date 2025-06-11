@@ -84,7 +84,8 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 			continue
 		}
 
-		cleanPath := strings.Trim(item.Config.Path, " /")
+		cleanPath := strings.Trim(item.Config.Path, " ")
+		cleanPath = strings.TrimPrefix(cleanPath, "/")
 
 		for _, pattern := range []string{
 			fmt.Sprintf("/api/v2/namespaces/%s/gateway/%s", item.Namespace, cleanPath),
@@ -108,6 +109,7 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 					// inject endpoint.
 					r = InjectContextEndpoint(r, &endpoints[i])
 					r = InjectContextURLParams(r, ExtractBetweenCurlyBraces(pattern))
+					r = InjectContextRouterPattern(r, pattern)
 
 					// Outbound plugins are used to transform the output from target plugins. When an outbound plugin is
 					// configured, target plugins output should be recorded in a buffer rather than flushed directly to
