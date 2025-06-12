@@ -1,6 +1,6 @@
 import { AllBlocksType, ParentBlockUnion } from "../../schema/blocks";
 import { DirektivPagesSchema, DirektivPagesType } from "../../schema";
-import { Heading1, Text } from "lucide-react";
+import { Heading1, LucideIcon, Text } from "lucide-react";
 
 import { BlockPathType } from "../Block";
 import { clonePage } from "../../BlockEditor/utils";
@@ -147,7 +147,11 @@ export const getPlaceholderBlock = (
   }
 };
 
-export const buttons = [
+export const buttons: {
+  type: AllBlocksType["type"];
+  label: string;
+  icon: LucideIcon;
+}[] = [
   {
     type: "headline" satisfies AllBlocksType["type"],
     label: t("direktivPage.error.blocks.headline"),

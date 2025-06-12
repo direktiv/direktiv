@@ -1,5 +1,4 @@
-import { CirclePlus, Plus } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
+import { Dialog, DialogContent } from "~/design/Dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import {
   PropsWithChildren,
@@ -18,6 +17,7 @@ import { BlockForm } from "../../../BlockEditor";
 import { BlockPathType } from "..";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import { CirclePlus } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
