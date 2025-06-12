@@ -7,7 +7,12 @@ import {
   useContext,
   useState,
 } from "react";
-import { addBlockToPage, pathsEqual, updateBlockInPage } from "./utils";
+import {
+  addBlockToPage,
+  deleteBlockFromPage,
+  pathsEqual,
+  updateBlockInPage,
+} from "./utils";
 
 import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../Block";
@@ -94,11 +99,17 @@ export const usePageEditor = () => {
     setPage(newPage);
   };
 
+  const deleteBlock = (path: BlockPathType) => {
+    const newPage = deleteBlockFromPage(page, path);
+    setPage(newPage);
+  };
+
   return {
     focus,
     mode,
     setFocus,
     addBlock,
+    deleteBlock,
     updateBlock,
     setPage,
   };

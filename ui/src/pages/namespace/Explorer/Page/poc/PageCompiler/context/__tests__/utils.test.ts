@@ -2,6 +2,7 @@ import { ColumnType, ColumnsType } from "../../../schema/blocks/columns";
 import { ParentBlocksType, SimpleBlocksType } from "../../../schema/blocks";
 import {
   addBlockToPage,
+  deleteBlockFromPage,
   findBlock,
   isPage,
   isParentBlock,
@@ -106,7 +107,7 @@ describe("updateBlockInPage", () => {
     });
   });
 
-  test("it throws an error if the specified index is empty", () => {
+  test("it throws an error if an empty array is given as index", () => {
     expect(() =>
       updateBlockInPage(simple, [], {
         type: "text",
@@ -187,6 +188,31 @@ describe("addBlockToPage", () => {
   test("it throws an error if the specified index is empty", () => {
     expect(() => addBlockToPage(simple, [], headline)).toThrow(
       "Invalid path, could not extract index for new block"
+    );
+  });
+});
+
+describe("deleteBlockFromPage", () => {
+  test("it deletes a block from the page", () => {
+    const result = deleteBlockFromPage(simple, [2, 0, 0]);
+    expect(result.blocks[2] as ColumnsType).toEqual({
+      type: "columns",
+      blocks: [
+        {
+          type: "column",
+          blocks: [],
+        },
+        {
+          type: "column",
+          blocks: [{ type: "text", content: "second column text" }],
+        },
+      ],
+    });
+  });
+
+  test("it throws an error if an empty array is given as index", () => {
+    expect(() => deleteBlockFromPage(simple, [])).toThrow(
+      "Invalid path, could not extract index for target block"
     );
   });
 });

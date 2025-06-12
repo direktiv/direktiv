@@ -1,4 +1,4 @@
-import { CirclePlus, Edit } from "lucide-react";
+import { CirclePlus, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import {
@@ -12,6 +12,8 @@ import { buttons, getPlaceholderBlock, pathsEqual } from "../../context/utils";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
+import { BlockContextMenu } from "../../../BlockEditor/components/ContextMenu";
+import { BlockDeleteForm } from "../../../BlockEditor/components/Delete";
 import { BlockForm } from "../../../BlockEditor";
 import { BlockPathType } from "..";
 import Button from "~/design/Button";
@@ -28,7 +30,7 @@ type BlockWrapperProps = PropsWithChildren<{
   block: AllBlocksType;
 }>;
 
-type DialogState = "create" | "edit" | null;
+type DialogState = "create" | "edit" | "delete" | null;
 
 export const BlockWrapper = ({
   block,
@@ -41,6 +43,8 @@ export const BlockWrapper = ({
   const [type, setType] = useState<AllBlocksType["type"]>(block.type);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const { deleteBlock } = usePageEditor();
 
   /**
    * This handler is only used for closing the dialog. For opening a dialog,
@@ -108,11 +112,13 @@ export const BlockWrapper = ({
         {mode === "edit" && isFocused && (
           <div onClick={(event) => event.stopPropagation()}>
             <Dialog open={!!dialog} onOpenChange={handleOnOpenChange}>
-              <DialogTrigger asChild onClick={() => setDialog("edit")}>
-                <Button variant="ghost" className="absolute right-1 top-1 z-30">
-                  <Edit />
-                </Button>
-              </DialogTrigger>
+              <div className="absolute right-1 top-1 z-30">
+                <BlockContextMenu
+                  onEdit={() => setDialog("edit")}
+                  onDelete={() => setDialog("delete")}
+                />
+              </div>
+
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -153,6 +159,14 @@ export const BlockWrapper = ({
                       block={getPlaceholderBlock(type)}
                       action={dialog}
                       path={blockPath}
+                    />
+                  )}
+                  {dialog === "delete" && (
+                    <BlockDeleteForm
+                      type={block.type}
+                      action={dialog}
+                      path={blockPath}
+                      onSubmit={(path) => deleteBlock(path)}
                     />
                   )}
                 </DialogContent>
