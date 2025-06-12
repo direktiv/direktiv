@@ -11,7 +11,7 @@ export const BlockDialog = () => {
   const { deleteBlock } = usePageEditor();
 
   if (!dialog) {
-    return <div>{JSON.stringify(dialog)}</div>;
+    return null;
   }
 
   /**
