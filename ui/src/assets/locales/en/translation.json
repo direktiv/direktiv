@@ -1649,7 +1649,9 @@
         "invalidJson": "Error in query with id {{id}}: {{endpoint}} returned an invalid JSON"
       },
       "blocks": {
-        "table": { "noResult": "No entries to show" }
+        "headline": "Headline",
+        "table": { "noResult": "No entries to show" },
+        "text": "Text"
       },
       "templateString": {
         "namespaceInvalid": "The template string does not have a valid namespace.",
