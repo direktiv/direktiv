@@ -19,6 +19,7 @@ import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
 import { twMergeClsx } from "~/util/helpers";
+import { useBlockDialog } from "../../../BlockEditor/useBlockDialog";
 import { usePageEditor } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
@@ -27,8 +28,6 @@ type BlockWrapperProps = PropsWithChildren<{
   block: AllBlocksType;
 }>;
 
-type DialogState = "create" | "edit" | "delete" | null;
-
 export const BlockWrapper = ({
   block,
   blockPath,
@@ -36,11 +35,9 @@ export const BlockWrapper = ({
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
   const { mode, focus, setFocus } = usePageEditor();
-  const [dialog, setDialog] = useState<DialogState>(null);
-  const [type, setType] = useState<AllBlocksType["type"]>(block.type);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-
+  const { dialog, setDialog } = useBlockDialog();
   const { deleteBlock } = usePageEditor();
 
   /**
@@ -111,32 +108,39 @@ export const BlockWrapper = ({
             <Dialog open={!!dialog} onOpenChange={handleOnOpenChange}>
               <div className="absolute right-1 top-1 z-30">
                 <BlockContextMenu
-                  onEdit={() => setDialog("edit")}
-                  onDelete={() => setDialog("delete")}
+                  onEdit={() =>
+                    setDialog({ action: "edit", blockType: block.type })
+                  }
+                  onDelete={() =>
+                    setDialog({ action: "delete", blockType: block.type })
+                  }
                 />
               </div>
               <SelectBlockType
                 onSelect={(type) => {
-                  setType(type);
-                  setDialog("create");
+                  setDialog({ action: "create", blockType: type });
                 }}
               />
               {dialog !== null && (
                 <DialogContent className="z-50">
-                  {dialog === "edit" && (
-                    <BlockForm block={block} action={dialog} path={blockPath} />
-                  )}
-                  {dialog === "create" && (
+                  {dialog.action === "edit" && (
                     <BlockForm
-                      block={getPlaceholderBlock(type)}
-                      action={dialog}
+                      block={block}
+                      action={dialog.action}
                       path={blockPath}
                     />
                   )}
-                  {dialog === "delete" && (
+                  {dialog.action === "create" && (
+                    <BlockForm
+                      block={getPlaceholderBlock(dialog.blockType)}
+                      action={dialog.action}
+                      path={blockPath}
+                    />
+                  )}
+                  {dialog.action === "delete" && (
                     <BlockDeleteForm
                       type={block.type}
-                      action={dialog}
+                      action={dialog.action}
                       path={blockPath}
                       onSubmit={(path) => deleteBlock(path)}
                     />
