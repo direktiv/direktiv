@@ -1,4 +1,3 @@
-import { Dialog, DialogContent } from "~/design/Dialog";
 import {
   PropsWithChildren,
   Suspense,
@@ -6,20 +5,18 @@ import {
   useRef,
   useState,
 } from "react";
-import { getPlaceholderBlock, pathsEqual } from "../../context/utils";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockContextMenu } from "../../../BlockEditor/components/ContextMenu";
-import { BlockDeleteForm } from "../../../BlockEditor/components/Delete";
-import { BlockForm } from "../../../BlockEditor";
 import { BlockPathType } from "..";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
+import { pathsEqual } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
-import { useBlockDialog } from "../../../BlockEditor/useBlockDialog";
+import { useBlockDialog } from "../../../BlockEditor/BlockDialogProvider";
 import { usePageEditor } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
@@ -37,18 +34,7 @@ export const BlockWrapper = ({
   const { mode, focus, setFocus } = usePageEditor();
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { dialog, setDialog } = useBlockDialog();
-  const { deleteBlock } = usePageEditor();
-
-  /**
-   * This handler is only used for closing the dialog. For opening a dialog,
-   * we add custom onClick events to the trigger buttons.
-   */
-  const handleOnOpenChange = (open: boolean) => {
-    if (open === false) {
-      setDialog(null);
-    }
-  };
+  const { setDialog } = useBlockDialog();
 
   useEffect(() => {
     if (mode !== "edit") {
@@ -105,49 +91,36 @@ export const BlockWrapper = ({
         )}
         {mode === "edit" && isFocused && (
           <div onClick={(event) => event.stopPropagation()}>
-            <Dialog open={!!dialog} onOpenChange={handleOnOpenChange}>
-              <div className="absolute right-1 top-1 z-30">
-                <BlockContextMenu
-                  onEdit={() =>
-                    setDialog({ action: "edit", blockType: block.type })
-                  }
-                  onDelete={() =>
-                    setDialog({ action: "delete", blockType: block.type })
-                  }
-                />
-              </div>
-              <SelectBlockType
-                onSelect={(type) => {
-                  setDialog({ action: "create", blockType: type });
-                }}
+            <div className="absolute right-1 top-1 z-30">
+              <BlockContextMenu
+                onEdit={() =>
+                  setDialog({
+                    action: "edit",
+                    block,
+                    blockType: block.type,
+                    path: blockPath,
+                  })
+                }
+                onDelete={() =>
+                  setDialog({
+                    action: "delete",
+                    block,
+                    blockType: block.type,
+                    path: blockPath,
+                  })
+                }
               />
-              {dialog !== null && (
-                <DialogContent className="z-50">
-                  {dialog.action === "edit" && (
-                    <BlockForm
-                      block={block}
-                      action={dialog.action}
-                      path={blockPath}
-                    />
-                  )}
-                  {dialog.action === "create" && (
-                    <BlockForm
-                      block={getPlaceholderBlock(dialog.blockType)}
-                      action={dialog.action}
-                      path={blockPath}
-                    />
-                  )}
-                  {dialog.action === "delete" && (
-                    <BlockDeleteForm
-                      type={block.type}
-                      action={dialog.action}
-                      path={blockPath}
-                      onSubmit={(path) => deleteBlock(path)}
-                    />
-                  )}
-                </DialogContent>
-              )}
-            </Dialog>
+            </div>
+            <SelectBlockType
+              onSelect={(type) =>
+                setDialog({
+                  action: "create",
+                  block, // TODO: Should not be passed on create
+                  blockType: type,
+                  path: blockPath,
+                })
+              }
+            />
           </div>
         )}
         <Suspense fallback={<Loading />}>

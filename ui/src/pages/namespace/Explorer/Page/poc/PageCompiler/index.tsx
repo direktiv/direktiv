@@ -5,6 +5,8 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { Block } from "./Block";
+import { BlockDialog } from "../BlockEditor/components/BlockDialog";
+import { BlockDialogProvider } from "../BlockEditor/BlockDialogProvider";
 import { BlockList } from "./Block/utils/BlockList";
 import { DirektivPagesSchema } from "../schema";
 import { ParsingError } from "./Block/utils/ParsingError";
@@ -38,11 +40,14 @@ export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
   return (
     <PageCompilerContextProvider setPage={setPage} page={page} mode={mode}>
       <QueryClientProvider client={queryClient}>
-        <BlockList>
-          {page.blocks.map((block, index) => (
-            <Block key={index} block={block} blockPath={[index]} />
-          ))}
-        </BlockList>
+        <BlockDialogProvider>
+          <BlockList>
+            {page.blocks.map((block, index) => (
+              <Block key={index} block={block} blockPath={[index]} />
+            ))}
+          </BlockList>
+          <BlockDialog />
+        </BlockDialogProvider>
       </QueryClientProvider>
     </PageCompilerContextProvider>
   );
