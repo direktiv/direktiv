@@ -1,5 +1,4 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import {
   PropsWithChildren,
   Suspense,
@@ -7,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { buttons, getPlaceholderBlock, pathsEqual } from "../../context/utils";
+import { getPlaceholderBlock, pathsEqual } from "../../context/utils";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
@@ -15,12 +14,10 @@ import { BlockContextMenu } from "../../../BlockEditor/components/ContextMenu";
 import { BlockDeleteForm } from "../../../BlockEditor/components/Delete";
 import { BlockForm } from "../../../BlockEditor";
 import { BlockPathType } from "..";
-import Button from "~/design/Button";
-import { Card } from "~/design/Card";
-import { CirclePlus } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
+import { SelectBlockType } from "../../../BlockEditor/components/AddBlock";
 import { twMergeClsx } from "~/util/helpers";
 import { usePageEditor } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
@@ -118,37 +115,12 @@ export const BlockWrapper = ({
                   onDelete={() => setDialog("delete")}
                 />
               </div>
-
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    size="sm"
-                    className="absolute -bottom-4 left-1/2 z-30 -translate-x-1/2"
-                  >
-                    <CirclePlus />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent asChild>
-                  <Card
-                    className="z-10 -mt-2 flex w-fit flex-col p-2 text-center dark:bg-gray-dark-2"
-                    noShadow
-                  >
-                    {buttons.map((button) => (
-                      <Button
-                        key={button.label}
-                        className="my-1 w-36 justify-start text-xs"
-                        onClick={() => {
-                          setType(button.type);
-                          setDialog("create");
-                        }}
-                      >
-                        <button.icon size={16} />
-                        {button.label}
-                      </Button>
-                    ))}
-                  </Card>
-                </PopoverContent>
-              </Popover>
+              <SelectBlockType
+                onSelect={(type) => {
+                  setType(type);
+                  setDialog("create");
+                }}
+              />
               {dialog !== null && (
                 <DialogContent className="z-50">
                   {dialog === "edit" && (
