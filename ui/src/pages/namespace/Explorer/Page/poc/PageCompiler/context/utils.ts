@@ -1,11 +1,9 @@
 import { AllBlocksType, ParentBlockUnion } from "../../schema/blocks";
 import { DirektivPagesSchema, DirektivPagesType } from "../../schema";
-import { Heading1, LucideIcon, Text } from "lucide-react";
 import { BlockPathType } from "../Block";
 import { HeadlineType } from "../../schema/blocks/headline";
 import { TextType } from "../../schema/blocks/text";
 import { clonePage } from "../../BlockEditor/utils";
-import { t } from "i18next";
 import { z } from "zod";
 
 export const isParentBlock = (
@@ -145,20 +143,3 @@ export const getPlaceholderBlock = (type: AllBlocksType["type"]) => {
       return { type: "text", content: "" } satisfies TextType;
   }
 };
-
-export const buttons: {
-  type: AllBlocksType["type"];
-  label: string;
-  icon: LucideIcon;
-}[] = [
-  {
-    type: "headline" satisfies AllBlocksType["type"],
-    label: t("direktivPage.error.blocks.headline"),
-    icon: Heading1,
-  },
-  {
-    type: "text" satisfies AllBlocksType["type"],
-    label: t("direktivPage.error.blocks.text"),
-    icon: Text,
-  },
-];

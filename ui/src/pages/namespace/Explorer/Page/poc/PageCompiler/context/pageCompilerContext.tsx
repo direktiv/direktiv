@@ -18,7 +18,7 @@ import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../Block";
 import { DirektivPagesType } from "../../schema";
 
-type PageCompilerMode = "edit" | "live";
+export type PageCompilerMode = "edit" | "live";
 
 export type PageCompilerProps = {
   mode: PageCompilerMode;

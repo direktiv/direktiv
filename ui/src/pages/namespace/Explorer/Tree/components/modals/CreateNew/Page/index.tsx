@@ -4,6 +4,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
+import {
+  DirektivPagesSchema,
+  DirektivPagesType,
+} from "~/pages/namespace/Explorer/Page/poc/schema";
 import { PanelTop, PlusCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
@@ -12,8 +16,9 @@ import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { addYamlFileExtension } from "../../../../utils";
-import { defaultEndpointFileYaml } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/utils";
+import { defaultPageFile } from "~/pages/namespace/Explorer/Page/poc/PageEditor/utils";
 import { encode } from "js-base64";
+import { jsonToYaml } from "~/pages/namespace/Explorer/utils";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "@tanstack/react-router";
@@ -23,7 +28,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormInput = {
   name: string;
-  fileContent: string;
+  fileContent: DirektivPagesType;
 };
 
 const NewPage = ({
@@ -52,7 +57,7 @@ const NewPage = ({
           message: t("pages.explorer.tree.newPage.nameAlreadyExists"),
         }
       ),
-      fileContent: z.string(),
+      fileContent: DirektivPagesSchema,
     })
   );
 
@@ -63,7 +68,7 @@ const NewPage = ({
   } = useForm<FormInput>({
     resolver,
     defaultValues: {
-      fileContent: defaultEndpointFileYaml,
+      fileContent: defaultPageFile,
     },
   });
 
@@ -85,7 +90,7 @@ const NewPage = ({
       path,
       payload: {
         name,
-        data: encode(fileContent),
+        data: encode(jsonToYaml(fileContent)),
         type: "page",
         mimeType: "application/yaml",
       },

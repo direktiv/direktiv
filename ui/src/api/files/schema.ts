@@ -97,6 +97,7 @@ const CreateYamlFileSchema = z.object({
     "workflow",
     "page",
     "gateway",
+    "page",
   ]),
   name: z.string().nonempty(),
   mimeType: z.literal("application/yaml"),
@@ -122,6 +123,7 @@ const CreateWorkflowSchema = CreateYamlFileSchema.extend({
 const CreatePageSchema = CreateYamlFileSchema.extend({
   type: z.literal("page"),
 });
+
 const CreateGatewaySchema = CreateYamlFileSchema.extend({
   type: z.literal("gateway"),
 });

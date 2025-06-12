@@ -23,10 +23,10 @@ export const DialogHeader = ({
   return (
     <DesignDialogHeader>
       <DialogTitle>
-        {t("direktivPage.blockEditor.dialogTitle", {
+        {t("direktivPage.blockEditor.editDialog.title", {
           path: path.join("."),
-          action: t(`direktivPage.blockEditor.action.${action}`),
-          type: t(`direktivPage.blockEditor.blockType.${type}`),
+          action: t(`direktivPage.blockEditor.editDialog.action.${action}`),
+          type: t(`direktivPage.blockEditor.editDialog.type.${type}`),
         })}
       </DialogTitle>
     </DesignDialogHeader>

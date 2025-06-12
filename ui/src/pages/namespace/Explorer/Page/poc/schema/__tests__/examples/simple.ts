@@ -1,7 +1,7 @@
 import { DirektivPagesType } from "../..";
 
 export default {
-  direktiv_api: "pages/v1",
+  direktiv_api: "page/v1",
   blocks: [
     {
       type: "headline",
