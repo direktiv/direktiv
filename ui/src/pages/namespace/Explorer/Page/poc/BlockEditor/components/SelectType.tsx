@@ -1,12 +1,29 @@
+import { CirclePlus, Heading1, LucideIcon, Text } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import { AllBlocksType } from "../../schema/blocks";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import { CirclePlus } from "lucide-react";
-import { buttons } from "../../PageCompiler/context/utils";
+import { t } from "i18next";
 
 type SelectBlockTypeProps = { onSelect: (type: AllBlocksType["type"]) => void };
+
+const buttons: {
+  type: AllBlocksType["type"];
+  label: string;
+  icon: LucideIcon;
+}[] = [
+  {
+    type: "headline" satisfies AllBlocksType["type"],
+    label: t("direktivPage.blockEditor.blockName.headline"),
+    icon: Heading1,
+  },
+  {
+    type: "text" satisfies AllBlocksType["type"],
+    label: t("direktivPage.blockEditor.blockName.text"),
+    icon: Text,
+  },
+];
 
 export const SelectBlockType = ({ onSelect }: SelectBlockTypeProps) => (
   <Popover>
