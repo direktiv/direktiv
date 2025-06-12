@@ -1,4 +1,4 @@
-import { CirclePlus, Edit, Heading1, Text } from "lucide-react";
+import { CirclePlus, Edit } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import {
@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { getPlaceholderBlock, pathsEqual } from "../../context/utils";
+import { buttons, getPlaceholderBlock, pathsEqual } from "../../context/utils";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
@@ -38,7 +38,6 @@ export const BlockWrapper = ({
   const { t } = useTranslation();
   const { mode, focus, setFocus } = usePageEditor();
   const [dialog, setDialog] = useState<DialogState>(null);
-  const [popover, setPopover] = useState<boolean>(false);
   const [type, setType] = useState<AllBlocksType["type"]>(block.type);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -114,7 +113,7 @@ export const BlockWrapper = ({
                   <Edit />
                 </Button>
               </DialogTrigger>
-              <Popover open={popover} onOpenChange={setPopover}>
+              <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     size="sm"
@@ -128,26 +127,19 @@ export const BlockWrapper = ({
                     className="z-10 -mt-2 flex w-fit flex-col p-2 text-center dark:bg-gray-dark-2"
                     noShadow
                   >
-                    <Button
-                      className="my-1 w-36 justify-start text-xs"
-                      onClick={() => {
-                        setType("headline");
-                        setDialog("create");
-                      }}
-                    >
-                      <Heading1 size={16} />
-                      Headline
-                    </Button>
-                    <Button
-                      className="my-1 w-36 justify-start text-xs"
-                      onClick={() => {
-                        setType("text");
-                        setDialog("create");
-                      }}
-                    >
-                      <Text size={16} />
-                      Text
-                    </Button>
+                    {buttons.map((button) => (
+                      <Button
+                        key={button.label}
+                        className="my-1 w-36 justify-start text-xs"
+                        onClick={() => {
+                          setType(button.type);
+                          setDialog("create");
+                        }}
+                      >
+                        <button.icon size={16} />
+                        {button.label}
+                      </Button>
+                    ))}
                   </Card>
                 </PopoverContent>
               </Popover>
