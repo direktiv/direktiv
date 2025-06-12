@@ -1649,9 +1649,7 @@
         "invalidJson": "Error in query with id {{id}}: {{endpoint}} returned an invalid JSON"
       },
       "blocks": {
-        "headline": "Headline",
-        "table": { "noResult": "No entries to show" },
-        "text": "Text"
+        "table": { "noResult": "No entries to show" }
       },
       "templateString": {
         "namespaceInvalid": "The template string does not have a valid namespace.",
@@ -1670,28 +1668,43 @@
         "cancelButton": "Cancel",
         "confirmButton": "Confirm"
       },
+      "blockName": {
+        "headline": "Headline",
+        "text": "Text",
+        "button": "Button",
+        "card": "Card",
+        "dialog": "Dialog",
+        "form": "Form",
+        "loop": "Loop",
+        "query-provider": "Query provider",
+        "column": "Column",
+        "columns": "Columns",
+        "table": "Table"
+      },
       "contextMenu": {
         "deleteButton": "Delete",
         "editButton": "Edit"
       },
-      "dialogTitle": "{{action}} {{type}} @{{path}}",
-      "action": {
-        "create": "create",
-        "edit": "edit",
-        "delete": "delete"
-      },
-      "blockType": {
-        "text": "text block",
-        "headline": "headline block",
-        "button": "button block",
-        "card": "card block",
-        "dialog": "dialog block",
-        "form": "form block",
-        "loop": "loop block",
-        "query-provider": "query provider",
-        "column": "set of columns",
-        "columns": "column block",
-        "table": "table block"
+      "editDialog": {
+        "title": "{{action}} {{type}} @{{path}}",
+        "action": {
+          "create": "create",
+          "edit": "edit",
+          "delete": "delete"
+        },
+        "type": {
+          "text": "text block",
+          "headline": "headline block",
+          "button": "button block",
+          "card": "card block",
+          "dialog": "dialog block",
+          "form": "form block",
+          "loop": "loop block",
+          "query-provider": "query provider",
+          "column": "set of columns",
+          "columns": "column block",
+          "table": "table block"
+        }
       },
       "delete": {
         "warning": "This will remove the current block and all content (including blocks nested into it). Are you sure you want to proceed?"

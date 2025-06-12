@@ -153,12 +153,12 @@ export const buttons: {
 }[] = [
   {
     type: "headline" satisfies AllBlocksType["type"],
-    label: t("direktivPage.error.blocks.headline"),
+    label: t("direktivPage.blockEditor.blockName.headline"),
     icon: Heading1,
   },
   {
     type: "text" satisfies AllBlocksType["type"],
-    label: t("direktivPage.error.blocks.text"),
+    label: t("direktivPage.blockEditor.blockName.text"),
     icon: Text,
   },
 ];
