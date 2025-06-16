@@ -1,4 +1,4 @@
-import { CirclePlus, Heading1, LucideIcon, Text } from "lucide-react";
+import { CirclePlus, Columns2, Heading1, LucideIcon, Text } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import { AllBlocksType } from "../../schema/blocks";
@@ -18,14 +18,19 @@ const buttons: {
   icon: LucideIcon;
 }[] = [
   {
-    type: "headline" satisfies AllBlocksType["type"],
+    type: "headline",
     label: t("direktivPage.blockEditor.blockName.headline"),
     icon: Heading1,
   },
   {
-    type: "text" satisfies AllBlocksType["type"],
+    type: "text",
     label: t("direktivPage.blockEditor.blockName.text"),
     icon: Text,
+  },
+  {
+    type: "columns",
+    label: t("direktivPage.blockEditor.blockName.columns"),
+    icon: Columns2,
   },
 ];
 

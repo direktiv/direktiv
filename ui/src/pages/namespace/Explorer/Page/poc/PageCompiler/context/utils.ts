@@ -1,6 +1,7 @@
 import { AllBlocksType, ParentBlockUnion } from "../../schema/blocks";
 import { DirektivPagesSchema, DirektivPagesType } from "../../schema";
 import { BlockPathType } from "../Block";
+import { ColumnsType } from "../../schema/blocks/columns";
 import { HeadlineType } from "../../schema/blocks/headline";
 import { TextType } from "../../schema/blocks/text";
 import { clonePage } from "../../BlockEditor/utils";
@@ -139,6 +140,21 @@ export const getBlockTemplate = (type: AllBlocksType["type"]) => {
         type: "text",
         content: "",
       } satisfies TextType;
+    case "columns": {
+      return {
+        type: "columns",
+        blocks: [
+          {
+            type: "column",
+            blocks: [],
+          },
+          {
+            type: "column",
+            blocks: [],
+          },
+        ],
+      } satisfies ColumnsType;
+    }
     default:
       return { type: "text", content: "" } satisfies TextType;
   }

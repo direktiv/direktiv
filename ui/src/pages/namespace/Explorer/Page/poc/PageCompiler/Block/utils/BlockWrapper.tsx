@@ -1,3 +1,4 @@
+import { AllBlocksType, inlineBlockTypes } from "../../../schema/blocks";
 import {
   PropsWithChildren,
   Suspense,
@@ -7,7 +8,6 @@ import {
 } from "react";
 import { getBlockTemplate, pathsEqual } from "../../context/utils";
 
-import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockContextMenu } from "../../../BlockEditor/components/ContextMenu";
 import { BlockPathType } from "..";
@@ -31,7 +31,7 @@ export const BlockWrapper = ({
   children,
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
-  const { mode, focus, setFocus } = usePageEditor();
+  const { mode, focus, addBlock, setFocus } = usePageEditor();
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { setDialog } = useBlockDialog();
@@ -110,13 +110,16 @@ export const BlockWrapper = ({
               />
             </div>
             <SelectBlockType
-              onSelect={(type) =>
-                setDialog({
+              onSelect={(type) => {
+                if (inlineBlockTypes.includes(type)) {
+                  return addBlock(blockPath, getBlockTemplate(type), true);
+                }
+                return setDialog({
                   action: "create",
                   block: getBlockTemplate(type),
                   path: blockPath,
-                })
-              }
+                });
+              }}
             />
           </div>
         )}

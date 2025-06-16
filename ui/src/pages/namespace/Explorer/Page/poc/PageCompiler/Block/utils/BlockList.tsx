@@ -4,6 +4,7 @@ import {
 } from "../../context/pageCompilerContext";
 import { ReactElement, Suspense } from "react";
 
+import { BlockPathType } from "..";
 import { Loading } from "./Loading";
 import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
 import { getBlockTemplate } from "../../context/utils";
@@ -13,6 +14,7 @@ import { useBlockDialog } from "../../../BlockEditor/BlockDialogProvider";
 type BlockListProps = {
   horizontal?: boolean;
   children: ReactElement[];
+  path: BlockPathType;
 };
 
 type BlockListComponentProps = BlockListProps & { mode?: PageCompilerMode };
@@ -20,6 +22,7 @@ type BlockListComponentProps = BlockListProps & { mode?: PageCompilerMode };
 export const BlockList = ({
   horizontal,
   children,
+  path,
 }: BlockListComponentProps) => {
   const { setDialog } = useBlockDialog();
   const { mode } = usePageEditor();
@@ -38,13 +41,13 @@ export const BlockList = ({
           <div className="self-center">
             <SelectBlockType
               big
-              onSelect={(type) =>
+              onSelect={(type) => {
                 setDialog({
                   action: "create",
                   block: getBlockTemplate(type),
-                  path: [0],
-                })
-              }
+                  path: [...path, 0],
+                });
+              }}
             />
           </div>
         )}
