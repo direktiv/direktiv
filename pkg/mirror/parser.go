@@ -317,7 +317,7 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		if err != nil {
 			return err
 		}
-	case core.PageFile:
+	case *core.PageFile:
 		err = p.handlePage(path, data)
 		if err != nil {
 			return err
