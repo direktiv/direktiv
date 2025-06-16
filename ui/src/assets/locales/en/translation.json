@@ -94,12 +94,12 @@
             "service": "Service",
             "gateway": {
               "label": "Gateway",
-              "route": "New Route",
-              "consumer": "New Consumer",
+              "route": "Route",
+              "consumer": "Consumer",
               "openapiSpecification": "OpenAPI Specification"
             },
             "page": {
-              "label": "New Page",
+              "label": "Page",
               "route": "Route",
               "consumer": "Consumer"
             }
