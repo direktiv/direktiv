@@ -1702,8 +1702,8 @@
           "form": "form block",
           "loop": "loop block",
           "query-provider": "query provider",
-          "column": "set of columns",
-          "columns": "column block",
+          "column": "column block",
+          "columns": "set of columns",
           "table": "table block"
         }
       },
