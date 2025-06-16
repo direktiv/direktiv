@@ -45,7 +45,7 @@ export default {
       queries: [
         {
           id: "fetching-resources",
-          url: "/api/get/resources",
+          baseUrl: "/api/get/resources",
           queryParams: [
             {
               key: "query",
@@ -70,7 +70,7 @@ export default {
               },
               mutation: {
                 id: "my-delete",
-                url: "/api/delete/",
+                baseUrl: "/api/delete/",
                 method: "DELETE",
               },
               blocks: [],

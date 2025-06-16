@@ -139,7 +139,7 @@ describe("VariableString", () => {
                 queries: [
                   {
                     id: "company-list",
-                    url: "/companies",
+                    baseUrl: "/companies",
                   },
                 ],
                 blocks: [
@@ -181,7 +181,7 @@ describe("VariableString", () => {
                 queries: [
                   {
                     id: "company-list",
-                    url: "/companies",
+                    baseUrl: "/companies",
                   },
                 ],
                 blocks: [
@@ -198,7 +198,7 @@ describe("VariableString", () => {
                         queries: [
                           {
                             id: "client",
-                            url: "/client/101",
+                            baseUrl: "/client/101",
                           },
                         ],
                         blocks: [
@@ -244,7 +244,7 @@ describe("VariableString", () => {
                 queries: [
                   {
                     id: "data-types",
-                    url: "/data-types",
+                    baseUrl: "/data-types",
                   },
                 ],
                 blocks: [
@@ -321,7 +321,7 @@ describe("VariableString", () => {
                 queries: [
                   {
                     id: "company-list",
-                    url: "/companies",
+                    baseUrl: "/companies",
                   },
                 ],
                 blocks: [
@@ -330,7 +330,7 @@ describe("VariableString", () => {
                     queries: [
                       {
                         id: "company-list",
-                        url: "/companies",
+                        baseUrl: "/companies",
                       },
                     ],
                     blocks: [],
@@ -367,7 +367,7 @@ describe("VariableString", () => {
                 queries: [
                   {
                     id: "company-list",
-                    url: "/companies",
+                    baseUrl: "/companies",
                   },
                 ],
                 blocks: [
@@ -427,7 +427,7 @@ describe("VariableString", () => {
                 queries: [
                   {
                     id: "company-list",
-                    url: "/companies",
+                    baseUrl: "/companies",
                   },
                 ],
                 blocks: [
@@ -439,7 +439,7 @@ describe("VariableString", () => {
                         queries: [
                           {
                             id: "client",
-                            url: "/client/101",
+                            baseUrl: "/client/101",
                           },
                         ],
                         blocks: [
@@ -527,7 +527,7 @@ describe("VariableString", () => {
                 queries: [
                   {
                     id: "company-list",
-                    url: "/companies",
+                    baseUrl: "/companies",
                   },
                 ],
                 blocks: [
@@ -577,7 +577,7 @@ describe("VariableString", () => {
                 queries: [
                   {
                     id: "company-list",
-                    url: "/companies",
+                    baseUrl: "/companies",
                   },
                 ],
                 blocks: [

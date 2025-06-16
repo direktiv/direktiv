@@ -31,7 +31,7 @@ const examplePage: DirektivPagesType = {
               mutation: {
                 id: "create-company",
                 method: "POST",
-                url: "/ns/demo/company",
+                baseUrl: "/ns/demo/company",
               },
               blocks: [
                 {
@@ -50,7 +50,7 @@ const examplePage: DirektivPagesType = {
       queries: [
         {
           id: "company-list",
-          endpoint: "/ns/demo/companies",
+          baseUrl: "/ns/demo/companies",
           queryParams: [
             {
               key: "query",

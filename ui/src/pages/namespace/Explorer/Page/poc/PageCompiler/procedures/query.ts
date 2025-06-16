@@ -8,16 +8,16 @@ export const usePageSuspenseQueries = (queries: QueryType[]) => {
   return useSuspenseQueries({
     queries: queries.map((query) => {
       // TODO: implement query params
-      const { id, url } = query;
+      const { id, baseUrl, queryParams } = query;
       return queryOptions({
-        queryKey: [id, url],
+        queryKey: [id, baseUrl],
         queryFn: async () => {
-          const response = await fetch(url);
+          const response = await fetch(baseUrl);
           if (!response.ok) {
             throw new Error(
               t("direktivPage.error.query.queryFailed", {
                 id,
-                url,
+                url: baseUrl,
                 status: response.status,
               })
             );
@@ -28,7 +28,7 @@ export const usePageSuspenseQueries = (queries: QueryType[]) => {
             throw new Error(
               t("direktivPage.error.query.invalidJson", {
                 id,
-                url,
+                url: baseUrl,
               })
             );
           }
