@@ -27,12 +27,12 @@ export const QueryProvider = ({
       queryOptions({
         queryKey: [q.id],
         queryFn: async () => {
-          const response = await fetch(q.endpoint);
+          const response = await fetch(q.url);
           if (!response.ok) {
             throw new Error(
               t("direktivPage.error.queryProvider.queryFailed", {
                 id: q.id,
-                endpoint: q.endpoint,
+                url: q.url,
                 status: response.status,
               })
             );
@@ -43,7 +43,7 @@ export const QueryProvider = ({
             throw new Error(
               t("direktivPage.error.queryProvider.invalidJson", {
                 id: q.id,
-                endpoint: q.endpoint,
+                url: q.url,
               })
             );
           }

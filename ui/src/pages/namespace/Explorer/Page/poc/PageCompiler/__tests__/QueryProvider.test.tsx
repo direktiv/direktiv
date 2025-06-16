@@ -54,7 +54,7 @@ describe("QueryProvider", () => {
               queries: [
                 {
                   id: "json-response",
-                  endpoint: "/json-response",
+                  url: "/json-response",
                 },
               ],
               blocks: [
@@ -88,7 +88,7 @@ describe("QueryProvider", () => {
               queries: [
                 {
                   id: "404",
-                  endpoint: "/404",
+                  url: "/404",
                 },
               ],
               blocks: [
@@ -126,7 +126,7 @@ describe("QueryProvider", () => {
               queries: [
                 {
                   id: "text-response",
-                  endpoint: "/text-response",
+                  url: "/text-response",
                 },
               ],
               blocks: [

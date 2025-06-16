@@ -31,7 +31,7 @@ const examplePage: DirektivPagesType = {
               mutation: {
                 id: "create-company",
                 method: "POST",
-                endpoint: "/ns/demo/company",
+                url: "/ns/demo/company",
               },
               blocks: [
                 {
