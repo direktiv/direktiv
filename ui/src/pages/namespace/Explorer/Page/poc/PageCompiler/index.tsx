@@ -5,7 +5,6 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { Block } from "./Block";
-import { BlockDialog } from "../BlockEditor/components/BlockDialog";
 import { BlockDialogProvider } from "../BlockEditor/BlockDialogProvider";
 import { BlockList } from "./Block/utils/BlockList";
 import { DirektivPagesSchema } from "../schema";
@@ -46,7 +45,6 @@ export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
               <Block key={index} block={block} blockPath={[index]} />
             ))}
           </BlockList>
-          <BlockDialog />
         </BlockDialogProvider>
       </QueryClientProvider>
     </PageCompilerContextProvider>
