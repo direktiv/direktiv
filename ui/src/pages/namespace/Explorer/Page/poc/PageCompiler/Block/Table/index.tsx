@@ -85,7 +85,7 @@ export const Table = ({ blockProps }: TableProps) => {
             <TableRow>
               <TableCellDesignComponent colSpan={numberOfColumns}>
                 <NoResult icon={PackageOpen}>
-                  {t("direktivPage.error.blocks.table.noResult")}
+                  {t("direktivPage.page.blocks.table.noResult")}
                 </NoResult>
               </TableCellDesignComponent>
             </TableRow>
