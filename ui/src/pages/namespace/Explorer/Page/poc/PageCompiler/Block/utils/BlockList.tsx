@@ -6,7 +6,7 @@ import { ReactElement, Suspense } from "react";
 
 import { Loading } from "./Loading";
 import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
-import { getPlaceholderBlock } from "../../context/utils";
+import { getBlockTemplate } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useBlockDialog } from "../../../BlockEditor/BlockDialogProvider";
 
@@ -41,7 +41,7 @@ export const BlockList = ({
               onSelect={(type) =>
                 setDialog({
                   action: "create",
-                  block: getPlaceholderBlock(type),
+                  block: getBlockTemplate(type),
                   path: [0],
                 })
               }

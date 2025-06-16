@@ -5,7 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { getPlaceholderBlock, pathsEqual } from "../../context/utils";
+import { getBlockTemplate, pathsEqual } from "../../context/utils";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
@@ -113,7 +113,7 @@ export const BlockWrapper = ({
               onSelect={(type) =>
                 setDialog({
                   action: "create",
-                  block: getPlaceholderBlock(type),
+                  block: getBlockTemplate(type),
                   path: blockPath,
                 })
               }

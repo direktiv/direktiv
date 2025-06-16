@@ -126,7 +126,7 @@ export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
   return a.length === b.length && a.every((val, index) => val === b[index]);
 };
 
-export const getPlaceholderBlock = (type: AllBlocksType["type"]) => {
+export const getBlockTemplate = (type: AllBlocksType["type"]) => {
   switch (type) {
     case "headline":
       return {
