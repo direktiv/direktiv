@@ -19,31 +19,33 @@ import { useVariables } from "../VariableContext";
  * Returns a Result object that indicates either success with the resolved value
  * or failure with an error code describing the reason
  */
-export const useResolveVariable = (
-  value: VariableType
-): Result<PossibleValues, ResolveVariableError> => {
-  const variableObject = parseVariable(value);
-  const validationResult = validateVariable(variableObject);
+export const useResolveVariable = () => {
   const variables = useVariables();
+  return (
+    value: VariableType
+  ): Result<PossibleValues, ResolveVariableError> => {
+    const variableObject = parseVariable(value);
+    const validationResult = validateVariable(variableObject);
 
-  if (!validationResult.success) {
-    return { success: false, error: validationResult.error };
-  }
+    if (!validationResult.success) {
+      return { success: false, error: validationResult.error };
+    }
 
-  const { id, pointer, namespace } = validationResult.data;
+    const { id, pointer, namespace } = validationResult.data;
 
-  if (!variables[namespace][id]) {
-    return { success: false, error: "NoStateForId" };
-  }
+    if (!variables[namespace][id]) {
+      return { success: false, error: "NoStateForId" };
+    }
 
-  const jsonPathResult = getValueFromJsonPath(
-    variables[namespace][id],
-    pointer
-  );
+    const jsonPathResult = getValueFromJsonPath(
+      variables[namespace][id],
+      pointer
+    );
 
-  if (!jsonPathResult.success) {
-    return { success: false, error: jsonPathResult.error };
-  }
+    if (!jsonPathResult.success) {
+      return { success: false, error: jsonPathResult.error };
+    }
 
-  return { success: true, data: jsonPathResult.data };
+    return { success: true, data: jsonPathResult.data };
+  };
 };

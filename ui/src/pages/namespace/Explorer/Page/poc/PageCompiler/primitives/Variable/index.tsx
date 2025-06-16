@@ -12,7 +12,7 @@ type VariableProps = {
 export const Variable = ({ value }: VariableProps) => {
   const { t } = useTranslation();
   const { mode } = usePageEditor();
-  const variableJSX = useResolveVariableString(value);
+  const variableJSX = useResolveVariableString()(value);
 
   if (!variableJSX.success) {
     return (

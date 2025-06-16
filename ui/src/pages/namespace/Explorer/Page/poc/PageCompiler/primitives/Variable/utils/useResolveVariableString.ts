@@ -13,19 +13,22 @@ const StringCompatible = z.union([
 
 type StringCompatibleType = z.infer<typeof StringCompatible>;
 
-export const useResolveVariableString = (
-  value: VariableType
-): Result<StringCompatibleType, ResolveVariableStringError> => {
-  const variableResult = useResolveVariable(value);
+export const useResolveVariableString = () => {
+  const variableResultFn = useResolveVariable();
+  return (
+    value: VariableType
+  ): Result<StringCompatibleType, ResolveVariableStringError> => {
+    const variableResult = variableResultFn(value);
 
-  if (!variableResult.success) {
-    return { success: false, error: variableResult.error };
-  }
+    if (!variableResult.success) {
+      return { success: false, error: variableResult.error };
+    }
 
-  const dataParsed = StringCompatible.safeParse(variableResult.data);
-  if (!dataParsed.success) {
-    return { success: false, error: "couldNotStringify" };
-  }
+    const dataParsed = StringCompatible.safeParse(variableResult.data);
+    if (!dataParsed.success) {
+      return { success: false, error: "couldNotStringify" };
+    }
 
-  return { success: true, data: `${dataParsed.data}` };
+    return { success: true, data: `${dataParsed.data}` };
+  };
 };

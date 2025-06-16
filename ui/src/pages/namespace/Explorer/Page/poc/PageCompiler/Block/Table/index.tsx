@@ -28,7 +28,7 @@ type TableProps = {
 export const Table = ({ blockProps }: TableProps) => {
   const { columns, actions, data: loop } = blockProps;
   const { t } = useTranslation();
-  const arrayVariable = useResolveVariableArray(loop.data);
+  const arrayVariable = useResolveVariableArray()(loop.data);
 
   const parentVariables = useVariables();
 

@@ -18,7 +18,7 @@ type LoopProps = {
 export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   const { blocks, data, id } = blockProps;
   const { t } = useTranslation();
-  const arrayVariable = useResolveVariableArray(data);
+  const arrayVariable = useResolveVariableArray()(data);
 
   const parentVariables = useVariables();
 
