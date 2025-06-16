@@ -66,6 +66,32 @@ const examplePage: DirektivPagesType = {
           label: "Found {{query.company-list.total}} companies",
         },
         {
+          type: "dialog",
+          trigger: {
+            type: "button",
+            label: "Create Company",
+          },
+          blocks: [
+            {
+              type: "query-provider",
+              queries: [
+                {
+                  id: "company-list2",
+                  baseUrl:
+                    "/ns/demo/companies/{{query.company-list.data.0.id}}",
+                  queryParams: [
+                    {
+                      key: "query",
+                      value: "{{query.company-list.data.0.id}}",
+                    },
+                  ],
+                },
+              ],
+              blocks: [],
+            },
+          ],
+        },
+        {
           type: "table",
           data: {
             type: "loop",
