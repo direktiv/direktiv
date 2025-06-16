@@ -17,12 +17,12 @@ type BlockListProps = {
 
 type BlockListComponentProps = BlockListProps & { mode?: PageCompilerMode };
 
-const BlockListComponent = ({
+export const BlockList = ({
   horizontal,
   children,
-  mode,
 }: BlockListComponentProps) => {
   const { setDialog } = useBlockDialog();
+  const { mode } = usePageEditor();
 
   return (
     <div
@@ -52,10 +52,4 @@ const BlockListComponent = ({
       </Suspense>
     </div>
   );
-};
-
-export const BlockList = (args: BlockListProps) => {
-  const { mode } = usePageEditor();
-
-  return <BlockListComponent {...{ ...args, mode }} />;
 };
