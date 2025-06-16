@@ -23,11 +23,6 @@ const examplePage: DirektivPagesType = {
           },
           blocks: [
             {
-              type: "headline",
-              level: "h3",
-              label: "Create Company",
-            },
-            {
               type: "form",
               trigger: {
                 type: "button",
