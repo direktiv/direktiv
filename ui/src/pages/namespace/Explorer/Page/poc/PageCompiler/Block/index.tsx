@@ -4,6 +4,7 @@ import { Button } from "./Button";
 import { Card } from "./Card";
 import { Columns } from "./Columns";
 import { Dialog } from "./Dialog";
+import { Form } from "./Form";
 import { Headline } from "./Headline";
 import { Loop } from "./Loop";
 import { ParsingError } from "./utils/ParsingError";
@@ -41,6 +42,8 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         return <Dialog blockProps={block} blockPath={blockPath} />;
       case "table":
         return <Table blockProps={block} />;
+      case "form":
+        return <Form blockProps={block} blockPath={blockPath} />;
       default:
         return (
           <ParsingError
