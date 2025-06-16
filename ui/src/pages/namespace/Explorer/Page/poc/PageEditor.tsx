@@ -13,24 +13,40 @@ const examplePage: DirektivPagesType = {
   direktiv_api: "pages/v1",
   blocks: [
     {
-      type: "columns",
-      blocks: [
-        {
-          type: "column",
-          blocks: [{ type: "text", content: "column 1 text" }],
-        },
-        {
-          type: "column",
-          blocks: [{ type: "text", content: "column 2 text" }],
-        },
-      ],
-    },
-    {
       type: "card",
       blocks: [
         {
-          type: "card",
-          blocks: [{ type: "text", content: "text block in 2 cards" }],
+          type: "dialog",
+          trigger: {
+            type: "button",
+            label: "Create Company",
+          },
+          blocks: [
+            {
+              type: "headline",
+              level: "h3",
+              label: "Create Company",
+            },
+            {
+              type: "form",
+              trigger: {
+                type: "button",
+                label: "Search",
+              },
+              mutation: {
+                id: "create-company",
+                method: "POST",
+                endpoint: "/ns/demo/company",
+              },
+              blocks: [
+                {
+                  type: "headline",
+                  level: "h3",
+                  label: "Create Company",
+                },
+              ],
+            },
+          ],
         },
       ],
     },
