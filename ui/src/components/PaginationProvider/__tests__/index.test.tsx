@@ -1,7 +1,8 @@
-import { act, render, screen } from "@testing-library/react";
 import { describe, expect, test } from "vitest";
+import { render, screen } from "@testing-library/react";
 
 import PaginationProvider from "..";
+import { act } from "react";
 import userEvent from "@testing-library/user-event";
 
 const items = [
