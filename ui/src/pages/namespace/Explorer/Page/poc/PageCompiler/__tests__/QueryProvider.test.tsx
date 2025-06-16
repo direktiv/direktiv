@@ -1,4 +1,5 @@
 import { HttpResponse, http } from "msw";
+import { act, render, screen } from "@testing-library/react";
 import {
   afterAll,
   afterEach,
@@ -8,11 +9,9 @@ import {
   test,
   vi,
 } from "vitest";
-import { render, screen } from "@testing-library/react";
 
 import { DirektivPagesType } from "../../schema";
 import { PageCompiler } from "..";
-import { act } from "react";
 import { createDirektivPage } from "./utils";
 import { setupServer } from "msw/node";
 
