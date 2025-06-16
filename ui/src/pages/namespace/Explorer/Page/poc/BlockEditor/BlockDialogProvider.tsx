@@ -7,7 +7,6 @@ import { Dialog } from "~/design/Dialog";
 
 type DialogState = null | {
   action: "create" | "edit" | "delete";
-  blockType: AllBlocksType["type"];
   block: AllBlocksType;
   path: BlockPathType;
 };

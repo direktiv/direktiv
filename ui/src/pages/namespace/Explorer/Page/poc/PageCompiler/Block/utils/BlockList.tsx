@@ -43,7 +43,6 @@ const BlockListComponent = ({
                   action: "create",
                   block: getPlaceholderBlock(type),
                   path: [0],
-                  blockType: type,
                 })
               }
             />

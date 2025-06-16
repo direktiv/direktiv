@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { getPlaceholderBlock, pathsEqual } from "../../context/utils";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
@@ -14,7 +15,6 @@ import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
-import { pathsEqual } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useBlockDialog } from "../../../BlockEditor/BlockDialogProvider";
 import { usePageEditor } from "../../context/pageCompilerContext";
@@ -97,7 +97,6 @@ export const BlockWrapper = ({
                   setDialog({
                     action: "edit",
                     block,
-                    blockType: block.type,
                     path: blockPath,
                   })
                 }
@@ -105,7 +104,6 @@ export const BlockWrapper = ({
                   setDialog({
                     action: "delete",
                     block,
-                    blockType: block.type,
                     path: blockPath,
                   })
                 }
@@ -115,8 +113,7 @@ export const BlockWrapper = ({
               onSelect={(type) =>
                 setDialog({
                   action: "create",
-                  block, // TODO: Should not be passed on create
-                  blockType: type,
+                  block: getPlaceholderBlock(type),
                   path: blockPath,
                 })
               }
