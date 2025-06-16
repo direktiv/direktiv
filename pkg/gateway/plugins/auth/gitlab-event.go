@@ -26,15 +26,15 @@ func (p *GitlabWebhookPlugin) NewInstance(config core.PluginConfig) (core.Plugin
 	return pl, nil
 }
 
-func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
 	// check request is already authenticated
 	if gateway.ExtractContextActiveConsumer(r) != nil {
-		return r
+		return w, r
 	}
 
 	secret := r.Header.Get(gitlabHeaderName)
 	if secret != p.Secret {
-		return r
+		return w, r
 	}
 
 	c := &core.Consumer{
@@ -44,7 +44,7 @@ func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *h
 	}
 	r = gateway.InjectContextActiveConsumer(r, c)
 
-	return r
+	return w, r
 }
 
 func (*GitlabWebhookPlugin) Type() string {
