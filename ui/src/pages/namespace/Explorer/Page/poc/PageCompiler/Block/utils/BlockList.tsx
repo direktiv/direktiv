@@ -35,16 +35,19 @@ const BlockListComponent = ({
     >
       <Suspense fallback={<Loading />}>
         {mode === "edit" && !children.length && (
-          <SelectBlockType
-            onSelect={(type) =>
-              setDialog({
-                action: "create",
-                block: getPlaceholderBlock(type),
-                path: [0],
-                blockType: type,
-              })
-            }
-          />
+          <div className="self-center">
+            <SelectBlockType
+              big
+              onSelect={(type) =>
+                setDialog({
+                  action: "create",
+                  block: getPlaceholderBlock(type),
+                  path: [0],
+                  blockType: type,
+                })
+              }
+            />
+          </div>
         )}
         {children}
       </Suspense>

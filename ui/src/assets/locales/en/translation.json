@@ -1666,7 +1666,8 @@
       "generic": {
         "saveButton": "Save",
         "cancelButton": "Cancel",
-        "confirmButton": "Confirm"
+        "confirmButton": "Confirm",
+        "addBlock": "Add block"
       },
       "blockName": {
         "headline": "Headline",
