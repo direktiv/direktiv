@@ -41,14 +41,14 @@ func (tnf *NamespaceFilePlugin) Type() string {
 	return "target-namespace-file"
 }
 
-func (tnf *NamespaceFilePlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+func (tnf *NamespaceFilePlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
 	currentNS := gateway.ExtractContextEndpoint(r).Namespace
 	if tnf.Namespace == "" {
 		tnf.Namespace = currentNS
 	}
 	if tnf.Namespace != currentNS && currentNS != core.SystemNamespace {
 		gateway.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
-		return nil
+		return nil, nil
 	}
 
 	url := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/files%s?raw=true",
@@ -58,7 +58,7 @@ func (tnf *NamespaceFilePlugin) Execute(w http.ResponseWriter, r *http.Request) 
 	resp, err := doRequest(r, http.MethodGet, url, nil)
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "couldn't execute downstream request")
-		return nil
+		return nil, nil
 	}
 	defer resp.Body.Close()
 
@@ -77,10 +77,10 @@ func (tnf *NamespaceFilePlugin) Execute(w http.ResponseWriter, r *http.Request) 
 	// copy the response body
 	if _, err := io.Copy(w, resp.Body); err != nil {
 		gateway.WriteInternalError(r, w, nil, "couldn't write downstream response")
-		return nil
+		return nil, nil
 	}
 
-	return r
+	return w, r
 }
 
 func init() {
