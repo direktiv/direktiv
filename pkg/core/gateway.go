@@ -54,6 +54,9 @@ type Plugin interface {
 	Type() string
 }
 
+type Page struct {
+}
+
 type Gateway struct {
 	Base []byte
 

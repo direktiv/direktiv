@@ -35,6 +35,10 @@ const (
 )
 
 const (
+	PageAPIV1 = "page/v1"
+)
+
+const (
 	EndpointAPIV1 = "endpoint/v1"
 )
 
@@ -86,6 +90,17 @@ func LoadResource(data []byte) (interface{}, error) {
 		err = yaml.Unmarshal(data, &sf)
 		if err != nil {
 			return &core.ServiceFile{
+				DirektivAPI: s,
+			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
+		}
+
+		return sf, nil
+
+	case PageAPIV1:
+		sf := new(core.PageFile)
+		err = yaml.Unmarshal(data, &sf)
+		if err != nil {
+			return &core.PageFile{
 				DirektivAPI: s,
 			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
 		}

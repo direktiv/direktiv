@@ -30,6 +30,7 @@ type Parser struct {
 	Endpoints map[string][]byte
 	Consumers map[string][]byte
 	Gateways  map[string][]byte
+	Pages     map[string][]byte
 
 	DeprecatedNamespaceVars map[string][]byte
 	DeprecatedWorkflowVars  map[string]map[string][]byte
@@ -57,6 +58,7 @@ func NewParser(namespace, pid string, src Source) (*Parser, error) {
 		Endpoints: make(map[string][]byte),
 		Consumers: make(map[string][]byte),
 		Gateways:  make(map[string][]byte),
+		Pages:     make(map[string][]byte),
 
 		DeprecatedNamespaceVars: make(map[string][]byte),
 		DeprecatedWorkflowVars:  make(map[string]map[string][]byte),
@@ -315,6 +317,11 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		if err != nil {
 			return err
 		}
+	case core.PageFile:
+		err = p.handlePage(path, data)
+		if err != nil {
+			return err
+		}
 	default:
 		panic(typ)
 	}
@@ -418,6 +425,15 @@ func (p *Parser) handleGateway(path string, data []byte) error {
 		fmt.Sprintf("direktiv resource file containing a gateway definition found at '%s'", path))
 
 	p.Gateways[path] = data
+
+	return nil
+}
+
+func (p *Parser) handlePage(path string, data []byte) error {
+	telemetry.LogActivity(telemetry.LogLevelInfo, p.Namespace, p.PID,
+		fmt.Sprintf("direktiv resource file containing a page definition found at '%s'", path))
+
+	p.Pages[path] = data
 
 	return nil
 }
