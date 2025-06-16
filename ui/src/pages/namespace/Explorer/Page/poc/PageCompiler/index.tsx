@@ -7,6 +7,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { Block } from "./Block";
 import { BlockList } from "./Block/utils/BlockList";
+import { DndContext } from "~/design/DragAndDropEditor/Context.tsx";
+import { DroppableSeparator } from "~/design/DragAndDropEditor/DroppableSeparator";
 import { ParsingError } from "./Block/utils/ParsingError";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -40,14 +42,27 @@ export const PageCompiler = ({
     );
   }
 
+  const onMove = (
+    name: string,
+    target: string,
+    position: "before" | "after" | undefined
+  ) => {
+    console.log("onmove");
+  };
+
   return (
     <PageCompilerContextProvider setPage={setPage} page={page} mode={mode}>
       <QueryClientProvider client={queryClient}>
-        <BlockList>
-          {page.blocks.map((block, index) => (
-            <Block key={index} block={block} blockPath={[index]} />
-          ))}
-        </BlockList>
+        <DndContext onMove={onMove}>
+          <BlockList>
+            {page.blocks.map((block, index) => (
+              <>
+                <DroppableSeparator id={String(index)} position="before" />
+                <Block key={index} block={block} blockPath={[index]} />
+              </>
+            ))}
+          </BlockList>
+        </DndContext>
       </QueryClientProvider>
     </PageCompilerContextProvider>
   );
