@@ -78,6 +78,23 @@ export const WithButtonAsTrigger = () => (
   </Dialog>
 );
 
+export const WithCloseButton = () => (
+  <Dialog>
+    <DialogTrigger>
+      <Button>With close button</Button>
+    </DialogTrigger>
+    <DialogContent showCloseButton>
+      <DialogHeader>
+        <DialogTitle>Dialog Title</DialogTitle>
+        <DialogDescription>
+          This is a description of the dialog.
+        </DialogDescription>
+      </DialogHeader>
+      Content goes here
+    </DialogContent>
+  </Dialog>
+);
+
 export const ControlledDialogWithForm = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const formId = "my-form";
