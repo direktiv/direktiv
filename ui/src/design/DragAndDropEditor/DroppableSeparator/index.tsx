@@ -7,10 +7,15 @@ import { twMergeClsx } from "~/util/helpers";
 
 type DroppableProps = PropsWithChildren & {
   id: string;
+  visible: boolean;
   position: "before" | "after" | undefined;
 };
 
-export const DroppableSeparator: FC<DroppableProps> = ({ id, children }) => {
+export const DroppableSeparator: FC<DroppableProps> = ({
+  id,
+  visible,
+  children,
+}) => {
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
@@ -24,7 +29,9 @@ export const DroppableSeparator: FC<DroppableProps> = ({ id, children }) => {
       ref={setNodeRef}
       aria-label={id}
       className={twMergeClsx(
-        "relative h-1 w-full justify-center rounded-lg bg-gray-4 transition-all dark:bg-gray-dark-4",
+        "invisible relative h-1 w-full justify-center rounded-lg",
+        visible &&
+          "visible relative h-1 w-full justify-center rounded-lg bg-gray-4 transition-all dark:bg-gray-dark-4",
         isOver && "h-1 bg-gray-8 transition-all dark:bg-gray-dark-8"
       )}
     >

@@ -89,112 +89,125 @@ export const BlockWrapper = ({
 
   return (
     <>
-      <DraggableElement name={String(blockPath)}>
-        <div
-          ref={containerRef}
-          className={twMergeClsx(
-            mode === "edit" &&
-              "relative rounded-md border-2 border-dashed border-gray-4 bg-white p-3 dark:border-gray-dark-4 dark:bg-black",
-            isHovered &&
-              mode === "edit" &&
-              "border-solid bg-gray-2 dark:bg-gray-dark-2",
-            isFocused &&
-              mode === "edit" &&
-              "border-solid border-gray-8 dark:border-gray-10"
-          )}
-          data-block-wrapper
-          onClick={handleClickBlock}
-        >
-          {mode === "edit" && (isHovered || isFocused) && (
-            <Badge className="absolute z-30 -m-6" variant="secondary">
-              <span className="mr-2">
-                <b>{block.type}</b>
-              </span>
-              {blockPath.join(".")}
-            </Badge>
-          )}
-          {mode === "edit" && isFocused && (
-            <div onClick={(event) => event.stopPropagation()}>
-              <Dialog open={!!dialog} onOpenChange={handleOnOpenChange}>
-                <div className="absolute right-1 top-1 z-30">
-                  <BlockContextMenu
-                    onEdit={() => setDialog("edit")}
-                    onDelete={() => setDialog("delete")}
-                  />
-                </div>
+      {mode === "edit" ? (
+        <DraggableElement element={block} name={String(blockPath)}>
+          <div
+            ref={containerRef}
+            className={twMergeClsx(
+              "relative rounded-md border-2 border-dashed border-gray-4 bg-white p-0 dark:border-gray-dark-4 dark:bg-black",
+              isHovered && "border-solid bg-gray-2 dark:bg-gray-dark-2",
+              isFocused && "border-solid border-gray-8 dark:border-gray-10"
+            )}
+            data-block-wrapper
+            onClick={handleClickBlock}
+          >
+            {(isHovered || isFocused) && (
+              <Badge className="absolute z-30 -m-6" variant="secondary">
+                <span className="mr-2">
+                  <b>{block.type}</b>
+                </span>
+                {blockPath.join(".")}
+              </Badge>
+            )}
+            {isFocused && (
+              <div onClick={(event) => event.stopPropagation()}>
+                <Dialog open={!!dialog} onOpenChange={handleOnOpenChange}>
+                  <div className="absolute right-1 top-1 z-30">
+                    <BlockContextMenu
+                      onEdit={() => setDialog("edit")}
+                      onDelete={() => setDialog("delete")}
+                    />
+                  </div>
 
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      size="sm"
-                      className="absolute -bottom-4 left-1/2 z-30 -translate-x-1/2"
-                    >
-                      <CirclePlus />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent asChild>
-                    <Card
-                      className="z-10 -mt-2 flex w-fit flex-col p-2 text-center dark:bg-gray-dark-2"
-                      noShadow
-                    >
-                      {buttons.map((button) => (
-                        <Button
-                          key={button.label}
-                          className="my-1 w-36 justify-start text-xs"
-                          onClick={() => {
-                            setType(button.type);
-                            setDialog("create");
-                          }}
-                        >
-                          <button.icon size={16} />
-                          {button.label}
-                        </Button>
-                      ))}
-                    </Card>
-                  </PopoverContent>
-                </Popover>
-                {dialog !== null && (
-                  <DialogContent className="z-50">
-                    {dialog === "edit" && (
-                      <BlockForm
-                        block={block}
-                        action={dialog}
-                        path={blockPath}
-                      />
-                    )}
-                    {dialog === "create" && (
-                      <BlockForm
-                        block={getPlaceholderBlock(type)}
-                        action={dialog}
-                        path={blockPath}
-                      />
-                    )}
-                    {dialog === "delete" && (
-                      <BlockDeleteForm
-                        type={block.type}
-                        action={dialog}
-                        path={blockPath}
-                        onSubmit={(path) => deleteBlock(path)}
-                      />
-                    )}
-                  </DialogContent>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        size="sm"
+                        className="absolute -bottom-4 left-1/2 z-30 -translate-x-1/2"
+                      >
+                        <CirclePlus />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent asChild>
+                      <Card
+                        className="z-10 -mt-2 flex w-fit flex-col p-2 text-center dark:bg-gray-dark-2"
+                        noShadow
+                      >
+                        {buttons.map((button) => (
+                          <Button
+                            key={button.label}
+                            className="my-1 w-36 justify-start text-xs"
+                            onClick={() => {
+                              setType(button.type);
+                              setDialog("create");
+                            }}
+                          >
+                            <button.icon size={16} />
+                            {button.label}
+                          </Button>
+                        ))}
+                      </Card>
+                    </PopoverContent>
+                  </Popover>
+                  {dialog !== null && (
+                    <DialogContent className="z-50">
+                      {dialog === "edit" && (
+                        <BlockForm
+                          block={block}
+                          action={dialog}
+                          path={blockPath}
+                        />
+                      )}
+                      {dialog === "create" && (
+                        <BlockForm
+                          block={getPlaceholderBlock(type)}
+                          action={dialog}
+                          path={blockPath}
+                        />
+                      )}
+                      {dialog === "delete" && (
+                        <BlockDeleteForm
+                          type={block.type}
+                          action={dialog}
+                          path={blockPath}
+                          onSubmit={(path) => deleteBlock(path)}
+                        />
+                      )}
+                    </DialogContent>
+                  )}
+                </Dialog>
+              </div>
+            )}
+            <Suspense fallback={<Loading />}>
+              <ErrorBoundary
+                fallbackRender={({ error }) => (
+                  <ParsingError title={t("direktivPage.error.genericError")}>
+                    {error.message}
+                  </ParsingError>
                 )}
-              </Dialog>
-            </div>
-          )}
-          <Suspense fallback={<Loading />}>
-            <ErrorBoundary
-              fallbackRender={({ error }) => (
-                <ParsingError title={t("direktivPage.error.genericError")}>
-                  {error.message}
-                </ParsingError>
-              )}
-            >
-              {children}
-            </ErrorBoundary>
-          </Suspense>
-        </div>
-      </DraggableElement>
+              >
+                {children}
+              </ErrorBoundary>
+            </Suspense>
+          </div>
+        </DraggableElement>
+      ) : (
+        <>
+          <div ref={containerRef} data-block-wrapper onClick={handleClickBlock}>
+            <Suspense fallback={<Loading />}>
+              <ErrorBoundary
+                fallbackRender={({ error }) => (
+                  <ParsingError title={t("direktivPage.error.genericError")}>
+                    {error.message}
+                  </ParsingError>
+                )}
+              >
+                {children}
+              </ErrorBoundary>
+            </Suspense>
+          </div>
+        </>
+      )}
     </>
   );
 };
