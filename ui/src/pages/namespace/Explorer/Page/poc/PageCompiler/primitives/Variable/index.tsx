@@ -2,8 +2,8 @@ import { VariableError } from "./Error";
 import { VariableType } from "../../../schema/primitives/variable";
 import { twMergeClsx } from "~/util/helpers";
 import { usePageEditor } from "../../context/pageCompilerContext";
-import { useResolveVariableString } from "./utils/useResolveVariableString";
 import { useTranslation } from "react-i18next";
+import { useVariableStringResolver } from "./utils/useVariableStringResolver";
 
 type VariableProps = {
   value: VariableType;
@@ -12,12 +12,12 @@ type VariableProps = {
 export const Variable = ({ value }: VariableProps) => {
   const { t } = useTranslation();
   const { mode } = usePageEditor();
-  const variableString = useResolveVariableString()(value);
+  const resolvedVariableString = useVariableStringResolver()(value);
 
-  if (!variableString.success) {
+  if (!resolvedVariableString.success) {
     return (
-      <VariableError value={value} errorCode={variableString.error}>
-        {t(`direktivPage.error.templateString.${variableString.error}`)}
+      <VariableError value={value} errorCode={resolvedVariableString.error}>
+        {t(`direktivPage.error.templateString.${resolvedVariableString.error}`)}
       </VariableError>
     );
   }
@@ -29,7 +29,7 @@ export const Variable = ({ value }: VariableProps) => {
           "border border-gray-9 bg-gray-4 dark:border-gray-dark-9 dark:bg-gray-dark-4"
       )}
     >
-      {variableString.data}
+      {resolvedVariableString.data}
     </span>
   );
 };

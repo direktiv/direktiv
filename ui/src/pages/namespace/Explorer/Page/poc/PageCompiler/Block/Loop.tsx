@@ -7,8 +7,8 @@ import {
 import { BlockList } from "./utils/BlockList";
 import { LoopType } from "../../schema/blocks/loop";
 import { VariableError } from "../primitives/Variable/Error";
-import { useResolveVariableArray } from "../primitives/Variable/utils/useResolveVariableArray";
 import { useTranslation } from "react-i18next";
+import { useVariableArrayResolver } from "../primitives/Variable/utils/useVariableArrayResolver";
 
 type LoopProps = {
   blockProps: LoopType;
@@ -18,7 +18,7 @@ type LoopProps = {
 export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   const { blocks, data, id } = blockProps;
   const { t } = useTranslation();
-  const arrayVariable = useResolveVariableArray()(data);
+  const resolvedVariableArray = useVariableArrayResolver()(data);
 
   const parentVariables = useVariables();
 
@@ -26,18 +26,18 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
     throw new Error(t("direktivPage.error.duplicateId", { id }));
   }
 
-  if (!arrayVariable.success) {
+  if (!resolvedVariableArray.success) {
     return (
-      <VariableError value={data} errorCode={arrayVariable.error}>
-        {t(`direktivPage.error.templateString.${arrayVariable.error}`)} (
-        {arrayVariable.error})
+      <VariableError value={data} errorCode={resolvedVariableArray.error}>
+        {t(`direktivPage.error.templateString.${resolvedVariableArray.error}`)}{" "}
+        ({resolvedVariableArray.error})
       </VariableError>
     );
   }
 
   return (
     <BlockList>
-      {arrayVariable.data.map((item, variableIndex) => (
+      {resolvedVariableArray.data.map((item, variableIndex) => (
         <VariableContextProvider
           key={variableIndex}
           value={{

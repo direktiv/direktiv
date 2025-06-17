@@ -18,8 +18,8 @@ import { PackageOpen } from "lucide-react";
 import { TableCell } from "./TableCell";
 import { TableType } from "../../../schema/blocks/table";
 import { VariableError } from "../../primitives/Variable/Error";
-import { useResolveVariableArray } from "../../primitives/Variable/utils/useResolveVariableArray";
 import { useTranslation } from "react-i18next";
+import { useVariableArrayResolver } from "../../primitives/Variable/utils/useVariableArrayResolver";
 
 type TableProps = {
   blockProps: TableType;
@@ -28,7 +28,7 @@ type TableProps = {
 export const Table = ({ blockProps }: TableProps) => {
   const { columns, actions, data: loop } = blockProps;
   const { t } = useTranslation();
-  const arrayVariable = useResolveVariableArray()(loop.data);
+  const resolvedVariableArray = useVariableArrayResolver()(loop.data);
 
   const parentVariables = useVariables();
 
@@ -36,18 +36,18 @@ export const Table = ({ blockProps }: TableProps) => {
     throw new Error(t("direktivPage.error.duplicateId", { id: loop.id }));
   }
 
-  if (!arrayVariable.success) {
+  if (!resolvedVariableArray.success) {
     return (
-      <VariableError value={loop.data} errorCode={arrayVariable.error}>
-        {t(`direktivPage.error.templateString.${arrayVariable.error}`)} (
-        {arrayVariable.error})
+      <VariableError value={loop.data} errorCode={resolvedVariableArray.error}>
+        {t(`direktivPage.error.templateString.${resolvedVariableArray.error}`)}{" "}
+        ({resolvedVariableArray.error})
       </VariableError>
     );
   }
 
   const hasActionsColumn = actions.length > 0;
   const numberOfColumns = columns.length + (hasActionsColumn ? 1 : 0);
-  const hasRows = arrayVariable.data.length > 0;
+  const hasRows = resolvedVariableArray.data.length > 0;
 
   return (
     <Card>
@@ -62,7 +62,7 @@ export const Table = ({ blockProps }: TableProps) => {
         </TableHead>
         <TableBody>
           {hasRows ? (
-            arrayVariable.data.map((item, index) => (
+            resolvedVariableArray.data.map((item, index) => (
               <VariableContextProvider
                 key={index}
                 value={{

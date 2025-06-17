@@ -20,7 +20,7 @@ import { useVariables } from "../VariableContext";
  * Returns a Result object that indicates either success with the resolved value
  * or failure with an error code describing the reason
  */
-export const useResolveVariable = () => {
+export const useVariableResolver = () => {
   const variables = useVariables();
   return (
     value: VariableType

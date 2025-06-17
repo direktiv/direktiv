@@ -1,7 +1,7 @@
 import { ResolveVariableStringError } from "./errors";
 import { Result } from "./types";
 import { VariableType } from "../../../../schema/primitives/variable";
-import { useResolveVariable } from "./useResolveVariable";
+import { useVariableResolver } from "./useVariableResolver";
 import { z } from "zod";
 
 const StringCompatible = z.union([
@@ -13,12 +13,12 @@ const StringCompatible = z.union([
 
 type StringCompatibleType = z.infer<typeof StringCompatible>;
 
-export const useResolveVariableString = () => {
-  const variableResultFn = useResolveVariable();
+export const useVariableStringResolver = () => {
+  const resolveVariable = useVariableResolver();
   return (
     value: VariableType
   ): Result<StringCompatibleType, ResolveVariableStringError> => {
-    const variableResult = variableResultFn(value);
+    const variableResult = resolveVariable(value);
 
     if (!variableResult.success) {
       return { success: false, error: variableResult.error };
