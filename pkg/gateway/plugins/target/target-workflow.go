@@ -53,7 +53,7 @@ func (tf *FlowPlugin) Type() string {
 	return "target-flow"
 }
 
-func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
 	ctx := telemetry.GetContextFromRequest(r.Context(), r)
 	ctx, span := telemetry.Tracer.Start(ctx, "gateway-request")
 	defer span.End()
@@ -64,7 +64,7 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 	}
 	if tf.Namespace != currentNS && currentNS != core.SystemNamespace {
 		gateway.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
-		return nil
+		return nil, nil
 	}
 
 	url := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/instances?path=%s&wait=%s",
@@ -75,7 +75,7 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 	resp, err := doRequest(r.WithContext(ctx), http.MethodPost, url, r.Body)
 	if err != nil {
 		gateway.WriteForbiddenError(r, w, err, "couldn't execute downstream request")
-		return nil
+		return nil, nil
 	}
 	defer resp.Body.Close()
 
@@ -90,7 +90,7 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 			gateway.ExtractContextEndpoint(r).FilePath,
 			fmt.Sprintf("errCode: %s, errMessage: %s, instanceId: %s", errorCode, errorMessage, instance))
 
-		return nil
+		return nil, nil
 	}
 
 	// Copy headers.
@@ -109,10 +109,10 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 	// Copy the response body.
 	if _, err := io.Copy(w, resp.Body); err != nil {
 		gateway.WriteInternalError(r, w, nil, "couldn't write downstream response")
-		return nil
+		return nil, nil
 	}
 
-	return r
+	return w, r
 }
 
 func init() {

@@ -31,30 +31,30 @@ func (acl *ACLPlugin) Type() string {
 	return "acl"
 }
 
-func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
 	c := gateway.ExtractContextActiveConsumer(r)
 	if c == nil {
 		gateway.WriteInternalError(r, w, nil, "missing consumer")
-		return nil
+		return nil, nil
 	}
 	if result(acl.DenyGroups, c.Groups) {
 		gateway.WriteForbiddenError(r, w, nil, "denied user groups")
-		return nil
+		return nil, nil
 	}
 	if result(acl.DenyTags, c.Tags) {
 		gateway.WriteForbiddenError(r, w, nil, "denied user tags")
-		return nil
+		return nil, nil
 	}
 	if result(acl.AllowGroups, c.Groups) {
-		return r
+		return w, r
 	}
 	if result(acl.AllowTags, c.Tags) {
-		return r
+		return w, r
 	}
 
 	gateway.WriteForbiddenError(r, w, nil, "denied user")
 
-	return nil
+	return nil, nil
 }
 
 func result(userValues []string, configValues []string) bool {

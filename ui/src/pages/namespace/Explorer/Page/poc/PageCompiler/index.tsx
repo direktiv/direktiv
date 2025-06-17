@@ -1,4 +1,3 @@
-import { DirektivPagesSchema, DirektivPagesType } from "../schema";
 import {
   PageCompilerContextProvider,
   PageCompilerProps,
@@ -7,11 +6,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { AllBlocksType } from "../schema/blocks";
 import { Block } from "./Block";
+import { BlockDialogProvider } from "../BlockEditor/BlockDialogProvider";
 import { BlockList } from "./Block/utils/BlockList";
+import { DirektivPagesSchema } from "../schema";
 import { DndContext } from "~/design/DragAndDropEditor/Context.tsx";
 import { DroppableSeparator } from "~/design/DragAndDropEditor/DroppableSeparator";
 import { ParsingError } from "./Block/utils/ParsingError";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const queryClient = new QueryClient({
@@ -27,11 +27,7 @@ const queryClient = new QueryClient({
   },
 });
 
-export const PageCompiler = ({
-  page: initialPage,
-  mode,
-}: PageCompilerProps) => {
-  const [page, setPage] = useState<DirektivPagesType>(initialPage ?? "");
+export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
   const parsedPage = DirektivPagesSchema.safeParse(page);
   const { t } = useTranslation();
   if (!parsedPage.success) {
@@ -53,18 +49,20 @@ export const PageCompiler = ({
     <PageCompilerContextProvider setPage={setPage} page={page} mode={mode}>
       <QueryClientProvider client={queryClient}>
         <DndContext onMove={onMove}>
-          <BlockList>
-            {page.blocks.map((block, index) => (
-              <div key={index}>
-                <DroppableSeparator
-                  visible={mode === "edit"}
-                  id={String(index)}
-                  position="before"
-                />
-                <Block key={index} block={block} blockPath={[index]} />
-              </div>
-            ))}
-          </BlockList>
+          <BlockDialogProvider>
+            <BlockList>
+              {page.blocks.map((block, index) => (
+                <div key={index}>
+                  <DroppableSeparator
+                    visible={mode === "edit"}
+                    id={String(index)}
+                    position="before"
+                  />
+                  <Block key={index} block={block} blockPath={[index]} />
+                </div>
+              ))}
+            </BlockList>
+          </BlockDialogProvider>
         </DndContext>
       </QueryClientProvider>
     </PageCompilerContextProvider>

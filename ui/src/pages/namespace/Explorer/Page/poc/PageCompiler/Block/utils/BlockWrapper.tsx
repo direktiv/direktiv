@@ -1,5 +1,3 @@
-import { Dialog, DialogContent } from "~/design/Dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import {
   PropsWithChildren,
   Suspense,
@@ -7,22 +5,19 @@ import {
   useRef,
   useState,
 } from "react";
-import { buttons, getPlaceholderBlock, pathsEqual } from "../../context/utils";
+import { getPlaceholderBlock, pathsEqual } from "../../context/utils";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockContextMenu } from "../../../BlockEditor/components/ContextMenu";
-import { BlockDeleteForm } from "../../../BlockEditor/components/Delete";
-import { BlockForm } from "../../../BlockEditor";
 import { BlockPathType } from "..";
-import Button from "~/design/Button";
-import { Card } from "~/design/Card";
-import { CirclePlus } from "lucide-react";
 import { DraggableElement } from "~/design/DragAndDropEditor/DraggableElement";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
+import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
 import { twMergeClsx } from "~/util/helpers";
+import { useBlockDialog } from "../../../BlockEditor/BlockDialogProvider";
 import { usePageEditor } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
@@ -31,8 +26,6 @@ type BlockWrapperProps = PropsWithChildren<{
   block: AllBlocksType;
 }>;
 
-type DialogState = "create" | "edit" | "delete" | null;
-
 export const BlockWrapper = ({
   block,
   blockPath,
@@ -40,22 +33,9 @@ export const BlockWrapper = ({
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
   const { mode, focus, setFocus } = usePageEditor();
-  const [dialog, setDialog] = useState<DialogState>(null);
-  const [type, setType] = useState<AllBlocksType["type"]>(block.type);
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const { deleteBlock } = usePageEditor();
-
-  /**
-   * This handler is only used for closing the dialog. For opening a dialog,
-   * we add custom onClick events to the trigger buttons.
-   */
-  const handleOnOpenChange = (open: boolean) => {
-    if (open === false) {
-      setDialog(null);
-    }
-  };
+  const { setDialog } = useBlockDialog();
 
   useEffect(() => {
     if (mode !== "edit") {
@@ -111,71 +91,34 @@ export const BlockWrapper = ({
             )}
             {isFocused && (
               <div onClick={(event) => event.stopPropagation()}>
-                <Dialog open={!!dialog} onOpenChange={handleOnOpenChange}>
-                  <div className="absolute right-1 top-1 z-30">
-                    <BlockContextMenu
-                      onEdit={() => setDialog("edit")}
-                      onDelete={() => setDialog("delete")}
-                    />
-                  </div>
+                <div className="absolute right-1 top-1 z-30">
+                  <BlockContextMenu
+                    onEdit={() =>
+                      setDialog({
+                        action: "edit",
+                        block,
+                        path: blockPath,
+                      })
+                    }
+                    onDelete={() =>
+                      setDialog({
+                        action: "delete",
+                        block,
+                        path: blockPath,
+                      })
+                    }
+                  />
+                </div>
 
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        size="sm"
-                        className="absolute -bottom-4 left-1/2 z-30 -translate-x-1/2"
-                      >
-                        <CirclePlus />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent asChild>
-                      <Card
-                        className="z-10 -mt-2 flex w-fit flex-col p-2 text-center dark:bg-gray-dark-2"
-                        noShadow
-                      >
-                        {buttons.map((button) => (
-                          <Button
-                            key={button.label}
-                            className="my-1 w-36 justify-start text-xs"
-                            onClick={() => {
-                              setType(button.type);
-                              setDialog("create");
-                            }}
-                          >
-                            <button.icon size={16} />
-                            {button.label}
-                          </Button>
-                        ))}
-                      </Card>
-                    </PopoverContent>
-                  </Popover>
-                  {dialog !== null && (
-                    <DialogContent className="z-50">
-                      {dialog === "edit" && (
-                        <BlockForm
-                          block={block}
-                          action={dialog}
-                          path={blockPath}
-                        />
-                      )}
-                      {dialog === "create" && (
-                        <BlockForm
-                          block={getPlaceholderBlock(type)}
-                          action={dialog}
-                          path={blockPath}
-                        />
-                      )}
-                      {dialog === "delete" && (
-                        <BlockDeleteForm
-                          type={block.type}
-                          action={dialog}
-                          path={blockPath}
-                          onSubmit={(path) => deleteBlock(path)}
-                        />
-                      )}
-                    </DialogContent>
-                  )}
-                </Dialog>
+                <SelectBlockType
+                  onSelect={(type) =>
+                    setDialog({
+                      action: "create",
+                      block: getPlaceholderBlock(type),
+                      path: blockPath,
+                    })
+                  }
+                />
               </div>
             )}
             <Suspense fallback={<Loading />}>

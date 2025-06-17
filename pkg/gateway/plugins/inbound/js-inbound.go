@@ -74,7 +74,7 @@ type request struct {
 	Status int
 }
 
-func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
 	var (
 		err error
 		b   []byte
@@ -84,7 +84,7 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 		b, err = io.ReadAll(r.Body)
 		if err != nil {
 			gateway.WriteInternalError(r, w, err, "can not set read body for js inbound plugin")
-			return nil
+			return nil, nil
 		}
 		defer r.Body.Close()
 	}
@@ -112,7 +112,7 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 	err = vm.Set("input", req)
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "can not set input object")
-		return nil
+		return nil, nil
 	}
 
 	err = vm.Set("log", func(txt interface{}) {
@@ -120,7 +120,7 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 	})
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "can not set log function")
-		return nil
+		return nil, nil
 	}
 
 	script := fmt.Sprintf("function run() { %s; return input } run()",
@@ -129,7 +129,7 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 	val, err := vm.RunScript("plugin", script)
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "can not execute script")
-		return nil
+		return nil, nil
 	}
 
 	if val != nil && !val.Equals(goja.Undefined()) {
@@ -166,12 +166,12 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 				// nolint
 				w.Write([]byte(responseDone.Body))
 
-				return nil
+				return nil, nil
 			}
 		}
 	}
 
-	return r
+	return w, r
 }
 
 func init() {

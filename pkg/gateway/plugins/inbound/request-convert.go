@@ -47,7 +47,7 @@ type RequestConvertResponse struct {
 	Consumer    RequestConsumer     `json:"consumer"`
 }
 
-func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
 	response := &RequestConvertResponse{
 		URLParams:   make(map[string]string),
 		QueryParams: make(map[string][]string),
@@ -94,7 +94,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 		content, err = io.ReadAll(r.Body)
 		if err != nil {
 			gateway.WriteInternalError(r, w, err, "can not process content")
-			return nil
+			return nil, nil
 		}
 		defer r.Body.Close()
 	}
@@ -110,7 +110,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 	newBody, err := json.Marshal(response)
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "can not process content")
-		return nil
+		return nil, nil
 	}
 	r.Body = io.NopCloser(bytes.NewBuffer(newBody))
 
@@ -118,7 +118,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 		"plugin", (&RequestConvertPlugin{}).Type(),
 		"body", string(newBody))
 
-	return r
+	return w, r
 }
 
 func (rcp *RequestConvertPlugin) Type() string {

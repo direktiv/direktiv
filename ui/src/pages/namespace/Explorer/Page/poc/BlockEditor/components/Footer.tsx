@@ -15,12 +15,12 @@ export const DialogFooter = ({ onSubmit }: BlockEditorFooterProps) => {
 
   return (
     <DesignDialogFooter>
-      <DialogClose>
+      <DialogClose asChild>
         <Button variant="ghost">
           {t("direktivPage.blockEditor.generic.cancelButton")}
         </Button>
       </DialogClose>
-      <DialogClose>
+      <DialogClose asChild>
         <Button variant="primary" onClick={onSubmit}>
           {t("direktivPage.blockEditor.generic.saveButton")}
         </Button>
