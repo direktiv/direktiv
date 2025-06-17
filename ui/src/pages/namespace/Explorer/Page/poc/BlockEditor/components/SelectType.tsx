@@ -10,6 +10,7 @@ import { t } from "i18next";
 type SelectBlockTypeProps = {
   onSelect: (type: AllBlocksType["type"]) => void;
   big?: boolean;
+  restrict?: AllBlocksType["type"][];
 };
 
 const buttons: {
@@ -55,33 +56,40 @@ const DefaultTrigger = () => (
   </PopoverTrigger>
 );
 
-const Content = ({ onSelect }: Pick<SelectBlockTypeProps, "onSelect">) => (
-  <PopoverContent asChild>
-    <Card
-      className="z-10 -mt-2 flex w-fit flex-col p-2 text-center dark:bg-gray-dark-2"
-      noShadow
-    >
-      {buttons.map((button) => (
-        <Button
-          variant="outline"
-          key={button.label}
-          className="my-1 w-36 justify-start text-xs"
-          onClick={() => onSelect(button.type)}
-        >
-          <button.icon size={16} />
-          {button.label}
-        </Button>
-      ))}
-    </Card>
-  </PopoverContent>
-);
+const List = ({ onSelect, restrict }: Omit<SelectBlockTypeProps, "label">) => {
+  const filteredButtons = restrict?.length
+    ? buttons.filter((item) => restrict.includes(item.type))
+    : buttons;
+
+  return (
+    <PopoverContent asChild>
+      <Card
+        className="z-10 -mt-2 flex w-fit flex-col p-2 text-center dark:bg-gray-dark-2"
+        noShadow
+      >
+        {filteredButtons.map((button) => (
+          <Button
+            variant="outline"
+            key={button.label}
+            className="my-1 w-36 justify-start text-xs"
+            onClick={() => onSelect(button.type)}
+          >
+            <button.icon size={16} />
+            {button.label}
+          </Button>
+        ))}
+      </Card>
+    </PopoverContent>
+  );
+};
 
 export const SelectBlockType = ({
   onSelect,
   big = false,
+  restrict,
 }: SelectBlockTypeProps) => (
   <Popover>
     {big ? <BigTrigger /> : <DefaultTrigger />}
-    <Content onSelect={onSelect} />
+    <List onSelect={onSelect} restrict={restrict} />
   </Popover>
 );
