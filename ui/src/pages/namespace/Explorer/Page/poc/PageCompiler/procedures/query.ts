@@ -1,12 +1,12 @@
 import { queryOptions, useSuspenseQueries } from "@tanstack/react-query";
 
 import { QueryType } from "../../schema/procedures/query";
-import { useGetUrl } from "./utils";
 import { useTranslation } from "react-i18next";
+import { useUrlGenerator } from "./utils";
 
 export const usePageSuspenseQueries = (queries: QueryType[]) => {
   const { t } = useTranslation();
-  const getUrlFn = useGetUrl();
+  const getUrlFn = useUrlGenerator();
   return useSuspenseQueries({
     queries: queries.map((query) => {
       const url = getUrlFn(query);

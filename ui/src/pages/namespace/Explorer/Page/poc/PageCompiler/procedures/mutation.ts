@@ -1,11 +1,15 @@
 import { MutationType } from "../../schema/procedures/mutation";
-import { useGetUrl } from "./utils";
+import { useKeyValueArrayResolver } from "../primitives/keyValue/utils";
 import { useMutation } from "@tanstack/react-query";
+import { useUrlGenerator } from "./utils";
 
 export const usePageMutation = (mutation: MutationType) => {
-  const { method } = mutation;
+  const { method, requestBody, requestHeaders } = mutation;
 
-  const url = useGetUrl()(mutation);
+  const url = useUrlGenerator()(mutation);
+  const resolveKeyValueArray = useKeyValueArrayResolver();
+
+  const requestBodyResolved = resolveKeyValueArray(requestBody ?? []);
 
   return useMutation({
     mutationFn: async () => {
