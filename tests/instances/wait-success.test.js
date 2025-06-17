@@ -73,7 +73,7 @@ states:
 				},
 			],
 		})
-	}),
+	})
 
 	it(`should invoke the 'noop.yaml' workflow wait for completion and respond with the summary`, async () => {
 		const req = await request(common.config.getDirektivHost())

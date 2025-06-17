@@ -21,7 +21,6 @@ describe('Test services crud operations', () => {
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data).toEqual(
 			expect.arrayContaining(
-
 				[
 					{
 						createdAt: expect.stringMatching(regex.timestampRegex),
@@ -38,7 +37,6 @@ describe('Test services crud operations', () => {
 						user: 'a_name_2',
 					},
 				],
-
 			),
 		)
 	})
