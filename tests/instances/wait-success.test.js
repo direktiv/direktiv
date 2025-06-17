@@ -77,14 +77,14 @@ states:
 
 	it(`should invoke the 'noop.yaml' workflow wait for completion and respond with the summary`, async () => {
 		const req = await request(common.config.getDirektivHost())
-		  .post(
+			.post(
 				`/api/v2/namespaces/${ namespaceName }/instances?path=noop.yaml&wait=true&output=true`,
-		  )
-		  .send({ a: 2 })
+			)
+			.send({ a: 2 })
 		expect(req.statusCode).toEqual(200)
 
 		expect(req.body).toMatchObject({
-		  data: {
+			data: {
 				output: 'eyJyZXN1bHQiOiJ4In0=',
 				createdAt: expect.stringMatching(regex.timestampRegex),
 				endedAt: expect.stringMatching(regex.timestampRegex),
@@ -97,7 +97,7 @@ states:
 				path: '/noop.yaml',
 				status: 'complete',
 				traceId: expect.anything(),
-		  },
+			},
 		})
-	  })
+	})
 })
