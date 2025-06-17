@@ -1,11 +1,11 @@
 import { MutationType } from "../../schema/procedures/mutation";
-import { getUrl } from "./utils";
+import { useGetUrl } from "./utils";
 import { useMutation } from "@tanstack/react-query";
 
 export const usePageMutation = (mutation: MutationType) => {
   const { method } = mutation;
 
-  const url = getUrl(mutation);
+  const url = useGetUrl()(mutation);
 
   return useMutation({
     mutationFn: async () => {
