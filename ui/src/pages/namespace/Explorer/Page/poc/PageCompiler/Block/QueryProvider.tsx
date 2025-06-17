@@ -78,7 +78,7 @@ export const QueryProvider = ({
         },
       }}
     >
-      <BlockList>
+      <BlockList path={blockPath}>
         {blocks.map((block, index) => (
           <Block key={index} block={block} blockPath={[...blockPath, index]} />
         ))}

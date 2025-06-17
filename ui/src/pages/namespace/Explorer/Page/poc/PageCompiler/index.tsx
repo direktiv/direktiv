@@ -40,7 +40,7 @@ export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
     <PageCompilerContextProvider setPage={setPage} page={page} mode={mode}>
       <QueryClientProvider client={queryClient}>
         <BlockDialogProvider>
-          <BlockList>
+          <BlockList path={[]}>
             {page.blocks.map((block, index) => (
               <Block key={index} block={block} blockPath={[index]} />
             ))}

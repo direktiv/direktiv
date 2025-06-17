@@ -11,7 +11,7 @@ type CardProps = {
 
 export const Card = ({ blockProps, blockPath }: CardProps) => (
   <CardDesignComponent className="p-5">
-    <BlockList>
+    <BlockList path={blockPath}>
       {blockProps.blocks.map((block, index) => (
         <Block key={index} block={block} blockPath={[...blockPath, index]} />
       ))}

@@ -27,7 +27,6 @@ export const Text = ({
           })
         }
       />
-      <div>Debug Info {JSON.stringify(block)}</div>
 
       <DialogFooter onSubmit={() => onSubmit(block)} />
     </>

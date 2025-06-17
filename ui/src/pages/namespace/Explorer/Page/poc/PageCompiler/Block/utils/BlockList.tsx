@@ -4,15 +4,19 @@ import {
 } from "../../context/pageCompilerContext";
 import { ReactElement, Suspense } from "react";
 
+import { AllBlocksType } from "../../../schema/blocks";
+import { BlockPathType } from "..";
 import { Loading } from "./Loading";
 import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
-import { getPlaceholderBlock } from "../../context/utils";
+import { getBlockTemplate } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useBlockDialog } from "../../../BlockEditor/BlockDialogProvider";
 
 type BlockListProps = {
   horizontal?: boolean;
   children: ReactElement[];
+  path: BlockPathType;
+  restrict?: AllBlocksType["type"][];
 };
 
 type BlockListComponentProps = BlockListProps & { mode?: PageCompilerMode };
@@ -20,6 +24,8 @@ type BlockListComponentProps = BlockListProps & { mode?: PageCompilerMode };
 export const BlockList = ({
   horizontal,
   children,
+  path,
+  restrict,
 }: BlockListComponentProps) => {
   const { setDialog } = useBlockDialog();
   const { mode } = usePageEditor();
@@ -38,13 +44,14 @@ export const BlockList = ({
           <div className="self-center">
             <SelectBlockType
               big
-              onSelect={(type) =>
+              restrict={restrict}
+              onSelect={(type) => {
                 setDialog({
                   action: "create",
-                  block: getPlaceholderBlock(type),
-                  path: [0],
-                })
-              }
+                  block: getBlockTemplate(type),
+                  path: [...path, 0],
+                });
+              }}
             />
           </div>
         )}
