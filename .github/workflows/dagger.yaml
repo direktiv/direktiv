@@ -1,0 +1,23 @@
+name: dagger
+on:
+  push:
+    tags:
+      - "*"
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  dagger:
+    name: Dagger
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Call local Dagger Function
+        uses: dagger/dagger-for-github@8.0.0
+        with:
+          version: "latest"
+          module: .dagger
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          args: build-ui --source=.
