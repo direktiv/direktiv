@@ -1,12 +1,17 @@
+import { DirektivPagesSchema, DirektivPagesType } from "./poc/schema";
+import { decode, encode } from "js-base64";
+import { jsonToYaml, yamlToJsonOrNull } from "../utils";
+
 import { Card } from "~/design/Card";
 import { FC } from "react";
 import { NoPermissions } from "~/design/Table";
-import PageEditor from "./PageEditor";
+import PageEditor from "./poc/PageEditor";
 import { PanelTop } from "lucide-react";
 import { analyzePath } from "~/util/router/utils";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
 import { useParams } from "@tanstack/react-router";
+import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
 const UIPage: FC = () => {
   const { _splat: path } = useParams({ strict: false });
@@ -17,14 +22,12 @@ const UIPage: FC = () => {
   const {
     isAllowed,
     noPermissionMessage,
-    data: endpointData,
+    data: file,
     isFetched: isPermissionCheckFetched,
+    isPending,
   } = useFile({ path });
 
-  if (!namespace) return null;
-  if (!path) return null;
-  if (endpointData?.type !== "page") return null;
-  if (!isPermissionCheckFetched) return null;
+  const { mutate: updateFile } = useUpdateFile();
 
   if (isAllowed === false)
     return (
@@ -32,6 +35,27 @@ const UIPage: FC = () => {
         <NoPermissions>{noPermissionMessage}</NoPermissions>
       </Card>
     );
+
+  if (!namespace) return null;
+  if (!isPermissionCheckFetched) return null;
+  if (file?.type !== "page") return null;
+
+  const parsedPage = DirektivPagesSchema.safeParse(
+    yamlToJsonOrNull(decode(file.data))
+  );
+
+  if (!parsedPage.success) {
+    throw new Error("File is not a valid page");
+  }
+
+  const handleSave = (page: DirektivPagesType) => {
+    updateFile({
+      path: file.path,
+      payload: {
+        data: encode(jsonToYaml(page)),
+      },
+    });
+  };
 
   return (
     <>
@@ -44,7 +68,11 @@ const UIPage: FC = () => {
         </div>
       </div>
 
-      <PageEditor data={endpointData} />
+      <PageEditor
+        page={parsedPage.data}
+        isPending={isPending}
+        onSave={(page) => handleSave(page)}
+      />
     </>
   );
 };
