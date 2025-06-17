@@ -18,11 +18,11 @@ func (ba *DebugPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error
 	return &DebugPlugin{}, nil
 }
 
-func (ba *DebugPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+func (ba *DebugPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "reading request body")
-		return nil
+		return nil, nil
 	}
 
 	response := struct {
@@ -37,7 +37,7 @@ func (ba *DebugPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Req
 
 	gateway.WriteJSON(w, response)
 
-	return r
+	return w, r
 }
 
 func (ba *DebugPlugin) Type() string {

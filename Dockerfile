@@ -34,9 +34,13 @@ RUN corepack prepare pnpm@9.15.4 --activate
 
 WORKDIR /app
 
-COPY ui/ ./
 
+# install dependencies (only necessary files are copied to be able to cache this layer)
+COPY ui/package.json .
+COPY ui/pnpm-lock.yaml .
 RUN pnpm install --frozen-lockfile
+
+COPY ui/ ./
 
 RUN pnpm run build
 

@@ -26,12 +26,12 @@ export const BlockDeleteForm = ({
       <DialogHeader action={action} path={path} type={type} />
       <div>{t("direktivPage.blockEditor.delete.warning")}</div>
       <DialogFooter>
-        <DialogClose>
+        <DialogClose asChild>
           <Button variant="ghost">
             {t("direktivPage.blockEditor.generic.cancelButton")}
           </Button>
         </DialogClose>
-        <DialogClose>
+        <DialogClose asChild>
           <Button variant="primary" onClick={() => onSubmit(path)}>
             {t("direktivPage.blockEditor.generic.confirmButton")}
           </Button>
