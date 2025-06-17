@@ -9,3 +9,10 @@ export const useKeyValueArrayResolver = () => {
       return { key, value: parsedValue };
     });
 };
+
+const keyValueToObject = (kv: KeyValueType) => ({
+  [kv.key]: kv.value,
+});
+
+export const keyValueArrayToObject = (kv: KeyValueType[]) =>
+  kv.reduce((acc, curr) => ({ ...acc, ...keyValueToObject(curr) }), {});
