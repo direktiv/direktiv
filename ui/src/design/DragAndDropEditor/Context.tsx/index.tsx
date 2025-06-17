@@ -1,11 +1,13 @@
 import { DndContext as DndKitContext, DragEndEvent } from "@dnd-kit/core";
 import { FC, PropsWithChildren } from "react";
 
+import { AllBlocksType } from "~/pages/namespace/Explorer/Page/poc/schema/blocks";
+
 type DndContextProps = PropsWithChildren & {
   onMove: (
     draggableName: string,
     droppableName: string,
-    position: "before" | "after" | undefined
+    element: AllBlocksType
   ) => void;
 };
 
@@ -15,19 +17,12 @@ export const DndContext: FC<DndContextProps> = ({ children, onMove }) => {
     const overId = e.over?.id?.toString();
 
     if (draggableName && overId) {
-      const [droppableName, position] = overId.split("-") as [
-        string,
-        "before" | "after" | undefined,
-      ];
+      const [droppableName] = overId.split("-") as [string];
 
-      if (
-        draggableName &&
-        droppableName &&
-        (position === "before" ||
-          position === "after" ||
-          position === undefined)
-      ) {
-        onMove(draggableName, droppableName, position);
+      const element = e.active.data.current;
+
+      if (draggableName && droppableName && element) {
+        onMove(draggableName, droppableName, element);
       }
     }
   };

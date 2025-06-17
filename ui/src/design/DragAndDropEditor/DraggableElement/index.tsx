@@ -1,16 +1,24 @@
 import { FC, PropsWithChildren } from "react";
 
+import { AllBlocksType } from "~/pages/namespace/Explorer/Page/poc/schema/blocks";
 import { GripVertical } from "lucide-react";
 import { useDraggable } from "@dnd-kit/core";
 
 export type DraggableProps = PropsWithChildren & {
   name: string;
+  element: AllBlocksType;
 };
 
-export const DraggableElement: FC<DraggableProps> = ({ name, children }) => {
+export const DraggableElement: FC<DraggableProps> = ({
+  name,
+  element,
+  children,
+}) => {
   const id = name;
+  const data = element;
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id,
+    data,
   });
 
   const style = transform
@@ -21,7 +29,7 @@ export const DraggableElement: FC<DraggableProps> = ({ name, children }) => {
     : {};
 
   return (
-    <div style={style} className="group relative pr-2">
+    <div style={style} className="relative">
       <div
         {...listeners}
         {...attributes}
