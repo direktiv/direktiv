@@ -27,7 +27,18 @@ import { z } from "zod";
  */
 export const variablePattern = /{{\s*([^\s{}]+)\s*}}/g;
 
-// TODO: write tests and a description for this function
+/**
+ * Splits a template string into an array of text fragments and processed variables.
+ *
+ * The function processes a string containing variables in the format {{variable}}
+ * and returns an array where:
+ * - text fragments are left untouched
+ * - variables are processed through the provided callback function
+ * - empty strings are included to preserve positional information
+ *
+ * Example: "Hello {{name}}!" with callback (match) => `[${match}]` returns:
+ * ["Hello ", "[name]", "!"]
+ */
 export const parseTemplateString = <T>(
   value: TemplateStringType,
   onMatch: (match: string, index: number) => T

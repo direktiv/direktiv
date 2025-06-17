@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { getValueFromJsonPath, parseVariable, variablePattern } from "../utils";
+import {
+  getValueFromJsonPath,
+  parseTemplateString,
+  parseVariable,
+  variablePattern,
+} from "../utils";
 
 describe("Template string variable regex", () => {
   test("it should match the basic variable syntax", () => {
@@ -96,6 +101,84 @@ describe("Template string variable regex", () => {
     expect(matches.length).toBe(1);
     expect(matches[0]?.[0]).toBe("{{ name }}");
     expect(matches[0]?.[1]).toBe("name");
+  });
+});
+
+describe("parseTemplateString", () => {
+  test("it should handle a simple template with one variable", () => {
+    const result = parseTemplateString(
+      "Hello {{name}}",
+      (match) => `[${match}]`
+    );
+    expect(result).toEqual(["Hello ", "[name]", ""]);
+  });
+
+  test("it should handle multiple variables", () => {
+    const result = parseTemplateString(
+      "{{greeting}} {{name}}!",
+      (match) => `[${match}]`
+    );
+    expect(result).toEqual(["", "[greeting]", " ", "[name]", "!"]);
+  });
+
+  test("it should preserve text between variables", () => {
+    const result = parseTemplateString(
+      "Hello {{title}} {{name}}, how are you?",
+      (match) => `[${match}]`
+    );
+    expect(result).toEqual([
+      "Hello ",
+      "[title]",
+      " ",
+      "[name]",
+      ", how are you?",
+    ]);
+  });
+
+  test("it should handle variables at the start and end", () => {
+    const result = parseTemplateString(
+      "{{start}}middle{{end}}",
+      (match) => `[${match}]`
+    );
+    expect(result).toEqual(["", "[start]", "middle", "[end]", ""]);
+  });
+
+  test("it should handle adjacent variables", () => {
+    const result = parseTemplateString(
+      "{{first}}{{second}}{{third}}",
+      (match) => `[${match}]`
+    );
+    expect(result).toEqual(["", "[first]", "", "[second]", "", "[third]", ""]);
+  });
+
+  test("it should handle complex variable paths", () => {
+    const result = parseTemplateString(
+      "Value: {{query.data.0.items.name}}",
+      (match) => `[${match}]`
+    );
+    expect(result).toEqual(["Value: ", "[query.data.0.items.name]", ""]);
+  });
+
+  test("it should provide correct index in callback", () => {
+    const indices: number[] = [];
+    parseTemplateString("{{a}}{{b}}{{c}}", (_, index) => {
+      indices.push(index);
+      return "";
+    });
+    expect(indices).toEqual([1, 3, 5]);
+  });
+
+  test("it should handle a string with no variables", () => {
+    const result = parseTemplateString(
+      "Just a normal string",
+      (match) => `[${match}]`
+    );
+    expect(result).toEqual(["Just a normal string"]);
+  });
+
+  test("it should handle empty strings", () => {
+    const result = parseTemplateString("", (match) => `[${match}]`);
+    expect(result).toEqual([""]);
   });
 });
 
