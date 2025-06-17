@@ -80,5 +80,6 @@ describe('Test header plugin', () => {
 		expect(req.body.result.headers.Hello[0]).toEqual('world')
 		expect(req.body.result.headers.Header).toBeUndefined()
 		expect(req.body.result.headers.Header1[0]).toEqual('newvalue')
+		expect(req.body.result.method).toEqual('POST')
 	})
 })
