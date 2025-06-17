@@ -11,10 +11,11 @@ import { VariableType } from "../../../../schema/primitives/variable";
 import { useVariables } from "../VariableContext";
 
 /**
- * Resolves a variable path string to its corresponding value stored in React context.
+ * A hook that returns a function to Resolve a variable path string to its
+ * corresponding value stored in React context.
  *
- * Takes a variable string (e.g. "query.company-list.data.0.name") that specifies the
- * namespace, ID, and JSON pointer to retrieve the value.
+ * Takes a variable string (e.g. "query.company-list.data.0.name") that specifies
+ * the namespace, ID, and JSON pointer to retrieve the value.
  *
  * Returns a Result object that indicates either success with the resolved value
  * or failure with an error code describing the reason
