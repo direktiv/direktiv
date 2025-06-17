@@ -127,6 +127,20 @@ export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
   return a.length === b.length && a.every((val, index) => val === b[index]);
 };
 
+export const parseAncestors = (
+  page: DirektivPagesType,
+  path: BlockPathType,
+  fn: (block: AllBlocksType | DirektivPagesType) => boolean
+) => {
+  for (let i = path.length - 1; i > 0; i--) {
+    const ancestor = findBlock(page, path.slice(0, i));
+    if (fn(ancestor)) {
+      return true;
+    }
+  }
+  return false;
+};
+
 export const getBlockTemplate = (type: AllBlocksType["type"]) => {
   switch (type) {
     case "headline":

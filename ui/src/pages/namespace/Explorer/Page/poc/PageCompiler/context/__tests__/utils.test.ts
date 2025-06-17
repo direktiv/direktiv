@@ -6,6 +6,7 @@ import {
   findBlock,
   isPage,
   isParentBlock,
+  parseAncestors,
   pathsEqual,
   updateBlockInPage,
 } from "../utils";
@@ -214,6 +215,28 @@ describe("deleteBlockFromPage", () => {
     expect(() => deleteBlockFromPage(simple, [])).toThrow(
       "Invalid path, could not extract index for target block"
     );
+  });
+});
+
+describe("parseAncestors", () => {
+  test("it returns true if at least one ancestor evaluates as true against the callback", () => {
+    const result = parseAncestors(
+      complex,
+      [2, 0, 1],
+      (block) => block.type && block.type === "column"
+    );
+    expect(result).toEqual(true);
+  });
+});
+
+describe("parseAncestors", () => {
+  test("it returns false if all ancestors evaluate as false against the callback", () => {
+    const result = parseAncestors(
+      complex,
+      [2, 0, 1],
+      (block) => block.type && block.type === "headline"
+    );
+    expect(result).toEqual(false);
   });
 });
 

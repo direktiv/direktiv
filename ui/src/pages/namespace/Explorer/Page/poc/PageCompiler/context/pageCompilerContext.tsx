@@ -10,6 +10,7 @@ import {
 import {
   addBlockToPage,
   deleteBlockFromPage,
+  parseAncestors as parseAncestorsUtil,
   pathsEqual,
   updateBlockInPage,
 } from "./utils";
@@ -104,6 +105,11 @@ export const usePageEditor = () => {
     setPage(newPage);
   };
 
+  const parseAncestors = (
+    path: BlockPathType,
+    fn: (block: AllBlocksType | DirektivPagesType) => boolean
+  ) => parseAncestorsUtil(page, path, fn);
+
   return {
     focus,
     mode,
@@ -112,6 +118,7 @@ export const usePageEditor = () => {
     deleteBlock,
     updateBlock,
     setPage,
+    parseAncestors,
   };
 };
 

@@ -2,38 +2,18 @@ import { CirclePlus, Columns2, Heading1, LucideIcon, Text } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import { AllBlocksType } from "../../schema/blocks";
+import { BlockPathType } from "../../PageCompiler/Block";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { Trans } from "react-i18next";
 import { t } from "i18next";
+import { usePageEditor } from "../../PageCompiler/context/pageCompilerContext";
 
 type SelectBlockTypeProps = {
   onSelect: (type: AllBlocksType["type"]) => void;
   big?: boolean;
-  restrict?: AllBlocksType["type"][];
+  path: BlockPathType;
 };
-
-const buttons: {
-  type: AllBlocksType["type"];
-  label: string;
-  icon: LucideIcon;
-}[] = [
-  {
-    type: "headline",
-    label: t("direktivPage.blockEditor.blockName.headline"),
-    icon: Heading1,
-  },
-  {
-    type: "text",
-    label: t("direktivPage.blockEditor.blockName.text"),
-    icon: Text,
-  },
-  {
-    type: "columns",
-    label: t("direktivPage.blockEditor.blockName.columns"),
-    icon: Columns2,
-  },
-];
 
 const BigTrigger = () => (
   <PopoverTrigger asChild>
@@ -56,10 +36,37 @@ const DefaultTrigger = () => (
   </PopoverTrigger>
 );
 
-const List = ({ onSelect, restrict }: Omit<SelectBlockTypeProps, "label">) => {
-  const filteredButtons = restrict?.length
-    ? buttons.filter((item) => restrict.includes(item.type))
-    : buttons;
+const List = ({ onSelect, path }: Omit<SelectBlockTypeProps, "label">) => {
+  const { parseAncestors } = usePageEditor();
+
+  const buttons: {
+    type: AllBlocksType["type"];
+    label: string;
+    icon: LucideIcon;
+    allow: (path: BlockPathType) => boolean;
+  }[] = [
+    {
+      type: "headline",
+      label: t("direktivPage.blockEditor.blockName.headline"),
+      icon: Heading1,
+      allow: () => true,
+    },
+    {
+      type: "text",
+      label: t("direktivPage.blockEditor.blockName.text"),
+      icon: Text,
+      allow: () => true,
+    },
+    {
+      type: "columns",
+      label: t("direktivPage.blockEditor.blockName.columns"),
+      icon: Columns2,
+      allow: (path: BlockPathType) =>
+        !parseAncestors(path, (block) => block.type === "columns"),
+    },
+  ];
+
+  const filteredButtons = buttons.filter((type) => type.allow(path) === true);
 
   return (
     <PopoverContent asChild>
@@ -86,10 +93,10 @@ const List = ({ onSelect, restrict }: Omit<SelectBlockTypeProps, "label">) => {
 export const SelectBlockType = ({
   onSelect,
   big = false,
-  restrict,
+  path,
 }: SelectBlockTypeProps) => (
   <Popover>
     {big ? <BigTrigger /> : <DefaultTrigger />}
-    <List onSelect={onSelect} restrict={restrict} />
+    <List onSelect={onSelect} path={path} />
   </Popover>
 );
