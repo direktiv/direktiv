@@ -1,13 +1,12 @@
-import { Block, BlockPathType } from "./Block";
 import { DirektivPagesSchema, DirektivPagesType } from "../schema";
 import {
   PageCompilerContextProvider,
   PageCompilerProps,
-  usePageEditor,
 } from "./context/pageCompilerContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { AllBlocksType } from "../schema/blocks";
+import { Block } from "./Block";
 import { BlockList } from "./Block/utils/BlockList";
 import { DndContext } from "~/design/DragAndDropEditor/Context.tsx";
 import { DroppableSeparator } from "~/design/DragAndDropEditor/DroppableSeparator";
@@ -35,12 +34,6 @@ export const PageCompiler = ({
   const [page, setPage] = useState<DirektivPagesType>(initialPage ?? "");
   const parsedPage = DirektivPagesSchema.safeParse(page);
   const { t } = useTranslation();
-  // const { useBlock } = usePageEditor();
-
-  // const [path, setPath] = useState<BlockPathType>([0, 0]);
-  // const findBlock = (path: BlockPathType) => {
-  //   useBlock(path);
-  // }
   if (!parsedPage.success) {
     return (
       <ParsingError title={t("direktivPage.error.invalidSchema")}>
@@ -52,9 +45,6 @@ export const PageCompiler = ({
   const onMove = (name: string, target: string, element: AllBlocksType) => {
     const newPage = page;
 
-    //const newElement = useBlock(path);
-    console.log("target " + target);
-    console.log("name" + name);
     newPage.blocks.splice(Number(target), 0, element);
     setPage(newPage);
   };
