@@ -204,7 +204,6 @@ describe('Test special command with supress', () => {
 		)
 	},
 	)
-
 })
 
 describe('Test special command with stop', () => {
