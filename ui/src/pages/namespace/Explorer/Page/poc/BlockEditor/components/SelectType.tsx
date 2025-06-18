@@ -36,9 +36,7 @@ const DefaultTrigger = () => (
 );
 
 const List = ({ onSelect, path }: Omit<SelectBlockTypeProps, "label">) => {
-  const types = useBlockTypes();
-
-  const filteredTypes = types.filter((type) => type.allow(path) === true);
+  const types = useBlockTypes(path);
 
   return (
     <PopoverContent asChild>
@@ -46,7 +44,7 @@ const List = ({ onSelect, path }: Omit<SelectBlockTypeProps, "label">) => {
         className="z-10 -mt-2 flex w-fit flex-col p-2 text-center dark:bg-gray-dark-2"
         noShadow
       >
-        {filteredTypes.map((type) => (
+        {types.map((type) => (
           <Button
             variant="outline"
             key={type.label}

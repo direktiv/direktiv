@@ -6,18 +6,18 @@ import { parseAncestors } from ".";
 import { usePage } from "../pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
-type BlockTypesConfig = {
+type BlockTypeConfig = {
   type: AllBlocksType["type"];
   label: string;
   icon: LucideIcon;
-  allow: (path: BlockPathType) => boolean;
-}[];
+  allow: () => boolean;
+};
 
-export const useBlockTypes = (): BlockTypesConfig => {
+export const useBlockTypes = (path: BlockPathType): BlockTypeConfig[] => {
   const { t } = useTranslation();
   const page = usePage();
 
-  return [
+  const config = [
     {
       type: "headline",
       label: t("direktivPage.blockEditor.blockName.headline"),
@@ -34,12 +34,14 @@ export const useBlockTypes = (): BlockTypesConfig => {
       type: "columns",
       label: t("direktivPage.blockEditor.blockName.columns"),
       icon: Columns2,
-      allow: (path: BlockPathType) =>
+      allow: () =>
         !parseAncestors({
           page,
           path,
           fn: (block) => block.type === "columns",
         }),
     },
-  ];
+  ] satisfies BlockTypeConfig[];
+
+  return config.filter((type) => type.allow() === true);
 };
