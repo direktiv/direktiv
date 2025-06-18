@@ -4,7 +4,7 @@ import { useVariableStringResolver } from "./useVariableStringResolver";
 
 /**
  * A hook that returns a function that enables you to analyze a string
- * for variable strings and replace them with their resolved valuee from
+ * for variable strings and replace them with their resolved value from
  * the React context.
  *
  * Example:
