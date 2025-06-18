@@ -35,7 +35,11 @@ export const useBlockTypes = (): BlockTypesConfig => {
       label: t("direktivPage.blockEditor.blockName.columns"),
       icon: Columns2,
       allow: (path: BlockPathType) =>
-        !parseAncestors(page, path, (block) => block.type === "columns"),
+        !parseAncestors({
+          page,
+          path,
+          fn: (block) => block.type === "columns",
+        }),
     },
   ];
 };

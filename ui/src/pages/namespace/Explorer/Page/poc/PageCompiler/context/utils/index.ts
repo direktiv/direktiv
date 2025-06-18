@@ -127,12 +127,19 @@ export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
   return a.length === b.length && a.every((val, index) => val === b[index]);
 };
 
-export const parseAncestors = (
-  page: DirektivPagesType,
-  path: BlockPathType,
-  fn: (block: AllBlocksType | DirektivPagesType) => boolean,
-  depth?: number
-) => {
+type ParseAncestorsConfig = {
+  page: DirektivPagesType;
+  path: BlockPathType;
+  fn: (block: AllBlocksType | DirektivPagesType) => boolean;
+  depth?: number;
+};
+
+export const parseAncestors = ({
+  page,
+  path,
+  fn,
+  depth,
+}: ParseAncestorsConfig) => {
   const limit = depth ? path.length - depth - 1 : 0;
   for (let i = path.length - 1; i > limit; i--) {
     const ancestor = findBlock(page, path.slice(0, i));
