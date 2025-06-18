@@ -8,7 +8,7 @@ export const useUrlGenerator = () => {
   const interpolateString = useStringInterpolation();
 
   return (input: QueryType | MutationType) => {
-    const { baseUrl, queryParams } = input;
+    const { url, queryParams } = input;
     const queryParamsResolved = resolveKeyValueArray(queryParams ?? []);
     const searchParams = new URLSearchParams();
     queryParamsResolved?.forEach(({ key, value }) => {
@@ -16,10 +16,12 @@ export const useUrlGenerator = () => {
     });
 
     const queryString = searchParams.toString();
-    const interpolatedBaseUrl = interpolateString(baseUrl);
+    const interpolatedUrl = interpolateString(url);
 
-    return queryString
-      ? interpolatedBaseUrl.concat("?", queryString)
-      : interpolatedBaseUrl;
+    const requestUrl = queryString
+      ? interpolatedUrl.concat("?", queryString)
+      : interpolatedUrl;
+
+    return requestUrl;
   };
 };
