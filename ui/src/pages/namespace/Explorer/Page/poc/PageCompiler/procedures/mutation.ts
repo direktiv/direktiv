@@ -2,13 +2,16 @@ import {
   keyValueArrayToObject,
   useKeyValueArrayResolver,
 } from "../primitives/keyValue/utils";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { MutationType } from "../../schema/procedures/mutation";
-import { useMutation } from "@tanstack/react-query";
+import { useToast } from "~/design/Toast";
 import { useUrlGenerator } from "./utils";
 
 export const usePageMutation = (mutation: MutationType) => {
   const { method, requestBody, requestHeaders } = mutation;
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const url = useUrlGenerator()(mutation);
   const resolveKeyValueArray = useKeyValueArrayResolver();
@@ -25,9 +28,19 @@ export const usePageMutation = (mutation: MutationType) => {
         headers,
       });
       if (!response.ok) {
-        throw new Error("Something went wrong.");
+        throw new Error(`${response.status}: ${response.statusText}`);
       }
       return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+    },
+    onError: (e) => {
+      toast({
+        title: e.name,
+        description: e.message,
+        variant: "error",
+      });
     },
   });
 };

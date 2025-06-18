@@ -9,6 +9,7 @@ import { BlockDialogProvider } from "../BlockEditor/BlockDialogProvider";
 import { BlockList } from "./Block/utils/BlockList";
 import { DirektivPagesSchema } from "../schema";
 import { ParsingError } from "./Block/utils/ParsingError";
+import { Toaster } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
 const queryClient = new QueryClient({
@@ -47,6 +48,7 @@ export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
           </BlockList>
         </BlockDialogProvider>
       </QueryClientProvider>
+      <Toaster />
     </PageCompilerContextProvider>
   );
 };
