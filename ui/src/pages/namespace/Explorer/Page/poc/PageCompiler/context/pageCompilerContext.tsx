@@ -58,7 +58,7 @@ const usePageStateContext = () => {
   return context;
 };
 
-const usePage = () => {
+export const usePage = () => {
   const { page } = usePageStateContext();
   return page;
 };
