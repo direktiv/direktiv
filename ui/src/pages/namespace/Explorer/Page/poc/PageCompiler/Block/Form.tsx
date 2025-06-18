@@ -1,5 +1,7 @@
 import { Block, BlockPathType } from ".";
+import { CornerDownLeft, Send } from "lucide-react";
 
+import Alert from "~/design/Alert";
 import { BlockList } from "./utils/BlockList";
 import Button from "~/design/Button";
 import { FormType } from "../../schema/blocks/form";
@@ -14,7 +16,7 @@ type FormProps = {
 export const Form = ({ blockProps, blockPath }: FormProps) => {
   const { mutation } = blockProps;
 
-  const { mutate } = usePageMutation(mutation);
+  const { mutate, isPending, error } = usePageMutation(mutation);
 
   const { t } = useTranslation();
   return (
@@ -25,13 +27,21 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
         mutate();
       }}
     >
+      {error && (
+        <Alert variant="error" className="mb-4">
+          {error.message}
+        </Alert>
+      )}
       <BlockList>
         {blockProps.blocks.map((block, index) => (
           <Block key={index} block={block} blockPath={[...blockPath, index]} />
         ))}
       </BlockList>
       <div className="mt-4 flex justify-end">
-        <Button>{t("direktivPage.page.blocks.form.save")}</Button>
+        <Button disabled={isPending} loading={isPending}>
+          {!isPending && <Send />}
+          {t("direktivPage.page.blocks.form.save")}
+        </Button>
       </div>
     </form>
   );

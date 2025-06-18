@@ -35,12 +35,5 @@ export const usePageMutation = (mutation: MutationType) => {
     onSuccess: () => {
       queryClient.invalidateQueries();
     },
-    onError: (e) => {
-      toast({
-        title: e.name,
-        description: e.message,
-        variant: "error",
-      });
-    },
   });
 };
