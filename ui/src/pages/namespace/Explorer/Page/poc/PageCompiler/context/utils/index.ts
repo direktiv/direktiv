@@ -130,9 +130,11 @@ export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
 export const parseAncestors = (
   page: DirektivPagesType,
   path: BlockPathType,
-  fn: (block: AllBlocksType | DirektivPagesType) => boolean
+  fn: (block: AllBlocksType | DirektivPagesType) => boolean,
+  depth?: number
 ) => {
-  for (let i = path.length - 1; i > 0; i--) {
+  const limit = depth ? path.length - depth - 1 : 0;
+  for (let i = path.length - 1; i > limit; i--) {
     const ancestor = findBlock(page, path.slice(0, i));
     if (fn(ancestor)) {
       return true;
