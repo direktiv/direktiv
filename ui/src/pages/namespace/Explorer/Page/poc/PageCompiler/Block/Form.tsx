@@ -1,10 +1,10 @@
 import { Block, BlockPathType } from ".";
-import { CornerDownLeft, Send } from "lucide-react";
 
 import Alert from "~/design/Alert";
 import { BlockList } from "./utils/BlockList";
 import Button from "~/design/Button";
 import { FormType } from "../../schema/blocks/form";
+import { Send } from "lucide-react";
 import { usePageMutation } from "../procedures/mutation";
 import { useTranslation } from "react-i18next";
 

@@ -5,13 +5,11 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { MutationType } from "../../schema/procedures/mutation";
-import { useToast } from "~/design/Toast";
 import { useUrlGenerator } from "./utils";
 
 export const usePageMutation = (mutation: MutationType) => {
   const { method, requestBody, requestHeaders } = mutation;
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const url = useUrlGenerator()(mutation);
   const resolveKeyValueArray = useKeyValueArrayResolver();
