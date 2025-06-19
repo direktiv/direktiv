@@ -16,7 +16,9 @@ export const usePageMutation = (mutation: MutationType) => {
 
   const requestBodyResolved = resolveKeyValueArray(requestBody ?? []);
   const body = JSON.stringify(keyValueArrayToObject(requestBodyResolved));
-  const headers = keyValueArrayToObject(requestHeaders ?? []);
+
+  const requestHeadersResolved = resolveKeyValueArray(requestHeaders ?? []);
+  const headers = keyValueArrayToObject(requestHeadersResolved);
 
   return useMutation({
     mutationFn: async () => {
