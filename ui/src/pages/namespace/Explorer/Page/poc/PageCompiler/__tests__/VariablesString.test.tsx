@@ -138,7 +138,7 @@ describe("VariableString", () => {
                 queries: [
                   {
                     id: "company-list",
-                    endpoint: "/companies",
+                    url: "/companies",
                   },
                 ],
                 blocks: [
@@ -180,7 +180,7 @@ describe("VariableString", () => {
                 queries: [
                   {
                     id: "company-list",
-                    endpoint: "/companies",
+                    url: "/companies",
                   },
                 ],
                 blocks: [
@@ -197,7 +197,7 @@ describe("VariableString", () => {
                         queries: [
                           {
                             id: "client",
-                            endpoint: "/client/101",
+                            url: "/client/101",
                           },
                         ],
                         blocks: [
@@ -243,7 +243,7 @@ describe("VariableString", () => {
                 queries: [
                   {
                     id: "data-types",
-                    endpoint: "/data-types",
+                    url: "/data-types",
                   },
                 ],
                 blocks: [
@@ -320,7 +320,7 @@ describe("VariableString", () => {
                 queries: [
                   {
                     id: "company-list",
-                    endpoint: "/companies",
+                    url: "/companies",
                   },
                 ],
                 blocks: [
@@ -329,7 +329,7 @@ describe("VariableString", () => {
                     queries: [
                       {
                         id: "company-list",
-                        endpoint: "/companies",
+                        url: "/companies",
                       },
                     ],
                     blocks: [],
@@ -366,7 +366,7 @@ describe("VariableString", () => {
                 queries: [
                   {
                     id: "company-list",
-                    endpoint: "/companies",
+                    url: "/companies",
                   },
                 ],
                 blocks: [
@@ -426,7 +426,7 @@ describe("VariableString", () => {
                 queries: [
                   {
                     id: "company-list",
-                    endpoint: "/companies",
+                    url: "/companies",
                   },
                 ],
                 blocks: [
@@ -438,7 +438,7 @@ describe("VariableString", () => {
                         queries: [
                           {
                             id: "client",
-                            endpoint: "/client/101",
+                            url: "/client/101",
                           },
                         ],
                         blocks: [
@@ -526,7 +526,7 @@ describe("VariableString", () => {
                 queries: [
                   {
                     id: "company-list",
-                    endpoint: "/companies",
+                    url: "/companies",
                   },
                 ],
                 blocks: [
@@ -576,7 +576,7 @@ describe("VariableString", () => {
                 queries: [
                   {
                     id: "company-list",
-                    endpoint: "/companies",
+                    url: "/companies",
                   },
                 ],
                 blocks: [

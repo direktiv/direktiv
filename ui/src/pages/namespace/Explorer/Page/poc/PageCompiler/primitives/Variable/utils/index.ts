@@ -1,5 +1,9 @@
 import { JsonPathError, ValidateVariableError } from "./errors";
 import {
+  TemplateStringSeparator,
+  TemplateStringType,
+} from "../../../../schema/primitives/templateString";
+import {
   VariableNamespaceSchema,
   VariableObject,
   VariableObjectValidated,
@@ -7,7 +11,6 @@ import {
 } from "../../../../schema/primitives/variable";
 
 import { Result } from "./types";
-import { TemplateStringSeparator } from "../../../../schema/primitives/templateString";
 import { z } from "zod";
 
 /**
@@ -23,6 +26,35 @@ import { z } from "zod";
  * The 'g' (global) flag ensures all variable patterns in the string are matched.
  */
 export const variablePattern = /{{\s*([^\s{}]+)\s*}}/g;
+
+/**
+ * Splits a template string into an array of text fragments and processed variables.
+ *
+ * The function processes a string containing variables in the format {{variable}}
+ * and returns an array where:
+ * - text fragments are left untouched
+ * - variables are processed through the provided callback function
+ * - empty strings are included to preserve positional information
+ *
+ * Example: "Hello {{name}}!" with callback (match) => `[${match}]` returns:
+ * ["Hello ", "[name]", "!"]
+ */
+export const parseTemplateString = <T>(
+  value: TemplateStringType,
+  onMatch: (match: string, index: number) => T
+): (string | T)[] => {
+  const fragments = value.split(variablePattern);
+
+  return fragments.map((fragment, index) => {
+    const isVariable = index % 2 === 1;
+
+    if (isVariable) {
+      return onMatch(fragment, index);
+    }
+
+    return fragment;
+  });
+};
 
 /**
  * Parses a variable string into its individual components.
