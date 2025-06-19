@@ -17,18 +17,34 @@ import { setupServer } from "msw/node";
 
 const setPage = (page: DirektivPagesType) => page;
 
+const apiRequestMock = vi.fn();
+
 const apiServer = setupServer(
-  http.get("/json-response", () =>
-    HttpResponse.json({
-      data: { message: "hello from the server" },
-    })
-  ),
-  http.get("/text-response", () =>
-    HttpResponse.text("this is a text response")
-  ),
-  http.get("/404", () =>
-    HttpResponse.json({ error: "not found" }, { status: 404 })
-  )
+  http.get("/json-response", (...args) => {
+    apiRequestMock(...args);
+    return HttpResponse.json({
+      data: {
+        id: "1",
+        message: "hello from the server",
+      },
+    });
+  }),
+  http.get("/dynamic/:id/path", (...args) => {
+    apiRequestMock(...args);
+    return HttpResponse.json({
+      data: {
+        message: "hello from the server",
+      },
+    });
+  }),
+  http.get("/text-response", (...args) => {
+    apiRequestMock(...args);
+    return HttpResponse.text("this is a text response");
+  }),
+  http.get("/404", (...args) => {
+    apiRequestMock(...args);
+    return HttpResponse.json({ error: "not found" }, { status: 404 });
+  })
 );
 
 beforeAll(() => {
@@ -75,6 +91,52 @@ describe("QueryProvider", () => {
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
       "This comes from the query provider: hello from the server"
     );
+  });
+
+  test("will interpolate variables in the url and query params", async () => {
+    await act(async () => {
+      render(
+        <PageCompiler
+          setPage={setPage}
+          page={createDirektivPage([
+            {
+              type: "query-provider",
+              queries: [
+                {
+                  id: "json-response",
+                  url: "/json-response",
+                },
+              ],
+              blocks: [
+                {
+                  type: "query-provider",
+                  queries: [
+                    {
+                      id: "request-with-variables",
+                      url: "/dynamic/{{query.json-response.data.id}}/path",
+                      queryParams: [
+                        { key: "id", value: "{{query.json-response.data.id}}" },
+                      ],
+                    },
+                  ],
+                  blocks: [],
+                },
+              ],
+            },
+          ])}
+          mode="live"
+        />
+      );
+    });
+
+    expect(apiRequestMock).toHaveBeenCalledTimes(2);
+
+    const secondRequestUrl = new URL(
+      apiRequestMock.mock.calls[1][0].request.url
+    );
+
+    expect(secondRequestUrl.pathname).toBe("/dynamic/1/path");
+    expect(secondRequestUrl.search).toBe("?id=1");
   });
 
   test("shows an error when the query returns a status code outside of the 200 range", async () => {
