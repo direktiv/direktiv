@@ -28,7 +28,8 @@ export const usePageMutation = (mutation: MutationType) => {
       if (!response.ok) {
         throw new Error(`${response.status}: ${response.statusText}`);
       }
-      return await response.json();
+
+      return;
     },
     onSuccess: () => {
       queryClient.invalidateQueries();
