@@ -2,7 +2,7 @@ import { Block, BlockPathType } from ".";
 
 import Alert from "~/design/Alert";
 import { BlockList } from "./utils/BlockList";
-import Button from "~/design/Button";
+import { Button } from "./Button";
 import { FormType } from "../../schema/blocks/form";
 import { Send } from "lucide-react";
 import { usePageMutation } from "../procedures/mutation";
@@ -14,7 +14,7 @@ type FormProps = {
 };
 
 export const Form = ({ blockProps, blockPath }: FormProps) => {
-  const { mutation } = blockProps;
+  const { mutation, trigger } = blockProps;
   const { mutate, isPending, error, isSuccess } = usePageMutation(mutation);
 
   const { t } = useTranslation();
@@ -50,10 +50,12 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
 
       {!isSuccess && (
         <div className="mt-4 flex justify-end">
-          <Button disabled={isPending} loading={isPending}>
-            {!isPending && <Send />}
-            {t("direktivPage.page.blocks.form.save")}
-          </Button>
+          <Button
+            disabled={isPending}
+            loading={isPending}
+            blockProps={trigger}
+            as="button"
+          />
         </div>
       )}
     </form>

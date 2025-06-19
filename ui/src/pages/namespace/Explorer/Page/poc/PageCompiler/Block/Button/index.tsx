@@ -3,7 +3,7 @@ import { Ref, forwardRef } from "react";
 import { TextButton, TextButtonProps } from "./TextButton";
 
 type ButtonCompoundProps =
-  | ({ as?: "button" } & DefaultButtonProps)
+  | ({ as?: "button"; disabled?: boolean } & DefaultButtonProps)
   | ({ as: "text" } & TextButtonProps);
 
 export const Button = forwardRef<
