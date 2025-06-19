@@ -1665,7 +1665,9 @@
     "page": {
       "blocks": {
         "table": { "noResult": "No entries to show" },
-        "form": { "save": "Save" }
+        "form": {
+          "success": "The form has been submitted successfully",
+          "save": "Save" }
       }
     },
     "blockEditor": {

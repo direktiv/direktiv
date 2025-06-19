@@ -15,8 +15,7 @@ type FormProps = {
 
 export const Form = ({ blockProps, blockPath }: FormProps) => {
   const { mutation } = blockProps;
-
-  const { mutate, isPending, error } = usePageMutation(mutation);
+  const { mutate, isPending, error, isSuccess } = usePageMutation(mutation);
 
   const { t } = useTranslation();
   return (
@@ -32,17 +31,31 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
           {error.message}
         </Alert>
       )}
-      <BlockList>
-        {blockProps.blocks.map((block, index) => (
-          <Block key={index} block={block} blockPath={[...blockPath, index]} />
-        ))}
-      </BlockList>
-      <div className="mt-4 flex justify-end">
-        <Button disabled={isPending} loading={isPending}>
-          {!isPending && <Send />}
-          {t("direktivPage.page.blocks.form.save")}
-        </Button>
-      </div>
+
+      {isSuccess ? (
+        <Alert variant="success" className="mb-4">
+          {t("direktivPage.page.blocks.form.success")}
+        </Alert>
+      ) : (
+        <BlockList>
+          {blockProps.blocks.map((block, index) => (
+            <Block
+              key={index}
+              block={block}
+              blockPath={[...blockPath, index]}
+            />
+          ))}
+        </BlockList>
+      )}
+
+      {!isSuccess && (
+        <div className="mt-4 flex justify-end">
+          <Button disabled={isPending} loading={isPending}>
+            {!isPending && <Send />}
+            {t("direktivPage.page.blocks.form.save")}
+          </Button>
+        </div>
+      )}
     </form>
   );
 };
