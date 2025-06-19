@@ -4,7 +4,6 @@ import Alert from "~/design/Alert";
 import { BlockList } from "./utils/BlockList";
 import { Button } from "./Button";
 import { FormType } from "../../schema/blocks/form";
-import { Send } from "lucide-react";
 import { usePageMutation } from "../procedures/mutation";
 import { useTranslation } from "react-i18next";
 
