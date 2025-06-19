@@ -17,10 +17,10 @@ import { useVariableStringResolver } from "./useVariableStringResolver";
  */
 export const useStringInterpolation = () => {
   const { t } = useTranslation();
-  const resolveVariableStringFn = useVariableStringResolver();
+  const resolveVariableString = useVariableStringResolver();
   return (input: string) =>
     parseTemplateString(input, (match) => {
-      const result = resolveVariableStringFn(match);
+      const result = resolveVariableString(match);
       if (!result.success) {
         throw new Error(t(`direktivPage.error.templateString.${result.error}`));
       }

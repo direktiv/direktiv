@@ -6,10 +6,10 @@ import { useUrlGenerator } from "./utils";
 
 export const usePageSuspenseQueries = (queries: QueryType[]) => {
   const { t } = useTranslation();
-  const getUrlFn = useUrlGenerator();
+  const generateUrl = useUrlGenerator();
   return useSuspenseQueries({
     queries: queries.map((query) => {
-      const url = getUrlFn(query);
+      const url = generateUrl(query);
       const { id } = query;
       return queryOptions({
         queryKey: [id, url],

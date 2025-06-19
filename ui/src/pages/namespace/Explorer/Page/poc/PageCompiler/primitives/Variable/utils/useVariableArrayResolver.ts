@@ -7,6 +7,10 @@ import { z } from "zod";
 const UnknownArraySchema = z.array(z.unknown());
 type UnknownArray = z.infer<typeof UnknownArraySchema>;
 
+/**
+ * A hook that works the same as useVariableResolver
+ * but ensures that the resolved value is an array.
+ */
 export const useVariableArrayResolver = () => {
   const resolveVariable = useVariableResolver();
   return (

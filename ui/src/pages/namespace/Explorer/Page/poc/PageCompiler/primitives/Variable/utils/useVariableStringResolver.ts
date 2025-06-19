@@ -13,6 +13,10 @@ const StringCompatible = z.union([
 
 type StringCompatibleType = z.infer<typeof StringCompatible>;
 
+/**
+ * A hook that works the same as useVariableResolver
+ * but ensures that the resolved value is a string.
+ */
 export const useVariableStringResolver = () => {
   const resolveVariable = useVariableResolver();
   return (
