@@ -1,0 +1,19 @@
+# https://taskfile.dev
+
+version: '3'
+
+includes:
+  zarf:
+    taskfile: ./zarf/taskfile.yml
+    dir: ./zarf
+
+vars:
+  GREETING: Hello, World!
+
+
+
+tasks:
+  default:
+    cmds:
+      - echo "{{.GREETING}}"
+    silent: true

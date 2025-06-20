@@ -1,3 +1,11 @@
+# DIRECTORY STRUCTURE
+
+The main `zarf.yaml` provides the airgap installation of Direktiv. The package configuration for the yolo (live) version resides in the directory `yolo`. 
+
+The individual components are in the `components` folder. The `zarf.yaml` in each component is the basic configuration and it has `images` and `yolo` folders for the different installation methods. The difference between the two configuration files in there is the `image` section for airgaped installations. 
+
+**TEMPLATES**: The Direktiv component uses templates to change the version number on release. The `zarf.yaml` file is being created using the taskfile during package creation.  
+
 # INIT
 
 ## WITH k3S

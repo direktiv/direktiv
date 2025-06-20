@@ -2,6 +2,8 @@
 
 This component installs Direktiv. It can be deployed with TLS certificates with `--set DIREKTIV_WITH_CERTIFICATE=true` added to the command line during deployment. This setting looks for two files `server.key` and `server.crt` and uses those for TLS connectivity. If they don't exist these files are getting create based on the value provided with `DIREKTIV_HOST`.
 
+zarf package deploy --set DIREKTIV_INGRESS_HOSTPORT=true --set DIREKTIV_INGRESS_SERVICE_TYPE=ClusterIP --set DIREKTIV_IMAGE=direktiv --set DIREKTIV_TAG=dev  --set DIREKTIV_REGISTRY=localhost:5001
+
 ## Variables
 
 ***DATABASE_HOST***: Database host, if not set it fetches the internal Postgres installation automatically 
@@ -26,7 +28,13 @@ This component installs Direktiv. It can be deployed with TLS certificates with 
 
 ***DIREKTIV_INGRESS_INSTALL***: Installation of Nginx (Default: true)
 
+###ZARF_VAR_DIREKTIV_REGISTRY###
+###DIREKTIV_INGRESS_HOSTPORT###
+###DIREKTIV_INGRESS_SERVICE_TYPE###
+
 ***DIREKTIV_IMAGE***: Direktiv image to be used (Default: direktiv/direktiv)
+
+***DIREKTIV_TAG***: Direktiv tag to use
 
 ***DIREKTIV_REQUEST_TIMEOUT***: Nginx timeout (Default: 7200)
 

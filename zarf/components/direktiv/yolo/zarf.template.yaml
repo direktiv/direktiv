@@ -1,7 +1,7 @@
 kind: ZarfPackageConfig 
 metadata:
   name: direktiv-no-images
-  version: v0.9.1
+  version: VERSION
   description: "direktiv installation"
   yolo: true
 
