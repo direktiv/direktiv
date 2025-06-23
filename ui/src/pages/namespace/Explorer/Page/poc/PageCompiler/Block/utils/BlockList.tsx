@@ -1,16 +1,15 @@
-import { AllBlocksType, inlineBlockTypes } from "../../../schema/blocks";
 import {
   PageCompilerMode,
+  useCreateBlock,
   usePageEditor,
 } from "../../context/pageCompilerContext";
 import { ReactElement, Suspense } from "react";
 
+import { AllBlocksType } from "../../../schema/blocks";
 import { BlockPathType } from "..";
 import { Loading } from "./Loading";
 import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
-import { getBlockTemplate } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
-import { useBlockDialog } from "../../../BlockEditor/BlockDialogProvider";
 
 type BlockListProps = {
   horizontal?: boolean;
@@ -26,8 +25,8 @@ export const BlockList = ({
   children,
   path,
 }: BlockListComponentProps) => {
-  const { setDialog } = useBlockDialog();
-  const { mode, addBlock } = usePageEditor();
+  const { mode } = usePageEditor();
+  const { createBlock } = useCreateBlock();
 
   return (
     <div
@@ -40,20 +39,14 @@ export const BlockList = ({
     >
       <Suspense fallback={<Loading />}>
         {mode === "edit" && !children.length && (
-          <div className="self-center">
+          <div
+            className="self-center"
+            onClick={(event) => event.stopPropagation()}
+          >
             <SelectBlockType
               big
               path={path}
-              onSelect={(type) => {
-                if (inlineBlockTypes.includes(type)) {
-                  return addBlock([...path, 0], getBlockTemplate(type), true);
-                }
-                setDialog({
-                  action: "create",
-                  block: getBlockTemplate(type),
-                  path: [...path, 0],
-                });
-              }}
+              onSelect={(type) => createBlock(type, [...path, 0])}
             />
           </div>
         )}

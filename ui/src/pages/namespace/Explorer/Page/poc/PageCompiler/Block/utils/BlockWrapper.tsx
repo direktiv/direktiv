@@ -1,4 +1,3 @@
-import { AllBlocksType, inlineBlockTypes } from "../../../schema/blocks";
 import {
   PropsWithChildren,
   Suspense,
@@ -6,8 +5,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { getBlockTemplate, pathsEqual } from "../../context/utils";
+import {
+  useCreateBlock,
+  usePageEditor,
+} from "../../context/pageCompilerContext";
 
+import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockContextMenu } from "../../../BlockEditor/components/ContextMenu";
 import { BlockPathType } from "..";
@@ -15,9 +18,9 @@ import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
+import { pathsEqual } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useBlockDialog } from "../../../BlockEditor/BlockDialogProvider";
-import { usePageEditor } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
 type BlockWrapperProps = PropsWithChildren<{
@@ -31,10 +34,11 @@ export const BlockWrapper = ({
   children,
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
-  const { mode, focus, addBlock, setFocus } = usePageEditor();
+  const { mode, focus, setFocus } = usePageEditor();
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { setDialog } = useBlockDialog();
+  const { createBlock } = useCreateBlock();
 
   useEffect(() => {
     if (mode !== "edit") {
@@ -111,16 +115,7 @@ export const BlockWrapper = ({
             </div>
             <SelectBlockType
               path={blockPath}
-              onSelect={(type) => {
-                if (inlineBlockTypes.includes(type)) {
-                  return addBlock(blockPath, getBlockTemplate(type), true);
-                }
-                return setDialog({
-                  action: "create",
-                  block: getBlockTemplate(type),
-                  path: blockPath,
-                });
-              }}
+              onSelect={(type) => createBlock(type, blockPath)}
             />
           </div>
         )}

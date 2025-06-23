@@ -41,7 +41,7 @@ const List = ({ onSelect, path }: Omit<SelectBlockTypeProps, "label">) => {
   return (
     <PopoverContent asChild>
       <Card
-        className="z-10 -mt-2 flex w-fit flex-col p-2 text-center dark:bg-gray-dark-2"
+        className="z-40 -mt-2 flex w-fit flex-col p-2 text-center dark:bg-gray-dark-2"
         noShadow
       >
         {types.map((type) => (

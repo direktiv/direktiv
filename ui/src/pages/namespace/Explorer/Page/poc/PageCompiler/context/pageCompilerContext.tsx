@@ -1,3 +1,4 @@
+import { AllBlocksType, inlineBlockTypes } from "../../schema/blocks";
 import {
   Dispatch,
   FC,
@@ -10,13 +11,14 @@ import {
 import {
   addBlockToPage,
   deleteBlockFromPage,
+  getBlockTemplate,
   pathsEqual,
   updateBlockInPage,
 } from "./utils";
 
-import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../Block";
 import { DirektivPagesType } from "../../schema";
+import { useBlockDialog } from "../../BlockEditor/BlockDialogProvider";
 
 export type PageCompilerMode = "edit" | "live";
 
@@ -35,10 +37,9 @@ const PageCompilerContext = createContext<PageCompilerState | null>(null);
 
 type PageCompilerContextProviderProps = PropsWithChildren<PageCompilerProps>;
 
-const PageCompilerContextProvider: FC<PageCompilerContextProviderProps> = ({
-  children,
-  ...value
-}) => {
+export const PageCompilerContextProvider: FC<
+  PageCompilerContextProviderProps
+> = ({ children, ...value }) => {
   const [focus, setFocus] = useState<BlockPathType | null>(null);
   return (
     <PageCompilerContext.Provider value={{ ...value, focus, setFocus }}>
@@ -69,6 +70,10 @@ export const usePage = () => {
 //   return findBlock(page, path);
 // };
 
+/**
+ * This hook returns variables and methods to update the page,
+ * for example, creating, updating or deleting blocks.
+ */
 export const usePageEditor = () => {
   const page = usePage();
   const {
@@ -117,4 +122,25 @@ export const usePageEditor = () => {
   };
 };
 
-export { PageCompilerContextProvider };
+/**
+ * This hook returns createBlock(), which opens the editor dialog for
+ * blocks such as text blocks, or just adds an inline block to the page
+ * (e.g., cards or columns, where no dialog is required).
+ */
+export const useCreateBlock = () => {
+  const { addBlock } = usePageEditor();
+  const { setDialog } = useBlockDialog();
+
+  const createBlock = (type: AllBlocksType["type"], path: BlockPathType) => {
+    if (inlineBlockTypes.includes(type)) {
+      return addBlock(path, getBlockTemplate(type), true);
+    }
+    setDialog({
+      action: "create",
+      block: getBlockTemplate(type),
+      path,
+    });
+  };
+
+  return { createBlock };
+};
