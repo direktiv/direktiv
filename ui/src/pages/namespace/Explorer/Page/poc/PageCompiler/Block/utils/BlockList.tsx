@@ -1,10 +1,10 @@
+import { AllBlocksType, inlineBlockTypes } from "../../../schema/blocks";
 import {
   PageCompilerMode,
   usePageEditor,
 } from "../../context/pageCompilerContext";
 import { ReactElement, Suspense } from "react";
 
-import { AllBlocksType } from "../../../schema/blocks";
 import { BlockPathType } from "..";
 import { Loading } from "./Loading";
 import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
@@ -27,7 +27,7 @@ export const BlockList = ({
   path,
 }: BlockListComponentProps) => {
   const { setDialog } = useBlockDialog();
-  const { mode } = usePageEditor();
+  const { mode, addBlock } = usePageEditor();
 
   return (
     <div
@@ -45,6 +45,9 @@ export const BlockList = ({
               big
               path={path}
               onSelect={(type) => {
+                if (inlineBlockTypes.includes(type)) {
+                  return addBlock([...path, 0], getBlockTemplate(type), true);
+                }
                 setDialog({
                   action: "create",
                   block: getBlockTemplate(type),
