@@ -1,0 +1,71 @@
+version: '3'
+
+includes:
+  version:  
+    taskfile: ../taskfile-version.yaml
+
+
+tasks:
+  version:
+    desc: Changes version of direktiv in zarf files
+    deps: [version:check]
+    cmds:
+    # check version format
+    - |
+      {{- if not (regexMatch "(^v[0-9]\\.[0-9]\\.[0-9]$)|^latest$|^dev$" .VERSION) -}}
+        echo "wrong version format: {{ .VERSION }}. either v0.0.0, dev or latest."
+        exit 1
+      {{- end -}}
+    # Replace version in zarf config files
+    - sed -e 's/VERSION/{{.VERSION}}/g' yolo/zarf.template.yaml > yolo/zarf.yaml
+    - sed -e 's/VERSION/{{.VERSION}}/g' zarf.template.yaml > zarf.yaml
+    - sed -e 's/VERSION/{{.VERSION}}/g' components/direktiv/images/zarf.template.yaml > components/direktiv/images/zarf.yaml
+    - sed -e 's/VERSION/{{.VERSION}}/g' components/direktiv/yolo/zarf.template.yaml > components/direktiv/yolo/zarf.yaml
+    - sed -e 's/VERSION/{{.VERSION}}/g' components/direktiv/zarf.template.yaml > components/direktiv/zarf.yaml
+    # if its dev, build charts from local and get image from local for airgap
+    - |
+      {{- if eq .VERSION  "dev" }}
+      sed -i -e 's/SOURCE: VALUE/localPath: ..\/..\/..\/charts\/direktiv/g' components/direktiv/zarf.yaml
+      sed -i -e 's/DIREKTIV_IMAGE/localhost:5001\/direktiv:dev/g'  components/direktiv/images/zarf.yaml
+      {{- else }}
+      sed -i -e 's/SOURCE: VALUE/url: https:\/\/charts.direktiv.io/g' components/direktiv/zarf.yaml
+      sed -i -e 's/DIREKTIV_IMAGE/docker.io\/direktiv\/direktiv:{{ .VERSION }}/g'  components/direktiv/images/zarf.yaml
+      {{- end }}
+    requires:
+      vars: [VERSION]
+    internal: true
+
+  create:
+    desc: Builds zarf airgap package for direktiv and dependencies
+    cmds: 
+    - task: version
+      vars: 
+        VERSION: '{{ .VERSION }}'
+    - zarf package create
+
+  dev-deploy:
+    desc: Deploys zarf airgap package
+    deps: [version:check]
+    cmds:
+    - zarf init --components=git-server --confirm
+    - zarf package deploy --confirm --components=postgres,linkerd --set DIREKTIV_INGRESS_HOSTPORT=true --set DIREKTIV_INGRESS_SERVICE_TYPE=ClusterIP --set DIREKTIV_IMAGE=direktiv --set DIREKTIV_TAG=dev  --set DIREKTIV_REGISTRY=localhost:5001 zarf-package-direktiv-full-amd64-{{ .VERSION }}.tar.zst
+    requires:
+      vars: [VERSION]
+
+  yolo-create:
+    desc: Builds yolo zarf package for direktiv and dependencies
+    cmds: 
+    - task: version
+      vars: 
+        VERSION: '{{ .VERSION }}'
+    - zarf package create yolo
+
+  yolo-dev-deploy:
+    desc: Deploys yolo zarf package
+    deps: [version:check]
+    cmds:
+    - zarf package deploy --confirm --components=postgres,linkerd --set DIREKTIV_INGRESS_HOSTPORT=true --set DIREKTIV_INGRESS_SERVICE_TYPE=ClusterIP --set DIREKTIV_IMAGE=direktiv --set DIREKTIV_TAG=dev  --set DIREKTIV_REGISTRY=localhost:5001 zarf-package-direktiv-full-no-images-amd64-{{ .VERSION }}.tar.zst
+    requires:
+      vars: [VERSION]
+
+  

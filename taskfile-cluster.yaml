@@ -1,0 +1,19 @@
+version: '3'
+
+tasks:
+  clean:
+    desc: Clean kind cluster
+    cmds:
+    - kind delete clusters --all
+
+  one-node:
+    desc: Setup empty one node kind cluster
+    cmds:
+    - task: clean
+    - kind create cluster --config kind-config.yaml
+
+  multi-node:
+    desc: Setup empty multi-node kind cluster
+    cmds:
+    - task: clean
+    - kind create cluster --config kind-config-cluster.yaml

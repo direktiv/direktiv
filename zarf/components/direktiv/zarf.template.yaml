@@ -105,7 +105,7 @@ components:
   - name: direktiv
     namespace: direktiv
     version: VERSION
-    url: https://charts.direktiv.io
+    SOURCE: VALUE
     valuesFiles:
     - values.yaml
     variables:

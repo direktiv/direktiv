@@ -1,19 +1,21 @@
-# https://taskfile.dev
-
 version: '3'
 
 includes:
   zarf:
-    taskfile: ./zarf/taskfile.yml
+    taskfile: ./zarf/taskfile.yaml
     dir: ./zarf
+  cluster: 
+    taskfile: taskfile-cluster.yaml
+  version:  
+    taskfile: taskfile-version.yaml
 
-vars:
-  GREETING: Hello, World!
 
+vars: 
+  VERSION: '{{.VERSION | default "dev"}}'
 
-
-tasks:
+tasks:  
   default:
+    deps: [version:check] 
     cmds:
-      - echo "{{.GREETING}}"
+    - echo "{{.VERSION}}"
     silent: true

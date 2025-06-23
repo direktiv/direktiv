@@ -119,5 +119,7 @@ zarf/server.key
 zarf/**/server.crt
 zarf/**/server.key
 zarf/yolo/zarf.yaml
+zarf/zarf.yaml
 zarf/components/direktiv/zarf.yaml
 zarf/components/direktiv/yolo/zarf.yaml
+zarf/components/direktiv/images/zarf.yaml

@@ -1,7 +1,7 @@
 kind: ZarfPackageConfig 
 metadata:
   name: direktiv-full
-  version: v0.9.1
+  version: VERSION
   description: "direktiv open source full installation"
 
 components:
