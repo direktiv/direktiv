@@ -1,4 +1,4 @@
-import { Columns2, Heading1, LucideIcon, Text } from "lucide-react";
+import { Captions, Columns2, Heading1, LucideIcon, Text } from "lucide-react";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import { BlockPathType } from "../../Block";
@@ -40,6 +40,17 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
         page,
         path,
         fn: (block) => block.type === "columns",
+      }),
+    },
+    {
+      type: "card",
+      label: t("direktivPage.blockEditor.blockName.card"),
+      icon: Captions,
+      allow: !parseAncestors({
+        page,
+        path,
+        fn: (block) => block.type === "card",
+        depth: 1,
       }),
     },
   ] satisfies BlockTypeConfig[];
