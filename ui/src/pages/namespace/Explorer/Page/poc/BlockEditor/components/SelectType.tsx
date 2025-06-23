@@ -1,4 +1,4 @@
-import { CirclePlus, Heading1, LucideIcon, Text } from "lucide-react";
+import { CirclePlus, Database, Heading1, LucideIcon, Text } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import { AllBlocksType } from "../../schema/blocks";
@@ -21,6 +21,11 @@ const buttons: {
     type: "headline" satisfies AllBlocksType["type"],
     label: t("direktivPage.blockEditor.blockName.headline"),
     icon: Heading1,
+  },
+  {
+    type: "query-provider",
+    label: t("direktivPage.blockEditor.blockName.query-provider"),
+    icon: Database,
   },
   {
     type: "text" satisfies AllBlocksType["type"],
@@ -60,7 +65,7 @@ const Content = ({ onSelect }: Pick<SelectBlockTypeProps, "onSelect">) => (
         <Button
           variant="outline"
           key={button.label}
-          className="my-1 w-36 justify-start text-xs"
+          className="my-1 w-40 justify-start text-xs"
           onClick={() => onSelect(button.type)}
         >
           <button.icon size={16} />
