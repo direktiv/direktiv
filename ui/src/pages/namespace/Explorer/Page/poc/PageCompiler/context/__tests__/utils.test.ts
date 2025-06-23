@@ -6,6 +6,7 @@ import {
   findBlock,
   isPage,
   isParentBlock,
+  parseAncestors,
   pathsEqual,
   updateBlockInPage,
 } from "../utils";
@@ -214,6 +215,86 @@ describe("deleteBlockFromPage", () => {
     expect(() => deleteBlockFromPage(simple, [])).toThrow(
       "Invalid path, could not extract index for target block"
     );
+  });
+});
+
+describe("parseAncestors", () => {
+  test("it returns true if at least one ancestor evaluates as true against the callback", () => {
+    const result = parseAncestors({
+      page: complex,
+      path: [2, 0, 1],
+      fn: (block) => block.type && block.type === "columns",
+    });
+    expect(result).toEqual(true);
+  });
+
+  test("it returns false if all ancestors evaluate as false against the callback", () => {
+    const result = parseAncestors({
+      page: complex,
+      path: [2, 0, 1],
+      fn: (block) => block.type && block.type === "headline",
+    });
+    expect(result).toEqual(false);
+  });
+
+  test("it returns true if ancestors within depth 1 evaluate as true", () => {
+    const result = parseAncestors({
+      page: complex,
+      path: [2, 0, 1],
+      fn: (block) => block.type && block.type === "column",
+      depth: 1,
+    });
+    expect(result).toEqual(true);
+  });
+
+  test("it returns false if ancestors within depth 1 evaluate as false", () => {
+    const result = parseAncestors({
+      page: complex,
+      path: [2, 0, 1],
+      fn: (block) => block.type && block.type === "columns",
+      depth: 1,
+    });
+    expect(result).toEqual(false);
+  });
+
+  test("it returns true if ancestors within depth 2 evaluate as true", () => {
+    const result = parseAncestors({
+      page: complex,
+      path: [3, 0, 0, 1],
+      fn: (block) => block.type && block.type === "dialog",
+      depth: 2,
+    });
+    expect(result).toEqual(true);
+  });
+
+  test("it returns false if ancestors within depth 2 evaluate as false", () => {
+    const result = parseAncestors({
+      page: complex,
+      path: [3, 0, 0, 1],
+      fn: (block) => block.type && block.type === "query-provider",
+      depth: 2,
+    });
+    expect(result).toEqual(false);
+  });
+
+  test("it returns true if ancestors within depth 3 evaluate as true", () => {
+    const result = parseAncestors({
+      page: complex,
+      path: [3, 0, 0, 1],
+      fn: (block) => block.type && block.type === "query-provider",
+      depth: 3,
+    });
+    expect(result).toEqual(true);
+  });
+
+  test("it returns false if ancestors within depth 3 evaluate as false", () => {
+    const result = parseAncestors({
+      page: complex,
+      path: [3, 0, 0, 1],
+      fn: (block) => block.type && block.type === "columns",
+      depth: 3,
+    });
+    expect(result).toEqual(false);
   });
 });
 

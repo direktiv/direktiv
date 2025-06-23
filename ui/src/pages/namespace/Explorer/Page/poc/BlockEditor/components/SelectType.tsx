@@ -1,39 +1,18 @@
-import { CirclePlus, Columns2, Heading1, LucideIcon, Text } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import { AllBlocksType } from "../../schema/blocks";
+import { BlockPathType } from "../../PageCompiler/Block";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import { CirclePlus } from "lucide-react";
 import { Trans } from "react-i18next";
-import { t } from "i18next";
+import { useBlockTypes } from "../../PageCompiler/context/utils/useBlockTypes";
 
 type SelectBlockTypeProps = {
   onSelect: (type: AllBlocksType["type"]) => void;
   big?: boolean;
-  restrict?: AllBlocksType["type"][];
+  path: BlockPathType;
 };
-
-const buttons: {
-  type: AllBlocksType["type"];
-  label: string;
-  icon: LucideIcon;
-}[] = [
-  {
-    type: "headline",
-    label: t("direktivPage.blockEditor.blockName.headline"),
-    icon: Heading1,
-  },
-  {
-    type: "text",
-    label: t("direktivPage.blockEditor.blockName.text"),
-    icon: Text,
-  },
-  {
-    type: "columns",
-    label: t("direktivPage.blockEditor.blockName.columns"),
-    icon: Columns2,
-  },
-];
 
 const BigTrigger = () => (
   <PopoverTrigger asChild>
@@ -56,10 +35,8 @@ const DefaultTrigger = () => (
   </PopoverTrigger>
 );
 
-const List = ({ onSelect, restrict }: Omit<SelectBlockTypeProps, "label">) => {
-  const filteredButtons = restrict?.length
-    ? buttons.filter((item) => restrict.includes(item.type))
-    : buttons;
+const List = ({ onSelect, path }: Omit<SelectBlockTypeProps, "label">) => {
+  const types = useBlockTypes(path);
 
   return (
     <PopoverContent asChild>
@@ -67,15 +44,15 @@ const List = ({ onSelect, restrict }: Omit<SelectBlockTypeProps, "label">) => {
         className="z-10 -mt-2 flex w-fit flex-col p-2 text-center dark:bg-gray-dark-2"
         noShadow
       >
-        {filteredButtons.map((button) => (
+        {types.map((type) => (
           <Button
             variant="outline"
-            key={button.label}
+            key={type.label}
             className="my-1 w-36 justify-start text-xs"
-            onClick={() => onSelect(button.type)}
+            onClick={() => onSelect(type.type)}
           >
-            <button.icon size={16} />
-            {button.label}
+            <type.icon size={16} />
+            {type.label}
           </Button>
         ))}
       </Card>
@@ -86,10 +63,10 @@ const List = ({ onSelect, restrict }: Omit<SelectBlockTypeProps, "label">) => {
 export const SelectBlockType = ({
   onSelect,
   big = false,
-  restrict,
+  path,
 }: SelectBlockTypeProps) => (
   <Popover>
     {big ? <BigTrigger /> : <DefaultTrigger />}
-    <List onSelect={onSelect} restrict={restrict} />
+    <List onSelect={onSelect} path={path} />
   </Popover>
 );

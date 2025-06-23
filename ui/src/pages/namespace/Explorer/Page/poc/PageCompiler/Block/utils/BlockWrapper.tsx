@@ -110,6 +110,7 @@ export const BlockWrapper = ({
               />
             </div>
             <SelectBlockType
+              path={blockPath}
               onSelect={(type) => {
                 if (inlineBlockTypes.includes(type)) {
                   return addBlock(blockPath, getBlockTemplate(type), true);

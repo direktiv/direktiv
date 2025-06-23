@@ -25,7 +25,6 @@ export const BlockList = ({
   horizontal,
   children,
   path,
-  restrict,
 }: BlockListComponentProps) => {
   const { setDialog } = useBlockDialog();
   const { mode } = usePageEditor();
@@ -44,7 +43,7 @@ export const BlockList = ({
           <div className="self-center">
             <SelectBlockType
               big
-              restrict={restrict}
+              path={path}
               onSelect={(type) => {
                 setDialog({
                   action: "create",

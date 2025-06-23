@@ -1,10 +1,10 @@
-import { AllBlocksType, ParentBlockUnion } from "../../schema/blocks";
-import { DirektivPagesSchema, DirektivPagesType } from "../../schema";
-import { BlockPathType } from "../Block";
-import { ColumnsType } from "../../schema/blocks/columns";
-import { HeadlineType } from "../../schema/blocks/headline";
-import { TextType } from "../../schema/blocks/text";
-import { clonePage } from "../../BlockEditor/utils";
+import { AllBlocksType, ParentBlockUnion } from "../../../schema/blocks";
+import { DirektivPagesSchema, DirektivPagesType } from "../../../schema";
+import { BlockPathType } from "../../Block";
+import { ColumnsType } from "../../../schema/blocks/columns";
+import { HeadlineType } from "../../../schema/blocks/headline";
+import { TextType } from "../../../schema/blocks/text";
+import { clonePage } from "../../../BlockEditor/utils";
 import { z } from "zod";
 
 export const isParentBlock = (
@@ -125,6 +125,29 @@ export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
     return a === b;
   }
   return a.length === b.length && a.every((val, index) => val === b[index]);
+};
+
+type ParseAncestorsConfig = {
+  page: DirektivPagesType;
+  path: BlockPathType;
+  fn: (block: AllBlocksType | DirektivPagesType) => boolean;
+  depth?: number;
+};
+
+export const parseAncestors = ({
+  page,
+  path,
+  fn,
+  depth,
+}: ParseAncestorsConfig) => {
+  const limit = depth ? path.length - depth - 1 : 0;
+  for (let i = path.length - 1; i > limit; i--) {
+    const ancestor = findBlock(page, path.slice(0, i));
+    if (fn(ancestor)) {
+      return true;
+    }
+  }
+  return false;
 };
 
 export const getBlockTemplate = (type: AllBlocksType["type"]) => {
