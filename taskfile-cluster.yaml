@@ -17,3 +17,31 @@ tasks:
     cmds:
     - task: clean
     - kind create cluster --config kind-config-cluster.yaml
+
+
+  docker-proxy-delete:
+    desc: Deleting repository proxies
+    cmds:
+    - docker stop proxy-docker-hub kind-registry proxy-quay proxy-gcr proxy-k8s-gcr proxy-registry-k8s-io proxy-cr-fluentbit-io | true
+    - docker rm proxy-docker-hub kind-registry proxy-quay proxy-gcr proxy-k8s-gcr proxy-registry-k8s-io proxy-cr-fluentbit-io | true
+
+  docker-proxy-create:
+    desc: Creating repository proxies
+    cmds:
+    - if ! docker inspect proxy-docker-hub >/dev/null 2>&1; then docker run -d --name proxy-docker-hub --restart=always --net=kind -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io registry:2; fi
+    - if ! docker inspect kind-registry >/dev/null 2>&1; then docker run -d -p "127.0.0.1:5001:5000" --network bridge --name kind-registry --restart=always registry:2; docker network connect kind kind-registry; fi
+    - if ! docker inspect proxy-quay >/dev/null 2>&1; then docker run -d --name proxy-quay --restart=always --net=kind -e REGISTRY_PROXY_REMOTEURL=https://quay.io registry:2; fi
+    - if ! docker inspect proxy-gcr >/dev/null 2>&1; then docker run -d --name proxy-gcr --restart=always --net=kind -e REGISTRY_PROXY_REMOTEURL=https://gcr.io registry:2; fi
+    - if ! docker inspect proxy-k8s-gcr >/dev/null 2>&1; then docker run -d --name proxy-k8s-gcr --restart=always --net=kind -e REGISTRY_PROXY_REMOTEURL=https://k8s.gcr.io registry:2; fi
+    - if ! docker inspect proxy-registry-k8s-io >/dev/null 2>&1; then docker run -d --name proxy-registry-k8s-io --restart=always --net=kind -e REGISTRY_PROXY_REMOTEURL=https://registry.k8s.io registry:2; fi
+    - if ! docker inspect proxy-cr-fluentbit-io >/dev/null 2>&1; then docker run -d --name proxy-cr-fluentbit-io --restart=always --net=kind -e REGISTRY_PROXY_REMOTEURL=https://cr.fluentbit.io registry:2; fi
+    internal: true
+
+  prepare:
+    desc: Preparing database and metrics server 
+    deps: [docker-proxy-create]
+    cmds:
+    # - kubectl apply -f kind/postgres.yaml
+    - kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+    # disable tls in metrics server
+    - kubectl patch deployment metrics-server -n kube-system --type=json -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
