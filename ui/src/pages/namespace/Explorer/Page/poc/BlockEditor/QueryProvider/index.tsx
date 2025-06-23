@@ -6,6 +6,7 @@ import {
 import { BlockEditFormProps } from "..";
 import { DialogFooter } from "../components/Footer";
 import { DialogHeader } from "../components/Header";
+import { QueriesTable } from "./QueriesTable";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -19,12 +20,18 @@ export const QueryProvider = ({
 }: HeadlineEditFormProps) => {
   const form = useForm<QueryProviderType>({
     resolver: zodResolver(QueryProviderSchema),
-    defaultValues: { ...propBlock },
+    defaultValues: propBlock,
   });
 
   return (
     <>
-      <DialogHeader action={action} path={path} type="headline" />
+      <DialogHeader action={action} path={path} type={propBlock.type} />
+      <QueriesTable
+        defaultValue={form.getValues("queries")}
+        onChange={(newValue) => {
+          form.setValue("queries", newValue);
+        }}
+      />
       <DialogFooter onSubmit={() => onSubmit(form.getValues())} />
     </>
   );

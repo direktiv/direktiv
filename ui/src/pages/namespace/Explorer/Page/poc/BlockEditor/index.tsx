@@ -2,7 +2,7 @@ import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
 import { DirektivPagesType } from "../schema";
 import { Headline } from "./Headline";
-import { QueryProvider } from "./QueryPovider";
+import { QueryProvider } from "./QueryProvider";
 import { Text } from "../BlockEditor/Text";
 import { isPage } from "../PageCompiler/context/utils";
 import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
