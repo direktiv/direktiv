@@ -10,10 +10,12 @@ type BlockTypeConfig = {
   type: AllBlocksType["type"];
   label: string;
   icon: LucideIcon;
-  allow: () => boolean;
+  allow: boolean;
 };
 
-export const useBlockTypes = (path: BlockPathType): BlockTypeConfig[] => {
+type BlockTypeConfigReturn = Omit<BlockTypeConfig, "allow">;
+
+export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
   const { t } = useTranslation();
   const page = usePage();
 
@@ -22,26 +24,27 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfig[] => {
       type: "headline",
       label: t("direktivPage.blockEditor.blockName.headline"),
       icon: Heading1,
-      allow: () => true,
+      allow: true,
     },
     {
       type: "text",
       label: t("direktivPage.blockEditor.blockName.text"),
       icon: Text,
-      allow: () => true,
+      allow: true,
     },
     {
       type: "columns",
       label: t("direktivPage.blockEditor.blockName.columns"),
       icon: Columns2,
-      allow: () =>
-        !parseAncestors({
-          page,
-          path,
-          fn: (block) => block.type === "columns",
-        }),
+      allow: !parseAncestors({
+        page,
+        path,
+        fn: (block) => block.type === "columns",
+      }),
     },
   ] satisfies BlockTypeConfig[];
 
-  return config.filter((type) => type.allow() === true);
+  return config
+    .filter((type) => type.allow)
+    .map(({ allow: _, ...rest }) => rest);
 };
