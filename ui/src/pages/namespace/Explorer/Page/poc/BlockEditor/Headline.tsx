@@ -27,7 +27,7 @@ export const Headline = ({
 
   return (
     <>
-      <DialogHeader action={action} path={path} type="headline" />
+      <DialogHeader action={action} path={path} type={propBlock.type} />
       <Input
         className="my-4"
         value={block.label}
