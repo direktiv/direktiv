@@ -97,11 +97,13 @@ export const usePageEditor = () => {
   ) => {
     const newPage = addBlockToPage(page, path, block, after);
     setPage(newPage);
+    contextSetFocus(null);
   };
 
   const deleteBlock = (path: BlockPathType) => {
     const newPage = deleteBlockFromPage(page, path);
     setPage(newPage);
+    contextSetFocus(null);
   };
 
   return {
