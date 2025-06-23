@@ -1690,6 +1690,11 @@
         "columns": "Columns",
         "table": "Table"
       },
+      "blockForms": {
+        "queryProvider": {
+          "queryLabel": "Query"
+        }
+      },
       "contextMenu": {
         "deleteButton": "Delete",
         "editButton": "Edit"

@@ -1,3 +1,4 @@
+import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { ReactNode, useState } from "react";
 import {
   Table,
@@ -10,8 +11,6 @@ import {
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import { Dialog } from "~/design/Dialog";
-import { DialogTrigger } from "@radix-ui/react-dialog";
 import { ListContextMenu } from "~/components/ListContextMenu";
 import { ModalWrapper } from "~/components/ModalWrapper";
 import { Plus } from "lucide-react";
@@ -19,17 +18,14 @@ import { Plus } from "lucide-react";
 export type GenericTableProps<T> = {
   data: T[];
   onChange: (newData: T[]) => void;
-  itemName: string;
-  itemNamePlural: string;
+  label: string;
   renderRow: (item: T, index: number) => ReactNode[];
   getItemKey: (item: T, index: number) => string;
-  formTitle: string;
   renderForm: (
     formId: string,
     onSubmit: (item: T) => void,
     defaultValues?: T
   ) => ReactNode;
-  addButtonText?: string;
 };
 
 const formId = "generic-table-form";
@@ -37,13 +33,10 @@ const formId = "generic-table-form";
 export const GenericTable = <T,>({
   data,
   onChange,
-  itemName,
-  itemNamePlural,
+  label,
   renderRow,
   getItemKey,
-  formTitle,
   renderForm,
-  addButtonText = `add ${itemName}`,
 }: GenericTableProps<T>) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [items, setItems] = useState(data);
@@ -100,14 +93,11 @@ export const GenericTable = <T,>({
         <Table>
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-              <TableHeaderCell colSpan={2}>
-                {items.length} {items.length === 1 ? itemName : itemNamePlural}
-              </TableHeaderCell>
-              <TableHeaderCell className="w-60 text-right">
+              <TableHeaderCell className="w-60 text-right" colSpan={3}>
                 <DialogTrigger asChild>
                   <Button icon variant="outline" size="sm">
                     <Plus />
-                    {addButtonText}
+                    {label}
                   </Button>
                 </DialogTrigger>
               </TableHeaderCell>
@@ -161,7 +151,7 @@ export const GenericTable = <T,>({
       </Card>
       <ModalWrapper
         formId={formId}
-        title={formTitle}
+        title={label}
         onCancel={() => {
           setDialogOpen(false);
           setEditIndex(undefined);
