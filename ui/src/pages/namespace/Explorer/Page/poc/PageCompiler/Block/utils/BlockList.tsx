@@ -5,7 +5,6 @@ import {
 } from "../../context/pageCompilerContext";
 import { ReactElement, Suspense } from "react";
 
-import { AllBlocksType } from "../../../schema/blocks";
 import { BlockPathType } from "..";
 import { Loading } from "./Loading";
 import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
@@ -15,7 +14,6 @@ type BlockListProps = {
   horizontal?: boolean;
   children: ReactElement[];
   path: BlockPathType;
-  restrict?: AllBlocksType["type"][];
 };
 
 type BlockListComponentProps = BlockListProps & { mode?: PageCompilerMode };

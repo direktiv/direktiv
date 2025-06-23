@@ -11,11 +11,7 @@ type ColumnsProps = {
 export const Columns = ({ blockProps, blockPath }: ColumnsProps) => (
   <BlockList horizontal path={blockPath}>
     {blockProps.blocks.map((column, columnIndex) => (
-      <BlockList
-        key={columnIndex}
-        path={[...blockPath, columnIndex]}
-        restrict={["headline", "text"]}
-      >
+      <BlockList key={columnIndex} path={[...blockPath, columnIndex]}>
         {column.blocks.map((block, blockIndex) => (
           <Block
             key={blockIndex}
