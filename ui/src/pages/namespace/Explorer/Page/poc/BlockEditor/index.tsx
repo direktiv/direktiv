@@ -12,7 +12,7 @@ export type BlockEditFormProps<T> = {
   action: BlockEditorAction;
   block: T;
   path: BlockPathType;
-  onSubmit: (newBlock: AllBlocksType) => void;
+  onSubmit: (newBlock: T) => void;
 };
 
 type BlockFormProps = {
