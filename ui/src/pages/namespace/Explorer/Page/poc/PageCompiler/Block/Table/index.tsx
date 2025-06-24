@@ -18,8 +18,8 @@ import { PackageOpen } from "lucide-react";
 import { TableCell } from "./TableCell";
 import { TableType } from "../../../schema/blocks/table";
 import { VariableError } from "../../primitives/Variable/Error";
-import { useResolveVariableArray } from "../../primitives/Variable/utils/useResolveVariableArray";
 import { useTranslation } from "react-i18next";
+import { useVariableArrayResolver } from "../../primitives/Variable/utils/useVariableArrayResolver";
 
 type TableProps = {
   blockProps: TableType;
@@ -28,26 +28,27 @@ type TableProps = {
 export const Table = ({ blockProps }: TableProps) => {
   const { columns, actions, data: loop } = blockProps;
   const { t } = useTranslation();
-  const arrayVariable = useResolveVariableArray(loop.data);
-
+  const resolveVariableArray = useVariableArrayResolver();
   const parentVariables = useVariables();
+
+  const variableArray = resolveVariableArray(loop.data);
 
   if (parentVariables.loop[loop.id]) {
     throw new Error(t("direktivPage.error.duplicateId", { id: loop.id }));
   }
 
-  if (!arrayVariable.success) {
+  if (!variableArray.success) {
     return (
-      <VariableError value={loop.data} errorCode={arrayVariable.error}>
-        {t(`direktivPage.error.templateString.${arrayVariable.error}`)} (
-        {arrayVariable.error})
+      <VariableError value={loop.data} errorCode={variableArray.error}>
+        {t(`direktivPage.error.templateString.${variableArray.error}`)} (
+        {variableArray.error})
       </VariableError>
     );
   }
 
   const hasActionsColumn = actions.length > 0;
   const numberOfColumns = columns.length + (hasActionsColumn ? 1 : 0);
-  const hasRows = arrayVariable.data.length > 0;
+  const hasRows = variableArray.data.length > 0;
 
   return (
     <Card>
@@ -62,7 +63,7 @@ export const Table = ({ blockProps }: TableProps) => {
         </TableHead>
         <TableBody>
           {hasRows ? (
-            arrayVariable.data.map((item, index) => (
+            variableArray.data.map((item, index) => (
               <VariableContextProvider
                 key={index}
                 value={{
@@ -85,7 +86,7 @@ export const Table = ({ blockProps }: TableProps) => {
             <TableRow>
               <TableCellDesignComponent colSpan={numberOfColumns}>
                 <NoResult icon={PackageOpen}>
-                  {t("direktivPage.error.blocks.table.noResult")}
+                  {t("direktivPage.page.blocks.table.noResult")}
                 </NoResult>
               </TableCellDesignComponent>
             </TableRow>

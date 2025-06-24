@@ -1,15 +1,12 @@
 import { Block, BlockPathType } from ".";
 import {
-  DialogClose,
   DialogContent,
   Dialog as DialogDesignComponent,
-  DialogFooter,
   DialogTrigger,
 } from "~/design/Dialog";
 
 import { BlockList } from "./utils/BlockList";
 import { Button } from "./Button";
-import ButtonDesignComponent from "~/design/Button";
 import { DialogType } from "../../schema/blocks/dialog";
 
 type DialogProps = {
@@ -23,7 +20,8 @@ export const Dialog = ({ blockProps, blockPath }: DialogProps) => {
       <DialogTrigger asChild>
         <Button blockProps={trigger} />
       </DialogTrigger>
-      <DialogContent>
+
+      <DialogContent showCloseButton>
         <BlockList path={blockPath}>
           {blocks.map((block, index) => (
             <Block
@@ -33,13 +31,6 @@ export const Dialog = ({ blockProps, blockPath }: DialogProps) => {
             />
           ))}
         </BlockList>
-        <DialogFooter>
-          <DialogClose asChild>
-            <ButtonDesignComponent variant="ghost">
-              Cancel
-            </ButtonDesignComponent>
-          </DialogClose>
-        </DialogFooter>
       </DialogContent>
     </DialogDesignComponent>
   );

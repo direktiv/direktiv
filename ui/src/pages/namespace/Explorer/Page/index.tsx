@@ -45,6 +45,7 @@ const UIPage: FC = () => {
   );
 
   if (!parsedPage.success) {
+    console.error(parsedPage.error);
     throw new Error("File is not a valid page");
   }
 
