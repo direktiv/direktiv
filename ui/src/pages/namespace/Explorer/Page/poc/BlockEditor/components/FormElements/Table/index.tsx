@@ -83,12 +83,6 @@ export const Table = <T,>({
   const formValues = editIndex !== undefined ? items[editIndex] : undefined;
   const columnCount = items[0] ? renderRow(items[0]).length : 0;
 
-  /**
-   * TODO:
-   *
-   * - add a "no items" message
-   *
-   */
   return (
     <Dialog
       open={dialogOpen}
