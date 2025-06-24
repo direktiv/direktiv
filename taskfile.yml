@@ -5,9 +5,12 @@ includes:
     taskfile: ./zarf/taskfile.yaml
     dir: ./zarf
   cluster: 
-    taskfile: taskfile-cluster.yaml
+    taskfile: taskfile_cluster.yaml
   version:  
-    taskfile: taskfile-version.yaml
+    taskfile: taskfile_version.yaml
+  build:  
+    taskfile: taskfile_build.yaml
+
 
 
 vars: 
@@ -15,7 +18,29 @@ vars:
 
 tasks:  
   default:
+    desc: Basic Kind cluster with Direktiv. Run with TELEMETRY=true to enable telemetry with grafana. 
     deps: [version:check] 
     cmds:
-    - echo "{{.VERSION}}"
+    - task: cluster:one-node
+    - task: cluster:docker-proxy-create
+    - task: cluster:database
+    - task: build:build
+    - task: cluster:install
     silent: true
+
+  multi:
+    desc: Multi-node Kind cluster with Direktiv. Run with TELEMETRY=true to enable telemetry with grafana. 
+    deps: [version:check] 
+    cmds:
+    - task: cluster:multi-node
+    - task: cluster:docker-proxy-create
+    - task: cluster:database
+    - task: build:build
+    - task: cluster:install
+    silent: true
+
+
+# install one-node
+# install multiu node
+# install zarf without images
+# install zarf with images

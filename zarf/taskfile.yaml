@@ -2,7 +2,7 @@ version: '3'
 
 includes:
   version:  
-    taskfile: ../taskfile-version.yaml
+    taskfile: ../taskfile_version.yaml
 
 
 tasks:
