@@ -131,9 +131,9 @@ describe("QueryProvider", () => {
 
     expect(apiRequestMock).toHaveBeenCalledTimes(2);
 
-    const secondRequestUrl = new URL(
-      apiRequestMock.mock.calls[1][0].request.url
-    );
+    const [, secondRequest] = apiRequestMock.mock.calls;
+    const [params] = secondRequest;
+    const secondRequestUrl = new URL(params.request.url);
 
     expect(secondRequestUrl.pathname).toBe("/dynamic/1/path");
     expect(secondRequestUrl.search).toBe("?id=1");
