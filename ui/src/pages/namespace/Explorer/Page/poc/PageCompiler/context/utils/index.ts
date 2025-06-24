@@ -128,7 +128,7 @@ export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
   return a.length === b.length && a.every((val, index) => val === b[index]);
 };
 
-type ParseAncestorsConfig = {
+type FindInBranchConfig = {
   page: DirektivPagesType;
   path: BlockPathType;
   match: (block: AllBlocksType | DirektivPagesType) => boolean;
@@ -140,11 +140,11 @@ export const findInBranch = ({
   path,
   match,
   depth,
-}: ParseAncestorsConfig) => {
+}: FindInBranchConfig) => {
   const limit = depth !== undefined ? path.length - depth : 0;
   for (let i = path.length; i >= limit; i--) {
-    const ancestor = findBlock(page, path.slice(0, i));
-    if (match(ancestor)) {
+    const target = findBlock(page, path.slice(0, i));
+    if (match(target)) {
       return true;
     }
   }
