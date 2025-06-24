@@ -12,12 +12,13 @@ type VariableProps = {
 export const Variable = ({ value }: VariableProps) => {
   const { t } = useTranslation();
   const { mode } = usePageEditor();
-  const resolvedVariableString = useVariableStringResolver()(value);
+  const resolveVariableString = useVariableStringResolver();
+  const variableString = resolveVariableString(value);
 
-  if (!resolvedVariableString.success) {
+  if (!variableString.success) {
     return (
-      <VariableError value={value} errorCode={resolvedVariableString.error}>
-        {t(`direktivPage.error.templateString.${resolvedVariableString.error}`)}
+      <VariableError value={value} errorCode={variableString.error}>
+        {t(`direktivPage.error.templateString.${variableString.error}`)}
       </VariableError>
     );
   }
@@ -29,7 +30,7 @@ export const Variable = ({ value }: VariableProps) => {
           "border border-gray-9 bg-gray-4 dark:border-gray-dark-9 dark:bg-gray-dark-4"
       )}
     >
-      {resolvedVariableString.data}
+      {variableString.data}
     </span>
   );
 };
