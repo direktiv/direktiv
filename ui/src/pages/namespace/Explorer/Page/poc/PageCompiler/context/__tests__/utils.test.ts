@@ -4,6 +4,7 @@ import {
   addBlockToPage,
   deleteBlockFromPage,
   findBlock,
+  findInBranch,
   isPage,
   isParentBlock,
   pathsEqual,
@@ -214,6 +215,191 @@ describe("deleteBlockFromPage", () => {
     expect(() => deleteBlockFromPage(simple, [])).toThrow(
       "Invalid path, could not extract index for target block"
     );
+  });
+});
+
+describe("findInBranch", () => {
+  test("it returns true if the element identified by the path matches fn", () => {
+    const result = findInBranch({
+      page: complex,
+      path: [2, 0, 0],
+      match: (block) => block.type && block.type === "text",
+    });
+    expect(result).toEqual(true);
+  });
+
+  test("it returns true if an ancester matches fn", () => {
+    const result = findInBranch({
+      page: complex,
+      path: [2, 0, 0],
+      match: (block) => block.type && block.type === "columns",
+    });
+    expect(result).toEqual(true);
+  });
+
+  test("it returns false if no element in the branch upwards matches the fn", () => {
+    const result = findInBranch({
+      page: complex,
+      path: [2, 0],
+      match: (block) => block.type && block.type === "text",
+    });
+    expect(result).toEqual(false);
+  });
+
+  test("it returns true if ancestors within depth 1 evaluate as true", () => {
+    const result = findInBranch({
+      page: complex,
+      path: [2, 0, 0],
+      match: (block) => block.type && block.type === "column",
+      depth: 1,
+    });
+    expect(result).toEqual(true);
+  });
+
+  test("it returns false if elements within depth 1 evaluate as false", () => {
+    const result = findInBranch({
+      page: complex,
+      path: [2, 0, 0],
+      match: (block) => block.type && block.type === "columns",
+      depth: 1,
+    });
+    expect(result).toEqual(false);
+  });
+
+  test("it returns true if ancestors within depth 1 evaluate as true", () => {
+    const result = findInBranch({
+      page: complex,
+      path: [2, 0, 0],
+      match: (block) => block.type && block.type === "column",
+      depth: 1,
+    });
+    expect(result).toEqual(true);
+  });
+
+  test("it returns true if depth is 0 and the last element in path matches fn", () => {
+    const result = findInBranch({
+      page: complex,
+      path: [2, 0, 0],
+      match: (block) => block.type && block.type === "text",
+      depth: 0,
+    });
+    expect(result).toEqual(true);
+  });
+
+  test("it returns false if depth is 0 and the last element in path does not match fn", () => {
+    const result = findInBranch({
+      page: complex,
+      path: [2, 0, 0],
+      match: (block) => block.type && block.type === "column",
+      depth: 0,
+    });
+    expect(result).toEqual(false);
+  });
+
+  test("it returns true if elements within depth 2 evaluate as true", () => {
+    const result = findInBranch({
+      page: complex,
+      path: [3, 0, 0],
+      match: (block) => block.type && block.type === "dialog",
+      depth: 2,
+    });
+    expect(result).toEqual(true);
+  });
+
+  test("it returns true if elements within depth 3 evaluate as true", () => {
+    const result = findInBranch({
+      page: complex,
+      path: [3, 0, 0],
+      match: (block) => block.type && block.type === "query-provider",
+      depth: 3,
+    });
+    expect(result).toEqual(true);
+  });
+
+  test("it returns false if elements within depth 3 evaluate as false", () => {
+    const result = findInBranch({
+      page: complex,
+      path: [3, 0, 0],
+      match: (block) => block.type && block.type === "columns",
+      depth: 3,
+    });
+    expect(result).toEqual(false);
+  });
+
+  test("it evaluates correctly (true) if path is [0]", () => {
+    const page = {
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [],
+        },
+      ],
+    } satisfies DirektivPagesType;
+    const result = findInBranch({
+      page,
+      path: [0],
+      match: (block) => block.type && block.type === "card",
+    });
+    expect(result).toEqual(true);
+  });
+
+  test("it evaluates correctly (false) when path is [0]", () => {
+    const page = {
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [],
+        },
+      ],
+    } satisfies DirektivPagesType;
+    const result = findInBranch({
+      page,
+      path: [0],
+      match: (block) => block.type && block.type === "text",
+    });
+    expect(result).toEqual(false);
+  });
+
+  test("it evaluates correctly (true) when path is []", () => {
+    const page = {
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [],
+        },
+      ],
+    } satisfies DirektivPagesType;
+    const result = findInBranch({
+      page,
+      path: [],
+      match: (block) => block.type && block.type === "page",
+    });
+    expect(result).toEqual(true);
+  });
+
+  test("it evaluates correctly (false) when path is []", () => {
+    const page = {
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [],
+        },
+      ],
+    } satisfies DirektivPagesType;
+    const result = findInBranch({
+      page,
+      path: [],
+      match: (block) => block.type && block.type === "card",
+    });
+    expect(result).toEqual(false);
   });
 });
 

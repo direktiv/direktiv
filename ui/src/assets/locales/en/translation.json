@@ -92,16 +92,12 @@
             "directory": "Directory",
             "workflow": "Workflow",
             "service": "Service",
+            "page": "Page",
             "gateway": {
               "label": "Gateway",
               "route": "New Route",
               "consumer": "New Consumer",
               "openapiSpecification": "OpenAPI Specification"
-            },
-            "page": {
-              "label": "New Page",
-              "route": "Route",
-              "consumer": "Consumer"
             }
           }
         },
