@@ -36,7 +36,7 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
           {t("direktivPage.page.blocks.form.success")}
         </Alert>
       ) : (
-        <BlockList>
+        <BlockList path={blockPath}>
           {blockProps.blocks.map((block, index) => (
             <Block
               key={index}
