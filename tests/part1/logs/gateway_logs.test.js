@@ -39,7 +39,7 @@ get:
       description: ""
 `))
 
-retry50(`call gateway`, async () => {
+	retry50(`call gateway`, async () => {
 		await request(common.config.getDirektivHost()).get(`/ns/${ namespace }/demo`)
 
 		const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs?route=%2Fdemo`)
@@ -50,6 +50,6 @@ retry50(`call gateway`, async () => {
 					msg: 'four',
 				}),
 			]),
-		)	
+		)
 	})
 })
