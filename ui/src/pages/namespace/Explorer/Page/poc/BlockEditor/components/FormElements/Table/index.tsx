@@ -14,7 +14,7 @@ import { ModalWrapper } from "~/components/ModalWrapper";
 import { Plus } from "lucide-react";
 import { Row } from "./Row";
 
-export type GenericTableProps<T> = {
+type TableProps<T> = {
   data: T[];
   getItemKey: (item: T) => string;
   itemLabel: string;
@@ -38,7 +38,7 @@ export const Table = <T,>({
   onChange,
   renderForm,
   renderRow,
-}: GenericTableProps<T>) => {
+}: TableProps<T>) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [items, setItems] = useState(data);
   const [editIndex, setEditIndex] = useState<number>();

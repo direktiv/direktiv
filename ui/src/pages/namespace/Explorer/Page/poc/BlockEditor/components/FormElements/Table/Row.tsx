@@ -3,14 +3,14 @@ import { TableCell, TableRow } from "~/design/Table";
 import { ListContextMenu } from "~/components/ListContextMenu";
 import { ReactNode } from "react";
 
-export type RowActions = {
+type RowActions = {
   onEdit: () => void;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
   onDelete: () => void;
 };
 
-export type RowProps<T> = {
+type RowProps<T> = {
   item: T;
   renderRow: (item: T) => ReactNode[];
   actions: RowActions;
