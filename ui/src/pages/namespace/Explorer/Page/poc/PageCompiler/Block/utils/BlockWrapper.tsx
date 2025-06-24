@@ -5,10 +5,6 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  useCreateBlock,
-  usePageEditor,
-} from "../../context/pageCompilerContext";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
@@ -21,6 +17,8 @@ import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
 import { pathsEqual } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useBlockDialog } from "../../../BlockEditor/BlockDialogProvider";
+import { useCreateBlock } from "../../context/utils/useCreateBlock";
+import { usePageEditor } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
 type BlockWrapperProps = PropsWithChildren<{
@@ -38,7 +36,7 @@ export const BlockWrapper = ({
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { setDialog } = useBlockDialog();
-  const { createBlock } = useCreateBlock();
+  const createBlock = useCreateBlock();
 
   useEffect(() => {
     if (mode !== "edit") {

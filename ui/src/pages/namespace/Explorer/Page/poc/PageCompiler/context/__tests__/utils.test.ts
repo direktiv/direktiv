@@ -223,7 +223,7 @@ describe("findInBranch", () => {
     const result = findInBranch({
       page: complex,
       path: [2, 0, 0],
-      fn: (block) => block.type && block.type === "text",
+      match: (block) => block.type && block.type === "text",
     });
     expect(result).toEqual(true);
   });
@@ -232,7 +232,7 @@ describe("findInBranch", () => {
     const result = findInBranch({
       page: complex,
       path: [2, 0, 0],
-      fn: (block) => block.type && block.type === "columns",
+      match: (block) => block.type && block.type === "columns",
     });
     expect(result).toEqual(true);
   });
@@ -241,7 +241,7 @@ describe("findInBranch", () => {
     const result = findInBranch({
       page: complex,
       path: [2, 0],
-      fn: (block) => block.type && block.type === "text",
+      match: (block) => block.type && block.type === "text",
     });
     expect(result).toEqual(false);
   });
@@ -250,7 +250,7 @@ describe("findInBranch", () => {
     const result = findInBranch({
       page: complex,
       path: [2, 0, 0],
-      fn: (block) => block.type && block.type === "column",
+      match: (block) => block.type && block.type === "column",
       depth: 1,
     });
     expect(result).toEqual(true);
@@ -260,7 +260,7 @@ describe("findInBranch", () => {
     const result = findInBranch({
       page: complex,
       path: [2, 0, 0],
-      fn: (block) => block.type && block.type === "columns",
+      match: (block) => block.type && block.type === "columns",
       depth: 1,
     });
     expect(result).toEqual(false);
@@ -270,7 +270,7 @@ describe("findInBranch", () => {
     const result = findInBranch({
       page: complex,
       path: [2, 0, 0],
-      fn: (block) => block.type && block.type === "column",
+      match: (block) => block.type && block.type === "column",
       depth: 1,
     });
     expect(result).toEqual(true);
@@ -280,7 +280,7 @@ describe("findInBranch", () => {
     const result = findInBranch({
       page: complex,
       path: [2, 0, 0],
-      fn: (block) => block.type && block.type === "text",
+      match: (block) => block.type && block.type === "text",
       depth: 0,
     });
     expect(result).toEqual(true);
@@ -290,7 +290,7 @@ describe("findInBranch", () => {
     const result = findInBranch({
       page: complex,
       path: [2, 0, 0],
-      fn: (block) => block.type && block.type === "column",
+      match: (block) => block.type && block.type === "column",
       depth: 0,
     });
     expect(result).toEqual(false);
@@ -300,7 +300,7 @@ describe("findInBranch", () => {
     const result = findInBranch({
       page: complex,
       path: [3, 0, 0],
-      fn: (block) => block.type && block.type === "dialog",
+      match: (block) => block.type && block.type === "dialog",
       depth: 2,
     });
     expect(result).toEqual(true);
@@ -310,7 +310,7 @@ describe("findInBranch", () => {
     const result = findInBranch({
       page: complex,
       path: [3, 0, 0],
-      fn: (block) => block.type && block.type === "query-provider",
+      match: (block) => block.type && block.type === "query-provider",
       depth: 3,
     });
     expect(result).toEqual(true);
@@ -320,7 +320,7 @@ describe("findInBranch", () => {
     const result = findInBranch({
       page: complex,
       path: [3, 0, 0],
-      fn: (block) => block.type && block.type === "columns",
+      match: (block) => block.type && block.type === "columns",
       depth: 3,
     });
     expect(result).toEqual(false);
@@ -340,7 +340,7 @@ describe("findInBranch", () => {
     const result = findInBranch({
       page,
       path: [0],
-      fn: (block) => block.type && block.type === "card",
+      match: (block) => block.type && block.type === "card",
     });
     expect(result).toEqual(true);
   });
@@ -359,7 +359,7 @@ describe("findInBranch", () => {
     const result = findInBranch({
       page,
       path: [0],
-      fn: (block) => block.type && block.type === "text",
+      match: (block) => block.type && block.type === "text",
     });
     expect(result).toEqual(false);
   });
@@ -378,7 +378,7 @@ describe("findInBranch", () => {
     const result = findInBranch({
       page,
       path: [],
-      fn: (block) => block.type && block.type === "page",
+      match: (block) => block.type && block.type === "page",
     });
     expect(result).toEqual(true);
   });
@@ -397,7 +397,7 @@ describe("findInBranch", () => {
     const result = findInBranch({
       page,
       path: [],
-      fn: (block) => block.type && block.type === "card",
+      match: (block) => block.type && block.type === "card",
     });
     expect(result).toEqual(false);
   });

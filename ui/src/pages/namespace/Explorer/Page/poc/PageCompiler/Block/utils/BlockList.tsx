@@ -1,6 +1,5 @@
 import {
   PageCompilerMode,
-  useCreateBlock,
   usePageEditor,
 } from "../../context/pageCompilerContext";
 import { ReactElement, Suspense } from "react";
@@ -9,6 +8,7 @@ import { BlockPathType } from "..";
 import { Loading } from "./Loading";
 import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
 import { twMergeClsx } from "~/util/helpers";
+import { useCreateBlock } from "../../context/utils/useCreateBlock";
 
 type BlockListProps = {
   horizontal?: boolean;
@@ -24,7 +24,7 @@ export const BlockList = ({
   path,
 }: BlockListComponentProps) => {
   const { mode } = usePageEditor();
-  const { createBlock } = useCreateBlock();
+  const createBlock = useCreateBlock();
 
   return (
     <div

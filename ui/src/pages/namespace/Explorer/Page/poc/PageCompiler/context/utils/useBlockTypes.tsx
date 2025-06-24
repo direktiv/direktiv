@@ -39,7 +39,7 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
       allow: !findInBranch({
         page,
         path,
-        fn: (block) => block.type === "columns",
+        match: (block) => block.type === "columns",
       }),
     },
     {
@@ -49,7 +49,7 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
       allow: !findInBranch({
         page,
         path,
-        fn: (block) => block.type === "card",
+        match: (block) => block.type === "card",
       }),
     },
   ] satisfies BlockTypeConfig[];

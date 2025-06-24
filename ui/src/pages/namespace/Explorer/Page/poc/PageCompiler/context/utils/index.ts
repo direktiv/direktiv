@@ -131,20 +131,20 @@ export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
 type ParseAncestorsConfig = {
   page: DirektivPagesType;
   path: BlockPathType;
-  fn: (block: AllBlocksType | DirektivPagesType) => boolean;
+  match: (block: AllBlocksType | DirektivPagesType) => boolean;
   depth?: number;
 };
 
 export const findInBranch = ({
   page,
   path,
-  fn,
+  match,
   depth,
 }: ParseAncestorsConfig) => {
   const limit = depth !== undefined ? path.length - depth : 0;
   for (let i = path.length; i >= limit; i--) {
     const ancestor = findBlock(page, path.slice(0, i));
-    if (fn(ancestor)) {
+    if (match(ancestor)) {
       return true;
     }
   }

@@ -1,4 +1,3 @@
-import { AllBlocksType, inlineBlockTypes } from "../../schema/blocks";
 import {
   Dispatch,
   FC,
@@ -11,14 +10,13 @@ import {
 import {
   addBlockToPage,
   deleteBlockFromPage,
-  getBlockTemplate,
   pathsEqual,
   updateBlockInPage,
 } from "./utils";
 
+import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../Block";
 import { DirektivPagesType } from "../../schema";
-import { useBlockDialog } from "../../BlockEditor/BlockDialogProvider";
 
 export type PageCompilerMode = "edit" | "live";
 
@@ -120,27 +118,4 @@ export const usePageEditor = () => {
     updateBlock,
     setPage,
   };
-};
-
-/**
- * This hook returns createBlock(), which opens the editor dialog for
- * blocks such as text blocks, or just adds an inline block to the page
- * (e.g., cards or columns, where no dialog is required).
- */
-export const useCreateBlock = () => {
-  const { addBlock } = usePageEditor();
-  const { setDialog } = useBlockDialog();
-
-  const createBlock = (type: AllBlocksType["type"], path: BlockPathType) => {
-    if (inlineBlockTypes.includes(type)) {
-      return addBlock(path, getBlockTemplate(type), true);
-    }
-    setDialog({
-      action: "create",
-      block: getBlockTemplate(type),
-      path,
-    });
-  };
-
-  return { createBlock };
 };
