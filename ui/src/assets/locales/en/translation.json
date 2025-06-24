@@ -1691,6 +1691,10 @@
         "table": "Table"
       },
       "blockForms": {
+        "keyValue": {
+          "key": "Key",
+          "value": "Value"
+        },
         "queryProvider": {
           "query": {
             "itemLabel": "Query",

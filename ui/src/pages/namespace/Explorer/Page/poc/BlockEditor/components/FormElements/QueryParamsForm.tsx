@@ -1,42 +1,58 @@
+import { KeyValue, KeyValueType } from "../../../schema/primitives/keyValue";
+
 import { ArrayForm } from "~/components/Form/Array";
-import { ControllerRenderProps } from "react-hook-form";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
-import { QueryType } from "../../../schema/procedures/query";
+import { useTranslation } from "react-i18next";
 
 type KeyValueInputProps = {
   label: string;
-  field: ControllerRenderProps<QueryType, "queryParams">;
+  field: {
+    value: KeyValueType[] | undefined;
+    onChange: (value: KeyValueType[]) => void;
+  };
 };
 
-export const KeyValueInput = ({ field, label }: KeyValueInputProps) => (
-  <Fieldset label={label}>
-    <ArrayForm
-      defaultValue={field.value || []}
-      onChange={field.onChange}
-      emptyItem={{ key: "", value: "" }}
-      itemIsValid={(item) =>
-        !!item && Object.values(item).every((v) => v !== "")
-      }
-      renderItem={({ value: objectValue, setValue, handleKeyDown }) => (
-        <>
-          {Object.entries(objectValue).map(([key, value]) => (
+export const KeyValueInput = ({ field, label }: KeyValueInputProps) => {
+  const { t } = useTranslation();
+  return (
+    <Fieldset label={label}>
+      <ArrayForm<KeyValueType>
+        defaultValue={field.value || []}
+        onChange={field.onChange}
+        emptyItem={{ key: "", value: "" }}
+        itemIsValid={(item) => KeyValue.safeParse(item).success}
+        renderItem={({ value: objectValue, setValue, handleKeyDown }) => (
+          <>
             <Input
-              key={key}
-              placeholder={key}
-              value={value}
+              placeholder={t(
+                "direktivPage.blockEditor.blockForms.keyValue.key"
+              )}
+              value={objectValue.key}
               onKeyDown={handleKeyDown}
               onChange={(e) => {
-                const newObject = {
+                setValue({
                   ...objectValue,
-                  [key]: e.target.value,
-                };
-                setValue(newObject);
+                  key: e.target.value,
+                });
               }}
             />
-          ))}
-        </>
-      )}
-    />
-  </Fieldset>
-);
+            <Input
+              placeholder={t(
+                "direktivPage.blockEditor.blockForms.keyValue.value"
+              )}
+              value={objectValue.value}
+              onKeyDown={handleKeyDown}
+              onChange={(e) => {
+                setValue({
+                  ...objectValue,
+                  value: e.target.value,
+                });
+              }}
+            />
+          </>
+        )}
+      />
+    </Fieldset>
+  );
+};
