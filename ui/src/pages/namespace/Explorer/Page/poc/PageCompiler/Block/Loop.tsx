@@ -36,7 +36,7 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   }
 
   return (
-    <BlockList>
+    <BlockList path={blockPath}>
       {resolvedVariableArray.data.map((item, variableIndex) => (
         <VariableContextProvider
           key={variableIndex}
@@ -48,7 +48,7 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
             },
           }}
         >
-          <BlockList>
+          <BlockList path={blockPath}>
             {blocks.map((block, blockIndex) => {
               const path = [...blockPath, blockIndex];
               return (

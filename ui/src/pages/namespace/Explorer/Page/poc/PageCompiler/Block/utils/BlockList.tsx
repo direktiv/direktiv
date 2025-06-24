@@ -4,15 +4,16 @@ import {
 } from "../../context/pageCompilerContext";
 import { ReactElement, Suspense } from "react";
 
+import { BlockPathType } from "..";
 import { Loading } from "./Loading";
 import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
-import { getPlaceholderBlock } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
-import { useBlockDialog } from "../../../BlockEditor/BlockDialogProvider";
+import { useCreateBlock } from "../../context/utils/useCreateBlock";
 
 type BlockListProps = {
   horizontal?: boolean;
   children: ReactElement[];
+  path: BlockPathType;
 };
 
 type BlockListComponentProps = BlockListProps & { mode?: PageCompilerMode };
@@ -20,9 +21,10 @@ type BlockListComponentProps = BlockListProps & { mode?: PageCompilerMode };
 export const BlockList = ({
   horizontal,
   children,
+  path,
 }: BlockListComponentProps) => {
-  const { setDialog } = useBlockDialog();
   const { mode } = usePageEditor();
+  const createBlock = useCreateBlock();
 
   return (
     <div
@@ -35,16 +37,14 @@ export const BlockList = ({
     >
       <Suspense fallback={<Loading />}>
         {mode === "edit" && !children.length && (
-          <div className="self-center">
+          <div
+            className="self-center"
+            onClick={(event) => event.stopPropagation()}
+          >
             <SelectBlockType
               big
-              onSelect={(type) =>
-                setDialog({
-                  action: "create",
-                  block: getPlaceholderBlock(type),
-                  path: [0],
-                })
-              }
+              path={path}
+              onSelect={(type) => createBlock(type, [...path, 0])}
             />
           </div>
         )}

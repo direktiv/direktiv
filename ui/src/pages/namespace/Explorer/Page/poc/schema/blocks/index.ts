@@ -55,3 +55,9 @@ export const AllBlocks: z.ZodType<AllBlocksType> = z.lazy(() =>
 export const TriggerBlocks = z.discriminatedUnion("type", [Button]);
 
 export type TriggerBlocksType = z.infer<typeof TriggerBlocks>;
+
+/* Inline blocks do not need a dialog for creation */
+export const inlineBlockTypes: Set<AllBlocksType["type"]> = new Set([
+  "columns",
+  "card",
+]);

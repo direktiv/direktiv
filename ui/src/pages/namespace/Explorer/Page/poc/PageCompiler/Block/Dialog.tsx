@@ -20,8 +20,9 @@ export const Dialog = ({ blockProps, blockPath }: DialogProps) => {
       <DialogTrigger asChild>
         <Button blockProps={trigger} />
       </DialogTrigger>
+
       <DialogContent showCloseButton>
-        <BlockList>
+        <BlockList path={blockPath}>
           {blocks.map((block, index) => (
             <Block
               key={index}

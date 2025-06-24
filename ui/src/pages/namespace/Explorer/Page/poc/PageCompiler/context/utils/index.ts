@@ -1,9 +1,11 @@
-import { AllBlocksType, ParentBlockUnion } from "../../schema/blocks";
-import { DirektivPagesSchema, DirektivPagesType } from "../../schema";
-import { BlockPathType } from "../Block";
-import { HeadlineType } from "../../schema/blocks/headline";
-import { TextType } from "../../schema/blocks/text";
-import { clonePage } from "../../BlockEditor/utils";
+import { AllBlocksType, ParentBlockUnion } from "../../../schema/blocks";
+import { DirektivPagesSchema, DirektivPagesType } from "../../../schema";
+import { BlockPathType } from "../../Block";
+import { CardType } from "../../../schema/blocks/card";
+import { ColumnsType } from "../../../schema/blocks/columns";
+import { HeadlineType } from "../../../schema/blocks/headline";
+import { TextType } from "../../../schema/blocks/text";
+import { clonePage } from "../../../BlockEditor/utils";
 import { z } from "zod";
 
 export const isParentBlock = (
@@ -126,7 +128,30 @@ export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
   return a.length === b.length && a.every((val, index) => val === b[index]);
 };
 
-export const getPlaceholderBlock = (type: AllBlocksType["type"]) => {
+type FindInBranchConfig = {
+  page: DirektivPagesType;
+  path: BlockPathType;
+  match: (block: AllBlocksType | DirektivPagesType) => boolean;
+  depth?: number;
+};
+
+export const findInBranch = ({
+  page,
+  path,
+  match,
+  depth,
+}: FindInBranchConfig) => {
+  const limit = depth !== undefined ? path.length - depth : 0;
+  for (let i = path.length; i >= limit; i--) {
+    const target = findBlock(page, path.slice(0, i));
+    if (match(target)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+export const getBlockTemplate = (type: AllBlocksType["type"]) => {
   switch (type) {
     case "headline":
       return {
@@ -139,6 +164,26 @@ export const getPlaceholderBlock = (type: AllBlocksType["type"]) => {
         type: "text",
         content: "",
       } satisfies TextType;
+    case "columns": {
+      return {
+        type: "columns",
+        blocks: [
+          {
+            type: "column",
+            blocks: [],
+          },
+          {
+            type: "column",
+            blocks: [],
+          },
+        ],
+      } satisfies ColumnsType;
+    }
+    case "card":
+      return {
+        type: "card",
+        blocks: [],
+      } satisfies CardType;
     default:
       return { type: "text", content: "" } satisfies TextType;
   }

@@ -152,7 +152,7 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
           >
             <DropdownMenuItem>
               <PanelTop className="mr-2 size-4" />
-              {t("pages.explorer.tree.newFileButton.items.page.label")}
+              {t("pages.explorer.tree.newFileButton.items.page")}
             </DropdownMenuItem>
           </DialogTrigger>
         </DropdownMenuGroup>
