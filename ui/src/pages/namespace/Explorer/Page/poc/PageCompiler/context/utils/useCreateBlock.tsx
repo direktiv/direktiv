@@ -15,7 +15,7 @@ export const useCreateBlock = () => {
   const { setDialog } = useBlockDialog();
 
   const createBlock = (type: AllBlocksType["type"], path: BlockPathType) => {
-    if (inlineBlockTypes.includes(type)) {
+    if (inlineBlockTypes.has(type)) {
       return addBlock(path, getBlockTemplate(type), true);
     }
     setDialog({
