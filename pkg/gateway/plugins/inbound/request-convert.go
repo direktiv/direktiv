@@ -20,6 +20,7 @@ type RequestConvertPlugin struct {
 	OmitQueries  bool `mapstructure:"omit_queries"`
 	OmitBody     bool `mapstructure:"omit_body"`
 	OmitConsumer bool `mapstructure:"omit_consumer"`
+	OmitMethod   bool `mapstructure:"omit_method"`
 }
 
 func (rcp *RequestConvertPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
@@ -45,6 +46,7 @@ type RequestConvertResponse struct {
 	Headers     http.Header         `json:"headers"`
 	Body        json.RawMessage     `json:"body"`
 	Consumer    RequestConsumer     `json:"consumer"`
+	Method      string              `json:"method"`
 }
 
 func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
@@ -77,6 +79,10 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 		response.Headers = r.Header
 	}
 
+	// convert method
+	if !rcp.OmitMethod {
+		response.Method = r.Method
+	}
 	c := gateway.ExtractContextActiveConsumer(r)
 
 	if !rcp.OmitConsumer && c != nil {

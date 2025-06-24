@@ -31,7 +31,6 @@ describe('Test path not found', () => {
 						message: 'request http path is not found',
 					},
 				},
-
 				)
 			})
 		})
