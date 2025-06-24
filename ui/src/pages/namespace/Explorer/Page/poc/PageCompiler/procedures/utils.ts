@@ -4,7 +4,7 @@ import { useKeyValueArrayResolver } from "../primitives/keyValue/utils";
 import { useStringInterpolation } from "../primitives/Variable/utils/useStringInterpolation";
 
 /**
- * A hook that returns a function to generates a URL from a query or mutation
+ * A hook that returns a function to generate a URL from a query or mutation
  */
 export const useUrlGenerator = () => {
   const resolveKeyValueArray = useKeyValueArrayResolver();
