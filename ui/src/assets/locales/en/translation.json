@@ -1692,7 +1692,11 @@
       },
       "blockForms": {
         "queryProvider": {
-          "queryLabel": "Query"
+          "query": {
+            "itemLabel": "Query",
+            "tableLabel": "{{count}} Queries",
+            "tableLabel_one": "{{count}} Query"
+          }
         }
       },
       "contextMenu": {

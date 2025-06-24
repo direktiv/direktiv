@@ -34,9 +34,17 @@ export const QueryProvider = ({
         onChange={(newValue) => {
           form.setValue("queries", newValue);
         }}
-        label={t(
-          "direktivPage.blockEditor.blockForms.queryProvider.queryLabel"
+        itemLabel={t(
+          "direktivPage.blockEditor.blockForms.queryProvider.query.itemLabel"
         )}
+        label={(count) =>
+          t(
+            "direktivPage.blockEditor.blockForms.queryProvider.query.tableLabel",
+            {
+              count,
+            }
+          )
+        }
         renderRow={(query) => [query.id, query.url]}
         getItemKey={(query) => query.id}
         renderForm={(formId, onSubmit, defaultValues) => (

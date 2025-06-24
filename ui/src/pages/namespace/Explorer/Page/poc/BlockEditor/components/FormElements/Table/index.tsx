@@ -16,10 +16,11 @@ import { Row } from "./Row";
 
 export type GenericTableProps<T> = {
   data: T[];
-  onChange: (newData: T[]) => void;
-  label: string;
-  renderRow: (item: T) => ReactNode[];
   getItemKey: (item: T) => string;
+  itemLabel: string;
+  label: (count: number) => string;
+  onChange: (newData: T[]) => void;
+  renderRow: (item: T) => ReactNode[];
   renderForm: (
     formId: string,
     onSubmit: (item: T) => void,
@@ -31,11 +32,12 @@ const formId = "table-form-element";
 
 export const Table = <T,>({
   data,
-  onChange,
-  label,
-  renderRow,
   getItemKey,
+  itemLabel,
+  label,
+  onChange,
   renderForm,
+  renderRow,
 }: GenericTableProps<T>) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [items, setItems] = useState(data);
@@ -79,6 +81,7 @@ export const Table = <T,>({
   };
 
   const formValues = editIndex !== undefined ? items[editIndex] : undefined;
+  const columnCount = items[0] ? renderRow(items[0]).length : 0;
 
   /**
    * TODO:
@@ -98,12 +101,14 @@ export const Table = <T,>({
         <TableDesignComponent>
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-              {/* TODO: fix colspan */}
-              <TableHeaderCell className="w-60 text-right" colSpan={3}>
+              <TableHeaderCell colSpan={columnCount}>
+                {label(items.length)}
+              </TableHeaderCell>
+              <TableHeaderCell className="w-60 text-right">
                 <DialogTrigger asChild>
                   <Button icon variant="outline" size="sm">
                     <Plus />
-                    {label}
+                    {itemLabel}
                   </Button>
                 </DialogTrigger>
               </TableHeaderCell>
@@ -140,7 +145,7 @@ export const Table = <T,>({
       </Card>
       <ModalWrapper
         formId={formId}
-        title={label}
+        title={itemLabel}
         onCancel={() => {
           setDialogOpen(false);
           setEditIndex(undefined);
