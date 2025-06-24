@@ -1,9 +1,8 @@
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { ReactNode, useState } from "react";
 import {
-  Table,
   TableBody,
-  TableCell,
+  Table as TableDesignComponent,
   TableHead,
   TableHeaderCell,
   TableRow,
@@ -11,16 +10,16 @@ import {
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import { ListContextMenu } from "~/components/ListContextMenu";
 import { ModalWrapper } from "~/components/ModalWrapper";
 import { Plus } from "lucide-react";
+import { Row } from "./Row";
 
 export type GenericTableProps<T> = {
   data: T[];
   onChange: (newData: T[]) => void;
   label: string;
-  renderRow: (item: T, index: number) => ReactNode[];
-  getItemKey: (item: T, index: number) => string;
+  renderRow: (item: T) => ReactNode[];
+  getItemKey: (item: T) => string;
   renderForm: (
     formId: string,
     onSubmit: (item: T) => void,
@@ -28,9 +27,9 @@ export type GenericTableProps<T> = {
   ) => ReactNode;
 };
 
-const formId = "generic-table-form";
+const formId = "table-form-element";
 
-export const GenericTable = <T,>({
+export const Table = <T,>({
   data,
   onChange,
   label,
@@ -81,6 +80,12 @@ export const GenericTable = <T,>({
 
   const formValues = editIndex !== undefined ? items[editIndex] : undefined;
 
+  /**
+   * TODO:
+   *
+   * - add a "no items" message
+   *
+   */
   return (
     <Dialog
       open={dialogOpen}
@@ -90,9 +95,10 @@ export const GenericTable = <T,>({
       }}
     >
       <Card noShadow>
-        <Table>
+        <TableDesignComponent>
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+              {/* TODO: fix colspan */}
               <TableHeaderCell className="w-60 text-right" colSpan={3}>
                 <DialogTrigger asChild>
                   <Button icon variant="outline" size="sm">
@@ -107,47 +113,30 @@ export const GenericTable = <T,>({
             {items.map((item, index, srcArray) => {
               const canMoveDown = index < srcArray.length - 1;
               const canMoveUp = index > 0;
-              const onMoveUp = canMoveUp
-                ? () => {
-                    moveItem(index, index - 1);
-                  }
-                : undefined;
-              const onMoveDown = canMoveDown
-                ? () => {
-                    moveItem(index, index + 1);
-                  }
-                : undefined;
-
-              const onDelete = () => {
-                deleteItem(index);
-              };
-
-              const rowCells = renderRow(item, index);
 
               return (
-                <TableRow
-                  key={getItemKey(item, index)}
-                  className="cursor-pointer"
-                  onClick={() => {
-                    setDialogOpen(true);
-                    setEditIndex(index);
+                <Row
+                  key={getItemKey(item)}
+                  item={item}
+                  renderRow={renderRow}
+                  actions={{
+                    onEdit: () => {
+                      setDialogOpen(true);
+                      setEditIndex(index);
+                    },
+                    onMoveUp: canMoveUp
+                      ? () => moveItem(index, index - 1)
+                      : undefined,
+                    onMoveDown: canMoveDown
+                      ? () => moveItem(index, index + 1)
+                      : undefined,
+                    onDelete: () => deleteItem(index),
                   }}
-                >
-                  {rowCells.map((cell, cellIndex) => (
-                    <TableCell key={cellIndex}>{cell}</TableCell>
-                  ))}
-                  <TableCell className="text-right">
-                    <ListContextMenu
-                      onDelete={onDelete}
-                      onMoveDown={onMoveDown}
-                      onMoveUp={onMoveUp}
-                    />
-                  </TableCell>
-                </TableRow>
+                />
               );
             })}
           </TableBody>
-        </Table>
+        </TableDesignComponent>
       </Card>
       <ModalWrapper
         formId={formId}
