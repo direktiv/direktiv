@@ -135,14 +135,14 @@ type ParseAncestorsConfig = {
   depth?: number;
 };
 
-export const parseAncestors = ({
+export const findInBranch = ({
   page,
   path,
   fn,
   depth,
 }: ParseAncestorsConfig) => {
-  const limit = depth ? path.length - depth - 1 : 0;
-  for (let i = path.length - 1; i > limit; i--) {
+  const limit = depth !== undefined ? path.length - depth : 0;
+  for (let i = path.length; i >= limit; i--) {
     const ancestor = findBlock(page, path.slice(0, i));
     if (fn(ancestor)) {
       return true;

@@ -2,7 +2,7 @@ import { Captions, Columns2, Heading1, LucideIcon, Text } from "lucide-react";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import { BlockPathType } from "../../Block";
-import { parseAncestors } from ".";
+import { findInBranch } from ".";
 import { usePage } from "../pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
@@ -36,7 +36,7 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
       type: "columns",
       label: t("direktivPage.blockEditor.blockName.columns"),
       icon: Columns2,
-      allow: !parseAncestors({
+      allow: !findInBranch({
         page,
         path,
         fn: (block) => block.type === "columns",
@@ -46,11 +46,10 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
       type: "card",
       label: t("direktivPage.blockEditor.blockName.card"),
       icon: Captions,
-      allow: !parseAncestors({
+      allow: !findInBranch({
         page,
         path,
         fn: (block) => block.type === "card",
-        depth: 1,
       }),
     },
   ] satisfies BlockTypeConfig[];
