@@ -8,6 +8,7 @@ import { DialogFooter } from "../components/Footer";
 import { DialogHeader } from "../components/Header";
 import { QueryForm } from "./QueryForm";
 import { Table } from "../components/FormElements/Table";
+import { keyValueArrayToObject } from "../../PageCompiler/primitives/keyValue/utils";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -45,7 +46,19 @@ export const QueryProvider = ({
             }
           )
         }
-        renderRow={(query) => [query.id, query.url]}
+        renderRow={(query) => {
+          let url = query.url;
+
+          const searchParams = new URLSearchParams(
+            keyValueArrayToObject(query.queryParams ?? [])
+          );
+          const queryString = searchParams.toString();
+          if (queryString) {
+            url = url.concat("?", queryString);
+          }
+
+          return [query.id, url];
+        }}
         getItemKey={(query) => query.id}
         renderForm={(formId, onSubmit, defaultValues) => (
           <QueryForm
