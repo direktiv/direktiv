@@ -10,9 +10,10 @@ import { useUrlGenerator } from "./utils";
 export const usePageMutation = (mutation: MutationType) => {
   const { method, requestBody, requestHeaders } = mutation;
   const queryClient = useQueryClient();
-
-  const url = useUrlGenerator()(mutation);
+  const generateUrl = useUrlGenerator();
   const resolveKeyValueArray = useKeyValueArrayResolver();
+
+  const url = generateUrl(mutation);
 
   const requestBodyResolved = resolveKeyValueArray(requestBody ?? []);
   const body = JSON.stringify(keyValueArrayToObject(requestBodyResolved));

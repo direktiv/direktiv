@@ -28,26 +28,27 @@ type TableProps = {
 export const Table = ({ blockProps }: TableProps) => {
   const { columns, actions, data: loop } = blockProps;
   const { t } = useTranslation();
-  const resolvedVariableArray = useVariableArrayResolver()(loop.data);
-
+  const resolveVariableArray = useVariableArrayResolver();
   const parentVariables = useVariables();
+
+  const variableArray = resolveVariableArray(loop.data);
 
   if (parentVariables.loop[loop.id]) {
     throw new Error(t("direktivPage.error.duplicateId", { id: loop.id }));
   }
 
-  if (!resolvedVariableArray.success) {
+  if (!variableArray.success) {
     return (
-      <VariableError value={loop.data} errorCode={resolvedVariableArray.error}>
-        {t(`direktivPage.error.templateString.${resolvedVariableArray.error}`)}{" "}
-        ({resolvedVariableArray.error})
+      <VariableError value={loop.data} errorCode={variableArray.error}>
+        {t(`direktivPage.error.templateString.${variableArray.error}`)} (
+        {variableArray.error})
       </VariableError>
     );
   }
 
   const hasActionsColumn = actions.length > 0;
   const numberOfColumns = columns.length + (hasActionsColumn ? 1 : 0);
-  const hasRows = resolvedVariableArray.data.length > 0;
+  const hasRows = variableArray.data.length > 0;
 
   return (
     <Card>
@@ -62,7 +63,7 @@ export const Table = ({ blockProps }: TableProps) => {
         </TableHead>
         <TableBody>
           {hasRows ? (
-            resolvedVariableArray.data.map((item, index) => (
+            variableArray.data.map((item, index) => (
               <VariableContextProvider
                 key={index}
                 value={{

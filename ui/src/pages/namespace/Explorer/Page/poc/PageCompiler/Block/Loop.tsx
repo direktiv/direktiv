@@ -18,26 +18,27 @@ type LoopProps = {
 export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   const { blocks, data, id } = blockProps;
   const { t } = useTranslation();
-  const resolvedVariableArray = useVariableArrayResolver()(data);
-
+  const resolveVariableArray = useVariableArrayResolver();
   const parentVariables = useVariables();
+
+  const variableArray = resolveVariableArray(data);
 
   if (parentVariables.loop[id]) {
     throw new Error(t("direktivPage.error.duplicateId", { id }));
   }
 
-  if (!resolvedVariableArray.success) {
+  if (!variableArray.success) {
     return (
-      <VariableError value={data} errorCode={resolvedVariableArray.error}>
-        {t(`direktivPage.error.templateString.${resolvedVariableArray.error}`)}{" "}
-        ({resolvedVariableArray.error})
+      <VariableError value={data} errorCode={variableArray.error}>
+        {t(`direktivPage.error.templateString.${variableArray.error}`)} (
+        {variableArray.error})
       </VariableError>
     );
   }
 
   return (
-    <BlockList>
-      {resolvedVariableArray.data.map((item, variableIndex) => (
+    <BlockList path={blockPath}>
+      {variableArray.data.map((item, variableIndex) => (
         <VariableContextProvider
           key={variableIndex}
           value={{
@@ -48,7 +49,7 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
             },
           }}
         >
-          <BlockList>
+          <BlockList path={blockPath}>
             {blocks.map((block, blockIndex) => {
               const path = [...blockPath, blockIndex];
               return (
