@@ -21,9 +21,11 @@ export const Row = <T,>({ item, renderRow, actions }: RowProps<T>) => {
   return (
     <TableRow className="cursor-pointer" onClick={actions.onEdit}>
       {rowCells.map((cell, cellIndex) => (
-        <TableCell key={cellIndex}>{cell}</TableCell>
+        <TableCell key={cellIndex} className="min-w-0 max-w-xs truncate">
+          <div className="truncate">{cell}</div>
+        </TableCell>
       ))}
-      <TableCell className="text-right">
+      <TableCell className="w-0 text-right">
         <ListContextMenu
           onDelete={actions.onDelete}
           onMoveDown={actions.onMoveDown}
