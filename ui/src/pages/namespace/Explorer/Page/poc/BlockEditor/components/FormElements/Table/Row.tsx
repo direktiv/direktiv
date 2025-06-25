@@ -1,7 +1,6 @@
 import { TableCell, TableRow } from "~/design/Table";
 
 import { ListContextMenu } from "~/components/ListContextMenu";
-import { ReactNode } from "react";
 
 type RowActions = {
   onEdit: () => void;
@@ -12,7 +11,7 @@ type RowActions = {
 
 type RowProps<T> = {
   item: T;
-  renderRow: (item: T) => ReactNode[];
+  renderRow: (item: T) => string[];
   actions: RowActions;
 };
 
@@ -21,7 +20,11 @@ export const Row = <T,>({ item, renderRow, actions }: RowProps<T>) => {
   return (
     <TableRow className="cursor-pointer" onClick={actions.onEdit}>
       {rowCells.map((cell, cellIndex) => (
-        <TableCell key={cellIndex} className="min-w-0 max-w-xs truncate">
+        <TableCell
+          key={cellIndex}
+          className="min-w-0 max-w-[200px] truncate"
+          title={cell}
+        >
           {cell}
         </TableCell>
       ))}
