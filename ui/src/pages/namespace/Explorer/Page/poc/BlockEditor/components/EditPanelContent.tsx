@@ -1,11 +1,10 @@
 import { BlockDeleteForm } from "./Delete";
 import { BlockForm } from "..";
-import { DialogContent } from "~/design/Dialog";
-import { useBlockDialog } from "../EditPanelProvider";
+import { useEditorPanel } from "../EditorPanelProvider";
 import { usePageEditor } from "../../PageCompiler/context/pageCompilerContext";
 
 export const EditPanel = () => {
-  const { panel } = useBlockDialog();
+  const { panel } = useEditorPanel();
   const { deleteBlock } = usePageEditor();
 
   if (!panel) {
@@ -15,7 +14,7 @@ export const EditPanel = () => {
   const { action, block, path } = panel;
 
   return (
-    <DialogContent className="z-50">
+    <>
       {action === "delete" ? (
         <BlockDeleteForm
           type={block.type}
@@ -26,6 +25,6 @@ export const EditPanel = () => {
       ) : (
         <BlockForm block={block} action={action} path={path} />
       )}
-    </DialogContent>
+    </>
   );
 };

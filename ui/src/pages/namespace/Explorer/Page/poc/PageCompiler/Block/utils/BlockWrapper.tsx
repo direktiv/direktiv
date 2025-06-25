@@ -16,8 +16,8 @@ import { ParsingError } from "./ParsingError";
 import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
 import { pathsEqual } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
-import { useBlockDialog } from "../../../BlockEditor/EditPanelProvider";
 import { useCreateBlock } from "../../context/utils/useCreateBlock";
+import { useEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 import { usePageEditor } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
@@ -35,7 +35,7 @@ export const BlockWrapper = ({
   const { mode, focus, setFocus } = usePageEditor();
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { setPanel } = useBlockDialog();
+  const { setPanel } = useEditorPanel();
   const createBlock = useCreateBlock();
 
   useEffect(() => {

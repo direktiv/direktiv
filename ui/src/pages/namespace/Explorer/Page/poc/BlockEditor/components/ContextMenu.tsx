@@ -7,7 +7,6 @@ import {
 import { Edit, MoreVertical, Trash } from "lucide-react";
 
 import Button from "~/design/Button";
-import { DialogTrigger } from "@radix-ui/react-dialog";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -35,18 +34,15 @@ export const BlockContextMenu: FC<BlockContextMenuProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-40">
-        <DialogTrigger className="w-full" onClick={onEdit}>
-          <DropdownMenuItem>
-            <Edit className="mr-2 size-4" />
-            {t("direktivPage.blockEditor.contextMenu.editButton")}
-          </DropdownMenuItem>
-        </DialogTrigger>
-        <DialogTrigger className="w-full" onClick={onDelete}>
-          <DropdownMenuItem>
-            <Trash className="mr-2 size-4" />
-            {t("direktivPage.blockEditor.contextMenu.deleteButton")}
-          </DropdownMenuItem>
-        </DialogTrigger>
+        <DropdownMenuItem className="w-full" onClick={onEdit}>
+          <Edit className="mr-2 size-4" />
+          {t("direktivPage.blockEditor.contextMenu.editButton")}
+        </DropdownMenuItem>
+
+        <DropdownMenuItem className="w-full" onClick={onDelete}>
+          <Trash className="mr-2 size-4" />
+          {t("direktivPage.blockEditor.contextMenu.deleteButton")}
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
