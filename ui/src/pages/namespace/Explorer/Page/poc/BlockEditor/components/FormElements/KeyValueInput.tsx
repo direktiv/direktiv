@@ -17,7 +17,7 @@ export const KeyValueInput = ({ field, label }: KeyValueInputProps) => {
   const { t } = useTranslation();
   return (
     <Fieldset label={label}>
-      <ArrayForm<KeyValueType>
+      <ArrayForm
         defaultValue={field.value || []}
         onChange={field.onChange}
         emptyItem={{ key: "", value: "" }}

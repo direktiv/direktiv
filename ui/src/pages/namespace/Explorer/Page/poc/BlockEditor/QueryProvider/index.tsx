@@ -44,14 +44,11 @@ export const QueryProvider = ({
         label={(count) =>
           t(
             "direktivPage.blockEditor.blockForms.queryProvider.query.tableLabel",
-            {
-              count,
-            }
+            { count }
           )
         }
         renderRow={(query) => {
           let url = query.url;
-
           const searchParams = new URLSearchParams(
             keyValueArrayToObject(query.queryParams ?? [])
           );
@@ -59,7 +56,6 @@ export const QueryProvider = ({
           if (queryString) {
             url = url.concat("?", queryString);
           }
-
           return [query.id, url];
         }}
         getItemKey={(query) => query.id}

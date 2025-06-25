@@ -3,9 +3,8 @@ import FormErrors, { errorsType } from "~/components/FormErrors";
 import { Query, QueryType } from "../../schema/procedures/query";
 
 import { Fieldset } from "~/components/Form/Fieldset";
-import { FormEvent } from "react";
 import Input from "~/design/Input";
-import { KeyValueInput } from "../components/FormElements/QueryParamsForm";
+import { KeyValueInput } from "../components/FormElements/KeyValueInput";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -31,13 +30,8 @@ export const QueryForm = ({
     defaultValues,
   });
 
-  const submitForm = (e: FormEvent<HTMLFormElement>) => {
-    e.stopPropagation(); // prevent the parent form from submitting
-    handleSubmit(onSubmit)(e);
-  };
-
   return (
-    <form onSubmit={submitForm} id={formId}>
+    <form onSubmit={handleSubmit(onSubmit)} id={formId}>
       {errors && <FormErrors errors={errors as errorsType} className="mb-5" />}
       <Fieldset
         label={t(
@@ -59,7 +53,6 @@ export const QueryForm = ({
         )}
         htmlFor="url"
       >
-        query.
         <Input
           {...register("url")}
           id="url"
