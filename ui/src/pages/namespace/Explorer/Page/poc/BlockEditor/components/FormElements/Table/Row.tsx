@@ -22,7 +22,7 @@ export const Row = <T,>({ item, renderRow, actions }: RowProps<T>) => {
     <TableRow className="cursor-pointer" onClick={actions.onEdit}>
       {rowCells.map((cell, cellIndex) => (
         <TableCell key={cellIndex} className="min-w-0 max-w-xs truncate">
-          <div className="truncate">{cell}</div>
+          {cell}
         </TableCell>
       ))}
       <TableCell className="w-0 text-right">
