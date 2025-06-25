@@ -6,6 +6,7 @@ import { Fieldset } from "~/components/Form/Fieldset";
 import { FormEvent } from "react";
 import Input from "~/design/Input";
 import { KeyValueInput } from "../components/FormElements/QueryParamsForm";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type QueryFormProps = {
@@ -19,6 +20,7 @@ export const QueryForm = ({
   formId,
   onSubmit,
 }: QueryFormProps) => {
+  const { t } = useTranslation();
   const {
     handleSubmit,
     register,
@@ -34,15 +36,37 @@ export const QueryForm = ({
     handleSubmit(onSubmit)(e);
   };
 
-  // TODO: i18n
   return (
     <form onSubmit={submitForm} id={formId}>
       {errors && <FormErrors errors={errors as errorsType} className="mb-5" />}
-      <Fieldset label="id" htmlFor="id">
-        <Input {...register("id")} id="id" />
+      <Fieldset
+        label={t(
+          "direktivPage.blockEditor.blockForms.queryProvider.query.idLabel"
+        )}
+        htmlFor="id"
+      >
+        <Input
+          {...register("id")}
+          id="id"
+          placeholder={t(
+            "direktivPage.blockEditor.blockForms.queryProvider.query.idPlaceholder"
+          )}
+        />
       </Fieldset>
-      <Fieldset label="url" htmlFor="url">
-        <Input {...register("url")} id="url" />
+      <Fieldset
+        label={t(
+          "direktivPage.blockEditor.blockForms.queryProvider.query.urlLabel"
+        )}
+        htmlFor="url"
+      >
+        query.
+        <Input
+          {...register("url")}
+          id="url"
+          placeholder={t(
+            "direktivPage.blockEditor.blockForms.queryProvider.query.urlPlaceholder"
+          )}
+        />
       </Fieldset>
       <Controller
         control={control}

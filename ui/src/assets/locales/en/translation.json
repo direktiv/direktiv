@@ -1681,7 +1681,7 @@
         "dialog": "Dialog",
         "form": "Form",
         "loop": "Loop",
-        "query-provider": "Query provider",
+        "query-provider": "Query Provider",
         "column": "Column",
         "columns": "Columns",
         "table": "Table"
@@ -1692,7 +1692,12 @@
           "value": "Value"
         },
         "queryProvider": {
+          "description": "A Query Provider fetches data from one or multiple APIs and makes the results accessible to its child blocks.",
           "query": {
+            "idLabel": "ID",
+            "idPlaceholder": "unique identifier name to reference this query in any dhild block",
+            "urlLabel": "URL",
+            "urlPlaceholder": "relative or absolute url like /path/to/endpoint or https://...",
             "itemLabel": "Query",
             "tableLabel": "{{count}} Queries",
             "tableLabel_one": "{{count}} Query"

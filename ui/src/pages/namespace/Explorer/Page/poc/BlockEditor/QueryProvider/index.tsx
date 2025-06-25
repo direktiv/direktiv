@@ -30,6 +30,9 @@ export const QueryProvider = ({
   return (
     <>
       <DialogHeader action={action} path={path} type={propBlock.type} />
+      <div className="text-gray-10">
+        {t("direktivPage.blockEditor.blockForms.queryProvider.description")}
+      </div>
       <Table
         data={form.getValues("queries")}
         onChange={(newValue) => {
