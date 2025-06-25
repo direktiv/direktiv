@@ -1,18 +1,18 @@
 import { BlockDeleteForm } from "./Delete";
 import { BlockForm } from "..";
 import { DialogContent } from "~/design/Dialog";
-import { useBlockDialog } from "../BlockDialogProvider";
+import { useBlockDialog } from "../EditPanelProvider";
 import { usePageEditor } from "../../PageCompiler/context/pageCompilerContext";
 
-export const BlockDialogContent = () => {
-  const { dialog } = useBlockDialog();
+export const EditPanel = () => {
+  const { panel } = useBlockDialog();
   const { deleteBlock } = usePageEditor();
 
-  if (!dialog) {
+  if (!panel) {
     return null;
   }
 
-  const { action, block, path } = dialog;
+  const { action, block, path } = panel;
 
   return (
     <DialogContent className="z-50">

@@ -2,7 +2,7 @@ import { AllBlocksType, inlineBlockTypes } from "../../../schema/blocks";
 
 import { BlockPathType } from "../../Block";
 import { getBlockTemplate } from ".";
-import { useBlockDialog } from "../../../BlockEditor/BlockDialogProvider";
+import { useBlockDialog } from "../../../BlockEditor/EditPanelProvider";
 import { usePageEditor } from "../pageCompilerContext";
 
 /**
@@ -12,13 +12,13 @@ import { usePageEditor } from "../pageCompilerContext";
  */
 export const useCreateBlock = () => {
   const { addBlock } = usePageEditor();
-  const { setDialog } = useBlockDialog();
+  const { setPanel } = useBlockDialog();
 
   const createBlock = (type: AllBlocksType["type"], path: BlockPathType) => {
     if (inlineBlockTypes.has(type)) {
       return addBlock(path, getBlockTemplate(type), true);
     }
-    setDialog({
+    setPanel({
       action: "create",
       block: getBlockTemplate(type),
       path,

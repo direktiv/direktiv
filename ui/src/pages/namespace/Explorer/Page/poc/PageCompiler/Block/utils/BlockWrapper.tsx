@@ -16,7 +16,7 @@ import { ParsingError } from "./ParsingError";
 import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
 import { pathsEqual } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
-import { useBlockDialog } from "../../../BlockEditor/BlockDialogProvider";
+import { useBlockDialog } from "../../../BlockEditor/EditPanelProvider";
 import { useCreateBlock } from "../../context/utils/useCreateBlock";
 import { usePageEditor } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
@@ -35,7 +35,7 @@ export const BlockWrapper = ({
   const { mode, focus, setFocus } = usePageEditor();
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { setDialog } = useBlockDialog();
+  const { setPanel } = useBlockDialog();
   const createBlock = useCreateBlock();
 
   useEffect(() => {
@@ -96,14 +96,14 @@ export const BlockWrapper = ({
             <div className="absolute right-1 top-1 z-30">
               <BlockContextMenu
                 onEdit={() =>
-                  setDialog({
+                  setPanel({
                     action: "edit",
                     block,
                     path: blockPath,
                   })
                 }
                 onDelete={() =>
-                  setDialog({
+                  setPanel({
                     action: "delete",
                     block,
                     path: blockPath,

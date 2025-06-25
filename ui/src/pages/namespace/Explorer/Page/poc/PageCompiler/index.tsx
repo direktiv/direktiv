@@ -5,9 +5,9 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { Block } from "./Block";
-import { BlockDialogProvider } from "../BlockEditor/BlockDialogProvider";
 import { BlockList } from "./Block/utils/BlockList";
 import { DirektivPagesSchema } from "../schema";
+import { EditPanelLayoutProvider } from "../BlockEditor/EditPanelProvider";
 import { ParsingError } from "./Block/utils/ParsingError";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -42,13 +42,19 @@ export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
   return (
     <PageCompilerContextProvider setPage={setPage} page={page} mode={mode}>
       <QueryClientProvider client={queryClient}>
-        <BlockDialogProvider>
-          <BlockList path={[]}>
-            {page.blocks.map((block, index) => (
-              <Block key={index} block={block} blockPath={[index]} />
-            ))}
-          </BlockList>
-        </BlockDialogProvider>
+        {/* rename and refactor block dialog provider */}
+        <EditPanelLayoutProvider>
+          <div className="flex">
+            <div className="w-1/3 max-w-xs">
+              {/* add EditorPane component here, with content same as dialog before */}
+            </div>
+            <BlockList path={[]}>
+              {page.blocks.map((block, index) => (
+                <Block key={index} block={block} blockPath={[index]} />
+              ))}
+            </BlockList>
+          </div>
+        </EditPanelLayoutProvider>
       </QueryClientProvider>
     </PageCompilerContextProvider>
   );
