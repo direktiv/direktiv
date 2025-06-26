@@ -1,5 +1,5 @@
 import { Dialog, DialogTrigger } from "~/design/Dialog";
-import { ReactNode, useState } from "react";
+import { Key, ReactNode, useState } from "react";
 import {
   TableBody,
   Table as TableDesignComponent,
@@ -16,7 +16,7 @@ import { Row } from "./Row";
 
 type TableProps<T> = {
   data: T[];
-  getItemKey: (item: T) => string;
+  getItemKey: (item: T, index: number) => Key;
   itemLabel: string;
   label: (count: number) => string;
   onChange: (newData: T[]) => void;
@@ -115,7 +115,7 @@ export const Table = <T,>({
 
               return (
                 <Row
-                  key={getItemKey(item)}
+                  key={getItemKey(item, index)}
                   item={item}
                   renderRow={renderRow}
                   actions={{
