@@ -1691,6 +1691,9 @@
           "key": "Key",
           "value": "Value"
         },
+        "table": {
+          "description": "A Table block displays a set of data in a table format. It can be used to display data from a Query Provider"
+        },
         "queryProvider": {
           "description": "A Query Provider fetches data from one or multiple APIs and makes the results accessible to its child blocks.",
           "query": {
