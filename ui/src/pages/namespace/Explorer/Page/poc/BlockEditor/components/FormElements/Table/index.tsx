@@ -20,7 +20,7 @@ type TableProps<T> = {
   itemLabel: string;
   label: (count: number) => string;
   onChange: (newData: T[]) => void;
-  renderRow: (item: T) => ReactNode[];
+  renderRow: (item: T) => string[];
   renderForm: (
     formId: string,
     onSubmit: (item: T) => void,
