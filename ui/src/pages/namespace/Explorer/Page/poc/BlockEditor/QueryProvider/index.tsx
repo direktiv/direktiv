@@ -30,7 +30,7 @@ export const QueryProvider = ({
   return (
     <>
       <DialogHeader action={action} path={path} type={propBlock.type} />
-      <div className="text-gray-10">
+      <div className="text-gray-10 dark:text-gray-10">
         {t("direktivPage.blockEditor.blockForms.queryProvider.description")}
       </div>
       <Table
