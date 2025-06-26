@@ -28,7 +28,12 @@ export const ColumnForm = ({
     formState: { errors },
   } = useForm<TableColumnType>({
     resolver: zodResolver(TableColumn),
-    defaultValues,
+    defaultValues: {
+      type: "table-column",
+      content: "",
+      label: "",
+      ...defaultValues,
+    },
   });
 
   return (

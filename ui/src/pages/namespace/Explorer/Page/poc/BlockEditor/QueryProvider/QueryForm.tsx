@@ -27,7 +27,12 @@ export const QueryForm = ({
     formState: { errors },
   } = useForm<QueryType>({
     resolver: zodResolver(Query),
-    defaultValues,
+    defaultValues: {
+      id: "",
+      url: "",
+      queryParams: [],
+      ...defaultValues,
+    },
   });
 
   return (
