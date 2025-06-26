@@ -12,11 +12,7 @@ type BlockEditDialogHeaderProps = {
   type: AllBlocksType["type"] | DirektivPagesType["type"];
 };
 
-export const DialogHeader = ({
-  path,
-  action,
-  type,
-}: BlockEditDialogHeaderProps) => {
+export const Header = ({ path, action, type }: BlockEditDialogHeaderProps) => {
   const { setPanel } = usePageEditorPanel();
   const { t } = useTranslation();
 

@@ -6,14 +6,11 @@ type BlockEditorFooterProps = {
   onCancel: () => void;
 };
 
-export const DialogFooter = ({
-  onSubmit,
-  onCancel,
-}: BlockEditorFooterProps) => {
+export const Footer = ({ onSubmit, onCancel }: BlockEditorFooterProps) => {
   const { t } = useTranslation();
 
   return (
-    <div>
+    <div className="mt-2 flex flex-row justify-end">
       <Button variant="ghost" onClick={onCancel}>
         {t("direktivPage.blockEditor.generic.cancelButton")}
       </Button>

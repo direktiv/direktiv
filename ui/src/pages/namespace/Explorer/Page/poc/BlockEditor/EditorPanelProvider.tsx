@@ -34,11 +34,11 @@ export const EditorPanelLayoutProvider = ({
 
   return (
     <EditorPanelContext.Provider value={{ panel, setPanel }}>
-      <div className="flex">
-        <div className="w-1/3 max-w-xs">
+      <div className="flex gap-5">
+        <div className="w-1/3 max-w-md shrink-0 overflow-x-hidden">
           <EditorPanel />
         </div>
-        <div className="w-full">{children}</div>
+        <div className="min-w-0 flex-1">{children}</div>
       </div>
     </EditorPanelContext.Provider>
   );

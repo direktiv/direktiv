@@ -1,6 +1,6 @@
 import { BlockEditFormProps } from ".";
-import { DialogFooter } from "./components/Footer";
-import { DialogHeader } from "./components/Header";
+import { Footer } from "./components/Footer";
+import { Header } from "./components/Header";
 import { TextType } from "../schema/blocks/text";
 import { Textarea } from "~/design/TextArea";
 import { useState } from "react";
@@ -17,8 +17,8 @@ export const Text = ({
   const [block, setBlock] = useState<TextType>(structuredClone(propBlock));
 
   return (
-    <>
-      <DialogHeader action={action} path={path} type="text" />
+    <div className="flex flex-col gap-4">
+      <Header action={action} path={path} type="text" />
       <Textarea
         value={block.content}
         onChange={(event) =>
@@ -29,13 +29,13 @@ export const Text = ({
         }
       />
 
-      <DialogFooter
+      <Footer
         onSubmit={() => {
           onSubmit(block);
           close();
         }}
         onCancel={() => onCancel()}
       />
-    </>
+    </div>
   );
 };

@@ -8,8 +8,8 @@ import {
 } from "~/design/Select";
 
 import { BlockEditFormProps } from ".";
-import { DialogFooter } from "./components/Footer";
-import { DialogHeader } from "./components/Header";
+import { Footer } from "./components/Footer";
+import { Header } from "./components/Header";
 import Input from "~/design/Input";
 import { useState } from "react";
 
@@ -27,10 +27,9 @@ export const Headline = ({
   const [block, setBlock] = useState<HeadlineType>(structuredClone(propBlock));
 
   return (
-    <>
-      <DialogHeader action={action} path={path} type={propBlock.type} />
+    <div className="flex flex-col gap-4">
+      <Header action={action} path={path} type={propBlock.type} />
       <Input
-        className="my-4"
         value={block.label}
         onChange={(e) => setBlock({ ...block, label: e.target.value })}
       />
@@ -55,7 +54,7 @@ export const Headline = ({
           ))}
         </SelectContent>
       </Select>
-      <DialogFooter onSubmit={() => onSubmit(block)} onCancel={onCancel} />
-    </>
+      <Footer onSubmit={() => onSubmit(block)} onCancel={onCancel} />
+    </div>
   );
 };
