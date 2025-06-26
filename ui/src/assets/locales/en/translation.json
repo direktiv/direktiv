@@ -1692,7 +1692,16 @@
           "value": "Value"
         },
         "table": {
-          "description": "A Table block displays a set of data in a table format. It can be used to display data from a Query Provider"
+          "description": "A Table block displays a set of data in a table format. It can be used to display data from a Query Provider",
+          "column": {
+            "labelLabel": "Label",
+            "labelPlaceholder": "Column label",
+            "contentLabel": "Content",
+            "contentPlaceholder": "The content of the column (e.g. E-Mail: {{loop.company-table.email}})",
+            "itemLabel": "Column",
+            "tableLabel": "{{count}} Columns",
+            "tableLabel_one": "{{count}}Column"
+          }
         },
         "queryProvider": {
           "description": "A Query Provider fetches data from one or multiple APIs and makes the results accessible to its child blocks.",
