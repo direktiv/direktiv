@@ -12,7 +12,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { ModalWrapper } from "~/components/ModalWrapper";
 import { Plus } from "lucide-react";
-import { Row } from "./Row";
+import { Rows } from "./Rows";
 
 type TableProps<T> = {
   data: T[];
@@ -66,21 +66,6 @@ export const Table = <T,>({
     onChange(newItems);
   };
 
-  const moveItem = (srcIndex: number, targetIndex: number) => {
-    const newItems = [...items];
-    const [targetItem] = newItems.splice(srcIndex, 1);
-    if (!targetItem) throw new Error("Invalid source index");
-    newItems.splice(targetIndex, 0, targetItem);
-    setItems(newItems);
-    onChange(newItems);
-  };
-
-  const deleteItem = (targetIndex: number) => {
-    const newItems = items.filter((_, i) => i !== targetIndex);
-    setItems(newItems);
-    onChange(newItems);
-  };
-
   const handleSubmit = (item: T) => {
     setDialog(null);
     if (dialog?.action === "edit") {
@@ -125,29 +110,16 @@ export const Table = <T,>({
             </TableRow>
           </TableHead>
           <TableBody>
-            {items.map((item, index, srcArray) => {
-              const canMoveDown = index < srcArray.length - 1;
-              const canMoveUp = index > 0;
-              return (
-                <Row
-                  key={getItemKey(item)}
-                  item={item}
-                  renderRow={renderRow}
-                  actions={{
-                    onEdit: () => {
-                      setDialog({ action: "edit", index });
-                    },
-                    onMoveUp: canMoveUp
-                      ? () => moveItem(index, index - 1)
-                      : undefined,
-                    onMoveDown: canMoveDown
-                      ? () => moveItem(index, index + 1)
-                      : undefined,
-                    onDelete: () => deleteItem(index),
-                  }}
-                />
-              );
-            })}
+            <Rows
+              items={items}
+              getItemKey={getItemKey}
+              renderRow={renderRow}
+              onEdit={(index) => setDialog({ action: "edit", index })}
+              onChange={(newItems) => {
+                setItems(newItems);
+                onChange(newItems);
+              }}
+            />
           </TableBody>
         </TableDesignComponent>
       </Card>
