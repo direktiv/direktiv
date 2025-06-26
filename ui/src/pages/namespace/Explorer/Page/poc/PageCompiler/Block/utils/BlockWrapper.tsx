@@ -31,8 +31,8 @@ export const BlockWrapper = ({
   children,
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
-  const { mode, focus, setFocus } = usePageEditor();
-  const { setPanel } = usePageEditorPanel();
+  const { mode } = usePageEditor();
+  const { panel, setPanel } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const createBlock = useCreateBlock();
@@ -57,20 +57,23 @@ export const BlockWrapper = ({
     return () => document.removeEventListener("mousemove", handleMouseMove);
   }, [mode]);
 
+  const isFocused = panel?.path && pathsEqual(panel.path, blockPath);
+
   const handleClickBlock = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
     if (mode !== "edit") {
       return;
     }
-    setPanel({
-      action: "edit",
-      block,
-      path: blockPath,
-    });
-    return setFocus(blockPath); // Todo: do we still need focus state separate from panel state?
+    if (isFocused) {
+      return setPanel(null);
+    } else {
+      return setPanel({
+        action: "edit",
+        block,
+        path: blockPath,
+      });
+    }
   };
-
-  const isFocused = focus && pathsEqual(focus, blockPath);
 
   return (
     <>

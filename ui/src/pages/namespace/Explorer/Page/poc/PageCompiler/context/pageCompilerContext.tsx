@@ -11,7 +11,6 @@ import {
   addBlockToPage,
   deleteBlockFromPage,
   findBlock,
-  pathsEqual,
   updateBlockInPage,
 } from "./utils";
 
@@ -73,19 +72,7 @@ export const useBlock = (path: BlockPathType) => {
  */
 export const usePageEditor = () => {
   const page = usePage();
-  const {
-    focus,
-    mode,
-    setFocus: contextSetFocus,
-    setPage,
-  } = usePageStateContext();
-
-  const setFocus = (path: BlockPathType) => {
-    if (focus && pathsEqual(focus, path)) {
-      return !!contextSetFocus && contextSetFocus(null);
-    }
-    return !!contextSetFocus && contextSetFocus(path);
-  };
+  const { mode, setFocus: contextSetFocus, setPage } = usePageStateContext();
 
   const updateBlock = (path: BlockPathType, newBlock: AllBlocksType) => {
     const newPage = updateBlockInPage(page, path, newBlock);
@@ -109,9 +96,7 @@ export const usePageEditor = () => {
   };
 
   return {
-    focus,
     mode,
-    setFocus,
     addBlock,
     deleteBlock,
     updateBlock,
