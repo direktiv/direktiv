@@ -30,6 +30,16 @@ type TableProps<T> = {
 
 const formId = "table-form-element";
 
+type DialogState =
+  | {
+      action: "create";
+    }
+  | {
+      action: "edit";
+      index: number;
+    }
+  | null;
+
 export const Table = <T,>({
   data,
   getItemKey,
@@ -39,9 +49,8 @@ export const Table = <T,>({
   renderForm,
   renderRow,
 }: TableProps<T>) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialog, setDialog] = useState<DialogState>(null);
   const [items, setItems] = useState(data);
-  const [editIndex, setEditIndex] = useState<number>();
 
   const addItem = (item: T) => {
     const newItems = [...items, item];
@@ -73,24 +82,23 @@ export const Table = <T,>({
   };
 
   const handleSubmit = (item: T) => {
-    setDialogOpen(false);
-    if (editIndex === undefined) {
-      addItem(item);
+    setDialog(null);
+    if (dialog?.action === "edit") {
+      updateItem(dialog.index, item);
     } else {
-      updateItem(editIndex, item);
+      addItem(item);
     }
-    setEditIndex(undefined);
   };
 
-  const formValues = editIndex !== undefined ? items[editIndex] : undefined;
+  const formValues =
+    dialog?.action === "edit" ? items[dialog.index] : undefined;
   const columnCount = items[0] ? renderRow(items[0]).length : 0;
 
   return (
     <Dialog
-      open={dialogOpen}
+      open={dialog !== null}
       onOpenChange={(isOpen) => {
-        if (isOpen === false) setEditIndex(undefined);
-        setDialogOpen(isOpen);
+        if (isOpen === false) setDialog(null);
       }}
     >
       <Card noShadow>
@@ -101,12 +109,15 @@ export const Table = <T,>({
                 {label(items.length)}
               </TableHeaderCell>
               <TableHeaderCell className="w-60 text-right">
-                <DialogTrigger asChild>
-                  <Button icon variant="outline" size="sm">
-                    <Plus />
-                    {itemLabel}
-                  </Button>
-                </DialogTrigger>
+                <Button
+                  icon
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setDialog({ action: "create" })}
+                >
+                  <Plus />
+                  {itemLabel}
+                </Button>
               </TableHeaderCell>
             </TableRow>
           </TableHead>
@@ -114,7 +125,6 @@ export const Table = <T,>({
             {items.map((item, index, srcArray) => {
               const canMoveDown = index < srcArray.length - 1;
               const canMoveUp = index > 0;
-
               return (
                 <Row
                   key={getItemKey(item)}
@@ -122,8 +132,7 @@ export const Table = <T,>({
                   renderRow={renderRow}
                   actions={{
                     onEdit: () => {
-                      setDialogOpen(true);
-                      setEditIndex(index);
+                      setDialog({ action: "edit", index });
                     },
                     onMoveUp: canMoveUp
                       ? () => moveItem(index, index - 1)
@@ -143,8 +152,7 @@ export const Table = <T,>({
         formId={formId}
         title={itemLabel}
         onCancel={() => {
-          setDialogOpen(false);
-          setEditIndex(undefined);
+          setDialog(null);
         }}
       >
         {renderForm(formId, handleSubmit, formValues)}
