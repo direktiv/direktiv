@@ -109,15 +109,18 @@ export const Table = <T,>({
                 {label(items.length)}
               </TableHeaderCell>
               <TableHeaderCell className="w-60 text-right">
-                <Button
-                  icon
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setDialog({ action: "create" })}
-                >
-                  <Plus />
-                  {itemLabel}
-                </Button>
+                <DialogTrigger asChild>
+                  <Button
+                    type="button"
+                    icon
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setDialog({ action: "create" })}
+                  >
+                    <Plus />
+                    {itemLabel}
+                  </Button>
+                </DialogTrigger>
               </TableHeaderCell>
             </TableRow>
           </TableHead>
