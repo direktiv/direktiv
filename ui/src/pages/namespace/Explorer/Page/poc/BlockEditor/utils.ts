@@ -12,10 +12,10 @@ export const queryToUrl = (query: QueryType) => {
     keyValueArrayToObject(query.queryParams ?? [])
   );
 
-  const queryString = searchParams.toString();
+  const paramsString = searchParams.toString();
 
-  if (queryString) {
-    url = url.concat("?", queryString);
+  if (paramsString) {
+    url = url.concat("?", paramsString);
   }
 
   return url;

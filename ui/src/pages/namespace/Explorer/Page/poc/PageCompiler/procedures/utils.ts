@@ -20,11 +20,11 @@ export const useUrlGenerator = () => {
     const searchParams = new URLSearchParams(
       keyValueArrayToObject(queryParamsResolved)
     );
-    const queryString = searchParams.toString();
+    const paramsString = searchParams.toString();
     const interpolatedUrl = interpolateString(url);
 
-    const requestUrl = queryString
-      ? interpolatedUrl.concat("?", queryString)
+    const requestUrl = paramsString
+      ? interpolatedUrl.concat("?", paramsString)
       : interpolatedUrl;
 
     return requestUrl;
