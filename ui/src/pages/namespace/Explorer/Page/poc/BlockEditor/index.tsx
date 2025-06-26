@@ -6,6 +6,7 @@ import { QueryProvider } from "./QueryProvider";
 import { Table } from "./Table";
 import { Text } from "../BlockEditor/Text";
 import { isPage } from "../PageCompiler/context/utils";
+import { useBlockDialog } from "./BlockDialogProvider";
 import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
 
 export type BlockEditorAction = "create" | "edit" | "delete";
@@ -25,6 +26,7 @@ type BlockFormProps = {
 
 export const BlockForm = ({ action, path, block }: BlockFormProps) => {
   const { addBlock, updateBlock } = usePageEditor();
+  const { setDialog } = useBlockDialog();
 
   if (isPage(block)) {
     throw Error("Unexpected page object when parsing block");
@@ -39,6 +41,7 @@ export const BlockForm = ({ action, path, block }: BlockFormProps) => {
         updateBlock(path, newBlock);
         break;
     }
+    setDialog(null);
   };
 
   switch (block.type) {

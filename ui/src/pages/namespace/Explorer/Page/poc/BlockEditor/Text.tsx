@@ -7,6 +7,8 @@ import { useState } from "react";
 
 type TextBlockEditFormProps = BlockEditFormProps<TextType>;
 
+const formId = "block-editor-text";
+
 export const Text = ({
   action,
   block: propBlock,
@@ -27,8 +29,7 @@ export const Text = ({
           })
         }
       />
-
-      <DialogFooter onSubmit={() => onSubmit(block)} />
+      <DialogFooter formId={formId} />
     </>
   );
 };

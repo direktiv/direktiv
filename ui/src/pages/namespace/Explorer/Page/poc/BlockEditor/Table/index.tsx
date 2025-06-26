@@ -1,3 +1,4 @@
+import FormErrors, { errorsType } from "~/components/FormErrors";
 import { Table as TableSchema, TableType } from "../../schema/blocks/table";
 
 import { ActionForm } from "./ActionForm";
@@ -14,6 +15,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type TableEditFormProps = BlockEditFormProps<TableType>;
 
+const formId = "block-editor-table";
+
 export const Table = ({
   action,
   block: propBlock,
@@ -21,15 +24,25 @@ export const Table = ({
   onSubmit,
 }: TableEditFormProps) => {
   const { t } = useTranslation();
-  const form = useForm<TableType>({
+  const {
+    handleSubmit,
+    getValues,
+    setValue,
+    register,
+    formState: { errors },
+  } = useForm<TableType>({
     resolver: zodResolver(TableSchema),
     defaultValues: propBlock,
   });
 
   return (
-    <>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      id={formId}
+      className="flex flex-col gap-3"
+    >
       <DialogHeader action={action} path={path} type={propBlock.type} />
-      {/* TODO: connect form and display errors, update schema to not alllow  */}
+      {errors && <FormErrors errors={errors as errorsType} />}
       <div className="text-gray-10 dark:text-gray-10">
         {t("direktivPage.blockEditor.blockForms.table.description")}
       </div>
@@ -38,7 +51,7 @@ export const Table = ({
         htmlFor="data-id"
       >
         <Input
-          {...form.register("data.id")}
+          {...register("data.id")}
           id="data-id"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.table.data.idPlaceholder"
@@ -50,18 +63,17 @@ export const Table = ({
         htmlFor="data-data"
       >
         <Input
-          {...form.register("data.data")}
+          {...register("data.data")}
           id="id"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.table.data.dataPlaceholder"
           )}
         />
       </Fieldset>
-      {/* TODO: loop.id and loop.data */}
       <TableForm
-        data={form.getValues("actions")}
+        data={getValues("actions")}
         onChange={(newValue) => {
-          form.setValue("actions", newValue);
+          setValue("actions", newValue);
         }}
         itemLabel={t(
           "direktivPage.blockEditor.blockForms.table.action.itemLabel"
@@ -82,9 +94,9 @@ export const Table = ({
         )}
       />
       <TableForm
-        data={form.getValues("columns")}
+        data={getValues("columns")}
         onChange={(newValue) => {
-          form.setValue("columns", newValue);
+          setValue("columns", newValue);
         }}
         itemLabel={t(
           "direktivPage.blockEditor.blockForms.table.column.itemLabel"
@@ -104,7 +116,7 @@ export const Table = ({
           />
         )}
       />
-      <DialogFooter onSubmit={() => onSubmit(form.getValues())} />
-    </>
+      <DialogFooter formId={formId} />
+    </form>
   );
 };

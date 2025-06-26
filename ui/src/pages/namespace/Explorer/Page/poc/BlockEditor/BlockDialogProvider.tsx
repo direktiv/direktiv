@@ -26,18 +26,10 @@ export const BlockDialogProvider = ({
   children: React.ReactNode;
 }) => {
   const [dialog, setDialog] = useState<DialogState>(null);
-  /**
-   * This handler is only used for closing the dialog. For opening a dialog,
-   * we add custom onClick events to the trigger buttons.
-   */
-  const handleOnOpenChange = (open: boolean) => {
-    if (open === false) {
-      setDialog(null);
-    }
-  };
+
   return (
     <DialogContext.Provider value={{ dialog, setDialog }}>
-      <Dialog open={!!dialog} onOpenChange={handleOnOpenChange}>
+      <Dialog open={!!dialog}>
         {children}
         <BlockDialogContent />
       </Dialog>

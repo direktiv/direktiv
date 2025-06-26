@@ -7,10 +7,10 @@ import Button from "~/design/Button";
 import { useTranslation } from "react-i18next";
 
 type BlockEditorFooterProps = {
-  onSubmit: () => void;
+  formId: string;
 };
 
-export const DialogFooter = ({ onSubmit }: BlockEditorFooterProps) => {
+export const DialogFooter = ({ formId }: BlockEditorFooterProps) => {
   const { t } = useTranslation();
 
   return (
@@ -21,7 +21,7 @@ export const DialogFooter = ({ onSubmit }: BlockEditorFooterProps) => {
         </Button>
       </DialogClose>
       <DialogClose asChild>
-        <Button variant="primary" onClick={onSubmit}>
+        <Button variant="primary" type="submit" form={formId}>
           {t("direktivPage.blockEditor.generic.saveButton")}
         </Button>
       </DialogClose>

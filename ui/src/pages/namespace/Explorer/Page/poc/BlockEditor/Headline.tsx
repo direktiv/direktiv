@@ -15,6 +15,8 @@ import { useState } from "react";
 
 type HeadlineEditFormProps = BlockEditFormProps<HeadlineType>;
 
+const formId = "block-editor-headline";
+
 export const Headline = ({
   action,
   block: propBlock,
@@ -54,7 +56,7 @@ export const Headline = ({
           ))}
         </SelectContent>
       </Select>
-      <DialogFooter onSubmit={() => onSubmit(block)} />
+      <DialogFooter formId={formId} />
     </>
   );
 };

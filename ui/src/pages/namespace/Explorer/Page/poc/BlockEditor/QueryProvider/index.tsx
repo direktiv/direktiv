@@ -15,6 +15,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type QueryProviderEditFormProps = BlockEditFormProps<QueryProviderType>;
 
+const formId = "block-editor-query-provider";
+
 export const QueryProvider = ({
   action,
   block: propBlock,
@@ -57,7 +59,7 @@ export const QueryProvider = ({
           />
         )}
       />
-      <DialogFooter onSubmit={() => onSubmit(form.getValues())} />
+      <DialogFooter formId={formId} />
     </>
   );
 };

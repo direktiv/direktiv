@@ -35,8 +35,13 @@ export const QueryForm = ({
     },
   });
 
+  const onFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.stopPropagation();
+    handleSubmit(onSubmit)(e);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} id={formId}>
+    <form onSubmit={onFormSubmit} id={formId}>
       {errors && <FormErrors errors={errors as errorsType} className="mb-5" />}
       <Fieldset
         label={t(
