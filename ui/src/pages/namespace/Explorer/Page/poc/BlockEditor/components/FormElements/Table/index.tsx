@@ -50,7 +50,9 @@ export const Table = <T,>({
   };
 
   const updateItem = (targetIndex: number, newItem: T) => {
-    const newItems = items.map((item, index) => (targetIndex === index ? newItem : item));
+    const newItems = items.map((item, index) =>
+      targetIndex === index ? newItem : item
+    );
     setItems(newItems);
     onChange(newItems);
   };
@@ -58,8 +60,8 @@ export const Table = <T,>({
   const moveItem = (srcIndex: number, targetIndex: number) => {
     const newItems = [...items];
     const [targetItem] = newItems.splice(srcIndex, 1);
-    if (!movedItem) throw new Error("Invalid source index");
-    newItems.splice(targetIndex, 0, movedItem);
+    if (!targetItem) throw new Error("Invalid source index");
+    newItems.splice(targetIndex, 0, targetItem);
     setItems(newItems);
     onChange(newItems);
   };
