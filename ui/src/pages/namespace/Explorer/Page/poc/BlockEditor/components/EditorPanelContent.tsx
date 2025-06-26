@@ -3,7 +3,7 @@ import { BlockForm } from "..";
 import { useEditorPanel } from "../EditorPanelProvider";
 import { usePageEditor } from "../../PageCompiler/context/pageCompilerContext";
 
-export const EditPanel = () => {
+export const EditorPanel = () => {
   const { panel } = useEditorPanel();
   const { deleteBlock } = usePageEditor();
 

@@ -2,7 +2,7 @@ import { createContext, useContext, useState } from "react";
 
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
-import { EditPanel } from "./components/EditPanelContent";
+import { EditorPanel } from "./components/EditorPanelContent";
 
 type EditorPanelState = null | {
   action: "create" | "edit" | "delete";
@@ -34,7 +34,7 @@ export const EditorPanelLayoutProvider = ({
     <EditorPanelContext.Provider value={{ panel, setPanel }}>
       <div className="flex">
         <div className="w-1/3 max-w-xs">
-          <EditPanel />
+          <EditorPanel />
         </div>
         <div className="w-full">{children}</div>
       </div>
