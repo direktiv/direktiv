@@ -66,8 +66,8 @@ export const Table = <T,>({
     onChange(newItems);
   };
 
-  const deleteItem = (index: number) => {
-    const newItems = items.filter((_, i) => i !== index);
+  const deleteItem = (targetIndex: number) => {
+    const newItems = items.filter((_, i) => i !== targetIndex);
     setItems(newItems);
     onChange(newItems);
   };
