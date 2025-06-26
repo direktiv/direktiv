@@ -4,6 +4,7 @@ import {
   Database,
   Heading1,
   LucideIcon,
+  Table,
   Text,
 } from "lucide-react";
 
@@ -64,6 +65,12 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
         path,
         match: (block) => block.type === "card",
       }),
+    },
+    {
+      type: "table",
+      label: t("direktivPage.blockEditor.blockName.table"),
+      icon: Table,
+      allow: true,
     },
   ] satisfies BlockTypeConfig[];
 
