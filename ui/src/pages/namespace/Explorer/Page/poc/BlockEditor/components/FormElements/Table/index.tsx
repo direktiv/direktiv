@@ -57,7 +57,7 @@ export const Table = <T,>({
 
   const moveItem = (srcIndex: number, targetIndex: number) => {
     const newItems = [...items];
-    const [movedItem] = newItems.splice(srcIndex, 1);
+    const [targetItem] = newItems.splice(srcIndex, 1);
     if (!movedItem) throw new Error("Invalid source index");
     newItems.splice(targetIndex, 0, movedItem);
     setItems(newItems);
