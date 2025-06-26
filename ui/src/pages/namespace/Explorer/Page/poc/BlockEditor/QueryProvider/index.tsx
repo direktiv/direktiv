@@ -13,14 +13,14 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type HeadlineEditFormProps = BlockEditFormProps<QueryProviderType>;
+type QueryProviderEditFormProps = BlockEditFormProps<QueryProviderType>;
 
 export const QueryProvider = ({
   action,
   block: propBlock,
   path,
   onSubmit,
-}: HeadlineEditFormProps) => {
+}: QueryProviderEditFormProps) => {
   const { t } = useTranslation();
   const form = useForm<QueryProviderType>({
     resolver: zodResolver(QueryProviderSchema),
