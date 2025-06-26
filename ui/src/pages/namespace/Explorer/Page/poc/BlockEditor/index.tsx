@@ -1,10 +1,13 @@
+import {
+  useBlock,
+  usePageEditor,
+} from "../PageCompiler/context/pageCompilerContext";
+
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
-import { DirektivPagesType } from "../schema";
 import { Headline } from "./Headline";
 import { Text } from "../BlockEditor/Text";
 import { isPage } from "../PageCompiler/context/utils";
-import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
 
 export type BlockEditorAction = "create" | "edit" | "delete";
 
@@ -16,12 +19,12 @@ export type BlockEditFormProps<T> = {
 };
 
 type BlockFormProps = {
-  block: AllBlocksType | DirektivPagesType;
   action: BlockEditorAction;
   path: BlockPathType;
 };
 
-export const BlockForm = ({ action, path, block }: BlockFormProps) => {
+export const BlockForm = ({ action, path }: BlockFormProps) => {
+  const block = useBlock(path);
   const { addBlock, updateBlock } = usePageEditor();
 
   if (isPage(block)) {

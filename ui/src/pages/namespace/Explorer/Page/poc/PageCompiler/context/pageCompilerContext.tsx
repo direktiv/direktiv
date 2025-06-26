@@ -10,6 +10,7 @@ import {
 import {
   addBlockToPage,
   deleteBlockFromPage,
+  findBlock,
   pathsEqual,
   updateBlockInPage,
 } from "./utils";
@@ -61,12 +62,10 @@ export const usePage = () => {
   return page;
 };
 
-// Todo: Currently not used. Remove it if we don't need it later.
-
-// const useBlock = (path: BlockPathType) => {
-//   const page = usePage();
-//   return findBlock(page, path);
-// };
+export const useBlock = (path: BlockPathType) => {
+  const page = usePage();
+  return findBlock(page, path);
+};
 
 /**
  * This hook returns variables and methods to update the page,

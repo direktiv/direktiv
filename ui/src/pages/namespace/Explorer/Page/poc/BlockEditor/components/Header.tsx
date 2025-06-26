@@ -6,12 +6,13 @@ import {
 import { AllBlocksType } from "../../schema/blocks";
 import { BlockEditorAction } from "..";
 import { BlockPathType } from "../../PageCompiler/Block";
+import { DirektivPagesType } from "../../schema";
 import { useTranslation } from "react-i18next";
 
 type BlockEditDialogHeaderProps = {
   path: BlockPathType;
   action: BlockEditorAction;
-  type: AllBlocksType["type"];
+  type: AllBlocksType["type"] | DirektivPagesType["type"];
 };
 
 export const DialogHeader = ({

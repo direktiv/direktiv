@@ -1698,6 +1698,7 @@
           "delete": "delete"
         },
         "type": {
+          "page": "page",
           "text": "text block",
           "headline": "headline block",
           "button": "button block",
