@@ -4,11 +4,13 @@ import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
 import { EditorPanel } from "./components/EditorPanelContent";
 
-type EditorPanelState = null | {
-  action: "create" | "edit" | "delete";
-  block: AllBlocksType;
-  path: BlockPathType;
-};
+type EditorPanelState =
+  | null
+  | {
+      action: "delete";
+      path: BlockPathType;
+    }
+  | { action: "create" | "edit"; block: AllBlocksType; path: BlockPathType };
 
 type EditorPanelContextType =
   | {
@@ -42,11 +44,11 @@ export const EditorPanelLayoutProvider = ({
   );
 };
 
-export const useEditorPanel = () => {
+export const usePageEditorPanel = () => {
   const context = useContext(EditorPanelContext);
   if (!context)
     throw new Error(
-      "useEditorPanel must be used within EditorPanelLayoutProvider"
+      "usePageEditorPanel must be used within EditorPanelLayoutProvider"
     );
   return context;
 };

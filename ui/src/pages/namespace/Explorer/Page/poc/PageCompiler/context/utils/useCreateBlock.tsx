@@ -2,8 +2,8 @@ import { AllBlocksType, inlineBlockTypes } from "../../../schema/blocks";
 
 import { BlockPathType } from "../../Block";
 import { getBlockTemplate } from ".";
-import { useEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 import { usePageEditor } from "../pageCompilerContext";
+import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 
 /**
  * This hook returns createBlock(), which opens the editor dialog for
@@ -12,7 +12,7 @@ import { usePageEditor } from "../pageCompilerContext";
  */
 export const useCreateBlock = () => {
   const { addBlock } = usePageEditor();
-  const { setPanel } = useEditorPanel();
+  const { setPanel } = usePageEditorPanel();
 
   const createBlock = (type: AllBlocksType["type"], path: BlockPathType) => {
     if (inlineBlockTypes.has(type)) {

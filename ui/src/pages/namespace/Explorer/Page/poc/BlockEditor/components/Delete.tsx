@@ -7,22 +7,17 @@ import { useBlock } from "../../PageCompiler/context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
 type BlockDeleteFormProps = {
-  action: "delete";
   path: BlockPathType;
-  onSubmit: (path: BlockPathType) => void;
+  onSubmit: () => void;
 };
 
-export const BlockDeleteForm = ({
-  action,
-  path,
-  onSubmit,
-}: BlockDeleteFormProps) => {
+export const BlockDeleteForm = ({ path, onSubmit }: BlockDeleteFormProps) => {
   const block = useBlock(path);
   const { t } = useTranslation();
 
   return (
     <>
-      <DialogHeader action={action} path={path} type={block.type} />
+      <DialogHeader action="delete" path={path} type={block.type} />
       <div>{t("direktivPage.blockEditor.delete.warning")}</div>
       <DialogFooter>
         <DialogClose asChild>
@@ -31,7 +26,7 @@ export const BlockDeleteForm = ({
           </Button>
         </DialogClose>
         <DialogClose asChild>
-          <Button variant="primary" onClick={() => onSubmit(path)}>
+          <Button variant="primary" onClick={() => onSubmit()}>
             {t("direktivPage.blockEditor.generic.confirmButton")}
           </Button>
         </DialogClose>

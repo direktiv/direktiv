@@ -8,7 +8,6 @@ import {
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
-import { BlockContextMenu } from "../../../BlockEditor/components/ContextMenu";
 import { BlockPathType } from "..";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
@@ -17,8 +16,8 @@ import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
 import { pathsEqual } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useCreateBlock } from "../../context/utils/useCreateBlock";
-import { useEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 import { usePageEditor } from "../../context/pageCompilerContext";
+import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 import { useTranslation } from "react-i18next";
 
 type BlockWrapperProps = PropsWithChildren<{
@@ -33,9 +32,9 @@ export const BlockWrapper = ({
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
   const { mode, focus, setFocus } = usePageEditor();
+  const { setPanel } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { setPanel } = useEditorPanel();
   const createBlock = useCreateBlock();
 
   useEffect(() => {
@@ -63,7 +62,12 @@ export const BlockWrapper = ({
     if (mode !== "edit") {
       return;
     }
-    return setFocus(blockPath);
+    setPanel({
+      action: "edit",
+      block,
+      path: blockPath,
+    });
+    return setFocus(blockPath); // Todo: do we still need focus state separate from panel state?
   };
 
   const isFocused = focus && pathsEqual(focus, blockPath);
@@ -93,24 +97,6 @@ export const BlockWrapper = ({
         )}
         {mode === "edit" && isFocused && (
           <div onClick={(event) => event.stopPropagation()}>
-            <div className="absolute right-1 top-1 z-30">
-              <BlockContextMenu
-                onEdit={() =>
-                  setPanel({
-                    action: "edit",
-                    block,
-                    path: blockPath,
-                  })
-                }
-                onDelete={() =>
-                  setPanel({
-                    action: "delete",
-                    block,
-                    path: blockPath,
-                  })
-                }
-              />
-            </div>
             <SelectBlockType
               path={blockPath}
               onSelect={(type) => createBlock(type, blockPath)}
