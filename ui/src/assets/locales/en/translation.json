@@ -1693,6 +1693,19 @@
         },
         "table": {
           "description": "A Table block displays a set of data in a table format. It can be used to display data from a Query Provider",
+          "data": {
+            "idLabel": "loop ID",
+            "idPlaceholder": "unique identifier name to reference a row in the table",
+            "dataLabel": "data",
+            "dataPlaceholder": "Path to an array for the table (e.g. query.companies.data)"
+          },
+          "action": {
+            "labelLabel": "Label",
+            "labelPlaceholder": "The label of the Action (e.g. Edit, Delete)",
+            "itemLabel": "Action",
+            "tableLabel": "{{count}} Actions",
+            "tableLabel_one": "{{count}} Action"
+          },
           "column": {
             "labelLabel": "Label",
             "labelPlaceholder": "Column label",
@@ -1700,7 +1713,7 @@
             "contentPlaceholder": "The content of the column (e.g. E-Mail: {{loop.company-table.email}})",
             "itemLabel": "Column",
             "tableLabel": "{{count}} Columns",
-            "tableLabel_one": "{{count}}Column"
+            "tableLabel_one": "{{count}} Column"
           }
         },
         "queryProvider": {
