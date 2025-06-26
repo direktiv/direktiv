@@ -12,6 +12,7 @@ export const Text = ({
   block: propBlock,
   path,
   onSubmit,
+  onCancel,
 }: TextBlockEditFormProps) => {
   const [block, setBlock] = useState<TextType>(structuredClone(propBlock));
 
@@ -28,7 +29,13 @@ export const Text = ({
         }
       />
 
-      <DialogFooter onSubmit={() => onSubmit(block)} />
+      <DialogFooter
+        onSubmit={() => {
+          onSubmit(block);
+          close();
+        }}
+        onCancel={() => onCancel()}
+      />
     </>
   );
 };

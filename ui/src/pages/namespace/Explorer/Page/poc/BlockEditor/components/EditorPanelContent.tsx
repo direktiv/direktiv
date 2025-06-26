@@ -5,7 +5,7 @@ import { usePageEditorPanel } from "../EditorPanelProvider";
 
 export const EditorPanel = () => {
   const { deleteBlock } = usePageEditor();
-  const { panel } = usePageEditorPanel();
+  const { panel, setPanel } = usePageEditorPanel();
 
   if (!panel) {
     // Instead of nothing, we could later display global page settings.
@@ -17,7 +17,10 @@ export const EditorPanel = () => {
       {panel.action === "delete" ? (
         <BlockDeleteForm
           path={panel.path}
-          onSubmit={() => deleteBlock(panel.path)}
+          onSubmit={() => {
+            setPanel(null);
+            deleteBlock(panel.path);
+          }}
         />
       ) : (
         <BlockForm

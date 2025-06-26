@@ -4,6 +4,7 @@ import { Headline } from "./Headline";
 import { Text } from "../BlockEditor/Text";
 import { isPage } from "../PageCompiler/context/utils";
 import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
+import { usePageEditorPanel } from "./EditorPanelProvider";
 
 export type BlockEditorAction = "create" | "edit" | "delete";
 
@@ -12,6 +13,7 @@ export type BlockEditFormProps<T> = {
   block: T;
   path: BlockPathType;
   onSubmit: (newBlock: AllBlocksType) => void;
+  onCancel: () => void;
 };
 
 type BlockFormProps = {
@@ -22,6 +24,7 @@ type BlockFormProps = {
 
 export const BlockForm = ({ action, block, path }: BlockFormProps) => {
   const { addBlock, updateBlock } = usePageEditor();
+  const { setPanel } = usePageEditorPanel();
 
   if (isPage(block)) {
     throw Error("Unexpected page object when parsing block");
@@ -36,7 +39,10 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
         updateBlock(path, newBlock);
         break;
     }
+    setPanel(null);
   };
+
+  const handleClose = () => setPanel(null);
 
   switch (block.type) {
     case "text": {
@@ -46,6 +52,7 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
           block={block}
           path={path}
           onSubmit={handleUpdate}
+          onCancel={handleClose}
         />
       );
     }
@@ -56,6 +63,7 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
           block={block}
           path={path}
           onSubmit={handleUpdate}
+          onCancel={handleClose}
         />
       );
     }
