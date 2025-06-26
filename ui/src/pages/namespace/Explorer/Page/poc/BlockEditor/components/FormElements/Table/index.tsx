@@ -49,8 +49,8 @@ export const Table = <T,>({
     onChange(newItems);
   };
 
-  const updateItem = (index: number, item: T) => {
-    const newItems = items.map((i, idx) => (idx === index ? item : i));
+  const updateItem = (targetIndex: number, newItem: T) => {
+    const newItems = items.map((item, index) => (targetIndex === index ? newItem : item));
     setItems(newItems);
     onChange(newItems);
   };
