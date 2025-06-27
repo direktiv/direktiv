@@ -5,7 +5,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { getPlaceholderBlock, pathsEqual } from "../../context/utils";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
@@ -16,8 +15,10 @@ import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
+import { pathsEqual } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useBlockDialog } from "../../../BlockEditor/BlockDialogProvider";
+import { useCreateBlock } from "../../context/utils/useCreateBlock";
 import { usePageEditor } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
@@ -36,6 +37,7 @@ export const BlockWrapper = ({
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { setDialog } = useBlockDialog();
+  const createBlock = useCreateBlock();
 
   useEffect(() => {
     if (mode !== "edit") {
@@ -111,13 +113,8 @@ export const BlockWrapper = ({
                 </div>
 
                 <SelectBlockType
-                  onSelect={(type) =>
-                    setDialog({
-                      action: "create",
-                      block: getPlaceholderBlock(type),
-                      path: blockPath,
-                    })
-                  }
+                  path={blockPath}
+                  onSelect={(type) => createBlock(type, blockPath)}
                 />
               </div>
             )}

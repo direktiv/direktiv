@@ -41,16 +41,16 @@ Blocks are the main elements that the user can use to compose a Direktiv page.
 
 ### Columns `Block`
 
-| Attribute | Type           | Description                                        |
-| --------- | -------------- | -------------------------------------------------- |
-| `type`    | `"columns"`    |                                                    |
-| `blocks`  | `Column[]`     | Array of column blocks                             |
+| Attribute | Type        | Description            |
+| --------- | ----------- | ---------------------- |
+| `type`    | `"columns"` |                        |
+| `blocks`  | `Column[]`  | Array of column blocks |
 
 ### Column `Block`
 
-| Attribute | Type       | Description                    |
-| --------- | ---------- | ------------------------------ |
-| `type`    | `"column"` |                                |
+| Attribute | Type       | Description                      |
+| --------- | ---------- | -------------------------------- |
+| `type`    | `"column"` |                                  |
 | `blocks`  | `Block[]`  | Content blocks within the column |
 
 ### Dialog `Block`
@@ -132,7 +132,7 @@ A mutation is an API request that modifies data on the server
 | ----------------- | ---------------- | ------------------------- |
 | `id`              | `Id`             | Unique identifier         |
 | `method`          | `MutationMethod` | HTTP method               |
-| `endpoint`        | `TemplateString` | API endpoint              |
+| `url`             | `TemplateString` | url to the API endpoint   |
 | `queryParams?`    | `KeyValue[]`     | Optional query parameters |
 | `requestHeaders?` | `KeyValue[]`     | Optional request headers  |
 | `requestBody?`    | `KeyValue[]`     | Optional request body     |
@@ -148,7 +148,7 @@ A query is a API request that reads data from the server
 | Attribute      | Type             | Description                            |
 | -------------- | ---------------- | -------------------------------------- |
 | `id`           | `Id`             | Unique ID used to reference query data |
-| `endpoint`     | `TemplateString` | Path to the endpoint                   |
+| `url`          | `TemplateString` | url to the API endpoint                |
 | `queryParams?` | `KeyValue[]`     | Optional query parameters              |
 
 # Primitives

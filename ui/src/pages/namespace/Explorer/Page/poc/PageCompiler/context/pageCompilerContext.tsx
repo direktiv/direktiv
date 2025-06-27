@@ -35,10 +35,9 @@ const PageCompilerContext = createContext<PageCompilerState | null>(null);
 
 type PageCompilerContextProviderProps = PropsWithChildren<PageCompilerProps>;
 
-const PageCompilerContextProvider: FC<PageCompilerContextProviderProps> = ({
-  children,
-  ...value
-}) => {
+export const PageCompilerContextProvider: FC<
+  PageCompilerContextProviderProps
+> = ({ children, ...value }) => {
   const [focus, setFocus] = useState<BlockPathType | null>(null);
   return (
     <PageCompilerContext.Provider value={{ ...value, focus, setFocus }}>
@@ -57,7 +56,7 @@ const usePageStateContext = () => {
   return context;
 };
 
-const usePage = () => {
+export const usePage = () => {
   const { page } = usePageStateContext();
   return page;
 };
@@ -69,6 +68,10 @@ const usePage = () => {
 //   return findBlock(page, path);
 // };
 
+/**
+ * This hook returns variables and methods to update the page,
+ * for example, creating, updating or deleting blocks.
+ */
 export const usePageEditor = () => {
   const page = usePage();
   const {
@@ -97,11 +100,13 @@ export const usePageEditor = () => {
   ) => {
     const newPage = addBlockToPage(page, path, block, after);
     setPage(newPage);
+    contextSetFocus(null);
   };
 
   const deleteBlock = (path: BlockPathType) => {
     const newPage = deleteBlockFromPage(page, path);
     setPage(newPage);
+    contextSetFocus(null);
   };
 
   return {
@@ -114,5 +119,3 @@ export const usePageEditor = () => {
     setPage,
   };
 };
-
-export { PageCompilerContextProvider };

@@ -2,6 +2,7 @@ import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
 import { DirektivPagesType } from "../schema";
 import { Headline } from "./Headline";
+import { QueryProvider } from "./QueryProvider";
 import { Text } from "../BlockEditor/Text";
 import { isPage } from "../PageCompiler/context/utils";
 import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
@@ -12,7 +13,7 @@ export type BlockEditFormProps<T> = {
   action: BlockEditorAction;
   block: T;
   path: BlockPathType;
-  onSubmit: (newBlock: AllBlocksType) => void;
+  onSubmit: (newBlock: T) => void;
 };
 
 type BlockFormProps = {
@@ -53,6 +54,16 @@ export const BlockForm = ({ action, path, block }: BlockFormProps) => {
     case "headline": {
       return (
         <Headline
+          action={action}
+          block={block}
+          path={path}
+          onSubmit={handleUpdate}
+        />
+      );
+    }
+    case "query-provider": {
+      return (
+        <QueryProvider
           action={action}
           block={block}
           path={path}

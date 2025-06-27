@@ -2,6 +2,7 @@ import { DirektivPagesType } from "../..";
 
 export default {
   direktiv_api: "page/v1",
+  type: "page",
   blocks: [
     {
       type: "headline",
@@ -45,7 +46,7 @@ export default {
       queries: [
         {
           id: "fetching-resources",
-          endpoint: "/api/get/resources",
+          url: "/api/get/resources",
           queryParams: [
             {
               key: "query",
@@ -70,7 +71,7 @@ export default {
               },
               mutation: {
                 id: "my-delete",
-                endpoint: "/api/delete/",
+                url: "/api/delete/",
                 method: "DELETE",
               },
               blocks: [],

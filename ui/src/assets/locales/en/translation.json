@@ -92,16 +92,12 @@
             "directory": "Directory",
             "workflow": "Workflow",
             "service": "Service",
+            "page": "Page",
             "gateway": {
               "label": "Gateway",
-              "route": "New Route",
-              "consumer": "New Consumer",
-              "openapiSpecification": "OpenAPI Specification"
-            },
-            "page": {
-              "label": "New Page",
               "route": "Route",
-              "consumer": "Consumer"
+              "consumer": "Consumer",
+              "openapiSpecification": "OpenAPI Specification"
             }
           }
         },
@@ -1644,9 +1640,9 @@
       "blockNotImplemented": "The block type \"{{type}}\" is not implemented yet",
       "genericError": "There was an unexpected error",
       "duplicateId": "Error in block with id {{id}}: The id is already used by one of the parent blocks",
-      "queryProvider": {
-        "queryFailed": "Error in query with id {{id}}: {{endpoint}} responded with {{status}}",
-        "invalidJson": "Error in query with id {{id}}: {{endpoint}} returned an invalid JSON"
+      "query": {
+        "queryFailed": "Error in query with id {{id}}: {{url}} responded with {{status}}",
+        "invalidJson": "Error in query with id {{id}}: {{url}} returned an invalid JSON"
       },
       "blocks": {
         "table": { "noResult": "No entries to show" }
@@ -1660,6 +1656,14 @@
         "invalidPath": "The path is not ivalid. It points to an undefined value",
         "couldNotStringify": "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null.",
         "notAnArray": "Pointing to a value that is not an array."
+      }
+    },
+    "page": {
+      "blocks": {
+        "table": { "noResult": "No entries to show" },
+        "form": {
+          "success": "The form has been submitted successfully"
+        }
       }
     },
     "blockEditor": {
@@ -1677,10 +1681,28 @@
         "dialog": "Dialog",
         "form": "Form",
         "loop": "Loop",
-        "query-provider": "Query provider",
+        "query-provider": "Query Provider",
         "column": "Column",
         "columns": "Columns",
         "table": "Table"
+      },
+      "blockForms": {
+        "keyValue": {
+          "key": "Key",
+          "value": "Value"
+        },
+        "queryProvider": {
+          "description": "A Query Provider fetches data from one or multiple APIs and makes the results accessible to its child blocks.",
+          "query": {
+            "idLabel": "ID",
+            "idPlaceholder": "unique identifier name to reference this query in any child block",
+            "urlLabel": "URL",
+            "urlPlaceholder": "relative or absolute url like /path/to/endpoint or https://...",
+            "itemLabel": "Query",
+            "tableLabel": "{{count}} Queries",
+            "tableLabel_one": "{{count}} Query"
+          }
+        }
       },
       "contextMenu": {
         "deleteButton": "Delete",
