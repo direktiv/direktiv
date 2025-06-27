@@ -1691,8 +1691,13 @@
           "key": "Key",
           "value": "Value"
         },
+        "text": {
+          "description": "Text blocks are used to display a block of text.",
+          "contentLabel": "Content",
+          "contentPlaceholder": "Enter text here..."
+        },
         "headline": {
-          "description": "A simple block to display a headline",
+          "description": "Headlines are used to display a title for a section of content. They can be used to create a hierarchy of content.",
           "labelLabel": "Label",
           "labelPlaceholder": "Headline",
           "levelLabel": "Level"

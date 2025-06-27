@@ -9,6 +9,7 @@ import { ReactNode } from "react";
 
 interface FormWrapperProps<T extends FieldValues> {
   form: UseFormReturn<T>;
+  description: string;
   onSubmit: (data: T) => void;
   action: BlockEditFormProps<T>["action"];
   path: BlockEditFormProps<T>["path"];
@@ -24,6 +25,7 @@ export const FormWrapper = <T extends FieldValues>({
   action,
   path,
   blockType,
+  description,
   children,
 }: FormWrapperProps<T>) => {
   const {
@@ -38,6 +40,7 @@ export const FormWrapper = <T extends FieldValues>({
       className="flex flex-col gap-3"
     >
       <DialogHeader action={action} path={path} type={blockType} />
+      <div className="text-gray-10 dark:text-gray-10">{description}</div>
       {errors && <FormErrors errors={errors as errorsType} />}
       {children}
       <DialogFooter formId={formId} />

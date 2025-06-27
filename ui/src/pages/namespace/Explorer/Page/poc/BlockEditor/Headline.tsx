@@ -35,15 +35,15 @@ export const Headline = ({
 
   return (
     <FormWrapper
+      description={t(
+        "direktivPage.blockEditor.blockForms.headline.description"
+      )}
       form={form}
       onSubmit={onSubmit}
       action={action}
       path={path}
       blockType={propBlock.type}
     >
-      <div className="text-gray-10 dark:text-gray-10">
-        {t("direktivPage.blockEditor.blockForms.headline.description")}
-      </div>
       <Fieldset
         label={t("direktivPage.blockEditor.blockForms.headline.labelLabel")}
         htmlFor="label"

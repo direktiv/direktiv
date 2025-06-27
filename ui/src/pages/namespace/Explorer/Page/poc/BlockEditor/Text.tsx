@@ -4,6 +4,7 @@ import { BlockEditFormProps } from ".";
 import { FormWrapper } from "./components/FormWrapper";
 import { Textarea } from "~/design/TextArea";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type TextBlockEditFormProps = BlockEditFormProps<TextType>;
@@ -14,6 +15,7 @@ export const Text = ({
   path,
   onSubmit,
 }: TextBlockEditFormProps) => {
+  const { t } = useTranslation();
   const form = useForm<TextType>({
     resolver: zodResolver(TextSchema),
     defaultValues: propBlock,
@@ -21,6 +23,7 @@ export const Text = ({
 
   return (
     <FormWrapper
+      description={t("direktivPage.blockEditor.blockForms.text.description")}
       form={form}
       onSubmit={onSubmit}
       action={action}

@@ -28,15 +28,15 @@ export const QueryProvider = ({
 
   return (
     <FormWrapper
+      description={t(
+        "direktivPage.blockEditor.blockForms.queryProvider.description"
+      )}
       form={form}
       onSubmit={onSubmit}
       action={action}
       path={path}
       blockType={propBlock.type}
     >
-      <div className="text-gray-10 dark:text-gray-10">
-        {t("direktivPage.blockEditor.blockForms.queryProvider.description")}
-      </div>
       <Table
         data={form.getValues("queries")}
         onChange={(newValue) => {
