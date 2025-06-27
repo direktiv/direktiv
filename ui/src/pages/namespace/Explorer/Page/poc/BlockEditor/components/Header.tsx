@@ -3,24 +3,30 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 
-import { useBlockDialog } from "../BlockDialogProvider";
+import { AllBlocksType } from "../../schema/blocks";
+import { BlockEditorAction } from "..";
+import { BlockPathType } from "../../PageCompiler/Block";
 import { useTranslation } from "react-i18next";
 
-export const DialogHeader = () => {
+type BlockEditDialogHeaderProps = {
+  path: BlockPathType;
+  action: BlockEditorAction;
+  type: AllBlocksType["type"];
+};
+
+export const DialogHeader = ({
+  path,
+  action,
+  type,
+}: BlockEditDialogHeaderProps) => {
   const { t } = useTranslation();
-  const { dialog } = useBlockDialog();
-
-  if (!dialog) return null;
-
-  const { action, block, path } = dialog;
-
   return (
     <DesignDialogHeader>
       <DialogTitle>
         {t("direktivPage.blockEditor.editDialog.title", {
           path: path.join("."),
           action: t(`direktivPage.blockEditor.editDialog.action.${action}`),
-          type: t(`direktivPage.blockEditor.editDialog.type.${block.type}`),
+          type: t(`direktivPage.blockEditor.editDialog.type.${type}`),
         })}
       </DialogTitle>
     </DesignDialogHeader>
