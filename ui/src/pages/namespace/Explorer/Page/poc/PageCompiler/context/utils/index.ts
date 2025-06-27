@@ -4,6 +4,7 @@ import { BlockPathType } from "../../Block";
 import { CardType } from "../../../schema/blocks/card";
 import { ColumnsType } from "../../../schema/blocks/columns";
 import { HeadlineType } from "../../../schema/blocks/headline";
+import { QueryProviderType } from "../../../schema/blocks/queryProvider";
 import { TextType } from "../../../schema/blocks/text";
 import { clonePage } from "../../../BlockEditor/utils";
 import { z } from "zod";
@@ -184,7 +185,13 @@ export const getBlockTemplate = (type: AllBlocksType["type"]) => {
         type: "card",
         blocks: [],
       } satisfies CardType;
+    case "query-provider":
+      return {
+        type: "query-provider",
+        blocks: [],
+        queries: [],
+      } satisfies QueryProviderType;
     default:
-      return { type: "text", content: "" } satisfies TextType;
+      throw new Error(`${type} is not implemented yet`);
   }
 };

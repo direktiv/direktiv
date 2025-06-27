@@ -17,7 +17,7 @@ export const Text = ({
 
   return (
     <>
-      <DialogHeader action={action} path={path} type="text" />
+      <DialogHeader action={action} path={path} type={propBlock.type} />
       <Textarea
         value={block.content}
         onChange={(event) =>
