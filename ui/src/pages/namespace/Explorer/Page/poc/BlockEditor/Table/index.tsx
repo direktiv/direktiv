@@ -1,12 +1,10 @@
-import FormErrors, { errorsType } from "~/components/FormErrors";
 import { Table as TableSchema, TableType } from "../../schema/blocks/table";
 
 import { ActionForm } from "./ActionForm";
 import { BlockEditFormProps } from "..";
 import { ColumnForm } from "./ColumnForm";
-import { DialogFooter } from "../components/Footer";
-import { DialogHeader } from "../components/Header";
 import { Fieldset } from "~/components/Form/Fieldset";
+import { FormWrapper } from "../components/FormWrapper";
 import Input from "~/design/Input";
 import { Table as TableForm } from "../components/FormElements/Table";
 import { useForm } from "react-hook-form";
@@ -15,8 +13,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type TableEditFormProps = BlockEditFormProps<TableType>;
 
-const formId = "block-editor-table";
-
 export const Table = ({
   action,
   block: propBlock,
@@ -24,25 +20,19 @@ export const Table = ({
   onSubmit,
 }: TableEditFormProps) => {
   const { t } = useTranslation();
-  const {
-    handleSubmit,
-    getValues,
-    setValue,
-    register,
-    formState: { errors },
-  } = useForm<TableType>({
+  const form = useForm<TableType>({
     resolver: zodResolver(TableSchema),
     defaultValues: propBlock,
   });
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      id={formId}
-      className="flex flex-col gap-3"
+    <FormWrapper
+      form={form}
+      onSubmit={onSubmit}
+      action={action}
+      path={path}
+      blockType={propBlock.type}
     >
-      <DialogHeader action={action} path={path} type={propBlock.type} />
-      {errors && <FormErrors errors={errors as errorsType} />}
       <div className="text-gray-10 dark:text-gray-10">
         {t("direktivPage.blockEditor.blockForms.table.description")}
       </div>
@@ -51,7 +41,7 @@ export const Table = ({
         htmlFor="data-id"
       >
         <Input
-          {...register("data.id")}
+          {...form.register("data.id")}
           id="data-id"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.table.data.idPlaceholder"
@@ -63,7 +53,7 @@ export const Table = ({
         htmlFor="data-data"
       >
         <Input
-          {...register("data.data")}
+          {...form.register("data.data")}
           id="id"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.table.data.dataPlaceholder"
@@ -71,9 +61,9 @@ export const Table = ({
         />
       </Fieldset>
       <TableForm
-        data={getValues("actions")}
+        data={form.getValues("actions")}
         onChange={(newValue) => {
-          setValue("actions", newValue);
+          form.setValue("actions", newValue);
         }}
         itemLabel={t(
           "direktivPage.blockEditor.blockForms.table.action.itemLabel"
@@ -93,9 +83,9 @@ export const Table = ({
         )}
       />
       <TableForm
-        data={getValues("columns")}
+        data={form.getValues("columns")}
         onChange={(newValue) => {
-          setValue("columns", newValue);
+          form.setValue("columns", newValue);
         }}
         itemLabel={t(
           "direktivPage.blockEditor.blockForms.table.column.itemLabel"
@@ -114,7 +104,6 @@ export const Table = ({
           />
         )}
       />
-      <DialogFooter formId={formId} />
-    </form>
+    </FormWrapper>
   );
 };

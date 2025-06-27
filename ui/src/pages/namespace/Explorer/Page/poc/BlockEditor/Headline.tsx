@@ -1,5 +1,4 @@
 import { Controller, useForm } from "react-hook-form";
-import FormErrors, { errorsType } from "~/components/FormErrors";
 import {
   Headline as HeadlineSchema,
   HeadlineType,
@@ -14,16 +13,13 @@ import {
 } from "~/design/Select";
 
 import { BlockEditFormProps } from ".";
-import { DialogFooter } from "./components/Footer";
-import { DialogHeader } from "./components/Header";
 import { Fieldset } from "~/components/Form/Fieldset";
+import { FormWrapper } from "./components/FormWrapper";
 import Input from "~/design/Input";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type HeadlineEditFormProps = BlockEditFormProps<HeadlineType>;
-
-const formId = "block-editor-headline";
 
 export const Headline = ({
   action,
@@ -32,24 +28,19 @@ export const Headline = ({
   onSubmit,
 }: HeadlineEditFormProps) => {
   const { t } = useTranslation();
-  const {
-    handleSubmit,
-    register,
-    control,
-    formState: { errors },
-  } = useForm<HeadlineType>({
+  const form = useForm<HeadlineType>({
     resolver: zodResolver(HeadlineSchema),
     defaultValues: propBlock,
   });
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      id={formId}
-      className="flex flex-col gap-3"
+    <FormWrapper
+      form={form}
+      onSubmit={onSubmit}
+      action={action}
+      path={path}
+      blockType={propBlock.type}
     >
-      <DialogHeader action={action} path={path} type={propBlock.type} />
-      {errors && <FormErrors errors={errors as errorsType} />}
       <div className="text-gray-10 dark:text-gray-10">
         {t("direktivPage.blockEditor.blockForms.headline.description")}
       </div>
@@ -58,7 +49,7 @@ export const Headline = ({
         htmlFor="label"
       >
         <Input
-          {...register("label")}
+          {...form.register("label")}
           id="label"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.headline.labelPlaceholder"
@@ -70,7 +61,7 @@ export const Headline = ({
         htmlFor="level"
       >
         <Controller
-          control={control}
+          control={form.control}
           name="level"
           render={({ field }) => (
             <Select value={field.value} onValueChange={field.onChange}>
@@ -88,7 +79,6 @@ export const Headline = ({
           )}
         />
       </Fieldset>
-      <DialogFooter formId={formId} />
-    </form>
+    </FormWrapper>
   );
 };

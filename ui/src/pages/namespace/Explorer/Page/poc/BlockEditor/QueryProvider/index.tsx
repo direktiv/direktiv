@@ -4,8 +4,7 @@ import {
 } from "../../schema/blocks/queryProvider";
 
 import { BlockEditFormProps } from "..";
-import { DialogFooter } from "../components/Footer";
-import { DialogHeader } from "../components/Header";
+import { FormWrapper } from "../components/FormWrapper";
 import { QueryForm } from "./QueryForm";
 import { Table } from "../components/FormElements/Table";
 import { queryToUrl } from "../utils";
@@ -14,8 +13,6 @@ import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type QueryProviderEditFormProps = BlockEditFormProps<QueryProviderType>;
-
-const formId = "block-editor-query-provider";
 
 export const QueryProvider = ({
   action,
@@ -30,8 +27,13 @@ export const QueryProvider = ({
   });
 
   return (
-    <>
-      <DialogHeader action={action} path={path} type={propBlock.type} />
+    <FormWrapper
+      form={form}
+      onSubmit={onSubmit}
+      action={action}
+      path={path}
+      blockType={propBlock.type}
+    >
       <div className="text-gray-10 dark:text-gray-10">
         {t("direktivPage.blockEditor.blockForms.queryProvider.description")}
       </div>
@@ -58,7 +60,6 @@ export const QueryProvider = ({
           />
         )}
       />
-      <DialogFooter formId={formId} />
-    </>
+    </FormWrapper>
   );
 };
