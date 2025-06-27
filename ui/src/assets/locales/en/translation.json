@@ -1691,6 +1691,12 @@
           "key": "Key",
           "value": "Value"
         },
+        "headline": {
+          "description": "A simple block to display a headline",
+          "labelLabel": "Label",
+          "labelPlaceholder": "Headline",
+          "levelLabel": "Level"
+        },
         "table": {
           "description": "A Table block displays a set of data in a table format. It can be used to display data from a Query Provider",
           "data": {
