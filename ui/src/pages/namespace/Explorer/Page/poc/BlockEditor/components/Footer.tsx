@@ -20,11 +20,9 @@ export const DialogFooter = ({ formId }: BlockEditorFooterProps) => {
           {t("direktivPage.blockEditor.generic.cancelButton")}
         </Button>
       </DialogClose>
-      <DialogClose asChild>
-        <Button variant="primary" type="submit" form={formId}>
-          {t("direktivPage.blockEditor.generic.saveButton")}
-        </Button>
-      </DialogClose>
+      <Button variant="primary" type="submit" form={formId}>
+        {t("direktivPage.blockEditor.generic.saveButton")}
+      </Button>
     </DesignDialogFooter>
   );
 };
