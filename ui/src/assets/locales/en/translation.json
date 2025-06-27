@@ -1720,7 +1720,7 @@
           "description": "A Query Provider fetches data from one or multiple APIs and makes the results accessible to its child blocks.",
           "query": {
             "idLabel": "ID",
-            "idPlaceholder": "unique identifier name to reference this query in any dhild block",
+            "idPlaceholder": "unique identifier name to reference this query in any child block",
             "urlLabel": "URL",
             "urlPlaceholder": "relative or absolute url like /path/to/endpoint or https://...",
             "itemLabel": "Query",

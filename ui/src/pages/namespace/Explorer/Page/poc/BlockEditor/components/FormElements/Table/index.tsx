@@ -1,5 +1,5 @@
 import { Dialog, DialogTrigger } from "~/design/Dialog";
-import { Key, ReactNode, useState } from "react";
+import { ReactNode, useState } from "react";
 import {
   TableBody,
   Table as TableDesignComponent,
@@ -12,11 +12,11 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { ModalWrapper } from "~/components/ModalWrapper";
 import { Plus } from "lucide-react";
-import { Row } from "./Row";
+import { Rows } from "./Rows";
 
 type TableProps<T> = {
   data: T[];
-  getItemKey: (item: T, index: number) => Key;
+  getItemKey: (item: T) => string;
   itemLabel: string;
   label: (count: number) => string;
   onChange: (newData: T[]) => void;
@@ -30,6 +30,16 @@ type TableProps<T> = {
 
 const formId = "table-form-element";
 
+type DialogState =
+  | {
+      action: "create";
+    }
+  | {
+      action: "edit";
+      index: number;
+    }
+  | null;
+
 export const Table = <T,>({
   data,
   getItemKey,
@@ -39,9 +49,8 @@ export const Table = <T,>({
   renderForm,
   renderRow,
 }: TableProps<T>) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialog, setDialog] = useState<DialogState>(null);
   const [items, setItems] = useState(data);
-  const [editIndex, setEditIndex] = useState<number>();
 
   const addItem = (item: T) => {
     const newItems = [...items, item];
@@ -49,46 +58,32 @@ export const Table = <T,>({
     onChange(newItems);
   };
 
-  const updateItem = (index: number, item: T) => {
-    const newItems = items.map((i, idx) => (idx === index ? item : i));
-    setItems(newItems);
-    onChange(newItems);
-  };
-
-  const moveItem = (srcIndex: number, targetIndex: number) => {
-    const newItems = [...items];
-    const [movedItem] = newItems.splice(srcIndex, 1);
-    if (!movedItem) throw new Error("Invalid source index");
-    newItems.splice(targetIndex, 0, movedItem);
-    setItems(newItems);
-    onChange(newItems);
-  };
-
-  const deleteItem = (index: number) => {
-    const newItems = items.filter((_, i) => i !== index);
+  const updateItem = (targetIndex: number, newItem: T) => {
+    const newItems = items.map((item, index) =>
+      targetIndex === index ? newItem : item
+    );
     setItems(newItems);
     onChange(newItems);
   };
 
   const handleSubmit = (item: T) => {
-    setDialogOpen(false);
-    if (editIndex === undefined) {
-      addItem(item);
+    setDialog(null);
+    if (dialog?.action === "edit") {
+      updateItem(dialog.index, item);
     } else {
-      updateItem(editIndex, item);
+      addItem(item);
     }
-    setEditIndex(undefined);
   };
 
-  const formValues = editIndex !== undefined ? items[editIndex] : undefined;
+  const formValues =
+    dialog?.action === "edit" ? items[dialog.index] : undefined;
   const columnCount = items[0] ? renderRow(items[0]).length : 0;
 
   return (
     <Dialog
-      open={dialogOpen}
+      open={dialog !== null}
       onOpenChange={(isOpen) => {
-        if (isOpen === false) setEditIndex(undefined);
-        setDialogOpen(isOpen);
+        if (isOpen === false) setDialog(null);
       }}
     >
       <Card noShadow>
@@ -100,7 +95,13 @@ export const Table = <T,>({
               </TableHeaderCell>
               <TableHeaderCell className="w-60 text-right">
                 <DialogTrigger asChild>
-                  <Button icon variant="outline" size="sm">
+                  <Button
+                    type="button"
+                    icon
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setDialog({ action: "create" })}
+                  >
                     <Plus />
                     {itemLabel}
                   </Button>
@@ -109,31 +110,16 @@ export const Table = <T,>({
             </TableRow>
           </TableHead>
           <TableBody>
-            {items.map((item, index, srcArray) => {
-              const canMoveDown = index < srcArray.length - 1;
-              const canMoveUp = index > 0;
-
-              return (
-                <Row
-                  key={getItemKey(item, index)}
-                  item={item}
-                  renderRow={renderRow}
-                  actions={{
-                    onEdit: () => {
-                      setDialogOpen(true);
-                      setEditIndex(index);
-                    },
-                    onMoveUp: canMoveUp
-                      ? () => moveItem(index, index - 1)
-                      : undefined,
-                    onMoveDown: canMoveDown
-                      ? () => moveItem(index, index + 1)
-                      : undefined,
-                    onDelete: () => deleteItem(index),
-                  }}
-                />
-              );
-            })}
+            <Rows
+              items={items}
+              getItemKey={getItemKey}
+              renderRow={renderRow}
+              onEdit={(index) => setDialog({ action: "edit", index })}
+              onChange={(newItems) => {
+                setItems(newItems);
+                onChange(newItems);
+              }}
+            />
           </TableBody>
         </TableDesignComponent>
       </Card>
@@ -141,8 +127,7 @@ export const Table = <T,>({
         formId={formId}
         title={itemLabel}
         onCancel={() => {
-          setDialogOpen(false);
-          setEditIndex(undefined);
+          setDialog(null);
         }}
       >
         {renderForm(formId, handleSubmit, formValues)}

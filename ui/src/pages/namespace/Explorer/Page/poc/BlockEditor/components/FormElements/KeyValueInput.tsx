@@ -22,17 +22,17 @@ export const KeyValueInput = ({ field, label }: KeyValueInputProps) => {
         onChange={field.onChange}
         emptyItem={{ key: "", value: "" }}
         itemIsValid={(item) => KeyValue.safeParse(item).success}
-        renderItem={({ value: objectValue, setValue, handleKeyDown }) => (
+        renderItem={({ value: itemValue, setValue, handleKeyDown }) => (
           <>
             <Input
               placeholder={t(
                 "direktivPage.blockEditor.blockForms.keyValue.key"
               )}
-              value={objectValue.key}
+              value={itemValue.key}
               onKeyDown={handleKeyDown}
               onChange={(e) => {
                 setValue({
-                  ...objectValue,
+                  ...itemValue,
                   key: e.target.value,
                 });
               }}
@@ -41,11 +41,11 @@ export const KeyValueInput = ({ field, label }: KeyValueInputProps) => {
               placeholder={t(
                 "direktivPage.blockEditor.blockForms.keyValue.value"
               )}
-              value={objectValue.value}
+              value={itemValue.value}
               onKeyDown={handleKeyDown}
               onChange={(e) => {
                 setValue({
-                  ...objectValue,
+                  ...itemValue,
                   value: e.target.value,
                 });
               }}

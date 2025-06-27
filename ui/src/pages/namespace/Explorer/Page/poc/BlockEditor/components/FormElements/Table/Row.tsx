@@ -18,7 +18,10 @@ type RowProps<T> = {
 export const Row = <T,>({ item, renderRow, actions }: RowProps<T>) => {
   const rowCells = renderRow(item);
   return (
-    <TableRow className="cursor-pointer" onClick={actions.onEdit}>
+    <TableRow
+      className="cursor-pointer hover:underline"
+      onClick={actions.onEdit}
+    >
       {rowCells.map((cell, cellIndex) => (
         <TableCell
           key={cellIndex}
