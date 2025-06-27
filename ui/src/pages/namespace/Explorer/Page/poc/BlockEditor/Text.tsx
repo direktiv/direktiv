@@ -1,6 +1,7 @@
 import { Text as TextSchema, TextType } from "../schema/blocks/text";
 
 import { BlockEditFormProps } from ".";
+import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "./components/FormWrapper";
 import { Textarea } from "~/design/TextArea";
 import { useForm } from "react-hook-form";
@@ -30,7 +31,18 @@ export const Text = ({
       path={path}
       blockType={propBlock.type}
     >
-      <Textarea {...form.register("content")} />
+      <Fieldset
+        label={t("direktivPage.blockEditor.blockForms.text.contentLabel")}
+        htmlFor="content"
+      >
+        <Textarea
+          {...form.register("content")}
+          id="content"
+          placeholder={t(
+            "direktivPage.blockEditor.blockForms.text.contentPlaceholder"
+          )}
+        />
+      </Fieldset>
     </FormWrapper>
   );
 };
