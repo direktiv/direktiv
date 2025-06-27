@@ -1,9 +1,12 @@
+import FormErrors, { errorsType } from "~/components/FormErrors";
+import { Text as TextSchema, TextType } from "../schema/blocks/text";
+
 import { BlockEditFormProps } from ".";
 import { DialogFooter } from "./components/Footer";
 import { DialogHeader } from "./components/Header";
-import { TextType } from "../schema/blocks/text";
 import { Textarea } from "~/design/TextArea";
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type TextBlockEditFormProps = BlockEditFormProps<TextType>;
 
@@ -15,21 +18,25 @@ export const Text = ({
   path,
   onSubmit,
 }: TextBlockEditFormProps) => {
-  const [block, setBlock] = useState<TextType>(structuredClone(propBlock));
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = useForm<TextType>({
+    resolver: zodResolver(TextSchema),
+    defaultValues: propBlock,
+  });
 
   return (
-    <>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      id={formId}
+      className="flex flex-col gap-3"
+    >
       <DialogHeader action={action} path={path} type={propBlock.type} />
-      <Textarea
-        value={block.content}
-        onChange={(event) =>
-          setBlock({
-            ...block,
-            content: event.target.value,
-          })
-        }
-      />
+      {errors && <FormErrors errors={errors as errorsType} />}
+      <Textarea {...register("content")} />
       <DialogFooter formId={formId} />
-    </>
+    </form>
   );
 };
