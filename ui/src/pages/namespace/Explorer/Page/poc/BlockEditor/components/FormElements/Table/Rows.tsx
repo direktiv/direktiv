@@ -2,7 +2,6 @@ import { Row } from "./Row";
 
 type RowsProps<T> = {
   items: T[];
-  getItemKey: (item: T) => string;
   renderRow: (item: T) => string[];
   onEdit: (targetIndex: number) => void;
   onChange: (newData: T[]) => void;
@@ -10,7 +9,6 @@ type RowsProps<T> = {
 
 export const Rows = <T,>({
   items,
-  getItemKey,
   renderRow,
   onEdit,
   onChange,
@@ -33,7 +31,7 @@ export const Rows = <T,>({
     const canMoveUp = index > 0;
     return (
       <Row
-        key={getItemKey(item)}
+        key={index}
         item={item}
         renderRow={renderRow}
         actions={{

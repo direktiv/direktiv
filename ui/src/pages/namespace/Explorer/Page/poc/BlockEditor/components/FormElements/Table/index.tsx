@@ -16,7 +16,6 @@ import { Rows } from "./Rows";
 
 type TableProps<T> = {
   data: T[];
-  getItemKey: (item: T) => string;
   itemLabel: string;
   label: (count: number) => string;
   onChange: (newData: T[]) => void;
@@ -42,7 +41,6 @@ type DialogState =
 
 export const Table = <T,>({
   data,
-  getItemKey,
   itemLabel,
   label,
   onChange,
@@ -112,7 +110,6 @@ export const Table = <T,>({
           <TableBody>
             <Rows
               items={items}
-              getItemKey={getItemKey}
               renderRow={renderRow}
               onEdit={(index) => setDialog({ action: "edit", index })}
               onChange={(newItems) => {

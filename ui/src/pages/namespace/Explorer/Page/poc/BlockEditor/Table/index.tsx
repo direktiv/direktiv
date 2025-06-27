@@ -84,7 +84,6 @@ export const Table = ({
           })
         }
         renderRow={(query) => [query.label]}
-        getItemKey={(query, index) => index}
         renderForm={(formId, onSubmit, defaultValues) => (
           <ActionForm
             formId={formId}
@@ -107,7 +106,6 @@ export const Table = ({
           })
         }
         renderRow={(query) => [query.label, query.content]}
-        getItemKey={(query, index) => index}
         renderForm={(formId, onSubmit, defaultValues) => (
           <ColumnForm
             formId={formId}

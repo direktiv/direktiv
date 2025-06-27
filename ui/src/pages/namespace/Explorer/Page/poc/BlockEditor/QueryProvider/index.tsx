@@ -50,7 +50,6 @@ export const QueryProvider = ({
           )
         }
         renderRow={(query) => [query.id, queryToUrl(query)]}
-        getItemKey={(query) => query.id}
         renderForm={(formId, onSubmit, defaultValues) => (
           <QueryForm
             formId={formId}
