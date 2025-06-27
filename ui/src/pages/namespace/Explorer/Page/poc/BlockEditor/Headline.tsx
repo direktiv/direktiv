@@ -22,9 +22,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 type HeadlineEditFormProps = BlockEditFormProps<HeadlineType>;
 
 export const Headline = ({
-  action,
   block: propBlock,
-  path,
   onSubmit,
 }: HeadlineEditFormProps) => {
   const { t } = useTranslation();
@@ -34,13 +32,7 @@ export const Headline = ({
   });
 
   return (
-    <FormWrapper
-      form={form}
-      onSubmit={onSubmit}
-      action={action}
-      path={path}
-      blockType={propBlock.type}
-    >
+    <FormWrapper form={form} onSubmit={onSubmit}>
       <div className="text-gray-10 dark:text-gray-10">
         {t("direktivPage.blockEditor.blockForms.headline.description")}
       </div>

@@ -1,6 +1,4 @@
 import { AllBlocksType } from "../schema/blocks";
-import { BlockPathType } from "../PageCompiler/Block";
-import { DirektivPagesType } from "../schema";
 import { Headline } from "./Headline";
 import { QueryProvider } from "./QueryProvider";
 import { Table } from "./Table";
@@ -12,21 +10,17 @@ import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
 export type BlockEditorAction = "create" | "edit" | "delete";
 
 export type BlockEditFormProps<T> = {
-  action: BlockEditorAction;
   block: T;
-  path: BlockPathType;
   onSubmit: (newBlock: T) => void;
 };
 
-type BlockFormProps = {
-  block: AllBlocksType | DirektivPagesType;
-  action: BlockEditorAction;
-  path: BlockPathType;
-};
-
-export const BlockForm = ({ action, path, block }: BlockFormProps) => {
+export const BlockForm = () => {
   const { addBlock, updateBlock } = usePageEditor();
-  const { setDialog } = useBlockDialog();
+  const { setDialog, dialog } = useBlockDialog();
+
+  if (!dialog) return null;
+
+  const { block, path, action } = dialog;
 
   if (isPage(block)) {
     throw Error("Unexpected page object when parsing block");
@@ -46,44 +40,16 @@ export const BlockForm = ({ action, path, block }: BlockFormProps) => {
 
   switch (block.type) {
     case "text": {
-      return (
-        <Text
-          action={action}
-          block={block}
-          path={path}
-          onSubmit={handleUpdate}
-        />
-      );
+      return <Text block={block} onSubmit={handleUpdate} />;
     }
     case "headline": {
-      return (
-        <Headline
-          action={action}
-          block={block}
-          path={path}
-          onSubmit={handleUpdate}
-        />
-      );
+      return <Headline block={block} onSubmit={handleUpdate} />;
     }
     case "query-provider": {
-      return (
-        <QueryProvider
-          action={action}
-          block={block}
-          path={path}
-          onSubmit={handleUpdate}
-        />
-      );
+      return <QueryProvider block={block} onSubmit={handleUpdate} />;
     }
     case "table": {
-      return (
-        <Table
-          action={action}
-          block={block}
-          path={path}
-          onSubmit={handleUpdate}
-        />
-      );
+      return <Table block={block} onSubmit={handleUpdate} />;
     }
   }
 

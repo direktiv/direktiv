@@ -1,29 +1,22 @@
 import { DialogClose, DialogFooter } from "~/design/Dialog";
 
-import { AllBlocksType } from "../../schema/blocks";
-import { BlockPathType } from "../../PageCompiler/Block";
 import Button from "~/design/Button";
 import { DialogHeader } from "../components/Header";
+import { useBlockDialog } from "../BlockDialogProvider";
+import { usePageEditor } from "../../PageCompiler/context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
-type BlockDeleteFormProps = {
-  action: "delete";
-  path: BlockPathType;
-  type: AllBlocksType["type"];
-  onSubmit: (path: BlockPathType) => void;
-};
-
-export const BlockDeleteForm = ({
-  action,
-  type,
-  path,
-  onSubmit,
-}: BlockDeleteFormProps) => {
+export const BlockDeleteForm = () => {
   const { t } = useTranslation();
+  const { dialog } = useBlockDialog();
+  const { deleteBlock } = usePageEditor();
+
+  if (dialog?.action !== "delete")
+    throw new Error("BlockDeleteForm used with invalid dialog state");
 
   return (
     <>
-      <DialogHeader action={action} path={path} type={type} />
+      <DialogHeader />
       <div>{t("direktivPage.blockEditor.delete.warning")}</div>
       <DialogFooter>
         <DialogClose asChild>
@@ -32,7 +25,7 @@ export const BlockDeleteForm = ({
           </Button>
         </DialogClose>
         <DialogClose asChild>
-          <Button variant="primary" onClick={() => onSubmit(path)}>
+          <Button variant="primary" onClick={() => deleteBlock(dialog.path)}>
             {t("direktivPage.blockEditor.generic.confirmButton")}
           </Button>
         </DialogClose>

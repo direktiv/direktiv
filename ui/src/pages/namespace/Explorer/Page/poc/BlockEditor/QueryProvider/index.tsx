@@ -15,9 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 type QueryProviderEditFormProps = BlockEditFormProps<QueryProviderType>;
 
 export const QueryProvider = ({
-  action,
   block: propBlock,
-  path,
   onSubmit,
 }: QueryProviderEditFormProps) => {
   const { t } = useTranslation();
@@ -27,13 +25,7 @@ export const QueryProvider = ({
   });
 
   return (
-    <FormWrapper
-      form={form}
-      onSubmit={onSubmit}
-      action={action}
-      path={path}
-      blockType={propBlock.type}
-    >
+    <FormWrapper form={form} onSubmit={onSubmit}>
       <div className="text-gray-10 dark:text-gray-10">
         {t("direktivPage.blockEditor.blockForms.queryProvider.description")}
       </div>
