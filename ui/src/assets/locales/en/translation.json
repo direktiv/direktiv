@@ -1707,6 +1707,13 @@
           "triggerLabelLabel": "Button Label",
           "triggerLabelPlaceholder": "Open Dialog"
         },
+        "loop": {
+          "description": "A Loop block allows you to repeat a set of blocks for each item in an array.",
+          "idLabel": "loop ID",
+          "idPlaceholder": "unique identifier name to reference the content of a loop iteration",
+          "dataLabel": "data",
+          "dataPlaceholder": "Path to an array for the loop (e.g. query.companies.data)"
+        },
         "table": {
           "description": "A Table block displays a set of data in a table format. It can be used to display data from a Query Provider",
           "data": {

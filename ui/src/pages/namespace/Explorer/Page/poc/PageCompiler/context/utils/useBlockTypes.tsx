@@ -5,6 +5,7 @@ import {
   Heading1,
   LucideIcon,
   RectangleHorizontal,
+  Repeat2,
   Table,
   Text,
 } from "lucide-react";
@@ -82,6 +83,12 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
         path,
         match: (block) => block.type === "dialog",
       }),
+    },
+    {
+      type: "loop",
+      label: t("direktivPage.blockEditor.blockName.loop"),
+      icon: Repeat2,
+      allow: true,
     },
   ] satisfies BlockTypeConfig[];
 

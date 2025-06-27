@@ -3,6 +3,7 @@ import { BlockPathType } from "../PageCompiler/Block";
 import { Dialog } from "./Dialog";
 import { DirektivPagesType } from "../schema";
 import { Headline } from "./Headline";
+import { Loop } from "./Loop";
 import { QueryProvider } from "./QueryProvider";
 import { Table } from "./Table";
 import { Text } from "../BlockEditor/Text";
@@ -89,6 +90,16 @@ export const BlockForm = ({ action, path, block }: BlockFormProps) => {
     case "dialog": {
       return (
         <Dialog
+          action={action}
+          block={block}
+          path={path}
+          onSubmit={handleUpdate}
+        />
+      );
+    }
+    case "loop": {
+      return (
+        <Loop
           action={action}
           block={block}
           path={path}
