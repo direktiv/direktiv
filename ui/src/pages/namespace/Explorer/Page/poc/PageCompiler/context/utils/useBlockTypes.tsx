@@ -4,6 +4,7 @@ import {
   Database,
   Heading1,
   LucideIcon,
+  RectangleHorizontal,
   Table,
   Text,
 } from "lucide-react";
@@ -71,6 +72,16 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
       label: t("direktivPage.blockEditor.blockName.table"),
       icon: Table,
       allow: true,
+    },
+    {
+      type: "dialog",
+      label: t("direktivPage.blockEditor.blockName.dialog"),
+      icon: RectangleHorizontal,
+      allow: !findInBranch({
+        page,
+        path,
+        match: (block) => block.type === "dialog",
+      }),
     },
   ] satisfies BlockTypeConfig[];
 

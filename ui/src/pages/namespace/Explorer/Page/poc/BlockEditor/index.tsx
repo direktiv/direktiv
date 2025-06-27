@@ -1,5 +1,6 @@
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
+import { Dialog } from "./Dialog";
 import { DirektivPagesType } from "../schema";
 import { Headline } from "./Headline";
 import { QueryProvider } from "./QueryProvider";
@@ -78,6 +79,16 @@ export const BlockForm = ({ action, path, block }: BlockFormProps) => {
     case "table": {
       return (
         <Table
+          action={action}
+          block={block}
+          path={path}
+          onSubmit={handleUpdate}
+        />
+      );
+    }
+    case "dialog": {
+      return (
+        <Dialog
           action={action}
           block={block}
           path={path}

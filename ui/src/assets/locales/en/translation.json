@@ -1702,6 +1702,11 @@
           "labelPlaceholder": "Headline",
           "levelLabel": "Level"
         },
+        "dialog": {
+          "description": "A Dialog block contains a button that opens a dialog when clicked. The dialog can contain any number of blocks.",
+          "triggerLabelLabel": "Button Label",
+          "triggerLabelPlaceholder": "Open Dialog"
+        },
         "table": {
           "description": "A Table block displays a set of data in a table format. It can be used to display data from a Query Provider",
           "data": {

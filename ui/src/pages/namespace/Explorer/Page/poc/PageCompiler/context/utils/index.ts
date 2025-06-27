@@ -3,6 +3,7 @@ import { DirektivPagesSchema, DirektivPagesType } from "../../../schema";
 import { BlockPathType } from "../../Block";
 import { CardType } from "../../../schema/blocks/card";
 import { ColumnsType } from "../../../schema/blocks/columns";
+import { DialogType } from "../../../schema/blocks/dialog";
 import { HeadlineType } from "../../../schema/blocks/headline";
 import { QueryProviderType } from "../../../schema/blocks/queryProvider";
 import { TableType } from "../../../schema/blocks/table";
@@ -203,6 +204,15 @@ export const getBlockTemplate = (type: AllBlocksType["type"]) => {
         actions: [],
         columns: [],
       } satisfies TableType;
+    case "dialog":
+      return {
+        type: "dialog",
+        trigger: {
+          type: "button",
+          label: "",
+        },
+        blocks: [],
+      } satisfies DialogType;
     default:
       throw new Error(`${type} is not implemented yet`);
   }
