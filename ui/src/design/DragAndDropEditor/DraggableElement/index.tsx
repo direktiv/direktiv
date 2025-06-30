@@ -4,7 +4,7 @@ import { AllBlocksType } from "~/pages/namespace/Explorer/Page/poc/schema/blocks
 import { GripVertical } from "lucide-react";
 import { useDraggable } from "@dnd-kit/core";
 
-export type DraggableProps = PropsWithChildren & {
+type DraggableProps = PropsWithChildren & {
   name: string;
   element: AllBlocksType;
 };

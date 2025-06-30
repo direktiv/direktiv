@@ -19,7 +19,7 @@ export const DndContext: FC<DndContextProps> = ({ children, onMove }) => {
     if (draggableName && overId) {
       const [droppableName] = overId.split("-") as [string];
 
-      const element = e.active.data.current;
+      const element = e.active.data.current as AllBlocksType;
 
       if (draggableName && droppableName && element) {
         onMove(draggableName, droppableName, element);
