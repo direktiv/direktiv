@@ -76,7 +76,7 @@ export const BlockWrapper = ({
           <div
             ref={containerRef}
             className={twMergeClsx(
-              "relative rounded-md border-2 border-dashed border-gray-4 bg-white p-0 dark:border-gray-dark-4 dark:bg-black",
+              "relative rounded-md rounded-s-none border-2 border-dashed border-gray-4 bg-white p-0 dark:border-gray-dark-4 dark:bg-black",
               isHovered && "border-solid bg-gray-2 dark:bg-gray-dark-2",
               isFocused && "border-solid border-gray-8 dark:border-gray-8"
             )}

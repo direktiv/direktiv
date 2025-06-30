@@ -36,7 +36,7 @@ export const DraggableElement: FC<DraggableProps> = ({
         ref={setNodeRef}
         className="absolute z-0 -ml-4 flex h-full items-center p-0 text-gray-8 dark:text-gray-dark-8"
       >
-        <div className="flex w-5 items-center justify-center rounded rounded-e-none border-2 border-gray-4 bg-white p-0 hover:cursor-move hover:border-solid hover:bg-gray-2 dark:border-gray-dark-4 dark:bg-black dark:hover:bg-gray-dark-2">
+        <div className="flex h-full w-5 items-center justify-center rounded rounded-e-none border-2 border-gray-4 bg-white p-0 hover:cursor-move hover:border-solid hover:bg-gray-2 dark:border-gray-dark-4 dark:bg-black dark:hover:bg-gray-dark-2">
           <GripVertical />
         </div>
       </div>
