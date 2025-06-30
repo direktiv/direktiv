@@ -7,7 +7,6 @@ import { twMergeClsx } from "~/util/helpers";
 
 type DroppableProps = PropsWithChildren & {
   id: string;
-  visible: boolean;
   position: "before" | "after" | undefined;
 };
 

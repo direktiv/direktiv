@@ -70,18 +70,10 @@ export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
               {page.blocks.map((block, index) => (
                 <div key={index}>
                   {index === 0 && (
-                    <DroppableSeparator
-                      visible={true}
-                      id={String(index)}
-                      position="before"
-                    />
+                    <DroppableSeparator id={String(index)} position="before" />
                   )}
                   <Block key={index} block={block} blockPath={[index]} />
-                  <DroppableSeparator
-                    visible={true}
-                    id={String(index + 1)}
-                    position="after"
-                  />
+                  <DroppableSeparator id={String(index + 1)} position="after" />
                 </div>
               ))}
             </BlockList>
