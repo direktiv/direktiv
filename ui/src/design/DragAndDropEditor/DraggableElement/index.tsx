@@ -23,7 +23,7 @@ export const DraggableElement: FC<DraggableProps> = ({
 
   const style = transform
     ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(1.1)`,
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(1.05)`,
         zIndex: 20,
       }
     : {};
@@ -34,9 +34,9 @@ export const DraggableElement: FC<DraggableProps> = ({
         {...listeners}
         {...attributes}
         ref={setNodeRef}
-        className="absolute z-20 flex h-full items-center opacity-50 group-hover:opacity-100"
+        className="absolute z-0 -ml-4 flex h-full items-center p-0 text-gray-8 dark:text-gray-dark-8"
       >
-        <div className="flex w-5 items-center justify-center rounded rounded-e-none border-r hover:cursor-move hover:bg-gray-1 dark:hover:bg-gray-dark-1">
+        <div className="flex w-5 items-center justify-center rounded rounded-e-none border-2 border-gray-4 bg-white p-0 hover:cursor-move hover:border-solid hover:bg-gray-2 dark:border-gray-dark-4 dark:bg-black dark:hover:bg-gray-dark-2">
           <GripVertical />
         </div>
       </div>

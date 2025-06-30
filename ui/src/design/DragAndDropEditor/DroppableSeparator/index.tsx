@@ -13,13 +13,14 @@ type DroppableProps = PropsWithChildren & {
 
 export const DroppableSeparator: FC<DroppableProps> = ({
   id,
-  visible,
   children,
+  position,
 }) => {
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
 
+  const before = position === "before";
   const { active } = useDndContext();
 
   const canDrop = !!active;
@@ -29,10 +30,9 @@ export const DroppableSeparator: FC<DroppableProps> = ({
       ref={setNodeRef}
       aria-label={id}
       className={twMergeClsx(
-        "invisible relative h-1 w-full justify-center rounded-lg",
-        visible &&
-          "visible relative h-1 w-full justify-center rounded-lg bg-gray-4 transition-all dark:bg-gray-dark-4",
-        isOver && "h-1 bg-gray-8 transition-all dark:bg-gray-dark-8"
+        "relative m-0 mt-2 h-1 w-full justify-center rounded-lg p-0",
+        before && "mb-2",
+        isOver && "h-10 bg-gray-4 transition-all dark:bg-gray-dark-4"
       )}
     >
       {children}
@@ -46,8 +46,8 @@ const DropZone = ({ isOver }: { isOver: boolean; id: string }) => (
     <div className="z-10 flex flex-col">
       <Badge
         className={twMergeClsx(
-          "w-fit bg-gray-8 transition-all",
-          isOver && "bg-gray-10"
+          "w-fit bg-gray-8 transition-all dark:bg-gray-8",
+          isOver && "bg-gray-10 dark:bg-gray-dark-10"
         )}
       >
         <PlusCircle className="mr-2" size={16} />

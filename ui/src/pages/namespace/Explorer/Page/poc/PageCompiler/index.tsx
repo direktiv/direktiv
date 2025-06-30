@@ -1,3 +1,4 @@
+import { DirektivPagesSchema, DirektivPagesType } from "../schema";
 import {
   PageCompilerContextProvider,
   PageCompilerProps,
@@ -8,7 +9,6 @@ import { AllBlocksType } from "../schema/blocks";
 import { Block } from "./Block";
 import { BlockDialogProvider } from "../BlockEditor/BlockDialogProvider";
 import { BlockList } from "./Block/utils/BlockList";
-import { DirektivPagesSchema } from "../schema";
 import { DndContext } from "~/design/DragAndDropEditor/Context.tsx";
 import { DroppableSeparator } from "~/design/DragAndDropEditor/DroppableSeparator";
 import { ParsingError } from "./Block/utils/ParsingError";
@@ -42,9 +42,22 @@ export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
   }
 
   const onMove = (name: string, target: string, element: AllBlocksType) => {
-    const newPage = page;
+    const blocks = [...page.blocks];
 
-    newPage.blocks.splice(Number(target), 0, element);
+    const currentIndex = Number(name);
+    blocks.splice(currentIndex, 1);
+
+    const targetIndex = Number(target);
+    const insertIndex =
+      currentIndex < targetIndex ? targetIndex - 1 : targetIndex;
+
+    blocks.splice(insertIndex, 0, element);
+
+    const newPage: DirektivPagesType = {
+      ...page,
+      blocks,
+    };
+
     setPage(newPage);
   };
 
@@ -56,12 +69,19 @@ export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
             <BlockList path={[]}>
               {page.blocks.map((block, index) => (
                 <div key={index}>
-                  <DroppableSeparator
-                    visible={mode === "edit"}
-                    id={String(index)}
-                    position="before"
-                  />
+                  {index === 0 && (
+                    <DroppableSeparator
+                      visible={true}
+                      id={String(index)}
+                      position="before"
+                    />
+                  )}
                   <Block key={index} block={block} blockPath={[index]} />
+                  <DroppableSeparator
+                    visible={true}
+                    id={String(index + 1)}
+                    position="after"
+                  />
                 </div>
               ))}
             </BlockList>

@@ -29,7 +29,7 @@ export const BlockList = ({
   return (
     <div
       className={twMergeClsx(
-        "gap-3",
+        "gap-3 px-2",
         horizontal
           ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))]"
           : "flex flex-col"
