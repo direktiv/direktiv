@@ -10,13 +10,11 @@ import { BlockDeleteForm } from "./components/Delete";
 import { BlockPathType } from "../PageCompiler/Block";
 import { EditorPanel } from "./components/EditorPanelContent";
 
-type EditorPanelState =
-  | null
-  | {
-      action: "delete";
-      path: BlockPathType;
-    }
-  | { action: "create" | "edit"; block: AllBlocksType; path: BlockPathType };
+type EditorPanelState = null | {
+  action: "create" | "edit" | "delete";
+  block: AllBlocksType;
+  path: BlockPathType;
+};
 
 type EditorPanelContextType =
   | {
@@ -45,15 +43,18 @@ export const EditorPanelLayoutProvider = ({
           </div>
           <div className="min-w-0 flex-1">{children}</div>
         </div>
-        <Dialog
-          open={panel && panel.action === "delete" ? true : false}
-          onOpenChange={(open) => !open && setPanel(null)}
-        >
+        <Dialog open={panel && panel.action === "delete" ? true : false}>
           <DialogContent>
             {!!panel && (
               <BlockDeleteForm
                 path={panel.path}
-                onSubmit={() => deleteBlock(panel.path)}
+                onSubmit={() => {
+                  deleteBlock(panel.path);
+                  setPanel(null);
+                }}
+                onCancel={() => {
+                  setPanel({ ...panel, action: "edit" });
+                }}
               />
             )}
           </DialogContent>

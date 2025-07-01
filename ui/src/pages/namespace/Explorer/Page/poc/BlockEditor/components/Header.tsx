@@ -2,17 +2,16 @@ import { AllBlocksType } from "../../schema/blocks";
 import { BlockContextMenu } from "./ContextMenu";
 import { BlockEditorAction } from "..";
 import { BlockPathType } from "../../PageCompiler/Block";
-import { DirektivPagesType } from "../../schema";
 import { usePageEditorPanel } from "../EditorPanelProvider";
 import { useTranslation } from "react-i18next";
 
 type BlockFormHeaderProps = {
   path: BlockPathType;
   action: BlockEditorAction;
-  type: AllBlocksType["type"] | DirektivPagesType["type"];
+  block: AllBlocksType;
 };
 
-export const Header = ({ path, action, type }: BlockFormHeaderProps) => {
+export const Header = ({ path, action, block }: BlockFormHeaderProps) => {
   const { setPanel } = usePageEditorPanel();
   const { t } = useTranslation();
 
@@ -21,11 +20,11 @@ export const Header = ({ path, action, type }: BlockFormHeaderProps) => {
       {t("direktivPage.blockEditor.blockForm.title", {
         path: path.join("."),
         action: t(`direktivPage.blockEditor.blockForm.action.${action}`),
-        type: t(`direktivPage.blockEditor.blockForm.type.${type}`),
+        type: t(`direktivPage.blockEditor.blockForm.type.${block.type}`),
       })}
       <BlockContextMenu
         path={path}
-        onDelete={() => setPanel({ action: "delete", path })}
+        onDelete={() => setPanel({ action: "delete", path, block })}
       />
     </div>
   );

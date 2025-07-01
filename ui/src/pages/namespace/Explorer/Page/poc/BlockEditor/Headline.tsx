@@ -28,7 +28,7 @@ export const Headline = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <Header action={action} path={path} type={propBlock.type} />
+      <Header action={action} path={path} block={propBlock} />
       <Input
         value={block.label}
         onChange={(e) => setBlock({ ...block, label: e.target.value })}

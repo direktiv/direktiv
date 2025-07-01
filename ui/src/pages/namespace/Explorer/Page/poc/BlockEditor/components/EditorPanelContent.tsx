@@ -13,11 +13,6 @@ export const EditorPanel = () => {
     );
   }
 
-  if (panel.action === "delete") {
-    // Block form must be hidden because it will throw an error when block disappears
-    return null;
-  }
-
   return (
     <BlockForm action={panel.action} path={panel.path} block={panel.block} />
   );

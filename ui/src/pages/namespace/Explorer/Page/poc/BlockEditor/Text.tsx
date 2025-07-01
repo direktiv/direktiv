@@ -18,7 +18,7 @@ export const Text = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <Header action={action} path={path} type="text" />
+      <Header action={action} path={path} block={propBlock} />
       <Textarea
         value={block.content}
         onChange={(event) =>
