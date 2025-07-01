@@ -46,11 +46,14 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
 
   const handleClose = () => setPanel(null);
 
+  // Key needed to instantiate new component per block and action
+  const key = `${action}-${path.join(".")}`;
+
   switch (block.type) {
     case "text": {
       return (
         <Text
-          key={path.join()}
+          key={key}
           action={action}
           block={block}
           path={path}
@@ -62,7 +65,7 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
     case "headline": {
       return (
         <Headline
-          key={path.join()}
+          key={key}
           action={action}
           block={block}
           path={path}
