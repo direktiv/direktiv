@@ -28,6 +28,10 @@ linters:
     - wrapcheck
     - wsl
     - funcorder
+    - wsl_v5
+
+    - noinlineerr
+    - embeddedstructfieldcheck
 
   settings:
     nlreturn:
