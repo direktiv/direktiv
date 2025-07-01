@@ -8,10 +8,15 @@ import { useTranslation } from "react-i18next";
 
 type BlockDeleteFormProps = {
   path: BlockPathType;
+  onCancel: () => void;
   onSubmit: () => void;
 };
 
-export const BlockDeleteForm = ({ path, onSubmit }: BlockDeleteFormProps) => {
+export const BlockDeleteForm = ({
+  path,
+  onCancel,
+  onSubmit,
+}: BlockDeleteFormProps) => {
   const block = useBlock(path);
   const { t } = useTranslation();
 
@@ -22,16 +27,12 @@ export const BlockDeleteForm = ({ path, onSubmit }: BlockDeleteFormProps) => {
         {t("direktivPage.blockEditor.delete.warning")}
       </div>
       <DialogFooter>
-        <DialogClose asChild>
-          <Button variant="ghost">
-            {t("direktivPage.blockEditor.generic.cancelButton")}
-          </Button>
-        </DialogClose>
-        <DialogClose asChild>
-          <Button variant="primary" onClick={() => onSubmit()}>
-            {t("direktivPage.blockEditor.generic.confirmButton")}
-          </Button>
-        </DialogClose>
+        <Button variant="ghost" onClick={() => onCancel()}>
+          {t("direktivPage.blockEditor.generic.cancelButton")}
+        </Button>
+        <Button variant="primary" onClick={() => onSubmit()}>
+          {t("direktivPage.blockEditor.generic.confirmButton")}
+        </Button>
       </DialogFooter>
     </>
   );

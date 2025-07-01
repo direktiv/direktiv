@@ -25,6 +25,7 @@ export const EditorPanel = () => {
             setPanel(null);
             deleteBlock(panel.path);
           }}
+          onCancel={() => setPanel(null)}
         />
       ) : (
         <BlockForm
