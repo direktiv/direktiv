@@ -1,11 +1,8 @@
-import { BlockDeleteForm } from "./Delete";
 import { BlockForm } from "..";
-import { usePageEditor } from "../../PageCompiler/context/pageCompilerContext";
 import { usePageEditorPanel } from "../EditorPanelProvider";
 
 export const EditorPanel = () => {
-  const { deleteBlock } = usePageEditor();
-  const { panel, setPanel } = usePageEditorPanel();
+  const { panel } = usePageEditorPanel();
 
   if (!panel) {
     return (
@@ -16,24 +13,12 @@ export const EditorPanel = () => {
     );
   }
 
+  if (panel.action === "delete") {
+    // Block form must be hidden because it will throw an error when block disappears
+    return null;
+  }
+
   return (
-    <>
-      {panel.action === "delete" ? (
-        <BlockDeleteForm
-          path={panel.path}
-          onSubmit={() => {
-            setPanel(null);
-            deleteBlock(panel.path);
-          }}
-          onCancel={() => setPanel(null)}
-        />
-      ) : (
-        <BlockForm
-          action={panel.action}
-          path={panel.path}
-          block={panel.block}
-        />
-      )}
-    </>
+    <BlockForm action={panel.action} path={panel.path} block={panel.block} />
   );
 };

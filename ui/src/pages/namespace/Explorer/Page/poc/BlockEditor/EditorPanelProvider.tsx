@@ -1,9 +1,14 @@
+import { Dialog, DialogContent } from "~/design/Dialog";
 import { createContext, useContext, useState } from "react";
+import {
+  usePageEditor,
+  usePageStateContext,
+} from "../PageCompiler/context/pageCompilerContext";
 
 import { AllBlocksType } from "../schema/blocks";
+import { BlockDeleteForm } from "./components/Delete";
 import { BlockPathType } from "../PageCompiler/Block";
 import { EditorPanel } from "./components/EditorPanelContent";
-import { usePageStateContext } from "../PageCompiler/context/pageCompilerContext";
 
 type EditorPanelState =
   | null
@@ -27,6 +32,7 @@ export const EditorPanelLayoutProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const { deleteBlock } = usePageEditor();
   const [panel, setPanel] = useState<EditorPanelState>(null);
   const { mode } = usePageStateContext();
 
@@ -39,6 +45,19 @@ export const EditorPanelLayoutProvider = ({
           </div>
           <div className="min-w-0 flex-1">{children}</div>
         </div>
+        <Dialog
+          open={panel && panel.action === "delete" ? true : false}
+          onOpenChange={(open) => !open && setPanel(null)}
+        >
+          <DialogContent>
+            {!!panel && (
+              <BlockDeleteForm
+                path={panel.path}
+                onSubmit={() => deleteBlock(panel.path)}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </EditorPanelContext.Provider>
     );
   }
