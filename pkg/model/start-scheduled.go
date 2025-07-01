@@ -2,7 +2,8 @@ package model
 
 type ScheduledStart struct {
 	StartCommon `yaml:",inline"`
-	Cron        string `yaml:"cron"`
+
+	Cron string `yaml:"cron"`
 }
 
 func (o *ScheduledStart) GetEvents() []StartEventDefinition {

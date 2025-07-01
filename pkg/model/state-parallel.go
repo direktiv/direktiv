@@ -7,11 +7,12 @@ import (
 
 type ParallelState struct {
 	StateCommon `yaml:",inline"`
-	Actions     []ActionDefinition `yaml:"actions"`
-	Mode        BranchMode         `yaml:"mode,omitempty"`
-	Timeout     string             `yaml:"timeout,omitempty"`
-	Transform   interface{}        `yaml:"transform,omitempty"`
-	Transition  string             `yaml:"transition,omitempty"`
+
+	Actions    []ActionDefinition `yaml:"actions"`
+	Mode       BranchMode         `yaml:"mode,omitempty"`
+	Timeout    string             `yaml:"timeout,omitempty"`
+	Transform  interface{}        `yaml:"transform,omitempty"`
+	Transition string             `yaml:"transition,omitempty"`
 }
 
 func (o *ParallelState) GetID() string {

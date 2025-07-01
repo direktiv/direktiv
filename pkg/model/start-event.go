@@ -4,7 +4,8 @@ import "errors"
 
 type EventStart struct {
 	StartCommon `yaml:",inline"`
-	Event       *StartEventDefinition `yaml:"event"`
+
+	Event *StartEventDefinition `yaml:"event"`
 }
 
 func (o *EventStart) GetEvents() []StartEventDefinition {
