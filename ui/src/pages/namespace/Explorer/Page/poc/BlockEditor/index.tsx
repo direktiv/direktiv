@@ -3,6 +3,7 @@ import { BlockPathType } from "../PageCompiler/Block";
 import { Dialog } from "./Dialog";
 import { DirektivPagesType } from "../schema";
 import { Headline } from "./Headline";
+import { Image } from "./Image";
 import { Loop } from "./Loop";
 import { QueryProvider } from "./QueryProvider";
 import { Table } from "./Table";
@@ -60,6 +61,16 @@ export const BlockForm = ({ action, path, block }: BlockFormProps) => {
     case "headline": {
       return (
         <Headline
+          action={action}
+          block={block}
+          path={path}
+          onSubmit={handleUpdate}
+        />
+      );
+    }
+    case "image": {
+      return (
+        <Image
           action={action}
           block={block}
           path={path}

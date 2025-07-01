@@ -5,6 +5,7 @@ import { CardType } from "../../../schema/blocks/card";
 import { ColumnsType } from "../../../schema/blocks/columns";
 import { DialogType } from "../../../schema/blocks/dialog";
 import { HeadlineType } from "../../../schema/blocks/headline";
+import { ImageType } from "../../../schema/blocks/image";
 import { LoopType } from "../../../schema/blocks/loop";
 import { QueryProviderType } from "../../../schema/blocks/queryProvider";
 import { TableType } from "../../../schema/blocks/table";
@@ -221,6 +222,13 @@ export const getBlockTemplate = (type: AllBlocksType["type"]) => {
         data: "",
         blocks: [],
       } satisfies LoopType;
+    case "image":
+      return {
+        type: "image",
+        src: "",
+        width: 200,
+        height: 200,
+      } satisfies ImageType;
     default:
       throw new Error(`${type} is not implemented yet`);
   }
