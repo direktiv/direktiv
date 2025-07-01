@@ -1,7 +1,6 @@
-import { DialogClose, DialogFooter } from "~/design/Dialog";
-
 import { BlockPathType } from "../../PageCompiler/Block";
 import Button from "~/design/Button";
+import { DialogFooter } from "~/design/Dialog";
 import { Header } from "../components/Header";
 import { useBlock } from "../../PageCompiler/context/pageCompilerContext";
 import { useTranslation } from "react-i18next";

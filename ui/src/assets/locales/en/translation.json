@@ -1690,7 +1690,7 @@
         "deleteButton": "Delete",
         "editButton": "Edit"
       },
-      "editDialog": {
+      "blockForm": {
         "title": "{{action}} {{type}} @{{path}}",
         "action": {
           "create": "create",

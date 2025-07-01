@@ -6,9 +6,9 @@ import { usePageEditor } from "../pageCompilerContext";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 
 /**
- * This hook returns createBlock(), which opens the editor dialog for
+ * This hook returns createBlock(), which opens the editor form for
  * blocks such as text blocks, or just adds an inline block to the page
- * (e.g., cards or columns, where no dialog is required).
+ * (e.g., cards or columns, where no form is required).
  */
 export const useCreateBlock = () => {
   const { addBlock } = usePageEditor();

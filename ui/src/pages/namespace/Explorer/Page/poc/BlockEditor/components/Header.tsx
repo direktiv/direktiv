@@ -6,22 +6,22 @@ import { DirektivPagesType } from "../../schema";
 import { usePageEditorPanel } from "../EditorPanelProvider";
 import { useTranslation } from "react-i18next";
 
-type BlockEditDialogHeaderProps = {
+type BlockBlockFormHeaderProps = {
   path: BlockPathType;
   action: BlockEditorAction;
   type: AllBlocksType["type"] | DirektivPagesType["type"];
 };
 
-export const Header = ({ path, action, type }: BlockEditDialogHeaderProps) => {
+export const Header = ({ path, action, type }: BlockBlockFormHeaderProps) => {
   const { setPanel } = usePageEditorPanel();
   const { t } = useTranslation();
 
   return (
     <div className="flex flex-row justify-between">
-      {t("direktivPage.blockEditor.editDialog.title", {
+      {t("direktivPage.blockEditor.blockForm.title", {
         path: path.join("."),
-        action: t(`direktivPage.blockEditor.editDialog.action.${action}`),
-        type: t(`direktivPage.blockEditor.editDialog.type.${type}`),
+        action: t(`direktivPage.blockEditor.blockForm.action.${action}`),
+        type: t(`direktivPage.blockEditor.blockForm.type.${type}`),
       })}
       <BlockContextMenu
         path={path}

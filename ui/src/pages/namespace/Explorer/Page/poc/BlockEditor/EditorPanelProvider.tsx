@@ -29,10 +29,6 @@ export const EditorPanelLayoutProvider = ({
 }) => {
   const [panel, setPanel] = useState<EditorPanelState>(null);
   const { mode } = usePageStateContext();
-  /**
-   * This handler is only used for closing the dialog. For opening a dialog,
-   * we add custom onClick events to the trigger buttons.
-   */
 
   if (mode === "edit") {
     return (
