@@ -1,4 +1,3 @@
-import { Card } from "~/design/Card";
 import { ImageType } from "../../schema/blocks/image";
 import { useStringInterpolation } from "../primitives/Variable/utils/useStringInterpolation";
 
