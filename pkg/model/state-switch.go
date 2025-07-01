@@ -23,7 +23,8 @@ func (o *SwitchConditionDefinition) Validate() error {
 
 // SwitchState defines what is needed for a switch state.
 type SwitchState struct {
-	StateCommon       `yaml:",inline"`
+	StateCommon `yaml:",inline"`
+
 	Conditions        []SwitchConditionDefinition `yaml:"conditions"`
 	DefaultTransform  interface{}                 `yaml:"defaultTransform,omitempty"`
 	DefaultTransition string                      `yaml:"defaultTransition,omitempty"`

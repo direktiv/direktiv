@@ -4,7 +4,8 @@ import "errors"
 
 type EventsXorStart struct {
 	StartCommon `yaml:",inline"`
-	Events      []StartEventDefinition `yaml:"events"`
+
+	Events []StartEventDefinition `yaml:"events"`
 }
 
 func (o *EventsXorStart) GetEvents() []StartEventDefinition {

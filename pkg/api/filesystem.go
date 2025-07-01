@@ -74,6 +74,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 
 	res := struct {
 		*filestore.File
+
 		Children []*filestore.File `json:"children"`
 	}{
 		File:     file,

@@ -7,11 +7,12 @@ import (
 
 type ActionState struct {
 	StateCommon `yaml:",inline"`
-	Action      *ActionDefinition `yaml:"action"`
-	Async       bool              `yaml:"async,omitempty"`
-	Timeout     string            `yaml:"timeout,omitempty"`
-	Transform   interface{}       `yaml:"transform,omitempty"`
-	Transition  string            `yaml:"transition,omitempty"`
+
+	Action     *ActionDefinition `yaml:"action"`
+	Async      bool              `yaml:"async,omitempty"`
+	Timeout    string            `yaml:"timeout,omitempty"`
+	Transform  interface{}       `yaml:"transform,omitempty"`
+	Transition string            `yaml:"transition,omitempty"`
 }
 
 func (o *ActionState) GetID() string {

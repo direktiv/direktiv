@@ -7,9 +7,10 @@ import (
 
 type DelayState struct {
 	StateCommon `yaml:",inline"`
-	Duration    string      `yaml:"duration"`
-	Transform   interface{} `yaml:"transform,omitempty"`
-	Transition  string      `yaml:"transition,omitempty"`
+
+	Duration   string      `yaml:"duration"`
+	Transform  interface{} `yaml:"transform,omitempty"`
+	Transition string      `yaml:"transition,omitempty"`
 }
 
 func (o *DelayState) GetID() string {

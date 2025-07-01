@@ -327,6 +327,7 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 
 type activeRequest struct {
 	*functionRequest
+
 	cancel func()
 	ctx    context.Context //nolint:containedctx
 }
@@ -435,9 +436,10 @@ func (srv *LocalServer) run() {
 }
 
 type functionRequest struct {
+	engine.ActionContext
+
 	actionId string
 	callPath string
-	engine.ActionContext
 	deadline time.Time
 	input    []byte
 	files    []*functionFiles

@@ -7,10 +7,11 @@ import (
 
 type EventsAndState struct {
 	StateCommon `yaml:",inline"`
-	Events      []ConsumeEventDefinition `yaml:"events"`
-	Timeout     string                   `yaml:"timeout,omitempty"`
-	Transform   interface{}              `yaml:"transform,omitempty"`
-	Transition  string                   `yaml:"transition,omitempty"`
+
+	Events     []ConsumeEventDefinition `yaml:"events"`
+	Timeout    string                   `yaml:"timeout,omitempty"`
+	Transform  interface{}              `yaml:"transform,omitempty"`
+	Transition string                   `yaml:"transition,omitempty"`
 }
 
 func (o *EventsAndState) GetID() string {

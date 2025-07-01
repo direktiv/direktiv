@@ -25,6 +25,7 @@ const (
 
 type kManager struct {
 	*kubernetes.Clientset
+
 	K8sNamespace string
 }
 

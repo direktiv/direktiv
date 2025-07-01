@@ -6,8 +6,9 @@ import (
 
 type EventsAndStart struct {
 	StartCommon `yaml:",inline"`
-	LifeSpan    string                 `yaml:"lifespan,omitempty"`
-	Events      []StartEventDefinition `yaml:"events"`
+
+	LifeSpan string                 `yaml:"lifespan,omitempty"`
+	Events   []StartEventDefinition `yaml:"events"`
 }
 
 func (o *EventsAndStart) GetEvents() []StartEventDefinition {
