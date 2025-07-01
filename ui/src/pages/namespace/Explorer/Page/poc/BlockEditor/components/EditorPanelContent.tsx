@@ -8,8 +8,12 @@ export const EditorPanel = () => {
   const { panel, setPanel } = usePageEditorPanel();
 
   if (!panel) {
-    // Instead of nothing, we could later display global page settings.
-    return null;
+    return (
+      <div>
+        Placeholder for a global page form, including page settings and drag and
+        drop sources for adding blocks.
+      </div>
+    );
   }
 
   return (

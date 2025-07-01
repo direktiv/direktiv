@@ -1,6 +1,7 @@
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
 import { Headline } from "./Headline";
+import { Key } from "react";
 import { Text } from "../BlockEditor/Text";
 import { isPage } from "../PageCompiler/context/utils";
 import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
@@ -9,6 +10,7 @@ import { usePageEditorPanel } from "./EditorPanelProvider";
 export type BlockEditorAction = "create" | "edit" | "delete";
 
 export type BlockEditFormProps<T> = {
+  key: Key; // needed to ensure forms are initialized per block
   action: BlockEditorAction;
   block: T;
   path: BlockPathType;
@@ -48,6 +50,7 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
     case "text": {
       return (
         <Text
+          key={path.join()}
           action={action}
           block={block}
           path={path}
@@ -59,6 +62,7 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
     case "headline": {
       return (
         <Headline
+          key={path.join()}
           action={action}
           block={block}
           path={path}
