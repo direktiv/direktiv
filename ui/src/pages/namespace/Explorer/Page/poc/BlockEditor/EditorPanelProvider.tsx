@@ -3,6 +3,7 @@ import { createContext, useContext, useState } from "react";
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
 import { EditorPanel } from "./components/EditorPanelContent";
+import { usePageStateContext } from "../PageCompiler/context/pageCompilerContext";
 
 type EditorPanelState =
   | null
@@ -27,21 +28,26 @@ export const EditorPanelLayoutProvider = ({
   children: React.ReactNode;
 }) => {
   const [panel, setPanel] = useState<EditorPanelState>(null);
+  const { mode } = usePageStateContext();
   /**
    * This handler is only used for closing the dialog. For opening a dialog,
    * we add custom onClick events to the trigger buttons.
    */
 
-  return (
-    <EditorPanelContext.Provider value={{ panel, setPanel }}>
-      <div className="flex gap-5">
-        <div className="w-1/3 max-w-md shrink-0 overflow-x-hidden">
-          <EditorPanel />
+  if (mode === "edit") {
+    return (
+      <EditorPanelContext.Provider value={{ panel, setPanel }}>
+        <div className="flex gap-5">
+          <div className="w-1/3 max-w-md shrink-0 overflow-x-hidden">
+            <EditorPanel />
+          </div>
+          <div className="min-w-0 flex-1">{children}</div>
         </div>
-        <div className="min-w-0 flex-1">{children}</div>
-      </div>
-    </EditorPanelContext.Provider>
-  );
+      </EditorPanelContext.Provider>
+    );
+  }
+
+  return <>{children}</>;
 };
 
 export const usePageEditorPanel = () => {

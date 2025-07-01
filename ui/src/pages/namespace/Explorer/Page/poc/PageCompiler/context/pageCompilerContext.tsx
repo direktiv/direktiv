@@ -18,7 +18,7 @@ import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../Block";
 import { DirektivPagesType } from "../../schema";
 
-export type PageCompilerMode = "edit" | "live";
+type PageCompilerMode = "edit" | "live";
 
 export type PageCompilerProps = {
   mode: PageCompilerMode;
@@ -46,7 +46,7 @@ export const PageCompilerContextProvider: FC<
   );
 };
 
-const usePageStateContext = () => {
+export const usePageStateContext = () => {
   const context = useContext(PageCompilerContext);
   if (!context) {
     throw new Error(
