@@ -1,4 +1,9 @@
-import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
+import {
+  Popover,
+  PopoverClose,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/design/Popover";
 
 import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../../PageCompiler/Block";
@@ -45,15 +50,16 @@ const List = ({ onSelect, path }: Omit<SelectBlockTypeProps, "label">) => {
         noShadow
       >
         {types.map((type) => (
-          <Button
-            key={type.label}
-            variant="outline"
-            className="my-1 w-40 justify-start text-xs"
-            onClick={() => onSelect(type.type)}
-          >
-            <type.icon size={16} />
-            {type.label}
-          </Button>
+          <PopoverClose key={type.label} asChild>
+            <Button
+              variant="outline"
+              className="my-1 w-40 justify-start text-xs"
+              onClick={() => onSelect(type.type)}
+            >
+              <type.icon size={16} />
+              {type.label}
+            </Button>
+          </PopoverClose>
         ))}
       </Card>
     </PopoverContent>
