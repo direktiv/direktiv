@@ -1,5 +1,52 @@
 version: '3'
 
+includes:
+  build:  
+    taskfile: taskfile_build.yaml
 
 tasks:
+  scan-ui:
+    desc: Runs trivy for the UI folder
+    cmds:
+      - trivy filesystem -s HIGH -s CRITICAL --exit-code 1 --ignore-unfixed ui
 
+  scan-backend:
+    desc: Runs trivy on go binary
+    deps: [build:build-push]
+    cmds: 
+      - trivy image -s HIGH -s CRITICAL --exit-code 1 --ignore-unfixed {{ .DOCKER_REPO }}/direktiv:{{ .VERSION }}
+
+  scan-helm:
+    desc: Runs trivy on Helm charts. Includes dependencies.
+    deps: [build:build-push]
+    cmds: 
+      - trivy config -s HIGH -s CRITICAL charts/direktiv
+
+  scan-docker:
+    desc: Scans Dockerfile for misconfiguration
+    cmds:
+    - trivy config --exit-code 1 Dockerfile
+
+  go-unit:
+    desc: Run go unit tests
+    dir: pkg
+    cmds:
+    - go test ./...
+
+  playwright:
+    desc: sjsjs
+    cmds: 
+    - |
+      docker run -v {{ .PWD }}/ui:/app/ui \
+      -w /app/ui \
+      --net=host \
+      --ipc=host \
+      -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
+      -e PLAYWRIGHT_USE_VITE=FALSE \
+      -e PLAYWRIGHT_UI_BASE_URL=http://127.0.0.1:9090 \
+      -e PLAYWRIGHT_SHARD=1/1 \
+      -e PLAYWRIGHT_CI=TRUE \
+      mcr.microsoft.com/playwright:v1.53.0-noble 
+    vars:
+      PWD:
+        sh: pwd

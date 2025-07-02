@@ -4,7 +4,6 @@ includes:
   version:  
     taskfile: ../taskfile_version.yaml
 
-
 tasks:
   version:
     desc: Changes version of direktiv in zarf files
@@ -22,6 +21,8 @@ tasks:
     - sed -e 's/VERSION/{{.VERSION}}/g' components/direktiv/images/zarf.template.yaml > components/direktiv/images/zarf.yaml
     - sed -e 's/VERSION/{{.VERSION}}/g' components/direktiv/yolo/zarf.template.yaml > components/direktiv/yolo/zarf.yaml
     - sed -e 's/VERSION/{{.VERSION}}/g' components/direktiv/zarf.template.yaml > components/direktiv/zarf.yaml
+    # EE
+    - sed -e 's/VERSION/{{.VERSION}}/g' ../direktiv-ee/zarf/yolo/zarf.template.yaml > ../direktiv-ee/zarf/yolo/zarf.yaml
     # if its dev, build charts from local and get image from local for airgap
     - |
       {{- if eq .VERSION  "dev" }}
@@ -33,7 +34,7 @@ tasks:
       {{- end }}
     requires:
       vars: [VERSION]
-    internal: true
+    # internal: true
 
   create:
     desc: Builds zarf airgap package for direktiv and dependencies
@@ -64,8 +65,22 @@ tasks:
     desc: Deploys yolo zarf package
     deps: [version:check]
     cmds:
-    - zarf package deploy --confirm --components=postgres,linkerd --set DIREKTIV_INGRESS_HOSTPORT=true --set DIREKTIV_INGRESS_SERVICE_TYPE=ClusterIP --set DIREKTIV_IMAGE=direktiv --set DIREKTIV_TAG=dev  --set DIREKTIV_REGISTRY=localhost:5001 zarf-package-direktiv-full-no-images-amd64-{{ .VERSION }}.tar.zst
+    - zarf package deploy --confirm --components=postgres --set DIREKTIV_INGRESS_HOSTPORT=true --set DIREKTIV_INGRESS_SERVICE_TYPE=ClusterIP --set DIREKTIV_IMAGE=direktiv --set DIREKTIV_TAG=dev  --set DIREKTIV_REGISTRY=localhost:5001 zarf-package-direktiv-full-no-images-amd64-{{ .VERSION }}.tar.zst
     requires:
       vars: [VERSION]
 
-  
+  ee-yolo-create:
+    desc: Builds ee yolo zarf package for direktiv and dependencies
+    cmds: 
+    - task: version
+      vars: 
+        VERSION: '{{ .VERSION }}'
+    - zarf package create ../direktiv-ee/zarf/yolo
+
+  ee-yolo-dev-deploy:
+    desc: Deploys yolo zarf package for EE
+    deps: [version:check]
+    cmds:
+    - zarf package deploy --components=postgres,keycloak --set DIREKTIV_WITH_CERTIFICATE=true --set DIREKTIV_INGRESS_HOSTPORT=true --set DIREKTIV_INGRESS_SERVICE_TYPE=ClusterIP --set DIREKTIV_IMAGE=direktiv-ee --set DIREKTIV_TAG=dev  --set DIREKTIV_REGISTRY=localhost:5001 zarf-package-direktiv-ee-full-no-images-amd64-{{ .VERSION }}.tar.zst
+    requires:
+      vars: [VERSION]

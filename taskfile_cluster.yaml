@@ -1,13 +1,26 @@
 version: '3'
 
 vars: 
-  VERSION: '{{.TELEMETRY | default "false"}}'
+  TELEMETRY: '{{.TELEMETRY | default "false"}}'
 
 tasks:
   clean:
     desc: Clean kind cluster
     cmds:
     - kind delete clusters --all
+
+  enable-tls:
+    desc: Switches kind to port 443
+    cmds:
+    - sed -i "s/80/443/" kind-config.yaml
+    - sed -i "s/80/443/" kind-config-cluster.yaml
+
+  disable-tls:
+    desc: Switches kind to port 443
+    cmds:
+    - sed -i "s/443/80/" kind-config.yaml
+    - sed -i "s/443/80/" kind-config-cluster.yaml
+
 
   one-node:
     desc: Setup empty one node kind cluster

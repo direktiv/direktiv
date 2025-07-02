@@ -123,3 +123,4 @@ zarf/zarf.yaml
 zarf/components/direktiv/zarf.yaml
 zarf/components/direktiv/yolo/zarf.yaml
 zarf/components/direktiv/images/zarf.yaml
+zarf/**/keycloak_db_user.txt

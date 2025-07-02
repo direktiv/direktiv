@@ -7,6 +7,7 @@ tasks:
   check:
     desc: Checks if version has the right syntax for Direktiv builds
     cmds:
+    - echo VERSION IN {{ .VERSION }}
     - |
       {{- if not (regexMatch "(^v[0-9]\\.[0-9]\\.[0-9]$)|^latest$|^dev$" .VERSION) -}}
         echo "wrong version format: {{ .VERSION }}. either v0.0.0, dev or latest."

@@ -5,7 +5,6 @@ includes:
     taskfile: taskfile_version.yaml
 
 vars: 
-  VERSION: '{{.VERSION | default "dev"}}' # e.g. v0.8.0
   DOCKER_REPO: '{{.DOCKER_REPO | default "localhost:5001" }}'
   GIT_DIRTY:
     sh: git diff --quiet || echo '-dirty'
@@ -13,15 +12,21 @@ vars:
     sh: git rev-parse --short HEAD
   RELEASE_VERSION: '{{ .VERSION }}-{{ .GIT_HASH }}{{ .GIT_DIRTY }}'
   IS_ENTERPRISE: '{{.IS_ENTERPRISE | default "false"}}'
+  IMAGE_NAME: |
+    {{- if eq .IS_ENTERPRISE "true" -}}
+      direktiv-ee
+    {{- else -}}
+      direktiv
+    {{- end -}}
+
 
 tasks:
   build:
     desc: Building for local architecture
-    deps: [version:check]
     cmds:
-      - echo {{ .DOCKER_REPO  }}
-      - echo RELEASE_VERSION
-      - docker build --build-arg IS_ENTERPRISE={{ .IS_ENTERPRISE }} --build-arg RELEASE_VERSION={{ .RELEASE_VERSION }} -t {{ .DOCKER_REPO }}/direktiv:{{ .VERSION }} . 
+      - task: version:check
+      - echo VALUE {{ .IMAGE_NAME }}
+      - docker build --build-arg IS_ENTERPRISE={{ .IS_ENTERPRISE }} --build-arg RELEASE_VERSION={{ .RELEASE_VERSION }} -t {{ .DOCKER_REPO }}/{{ .IMAGE_NAME }}:{{ .VERSION }} . 
     env:
       DOCKER_BUILDKIT: "1"
 
@@ -29,11 +34,11 @@ tasks:
     desc: Builds and pushed the image for local architecture
     cmds:
       - task: build
-      - docker push {{ .DOCKER_REPO }}/direktiv:{{ .VERSION }}
+      - docker push {{ .DOCKER_REPO }}/{{ .IMAGE_NAME }}:{{ .VERSION }}
       
   buildx:
     desc: Builds cross-platform image and pushes it directly to the registry
-    deps: [version:check]
     cmds:
+      - task: version:check
       - docker buildx create --use --name=direktiv --node=direktiv
-      - docker buildx build --build-arg IS_ENTERPRISE={{ .IS_ENTERPRISE }} --build-arg RELEASE_VERSION={{ .RELEASE_VERSION }} --platform linux/amd64,linux/arm64 -t {{ .DOCKER_REPO }}/direktiv:{{ .VERSION }} --push . 
+      - docker buildx build --build-arg IS_ENTERPRISE={{ .IS_ENTERPRISE }} --build-arg RELEASE_VERSION={{ .RELEASE_VERSION }} --platform linux/amd64,linux/arm64 -t {{ .DOCKER_REPO }}/{{ .IMAGE_NAME }}:{{ .VERSION }} --push . 
