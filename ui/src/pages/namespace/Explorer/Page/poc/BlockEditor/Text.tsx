@@ -32,9 +32,8 @@ export const Text = ({
       <Footer
         onSubmit={() => {
           onSubmit(block);
-          close();
         }}
-        onCancel={() => onCancel()}
+        onCancel={onCancel}
       />
     </div>
   );

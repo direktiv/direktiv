@@ -58,10 +58,7 @@ export const QueryProvider = ({
           />
         )}
       />
-      <Footer
-        onSubmit={() => onSubmit(form.getValues())}
-        onCancel={() => onCancel}
-      />
+      <Footer onSubmit={() => onSubmit(form.getValues())} onCancel={onCancel} />
     </div>
   );
 };
