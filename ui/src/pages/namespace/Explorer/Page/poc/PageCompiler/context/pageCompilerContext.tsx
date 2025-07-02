@@ -1,12 +1,4 @@
-import {
-  Dispatch,
-  FC,
-  PropsWithChildren,
-  SetStateAction,
-  createContext,
-  useContext,
-  useState,
-} from "react";
+import { FC, PropsWithChildren, createContext, useContext } from "react";
 import {
   addBlockToPage,
   deleteBlockFromPage,
@@ -26,25 +18,17 @@ export type PageCompilerProps = {
   setPage: (page: DirektivPagesType) => void;
 };
 
-type PageCompilerState = PageCompilerProps & {
-  focus: BlockPathType | null;
-  setFocus: Dispatch<SetStateAction<BlockPathType | null>>;
-};
-
-const PageCompilerContext = createContext<PageCompilerState | null>(null);
+const PageCompilerContext = createContext<PageCompilerProps | null>(null);
 
 type PageCompilerContextProviderProps = PropsWithChildren<PageCompilerProps>;
 
 export const PageCompilerContextProvider: FC<
   PageCompilerContextProviderProps
-> = ({ children, ...value }) => {
-  const [focus, setFocus] = useState<BlockPathType | null>(null);
-  return (
-    <PageCompilerContext.Provider value={{ ...value, focus, setFocus }}>
-      {children}
-    </PageCompilerContext.Provider>
-  );
-};
+> = ({ children, ...value }) => (
+  <PageCompilerContext.Provider value={{ ...value }}>
+    {children}
+  </PageCompilerContext.Provider>
+);
 
 export const usePageStateContext = () => {
   const context = useContext(PageCompilerContext);
@@ -72,7 +56,7 @@ export const useBlock = (path: BlockPathType) => {
  */
 export const usePageEditor = () => {
   const page = usePage();
-  const { mode, setFocus: contextSetFocus, setPage } = usePageStateContext();
+  const { mode, setPage } = usePageStateContext();
 
   const updateBlock = (path: BlockPathType, newBlock: AllBlocksType) => {
     const newPage = updateBlockInPage(page, path, newBlock);
@@ -86,13 +70,11 @@ export const usePageEditor = () => {
   ) => {
     const newPage = addBlockToPage(page, path, block, after);
     setPage(newPage);
-    contextSetFocus(null);
   };
 
   const deleteBlock = (path: BlockPathType) => {
     const newPage = deleteBlockFromPage(page, path);
     setPage(newPage);
-    contextSetFocus(null);
   };
 
   return {

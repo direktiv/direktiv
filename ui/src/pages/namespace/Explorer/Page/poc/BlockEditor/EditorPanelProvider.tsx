@@ -19,9 +19,9 @@ type EditorPanelState = null | {
 type EditorPanelContextType = {
   panel: EditorPanelState;
   setPanel: React.Dispatch<React.SetStateAction<EditorPanelState>>;
-} | null;
+};
 
-const EditorPanelContext = createContext<EditorPanelContextType>(null);
+const EditorPanelContext = createContext<EditorPanelContextType | null>(null);
 
 export const EditorPanelLayoutProvider = ({
   children,
