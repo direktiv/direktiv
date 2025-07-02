@@ -16,14 +16,12 @@ type EditorPanelState = null | {
   path: BlockPathType;
 };
 
-type EditorPanelContextType =
-  | {
-      panel: EditorPanelState;
-      setPanel: React.Dispatch<React.SetStateAction<EditorPanelState>>;
-    }
-  | undefined;
+type EditorPanelContextType = {
+  panel: EditorPanelState;
+  setPanel: React.Dispatch<React.SetStateAction<EditorPanelState>>;
+} | null;
 
-const EditorPanelContext = createContext<EditorPanelContextType>(undefined);
+const EditorPanelContext = createContext<EditorPanelContextType>(null);
 
 export const EditorPanelLayoutProvider = ({
   children,
