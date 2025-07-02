@@ -1,0 +1,43 @@
+import { TableCell, TableRow } from "~/design/Table";
+
+import { ListContextMenu } from "~/components/ListContextMenu";
+
+type RowActions = {
+  onEdit: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  onDelete: () => void;
+};
+
+type RowProps<T> = {
+  item: T;
+  renderRow: (item: T) => string[];
+  actions: RowActions;
+};
+
+export const Row = <T,>({ item, renderRow, actions }: RowProps<T>) => {
+  const rowCells = renderRow(item);
+  return (
+    <TableRow
+      className="cursor-pointer hover:underline"
+      onClick={actions.onEdit}
+    >
+      {rowCells.map((cell, cellIndex) => (
+        <TableCell
+          key={cellIndex}
+          className="min-w-0 max-w-[200px] truncate"
+          title={cell}
+        >
+          {cell}
+        </TableCell>
+      ))}
+      <TableCell className="w-0 text-right">
+        <ListContextMenu
+          onDelete={actions.onDelete}
+          onMoveDown={actions.onMoveDown}
+          onMoveUp={actions.onMoveUp}
+        />
+      </TableCell>
+    </TableRow>
+  );
+};

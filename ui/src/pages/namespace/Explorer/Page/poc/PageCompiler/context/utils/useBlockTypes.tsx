@@ -1,4 +1,11 @@
-import { Captions, Columns2, Heading1, LucideIcon, Text } from "lucide-react";
+import {
+  Captions,
+  Columns2,
+  Database,
+  Heading1,
+  LucideIcon,
+  Text,
+} from "lucide-react";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import { BlockPathType } from "../../Block";
@@ -30,6 +37,12 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
       type: "text",
       label: t("direktivPage.blockEditor.blockName.text"),
       icon: Text,
+      allow: true,
+    },
+    {
+      type: "query-provider",
+      label: t("direktivPage.blockEditor.blockName.query-provider"),
+      icon: Database,
       allow: true,
     },
     {

@@ -46,9 +46,9 @@ const List = ({ onSelect, path }: Omit<SelectBlockTypeProps, "label">) => {
       >
         {types.map((type) => (
           <Button
-            variant="outline"
             key={type.label}
-            className="my-1 w-36 justify-start text-xs"
+            variant="outline"
+            className="my-1 w-40 justify-start text-xs"
             onClick={() => onSelect(type.type)}
           >
             <type.icon size={16} />
