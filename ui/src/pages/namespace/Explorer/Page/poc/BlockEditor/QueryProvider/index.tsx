@@ -29,7 +29,7 @@ export const QueryProvider = ({
   });
 
   return (
-    <>
+    <div className="flex flex-col gap-4 p-1">
       <Header action={action} path={path} block={propBlock} />
       <div className="text-gray-10">
         {t("direktivPage.blockEditor.blockForms.queryProvider.description")}
@@ -62,6 +62,6 @@ export const QueryProvider = ({
         onSubmit={() => onSubmit(form.getValues())}
         onCancel={() => onCancel}
       />
-    </>
+    </div>
   );
 };
