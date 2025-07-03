@@ -370,7 +370,7 @@ describe("findAncestor", () => {
     const result = findAncestor({
       page,
       path: [],
-      match: (block) => block.type && block.type === "card",
+      match: (block) => block.type && block.type === "page",
     });
     expect(result).toEqual(false);
   });
