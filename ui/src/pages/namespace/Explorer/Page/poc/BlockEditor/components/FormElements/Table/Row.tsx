@@ -12,10 +12,16 @@ type RowActions = {
 type RowProps<T> = {
   item: T;
   renderRow: (item: T) => string[];
+  numberOfColumns: number;
   actions: RowActions;
 };
 
-export const Row = <T,>({ item, renderRow, actions }: RowProps<T>) => {
+export const Row = <T,>({
+  item,
+  renderRow,
+  numberOfColumns,
+  actions,
+}: RowProps<T>) => {
   const rowCells = renderRow(item);
   return (
     <TableRow
@@ -23,12 +29,10 @@ export const Row = <T,>({ item, renderRow, actions }: RowProps<T>) => {
       onClick={actions.onEdit}
     >
       {rowCells.map((cell, cellIndex) => (
-        <TableCell
-          key={cellIndex}
-          className="min-w-0 max-w-[200px] truncate"
-          title={cell}
-        >
-          {cell}
+        <TableCell key={cellIndex} title={cell}>
+          <div className="truncate" style={{ width: 200 / numberOfColumns }}>
+            {cell} {numberOfColumns}
+          </div>
         </TableCell>
       ))}
       <TableCell className="w-0 text-right">

@@ -16,7 +16,7 @@ export const InlineBlockSidePanel = ({
 }: QueryProviderEditFormProps) => {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 px-1">
       <Header action={action} path={path} block={block} />
       <div className="text-gray-10">
         {t("direktivPage.blockEditor.blockForm.noFormDescription")}
