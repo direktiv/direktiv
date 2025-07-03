@@ -2,6 +2,7 @@ import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
 import { Dialog } from "./Dialog";
 import { Headline } from "./Headline";
+import { InlineBlockSidePanel } from "./InlineBlockSidePanel";
 import { Key } from "react";
 import { Loop } from "./Loop";
 import { QueryProvider } from "./QueryProvider";
@@ -90,6 +91,19 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
         />
       );
     }
+
+    case "card":
+    case "columns": {
+      return (
+        <InlineBlockSidePanel
+          key={key}
+          action={action}
+          block={block}
+          path={path}
+        />
+      );
+    }
+
     case "table": {
       return (
         <Table
