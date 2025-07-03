@@ -25,7 +25,7 @@ export const Row = <T,>({ item, renderRow, actions }: RowProps<T>) => {
       {rowCells.map((cell, cellIndex) => (
         <TableCell
           key={cellIndex}
-          className="min-w-0 max-w-[200px] truncate"
+          className="min-w-0 max-w-[150px] truncate"
           title={cell}
         >
           {cell}
