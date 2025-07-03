@@ -80,11 +80,11 @@ Blocks are the main elements that the user can use to compose a Direktiv page.
 
 ### Button `Block<trigger>`
 
-| Attribute | Type       | Description                                                                                                        |
-| --------- | ---------- | ------------------------------------------------------------------------------------------------------------------ |
-| `type`    | `"button"` |                                                                                                                    |
-| `label`   | `string`   | Button label text                                                                                                  |
-| `submit?` | `Mutation` | mutation that will be executed on click. This is optional as the button can also be used as a trigger for a dialog |
+| Attribute | Type             | Description                                                                                                        |
+| --------- | ---------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `type`    | `"button"`       |                                                                                                                    |
+| `label`   | `TemplateString` | Button label text                                                                                                  |
+| `submit?` | `Mutation`       | mutation that will be executed on click. This is optional as the button can also be used as a trigger for a dialog |
 
 ### Form `Block`
 

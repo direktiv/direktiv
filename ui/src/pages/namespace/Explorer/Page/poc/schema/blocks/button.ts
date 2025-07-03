@@ -1,9 +1,10 @@
 import { Mutation } from "../procedures/mutation";
+import { TemplateString } from "../primitives/templateString";
 import { z } from "zod";
 
 export const Button = z.object({
   type: z.literal("button"),
-  label: z.string().min(1),
+  label: TemplateString,
   submit: Mutation.optional(),
 });
 

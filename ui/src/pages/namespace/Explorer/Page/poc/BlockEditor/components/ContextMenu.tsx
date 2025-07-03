@@ -4,22 +4,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
-import { Edit, MoreVertical, Trash } from "lucide-react";
+import { MoreVertical, Trash } from "lucide-react";
 
+import { BlockPathType } from "../../PageCompiler/Block";
 import Button from "~/design/Button";
-import { DialogTrigger } from "@radix-ui/react-dialog";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 type BlockContextMenuProps = {
+  path: BlockPathType;
   onDelete: () => void;
-  onEdit: () => void;
 };
 
-export const BlockContextMenu: FC<BlockContextMenuProps> = ({
-  onDelete,
-  onEdit,
-}) => {
+export const BlockContextMenu: FC<BlockContextMenuProps> = ({ onDelete }) => {
   const { t } = useTranslation();
   return (
     <DropdownMenu>
@@ -35,18 +32,10 @@ export const BlockContextMenu: FC<BlockContextMenuProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-40">
-        <DialogTrigger className="w-full" onClick={onEdit}>
-          <DropdownMenuItem>
-            <Edit className="mr-2 size-4" />
-            {t("direktivPage.blockEditor.contextMenu.editButton")}
-          </DropdownMenuItem>
-        </DialogTrigger>
-        <DialogTrigger className="w-full" onClick={onDelete}>
-          <DropdownMenuItem>
-            <Trash className="mr-2 size-4" />
-            {t("direktivPage.blockEditor.contextMenu.deleteButton")}
-          </DropdownMenuItem>
-        </DialogTrigger>
+        <DropdownMenuItem className="w-full" onClick={onDelete}>
+          <Trash className="mr-2 size-4" />
+          {t("direktivPage.blockEditor.contextMenu.deleteButton")}
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -15,6 +15,7 @@ export const Dialog = ({
   block: propBlock,
   path,
   onSubmit,
+  onCancel,
 }: DialogFormProps) => {
   const { t } = useTranslation();
   const form = useForm<DialogType>({
@@ -26,10 +27,11 @@ export const Dialog = ({
     <FormWrapper
       description={t("direktivPage.blockEditor.blockForms.dialog.description")}
       form={form}
-      onSubmit={onSubmit}
+      block={propBlock}
       action={action}
       path={path}
-      blockType={propBlock.type}
+      onSubmit={onSubmit}
+      onCancel={onCancel}
     >
       <Fieldset
         label={t(

@@ -9,12 +9,13 @@ import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type LoopFormProps = BlockEditFormProps<LoopType>;
-//
+
 export const Loop = ({
   action,
   block: propBlock,
   path,
   onSubmit,
+  onCancel,
 }: LoopFormProps) => {
   const { t } = useTranslation();
   const form = useForm<LoopType>({
@@ -26,10 +27,11 @@ export const Loop = ({
     <FormWrapper
       description={t("direktivPage.blockEditor.blockForms.loop.description")}
       form={form}
-      onSubmit={onSubmit}
+      block={propBlock}
       action={action}
       path={path}
-      blockType={propBlock.type}
+      onSubmit={onSubmit}
+      onCancel={onCancel}
     >
       <Fieldset
         label={t("direktivPage.blockEditor.blockForms.loop.idLabel")}
