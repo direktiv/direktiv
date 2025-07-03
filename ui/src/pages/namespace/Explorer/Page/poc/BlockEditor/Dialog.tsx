@@ -1,31 +1,31 @@
-import { Text as TextSchema, TextType } from "../schema/blocks/text";
+import { Dialog as DialogSchema, DialogType } from "../schema/blocks/dialog";
 
 import { BlockEditFormProps } from ".";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "./components/FormWrapper";
-import { Textarea } from "~/design/TextArea";
+import Input from "~/design/Input";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type TextBlockEditFormProps = BlockEditFormProps<TextType>;
+type DialogFormProps = BlockEditFormProps<DialogType>;
 
-export const Text = ({
+export const Dialog = ({
   action,
   block: propBlock,
   path,
   onSubmit,
   onCancel,
-}: TextBlockEditFormProps) => {
+}: DialogFormProps) => {
   const { t } = useTranslation();
-  const form = useForm<TextType>({
-    resolver: zodResolver(TextSchema),
+  const form = useForm<DialogType>({
+    resolver: zodResolver(DialogSchema),
     defaultValues: propBlock,
   });
 
   return (
     <FormWrapper
-      description={t("direktivPage.blockEditor.blockForms.text.description")}
+      description={t("direktivPage.blockEditor.blockForms.dialog.description")}
       form={form}
       block={propBlock}
       action={action}
@@ -34,14 +34,16 @@ export const Text = ({
       onCancel={onCancel}
     >
       <Fieldset
-        label={t("direktivPage.blockEditor.blockForms.text.contentLabel")}
-        htmlFor="content"
+        label={t(
+          "direktivPage.blockEditor.blockForms.dialog.triggerLabelLabel"
+        )}
+        htmlFor="label"
       >
-        <Textarea
-          {...form.register("content")}
-          id="content"
+        <Input
+          {...form.register("trigger.label")}
+          id="label"
           placeholder={t(
-            "direktivPage.blockEditor.blockForms.text.contentPlaceholder"
+            "direktivPage.blockEditor.blockForms.dialog.triggerLabelPlaceholder"
           )}
         />
       </Fieldset>

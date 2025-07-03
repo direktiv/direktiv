@@ -3,6 +3,7 @@ import ButtonDesignComponent, {
 } from "~/design/Button";
 
 import { ButtonType } from "../../../schema/blocks/button";
+import { TemplateString } from "../../primitives/TemplateString";
 import { forwardRef } from "react";
 
 export type DefaultButtonProps = ButtonDesignComponentProps & {
@@ -12,7 +13,7 @@ export type DefaultButtonProps = ButtonDesignComponentProps & {
 export const DefaultButton = forwardRef<HTMLButtonElement, DefaultButtonProps>(
   ({ blockProps, ...props }, ref) => (
     <ButtonDesignComponent ref={ref} {...props}>
-      {blockProps.label}
+      <TemplateString value={blockProps.label} />
     </ButtonDesignComponent>
   )
 );

@@ -1691,6 +1691,54 @@
           "key": "Key",
           "value": "Value"
         },
+        "text": {
+          "description": "Text blocks are used to display a block of text.",
+          "contentLabel": "Content",
+          "contentPlaceholder": "Enter text here..."
+        },
+        "headline": {
+          "description": "Headlines are used to display a title for a section of content. They can be used to create a hierarchy of content.",
+          "labelLabel": "Label",
+          "labelPlaceholder": "Headline",
+          "levelLabel": "Level"
+        },
+        "dialog": {
+          "description": "A Dialog block contains a button that opens a dialog when clicked. The dialog can contain any number of blocks.",
+          "triggerLabelLabel": "Button Label",
+          "triggerLabelPlaceholder": "Open Dialog"
+        },
+        "loop": {
+          "description": "A Loop block allows you to repeat a set of blocks for each item in an array.",
+          "idLabel": "loop ID",
+          "idPlaceholder": "unique identifier name to reference the content of a loop iteration",
+          "dataLabel": "data",
+          "dataPlaceholder": "Path to an array for the loop (e.g. query.companies.data)"
+        },
+        "table": {
+          "description": "A Table block displays data in a table format, as one row for each item in an array. It can be used to display data from a Query Provider",
+          "data": {
+            "idLabel": "loop ID",
+            "idPlaceholder": "unique identifier to reference the data for the current row",
+            "dataLabel": "data",
+            "dataPlaceholder": "Path to an array for the table (e.g. query.companies.data)"
+          },
+          "action": {
+            "labelLabel": "Label",
+            "labelPlaceholder": "The label of the Action (e.g. Edit, Delete)",
+            "itemLabel": "Action",
+            "tableLabel": "{{count}} Actions",
+            "tableLabel_one": "{{count}} Action"
+          },
+          "column": {
+            "labelLabel": "Label",
+            "labelPlaceholder": "Column label",
+            "contentLabel": "Content",
+            "contentPlaceholder": "The content of the column (e.g. E-Mail: {{loop.company-table.email}})",
+            "itemLabel": "Column",
+            "tableLabel": "{{count}} Columns",
+            "tableLabel_one": "{{count}} Column"
+          }
+        },
         "queryProvider": {
           "description": "A Query Provider fetches data from one or multiple APIs and makes the results accessible to its child blocks.",
           "query": {

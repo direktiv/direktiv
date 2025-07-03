@@ -4,8 +4,7 @@ import {
 } from "../../schema/blocks/queryProvider";
 
 import { BlockEditFormProps } from "..";
-import { Footer } from "../components/Footer";
-import { Header } from "../components/Header";
+import { FormWrapper } from "../components/FormWrapper";
 import { QueryForm } from "./QueryForm";
 import { Table } from "../components/FormElements/Table";
 import { queryToUrl } from "../utils";
@@ -29,11 +28,17 @@ export const QueryProvider = ({
   });
 
   return (
-    <div className="flex flex-col gap-4 p-1">
-      <Header action={action} path={path} block={propBlock} />
-      <div className="text-gray-10">
-        {t("direktivPage.blockEditor.blockForms.queryProvider.description")}
-      </div>
+    <FormWrapper
+      description={t(
+        "direktivPage.blockEditor.blockForms.queryProvider.description"
+      )}
+      form={form}
+      block={propBlock}
+      action={action}
+      path={path}
+      onSubmit={onSubmit}
+      onCancel={onCancel}
+    >
       <Table
         data={form.getValues("queries")}
         onChange={(newValue) => {
@@ -49,7 +54,6 @@ export const QueryProvider = ({
           )
         }
         renderRow={(query) => [query.id, queryToUrl(query)]}
-        getItemKey={(query) => query.id}
         renderForm={(formId, onSubmit, defaultValues) => (
           <QueryForm
             formId={formId}
@@ -58,7 +62,6 @@ export const QueryProvider = ({
           />
         )}
       />
-      <Footer onSubmit={() => onSubmit(form.getValues())} onCancel={onCancel} />
-    </div>
+    </FormWrapper>
   );
 };
