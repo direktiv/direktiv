@@ -13,7 +13,25 @@ type BlockListProps = {
   path: BlockPathType;
 };
 
+type WrapperProps = {
+  horizontal?: boolean;
+  children: ReactElement;
+};
+
 type BlockListComponentProps = BlockListProps;
+
+const BlockListWrapper = ({ children, horizontal }: WrapperProps) => (
+  <div
+    className={twMergeClsx(
+      "w-full gap-3",
+      horizontal
+        ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))]"
+        : "flex flex-col"
+    )}
+  >
+    {children}
+  </div>
+);
 
 const EditorBlockList = ({
   horizontal,
@@ -23,14 +41,7 @@ const EditorBlockList = ({
   const createBlock = useCreateBlock();
 
   return (
-    <div
-      className={twMergeClsx(
-        "w-full gap-3",
-        horizontal
-          ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))]"
-          : "flex flex-col"
-      )}
-    >
+    <BlockListWrapper horizontal={horizontal}>
       <Suspense fallback={<Loading />}>
         {!children.length && (
           <div
@@ -46,7 +57,7 @@ const EditorBlockList = ({
         )}
         {children}
       </Suspense>
-    </div>
+    </BlockListWrapper>
   );
 };
 
@@ -54,16 +65,9 @@ const VisitorBlockList = ({
   horizontal,
   children,
 }: BlockListComponentProps) => (
-  <div
-    className={twMergeClsx(
-      "w-full gap-3",
-      horizontal
-        ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))]"
-        : "flex flex-col"
-    )}
-  >
+  <BlockListWrapper horizontal={horizontal}>
     <Suspense fallback={<Loading />}>{children}</Suspense>
-  </div>
+  </BlockListWrapper>
 );
 
 export const BlockList = (props: BlockListComponentProps) => {
