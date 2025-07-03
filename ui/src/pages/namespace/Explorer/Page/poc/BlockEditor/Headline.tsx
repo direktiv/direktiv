@@ -1,4 +1,9 @@
-import { HeadlineType, headlineLevels } from "../schema/blocks/headline";
+import { Controller, useForm } from "react-hook-form";
+import {
+  Headline as HeadlineSchema,
+  HeadlineType,
+  headlineLevels,
+} from "../schema/blocks/headline";
 import {
   Select,
   SelectContent,
@@ -8,10 +13,11 @@ import {
 } from "~/design/Select";
 
 import { BlockEditFormProps } from ".";
-import { Footer } from "./components/Footer";
-import { Header } from "./components/Header";
+import { Fieldset } from "~/components/Form/Fieldset";
+import { FormWrapper } from "./components/FormWrapper";
 import Input from "~/design/Input";
-import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type HeadlineEditFormProps = BlockEditFormProps<HeadlineType>;
 
@@ -22,39 +28,59 @@ export const Headline = ({
   onSubmit,
   onCancel,
 }: HeadlineEditFormProps) => {
-  const defaultLevel = headlineLevels[1];
-
-  const [block, setBlock] = useState<HeadlineType>(structuredClone(propBlock));
+  const { t } = useTranslation();
+  const form = useForm<HeadlineType>({
+    resolver: zodResolver(HeadlineSchema),
+    defaultValues: propBlock,
+  });
 
   return (
-    <div className="flex flex-col gap-4">
-      <Header action={action} path={path} block={propBlock} />
-      <Input
-        value={block.label}
-        onChange={(e) => setBlock({ ...block, label: e.target.value })}
-      />
-      <Select
-        value={block.level}
-        onValueChange={(value: HeadlineType["level"]) =>
-          setBlock({
-            ...block,
-            level: value,
-          })
-        }
-        defaultValue={defaultLevel}
+    <FormWrapper
+      description={t(
+        "direktivPage.blockEditor.blockForms.headline.description"
+      )}
+      form={form}
+      block={propBlock}
+      action={action}
+      path={path}
+      onSubmit={onSubmit}
+      onCancel={onCancel}
+    >
+      <Fieldset
+        label={t("direktivPage.blockEditor.blockForms.headline.labelLabel")}
+        htmlFor="label"
       >
-        <SelectTrigger variant="outline">
-          <SelectValue placeholder="something" />
-        </SelectTrigger>
-        <SelectContent>
-          {headlineLevels.map((item) => (
-            <SelectItem key={item} value={item}>
-              <span>{item}</span>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <Footer onSubmit={() => onSubmit(block)} onCancel={onCancel} />
-    </div>
+        <Input
+          {...form.register("label")}
+          id="label"
+          placeholder={t(
+            "direktivPage.blockEditor.blockForms.headline.labelPlaceholder"
+          )}
+        />
+      </Fieldset>
+      <Fieldset
+        label={t("direktivPage.blockEditor.blockForms.headline.levelLabel")}
+        htmlFor="level"
+      >
+        <Controller
+          control={form.control}
+          name="level"
+          render={({ field }) => (
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger variant="outline" id="level">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {headlineLevels.map((item) => (
+                  <SelectItem key={item} value={item}>
+                    <span>{item}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
+      </Fieldset>
+    </FormWrapper>
   );
 };

@@ -4,6 +4,9 @@ import {
   Database,
   Heading1,
   LucideIcon,
+  RectangleHorizontal,
+  Repeat2,
+  Table,
   Text,
 } from "lucide-react";
 
@@ -64,6 +67,28 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
         path,
         match: (block) => block.type === "card",
       }),
+    },
+    {
+      type: "table",
+      label: t("direktivPage.blockEditor.blockName.table"),
+      icon: Table,
+      allow: true,
+    },
+    {
+      type: "dialog",
+      label: t("direktivPage.blockEditor.blockName.dialog"),
+      icon: RectangleHorizontal,
+      allow: !findInBranch({
+        page,
+        path,
+        match: (block) => block.type === "dialog",
+      }),
+    },
+    {
+      type: "loop",
+      label: t("direktivPage.blockEditor.blockName.loop"),
+      icon: Repeat2,
+      allow: true,
     },
   ] satisfies BlockTypeConfig[];
 

@@ -1,9 +1,12 @@
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
+import { Dialog } from "./Dialog";
 import { Headline } from "./Headline";
 import { InlineBlockSidePanel } from "./InlineBlockSidePanel";
 import { Key } from "react";
+import { Loop } from "./Loop";
 import { QueryProvider } from "./QueryProvider";
+import { Table } from "./Table";
 import { Text } from "../BlockEditor/Text";
 import { isPage } from "../PageCompiler/context/utils";
 import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
@@ -96,6 +99,43 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
           action={action}
           block={block}
           path={path}
+        />
+      );
+    }
+
+    case "table": {
+      return (
+        <Table
+          key={key}
+          action={action}
+          block={block}
+          path={path}
+          onSubmit={handleUpdate}
+          onCancel={handleClose}
+        />
+      );
+    }
+    case "dialog": {
+      return (
+        <Dialog
+          key={key}
+          action={action}
+          block={block}
+          path={path}
+          onSubmit={handleUpdate}
+          onCancel={handleClose}
+        />
+      );
+    }
+    case "loop": {
+      return (
+        <Loop
+          key={key}
+          action={action}
+          block={block}
+          path={path}
+          onSubmit={handleUpdate}
+          onCancel={handleClose}
         />
       );
     }

@@ -2,11 +2,11 @@ import Button from "~/design/Button";
 import { useTranslation } from "react-i18next";
 
 type BlockEditorFooterProps = {
-  onSubmit: () => void;
+  formId: string;
   onCancel: () => void;
 };
 
-export const Footer = ({ onSubmit, onCancel }: BlockEditorFooterProps) => {
+export const Footer = ({ formId, onCancel }: BlockEditorFooterProps) => {
   const { t } = useTranslation();
 
   return (
@@ -14,7 +14,8 @@ export const Footer = ({ onSubmit, onCancel }: BlockEditorFooterProps) => {
       <Button variant="ghost" onClick={onCancel}>
         {t("direktivPage.blockEditor.generic.cancelButton")}
       </Button>
-      <Button variant="primary" onClick={onSubmit}>
+
+      <Button variant="primary" type="submit" form={formId}>
         {t("direktivPage.blockEditor.generic.saveButton")}
       </Button>
     </div>
