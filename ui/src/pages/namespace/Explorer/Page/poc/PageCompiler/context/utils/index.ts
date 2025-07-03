@@ -136,14 +136,14 @@ type FindInBranchConfig = {
   depth?: number;
 };
 
-export const findInBranch = ({
+export const findAncestor = ({
   page,
   path,
   match,
   depth,
 }: FindInBranchConfig) => {
   const limit = depth !== undefined ? path.length - depth : 0;
-  for (let i = path.length; i >= limit; i--) {
+  for (let i = path.length - 1; i >= limit; i--) {
     const target = findBlock(page, path.slice(0, i));
     if (match(target)) {
       return true;

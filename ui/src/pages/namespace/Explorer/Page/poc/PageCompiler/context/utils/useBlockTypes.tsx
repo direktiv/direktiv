@@ -9,7 +9,7 @@ import {
 
 import { AllBlocksType } from "../../../schema/blocks";
 import { BlockPathType } from "../../Block";
-import { findInBranch } from ".";
+import { findAncestor } from ".";
 import { usePage } from "../pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
@@ -49,7 +49,7 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
       type: "columns",
       label: t("direktivPage.blockEditor.blockName.columns"),
       icon: Columns2,
-      allow: !findInBranch({
+      allow: !findAncestor({
         page,
         path,
         match: (block) => block.type === "columns",
@@ -59,7 +59,7 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
       type: "card",
       label: t("direktivPage.blockEditor.blockName.card"),
       icon: Captions,
-      allow: !findInBranch({
+      allow: !findAncestor({
         page,
         path,
         match: (block) => block.type === "card",
