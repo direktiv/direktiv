@@ -75,7 +75,7 @@ export const Table = <T,>({
 
   const formValues =
     dialog?.action === "edit" ? items[dialog.index] : undefined;
-  const columnCount = items[0] ? renderRow(items[0]).length : 0;
+  const numberOfColumns = items[0] ? renderRow(items[0]).length : 0;
 
   return (
     <Dialog
@@ -88,22 +88,22 @@ export const Table = <T,>({
         <TableDesignComponent>
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-              <TableHeaderCell colSpan={columnCount}>
-                {label(items.length)}
-              </TableHeaderCell>
-              <TableHeaderCell className="w-60 text-right">
-                <DialogTrigger asChild>
-                  <Button
-                    type="button"
-                    icon
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setDialog({ action: "create" })}
-                  >
-                    <Plus />
-                    {itemLabel}
-                  </Button>
-                </DialogTrigger>
+              <TableHeaderCell colSpan={numberOfColumns + 1}>
+                <div className="flex">
+                  <div className="grow">{label(items.length)}</div>
+                  <DialogTrigger asChild>
+                    <Button
+                      type="button"
+                      icon
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDialog({ action: "create" })}
+                    >
+                      <Plus />
+                      {itemLabel}
+                    </Button>
+                  </DialogTrigger>
+                </div>
               </TableHeaderCell>
             </TableRow>
           </TableHead>
@@ -112,6 +112,7 @@ export const Table = <T,>({
               items={items}
               renderRow={renderRow}
               onEdit={(index) => setDialog({ action: "edit", index })}
+              numberOfColumns={numberOfColumns}
               onChange={(newItems) => {
                 setItems(newItems);
                 onChange(newItems);
