@@ -1684,6 +1684,7 @@
         "query-provider": "Query Provider",
         "column": "Column",
         "columns": "Columns",
+        "image": "Image",
         "table": "Table"
       },
       "blockForms": {
@@ -1701,6 +1702,15 @@
           "labelLabel": "Label",
           "labelPlaceholder": "Headline",
           "levelLabel": "Level"
+        },
+        "image": {
+          "description": "Image blocks are used to display images on the page.",
+          "srcLabel": "Image Source",
+          "srcPlaceholder": "Enter image URL",
+          "widthLabel": "Width",
+          "widthPlaceholder": "Width in pixels",
+          "heightLabel": "Height",
+          "heightPlaceholder": "Height in pixels"
         },
         "dialog": {
           "description": "A Dialog block contains a button that opens a dialog when clicked. The dialog can contain any number of blocks.",
@@ -1775,6 +1785,7 @@
           "query-provider": "query provider",
           "column": "column block",
           "columns": "set of columns",
+          "image": "image block",
           "table": "table block"
         }
       },

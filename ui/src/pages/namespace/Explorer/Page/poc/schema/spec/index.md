@@ -116,6 +116,15 @@ A Block that allows to iterate over an array variable. It renders its blocks for
 | `data`    | `Variable<Array>` | Variable to loop over          |
 | `blocks`  | `Block[]`         | Child blocks rendered per item |
 
+### Image `Block`
+
+| Attribute | Type             | Description            |
+| --------- | ---------------- | ---------------------- |
+| `type`    | `"image"`        |                        |
+| `src`     | `TemplateString` | Image source URL       |
+| `width`   | `number`         | Image width in pixels  |
+| `height`  | `number`         | Image height in pixels |
+
 **Example**
 
 When adding a `loop` block with the id `pokemon` and a variable `query.pokemonList.data` (points to a `query` with the id `pokemon-list` and references the `data` array returned from the API request), every block will have access to the variable `loop.pokemon` to reference its corresponding array item.

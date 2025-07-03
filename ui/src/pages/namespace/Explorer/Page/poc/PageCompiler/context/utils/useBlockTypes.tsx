@@ -3,6 +3,7 @@ import {
   Columns2,
   Database,
   Heading1,
+  Image,
   LucideIcon,
   RectangleHorizontal,
   Repeat2,
@@ -88,6 +89,12 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
       type: "loop",
       label: t("direktivPage.blockEditor.blockName.loop"),
       icon: Repeat2,
+      allow: true,
+    },
+    {
+      type: "image",
+      label: t("direktivPage.blockEditor.blockName.image"),
+      icon: Image,
       allow: true,
     },
   ] satisfies BlockTypeConfig[];

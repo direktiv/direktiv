@@ -2,6 +2,7 @@ import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
 import { Dialog } from "./Dialog";
 import { Headline } from "./Headline";
+import { Image } from "./Image";
 import { InlineBlockSidePanel } from "./InlineBlockSidePanel";
 import { Key } from "react";
 import { Loop } from "./Loop";
@@ -70,6 +71,18 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
     case "headline": {
       return (
         <Headline
+          key={key}
+          action={action}
+          block={block}
+          path={path}
+          onSubmit={handleUpdate}
+          onCancel={handleClose}
+        />
+      );
+    }
+    case "image": {
+      return (
+        <Image
           key={key}
           action={action}
           block={block}
