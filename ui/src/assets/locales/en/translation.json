@@ -1715,7 +1715,7 @@
           "dataPlaceholder": "Path to an array for the loop (e.g. query.companies.data)"
         },
         "table": {
-          "description": "A Table block displays a set of data in a table format. It can be used to display data from a Query Provider",
+          "description": "A Table block displays data in a table format, as one row for each item in an array. It can be used to display data from a Query Provider",
           "data": {
             "idLabel": "loop ID",
             "idPlaceholder": "unique identifier to reference the data for the current row",
