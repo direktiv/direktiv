@@ -15,6 +15,7 @@ export const Image = ({
   block: propBlock,
   path,
   onSubmit,
+  onCancel,
 }: ImageEditFormProps) => {
   const { t } = useTranslation();
   const form = useForm<ImageType>({
@@ -26,10 +27,11 @@ export const Image = ({
     <FormWrapper
       description={t("direktivPage.blockEditor.blockForms.image.description")}
       form={form}
-      onSubmit={onSubmit}
+      block={propBlock}
       action={action}
       path={path}
-      blockType={propBlock.type}
+      onSubmit={onSubmit}
+      onCancel={onCancel}
     >
       <Fieldset
         label={t("direktivPage.blockEditor.blockForms.image.srcLabel")}
