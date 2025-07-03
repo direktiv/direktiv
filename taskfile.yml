@@ -3,7 +3,7 @@ version: '3'
 includes:
   zarf:
     taskfile: ./zarf/taskfile.yaml
-    dir: ./zarf
+    # dir: ./zarf
   cluster: 
     taskfile: taskfile_cluster.yaml
   version:  
@@ -12,7 +12,7 @@ includes:
     taskfile: taskfile_build.yaml
   test:  
     taskfile: taskfile_test.yaml
-
+    
 tasks:  
   default:
     desc: Basic Kind cluster with Direktiv. Run with TELEMETRY=true to enable telemetry with grafana. 
@@ -35,9 +35,3 @@ tasks:
     - task: build:build
     - task: cluster:install
     silent: true
-
-
-# install one-node
-# install multiu node
-# install zarf without images
-# install zarf with images

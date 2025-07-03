@@ -1,6 +1,6 @@
 kind: ZarfPackageConfig 
 metadata:
-  name: direktiv-no-images
+  name: direktiv-images
   version: VERSION
   description: "direktiv installation"
 

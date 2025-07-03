@@ -16,21 +16,27 @@ tasks:
         exit 1
       {{- end -}}
     # Replace version in zarf config files
-    - sed -e 's/VERSION/{{.VERSION}}/g' yolo/zarf.template.yaml > yolo/zarf.yaml
-    - sed -e 's/VERSION/{{.VERSION}}/g' zarf.template.yaml > zarf.yaml
-    - sed -e 's/VERSION/{{.VERSION}}/g' components/direktiv/images/zarf.template.yaml > components/direktiv/images/zarf.yaml
-    - sed -e 's/VERSION/{{.VERSION}}/g' components/direktiv/yolo/zarf.template.yaml > components/direktiv/yolo/zarf.yaml
-    - sed -e 's/VERSION/{{.VERSION}}/g' components/direktiv/zarf.template.yaml > components/direktiv/zarf.yaml
-    # EE
-    - sed -e 's/VERSION/{{.VERSION}}/g' ../direktiv-ee/zarf/yolo/zarf.template.yaml > ../direktiv-ee/zarf/yolo/zarf.yaml
+    - sed -e 's/VERSION/{{.VERSION}}/g' zarf/yolo/zarf.template.yaml > zarf/yolo/zarf.yaml
+    - sed -e 's/VERSION/{{.VERSION}}/g' zarf/zarf.template.yaml > zarf/zarf.yaml
+    - sed -e 's/VERSION/{{.VERSION}}/g' zarf/components/direktiv/images/zarf.template.yaml > zarf/components/direktiv/images/zarf.yaml
+    - sed -e 's/VERSION/{{.VERSION}}/g' zarf/components/direktiv/yolo/zarf.template.yaml > zarf/components/direktiv/yolo/zarf.yaml
+    - sed -e 's/VERSION/{{.VERSION}}/g' zarf/components/direktiv/zarf.template.yaml > zarf/components/direktiv/zarf.yaml
+    # ee
+    - sed -e 's/VERSION/{{.VERSION}}/g' direktiv-ee/zarf/yolo/zarf.template.yaml > direktiv-ee/zarf/yolo/zarf.yaml | true
+    - sed -e 's/VERSION/{{.VERSION}}/g' direktiv-ee/zarf/zarf.template.yaml > direktiv-ee/zarf/zarf.yaml | true
+    - sed -e 's/VERSION/{{.VERSION}}/g' direktiv-ee/zarf/components/direktiv/images/zarf.template.yaml > direktiv-ee/zarf/components/direktiv/images/zarf.yaml | true
+    - sed -e 's/VERSION/{{.VERSION}}/g' direktiv-ee/zarf/components/direktiv/yolo/zarf.template.yaml > direktiv-ee/zarf/components/direktiv/yolo/zarf.yaml | true
+    
     # if its dev, build charts from local and get image from local for airgap
     - |
       {{- if eq .VERSION  "dev" }}
-      sed -i -e 's/SOURCE: VALUE/localPath: ..\/..\/..\/charts\/direktiv/g' components/direktiv/zarf.yaml
-      sed -i -e 's/DIREKTIV_IMAGE/localhost:5001\/direktiv:dev/g'  components/direktiv/images/zarf.yaml
+      sed -i -e 's/SOURCE: VALUE/localPath: ..\/..\/..\/charts\/direktiv/g' zarf/components/direktiv/zarf.yaml
+      sed -i -e 's/DIREKTIV_IMAGE/localhost:5001\/direktiv:dev/g'  zarf/components/direktiv/images/zarf.yaml
+      sed -i -e 's/DIREKTIV_IMAGE/localhost:5001\/direktiv-ee:dev/g'  direktiv-ee/zarf/components/direktiv/images/zarf.yaml
       {{- else }}
-      sed -i -e 's/SOURCE: VALUE/url: https:\/\/charts.direktiv.io/g' components/direktiv/zarf.yaml
-      sed -i -e 's/DIREKTIV_IMAGE/docker.io\/direktiv\/direktiv:{{ .VERSION }}/g'  components/direktiv/images/zarf.yaml
+      sed -i -e 's/SOURCE: VALUE/url: https:\/\/charts.direktiv.io/g' zarf/components/direktiv/zarf.yaml
+      sed -i -e 's/DIREKTIV_IMAGE/docker.io\/direktiv\/direktiv:{{ .VERSION }}/g'  zarf/components/direktiv/images/zarf.yaml
+      sed -i -e 's/DIREKTIV_IMAGE/localhost:5001\/direktiv-ee:dev/g'  direktiv-ee/zarf/components/direktiv/images/zarf.yaml
       {{- end }}
     requires:
       vars: [VERSION]
@@ -44,7 +50,7 @@ tasks:
         VERSION: '{{ .VERSION }}'
     - zarf package create
 
-  dev-deploy:
+  deploy:
     desc: Deploys zarf airgap package
     deps: [version:check]
     cmds:
@@ -59,15 +65,25 @@ tasks:
     - task: version
       vars: 
         VERSION: '{{ .VERSION }}'
-    - zarf package create yolo
+    - zarf package create zarf/yolo
 
-  yolo-dev-deploy:
+  yolo-deploy:
     desc: Deploys yolo zarf package
     deps: [version:check]
     cmds:
     - zarf package deploy --confirm --components=postgres --set DIREKTIV_INGRESS_HOSTPORT=true --set DIREKTIV_INGRESS_SERVICE_TYPE=ClusterIP --set DIREKTIV_IMAGE=direktiv --set DIREKTIV_TAG=dev  --set DIREKTIV_REGISTRY=localhost:5001 zarf-package-direktiv-full-no-images-amd64-{{ .VERSION }}.tar.zst
     requires:
       vars: [VERSION]
+
+  ee-create:
+    desc: Builds ee  zarf package for direktiv and dependencies
+    cmds: 
+    - task: version
+      vars: 
+        VERSION: '{{ .VERSION }}'
+    - pwd
+    - zarf package create direktiv-ee/zarf
+
 
   ee-yolo-create:
     desc: Builds ee yolo zarf package for direktiv and dependencies
@@ -81,6 +97,6 @@ tasks:
     desc: Deploys yolo zarf package for EE
     deps: [version:check]
     cmds:
-    - zarf package deploy --components=postgres,keycloak --set DIREKTIV_WITH_CERTIFICATE=true --set DIREKTIV_INGRESS_HOSTPORT=true --set DIREKTIV_INGRESS_SERVICE_TYPE=ClusterIP --set DIREKTIV_IMAGE=direktiv-ee --set DIREKTIV_TAG=dev  --set DIREKTIV_REGISTRY=localhost:5001 zarf-package-direktiv-ee-full-no-images-amd64-{{ .VERSION }}.tar.zst
+    - zarf package deploy --components=postgres,keycloak --set DIREKTIV_PORT=:9090 --set DIREKTIV_HOST=policy.test --set DIREKTIV_LICENSE_FILE=/home/jensg/go/src/github.com/direktiv/direktiv/direktiv-ee/license.json  --set DIREKTIV_WITH_CERTIFICATE=true --set DIREKTIV_INGRESS_HOSTPORT=true --set DIREKTIV_INGRESS_SERVICE_TYPE=ClusterIP --set DIREKTIV_IMAGE=direktiv-ee --set DIREKTIV_TAG=dev  --set DIREKTIV_REGISTRY=localhost:5001 zarf-package-direktiv-ee-full-no-images-amd64-{{ .VERSION }}.tar.zst
     requires:
       vars: [VERSION]
