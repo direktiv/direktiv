@@ -26,10 +26,11 @@ export const Text = ({
     <FormWrapper
       description={t("direktivPage.blockEditor.blockForms.text.description")}
       form={form}
-      onSubmit={onSubmit}
+      block={propBlock}
       action={action}
       path={path}
       blockType={propBlock.type}
+      onSubmit={onSubmit}
     >
       <Fieldset
         label={t("direktivPage.blockEditor.blockForms.text.contentLabel")}

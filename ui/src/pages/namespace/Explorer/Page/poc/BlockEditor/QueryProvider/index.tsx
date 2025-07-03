@@ -19,6 +19,7 @@ export const QueryProvider = ({
   block: propBlock,
   path,
   onSubmit,
+  onCancel,
 }: QueryProviderEditFormProps) => {
   const { t } = useTranslation();
   const form = useForm<QueryProviderType>({
@@ -32,10 +33,11 @@ export const QueryProvider = ({
         "direktivPage.blockEditor.blockForms.queryProvider.description"
       )}
       form={form}
-      onSubmit={onSubmit}
+      block={propBlock}
       action={action}
       path={path}
-      blockType={propBlock.type}
+      onSubmit={onSubmit}
+      onCancel={onCancel}
     >
       <Table
         data={form.getValues("queries")}

@@ -1,7 +1,3 @@
-import {
-  PageCompilerMode,
-  usePageEditor,
-} from "../../context/pageCompilerContext";
 import { ReactElement, Suspense } from "react";
 
 import { BlockPathType } from "..";
@@ -9,6 +5,7 @@ import { Loading } from "./Loading";
 import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
 import { twMergeClsx } from "~/util/helpers";
 import { useCreateBlock } from "../../context/utils/useCreateBlock";
+import { usePageStateContext } from "../../context/pageCompilerContext";
 
 type BlockListProps = {
   horizontal?: boolean;
@@ -16,27 +13,26 @@ type BlockListProps = {
   path: BlockPathType;
 };
 
-type BlockListComponentProps = BlockListProps & { mode?: PageCompilerMode };
+type BlockListComponentProps = BlockListProps;
 
-export const BlockList = ({
+const EditorBlockList = ({
   horizontal,
   children,
   path,
 }: BlockListComponentProps) => {
-  const { mode } = usePageEditor();
   const createBlock = useCreateBlock();
 
   return (
     <div
       className={twMergeClsx(
-        "gap-3",
+        "w-full gap-3",
         horizontal
           ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))]"
           : "flex flex-col"
       )}
     >
       <Suspense fallback={<Loading />}>
-        {mode === "edit" && !children.length && (
+        {!children.length && (
           <div
             className="self-center"
             onClick={(event) => event.stopPropagation()}
@@ -52,4 +48,30 @@ export const BlockList = ({
       </Suspense>
     </div>
   );
+};
+
+const VisitorBlockList = ({
+  horizontal,
+  children,
+}: BlockListComponentProps) => (
+  <div
+    className={twMergeClsx(
+      "w-full gap-3",
+      horizontal
+        ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))]"
+        : "flex flex-col"
+    )}
+  >
+    <Suspense fallback={<Loading />}>{children}</Suspense>
+  </div>
+);
+
+export const BlockList = (props: BlockListComponentProps) => {
+  const { mode } = usePageStateContext();
+
+  if (mode === "edit") {
+    return <EditorBlockList {...props} />;
+  }
+
+  return <VisitorBlockList {...props} />;
 };

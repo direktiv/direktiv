@@ -26,6 +26,7 @@ export const Headline = ({
   block: propBlock,
   path,
   onSubmit,
+  onCancel,
 }: HeadlineEditFormProps) => {
   const { t } = useTranslation();
   const form = useForm<HeadlineType>({
@@ -39,10 +40,11 @@ export const Headline = ({
         "direktivPage.blockEditor.blockForms.headline.description"
       )}
       form={form}
-      onSubmit={onSubmit}
+      block={propBlock}
       action={action}
       path={path}
-      blockType={propBlock.type}
+      onSubmit={onSubmit}
+      onCancel={onCancel}
     >
       <Fieldset
         label={t("direktivPage.blockEditor.blockForms.headline.labelLabel")}

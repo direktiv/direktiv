@@ -1756,7 +1756,7 @@
         "deleteButton": "Delete",
         "editButton": "Edit"
       },
-      "editDialog": {
+      "blockForm": {
         "title": "{{action}} {{type}} @{{path}}",
         "action": {
           "create": "create",
@@ -1764,6 +1764,7 @@
           "delete": "delete"
         },
         "type": {
+          "page": "page",
           "text": "text block",
           "headline": "headline block",
           "button": "button block",

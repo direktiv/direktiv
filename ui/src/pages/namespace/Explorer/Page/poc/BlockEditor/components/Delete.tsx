@@ -1,38 +1,53 @@
-import { DialogClose, DialogFooter } from "~/design/Dialog";
+import {
+  DialogClose,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/design/Dialog";
 
-import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../../PageCompiler/Block";
 import Button from "~/design/Button";
-import { DialogHeader } from "../components/Header";
+import { useBlock } from "../../PageCompiler/context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
 type BlockDeleteFormProps = {
-  action: "delete";
   path: BlockPathType;
-  type: AllBlocksType["type"];
-  onSubmit: (path: BlockPathType) => void;
+  onCancel: () => void;
+  onSubmit: () => void;
 };
 
 export const BlockDeleteForm = ({
-  action,
-  type,
   path,
+  onCancel,
   onSubmit,
 }: BlockDeleteFormProps) => {
+  const block = useBlock(path);
   const { t } = useTranslation();
 
   return (
     <>
-      <DialogHeader action={action} path={path} type={type} />
-      <div>{t("direktivPage.blockEditor.delete.warning")}</div>
+      <DialogHeader>
+        <DialogTitle>
+          <div className="flex flex-row justify-between">
+            {t("direktivPage.blockEditor.blockForm.title", {
+              path: path.join("."),
+              action: t("direktivPage.blockEditor.blockForm.action.delete"),
+              type: t(`direktivPage.blockEditor.blockForm.type.${block.type}`),
+            })}
+          </div>
+        </DialogTitle>
+      </DialogHeader>
+
+      <div className="my-3">{t("direktivPage.blockEditor.delete.warning")}</div>
+
       <DialogFooter>
         <DialogClose asChild>
-          <Button variant="ghost">
+          <Button variant="ghost" onClick={() => onCancel()}>
             {t("direktivPage.blockEditor.generic.cancelButton")}
           </Button>
         </DialogClose>
         <DialogClose asChild>
-          <Button variant="primary" onClick={() => onSubmit(path)}>
+          <Button variant="primary" onClick={() => onSubmit()}>
             {t("direktivPage.blockEditor.generic.confirmButton")}
           </Button>
         </DialogClose>
