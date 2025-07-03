@@ -78,7 +78,7 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
       type: "dialog",
       label: t("direktivPage.blockEditor.blockName.dialog"),
       icon: RectangleHorizontal,
-      allow: !findInBranch({
+      allow: !findAncestor({
         page,
         path,
         match: (block) => block.type === "dialog",
