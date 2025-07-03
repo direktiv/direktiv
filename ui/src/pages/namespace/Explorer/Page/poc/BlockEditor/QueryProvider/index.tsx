@@ -4,8 +4,8 @@ import {
 } from "../../schema/blocks/queryProvider";
 
 import { BlockEditFormProps } from "..";
-import { DialogFooter } from "../components/Footer";
-import { DialogHeader } from "../components/Header";
+import { Footer } from "../components/Footer";
+import { Header } from "../components/Header";
 import { QueryForm } from "./QueryForm";
 import { Table } from "../components/FormElements/Table";
 import { queryToUrl } from "../utils";
@@ -20,6 +20,7 @@ export const QueryProvider = ({
   block: propBlock,
   path,
   onSubmit,
+  onCancel,
 }: QueryProviderEditFormProps) => {
   const { t } = useTranslation();
   const form = useForm<QueryProviderType>({
@@ -28,8 +29,8 @@ export const QueryProvider = ({
   });
 
   return (
-    <>
-      <DialogHeader action={action} path={path} type={propBlock.type} />
+    <div className="flex flex-col gap-4 p-1">
+      <Header action={action} path={path} block={propBlock} />
       <div className="text-gray-10">
         {t("direktivPage.blockEditor.blockForms.queryProvider.description")}
       </div>
@@ -57,7 +58,7 @@ export const QueryProvider = ({
           />
         )}
       />
-      <DialogFooter onSubmit={() => onSubmit(form.getValues())} />
-    </>
+      <Footer onSubmit={() => onSubmit(form.getValues())} onCancel={onCancel} />
+    </div>
   );
 };

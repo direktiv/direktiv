@@ -1,29 +1,34 @@
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
-import { DirektivPagesType } from "../schema";
 import { Headline } from "./Headline";
+import { InlineBlockSidePanel } from "./InlineBlockSidePanel";
+import { Key } from "react";
 import { QueryProvider } from "./QueryProvider";
 import { Text } from "../BlockEditor/Text";
 import { isPage } from "../PageCompiler/context/utils";
 import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
+import { usePageEditorPanel } from "./EditorPanelProvider";
 
 export type BlockEditorAction = "create" | "edit" | "delete";
 
 export type BlockEditFormProps<T> = {
+  key: Key; // needed to ensure forms are initialized per block
   action: BlockEditorAction;
   block: T;
   path: BlockPathType;
   onSubmit: (newBlock: T) => void;
+  onCancel: () => void;
 };
 
 type BlockFormProps = {
-  block: AllBlocksType | DirektivPagesType;
   action: BlockEditorAction;
+  block: AllBlocksType;
   path: BlockPathType;
 };
 
-export const BlockForm = ({ action, path, block }: BlockFormProps) => {
+export const BlockForm = ({ action, block, path }: BlockFormProps) => {
   const { addBlock, updateBlock } = usePageEditor();
+  const { setPanel } = usePageEditorPanel();
 
   if (isPage(block)) {
     throw Error("Unexpected page object when parsing block");
@@ -38,36 +43,59 @@ export const BlockForm = ({ action, path, block }: BlockFormProps) => {
         updateBlock(path, newBlock);
         break;
     }
+    setPanel(null);
   };
+
+  const handleClose = () => setPanel(null);
+
+  // Key needed to instantiate new component per block and action
+  const key = `${action}-${path.join(".")}`;
 
   switch (block.type) {
     case "text": {
       return (
         <Text
+          key={key}
           action={action}
           block={block}
           path={path}
           onSubmit={handleUpdate}
+          onCancel={handleClose}
         />
       );
     }
     case "headline": {
       return (
         <Headline
+          key={key}
           action={action}
           block={block}
           path={path}
           onSubmit={handleUpdate}
+          onCancel={handleClose}
         />
       );
     }
     case "query-provider": {
       return (
         <QueryProvider
+          key={key}
           action={action}
           block={block}
           path={path}
           onSubmit={handleUpdate}
+          onCancel={handleClose}
+        />
+      );
+    }
+    case "card":
+    case "columns": {
+      return (
+        <InlineBlockSidePanel
+          key={key}
+          action={action}
+          block={block}
+          path={path}
         />
       );
     }
