@@ -1718,7 +1718,7 @@
           "description": "A Table block displays a set of data in a table format. It can be used to display data from a Query Provider",
           "data": {
             "idLabel": "loop ID",
-            "idPlaceholder": "unique identifier name to reference a row in the table",
+            "idPlaceholder": "unique identifier to reference the data for the current row",
             "dataLabel": "data",
             "dataPlaceholder": "Path to an array for the table (e.g. query.companies.data)"
           },
