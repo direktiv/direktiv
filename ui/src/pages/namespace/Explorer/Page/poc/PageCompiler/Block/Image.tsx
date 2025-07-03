@@ -8,6 +8,6 @@ type ImageProps = {
 export const Image = ({ blockProps }: ImageProps) => {
   const { src, width, height } = blockProps;
   const interpolateString = useStringInterpolation();
-  const interPolatedSrc = interpolateString(src);
-  return <img src={interPolatedSrc} width={width} height={height} />;
+  const interpolatedSrc = interpolateString(src);
+  return <img src={interpolatedSrc} width={width} height={height} />;
 };
