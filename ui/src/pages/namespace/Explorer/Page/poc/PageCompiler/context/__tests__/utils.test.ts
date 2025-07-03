@@ -334,6 +334,28 @@ describe("findAncestor", () => {
     expect(result).toEqual(false);
   });
 
+  test("it throws an error if depth is 0", () => {
+    expect(() =>
+      findAncestor({
+        page: complex,
+        path: [2, 0, 0],
+        match: (block) => block.type && block.type === "column",
+        depth: 0,
+      })
+    ).toThrow("depth must be undefined or >= 1");
+  });
+
+  test("it throws an error if depth is negative", () => {
+    expect(() =>
+      findAncestor({
+        page: complex,
+        path: [2, 0, 0],
+        match: (block) => block.type && block.type === "column",
+        depth: -1,
+      })
+    ).toThrow("depth must be undefined or >= 1");
+  });
+
   test("it evaluates as false when path is [], as there are no parents", () => {
     const page = {
       direktiv_api: "page/v1",

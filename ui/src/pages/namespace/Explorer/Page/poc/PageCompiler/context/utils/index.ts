@@ -142,6 +142,9 @@ export const findAncestor = ({
   match,
   depth,
 }: FindInBranchConfig) => {
+  if (depth !== undefined && !(depth >= 1)) {
+    throw new Error("depth must be undefined or >= 1");
+  }
   const limit = depth !== undefined ? path.length - depth : 0;
   for (let i = path.length - 1; i >= limit; i--) {
     const target = findBlock(page, path.slice(0, i));
