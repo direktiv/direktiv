@@ -39,7 +39,7 @@ export const FormWrapper = <T extends FieldValues>({
     <form
       onSubmit={handleSubmit(onSubmit)}
       id={formId}
-      className="flex flex-col gap-3"
+      className="flex flex-col gap-4"
     >
       <Header action={action} path={path} block={block} />
       <div className="text-gray-10 dark:text-gray-10">{description}</div>

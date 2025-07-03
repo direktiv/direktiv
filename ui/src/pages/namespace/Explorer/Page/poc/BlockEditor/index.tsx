@@ -91,7 +91,6 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
         />
       );
     }
-
     case "card":
     case "columns": {
       return (
