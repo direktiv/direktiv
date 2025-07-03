@@ -3,17 +3,18 @@ import FormErrors, { errorsType } from "~/components/FormErrors";
 
 import { AllBlocksType } from "../../schema/blocks";
 import { BlockEditFormProps } from "..";
-import { DialogFooter } from "./Footer";
-import { DialogHeader } from "./Header";
+import { Footer } from "./Footer";
+import { Header } from "./Header";
 import { ReactNode } from "react";
 
 interface FormWrapperProps<T extends FieldValues> {
   form: UseFormReturn<T>;
   description: string;
   onSubmit: (data: T) => void;
+  onCancel: () => void;
   action: BlockEditFormProps<T>["action"];
   path: BlockEditFormProps<T>["path"];
-  blockType: AllBlocksType["type"];
+  block: AllBlocksType;
   children: ReactNode;
 }
 
@@ -24,9 +25,10 @@ export const FormWrapper = <T extends FieldValues>({
   onSubmit,
   action,
   path,
-  blockType,
+  block,
   description,
   children,
+  onCancel,
 }: FormWrapperProps<T>) => {
   const {
     handleSubmit,
@@ -39,11 +41,11 @@ export const FormWrapper = <T extends FieldValues>({
       id={formId}
       className="flex flex-col gap-3"
     >
-      <DialogHeader action={action} path={path} type={blockType} />
+      <Header action={action} path={path} block={block} />
       <div className="text-gray-10 dark:text-gray-10">{description}</div>
       {errors && <FormErrors errors={errors as errorsType} />}
       {children}
-      <DialogFooter formId={formId} />
+      <Footer formId={formId} onCancel={onCancel} />
     </form>
   );
 };

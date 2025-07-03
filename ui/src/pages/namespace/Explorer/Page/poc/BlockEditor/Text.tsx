@@ -15,6 +15,7 @@ export const Text = ({
   block: propBlock,
   path,
   onSubmit,
+  onCancel,
 }: TextBlockEditFormProps) => {
   const { t } = useTranslation();
   const form = useForm<TextType>({
@@ -29,8 +30,8 @@ export const Text = ({
       block={propBlock}
       action={action}
       path={path}
-      blockType={propBlock.type}
       onSubmit={onSubmit}
+      onCancel={onCancel}
     >
       <Fieldset
         label={t("direktivPage.blockEditor.blockForms.text.contentLabel")}

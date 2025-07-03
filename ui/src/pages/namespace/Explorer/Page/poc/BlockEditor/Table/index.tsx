@@ -18,6 +18,7 @@ export const Table = ({
   block: propBlock,
   path,
   onSubmit,
+  onCancel,
 }: TableEditFormProps) => {
   const { t } = useTranslation();
   const form = useForm<TableType>({
@@ -29,10 +30,11 @@ export const Table = ({
     <FormWrapper
       description={t("direktivPage.blockEditor.blockForms.table.description")}
       form={form}
-      onSubmit={onSubmit}
+      block={propBlock}
       action={action}
       path={path}
-      blockType={propBlock.type}
+      onSubmit={onSubmit}
+      onCancel={onCancel}
     >
       <Fieldset
         label={t("direktivPage.blockEditor.blockForms.table.data.idLabel")}
