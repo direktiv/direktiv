@@ -1710,6 +1710,7 @@
       },
       "blockForm": {
         "title": "{{action}} {{type}} @{{path}}",
+        "noFormDescription": "This block has no properties other than child blocks, which you can add/remove in the page preview.",
         "action": {
           "create": "create",
           "edit": "edit",

@@ -1,6 +1,7 @@
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
 import { Headline } from "./Headline";
+import { InlineBlockSidePanel } from "./InlineBlockSidePanel";
 import { Key } from "react";
 import { QueryProvider } from "./QueryProvider";
 import { Text } from "../BlockEditor/Text";
@@ -84,6 +85,17 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
           path={path}
           onSubmit={handleUpdate}
           onCancel={handleClose}
+        />
+      );
+    }
+    case "card":
+    case "columns": {
+      return (
+        <InlineBlockSidePanel
+          key={key}
+          action={action}
+          block={block}
+          path={path}
         />
       );
     }
