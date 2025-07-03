@@ -1705,8 +1705,7 @@
         }
       },
       "contextMenu": {
-        "deleteButton": "Delete",
-        "editButton": "Edit"
+        "deleteButton": "Delete"
       },
       "blockForm": {
         "title": "{{action}} {{type}} @{{path}}",
