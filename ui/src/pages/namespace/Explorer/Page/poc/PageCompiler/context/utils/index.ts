@@ -122,28 +122,50 @@ export const deleteBlockFromPage = (
 
 export const moveBlockWithinPage = (
   page: DirektivPagesType,
-  fromPath: BlockPathType,
-  toPath: BlockPathType,
+  originPath: BlockPathType,
+  targetPath: BlockPathType,
   block: AllBlocksType
 ): DirektivPagesType => {
-  const fromIndex = pathToId(fromPath);
-  const toIndex = pathToId(toPath);
+  const originIndex = originPath[originPath.length - 1];
+  const targetIndex = targetPath[targetPath.length - 1];
 
-  if (typeof fromIndex !== "string" || typeof toIndex !== "string") {
+  if (typeof originIndex !== "number" || typeof targetIndex !== "number") {
     throw new Error(
-      `Invalid fromPath or toPath — fromIndex: ${fromIndex}, toIndex: ${toIndex}`
+      `Invalid originPath or targetPath — originIndex: ${originIndex}, targetIndex: ${targetIndex}`
     );
   }
 
-  const newPage = addBlockToPage(page, toPath, block, false);
-  return newPage;
+  if (targetIndex === undefined) {
+    throw new Error("Invalid path, could not extract index for target block");
+  }
+
+  const originParent = originPath.slice(0, -1).join("-");
+  const targetParent = targetPath.slice(0, -1).join("-");
+
+  const movingWithinSameParent = originParent === targetParent;
+
+  const movingBefore = originIndex > targetIndex || originParent > targetParent;
+  const adjustedOriginIndex =
+    movingWithinSameParent && movingBefore ? originIndex + 1 : originIndex;
+
+  const replacedLastIndexPath: BlockPathType = [
+    ...originPath.slice(0, -1),
+    adjustedOriginIndex,
+  ];
+
+  const pageWithAddedBlock = addBlockToPage(page, targetPath, block, false);
+  const pageWithDeletedBlock = deleteBlockFromPage(
+    pageWithAddedBlock,
+    replacedLastIndexPath
+  );
+  return pageWithDeletedBlock;
 };
 
-export const idToPath = (id: string) => {
+export const idToPath = (id: string): BlockPathType => {
   const arrayOfStrings = id.split("-");
   const path = arrayOfStrings.map(Number);
 
-  return path satisfies BlockPathType;
+  return path;
 };
 
 export const pathToId = (path: BlockPathType) => {
