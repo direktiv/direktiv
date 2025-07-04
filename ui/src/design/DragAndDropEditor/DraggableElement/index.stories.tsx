@@ -10,5 +10,5 @@ export const Default = () => {
     type: "button",
     label: "Button",
   };
-  return <DraggableElement element={block} name="1" />;
+  return <DraggableElement blockPath={[1]} element={block} id="1" />;
 };

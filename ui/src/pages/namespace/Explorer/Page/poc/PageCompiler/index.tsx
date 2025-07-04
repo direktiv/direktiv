@@ -1,16 +1,16 @@
-import { DirektivPagesSchema, DirektivPagesType } from "../schema";
+import { Block, BlockPathType } from "./Block";
 import {
   PageCompilerContextProvider,
   PageCompilerProps,
 } from "./context/pageCompilerContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { addBlockToPage, moveBlockWithinPage } from "./context/utils";
 
 import { AllBlocksType } from "../schema/blocks";
-import { Block } from "./Block";
 import { BlockDialogProvider } from "../BlockEditor/BlockDialogProvider";
 import { BlockList } from "./Block/utils/BlockList";
+import { DirektivPagesSchema } from "../schema";
 import { DndContext } from "~/design/DragAndDropEditor/Context.tsx";
-import { DroppableSeparator } from "~/design/DragAndDropEditor/DroppableSeparator";
 import { ParsingError } from "./Block/utils/ParsingError";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,24 +41,17 @@ export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
     );
   }
 
-  const onMove = (name: string, target: string, element: AllBlocksType) => {
-    const blocks = [...page.blocks];
+  const onMove = (
+    origin: BlockPathType | null,
+    target: BlockPathType,
+    block: AllBlocksType
+  ) => {
+    const updatedPage =
+      origin === null
+        ? addBlockToPage(page, target, block)
+        : moveBlockWithinPage(page, origin, target, block);
 
-    const currentIndex = Number(name);
-    blocks.splice(currentIndex, 1);
-
-    const targetIndex = Number(target);
-    const insertIndex =
-      currentIndex < targetIndex ? targetIndex - 1 : targetIndex;
-
-    blocks.splice(insertIndex, 0, element);
-
-    const newPage: DirektivPagesType = {
-      ...page,
-      blocks,
-    };
-
-    setPage(newPage);
+    setPage(updatedPage);
   };
 
   return (
@@ -69,11 +62,7 @@ export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
             <BlockList path={[]}>
               {page.blocks.map((block, index) => (
                 <div key={index}>
-                  {index === 0 && (
-                    <DroppableSeparator id={String(index)} position="before" />
-                  )}
                   <Block key={index} block={block} blockPath={[index]} />
-                  <DroppableSeparator id={String(index + 1)} position="after" />
                 </div>
               ))}
             </BlockList>

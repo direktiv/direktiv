@@ -2,16 +2,19 @@ import { FC, PropsWithChildren } from "react";
 import { useDndContext, useDroppable } from "@dnd-kit/core";
 
 import Badge from "~/design/Badge";
+import { BlockPathType } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/Block";
 import { PlusCircle } from "lucide-react";
 import { twMergeClsx } from "~/util/helpers";
 
 type DroppableProps = PropsWithChildren & {
   id: string;
+  blockPath: BlockPathType;
   position: "before" | "after" | undefined;
 };
 
 export const DroppableSeparator: FC<DroppableProps> = ({
   id,
+  blockPath,
   children,
   position,
 }) => {
@@ -35,12 +38,18 @@ export const DroppableSeparator: FC<DroppableProps> = ({
       )}
     >
       {children}
-      {canDrop && <DropZone id={id} isOver={isOver} />}
+      {canDrop && <DropZone id={id} isOver={isOver} blockPath={blockPath} />}
     </div>
   );
 };
 
-const DropZone = ({ isOver }: { isOver: boolean; id: string }) => (
+const DropZone = ({
+  isOver,
+}: {
+  isOver: boolean;
+  id: string;
+  blockPath: BlockPathType;
+}) => (
   <div className="absolute inset-0 flex flex-col items-center justify-center">
     <div className="z-10 flex flex-col">
       <Badge

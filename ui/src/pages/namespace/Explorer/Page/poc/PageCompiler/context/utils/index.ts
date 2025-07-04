@@ -120,6 +120,37 @@ export const deleteBlockFromPage = (
   throw new Error("Could not remove block");
 };
 
+export const moveBlockWithinPage = (
+  page: DirektivPagesType,
+  fromPath: BlockPathType,
+  toPath: BlockPathType,
+  block: AllBlocksType
+): DirektivPagesType => {
+  const fromIndex = pathToId(fromPath);
+  const toIndex = pathToId(toPath);
+
+  if (typeof fromIndex !== "string" || typeof toIndex !== "string") {
+    throw new Error(
+      `Invalid fromPath or toPath — fromIndex: ${fromIndex}, toIndex: ${toIndex}`
+    );
+  }
+
+  const newPage = addBlockToPage(page, toPath, block, false);
+  return newPage;
+};
+
+export const idToPath = (id: string) => {
+  const arrayOfStrings = id.split("-");
+  const path = arrayOfStrings.map(Number);
+
+  return path satisfies BlockPathType;
+};
+
+export const pathToId = (path: BlockPathType) => {
+  const id = path.join("-");
+  return id;
+};
+
 type PathOrNull = BlockPathType | null;
 
 export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
