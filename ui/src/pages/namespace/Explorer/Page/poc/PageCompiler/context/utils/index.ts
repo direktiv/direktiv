@@ -3,8 +3,11 @@ import { DirektivPagesSchema, DirektivPagesType } from "../../../schema";
 import { BlockPathType } from "../../Block";
 import { CardType } from "../../../schema/blocks/card";
 import { ColumnsType } from "../../../schema/blocks/columns";
+import { DialogType } from "../../../schema/blocks/dialog";
 import { HeadlineType } from "../../../schema/blocks/headline";
+import { LoopType } from "../../../schema/blocks/loop";
 import { QueryProviderType } from "../../../schema/blocks/queryProvider";
+import { TableType } from "../../../schema/blocks/table";
 import { TextType } from "../../../schema/blocks/text";
 import { clonePage } from "../../../BlockEditor/utils";
 import { z } from "zod";
@@ -189,14 +192,17 @@ type FindInBranchConfig = {
   depth?: number;
 };
 
-export const findInBranch = ({
+export const findAncestor = ({
   page,
   path,
   match,
   depth,
 }: FindInBranchConfig) => {
+  if (depth !== undefined && !(depth >= 1)) {
+    throw new Error("depth must be undefined or >= 1");
+  }
   const limit = depth !== undefined ? path.length - depth : 0;
-  for (let i = path.length; i >= limit; i--) {
+  for (let i = path.length - 1; i >= limit; i--) {
     const target = findBlock(page, path.slice(0, i));
     if (match(target)) {
       return true;
@@ -244,6 +250,33 @@ export const getBlockTemplate = (type: AllBlocksType["type"]) => {
         blocks: [],
         queries: [],
       } satisfies QueryProviderType;
+    case "table":
+      return {
+        type: "table",
+        data: {
+          type: "loop",
+          id: "",
+          data: "",
+        },
+        actions: [],
+        columns: [],
+      } satisfies TableType;
+    case "dialog":
+      return {
+        type: "dialog",
+        trigger: {
+          type: "button",
+          label: "",
+        },
+        blocks: [],
+      } satisfies DialogType;
+    case "loop":
+      return {
+        type: "loop",
+        id: "",
+        data: "",
+        blocks: [],
+      } satisfies LoopType;
     default:
       throw new Error(`${type} is not implemented yet`);
   }

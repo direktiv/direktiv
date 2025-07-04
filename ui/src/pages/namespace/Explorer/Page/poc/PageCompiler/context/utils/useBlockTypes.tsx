@@ -4,12 +4,15 @@ import {
   Database,
   Heading1,
   LucideIcon,
+  RectangleHorizontal,
+  Repeat2,
+  Table,
   Text,
 } from "lucide-react";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import { BlockPathType } from "../../Block";
-import { findInBranch } from ".";
+import { findAncestor } from ".";
 import { usePage } from "../pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
@@ -49,7 +52,7 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
       type: "columns",
       label: t("direktivPage.blockEditor.blockName.columns"),
       icon: Columns2,
-      allow: !findInBranch({
+      allow: !findAncestor({
         page,
         path,
         match: (block) => block.type === "columns",
@@ -59,11 +62,33 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
       type: "card",
       label: t("direktivPage.blockEditor.blockName.card"),
       icon: Captions,
-      allow: !findInBranch({
+      allow: !findAncestor({
         page,
         path,
         match: (block) => block.type === "card",
       }),
+    },
+    {
+      type: "table",
+      label: t("direktivPage.blockEditor.blockName.table"),
+      icon: Table,
+      allow: true,
+    },
+    {
+      type: "dialog",
+      label: t("direktivPage.blockEditor.blockName.dialog"),
+      icon: RectangleHorizontal,
+      allow: !findAncestor({
+        page,
+        path,
+        match: (block) => block.type === "dialog",
+      }),
+    },
+    {
+      type: "loop",
+      label: t("direktivPage.blockEditor.blockName.loop"),
+      icon: Repeat2,
+      allow: true,
     },
   ] satisfies BlockTypeConfig[];
 

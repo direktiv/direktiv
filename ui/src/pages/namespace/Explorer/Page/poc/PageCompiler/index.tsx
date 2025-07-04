@@ -5,10 +5,10 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { Block } from "./Block";
-import { BlockDialogProvider } from "../BlockEditor/BlockDialogProvider";
 import { BlockList } from "./Block/utils/BlockList";
 import { DirektivPagesSchema } from "../schema";
 import { DndContextProvider } from "../DndContextProvider";
+import { EditorPanelLayoutProvider } from "../BlockEditor/EditorPanelProvider";
 import { ParsingError } from "./Block/utils/ParsingError";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -43,15 +43,13 @@ export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
     <PageCompilerContextProvider setPage={setPage} page={page} mode={mode}>
       <QueryClientProvider client={queryClient}>
         <DndContextProvider setPage={setPage} page={page}>
-          <BlockDialogProvider>
+          <EditorPanelLayoutProvider>
             <BlockList path={[]}>
               {page.blocks.map((block, index) => (
-                <div key={index}>
-                  <Block key={index} block={block} blockPath={[index]} />
-                </div>
+                <Block key={index} block={block} blockPath={[index]} />
               ))}
             </BlockList>
-          </BlockDialogProvider>
+          </EditorPanelLayoutProvider>
         </DndContextProvider>
       </QueryClientProvider>
     </PageCompilerContextProvider>

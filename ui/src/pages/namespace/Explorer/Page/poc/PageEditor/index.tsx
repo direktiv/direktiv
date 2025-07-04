@@ -56,13 +56,11 @@ const PageEditor = ({ isPending, page: pageProp, onSave }: PageEditorProps) => {
             />
           </Card>
         )}
-        <Card className="flex flex-col gap-4 p-4">
-          <PageCompiler
-            mode={mode}
-            page={page}
-            setPage={(page) => setPage(page)}
-          />
-        </Card>
+        <PageCompiler
+          mode={mode}
+          page={page}
+          setPage={(page) => setPage(page)}
+        />
       </div>
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="flex gap-5 text-sm">
