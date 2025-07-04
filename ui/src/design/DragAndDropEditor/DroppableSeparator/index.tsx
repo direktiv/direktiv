@@ -58,8 +58,7 @@ const DropZone = ({
           isOver && "bg-gray-10 dark:bg-gray-dark-10"
         )}
       >
-        <PlusCircle className="mr-2" size={16} />
-        {isOver ? <>Insert here</> : <>...</>}
+        <PlusCircle size={16} />
       </Badge>
     </div>
   </div>
