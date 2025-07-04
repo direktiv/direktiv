@@ -1,16 +1,14 @@
-import { Block, BlockPathType } from "./Block";
 import {
   PageCompilerContextProvider,
   PageCompilerProps,
 } from "./context/pageCompilerContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { addBlockToPage, moveBlockWithinPage } from "./context/utils";
 
-import { AllBlocksType } from "../schema/blocks";
+import { Block } from "./Block";
 import { BlockDialogProvider } from "../BlockEditor/BlockDialogProvider";
 import { BlockList } from "./Block/utils/BlockList";
 import { DirektivPagesSchema } from "../schema";
-import { DndContext } from "~/design/DragAndDropEditor/Context.tsx";
+import { DndContextProvider } from "../DndContextProvider";
 import { ParsingError } from "./Block/utils/ParsingError";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,23 +39,10 @@ export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
     );
   }
 
-  const onMove = (
-    origin: BlockPathType | null,
-    target: BlockPathType,
-    block: AllBlocksType
-  ) => {
-    const updatedPage =
-      origin === null
-        ? addBlockToPage(page, target, block)
-        : moveBlockWithinPage(page, origin, target, block);
-
-    setPage(updatedPage);
-  };
-
   return (
     <PageCompilerContextProvider setPage={setPage} page={page} mode={mode}>
       <QueryClientProvider client={queryClient}>
-        <DndContext onMove={onMove}>
+        <DndContextProvider setPage={setPage} page={page}>
           <BlockDialogProvider>
             <BlockList path={[]}>
               {page.blocks.map((block, index) => (
@@ -67,7 +52,7 @@ export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
               ))}
             </BlockList>
           </BlockDialogProvider>
-        </DndContext>
+        </DndContextProvider>
       </QueryClientProvider>
     </PageCompilerContextProvider>
   );
