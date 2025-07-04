@@ -1,31 +1,40 @@
+import {
+  AllBlocks,
+  AllBlocksType,
+} from "~/pages/namespace/Explorer/Page/poc/schema/blocks";
 import { DndContext as DndKitContext, DragEndEvent } from "@dnd-kit/core";
 import { FC, PropsWithChildren } from "react";
 
-import { AllBlocksType } from "~/pages/namespace/Explorer/Page/poc/schema/blocks";
 import { BlockPathType } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/Block";
 import { idToPath } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/utils";
 
 type DndContextProps = PropsWithChildren & {
   onMove: (
-    draggableName: BlockPathType,
-    droppableName: BlockPathType,
+    origin: BlockPathType,
+    target: BlockPathType,
     block: AllBlocksType
   ) => void;
 };
 
 export const DndContext: FC<DndContextProps> = ({ children, onMove }) => {
   const onDragEnd = (e: DragEndEvent) => {
-    const draggableName = idToPath(String(e.active.id));
-    const overId = String(e.over?.id);
+    if (e.active.id != null && e.over?.id != null) {
+      const activeId = String(e.active.id);
+      const overId = String(e.over?.id);
 
-    if (draggableName && overId) {
-      const droppableName = idToPath(overId);
+      const origin = idToPath(activeId);
+      const target = idToPath(overId);
 
-      const block = e.active.data.current as AllBlocksType;
+      if (!Array.isArray(origin) || origin.length === 0) return;
+      if (!Array.isArray(target) || target.length === 0) return;
 
-      if (draggableName && droppableName && block) {
-        onMove(draggableName, droppableName, block);
-      }
+      const data = e.active.data.current;
+      const parsed = AllBlocks.safeParse(data);
+      if (!parsed.success) return;
+
+      const block = parsed.data;
+
+      onMove(origin, target, block);
     }
   };
 
