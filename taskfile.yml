@@ -23,14 +23,3 @@ tasks:
     - task: build:build
     - task: cluster:install
     silent: true
-
-  multi:
-    desc: Multi-node Kind cluster with Direktiv. Run with TELEMETRY=true to enable telemetry with grafana. 
-    deps: [version:check] 
-    cmds:
-    - task: cluster:multi-node
-    - task: cluster:docker-proxy-create
-    - task: cluster:database
-    - task: build:build
-    - task: cluster:install
-    silent: true

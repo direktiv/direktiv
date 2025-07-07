@@ -31,16 +31,47 @@ This project uses `taskfile.dev` for building artifacts. One command builds an a
 
 Packages can be deployed with one command `zarf package deploy zarf-package-direktiv-full-XXX`. Deployment parameters can be set with a `--set` argument but a safer way of providing deployment variables is using a `zarf-config.yaml`. 
 
-
-certificates / direktiv-host
+TLS can be enabled by using `DIREKTIV_WITH_CERTIFICATE`. The Zarf installer uses `server.key` amd `server.crt` as server certificates. If `server.key` does not exist a self-signed certificate will be generated. If certificates are being used the value `DIREKTIV_HOST` has to be set to the DNS name of the cluster. 
 
 ### Installation configuration
 
+Deployments can be configured with a `zarf-config.yaml` file in the installation directory. The components to be installed and installation values can be configured. The following is an example how to install a development version with Zarf to the cluster: 
+
+```
+log_level : 'info'
+
+package:
+  deploy:
+    components: 'direktiv,postgres,linkerd'
+    set:
+      direktiv_request_timeout: 28800
+      direktiv_ingress_hostport: "true"
+      direktiv_ingress_service_type: ClusterIP
+      direktiv_tag: dev
+      direktiv_registry: localhost:5001      
+      direktiv_function_sizes: |
+        limits:
+          memory:
+            small: 256
+            medium: 512
+            large: 2048
+          cpu:
+            small: 300m
+            medium: 450m
+            large: 2000m
+          disk:
+            small: 128
+            medium: 256
+            large: 1024
+      direktiv_image: direktiv
+```
+
 ### Developing Packages
 
-To develop and change the Zarf package there are two commands to reset the KIND cluster and deploy a package:
+To develop and change the Zarf package there are three commands to reset the KIND cluster and deploy a package:
 
 - `cluster:one-node`
+- `zarf-create` or `zarf-yolo-create`
 - `zarf:deploy` or `zarf:yolo-deploy`
 
 

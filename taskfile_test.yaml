@@ -3,7 +3,11 @@ version: '3'
 includes:
   build:  
     taskfile: taskfile_build.yaml
+    internal: true  
 
+vars: 
+  DIREKTIV_HOST: '{{.DIREKTIV_HOST | default "localhost:9090"}}'
+  
 tasks:
   scan-ui:
     desc: Runs trivy for the UI folder
@@ -32,21 +36,54 @@ tasks:
     dir: pkg
     cmds:
     - go test ./...
+  
+  api:
+    desc: Runs API tests against server set with `DIREKTIV_HOST`.
+    cmds:
+    - kubectl wait --for=condition=ready pod -l "app=direktiv-flow"
+    - |
+      docker run -it --rm \
+      -v `pwd`/tests:/tests \
+      -e 'DIREKTIV_HOST=http://{{ .DIREKTIV_HOST }}' \
+      -e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
+      --network=host \
+      node:lts-alpine3.18 npm --prefix "/tests" run jest -- ${JEST_PREFIX} --runInBand
+
+  lint:
+    desc: Runs Go linting
+    cmds:
+    - |
+      docker run \
+      --rm \
+      --tty \
+      -v `pwd`:/app \
+      -w /app \
+      -v /tmp/golangci:/root/.cache:rw \
+      -e GOCACHE=/root/.cache/  \
+      -e GOLANGCI_LINT_CACHE=/root/.cache/ \
+      -e GOMODCACHE=/root/.cache/go/pkg/mod  \
+      golangci/golangci-lint:v2.2.1 golangci-lint run --verbose --config /app/.golangci.yaml
 
   playwright:
     desc: sjsjs
     cmds: 
     - |
-      docker run -v {{ .PWD }}/ui:/app/ui \
+      docker run \
+      -v {{ .PWD }}/ui:/app/ui \
+      -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
+        -e PLAYWRIGHT_USE_VITE=FALSE \
+        -e PLAYWRIGHT_UI_BASE_URL=http://{{ .DIREKTIV_HOST }} \
+        -e PLAYWRIGHT_SHARD=1/1 \
+        -e PLAYWRIGHT_CI=TRUE \
       -w /app/ui \
       --net=host \
-      --ipc=host \
-      -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
-      -e PLAYWRIGHT_USE_VITE=FALSE \
-      -e PLAYWRIGHT_UI_BASE_URL=http://127.0.0.1:9090 \
-      -e PLAYWRIGHT_SHARD=1/1 \
-      -e PLAYWRIGHT_CI=TRUE \
-      mcr.microsoft.com/playwright:v1.53.0-noble 
+      node:20-slim \
+      bash -c "\
+        corepack enable && \
+        corepack prepare pnpm@9.15.4 --activate && \
+        pnpm install && \
+        pnpm exec playwright install --with-deps chromium && \
+        pnpm exec playwright test --shard=1/1 --project \"chromium\" --reporter=line"
     vars:
       PWD:
         sh: pwd

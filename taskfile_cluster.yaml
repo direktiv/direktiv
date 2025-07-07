@@ -2,6 +2,7 @@ version: '3'
 
 vars: 
   TELEMETRY: '{{.TELEMETRY | default "false"}}'
+  TLS: '{{.TLS | default "false"}}'
 
 tasks:
   clean:
@@ -9,31 +10,20 @@ tasks:
     cmds:
     - kind delete clusters --all
 
-  enable-tls:
-    desc: Switches kind to port 443
-    cmds:
-    - sed -i "s/80/443/" kind-config.yaml
-    - sed -i "s/80/443/" kind-config-cluster.yaml
-
-  disable-tls:
-    desc: Switches kind to port 443
-    cmds:
-    - sed -i "s/443/80/" kind-config.yaml
-    - sed -i "s/443/80/" kind-config-cluster.yaml
-
-
   one-node:
-    desc: Setup empty one node kind cluster
+    desc: Setup empty one node kind cluster. Use `TLS` to enable 443 instead of port 80.
     cmds:
     - task: clean
-    - kind create cluster --config kind-config.yaml
+    - |
+      {{- if eq .TLS "true" -}} sed "s/80/443/" kind-config.yaml  | {{- end -}} kind create cluster --config kind-config.yaml
     - task: metrics-server
 
   multi-node:
-    desc: Setup empty multi-node kind cluster
+    desc: Setup empty multi-node kind cluster. Use `TLS` to enable 443 instead of port 80.
     cmds:
     - task: clean
-    - kind create cluster --config kind-config-cluster.yaml
+    - |
+      {{- if eq .TLS "true" -}} sed "s/80/443/" kind-config.yaml  | {{- end -}} kind create cluster --config kind-config-cluster.yaml
     - task: metrics-server
 
   metrics-server:
@@ -143,42 +133,8 @@ tasks:
       loki grafana/loki
       {{- end }}
 
-      
-  # install-ee:
-  #   desc: fresh on Kind
-  #   cmds:
-  #   - task: prepare
-
   uninstall:
     desc: Uninstalling Direktiv
     cmds:
     - 'kubectl get namespace "direktiv-services-direktiv" -o json   | tr -d "\n" | sed "s/\"finalizers\": \[[^]]\+\]/\"finalizers\": []/"   | kubectl replace --raw /api/v1/namespaces/direktiv-services-direktiv/finalize -f - || true'
     - helm uninstall direktiv
-
-  dummy:
-    cmds:
-    - task: one-node
-    - task: database
-    
-
-  # init-tracing:
-
-
-  # delete: 
-  #   desc: delete everything
-
-  # restart:
-
-  # restart-logs:
-
-
-# cluster-direktiv-delete
-# .PHONY: cluster-direktiv-run
-# cluster-direktiv-run: cluster-build
-# 	kubectl delete pod -l app.kubernetes.io/name=direktiv,app.kubernetes.io/instance=direktiv 
-# 	kubectl wait --for=condition=ready pod -l "app=direktiv-flow"
-# 	kubectl logs -f -l "app=direktiv-flow"
-
-# cluster-dev:
-# 	DOCKER_BUILDKIT=1 docker build --build-arg IS_ENTERPRISE=${IS_ENTERPRISE} --push -t localhost:5001/direktiv:dev .
-# 	kubectl delete pod -l app=direktiv-flow

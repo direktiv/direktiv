@@ -28,9 +28,11 @@ zarf package deploy --set DIREKTIV_INGRESS_HOSTPORT=true --set DIREKTIV_INGRESS_
 
 ***DIREKTIV_INGRESS_INSTALL***: Installation of Nginx (Default: true)
 
-###ZARF_VAR_DIREKTIV_REGISTRY###
-###DIREKTIV_INGRESS_HOSTPORT###
-###DIREKTIV_INGRESS_SERVICE_TYPE###
+***ZARF_VAR_DIREKTIV_REGISTRY***: Empty for production installation but can be set to `localhost:5000` for local installations.
+
+***DIREKTIV_INGRESS_HOSTPORT***: Set to true if installed in Kind cluster.
+
+***DIREKTIV_INGRESS_SERVICE_TYPE***: Set to `ClusterIP` for Kind installations.
 
 ***DIREKTIV_IMAGE***: Direktiv image to be used (Default: direktiv/direktiv)
 
