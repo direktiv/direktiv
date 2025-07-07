@@ -132,10 +132,8 @@ export const moveBlockWithinPage = (
   const originIndex = originPath[originPath.length - 1];
   const targetIndex = targetPath[targetPath.length - 1];
 
-  if (typeof originIndex !== "number" || typeof targetIndex !== "number") {
-    throw new Error(
-      `Invalid originPath or targetPath — originIndex: ${originIndex}, targetIndex: ${targetIndex}`
-    );
+  if (originIndex === undefined) {
+    throw new Error("Invalid path, could not extract index for origin block");
   }
 
   if (targetIndex === undefined) {
