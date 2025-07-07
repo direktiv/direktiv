@@ -3,6 +3,7 @@ import {
   addBlockToPage,
   deleteBlockFromPage,
   findBlock,
+  moveBlockWithinPage,
   updateBlockInPage,
 } from "./utils";
 
@@ -77,10 +78,20 @@ export const usePageEditor = () => {
     setPage(newPage);
   };
 
+  const moveBlock = (
+    origin: BlockPathType,
+    target: BlockPathType,
+    block: AllBlocksType
+  ) => {
+    const newPage = moveBlockWithinPage(page, origin, target, block);
+    setPage(newPage);
+  };
+
   return {
     mode,
     addBlock,
     deleteBlock,
+    moveBlock,
     updateBlock,
     setPage,
   };
