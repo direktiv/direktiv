@@ -13,14 +13,14 @@ import { DndContext } from "~/design/DragAndDropEditor/Context.tsx";
 import { PropsWithChildren } from "react";
 
 export const DndContextProvider = ({ children }: PropsWithChildren) => {
+  const page = usePage();
+  const { setPage } = usePageEditor();
+
   const onMove = (
     origin: BlockPathType | null,
     target: BlockPathType,
     block: AllBlocksType
   ) => {
-    const page = usePage();
-    const { setPage } = usePageEditor();
-
     const updatedPage =
       origin === null
         ? addBlockToPage(page, target, block)
