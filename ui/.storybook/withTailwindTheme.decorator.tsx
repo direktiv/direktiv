@@ -1,7 +1,7 @@
 import React from "react";
 import { useEffect } from "react";
 
-export const DEFAULT_THEME = "light";
+const DEFAULT_THEME = "light";
 
 export default (Story, context) => {
   const { theme } = context.globals;

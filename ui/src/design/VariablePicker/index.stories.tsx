@@ -77,7 +77,7 @@ export const WithHeadingAndSeparator = () => {
   const [value, setValue] = useState("");
 
   return (
-    <div className="flex items-center ">
+    <div className="flex items-center">
       <Variablepicker
         value={value}
         onValueChange={(value) => {
@@ -106,7 +106,7 @@ export const WithErrorMessage = () => (
       to select it or deliver the value somewhere.
     </p>
     <br />
-    <div className="flex items-center ">
+    <div className="flex items-center">
       <VariablepickerError buttonText="Select Variable">
         <VariablepickerMessage>- This space is empty -</VariablepickerMessage>
       </VariablepickerError>

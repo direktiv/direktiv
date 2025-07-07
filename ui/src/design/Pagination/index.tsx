@@ -27,7 +27,7 @@ export const Pagination: React.FC<PaginationProps> = ({ children, align }) => (
   </div>
 );
 Pagination.displayName = "Pagination";
-export interface PaginationLinkProps {
+interface PaginationLinkProps {
   onClick?: () => void;
   active?: boolean;
   icon?: "left" | "right";
@@ -61,11 +61,11 @@ export const PaginationLink = React.forwardRef<
       {...props}
       aria-current={active ? "page" : undefined}
       className={twMergeClsx(
-        "relative inline-flex cursor-pointer items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset focus:z-20 ",
+        "relative inline-flex cursor-pointer items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset focus:z-20",
         "disabled:pointer-events-none disabled:opacity-50",
         "text-gray-12 ring-gray-7 focus:outline-offset-0 focus-visible:outline-gray-9",
         "dark:text-gray-dark-12 dark:ring-gray-dark-7 dark:focus-visible:outline-gray-dark-9",
-        active && "z-10 bg-gray-3 dark:bg-gray-dark-3 ",
+        active && "z-10 bg-gray-3 dark:bg-gray-dark-3",
         !active && "hover:bg-gray-2 dark:hover:bg-gray-dark-2"
       )}
     >

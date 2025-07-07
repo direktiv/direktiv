@@ -1,4 +1,4 @@
-export type State = {
+type State = {
   id: string;
   type: string;
   events: {

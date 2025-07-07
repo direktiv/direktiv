@@ -9,7 +9,7 @@ import { z } from "zod";
     "user": "username" 
   }
  */
-export const RegistrySchema = z.object({
+const RegistrySchema = z.object({
   id: z.string(),
   namespace: z.string(),
   url: z.string().url(),
@@ -39,6 +39,6 @@ export const RegistryCreatedSchema = z.object({
 export const RegistryDeletedSchema = z.null();
 
 export type RegistrySchemaType = z.infer<typeof RegistrySchema>;
-export type RegistryCreatedSchemaType = z.infer<typeof RegistryCreatedSchema>;
+
 export type RegistryListSchemaType = z.infer<typeof RegistryListSchema>;
 export type RegistryFormSchemaType = z.infer<typeof RegistryFormSchema>;

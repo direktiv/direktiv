@@ -7,7 +7,7 @@ export const inactiveClassNames = "hover:bg-gray-2 dark:hover:bg-gray-dark-2";
 export const baseClassNames =
   "[&>svg]:group group flex items-center rounded-md p-2 text-sm font-medium [&>svg]:mr-3";
 
-export const createClassNames = (active: boolean, className?: string) =>
+const createClassNames = (active: boolean, className?: string) =>
   twMergeClsx(
     active ? activeClassNames : inactiveClassNames,
     baseClassNames,

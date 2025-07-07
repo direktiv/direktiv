@@ -7,7 +7,7 @@ import {
 
 import { FC } from "react";
 
-export type MessagesOverlayProps = {
+type MessagesOverlayProps = {
   messages: string[];
   children: (messages: number) => JSX.Element;
   variant?: AlertProps["variant"];

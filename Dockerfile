@@ -25,7 +25,8 @@ RUN --mount=type=cache,target=/root/.cache/go-build cd src &&  \
     -o $(cat ../BUILD_PATH.txt);
 
 #########################################################################################
-FROM --platform=$BUILDPLATFORM node:20-slim as ui-builder
+FROM --platform=$BUILDPLATFORM node:20.18.1-slim as ui-builder
+
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
@@ -33,23 +34,13 @@ RUN corepack prepare pnpm@9.15.4 --activate
 
 WORKDIR /app
 
+
+# install dependencies (only necessary files are copied to be able to cache this layer)
 COPY ui/package.json .
 COPY ui/pnpm-lock.yaml .
-
 RUN pnpm install --frozen-lockfile
 
-COPY ui/.eslintrc.js .
-COPY ui/.prettierrc.mjs .
-COPY ui/.prettierignore .
-COPY ui/index.html .
-COPY ui/postcss.config.cjs .
-COPY ui/tailwind.config.cjs .
-COPY ui/tsconfig.json .
-COPY ui/vite.config.mts .
-COPY ui/assets assets
-COPY ui/public public
-COPY ui/src src
-COPY ui/test test
+COPY ui/ ./
 
 RUN pnpm run build
 

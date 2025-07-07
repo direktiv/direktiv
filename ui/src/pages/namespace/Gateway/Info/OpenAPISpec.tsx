@@ -13,7 +13,7 @@ const OpenAPISpec = () => {
   const specToYaml = spec ? jsonToYaml(spec) : "";
 
   return (
-    <Card className="flex grow p-4 lg:h-[calc(100vh-11.8rem)] h-96 w-full">
+    <Card className="flex h-96 w-full grow p-4 lg:h-[calc(100vh-11.8rem)]">
       <Editor
         value={specToYaml}
         theme={theme ?? undefined}

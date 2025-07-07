@@ -26,7 +26,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={twMergeClsx(
-      "flex cursor-default select-none items-center rounded-sm py-1.5 px-2 text-sm font-medium outline-none",
+      "flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm font-medium outline-none",
       "focus:bg-gray-3 data-[state=open]:bg-gray-3",
       "dark:focus:bg-gray-dark-3 dark:data-[state=open]:bg-gray-dark-3",
       inset && "pl-8",
@@ -68,7 +68,7 @@ const DropdownMenuContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={twMergeClsx(
-        "z-50 min-w-32 overflow-hidden animate-in data-[side=top]:slide-in-from-bottom-2 data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2 data-[side=bottom]:slide-in-from-top-2",
+        "z-50 min-w-32 overflow-hidden animate-in data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
         "rounded-md shadow-md ring-1",
         "bg-gray-1 text-gray-11 ring-gray-3",
         "dark:bg-gray-dark-1 dark:text-gray-dark-11 dark:ring-gray-dark-3",
@@ -89,7 +89,7 @@ const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={twMergeClsx(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 px-2 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm font-medium outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       "focus:bg-gray-3",
       "dark:focus:bg-gray-dark-3",
       inset && "pl-8",
@@ -140,7 +140,7 @@ const DropdownMenuRadioItem = React.forwardRef<
     )}
     {...props}
   >
-    <span className="absolute left-2 flex size-3.5 items-center justify-center ">
+    <span className="absolute left-2 flex size-3.5 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
         <Circle className="size-2 fill-current" />
       </DropdownMenuPrimitive.ItemIndicator>

@@ -27,7 +27,7 @@ const OidcGroupSelector = ({
         {t("pages.permissions.oidcGroupSelector.label")}
       </label>
       <Card
-        className="max-h-[200px] w-full overflow-scroll p-5 grid grid-cols-2 gap-5"
+        className="grid max-h-[200px] w-full grid-cols-2 gap-5 overflow-scroll p-5"
         noShadow
       >
         <ArrayForm

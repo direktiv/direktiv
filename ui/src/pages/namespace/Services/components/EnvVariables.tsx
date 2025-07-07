@@ -9,7 +9,7 @@ import { FC } from "react";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import { useTranslation } from "react-i18next";
 
-export type EnvsVariablesProps = {
+type EnvsVariablesProps = {
   envs: ServiceSchemaType["envs"];
 };
 

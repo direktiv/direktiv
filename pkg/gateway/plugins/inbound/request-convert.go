@@ -20,6 +20,7 @@ type RequestConvertPlugin struct {
 	OmitQueries  bool `mapstructure:"omit_queries"`
 	OmitBody     bool `mapstructure:"omit_body"`
 	OmitConsumer bool `mapstructure:"omit_consumer"`
+	OmitMethod   bool `mapstructure:"omit_method"`
 }
 
 func (rcp *RequestConvertPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
@@ -45,9 +46,10 @@ type RequestConvertResponse struct {
 	Headers     http.Header         `json:"headers"`
 	Body        json.RawMessage     `json:"body"`
 	Consumer    RequestConsumer     `json:"consumer"`
+	Method      string              `json:"method"`
 }
 
-func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
 	response := &RequestConvertResponse{
 		URLParams:   make(map[string]string),
 		QueryParams: make(map[string][]string),
@@ -77,6 +79,10 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 		response.Headers = r.Header
 	}
 
+	// convert method
+	if !rcp.OmitMethod {
+		response.Method = r.Method
+	}
 	c := gateway.ExtractContextActiveConsumer(r)
 
 	if !rcp.OmitConsumer && c != nil {
@@ -94,7 +100,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 		content, err = io.ReadAll(r.Body)
 		if err != nil {
 			gateway.WriteInternalError(r, w, err, "can not process content")
-			return nil
+			return nil, nil
 		}
 		defer r.Body.Close()
 	}
@@ -110,7 +116,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 	newBody, err := json.Marshal(response)
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "can not process content")
-		return nil
+		return nil, nil
 	}
 	r.Body = io.NopCloser(bytes.NewBuffer(newBody))
 
@@ -118,7 +124,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 		"plugin", (&RequestConvertPlugin{}).Type(),
 		"body", string(newBody))
 
-	return r
+	return w, r
 }
 
 func (rcp *RequestConvertPlugin) Type() string {

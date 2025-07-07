@@ -5,7 +5,7 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useQuery } from "@tanstack/react-query";
 import { versionKeys } from "..";
 
-export const getVersion = apiFactory({
+const getVersion = apiFactory({
   url: () => `/api/v2/status`,
   method: "GET",
   schema: VersionSchema,

@@ -61,7 +61,7 @@ type AsChildOrLoading =
       loading?: never;
       asChild: true;
     };
-export type FilepickerProps = PropsWithChildren & {
+type FilepickerProps = PropsWithChildren & {
   icon: LucideIcon;
 } & AsChildOrLoading;
 

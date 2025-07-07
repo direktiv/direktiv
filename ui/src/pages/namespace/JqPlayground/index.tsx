@@ -127,9 +127,7 @@ const JqPlaygroundPage: FC = () => {
           </a>
         </Button>
       </div>
-      <Card className="p-5 text-sm ">
-        {t("pages.jqPlayground.description")}
-      </Card>
+      <Card className="p-5 text-sm">{t("pages.jqPlayground.description")}</Card>
       <Card className="p-5">
         <form
           ref={formRef}

@@ -15,7 +15,7 @@ type InstanceStreamingParams = {
   enabled?: boolean;
 };
 
-export const useInstanceDetailsStream = ({
+const useInstanceDetailsStream = ({
   instanceId,
   enabled,
 }: InstanceStreamingParams) => {

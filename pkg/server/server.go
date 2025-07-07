@@ -105,7 +105,7 @@ func Run(circuit *core.Circuit) error {
 	slog.Info("initializing raw db connection")
 	rawDB, err := sql.Open("postgres", config.DB)
 	if err == nil {
-		err = rawDB.Ping()
+		err = rawDB.PingContext(context.Background())
 	}
 	if err != nil {
 		return fmt.Errorf("creating raw db driver, err: %w", err)

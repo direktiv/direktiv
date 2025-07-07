@@ -6,7 +6,7 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
-export const getPods = apiFactory({
+const getPods = apiFactory({
   url: ({
     baseUrl,
     namespace,

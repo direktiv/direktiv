@@ -98,7 +98,7 @@ const Layout = () => {
   }
 
   return (
-    <main className="grid min-h-full place-items-center py-24 px-6 sm:py-32 lg:px-8">
+    <main className="grid min-h-full place-items-center px-6 py-24 sm:py-32 lg:px-8">
       <div className="flex flex-col gap-8 text-center">
         <h1 className="flex justify-center space-x-3 text-2xl font-bold text-gray-12 dark:text-gray-dark-12">
           <span>{t("pages.onboarding.welcomeTo")}</span>

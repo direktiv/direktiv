@@ -13,10 +13,11 @@ type (
 )
 
 type LogObject struct {
+	InstanceInfo
+
 	Namespace string   `json:"namespace"`
 	ID        string   `json:"id"`
 	Scope     LogScope `json:"scope"`
-	InstanceInfo
 }
 
 type InstanceInfo struct {
@@ -31,6 +32,7 @@ type InstanceInfo struct {
 // fluentbit can not be used because it is picking up the logs of newly created pods too late.
 type HTTPInstanceInfo struct {
 	LogObject
+
 	Msg   string   `json:"msg"`
 	Level LogLevel `json:"level"`
 }

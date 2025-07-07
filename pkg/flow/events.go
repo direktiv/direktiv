@@ -26,6 +26,7 @@ func init() {
 
 type events struct {
 	*server
+
 	appendStagingEvent func(ctx context.Context, events ...*datastore.StagingEvent) ([]*datastore.StagingEvent, []error)
 }
 
