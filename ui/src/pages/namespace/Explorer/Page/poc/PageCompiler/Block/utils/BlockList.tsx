@@ -50,7 +50,7 @@ const EditorBlockList = ({
           >
             <SelectBlockType
               big
-              path={path}
+              path={[...path, 0]}
               onSelect={(type) => createBlock(type, [...path, 0])}
             />
           </div>
