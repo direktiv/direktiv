@@ -42,7 +42,7 @@ export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
   return (
     <PageCompilerContextProvider setPage={setPage} page={page} mode={mode}>
       <QueryClientProvider client={queryClient}>
-        <DndContextProvider setPage={setPage} page={page}>
+        <DndContextProvider>
           <EditorPanelLayoutProvider>
             <BlockList path={[]}>
               {page.blocks.map((block, index) => (

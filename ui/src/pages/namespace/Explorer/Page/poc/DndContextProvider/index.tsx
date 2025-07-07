@@ -2,28 +2,25 @@ import {
   addBlockToPage,
   moveBlockWithinPage,
 } from "../PageCompiler/context/utils";
+import {
+  usePage,
+  usePageEditor,
+} from "../PageCompiler/context/pageCompilerContext";
 
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
-import { DirektivPagesType } from "../schema";
 import { DndContext } from "~/design/DragAndDropEditor/Context.tsx";
 import { PropsWithChildren } from "react";
 
-type DndContextProviderProps = PropsWithChildren & {
-  page: DirektivPagesType;
-  setPage: (page: DirektivPagesType) => void;
-};
-
-export const DndContextProvider = ({
-  page,
-  setPage,
-  children,
-}: DndContextProviderProps) => {
+export const DndContextProvider = ({ children }: PropsWithChildren) => {
   const onMove = (
     origin: BlockPathType | null,
     target: BlockPathType,
     block: AllBlocksType
   ) => {
+    const page = usePage();
+    const { setPage } = usePageEditor();
+
     const updatedPage =
       origin === null
         ? addBlockToPage(page, target, block)
