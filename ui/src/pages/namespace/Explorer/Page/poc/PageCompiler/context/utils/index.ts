@@ -123,6 +123,57 @@ export const deleteBlockFromPage = (
   throw new Error("Could not remove block");
 };
 
+export const moveBlockWithinPage = (
+  page: DirektivPagesType,
+  originPath: BlockPathType,
+  targetPath: BlockPathType,
+  block: AllBlocksType
+): DirektivPagesType => {
+  const originIndex = originPath[originPath.length - 1];
+  const targetIndex = targetPath[targetPath.length - 1];
+
+  if (originIndex === undefined) {
+    throw new Error("Invalid path, could not extract index for origin block");
+  }
+
+  if (targetIndex === undefined) {
+    throw new Error("Invalid path, could not extract index for target block");
+  }
+
+  const originParent = originPath.slice(0, -1).join("-");
+  const targetParent = targetPath.slice(0, -1).join("-");
+
+  const movingWithinSameParent = originParent === targetParent;
+
+  const movingBefore = originIndex > targetIndex || originParent > targetParent;
+  const adjustedOriginIndex =
+    movingWithinSameParent && movingBefore ? originIndex + 1 : originIndex;
+
+  const replacedLastIndexPath: BlockPathType = [
+    ...originPath.slice(0, -1),
+    adjustedOriginIndex,
+  ];
+
+  const pageWithAddedBlock = addBlockToPage(page, targetPath, block, false);
+  const pageWithDeletedBlock = deleteBlockFromPage(
+    pageWithAddedBlock,
+    replacedLastIndexPath
+  );
+  return pageWithDeletedBlock;
+};
+
+export const idToPath = (id: string): BlockPathType => {
+  const arrayOfStrings = id.split("-");
+  const path = arrayOfStrings.map(Number);
+
+  return path;
+};
+
+export const pathToId = (path: BlockPathType) => {
+  const id = path.join("-");
+  return id;
+};
+
 type PathOrNull = BlockPathType | null;
 
 export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
