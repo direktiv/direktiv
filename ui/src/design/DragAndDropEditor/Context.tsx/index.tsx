@@ -25,8 +25,8 @@ export const DndContext: FC<DndContextProps> = ({ children, onMove }) => {
       const origin = idToPath(activeId);
       const target = idToPath(overId);
 
-      if (!Array.isArray(origin) || origin.length === 0) return;
-      if (!Array.isArray(target) || target.length === 0) return;
+      if (origin.length === 0) return;
+      if (target.length === 0) return;
 
       const data = e.active.data.current;
       const parsed = AllBlocks.safeParse(data);
