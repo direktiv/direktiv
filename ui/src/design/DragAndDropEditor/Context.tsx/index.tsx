@@ -18,9 +18,9 @@ type DndContextProps = PropsWithChildren & {
 
 export const DndContext: FC<DndContextProps> = ({ children, onMove }) => {
   const onDragEnd = (e: DragEndEvent) => {
-    if (e.active.id != null && e.over?.id != null) {
+    if (e.active.id !== null && e.over) {
       const activeId = String(e.active.id);
-      const overId = String(e.over?.id);
+      const overId = String(e.over.id);
 
       const origin = idToPath(activeId);
       const target = idToPath(overId);
