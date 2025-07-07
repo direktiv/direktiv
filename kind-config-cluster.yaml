@@ -26,7 +26,7 @@ containerdConfigPatches:
 nodes:
 - role: control-plane
   extraPortMappings:
-  - containerPort: 443
+  - containerPort: 80
     hostPort: 9090
     protocol: TCP
   - containerPort: 5432

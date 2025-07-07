@@ -2,8 +2,7 @@ version: '3'
 
 includes:
   zarf:
-    taskfile: ./zarf/taskfile.yaml
-    # dir: ./zarf
+    taskfile: taskfile_zarf.yaml
   cluster: 
     taskfile: taskfile_cluster.yaml
   version:  

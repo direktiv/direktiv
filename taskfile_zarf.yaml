@@ -2,19 +2,13 @@ version: '3'
 
 includes:
   version:  
-    taskfile: ../taskfile_version.yaml
+    taskfile: taskfile_version.yaml
 
 tasks:
   version:
     desc: Changes version of direktiv in zarf files
     deps: [version:check]
     cmds:
-    # check version format
-    - |
-      {{- if not (regexMatch "(^v[0-9]\\.[0-9]\\.[0-9]$)|^latest$|^dev$" .VERSION) -}}
-        echo "wrong version format: {{ .VERSION }}. either v0.0.0, dev or latest."
-        exit 1
-      {{- end -}}
     # Replace version in zarf config files
     - sed -e 's/VERSION/{{.VERSION}}/g' zarf/yolo/zarf.template.yaml > zarf/yolo/zarf.yaml
     - sed -e 's/VERSION/{{.VERSION}}/g' zarf/zarf.template.yaml > zarf/zarf.yaml
@@ -40,7 +34,7 @@ tasks:
       {{- end }}
     requires:
       vars: [VERSION]
-    # internal: true
+    internal: true
 
   create:
     desc: Builds zarf airgap package for direktiv and dependencies
@@ -48,7 +42,7 @@ tasks:
     - task: version
       vars: 
         VERSION: '{{ .VERSION }}'
-    - zarf package create
+    - zarf package create zarf/
 
   deploy:
     desc: Deploys zarf airgap package

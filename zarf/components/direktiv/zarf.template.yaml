@@ -65,6 +65,8 @@ variables:
   autoIndent: true
 - name: DIREKTIV_OTEL_CONFIG
   autoIndent: true
+- name: DIREKTIV_ADDITIONAL_CONFIG
+  autoIndent: true
 
 components:
 - name: direktiv
