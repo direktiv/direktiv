@@ -66,8 +66,6 @@ cluster-create:
 .PHONY: cluster-prep
 cluster-prep: 
 	kubectl apply -f kind/postgres.yaml
-	kubectl apply -f kind/deploy-ingress-nginx.yaml
-	kubectl apply -f kind/svc-configmap.yaml
 	kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 
 	# This is a workaround so that the metrics server works in KIND setup
@@ -88,18 +86,16 @@ cluster-direktiv-delete: ## Deletes direktiv from cluster
 
 .PHONY: cluster-direktiv
 cluster-direktiv: ## Installs direktiv in cluster
-	kubectl wait -n ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
-	kubectl wait -n ingress-nginx --for=condition=complete job --selector=app.kubernetes.io/component=admission-webhook --timeout=120s
-
 	@if [ "$(IS_ENTERPRISE)" != "true" ]; then \
 		helm install --set database.host=postgres.default.svc \
+		-f kind/nginx-tcp.yaml \
 		--set database.port=5432 \
 		--set database.user=admin \
 		--set database.password=password \
 		--set database.name=direktiv \
 		--set database.sslmode=disable \
 		--set pullPolicy=Always \
-		--set ingress-nginx.install=false \
+		--set ingress-nginx.controller.hostPort.enabled=true \
 		--set image=direktiv \
 		--set registry=localhost:5001 \
 		--set tag=dev \
@@ -110,13 +106,14 @@ cluster-direktiv: ## Installs direktiv in cluster
 	@if [ "$(IS_ENTERPRISE)" = "true" ]; then \
 	helm install --set database.host=postgres.default.svc \
 	-f direktiv-ee/install/04_direktiv/keys.yaml \
+	-f kind/nginx-tcp.yaml \
 	--set database.port=5432 \
 	--set database.user=admin \
 	--set database.password=password \
 	--set database.name=direktiv \
 	--set database.sslmode=disable \
 	--set pullPolicy=Always \
-	--set ingress-nginx.install=false \
+	--set ingress-nginx.controller.hostPort.enabled=true \
 	--set image=direktiv \
 	--set registry=localhost:5001 \
 	--set tag=dev \

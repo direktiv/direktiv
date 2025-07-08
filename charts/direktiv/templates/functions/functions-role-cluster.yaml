@@ -19,7 +19,7 @@ rules:
   verbs: ["list", "watch", "get"]
 - apiGroups: ["apps"]
   resources: ["deployments"]
-  verbs: ["patch", "create", "list", "watch", "log", "delete"]
+  verbs: ["patch", "create", "list", "watch", "log", "delete", "scale"]
 - apiGroups: ["apps"]
   resources: ["deployments/scale"]
   verbs: ["update"]

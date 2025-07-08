@@ -108,7 +108,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 		if version.Version != "" && version.GitSha != "" {
 			data.Version = version.Version + " " + version.GitSha
 		} else {
-			data.Version = "dev"
+			data.Version = "dev2"
 		}
 
 		writeJSON(w, data)

@@ -1,20 +1,19 @@
 kind: ZarfPackageConfig 
 metadata:
-  name: direktiv-full-no-images
-  version: v0.9.1
+  name: direktiv-full
+  version: VERSION
   description: "direktiv open source full installation"
-  yolo: true
 
 components:
 - name: linkerd
   required: false
   import:
-    path: ../components/linkerd/yolo
+    path: components/linkerd/images
 - name: postgres
   required: false
   import:
-    path: ../components/db/yolo
+    path: components/db/images
 - name: direktiv
   required: true
   import:
-    path: ../components/direktiv/yolo
+    path: components/direktiv/images

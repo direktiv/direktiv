@@ -1,7 +1,7 @@
 kind: ZarfPackageConfig 
 metadata:
   name: direktiv 
-  version: dev
+  version: VERSION
   description: "direktiv installation"
 
 variables:
@@ -42,7 +42,7 @@ variables:
 - name: DIREKTIV_IMAGE
   default: "direktiv/direktiv"
 - name: DIREKTIV_TAG
-  default: "dev"
+  default: "VERSION"
 - name: DIREKTIV_REQUEST_TIMEOUT
   default: "7200"
 - name: DIREKTIV_FUNCTION_SIZES
@@ -106,8 +106,8 @@ components:
   charts:
   - name: direktiv
     namespace: direktiv
-    version: dev
-    localPath: ../../../charts/direktiv
+    version: VERSION
+    SOURCE: VALUE
     valuesFiles:
     - values.yaml
     variables:
