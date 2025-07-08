@@ -75,7 +75,6 @@ tasks:
     - task: version
       vars: 
         VERSION: '{{ .VERSION }}'
-    - pwd
     - zarf package create direktiv-ee/zarf
 
 
@@ -85,12 +84,15 @@ tasks:
     - task: version
       vars: 
         VERSION: '{{ .VERSION }}'
-    - zarf package create ../direktiv-ee/zarf/yolo
+    - zarf package create direktiv-ee/zarf/yolo
 
-  ee-yolo-dev-deploy:
+  ee-yolo-deploy:
     desc: Deploys yolo zarf package for EE
     deps: [version:check]
     cmds:
-    - zarf package deploy --components=postgres,keycloak --set DIREKTIV_PORT=:9090 --set DIREKTIV_HOST=policy.test --set DIREKTIV_LICENSE_FILE=/home/jensg/go/src/github.com/direktiv/direktiv/direktiv-ee/license.json  --set DIREKTIV_WITH_CERTIFICATE=true --set DIREKTIV_INGRESS_HOSTPORT=true --set DIREKTIV_INGRESS_SERVICE_TYPE=ClusterIP --set DIREKTIV_IMAGE=direktiv-ee --set DIREKTIV_TAG=dev  --set DIREKTIV_REGISTRY=localhost:5001 zarf-package-direktiv-ee-full-no-images-amd64-{{ .VERSION }}.tar.zst
+    - zarf package deploy --components=postgres,keycloak --set DIREKTIV_PORT=:9090 --set DIREKTIV_HOST={{ .DIREKTIV_HOST }} --set DIREKTIV_LICENSE_FILE=direktiv-ee/test-license.json  --set DIREKTIV_WITH_CERTIFICATE=true --set DIREKTIV_INGRESS_HOSTPORT=true --set DIREKTIV_INGRESS_SERVICE_TYPE=ClusterIP --set DIREKTIV_IMAGE=direktiv-ee --set DIREKTIV_TAG=dev  --set DIREKTIV_REGISTRY=localhost:5001 zarf-package-direktiv-ee-full-no-images-amd64-{{ .VERSION }}.tar.zst
     requires:
       vars: [VERSION]
+    vars:
+      DIREKTIV_HOST:
+        sh: hostname

@@ -20,6 +20,20 @@ tasks:
     - task: cluster:one-node
     - task: cluster:docker-proxy-create
     - task: cluster:database
-    - task: build:build
+    - task: build:build-push
     - task: cluster:install
     silent: true
+
+  ee:
+    desc: Basic EE cluster with Direktiv. Run with `IS_ENTERPRISE=true`.
+    deps: [version:check] 
+    vars:
+      IS_ENTERPRISE: "true"
+    cmds:
+    - task: cluster:one-node
+      vars: 
+        TLS: "true"
+    - task: cluster:docker-proxy-create
+    - task: build:build-push
+    - task: zarf:ee-yolo-create
+    - task: zarf:ee-yolo-deploy

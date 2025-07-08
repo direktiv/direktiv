@@ -25,7 +25,6 @@ tasks:
     desc: Building for local architecture
     cmds:
       - task: version:check
-      - echo VALUE {{ .IMAGE_NAME }}
       - docker build --build-arg IS_ENTERPRISE={{ .IS_ENTERPRISE }} --build-arg RELEASE_VERSION={{ .RELEASE_VERSION }} -t {{ .DOCKER_REPO }}/{{ .IMAGE_NAME }}:{{ .VERSION }} . 
     env:
       DOCKER_BUILDKIT: "1"

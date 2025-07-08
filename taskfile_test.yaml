@@ -37,6 +37,17 @@ tasks:
     cmds:
     - go test ./...
   
+  api-ee:
+    desc: Runs EE API tests against server set with `DIREKTIV_HOST`.
+    cmds: 
+    - kubectl wait --for=condition=ready pod -l "app=direktiv-flow"
+    - docker run -it --rm \
+      -v `pwd`/direktiv-ee/tests:/tests \
+      -e 'DIREKTIV_HOST=http://{{ .DIREKTIV_HOST }}' \
+      -e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
+      --network=host \
+      node:lts-alpine3.18 npm --prefix "/tests" run jest -- ${JEST_PREFIX} --runInBand
+
   api:
     desc: Runs API tests against server set with `DIREKTIV_HOST`.
     cmds:

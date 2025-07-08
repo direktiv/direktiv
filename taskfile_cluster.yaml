@@ -15,7 +15,7 @@ tasks:
     cmds:
     - task: clean
     - |
-      {{- if eq .TLS "true" -}} sed "s/80/443/" kind-config.yaml  | {{- end -}} kind create cluster --config kind-config.yaml
+      {{- if eq .TLS "true" -}} sed "s/80/443/" kind-config.yaml  | {{- end -}} kind create cluster --config -
     - task: metrics-server
 
   multi-node:
@@ -23,7 +23,7 @@ tasks:
     cmds:
     - task: clean
     - |
-      {{- if eq .TLS "true" -}} sed "s/80/443/" kind-config.yaml  | {{- end -}} kind create cluster --config kind-config-cluster.yaml
+      {{- if eq .TLS "true" -}} sed "s/80/443/" kind-config.yaml  | {{- end -}} kind create cluster --config -
     - task: metrics-server
 
   metrics-server:
