@@ -3,9 +3,9 @@ import { KeyValue } from "../primitives/keyValue";
 import { TemplateString } from "../primitives/templateString";
 import { z } from "zod";
 
-const MutationMethods = ["POST", "PUT", "PATCH", "DELETE"] as const;
+export const mutationMethods = ["POST", "PUT", "PATCH", "DELETE"] as const;
 
-const MutationMethod = z.enum(MutationMethods);
+const MutationMethod = z.enum(mutationMethods);
 
 export const Mutation = z.object({
   id: Id,

@@ -75,7 +75,12 @@ export const QueryForm = ({
         control={control}
         name="queryParams"
         render={({ field }) => (
-          <KeyValueInput field={field} label="Query Parameters" />
+          <KeyValueInput
+            field={field}
+            label={t(
+              "direktivPage.blockEditor.blockForms.queryProvider.query.queryParamsLabel"
+            )}
+          />
         )}
       />
     </form>

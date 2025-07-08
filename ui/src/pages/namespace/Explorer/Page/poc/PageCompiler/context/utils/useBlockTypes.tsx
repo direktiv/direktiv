@@ -9,6 +9,7 @@ import {
   Repeat2,
   Table,
   Text,
+  TextCursorInput,
 } from "lucide-react";
 
 import { AllBlocksType } from "../../../schema/blocks";
@@ -95,6 +96,12 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
       type: "image",
       label: t("direktivPage.blockEditor.blockName.image"),
       icon: Image,
+      allow: true,
+    },
+    {
+      type: "form",
+      label: t("direktivPage.blockEditor.blockName.form"),
+      icon: TextCursorInput,
       allow: true,
     },
   ] satisfies BlockTypeConfig[];
