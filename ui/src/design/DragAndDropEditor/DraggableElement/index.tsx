@@ -45,3 +45,35 @@ export const DraggableElement: FC<DraggableProps> = ({
     </div>
   );
 };
+
+export const DraggableCreateElement: FC<DraggableProps> = ({
+  id,
+  element,
+  children,
+}) => {
+  const data = element;
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id,
+    data,
+  });
+
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(1.05)`,
+        zIndex: 50,
+      }
+    : {};
+
+  return (
+    <div style={style} className="relative">
+      <div
+        {...listeners}
+        {...attributes}
+        ref={setNodeRef}
+        className="relative z-20 cursor-move"
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
