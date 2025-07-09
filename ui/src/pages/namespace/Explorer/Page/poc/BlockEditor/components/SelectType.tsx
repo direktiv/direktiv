@@ -12,6 +12,7 @@ import { Card } from "~/design/Card";
 import { CirclePlus } from "lucide-react";
 import { Trans } from "react-i18next";
 import { useBlockTypes } from "../../PageCompiler/context/utils/useBlockTypes";
+import { usePage } from "../../PageCompiler/context/pageCompilerContext";
 
 type SelectBlockTypeProps = {
   onSelect: (type: AllBlocksType["type"]) => void;
@@ -41,15 +42,16 @@ const DefaultTrigger = () => (
 );
 
 const List = ({ onSelect, path }: Omit<SelectBlockTypeProps, "label">) => {
-  const types = useBlockTypes(path);
-
+  const page = usePage();
+  const blockTypes = useBlockTypes();
+  const allowedBlockTypes = blockTypes.filter((type) => type.allow(page, path));
   return (
     <PopoverContent asChild>
       <Card
         className="z-40 -mt-2 flex w-fit flex-col p-2 text-center dark:bg-gray-dark-2"
         noShadow
       >
-        {types.map((type) => (
+        {allowedBlockTypes.map((type) => (
           <PopoverClose key={type.label} asChild>
             <Button
               variant="outline"

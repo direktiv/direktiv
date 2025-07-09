@@ -27,8 +27,7 @@ type BlockFormProps = {
 export const BlockForm = ({ action, block, path }: BlockFormProps) => {
   const { addBlock, updateBlock } = usePageEditor();
   const { setPanel } = usePageEditorPanel();
-  // TODO: use a different hook that does not filter, or remove filtering
-  const blockTypes = useBlockTypes(path);
+  const blockTypes = useBlockTypes();
 
   if (isPage(block)) {
     throw Error("Unexpected page object when parsing block");
