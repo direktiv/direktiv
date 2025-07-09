@@ -15,7 +15,7 @@ type DialogProps = {
   blockPath: BlockPathType;
 };
 export const Dialog = ({ blockProps, blockPath }: DialogProps) => {
-  const container = useLocalDialogContainer();
+  const { container } = useLocalDialogContainer();
   const { blocks, trigger } = blockProps;
   return (
     <DialogDesignComponent>

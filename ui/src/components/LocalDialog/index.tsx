@@ -2,11 +2,21 @@ import { HTMLAttributes, createContext, useContext, useState } from "react";
 
 import { twMergeClsx } from "~/util/helpers";
 
-const LocalDialogContainerContext = createContext<HTMLDivElement | null>(null);
+type LocalDialogContainerContextValue = {
+  container: HTMLDivElement | null;
+};
+
+const LocalDialogContainerContext =
+  createContext<LocalDialogContainerContextValue | null>(null);
+
+LocalDialogContainerContext.displayName = "LocalDialogContainerContext";
 
 export const useLocalDialogContainer = () => {
   const context = useContext(LocalDialogContainerContext);
-  if (!context) throw new Error("Must be used inside <LocalDialogContainer>");
+  if (!context)
+    throw new Error(
+      "useLocalDialogContainer must be used inside <LocalDialogContainer>"
+    );
   return context;
 };
 
@@ -19,7 +29,7 @@ export const LocalDialogContainer = ({
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
   return (
-    <LocalDialogContainerContext.Provider value={container}>
+    <LocalDialogContainerContext.Provider value={{ container }}>
       <div ref={setContainer} className={twMergeClsx("relative", className)}>
         {children}
       </div>

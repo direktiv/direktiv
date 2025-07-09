@@ -64,7 +64,7 @@ export const EditorPanelLayoutProvider = ({
     );
   }
 
-  return <LocalDialogContainer>{children}</LocalDialogContainer>;
+  return <>{children}</>;
 };
 
 export const usePageEditorPanel = () => {
