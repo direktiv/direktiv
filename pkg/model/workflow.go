@@ -208,7 +208,6 @@ func (o *Workflow) validate() error {
 				return fmt.Errorf("workflow state[%v] '%v' transition '%s' does not exist", i, tKey, transition)
 			}
 		}
-
 		// Check if function actions are defined
 		fActions := make([]string, 0)
 		switch state.GetType() {

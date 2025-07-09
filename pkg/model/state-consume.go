@@ -7,10 +7,11 @@ import (
 
 type ConsumeEventState struct {
 	StateCommon `yaml:",inline"`
-	Event       *ConsumeEventDefinition `yaml:"event"`
-	Timeout     string                  `yaml:"timeout,omitempty"`
-	Transform   interface{}             `yaml:"transform,omitempty"`
-	Transition  string                  `yaml:"transition,omitempty"`
+
+	Event      *ConsumeEventDefinition `yaml:"event"`
+	Timeout    string                  `yaml:"timeout,omitempty"`
+	Transform  interface{}             `yaml:"transform,omitempty"`
+	Transition string                  `yaml:"transition,omitempty"`
 }
 
 func (o *ConsumeEventState) GetID() string {

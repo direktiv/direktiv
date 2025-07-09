@@ -27,10 +27,11 @@ func (o *GenerateEventDefinition) Validate() error {
 
 type GenerateEventState struct {
 	StateCommon `yaml:",inline"`
-	Delay       string                   `yaml:"delay"`
-	Event       *GenerateEventDefinition `yaml:"event"`
-	Transform   interface{}              `yaml:"transform,omitempty"`
-	Transition  string                   `yaml:"transition,omitempty"`
+
+	Delay      string                   `yaml:"delay"`
+	Event      *GenerateEventDefinition `yaml:"event"`
+	Transform  interface{}              `yaml:"transform,omitempty"`
+	Transition string                   `yaml:"transition,omitempty"`
 }
 
 func (o *GenerateEventState) GetID() string {

@@ -6,11 +6,12 @@ import (
 
 type ErrorState struct {
 	StateCommon `yaml:",inline"`
-	Error       string      `yaml:"error"`
-	Message     string      `yaml:"message"`
-	Args        []string    `yaml:"args,omitempty"`
-	Transform   interface{} `yaml:"transform,omitempty"`
-	Transition  string      `yaml:"transition,omitempty"`
+
+	Error      string      `yaml:"error"`
+	Message    string      `yaml:"message"`
+	Args       []string    `yaml:"args,omitempty"`
+	Transform  interface{} `yaml:"transform,omitempty"`
+	Transition string      `yaml:"transition,omitempty"`
 }
 
 func (o *ErrorState) GetID() string {

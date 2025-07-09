@@ -10,12 +10,13 @@ import (
 )
 
 type ActionRequest struct {
+	ActionContext
+
 	// TODO secrets
 	Deadline  time.Time                `json:"deadline"`
 	UserInput []byte                   `json:"userInput"`
 	Files     []FunctionFileDefinition `json:"files"`
 	Async     bool                     `json:"async"`
-	ActionContext
 }
 
 type ActionContext struct {

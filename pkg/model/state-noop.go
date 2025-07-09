@@ -6,8 +6,9 @@ import (
 
 type NoopState struct {
 	StateCommon `yaml:",inline"`
-	Transform   interface{} `yaml:"transform,omitempty"`
-	Transition  string      `yaml:"transition,omitempty"`
+
+	Transform  interface{} `yaml:"transform,omitempty"`
+	Transition string      `yaml:"transition,omitempty"`
 }
 
 func (o *NoopState) GetID() string {
