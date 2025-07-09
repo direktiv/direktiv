@@ -1,4 +1,11 @@
-import { FC, PropsWithChildren, createContext, useContext } from "react";
+import {
+  Dispatch,
+  FC,
+  PropsWithChildren,
+  SetStateAction,
+  createContext,
+  useContext,
+} from "react";
 import {
   addBlockToPage,
   deleteBlockFromPage,
@@ -17,6 +24,8 @@ export type PageCompilerProps = {
   mode: PageCompilerMode;
   page: DirektivPagesType;
   setPage: (page: DirektivPagesType) => void;
+  container?: HTMLDivElement | null;
+  setContainer?: Dispatch<SetStateAction<HTMLDivElement | null>>;
 };
 
 const PageCompilerContext = createContext<PageCompilerProps | null>(null);

@@ -8,12 +8,14 @@ import {
 import { BlockList } from "./utils/BlockList";
 import { Button } from "./Button";
 import { DialogType } from "../../schema/blocks/dialog";
+import { usePageStateContext } from "../context/pageCompilerContext";
 
 type DialogProps = {
   blockProps: DialogType;
   blockPath: BlockPathType;
 };
 export const Dialog = ({ blockProps, blockPath }: DialogProps) => {
+  const { container } = usePageStateContext();
   const { blocks, trigger } = blockProps;
   return (
     <DialogDesignComponent>
@@ -21,7 +23,7 @@ export const Dialog = ({ blockProps, blockPath }: DialogProps) => {
         <Button blockProps={trigger} />
       </DialogTrigger>
 
-      <DialogContent showCloseButton>
+      <DialogContent container={container} showCloseButton>
         <BlockList path={blockPath}>
           {blocks.map((block, index) => (
             <Block

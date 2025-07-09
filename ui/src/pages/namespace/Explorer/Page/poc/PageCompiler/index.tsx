@@ -13,7 +13,13 @@ import { ParsingError } from "./Block/utils/ParsingError";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
+export const PageCompiler = ({
+  page,
+  setPage,
+  mode,
+  container,
+  setContainer,
+}: PageCompilerProps) => {
   const [queryClient] = useState(
     new QueryClient({
       defaultOptions: {
@@ -40,15 +46,22 @@ export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
   }
 
   return (
-    <PageCompilerContextProvider setPage={setPage} page={page} mode={mode}>
+    <PageCompilerContextProvider
+      setPage={setPage}
+      page={page}
+      mode={mode}
+      container={container}
+    >
       <QueryClientProvider client={queryClient}>
         <DndContextProvider>
           <EditorPanelLayoutProvider>
-            <BlockList path={[]}>
-              {page.blocks.map((block, index) => (
-                <Block key={index} block={block} blockPath={[index]} />
-              ))}
-            </BlockList>
+            <div ref={setContainer} className="relative">
+              <BlockList path={[]}>
+                {page.blocks.map((block, index) => (
+                  <Block key={index} block={block} blockPath={[index]} />
+                ))}
+              </BlockList>
+            </div>
           </EditorPanelLayoutProvider>
         </DndContextProvider>
       </QueryClientProvider>

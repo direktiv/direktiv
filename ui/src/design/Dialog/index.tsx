@@ -15,7 +15,12 @@ const DialogPortal = ({
   ...props
 }: DialogPrimitive.DialogPortalProps) => (
   <DialogPrimitive.Portal {...props}>
-    <div className="fixed inset-0 z-40 flex items-start justify-center sm:items-center">
+    <div
+      className={twMergeClsx(
+        props.container ? "absolute" : "fixed",
+        "inset-0 z-40 flex items-start justify-center sm:items-center"
+      )}
+    >
       {children}
     </div>
   </DialogPrimitive.Portal>
@@ -24,11 +29,14 @@ DialogPortal.displayName = DialogPrimitive.Portal.displayName;
 
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay> & {
+    container?: HTMLDivElement | null;
+  }
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     className={twMergeClsx(
-      "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-all duration-100 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in",
+      props.container ? "absolute" : "fixed",
+      "inset-0 z-40 bg-black/50 backdrop-blur-sm transition-all duration-100 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in",
       className
     )}
     {...props}
@@ -44,14 +52,22 @@ const DialogContent = React.forwardRef<
       typeof DialogPrimitive.Overlay
     >;
     showCloseButton?: boolean;
+    container?: HTMLDivElement | null;
   }
 >(
   (
-    { className, children, overlayProps, showCloseButton = false, ...props },
+    {
+      className,
+      children,
+      overlayProps,
+      showCloseButton = false,
+      container,
+      ...props
+    },
     ref
   ) => (
-    <DialogPortal>
-      <DialogOverlay {...overlayProps} />
+    <DialogPortal container={container}>
+      <DialogOverlay container={container} {...overlayProps} />
       <DialogPrimitive.Content
         ref={ref}
         className={twMergeClsx(
