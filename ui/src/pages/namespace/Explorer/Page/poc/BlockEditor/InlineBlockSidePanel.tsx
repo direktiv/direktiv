@@ -1,11 +1,10 @@
 import { BlockEditFormProps } from ".";
-import { CardType } from "../schema/blocks/card";
-import { ColumnsType } from "../schema/blocks/columns";
 import { Header } from "./components/Header";
+import { InlineBlocks } from "../schema/blocks";
 import { useTranslation } from "react-i18next";
 
 type QueryProviderEditFormProps = Omit<
-  BlockEditFormProps<CardType | ColumnsType>,
+  BlockEditFormProps<InlineBlocks>,
   "onSubmit" | "onCancel"
 >;
 

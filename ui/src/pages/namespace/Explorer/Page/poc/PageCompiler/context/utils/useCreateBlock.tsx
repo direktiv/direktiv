@@ -1,4 +1,8 @@
-import { AllBlocksType, inlineBlockTypes } from "../../../schema/blocks";
+import {
+  AllBlocksType,
+  InlineBlocksType,
+  inlineBlockTypes,
+} from "../../../schema/blocks";
 
 import { BlockPathType } from "../../Block";
 import { getBlockTemplate } from ".";
@@ -15,7 +19,7 @@ export const useCreateBlock = () => {
   const { setPanel } = usePageEditorPanel();
 
   const createBlock = (type: AllBlocksType["type"], path: BlockPathType) => {
-    if (inlineBlockTypes.has(type)) {
+    if (inlineBlockTypes.has(type as InlineBlocksType)) {
       return addBlock(path, getBlockTemplate(type), true);
     }
     setPanel({

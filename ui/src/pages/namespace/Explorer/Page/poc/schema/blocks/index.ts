@@ -10,6 +10,7 @@ import { QueryProvider, QueryProviderType } from "./queryProvider";
 import { Table, TableType } from "./table";
 import { Text, TextType } from "./text";
 
+import { ExtractUnionFromSet } from "./utils";
 import { z } from "zod";
 
 /**
@@ -64,7 +65,14 @@ export const TriggerBlocks = z.discriminatedUnion("type", [Button]);
 export type TriggerBlocksType = z.infer<typeof TriggerBlocks>;
 
 /* Inline blocks do not need a dialog for creation */
-export const inlineBlockTypes: Set<AllBlocksType["type"]> = new Set([
-  "columns",
-  "card",
-]);
+export const inlineBlockTypes = new Set(["columns", "card"]) satisfies Set<
+  AllBlocksType["type"]
+>;
+
+// TODO: clean this up and check the names
+export type InlineBlocksType = ExtractUnionFromSet<typeof inlineBlockTypes>;
+
+type FormBlocksType = Exclude<AllBlocksType["type"], InlineBlocksType>;
+
+export type FormBlocks = Extract<AllBlocksType, { type: FormBlocksType }>;
+export type InlineBlocks = Extract<AllBlocksType, { type: InlineBlocksType }>;
