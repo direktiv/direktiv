@@ -11,7 +11,7 @@ export const Footer = ({ formId, onCancel }: BlockEditorFooterProps) => {
 
   return (
     <div className="mt-2 flex flex-row justify-end gap-2">
-      <Button variant="ghost" onClick={onCancel}>
+      <Button variant="ghost" onClick={onCancel} type="reset">
         {t("direktivPage.blockEditor.generic.cancelButton")}
       </Button>
 

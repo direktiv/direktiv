@@ -13,8 +13,9 @@ type EventConditionDefinition struct {
 
 type EventsXorState struct {
 	StateCommon `yaml:",inline"`
-	Events      []EventConditionDefinition `yaml:"events"`
-	Timeout     string                     `yaml:"timeout,omitempty"`
+
+	Events  []EventConditionDefinition `yaml:"events"`
+	Timeout string                     `yaml:"timeout,omitempty"`
 }
 
 func (o *EventsXorState) GetID() string {

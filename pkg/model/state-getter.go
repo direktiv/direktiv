@@ -10,9 +10,10 @@ import (
 // GetterState defines the state for a getter.
 type GetterState struct {
 	StateCommon `yaml:",inline"`
-	Variables   []GetterDefinition `yaml:"variables"`
-	Transform   interface{}        `yaml:"transform,omitempty"`
-	Transition  string             `yaml:"transition,omitempty"`
+
+	Variables  []GetterDefinition `yaml:"variables"`
+	Transform  interface{}        `yaml:"transform,omitempty"`
+	Transition string             `yaml:"transition,omitempty"`
 }
 
 // GetterDefinition takes a scope and key to work out where the variable goes.

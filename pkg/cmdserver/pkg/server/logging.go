@@ -12,10 +12,11 @@ import (
 )
 
 type Logger struct {
+	io.Writer
+
 	LogData          bytes.Buffer
 	actionID         string
 	backendLogServer string
-	io.Writer
 }
 
 var _ io.Writer = (*Logger)(nil)

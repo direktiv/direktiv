@@ -1758,7 +1758,23 @@
             "urlPlaceholder": "relative or absolute url like /path/to/endpoint or https://...",
             "itemLabel": "Query",
             "tableLabel": "{{count}} Queries",
-            "tableLabel_one": "{{count}} Query"
+            "tableLabel_one": "{{count}} Query",
+            "queryParamsLabel": "Query Parameters"
+          }
+        },
+        "form": {
+          "description": "A Form block allows you to create a form that can be submitted to a URL.",
+          "mutation": {
+            "triggerLabelLabel": "Button Label",
+            "triggerLabelPlaceholder": "Submit Form",
+            "idLabel": "form ID",
+            "idPlaceholder": "unique identifier name to reference this form in any child block",
+            "methodLabel": "HTTP Method",
+            "urlLabel": "URL",
+            "urlPlaceholder": "relative or absolute url like /path/to/endpoint or https://...",
+            "queryParamsLabel": "Query Parameters",
+            "requestHeadersLabel": "Request Headers",
+            "requestBodyLabel": "Request Body"
           }
         }
       },

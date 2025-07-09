@@ -53,6 +53,7 @@ type GitSourceConfig struct {
 
 type gitSource struct {
 	*DirectorySource
+
 	path  string
 	conf  GitSourceConfig
 	notes map[string]string

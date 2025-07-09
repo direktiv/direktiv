@@ -7,19 +7,6 @@ type CreateServiceFileParams = {
   size?: "large" | "medium" | "small";
 };
 
-export const createHttpServiceFile = ({
-  scale = 1,
-  size = "small",
-}: CreateServiceFileParams = {}) => `direktiv_api: service/v1
-image: gcr.io/direktiv/functions/http-request:1.0
-scale: ${scale}
-size: ${size}
-cmd: 
-envs:
-  - name: MY_ENV_VAR
-    value: env-var-value
-`;
-
 export const createRequestServiceFile = ({
   scale = 1,
   size = "small",

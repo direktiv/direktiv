@@ -4,6 +4,7 @@ import { BlockPathType } from "../../Block";
 import { CardType } from "../../../schema/blocks/card";
 import { ColumnsType } from "../../../schema/blocks/columns";
 import { DialogType } from "../../../schema/blocks/dialog";
+import { FormType } from "../../../schema/blocks/form";
 import { HeadlineType } from "../../../schema/blocks/headline";
 import { ImageType } from "../../../schema/blocks/image";
 import { LoopType } from "../../../schema/blocks/loop";
@@ -283,6 +284,20 @@ export const getBlockTemplate = (type: AllBlocksType["type"]) => {
         width: 200,
         height: 200,
       } satisfies ImageType;
+    case "form":
+      return {
+        type: "form",
+        mutation: {
+          id: "",
+          url: "",
+          method: "POST",
+        },
+        trigger: {
+          label: "",
+          type: "button",
+        },
+        blocks: [],
+      } satisfies FormType;
     default:
       throw new Error(`${type} is not implemented yet`);
   }
