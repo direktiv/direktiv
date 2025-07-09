@@ -8,14 +8,14 @@ import {
 import { BlockList } from "./utils/BlockList";
 import { Button } from "./Button";
 import { DialogType } from "../../schema/blocks/dialog";
-import { usePageStateContext } from "../context/pageCompilerContext";
+import { useLocalDialogContainer } from "~/components/LocalDialog";
 
 type DialogProps = {
   blockProps: DialogType;
   blockPath: BlockPathType;
 };
 export const Dialog = ({ blockProps, blockPath }: DialogProps) => {
-  const { container } = usePageStateContext();
+  const container = useLocalDialogContainer();
   const { blocks, trigger } = blockProps;
   return (
     <DialogDesignComponent>

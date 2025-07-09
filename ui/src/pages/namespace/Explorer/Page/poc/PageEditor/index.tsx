@@ -27,7 +27,6 @@ const PageEditor = ({ isPending, page: pageProp, onSave }: PageEditorProps) => {
   const [validate, setValidate] = useState(true);
   const [showCode, setShowCode] = useState(false);
   const { t } = useTranslation();
-  const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
@@ -61,8 +60,6 @@ const PageEditor = ({ isPending, page: pageProp, onSave }: PageEditorProps) => {
           mode={mode}
           page={page}
           setPage={(page) => setPage(page)}
-          container={container}
-          setContainer={setContainer}
         />
       </div>
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
