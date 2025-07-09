@@ -102,7 +102,11 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
       type: "form",
       label: t("direktivPage.blockEditor.blockName.form"),
       icon: TextCursorInput,
-      allow: true,
+      allow: !findAncestor({
+        page,
+        path,
+        match: (block) => block.type === "form",
+      }),
     },
   ] satisfies BlockTypeConfig[];
 
