@@ -1,6 +1,6 @@
 import { HTMLAttributes, createContext, useContext, useState } from "react";
 
-import { twMerge } from "tailwind-merge";
+import { twMergeClsx } from "~/util/helpers";
 
 const LocalDialogContainerContext = createContext<HTMLDivElement | null>(null);
 
@@ -20,7 +20,7 @@ export const LocalDialogContainer = ({
 
   return (
     <LocalDialogContainerContext.Provider value={container}>
-      <div ref={setContainer} className={twMerge("relative", className)}>
+      <div ref={setContainer} className={twMergeClsx("relative", className)}>
         {children}
       </div>
     </LocalDialogContainerContext.Provider>
