@@ -68,11 +68,13 @@ export type TriggerBlocksType = z.infer<typeof TriggerBlocks>;
 export const inlineBlockTypes = new Set(["columns", "card"]) satisfies Set<
   AllBlocksType["type"]
 >;
+export type InlineBlocksTypesType = ExtractUnionFromSet<
+  typeof inlineBlockTypes
+>;
+export type InlineBlocks = Extract<
+  AllBlocksType,
+  { type: InlineBlocksTypesType }
+>;
 
-// TODO: clean this up and check the names
-export type InlineBlocksType = ExtractUnionFromSet<typeof inlineBlockTypes>;
-
-type FormBlocksType = Exclude<AllBlocksType["type"], InlineBlocksType>;
-
+type FormBlocksType = Exclude<AllBlocksType["type"], InlineBlocksTypesType>;
 export type FormBlocks = Extract<AllBlocksType, { type: FormBlocksType }>;
-export type InlineBlocks = Extract<AllBlocksType, { type: InlineBlocksType }>;

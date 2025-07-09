@@ -1,6 +1,6 @@
 import {
   AllBlocksType,
-  InlineBlocksType,
+  InlineBlocksTypesType,
   inlineBlockTypes,
 } from "../../../schema/blocks";
 
@@ -26,7 +26,7 @@ export const useCreateBlock = () => {
       throw new Error(`${type} is not implemented yet`);
     }
 
-    if (inlineBlockTypes.has(type as InlineBlocksType)) {
+    if (inlineBlockTypes.has(type as InlineBlocksTypesType)) {
       return addBlock(path, matchingBlockType.defaultValues, true);
     }
 

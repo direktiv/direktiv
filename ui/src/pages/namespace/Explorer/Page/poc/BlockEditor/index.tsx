@@ -1,7 +1,8 @@
+import { ComponentType, Key } from "react";
+
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
 import { InlineBlockSidePanel } from "./InlineBlockSidePanel";
-import { Key } from "react";
 import { isPage } from "../PageCompiler/context/utils";
 import { useBlockTypes } from "../PageCompiler/context/utils/useBlockTypes";
 import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
@@ -56,10 +57,9 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
     matchingBlockType?.formComponent &&
     block.type === matchingBlockType.type
   ) {
-    const FormComponent =
-      matchingBlockType.formComponent as React.ComponentType<
-        BlockEditFormProps<typeof block>
-      >;
+    const FormComponent = matchingBlockType.formComponent as ComponentType<
+      BlockEditFormProps<typeof block>
+    >;
     return (
       <FormComponent
         key={key}
@@ -86,11 +86,9 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
     );
   }
 
-  if (!matchingBlockType) {
-    return (
-      <div>
-        Fallback form for {path} from {JSON.stringify(block)}
-      </div>
-    );
-  }
+  return (
+    <div>
+      Fallback form for {path} from {JSON.stringify(block)}
+    </div>
+  );
 };
