@@ -50,13 +50,16 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
   // Key needed to instantiate new component per block and action
   const key = `${action}-${path.join(".")}`;
 
-  // TODO: or should blockTypes be an object that has to implement every block type?
-  const matching = blockTypes.find((type) => type.type === block.type);
+  const matchingBlockType = blockTypes.find((type) => type.type === block.type);
 
-  if (matching?.formComponent && block.type === matching.type) {
-    const FormComponent = matching.formComponent as React.ComponentType<
-      BlockEditFormProps<typeof block>
-    >;
+  if (
+    matchingBlockType?.formComponent &&
+    block.type === matchingBlockType.type
+  ) {
+    const FormComponent =
+      matchingBlockType.formComponent as React.ComponentType<
+        BlockEditFormProps<typeof block>
+      >;
     return (
       <FormComponent
         key={key}
@@ -69,7 +72,10 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
     );
   }
 
-  if (!matching?.formComponent && block.type === matching?.type) {
+  if (
+    !matchingBlockType?.formComponent &&
+    block.type === matchingBlockType?.type
+  ) {
     return (
       <InlineBlockSidePanel
         key={key}
@@ -80,7 +86,7 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
     );
   }
 
-  if (!matching) {
+  if (!matchingBlockType) {
     return (
       <div>
         Fallback form for {path} from {JSON.stringify(block)}
