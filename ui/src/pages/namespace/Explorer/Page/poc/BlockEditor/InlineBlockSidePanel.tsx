@@ -1,10 +1,10 @@
 import { BlockEditFormProps } from ".";
 import { Header } from "./components/Header";
-import { InlineBlocks } from "../schema/blocks";
+import { InlineBlocksType } from "../schema/blocks";
 import { useTranslation } from "react-i18next";
 
 type QueryProviderEditFormProps = Omit<
-  BlockEditFormProps<InlineBlocks>,
+  BlockEditFormProps<InlineBlocksType>,
   "onSubmit" | "onCancel"
 >;
 

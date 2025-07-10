@@ -55,6 +55,7 @@ export type ParentBlocksType =
   | ColumnsType;
 
 export type AllBlocksType = SimpleBlocksType | ParentBlocksType;
+type AllBlocksTypeUnion = AllBlocksType["type"];
 
 export const AllBlocks: z.ZodType<AllBlocksType> = z.lazy(() =>
   z.union([SimpleBlockUnion, ParentBlockUnion])
@@ -65,16 +66,22 @@ export const TriggerBlocks = z.discriminatedUnion("type", [Button]);
 export type TriggerBlocksType = z.infer<typeof TriggerBlocks>;
 
 /* Inline blocks do not need a dialog for creation */
-export const inlineBlockTypes = new Set(["columns", "card"]) satisfies Set<
-  AllBlocksType["type"]
+export const inlineBlockTypeList = new Set([
+  "columns",
+  "card",
+]) satisfies Set<AllBlocksTypeUnion>;
+
+export type InlineBlocksTypeUnion = ExtractUnionFromSet<
+  typeof inlineBlockTypeList
 >;
-export type InlineBlocksTypesType = ExtractUnionFromSet<
-  typeof inlineBlockTypes
->;
-export type InlineBlocks = Extract<
+export type InlineBlocksType = Extract<
   AllBlocksType,
-  { type: InlineBlocksTypesType }
+  { type: InlineBlocksTypeUnion }
 >;
 
-type FormBlocksType = Exclude<AllBlocksType["type"], InlineBlocksTypesType>;
-export type FormBlocks = Extract<AllBlocksType, { type: FormBlocksType }>;
+type FormBlocksTypeUnion = Exclude<AllBlocksTypeUnion, InlineBlocksTypeUnion>;
+
+export type FormBlocksType = Extract<
+  AllBlocksType,
+  { type: FormBlocksTypeUnion }
+>;
