@@ -1,16 +1,7 @@
 import { AllBlocksType, ParentBlockUnion } from "../../../schema/blocks";
 import { DirektivPagesSchema, DirektivPagesType } from "../../../schema";
+
 import { BlockPathType } from "../../Block";
-import { CardType } from "../../../schema/blocks/card";
-import { ColumnsType } from "../../../schema/blocks/columns";
-import { DialogType } from "../../../schema/blocks/dialog";
-import { FormType } from "../../../schema/blocks/form";
-import { HeadlineType } from "../../../schema/blocks/headline";
-import { ImageType } from "../../../schema/blocks/image";
-import { LoopType } from "../../../schema/blocks/loop";
-import { QueryProviderType } from "../../../schema/blocks/queryProvider";
-import { TableType } from "../../../schema/blocks/table";
-import { TextType } from "../../../schema/blocks/text";
 import { clonePage } from "../../../BlockEditor/utils";
 import { z } from "zod";
 
@@ -209,96 +200,4 @@ export const findAncestor = ({
     }
   }
   return false;
-};
-
-export const getBlockTemplate = (type: AllBlocksType["type"]) => {
-  switch (type) {
-    case "headline":
-      return {
-        type: "headline",
-        level: "h1",
-        label: "",
-      } satisfies HeadlineType;
-    case "text":
-      return {
-        type: "text",
-        content: "",
-      } satisfies TextType;
-    case "columns": {
-      return {
-        type: "columns",
-        blocks: [
-          {
-            type: "column",
-            blocks: [],
-          },
-          {
-            type: "column",
-            blocks: [],
-          },
-        ],
-      } satisfies ColumnsType;
-    }
-    case "card":
-      return {
-        type: "card",
-        blocks: [],
-      } satisfies CardType;
-    case "query-provider":
-      return {
-        type: "query-provider",
-        blocks: [],
-        queries: [],
-      } satisfies QueryProviderType;
-    case "table":
-      return {
-        type: "table",
-        data: {
-          type: "loop",
-          id: "",
-          data: "",
-        },
-        actions: [],
-        columns: [],
-      } satisfies TableType;
-    case "dialog":
-      return {
-        type: "dialog",
-        trigger: {
-          type: "button",
-          label: "",
-        },
-        blocks: [],
-      } satisfies DialogType;
-    case "loop":
-      return {
-        type: "loop",
-        id: "",
-        data: "",
-        blocks: [],
-      } satisfies LoopType;
-    case "image":
-      return {
-        type: "image",
-        src: "",
-        width: 200,
-        height: 200,
-      } satisfies ImageType;
-    case "form":
-      return {
-        type: "form",
-        mutation: {
-          id: "",
-          url: "",
-          method: "POST",
-        },
-        trigger: {
-          label: "",
-          type: "button",
-        },
-        blocks: [],
-      } satisfies FormType;
-    default:
-      throw new Error(`${type} is not implemented yet`);
-  }
 };

@@ -1,7 +1,11 @@
-import { AllBlocksType, inlineBlockTypes } from "../../../schema/blocks";
+import {
+  AllBlocksType,
+  InlineBlocksTypeUnion,
+  inlineBlockTypeList,
+} from "../../../schema/blocks";
 
 import { BlockPathType } from "../../Block";
-import { getBlockTemplate } from ".";
+import { useBlockTypes } from "./useBlockTypes";
 import { usePageEditor } from "../pageCompilerContext";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 
@@ -13,14 +17,22 @@ import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 export const useCreateBlock = () => {
   const { addBlock } = usePageEditor();
   const { setPanel } = usePageEditorPanel();
+  const blockTypes = useBlockTypes();
 
   const createBlock = (type: AllBlocksType["type"], path: BlockPathType) => {
-    if (inlineBlockTypes.has(type)) {
-      return addBlock(path, getBlockTemplate(type), true);
+    const matchingBlockType = blockTypes.find((block) => block.type === type);
+
+    if (!matchingBlockType) {
+      throw new Error(`${type} is not implemented yet`);
     }
+
+    if (inlineBlockTypeList.has(type as InlineBlocksTypeUnion)) {
+      return addBlock(path, matchingBlockType.defaultValues, true);
+    }
+
     setPanel({
       action: "create",
-      block: getBlockTemplate(type),
+      block: matchingBlockType.defaultValues,
       path,
     });
   };
