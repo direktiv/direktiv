@@ -849,9 +849,10 @@ type actionResultPayload struct {
 }
 
 type actionResultMessage struct {
-	InstanceID string
 	enginerefactor.ActionContext
-	Payload actionResultPayload
+
+	InstanceID string
+	Payload    actionResultPayload
 }
 
 func (engine *engine) createTransport() *http.Transport {

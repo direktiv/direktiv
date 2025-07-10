@@ -348,6 +348,7 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 func namespaceAPIObject(ns *datastore.Namespace, mConfig *datastore.MirrorConfig) any {
 	type apiObject struct {
 		*datastore.Namespace
+
 		Mirror            any  `json:"mirror"`
 		IsSystemNamespace bool `json:"isSystemNamespace"`
 	}

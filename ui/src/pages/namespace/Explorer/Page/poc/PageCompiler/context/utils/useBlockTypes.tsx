@@ -152,7 +152,12 @@ export const useBlockTypes = (): BlockTypeConfig[] => {
       type: "form",
       label: t("direktivPage.blockEditor.blockName.form"),
       icon: TextCursorInput,
-      allow: () => true,
+      allow: (page, path) =>
+        !findAncestor({
+          page,
+          path,
+          match: (block) => block.type === "form",
+        }),
       formComponent: FormForm,
       defaultValues: {
         type: "form",

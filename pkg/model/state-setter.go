@@ -15,9 +15,10 @@ const (
 
 type SetterState struct {
 	StateCommon `yaml:",inline"`
-	Variables   []SetterDefinition `yaml:"variables"`
-	Transform   interface{}        `yaml:"transform,omitempty"`
-	Transition  string             `yaml:"transition,omitempty"`
+
+	Variables  []SetterDefinition `yaml:"variables"`
+	Transform  interface{}        `yaml:"transform,omitempty"`
+	Transition string             `yaml:"transition,omitempty"`
 }
 
 type SetterDefinition struct {

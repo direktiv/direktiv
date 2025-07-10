@@ -11,6 +11,7 @@ import (
 
 type StagingEvent struct {
 	*Event
+
 	DatabaseID   uuid.UUID
 	DelayedUntil time.Time
 }
