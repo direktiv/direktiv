@@ -16,7 +16,7 @@ export const useCreateBlock = () => {
 
   const createBlock = (type: AllBlocksType["type"], path: BlockPathType) => {
     if (inlineBlockTypes.has(type)) {
-      return addBlock(path, getBlockTemplate(type), true);
+      return addBlock(path, getBlockTemplate(type));
     }
     setPanel({
       action: "create",

@@ -46,12 +46,17 @@ export const DraggableElement: FC<DraggableProps> = ({
   );
 };
 
-export const DraggableCreateElement: FC<DraggableProps> = ({
+type DraggableCreateProps = PropsWithChildren & {
+  id: number;
+  type: AllBlocksType["type"];
+};
+
+export const DraggableCreateElement: FC<DraggableCreateProps> = ({
   id,
-  element,
+  type,
   children,
 }) => {
-  const data = element;
+  const data = { type };
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id,
     data,

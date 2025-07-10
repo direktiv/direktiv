@@ -1,6 +1,7 @@
 import { FC, PropsWithChildren } from "react";
 import { useDndContext, useDroppable } from "@dnd-kit/core";
 
+import { AllBlocksType } from "~/pages/namespace/Explorer/Page/poc/schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockPathType } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/Block";
 import { PlusCircle } from "lucide-react";
@@ -10,6 +11,7 @@ type DroppableProps = PropsWithChildren & {
   id: string;
   blockPath: BlockPathType;
   position: "before" | "after" | undefined;
+  onDrop: (type: AllBlocksType["type"]) => void;
 };
 
 export const DroppableSeparator: FC<DroppableProps> = ({
@@ -17,9 +19,15 @@ export const DroppableSeparator: FC<DroppableProps> = ({
   blockPath,
   children,
   position,
+  onDrop,
 }) => {
   const { setNodeRef, isOver } = useDroppable({
     id,
+    data: {
+      blockPath,
+      position,
+      onDrop,
+    },
   });
 
   const before = position === "before";

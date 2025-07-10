@@ -1,56 +1,48 @@
 import { Blocks, Settings } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 
-import { AllBlocksType } from "../../schema/blocks";
 import { BlockForm } from "..";
 import { Card } from "~/design/Card";
 import { DraggableCreateElement } from "~/design/DragAndDropEditor/DraggableElement";
 import { useBlockTypes } from "../../PageCompiler/context/utils/useBlockTypes";
 import { usePageEditorPanel } from "../EditorPanelProvider";
+import { useTranslation } from "react-i18next";
 
 export const EditorPanel = () => {
   const { panel } = usePageEditorPanel();
+  const { t } = useTranslation();
 
   const path = panel?.path ?? [1];
 
   const types = useBlockTypes(path);
 
-  const emptyBlock: AllBlocksType = { type: "button", label: "ok" };
-
   if (!panel) {
     return (
       <div>
         <Tabs
-          defaultValue="general"
+          defaultValue="addBlock"
           className="z-50 w-full overflow-visible border-red-300"
         >
           <TabsList variant="boxed">
-            <TabsTrigger variant="boxed" value="general">
-              <Settings size={16} /> General Settings
-            </TabsTrigger>
-            <TabsTrigger variant="boxed" value="blockcollection">
+            <TabsTrigger variant="boxed" value="addBlock">
               <Blocks size={16} />
-              Add Block
+              {t("direktivPage.blockEditor.generic.addBlockTab")}
+            </TabsTrigger>
+            <TabsTrigger variant="boxed" value="settings">
+              <Settings size={16} />
+              {t("direktivPage.blockEditor.generic.settingsTab")}
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="general" asChild>
-            <Card
-              className="row flex bg-gray-2 p-4 text-sm dark:bg-gray-dark-2"
-              noShadow
-            >
-              settings
-            </Card>
-          </TabsContent>
-          <TabsContent value="blockcollection" asChild>
+
+          <TabsContent value="addBlock" asChild>
             <div className="relative flex-col-reverse overflow-visible">
-              {types.map((type) => {
+              {types.map((type, index) => {
                 const Icon = type.icon;
                 return (
                   <DraggableCreateElement
                     key={type.label}
-                    id={String(type.label)}
-                    element={emptyBlock}
-                    blockPath={null}
+                    id={index}
+                    type={type.type}
                   >
                     <Card className="z-50 m-4 flex justify-center bg-gray-2 p-4 text-sm text-black dark:bg-gray-dark-2">
                       <Icon size={16} className="mr-4" /> {type.label}
@@ -60,6 +52,7 @@ export const EditorPanel = () => {
               })}
             </div>
           </TabsContent>
+          <TabsContent value="settings" asChild></TabsContent>
         </Tabs>
       </div>
     );

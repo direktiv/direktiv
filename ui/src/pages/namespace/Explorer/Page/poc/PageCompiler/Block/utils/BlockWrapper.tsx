@@ -75,6 +75,9 @@ const EditorBlockWrapper = ({
         id={pathToId(blockPath)}
         blockPath={blockPath}
         position="before"
+        onDrop={(type: AllBlocksType["type"]) => {
+          createBlock(type, blockPath);
+        }}
       />
       <DraggableElement
         blockPath={blockPath}
