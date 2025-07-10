@@ -53,13 +53,13 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
 
   const matchingBlockType = blockTypes.find((type) => type.type === block.type);
 
-  if (
-    matchingBlockType?.formComponent &&
-    block.type === matchingBlockType.type
-  ) {
+  const isFormBlock = !!matchingBlockType?.formComponent;
+
+  if (isFormBlock && block.type === matchingBlockType.type) {
     const FormComponent = matchingBlockType.formComponent as ComponentType<
       BlockEditFormProps<typeof block>
     >;
+
     return (
       <FormComponent
         key={key}
@@ -72,10 +72,7 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
     );
   }
 
-  if (
-    !matchingBlockType?.formComponent &&
-    block.type === matchingBlockType?.type
-  ) {
+  if (!isFormBlock && block.type === matchingBlockType?.type) {
     return (
       <InlineBlockSidePanel
         key={key}
