@@ -15,7 +15,6 @@ import { DroppableSeparator } from "~/design/DragAndDropEditor/DroppableSeparato
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
-import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
 import { twMergeClsx } from "~/util/helpers";
 import { useCreateBlock } from "../../context/utils/useCreateBlock";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
@@ -101,14 +100,6 @@ const EditorBlockWrapper = ({
               </span>
               {blockPath.join(".")}
             </Badge>
-          )}
-          {isFocused && (
-            <div onClick={(event) => event.stopPropagation()}>
-              <SelectBlockType
-                path={blockPath}
-                onSelect={(type) => createBlock(type, blockPath)}
-              />
-            </div>
           )}
           <Suspense fallback={<Loading />}>
             <ErrorBoundary

@@ -48,11 +48,7 @@ const EditorBlockList = ({
             className="self-center"
             onClick={(event) => event.stopPropagation()}
           >
-            <SelectBlockType
-              big
-              path={[...path, 0]}
-              onSelect={(type) => createBlock(type, [...path, 0])}
-            />
+            placeholder for droppable
           </div>
         )}
         {children}
