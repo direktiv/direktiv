@@ -1,8 +1,10 @@
 import { ReactElement, Suspense } from "react";
 
+import { AllBlocksType } from "../../../schema/blocks";
 import { BlockPathType } from "..";
+import { DroppableElement } from "~/design/DragAndDropEditor/DroppableSeparator";
 import { Loading } from "./Loading";
-import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
+import { pathToId } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useCreateBlock } from "../../context/utils/useCreateBlock";
 import { usePageStateContext } from "../../context/pageCompilerContext";
@@ -48,7 +50,14 @@ const EditorBlockList = ({
             className="self-center"
             onClick={(event) => event.stopPropagation()}
           >
-            placeholder for droppable
+            <DroppableElement
+              id={pathToId(path)}
+              blockPath={path}
+              position="before"
+              onDrop={(type: AllBlocksType["type"]) => {
+                createBlock(type, path);
+              }}
+            />
           </div>
         )}
         {children}

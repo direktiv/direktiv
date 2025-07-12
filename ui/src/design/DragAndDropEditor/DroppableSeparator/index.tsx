@@ -51,6 +51,41 @@ export const DroppableSeparator: FC<DroppableProps> = ({
   );
 };
 
+export const DroppableElement: FC<DroppableProps> = ({
+  id,
+  blockPath,
+  children,
+  position,
+  onDrop,
+}) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id,
+    data: {
+      blockPath,
+      position,
+      onDrop,
+    },
+  });
+
+  const { active } = useDndContext();
+
+  const canDrop = !!active;
+
+  return (
+    <div
+      ref={setNodeRef}
+      aria-label={id}
+      className={twMergeClsx(
+        "relative m-0 my-4 -ml-4 h-10 w-full justify-center rounded-lg p-0",
+        isOver && "h-10 bg-gray-4 transition-all dark:bg-gray-dark-4"
+      )}
+    >
+      {children}
+      {canDrop && <DropZone id={id} isOver={isOver} blockPath={blockPath} />}
+    </div>
+  );
+};
+
 const DropZone = ({
   isOver,
 }: {
