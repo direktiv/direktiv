@@ -13,7 +13,10 @@ describe("addBlockToPage", () => {
   };
 
   const path: BlockPathType = [0];
-  const pathLevelBelow: BlockPathType = [1, 0];
+
+  const pathLevelBelow: BlockPathType = [0, 0];
+  const pathLevelBelowBefore: BlockPathType = [0, 0];
+  const pathLevelBelowAfter: BlockPathType = [0, 1];
 
   test("inserts block on the same level", () => {
     const page: DirektivPagesType = {
@@ -44,6 +47,66 @@ describe("addBlockToPage", () => {
         {
           type: "card",
           blocks: [
+            {
+              type: "headline",
+              level: "h1",
+              label: "NEW HEADLINE",
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  test("inserts block in another block (level below) - insert before ", () => {
+    const page: DirektivPagesType = {
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        { type: "card", blocks: [{ type: "text", content: "Original Block" }] },
+      ],
+    };
+
+    const updatedPage = addBlockToPage(page, pathLevelBelowBefore, newBlock);
+
+    expect(updatedPage).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [
+            {
+              type: "headline",
+              level: "h1",
+              label: "NEW HEADLINE",
+            },
+            { type: "text", content: "Original Block" },
+          ],
+        },
+      ],
+    });
+  });
+
+  test("inserts block in another block (level below) - insert after ", () => {
+    const page: DirektivPagesType = {
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        { type: "card", blocks: [{ type: "text", content: "Original Block" }] },
+      ],
+    };
+
+    const updatedPage = addBlockToPage(page, pathLevelBelowAfter, newBlock);
+
+    expect(updatedPage).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [
+            { type: "text", content: "Original Block" },
             {
               type: "headline",
               level: "h1",
