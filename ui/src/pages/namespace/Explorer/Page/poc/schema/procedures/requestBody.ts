@@ -1,4 +1,3 @@
-import { KeyValue } from "../primitives/keyValue";
 import z from "zod";
 
 const StringSchema = z.object({
@@ -18,12 +17,17 @@ const BooleanSchema = z.object({
 
 const ArraySchema = z.object({
   type: z.literal("array"),
-  value: z.array(z.string()),
+  value: z.array(z.unknown()),
 });
 
 const ObjectSchema = z.object({
   type: z.literal("object"),
-  value: KeyValue,
+  value: z.array(
+    z.object({
+      key: z.string().min(1),
+      value: z.unknown(),
+    })
+  ),
 });
 
 const DataType = z.discriminatedUnion("type", [

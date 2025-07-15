@@ -138,6 +138,31 @@ export default {
                       value: "query.loop.project.categories",
                     },
                   },
+                  {
+                    key: "relatedTickets",
+                    value: {
+                      type: "array",
+                      // a static array of strings
+                      value: ["ticket-1", "ticket-2", "ticket-3"],
+                    },
+                  },
+                  {
+                    key: "customFields",
+                    value: {
+                      type: "object",
+                      // a static object
+                      value: [
+                        {
+                          key: "severity",
+                          value: "high",
+                        },
+                        {
+                          key: "environment",
+                          value: "staging",
+                        },
+                      ],
+                    },
+                  },
                 ],
               },
               blocks: [],
