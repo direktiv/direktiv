@@ -165,13 +165,23 @@ export const moveBlockWithinPage = (
 export const idToPath = (id: string): BlockPathType => {
   const arrayOfStrings = id.split("-");
   const path = arrayOfStrings.map(Number);
-
   return path;
 };
 
 export const pathToId = (path: BlockPathType) => {
   const id = path.join("-");
   return id;
+};
+
+export const incrementPath = (path: BlockPathType): BlockPathType => {
+  const pathLength = path.length;
+  let lastIndex = path[pathLength - 1];
+
+  const updatedPath = lastIndex
+    ? [...path.slice(0, -1), (lastIndex -= 1)]
+    : path;
+
+  return updatedPath;
 };
 
 type PathOrNull = BlockPathType | null;

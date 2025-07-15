@@ -1,4 +1,9 @@
 import { FC, PropsWithChildren } from "react";
+import {
+  idToPath,
+  incrementPath,
+  pathToId,
+} from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/utils";
 import { useDndContext, useDroppable } from "@dnd-kit/core";
 
 import { AllBlocksType } from "~/pages/namespace/Explorer/Page/poc/schema/blocks";
@@ -33,6 +38,11 @@ export const DroppableSeparator: FC<DroppableProps> = ({
   const before = position === "before";
   const { active } = useDndContext();
 
+  const path = idToPath(id);
+  const pathAfter = incrementPath(path);
+  const positionAfter = pathToId(pathAfter);
+
+  const samePosition = active?.id === id || active?.id === positionAfter;
   const canDrop = !!active;
 
   return (
@@ -42,7 +52,8 @@ export const DroppableSeparator: FC<DroppableProps> = ({
       className={twMergeClsx(
         "relative m-0 my-4 -ml-4 h-1 w-full justify-center rounded-lg p-0",
         before && "mb-4",
-        isOver && "h-1 bg-gray-4 transition-all dark:bg-gray-dark-4"
+        isOver && "h-1 bg-gray-4 transition-all dark:bg-gray-dark-4",
+        samePosition && "invisible"
       )}
     >
       {children}
@@ -69,6 +80,8 @@ export const DroppableElement: FC<DroppableProps> = ({
 
   const { active } = useDndContext();
 
+  const samePosition = active?.id === id;
+
   const canDrop = !!active;
 
   return (
@@ -77,7 +90,8 @@ export const DroppableElement: FC<DroppableProps> = ({
       aria-label={id}
       className={twMergeClsx(
         "relative m-0 my-4 -ml-4 h-10 w-full justify-center rounded-lg p-0",
-        isOver && "h-10 bg-gray-4 transition-all dark:bg-gray-dark-4"
+        isOver && "h-10 bg-gray-4 transition-all dark:bg-gray-dark-4",
+        samePosition && "invisible"
       )}
     >
       {children}
