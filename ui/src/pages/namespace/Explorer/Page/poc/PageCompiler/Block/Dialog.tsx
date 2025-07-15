@@ -24,9 +24,12 @@ export const Dialog = ({ blockProps, blockPath }: DialogProps) => {
       </DialogTrigger>
 
       <DialogPrimitive.DialogPortal container={container}>
-        <div className="pointer-events-none absolute inset-0 flex items-start justify-center px-5 pt-16">
+        <div
+          className="absolute inset-0 flex items-start justify-center px-5 pt-16"
+          onClick={(event) => event.stopPropagation()}
+        >
           <div
-            className="pointer-events-auto absolute inset-0 -m-2 bg-black/10 backdrop-blur-sm"
+            className="absolute inset-0 -m-2 bg-black/10 backdrop-blur-sm"
             onClick={(event) => event.stopPropagation()}
           />
           <DialogPrimitive.Content

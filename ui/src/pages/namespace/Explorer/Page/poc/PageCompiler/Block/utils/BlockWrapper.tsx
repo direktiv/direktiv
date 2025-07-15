@@ -58,6 +58,7 @@ const EditorBlockWrapper = ({
 
   const handleClickBlock = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
+
     if (isFocused) {
       return setPanel(null);
     } else {
