@@ -9,18 +9,27 @@ import { DialogType } from "../../schema/blocks/dialog";
 import { XIcon } from "lucide-react";
 import { twMergeClsx } from "~/util/helpers";
 import { useLocalDialogContainer } from "~/components/LocalDialog";
+import { usePageEditor } from "../context/pageCompilerContext";
+import { usePageEditorPanel } from "../../BlockEditor/EditorPanelProvider";
 
 type DialogProps = {
   blockProps: DialogType;
   blockPath: BlockPathType;
+  onOpenChange?: (open: boolean) => void;
 };
-export const Dialog = ({ blockProps, blockPath }: DialogProps) => {
+
+const DialogBaseComponent = ({
+  blockProps,
+  blockPath,
+  onOpenChange,
+}: DialogProps) => {
   const { container } = useLocalDialogContainer();
   const { blocks, trigger } = blockProps;
+
   return (
-    <DialogPrimitive.Root modal={false}>
-      <DialogTrigger asChild>
-        <Button blockProps={trigger} />
+    <DialogPrimitive.Root modal={false} onOpenChange={onOpenChange}>
+      <DialogTrigger>
+        <Button data-local-dialog-trigger blockProps={trigger} />
       </DialogTrigger>
 
       <DialogPrimitive.DialogPortal container={container}>
@@ -61,4 +70,29 @@ export const Dialog = ({ blockProps, blockPath }: DialogProps) => {
       </DialogPrimitive.DialogPortal>
     </DialogPrimitive.Root>
   );
+};
+
+const EditModeDialog = (props: DialogProps) => {
+  const { setPanel } = usePageEditorPanel();
+
+  return (
+    <DialogBaseComponent
+      {...props}
+      onOpenChange={() =>
+        setPanel({
+          action: "edit",
+          path: props.blockPath,
+          block: props.blockProps,
+        })
+      }
+    />
+  );
+};
+
+export const Dialog = (props: DialogProps) => {
+  const { mode } = usePageEditor();
+
+  if (mode === "edit") return <EditModeDialog {...props} />;
+
+  return <DialogBaseComponent {...props} />;
 };

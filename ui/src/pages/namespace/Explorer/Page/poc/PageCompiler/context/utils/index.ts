@@ -185,30 +185,50 @@ export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
   return a.length === b.length && a.every((val, index) => val === b[index]);
 };
 
-type FindInBranchConfig = {
+// type FindAncestorConfig = {
+//   page: DirektivPagesType;
+//   path: BlockPathType;
+//   match: (block: AllBlocksType | DirektivPagesType) => boolean;
+//   depth?: number;
+// };
+
+type FindAncestorConfig<T extends AllPossibleBlocks["type"]> = {
   page: DirektivPagesType;
   path: BlockPathType;
-  match: (block: AllBlocksType | DirektivPagesType) => boolean;
+  match: (
+    block: AllPossibleBlocks
+  ) => block is Extract<AllPossibleBlocks, { type: T }>;
   depth?: number;
 };
 
-export const findAncestor = ({
+type AllPossibleBlocks = AllBlocksType | DirektivPagesType;
+
+type FindAncestorResult<T extends AllPossibleBlocks["type"]> = {
+  block: Extract<AllPossibleBlocks, { type: T }>;
+  path: BlockPathType;
+} | null;
+
+export const findAncestor = <T extends AllPossibleBlocks["type"]>({
   page,
   path,
   match,
   depth,
-}: FindInBranchConfig) => {
+}: FindAncestorConfig<T>): FindAncestorResult<T> => {
   if (depth !== undefined && !(depth >= 1)) {
     throw new Error("depth must be undefined or >= 1");
   }
   const limit = depth !== undefined ? path.length - depth : 0;
   for (let i = path.length - 1; i >= limit; i--) {
-    const target = findBlock(page, path.slice(0, i));
+    const targetPath = path.slice(0, i);
+    const target = findBlock(page, targetPath);
     if (match(target)) {
-      return true;
+      return {
+        block: target,
+        path: targetPath,
+      };
     }
   }
-  return false;
+  return null;
 };
 
 export const getBlockTemplate = (type: AllBlocksType["type"]) => {

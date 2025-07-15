@@ -5,7 +5,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { pathToId, pathsEqual } from "../../context/utils";
+import { findAncestor, pathToId, pathsEqual } from "../../context/utils";
+import {
+  usePage,
+  usePageStateContext,
+} from "../../context/pageCompilerContext";
 
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
@@ -19,7 +23,6 @@ import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
 import { twMergeClsx } from "~/util/helpers";
 import { useCreateBlock } from "../../context/utils/useCreateBlock";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
-import { usePageStateContext } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
 type BlockWrapperProps = PropsWithChildren<{
@@ -33,6 +36,7 @@ const EditorBlockWrapper = ({
   children,
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
+  const page = usePage();
   const { panel, setPanel } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -59,15 +63,30 @@ const EditorBlockWrapper = ({
   const handleClickBlock = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
 
-    if (isFocused) {
-      return setPanel(null);
-    } else {
+    const parentDialog = findAncestor({
+      page,
+      path: blockPath,
+      match: (block) => block.type === "dialog",
+    });
+
+    // if block losing focus is in a Dialog, focus the Dialog.
+    if (isFocused && parentDialog) {
       return setPanel({
         action: "edit",
-        block,
-        path: blockPath,
+        block: parentDialog.block,
+        path: parentDialog.path,
       });
     }
+
+    if (isFocused) {
+      return setPanel(null);
+    }
+
+    return setPanel({
+      action: "edit",
+      block,
+      path: blockPath,
+    });
   };
 
   return (
