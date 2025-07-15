@@ -46,12 +46,14 @@ const DialogBaseComponent = ({
 };
 
 const EditModeDialog = (props: DialogProps) => {
-  const { setPanel } = usePageEditorPanel();
+  const { panel, setPanel } = usePageEditorPanel();
 
   return (
     <DialogBaseComponent
       {...props}
       onOpenChange={() =>
+        // avoid re-rendering when panel is already set to target
+        panel?.path !== props.blockPath &&
         setPanel({
           action: "edit",
           path: props.blockPath,
