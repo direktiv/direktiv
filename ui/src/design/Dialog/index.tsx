@@ -15,11 +15,7 @@ const DialogPortal = ({
   ...props
 }: DialogPrimitive.DialogPortalProps) => (
   <DialogPrimitive.Portal {...props}>
-    <div
-      className={twMergeClsx(
-        "inset-0 z-40 flex items-start justify-center sm:items-center"
-      )}
-    >
+    <div className="fixed inset-0 z-40 flex items-start justify-center sm:items-center">
       {children}
     </div>
   </DialogPrimitive.Portal>
@@ -32,7 +28,7 @@ const DialogOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     className={twMergeClsx(
-      "inset-0 z-40 bg-black/50 backdrop-blur-sm transition-all duration-100 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in",
+      "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-all duration-100 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in",
       className
     )}
     {...props}
