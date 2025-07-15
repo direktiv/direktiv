@@ -22,36 +22,36 @@ const DialogBaseComponent = ({
   const { blocks, trigger } = blockProps;
 
   return (
-    <LocalDialog onOpenChange={onOpenChange}>
-      <DialogTrigger>
-        <Button data-local-dialog-trigger blockProps={trigger} />
-      </DialogTrigger>
+    <div onClick={(event) => event.preventDefault}>
+      <LocalDialog onOpenChange={onOpenChange}>
+        <DialogTrigger asChild onClick={(event) => event.stopPropagation()}>
+          <Button blockProps={trigger} />
+        </DialogTrigger>
 
-      <LocalDialogContent>
-        <DialogXClose />
-        <BlockList path={blockPath}>
-          {blocks.map((block, index) => (
-            <Block
-              key={index}
-              block={block}
-              blockPath={[...blockPath, index]}
-            />
-          ))}
-        </BlockList>
-      </LocalDialogContent>
-    </LocalDialog>
+        <LocalDialogContent>
+          <DialogXClose />
+          <BlockList path={blockPath}>
+            {blocks.map((block, index) => (
+              <Block
+                key={index}
+                block={block}
+                blockPath={[...blockPath, index]}
+              />
+            ))}
+          </BlockList>
+        </LocalDialogContent>
+      </LocalDialog>
+    </div>
   );
 };
 
 const EditModeDialog = (props: DialogProps) => {
-  const { panel, setPanel } = usePageEditorPanel();
+  const { setPanel } = usePageEditorPanel();
 
   return (
     <DialogBaseComponent
       {...props}
       onOpenChange={() =>
-        // avoid re-rendering when panel is already set to target
-        panel?.path !== props.blockPath &&
         setPanel({
           action: "edit",
           path: props.blockPath,
