@@ -5,7 +5,6 @@ import { LocalDialog, LocalDialogContent } from "~/components/LocalDialog";
 import { BlockList } from "./utils/BlockList";
 import { Button } from "./Button";
 import { DialogType } from "../../schema/blocks/dialog";
-import { useLocalDialogContainer } from "~/components/LocalDialog/container";
 import { usePageEditor } from "../context/pageCompilerContext";
 import { usePageEditorPanel } from "../../BlockEditor/EditorPanelProvider";
 
@@ -20,7 +19,6 @@ const DialogBaseComponent = ({
   blockPath,
   onOpenChange,
 }: DialogProps) => {
-  const { container } = useLocalDialogContainer();
   const { blocks, trigger } = blockProps;
 
   return (
@@ -29,7 +27,7 @@ const DialogBaseComponent = ({
         <Button data-local-dialog-trigger blockProps={trigger} />
       </DialogTrigger>
 
-      <LocalDialogContent container={container}>
+      <LocalDialogContent>
         <DialogXClose />
         <BlockList path={blockPath}>
           {blocks.map((block, index) => (
