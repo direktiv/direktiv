@@ -69,10 +69,76 @@ export default {
                 type: "button",
                 label: "delete",
               },
+
               mutation: {
-                id: "my-delete",
-                url: "/api/delete/",
-                method: "DELETE",
+                id: "create-ticket",
+                url: "/api/teams/{{query.user.teamId}}/projects/{{loop.project.id}}/tickets",
+                method: "POST",
+                queryParams: [
+                  {
+                    key: "assigned",
+                    value: "{{query.user.id}}",
+                  },
+                ],
+                requestHeaders: [
+                  {
+                    key: "Authorization",
+                    value: "Bearer {{query.user.token}}",
+                  },
+                ],
+                // request body must support more that just key value string pairs
+                requestBody: [
+                  {
+                    key: "title",
+                    value: {
+                      type: "string",
+                      // a string using a variable placeholder from a string input
+                      value: "Draft: {{form.ticketForm.title}}",
+                    },
+                  },
+                  {
+                    key: "description",
+                    value: {
+                      type: "string",
+                      // a static string
+                      value: "Steps to reproduce: \n\n Acceptance criteria: \n",
+                    },
+                  },
+                  {
+                    key: "priority",
+                    value: {
+                      type: "variable",
+                      // uses a variable and preserves type. In this
+                      // it would be sourced from a number input
+                      value: "form.ticketForm.priority",
+                    },
+                  },
+                  {
+                    key: "hidden",
+                    value: {
+                      type: "variable",
+                      // boolean value from a checkbox
+                      value: "form.ticketForm.hidden",
+                    },
+                  },
+                  {
+                    key: "isDraft",
+                    value: {
+                      type: "boolean",
+                      // a static boolean
+                      value: true,
+                    },
+                  },
+                  {
+                    key: "categories",
+                    value: {
+                      type: "variable",
+                      // this is an example of using a variables
+                      // that does not come from a form at all
+                      value: "query.loop.project.categories",
+                    },
+                  },
+                ],
               },
               blocks: [],
             },
