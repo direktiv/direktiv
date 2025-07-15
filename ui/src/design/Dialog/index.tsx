@@ -17,7 +17,6 @@ const DialogPortal = ({
   <DialogPrimitive.Portal {...props}>
     <div
       className={twMergeClsx(
-        props.container ? "absolute" : "fixed",
         "inset-0 z-40 flex items-start justify-center sm:items-center"
       )}
     >
@@ -29,13 +28,10 @@ DialogPortal.displayName = DialogPrimitive.Portal.displayName;
 
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay> & {
-    container?: HTMLDivElement | null;
-  }
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     className={twMergeClsx(
-      props.container ? "absolute" : "fixed",
       "inset-0 z-40 bg-black/50 backdrop-blur-sm transition-all duration-100 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in",
       className
     )}
@@ -51,11 +47,10 @@ const DialogContent = React.forwardRef<
     overlayProps?: React.ComponentPropsWithoutRef<
       typeof DialogPrimitive.Overlay
     >;
-    container?: HTMLDivElement | null;
   }
->(({ className, children, overlayProps, container, ...props }, ref) => (
-  <DialogPortal container={container}>
-    <DialogOverlay container={container} {...overlayProps} />
+>(({ className, children, overlayProps, ...props }, ref) => (
+  <DialogPortal>
+    <DialogOverlay {...overlayProps} />
     <DialogPrimitive.Content
       ref={ref}
       className={twMergeClsx(
