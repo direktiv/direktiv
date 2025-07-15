@@ -41,21 +41,17 @@ const EditorBlockList = ({
   path,
 }: BlockListComponentProps) => {
   const createBlock = useCreateBlock();
-
   return (
     <BlockListWrapper horizontal={horizontal}>
       <Suspense fallback={<Loading />}>
         {!children.length && (
-          <div
-            className="self-center"
-            onClick={(event) => event.stopPropagation()}
-          >
+          <div className="w-full self-center">
             <DroppableElement
               id={pathToId(path)}
               blockPath={path}
               position="before"
               onDrop={(type: AllBlocksType["type"]) => {
-                createBlock(type, path);
+                createBlock(type, [...path, 0]);
               }}
             />
           </div>
