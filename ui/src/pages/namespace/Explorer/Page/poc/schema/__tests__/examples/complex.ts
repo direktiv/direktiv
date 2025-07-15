@@ -135,7 +135,7 @@ export default {
                       type: "variable",
                       // this is an example of using a variables
                       // that does not come from a form at all
-                      value: "query.loop.project.categories",
+                      value: "loop.project.categories",
                     },
                   },
                   {
