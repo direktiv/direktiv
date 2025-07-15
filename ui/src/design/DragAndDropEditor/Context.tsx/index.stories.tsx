@@ -25,9 +25,9 @@ export const Default = () => {
     block: AllBlocksType
   ) => {
     const fromIndex = origin[0] ?? 0;
-    const toIndex = target[0] ?? 0;
+    let toIndex = target[0] ?? 0;
 
-    if (fromIndex === toIndex) return;
+    if (fromIndex < toIndex) toIndex -= 1;
 
     const updated = [...blocks];
     updated.splice(fromIndex, 1);
@@ -35,21 +35,23 @@ export const Default = () => {
     setBlocks(updated);
   };
 
+  const doSomething = () => 1;
+
   return (
     <DndContext onMove={moveBlock}>
-      <DroppableSeparator id="0" position="before" blockPath={[0]} />
       {blocks.map((block, index) => (
         <div key={index} className="my-2 flex flex-col items-center">
+          <DroppableSeparator
+            id={String(index)}
+            position="before"
+            blockPath={[index]}
+            onDrop={() => doSomething}
+          />
           <DraggableElement element={block} id={`${index}`} blockPath={[index]}>
             {block.type === "headline" && (
               <div className="border-2 border-dashed p-2">{block.label}</div>
             )}
           </DraggableElement>
-          <DroppableSeparator
-            id={String(index)}
-            position="after"
-            blockPath={[index]}
-          />
         </div>
       ))}
     </DndContext>
