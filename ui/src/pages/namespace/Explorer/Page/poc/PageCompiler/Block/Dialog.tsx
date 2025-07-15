@@ -28,11 +28,14 @@ const DialogBaseComponent = ({
 
   return (
     <DialogPrimitive.Root modal={false} onOpenChange={onOpenChange}>
+      {/* modal={false} allows interaction with DOM, which is further controlled by elements below*/}
+
       <DialogTrigger>
         <Button data-local-dialog-trigger blockProps={trigger} />
       </DialogTrigger>
 
       <DialogPrimitive.DialogPortal container={container}>
+        {/* Custom "overlay" implementation below, radix-ui overlay is not rendered when modal=false */}
         <div
           className="absolute inset-0 flex items-start justify-center px-5 pt-16"
           onClick={(event) => event.stopPropagation()}
@@ -46,8 +49,8 @@ const DialogBaseComponent = ({
               "pointer-events-auto fixed z-50 grid w-full gap-4 rounded-b-lg bg-gray-1 p-6 animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0",
               "dark:bg-gray-dark-1"
             )}
-            onInteractOutside={(e) => {
-              e.preventDefault();
+            onInteractOutside={(event) => {
+              event.preventDefault();
             }}
           >
             <DialogPrimitive.Close
