@@ -69,7 +69,6 @@ export default {
                 type: "button",
                 label: "delete",
               },
-
               mutation: {
                 id: "create-ticket",
                 url: "/api/teams/{{query.user.teamId}}/projects/{{loop.project.id}}/tickets",
@@ -86,13 +85,11 @@ export default {
                     value: "Bearer {{query.user.token}}",
                   },
                 ],
-                // request body must support more that just key value string pairs
                 requestBody: [
                   {
                     key: "title",
                     value: {
                       type: "string",
-                      // a string using a variable placeholder from a string input
                       value: "Draft: {{form.ticketForm.title}}",
                     },
                   },
@@ -100,7 +97,6 @@ export default {
                     key: "description",
                     value: {
                       type: "string",
-                      // a static string
                       value: "Steps to reproduce: \n\n Acceptance criteria: \n",
                     },
                   },
@@ -108,8 +104,6 @@ export default {
                     key: "priority",
                     value: {
                       type: "variable",
-                      // uses a variable and preserves type. In this
-                      // it would be sourced from a number input
                       value: "form.ticketForm.priority",
                     },
                   },
@@ -117,7 +111,6 @@ export default {
                     key: "hidden",
                     value: {
                       type: "variable",
-                      // boolean value from a checkbox
                       value: "form.ticketForm.hidden",
                     },
                   },
@@ -125,7 +118,6 @@ export default {
                     key: "isDraft",
                     value: {
                       type: "boolean",
-                      // a static boolean
                       value: true,
                     },
                   },
@@ -133,8 +125,6 @@ export default {
                     key: "categories",
                     value: {
                       type: "variable",
-                      // this is an example of using a variables
-                      // that does not come from a form at all
                       value: "loop.project.categories",
                     },
                   },
@@ -142,7 +132,6 @@ export default {
                     key: "relatedTickets",
                     value: {
                       type: "array",
-                      // a static array of strings
                       value: ["ticket-1", "ticket-2", "ticket-3"],
                     },
                   },
@@ -150,7 +139,6 @@ export default {
                     key: "customFields",
                     value: {
                       type: "object",
-                      // a static object
                       value: [
                         {
                           key: "severity",
