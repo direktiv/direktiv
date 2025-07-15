@@ -129,7 +129,8 @@ export const Form = ({
           />
         )}
       />
-      <Controller
+      {/* TODO: implement request body form that supported the new schema */}
+      {/* <Controller
         control={form.control}
         name="mutation.requestBody"
         render={({ field }) => (
@@ -140,7 +141,7 @@ export const Form = ({
             )}
           />
         )}
-      />
+      /> */}
     </FormWrapper>
   );
 };

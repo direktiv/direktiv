@@ -8,15 +8,16 @@ import { MutationType } from "../../schema/procedures/mutation";
 import { useUrlGenerator } from "./utils";
 
 export const usePageMutation = (mutation: MutationType) => {
-  const { method, requestBody, requestHeaders } = mutation;
+  const { method, requestHeaders } = mutation;
   const queryClient = useQueryClient();
   const generateUrl = useUrlGenerator();
   const resolveKeyValueArray = useKeyValueArrayResolver();
 
   const url = generateUrl(mutation);
 
-  const requestBodyResolved = resolveKeyValueArray(requestBody ?? []);
-  const body = JSON.stringify(keyValueArrayToObject(requestBodyResolved));
+  // TODO: implement parsing the body with the new schema
+  // const requestBodyResolved = resolveKeyValueArray(requestBody ?? []);
+  // const body = JSON.stringify(keyValueArrayToObject(requestBodyResolved));
 
   const requestHeadersResolved = resolveKeyValueArray(requestHeaders ?? []);
   const headers = keyValueArrayToObject(requestHeadersResolved);
@@ -25,7 +26,7 @@ export const usePageMutation = (mutation: MutationType) => {
     mutationFn: async () => {
       const response = await fetch(url, {
         method,
-        body,
+        body: undefined,
         headers,
       });
       if (!response.ok) {

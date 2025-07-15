@@ -15,9 +15,16 @@ const BooleanSchema = z.object({
   value: z.boolean(),
 });
 
+// for simplifity we don't support nested arrays and objects yet
+const AllowedArrayAndObjectValues = z.union([
+  z.string(),
+  z.number(),
+  z.boolean(),
+]);
+
 const ArraySchema = z.object({
   type: z.literal("array"),
-  value: z.array(z.unknown()),
+  value: z.array(AllowedArrayAndObjectValues),
 });
 
 const ObjectSchema = z.object({
@@ -25,7 +32,7 @@ const ObjectSchema = z.object({
   value: z.array(
     z.object({
       key: z.string().min(1),
-      value: z.unknown(),
+      value: AllowedArrayAndObjectValues,
     })
   ),
 });
