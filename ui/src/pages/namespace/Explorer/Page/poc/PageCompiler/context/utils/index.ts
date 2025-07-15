@@ -185,12 +185,7 @@ export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
   return a.length === b.length && a.every((val, index) => val === b[index]);
 };
 
-// type FindAncestorConfig = {
-//   page: DirektivPagesType;
-//   path: BlockPathType;
-//   match: (block: AllBlocksType | DirektivPagesType) => boolean;
-//   depth?: number;
-// };
+type AllPossibleBlocks = AllBlocksType | DirektivPagesType;
 
 type FindAncestorConfig<T extends AllPossibleBlocks["type"]> = {
   page: DirektivPagesType;
@@ -200,8 +195,6 @@ type FindAncestorConfig<T extends AllPossibleBlocks["type"]> = {
   ) => block is Extract<AllPossibleBlocks, { type: T }>;
   depth?: number;
 };
-
-type AllPossibleBlocks = AllBlocksType | DirektivPagesType;
 
 type FindAncestorResult<T extends AllPossibleBlocks["type"]> = {
   block: Extract<AllPossibleBlocks, { type: T }>;
