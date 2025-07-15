@@ -24,12 +24,14 @@ export const DroppableSeparator: FC<DroppableProps> = ({
   blockPath,
   children,
   position,
+  onDrop,
 }) => {
   const { setNodeRef, isOver } = useDroppable({
     id,
     data: {
       blockPath,
       position,
+      onDrop,
     },
   });
 
