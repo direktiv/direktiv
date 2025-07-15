@@ -1,98 +1,248 @@
-# Forms
+## Description
 
-- Forms will probably be the a feature that will challenge the Pages the most
-- I assume that this will be the core feature that needs to be very flexible
-- Here is a small list of features that I think we need to support:
+This PR outlines how form primitives (such as text inputs, select boxes, etc.) are defined in the Direktiv Pages spec and how they interact with their form block. It also extends the form block as the current specification only has limited data type supported in the payload of the request.
 
-  - make static forms like
-    - text inputs: name, email, etc
-    - select from a static list: country, language, etc
-  - make dynamic forms likey
+Forms represent one of the most challenging and critical features for the Direktiv Pages. As a feature it requires maximum flexibility, forms must support a wide range of use cases and data flexibility.
 
-    - select from a list of values from a query result
+We distinguish between a form block (the block that actually sends a request to the backend) and form primitives (form element blocks like an input field. These are nested however deep somewhere in the form block.
 
-## Form primitves
+This is how a page with a form could be structured like:
 
-Form primitives should all be pretty straight forward, they are all just blocks that adds a variable to the form that they are in. Every form primitive returns a specific data type (text area -> string, checkbox -> boolean, etc). It does not matter how deep they are nested.
+![page builder form](https://github.com/user-attachments/assets/fe2a7e33-60bc-49e3-86f5-59c11630802c)
 
-The actual usage of the variables will be done in the form component itself. This is were the actual complexity needs to be solved.
+## Form primitives
 
-### Form primitves
+Each form primitive should be pretty straightforward. They are simple blocks that add a variable to the page's state and can be used in the form block. Each of these elements return a specific data type: text areas store strings, checkboxes store booleans, and so on.
 
-I suggest we use the following primitives:
+### All form elements should have these fields in common
 
-- input
-  - type:
-    - text (string)
-    - date (string)
-    - password (string)
-    - email (string)
-    - url (string)
-    - number (number)
-- textarea (string)
-- checkbox (boolean)
-- select (string)
-  - values: needs a list of strings as a default value input
-    - could either be static or dynamic
-- file
-  - I mostly included this because I wanna make sure that we already have a story on how we solve thi. We will definitely need to supoprt this at some point
-  - which type should it be?
-    - base64 encoded string would be the easiest to implement because it is just a string and therefore JSON compatible
-    - binary would be the more common format (multipart/form-data)
+- `id`: for referencing it in the form block
+- `label`
+- `description`: a string that gives a more details description about the form element. It can be an empty string.
+- `defaultValue`: an optional default value of that form element. The type of that value must match the output type
+- `required`: a boolean that determines if this field is required to be set by the user
 
-Every primitive will have the following attributes in common:
+### I suggest we use the following primitives:
 
-- id (for referencing it in the form block), technically not needed as an identifier when we don't allow nesting forms, but we probably need to support some kind of nesting as nesting block forms would not nessesarily be also nested form tags in the dom (which would be invalid html). Example: the user could have a form on a root level of the page and then a have a modal openeing a form
-- label
-- description (can be empy)
-- defaultValue (always the same data type as the output data)
-  - can be dynamic or static
+- input `string` or `number`
+  - additional attributes:
+    - type: `text` | `data` | `password` | `email` | `url` | `number`
+- textarea `string`
+- checkbox `boolean`
+- select `string`
+  - additional attributes:
+    - values: `string[]`. This attribute will list all the possible select values that are available.
+- file `string` (for future iteration)
+  - Does not need to be implemented in the first iteration, but it will definitely be a requirement at some point. File input usually has some implications about the content type of the request and therefore I wanted to make sure that we can solve this data type conceptually already. Right now, we imply that forms are sent via `Content-Type: application/json`. However, a binary is not compatible with JSON and therefore is mostly sent via `Content-Type: multipart/form-data`. This would mean that using a file input in a form would implicitly change the entire payload from `Content-Type: application/json` to `Content-Type: multipart/form-data`. I would suggest starting with a simple implementation first and always casting the file to a base64 encoded string and sending it via `Content-Type: application/json` as well. I think most admins will own the backend API and should be able to handle file uploads that way. However, I can imagine that there are cases where the admin does not own the upload endpoint like if it is a presigned URL for an S3 bucket, but if this becomes a requirement we can still implement a different behavior.
+- checkbox list (or a multi select) `string[]` (for future iteration)
 
-Example of some form primitives in JSON:
+### primitives that we don't need
 
-## Extending the KeyValue Schema
+- I decided against radio buttons, as a select box can represent the same state in a much more compact way
 
-This is how KeyValue looks right now:
+## A new data type we need
+
+For mutations and queries, we use the `KeyValue` schema that looks like this:
 
 ```
- queryParams: [
-  {
-    key: "query",
-    value: "string",
-  },
-],
+{
+  "key": "some-key",
+  "value": "some value that supports template strings {{query.user.id}}"
+}
 ```
 
-This schema only supports strings for key and values. Values here can even use variable strings make use of existing variables from type string. This works fine in mutations/queries when defining headers and get parameters, as no other data type is supported.
+This data type is perfect for modelling request params and request headers as the key and values can only be strings. However the payload of a mutation must be 100% JSON compatible which requires a new data type. To solve this I would like to introduce [a new Schema](https://github.com/direktiv/direktiv/pull/1850/files#diff-03d7ea036d1551a6f15a40de724d88e61e5099a9a4d5c69465a2f50cfe4a74c1).
 
-are from type `KeyValue`. Where the key is a `string` and the value is a `TemplateString`. The problem is, that `KeyValue` assumes that the key and the value are always strings. This maps very well to how the data type of get parameters and request headers are shaped (they can only be strings), but the payload of a mutation would need to be more flexible and support JSON at least (the values need to support: string, number, boolean, null, array, object).
+Here is an example of a complex request that is now possible with the new schema. This request could be made from the form in the picture above:
 
-## Form primitves
+```JavaScript
+{
+  "mutation": {
+    "id": "create-ticket",
+    "url": "/api/teams/{{query.user.teamId}}/projects/{{loop.project.id}}/tickets",
+    "method": "POST",
+    "queryParams": [
+      {
+        "key": "assigned",
+        "value": "{{query.user.id}}"
+      }
+    ],
+    "requestHeaders": [
+      {
+        "key": "Authorization",
+        "value": "Bearer {{query.user.token}}"
+      }
+    ],
+    // request body must support more that just key value string pairs
+    "requestBody": [
+      {
+        "key": "title",
+        "value": {
+          "type": "string",
+          // a string using a variable placeholder from a string input
+          "value": "Draft: {{form.ticketForm.title}}"
+        }
+      },
+      {
+        "key": "description",
+        "value": {
+          "type": "string",
+          // a static string
+          "value": "Steps to reproduce: \n\n Acceptance criteria: \n"
+        }
+      },
+      {
+        "key": "priority",
+        "value": {
+          "type": "variable",
+          // uses a variable and preserves type. In this
+          // it would be sourced from a number input
+          "value": "form.ticketForm.priority"
+        }
+      },
+      {
+        "key": "hidden",
+        "value": {
+          "type": "variable",
+          // boolean value from a checkbox
+          "value": "form.ticketForm.hidden"
+        }
+      },
+      {
+        "key": "isDraft",
+        "value": {
+          "type": "boolean",
+          // a static boolean
+          "value": true
+        }
+      },
+      {
+        "key": "categories",
+        "value": {
+          "type": "variable",
+          // this is an example of using a variables
+          // that does not come from a form at all
+          "value": "loop.project.categories"
+        }
+      },
+      {
+        "key": "relatedTickets",
+        "value": {
+          "type": "array",
+          // a static array of strings
+          "value": ["ticket-1", "ticket-2", "ticket-3"]
+        }
+      },
+      {
+        "key": "customFields",
+        "value": {
+          "type": "object",
+          // a static object
+          "value": [
+            {
+              "key": "severity",
+              "value": "high"
+            },
+            {
+              "key": "environment",
+              "value": "staging"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
 
-Every primitive will have the following attributes:
+This will compile to
 
-TBD:
+```bash
+curl -X POST "https://example.com/api/teams/team-123/projects/proj-789/tickets?assigned=user-456" \
+  -H "Authorization: Bearer abc123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Draft: Login button not responsive",
+    "description": "Steps to reproduce: \n\n Acceptance criteria: \n",
+    "priority": 2,
+    "hidden": false,
+    "isDraft": true,
+    "categories": ["bug", "frontend"],
+    "relatedTickets": ["ticket-1", "ticket-2", "ticket-3"],
+    "customFields": {
+      "severity": "high",
+      "environment": "staging"
+    }
+  }'
+```
 
-- data types
-- how to solve multiple checkboxes (user needs to compose an array)
-- validation
+This new data type would also solve a similar problem that we have in the form elements.
 
-# For simplicity, we don not add
+Every form element has a `defaultValue` attribute. If these could just be strings, we could use a template string here and would cover all possible default values. However, we could not set a default value for a checkbox (`boolean`), a number input (`number`) or a checkbox list (`string[]`). Setting a default value could now look like this
 
-- we don't add radio buttons, we can solve this data type with a select input
+```javascript
+// setting a string
+"defaultValue": {
+  "type": "string",
+  "value": "Draft: {{loop.project.title}}"
+}
+```
 
-# Future considerations
+or
 
-- It will probably be a requirement to having multi step forms (like a multi step wizard) and I think this would be a solid foundation for that
+```javascript
+// setting a number (assuming the variable stores a number)
+"defaultValue": {
+  "type": "variable",
+  "value": "query.project.defaultPriority"
+}
+```
 
-## Open Questions:
+or
 
-First, we should set some general boundaries for what type of payload we want to support. I would suggest that limit the playload to be from type `application/json` or `multipart/form-data` when a file upload is involved. This shoudl just be a convention that we don't even show the user (edge case: we should think about what we do if the user sets the header `Content-Type` by themselves, maybe we just overwrite it and/or show a warning if the user adds this key to a headers).
+```javascript
+// setting a static number
+"defaultValue": {
+  "type": "number",
+  "value": 2
+}
+```
 
-A `KeyValue`
+We will have a similar problem and solution for defining all the values that a select can have. We want the ability to set it from a static list of strings
 
-- static: `{ "name": "John Doe" }`
-- dynamic: `{ "name": "{{form.userForm.name}}" }`
-- hybrid: `{ "action": "create-{{form.userForm.name}}", "age": 30 }`
+```javascript
+"value": {
+  "type": "array",
+  value: ["low", "medium", "high", "urgent"],
+}
+```
 
-File uploads: we could either go for application/json and allow
+but also source them from a variable.
+
+```javascript
+"value": {
+  "type": "variable",
+  "value": "query.project.availablePriorities"
+}
+```
+
+## Future Improvements
+
+- **Validation**: With the ability to mark form elements as required or optional, we already have a very pragmatic validation that is suitable for an MVP. However, in the future, we need more granular validation. This should be defined in the form component very close to the mutation, maybe even in the `RequestBodySchema`.
+
+## Specific Changes in this PR:
+
+- modeled the new schema for the payload
+- disabled the form payload for now as it now requires a new implementation (not disabling it would cause TypeScript errors)
+  - user can not set the payload anymore in the UI
+  - even if a payload is set, the request will ignore it for now
+
+## Checklist
+
+- [x] Documentation updated if required
+- [x] Test coverage is appropriate
+
+## Checklist Internal
+
+- [x] Linear issue linked (e.g. [DIR-XXXX] pull request title)
+- [x] Has the PR been labeled
