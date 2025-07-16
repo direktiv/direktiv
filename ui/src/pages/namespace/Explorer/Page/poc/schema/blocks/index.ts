@@ -66,13 +66,13 @@ export const TriggerBlocks = z.discriminatedUnion("type", [Button]);
 export type TriggerBlocksType = z.infer<typeof TriggerBlocks>;
 
 /* Inline blocks do not need a dialog for creation */
-export const inlineBlockTypeList = new Set([
+export const inlineBlocksTypeList = new Set([
   "columns",
   "card",
 ]) satisfies Set<AllBlocksTypeUnion>;
 
 export type InlineBlocksTypeUnion = ExtractUnionFromSet<
-  typeof inlineBlockTypeList
+  typeof inlineBlocksTypeList
 >;
 export type InlineBlocksType = Extract<
   AllBlocksType,
