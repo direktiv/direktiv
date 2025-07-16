@@ -30,7 +30,7 @@ export const DraggableElement: FC<DraggableProps> = ({
     : {};
 
   return (
-    <div style={style} className="relative">
+    <div style={style} className="relative pl-4">
       <div
         {...listeners}
         {...attributes}
