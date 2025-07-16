@@ -54,7 +54,7 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
   const blockConfig = getBlockConfig(block.type);
 
   if (!blockConfig) {
-    throw new Error("Block config is undefined or does not match block");
+    throw new Error("Block config must not be undefined");
   }
 
   const isFormBlock = !!blockConfig.formComponent;
