@@ -1,6 +1,6 @@
 import { Block, BlockPathType } from ".";
 import { DialogTrigger, DialogXClose } from "~/design/Dialog";
-import { LocalDialog, LocalDialogContent } from "~/components/LocalDialog";
+import { LocalDialog, LocalDialogContent } from "~/design/LocalDialog";
 
 import { BlockList } from "./utils/BlockList";
 import { Button } from "./Button";

@@ -9,7 +9,7 @@ import { AllBlocksType } from "../schema/blocks";
 import { BlockDeleteForm } from "./components/Delete";
 import { BlockPathType } from "../PageCompiler/Block";
 import { EditorPanel } from "./components/EditorPanelContent";
-import { LocalDialogContainer } from "~/components/LocalDialog/container";
+import { LocalDialogContainer } from "~/design/LocalDialog/container";
 
 type EditorPanelState = null | {
   action: "create" | "edit" | "delete";
