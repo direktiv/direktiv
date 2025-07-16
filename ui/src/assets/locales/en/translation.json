@@ -92,6 +92,7 @@
             "directory": "Directory",
             "workflow": "Workflow",
             "service": "Service",
+            "page": "Page",
             "gateway": {
               "label": "Gateway",
               "route": "Route",
@@ -133,7 +134,14 @@
           "cancelBtn": "Cancel",
           "createBtn": "Create"
         },
-
+        "newPage": {
+          "title": "Create a new page",
+          "nameLabel": "Name",
+          "namePlaceholder": "page-name.yaml",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
+        },
         "openapiSpecification": {
           "title": "Create a new OpenAPI Specification",
           "nameLabel": "Name",
@@ -1623,6 +1631,182 @@
             "description": "The role could not be deleted 😢"
           }
         }
+      }
+    }
+  },
+  "direktivPage": {
+    "error": {
+      "invalidSchema": "The page can not be rendered because it has an invalid configuration",
+      "blockNotImplemented": "The block type \"{{type}}\" is not implemented yet",
+      "genericError": "There was an unexpected error",
+      "duplicateId": "Error in block with id {{id}}: The id is already used by one of the parent blocks",
+      "query": {
+        "queryFailed": "Error in query with id {{id}}: {{url}} responded with {{status}}",
+        "invalidJson": "Error in query with id {{id}}: {{url}} returned an invalid JSON"
+      },
+      "blocks": {
+        "table": { "noResult": "No entries to show" }
+      },
+      "templateString": {
+        "namespaceInvalid": "The template string does not have a valid namespace.",
+        "idUndefined": "The template string is missing an id.",
+        "pointerUndefined": "The template string is missing a pointer.",
+        "NoStateForId": "Could not find any state for the id",
+        "invalidJson": "Trying to process a template string on an invalid JSON object",
+        "invalidPath": "The path is not ivalid. It points to an undefined value",
+        "couldNotStringify": "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null.",
+        "notAnArray": "Pointing to a value that is not an array."
+      }
+    },
+    "page": {
+      "blocks": {
+        "table": { "noResult": "No entries to show" },
+        "form": {
+          "success": "The form has been submitted successfully"
+        }
+      }
+    },
+    "blockEditor": {
+      "generic": {
+        "saveButton": "Save",
+        "cancelButton": "Cancel",
+        "confirmButton": "Confirm",
+        "addBlock": "Add block"
+      },
+      "blockName": {
+        "headline": "Headline",
+        "text": "Text",
+        "button": "Button",
+        "card": "Card",
+        "dialog": "Dialog",
+        "form": "Form",
+        "loop": "Loop",
+        "query-provider": "Query Provider",
+        "column": "Column",
+        "columns": "Columns",
+        "image": "Image",
+        "table": "Table"
+      },
+      "blockForms": {
+        "keyValue": {
+          "key": "Key",
+          "value": "Value"
+        },
+        "text": {
+          "description": "Text blocks are used to display a block of text.",
+          "contentLabel": "Content",
+          "contentPlaceholder": "Enter text here..."
+        },
+        "headline": {
+          "description": "Headlines are used to display a title for a section of content. They can be used to create a hierarchy of content.",
+          "labelLabel": "Label",
+          "labelPlaceholder": "Headline",
+          "levelLabel": "Level"
+        },
+        "image": {
+          "description": "Image blocks are used to display images on the page.",
+          "srcLabel": "Image Source",
+          "srcPlaceholder": "Enter image URL",
+          "widthLabel": "Width",
+          "widthPlaceholder": "Width in pixels",
+          "heightLabel": "Height",
+          "heightPlaceholder": "Height in pixels"
+        },
+        "dialog": {
+          "description": "A Dialog block contains a button that opens a dialog when clicked. The dialog can contain any number of blocks.",
+          "triggerLabelLabel": "Button Label",
+          "triggerLabelPlaceholder": "Open Dialog"
+        },
+        "loop": {
+          "description": "A Loop block allows you to repeat a set of blocks for each item in an array.",
+          "idLabel": "loop ID",
+          "idPlaceholder": "unique identifier name to reference the content of a loop iteration",
+          "dataLabel": "data",
+          "dataPlaceholder": "Path to an array for the loop (e.g. query.companies.data)"
+        },
+        "table": {
+          "description": "A Table block displays data in a table format, as one row for each item in an array. It can be used to display data from a Query Provider",
+          "data": {
+            "idLabel": "loop ID",
+            "idPlaceholder": "unique identifier to reference the data for the current row",
+            "dataLabel": "data",
+            "dataPlaceholder": "Path to an array for the table (e.g. query.companies.data)"
+          },
+          "action": {
+            "labelLabel": "Label",
+            "labelPlaceholder": "The label of the Action (e.g. Edit, Delete)",
+            "itemLabel": "Action",
+            "tableLabel": "{{count}} Actions",
+            "tableLabel_one": "{{count}} Action"
+          },
+          "column": {
+            "labelLabel": "Label",
+            "labelPlaceholder": "Column label",
+            "contentLabel": "Content",
+            "contentPlaceholder": "The content of the column (e.g. E-Mail: {{loop.company-table.email}})",
+            "itemLabel": "Column",
+            "tableLabel": "{{count}} Columns",
+            "tableLabel_one": "{{count}} Column"
+          }
+        },
+        "queryProvider": {
+          "description": "A Query Provider fetches data from one or multiple APIs and makes the results accessible to its child blocks.",
+          "query": {
+            "idLabel": "ID",
+            "idPlaceholder": "unique identifier name to reference this query in any child block",
+            "urlLabel": "URL",
+            "urlPlaceholder": "relative or absolute url like /path/to/endpoint or https://...",
+            "itemLabel": "Query",
+            "tableLabel": "{{count}} Queries",
+            "tableLabel_one": "{{count}} Query",
+            "queryParamsLabel": "Query Parameters"
+          }
+        },
+        "form": {
+          "description": "A Form block allows you to create a form that can be submitted to a URL.",
+          "mutation": {
+            "triggerLabelLabel": "Button Label",
+            "triggerLabelPlaceholder": "Submit Form",
+            "idLabel": "form ID",
+            "idPlaceholder": "unique identifier name to reference this form in any child block",
+            "methodLabel": "HTTP Method",
+            "urlLabel": "URL",
+            "urlPlaceholder": "relative or absolute url like /path/to/endpoint or https://...",
+            "queryParamsLabel": "Query Parameters",
+            "requestHeadersLabel": "Request Headers",
+            "requestBodyLabel": "Request Body"
+          }
+        }
+      },
+      "contextMenu": {
+        "deleteButton": "Delete"
+      },
+      "blockForm": {
+        "title": "{{action}} {{type}} @{{path}}",
+        "noFormDescription": "This block has no properties other than child blocks, which you can add/remove in the page preview.",
+        "action": {
+          "create": "create",
+          "edit": "edit",
+          "delete": "delete"
+        },
+        "type": {
+          "page": "page",
+          "text": "text block",
+          "headline": "headline block",
+          "button": "button block",
+          "card": "card block",
+          "dialog": "dialog block",
+          "form": "form block",
+          "loop": "loop block",
+          "query-provider": "query provider",
+          "column": "column block",
+          "columns": "set of columns",
+          "image": "image block",
+          "table": "table block"
+        }
+      },
+      "delete": {
+        "warning": "This will remove the current block and all content (including blocks nested into it). Are you sure you want to proceed?"
       }
     }
   }
