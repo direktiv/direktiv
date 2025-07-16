@@ -53,7 +53,11 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
 
   const blockConfig = getBlockConfig(block.type);
 
-  const isFormBlock = !!blockConfig && !!blockConfig.formComponent;
+  if (!blockConfig) {
+    throw new Error("Block config is undefined or does not match block");
+  }
+
+  const isFormBlock = !!blockConfig.formComponent;
 
   if (isFormBlock && block.type === blockConfig.type) {
     const FormComponent = blockConfig.formComponent as ComponentType<
@@ -72,7 +76,7 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
     );
   }
 
-  if (blockConfig && !isFormBlock && block.type === blockConfig.type) {
+  if (!isFormBlock && block.type === blockConfig.type) {
     return (
       <InlineBlockSidePanel
         key={key}
