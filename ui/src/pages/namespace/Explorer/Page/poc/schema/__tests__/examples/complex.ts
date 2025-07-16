@@ -70,88 +70,9 @@ export default {
                 label: "delete",
               },
               mutation: {
-                id: "create-ticket",
-                url: "/api/teams/{{query.user.teamId}}/projects/{{loop.project.id}}/tickets",
-                method: "POST",
-                queryParams: [
-                  {
-                    key: "assigned",
-                    value: "{{query.user.id}}",
-                  },
-                ],
-                requestHeaders: [
-                  {
-                    key: "Authorization",
-                    value: "Bearer {{query.user.token}}",
-                  },
-                ],
-                requestBody: [
-                  {
-                    key: "title",
-                    value: {
-                      type: "string",
-                      value: "Draft: {{form.ticketForm.title}}",
-                    },
-                  },
-                  {
-                    key: "description",
-                    value: {
-                      type: "string",
-                      value: "Steps to reproduce: \n\n Acceptance criteria: \n",
-                    },
-                  },
-                  {
-                    key: "priority",
-                    value: {
-                      type: "variable",
-                      value: "form.ticketForm.priority",
-                    },
-                  },
-                  {
-                    key: "hidden",
-                    value: {
-                      type: "variable",
-                      value: "form.ticketForm.hidden",
-                    },
-                  },
-                  {
-                    key: "isDraft",
-                    value: {
-                      type: "boolean",
-                      value: true,
-                    },
-                  },
-                  {
-                    key: "categories",
-                    value: {
-                      type: "variable",
-                      value: "loop.project.categories",
-                    },
-                  },
-                  {
-                    key: "relatedTickets",
-                    value: {
-                      type: "array",
-                      value: ["ticket-1", "ticket-2", "ticket-3"],
-                    },
-                  },
-                  {
-                    key: "customFields",
-                    value: {
-                      type: "object",
-                      value: [
-                        {
-                          key: "severity",
-                          value: "high",
-                        },
-                        {
-                          key: "environment",
-                          value: "staging",
-                        },
-                      ],
-                    },
-                  },
-                ],
+                id: "my-delete",
+                url: "/api/delete/",
+                method: "DELETE",
               },
               blocks: [],
             },

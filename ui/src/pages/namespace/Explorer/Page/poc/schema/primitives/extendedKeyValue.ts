@@ -45,7 +45,7 @@ const DataType = z.discriminatedUnion("type", [
   ObjectSchema,
 ]);
 
-export const RequestBodySchema = z.object({
+export const ExtendedKeyValueSchema = z.object({
   key: z.string().min(1),
   value: DataType,
 });
