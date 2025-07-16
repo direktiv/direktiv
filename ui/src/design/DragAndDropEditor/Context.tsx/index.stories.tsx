@@ -49,7 +49,7 @@ export const Default = () => {
           />
           <DraggableElement element={block} id={`${index}`} blockPath={[index]}>
             {block.type === "headline" && (
-              <div className="border-2 border-dashed p-2">{block.label}</div>
+              <div className="border-2 p-2">{block.label}</div>
             )}
           </DraggableElement>
         </div>

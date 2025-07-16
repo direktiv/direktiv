@@ -19,10 +19,7 @@ export const EditorPanel = () => {
   if (!panel) {
     return (
       <div>
-        <Tabs
-          defaultValue="addBlock"
-          className="z-50 w-full overflow-visible border-red-300"
-        >
+        <Tabs defaultValue="addBlock">
           <TabsList variant="boxed">
             <TabsTrigger variant="boxed" value="addBlock">
               <Blocks size={16} />

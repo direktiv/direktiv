@@ -50,7 +50,7 @@ export const DroppableSeparator: FC<DroppableProps> = ({
       ref={setNodeRef}
       aria-label={id}
       className={twMergeClsx(
-        "relative m-0 my-4 -ml-4 h-1 w-full justify-center rounded-lg p-0",
+        "relative m-0 my-4 h-1 w-full justify-center rounded-lg p-0",
         before && "mb-4",
         isOver && "h-1 bg-gray-4 transition-all dark:bg-gray-dark-4",
         samePosition && "invisible"
@@ -89,7 +89,7 @@ export const DroppableElement: FC<DroppableProps> = ({
       ref={setNodeRef}
       aria-label={id}
       className={twMergeClsx(
-        "relative m-0 my-4 -ml-4 h-10 w-full justify-center rounded-lg p-0",
+        "relative m-0 my-4 h-10 w-full justify-center rounded-lg p-0",
         isOver && "h-10 bg-gray-4 transition-all dark:bg-gray-dark-4",
         samePosition && "invisible"
       )}
