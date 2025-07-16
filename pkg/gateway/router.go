@@ -11,6 +11,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Struct router implements the gateway logic of serving requests. We can see that it wraps a simple
@@ -88,7 +89,13 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 			fmt.Sprintf("/api/v2/namespaces/%s/gateway/%s", item.Namespace, cleanPath),
 			fmt.Sprintf("/ns/%s/%s", item.Namespace, cleanPath),
 		} {
-			serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+
+			timeout := 24 * time.Hour
+			if item.Config.Timeout != 0 {
+				timeout = time.Duration(item.Config.Timeout) * time.Second
+			}
+
+			serveMux.Handle(pattern, http.TimeoutHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				// Check if correct method.
 				if !slices.Contains(item.Config.Methods, r.Method) {
 					WriteJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
@@ -145,7 +152,7 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 							Error("flushing final bytes to connection", "err", err)
 					}
 				}
-			})
+			}), timeout, ""))
 		}
 	}
 
