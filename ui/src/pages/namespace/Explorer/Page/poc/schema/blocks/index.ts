@@ -20,7 +20,7 @@ import { z } from "zod";
  * The schema needs to get the type input to avoid circular dependencies.
  */
 
-const SimpleBlockUnion = z.discriminatedUnion("type", [
+const SimpleBlocksUnion = z.discriminatedUnion("type", [
   Button,
   Headline,
   Image,
@@ -28,7 +28,7 @@ const SimpleBlockUnion = z.discriminatedUnion("type", [
   Text,
 ]);
 
-export const ParentBlockUnion = z.discriminatedUnion("type", [
+export const ParentBlocksUnion = z.discriminatedUnion("type", [
   Card,
   Dialog,
   Form,
@@ -58,7 +58,7 @@ export type AllBlocksType = SimpleBlocksType | ParentBlocksType;
 type AllBlocksTypeUnion = AllBlocksType["type"];
 
 export const AllBlocks: z.ZodType<AllBlocksType> = z.lazy(() =>
-  z.union([SimpleBlockUnion, ParentBlockUnion])
+  z.union([SimpleBlocksUnion, ParentBlocksUnion])
 );
 
 export const TriggerBlocks = z.discriminatedUnion("type", [Button]);

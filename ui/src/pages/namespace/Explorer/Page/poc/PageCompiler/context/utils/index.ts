@@ -1,4 +1,4 @@
-import { AllBlocksType, ParentBlockUnion } from "../../../schema/blocks";
+import { AllBlocksType, ParentBlocksUnion } from "../../../schema/blocks";
 import { DirektivPagesSchema, DirektivPagesType } from "../../../schema";
 
 import { BlockPathType } from "../../Block";
@@ -7,8 +7,8 @@ import { z } from "zod";
 
 export const isParentBlock = (
   block: AllBlocksType
-): block is z.infer<typeof ParentBlockUnion> =>
-  ParentBlockUnion.safeParse(block).success;
+): block is z.infer<typeof ParentBlocksUnion> =>
+  ParentBlocksUnion.safeParse(block).success;
 
 export const isPage = (
   page: AllBlocksType | DirektivPagesType
