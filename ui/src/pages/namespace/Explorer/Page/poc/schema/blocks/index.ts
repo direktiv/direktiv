@@ -10,6 +10,7 @@ import { QueryProvider, QueryProviderType } from "./queryProvider";
 import { Table, TableType } from "./table";
 import { Text, TextType } from "./text";
 
+import { ExtractUnionFromSet } from "./utils";
 import { z } from "zod";
 
 /**
@@ -19,7 +20,7 @@ import { z } from "zod";
  * The schema needs to get the type input to avoid circular dependencies.
  */
 
-const SimpleBlockUnion = z.discriminatedUnion("type", [
+const SimpleBlocksUnion = z.discriminatedUnion("type", [
   Button,
   Headline,
   Image,
@@ -27,7 +28,7 @@ const SimpleBlockUnion = z.discriminatedUnion("type", [
   Text,
 ]);
 
-export const ParentBlockUnion = z.discriminatedUnion("type", [
+export const ParentBlocksUnion = z.discriminatedUnion("type", [
   Card,
   Dialog,
   Form,
@@ -54,9 +55,10 @@ export type ParentBlocksType =
   | ColumnsType;
 
 export type AllBlocksType = SimpleBlocksType | ParentBlocksType;
+type AllBlocksTypeUnion = AllBlocksType["type"];
 
 export const AllBlocks: z.ZodType<AllBlocksType> = z.lazy(() =>
-  z.union([SimpleBlockUnion, ParentBlockUnion])
+  z.union([SimpleBlocksUnion, ParentBlocksUnion])
 );
 
 export const TriggerBlocks = z.discriminatedUnion("type", [Button]);
@@ -64,7 +66,22 @@ export const TriggerBlocks = z.discriminatedUnion("type", [Button]);
 export type TriggerBlocksType = z.infer<typeof TriggerBlocks>;
 
 /* Inline blocks do not need a dialog for creation */
-export const inlineBlockTypes: Set<AllBlocksType["type"]> = new Set([
+export const inlineBlocksTypeList = new Set([
   "columns",
   "card",
-]);
+]) satisfies Set<AllBlocksTypeUnion>;
+
+export type InlineBlocksTypeUnion = ExtractUnionFromSet<
+  typeof inlineBlocksTypeList
+>;
+export type InlineBlocksType = Extract<
+  AllBlocksType,
+  { type: InlineBlocksTypeUnion }
+>;
+
+type FormBlocksTypeUnion = Exclude<AllBlocksTypeUnion, InlineBlocksTypeUnion>;
+
+export type FormBlocksType = Extract<
+  AllBlocksType,
+  { type: FormBlocksTypeUnion }
+>;

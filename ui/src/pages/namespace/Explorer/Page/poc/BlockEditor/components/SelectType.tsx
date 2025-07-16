@@ -41,15 +41,15 @@ const DefaultTrigger = () => (
 );
 
 const List = ({ onSelect, path }: Omit<SelectBlockTypeProps, "label">) => {
-  const types = useBlockTypes(path);
-
+  const { getAllowedTypes } = useBlockTypes();
+  const allowedBlockTypes = getAllowedTypes(path);
   return (
     <PopoverContent asChild>
       <Card
         className="z-40 -mt-2 flex w-fit flex-col p-2 text-center dark:bg-gray-dark-2"
         noShadow
       >
-        {types.map((type) => (
+        {allowedBlockTypes.map((type) => (
           <PopoverClose key={type.label} asChild>
             <Button
               variant="outline"
