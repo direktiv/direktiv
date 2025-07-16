@@ -1,6 +1,7 @@
 package sql
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -51,7 +52,7 @@ func (p *postgresBus) Publish(channel string, data string) error {
 	if channel == "" || strings.Contains(channel, " ") {
 		return fmt.Errorf("channel name is empty or has spaces: >%s<", channel)
 	}
-	_, err := p.db.Exec(fmt.Sprintf("NOTIFY %s, '%s'", channel, data))
+	_, err := p.db.ExecContext(context.Background(), fmt.Sprintf("NOTIFY %s, '%s'", channel, data))
 	if err != nil {
 		return fmt.Errorf("send notify command, channel: %s, data: %v, err: %w", channel, data, err)
 	}

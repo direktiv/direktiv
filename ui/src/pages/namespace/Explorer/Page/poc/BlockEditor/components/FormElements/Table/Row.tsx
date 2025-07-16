@@ -31,7 +31,7 @@ export const Row = <T,>({
       {rowCells.map((cell, cellIndex) => (
         <TableCell key={cellIndex} title={cell}>
           <div className="truncate" style={{ width: 200 / numberOfColumns }}>
-            {cell} {numberOfColumns}
+            {cell}
           </div>
         </TableCell>
       ))}

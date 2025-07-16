@@ -225,78 +225,79 @@ describe("findAncestor", () => {
       path: [2, 0, 0],
       match: (block) => block.type && block.type === "text",
     });
-    expect(result).toEqual(false);
+    expect(result).toEqual(null);
   });
 
-  test("it returns true if an ancester matches fn", () => {
+  test("it returns an object if an ancester matches fn", () => {
+    const target = complex.blocks[2];
+
     const result = findAncestor({
       page: complex,
       path: [2, 0, 0],
       match: (block) => block.type && block.type === "columns",
     });
-    expect(result).toEqual(true);
+    expect(result).toEqual({
+      block: target,
+      path: [2],
+    });
   });
 
-  test("it returns false if no element in the branch upwards matches the fn", () => {
+  test("it returns null if no element in the branch upwards matches the fn", () => {
     const result = findAncestor({
       page: complex,
       path: [2, 0],
       match: (block) => block.type && block.type === "text",
     });
-    expect(result).toEqual(false);
+    expect(result).toEqual(null);
   });
 
-  test("it returns true if depth is 1 and the first ancestor matches fn", () => {
+  test("it returns an object if depth is 1 and the first ancestor matches fn", () => {
+    const target = (complex.blocks[2] as ColumnsType).blocks[0];
+
     const result = findAncestor({
       page: complex,
       path: [2, 0, 0],
       match: (block) => block.type && block.type === "column",
       depth: 1,
     });
-    expect(result).toEqual(true);
+    expect(result).toEqual({ block: target, path: [2, 0] });
   });
 
-  test("it returns false if depth is 1 and the first ancestor does not match fn", () => {
+  test("it returns null if depth is 1 and the first ancestor does not match fn", () => {
     const result = findAncestor({
       page: complex,
       path: [2, 0, 0],
       match: (block) => block.type && block.type === "text",
       depth: 1,
     });
-    expect(result).toEqual(false);
+    expect(result).toEqual(null);
   });
 
   test("it returns true if elements within depth 2 evaluate as true", () => {
-    const result = findAncestor({
-      page: complex,
-      path: [3, 0, 0],
-      match: (block) => block.type && block.type === "dialog",
-      depth: 2,
-    });
-    expect(result).toEqual(true);
-  });
-
-  test("it returns true if elements within depth 3 evaluate as true", () => {
+    const target = complex.blocks[3];
     const result = findAncestor({
       page: complex,
       path: [3, 0, 0],
       match: (block) => block.type && block.type === "query-provider",
-      depth: 3,
+      depth: 2,
     });
-    expect(result).toEqual(true);
+    expect(result).toEqual({
+      block: target,
+      path: [3],
+    });
   });
 
-  test("it returns false if elements within depth 3 evaluate as false", () => {
+  test("it returns null if elements within depth 2 evaluate as false", () => {
     const result = findAncestor({
       page: complex,
       path: [3, 0, 0],
       match: (block) => block.type && block.type === "columns",
-      depth: 3,
+      depth: 2,
     });
-    expect(result).toEqual(false);
+    expect(result).toEqual(null);
   });
 
-  test("it evaluates correctly (true) if path is [0]", () => {
+  test("it evaluates correctly if path is [0]", () => {
     const page = {
       direktiv_api: "page/v1",
       type: "page",
@@ -312,10 +313,13 @@ describe("findAncestor", () => {
       path: [0],
       match: (block) => block.type && block.type === "page",
     });
-    expect(result).toEqual(true);
+    expect(result).toEqual({
+      block: page,
+      path: [],
+    });
   });
 
-  test("it evaluates correctly (false) if path is [0]", () => {
+  test("it evaluates correctly (null) if path is [0]", () => {
     const page = {
       direktiv_api: "page/v1",
       type: "page",
@@ -331,7 +335,7 @@ describe("findAncestor", () => {
       path: [0],
       match: (block) => block.type && block.type === "card",
     });
-    expect(result).toEqual(false);
+    expect(result).toEqual(null);
   });
 
   test("it throws an error if depth is 0", () => {
@@ -356,7 +360,7 @@ describe("findAncestor", () => {
     ).toThrow("depth must be undefined or >= 1");
   });
 
-  test("it evaluates as false when path is [], as there are no parents", () => {
+  test("it evaluates as null when path is [], as there are no parents", () => {
     const page = {
       direktiv_api: "page/v1",
       type: "page",
@@ -372,7 +376,7 @@ describe("findAncestor", () => {
       path: [],
       match: (block) => block.type && block.type === "page",
     });
-    expect(result).toEqual(false);
+    expect(result).toEqual(null);
   });
 });
 

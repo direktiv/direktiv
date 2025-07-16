@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogXClose,
 } from "./index";
 import type { Meta, StoryObj } from "@storybook/react";
 import Button from "../Button";
@@ -83,7 +84,8 @@ export const WithCloseButton = () => (
     <DialogTrigger>
       <Button>With close button</Button>
     </DialogTrigger>
-    <DialogContent showCloseButton>
+    <DialogContent>
+      <DialogXClose />
       <DialogHeader>
         <DialogTitle>Dialog Title</DialogTitle>
         <DialogDescription>

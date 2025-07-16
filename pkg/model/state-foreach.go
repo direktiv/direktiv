@@ -8,11 +8,12 @@ import (
 // ForEachState defines the fields attached for a foreach.
 type ForEachState struct {
 	StateCommon `yaml:",inline"`
-	Array       interface{}       `yaml:"array"`
-	Action      *ActionDefinition `yaml:"action"`
-	Timeout     string            `yaml:"timeout,omitempty"`
-	Transform   interface{}       `yaml:"transform,omitempty"`
-	Transition  string            `yaml:"transition,omitempty"`
+
+	Array      interface{}       `yaml:"array"`
+	Action     *ActionDefinition `yaml:"action"`
+	Timeout    string            `yaml:"timeout,omitempty"`
+	Transform  interface{}       `yaml:"transform,omitempty"`
+	Transition string            `yaml:"transition,omitempty"`
 }
 
 // GetID returns the ID of the state.

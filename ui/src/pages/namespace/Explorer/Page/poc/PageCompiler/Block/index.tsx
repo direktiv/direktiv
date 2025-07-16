@@ -6,6 +6,7 @@ import { Columns } from "./Columns";
 import { Dialog } from "./Dialog";
 import { Form } from "./Form";
 import { Headline } from "./Headline";
+import { Image } from "./Image";
 import { Loop } from "./Loop";
 import { ParsingError } from "./utils/ParsingError";
 import { QueryProvider } from "./QueryProvider";
@@ -28,6 +29,8 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         return <Headline blockProps={block} />;
       case "text":
         return <Text blockProps={block} />;
+      case "image":
+        return <Image blockProps={block} />;
       case "card":
         return <Card blockProps={block} blockPath={blockPath} />;
       case "button":

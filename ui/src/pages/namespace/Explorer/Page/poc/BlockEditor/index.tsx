@@ -1,7 +1,9 @@
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
 import { Dialog } from "./Dialog";
+import { Form } from "./Form";
 import { Headline } from "./Headline";
+import { Image } from "./Image";
 import { InlineBlockSidePanel } from "./InlineBlockSidePanel";
 import { Key } from "react";
 import { Loop } from "./Loop";
@@ -79,6 +81,18 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
         />
       );
     }
+    case "image": {
+      return (
+        <Image
+          key={key}
+          action={action}
+          block={block}
+          path={path}
+          onSubmit={handleUpdate}
+          onCancel={handleClose}
+        />
+      );
+    }
     case "query-provider": {
       return (
         <QueryProvider
@@ -130,6 +144,18 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
     case "loop": {
       return (
         <Loop
+          key={key}
+          action={action}
+          block={block}
+          path={path}
+          onSubmit={handleUpdate}
+          onCancel={handleClose}
+        />
+      );
+    }
+    case "form": {
+      return (
+        <Form
           key={key}
           action={action}
           block={block}

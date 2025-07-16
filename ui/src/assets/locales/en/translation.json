@@ -1685,6 +1685,7 @@
         "query-provider": "Query Provider",
         "column": "Column",
         "columns": "Columns",
+        "image": "Image",
         "table": "Table"
       },
       "blockForms": {
@@ -1702,6 +1703,15 @@
           "labelLabel": "Label",
           "labelPlaceholder": "Headline",
           "levelLabel": "Level"
+        },
+        "image": {
+          "description": "Image blocks are used to display images on the page.",
+          "srcLabel": "Image Source",
+          "srcPlaceholder": "Enter image URL",
+          "widthLabel": "Width",
+          "widthPlaceholder": "Width in pixels",
+          "heightLabel": "Height",
+          "heightPlaceholder": "Height in pixels"
         },
         "dialog": {
           "description": "A Dialog block contains a button that opens a dialog when clicked. The dialog can contain any number of blocks.",
@@ -1749,7 +1759,23 @@
             "urlPlaceholder": "relative or absolute url like /path/to/endpoint or https://...",
             "itemLabel": "Query",
             "tableLabel": "{{count}} Queries",
-            "tableLabel_one": "{{count}} Query"
+            "tableLabel_one": "{{count}} Query",
+            "queryParamsLabel": "Query Parameters"
+          }
+        },
+        "form": {
+          "description": "A Form block allows you to create a form that can be submitted to a URL.",
+          "mutation": {
+            "triggerLabelLabel": "Button Label",
+            "triggerLabelPlaceholder": "Submit Form",
+            "idLabel": "form ID",
+            "idPlaceholder": "unique identifier name to reference this form in any child block",
+            "methodLabel": "HTTP Method",
+            "urlLabel": "URL",
+            "urlPlaceholder": "relative or absolute url like /path/to/endpoint or https://...",
+            "queryParamsLabel": "Query Parameters",
+            "requestHeadersLabel": "Request Headers",
+            "requestBodyLabel": "Request Body"
           }
         }
       },
@@ -1776,6 +1802,7 @@
           "query-provider": "query provider",
           "column": "column block",
           "columns": "set of columns",
+          "image": "image block",
           "table": "table block"
         }
       },

@@ -9,6 +9,7 @@ import { AllBlocksType } from "../schema/blocks";
 import { BlockDeleteForm } from "./components/Delete";
 import { BlockPathType } from "../PageCompiler/Block";
 import { EditorPanel } from "./components/EditorPanel";
+import { LocalDialogContainer } from "~/design/LocalDialog/container";
 
 type EditorPanelState = null | {
   action: "create" | "edit" | "delete";
@@ -39,7 +40,9 @@ export const EditorPanelLayoutProvider = ({
           <div className="w-1/3 max-w-md shrink-0 overflow-visible border-r-2 border-gray-4 pr-2">
             <EditorPanel />
           </div>
-          <div className="min-w-0 flex-1">{children}</div>
+          <LocalDialogContainer className="min-w-0 flex-1">
+            {children}
+          </LocalDialogContainer>
         </div>
         <Dialog open={panel && panel.action === "delete" ? true : false}>
           <DialogContent>
@@ -61,7 +64,7 @@ export const EditorPanelLayoutProvider = ({
     );
   }
 
-  return <>{children}</>;
+  return <LocalDialogContainer>{children}</LocalDialogContainer>;
 };
 
 export const usePageEditorPanel = () => {

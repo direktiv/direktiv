@@ -3,11 +3,13 @@ import {
   Columns2,
   Database,
   Heading1,
+  Image,
   LucideIcon,
   RectangleHorizontal,
   Repeat2,
   Table,
   Text,
+  TextCursorInput,
 } from "lucide-react";
 
 import { AllBlocksType } from "../../../schema/blocks";
@@ -89,6 +91,22 @@ export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
       label: t("direktivPage.blockEditor.blockName.loop"),
       icon: Repeat2,
       allow: true,
+    },
+    {
+      type: "image",
+      label: t("direktivPage.blockEditor.blockName.image"),
+      icon: Image,
+      allow: true,
+    },
+    {
+      type: "form",
+      label: t("direktivPage.blockEditor.blockName.form"),
+      icon: TextCursorInput,
+      allow: !findAncestor({
+        page,
+        path,
+        match: (block) => block.type === "form",
+      }),
     },
   ] satisfies BlockTypeConfig[];
 
