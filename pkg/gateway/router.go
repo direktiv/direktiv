@@ -2,7 +2,6 @@ package gateway
 
 import (
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/core"
 	"io"
 	"log/slog"
 	"net/http"
@@ -12,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/direktiv/direktiv/pkg/core"
 )
 
 // Struct router implements the gateway logic of serving requests. We can see that it wraps a simple
@@ -89,7 +90,6 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 			fmt.Sprintf("/api/v2/namespaces/%s/gateway/%s", item.Namespace, cleanPath),
 			fmt.Sprintf("/ns/%s/%s", item.Namespace, cleanPath),
 		} {
-
 			timeout := 24 * time.Hour
 			if item.Config.Timeout != 0 {
 				timeout = time.Duration(item.Config.Timeout) * time.Second
