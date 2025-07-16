@@ -17,10 +17,10 @@ import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 export const useCreateBlock = () => {
   const { addBlock } = usePageEditor();
   const { setPanel } = usePageEditorPanel();
-  const blockTypes = useBlockTypes();
+  const { getBlockConfig } = useBlockTypes();
 
   const createBlock = (type: AllBlocksType["type"], path: BlockPathType) => {
-    const matchingBlockType = blockTypes.find((block) => block.type === type);
+    const matchingBlockType = getBlockConfig(type);
 
     if (!matchingBlockType) {
       throw new Error(`${type} is not implemented yet`);

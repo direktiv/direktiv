@@ -28,7 +28,7 @@ type BlockFormProps = {
 export const BlockForm = ({ action, block, path }: BlockFormProps) => {
   const { addBlock, updateBlock } = usePageEditor();
   const { setPanel } = usePageEditorPanel();
-  const blockTypes = useBlockTypes();
+  const { getBlockConfig } = useBlockTypes();
 
   if (isPage(block)) {
     throw Error("Unexpected page object when parsing block");
@@ -51,12 +51,12 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
   // Key needed to instantiate new component per block and action
   const key = `${action}-${path.join(".")}`;
 
-  const matchingBlockType = blockTypes.find((type) => type.type === block.type);
+  const blockConfig = getBlockConfig(block.type);
 
-  const isFormBlock = !!matchingBlockType?.formComponent;
+  const isFormBlock = !!blockConfig && !!blockConfig.formComponent;
 
-  if (isFormBlock && block.type === matchingBlockType.type) {
-    const FormComponent = matchingBlockType.formComponent as ComponentType<
+  if (isFormBlock && block.type === blockConfig.type) {
+    const FormComponent = blockConfig.formComponent as ComponentType<
       BlockEditFormProps<typeof block>
     >;
 
@@ -72,7 +72,7 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
     );
   }
 
-  if (!isFormBlock && block.type === matchingBlockType?.type) {
+  if (blockConfig && !isFormBlock && block.type === blockConfig.type) {
     return (
       <InlineBlockSidePanel
         key={key}

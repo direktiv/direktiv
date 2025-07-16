@@ -12,7 +12,6 @@ import { Card } from "~/design/Card";
 import { CirclePlus } from "lucide-react";
 import { Trans } from "react-i18next";
 import { useBlockTypes } from "../../PageCompiler/context/utils/useBlockTypes";
-import { usePage } from "../../PageCompiler/context/pageCompilerContext";
 
 type SelectBlockTypeProps = {
   onSelect: (type: AllBlocksType["type"]) => void;
@@ -42,9 +41,8 @@ const DefaultTrigger = () => (
 );
 
 const List = ({ onSelect, path }: Omit<SelectBlockTypeProps, "label">) => {
-  const page = usePage();
-  const blockTypes = useBlockTypes();
-  const allowedBlockTypes = blockTypes.filter((type) => type.allow(page, path));
+  const { getAllowedTypes } = useBlockTypes();
+  const allowedBlockTypes = getAllowedTypes(path);
   return (
     <PopoverContent asChild>
       <Card
