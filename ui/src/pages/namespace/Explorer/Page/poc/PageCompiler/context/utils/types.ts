@@ -6,14 +6,14 @@ import { ComponentType } from "react";
 import { DirektivPagesType } from "../../../schema";
 import { LucideIcon } from "lucide-react";
 
-type BlockTypeConfigBase = {
+type ConfigBase = {
   label: string;
   icon: LucideIcon;
   allow: (page: DirektivPagesType, path: BlockPathType) => boolean;
 };
 
 // inline blocks don't have a form component
-type BlockTypeConfigWithoutForm = {
+type WithForm = {
   [K in InlineBlocksType as K["type"]]: {
     type: K["type"];
     formComponent?: never;
@@ -22,7 +22,7 @@ type BlockTypeConfigWithoutForm = {
 }[InlineBlocksType["type"]];
 
 // BlockTypeConfigWithForm must have a form component that implements a form for that very block type
-type BlockTypeConfigWithForm = {
+type WithoutForm = {
   [K in FormBlocksType as K["type"]]: {
     type: K["type"];
     formComponent: ComponentType<BlockEditFormProps<K>>;
@@ -30,5 +30,4 @@ type BlockTypeConfigWithForm = {
   };
 }[FormBlocksType["type"]];
 
-export type BlockTypeConfig = BlockTypeConfigBase &
-  (BlockTypeConfigWithForm | BlockTypeConfigWithoutForm);
+export type BlockTypeConfig = ConfigBase & (WithoutForm | WithForm);
