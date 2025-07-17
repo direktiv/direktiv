@@ -100,83 +100,71 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 		}
 
 		for _, pattern := range paths {
-			serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-				result := make(chan bool, 1)
+			timeout := 24 * time.Hour
+			if item.Config.Timeout != 0 {
+				timeout = time.Duration(item.Config.Timeout) * time.Second
+			}
 
-				//nolint:contextcheck
-				go func() {
-					// Check if correct method.
-					if !slices.Contains(item.Config.Methods, r.Method) {
-						WriteJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
-							fmt.Sprintf("method:%s is not allowed with this endpoint", r.Method))
+			serveMux.Handle(pattern, http.TimeoutHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				// Check if correct method.
+				if !slices.Contains(item.Config.Methods, r.Method) {
+					WriteJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
+						fmt.Sprintf("method:%s is not allowed with this endpoint", r.Method))
 
-						return
-					}
+					return
+				}
 
-					// Inject consumer files.
-					r = InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
-					// inject endpoint.
-					r = InjectContextEndpoint(r, &endpoints[i])
-					r = InjectContextURLPattern(r, pattern)
-					r = InjectContextURLParams(r, ExtractBetweenCurlyBraces(pattern))
+				// Inject consumer files.
+				r = InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
+				// inject endpoint.
+				r = InjectContextEndpoint(r, &endpoints[i])
+				r = InjectContextURLPattern(r, pattern)
+				r = InjectContextURLParams(r, ExtractBetweenCurlyBraces(pattern))
 
-					// Outbound plugins are used to transform the output from target plugins. When an outbound plugin is
-					// configured, target plugins output should be recorded in a buffer rather than flushed directly to
-					// the client's tcp connection. Then the recorded bytes should be somehow piped to the outbound
-					// plugins.
-					originalWriter := w
-					if hasOutboundConfigured {
-						w = httptest.NewRecorder()
-					}
+				// Outbound plugins are used to transform the output from target plugins. When an outbound plugin is
+				// configured, target plugins output should be recorded in a buffer rather than flushed directly to
+				// the client's tcp connection. Then the recorded bytes should be somehow piped to the outbound
+				// plugins.
+				originalWriter := w
+				if hasOutboundConfigured {
+					w = httptest.NewRecorder()
+				}
 
-					for _, p := range pChain {
-						// Checkpoint if auth plugins had a match.
-						if !isAuthPlugin(p) {
-							// Case where auth is required but request is not authenticated (consumers doesn't match).
-							hasActiveConsumer := ExtractContextActiveConsumer(r) != nil
-							if !item.Config.AllowAnonymous && !hasActiveConsumer {
-								WriteJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
+				for _, p := range pChain {
+					// Checkpoint if auth plugins had a match.
+					if !isAuthPlugin(p) {
+						// Case where auth is required but request is not authenticated (consumers doesn't match).
+						hasActiveConsumer := ExtractContextActiveConsumer(r) != nil
+						if !item.Config.AllowAnonymous && !hasActiveConsumer {
+							WriteJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
 
-								break
-							}
-						}
-						if w, r = p.Execute(w, r); r == nil {
 							break
 						}
 					}
+					if w, r = p.Execute(w, r); r == nil {
+						break
+					}
+				}
 
-					if hasOutboundConfigured {
-						//nolint:forcetypeassert
-						w := w.(*httptest.ResponseRecorder)
-						// Copy headers to the original writer.
-						for key, values := range w.Header() {
-							for _, value := range values {
-								originalWriter.Header().Set(key, value)
-							}
-						}
-						originalWriter.Header().Set("Content-Length", strconv.Itoa(w.Body.Len()))
-						originalWriter.WriteHeader(w.Code)
-						// Copy body to the original writer.
-						if _, err := io.Copy(originalWriter, w.Body); err != nil {
-							slog.With("component", "gateway").
-								Error("flushing final bytes to connection", "err", err)
+				if hasOutboundConfigured {
+					//nolint:forcetypeassert
+					w := w.(*httptest.ResponseRecorder)
+					// Copy headers to the original writer.
+					for key, values := range w.Header() {
+						for _, value := range values {
+							originalWriter.Header().Set(key, value)
 						}
 					}
-
-					result <- true
-				}()
-
-				timeout := 24 * time.Hour
-				if item.Config.Timeout != 0 {
-					timeout = time.Duration(item.Config.Timeout) * time.Second
+					originalWriter.Header().Set("Content-Length", strconv.Itoa(w.Body.Len()))
+					originalWriter.WriteHeader(w.Code)
+					// Copy body to the original writer.
+					if _, err := io.Copy(originalWriter, w.Body); err != nil {
+						slog.With("component", "gateway").
+							Error("flushing final bytes to connection", "err", err)
+					}
 				}
 
-				select {
-				case <-time.After(timeout):
-					w.WriteHeader(http.StatusGatewayTimeout)
-				case <-result:
-				}
-			})
+			}), timeout, ""))
 		}
 	}
 
