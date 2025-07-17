@@ -1,8 +1,8 @@
+import { Divide, Heading1 } from "lucide-react";
 import { DraggableElementAdd, DraggableElementSort } from "./DraggableElement";
 
 import { Card } from "../Card";
 import { DndContext } from ".";
-import { Heading1 } from "lucide-react";
 import { HeadlineType } from "~/pages/namespace/Explorer/Page/poc/schema/blocks/headline";
 import { useState } from "react";
 
@@ -17,17 +17,25 @@ const blocks: HeadlineType[] = [
 ];
 
 export const Default = () => {
-  const [action, setAction] = useState("please drag something");
+  const [actions, setActions] = useState<string[]>([]);
 
   return (
     <DndContext
       onDrop={(payload) => {
-        setAction(
-          `🫳 you just dropped a ${payload.block.type} (action: ${payload.type})`
-        );
+        if (payload.type === "add") {
+          setActions((old) => [
+            ...old,
+            `🫳 you just added a ${payload.block.type}`,
+          ]);
+        }
+        if (payload.type === "move") {
+          setActions((old) => [
+            ...old,
+            `🫳 you just moved a ${payload.block.type} from ${payload.originPath.join(",")}`,
+          ]);
+        }
       }}
     >
-      <Card className="mb-3 p-5">{action}</Card>
       <div className="flex gap-5">
         <Card className="w-[200px] p-3">
           <DraggableElementAdd
@@ -67,6 +75,11 @@ export const Default = () => {
           })}
         </Card>
       </div>
+      <Card className="mt-3 h-[100px] overflow-y-scroll p-5">
+        {actions.reverse().map((action, index) => (
+          <div key={index}>{action}</div>
+        ))}
+      </Card>
     </DndContext>
   );
 };
