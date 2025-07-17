@@ -1,37 +1,36 @@
-import { DndContext, DraggableElement } from ".";
+import { DraggableElementAdd, DraggableElementSort } from "./DraggableElement";
 
-import { AllBlocksType } from "~/pages/namespace/Explorer/Page/poc/schema/blocks";
-import { BlockPathType } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/Block";
 import { Card } from "../Card";
+import { DndContext } from ".";
+import { Heading1 } from "lucide-react";
 import { HeadlineType } from "~/pages/namespace/Explorer/Page/poc/schema/blocks/headline";
-import path from "path";
-import { pathToId } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/utils";
 import { useState } from "react";
 
 export default {
   title: "Components/DragAndDropEditorAlt",
 };
 
-const initialBlocks: HeadlineType[] = [
+const blocks: HeadlineType[] = [
   { type: "headline", level: "h3", label: "Headline 1" },
   { type: "headline", level: "h3", label: "Headline 2" },
   { type: "headline", level: "h3", label: "Headline 3" },
 ];
 
 export const Default = () => {
-  const [blocks, setBlocks] = useState<AllBlocksType[]>(initialBlocks);
+  const [action, setAction] = useState("please drag something");
 
   return (
     <DndContext
       onDrop={(payload) => {
-        alert(
-          `🫳 you just dropped something! \n ${payload.type} a ${payload.block.type}`
+        setAction(
+          `🫳 you just dropped a ${payload.block.type} (action: ${payload.type})`
         );
       }}
     >
+      <Card className="mb-3 p-5">{action}</Card>
       <div className="flex gap-5">
         <Card className="w-[200px] p-3">
-          <DraggableElement
+          <DraggableElementAdd
             payload={{
               type: "add",
               block: {
@@ -40,9 +39,10 @@ export const Default = () => {
                 level: "h3",
               },
             }}
+            icon={Heading1}
           >
-            <div className="border-2 p-2">Headline</div>
-          </DraggableElement>
+            Headline
+          </DraggableElementAdd>
         </Card>
         <Card className="grow p-3">
           {blocks.map((block, index) => {
@@ -50,18 +50,18 @@ export const Default = () => {
             return (
               <div key={index} className="my-2 flex flex-col items-center">
                 {/* <DroppableSeparator
-              id={String(index)}
-              position="before"
-              blockPath={[index]}
-              onDrop={() => doSomething}
-              />*/}
-                <DraggableElement
+                        id={String(index)}
+                        position="before"
+                        blockPath={[index]}
+                        onDrop={() => doSomething}
+                        />*/}
+                <DraggableElementSort
                   payload={{ type: "move", block, originPath: blockPath }}
                 >
                   {block.type === "headline" && (
                     <div className="border-2 p-2">{block.label}</div>
                   )}
-                </DraggableElement>
+                </DraggableElementSort>
               </div>
             );
           })}
