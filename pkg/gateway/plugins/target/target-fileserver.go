@@ -3,12 +3,13 @@ package target
 import (
 	"errors"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway"
 	"io"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
 type NamespaceFileServerPlugin struct {

@@ -163,7 +163,6 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 							Error("flushing final bytes to connection", "err", err)
 					}
 				}
-
 			}), timeout, ""))
 		}
 	}

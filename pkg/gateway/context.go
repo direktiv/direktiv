@@ -81,6 +81,7 @@ func ExtractContextURLPattern(r *http.Request) string {
 
 	return cast
 }
+
 func InjectContextURLPattern(r *http.Request, contextValue string) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), gatewayCtxKeyURLPattern, contextValue))
 }
