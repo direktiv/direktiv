@@ -37,7 +37,7 @@ export const EditorPanelLayoutProvider = ({
     return (
       <EditorPanelContext.Provider value={{ panel, setPanel }}>
         <div className="flex gap-5">
-          <div className="w-1/3 max-w-md shrink-0 overflow-visible border-r-2 border-gray-4 pr-2">
+          <div className="w-1/3 max-w-md shrink-0 overflow-visible border-r-2 border-gray-4 pr-2 dark:border-gray-dark-4">
             <EditorPanel />
           </div>
           <LocalDialogContainer className="min-w-0 flex-1">

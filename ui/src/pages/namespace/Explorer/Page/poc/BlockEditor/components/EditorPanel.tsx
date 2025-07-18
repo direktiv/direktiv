@@ -41,7 +41,7 @@ export const EditorPanel = () => {
                     id={index}
                     type={type.type}
                   >
-                    <Card className="z-50 m-4 flex justify-center bg-gray-2 p-4 text-sm text-black dark:bg-gray-dark-2">
+                    <Card className="z-50 m-4 flex justify-center bg-gray-2 p-4 text-sm text-black dark:bg-gray-dark-2 dark:text-white">
                       <Icon size={16} className="mr-4" /> {type.label}
                     </Card>
                   </DraggableCreateElement>

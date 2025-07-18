@@ -111,7 +111,7 @@ const DropZone = ({
     <div className="z-10 flex flex-col">
       <Badge
         className={twMergeClsx(
-          "w-fit bg-gray-8 transition-all dark:bg-gray-8",
+          "w-fit bg-gray-8 transition-all dark:bg-gray-dark-8",
           isOver && "bg-gray-10 dark:bg-gray-dark-10"
         )}
       >
