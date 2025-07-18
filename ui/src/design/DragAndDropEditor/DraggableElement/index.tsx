@@ -30,18 +30,58 @@ export const DraggableElement: FC<DraggableProps> = ({
     : {};
 
   return (
-    <div style={style} className="relative pl-4">
+    <div style={style} className="relative m-1">
       <div
         {...listeners}
         {...attributes}
         ref={setNodeRef}
-        className="absolute z-0 -ml-4 flex h-full items-center p-0 text-gray-8 dark:text-gray-dark-8"
+        className="absolute z-20 h-full text-gray-8 dark:text-gray-dark-8"
       >
-        <div className="flex h-full w-5 items-center justify-center rounded rounded-e-none border-2 border-dashed border-gray-4 bg-white p-0 hover:cursor-move hover:border-solid hover:bg-gray-2 active:cursor-move active:border-solid active:bg-gray-2 dark:border-gray-dark-4 dark:bg-black dark:hover:bg-gray-dark-2">
+        <div className="flex h-full w-5 items-center justify-center rounded rounded-e-none border-2 border-r-0 border-gray-4 bg-white p-0 hover:cursor-move hover:border-solid hover:bg-gray-2 active:cursor-move active:border-solid active:bg-gray-2 dark:border-gray-dark-4 dark:bg-black dark:hover:bg-gray-dark-2">
           <GripVertical />
         </div>
       </div>
-      {children}
+      <div className="flex justify-center">
+        <span className="mr-5"></span>
+        <div className="w-full">{children}</div>
+      </div>
+    </div>
+  );
+};
+
+type DraggableCreateProps = PropsWithChildren & {
+  id: number;
+  type: AllBlocksType["type"];
+};
+
+export const DraggableCreateElement: FC<DraggableCreateProps> = ({
+  id,
+  type,
+  children,
+}) => {
+  const data = { type };
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id,
+    data,
+  });
+
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(1.05)`,
+        zIndex: 50,
+      }
+    : {};
+
+  return (
+    <div style={style} className="relative">
+      <div
+        {...listeners}
+        {...attributes}
+        ref={setNodeRef}
+        className="relative z-20 cursor-move"
+      >
+        {children}
+      </div>
     </div>
   );
 };

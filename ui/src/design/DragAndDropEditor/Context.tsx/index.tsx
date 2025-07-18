@@ -19,22 +19,30 @@ type DndContextProps = PropsWithChildren & {
 export const DndContext: FC<DndContextProps> = ({ children, onMove }) => {
   const onDragEnd = (e: DragEndEvent) => {
     if (e.active.id !== null && e.over) {
-      const activeId = String(e.active.id);
-      const overId = String(e.over.id);
+      if (typeof e.active.id === "number") {
+        const data = e.active.data.current;
+        const blocktype = data?.type ?? "headline";
+        const overData = e.over.data.current;
+        const onCreate = overData?.onDrop;
+        if (blocktype === undefined) return;
 
-      const origin = idToPath(activeId);
-      const target = idToPath(overId);
+        onCreate(blocktype);
+      } else {
+        const activeId = String(e.active.id);
+        const overId = String(e.over.id);
+        const origin = idToPath(activeId);
+        const target = idToPath(overId);
 
-      if (origin.length === 0) return;
-      if (target.length === 0) return;
+        if (origin.length === 0) return;
+        if (target.length === 0) return;
 
-      const data = e.active.data.current;
-      const parsed = AllBlocks.safeParse(data);
-      if (!parsed.success) return;
+        const data = e.active.data.current;
+        const parsed = AllBlocks.safeParse(data);
+        if (!parsed.success) return;
+        const block = parsed.data;
 
-      const block = parsed.data;
-
-      onMove(origin, target, block);
+        onMove(origin, target, block);
+      }
     }
   };
 

@@ -8,7 +8,7 @@ import {
 import { AllBlocksType } from "../schema/blocks";
 import { BlockDeleteForm } from "./components/Delete";
 import { BlockPathType } from "../PageCompiler/Block";
-import { EditorPanel } from "./components/EditorPanelContent";
+import { EditorPanel } from "./components/EditorPanel";
 import { LocalDialogContainer } from "~/design/LocalDialog/container";
 
 type EditorPanelState = null | {
@@ -37,7 +37,7 @@ export const EditorPanelLayoutProvider = ({
     return (
       <EditorPanelContext.Provider value={{ panel, setPanel }}>
         <div className="flex gap-5">
-          <div className="w-1/3 max-w-md shrink-0 overflow-x-hidden">
+          <div className="w-1/3 max-w-md shrink-0 overflow-visible border-r-2 border-gray-4 pr-2 dark:border-gray-dark-4">
             <EditorPanel />
           </div>
           <LocalDialogContainer className="min-w-0 flex-1">

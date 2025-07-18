@@ -19,7 +19,6 @@ import { DroppableSeparator } from "~/design/DragAndDropEditor/DroppableSeparato
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
-import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
 import { twMergeClsx } from "~/util/helpers";
 import { useCreateBlock } from "../../context/utils/useCreateBlock";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
@@ -95,6 +94,9 @@ const EditorBlockWrapper = ({
         id={pathToId(blockPath)}
         blockPath={blockPath}
         position="before"
+        onDrop={(type) => {
+          createBlock(type, blockPath);
+        }}
       />
       <DraggableElement
         blockPath={blockPath}
@@ -104,9 +106,9 @@ const EditorBlockWrapper = ({
         <div
           ref={containerRef}
           className={twMergeClsx(
-            "relative isolate z-0 rounded-md rounded-s-none border-2 border-dashed border-gray-4 bg-white p-0 dark:border-gray-dark-4 dark:bg-black",
-            isHovered && "border-solid bg-gray-2 dark:bg-gray-dark-2",
-            isFocused && "border-solid border-gray-8 dark:border-gray-8"
+            "relative isolate z-0 rounded-md rounded-s-none border-2 border-gray-4 bg-white p-0 dark:border-gray-dark-4 dark:bg-black",
+            isHovered && "bg-gray-2 dark:bg-gray-dark-2",
+            isFocused && "border-gray-8 dark:border-gray-8"
           )}
           data-block-wrapper
           onClick={handleClickBlock}
@@ -118,14 +120,6 @@ const EditorBlockWrapper = ({
               </span>
               {blockPath.join(".")}
             </Badge>
-          )}
-          {isFocused && (
-            <div onClick={(event) => event.stopPropagation()}>
-              <SelectBlockType
-                path={blockPath}
-                onSelect={(type) => createBlock(type, blockPath)}
-              />
-            </div>
           )}
           <Suspense fallback={<Loading />}>
             <ErrorBoundary
