@@ -1,7 +1,7 @@
 import { FC, PropsWithChildren } from "react";
 import {
+  decrementPath,
   idToPath,
-  incrementPath,
   pathToId,
 } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/utils";
 import { useDndContext, useDroppable } from "@dnd-kit/core";
@@ -39,10 +39,10 @@ export const DroppableSeparator: FC<DroppableProps> = ({
   const { active } = useDndContext();
 
   const path = idToPath(id);
-  const pathAfter = incrementPath(path);
-  const positionAfter = pathToId(pathAfter);
+  const pathBefore = decrementPath(path);
+  const positionBefore = pathToId(pathBefore);
 
-  const samePosition = active?.id === id || active?.id === positionAfter;
+  const samePosition = active?.id === id || active?.id === positionBefore;
   const canDrop = !!active;
 
   return (

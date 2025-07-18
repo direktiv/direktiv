@@ -175,7 +175,7 @@ export const pathToId = (path: BlockPathType) => {
   return id;
 };
 
-export const incrementPath = (path: BlockPathType): BlockPathType => {
+export const decrementPath = (path: BlockPathType): BlockPathType => {
   const pathLength = path.length;
   let lastIndex = path[pathLength - 1];
 
