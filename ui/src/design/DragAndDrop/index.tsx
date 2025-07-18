@@ -1,19 +1,29 @@
 import { DndContext as DndKitContext, DragEndEvent } from "@dnd-kit/core";
+import {
+  DragAndDropPayloadSchemaType,
+  DragPayloadSchema,
+  DropPayloadSchema,
+} from "./schema";
 import { FC, PropsWithChildren } from "react";
-import { PayloadSchema, PayloadSchemaType } from "./schema";
 
 type DndContextProps = PropsWithChildren & {
-  onDrop: (payload: PayloadSchemaType) => void;
+  onDrop: (payload: DragAndDropPayloadSchemaType) => void;
 };
 
 export const DndContext: FC<DndContextProps> = ({ children, onDrop }) => {
   const onDragEnd = (e: DragEndEvent) => {
-    //  validate payload and only call onDrop if it is valid
-    const parsedPayload = PayloadSchema.safeParse(e.active.data.current);
-    if (!parsedPayload.success) return;
-    const payload = parsedPayload.data;
+    const parsedDragPayload = DragPayloadSchema.safeParse(
+      e.active.data.current
+    );
+    if (!parsedDragPayload.success) return;
 
-    onDrop(payload);
+    const parsedDropPayload = DropPayloadSchema.safeParse(e.over?.data.current);
+    if (!parsedDropPayload.success) return;
+
+    onDrop({
+      drag: parsedDragPayload.data,
+      drop: parsedDropPayload.data,
+    });
   };
 
   return <DndKitContext onDragEnd={onDragEnd}>{children}</DndKitContext>;

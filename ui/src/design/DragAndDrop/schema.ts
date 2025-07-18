@@ -1,6 +1,8 @@
 import { AllBlocks } from "~/pages/namespace/Explorer/Page/poc/schema/blocks";
 import z from "zod";
 
+const PathSchema = z.array(z.number());
+
 const AddPayloadSchema = z.object({
   type: z.literal("add"),
   block: AllBlocks,
@@ -9,12 +11,27 @@ const AddPayloadSchema = z.object({
 const MovePayloadSchema = z.object({
   type: z.literal("move"),
   block: AllBlocks,
-  originPath: z.array(z.number()),
+  originPath: PathSchema,
 });
 
-export const PayloadSchema = z.discriminatedUnion("type", [
+export const DragPayloadSchema = z.discriminatedUnion("type", [
   AddPayloadSchema,
   MovePayloadSchema,
 ]);
 
-export type PayloadSchemaType = z.infer<typeof PayloadSchema>;
+export type DragPayloadSchemaType = z.infer<typeof DragPayloadSchema>;
+
+export const DropPayloadSchema = z.object({
+  targetPath: PathSchema,
+});
+
+export type DropPayloadSchemaType = z.infer<typeof DropPayloadSchema>;
+
+export const DragAndDropPayloadSchema = z.object({
+  drag: DragPayloadSchema,
+  drop: DropPayloadSchema,
+});
+
+export type DragAndDropPayloadSchemaType = z.infer<
+  typeof DragAndDropPayloadSchema
+>;

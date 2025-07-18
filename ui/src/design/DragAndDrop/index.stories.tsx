@@ -2,6 +2,7 @@ import { DragablePaletteItem, SortableItem } from "./Draggable";
 
 import { Card } from "../Card";
 import { DndContext } from ".";
+import { Dropzone } from "./Dropzone";
 import { Heading1 } from "lucide-react";
 import { HeadlineType } from "~/pages/namespace/Explorer/Page/poc/schema/blocks/headline";
 import { useState } from "react";
@@ -22,16 +23,17 @@ export const Default = () => {
   return (
     <DndContext
       onDrop={(payload) => {
-        if (payload.type === "add") {
+        const { drag, drop } = payload;
+        if (drag.type === "add") {
           setActions((old) => [
             ...old,
-            `🫳 you just added a ${payload.block.type}`,
+            `you just added a ${drag.block.type} at ${drop.targetPath.join(",")}`,
           ]);
         }
-        if (payload.type === "move") {
+        if (drag.type === "move") {
           setActions((old) => [
             ...old,
-            `🫳 you just moved a ${payload.block.type} from ${payload.originPath.join(",")}`,
+            `you just moved a ${drag.block.type} from ${drag.originPath.join(",")} to ${drop.targetPath.join(",")}`,
           ]);
         }
       }}
@@ -57,12 +59,7 @@ export const Default = () => {
             const blockPath = [index];
             return (
               <div key={index} className="my-2 flex flex-col items-center">
-                {/* <DroppableSeparator
-                        id={String(index)}
-                        position="before"
-                        blockPath={[index]}
-                        onDrop={() => doSomething}
-                        />*/}
+                <Dropzone payload={{ targetPath: [index] }} />
                 <SortableItem
                   payload={{ type: "move", block, originPath: blockPath }}
                 >

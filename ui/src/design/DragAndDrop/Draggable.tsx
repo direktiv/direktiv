@@ -8,18 +8,18 @@ import {
 import { GripVertical, LucideIcon } from "lucide-react";
 
 import { Card } from "../Card";
-import { PayloadSchemaType } from "./schema";
+import { DragPayloadSchemaType } from "./schema";
 import { useDraggable } from "@dnd-kit/core";
 
 type DraggableProps = PropsWithChildren & {
-  payload: PayloadSchemaType;
+  payload: DragPayloadSchemaType;
 };
 
 type Transform = ReturnType<typeof useDraggable>["transform"];
 
 type DraggableElementUnstyledProps = PropsWithChildren &
   HTMLAttributes<HTMLDivElement> & {
-    payload: PayloadSchemaType;
+    payload: DragPayloadSchemaType;
     style: (transform: Transform) => CSSProperties;
   };
 
