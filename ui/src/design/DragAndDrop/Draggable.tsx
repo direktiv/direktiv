@@ -24,23 +24,15 @@ type DraggableElementUnstyledProps = PropsWithChildren &
   };
 
 const Dragable = forwardRef<HTMLDivElement, DraggableElementUnstyledProps>(
-  ({ payload, style, children, ...props }, ref) => {
+  ({ payload, style, children, ...props }) => {
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
-      // TODO: use a better id?
       id: JSON.stringify(payload),
       data: payload,
     });
 
     return (
       <div
-        ref={(node) => {
-          setNodeRef(node);
-          if (typeof ref === "function") {
-            ref(node);
-          } else if (ref) {
-            ref.current = node;
-          }
-        }}
+        ref={setNodeRef}
         {...listeners}
         {...attributes}
         {...props}
