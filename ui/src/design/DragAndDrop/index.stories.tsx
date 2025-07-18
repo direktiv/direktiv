@@ -1,13 +1,13 @@
-import { Divide, Heading1 } from "lucide-react";
-import { DraggableElementAdd, DraggableElementSort } from "./DraggableElement";
+import { DragablePaletteItem, SortableItem } from "./Draggable";
 
 import { Card } from "../Card";
 import { DndContext } from ".";
+import { Heading1 } from "lucide-react";
 import { HeadlineType } from "~/pages/namespace/Explorer/Page/poc/schema/blocks/headline";
 import { useState } from "react";
 
 export default {
-  title: "Components/DragAndDropEditorAlt",
+  title: "Components/DragAndDrop",
 };
 
 const blocks: HeadlineType[] = [
@@ -38,7 +38,7 @@ export const Default = () => {
     >
       <div className="flex gap-5">
         <Card className="w-[200px] p-3">
-          <DraggableElementAdd
+          <DragablePaletteItem
             payload={{
               type: "add",
               block: {
@@ -50,7 +50,7 @@ export const Default = () => {
             icon={Heading1}
           >
             Headline
-          </DraggableElementAdd>
+          </DragablePaletteItem>
         </Card>
         <Card className="grow p-3">
           {blocks.map((block, index) => {
@@ -63,13 +63,13 @@ export const Default = () => {
                         blockPath={[index]}
                         onDrop={() => doSomething}
                         />*/}
-                <DraggableElementSort
+                <SortableItem
                   payload={{ type: "move", block, originPath: blockPath }}
                 >
                   {block.type === "headline" && (
                     <div className="border-2 p-2">{block.label}</div>
                   )}
-                </DraggableElementSort>
+                </SortableItem>
               </div>
             );
           })}

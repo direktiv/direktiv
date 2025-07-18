@@ -23,43 +23,39 @@ type DraggableElementUnstyledProps = PropsWithChildren &
     style: (transform: Transform) => CSSProperties;
   };
 
-const DraggableElementUnstyled = forwardRef<
-  HTMLDivElement,
-  DraggableElementUnstyledProps
->(({ payload, style, children, ...props }, ref) => {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    // TODO: use a better id?
-    id: JSON.stringify(payload),
-    data: payload,
-  });
+const Dragable = forwardRef<HTMLDivElement, DraggableElementUnstyledProps>(
+  ({ payload, style, children, ...props }, ref) => {
+    const { attributes, listeners, setNodeRef, transform } = useDraggable({
+      // TODO: use a better id?
+      id: JSON.stringify(payload),
+      data: payload,
+    });
 
-  return (
-    <div
-      ref={(node) => {
-        setNodeRef(node);
-        if (typeof ref === "function") {
-          ref(node);
-        } else if (ref) {
-          ref.current = node;
-        }
-      }}
-      {...listeners}
-      {...attributes}
-      {...props}
-      style={style(transform)}
-    >
-      {children}
-    </div>
-  );
-});
+    return (
+      <div
+        ref={(node) => {
+          setNodeRef(node);
+          if (typeof ref === "function") {
+            ref(node);
+          } else if (ref) {
+            ref.current = node;
+          }
+        }}
+        {...listeners}
+        {...attributes}
+        {...props}
+        style={style(transform)}
+      >
+        {children}
+      </div>
+    );
+  }
+);
 
-DraggableElementUnstyled.displayName = "DraggableElementUnstyled";
+Dragable.displayName = "DraggableElementUnstyled";
 
-export const DraggableElementSort: FC<DraggableProps> = ({
-  payload,
-  children,
-}) => (
-  <DraggableElementUnstyled
+export const SortableItem: FC<DraggableProps> = ({ payload, children }) => (
+  <Dragable
     payload={payload}
     className="relative m-1"
     style={(transform) =>
@@ -80,15 +76,15 @@ export const DraggableElementSort: FC<DraggableProps> = ({
       <span className="mr-5"></span>
       <div className="w-full">{children}</div>
     </div>
-  </DraggableElementUnstyled>
+  </Dragable>
 );
 
-export const DraggableElementAdd: FC<DraggableProps & { icon: LucideIcon }> = ({
+export const DragablePaletteItem: FC<DraggableProps & { icon: LucideIcon }> = ({
   payload,
   icon: Icon,
   children,
 }) => (
-  <DraggableElementUnstyled
+  <Dragable
     payload={payload}
     className="relative m-1"
     style={(transform) =>
@@ -103,5 +99,5 @@ export const DraggableElementAdd: FC<DraggableProps & { icon: LucideIcon }> = ({
     <Card className="z-50 m-4 flex items-center justify-center bg-gray-2 p-4 text-sm text-black dark:bg-gray-dark-2">
       <Icon size={16} className="mr-4" /> {children}
     </Card>
-  </DraggableElementUnstyled>
+  </Dragable>
 );
