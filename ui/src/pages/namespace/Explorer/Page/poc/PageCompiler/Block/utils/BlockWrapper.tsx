@@ -94,7 +94,7 @@ const EditorBlockWrapper = ({
         id={pathToId(blockPath)}
         blockPath={blockPath}
         position="before"
-        onDrop={(type: AllBlocksType["type"]) => {
+        onDrop={(type) => {
           createBlock(type, blockPath);
         }}
       />
