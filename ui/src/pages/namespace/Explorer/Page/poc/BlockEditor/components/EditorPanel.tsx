@@ -12,9 +12,8 @@ export const EditorPanel = () => {
   const { panel } = usePageEditorPanel();
   const { t } = useTranslation();
 
-  const path = panel?.path ?? [1];
-
-  const types = useBlockTypes(path);
+  const rootLevel = [1];
+  const allowedBlockTypes = useBlockTypes(rootLevel);
 
   if (!panel) {
     return (
@@ -33,7 +32,7 @@ export const EditorPanel = () => {
 
           <TabsContent value="addBlock" asChild>
             <div className="relative flex-col-reverse overflow-visible">
-              {types.map((type, index) => {
+              {allowedBlockTypes.map((type, index) => {
                 const Icon = type.icon;
                 return (
                   <DraggableCreateElement
