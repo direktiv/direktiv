@@ -1,8 +1,9 @@
 import { FC, PropsWithChildren } from "react";
+import { GripVertical, LucideIcon } from "lucide-react";
 
 import { AllBlocksType } from "~/pages/namespace/Explorer/Page/poc/schema/blocks";
 import { BlockPathType } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/Block";
-import { GripVertical } from "lucide-react";
+import { Card } from "~/design/Card";
 import { useDraggable } from "@dnd-kit/core";
 
 type DraggableProps = PropsWithChildren & {
@@ -52,11 +53,13 @@ export const DraggableElement: FC<DraggableProps> = ({
 type DraggableCreateProps = PropsWithChildren & {
   id: number;
   type: AllBlocksType["type"];
+  icon: LucideIcon;
 };
 
 export const DraggableCreateElement: FC<DraggableCreateProps> = ({
   id,
   type,
+  icon: Icon,
   children,
 }) => {
   const data = { type };
@@ -80,7 +83,10 @@ export const DraggableCreateElement: FC<DraggableCreateProps> = ({
         ref={setNodeRef}
         className="relative z-20 cursor-move"
       >
-        {children}
+        <Card className="z-50 m-4 flex items-center justify-center bg-gray-2 p-4 text-sm text-black dark:bg-gray-dark-2 dark:text-white">
+          <Icon size={16} className="mr-4" />
+          {children}
+        </Card>
       </div>
     </div>
   );

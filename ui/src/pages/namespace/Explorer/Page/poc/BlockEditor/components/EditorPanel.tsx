@@ -2,7 +2,6 @@ import { Blocks, Settings } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 
 import { BlockForm } from "..";
-import { Card } from "~/design/Card";
 import { DraggableCreateElement } from "~/design/DragAndDropEditor/DraggableElement";
 import { useBlockTypes } from "../../PageCompiler/context/utils/useBlockTypes";
 import { usePageEditorPanel } from "../EditorPanelProvider";
@@ -32,20 +31,16 @@ export const EditorPanel = () => {
 
           <TabsContent value="addBlock" asChild>
             <div className="relative flex-col-reverse overflow-visible">
-              {allowedBlockTypes.map((type, index) => {
-                const Icon = type.icon;
-                return (
-                  <DraggableCreateElement
-                    key={type.label}
-                    id={index}
-                    type={type.type}
-                  >
-                    <Card className="z-50 m-4 flex justify-center bg-gray-2 p-4 text-sm text-black dark:bg-gray-dark-2 dark:text-white">
-                      <Icon size={16} className="mr-4" /> {type.label}
-                    </Card>
-                  </DraggableCreateElement>
-                );
-              })}
+              {allowedBlockTypes.map((type, index) => (
+                <DraggableCreateElement
+                  key={type.label}
+                  id={index}
+                  type={type.type}
+                  icon={type.icon}
+                >
+                  {type.label}
+                </DraggableCreateElement>
+              ))}
             </div>
           </TabsContent>
           <TabsContent value="settings" asChild></TabsContent>
