@@ -191,6 +191,122 @@ describe("addBlockToPage", () => {
       "Invalid path, could not extract index for new block"
     );
   });
+
+  test("inserts block in another block (level below)", () => {
+    const page: DirektivPagesType = {
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [{ type: "card", blocks: [] }],
+    };
+
+    const updatedPage = addBlockToPage(page, [0, 0], headline);
+
+    expect(updatedPage).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [
+            {
+              type: "headline",
+              level: "h2",
+              label: "New headline",
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  test("inserts block in another block (level below) - insert before ", () => {
+    const page: DirektivPagesType = {
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        { type: "card", blocks: [{ type: "text", content: "Original Block" }] },
+      ],
+    };
+
+    const updatedPage = addBlockToPage(page, [0, 0], headline);
+
+    expect(updatedPage).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [
+            {
+              type: "headline",
+              level: "h2",
+              label: "New headline",
+            },
+            { type: "text", content: "Original Block" },
+          ],
+        },
+      ],
+    });
+  });
+
+  test("inserts block in another block (level below) - insert after ", () => {
+    const page: DirektivPagesType = {
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        { type: "card", blocks: [{ type: "text", content: "Original Block" }] },
+      ],
+    };
+
+    const updatedPage = addBlockToPage(page, [0, 1], headline);
+
+    expect(updatedPage).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [
+            { type: "text", content: "Original Block" },
+            {
+              type: "headline",
+              level: "h2",
+              label: "New headline",
+            },
+          ],
+        },
+      ],
+    });
+  });
+  test("inserts block in another block (level below) - insert after 2", () => {
+    const page: DirektivPagesType = {
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        { type: "card", blocks: [{ type: "text", content: "Original Block" }] },
+      ],
+    };
+
+    const updatedPage = addBlockToPage(page, [0, 1], headline, true);
+
+    expect(updatedPage).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [
+            { type: "text", content: "Original Block" },
+            {
+              type: "headline",
+              level: "h2",
+              label: "New headline",
+            },
+          ],
+        },
+      ],
+    });
+  });
 });
 
 describe("deleteBlockFromPage", () => {
