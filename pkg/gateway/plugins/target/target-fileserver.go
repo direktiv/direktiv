@@ -3,13 +3,13 @@ package target
 import (
 	"errors"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/filestore"
 	"io"
 	"net/http"
 	"os"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
