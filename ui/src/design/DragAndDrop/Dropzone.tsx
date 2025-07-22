@@ -8,7 +8,6 @@ import { useDndContext, useDroppable } from "@dnd-kit/core";
 
 import Badge from "~/design/Badge";
 import { PlusCircle } from "lucide-react";
-import { pathToId } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/utils";
 import { twMergeClsx } from "~/util/helpers";
 
 type DroppableProps = PropsWithChildren & {
@@ -22,7 +21,7 @@ export const Dropzone: FC<DroppableProps> = ({
   children,
 }) => {
   const { setNodeRef, isOver } = useDroppable({
-    id: pathToId(payload.targetPath),
+    id: payload.targetPath.join("-"),
     data: payload,
   });
 

@@ -5,12 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  decrementPath,
-  findAncestor,
-  pathToId,
-  pathsEqual,
-} from "../../context/utils";
+import { decrementPath, findAncestor, pathsEqual } from "../../context/utils";
 import {
   usePage,
   usePageStateContext,
@@ -95,13 +90,10 @@ const EditorBlockWrapper = ({
   const isDropAllowed = (payload: DragPayloadSchemaType | null) => {
     if (payload?.type === "move") {
       // don't show a dropzone for neighboring blocks
-      const originPathId = pathToId(payload.originPath);
       const precedingSilblingPath = decrementPath(blockPath);
-      const currentPathId = pathToId(blockPath);
-      const precedingSilblingPathId = pathToId(precedingSilblingPath);
       if (
-        originPathId === precedingSilblingPathId ||
-        originPathId === currentPathId
+        pathsEqual(payload.originPath, precedingSilblingPath) ||
+        pathsEqual(payload.originPath, blockPath)
       ) {
         return false;
       }
