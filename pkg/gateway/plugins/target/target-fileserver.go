@@ -3,6 +3,7 @@ package target
 import (
 	"errors"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"io"
 	"net/http"
 	"os"
@@ -21,6 +22,10 @@ func (tnf *NamespaceFileServerPlugin) NewInstance(config core.PluginConfig) (cor
 	pl := &NamespaceFileServerPlugin{}
 
 	err := gateway.ConvertConfig(config.Config, pl)
+	if err != nil {
+		return nil, err
+	}
+	_, err = filestore.SanitizePath(pl.Dir)
 	if err != nil {
 		return nil, err
 	}
@@ -50,6 +55,12 @@ func (tnf *NamespaceFileServerPlugin) Execute(w http.ResponseWriter, r *http.Req
 	parts := strings.Split(r.URL.Path, gateway.ExtractContextURLPattern(r))
 	if len(parts) != 2 {
 		gateway.WriteInternalError(r, w, errors.New("unexpected request url"), "plugin couldn't parse url")
+
+		return nil, nil
+	}
+
+	if !strings.HasPrefix("/"+parts[1], tnf.Dir) {
+		gateway.WriteInternalError(r, w, errors.New("unexpected request url"), "path is not allowed")
 
 		return nil, nil
 	}
