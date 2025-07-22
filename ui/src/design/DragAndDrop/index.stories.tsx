@@ -27,7 +27,7 @@ export const Default = () => {
         if (drag.type === "add") {
           setActions((old) => [
             ...old,
-            `you just added a ${drag.block.type} at ${drop.targetPath.join(",")}`,
+            `you just added a ${drag.blockType} at ${drop.targetPath.join(",")}`,
           ]);
         }
         if (drag.type === "move") {
@@ -43,11 +43,7 @@ export const Default = () => {
           <DragablePaletteItem
             payload={{
               type: "add",
-              block: {
-                type: "headline",
-                label: "Headline",
-                level: "h3",
-              },
+              blockType: "headline",
             }}
             icon={Heading1}
           >

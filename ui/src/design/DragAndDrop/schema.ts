@@ -1,11 +1,15 @@
-import { AllBlocks } from "~/pages/namespace/Explorer/Page/poc/schema/blocks";
+import {
+  AllBlocks,
+  AvailableBlockTypeAttributes,
+} from "~/pages/namespace/Explorer/Page/poc/schema/blocks";
+
 import z from "zod";
 
 const PathSchema = z.array(z.number());
 
 const AddPayloadSchema = z.object({
   type: z.literal("add"),
-  block: AllBlocks,
+  blockType: AvailableBlockTypeAttributes,
 });
 
 const MovePayloadSchema = z.object({

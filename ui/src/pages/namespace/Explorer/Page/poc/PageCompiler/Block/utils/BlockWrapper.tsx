@@ -5,7 +5,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { findAncestor, pathToId, pathsEqual } from "../../context/utils";
+import {
+  decrementPath,
+  findAncestor,
+  pathToId,
+  pathsEqual,
+} from "../../context/utils";
 import {
   usePage,
   usePageStateContext,
@@ -14,13 +19,13 @@ import {
 import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockPathType } from "..";
-import { DraggableElement } from "~/design/DragAndDropEditor/DraggableElement";
-import { DroppableSeparator } from "~/design/DragAndDropEditor/DroppableSeparator";
+import { DragPayloadSchemaType } from "~/design/DragAndDrop/schema";
+import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
+import { SortableItem } from "~/design/DragAndDrop/Draggable";
 import { twMergeClsx } from "~/util/helpers";
-import { useCreateBlock } from "../../context/utils/useCreateBlock";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 import { useTranslation } from "react-i18next";
 
@@ -39,7 +44,6 @@ const EditorBlockWrapper = ({
   const { panel, setPanel } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const createBlock = useCreateBlock();
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -88,20 +92,33 @@ const EditorBlockWrapper = ({
     });
   };
 
+  const isDropAllowed = (payload: DragPayloadSchemaType | null) => {
+    if (payload?.type === "move") {
+      // don't show a dropzone for neighboring blocks
+      const originPathId = pathToId(payload.originPath);
+      const precedingSilblingPath = decrementPath(blockPath);
+      const currentPathId = pathToId(blockPath);
+      const precedingSilblingPathId = pathToId(precedingSilblingPath);
+      if (
+        originPathId === precedingSilblingPathId ||
+        originPathId === currentPathId
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   return (
     <>
-      <DroppableSeparator
-        id={pathToId(blockPath)}
-        blockPath={blockPath}
-        position="before"
-        onDrop={(type) => {
-          createBlock(type, blockPath);
+      <Dropzone payload={{ targetPath: blockPath }} isVisible={isDropAllowed} />
+      <SortableItem
+        payload={{
+          type: "move",
+          block,
+          originPath: blockPath,
         }}
-      />
-      <DraggableElement
-        blockPath={blockPath}
-        element={block}
-        id={pathToId(blockPath)}
       >
         <div
           ref={containerRef}
@@ -133,7 +150,7 @@ const EditorBlockWrapper = ({
             </ErrorBoundary>
           </Suspense>
         </div>
-      </DraggableElement>
+      </SortableItem>
     </>
   );
 };

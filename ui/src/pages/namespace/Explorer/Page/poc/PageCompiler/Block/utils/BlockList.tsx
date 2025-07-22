@@ -1,12 +1,9 @@
 import { ReactElement, Suspense } from "react";
 
-import { AllBlocksType } from "../../../schema/blocks";
 import { BlockPathType } from "..";
-import { DroppableElement } from "~/design/DragAndDropEditor/DroppableSeparator";
+import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { Loading } from "./Loading";
-import { pathToId } from "../../context/utils";
 import { twMergeClsx } from "~/util/helpers";
-import { useCreateBlock } from "../../context/utils/useCreateBlock";
 import { usePageStateContext } from "../../context/pageCompilerContext";
 
 type BlockListProps = {
@@ -39,28 +36,18 @@ const EditorBlockList = ({
   horizontal,
   children,
   path,
-}: BlockListComponentProps) => {
-  const createBlock = useCreateBlock();
-  return (
-    <BlockListWrapper horizontal={horizontal}>
-      <Suspense fallback={<Loading />}>
-        {!children.length && (
-          <div className="w-full self-center">
-            <DroppableElement
-              id={pathToId(path)}
-              blockPath={path}
-              position="before"
-              onDrop={(type: AllBlocksType["type"]) => {
-                createBlock(type, [...path, 0]);
-              }}
-            />
-          </div>
-        )}
-        {children}
-      </Suspense>
-    </BlockListWrapper>
-  );
-};
+}: BlockListComponentProps) => (
+  <BlockListWrapper horizontal={horizontal}>
+    <Suspense fallback={<Loading />}>
+      {!children.length && (
+        <div className="w-full self-center">
+          <Dropzone payload={{ targetPath: path }} />
+        </div>
+      )}
+      {children}
+    </Suspense>
+  </BlockListWrapper>
+);
 
 const VisitorBlockList = ({
   horizontal,

@@ -1,20 +1,24 @@
+import {
+  DragPayloadSchema,
+  DragPayloadSchemaType,
+  DropPayloadSchemaType,
+} from "./schema";
 import { FC, PropsWithChildren } from "react";
 import { useDndContext, useDroppable } from "@dnd-kit/core";
 
 import Badge from "~/design/Badge";
-import { DropPayloadSchemaType } from "./schema";
 import { PlusCircle } from "lucide-react";
 import { pathToId } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/utils";
 import { twMergeClsx } from "~/util/helpers";
 
 type DroppableProps = PropsWithChildren & {
   payload: DropPayloadSchemaType;
-  className?: string;
+  isVisible?: (payload: DragPayloadSchemaType | null) => boolean;
 };
 
 export const Dropzone: FC<DroppableProps> = ({
   payload,
-  className,
+  isVisible = () => true,
   children,
 }) => {
   const { setNodeRef, isOver } = useDroppable({
@@ -26,13 +30,16 @@ export const Dropzone: FC<DroppableProps> = ({
 
   const canDrop = !!active;
 
+  const parsedPayload = DragPayloadSchema.safeParse(active?.data.current);
+
   return (
     <div
       ref={setNodeRef}
       className={twMergeClsx(
         "relative m-0 my-4 h-1 w-full justify-center rounded-lg p-0",
         isOver && "h-1 bg-gray-4 transition-all dark:bg-gray-dark-4",
-        className
+        !isVisible(parsedPayload.success ? parsedPayload.data : null) &&
+          "invisible"
       )}
     >
       {children}
