@@ -39,8 +39,8 @@ describe('Test gateway basic call', () => {
 		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway/foo`)
 		expect(res.statusCode).toEqual(405)
 		expect(res.body.error).toEqual({
-				endpointFile: '/ep1.yaml',
-				message: 'method:GET is not allowed with this endpoint'
+			endpointFile: '/ep1.yaml',
+			message: 'method:GET is not allowed with this endpoint',
 
 		})
 	})
