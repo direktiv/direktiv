@@ -369,8 +369,8 @@ describe("decrementPath", () => {
 
   test("should not handle a path with last index 0 (result will never be -1)", () => {
     const input = [0, 0];
-    const expected = [0, -1];
-    expect(decrementPath(input)).not.toEqual(expected);
+    const expected = [0, 0];
+    expect(decrementPath(input)).toEqual(expected);
   });
 
   test("should return the same path if the last index is falsy (e.g. 0)", () => {
