@@ -164,12 +164,6 @@ export const moveBlockWithinPage = (
   return pageWithDeletedBlock;
 };
 
-export const idToPath = (id: string): BlockPathType => {
-  const arrayOfStrings = id.split("-");
-  const path = arrayOfStrings.map(Number);
-  return path;
-};
-
 export const pathToId = (path: BlockPathType) => {
   const id = path.join("-");
   return id;
