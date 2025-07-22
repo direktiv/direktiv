@@ -2,6 +2,7 @@ import { ColumnType, ColumnsType } from "../../../schema/blocks/columns";
 import { ParentBlocksType, SimpleBlocksType } from "../../../schema/blocks";
 import {
   addBlockToPage,
+  decrementPath,
   deleteBlockFromPage,
   findAncestor,
   findBlock,
@@ -219,7 +220,7 @@ describe("addBlockToPage", () => {
     });
   });
 
-  test("inserts block in another block (level below) - insert before ", () => {
+  test("inserts block in another block (level below) - insert before - defined through path", () => {
     const page: DirektivPagesType = {
       direktiv_api: "page/v1",
       type: "page",
@@ -249,12 +250,48 @@ describe("addBlockToPage", () => {
     });
   });
 
-  test("inserts block in another block (level below) - insert after ", () => {
+  test("inserts block in another block (level below) - insert before - defined through property 'after'", () => {
     const page: DirektivPagesType = {
       direktiv_api: "page/v1",
       type: "page",
       blocks: [
         { type: "card", blocks: [{ type: "text", content: "Original Block" }] },
+      ],
+    };
+
+    const updatedPage = addBlockToPage(page, [0, 0], headline);
+
+    expect(updatedPage).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [
+            {
+              type: "headline",
+              level: "h2",
+              label: "New headline",
+            },
+            { type: "text", content: "Original Block" },
+          ],
+        },
+      ],
+    });
+  });
+
+  test("inserts block in another block (level below) - insert after - defined through path", () => {
+    const page: DirektivPagesType = {
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [
+            { type: "text", content: "First Block" },
+            { type: "text", content: "Second Block" },
+          ],
+        },
       ],
     };
 
@@ -267,27 +304,34 @@ describe("addBlockToPage", () => {
         {
           type: "card",
           blocks: [
-            { type: "text", content: "Original Block" },
+            { type: "text", content: "First Block" },
             {
               type: "headline",
               level: "h2",
               label: "New headline",
             },
+            { type: "text", content: "Second Block" },
           ],
         },
       ],
     });
   });
-  test("inserts block in another block (level below) - insert after 2", () => {
+  test("inserts block in another block (level below) - insert after - defined through property 'after'", () => {
     const page: DirektivPagesType = {
       direktiv_api: "page/v1",
       type: "page",
       blocks: [
-        { type: "card", blocks: [{ type: "text", content: "Original Block" }] },
+        {
+          type: "card",
+          blocks: [
+            { type: "text", content: "First Block" },
+            { type: "text", content: "Second Block" },
+          ],
+        },
       ],
     };
 
-    const updatedPage = addBlockToPage(page, [0, 1], headline, true);
+    const updatedPage = addBlockToPage(page, [0, 0], headline, true);
 
     expect(updatedPage).toEqual({
       direktiv_api: "page/v1",
@@ -296,16 +340,49 @@ describe("addBlockToPage", () => {
         {
           type: "card",
           blocks: [
-            { type: "text", content: "Original Block" },
+            { type: "text", content: "First Block" },
             {
               type: "headline",
               level: "h2",
               label: "New headline",
             },
+            { type: "text", content: "Second Block" },
           ],
         },
       ],
     });
+  });
+});
+
+describe("decrementPath", () => {
+  test("should decrement the last index of a non-empty path", () => {
+    const input = [0, 2, 3];
+    const expected = [0, 2, 2];
+    expect(decrementPath(input)).toEqual(expected);
+  });
+
+  test("should handle a path with a single element", () => {
+    const input = [1];
+    const expected = [0];
+    expect(decrementPath(input)).toEqual(expected);
+  });
+
+  test("should not handle a path with last index 0 (result will never be -1)", () => {
+    const input = [0, 0];
+    const expected = [0, -1];
+    expect(decrementPath(input)).not.toEqual(expected);
+  });
+
+  test("should return the same path if the last index is falsy (e.g. 0)", () => {
+    const input = [1, 0];
+    const expected = [1, 0];
+    expect(decrementPath(input)).toEqual(expected);
+  });
+
+  test("should return an empty array unchanged", () => {
+    const input: number[] = [];
+    const expected: number[] = [];
+    expect(decrementPath(input)).toEqual(expected);
   });
 });
 
