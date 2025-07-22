@@ -14,8 +14,9 @@ import (
 )
 
 type NamespaceFileServerPlugin struct {
-	Dir       string `mapstructure:"dir"`
-	Namespace string `mapstructure:"namespace"`
+	AllowPaths []string `mapstructure:"allow_paths"`
+	DenyPaths  []string `mapstructure:"deny_paths"`
+	Namespace  string   `mapstructure:"namespace"`
 }
 
 func (tnf *NamespaceFileServerPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
@@ -25,9 +26,23 @@ func (tnf *NamespaceFileServerPlugin) NewInstance(config core.PluginConfig) (cor
 	if err != nil {
 		return nil, err
 	}
-	_, err = filestore.SanitizePath(pl.Dir)
-	if err != nil {
-		return nil, err
+	for _, path := range pl.AllowPaths {
+		_, err = filestore.SanitizePath(path)
+		if err != nil {
+			return nil, err
+		}
+		if path == "" {
+			return nil, errors.New("allow_paths has an empty path")
+		}
+	}
+	for _, path := range pl.DenyPaths {
+		_, err = filestore.SanitizePath(path)
+		if err != nil {
+			return nil, err
+		}
+		if path == "" {
+			return nil, errors.New("deny_paths has an empty path")
+		}
 	}
 
 	return pl, nil
@@ -59,10 +74,21 @@ func (tnf *NamespaceFileServerPlugin) Execute(w http.ResponseWriter, r *http.Req
 		return nil, nil
 	}
 
-	if !strings.HasPrefix("/"+parts[1], tnf.Dir) {
-		gateway.WriteInternalError(r, w, errors.New("unexpected request url"), "path is not allowed")
+	for _, path := range tnf.DenyPaths {
+		if strings.HasPrefix("/"+parts[1], path) {
+			gateway.WriteInternalError(r, w, errors.New("unexpected request url"), "path is denied")
 
-		return nil, nil
+			return nil, nil
+		}
+	}
+	allowed := false
+	for _, path := range tnf.AllowPaths {
+		if strings.HasPrefix("/"+parts[1], path) {
+			allowed = true
+		}
+	}
+	if !allowed {
+		gateway.WriteInternalError(r, w, errors.New("unexpected request url"), "path is not allowed")
 	}
 
 	url := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/files%s?raw=true",
