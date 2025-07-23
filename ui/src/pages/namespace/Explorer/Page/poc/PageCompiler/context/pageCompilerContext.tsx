@@ -7,8 +7,8 @@ import {
   updateBlockInPage,
 } from "./utils";
 
-import { AllBlocksType } from "../../schema/blocks";
 import { BlockPathType } from "../Block";
+import { BlockType } from "../../schema/blocks";
 import { DirektivPagesType } from "../../schema";
 
 type PageCompilerMode = "edit" | "live";
@@ -59,16 +59,12 @@ export const usePageEditor = () => {
   const page = usePage();
   const { mode, setPage } = usePageStateContext();
 
-  const updateBlock = (path: BlockPathType, newBlock: AllBlocksType) => {
+  const updateBlock = (path: BlockPathType, newBlock: BlockType) => {
     const newPage = updateBlockInPage(page, path, newBlock);
     setPage(newPage);
   };
 
-  const addBlock = (
-    path: BlockPathType,
-    block: AllBlocksType,
-    after = false
-  ) => {
+  const addBlock = (path: BlockPathType, block: BlockType, after = false) => {
     const newPage = addBlockToPage(page, path, block, after);
     setPage(newPage);
   };
@@ -81,7 +77,7 @@ export const usePageEditor = () => {
   const moveBlock = (
     origin: BlockPathType,
     target: BlockPathType,
-    block: AllBlocksType
+    block: BlockType
   ) => {
     const newPage = moveBlockWithinPage(page, origin, target, block);
     setPage(newPage);

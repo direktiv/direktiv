@@ -1,10 +1,10 @@
 import { BlockEditFormProps } from ".";
 import { Header } from "./components/Header";
-import { NoFormBlocksType } from "../schema/blocks";
+import { NoFormBlockType } from "../schema/blocks";
 import { useTranslation } from "react-i18next";
 
 type NoFormBlockProps = Omit<
-  BlockEditFormProps<NoFormBlocksType>,
+  BlockEditFormProps<NoFormBlockType>,
   "onSubmit" | "onCancel"
 >;
 

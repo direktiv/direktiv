@@ -1,4 +1,4 @@
-import { AllBlocksType, ParentBlocksUnion } from "../../../schema/blocks";
+import { BlockType, ParentBlockUnion } from "../../../schema/blocks";
 import { DirektivPagesSchema, DirektivPagesType } from "../../../schema";
 
 import { BlockPathType } from "../../Block";
@@ -6,24 +6,24 @@ import { clonePage } from "../../../BlockEditor/utils";
 import { z } from "zod";
 
 export const isParentBlock = (
-  block: AllBlocksType
-): block is z.infer<typeof ParentBlocksUnion> =>
-  ParentBlocksUnion.safeParse(block).success;
+  block: BlockType
+): block is z.infer<typeof ParentBlockUnion> =>
+  ParentBlockUnion.safeParse(block).success;
 
 export const isPage = (
-  page: AllBlocksType | DirektivPagesType
+  page: BlockType | DirektivPagesType
 ): page is z.infer<typeof DirektivPagesSchema> =>
   DirektivPagesSchema.safeParse(page).success;
 
 export const findBlock = (
-  parent: AllBlocksType | DirektivPagesType,
+  parent: BlockType | DirektivPagesType,
   path: BlockPathType
 ) =>
-  path.reduce<AllBlocksType | DirektivPagesType>((acc, index) => {
+  path.reduce<BlockType | DirektivPagesType>((acc, index) => {
     let next;
 
     if (isPage(acc) || isParentBlock(acc)) {
-      next = acc.blocks[index] as AllBlocksType;
+      next = acc.blocks[index] as BlockType;
     }
 
     if (!next) {
@@ -36,7 +36,7 @@ export const findBlock = (
 export const updateBlockInPage = (
   page: DirektivPagesType,
   path: BlockPathType,
-  block: AllBlocksType
+  block: BlockType
 ): DirektivPagesType => {
   const targetIndex = path[path.length - 1];
 
@@ -60,7 +60,7 @@ export const updateBlockInPage = (
 export const addBlockToPage = (
   page: DirektivPagesType,
   path: BlockPathType,
-  block: AllBlocksType,
+  block: BlockType,
   after = false
 ) => {
   let index = path[path.length - 1];
@@ -77,7 +77,7 @@ export const addBlockToPage = (
   }
 
   if (isPage(parent) || isParentBlock(parent)) {
-    const newList: AllBlocksType[] = [
+    const newList: BlockType[] = [
       ...parent.blocks.slice(0, index),
       block,
       ...parent.blocks.slice(index),
@@ -104,7 +104,7 @@ export const deleteBlockFromPage = (
   const parent = findBlock(newPage, path.slice(0, -1));
 
   if (isPage(parent) || isParentBlock(parent)) {
-    const newList: AllBlocksType[] = [
+    const newList: BlockType[] = [
       ...parent.blocks.slice(0, index),
       ...parent.blocks.slice(index + 1),
     ];
@@ -120,7 +120,7 @@ export const moveBlockWithinPage = (
   page: DirektivPagesType,
   originPath: BlockPathType,
   targetPath: BlockPathType,
-  block: AllBlocksType
+  block: BlockType
 ): DirektivPagesType => {
   const originIndex = originPath[originPath.length - 1];
   const targetIndex = targetPath[targetPath.length - 1];
@@ -175,7 +175,7 @@ export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
   return a.length === b.length && a.every((val, index) => val === b[index]);
 };
 
-type AllPossibleBlocks = AllBlocksType | DirektivPagesType;
+type AllPossibleBlocks = BlockType | DirektivPagesType;
 
 type FindAncestorConfig<T extends AllPossibleBlocks["type"]> = {
   page: DirektivPagesType;

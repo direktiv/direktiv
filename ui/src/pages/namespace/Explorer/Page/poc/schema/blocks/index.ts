@@ -20,7 +20,7 @@ import { z } from "zod";
  * The schema needs to get the type input to avoid circular dependencies.
  */
 
-const SimpleBlocksUnion = z.discriminatedUnion("type", [
+const SimpleBlockUnion = z.discriminatedUnion("type", [
   Button,
   Headline,
   Image,
@@ -28,7 +28,7 @@ const SimpleBlocksUnion = z.discriminatedUnion("type", [
   Text,
 ]);
 
-export const ParentBlocksUnion = z.discriminatedUnion("type", [
+export const ParentBlockUnion = z.discriminatedUnion("type", [
   Card,
   Dialog,
   Form,
@@ -38,14 +38,14 @@ export const ParentBlocksUnion = z.discriminatedUnion("type", [
   Columns,
 ]);
 
-export type SimpleBlocksType =
+export type SimpleBlockType =
   | ButtonType
   | HeadlineType
   | ImageType
   | TableType
   | TextType;
 
-export type ParentBlocksType =
+export type ParentBlockType =
   | CardType
   | DialogType
   | FormType
@@ -54,11 +54,11 @@ export type ParentBlocksType =
   | ColumnType
   | ColumnsType;
 
-export type AllBlocksType = SimpleBlocksType | ParentBlocksType;
-type AllBlocksTypeUnion = AllBlocksType["type"];
+export type BlockType = SimpleBlockType | ParentBlockType;
+type BlockTypeUnion = BlockType["type"];
 
-export const AllBlocks: z.ZodType<AllBlocksType> = z.lazy(() =>
-  z.union([SimpleBlocksUnion, ParentBlocksUnion])
+export const Block: z.ZodType<BlockType> = z.lazy(() =>
+  z.union([SimpleBlockUnion, ParentBlockUnion])
 );
 
 export const AvailableBlockTypeAttributes = z.union([
@@ -76,25 +76,22 @@ export const AvailableBlockTypeAttributes = z.union([
   z.literal("columns"),
 ]);
 
-export const TriggerBlocks = z.discriminatedUnion("type", [Button]);
+export const TriggerBlock = z.discriminatedUnion("type", [Button]);
 
-export type TriggerBlocksType = z.infer<typeof TriggerBlocks>;
+export type TriggerBlockType = z.infer<typeof TriggerBlock>;
 
 /* Inline blocks do not need a dialog for creation */
-const noFormBlocksTypeList = new Set([
+const noFormBlockTypeList = new Set([
   "columns",
   "card",
-]) satisfies Set<AllBlocksTypeUnion>;
+]) satisfies Set<BlockTypeUnion>;
 
-type noFormBlocksTypeUnion = ExtractUnionFromSet<typeof noFormBlocksTypeList>;
-export type NoFormBlocksType = Extract<
-  AllBlocksType,
-  { type: noFormBlocksTypeUnion }
+type noFormBlockTypeUnion = ExtractUnionFromSet<typeof noFormBlockTypeList>;
+export type NoFormBlockType = Extract<
+  BlockType,
+  { type: noFormBlockTypeUnion }
 >;
 
-type FormBlocksTypeUnion = Exclude<AllBlocksTypeUnion, noFormBlocksTypeUnion>;
+type FormBlockTypeUnion = Exclude<BlockTypeUnion, noFormBlockTypeUnion>;
 
-export type FormBlocksType = Extract<
-  AllBlocksType,
-  { type: FormBlocksTypeUnion }
->;
+export type FormBlockType = Extract<BlockType, { type: FormBlockTypeUnion }>;

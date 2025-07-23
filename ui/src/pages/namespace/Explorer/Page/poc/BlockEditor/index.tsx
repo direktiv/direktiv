@@ -1,7 +1,7 @@
 import { ComponentType, Key } from "react";
 
-import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
+import { BlockType } from "../schema/blocks";
 import { NoFormBlockSidePanel } from "./NoFormBlockSidePanel";
 import { isPage } from "../PageCompiler/context/utils";
 import { useBlockTypes } from "../PageCompiler/context/utils/useBlockTypes";
@@ -21,7 +21,7 @@ export type BlockEditFormProps<T> = {
 
 type BlockFormProps = {
   action: BlockEditorAction;
-  block: AllBlocksType;
+  block: BlockType;
   path: BlockPathType;
 };
 
@@ -34,7 +34,7 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
     throw Error("Unexpected page object when parsing block");
   }
 
-  const handleUpdate = (newBlock: AllBlocksType) => {
+  const handleUpdate = (newBlock: BlockType) => {
     switch (action) {
       case "create":
         addBlock(path, newBlock);

@@ -5,9 +5,9 @@ import {
   usePageStateContext,
 } from "../PageCompiler/context/pageCompilerContext";
 
-import { AllBlocksType } from "../schema/blocks";
 import { BlockDeleteForm } from "./components/Delete";
 import { BlockPathType } from "../PageCompiler/Block";
+import { BlockType } from "../schema/blocks";
 import { DndContext } from "~/design/DragAndDrop";
 import { DragAndDropPayloadSchemaType } from "~/design/DragAndDrop/schema";
 import { EditorPanel } from "./components/EditorPanel";
@@ -16,7 +16,7 @@ import { useBlockTypes } from "../PageCompiler/context/utils/useBlockTypes";
 
 type EditorPanelState = null | {
   action: "create" | "edit" | "delete";
-  block: AllBlocksType;
+  block: BlockType;
   path: BlockPathType;
 };
 
@@ -38,7 +38,7 @@ export const EditorPanelLayoutProvider = ({
   const [panel, setPanel] = useState<EditorPanelState>(null);
   const { mode } = usePageStateContext();
 
-  const createBlock = (type: AllBlocksType["type"], path: BlockPathType) => {
+  const createBlock = (type: BlockType["type"], path: BlockPathType) => {
     const blockConfig = getBlockConfig(type);
 
     if (!blockConfig) throw new Error(`No blockConfig found for ${type}`);
