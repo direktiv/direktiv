@@ -11,9 +11,9 @@ import {
   usePageStateContext,
 } from "../../context/pageCompilerContext";
 
-import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockPathType } from "..";
+import { BlockType } from "../../../schema/blocks";
 import { DragPayloadSchemaType } from "~/design/DragAndDrop/schema";
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { ErrorBoundary } from "react-error-boundary";
@@ -26,7 +26,7 @@ import { useTranslation } from "react-i18next";
 
 type BlockWrapperProps = PropsWithChildren<{
   blockPath: BlockPathType;
-  block: AllBlocksType;
+  block: BlockType;
 }>;
 
 const EditorBlockWrapper = ({

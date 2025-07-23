@@ -1,4 +1,4 @@
-import { AllBlocks, AllBlocksType } from ".";
+import { Block, BlockType } from ".";
 import { z } from "zod";
 
 /**
@@ -9,12 +9,12 @@ import { z } from "zod";
  */
 export type ColumnType = {
   type: "column";
-  blocks: AllBlocksType[];
+  blocks: BlockType[];
 };
 
 export const Column = z.object({
   type: z.literal("column"),
-  blocks: z.array(z.lazy(() => AllBlocks)),
+  blocks: z.array(z.lazy(() => Block)),
 }) satisfies z.ZodType<ColumnType>;
 
 export type ColumnsType = {

@@ -1,4 +1,4 @@
-import { AllBlocks, AllBlocksType } from ".";
+import { Block, BlockType } from ".";
 import { z } from "zod";
 
 /**
@@ -9,10 +9,10 @@ import { z } from "zod";
  */
 export type CardType = {
   type: "card";
-  blocks: AllBlocksType[];
+  blocks: BlockType[];
 };
 
 export const Card = z.object({
   type: z.literal("card"),
-  blocks: z.array(z.lazy(() => AllBlocks)),
+  blocks: z.array(z.lazy(() => Block)),
 }) satisfies z.ZodType<CardType>;
