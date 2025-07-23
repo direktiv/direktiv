@@ -12,7 +12,8 @@ export const EditorPanel = () => {
   const { t } = useTranslation();
 
   const rootLevel = [1];
-  const allowedBlockTypes = useBlockTypes(rootLevel);
+  const { getAllowedTypes } = useBlockTypes();
+  const allowedBlockTypes = getAllowedTypes(rootLevel);
 
   if (!panel) {
     return (
