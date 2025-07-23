@@ -1,4 +1,4 @@
-import { FormBlocksType, InlineBlocksType } from "../../../schema/blocks";
+import { FormBlocksType, NoFormBlocksType } from "../../../schema/blocks";
 
 import { BlockEditFormProps } from "../../../BlockEditor";
 import { BlockPathType } from "../../Block";
@@ -14,12 +14,12 @@ type ConfigBase = {
 
 // inline blocks don't have a form component
 type WithForm = {
-  [K in InlineBlocksType as K["type"]]: {
+  [K in NoFormBlocksType as K["type"]]: {
     type: K["type"];
     formComponent?: never;
     defaultValues: K;
   };
-}[InlineBlocksType["type"]];
+}[NoFormBlocksType["type"]];
 
 // BlockTypeConfigWithForm must have a form component that implements a form for that very block type
 type WithoutForm = {

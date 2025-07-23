@@ -1,18 +1,18 @@
 import { BlockEditFormProps } from ".";
 import { Header } from "./components/Header";
-import { InlineBlocksType } from "../schema/blocks";
+import { NoFormBlocksType } from "../schema/blocks";
 import { useTranslation } from "react-i18next";
 
-type InlineBlockFormProps = Omit<
-  BlockEditFormProps<InlineBlocksType>,
+type NoFormBlockProps = Omit<
+  BlockEditFormProps<NoFormBlocksType>,
   "onSubmit" | "onCancel"
 >;
 
-export const InlineBlockSidePanel = ({
+export const NoFormBlockSidePanel = ({
   action,
   block,
   path,
-}: InlineBlockFormProps) => {
+}: NoFormBlockProps) => {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-4 px-1">

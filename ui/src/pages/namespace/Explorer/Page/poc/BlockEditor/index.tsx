@@ -2,7 +2,7 @@ import { ComponentType, Key } from "react";
 
 import { AllBlocksType } from "../schema/blocks";
 import { BlockPathType } from "../PageCompiler/Block";
-import { InlineBlockSidePanel } from "./InlineBlockSidePanel";
+import { NoFormBlockSidePanel } from "./NoFormBlockSidePanel";
 import { isPage } from "../PageCompiler/context/utils";
 import { useBlockTypes } from "../PageCompiler/context/utils/useBlockTypes";
 import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
@@ -78,7 +78,7 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
 
   if (!isFormBlock && block.type === blockConfig.type) {
     return (
-      <InlineBlockSidePanel
+      <NoFormBlockSidePanel
         key={key}
         action={action}
         block={block}
