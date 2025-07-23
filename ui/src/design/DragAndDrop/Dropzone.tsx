@@ -20,9 +20,11 @@ export const Dropzone: FC<DroppableProps> = ({
   enable = () => true,
   children,
 }) => {
-  const { active } = useDndContext();
+  const { active: activeDraggable } = useDndContext();
 
-  const parsedPayload = DragPayloadSchema.safeParse(active?.data.current);
+  const parsedPayload = DragPayloadSchema.safeParse(
+    activeDraggable?.data.current
+  );
 
   const isEnabled = enable(parsedPayload.success ? parsedPayload.data : null);
 
@@ -32,7 +34,7 @@ export const Dropzone: FC<DroppableProps> = ({
     data: payload,
   });
 
-  const isDragging = !!active;
+  const isDragging = !!activeDraggable;
   const showDropIndicator = isDragging && isEnabled;
 
   return (
