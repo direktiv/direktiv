@@ -11,8 +11,7 @@ export const EditorPanel = () => {
   const { panel } = usePageEditorPanel();
   const { t } = useTranslation();
 
-  const rootLevel = [1];
-  const allowedBlockTypes = useBlockTypes(rootLevel);
+  const blockTypes = useBlockTypes([]);
 
   if (panel?.action) {
     return (
@@ -36,7 +35,7 @@ export const EditorPanel = () => {
 
         <TabsContent value="addBlock" asChild>
           <div className="relative flex-col-reverse overflow-visible">
-            {allowedBlockTypes.map((type, index) => (
+            {blockTypes.map((type, index) => (
               <DragablePaletteItem
                 key={index}
                 payload={{ type: "add", blockType: type.type }}
