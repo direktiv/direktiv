@@ -50,7 +50,7 @@ export const EditorPanelLayoutProvider = ({
   const onDrop = (payload: DragAndDropPayloadSchemaType) => {
     const { drag, drop } = payload;
     if (drag.type === "add") {
-      createBlock(drag.blockType, [...drop.targetPath, 0]);
+      createBlock(drag.blockType, [...drop.targetPath]);
     }
     if (drag.type === "move") {
       moveBlock(drag.originPath, drop.targetPath, drag.block);

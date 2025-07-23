@@ -41,7 +41,7 @@ const EditorBlockList = ({
     <Suspense fallback={<Loading />}>
       {!children.length && (
         <div className="w-full self-center">
-          <Dropzone payload={{ targetPath: path }} />
+          <Dropzone payload={{ targetPath: [...path, 0] }} />
         </div>
       )}
       {children}
