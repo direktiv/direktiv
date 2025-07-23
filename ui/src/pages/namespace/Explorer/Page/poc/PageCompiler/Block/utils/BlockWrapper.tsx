@@ -61,8 +61,7 @@ const EditorBlockWrapper = ({
     return () => document.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  const isFocused =
-    panel?.action && panel.path && pathsEqual(panel.path, blockPath);
+  const isFocused = panel?.action && pathsEqual(panel.path, blockPath);
 
   const parentDialog = findAncestor({
     page,
