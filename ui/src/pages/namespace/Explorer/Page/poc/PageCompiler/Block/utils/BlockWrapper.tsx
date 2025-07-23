@@ -5,7 +5,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { decrementPath, findAncestor, pathsEqual } from "../../context/utils";
+import {
+  decrementPath,
+  findAncestor,
+  pathContains,
+  pathsEqual,
+} from "../../context/utils";
 import {
   usePage,
   usePageStateContext,
@@ -56,21 +61,23 @@ const EditorBlockWrapper = ({
     return () => document.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  const isFocused = panel?.path && pathsEqual(panel.path, blockPath);
+  const isFocused =
+    panel?.action && panel.path && pathsEqual(panel.path, blockPath);
+
+  const parentDialog = findAncestor({
+    page,
+    path: blockPath,
+    match: (block) => block.type === "dialog",
+  });
 
   const handleClickBlock = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
-
-    const parentDialog = findAncestor({
-      page,
-      path: blockPath,
-      match: (block) => block.type === "dialog",
-    });
 
     // if block losing focus is in a Dialog, focus the Dialog.
     if (isFocused && parentDialog) {
       return setPanel({
         action: "edit",
+        dialog: null,
         block: parentDialog.block,
         path: parentDialog.path,
       });
@@ -82,12 +89,16 @@ const EditorBlockWrapper = ({
 
     return setPanel({
       action: "edit",
+      dialog: null,
       block,
       path: blockPath,
     });
   };
 
   const isDropAllowed = (payload: DragPayloadSchemaType | null) => {
+    if (panel?.dialog && !pathContains(blockPath, panel.dialog)) {
+      return false;
+    }
     if (payload?.type === "move") {
       // don't show a dropzone for neighboring blocks
       const precedingSilblingPath = decrementPath(blockPath);
@@ -98,7 +109,6 @@ const EditorBlockWrapper = ({
         return false;
       }
     }
-
     return true;
   };
 

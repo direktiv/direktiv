@@ -20,16 +20,21 @@ export const Dropzone: FC<DroppableProps> = ({
   isVisible = () => true,
   children,
 }) => {
+  const { active } = useDndContext();
+
+  const parsedPayload = DragPayloadSchema.safeParse(active?.data.current);
+
+  const isDisabled = !isVisible(
+    parsedPayload.success ? parsedPayload.data : null
+  );
+
   const { setNodeRef, isOver } = useDroppable({
+    disabled: isDisabled,
     id: payload.targetPath.join("-"),
     data: payload,
   });
 
-  const { active } = useDndContext();
-
   const canDrop = !!active;
-
-  const parsedPayload = DragPayloadSchema.safeParse(active?.data.current);
 
   return (
     <div
@@ -37,8 +42,7 @@ export const Dropzone: FC<DroppableProps> = ({
       className={twMergeClsx(
         "relative m-0 my-4 h-1 w-full justify-center rounded-lg p-0",
         isOver && "h-1 bg-gray-4 transition-all dark:bg-gray-dark-4",
-        !isVisible(parsedPayload.success ? parsedPayload.data : null) &&
-          "invisible"
+        isDisabled && "invisible"
       )}
     >
       {children}

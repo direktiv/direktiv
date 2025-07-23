@@ -14,11 +14,18 @@ import { EditorPanel } from "./components/EditorPanel";
 import { LocalDialogContainer } from "~/design/LocalDialog/container";
 import { getBlockTemplate } from "../PageCompiler/context/utils";
 
-type EditorPanelState = null | {
-  action: "create" | "edit" | "delete";
-  block: AllBlocksType;
-  path: BlockPathType;
-};
+type EditorPanelState =
+  | null
+  | {
+      action: null;
+      dialog?: BlockPathType | null;
+    }
+  | {
+      action: "create" | "edit" | "delete";
+      block: AllBlocksType;
+      path: BlockPathType;
+      dialog?: BlockPathType | null;
+    };
 
 type EditorPanelContextType = {
   panel: EditorPanelState;
@@ -71,7 +78,7 @@ export const EditorPanelLayoutProvider = ({
           </div>
           <Dialog open={panel && panel.action === "delete" ? true : false}>
             <DialogContent>
-              {!!panel && (
+              {!!panel && panel.action === "delete" && (
                 <BlockDeleteForm
                   path={panel.path}
                   onSubmit={() => {

@@ -175,6 +175,14 @@ export const decrementPath = (path: BlockPathType): BlockPathType => {
   return updatedPath;
 };
 
+export const pathContains = (a: BlockPathType, b: BlockPathType) => {
+  if (b.length === 0) {
+    throw new Error("Invalid input: b must not be empty.");
+  }
+  if (b.length > a.length) return false;
+  return b.every((value, index) => a[index] === value);
+};
+
 type PathOrNull = BlockPathType | null;
 
 export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {

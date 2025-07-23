@@ -8,6 +8,7 @@ import {
   findBlock,
   isPage,
   isParentBlock,
+  pathContains,
   pathsEqual,
   updateBlockInPage,
 } from "../utils";
@@ -383,6 +384,33 @@ describe("decrementPath", () => {
     const input: number[] = [];
     const expected: number[] = [];
     expect(decrementPath(input)).toEqual(expected);
+  });
+});
+
+describe("pathContains", () => {
+  test("returns true when a starts with b", () => {
+    expect(pathContains([0, 4, 3, 1], [0, 4, 3])).toBe(true);
+    expect(pathContains([1, 2, 3], [1])).toBe(true);
+    expect(pathContains([5, 6, 7, 8], [5, 6])).toBe(true);
+  });
+
+  test("returns true when a and b are exactly equal", () => {
+    expect(pathContains([1, 2, 3], [1, 2, 3])).toBe(true);
+  });
+
+  test("returns false when b is longer than a", () => {
+    expect(pathContains([1, 2], [1, 2, 3])).toBe(false);
+  });
+
+  test("returns false when a does not start with b", () => {
+    expect(pathContains([0, 4, 3, 1], [4, 3])).toBe(false);
+    expect(pathContains([1, 2, 3], [2])).toBe(false);
+  });
+
+  test("returns true when b is empty (every array starts with [])", () => {
+    expect(() => pathContains([1, 2, 3], [])).toThrow(
+      "Invalid input: b must not be empty."
+    );
   });
 });
 
