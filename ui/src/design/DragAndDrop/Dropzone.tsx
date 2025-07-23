@@ -12,41 +12,39 @@ import { twMergeClsx } from "~/util/helpers";
 
 type DroppableProps = PropsWithChildren & {
   payload: DropPayloadSchemaType;
-  isVisible?: (payload: DragPayloadSchemaType | null) => boolean;
+  enable?: (payload: DragPayloadSchemaType | null) => boolean;
 };
 
 export const Dropzone: FC<DroppableProps> = ({
   payload,
-  isVisible = () => true,
+  enable = () => true,
   children,
 }) => {
   const { active } = useDndContext();
 
   const parsedPayload = DragPayloadSchema.safeParse(active?.data.current);
 
-  const isDisabled = !isVisible(
-    parsedPayload.success ? parsedPayload.data : null
-  );
+  const isEnabled = enable(parsedPayload.success ? parsedPayload.data : null);
 
   const { setNodeRef, isOver } = useDroppable({
-    disabled: isDisabled,
+    disabled: !isEnabled,
     id: payload.targetPath.join("-"),
     data: payload,
   });
 
-  const canDrop = !!active;
+  const isDragging = !!active;
+  const showDropIndicator = isDragging && isEnabled;
 
   return (
     <div
       ref={setNodeRef}
       className={twMergeClsx(
         "relative m-0 my-4 h-1 w-full justify-center rounded-lg p-0",
-        isOver && "h-1 bg-gray-4 transition-all dark:bg-gray-dark-4",
-        isDisabled && "invisible"
+        isOver && "h-1 bg-gray-4 transition-all dark:bg-gray-dark-4"
       )}
     >
       {children}
-      {canDrop && (
+      {showDropIndicator && (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="z-10 flex flex-col">
             <Badge

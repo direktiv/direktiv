@@ -94,7 +94,7 @@ const EditorBlockWrapper = ({
     });
   };
 
-  const isDropAllowed = (payload: DragPayloadSchemaType | null) => {
+  const enableDropZone = (payload: DragPayloadSchemaType | null) => {
     if (panel?.dialog && !pathContains(blockPath, panel.dialog)) {
       return false;
     }
@@ -113,7 +113,7 @@ const EditorBlockWrapper = ({
 
   return (
     <>
-      <Dropzone payload={{ targetPath: blockPath }} isVisible={isDropAllowed} />
+      <Dropzone payload={{ targetPath: blockPath }} enable={enableDropZone} />
       <SortableItem
         payload={{
           type: "move",
