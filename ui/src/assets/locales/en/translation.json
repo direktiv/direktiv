@@ -1674,6 +1674,12 @@
         "cancelButton": "Cancel",
         "confirmButton": "Confirm"
       },
+
+      "toolbar": {
+        "code": "Code View",
+        "edit": "Edit",
+        "live": "Live View"
+      },
       "blockName": {
         "headline": "Headline",
         "text": "Text",
