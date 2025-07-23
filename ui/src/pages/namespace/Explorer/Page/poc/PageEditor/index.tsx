@@ -3,6 +3,7 @@ import { DirektivPagesSchema, DirektivPagesType } from "../schema";
 import { jsonToYaml, yamlToJsonOrNull } from "../../../utils";
 
 import Button from "~/design/Button";
+import ButtonBar from "./ButtonBar";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { PageCompiler } from "../PageCompiler";
@@ -30,81 +31,39 @@ const PageEditor = ({ isPending, page: pageProp, onSave }: PageEditorProps) => {
 
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
-      <div
-        className={twMergeClsx(
-          "relative grid grow gap-5",
-          showCode && "grid-cols-2"
-        )}
-      >
-        {showCode && (
-          <Card className="p-4">
-            <Editor
-              value={jsonToYaml(page)}
-              theme={theme ?? undefined}
-              onChange={(newValue) => {
-                if (newValue) {
-                  const newValueJson = yamlToJsonOrNull(newValue);
-                  if (
-                    validate &&
-                    !DirektivPagesSchema.safeParse(newValueJson).success
-                  ) {
-                    return;
-                  }
-                  setPage(newValueJson);
-                }
-              }}
-            />
-          </Card>
-        )}
-        <PageCompiler
+      <Card className="grow p-5">
+        <Editor
+          value={jsonToYaml(page)}
+          theme={theme ?? undefined}
+          onChange={(newValue) => {
+            if (newValue) {
+              const newValueJson = yamlToJsonOrNull(newValue);
+              if (
+                validate &&
+                !DirektivPagesSchema.safeParse(newValueJson).success
+              ) {
+                return;
+              }
+              setPage(newValueJson);
+            }
+          }}
+        />
+        {/* <PageCompiler
           mode={mode}
           page={page}
           setPage={(page) => setPage(page)}
-        />
-      </div>
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div className="flex gap-5 text-sm">
-          <div className="flex items-center gap-2">
-            <Switch
-              id="mode"
-              checked={mode === "edit"}
-              onCheckedChange={(value) => {
-                setMode(value ? "edit" : "live");
-              }}
-            />
-            <label htmlFor="mode">Editor</label>
-          </div>
-          <div className="flex items-center gap-2">
-            <Switch
-              id="show-code"
-              checked={showCode}
-              onCheckedChange={(value) => {
-                setShowCode(value);
-              }}
-            />
-            <label htmlFor="show-code">Show Code</label>
-          </div>
-          <div className="flex items-center gap-2">
-            <Switch
-              disabled={!showCode}
-              id="validate"
-              checked={validate}
-              onCheckedChange={(value) => {
-                setValidate(value);
-              }}
-            />
-            <label htmlFor="validate">Validate</label>
-          </div>
-        </div>
+        /> */}
+      </Card>
+      <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
+        <ButtonBar />
         <Button
           variant="outline"
           type="button"
           disabled={isPending}
           onClick={() => onSave(page)}
-          data-testid="page-editor-btn-save"
         >
           <Save />
-          {t("pages.explorer.workflow.editor.saveBtn")}
+          {t("direktivPage.blockEditor.generic.saveButton")}
         </Button>
       </div>
     </div>
