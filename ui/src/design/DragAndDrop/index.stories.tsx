@@ -52,10 +52,9 @@ export const Default = () => {
         </Card>
         <Card className="grow p-3">
           {blocks.map((block, index) => {
-            const blockPath = [index];
+            const blockPath = [index + 1];
             return (
               <div key={index} className="my-2 flex flex-col items-center">
-                <Dropzone payload={{ targetPath: [index] }} />
                 <SortableItem
                   payload={{ type: "move", block, originPath: blockPath }}
                 >
@@ -63,13 +62,14 @@ export const Default = () => {
                     <div className="border-2 p-2">{block.label}</div>
                   )}
                 </SortableItem>
+                <Dropzone payload={{ targetPath: [index + 1] }} />
               </div>
             );
           })}
         </Card>
       </div>
       <Card className="mt-3 h-[100px] overflow-y-scroll p-5">
-        {actions.reverse().map((action, index) => (
+        {actions.map((action, index) => (
           <div key={index}>{action}</div>
         ))}
       </Card>

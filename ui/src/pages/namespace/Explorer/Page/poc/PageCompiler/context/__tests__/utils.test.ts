@@ -2,10 +2,10 @@ import { ColumnType, ColumnsType } from "../../../schema/blocks/columns";
 import { ParentBlockType, SimpleBlockType } from "../../../schema/blocks";
 import {
   addBlockToPage,
-  decrementPath,
   deleteBlockFromPage,
   findAncestor,
   findBlock,
+  incrementPath,
   isPage,
   isParentBlock,
   pathsEqual,
@@ -354,35 +354,29 @@ describe("addBlockToPage", () => {
   });
 });
 
-describe("decrementPath", () => {
-  test("should decrement the last index of a non-empty path", () => {
-    const input = [0, 2, 3];
-    const expected = [0, 2, 2];
-    expect(decrementPath(input)).toEqual(expected);
+describe("incrementPath", () => {
+  test("should increment the last index of a non-empty path", () => {
+    const input = [0, 2, 2];
+    const expected = [0, 2, 3];
+    expect(incrementPath(input)).toEqual(expected);
   });
 
   test("should handle a path with a single element", () => {
-    const input = [1];
-    const expected = [0];
-    expect(decrementPath(input)).toEqual(expected);
+    const input = [0];
+    const expected = [1];
+    expect(incrementPath(input)).toEqual(expected);
   });
 
-  test("should not handle a path with last index 0 (result will never be -1)", () => {
-    const input = [0, 0];
-    const expected = [0, 0];
-    expect(decrementPath(input)).toEqual(expected);
-  });
-
-  test("should return the same path if the last index is falsy (e.g. 0)", () => {
-    const input = [1, 0];
-    const expected = [1, 0];
-    expect(decrementPath(input)).toEqual(expected);
+  test("should handle a path with last index 0", () => {
+    const input = [2, 0];
+    const expected = [2, 1];
+    expect(incrementPath(input)).toEqual(expected);
   });
 
   test("should return an empty array unchanged", () => {
     const input: number[] = [];
     const expected: number[] = [];
-    expect(decrementPath(input)).toEqual(expected);
+    expect(incrementPath(input)).toEqual(expected);
   });
 });
 
