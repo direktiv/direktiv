@@ -63,14 +63,14 @@ const EditorBlockWrapper = ({
 
   const isFocused = panel?.action && pathsEqual(panel.path, blockPath);
 
-  const parentDialog = findAncestor({
-    page,
-    path: blockPath,
-    match: (block) => block.type === "dialog",
-  });
-
   const handleClickBlock = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
+
+    const parentDialog = findAncestor({
+      page,
+      path: blockPath,
+      match: (block) => block.type === "dialog",
+    });
 
     // if block losing focus is in a Dialog, focus the Dialog.
     if (isFocused && parentDialog) {
