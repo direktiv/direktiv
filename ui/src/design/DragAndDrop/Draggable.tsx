@@ -18,7 +18,8 @@ const useSharedDraggable = (payload: DragPayloadSchemaType) => {
   const styles: CSSProperties = transform
     ? {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(1.05)`,
-        zIndex: "51",
+        position: "relative",
+        zIndex: "50",
       }
     : {};
 
@@ -35,7 +36,7 @@ export const SortableItem: FC<DraggableProps> = ({ payload, children }) => {
         ref={setNodeRef}
         {...listeners}
         {...attributes}
-        className="absolute z-50 h-full text-gray-8 dark:text-gray-dark-8"
+        className="absolute z-40 h-full text-gray-8 dark:text-gray-dark-8"
       >
         <div className="flex h-full w-5 items-center justify-center rounded rounded-e-none border-2 border-r-0 border-gray-4 bg-white p-0 hover:cursor-move hover:border-solid hover:bg-gray-2 active:cursor-move active:border-solid active:bg-gray-2 dark:border-gray-dark-4 dark:bg-black dark:hover:bg-gray-dark-2">
           <GripVertical />
