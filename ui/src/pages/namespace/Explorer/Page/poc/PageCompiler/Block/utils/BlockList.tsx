@@ -22,9 +22,9 @@ type BlockListComponentProps = BlockListProps;
 const BlockListWrapper = ({ children, horizontal }: WrapperProps) => (
   <div
     className={twMergeClsx(
-      "w-full gap-3",
+      "w-full",
       horizontal
-        ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))]"
+        ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-3"
         : "flex flex-col"
     )}
   >

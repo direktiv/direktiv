@@ -159,7 +159,7 @@ const VisitorBlockWrapper = ({ children }: BlockWrapperProps) => {
           </ParsingError>
         )}
       >
-        {children}
+        <div className="my-2">{children}</div>
       </ErrorBoundary>
     </Suspense>
   );
