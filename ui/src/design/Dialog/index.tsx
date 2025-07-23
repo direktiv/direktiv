@@ -43,37 +43,23 @@ const DialogContent = React.forwardRef<
     overlayProps?: React.ComponentPropsWithoutRef<
       typeof DialogPrimitive.Overlay
     >;
-    showCloseButton?: boolean;
   }
->(
-  (
-    { className, children, overlayProps, showCloseButton = false, ...props },
-    ref
-  ) => (
-    <DialogPortal>
-      <DialogOverlay {...overlayProps} />
-      <DialogPrimitive.Content
-        ref={ref}
-        className={twMergeClsx(
-          "fixed z-40 grid w-full gap-4 rounded-b-lg bg-gray-1 p-6 animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0",
-          "dark:bg-gray-dark-1",
-          className
-        )}
-        {...props}
-      >
-        {children}
-        {showCloseButton && (
-          <DialogPrimitive.Close
-            data-slot="dialog-close"
-            className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline focus:outline-2 disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
-          >
-            <XIcon />
-          </DialogPrimitive.Close>
-        )}
-      </DialogPrimitive.Content>
-    </DialogPortal>
-  )
-);
+>(({ className, children, overlayProps, ...props }, ref) => (
+  <DialogPortal>
+    <DialogOverlay {...overlayProps} />
+    <DialogPrimitive.Content
+      ref={ref}
+      className={twMergeClsx(
+        "fixed z-40 grid w-full gap-4 rounded-b-lg bg-gray-1 p-6 animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0",
+        "dark:bg-gray-dark-1",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </DialogPrimitive.Content>
+  </DialogPortal>
+));
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 const DialogHeader = ({
@@ -135,10 +121,20 @@ const DialogDescription = React.forwardRef<
 ));
 DialogDescription.displayName = DialogPrimitive.Description.displayName;
 
+const DialogXClose = () => (
+  <DialogPrimitive.Close
+    data-slot="dialog-close"
+    className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline focus:outline-2 disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+  >
+    <XIcon />
+  </DialogPrimitive.Close>
+);
+
 export {
   Dialog,
   DialogTrigger,
   DialogClose,
+  DialogXClose,
   DialogContent,
   DialogHeader,
   DialogFooter,

@@ -37,7 +37,7 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
   const handleUpdate = (newBlock: AllBlocksType) => {
     switch (action) {
       case "create":
-        addBlock(path, newBlock, true);
+        addBlock(path, newBlock);
         break;
       case "edit":
         updateBlock(path, newBlock);

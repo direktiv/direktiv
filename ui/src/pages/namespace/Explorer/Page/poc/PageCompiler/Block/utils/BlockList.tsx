@@ -1,10 +1,9 @@
 import { ReactElement, Suspense } from "react";
 
 import { BlockPathType } from "..";
+import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { Loading } from "./Loading";
-import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
 import { twMergeClsx } from "~/util/helpers";
-import { useCreateBlock } from "../../context/utils/useCreateBlock";
 import { usePageStateContext } from "../../context/pageCompilerContext";
 
 type BlockListProps = {
@@ -37,29 +36,18 @@ const EditorBlockList = ({
   horizontal,
   children,
   path,
-}: BlockListComponentProps) => {
-  const createBlock = useCreateBlock();
-
-  return (
-    <BlockListWrapper horizontal={horizontal}>
-      <Suspense fallback={<Loading />}>
-        {!children.length && (
-          <div
-            className="self-center"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <SelectBlockType
-              big
-              path={[...path, 0]}
-              onSelect={(type) => createBlock(type, [...path, 0])}
-            />
-          </div>
-        )}
-        {children}
-      </Suspense>
-    </BlockListWrapper>
-  );
-};
+}: BlockListComponentProps) => (
+  <BlockListWrapper horizontal={horizontal}>
+    <Suspense fallback={<Loading />}>
+      {!children.length && (
+        <div className="w-full self-center">
+          <Dropzone payload={{ targetPath: [...path, 0] }} />
+        </div>
+      )}
+      {children}
+    </Suspense>
+  </BlockListWrapper>
+);
 
 const VisitorBlockList = ({
   horizontal,

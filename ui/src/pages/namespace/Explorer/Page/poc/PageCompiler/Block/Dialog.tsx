@@ -1,37 +1,71 @@
 import { Block, BlockPathType } from ".";
-import {
-  DialogContent,
-  Dialog as DialogDesignComponent,
-  DialogTrigger,
-} from "~/design/Dialog";
+import { DialogTrigger, DialogXClose } from "~/design/Dialog";
+import { LocalDialog, LocalDialogContent } from "~/design/LocalDialog";
 
 import { BlockList } from "./utils/BlockList";
 import { Button } from "./Button";
 import { DialogType } from "../../schema/blocks/dialog";
+import { usePageEditor } from "../context/pageCompilerContext";
+import { usePageEditorPanel } from "../../BlockEditor/EditorPanelProvider";
 
 type DialogProps = {
   blockProps: DialogType;
   blockPath: BlockPathType;
+  onOpenChange?: (open: boolean) => void;
 };
-export const Dialog = ({ blockProps, blockPath }: DialogProps) => {
-  const { blocks, trigger } = blockProps;
-  return (
-    <DialogDesignComponent>
-      <DialogTrigger asChild>
-        <Button blockProps={trigger} />
-      </DialogTrigger>
 
-      <DialogContent showCloseButton>
-        <BlockList path={blockPath}>
-          {blocks.map((block, index) => (
-            <Block
-              key={index}
-              block={block}
-              blockPath={[...blockPath, index]}
-            />
-          ))}
-        </BlockList>
-      </DialogContent>
-    </DialogDesignComponent>
+const DialogBaseComponent = ({
+  blockProps,
+  blockPath,
+  onOpenChange,
+}: DialogProps) => {
+  const { blocks, trigger } = blockProps;
+
+  return (
+    <div onClick={(event) => event.preventDefault}>
+      <LocalDialog onOpenChange={onOpenChange}>
+        <DialogTrigger asChild onClick={(event) => event.stopPropagation()}>
+          <Button blockProps={trigger} />
+        </DialogTrigger>
+
+        <LocalDialogContent>
+          <DialogXClose />
+          <BlockList path={blockPath}>
+            {blocks.map((block, index) => (
+              <Block
+                key={index}
+                block={block}
+                blockPath={[...blockPath, index]}
+              />
+            ))}
+          </BlockList>
+        </LocalDialogContent>
+      </LocalDialog>
+    </div>
   );
+};
+
+const EditModeDialog = (props: DialogProps) => {
+  const { setPanel } = usePageEditorPanel();
+
+  return (
+    <DialogBaseComponent
+      {...props}
+      onOpenChange={() =>
+        setPanel({
+          action: "edit",
+          path: props.blockPath,
+          block: props.blockProps,
+        })
+      }
+    />
+  );
+};
+
+export const Dialog = (props: DialogProps) => {
+  const { mode } = usePageEditor();
+
+  if (mode === "edit") return <EditModeDialog {...props} />;
+
+  return <DialogBaseComponent {...props} />;
 };

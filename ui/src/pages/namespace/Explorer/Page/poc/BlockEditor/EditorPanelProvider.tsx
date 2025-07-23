@@ -1,3 +1,4 @@
+import { AllBlocksType, inlineBlockTypes } from "../schema/blocks";
 import { Dialog, DialogContent } from "~/design/Dialog";
 import { createContext, useContext, useState } from "react";
 import {
@@ -5,10 +6,13 @@ import {
   usePageStateContext,
 } from "../PageCompiler/context/pageCompilerContext";
 
-import { AllBlocksType } from "../schema/blocks";
 import { BlockDeleteForm } from "./components/Delete";
 import { BlockPathType } from "../PageCompiler/Block";
-import { EditorPanel } from "./components/EditorPanelContent";
+import { DndContext } from "~/design/DragAndDrop";
+import { DragAndDropPayloadSchemaType } from "~/design/DragAndDrop/schema";
+import { EditorPanel } from "./components/EditorPanel";
+import { LocalDialogContainer } from "~/design/LocalDialog/container";
+import { getBlockTemplate } from "../PageCompiler/context/utils";
 
 type EditorPanelState = null | {
   action: "create" | "edit" | "delete";
@@ -28,40 +32,65 @@ export const EditorPanelLayoutProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { deleteBlock } = usePageEditor();
+  const { addBlock, deleteBlock, moveBlock } = usePageEditor();
   const [panel, setPanel] = useState<EditorPanelState>(null);
   const { mode } = usePageStateContext();
 
+  const createBlock = (type: AllBlocksType["type"], path: BlockPathType) => {
+    if (inlineBlockTypes.has(type)) {
+      return addBlock(path, getBlockTemplate(type));
+    }
+    setPanel({
+      action: "create",
+      block: getBlockTemplate(type),
+      path,
+    });
+  };
+
+  const onDrop = (payload: DragAndDropPayloadSchemaType) => {
+    const { drag, drop } = payload;
+    if (drag.type === "add") {
+      createBlock(drag.blockType, [...drop.targetPath]);
+    }
+    if (drag.type === "move") {
+      moveBlock(drag.originPath, drop.targetPath, drag.block);
+    }
+  };
+
   if (mode === "edit") {
     return (
-      <EditorPanelContext.Provider value={{ panel, setPanel }}>
-        <div className="flex gap-5">
-          <div className="w-1/3 max-w-md shrink-0 overflow-x-hidden">
-            <EditorPanel />
+      <DndContext onDrop={onDrop}>
+        <EditorPanelContext.Provider value={{ panel, setPanel }}>
+          <div className="flex gap-5">
+            <div className="w-1/3 max-w-md shrink-0 overflow-visible border-r-2 border-gray-4 pr-2 dark:border-gray-dark-4">
+              <EditorPanel />
+            </div>
+            <LocalDialogContainer className="min-w-0 flex-1">
+              {children}
+            </LocalDialogContainer>
           </div>
-          <div className="min-w-0 flex-1">{children}</div>
-        </div>
-        <Dialog open={panel && panel.action === "delete" ? true : false}>
-          <DialogContent>
-            {!!panel && (
-              <BlockDeleteForm
-                path={panel.path}
-                onSubmit={() => {
-                  deleteBlock(panel.path);
-                  setPanel(null);
-                }}
-                onCancel={() => {
-                  setPanel({ ...panel, action: "edit" });
-                }}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
-      </EditorPanelContext.Provider>
+          <Dialog open={panel && panel.action === "delete" ? true : false}>
+            <DialogContent>
+              {!!panel && (
+                <BlockDeleteForm
+                  path={panel.path}
+                  onSubmit={() => {
+                    deleteBlock(panel.path);
+                    setPanel(null);
+                  }}
+                  onCancel={() => {
+                    setPanel({ ...panel, action: "edit" });
+                  }}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
+        </EditorPanelContext.Provider>
+      </DndContext>
     );
   }
 
-  return <>{children}</>;
+  return <LocalDialogContainer>{children}</LocalDialogContainer>;
 };
 
 export const usePageEditorPanel = () => {

@@ -61,6 +61,21 @@ export const AllBlocks: z.ZodType<AllBlocksType> = z.lazy(() =>
   z.union([SimpleBlocksUnion, ParentBlocksUnion])
 );
 
+export const AvailableBlockTypeAttributes = z.union([
+  z.literal("button"),
+  z.literal("headline"),
+  z.literal("image"),
+  z.literal("table"),
+  z.literal("text"),
+  z.literal("card"),
+  z.literal("dialog"),
+  z.literal("form"),
+  z.literal("loop"),
+  z.literal("query-provider"),
+  z.literal("column"),
+  z.literal("columns"),
+]);
+
 export const TriggerBlocks = z.discriminatedUnion("type", [Button]);
 
 export type TriggerBlocksType = z.infer<typeof TriggerBlocks>;
