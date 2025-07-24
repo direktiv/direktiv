@@ -132,7 +132,7 @@ const EditorBlockWrapper = ({
         <div
           ref={containerRef}
           className={twMergeClsx(
-            "relative isolate my-2 rounded bg-white outline-offset-0 dark:bg-black",
+            "relative isolate my-3 rounded bg-white outline-offset-0 dark:bg-black",
             isHovered &&
               !isDragging &&
               "bg-gray-2 outline outline-2 outline-gray-4 dark:bg-gray-dark-2 dark:outline-gray-dark-4",
@@ -184,7 +184,7 @@ const VisitorBlockWrapper = ({ children }: BlockWrapperProps) => {
           </ParsingError>
         )}
       >
-        <div className="my-2">{children}</div>
+        <div className="my-3">{children}</div>
       </ErrorBoundary>
     </Suspense>
   );
