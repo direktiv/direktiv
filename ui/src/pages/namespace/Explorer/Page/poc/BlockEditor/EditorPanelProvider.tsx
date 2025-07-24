@@ -1,4 +1,3 @@
-import { AllBlocksType, inlineBlockTypes } from "../schema/blocks";
 import { Dialog, DialogContent } from "~/design/Dialog";
 import { PropsWithChildren, createContext, useContext, useState } from "react";
 import {
@@ -8,15 +7,16 @@ import {
 
 import { BlockDeleteForm } from "./components/Delete";
 import { BlockPathType } from "../PageCompiler/Block";
+import { BlockType } from "../schema/blocks";
 import { DndContext } from "~/design/DragAndDrop";
 import { DragAndDropPayloadSchemaType } from "~/design/DragAndDrop/schema";
 import { EditorPanel } from "./components/EditorPanel";
 import { LocalDialogContainer } from "~/design/LocalDialog/container";
-import { getBlockTemplate } from "../PageCompiler/context/utils";
+import { useBlockTypes } from "../PageCompiler/context/utils/useBlockTypes";
 
 type EditorPanelState = null | {
   action: "create" | "edit" | "delete";
-  block: AllBlocksType;
+  block: BlockType;
   path: BlockPathType;
 };
 
@@ -38,17 +38,23 @@ export const EditorPanelLayoutProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const { getBlockConfig } = useBlockTypes();
+
   const { addBlock, deleteBlock, moveBlock } = usePageEditor();
   const [panel, setPanel] = useState<EditorPanelState>(null);
   const { mode } = usePageStateContext();
 
-  const createBlock = (type: AllBlocksType["type"], path: BlockPathType) => {
-    if (inlineBlockTypes.has(type)) {
-      return addBlock(path, getBlockTemplate(type));
+  const createBlock = (type: BlockType["type"], path: BlockPathType) => {
+    const blockConfig = getBlockConfig(type);
+
+    if (!blockConfig) throw new Error(`No blockConfig found for ${type}`);
+
+    if (!blockConfig.formComponent) {
+      return addBlock(path, blockConfig.defaultValues);
     }
     setPanel({
       action: "create",
-      block: getBlockTemplate(type),
+      block: blockConfig.defaultValues,
       path,
     });
   };

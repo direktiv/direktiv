@@ -1,6 +1,6 @@
 import {
-  AllBlocks,
   AvailableBlockTypeAttributes,
+  Block,
 } from "~/pages/namespace/Explorer/Page/poc/schema/blocks";
 
 import z from "zod";
@@ -14,7 +14,7 @@ const AddPayloadSchema = z.object({
 
 const MovePayloadSchema = z.object({
   type: z.literal("move"),
-  block: AllBlocks,
+  block: Block,
   originPath: PathSchema,
 });
 

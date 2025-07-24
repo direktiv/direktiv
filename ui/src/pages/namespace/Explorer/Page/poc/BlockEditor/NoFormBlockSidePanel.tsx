@@ -1,19 +1,18 @@
 import { BlockEditFormProps } from ".";
-import { CardType } from "../schema/blocks/card";
-import { ColumnsType } from "../schema/blocks/columns";
 import { Header } from "./components/Header";
+import { NoFormBlockType } from "../schema/blocks";
 import { useTranslation } from "react-i18next";
 
-type QueryProviderEditFormProps = Omit<
-  BlockEditFormProps<CardType | ColumnsType>,
+type NoFormBlockProps = Omit<
+  BlockEditFormProps<NoFormBlockType>,
   "onSubmit" | "onCancel"
 >;
 
-export const InlineBlockSidePanel = ({
+export const NoFormBlockSidePanel = ({
   action,
   block,
   path,
-}: QueryProviderEditFormProps) => {
+}: NoFormBlockProps) => {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-4 px-1">

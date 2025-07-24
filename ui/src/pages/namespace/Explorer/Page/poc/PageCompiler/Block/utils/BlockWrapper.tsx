@@ -5,15 +5,15 @@ import {
   useRef,
   useState,
 } from "react";
-import { decrementPath, findAncestor, pathsEqual } from "../../context/utils";
+import { findAncestor, incrementPath, pathsEqual } from "../../context/utils";
 import {
   usePage,
   usePageStateContext,
 } from "../../context/pageCompilerContext";
 
-import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockPathType } from "..";
+import { BlockType } from "../../../schema/blocks";
 import { DragPayloadSchemaType } from "~/design/DragAndDrop/schema";
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { ErrorBoundary } from "react-error-boundary";
@@ -26,7 +26,7 @@ import { useTranslation } from "react-i18next";
 
 type BlockWrapperProps = PropsWithChildren<{
   blockPath: BlockPathType;
-  block: AllBlocksType;
+  block: BlockType;
 }>;
 
 const EditorBlockWrapper = ({
@@ -87,12 +87,14 @@ const EditorBlockWrapper = ({
     });
   };
 
+  const nextSilblingPath = incrementPath(blockPath);
+
   const isDropAllowed = (payload: DragPayloadSchemaType | null) => {
     if (payload?.type === "move") {
       // don't show a dropzone for neighboring blocks
-      const precedingSilblingPath = decrementPath(blockPath);
+
       if (
-        pathsEqual(payload.originPath, precedingSilblingPath) ||
+        pathsEqual(payload.originPath, nextSilblingPath) ||
         pathsEqual(payload.originPath, blockPath)
       ) {
         return false;
@@ -104,7 +106,6 @@ const EditorBlockWrapper = ({
 
   return (
     <>
-      <Dropzone payload={{ targetPath: blockPath }} isVisible={isDropAllowed} />
       <SortableItem
         payload={{
           type: "move",
@@ -143,6 +144,10 @@ const EditorBlockWrapper = ({
           </Suspense>
         </div>
       </SortableItem>
+      <Dropzone
+        payload={{ targetPath: nextSilblingPath }}
+        isVisible={isDropAllowed}
+      />
     </>
   );
 };
