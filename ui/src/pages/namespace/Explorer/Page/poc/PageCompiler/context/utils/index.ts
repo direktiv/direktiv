@@ -155,13 +155,12 @@ export const moveBlockWithinPage = (
   return pageWithDeletedBlock;
 };
 
-export const decrementPath = (path: BlockPathType): BlockPathType => {
+export const incrementPath = (path: BlockPathType): BlockPathType => {
   const pathLength = path.length;
   let lastIndex = path[pathLength - 1];
 
-  const updatedPath = lastIndex
-    ? [...path.slice(0, -1), (lastIndex -= 1)]
-    : path;
+  const updatedPath =
+    lastIndex !== undefined ? [...path.slice(0, -1), (lastIndex += 1)] : path;
 
   return updatedPath;
 };

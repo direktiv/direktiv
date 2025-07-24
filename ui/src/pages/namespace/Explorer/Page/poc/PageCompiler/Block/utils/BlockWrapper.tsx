@@ -6,8 +6,8 @@ import {
   useState,
 } from "react";
 import {
-  decrementPath,
   findAncestor,
+  incrementPath,
   pathIsDescendant,
   pathsEqual,
 } from "../../context/utils";
@@ -94,15 +94,17 @@ const EditorBlockWrapper = ({
     });
   };
 
+  const nextSilblingPath = incrementPath(blockPath);
+
   const enableDropZone = (payload: DragPayloadSchemaType | null) => {
     if (panel?.dialog && !pathIsDescendant(blockPath, panel.dialog)) {
       return false;
     }
     if (payload?.type === "move") {
       // don't show a dropzone for neighboring blocks
-      const precedingSilblingPath = decrementPath(blockPath);
+
       if (
-        pathsEqual(payload.originPath, precedingSilblingPath) ||
+        pathsEqual(payload.originPath, nextSilblingPath) ||
         pathsEqual(payload.originPath, blockPath)
       ) {
         return false;
@@ -113,7 +115,6 @@ const EditorBlockWrapper = ({
 
   return (
     <>
-      <Dropzone payload={{ targetPath: blockPath }} enable={enableDropZone} />
       <SortableItem
         payload={{
           type: "move",
@@ -152,6 +153,10 @@ const EditorBlockWrapper = ({
           </Suspense>
         </div>
       </SortableItem>
+      <Dropzone
+        payload={{ targetPath: nextSilblingPath }}
+        enable={enableDropZone}
+      />
     </>
   );
 };
