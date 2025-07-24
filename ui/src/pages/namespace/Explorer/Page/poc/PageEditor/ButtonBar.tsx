@@ -1,4 +1,5 @@
 import { Code, Eye, LucideIcon, Pencil } from "lucide-react";
+import { FC, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -7,15 +8,12 @@ import {
 } from "~/design/Tooltip";
 
 import { ButtonBar as DesignButtonBar } from "~/design/ButtonBar";
-import { PageCompilerMode } from "./poc/PageCompiler/context/pageCompilerContext";
+import { PageEditorMode } from ".";
 import { Toggle } from "~/design/Toggle";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-type ButtonState = PageCompilerMode | "code";
-
 type Button = {
-  id: ButtonState;
+  id: PageEditorMode;
   icon: LucideIcon;
 };
 
@@ -34,8 +32,19 @@ const buttons: Button[] = [
   },
 ];
 
-const ButtonBar = () => {
-  const [activeButton, setActiveButton] = useState<ButtonState>("edit");
+type ButtonBarProps = {
+  value: PageEditorMode;
+  onChange: (value: PageEditorMode) => void;
+};
+
+/**
+ *
+ * TODO: rename comopnent and file
+ * any better way to synch state
+ *
+ */
+const ButtonBar: FC<ButtonBarProps> = ({ value, onChange }) => {
+  const [activeButton, setActiveButton] = useState<PageEditorMode>(value);
   const { t } = useTranslation();
   return (
     <DesignButtonBar>
@@ -47,7 +56,10 @@ const ButtonBar = () => {
               <TooltipTrigger asChild>
                 <div className="flex grow">
                   <Toggle
-                    onClick={() => setActiveButton(button.id)}
+                    onClick={() => {
+                      setActiveButton(button.id);
+                      onChange(button.id);
+                    }}
                     className="grow"
                     pressed={button.id === activeButton}
                   >
