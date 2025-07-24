@@ -28,7 +28,7 @@ type EditorPanelContextType = {
 const EditorPanelContext = createContext<EditorPanelContextType | null>(null);
 
 const PagePreviewContainer = ({ children }: PropsWithChildren) => (
-  <div className="grow p-3 lg:h-[calc(100vh-230px)] lg:overflow-y-scroll">
+  <div className="grow p-3 sm:h-[calc(100vh-230px)] sm:overflow-y-scroll">
     {children}
   </div>
 );
@@ -73,8 +73,8 @@ export const EditorPanelLayoutProvider = ({
     return (
       <DndContext onDrop={onDrop}>
         <EditorPanelContext.Provider value={{ panel, setPanel }}>
-          <div className="grow gap-5 lg:flex">
-            <div className="h-[300px] overflow-y-visible border-b-2 border-gray-4 p-3 dark:border-gray-dark-4 lg:h-[calc(100vh-230px)] lg:w-1/3 lg:border-b-0 lg:border-r-2">
+          <div className="grow gap-5 sm:flex">
+            <div className="h-[300px] overflow-y-visible border-b-2 border-gray-4 p-3 dark:border-gray-dark-4 sm:h-[calc(100vh-230px)] sm:w-1/3 sm:border-b-0 sm:border-r-2">
               <EditorPanel />
             </div>
             <PagePreviewContainer>

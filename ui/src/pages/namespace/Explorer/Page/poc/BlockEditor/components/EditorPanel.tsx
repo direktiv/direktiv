@@ -29,7 +29,7 @@ export const EditorPanel = () => {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="addBlock" asChild>
-          <div className="grid grid-cols-3 gap-2 overflow-visible lg:grid-cols-1">
+          <div className="grid grid-cols-3 gap-2 overflow-visible sm:grid-cols-1">
             {allowedBlockTypes.map((type, index) => (
               <DraggablePaletteItem
                 key={index}
