@@ -49,7 +49,9 @@ const PageEditor = ({ isPending, page: pageProp, onSave }: PageEditorProps) => {
           variant="outline"
           type="button"
           disabled={isPending}
-          onClick={() => onSave(pageProp)}
+          onClick={() => {
+            onSave(page);
+          }}
         >
           <Save />
           {t("direktivPage.blockEditor.generic.saveButton")}
