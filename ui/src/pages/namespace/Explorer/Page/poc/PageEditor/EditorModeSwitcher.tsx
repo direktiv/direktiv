@@ -1,5 +1,4 @@
 import { Code, Eye, LucideIcon, Pencil } from "lucide-react";
-import { FC, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -7,7 +6,8 @@ import {
   TooltipTrigger,
 } from "~/design/Tooltip";
 
-import { ButtonBar as DesignButtonBar } from "~/design/ButtonBar";
+import { ButtonBar } from "~/design/ButtonBar";
+import { FC } from "react";
 import { PageEditorMode } from ".";
 import { Toggle } from "~/design/Toggle";
 import { useTranslation } from "react-i18next";
@@ -32,15 +32,18 @@ const buttons: Button[] = [
   },
 ];
 
-type ButtonBarProps = {
+type EditorModeSwitcherProps = {
   value: PageEditorMode;
   onChange: (value: PageEditorMode) => void;
 };
 
-const ButtonBar: FC<ButtonBarProps> = ({ value, onChange }) => {
+const EditorModeSwitcher: FC<EditorModeSwitcherProps> = ({
+  value,
+  onChange,
+}) => {
   const { t } = useTranslation();
   return (
-    <DesignButtonBar>
+    <ButtonBar>
       <TooltipProvider>
         {buttons.map((button) => {
           const IconComponent = button.icon;
@@ -66,8 +69,8 @@ const ButtonBar: FC<ButtonBarProps> = ({ value, onChange }) => {
           );
         })}
       </TooltipProvider>
-    </DesignButtonBar>
+    </ButtonBar>
   );
 };
 
-export default ButtonBar;
+export default EditorModeSwitcher;

@@ -1,8 +1,8 @@
 import Button from "~/design/Button";
-import ButtonBar from "./ButtonBar";
 import { Card } from "~/design/Card";
 import { DirektivPagesType } from "../schema";
 import Editor from "~/design/Editor";
+import EditorModeSwitcher from "./EditorModeSwitcher";
 import { PageCompiler } from "../PageCompiler";
 import { PageCompilerMode } from "../PageCompiler/context/pageCompilerContext";
 import { Save } from "lucide-react";
@@ -44,7 +44,7 @@ const PageEditor = ({ isPending, page: pageProp, onSave }: PageEditorProps) => {
         )}
       </Card>
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        <ButtonBar value={mode} onChange={setMode} />
+        <EditorModeSwitcher value={mode} onChange={setMode} />
         <Button
           variant="outline"
           type="button"
