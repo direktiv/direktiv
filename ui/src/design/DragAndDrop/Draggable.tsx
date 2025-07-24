@@ -20,7 +20,8 @@ const useSharedDragable = (payload: DragPayloadSchemaType) => {
   const styles: CSSProperties = transform
     ? {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(1.05)`,
-        zIndex: "51",
+        position: "relative",
+        zIndex: "50",
       }
     : {};
 
@@ -42,7 +43,7 @@ export const SortableItem: FC<DraggableProps> = ({
         {...listeners}
         {...attributes}
         className={twMergeClsx(
-          "absolute right-0 z-10 mt-2 h-[calc(100%-1rem)] text-gray-8 opacity-70 dark:text-gray-dark-8",
+          "absolute right-0 z-40 mt-2 h-[calc(100%-1rem)] text-gray-8 opacity-70 dark:text-gray-dark-8",
           className
         )}
       >

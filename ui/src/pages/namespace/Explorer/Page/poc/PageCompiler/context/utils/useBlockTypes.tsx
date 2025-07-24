@@ -4,7 +4,6 @@ import {
   Database,
   Heading1,
   Image,
-  LucideIcon,
   RectangleHorizontal,
   Repeat2,
   Table,
@@ -12,105 +11,185 @@ import {
   TextCursorInput,
 } from "lucide-react";
 
-import { AllBlocksType } from "../../../schema/blocks";
 import { BlockPathType } from "../../Block";
+import { BlockTypeConfig } from "./types";
+import { Dialog as DialogForm } from "../../../BlockEditor/Dialog";
+import { Form as FormForm } from "../../../BlockEditor/Form";
+import { Headline } from "../../../BlockEditor/Headline";
+import { Image as ImageForm } from "../../../BlockEditor/Image";
+import { Loop as LoopForm } from "../../../BlockEditor/Loop";
+import { QueryProvider as QueryProviderForm } from "../../../BlockEditor/QueryProvider";
+import { Table as TableForm } from "../../../BlockEditor/Table";
+import { Text as TextForm } from "../../../BlockEditor/Text";
 import { findAncestor } from ".";
+import { t } from "i18next";
 import { usePage } from "../pageCompilerContext";
-import { useTranslation } from "react-i18next";
 
-type BlockTypeConfig = {
-  type: AllBlocksType["type"];
-  label: string;
-  icon: LucideIcon;
-  allow: boolean;
-};
-
-type BlockTypeConfigReturn = Omit<BlockTypeConfig, "allow">;
-
-export const useBlockTypes = (path: BlockPathType): BlockTypeConfigReturn[] => {
-  const { t } = useTranslation();
-  const page = usePage();
-
-  const config = [
-    {
+const blockTypes: BlockTypeConfig[] = [
+  {
+    type: "headline",
+    label: t("direktivPage.blockEditor.blockName.headline"),
+    icon: Heading1,
+    allow: () => true,
+    formComponent: Headline,
+    defaultValues: {
       type: "headline",
-      label: t("direktivPage.blockEditor.blockName.headline"),
-      icon: Heading1,
-      allow: true,
+      level: "h1",
+      label: "",
     },
-    {
-      type: "text",
-      label: t("direktivPage.blockEditor.blockName.text"),
-      icon: Text,
-      allow: true,
-    },
-    {
-      type: "query-provider",
-      label: t("direktivPage.blockEditor.blockName.query-provider"),
-      icon: Database,
-      allow: true,
-    },
-    {
-      type: "columns",
-      label: t("direktivPage.blockEditor.blockName.columns"),
-      icon: Columns2,
-      allow: !findAncestor({
+  },
+  {
+    type: "text",
+    label: t("direktivPage.blockEditor.blockName.text"),
+    icon: Text,
+    allow: () => true,
+    formComponent: TextForm,
+    defaultValues: { type: "text", content: "" },
+  },
+  {
+    type: "query-provider",
+    label: t("direktivPage.blockEditor.blockName.query-provider"),
+    icon: Database,
+    allow: () => true,
+    formComponent: QueryProviderForm,
+    defaultValues: { type: "query-provider", blocks: [], queries: [] },
+  },
+  {
+    type: "columns",
+    label: t("direktivPage.blockEditor.blockName.columns"),
+    icon: Columns2,
+    allow: (page, path) =>
+      !findAncestor({
         page,
         path,
         match: (block) => block.type === "columns",
       }),
+    defaultValues: {
+      type: "columns",
+      blocks: [
+        {
+          type: "column",
+          blocks: [],
+        },
+        {
+          type: "column",
+          blocks: [],
+        },
+      ],
     },
-    {
-      type: "card",
-      label: t("direktivPage.blockEditor.blockName.card"),
-      icon: Captions,
-      allow: !findAncestor({
+  },
+  {
+    type: "card",
+    label: t("direktivPage.blockEditor.blockName.card"),
+    icon: Captions,
+    allow: (page, path) =>
+      !findAncestor({
         page,
         path,
         match: (block) => block.type === "card",
       }),
-    },
-    {
+    defaultValues: { type: "card", blocks: [] },
+  },
+  {
+    type: "table",
+    label: t("direktivPage.blockEditor.blockName.table"),
+    icon: Table,
+    allow: () => true,
+    formComponent: TableForm,
+    defaultValues: {
       type: "table",
-      label: t("direktivPage.blockEditor.blockName.table"),
-      icon: Table,
-      allow: true,
+      data: {
+        type: "loop",
+        id: "",
+        data: "",
+      },
+      actions: [],
+      columns: [],
     },
-    {
-      type: "dialog",
-      label: t("direktivPage.blockEditor.blockName.dialog"),
-      icon: RectangleHorizontal,
-      allow: !findAncestor({
+  },
+  {
+    type: "dialog",
+    label: t("direktivPage.blockEditor.blockName.dialog"),
+    icon: RectangleHorizontal,
+    allow: (page, path) =>
+      !findAncestor({
         page,
         path,
         match: (block) => block.type === "dialog",
       }),
+    formComponent: DialogForm,
+    defaultValues: {
+      type: "dialog",
+      trigger: {
+        type: "button",
+        label: "",
+      },
+      blocks: [],
     },
-    {
+  },
+  {
+    type: "loop",
+    label: t("direktivPage.blockEditor.blockName.loop"),
+    icon: Repeat2,
+    allow: () => true,
+    formComponent: LoopForm,
+    defaultValues: {
       type: "loop",
-      label: t("direktivPage.blockEditor.blockName.loop"),
-      icon: Repeat2,
-      allow: true,
+      id: "",
+      data: "",
+      blocks: [],
     },
-    {
-      type: "image",
-      label: t("direktivPage.blockEditor.blockName.image"),
-      icon: Image,
-      allow: true,
-    },
-    {
-      type: "form",
-      label: t("direktivPage.blockEditor.blockName.form"),
-      icon: TextCursorInput,
-      allow: !findAncestor({
+  },
+  {
+    type: "image",
+    label: t("direktivPage.blockEditor.blockName.image"),
+    icon: Image,
+    allow: () => true,
+    formComponent: ImageForm,
+    defaultValues: { type: "image", src: "", width: 200, height: 200 },
+  },
+  {
+    type: "form",
+    label: t("direktivPage.blockEditor.blockName.form"),
+    icon: TextCursorInput,
+    allow: (page, path) =>
+      !findAncestor({
         page,
         path,
         match: (block) => block.type === "form",
       }),
+    formComponent: FormForm,
+    defaultValues: {
+      type: "form",
+      mutation: {
+        id: "",
+        url: "",
+        method: "POST",
+      },
+      trigger: {
+        label: "",
+        type: "button",
+      },
+      blocks: [],
     },
-  ] satisfies BlockTypeConfig[];
+  },
+];
 
-  return config
-    .filter((type) => type.allow)
-    .map(({ allow: _, ...rest }) => rest);
+export const useBlockTypes = () => {
+  const page = usePage();
+
+  const getBlockConfig = <T extends BlockTypeConfig["type"]>(type: T) =>
+    blockTypes.find(
+      (config): config is Extract<BlockTypeConfig, { type: T }> =>
+        config.type === type
+    );
+
+  const getAllowedTypes = (path: BlockPathType) =>
+    blockTypes.filter((type) => type.allow(page, path));
+
+  return {
+    blockTypes,
+    getAllowedTypes,
+    getBlockConfig,
+  };
 };

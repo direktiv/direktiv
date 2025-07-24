@@ -1,14 +1,14 @@
-import { AllBlocksType } from "../../schema/blocks";
 import { BlockContextMenu } from "./ContextMenu";
 import { BlockEditorAction } from "..";
 import { BlockPathType } from "../../PageCompiler/Block";
+import { BlockType } from "../../schema/blocks";
 import { usePageEditorPanel } from "../EditorPanelProvider";
 import { useTranslation } from "react-i18next";
 
 type BlockFormHeaderProps = {
   path: BlockPathType;
   action: BlockEditorAction;
-  block: AllBlocksType;
+  block: BlockType;
 };
 
 export const Header = ({ path, action, block }: BlockFormHeaderProps) => {
