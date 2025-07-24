@@ -1,13 +1,10 @@
 import { ReactElement, Suspense } from "react";
-import { pathIsDescendant, pathsEqual } from "../../context/utils";
 
 import { BlockPathType } from "..";
-import { DragPayloadSchemaType } from "~/design/DragAndDrop/schema";
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { Loading } from "./Loading";
 import { twMergeClsx } from "~/util/helpers";
-import { useBlockTypes } from "../../context/utils/useBlockTypes";
-import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
+import { useEnableDropzone } from "./useEnableDropzone";
 import { usePageStateContext } from "../../context/pageCompilerContext";
 
 type BlockListProps = {
@@ -41,32 +38,9 @@ const EditorBlockList = ({
   children,
   path,
 }: BlockListComponentProps) => {
-  const { panel } = usePageEditorPanel();
-  const { getAllowedTypes } = useBlockTypes();
+  const enableDropZone = useEnableDropzone();
 
   const newBlockTargetPath = [...path, 0];
-
-  const enableDropZone = (payload: DragPayloadSchemaType | null) => {
-    if (panel?.dialog && !pathIsDescendant(path, panel.dialog)) {
-      return false;
-    }
-
-    const allowedTypes = getAllowedTypes(newBlockTargetPath);
-    if (!allowedTypes.some((config) => config.type === payload?.blockType)) {
-      return false;
-    }
-
-    if (payload?.type === "move") {
-      // don't show a dropzone for neighboring blocks
-      if (
-        pathsEqual(payload.originPath, newBlockTargetPath) ||
-        pathsEqual(payload.originPath, path)
-      ) {
-        return false;
-      }
-    }
-    return true;
-  };
 
   return (
     <BlockListWrapper horizontal={horizontal}>

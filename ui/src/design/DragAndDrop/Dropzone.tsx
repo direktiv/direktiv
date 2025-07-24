@@ -7,12 +7,16 @@ import { FC, PropsWithChildren } from "react";
 import { useDndContext, useDroppable } from "@dnd-kit/core";
 
 import Badge from "~/design/Badge";
+import { BlockPathType } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/Block";
 import { PlusCircle } from "lucide-react";
 import { twMergeClsx } from "~/util/helpers";
 
 type DroppableProps = PropsWithChildren & {
   payload: DropPayloadSchemaType;
-  enable?: (payload: DragPayloadSchemaType | null) => boolean;
+  enable?: (
+    payload: DragPayloadSchemaType | null,
+    targetPath: BlockPathType
+  ) => boolean;
 };
 
 export const Dropzone: FC<DroppableProps> = ({
@@ -21,12 +25,17 @@ export const Dropzone: FC<DroppableProps> = ({
   children,
 }) => {
   const { active: activeDraggable } = useDndContext();
+  const { targetPath } = payload;
 
-  const parsedPayload = DragPayloadSchema.safeParse(
+  const parsedDragPayload = DragPayloadSchema.safeParse(
     activeDraggable?.data.current
   );
 
-  const isEnabled = enable(parsedPayload.success ? parsedPayload.data : null);
+  const draggedPayload = parsedDragPayload.success
+    ? parsedDragPayload.data
+    : null;
+
+  const isEnabled = enable(draggedPayload, targetPath);
 
   const { setNodeRef, isOver } = useDroppable({
     disabled: !isEnabled,
