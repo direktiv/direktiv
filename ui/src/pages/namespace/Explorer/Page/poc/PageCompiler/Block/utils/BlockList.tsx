@@ -5,6 +5,7 @@ import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { Loading } from "./Loading";
 import { twMergeClsx } from "~/util/helpers";
 import { usePageStateContext } from "../../context/pageCompilerContext";
+import { useValidateDropzone } from "./useValidateDropzone";
 
 type BlockListProps = {
   horizontal?: boolean;
@@ -36,18 +37,27 @@ const EditorBlockList = ({
   horizontal,
   children,
   path,
-}: BlockListComponentProps) => (
-  <BlockListWrapper horizontal={horizontal}>
-    <Suspense fallback={<Loading />}>
-      {!children.length && (
-        <div className="w-full self-center">
-          <Dropzone payload={{ targetPath: [...path, 0] }} />
-        </div>
-      )}
-      {children}
-    </Suspense>
-  </BlockListWrapper>
-);
+}: BlockListComponentProps) => {
+  const validateDropzone = useValidateDropzone();
+
+  const newBlockTargetPath = [...path, 0];
+
+  return (
+    <BlockListWrapper horizontal={horizontal}>
+      <Suspense fallback={<Loading />}>
+        {!children.length && (
+          <div className="w-full self-center">
+            <Dropzone
+              validate={validateDropzone}
+              payload={{ targetPath: newBlockTargetPath }}
+            />
+          </div>
+        )}
+        {children}
+      </Suspense>
+    </BlockListWrapper>
+  );
+};
 
 const VisitorBlockList = ({
   horizontal,

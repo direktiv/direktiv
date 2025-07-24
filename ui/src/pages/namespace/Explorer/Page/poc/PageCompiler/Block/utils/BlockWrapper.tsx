@@ -5,12 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  findAncestor,
-  incrementPath,
-  pathIsDescendant,
-  pathsEqual,
-} from "../../context/utils";
+import { findAncestor, incrementPath, pathsEqual } from "../../context/utils";
 import {
   usePage,
   usePageStateContext,
@@ -19,7 +14,6 @@ import {
 import Badge from "~/design/Badge";
 import { BlockPathType } from "..";
 import { BlockType } from "../../../schema/blocks";
-import { DragPayloadSchemaType } from "~/design/DragAndDrop/schema";
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
@@ -28,6 +22,7 @@ import { SortableItem } from "~/design/DragAndDrop/Draggable";
 import { twMergeClsx } from "~/util/helpers";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 import { useTranslation } from "react-i18next";
+import { useValidateDropzone } from "./useValidateDropzone";
 
 type BlockWrapperProps = PropsWithChildren<{
   blockPath: BlockPathType;
@@ -43,6 +38,7 @@ const EditorBlockWrapper = ({
   const page = usePage();
   const { panel, setPanel } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
+  const validateDropzone = useValidateDropzone();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -94,31 +90,13 @@ const EditorBlockWrapper = ({
     });
   };
 
-  const nextSilblingPath = incrementPath(blockPath);
-
-  const enableDropZone = (payload: DragPayloadSchemaType | null) => {
-    if (panel?.dialog && !pathIsDescendant(blockPath, panel.dialog)) {
-      return false;
-    }
-    if (payload?.type === "move") {
-      // don't show a dropzone for neighboring blocks
-
-      if (
-        pathsEqual(payload.originPath, nextSilblingPath) ||
-        pathsEqual(payload.originPath, blockPath)
-      ) {
-        return false;
-      }
-    }
-    return true;
-  };
-
   return (
     <>
       <SortableItem
         payload={{
           type: "move",
           block,
+          blockType: block.type,
           originPath: blockPath,
         }}
       >
@@ -154,8 +132,8 @@ const EditorBlockWrapper = ({
         </div>
       </SortableItem>
       <Dropzone
-        payload={{ targetPath: nextSilblingPath }}
-        enable={enableDropZone}
+        payload={{ targetPath: incrementPath(blockPath) }}
+        validate={validateDropzone}
       />
     </>
   );
