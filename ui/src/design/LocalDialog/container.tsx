@@ -32,7 +32,7 @@ export const LocalDialogContainer = ({
     <LocalDialogContainerContext.Provider value={{ container }}>
       <div
         ref={setContainer}
-        className={twMergeClsx("relative isolate z-0", className)}
+        className={twMergeClsx("relative isolate z-0 w-full", className)}
       >
         {children}
       </div>

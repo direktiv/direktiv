@@ -1,5 +1,5 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
-import { createContext, useContext, useState } from "react";
+import { PropsWithChildren, createContext, useContext, useState } from "react";
 import {
   usePageEditor,
   usePageStateContext,
@@ -33,6 +33,12 @@ type EditorPanelContextType = {
 };
 
 const EditorPanelContext = createContext<EditorPanelContextType | null>(null);
+
+const PagePreviewContainer = ({ children }: PropsWithChildren) => (
+  <div className="grow px-3 py-5 sm:h-[calc(100vh-230px)] sm:overflow-y-scroll">
+    {children}
+  </div>
+);
 
 export const EditorPanelLayoutProvider = ({
   children,
@@ -74,13 +80,15 @@ export const EditorPanelLayoutProvider = ({
     return (
       <DndContext onDrop={onDrop}>
         <EditorPanelContext.Provider value={{ panel, setPanel }}>
-          <div className="flex gap-5">
-            <div className="w-1/3 max-w-md shrink-0 overflow-visible border-r-2 border-gray-4 pr-2 dark:border-gray-dark-4">
+          <div className="grow sm:flex">
+            <div className="h-[300px] overflow-y-visible border-b-2 border-gray-4 p-3 dark:border-gray-dark-4 sm:h-[calc(100vh-230px)] sm:w-1/3 sm:border-b-0 sm:border-r-2">
               <EditorPanel />
             </div>
-            <LocalDialogContainer className="min-w-0 flex-1">
-              {children}
-            </LocalDialogContainer>
+            <PagePreviewContainer>
+              <LocalDialogContainer className="min-w-0 flex-1">
+                {children}
+              </LocalDialogContainer>
+            </PagePreviewContainer>
           </div>
           <Dialog open={panel && panel.action === "delete" ? true : false}>
             <DialogContent>
@@ -103,7 +111,11 @@ export const EditorPanelLayoutProvider = ({
     );
   }
 
-  return <LocalDialogContainer>{children}</LocalDialogContainer>;
+  return (
+    <LocalDialogContainer>
+      <PagePreviewContainer>{children}</PagePreviewContainer>
+    </LocalDialogContainer>
+  );
 };
 
 export const usePageEditorPanel = () => {

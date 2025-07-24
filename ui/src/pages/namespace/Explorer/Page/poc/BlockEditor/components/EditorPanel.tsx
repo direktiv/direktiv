@@ -32,9 +32,8 @@ export const EditorPanel = () => {
             {t("direktivPage.blockEditor.generic.settingsTab")}
           </TabsTrigger>
         </TabsList>
-
         <TabsContent value="addBlock" asChild>
-          <div className="relative flex-col-reverse overflow-visible">
+          <div className="grid grid-cols-3 gap-2 overflow-visible sm:grid-cols-1">
             {blockTypes.map((type, index) => (
               <DragablePaletteItem
                 key={index}
