@@ -1,4 +1,8 @@
-import { pathIsDescendant, pathsEqual } from "../../context/utils";
+import {
+  incrementPath,
+  pathIsDescendant,
+  pathsEqual,
+} from "../../context/utils";
 
 import { BlockPathType } from "..";
 import { DragPayloadSchemaType } from "~/design/DragAndDrop/schema";
@@ -23,8 +27,11 @@ export const useValidateDropzone = () => {
     }
 
     if (payload?.type === "move") {
-      // don't show a dropzone for neighboring blocks
-      if (pathsEqual(payload.originPath, targetPath)) {
+      // don't show a dropzone for same or neighboring index
+      if (
+        pathsEqual(payload.originPath, targetPath) ||
+        pathsEqual(incrementPath(payload.originPath), targetPath)
+      ) {
         return false;
       }
     }
