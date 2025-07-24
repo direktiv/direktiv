@@ -165,6 +165,14 @@ export const incrementPath = (path: BlockPathType): BlockPathType => {
   return updatedPath;
 };
 
+export const pathIsDescendant = (
+  descendant: BlockPathType,
+  ancestor: BlockPathType
+): boolean => {
+  if (descendant.length <= ancestor.length) return false;
+  return ancestor.every((value, index) => descendant[index] === value);
+};
+
 type PathOrNull = BlockPathType | null;
 
 export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
