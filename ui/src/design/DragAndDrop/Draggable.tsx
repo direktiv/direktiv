@@ -22,6 +22,7 @@ const useSharedDragable = (payload: DragPayloadSchemaType) => {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(1.05)`,
         position: "relative",
         zIndex: "50",
+        opacity: 0.7,
       }
     : {};
 
