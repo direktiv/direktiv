@@ -8,6 +8,7 @@ import {
   incrementPath,
   isPage,
   isParentBlock,
+  pathIsDescendant,
   pathsEqual,
   updateBlockInPage,
 } from "../utils";
@@ -377,6 +378,32 @@ describe("incrementPath", () => {
     const input: number[] = [];
     const expected: number[] = [];
     expect(incrementPath(input)).toEqual(expected);
+  });
+});
+
+describe("pathIsDescendant", () => {
+  test("returns true when descendant starts with ancestor", () => {
+    expect(pathIsDescendant([0, 4, 3, 1], [0, 4, 3])).toBe(true);
+    expect(pathIsDescendant([1, 2, 3], [1])).toBe(true);
+    expect(pathIsDescendant([5, 6, 7, 8], [5, 6])).toBe(true);
+  });
+
+  test("returns true when ancestor is []", () => {
+    expect(pathIsDescendant([0], [])).toBe(true);
+  });
+
+  test("returns false when descendant and ancestor are exactly equal", () => {
+    expect(pathIsDescendant([1, 2, 3], [1, 2, 3])).toBe(false);
+    expect(pathIsDescendant([], [])).toBe(false);
+  });
+
+  test("returns false when ancestor is longer than descendant", () => {
+    expect(pathIsDescendant([1, 2], [1, 2, 3])).toBe(false);
+  });
+
+  test("returns false when descendant does not start with ancestor", () => {
+    expect(pathIsDescendant([0, 4, 3, 1], [4, 3])).toBe(false);
+    expect(pathIsDescendant([1, 2, 3], [2])).toBe(false);
   });
 });
 

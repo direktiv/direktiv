@@ -11,12 +11,16 @@ export const EditorPanel = () => {
   const { panel } = usePageEditorPanel();
   const { t } = useTranslation();
 
-  const rootLevel = [1];
-  const { getAllowedTypes } = useBlockTypes();
-  const allowedBlockTypes = getAllowedTypes(rootLevel);
+  const { blockTypes } = useBlockTypes();
 
-  if (!panel) {
+  if (panel?.action) {
     return (
+      <BlockForm action={panel.action} path={panel.path} block={panel.block} />
+    );
+  }
+
+  return (
+    <div>
       <Tabs defaultValue="addBlock">
         <TabsList variant="boxed">
           <TabsTrigger variant="boxed" value="addBlock">
@@ -30,7 +34,7 @@ export const EditorPanel = () => {
         </TabsList>
         <TabsContent value="addBlock" asChild>
           <div className="grid grid-cols-3 gap-2 overflow-visible sm:grid-cols-1">
-            {allowedBlockTypes.map((type, index) => (
+            {blockTypes.map((type, index) => (
               <DraggablePaletteItem
                 key={index}
                 payload={{ type: "add", blockType: type.type }}
@@ -43,10 +47,6 @@ export const EditorPanel = () => {
         </TabsContent>
         <TabsContent value="settings" asChild></TabsContent>
       </Tabs>
-    );
-  }
-
-  return (
-    <BlockForm action={panel.action} path={panel.path} block={panel.block} />
+    </div>
   );
 };
