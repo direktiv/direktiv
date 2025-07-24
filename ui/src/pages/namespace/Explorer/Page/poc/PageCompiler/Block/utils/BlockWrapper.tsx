@@ -90,8 +90,6 @@ const EditorBlockWrapper = ({
     });
   };
 
-  const nextSilblingPath = incrementPath(blockPath);
-
   return (
     <>
       <SortableItem
@@ -134,7 +132,7 @@ const EditorBlockWrapper = ({
         </div>
       </SortableItem>
       <Dropzone
-        payload={{ targetPath: nextSilblingPath }}
+        payload={{ targetPath: incrementPath(blockPath) }}
         validate={validateDropzone}
       />
     </>
