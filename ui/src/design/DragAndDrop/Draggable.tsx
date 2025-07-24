@@ -59,7 +59,7 @@ export const DragablePaletteItem: FC<DraggableProps & { icon: LucideIcon }> = ({
 
   return (
     <div ref={setNodeRef} {...listeners} {...attributes} style={styles}>
-      <Card className="z-50 flex items-center justify-center bg-gray-2 p-4 text-sm text-black hover:cursor-move active:cursor-move dark:bg-gray-dark-2">
+      <Card className="z-50 flex items-center justify-center bg-gray-2 p-3 text-sm text-black hover:cursor-move active:cursor-move dark:bg-gray-dark-2">
         <Icon size={16} className="mr-2" /> {children}
       </Card>
     </div>
