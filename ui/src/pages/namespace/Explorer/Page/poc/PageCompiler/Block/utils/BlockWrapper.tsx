@@ -129,7 +129,7 @@ const EditorBlockWrapper = ({
               "bg-gray-2 outline outline-2 outline-gray-4 dark:bg-gray-dark-2 dark:outline-gray-dark-4",
             isFocused &&
               "border-gray-8 outline outline-2 outline-gray-8 dark:border-gray-8 dark:outline-gray-dark-8",
-            isDragging && "outline outline-gray-8"
+            isDragging && "outline outline-gray-7 dark:outline-gray-dark-7"
           )}
           data-block-wrapper
           onClick={handleClickBlock}
