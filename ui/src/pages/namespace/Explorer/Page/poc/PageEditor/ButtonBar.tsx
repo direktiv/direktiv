@@ -37,14 +37,7 @@ type ButtonBarProps = {
   onChange: (value: PageEditorMode) => void;
 };
 
-/**
- *
- * TODO: rename comopnent and file
- * any better way to synch state
- *
- */
 const ButtonBar: FC<ButtonBarProps> = ({ value, onChange }) => {
-  const [activeButton, setActiveButton] = useState<PageEditorMode>(value);
   const { t } = useTranslation();
   return (
     <DesignButtonBar>
@@ -57,11 +50,10 @@ const ButtonBar: FC<ButtonBarProps> = ({ value, onChange }) => {
                 <div className="flex grow">
                   <Toggle
                     onClick={() => {
-                      setActiveButton(button.id);
                       onChange(button.id);
                     }}
                     className="grow"
-                    pressed={button.id === activeButton}
+                    pressed={button.id === value}
                   >
                     <IconComponent />
                   </Toggle>
