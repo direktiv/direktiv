@@ -11,7 +11,7 @@ import { BlockPathType } from "../Block";
 import { BlockType } from "../../schema/blocks";
 import { DirektivPagesType } from "../../schema";
 
-type PageCompilerMode = "edit" | "live";
+export type PageCompilerMode = "edit" | "live";
 
 export type PageCompilerProps = {
   mode: PageCompilerMode;
