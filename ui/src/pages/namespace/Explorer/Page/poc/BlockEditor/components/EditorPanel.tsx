@@ -11,7 +11,7 @@ export const EditorPanel = () => {
   const { panel } = usePageEditorPanel();
   const { t } = useTranslation();
 
-  const blockTypes = useBlockTypes([]);
+  const { blockTypes } = useBlockTypes();
 
   if (panel?.action) {
     return (

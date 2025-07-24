@@ -1,5 +1,5 @@
 import { ColumnType, ColumnsType } from "../../../schema/blocks/columns";
-import { ParentBlocksType, SimpleBlocksType } from "../../../schema/blocks";
+import { ParentBlockType, SimpleBlockType } from "../../../schema/blocks";
 import {
   addBlockToPage,
   decrementPath,
@@ -31,18 +31,18 @@ const parentBlock = {
       blocks: [{ type: "text", content: "some text goes here" }],
     },
   ],
-} satisfies ParentBlocksType;
+} satisfies ParentBlockType;
 
 const simpleBlock = {
   type: "headline",
   label: "Lorem ipsum",
   level: "h1",
-} satisfies SimpleBlocksType;
+} satisfies SimpleBlockType;
 
 describe("isParentBlock", () => {
   test("it should return false for a page", () => {
     const falseParentBlock = simple as unknown;
-    const result = isParentBlock(falseParentBlock as ParentBlocksType);
+    const result = isParentBlock(falseParentBlock as ParentBlockType);
     expect(result).toEqual(false);
   });
 
