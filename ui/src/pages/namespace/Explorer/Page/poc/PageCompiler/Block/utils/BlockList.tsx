@@ -4,8 +4,8 @@ import { BlockPathType } from "..";
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { Loading } from "./Loading";
 import { twMergeClsx } from "~/util/helpers";
-import { useEnableDropzone } from "./useEnableDropzone";
 import { usePageStateContext } from "../../context/pageCompilerContext";
+import { useValidateDropzone } from "./useValidateDropzone";
 
 type BlockListProps = {
   horizontal?: boolean;
@@ -38,7 +38,7 @@ const EditorBlockList = ({
   children,
   path,
 }: BlockListComponentProps) => {
-  const enableDropZone = useEnableDropzone();
+  const validateDropzone = useValidateDropzone();
 
   const newBlockTargetPath = [...path, 0];
 
@@ -48,7 +48,7 @@ const EditorBlockList = ({
         {!children.length && (
           <div className="w-full self-center">
             <Dropzone
-              enable={enableDropZone}
+              validate={validateDropzone}
               payload={{ targetPath: newBlockTargetPath }}
             />
           </div>

@@ -20,9 +20,9 @@ import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { SortableItem } from "~/design/DragAndDrop/Draggable";
 import { twMergeClsx } from "~/util/helpers";
-import { useEnableDropzone } from "./useEnableDropzone";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 import { useTranslation } from "react-i18next";
+import { useValidateDropzone } from "./useValidateDropzone";
 
 type BlockWrapperProps = PropsWithChildren<{
   blockPath: BlockPathType;
@@ -38,7 +38,7 @@ const EditorBlockWrapper = ({
   const page = usePage();
   const { panel, setPanel } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
-  const enableDropZone = useEnableDropzone();
+  const validateDropzone = useValidateDropzone();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -135,7 +135,7 @@ const EditorBlockWrapper = ({
       </SortableItem>
       <Dropzone
         payload={{ targetPath: nextSilblingPath }}
-        enable={enableDropZone}
+        validate={validateDropzone}
       />
     </>
   );

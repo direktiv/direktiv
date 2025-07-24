@@ -5,7 +5,7 @@ import { DragPayloadSchemaType } from "~/design/DragAndDrop/schema";
 import { useBlockTypes } from "../../context/utils/useBlockTypes";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 
-export const useEnableDropzone = () => {
+export const useValidateDropzone = () => {
   const { panel } = usePageEditorPanel();
   const { getAllowedTypes } = useBlockTypes();
 

@@ -13,7 +13,7 @@ import { twMergeClsx } from "~/util/helpers";
 
 type DroppableProps = PropsWithChildren & {
   payload: DropPayloadSchemaType;
-  enable?: (
+  validate?: (
     payload: DragPayloadSchemaType | null,
     targetPath: BlockPathType
   ) => boolean;
@@ -21,7 +21,7 @@ type DroppableProps = PropsWithChildren & {
 
 export const Dropzone: FC<DroppableProps> = ({
   payload,
-  enable = () => true,
+  validate = () => true,
   children,
 }) => {
   const { active: activeDraggable } = useDndContext();
@@ -35,7 +35,7 @@ export const Dropzone: FC<DroppableProps> = ({
     ? parsedDragPayload.data
     : null;
 
-  const isEnabled = enable(draggedPayload, targetPath);
+  const isEnabled = validate(draggedPayload, targetPath);
 
   const { setNodeRef, isOver } = useDroppable({
     disabled: !isEnabled,
