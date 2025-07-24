@@ -87,14 +87,14 @@ const EditorBlockWrapper = ({
     });
   };
 
-  const followingSilblingPath = incrementPath(blockPath);
+  const nextSilblingPath = incrementPath(blockPath);
 
   const isDropAllowed = (payload: DragPayloadSchemaType | null) => {
     if (payload?.type === "move") {
       // don't show a dropzone for neighboring blocks
 
       if (
-        pathsEqual(payload.originPath, followingSilblingPath) ||
+        pathsEqual(payload.originPath, nextSilblingPath) ||
         pathsEqual(payload.originPath, blockPath)
       ) {
         return false;
@@ -145,7 +145,7 @@ const EditorBlockWrapper = ({
         </div>
       </SortableItem>
       <Dropzone
-        payload={{ targetPath: followingSilblingPath }}
+        payload={{ targetPath: nextSilblingPath }}
         isVisible={isDropAllowed}
       />
     </>
