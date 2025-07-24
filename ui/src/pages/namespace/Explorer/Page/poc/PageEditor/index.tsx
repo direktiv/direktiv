@@ -28,12 +28,13 @@ const PageEditor = ({ isPending, page: pageProp, onSave }: PageEditorProps) => {
 
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
-      <Card className="grow p-5">
+      <Card className="flex grow">
         {mode === "code" ? (
           <Editor
             value={jsonToYaml(page)}
             options={{ readOnly: true }}
             theme={theme ?? undefined}
+            className="p-5"
           />
         ) : (
           <PageCompiler
