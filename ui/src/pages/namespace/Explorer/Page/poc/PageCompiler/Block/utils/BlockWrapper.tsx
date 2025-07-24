@@ -8,7 +8,7 @@ import {
 import {
   decrementPath,
   findAncestor,
-  pathContains,
+  pathIsDescendant,
   pathsEqual,
 } from "../../context/utils";
 import {
@@ -95,7 +95,7 @@ const EditorBlockWrapper = ({
   };
 
   const enableDropZone = (payload: DragPayloadSchemaType | null) => {
-    if (panel?.dialog && !pathContains(blockPath, panel.dialog)) {
+    if (panel?.dialog && !pathIsDescendant(blockPath, panel.dialog)) {
       return false;
     }
     if (payload?.type === "move") {
