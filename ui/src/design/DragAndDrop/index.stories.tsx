@@ -56,7 +56,12 @@ export const Default = () => {
             return (
               <div key={index} className="my-2 flex flex-col items-center">
                 <SortableItem
-                  payload={{ type: "move", block, originPath: blockPath }}
+                  payload={{
+                    type: "move",
+                    block,
+                    blockType: block.type,
+                    originPath: blockPath,
+                  }}
                 >
                   {block.type === "headline" && (
                     <div className="border-2 p-2">{block.label}</div>

@@ -26,6 +26,7 @@ import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { SortableItem } from "~/design/DragAndDrop/Draggable";
 import { twMergeClsx } from "~/util/helpers";
+import { useBlockTypes } from "../../context/utils/useBlockTypes";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 import { useTranslation } from "react-i18next";
 
@@ -43,6 +44,7 @@ const EditorBlockWrapper = ({
   const page = usePage();
   const { panel, setPanel } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
+  const { getAllowedTypes } = useBlockTypes();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -100,9 +102,14 @@ const EditorBlockWrapper = ({
     if (panel?.dialog && !pathIsDescendant(blockPath, panel.dialog)) {
       return false;
     }
+
+    const allowedTypes = getAllowedTypes(nextSilblingPath);
+    if (!allowedTypes.some((config) => config.type === payload?.blockType)) {
+      return false;
+    }
+
     if (payload?.type === "move") {
       // don't show a dropzone for neighboring blocks
-
       if (
         pathsEqual(payload.originPath, nextSilblingPath) ||
         pathsEqual(payload.originPath, blockPath)
@@ -119,6 +126,7 @@ const EditorBlockWrapper = ({
         payload={{
           type: "move",
           block,
+          blockType: block.type,
           originPath: blockPath,
         }}
       >
