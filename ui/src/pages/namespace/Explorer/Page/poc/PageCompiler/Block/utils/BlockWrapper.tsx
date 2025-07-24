@@ -5,7 +5,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { findAncestor, incrementPath, pathsEqual } from "../../context/utils";
+import {
+  findAncestor,
+  incrementPath,
+  pathIsDescendant,
+  pathsEqual,
+} from "../../context/utils";
 import {
   usePage,
   usePageStateContext,
@@ -59,7 +64,7 @@ const EditorBlockWrapper = ({
     return () => document.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  const isFocused = panel?.path && pathsEqual(panel.path, blockPath);
+  const isFocused = panel?.action && pathsEqual(panel.path, blockPath);
 
   const handleClickBlock = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
@@ -74,6 +79,7 @@ const EditorBlockWrapper = ({
     if (isFocused && parentDialog) {
       return setPanel({
         action: "edit",
+        dialog: null,
         block: parentDialog.block,
         path: parentDialog.path,
       });
@@ -85,6 +91,7 @@ const EditorBlockWrapper = ({
 
     return setPanel({
       action: "edit",
+      dialog: null,
       block,
       path: blockPath,
     });
@@ -92,7 +99,10 @@ const EditorBlockWrapper = ({
 
   const nextSilblingPath = incrementPath(blockPath);
 
-  const isDropAllowed = (payload: DragPayloadSchemaType | null) => {
+  const enableDropZone = (payload: DragPayloadSchemaType | null) => {
+    if (panel?.dialog && !pathIsDescendant(blockPath, panel.dialog)) {
+      return false;
+    }
     if (payload?.type === "move") {
       // don't show a dropzone for neighboring blocks
 
@@ -103,7 +113,6 @@ const EditorBlockWrapper = ({
         return false;
       }
     }
-
     return true;
   };
 
@@ -157,7 +166,7 @@ const EditorBlockWrapper = ({
       </SortableItem>
       <Dropzone
         payload={{ targetPath: nextSilblingPath }}
-        isVisible={isDropAllowed}
+        enable={enableDropZone}
       />
     </>
   );

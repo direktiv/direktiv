@@ -12,38 +12,43 @@ import { twMergeClsx } from "~/util/helpers";
 
 type DroppableProps = PropsWithChildren & {
   payload: DropPayloadSchemaType;
-  isVisible?: (payload: DragPayloadSchemaType | null) => boolean;
+  enable?: (payload: DragPayloadSchemaType | null) => boolean;
 };
 
 export const Dropzone: FC<DroppableProps> = ({
   payload,
-  isVisible = () => true,
+  enable = () => true,
   children,
 }) => {
+  const { active: activeDraggable } = useDndContext();
+
+  const parsedPayload = DragPayloadSchema.safeParse(
+    activeDraggable?.data.current
+  );
+
+  const isEnabled = enable(parsedPayload.success ? parsedPayload.data : null);
+
   const { setNodeRef, isOver } = useDroppable({
+    disabled: !isEnabled,
     id: payload.targetPath.join("-"),
     data: payload,
   });
 
-  const { active } = useDndContext();
-
-  const canDrop = !!active;
-
-  const parsedPayload = DragPayloadSchema.safeParse(active?.data.current);
+  const isDragging = !!activeDraggable;
+  const showDropIndicator = isOver && isEnabled;
 
   return (
     <div
       ref={setNodeRef}
       className={twMergeClsx(
-        "relative h-[4px] w-full justify-center rounded-lg p-0 transition-all",
-        canDrop && "bg-gray-4 dark:bg-gray-dark-4",
+        "relative h-[4px] w-full justify-center rounded-lg p-0",
+        isDragging && "bg-gray-4 dark:bg-gray-dark-4",
         isOver && "bg-gray-10 dark:bg-gray-10",
-        !isVisible(parsedPayload.success ? parsedPayload.data : null) &&
-          "invisible"
+        !isEnabled && "invisible"
       )}
     >
       {children}
-      {isOver && (
+      {showDropIndicator && (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="z-10 flex flex-col">
             <Badge

@@ -51,12 +51,15 @@ const EditModeDialog = (props: DialogProps) => {
   return (
     <DialogBaseComponent
       {...props}
-      onOpenChange={() =>
-        setPanel({
-          action: "edit",
-          path: props.blockPath,
-          block: props.blockProps,
-        })
+      onOpenChange={(open) =>
+        setPanel(
+          open
+            ? {
+                action: null,
+                dialog: props.blockPath,
+              }
+            : null
+        )
       }
     />
   );
