@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { ExtendedKeyValueSchema } from "../primitives/extendedKeyValue";
 import { Id } from "../primitives/id";
 import { KeyValue } from "../primitives/keyValue";
 import { TemplateString } from "../primitives/templateString";
