@@ -1,4 +1,4 @@
-import { DragablePaletteItem, SortableItem } from "./Draggable";
+import { DraggablePaletteItem, SortableItem } from "./Draggable";
 
 import { Card } from "../Card";
 import { DndContext } from ".";
@@ -40,7 +40,7 @@ export const Default = () => {
     >
       <div className="flex gap-5">
         <Card className="w-[200px] p-3">
-          <DragablePaletteItem
+          <DraggablePaletteItem
             payload={{
               type: "add",
               blockType: "headline",
@@ -48,7 +48,7 @@ export const Default = () => {
             icon={Heading1}
           >
             Headline
-          </DragablePaletteItem>
+          </DraggablePaletteItem>
         </Card>
         <Card className="grow p-3">
           {blocks.map((block, index) => {

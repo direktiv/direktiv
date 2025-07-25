@@ -11,7 +11,7 @@ type DraggableProps = PropsWithChildren & {
   className?: string;
 };
 
-const useSharedDragable = (payload: DragPayloadSchemaType) => {
+const useSharedDraggable = (payload: DragPayloadSchemaType) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: JSON.stringify(payload),
     data: payload,
@@ -35,7 +35,7 @@ export const SortableItem: FC<DraggableProps> = ({
   children,
 }) => {
   const { attributes, listeners, setNodeRef, styles } =
-    useSharedDragable(payload);
+    useSharedDraggable(payload);
 
   return (
     <div style={styles} className="relative">
@@ -59,13 +59,11 @@ export const SortableItem: FC<DraggableProps> = ({
   );
 };
 
-export const DragablePaletteItem: FC<DraggableProps & { icon: LucideIcon }> = ({
-  payload,
-  icon: Icon,
-  children,
-}) => {
+export const DraggablePaletteItem: FC<
+  DraggableProps & { icon: LucideIcon }
+> = ({ payload, icon: Icon, children }) => {
   const { attributes, listeners, setNodeRef, styles } =
-    useSharedDragable(payload);
+    useSharedDraggable(payload);
 
   return (
     <div ref={setNodeRef} {...listeners} {...attributes} style={styles}>
