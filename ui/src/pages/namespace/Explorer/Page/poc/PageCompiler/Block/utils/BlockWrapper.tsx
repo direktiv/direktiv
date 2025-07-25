@@ -143,7 +143,13 @@ const EditorBlockWrapper = ({
           onClick={handleClickBlock}
         >
           {isHoveredOrFocused && (
-            <Badge className="absolute z-30 -mt-6" variant="secondary">
+            <Badge
+              className={twMergeClsx(
+                "absolute z-30 -mt-7 rounded-md rounded-b-none px-2 py-1",
+                isFocused && "bg-gray-8 dark:bg-gray-dark-8"
+              )}
+              variant="secondary"
+            >
               <span className="mr-2">
                 <b>{block.type}</b>
               </span>
