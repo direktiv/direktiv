@@ -27,7 +27,7 @@ export const Variable = ({ value }: VariableProps) => {
     <span
       className={twMergeClsx(
         mode === "edit" &&
-          "rounded-sm bg-gray-4 outline outline-offset-2 outline-gray-8"
+          "rounded-sm outline-offset-2 outline-gray-8 hover:outline dark:outline-gray-dark-8"
       )}
     >
       {variableString.data}
