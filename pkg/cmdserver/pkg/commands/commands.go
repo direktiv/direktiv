@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
@@ -37,6 +38,7 @@ type Commands struct {
 type CommandsResponse struct {
 	Error  string
 	Output interface{}
+	Stdout string `json:"-"`
 }
 
 // nolint
@@ -70,7 +72,7 @@ func RunCommands(ctx context.Context, in Commands, info *server.ExecutionInfo) (
 		err := runCmd(command, info)
 
 		cr := CommandsResponse{
-			Output: info.Log.LogData.String(),
+			Stdout: info.Log.LogData.String(),
 		}
 
 		// enable writer again
@@ -88,6 +90,16 @@ func RunCommands(ctx context.Context, in Commands, info *server.ExecutionInfo) (
 				commandOutput = append(commandOutput, cr)
 				return commandOutput, fmt.Errorf("stopped because command %d failed", a)
 			}
+		}
+
+		// copy stdout from command in output
+		cr.Output = cr.Stdout
+
+		// if valid json make it a "real" json in the response
+		if json.Valid([]byte(cr.Stdout)) {
+			var raw json.RawMessage
+			json.Unmarshal([]byte(cr.Stdout), &raw)
+			cr.Output = raw
 		}
 
 		commandOutput = append(commandOutput, cr)
