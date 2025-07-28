@@ -61,6 +61,7 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 		pConfigs = append(pConfigs, item.Config.PluginsConfig.Outbound...)
 
 		hasOutboundConfigured := len(item.Config.PluginsConfig.Outbound) > 0
+		hasFileServerConfigured := item.Config.PluginsConfig.Target.Typ == "target-fileserver"
 
 		// build plugins chain.
 		pChain := []core.Plugin{}
@@ -86,10 +87,19 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 
 		cleanPath := strings.Trim(item.Config.Path, " /")
 
-		for _, pattern := range []string{
+		paths := []string{
 			fmt.Sprintf("/api/v2/namespaces/%s/gateway/%s", item.Namespace, cleanPath),
 			fmt.Sprintf("/ns/%s/%s", item.Namespace, cleanPath),
-		} {
+		}
+
+		if hasFileServerConfigured {
+			paths = []string{
+				fmt.Sprintf("/api/v2/namespaces/%s/gateway/%s/", item.Namespace, cleanPath),
+				fmt.Sprintf("/ns/%s/%s/", item.Namespace, cleanPath),
+			}
+		}
+
+		for _, pattern := range paths {
 			timeout := 24 * time.Hour
 			if item.Config.Timeout != 0 {
 				timeout = time.Duration(item.Config.Timeout) * time.Second
@@ -108,6 +118,7 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 				r = InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
 				// inject endpoint.
 				r = InjectContextEndpoint(r, &endpoints[i])
+				r = InjectContextURLPattern(r, pattern)
 				r = InjectContextURLParams(r, ExtractBetweenCurlyBraces(pattern))
 
 				// Outbound plugins are used to transform the output from target plugins. When an outbound plugin is
