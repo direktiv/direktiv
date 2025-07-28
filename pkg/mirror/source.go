@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
-	gitssh "github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"github.com/go-git/go-git/v6"
+	"github.com/go-git/go-git/v6/plumbing"
+	gitssh "github.com/go-git/go-git/v6/plumbing/transport/ssh"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -76,7 +76,7 @@ func clone(conf GitSourceConfig, cloneOpts *git.CloneOptions) (Source, error) {
 		return nil, err
 	}
 
-	_, err = git.PlainClone(path, false, cloneOpts)
+	_, err = git.PlainClone(path, cloneOpts)
 	if err != nil {
 		return nil, err
 	}
