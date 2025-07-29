@@ -44,7 +44,7 @@ export const SortableItem: FC<DraggableProps> = ({
         {...listeners}
         {...attributes}
         className={twMergeClsx(
-          "absolute right-0 z-40 mt-2 h-[calc(100%-1rem)] text-gray-8 opacity-70 dark:text-gray-dark-8",
+          "absolute z-40 mt-2 h-[calc(100%-1rem)] text-gray-8 opacity-70 dark:text-gray-dark-8",
           className
         )}
       >
