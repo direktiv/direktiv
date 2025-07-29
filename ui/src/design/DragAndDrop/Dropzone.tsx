@@ -46,39 +46,40 @@ export const Dropzone: FC<DroppableProps> = ({
   });
 
   const isDragging = !!activeDraggable;
-  const showDropIndicator = isDragging && status !== "hidden";
+  const showPlusIndicator = isDragging && status === "allowed";
+
+  if (status === "hidden") {
+    return null;
+  }
 
   return (
-    <div
-      ref={setNodeRef}
-      className={twMergeClsx(
-        "relative h-[4px] w-full justify-center rounded-lg p-0",
-        isDragging && "bg-gray-4 dark:bg-gray-dark-4",
-        isOver && "bg-gray-10 dark:bg-gray-10"
-      )}
-    >
-      {children}
-      {showDropIndicator && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className="z-10 flex flex-col">
-            <Badge
-              className={
-                status === "forbidden"
-                  ? twMergeClsx(
-                      "w-fit bg-danger-8 transition-all dark:bg-danger-dark-8",
-                      isOver && "bg-danger-10 dark:bg-danger-dark-10"
-                    )
-                  : twMergeClsx(
-                      "w-fit bg-info-7 transition-all dark:bg-info-dark-7",
-                      isOver && "bg-info-10 dark:bg-info-dark-10"
-                    )
-              }
-            >
-              <PlusCircle size={16} />
-            </Badge>
+    <>
+      <div
+        ref={setNodeRef}
+        className={
+          status === "allowed"
+            ? twMergeClsx(
+                "relative h-[4px] w-full justify-center rounded-lg p-0",
+                isDragging && "bg-primary-100 dark:bg-primary-800",
+                isOver && "bg-primary-600 dark:bg-primary-600"
+              )
+            : twMergeClsx(
+                "relative h-[4px] w-full justify-center rounded-lg p-0",
+                isDragging && "bg-gray-4 dark:bg-gray-dark-4"
+              )
+        }
+      >
+        {children}
+        {showPlusIndicator && isOver && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="z-10 flex flex-col">
+              <Badge className="bg-primary-600 dark:bg-primary-600">
+                <PlusCircle size={16} />
+              </Badge>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 };
