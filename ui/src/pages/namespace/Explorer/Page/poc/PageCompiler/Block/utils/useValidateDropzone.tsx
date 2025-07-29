@@ -6,6 +6,7 @@ import {
 
 import { BlockPathType } from "..";
 import { DragPayloadSchemaType } from "~/design/DragAndDrop/schema";
+import { DropzoneStatus } from "~/design/DragAndDrop/Dropzone";
 import { useBlockTypes } from "../../context/utils/useBlockTypes";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 
@@ -16,21 +17,12 @@ export const useValidateDropzone = () => {
   const enable = (
     payload: DragPayloadSchemaType | null,
     targetPath: BlockPathType
-  ) => {
+  ): DropzoneStatus => {
     if (!payload) {
-      return false;
+      return "hidden";
     }
     if (panel?.dialog && !pathIsDescendant(targetPath, panel.dialog)) {
-      return false;
-    }
-
-    const allowedTypes = getAllowedTypes(targetPath);
-
-    const blockType =
-      payload.type === "move" ? payload.block.type : payload.blockType;
-
-    if (!allowedTypes.some((config) => config.type === blockType)) {
-      return false;
+      return "hidden";
     }
 
     if (payload.type === "move") {
@@ -39,10 +31,20 @@ export const useValidateDropzone = () => {
         pathsEqual(payload.originPath, targetPath) ||
         pathsEqual(incrementPath(payload.originPath), targetPath)
       ) {
-        return false;
+        return "hidden";
       }
     }
-    return true;
+
+    const allowedTypes = getAllowedTypes(targetPath);
+
+    const blockType =
+      payload.type === "move" ? payload.block.type : payload.blockType;
+
+    if (!allowedTypes.some((config) => config.type === blockType)) {
+      return "forbidden";
+    }
+
+    return "allowed";
   };
 
   return enable;

@@ -11,17 +11,19 @@ import { BlockPathType } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/
 import { PlusCircle } from "lucide-react";
 import { twMergeClsx } from "~/util/helpers";
 
+export type DropzoneStatus = "hidden" | "allowed" | "forbidden";
+
 type DroppableProps = PropsWithChildren & {
   payload: DropPayloadSchemaType;
   validate?: (
     payload: DragPayloadSchemaType | null,
     targetPath: BlockPathType
-  ) => boolean;
+  ) => DropzoneStatus;
 };
 
 export const Dropzone: FC<DroppableProps> = ({
   payload,
-  validate = () => true,
+  validate = () => "allowed",
   children,
 }) => {
   const { active: activeDraggable } = useDndContext();
@@ -35,16 +37,16 @@ export const Dropzone: FC<DroppableProps> = ({
     ? parsedDragPayload.data
     : null;
 
-  const isEnabled = validate(draggedPayload, targetPath);
+  const status = validate(draggedPayload, targetPath);
 
   const { setNodeRef, isOver } = useDroppable({
-    disabled: !isEnabled,
+    disabled: status === "hidden" || status === "forbidden",
     id: payload.targetPath.join("-"),
     data: payload,
   });
 
   const isDragging = !!activeDraggable;
-  const showDropIndicator = isDragging && isEnabled;
+  const showDropIndicator = isDragging && status !== "hidden";
 
   return (
     <div
@@ -59,10 +61,17 @@ export const Dropzone: FC<DroppableProps> = ({
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="z-10 flex flex-col">
             <Badge
-              className={twMergeClsx(
-                "w-fit bg-gray-8 transition-all dark:bg-gray-8",
-                isOver && "bg-gray-10 dark:bg-gray-dark-10"
-              )}
+              className={
+                status === "forbidden"
+                  ? twMergeClsx(
+                      "w-fit bg-danger-8 transition-all dark:bg-danger-dark-8",
+                      isOver && "bg-danger-10 dark:bg-danger-dark-10"
+                    )
+                  : twMergeClsx(
+                      "w-fit bg-info-7 transition-all dark:bg-info-dark-7",
+                      isOver && "bg-info-10 dark:bg-info-dark-10"
+                    )
+              }
             >
               <PlusCircle size={16} />
             </Badge>
