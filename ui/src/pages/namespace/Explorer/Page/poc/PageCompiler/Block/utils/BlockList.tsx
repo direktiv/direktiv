@@ -23,9 +23,9 @@ type BlockListComponentProps = BlockListProps;
 const BlockListWrapper = ({ children, horizontal }: WrapperProps) => (
   <div
     className={twMergeClsx(
-      "w-full gap-3",
+      "w-full",
       horizontal
-        ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))]"
+        ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-3"
         : "flex flex-col"
     )}
   >
@@ -46,7 +46,8 @@ const EditorBlockList = ({
     <BlockListWrapper horizontal={horizontal}>
       <Suspense fallback={<Loading />}>
         {!children.length && (
-          <div className="w-full self-center">
+          // <div className="w-full self-center">
+          <div className="flex h-full min-h-[25px] flex-col justify-center">
             <Dropzone
               validate={validateDropzone}
               payload={{ targetPath: newBlockTargetPath }}
