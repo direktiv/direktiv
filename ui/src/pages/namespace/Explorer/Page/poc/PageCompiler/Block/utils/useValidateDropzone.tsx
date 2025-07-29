@@ -17,16 +17,23 @@ export const useValidateDropzone = () => {
     payload: DragPayloadSchemaType | null,
     targetPath: BlockPathType
   ) => {
+    if (!payload) {
+      return false;
+    }
     if (panel?.dialog && !pathIsDescendant(targetPath, panel.dialog)) {
       return false;
     }
 
     const allowedTypes = getAllowedTypes(targetPath);
-    if (!allowedTypes.some((config) => config.type === payload?.blockType)) {
+
+    const blockType =
+      payload.type === "move" ? payload.block.type : payload.blockType;
+
+    if (!allowedTypes.some((config) => config.type === blockType)) {
       return false;
     }
 
-    if (payload?.type === "move") {
+    if (payload.type === "move") {
       // don't show a dropzone for same or neighboring index
       if (
         pathsEqual(payload.originPath, targetPath) ||

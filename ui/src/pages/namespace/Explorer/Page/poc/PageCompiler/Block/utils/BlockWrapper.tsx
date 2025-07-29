@@ -96,7 +96,6 @@ const EditorBlockWrapper = ({
         payload={{
           type: "move",
           block,
-          blockType: block.type,
           originPath: blockPath,
         }}
       >

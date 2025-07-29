@@ -15,7 +15,6 @@ const AddPayloadSchema = z.object({
 const MovePayloadSchema = z.object({
   type: z.literal("move"),
   block: Block,
-  blockType: AvailableBlockTypeAttributes,
   originPath: PathSchema,
 });
 
