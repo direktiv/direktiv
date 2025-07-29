@@ -48,11 +48,12 @@ export const SortableItem: FC<DraggableProps> = ({
           className
         )}
       >
-        <div className="flex h-full w-5 items-center justify-center rounded border-2 border-gray-4 bg-white p-0 hover:cursor-move hover:border-solid hover:bg-gray-2 active:cursor-move active:border-solid active:bg-gray-2 dark:border-gray-dark-4 dark:bg-black dark:hover:bg-gray-dark-2">
+        <div className="flex h-full w-5 items-center justify-center rounded rounded-e-none border-2 border-gray-4 bg-white p-0 hover:cursor-move hover:border-solid hover:bg-gray-2 active:cursor-move active:border-solid active:bg-gray-2 dark:border-gray-dark-4 dark:bg-black dark:hover:bg-gray-dark-2">
           <GripVertical />
         </div>
       </div>
       <div className="flex justify-center">
+        <span className="mr-6"></span>
         <div className="w-full">{children}</div>
       </div>
     </div>
