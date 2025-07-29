@@ -26,10 +26,11 @@ export const useValidateDropzone = () => {
     }
 
     if (payload.type === "move") {
-      // don't show a dropzone for same or neighboring index
+      // don't show a dropzone for same, neighboring or nested index
       if (
         pathsEqual(payload.originPath, targetPath) ||
-        pathsEqual(incrementPath(payload.originPath), targetPath)
+        pathsEqual(incrementPath(payload.originPath), targetPath) ||
+        pathIsDescendant(targetPath, payload.originPath)
       ) {
         return "hidden";
       }
