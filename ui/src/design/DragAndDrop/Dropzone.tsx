@@ -40,7 +40,7 @@ export const Dropzone: FC<DroppableProps> = ({
   const status = validate(draggedPayload, targetPath);
 
   const { setNodeRef, isOver } = useDroppable({
-    disabled: status === "hidden" || status === "forbidden",
+    disabled: status !== "allowed",
     id: payload.targetPath.join("-"),
     data: payload,
   });
