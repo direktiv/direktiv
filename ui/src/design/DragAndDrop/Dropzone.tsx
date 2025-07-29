@@ -35,14 +35,16 @@ export const Dropzone: FC<DroppableProps> = ({
   });
 
   const isDragging = !!activeDraggable;
-  const showDropIndicator = isDragging && isEnabled;
+  const showDropIndicator = isOver && isEnabled;
 
   return (
     <div
       ref={setNodeRef}
       className={twMergeClsx(
-        "relative m-0 my-4 h-1 w-full justify-center rounded-lg p-0",
-        isOver && "h-1 bg-gray-4 transition-all dark:bg-gray-dark-4"
+        "relative h-[4px] w-full justify-center rounded-lg p-0",
+        isDragging && "bg-gray-4 dark:bg-gray-dark-4",
+        isOver && "bg-gray-10 dark:bg-gray-10",
+        !isEnabled && "invisible"
       )}
     >
       {children}
