@@ -1,5 +1,9 @@
 import z from "zod";
 
+/**
+ * An extended key-value pair that supports multiple data types for the value,
+ * including strings, variables, booleans, arrays, and objects.
+ */
 const StringSchema = z.object({
   type: z.literal("string"),
   value: z.string(),
