@@ -1801,6 +1801,10 @@
             "variantLabel": "Input Type",
             "defaultValueLabel": "Default Value",
             "defaultValuePlaceholder": "Enter default value (optional)"
+          },
+          "checkbox": {
+            "description": "A form checkbox block lets you create a checkbox to gather boolean information from users.",
+            "defaultValueLabel": "Default Checked"
           }
         }
       },

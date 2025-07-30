@@ -13,6 +13,7 @@ import {
 
 import { BlockPathType } from "../../Block";
 import { BlockTypeConfig } from "./types";
+import { Checkbox } from "../../../BlockEditor/Form/Checkbox";
 import { Dialog as DialogForm } from "../../../BlockEditor/Dialog";
 import { Form as FormForm } from "../../../BlockEditor/Form";
 import { Headline } from "../../../BlockEditor/Headline";
@@ -193,6 +194,26 @@ const blockTypes: BlockTypeConfig[] = [
       required: false,
       type: "form-input",
       variant: "text",
+    },
+  },
+  {
+    type: "form-checkbox",
+    label: t("direktivPage.blockEditor.blockName.form-checkbox"),
+    icon: TextCursorInput,
+    allow: (page, path) =>
+      !!findAncestor({
+        page,
+        path,
+        match: (block) => block.type === "form",
+      }),
+    formComponent: Checkbox,
+    defaultValues: {
+      id: "",
+      defaultValue: false,
+      description: "",
+      label: "",
+      required: false,
+      type: "form-checkbox",
     },
   },
 ];
