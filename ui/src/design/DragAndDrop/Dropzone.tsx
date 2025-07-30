@@ -57,16 +57,13 @@ export const Dropzone: FC<DroppableProps> = ({
       <div
         ref={setNodeRef}
         className={twMergeClsx(
+          "relative h-[4px] w-full justify-center rounded-lg p-0",
           status === "allowed"
             ? [
-                "relative h-[4px] w-full justify-center rounded-lg p-0",
                 isDragging && "bg-primary-100 dark:bg-primary-800",
                 isOver && "bg-primary-600 dark:bg-primary-600",
               ]
-            : [
-                "relative h-[4px] w-full justify-center rounded-lg p-0",
-                isDragging && "bg-gray-4 dark:bg-gray-dark-4",
-              ]
+            : [isDragging && "bg-gray-4 dark:bg-gray-dark-4"]
         )}
       >
         {children}
