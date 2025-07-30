@@ -1,9 +1,9 @@
 import z from "zod";
 
-// for simplifity we don't support nested objects yet
 const AllowedObjectValues = z.union([z.string(), z.number(), z.boolean()]);
 
-export const ObjectSchema = z.object({
+// for simplifity we don't support nested objects yet
+export const FlatObjectSchema = z.object({
   type: z.literal("object"),
   value: z.array(
     z.object({
