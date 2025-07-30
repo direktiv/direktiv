@@ -3,6 +3,10 @@ import { Card, CardType } from "./card";
 import { Column, ColumnType, Columns, ColumnsType } from "./columns";
 import { Dialog, DialogType } from "./dialog";
 import { Form, FormType } from "./form";
+import { FormCheckbox, FormCheckboxType } from "./form/checkbox";
+import { FormInput, FormInputType } from "./form/input";
+import { FormSelect, FormSelectType } from "./form/select";
+import { FormTextarea, FormTextareaType } from "./form/textarea";
 import { Headline, HeadlineType } from "./headline";
 import { Image, ImageType } from "./image";
 import { Loop, LoopType } from "./loop";
@@ -22,6 +26,10 @@ import { z } from "zod";
 
 const SimpleBlockUnion = z.discriminatedUnion("type", [
   Button,
+  FormCheckbox,
+  FormInput,
+  FormSelect,
+  FormTextarea,
   Headline,
   Image,
   Table,
@@ -40,6 +48,10 @@ export const ParentBlockUnion = z.discriminatedUnion("type", [
 
 export type SimpleBlockType =
   | ButtonType
+  | FormCheckboxType
+  | FormInputType
+  | FormSelectType
+  | FormTextareaType
   | HeadlineType
   | ImageType
   | TableType

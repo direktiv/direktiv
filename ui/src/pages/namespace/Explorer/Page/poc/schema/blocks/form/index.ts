@@ -1,6 +1,6 @@
-import { Block, BlockType, TriggerBlock, TriggerBlockType } from ".";
+import { Block, BlockType, TriggerBlock, TriggerBlockType } from "..";
+import { Mutation, MutationType } from "../../procedures/mutation";
 
-import { Mutation, MutationType } from "../procedures/mutation";
 import { z } from "zod";
 
 /**
