@@ -6,7 +6,7 @@ export const headlineLevels = ["h1", "h2", "h3"] as const;
 export const Headline = z.object({
   type: z.literal("headline"),
   level: z.enum(headlineLevels),
-  label: TemplateString,
+  label: TemplateString.min(1),
 });
 
 export type HeadlineType = z.infer<typeof Headline>;

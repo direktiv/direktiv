@@ -5,7 +5,7 @@ import { z } from "zod";
 
 export const Query = z.object({
   id: Id,
-  url: TemplateString,
+  url: TemplateString.min(1),
   queryParams: z.array(KeyValue).optional(),
 });
 
