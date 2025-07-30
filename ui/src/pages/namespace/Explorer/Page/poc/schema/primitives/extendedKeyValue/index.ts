@@ -4,7 +4,7 @@ import {
   StringArraySchema,
 } from "./array";
 
-import { ObjectSchema } from "./object";
+import { FlatObjectSchema } from "./object";
 import z from "zod";
 
 const StringSchema = z.object({
@@ -29,7 +29,7 @@ const DataType = z.discriminatedUnion("type", [
   StringArraySchema,
   BooleanArraySchema,
   NumberArraySchema,
-  ObjectSchema,
+  FlatObjectSchema,
 ]);
 
 /**
