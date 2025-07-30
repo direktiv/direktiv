@@ -4,7 +4,7 @@ import { z } from "zod";
 export const FormSelect = FormBase.extend({
   type: z.literal("form-select"),
   values: z.array(z.string()),
-  defaultValue: z.string().optional(),
+  defaultValue: z.string(),
 });
 
 export type FormSelectType = z.infer<typeof FormSelect>;
