@@ -1,38 +1,29 @@
-import { AllBlocksType, ParentBlockUnion } from "../../../schema/blocks";
+import { BlockType, ParentBlockUnion } from "../../../schema/blocks";
 import { DirektivPagesSchema, DirektivPagesType } from "../../../schema";
+
 import { BlockPathType } from "../../Block";
-import { CardType } from "../../../schema/blocks/card";
-import { ColumnsType } from "../../../schema/blocks/columns";
-import { DialogType } from "../../../schema/blocks/dialog";
-import { FormType } from "../../../schema/blocks/form";
-import { HeadlineType } from "../../../schema/blocks/headline";
-import { ImageType } from "../../../schema/blocks/image";
-import { LoopType } from "../../../schema/blocks/loop";
-import { QueryProviderType } from "../../../schema/blocks/queryProvider";
-import { TableType } from "../../../schema/blocks/table";
-import { TextType } from "../../../schema/blocks/text";
 import { clonePage } from "../../../BlockEditor/utils";
 import { z } from "zod";
 
 export const isParentBlock = (
-  block: AllBlocksType
+  block: BlockType
 ): block is z.infer<typeof ParentBlockUnion> =>
   ParentBlockUnion.safeParse(block).success;
 
 export const isPage = (
-  page: AllBlocksType | DirektivPagesType
+  page: BlockType | DirektivPagesType
 ): page is z.infer<typeof DirektivPagesSchema> =>
   DirektivPagesSchema.safeParse(page).success;
 
 export const findBlock = (
-  parent: AllBlocksType | DirektivPagesType,
+  parent: BlockType | DirektivPagesType,
   path: BlockPathType
 ) =>
-  path.reduce<AllBlocksType | DirektivPagesType>((acc, index) => {
+  path.reduce<BlockType | DirektivPagesType>((acc, index) => {
     let next;
 
     if (isPage(acc) || isParentBlock(acc)) {
-      next = acc.blocks[index] as AllBlocksType;
+      next = acc.blocks[index] as BlockType;
     }
 
     if (!next) {
@@ -45,7 +36,7 @@ export const findBlock = (
 export const updateBlockInPage = (
   page: DirektivPagesType,
   path: BlockPathType,
-  block: AllBlocksType
+  block: BlockType
 ): DirektivPagesType => {
   const targetIndex = path[path.length - 1];
 
@@ -69,7 +60,7 @@ export const updateBlockInPage = (
 export const addBlockToPage = (
   page: DirektivPagesType,
   path: BlockPathType,
-  block: AllBlocksType,
+  block: BlockType,
   after = false
 ) => {
   let index = path[path.length - 1];
@@ -86,7 +77,7 @@ export const addBlockToPage = (
   }
 
   if (isPage(parent) || isParentBlock(parent)) {
-    const newList: AllBlocksType[] = [
+    const newList: BlockType[] = [
       ...parent.blocks.slice(0, index),
       block,
       ...parent.blocks.slice(index),
@@ -113,7 +104,7 @@ export const deleteBlockFromPage = (
   const parent = findBlock(newPage, path.slice(0, -1));
 
   if (isPage(parent) || isParentBlock(parent)) {
-    const newList: AllBlocksType[] = [
+    const newList: BlockType[] = [
       ...parent.blocks.slice(0, index),
       ...parent.blocks.slice(index + 1),
     ];
@@ -129,7 +120,7 @@ export const moveBlockWithinPage = (
   page: DirektivPagesType,
   originPath: BlockPathType,
   targetPath: BlockPathType,
-  block: AllBlocksType
+  block: BlockType
 ): DirektivPagesType => {
   const originIndex = originPath[originPath.length - 1];
   const targetIndex = targetPath[targetPath.length - 1];
@@ -164,16 +155,22 @@ export const moveBlockWithinPage = (
   return pageWithDeletedBlock;
 };
 
-export const idToPath = (id: string): BlockPathType => {
-  const arrayOfStrings = id.split("-");
-  const path = arrayOfStrings.map(Number);
+export const incrementPath = (path: BlockPathType): BlockPathType => {
+  const pathLength = path.length;
+  let lastIndex = path[pathLength - 1];
 
-  return path;
+  const updatedPath =
+    lastIndex !== undefined ? [...path.slice(0, -1), (lastIndex += 1)] : path;
+
+  return updatedPath;
 };
 
-export const pathToId = (path: BlockPathType) => {
-  const id = path.join("-");
-  return id;
+export const pathIsDescendant = (
+  descendant: BlockPathType,
+  ancestor: BlockPathType
+): boolean => {
+  if (descendant.length <= ancestor.length) return false;
+  return ancestor.every((value, index) => descendant[index] === value);
 };
 
 type PathOrNull = BlockPathType | null;
@@ -185,120 +182,41 @@ export const pathsEqual = (a: PathOrNull, b: PathOrNull) => {
   return a.length === b.length && a.every((val, index) => val === b[index]);
 };
 
-type FindInBranchConfig = {
+type AllPossibleBlocks = BlockType | DirektivPagesType;
+
+type FindAncestorConfig<T extends AllPossibleBlocks["type"]> = {
   page: DirektivPagesType;
   path: BlockPathType;
-  match: (block: AllBlocksType | DirektivPagesType) => boolean;
+  match: (
+    block: AllPossibleBlocks
+  ) => block is Extract<AllPossibleBlocks, { type: T }>;
   depth?: number;
 };
 
-export const findAncestor = ({
+type FindAncestorResult<T extends AllPossibleBlocks["type"]> = {
+  block: Extract<AllPossibleBlocks, { type: T }>;
+  path: BlockPathType;
+} | null;
+
+export const findAncestor = <T extends AllPossibleBlocks["type"]>({
   page,
   path,
   match,
   depth,
-}: FindInBranchConfig) => {
+}: FindAncestorConfig<T>): FindAncestorResult<T> => {
   if (depth !== undefined && !(depth >= 1)) {
     throw new Error("depth must be undefined or >= 1");
   }
   const limit = depth !== undefined ? path.length - depth : 0;
   for (let i = path.length - 1; i >= limit; i--) {
-    const target = findBlock(page, path.slice(0, i));
+    const targetPath = path.slice(0, i);
+    const target = findBlock(page, targetPath);
     if (match(target)) {
-      return true;
+      return {
+        block: target,
+        path: targetPath,
+      };
     }
   }
-  return false;
-};
-
-export const getBlockTemplate = (type: AllBlocksType["type"]) => {
-  switch (type) {
-    case "headline":
-      return {
-        type: "headline",
-        level: "h1",
-        label: "",
-      } satisfies HeadlineType;
-    case "text":
-      return {
-        type: "text",
-        content: "",
-      } satisfies TextType;
-    case "columns": {
-      return {
-        type: "columns",
-        blocks: [
-          {
-            type: "column",
-            blocks: [],
-          },
-          {
-            type: "column",
-            blocks: [],
-          },
-        ],
-      } satisfies ColumnsType;
-    }
-    case "card":
-      return {
-        type: "card",
-        blocks: [],
-      } satisfies CardType;
-    case "query-provider":
-      return {
-        type: "query-provider",
-        blocks: [],
-        queries: [],
-      } satisfies QueryProviderType;
-    case "table":
-      return {
-        type: "table",
-        data: {
-          type: "loop",
-          id: "",
-          data: "",
-        },
-        actions: [],
-        columns: [],
-      } satisfies TableType;
-    case "dialog":
-      return {
-        type: "dialog",
-        trigger: {
-          type: "button",
-          label: "",
-        },
-        blocks: [],
-      } satisfies DialogType;
-    case "loop":
-      return {
-        type: "loop",
-        id: "",
-        data: "",
-        blocks: [],
-      } satisfies LoopType;
-    case "image":
-      return {
-        type: "image",
-        src: "",
-        width: 200,
-        height: 200,
-      } satisfies ImageType;
-    case "form":
-      return {
-        type: "form",
-        mutation: {
-          id: "",
-          url: "",
-          method: "POST",
-        },
-        trigger: {
-          label: "",
-          type: "button",
-        },
-        blocks: [],
-      } satisfies FormType;
-    default:
-      throw new Error(`${type} is not implemented yet`);
-  }
+  return null;
 };

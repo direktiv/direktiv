@@ -1,12 +1,14 @@
 import { ColumnType, ColumnsType } from "../../../schema/blocks/columns";
-import { ParentBlocksType, SimpleBlocksType } from "../../../schema/blocks";
+import { ParentBlockType, SimpleBlockType } from "../../../schema/blocks";
 import {
   addBlockToPage,
   deleteBlockFromPage,
   findAncestor,
   findBlock,
+  incrementPath,
   isPage,
   isParentBlock,
+  pathIsDescendant,
   pathsEqual,
   updateBlockInPage,
 } from "../utils";
@@ -29,18 +31,18 @@ const parentBlock = {
       blocks: [{ type: "text", content: "some text goes here" }],
     },
   ],
-} satisfies ParentBlocksType;
+} satisfies ParentBlockType;
 
 const simpleBlock = {
   type: "headline",
   label: "Lorem ipsum",
   level: "h1",
-} satisfies SimpleBlocksType;
+} satisfies SimpleBlockType;
 
 describe("isParentBlock", () => {
   test("it should return false for a page", () => {
     const falseParentBlock = simple as unknown;
-    const result = isParentBlock(falseParentBlock as ParentBlocksType);
+    const result = isParentBlock(falseParentBlock as ParentBlockType);
     expect(result).toEqual(false);
   });
 
@@ -191,6 +193,218 @@ describe("addBlockToPage", () => {
       "Invalid path, could not extract index for new block"
     );
   });
+
+  test("inserts block in another block (level below)", () => {
+    const page: DirektivPagesType = {
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [{ type: "card", blocks: [] }],
+    };
+
+    const updatedPage = addBlockToPage(page, [0, 0], headline);
+
+    expect(updatedPage).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [
+            {
+              type: "headline",
+              level: "h2",
+              label: "New headline",
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  test("inserts block in another block (level below) - insert before - defined through path", () => {
+    const page: DirektivPagesType = {
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        { type: "card", blocks: [{ type: "text", content: "Original Block" }] },
+      ],
+    };
+
+    const updatedPage = addBlockToPage(page, [0, 0], headline);
+
+    expect(updatedPage).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [
+            {
+              type: "headline",
+              level: "h2",
+              label: "New headline",
+            },
+            { type: "text", content: "Original Block" },
+          ],
+        },
+      ],
+    });
+  });
+
+  test("inserts block in another block (level below) - insert before - defined through property 'after'", () => {
+    const page: DirektivPagesType = {
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        { type: "card", blocks: [{ type: "text", content: "Original Block" }] },
+      ],
+    };
+
+    const updatedPage = addBlockToPage(page, [0, 0], headline);
+
+    expect(updatedPage).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [
+            {
+              type: "headline",
+              level: "h2",
+              label: "New headline",
+            },
+            { type: "text", content: "Original Block" },
+          ],
+        },
+      ],
+    });
+  });
+
+  test("inserts block in another block (level below) - insert after - defined through path", () => {
+    const page: DirektivPagesType = {
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [
+            { type: "text", content: "First Block" },
+            { type: "text", content: "Second Block" },
+          ],
+        },
+      ],
+    };
+
+    const updatedPage = addBlockToPage(page, [0, 1], headline);
+
+    expect(updatedPage).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [
+            { type: "text", content: "First Block" },
+            {
+              type: "headline",
+              level: "h2",
+              label: "New headline",
+            },
+            { type: "text", content: "Second Block" },
+          ],
+        },
+      ],
+    });
+  });
+  test("inserts block in another block (level below) - insert after - defined through property 'after'", () => {
+    const page: DirektivPagesType = {
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [
+            { type: "text", content: "First Block" },
+            { type: "text", content: "Second Block" },
+          ],
+        },
+      ],
+    };
+
+    const updatedPage = addBlockToPage(page, [0, 0], headline, true);
+
+    expect(updatedPage).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "card",
+          blocks: [
+            { type: "text", content: "First Block" },
+            {
+              type: "headline",
+              level: "h2",
+              label: "New headline",
+            },
+            { type: "text", content: "Second Block" },
+          ],
+        },
+      ],
+    });
+  });
+});
+
+describe("incrementPath", () => {
+  test("should increment the last index of a non-empty path", () => {
+    const input = [0, 2, 2];
+    const expected = [0, 2, 3];
+    expect(incrementPath(input)).toEqual(expected);
+  });
+
+  test("should handle a path with a single element", () => {
+    const input = [0];
+    const expected = [1];
+    expect(incrementPath(input)).toEqual(expected);
+  });
+
+  test("should handle a path with last index 0", () => {
+    const input = [2, 0];
+    const expected = [2, 1];
+    expect(incrementPath(input)).toEqual(expected);
+  });
+
+  test("should return an empty array unchanged", () => {
+    const input: number[] = [];
+    const expected: number[] = [];
+    expect(incrementPath(input)).toEqual(expected);
+  });
+});
+
+describe("pathIsDescendant", () => {
+  test("returns true when descendant starts with ancestor", () => {
+    expect(pathIsDescendant([0, 4, 3, 1], [0, 4, 3])).toBe(true);
+    expect(pathIsDescendant([1, 2, 3], [1])).toBe(true);
+    expect(pathIsDescendant([5, 6, 7, 8], [5, 6])).toBe(true);
+  });
+
+  test("returns true when ancestor is []", () => {
+    expect(pathIsDescendant([0], [])).toBe(true);
+  });
+
+  test("returns false when descendant and ancestor are exactly equal", () => {
+    expect(pathIsDescendant([1, 2, 3], [1, 2, 3])).toBe(false);
+    expect(pathIsDescendant([], [])).toBe(false);
+  });
+
+  test("returns false when ancestor is longer than descendant", () => {
+    expect(pathIsDescendant([1, 2], [1, 2, 3])).toBe(false);
+  });
+
+  test("returns false when descendant does not start with ancestor", () => {
+    expect(pathIsDescendant([0, 4, 3, 1], [4, 3])).toBe(false);
+    expect(pathIsDescendant([1, 2, 3], [2])).toBe(false);
+  });
 });
 
 describe("deleteBlockFromPage", () => {
@@ -225,78 +439,79 @@ describe("findAncestor", () => {
       path: [2, 0, 0],
       match: (block) => block.type && block.type === "text",
     });
-    expect(result).toEqual(false);
+    expect(result).toEqual(null);
   });
 
-  test("it returns true if an ancester matches fn", () => {
+  test("it returns an object if an ancester matches fn", () => {
+    const target = complex.blocks[2];
+
     const result = findAncestor({
       page: complex,
       path: [2, 0, 0],
       match: (block) => block.type && block.type === "columns",
     });
-    expect(result).toEqual(true);
+    expect(result).toEqual({
+      block: target,
+      path: [2],
+    });
   });
 
-  test("it returns false if no element in the branch upwards matches the fn", () => {
+  test("it returns null if no element in the branch upwards matches the fn", () => {
     const result = findAncestor({
       page: complex,
       path: [2, 0],
       match: (block) => block.type && block.type === "text",
     });
-    expect(result).toEqual(false);
+    expect(result).toEqual(null);
   });
 
-  test("it returns true if depth is 1 and the first ancestor matches fn", () => {
+  test("it returns an object if depth is 1 and the first ancestor matches fn", () => {
+    const target = (complex.blocks[2] as ColumnsType).blocks[0];
+
     const result = findAncestor({
       page: complex,
       path: [2, 0, 0],
       match: (block) => block.type && block.type === "column",
       depth: 1,
     });
-    expect(result).toEqual(true);
+    expect(result).toEqual({ block: target, path: [2, 0] });
   });
 
-  test("it returns false if depth is 1 and the first ancestor does not match fn", () => {
+  test("it returns null if depth is 1 and the first ancestor does not match fn", () => {
     const result = findAncestor({
       page: complex,
       path: [2, 0, 0],
       match: (block) => block.type && block.type === "text",
       depth: 1,
     });
-    expect(result).toEqual(false);
+    expect(result).toEqual(null);
   });
 
   test("it returns true if elements within depth 2 evaluate as true", () => {
-    const result = findAncestor({
-      page: complex,
-      path: [3, 0, 0],
-      match: (block) => block.type && block.type === "dialog",
-      depth: 2,
-    });
-    expect(result).toEqual(true);
-  });
-
-  test("it returns true if elements within depth 3 evaluate as true", () => {
+    const target = complex.blocks[3];
     const result = findAncestor({
       page: complex,
       path: [3, 0, 0],
       match: (block) => block.type && block.type === "query-provider",
-      depth: 3,
+      depth: 2,
     });
-    expect(result).toEqual(true);
+    expect(result).toEqual({
+      block: target,
+      path: [3],
+    });
   });
 
-  test("it returns false if elements within depth 3 evaluate as false", () => {
+  test("it returns null if elements within depth 2 evaluate as false", () => {
     const result = findAncestor({
       page: complex,
       path: [3, 0, 0],
       match: (block) => block.type && block.type === "columns",
-      depth: 3,
+      depth: 2,
     });
-    expect(result).toEqual(false);
+    expect(result).toEqual(null);
   });
 
-  test("it evaluates correctly (true) if path is [0]", () => {
+  test("it evaluates correctly if path is [0]", () => {
     const page = {
       direktiv_api: "page/v1",
       type: "page",
@@ -312,10 +527,13 @@ describe("findAncestor", () => {
       path: [0],
       match: (block) => block.type && block.type === "page",
     });
-    expect(result).toEqual(true);
+    expect(result).toEqual({
+      block: page,
+      path: [],
+    });
   });
 
-  test("it evaluates correctly (false) if path is [0]", () => {
+  test("it evaluates correctly (null) if path is [0]", () => {
     const page = {
       direktiv_api: "page/v1",
       type: "page",
@@ -331,7 +549,7 @@ describe("findAncestor", () => {
       path: [0],
       match: (block) => block.type && block.type === "card",
     });
-    expect(result).toEqual(false);
+    expect(result).toEqual(null);
   });
 
   test("it throws an error if depth is 0", () => {
@@ -356,7 +574,7 @@ describe("findAncestor", () => {
     ).toThrow("depth must be undefined or >= 1");
   });
 
-  test("it evaluates as false when path is [], as there are no parents", () => {
+  test("it evaluates as null when path is [], as there are no parents", () => {
     const page = {
       direktiv_api: "page/v1",
       type: "page",
@@ -372,7 +590,7 @@ describe("findAncestor", () => {
       path: [],
       match: (block) => block.type && block.type === "page",
     });
-    expect(result).toEqual(false);
+    expect(result).toEqual(null);
   });
 });
 

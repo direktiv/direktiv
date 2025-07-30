@@ -1,4 +1,4 @@
-import { AllBlocksType } from "../../schema/blocks";
+import { BlockType } from "../../schema/blocks";
 import { BlockWrapper } from "./utils/BlockWrapper";
 import { Button } from "./Button";
 import { Card } from "./Card";
@@ -15,7 +15,7 @@ import { Text } from "./Text";
 import { useTranslation } from "react-i18next";
 
 type BlockProps = {
-  block: AllBlocksType;
+  block: BlockType;
   blockPath: BlockPathType;
 };
 

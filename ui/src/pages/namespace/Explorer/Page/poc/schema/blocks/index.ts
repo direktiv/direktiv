@@ -10,6 +10,7 @@ import { QueryProvider, QueryProviderType } from "./queryProvider";
 import { Table, TableType } from "./table";
 import { Text, TextType } from "./text";
 
+import { ExtractUnionFromSet } from "./utils";
 import { z } from "zod";
 
 /**
@@ -37,14 +38,14 @@ export const ParentBlockUnion = z.discriminatedUnion("type", [
   Columns,
 ]);
 
-export type SimpleBlocksType =
+export type SimpleBlockType =
   | ButtonType
   | HeadlineType
   | ImageType
   | TableType
   | TextType;
 
-export type ParentBlocksType =
+export type ParentBlockType =
   | CardType
   | DialogType
   | FormType
@@ -53,18 +54,44 @@ export type ParentBlocksType =
   | ColumnType
   | ColumnsType;
 
-export type AllBlocksType = SimpleBlocksType | ParentBlocksType;
+export type BlockType = SimpleBlockType | ParentBlockType;
+type BlockTypeUnion = BlockType["type"];
 
-export const AllBlocks: z.ZodType<AllBlocksType> = z.lazy(() =>
+export const Block: z.ZodType<BlockType> = z.lazy(() =>
   z.union([SimpleBlockUnion, ParentBlockUnion])
 );
 
-export const TriggerBlocks = z.discriminatedUnion("type", [Button]);
+export const AvailableBlockTypeAttributes = z.union([
+  z.literal("button"),
+  z.literal("headline"),
+  z.literal("image"),
+  z.literal("table"),
+  z.literal("text"),
+  z.literal("card"),
+  z.literal("dialog"),
+  z.literal("form"),
+  z.literal("loop"),
+  z.literal("query-provider"),
+  z.literal("column"),
+  z.literal("columns"),
+]);
 
-export type TriggerBlocksType = z.infer<typeof TriggerBlocks>;
+export const TriggerBlock = z.discriminatedUnion("type", [Button]);
+
+export type TriggerBlockType = z.infer<typeof TriggerBlock>;
 
 /* Inline blocks do not need a dialog for creation */
-export const inlineBlockTypes: Set<AllBlocksType["type"]> = new Set([
+const noFormBlockTypeList = new Set([
   "columns",
   "card",
-]);
+]) satisfies Set<BlockTypeUnion>;
+
+type noFormBlockTypeUnion = ExtractUnionFromSet<typeof noFormBlockTypeList>;
+export type NoFormBlockType = Extract<
+  BlockType,
+  { type: noFormBlockTypeUnion }
+>;
+
+type FormBlockTypeUnion = Exclude<BlockTypeUnion, noFormBlockTypeUnion>;
+
+export type FormBlockType = Extract<BlockType, { type: FormBlockTypeUnion }>;

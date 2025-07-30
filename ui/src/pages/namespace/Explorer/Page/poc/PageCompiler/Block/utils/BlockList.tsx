@@ -1,10 +1,9 @@
 import { ReactElement, Suspense } from "react";
 
 import { BlockPathType } from "..";
+import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { Loading } from "./Loading";
-import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
 import { twMergeClsx } from "~/util/helpers";
-import { useCreateBlock } from "../../context/utils/useCreateBlock";
 import { usePageStateContext } from "../../context/pageCompilerContext";
 
 type BlockListProps = {
@@ -23,9 +22,9 @@ type BlockListComponentProps = BlockListProps;
 const BlockListWrapper = ({ children, horizontal }: WrapperProps) => (
   <div
     className={twMergeClsx(
-      "w-full gap-3",
+      "w-full",
       horizontal
-        ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))]"
+        ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-3"
         : "flex flex-col"
     )}
   >
@@ -37,29 +36,18 @@ const EditorBlockList = ({
   horizontal,
   children,
   path,
-}: BlockListComponentProps) => {
-  const createBlock = useCreateBlock();
-
-  return (
-    <BlockListWrapper horizontal={horizontal}>
-      <Suspense fallback={<Loading />}>
-        {!children.length && (
-          <div
-            className="self-center"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <SelectBlockType
-              big
-              path={[...path, 0]}
-              onSelect={(type) => createBlock(type, [...path, 0])}
-            />
-          </div>
-        )}
-        {children}
-      </Suspense>
-    </BlockListWrapper>
-  );
-};
+}: BlockListComponentProps) => (
+  <BlockListWrapper horizontal={horizontal}>
+    <Suspense fallback={<Loading />}>
+      {!children.length && (
+        <div className="flex h-full min-h-[25px] flex-col justify-center">
+          <Dropzone payload={{ targetPath: [...path, 0] }} />
+        </div>
+      )}
+      {children}
+    </Suspense>
+  </BlockListWrapper>
+);
 
 const VisitorBlockList = ({
   horizontal,

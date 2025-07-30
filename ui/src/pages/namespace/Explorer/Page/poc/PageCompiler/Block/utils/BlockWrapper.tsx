@@ -5,26 +5,34 @@ import {
   useRef,
   useState,
 } from "react";
-import { pathToId, pathsEqual } from "../../context/utils";
+import {
+  findAncestor,
+  incrementPath,
+  pathIsDescendant,
+  pathsEqual,
+} from "../../context/utils";
+import {
+  usePage,
+  usePageStateContext,
+} from "../../context/pageCompilerContext";
 
-import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockPathType } from "..";
-import { DraggableElement } from "~/design/DragAndDropEditor/DraggableElement";
-import { DroppableSeparator } from "~/design/DragAndDropEditor/DroppableSeparator";
+import { BlockType } from "../../../schema/blocks";
+import { DragPayloadSchemaType } from "~/design/DragAndDrop/schema";
+import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
-import { SelectBlockType } from "../../../BlockEditor/components/SelectType";
+import { SortableItem } from "~/design/DragAndDrop/Draggable";
 import { twMergeClsx } from "~/util/helpers";
-import { useCreateBlock } from "../../context/utils/useCreateBlock";
+import { useDndContext } from "@dnd-kit/core";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
-import { usePageStateContext } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
 type BlockWrapperProps = PropsWithChildren<{
   blockPath: BlockPathType;
-  block: AllBlocksType;
+  block: BlockType;
 }>;
 
 const EditorBlockWrapper = ({
@@ -33,10 +41,12 @@ const EditorBlockWrapper = ({
   children,
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
+  const page = usePage();
   const { panel, setPanel } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const createBlock = useCreateBlock();
+  const dndContext = useDndContext();
+  const isDragging = !!dndContext.active;
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -54,58 +64,98 @@ const EditorBlockWrapper = ({
     return () => document.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  const isFocused = panel?.path && pathsEqual(panel.path, blockPath);
+  const isFocused = panel?.action && pathsEqual(panel.path, blockPath);
 
   const handleClickBlock = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
-    if (isFocused) {
-      return setPanel(null);
-    } else {
+
+    const parentDialog = findAncestor({
+      page,
+      path: blockPath,
+      match: (block) => block.type === "dialog",
+    });
+
+    // if block losing focus is in a Dialog, focus the Dialog.
+    if (isFocused && parentDialog) {
       return setPanel({
         action: "edit",
-        block,
-        path: blockPath,
+        dialog: null,
+        block: parentDialog.block,
+        path: parentDialog.path,
       });
     }
+
+    if (isFocused) {
+      return setPanel(null);
+    }
+
+    return setPanel({
+      action: "edit",
+      dialog: null,
+      block,
+      path: blockPath,
+    });
   };
+
+  const nextSilblingPath = incrementPath(blockPath);
+
+  const enableDropZone = (payload: DragPayloadSchemaType | null) => {
+    if (panel?.dialog && !pathIsDescendant(blockPath, panel.dialog)) {
+      return false;
+    }
+    if (payload?.type === "move") {
+      // don't show a dropzone for neighboring blocks
+
+      if (
+        pathsEqual(payload.originPath, nextSilblingPath) ||
+        pathsEqual(payload.originPath, blockPath)
+      ) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const showDragHandle = (isHovered || isFocused) && !isDragging;
+  const isHoveredOrFocused = isHovered || isFocused;
 
   return (
     <>
-      <DroppableSeparator
-        id={pathToId(blockPath)}
-        blockPath={blockPath}
-        position="before"
-      />
-      <DraggableElement
-        blockPath={blockPath}
-        element={block}
-        id={pathToId(blockPath)}
+      <SortableItem
+        payload={{
+          type: "move",
+          block,
+          originPath: blockPath,
+        }}
+        className={twMergeClsx(showDragHandle ? "visible" : "invisible")}
       >
         <div
           ref={containerRef}
           className={twMergeClsx(
-            "relative rounded-md rounded-s-none border-2 border-dashed border-gray-4 bg-white p-0 dark:border-gray-dark-4 dark:bg-black",
-            isHovered && "border-solid bg-gray-2 dark:bg-gray-dark-2",
-            isFocused && "border-solid border-gray-8 dark:border-gray-8"
+            "relative isolate my-3 rounded bg-white outline-offset-4 dark:bg-black",
+            isHovered &&
+              !isDragging &&
+              "bg-gray-2 outline outline-2 outline-gray-4 dark:bg-gray-dark-2 dark:outline-gray-dark-4",
+            isFocused &&
+              "border-gray-8 outline outline-2 outline-gray-8 dark:border-gray-8 dark:outline-gray-dark-8",
+            isDragging && "outline outline-gray-7 dark:outline-gray-dark-7"
           )}
           data-block-wrapper
           onClick={handleClickBlock}
         >
-          {(isHovered || isFocused) && (
-            <Badge className="absolute z-30 -m-6" variant="secondary">
+          {isHoveredOrFocused && (
+            <Badge
+              className={twMergeClsx(
+                "absolute z-30 -mt-7 rounded-md rounded-b-none px-2 py-1",
+                isFocused && "bg-gray-8 dark:bg-gray-dark-8"
+              )}
+              variant="secondary"
+            >
               <span className="mr-2">
                 <b>{block.type}</b>
               </span>
               {blockPath.join(".")}
             </Badge>
-          )}
-          {isFocused && (
-            <div onClick={(event) => event.stopPropagation()}>
-              <SelectBlockType
-                path={blockPath}
-                onSelect={(type) => createBlock(type, blockPath)}
-              />
-            </div>
           )}
           <Suspense fallback={<Loading />}>
             <ErrorBoundary
@@ -119,7 +169,11 @@ const EditorBlockWrapper = ({
             </ErrorBoundary>
           </Suspense>
         </div>
-      </DraggableElement>
+      </SortableItem>
+      <Dropzone
+        payload={{ targetPath: nextSilblingPath }}
+        enable={enableDropZone}
+      />
     </>
   );
 };
@@ -136,7 +190,7 @@ const VisitorBlockWrapper = ({ children }: BlockWrapperProps) => {
           </ParsingError>
         )}
       >
-        {children}
+        <div className="my-3">{children}</div>
       </ErrorBoundary>
     </Suspense>
   );

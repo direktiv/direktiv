@@ -1668,10 +1668,17 @@
     },
     "blockEditor": {
       "generic": {
+        "settingsTab": "Settings",
+        "addBlockTab": "Add Block",
         "saveButton": "Save",
         "cancelButton": "Cancel",
-        "confirmButton": "Confirm",
-        "addBlock": "Add block"
+        "confirmButton": "Confirm"
+      },
+
+      "toolbar": {
+        "code": "Code View",
+        "edit": "Edit",
+        "live": "Live View"
       },
       "blockName": {
         "headline": "Headline",

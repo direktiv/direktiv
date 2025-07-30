@@ -1,4 +1,4 @@
-import { AllBlocks, AllBlocksType, TriggerBlocks, TriggerBlocksType } from ".";
+import { Block, BlockType, TriggerBlock, TriggerBlockType } from ".";
 
 import { z } from "zod";
 
@@ -10,12 +10,12 @@ import { z } from "zod";
  */
 export type DialogType = {
   type: "dialog";
-  trigger: TriggerBlocksType;
-  blocks: AllBlocksType[];
+  trigger: TriggerBlockType;
+  blocks: BlockType[];
 };
 
 export const Dialog = z.object({
   type: z.literal("dialog"),
-  trigger: z.lazy(() => TriggerBlocks),
-  blocks: z.array(z.lazy(() => AllBlocks)),
+  trigger: z.lazy(() => TriggerBlock),
+  blocks: z.array(z.lazy(() => Block)),
 }) satisfies z.ZodType<DialogType>;
