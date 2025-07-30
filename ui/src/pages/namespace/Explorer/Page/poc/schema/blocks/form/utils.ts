@@ -7,3 +7,5 @@ export const FormBase = z.object({
   description: TemplateString.optional(),
   required: z.boolean(),
 });
+
+export type FormBaseType = z.infer<typeof FormBase>;
