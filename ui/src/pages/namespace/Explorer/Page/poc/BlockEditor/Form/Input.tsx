@@ -2,10 +2,11 @@ import {
   FormInput as FormInputSchema,
   FormInputType,
 } from "../../schema/blocks/form/input";
-import { FormProvider, useForm } from "react-hook-form";
+import { UseFormReturn, useForm } from "react-hook-form";
 
 import { BaseForm } from "./BaseForm";
 import { BlockEditFormProps } from "..";
+import { FormBaseType } from "../../schema/blocks/form/utils";
 import { FormWrapper } from "../components/FormWrapper";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,9 +38,7 @@ export const Input = ({
       onSubmit={onSubmit}
       onCancel={onCancel}
     >
-      <FormProvider {...form}>
-        <BaseForm />
-      </FormProvider>
+      <BaseForm form={form as unknown as UseFormReturn<FormBaseType>} />
     </FormWrapper>
   );
 };

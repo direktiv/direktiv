@@ -2,11 +2,14 @@ import { Checkbox } from "~/design/Checkbox";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormBaseType } from "../../schema/blocks/form/utils";
 import InputDesignComponent from "~/design/Input";
-import { useFormContext } from "react-hook-form";
+import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
-export const BaseForm = () => {
-  const form = useFormContext<FormBaseType>();
+type BaseFormProps = {
+  form: UseFormReturn<FormBaseType>;
+};
+
+export const BaseForm = ({ form }: BaseFormProps) => {
   const { t } = useTranslation();
   return (
     <>
