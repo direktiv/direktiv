@@ -1797,7 +1797,10 @@
           "descriptionPlaceholder": "Description for the form element",
           "required": "Required field",
           "input": {
-            "description": "A form input block lets you create a text field to gather information from users."
+            "description": "A form input block lets you create a text field to gather information from users.",
+            "variantLabel": "Input Type",
+            "defaultValueLabel": "Default Value",
+            "defaultValuePlaceholder": "Enter default value (optional)"
           }
         }
       },

@@ -1,7 +1,7 @@
 import { FormBase } from "./utils";
 import { z } from "zod";
 
-const inputTypes = [
+export const inputTypes = [
   "text",
   "date",
   "password",
