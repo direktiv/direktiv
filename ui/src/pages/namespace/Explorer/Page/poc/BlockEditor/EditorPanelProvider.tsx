@@ -80,8 +80,8 @@ export const EditorPanelLayoutProvider = ({
     return (
       <DndContext onDrop={onDrop}>
         <EditorPanelContext.Provider value={{ panel, setPanel }}>
-          <div className="grow sm:flex">
-            <div className="h-[300px] overflow-y-visible border-b-2 border-gray-4 p-3 dark:border-gray-dark-4 sm:h-[calc(100vh-230px)] sm:w-1/3 sm:border-b-0 sm:border-r-2">
+          <div className="grow sm:grid sm:grid-cols-[350px_1fr]">
+            <div className="h-[300px] overflow-y-visible border-b-2 border-gray-4 p-3 dark:border-gray-dark-4 sm:h-[calc(100vh-230px)] sm:border-b-0 sm:border-r-2">
               <EditorPanel />
             </div>
             <PagePreviewContainer>

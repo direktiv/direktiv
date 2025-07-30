@@ -20,33 +20,31 @@ export const EditorPanel = () => {
   }
 
   return (
-    <div>
-      <Tabs defaultValue="addBlock">
-        <TabsList variant="boxed">
-          <TabsTrigger variant="boxed" value="addBlock">
-            <Blocks size={16} />
-            {t("direktivPage.blockEditor.generic.addBlockTab")}
-          </TabsTrigger>
-          <TabsTrigger variant="boxed" value="settings">
-            <Settings size={16} />
-            {t("direktivPage.blockEditor.generic.settingsTab")}
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="addBlock" asChild>
-          <div className="grid grid-cols-3 gap-2 overflow-visible sm:grid-cols-1">
-            {blockTypes.map((type, index) => (
-              <DraggablePaletteItem
-                key={index}
-                payload={{ type: "add", blockType: type.type }}
-                icon={type.icon}
-              >
-                {type.label}
-              </DraggablePaletteItem>
-            ))}
-          </div>
-        </TabsContent>
-        <TabsContent value="settings" asChild></TabsContent>
-      </Tabs>
-    </div>
+    <Tabs defaultValue="addBlock">
+      <TabsList variant="boxed">
+        <TabsTrigger variant="boxed" value="addBlock">
+          <Blocks size={16} />
+          {t("direktivPage.blockEditor.generic.addBlockTab")}
+        </TabsTrigger>
+        <TabsTrigger variant="boxed" value="settings">
+          <Settings size={16} />
+          {t("direktivPage.blockEditor.generic.settingsTab")}
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="addBlock" asChild>
+        <div className="grid grid-cols-3 gap-2 overflow-visible sm:grid-cols-1">
+          {blockTypes.map((type, index) => (
+            <DraggablePaletteItem
+              key={index}
+              payload={{ type: "add", blockType: type.type }}
+              icon={type.icon}
+            >
+              {type.label}
+            </DraggablePaletteItem>
+          ))}
+        </div>
+      </TabsContent>
+      <TabsContent value="settings" asChild></TabsContent>
+    </Tabs>
   );
 };
