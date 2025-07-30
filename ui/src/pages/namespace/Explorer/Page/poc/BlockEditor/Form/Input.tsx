@@ -17,7 +17,7 @@ import { BlockEditFormProps } from "..";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormBaseType } from "../../schema/blocks/form/utils";
 import { FormWrapper } from "../components/FormWrapper";
-import InputComponent from "~/design/Input";
+import InputDesignComponent from "~/design/Input";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -80,7 +80,7 @@ export const Input = ({
         )}
         htmlFor="defaultValue"
       >
-        <InputComponent
+        <InputDesignComponent
           {...form.register("defaultValue")}
           id="defaultValue"
           placeholder={t(
