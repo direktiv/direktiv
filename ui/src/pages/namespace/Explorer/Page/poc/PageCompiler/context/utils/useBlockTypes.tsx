@@ -2,13 +2,16 @@ import {
   Captions,
   Columns2,
   Database,
+  FileText,
   Heading1,
   Image,
   RectangleHorizontal,
   Repeat2,
+  SquareCheck,
   Table,
   Text,
   TextCursorInput,
+  Type,
 } from "lucide-react";
 
 import { BlockPathType } from "../../Block";
@@ -23,6 +26,7 @@ import { Loop as LoopForm } from "../../../BlockEditor/Loop";
 import { QueryProvider as QueryProviderForm } from "../../../BlockEditor/QueryProvider";
 import { Table as TableForm } from "../../../BlockEditor/Table";
 import { Text as TextForm } from "../../../BlockEditor/Text";
+import { Textarea } from "../../../BlockEditor/Form/Textarea";
 import { findAncestor } from ".";
 import { t } from "i18next";
 import { usePage } from "../pageCompilerContext";
@@ -153,7 +157,7 @@ const blockTypes: BlockTypeConfig[] = [
   {
     type: "form",
     label: t("direktivPage.blockEditor.blockName.form"),
-    icon: TextCursorInput,
+    icon: FileText,
     allow: (page, path) =>
       !findAncestor({
         page,
@@ -199,7 +203,7 @@ const blockTypes: BlockTypeConfig[] = [
   {
     type: "form-checkbox",
     label: t("direktivPage.blockEditor.blockName.form-checkbox"),
-    icon: TextCursorInput,
+    icon: SquareCheck,
     allow: (page, path) =>
       !!findAncestor({
         page,
@@ -214,6 +218,26 @@ const blockTypes: BlockTypeConfig[] = [
       label: "",
       required: false,
       type: "form-checkbox",
+    },
+  },
+  {
+    type: "form-textarea",
+    label: t("direktivPage.blockEditor.blockName.form-textarea"),
+    icon: Type,
+    allow: (page, path) =>
+      !!findAncestor({
+        page,
+        path,
+        match: (block) => block.type === "form",
+      }),
+    formComponent: Textarea,
+    defaultValues: {
+      id: "",
+      defaultValue: "",
+      description: "",
+      label: "",
+      required: false,
+      type: "form-textarea",
     },
   },
 ];

@@ -1805,6 +1805,11 @@
           "checkbox": {
             "description": "A form checkbox block lets you create a checkbox to gather boolean information from users.",
             "defaultValueLabel": "Default Checked"
+          },
+          "textarea": {
+            "description": "A form textarea block lets you create a multi-line text field to gather longer text from users.",
+            "defaultValueLabel": "Default Value",
+            "defaultValuePlaceholder": "Enter default text"
           }
         }
       },
