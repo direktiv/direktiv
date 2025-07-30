@@ -1788,8 +1788,17 @@
             "requestBodyLabel": "Request Body"
           }
         },
-        "form-input": {
-          "description": "A form input block lets you create a text field to gather information from users."
+        "formPrimitives": {
+          "idLabel": "ID",
+          "idPlaceholder": "unique identifier name to reference this form element in the form block",
+          "label": "Label",
+          "labelPlaceholder": "Label for the form element",
+          "description": "Description",
+          "descriptionPlaceholder": "Description for the form element",
+          "required": "Required field",
+          "input": {
+            "description": "A form input block lets you create a text field to gather information from users."
+          }
         }
       },
       "contextMenu": {

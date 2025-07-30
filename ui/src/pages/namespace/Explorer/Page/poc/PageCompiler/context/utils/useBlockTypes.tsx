@@ -17,6 +17,7 @@ import { Dialog as DialogForm } from "../../../BlockEditor/Dialog";
 import { Form as FormForm } from "../../../BlockEditor/Form";
 import { Headline } from "../../../BlockEditor/Headline";
 import { Image as ImageForm } from "../../../BlockEditor/Image";
+import { Input } from "../../../BlockEditor/Form/Input";
 import { Loop as LoopForm } from "../../../BlockEditor/Loop";
 import { QueryProvider as QueryProviderForm } from "../../../BlockEditor/QueryProvider";
 import { Table as TableForm } from "../../../BlockEditor/Table";
@@ -171,6 +172,27 @@ const blockTypes: BlockTypeConfig[] = [
         type: "button",
       },
       blocks: [],
+    },
+  },
+  {
+    type: "form-input",
+    label: t("direktivPage.blockEditor.blockName.form-input"),
+    icon: TextCursorInput,
+    allow: (page, path) =>
+      !!findAncestor({
+        page,
+        path,
+        match: (block) => block.type === "form",
+      }),
+    formComponent: Input,
+    defaultValues: {
+      id: "",
+      defaultValue: "",
+      description: "",
+      label: "",
+      required: false,
+      type: "form-input",
+      variant: "text",
     },
   },
 ];
