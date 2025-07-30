@@ -14,12 +14,12 @@ import { Table } from "./Table";
 import { Text } from "./Text";
 import { useTranslation } from "react-i18next";
 
+export type BlockPathType = number[];
+
 type BlockProps = {
   block: BlockType;
   blockPath: BlockPathType;
 };
-
-export type BlockPathType = number[];
 
 export const Block = ({ block, blockPath }: BlockProps) => {
   const { t } = useTranslation();
