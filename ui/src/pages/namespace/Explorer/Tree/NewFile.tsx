@@ -5,6 +5,7 @@ import NewFileButton, { FileTypeSelection } from "./components/NewFileButton";
 import NewConsumer from "./components/modals/CreateNew/Gateway/Consumer";
 import NewDirectory from "./components/modals/CreateNew/Directory";
 import NewOpenapiSpecification from "./components/modals/CreateNew/Gateway/OpenapiSpecification";
+import NewPage from "./components/modals/CreateNew/Page";
 import NewRoute from "./components/modals/CreateNew/Gateway/Route";
 import NewService from "./components/modals/CreateNew/Service";
 import NewWorkflow from "./components/modals/CreateNew/Workflow";
@@ -71,6 +72,14 @@ export const NewFileDialog: FC<NewFileDialogProps> = ({ path }) => {
         )}
         {selectedDialog === "new-consumer" && (
           <NewConsumer
+            path={data?.path}
+            unallowedNames={existingNames}
+            close={() => setDialogOpen(false)}
+          />
+        )}
+
+        {selectedDialog === "new-page" && (
+          <NewPage
             path={data?.path}
             unallowedNames={existingNames}
             close={() => setDialogOpen(false)}

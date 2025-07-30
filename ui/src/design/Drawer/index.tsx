@@ -13,11 +13,10 @@ interface DrawerPortalProps extends DrawerPrimitive.DialogPortalProps {
 
 const DrawerPortal = ({
   position = "right",
-  className,
   children,
   ...props
 }: DrawerPortalProps) => (
-  <DrawerPrimitive.Portal className={twMergeClsx(className)} {...props}>
+  <DrawerPrimitive.Portal {...props}>
     <div
       className={twMergeClsx(
         position === "top" && "items-start",
