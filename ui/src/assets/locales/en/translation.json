@@ -1797,19 +1797,26 @@
           "descriptionPlaceholder": "Description for the form element",
           "required": "Required field",
           "input": {
-            "description": "A form input block lets you create a text field to gather information from users.",
+            "description": "A input block lets you gather text information from users.",
             "variantLabel": "Input Type",
             "defaultValueLabel": "Default Value",
             "defaultValuePlaceholder": "Enter default value (optional)"
           },
           "checkbox": {
-            "description": "A form checkbox block lets you create a checkbox to gather boolean information from users.",
+            "description": "A checkbox block lets you gather boolean information from users.",
             "defaultValueLabel": "Default Checked"
           },
           "textarea": {
-            "description": "A form textarea block lets you create a multi-line text field to gather longer text from users.",
+            "description": "A textarea lets you gather larger text information from users.",
             "defaultValueLabel": "Default Value",
             "defaultValuePlaceholder": "Enter default text"
+          },
+          "select": {
+            "description": "A select lets you gather information from a list of options.",
+            "valuesLabel": "Options",
+            "valuesPlaceholder": "Select option",
+            "defaultValueLabel": "Default Selection",
+            "defaultValueLabelPlaceholder": "Select default option"
           }
         }
       },

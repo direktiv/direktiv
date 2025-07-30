@@ -1,5 +1,6 @@
 import {
   Captions,
+  ChevronDown,
   Columns2,
   Database,
   FileText,
@@ -24,6 +25,7 @@ import { Image as ImageForm } from "../../../BlockEditor/Image";
 import { Input } from "../../../BlockEditor/Form/Input";
 import { Loop as LoopForm } from "../../../BlockEditor/Loop";
 import { QueryProvider as QueryProviderForm } from "../../../BlockEditor/QueryProvider";
+import { Select } from "../../../BlockEditor/Form/Select";
 import { Table as TableForm } from "../../../BlockEditor/Table";
 import { Text as TextForm } from "../../../BlockEditor/Text";
 import { Textarea } from "../../../BlockEditor/Form/Textarea";
@@ -238,6 +240,27 @@ const blockTypes: BlockTypeConfig[] = [
       label: "",
       required: false,
       type: "form-textarea",
+    },
+  },
+  {
+    type: "form-select",
+    label: t("direktivPage.blockEditor.blockName.form-select"),
+    icon: ChevronDown,
+    allow: (page, path) =>
+      !!findAncestor({
+        page,
+        path,
+        match: (block) => block.type === "form",
+      }),
+    formComponent: Select,
+    defaultValues: {
+      id: "",
+      values: [],
+      defaultValue: "",
+      description: "",
+      label: "",
+      required: false,
+      type: "form-select",
     },
   },
 ];
