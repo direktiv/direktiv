@@ -1687,10 +1687,10 @@
         "card": "Card",
         "dialog": "Dialog",
         "form": "Form",
-        "form-checkbox": "Checkbox",
-        "form-input": "Input",
-        "form-select": "Select",
-        "form-textarea": "Textarea",
+        "form-checkbox": "Form: Checkbox",
+        "form-input": "Form: Input",
+        "form-select": "Form: Select",
+        "form-textarea": "Form: Textarea",
         "loop": "Loop",
         "query-provider": "Query Provider",
         "column": "Column",
@@ -1787,6 +1787,9 @@
             "requestHeadersLabel": "Request Headers",
             "requestBodyLabel": "Request Body"
           }
+        },
+        "form-input": {
+          "description": "A form input block lets you create a text field to gather information from users."
         }
       },
       "contextMenu": {
@@ -1808,10 +1811,10 @@
           "card": "card block",
           "dialog": "dialog block",
           "form": "form block",
-          "form-checkbox": "checkbox",
-          "form-input": "input",
-          "form-select": "select",
-          "form-textarea": "textarea",
+          "form-checkbox": "checkbox block",
+          "form-input": "input block",
+          "form-select": "select block",
+          "form-textarea": "textarea block",
           "loop": "loop block",
           "query-provider": "query provider",
           "column": "column block",
