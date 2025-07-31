@@ -1,0 +1,41 @@
+name: Notify Jira that PR is ready for review
+
+on:
+  pull_request:
+    types: [ready_for_review]
+
+jobs:
+  notify-jira:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract issue key and send webhook to Jira
+        env:
+          JIRA_WEBHOOK_URL: ${{ secrets.JIRA_WEBHOOK_URL }}
+          JIRA_WEBHOOK_SECRET: ${{ secrets.JIRA_WEBHOOK_SECRET }}
+          JIRA_ISSUE_REGEX: ${{ vars.JIRA_ISSUE_REGEX }}
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          BRANCH_NAME="${{ github.head_ref }}"
+
+          # Try to extract issue key from title, fallback to branch
+          ISSUE_KEY=$(echo "$PR_TITLE $BRANCH_NAME" | grep -oE "$JIRA_ISSUE_REGEX" | head -n1)
+
+          if [ -z "$ISSUE_KEY" ]; then
+            echo "No issue key found in PR title or branch name. Skipping Jira notification."
+            exit 0
+          fi
+
+          PR_URL="${{ github.event.pull_request.html_url }}"
+
+          echo "Sending READY_FOR_REVIEW action to Jira for $ISSUE_KEY"
+
+          curl -X POST "$JIRA_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -H "X-Atlassian-Token: no-check" \
+            -H "X-Automation-Webhook-Token: $JIRA_WEBHOOK_SECRET" \
+            -d '{
+              "issue_key": "'"$ISSUE_KEY"'",
+              "pr_url": "'"$PR_URL"'",
+              "action": "READY_FOR_REVIEW"
+            }'
