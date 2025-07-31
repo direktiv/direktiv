@@ -1,4 +1,5 @@
 import { FormInputType } from "../../schema/blocks/form/input";
+import Input from "~/design/Input";
 import { TemplateString } from "../primitives/TemplateString";
 
 type FormInputProps = {
@@ -10,7 +11,7 @@ export const FormInput = ({ blockProps }: FormInputProps) => (
     <label>
       <TemplateString value={blockProps.label} />
     </label>
-    <input type={blockProps.variant} defaultValue={blockProps.defaultValue} />
+    <Input type={blockProps.variant} defaultValue={blockProps.defaultValue} />
     <p>
       <TemplateString value={blockProps.description} />
     </p>
