@@ -1,3 +1,11 @@
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/design/Select";
+
 import { FormSelectType } from "../../schema/blocks/form/select";
 import { TemplateString } from "../primitives/TemplateString";
 
@@ -10,13 +18,18 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => (
     <label>
       <TemplateString value={blockProps.label} />
     </label>
-    <select defaultValue={blockProps.defaultValue}>
-      {blockProps.values.map((value) => (
-        <option key={value} value={value}>
-          {value}
-        </option>
-      ))}
-    </select>
+    <Select defaultValue={blockProps.defaultValue}>
+      <SelectTrigger variant="outline">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {blockProps.values.map((value) => (
+          <SelectItem key={value} value={value}>
+            {value}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
     <p>
       <TemplateString value={blockProps.description} />
     </p>
