@@ -5,6 +5,7 @@ import { Card } from "./Card";
 import { Columns } from "./Columns";
 import { Dialog } from "./Dialog";
 import { Form } from "./Form";
+import { FormCheckbox } from "./FormCheckbox";
 import { FormInput } from "./FormInput";
 import { FormSelect } from "./FormSelect";
 import { FormTextarea } from "./FormTextarea";
@@ -56,6 +57,8 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         return <FormTextarea blockProps={block} />;
       case "form-select":
         return <FormSelect blockProps={block} />;
+      case "form-checkbox":
+        return <FormCheckbox blockProps={block} />;
       default:
         return (
           <ParsingError
