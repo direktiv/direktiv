@@ -35,7 +35,7 @@ jobs:
             -H "X-Atlassian-Token: no-check" \
             -H "X-Automation-Webhook-Token: $JIRA_WEBHOOK_SECRET" \
             -d '{
-              "issue_key": "'"$ISSUE_KEY"'",
-              "pr_url": "'"$PR_URL"'",
+              "issue": "["$ISSUE_KEY"]",
+              "pr_url": "$PR_URL",
               "action": "READY_FOR_REVIEW"
             }'
