@@ -5,6 +5,7 @@ import { Card } from "./Card";
 import { Columns } from "./Columns";
 import { Dialog } from "./Dialog";
 import { Form } from "./Form";
+import { FormInput } from "./FormInput";
 import { Headline } from "./Headline";
 import { Image } from "./Image";
 import { Loop } from "./Loop";
@@ -47,6 +48,8 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         return <Table blockProps={block} />;
       case "form":
         return <Form blockProps={block} blockPath={blockPath} />;
+      case "form-input":
+        return <FormInput blockProps={block} />;
       default:
         return (
           <ParsingError
