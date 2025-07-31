@@ -6,6 +6,7 @@ import { Columns } from "./Columns";
 import { Dialog } from "./Dialog";
 import { Form } from "./Form";
 import { FormInput } from "./FormInput";
+import { FormTextarea } from "./FormTextarea";
 import { Headline } from "./Headline";
 import { Image } from "./Image";
 import { Loop } from "./Loop";
@@ -50,6 +51,8 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         return <Form blockProps={block} blockPath={blockPath} />;
       case "form-input":
         return <FormInput blockProps={block} />;
+      case "form-textarea":
+        return <FormTextarea blockProps={block} />;
       default:
         return (
           <ParsingError
