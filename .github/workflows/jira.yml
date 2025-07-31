@@ -34,8 +34,4 @@ jobs:
             -H "Content-Type: application/json" \
             -H "X-Atlassian-Token: no-check" \
             -H "X-Automation-Webhook-Token: $JIRA_WEBHOOK_SECRET" \
-            -d '{
-              "issue": "["$ISSUE_KEY"]",
-              "pr_url": "$PR_URL",
-              "action": "READY_FOR_REVIEW"
-            }'
+            -d "{\"issues\":[\"$ISSUE_KEY\"],\"pr_url\":\"$PR_URL\",\"action\":\"READY_FOR_REVIEW\"}"
