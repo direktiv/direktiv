@@ -8,9 +8,10 @@ type FormTextareaProps = {
 
 export const FormTextarea = ({ blockProps }: FormTextareaProps) => {
   const { id, label, description, defaultValue } = blockProps;
+  const htmlID = `id-${id}`;
   return (
-    <Fieldset label={label} description={description} htmlFor={id}>
-      <Textarea defaultValue={defaultValue} />
+    <Fieldset label={label} description={description} htmlFor={htmlID}>
+      <Textarea defaultValue={defaultValue} id={htmlID} />
     </Fieldset>
   );
 };

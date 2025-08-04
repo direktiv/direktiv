@@ -15,10 +15,11 @@ type FormSelectProps = {
 
 export const FormSelect = ({ blockProps }: FormSelectProps) => {
   const { id, label, description, defaultValue, values } = blockProps;
+  const htmlID = `id-${id}`;
   return (
-    <Fieldset label={label} description={description} htmlFor={id}>
+    <Fieldset label={label} description={description} htmlFor={htmlID}>
       <Select defaultValue={defaultValue}>
-        <SelectTrigger variant="outline">
+        <SelectTrigger variant="outline" id={htmlID}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

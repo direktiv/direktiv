@@ -8,9 +8,15 @@ type FormCheckboxProps = {
 
 export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
   const { id, label, description, defaultValue } = blockProps;
+  const htmlID = `id-${id}`;
   return (
-    <Fieldset label={label} description={description} htmlFor={id} horizontal>
-      <Checkbox defaultChecked={defaultValue} />
+    <Fieldset
+      label={label}
+      description={description}
+      htmlFor={htmlID}
+      horizontal
+    >
+      <Checkbox defaultChecked={defaultValue} id={htmlID} />
     </Fieldset>
   );
 };
