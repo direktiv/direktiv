@@ -1,19 +1,17 @@
 import { Checkbox } from "~/design/Checkbox";
+import { Fieldset } from "./utils/FieldSet";
 import { FormCheckboxType } from "../../../schema/blocks/form/checkbox";
-import { TemplateString } from "../../primitives/TemplateString";
 
 type FormCheckboxProps = {
   blockProps: FormCheckboxType;
 };
 
 export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => (
-  <div>
-    <label>
-      <Checkbox defaultChecked={blockProps.defaultValue} />
-      <TemplateString value={blockProps.label} />
-    </label>
-    <p>
-      <TemplateString value={blockProps.description} />
-    </p>
-  </div>
+  <Fieldset
+    label={blockProps.label}
+    description={blockProps.description}
+    horizontal
+  >
+    <Checkbox defaultChecked={blockProps.defaultValue} />
+  </Fieldset>
 );

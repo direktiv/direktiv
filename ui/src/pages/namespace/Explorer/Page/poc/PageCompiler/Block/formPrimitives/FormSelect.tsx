@@ -6,18 +6,15 @@ import {
   SelectValue,
 } from "~/design/Select";
 
+import { Fieldset } from "./utils/FieldSet";
 import { FormSelectType } from "../../../schema/blocks/form/select";
-import { TemplateString } from "../../primitives/TemplateString";
 
 type FormSelectProps = {
   blockProps: FormSelectType;
 };
 
 export const FormSelect = ({ blockProps }: FormSelectProps) => (
-  <div>
-    <label>
-      <TemplateString value={blockProps.label} />
-    </label>
+  <Fieldset label={blockProps.label} description={blockProps.description}>
     <Select defaultValue={blockProps.defaultValue}>
       <SelectTrigger variant="outline">
         <SelectValue />
@@ -30,8 +27,5 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => (
         ))}
       </SelectContent>
     </Select>
-    <p>
-      <TemplateString value={blockProps.description} />
-    </p>
-  </div>
+  </Fieldset>
 );

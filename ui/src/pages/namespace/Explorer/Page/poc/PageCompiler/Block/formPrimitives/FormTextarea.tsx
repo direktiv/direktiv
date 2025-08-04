@@ -1,5 +1,5 @@
+import { Fieldset } from "./utils/FieldSet";
 import { FormTextareaType } from "../../../schema/blocks/form/textarea";
-import { TemplateString } from "../../primitives/TemplateString";
 import { Textarea } from "~/design/TextArea";
 
 type FormTextareaProps = {
@@ -7,13 +7,7 @@ type FormTextareaProps = {
 };
 
 export const FormTextarea = ({ blockProps }: FormTextareaProps) => (
-  <div>
-    <label>
-      <TemplateString value={blockProps.label} />
-    </label>
+  <Fieldset label={blockProps.label} description={blockProps.description}>
     <Textarea defaultValue={blockProps.defaultValue} />
-    <p>
-      <TemplateString value={blockProps.description} />
-    </p>
-  </div>
+  </Fieldset>
 );
