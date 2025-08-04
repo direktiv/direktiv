@@ -1,6 +1,6 @@
 import { Checkbox } from "~/design/Checkbox";
-import { FormCheckboxType } from "../../schema/blocks/form/checkbox";
-import { TemplateString } from "../primitives/TemplateString";
+import { FormCheckboxType } from "../../../schema/blocks/form/checkbox";
+import { TemplateString } from "../../primitives/TemplateString";
 
 type FormCheckboxProps = {
   blockProps: FormCheckboxType;

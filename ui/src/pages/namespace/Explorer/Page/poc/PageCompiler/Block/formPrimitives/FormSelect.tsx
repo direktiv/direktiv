@@ -6,8 +6,8 @@ import {
   SelectValue,
 } from "~/design/Select";
 
-import { FormSelectType } from "../../schema/blocks/form/select";
-import { TemplateString } from "../primitives/TemplateString";
+import { FormSelectType } from "../../../schema/blocks/form/select";
+import { TemplateString } from "../../primitives/TemplateString";
 
 type FormSelectProps = {
   blockProps: FormSelectType;

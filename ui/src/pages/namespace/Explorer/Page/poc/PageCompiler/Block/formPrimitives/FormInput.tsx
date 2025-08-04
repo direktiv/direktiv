@@ -1,6 +1,6 @@
-import { FormInputType } from "../../schema/blocks/form/input";
+import { FormInputType } from "../../../schema/blocks/form/input";
 import Input from "~/design/Input";
-import { TemplateString } from "../primitives/TemplateString";
+import { TemplateString } from "../../primitives/TemplateString";
 
 type FormInputProps = {
   blockProps: FormInputType;

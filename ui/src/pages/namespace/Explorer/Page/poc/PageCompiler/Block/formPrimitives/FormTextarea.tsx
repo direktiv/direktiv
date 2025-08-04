@@ -1,5 +1,5 @@
-import { FormTextareaType } from "../../schema/blocks/form/textarea";
-import { TemplateString } from "../primitives/TemplateString";
+import { FormTextareaType } from "../../../schema/blocks/form/textarea";
+import { TemplateString } from "../../primitives/TemplateString";
 import { Textarea } from "~/design/TextArea";
 
 type FormTextareaProps = {
