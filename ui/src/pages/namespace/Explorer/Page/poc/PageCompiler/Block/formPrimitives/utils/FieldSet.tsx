@@ -5,8 +5,8 @@ import { twMergeClsx } from "~/util/helpers";
 type FieldsetProps = PropsWithChildren & {
   label: string;
   description: string;
+  htmlFor: string;
   horizontal?: boolean;
-  htmlFor?: string;
 };
 
 export const Fieldset: FC<FieldsetProps> = ({

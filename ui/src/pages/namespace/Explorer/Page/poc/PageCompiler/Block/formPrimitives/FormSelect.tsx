@@ -13,19 +13,22 @@ type FormSelectProps = {
   blockProps: FormSelectType;
 };
 
-export const FormSelect = ({ blockProps }: FormSelectProps) => (
-  <Fieldset label={blockProps.label} description={blockProps.description}>
-    <Select defaultValue={blockProps.defaultValue}>
-      <SelectTrigger variant="outline">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {blockProps.values.map((value) => (
-          <SelectItem key={value} value={value}>
-            {value}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  </Fieldset>
-);
+export const FormSelect = ({ blockProps }: FormSelectProps) => {
+  const { id, label, description, defaultValue, values } = blockProps;
+  return (
+    <Fieldset label={label} description={description} htmlFor={id}>
+      <Select defaultValue={defaultValue}>
+        <SelectTrigger variant="outline">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {values.map((value) => (
+            <SelectItem key={value} value={value}>
+              {value}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </Fieldset>
+  );
+};

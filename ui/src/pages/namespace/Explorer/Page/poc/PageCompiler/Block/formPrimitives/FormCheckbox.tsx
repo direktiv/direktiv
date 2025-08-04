@@ -6,12 +6,11 @@ type FormCheckboxProps = {
   blockProps: FormCheckboxType;
 };
 
-export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => (
-  <Fieldset
-    label={blockProps.label}
-    description={blockProps.description}
-    horizontal
-  >
-    <Checkbox defaultChecked={blockProps.defaultValue} />
-  </Fieldset>
-);
+export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
+  const { id, label, description, defaultValue } = blockProps;
+  return (
+    <Fieldset label={label} description={description} htmlFor={id} horizontal>
+      <Checkbox defaultChecked={defaultValue} />
+    </Fieldset>
+  );
+};

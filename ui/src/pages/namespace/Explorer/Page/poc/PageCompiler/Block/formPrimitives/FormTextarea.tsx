@@ -6,8 +6,11 @@ type FormTextareaProps = {
   blockProps: FormTextareaType;
 };
 
-export const FormTextarea = ({ blockProps }: FormTextareaProps) => (
-  <Fieldset label={blockProps.label} description={blockProps.description}>
-    <Textarea defaultValue={blockProps.defaultValue} />
-  </Fieldset>
-);
+export const FormTextarea = ({ blockProps }: FormTextareaProps) => {
+  const { id, label, description, defaultValue } = blockProps;
+  return (
+    <Fieldset label={label} description={description} htmlFor={id}>
+      <Textarea defaultValue={defaultValue} />
+    </Fieldset>
+  );
+};
