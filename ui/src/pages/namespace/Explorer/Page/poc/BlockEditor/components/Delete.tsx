@@ -47,7 +47,7 @@ export const BlockDeleteForm = ({
           </Button>
         </DialogClose>
         <DialogClose asChild>
-          <Button variant="primary" onClick={() => onSubmit()}>
+          <Button variant="destructive" onClick={() => onSubmit()}>
             {t("direktivPage.blockEditor.generic.confirmButton")}
           </Button>
         </DialogClose>

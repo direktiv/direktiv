@@ -1,13 +1,14 @@
 import { ColumnType, ColumnsType } from "../../../schema/blocks/columns";
-import { ParentBlocksType, SimpleBlocksType } from "../../../schema/blocks";
+import { ParentBlockType, SimpleBlockType } from "../../../schema/blocks";
 import {
   addBlockToPage,
-  decrementPath,
   deleteBlockFromPage,
   findAncestor,
   findBlock,
+  incrementPath,
   isPage,
   isParentBlock,
+  pathIsDescendant,
   pathsEqual,
   updateBlockInPage,
 } from "../utils";
@@ -30,18 +31,18 @@ const parentBlock = {
       blocks: [{ type: "text", content: "some text goes here" }],
     },
   ],
-} satisfies ParentBlocksType;
+} satisfies ParentBlockType;
 
 const simpleBlock = {
   type: "headline",
   label: "Lorem ipsum",
   level: "h1",
-} satisfies SimpleBlocksType;
+} satisfies SimpleBlockType;
 
 describe("isParentBlock", () => {
   test("it should return false for a page", () => {
     const falseParentBlock = simple as unknown;
-    const result = isParentBlock(falseParentBlock as ParentBlocksType);
+    const result = isParentBlock(falseParentBlock as ParentBlockType);
     expect(result).toEqual(false);
   });
 
@@ -354,35 +355,55 @@ describe("addBlockToPage", () => {
   });
 });
 
-describe("decrementPath", () => {
-  test("should decrement the last index of a non-empty path", () => {
-    const input = [0, 2, 3];
-    const expected = [0, 2, 2];
-    expect(decrementPath(input)).toEqual(expected);
+describe("incrementPath", () => {
+  test("should increment the last index of a non-empty path", () => {
+    const input = [0, 2, 2];
+    const expected = [0, 2, 3];
+    expect(incrementPath(input)).toEqual(expected);
   });
 
   test("should handle a path with a single element", () => {
-    const input = [1];
-    const expected = [0];
-    expect(decrementPath(input)).toEqual(expected);
+    const input = [0];
+    const expected = [1];
+    expect(incrementPath(input)).toEqual(expected);
   });
 
-  test("should not handle a path with last index 0 (result will never be -1)", () => {
-    const input = [0, 0];
-    const expected = [0, 0];
-    expect(decrementPath(input)).toEqual(expected);
-  });
-
-  test("should return the same path if the last index is falsy (e.g. 0)", () => {
-    const input = [1, 0];
-    const expected = [1, 0];
-    expect(decrementPath(input)).toEqual(expected);
+  test("should handle a path with last index 0", () => {
+    const input = [2, 0];
+    const expected = [2, 1];
+    expect(incrementPath(input)).toEqual(expected);
   });
 
   test("should return an empty array unchanged", () => {
     const input: number[] = [];
     const expected: number[] = [];
-    expect(decrementPath(input)).toEqual(expected);
+    expect(incrementPath(input)).toEqual(expected);
+  });
+});
+
+describe("pathIsDescendant", () => {
+  test("returns true when descendant starts with ancestor", () => {
+    expect(pathIsDescendant([0, 4, 3, 1], [0, 4, 3])).toBe(true);
+    expect(pathIsDescendant([1, 2, 3], [1])).toBe(true);
+    expect(pathIsDescendant([5, 6, 7, 8], [5, 6])).toBe(true);
+  });
+
+  test("returns true when ancestor is []", () => {
+    expect(pathIsDescendant([0], [])).toBe(true);
+  });
+
+  test("returns false when descendant and ancestor are exactly equal", () => {
+    expect(pathIsDescendant([1, 2, 3], [1, 2, 3])).toBe(false);
+    expect(pathIsDescendant([], [])).toBe(false);
+  });
+
+  test("returns false when ancestor is longer than descendant", () => {
+    expect(pathIsDescendant([1, 2], [1, 2, 3])).toBe(false);
+  });
+
+  test("returns false when descendant does not start with ancestor", () => {
+    expect(pathIsDescendant([0, 4, 3, 1], [4, 3])).toBe(false);
+    expect(pathIsDescendant([1, 2, 3], [2])).toBe(false);
   });
 });
 

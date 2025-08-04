@@ -1,8 +1,8 @@
 import { FieldValues, UseFormReturn } from "react-hook-form";
 import FormErrors, { errorsType } from "~/components/FormErrors";
 
-import { AllBlocksType } from "../../schema/blocks";
 import { BlockEditFormProps } from "..";
+import { BlockType } from "../../schema/blocks";
 import { Footer } from "./Footer";
 import { Header } from "./Header";
 import { ReactNode } from "react";
@@ -14,7 +14,7 @@ interface FormWrapperProps<T extends FieldValues> {
   onCancel: () => void;
   action: BlockEditFormProps<T>["action"];
   path: BlockEditFormProps<T>["path"];
-  block: AllBlocksType;
+  block: BlockType;
   children: ReactNode;
 }
 

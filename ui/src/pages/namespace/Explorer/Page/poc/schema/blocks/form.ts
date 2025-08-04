@@ -1,4 +1,4 @@
-import { AllBlocks, AllBlocksType, TriggerBlocks, TriggerBlocksType } from ".";
+import { Block, BlockType, TriggerBlock, TriggerBlockType } from ".";
 
 import { Mutation, MutationType } from "../procedures/mutation";
 import { z } from "zod";
@@ -11,14 +11,14 @@ import { z } from "zod";
  */
 export type FormType = {
   type: "form";
-  trigger: TriggerBlocksType;
+  trigger: TriggerBlockType;
   mutation: MutationType;
-  blocks: AllBlocksType[];
+  blocks: BlockType[];
 };
 
 export const Form = z.object({
   type: z.literal("form"),
-  trigger: z.lazy(() => TriggerBlocks),
+  trigger: z.lazy(() => TriggerBlock),
   mutation: Mutation,
-  blocks: z.array(z.lazy(() => AllBlocks)),
+  blocks: z.array(z.lazy(() => Block)),
 }) satisfies z.ZodType<FormType>;

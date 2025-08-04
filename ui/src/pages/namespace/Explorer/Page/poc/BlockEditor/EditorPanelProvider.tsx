@@ -1,6 +1,5 @@
-import { AllBlocksType, inlineBlockTypes } from "../schema/blocks";
 import { Dialog, DialogContent } from "~/design/Dialog";
-import { createContext, useContext, useState } from "react";
+import { PropsWithChildren, createContext, useContext, useState } from "react";
 import {
   usePageEditor,
   usePageStateContext,
@@ -8,17 +7,25 @@ import {
 
 import { BlockDeleteForm } from "./components/Delete";
 import { BlockPathType } from "../PageCompiler/Block";
+import { BlockType } from "../schema/blocks";
 import { DndContext } from "~/design/DragAndDrop";
 import { DragAndDropPayloadSchemaType } from "~/design/DragAndDrop/schema";
 import { EditorPanel } from "./components/EditorPanel";
 import { LocalDialogContainer } from "~/design/LocalDialog/container";
-import { getBlockTemplate } from "../PageCompiler/context/utils";
+import { useBlockTypes } from "../PageCompiler/context/utils/useBlockTypes";
 
-type EditorPanelState = null | {
-  action: "create" | "edit" | "delete";
-  block: AllBlocksType;
-  path: BlockPathType;
-};
+type EditorPanelState =
+  | null
+  | {
+      action: null;
+      dialog?: BlockPathType | null;
+    }
+  | {
+      action: "create" | "edit" | "delete";
+      block: BlockType;
+      path: BlockPathType;
+      dialog?: BlockPathType | null;
+    };
 
 type EditorPanelContextType = {
   panel: EditorPanelState;
@@ -27,22 +34,34 @@ type EditorPanelContextType = {
 
 const EditorPanelContext = createContext<EditorPanelContextType | null>(null);
 
+const PagePreviewContainer = ({ children }: PropsWithChildren) => (
+  <div className="grow px-3 py-5 sm:h-[calc(100vh-230px)] sm:overflow-y-scroll">
+    {children}
+  </div>
+);
+
 export const EditorPanelLayoutProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
+  const { getBlockConfig } = useBlockTypes();
+
   const { addBlock, deleteBlock, moveBlock } = usePageEditor();
   const [panel, setPanel] = useState<EditorPanelState>(null);
   const { mode } = usePageStateContext();
 
-  const createBlock = (type: AllBlocksType["type"], path: BlockPathType) => {
-    if (inlineBlockTypes.has(type)) {
-      return addBlock(path, getBlockTemplate(type));
+  const createBlock = (type: BlockType["type"], path: BlockPathType) => {
+    const blockConfig = getBlockConfig(type);
+
+    if (!blockConfig) throw new Error(`No blockConfig found for ${type}`);
+
+    if (!blockConfig.formComponent) {
+      return addBlock(path, blockConfig.defaultValues);
     }
     setPanel({
       action: "create",
-      block: getBlockTemplate(type),
+      block: blockConfig.defaultValues,
       path,
     });
   };
@@ -61,17 +80,19 @@ export const EditorPanelLayoutProvider = ({
     return (
       <DndContext onDrop={onDrop}>
         <EditorPanelContext.Provider value={{ panel, setPanel }}>
-          <div className="flex gap-5">
-            <div className="w-1/3 max-w-md shrink-0 overflow-visible border-r-2 border-gray-4 pr-2 dark:border-gray-dark-4">
+          <div className="grow sm:grid sm:grid-cols-[350px_1fr]">
+            <div className="h-[300px] overflow-y-visible border-b-2 border-gray-4 p-3 dark:border-gray-dark-4 sm:h-[calc(100vh-230px)] sm:border-b-0 sm:border-r-2">
               <EditorPanel />
             </div>
-            <LocalDialogContainer className="min-w-0 flex-1">
-              {children}
-            </LocalDialogContainer>
+            <PagePreviewContainer>
+              <LocalDialogContainer className="min-w-0 flex-1">
+                {children}
+              </LocalDialogContainer>
+            </PagePreviewContainer>
           </div>
           <Dialog open={panel && panel.action === "delete" ? true : false}>
             <DialogContent>
-              {!!panel && (
+              {!!panel && panel.action === "delete" && (
                 <BlockDeleteForm
                   path={panel.path}
                   onSubmit={() => {
@@ -90,7 +111,11 @@ export const EditorPanelLayoutProvider = ({
     );
   }
 
-  return <LocalDialogContainer>{children}</LocalDialogContainer>;
+  return (
+    <LocalDialogContainer>
+      <PagePreviewContainer>{children}</PagePreviewContainer>
+    </LocalDialogContainer>
+  );
 };
 
 export const usePageEditorPanel = () => {

@@ -1,4 +1,4 @@
-import { DragablePaletteItem, SortableItem } from "./Draggable";
+import { DraggablePaletteItem, SortableItem } from "./Draggable";
 
 import { Card } from "../Card";
 import { DndContext } from ".";
@@ -40,7 +40,7 @@ export const Default = () => {
     >
       <div className="flex gap-5">
         <Card className="w-[200px] p-3">
-          <DragablePaletteItem
+          <DraggablePaletteItem
             payload={{
               type: "add",
               blockType: "headline",
@@ -48,28 +48,32 @@ export const Default = () => {
             icon={Heading1}
           >
             Headline
-          </DragablePaletteItem>
+          </DraggablePaletteItem>
         </Card>
         <Card className="grow p-3">
           {blocks.map((block, index) => {
-            const blockPath = [index];
+            const blockPath = [index + 1];
             return (
               <div key={index} className="my-2 flex flex-col items-center">
-                <Dropzone payload={{ targetPath: [index] }} />
                 <SortableItem
-                  payload={{ type: "move", block, originPath: blockPath }}
+                  payload={{
+                    type: "move",
+                    block,
+                    originPath: blockPath,
+                  }}
                 >
                   {block.type === "headline" && (
                     <div className="border-2 p-2">{block.label}</div>
                   )}
                 </SortableItem>
+                <Dropzone payload={{ targetPath: [index + 1] }} />
               </div>
             );
           })}
         </Card>
       </div>
       <Card className="mt-3 h-[100px] overflow-y-scroll p-5">
-        {actions.reverse().map((action, index) => (
+        {actions.map((action, index) => (
           <div key={index}>{action}</div>
         ))}
       </Card>

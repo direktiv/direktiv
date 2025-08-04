@@ -1,4 +1,4 @@
-import { AllBlocks, AllBlocksType } from ".";
+import { Block, BlockType } from ".";
 
 import { Variable, VariableType } from "../primitives/variable";
 import { z } from "zod";
@@ -13,14 +13,14 @@ export type LoopType = {
   type: "loop";
   id: string;
   data: VariableType;
-  blocks: AllBlocksType[];
+  blocks: BlockType[];
 };
 
 export const Loop = z.object({
   type: z.literal("loop"),
   id: z.string().min(1),
   data: Variable,
-  blocks: z.array(z.lazy(() => AllBlocks)),
+  blocks: z.array(z.lazy(() => Block)),
 }) satisfies z.ZodType<LoopType>;
 
 export const BlocklessLoop = Loop.omit({ blocks: true });

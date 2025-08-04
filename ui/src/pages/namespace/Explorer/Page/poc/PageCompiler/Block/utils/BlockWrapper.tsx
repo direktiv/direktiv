@@ -5,28 +5,29 @@ import {
   useRef,
   useState,
 } from "react";
-import { decrementPath, findAncestor, pathsEqual } from "../../context/utils";
+import { findAncestor, incrementPath, pathsEqual } from "../../context/utils";
 import {
   usePage,
   usePageStateContext,
 } from "../../context/pageCompilerContext";
 
-import { AllBlocksType } from "../../../schema/blocks";
 import Badge from "~/design/Badge";
 import { BlockPathType } from "..";
-import { DragPayloadSchemaType } from "~/design/DragAndDrop/schema";
+import { BlockType } from "../../../schema/blocks";
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { SortableItem } from "~/design/DragAndDrop/Draggable";
 import { twMergeClsx } from "~/util/helpers";
+import { useDndContext } from "@dnd-kit/core";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 import { useTranslation } from "react-i18next";
+import { useValidateDropzone } from "./useValidateDropzone";
 
 type BlockWrapperProps = PropsWithChildren<{
   blockPath: BlockPathType;
-  block: AllBlocksType;
+  block: BlockType;
 }>;
 
 const EditorBlockWrapper = ({
@@ -38,7 +39,10 @@ const EditorBlockWrapper = ({
   const page = usePage();
   const { panel, setPanel } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
+  const validateDropzone = useValidateDropzone();
   const containerRef = useRef<HTMLDivElement>(null);
+  const dndContext = useDndContext();
+  const isDragging = !!dndContext.active;
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -56,7 +60,7 @@ const EditorBlockWrapper = ({
     return () => document.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  const isFocused = panel?.path && pathsEqual(panel.path, blockPath);
+  const isFocused = panel?.action && pathsEqual(panel.path, blockPath);
 
   const handleClickBlock = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
@@ -71,6 +75,7 @@ const EditorBlockWrapper = ({
     if (isFocused && parentDialog) {
       return setPanel({
         action: "edit",
+        dialog: null,
         block: parentDialog.block,
         path: parentDialog.path,
       });
@@ -82,48 +87,47 @@ const EditorBlockWrapper = ({
 
     return setPanel({
       action: "edit",
+      dialog: null,
       block,
       path: blockPath,
     });
   };
 
-  const isDropAllowed = (payload: DragPayloadSchemaType | null) => {
-    if (payload?.type === "move") {
-      // don't show a dropzone for neighboring blocks
-      const precedingSilblingPath = decrementPath(blockPath);
-      if (
-        pathsEqual(payload.originPath, precedingSilblingPath) ||
-        pathsEqual(payload.originPath, blockPath)
-      ) {
-        return false;
-      }
-    }
-
-    return true;
-  };
+  const showDragHandle = (isHovered || isFocused) && !isDragging;
+  const isHoveredOrFocused = isHovered || isFocused;
 
   return (
     <>
-      <Dropzone payload={{ targetPath: blockPath }} isVisible={isDropAllowed} />
       <SortableItem
         payload={{
           type: "move",
           block,
           originPath: blockPath,
         }}
+        className={twMergeClsx(showDragHandle ? "visible" : "invisible")}
       >
         <div
           ref={containerRef}
           className={twMergeClsx(
-            "relative isolate z-0 rounded-md rounded-s-none border-2 border-gray-4 bg-white p-0 dark:border-gray-dark-4 dark:bg-black",
-            isHovered && "bg-gray-2 dark:bg-gray-dark-2",
-            isFocused && "border-gray-8 dark:border-gray-8"
+            "relative isolate my-3 rounded bg-white outline-offset-4 dark:bg-black",
+            isHovered &&
+              !isDragging &&
+              "bg-gray-2 outline outline-2 outline-gray-4 dark:bg-gray-dark-2 dark:outline-gray-dark-4",
+            isFocused &&
+              "border-gray-8 outline outline-2 outline-gray-8 dark:border-gray-8 dark:outline-gray-dark-8",
+            isDragging && "outline outline-gray-7 dark:outline-gray-dark-7"
           )}
           data-block-wrapper
           onClick={handleClickBlock}
         >
-          {(isHovered || isFocused) && (
-            <Badge className="absolute z-30 -m-6" variant="secondary">
+          {isHoveredOrFocused && (
+            <Badge
+              className={twMergeClsx(
+                "absolute z-30 -mt-7 rounded-md rounded-b-none px-2 py-1",
+                isFocused && "bg-gray-8 dark:bg-gray-dark-8"
+              )}
+              variant="secondary"
+            >
               <span className="mr-2">
                 <b>{block.type}</b>
               </span>
@@ -143,6 +147,10 @@ const EditorBlockWrapper = ({
           </Suspense>
         </div>
       </SortableItem>
+      <Dropzone
+        payload={{ targetPath: incrementPath(blockPath) }}
+        validate={validateDropzone}
+      />
     </>
   );
 };
@@ -159,7 +167,7 @@ const VisitorBlockWrapper = ({ children }: BlockWrapperProps) => {
           </ParsingError>
         )}
       >
-        {children}
+        <div className="my-3">{children}</div>
       </ErrorBoundary>
     </Suspense>
   );

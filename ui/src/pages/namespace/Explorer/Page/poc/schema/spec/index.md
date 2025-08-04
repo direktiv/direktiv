@@ -177,7 +177,7 @@ _\*the exact syntax is still TBD_
 
 A template string is a string that can have `Variable` placeholders that will be filled with dynamic data. Variables will always be stringified.
 
-**Example**s
+**Example**
 
 - `Edit {{query.pokemon.data.name}}`
 

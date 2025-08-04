@@ -1,5 +1,5 @@
 import FormErrors, { errorsType } from "~/components/FormErrors";
-import { TriggerBlocks, TriggerBlocksType } from "../../schema/blocks";
+import { TriggerBlock, TriggerBlockType } from "../../schema/blocks";
 
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
@@ -8,9 +8,9 @@ import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type ActionFormProps = {
-  defaultValues?: TriggerBlocksType;
+  defaultValues?: TriggerBlockType;
   formId: string;
-  onSubmit: (data: TriggerBlocksType) => void;
+  onSubmit: (data: TriggerBlockType) => void;
 };
 
 export const ActionForm = ({
@@ -23,8 +23,8 @@ export const ActionForm = ({
     handleSubmit,
     register,
     formState: { errors },
-  } = useForm<TriggerBlocksType>({
-    resolver: zodResolver(TriggerBlocks),
+  } = useForm<TriggerBlockType>({
+    resolver: zodResolver(TriggerBlock),
     defaultValues: {
       type: "button",
       label: "",
