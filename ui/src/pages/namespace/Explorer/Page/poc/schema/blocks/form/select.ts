@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const FormSelect = FormBase.extend({
   type: z.literal("form-select"),
-  values: z.array(z.string()),
+  values: z.array(z.string()).nonempty(),
   defaultValue: z.string(),
 });
 
