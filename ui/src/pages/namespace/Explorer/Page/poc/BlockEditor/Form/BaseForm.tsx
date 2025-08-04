@@ -6,11 +6,15 @@ import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 type BaseFormProps = {
-  form: UseFormReturn<FormBaseType>;
+  // Unfortunately, we cannot type form `type UseFormReturn<FormBaseType>` but have to use `UseFormReturn<any>`. Every form that we pass
+  // to this component will implement the BaseForm but will still have additional properties. These additional properties will lead to a
+  // type error. That's why we have to use `any` here. Still, this is a better solution that having boilerplate code in every form.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  form: UseFormReturn<any>;
 };
-
-export const BaseForm = ({ form }: BaseFormProps) => {
+export const BaseForm = ({ form: anyForm }: BaseFormProps) => {
   const { t } = useTranslation();
+  const form = anyForm as UseFormReturn<FormBaseType>;
   return (
     <>
       <Fieldset

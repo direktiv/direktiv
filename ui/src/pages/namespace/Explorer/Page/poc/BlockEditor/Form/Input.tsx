@@ -1,4 +1,4 @@
-import { Controller, UseFormReturn, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import {
   FormInput as FormInputSchema,
   FormInputType,
@@ -15,7 +15,6 @@ import {
 import { BaseForm } from "./BaseForm";
 import { BlockEditFormProps } from "..";
 import { Fieldset } from "~/components/Form/Fieldset";
-import { FormBaseType } from "../../schema/blocks/form/utils";
 import { FormWrapper } from "../components/FormWrapper";
 import InputDesignComponent from "~/design/Input";
 import { useTranslation } from "react-i18next";
@@ -48,7 +47,7 @@ export const Input = ({
       onSubmit={onSubmit}
       onCancel={onCancel}
     >
-      <BaseForm form={form as unknown as UseFormReturn<FormBaseType>} />
+      <BaseForm form={form} />
       <Fieldset
         label={t(
           "direktivPage.blockEditor.blockForms.formPrimitives.input.variantLabel"

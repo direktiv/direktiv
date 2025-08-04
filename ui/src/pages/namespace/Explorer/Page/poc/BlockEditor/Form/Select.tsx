@@ -1,4 +1,4 @@
-import { Controller, UseFormReturn, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import {
   FormSelect as FormSelectSchema,
   FormSelectType,
@@ -8,7 +8,6 @@ import { ArrayForm } from "~/components/Form/Array";
 import { BaseForm } from "./BaseForm";
 import { BlockEditFormProps } from "..";
 import { Fieldset } from "~/components/Form/Fieldset";
-import { FormBaseType } from "../../schema/blocks/form/utils";
 import { FormWrapper } from "../components/FormWrapper";
 import Input from "~/design/Input";
 import { useTranslation } from "react-i18next";
@@ -41,7 +40,7 @@ export const Select = ({
       onSubmit={onSubmit}
       onCancel={onCancel}
     >
-      <BaseForm form={form as unknown as UseFormReturn<FormBaseType>} />
+      <BaseForm form={form} />
       <Controller
         control={form.control}
         name="values"

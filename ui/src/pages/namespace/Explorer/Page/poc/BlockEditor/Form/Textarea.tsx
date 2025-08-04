@@ -2,14 +2,13 @@ import {
   FormTextarea as FormTextareaSchema,
   FormTextareaType,
 } from "../../schema/blocks/form/textarea";
-import { UseFormReturn, useForm } from "react-hook-form";
 
 import { BaseForm } from "./BaseForm";
 import { BlockEditFormProps } from "..";
 import { Fieldset } from "~/components/Form/Fieldset";
-import { FormBaseType } from "../../schema/blocks/form/utils";
 import { FormWrapper } from "../components/FormWrapper";
 import { Textarea as TextareaComponent } from "~/design/TextArea";
+import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -40,7 +39,7 @@ export const Textarea = ({
       onSubmit={onSubmit}
       onCancel={onCancel}
     >
-      <BaseForm form={form as unknown as UseFormReturn<FormBaseType>} />
+      <BaseForm form={form} />
       <Fieldset
         label={t(
           "direktivPage.blockEditor.blockForms.formPrimitives.textarea.defaultValueLabel"
