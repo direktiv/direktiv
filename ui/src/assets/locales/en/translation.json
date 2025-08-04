@@ -1662,7 +1662,8 @@
       "blocks": {
         "table": { "noResult": "No entries to show" },
         "form": {
-          "success": "The form has been submitted successfully"
+          "success": "The form has been submitted successfully",
+          "optional": "optional"
         }
       }
     },
