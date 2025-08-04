@@ -25,7 +25,7 @@ const BlockListWrapper = ({ children, horizontal }: WrapperProps) => (
     className={twMergeClsx(
       "w-full",
       horizontal
-        ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-3"
+        ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-6"
         : "flex flex-col"
     )}
   >
