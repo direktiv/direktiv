@@ -20,10 +20,10 @@ export const LocalDialogContent = ({ children }: PropsWithChildren) => {
   return (
     <DialogPrimitive.DialogPortal container={container}>
       <div
-        className="absolute inset-0 flex items-start justify-center px-5 pt-16"
+        className="absolute inset-0 flex items-start justify-center px-5 pt-20"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="absolute inset-0 -mx-4 -my-5 bg-black/10 backdrop-blur-sm" />
+        <div className="absolute inset-0 bg-black/10 backdrop-blur-sm" />
         <DialogPrimitive.Content
           className={twMergeClsx(
             "pointer-events-auto fixed z-50 grid w-full gap-4 rounded-b-lg bg-gray-1 p-6 animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0",
