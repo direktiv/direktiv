@@ -21,14 +21,7 @@ export const Fieldset: FC<FieldsetProps> = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <fieldset
-      className={twMergeClsx(
-        "mb-2 flex gap-1",
-        horizontal
-          ? "flex-row-reverse flex-wrap items-center gap-2"
-          : "flex-col gap-1"
-      )}
-    >
+    <fieldset className="flex flex-col gap-1">
       <label className="flex grow text-sm font-bold" htmlFor={htmlFor}>
         <span className="grow">{label}</span>
         {optional && (
@@ -38,12 +31,19 @@ export const Fieldset: FC<FieldsetProps> = ({
           </span>
         )}
       </label>
-      {children}
-      {description && (
-        <div className="basis-full text-sm text-gray-9 dark:text-gray-dark-9">
-          {description}
-        </div>
-      )}
+      <div
+        className={twMergeClsx(
+          "flex min-h-9",
+          horizontal ? "flex-row items-center gap-3" : "flex-col gap-2"
+        )}
+      >
+        {children}
+        {description && (
+          <div className="basis-full text-sm text-gray-9 dark:text-gray-dark-9">
+            {description}
+          </div>
+        )}
+      </div>
     </fieldset>
   );
 };
