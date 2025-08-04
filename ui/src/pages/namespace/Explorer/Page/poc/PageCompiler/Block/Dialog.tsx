@@ -27,18 +27,19 @@ const DialogBaseComponent = ({
         <DialogTrigger asChild onClick={(event) => event.stopPropagation()}>
           <Button blockProps={trigger} />
         </DialogTrigger>
-
         <LocalDialogContent>
           <DialogXClose />
-          <BlockList path={blockPath}>
-            {blocks.map((block, index) => (
-              <Block
-                key={index}
-                block={block}
-                blockPath={[...blockPath, index]}
-              />
-            ))}
-          </BlockList>
+          <div className="max-h-[500px] overflow-y-auto p-2 pt-4">
+            <BlockList path={blockPath}>
+              {blocks.map((block, index) => (
+                <Block
+                  key={index}
+                  block={block}
+                  blockPath={[...blockPath, index]}
+                />
+              ))}
+            </BlockList>
+          </div>
         </LocalDialogContent>
       </LocalDialog>
     </div>
