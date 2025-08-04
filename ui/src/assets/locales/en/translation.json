@@ -1795,7 +1795,7 @@
           "labelPlaceholder": "Label for the form element",
           "description": "Description",
           "descriptionPlaceholder": "Description for the form element",
-          "required": "Required field",
+          "optional": "Optional field",
           "input": {
             "description": "An input field allows users to enter text information.",
             "variantLabel": "Input Type",

@@ -7,7 +7,7 @@ type FormInputProps = {
 };
 
 export const FormInput = ({ blockProps }: FormInputProps) => {
-  const { id, label, description, variant, defaultValue, required } =
+  const { id, label, description, variant, defaultValue, optional } =
     blockProps;
   const htmlID = `id-${id}`;
   return (
@@ -15,7 +15,7 @@ export const FormInput = ({ blockProps }: FormInputProps) => {
       label={label}
       description={description}
       htmlFor={htmlID}
-      required={required}
+      optional={optional}
     >
       <Input type={variant} defaultValue={defaultValue} id={htmlID} />
     </Fieldset>

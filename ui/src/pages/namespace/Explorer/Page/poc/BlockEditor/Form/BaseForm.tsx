@@ -52,15 +52,15 @@ export const BaseForm = ({ form }: BaseFormProps) => {
         />
       </Fieldset>
       <Fieldset
-        label={t("direktivPage.blockEditor.blockForms.formPrimitives.required")}
+        label={t("direktivPage.blockEditor.blockForms.formPrimitives.optional")}
         htmlFor="required"
         horizontal
       >
         <Checkbox
-          defaultChecked={form.getValues("required")}
+          defaultChecked={form.getValues("optional")}
           onCheckedChange={(value) => {
             if (typeof value === "boolean") {
-              form.setValue("required", value);
+              form.setValue("optional", value);
             }
           }}
           id="required"

@@ -7,7 +7,7 @@ type FormCheckboxProps = {
 };
 
 export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
-  const { id, label, description, defaultValue, required } = blockProps;
+  const { id, label, description, defaultValue, optional } = blockProps;
   const htmlID = `id-${id}`;
   return (
     <Fieldset
@@ -15,7 +15,7 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
       description={description}
       htmlFor={htmlID}
       horizontal
-      required={required}
+      optional={optional}
     >
       <Checkbox defaultChecked={defaultValue} id={htmlID} />
     </Fieldset>

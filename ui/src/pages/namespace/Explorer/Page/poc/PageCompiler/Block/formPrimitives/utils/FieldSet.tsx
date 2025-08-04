@@ -6,7 +6,7 @@ type FieldsetProps = PropsWithChildren & {
   label: string;
   description: string;
   htmlFor: string;
-  required: boolean;
+  optional: boolean;
   horizontal?: boolean;
 };
 
