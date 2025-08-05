@@ -1,6 +1,6 @@
 import {
   Captions,
-  ChevronDown,
+  ChevronsUpDown,
   Columns2,
   Database,
   FileText,
@@ -245,7 +245,7 @@ const blockTypes: BlockTypeConfig[] = [
   {
     type: "form-select",
     label: t("direktivPage.blockEditor.blockName.form-select"),
-    icon: ChevronDown,
+    icon: ChevronsUpDown,
     allow: (page, path) =>
       !!findAncestor({
         page,
