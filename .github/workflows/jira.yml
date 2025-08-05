@@ -18,13 +18,14 @@ jobs:
           PR_TITLE="${{ github.event.pull_request.title }}"
           BRANCH_NAME="${{ github.head_ref }}"
 
-          # Try to extract issue key from title, fallback to branch
-          ISSUE_KEY=$(echo "$PR_TITLE $BRANCH_NAME" | grep -oE "$JIRA_ISSUE_REGEX" | head -n1)
+          ISSUE_KEYS=($(echo "$PR_TITLE $BRANCH_NAME" | grep -oE "$JIRA_ISSUE_REGEX" | sort -u))
 
-          if [ -z "$ISSUE_KEY" ]; then
+          if [ ${#ISSUE_KEYS[@]} -eq 0 ]; then
             echo "No issue key found in PR title or branch name. Skipping Jira notification."
             exit 0
           fi
+
+          ISSUES_JSON="[$(printf '"%s",' "${ISSUE_KEYS[@]}" | sed 's/,$//')]"
 
           PR_URL="${{ github.event.pull_request.html_url }}"
 
@@ -34,4 +35,4 @@ jobs:
             -H "Content-Type: application/json" \
             -H "X-Atlassian-Token: no-check" \
             -H "X-Automation-Webhook-Token: $JIRA_WEBHOOK_SECRET" \
-            -d "{\"issues\":[\"$ISSUE_KEY\"],\"pr_url\":\"$PR_URL\",\"action\":\"READY_FOR_REVIEW\"}"
+            -d "{\"issues\":${ISSUES_JSON},\"pr_url\":\"$PR_URL\",\"action\":\"READY_FOR_REVIEW\"}"
