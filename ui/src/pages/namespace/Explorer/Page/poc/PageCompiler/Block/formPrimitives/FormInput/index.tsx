@@ -11,7 +11,6 @@ export const FormInput = ({ blockProps }: FormInputProps) => {
   const { id, label, description, variant, defaultValue, optional } =
     blockProps;
   const htmlID = `id-${id}`;
-
   return (
     <Fieldset
       label={label}
@@ -20,7 +19,12 @@ export const FormInput = ({ blockProps }: FormInputProps) => {
       optional={optional}
     >
       {variant === "date" ? (
-        <DateInput id={htmlID} defaultValue={`${defaultValue}`} />
+        <DateInput
+          id={htmlID}
+          defaultValue={`${defaultValue}`}
+          // remount when defaultValue changes
+          key={defaultValue}
+        />
       ) : (
         <TextInput
           id={htmlID}

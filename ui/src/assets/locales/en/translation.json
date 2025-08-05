@@ -1664,7 +1664,8 @@
         "form": {
           "success": "The form has been submitted successfully",
           "optional": "optional",
-          "selectPlaceholder": "Select an option"
+          "selectPlaceholder": "Select an option",
+          "datePickerPlaceholder": "Pick a date"
         }
       }
     },
