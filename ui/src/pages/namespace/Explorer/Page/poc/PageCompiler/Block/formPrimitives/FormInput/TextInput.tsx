@@ -6,6 +6,4 @@ type TextInputProps = InputProps & {
   variant: FormInputType["variant"];
 };
 
-export const TextInput = ({ variant, id, defaultValue }: TextInputProps) => (
-  <Input type={variant} defaultValue={defaultValue} id={id} />
-);
+export const TextInput = (props: TextInputProps) => <Input {...props} />;
