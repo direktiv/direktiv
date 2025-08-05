@@ -17,7 +17,7 @@ type FormSelectProps = {
 export const FormSelect = ({ blockProps }: FormSelectProps) => {
   const { t } = useTranslation();
   const { id, label, description, defaultValue, values, optional } = blockProps;
-  const htmlID = `id-${id}`;
+  const htmlID = `form-select-${id}`;
 
   const value = values.some((v) => v === defaultValue)
     ? defaultValue

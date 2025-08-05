@@ -10,7 +10,7 @@ type FormInputProps = {
 export const FormInput = ({ blockProps }: FormInputProps) => {
   const { id, label, description, variant, defaultValue, optional } =
     blockProps;
-  const htmlID = `id-${id}`;
+  const htmlID = `form-input-${id}`;
   return (
     <Fieldset
       label={label}
