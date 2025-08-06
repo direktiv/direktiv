@@ -29,7 +29,7 @@ const DialogBaseComponent = ({
         </DialogTrigger>
         <LocalDialogContent>
           <DialogXClose />
-          <div className="max-h-[551vh] overflow-y-auto p-2 pt-4">
+          <div className="max-h-[55vh] overflow-y-auto p-2 pt-4">
             <BlockList path={blockPath}>
               {blocks.map((block, index) => (
                 <Block
