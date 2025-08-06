@@ -1818,7 +1818,7 @@
             "description": "A select dropdown allows users to choose from a predefined list of options.",
             "valuesLabel": "Options",
             "valuesPlaceholder": "Select option",
-            "defaultValueLabel": "Default Selection",
+            "defaultValueLabel": "Default selection",
             "defaultValueLabelPlaceholder": "Select default option"
           }
         }
