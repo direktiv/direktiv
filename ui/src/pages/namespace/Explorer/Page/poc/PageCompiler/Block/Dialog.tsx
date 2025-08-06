@@ -46,11 +46,10 @@ const DialogBaseComponent = ({
 };
 
 const EditModeDialog = (props: DialogProps) => {
-  const { dialog, setDialog } = usePageEditorPanel();
+  const { setDialog } = usePageEditorPanel();
 
   return (
     <div>
-      {dialog ? "true" : ""}
       <DialogBaseComponent
         {...props}
         onOpenChange={(open) => setDialog(open ? props.blockPath : null)}
