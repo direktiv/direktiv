@@ -13,7 +13,6 @@ export const inputTypes = [
 export const FormInput = FormBase.extend({
   type: z.literal("form-input"),
   variant: z.enum(inputTypes),
-  // TODO: no binding to variant yet (alternatively, we could have a form-text-input and form-number-input)
   defaultValue: z.union([z.string(), z.number()]),
 });
 
