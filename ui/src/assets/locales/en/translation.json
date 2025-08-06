@@ -1806,7 +1806,7 @@
             "defaultValuePlaceholder": "Enter default value (optional)"
           },
           "checkbox": {
-            "description": "A checkbox allows users to select or deselect a boolean option.",
+            "description": "A checkbox allows users to select or unselect a boolean option.",
             "defaultValueLabel": "Default Checked"
           },
           "textarea": {
