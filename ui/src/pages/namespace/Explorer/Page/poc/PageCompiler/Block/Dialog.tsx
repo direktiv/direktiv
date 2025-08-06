@@ -49,12 +49,10 @@ const EditModeDialog = (props: DialogProps) => {
   const { setDialog } = usePageEditorPanel();
 
   return (
-    <div>
-      <DialogBaseComponent
-        {...props}
-        onOpenChange={(open) => setDialog(open ? props.blockPath : null)}
-      />
-    </div>
+    <DialogBaseComponent
+      {...props}
+      onOpenChange={(open) => setDialog(open ? props.blockPath : null)}
+    />
   );
 };
 
