@@ -1810,7 +1810,7 @@
             "defaultValueLabel": "Default checked"
           },
           "textarea": {
-            "description": "A textarea allows users to enter multi-line text information.",
+            "description": "A textarea allows users to enter multi-line text.",
             "defaultValueLabel": "Default Value",
             "defaultValuePlaceholder": "Enter default text"
           },
