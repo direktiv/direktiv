@@ -1793,7 +1793,7 @@
         },
         "formPrimitives": {
           "idLabel": "ID",
-          "idPlaceholder": "unique identifier name to reference this form element in the form block",
+          "idPlaceholder": "unique identifier to reference this form element in the form block",
           "label": "Label",
           "labelPlaceholder": "Label for the form element",
           "description": "Description",
