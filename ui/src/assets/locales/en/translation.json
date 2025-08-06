@@ -1807,7 +1807,7 @@
           },
           "checkbox": {
             "description": "A checkbox allows users to select or unselect a boolean option.",
-            "defaultValueLabel": "Default Checked"
+            "defaultValueLabel": "Default checked"
           },
           "textarea": {
             "description": "A textarea allows users to enter multi-line text information.",
