@@ -11,7 +11,7 @@ import { useBlockTypes } from "../../context/utils/useBlockTypes";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 
 export const useValidateDropzone = () => {
-  const { panel } = usePageEditorPanel();
+  const { dialog } = usePageEditorPanel();
   const { getAllowedTypes } = useBlockTypes();
 
   const enable = (
@@ -21,7 +21,8 @@ export const useValidateDropzone = () => {
     if (!payload) {
       return "hidden";
     }
-    if (panel?.dialog && !pathIsDescendant(targetPath, panel.dialog)) {
+
+    if (dialog && !pathIsDescendant(targetPath, dialog)) {
       return "hidden";
     }
 
