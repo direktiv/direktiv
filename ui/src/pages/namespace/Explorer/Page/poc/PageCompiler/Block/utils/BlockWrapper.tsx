@@ -75,19 +75,18 @@ const EditorBlockWrapper = ({
     if (isFocused && parentDialog) {
       return setPanel({
         action: "edit",
-        dialog: null,
         block: parentDialog.block,
         path: parentDialog.path,
       });
     }
 
+    // if focused block is clicked, unfocus
     if (isFocused) {
       return setPanel(null);
     }
 
     return setPanel({
       action: "edit",
-      dialog: null,
       block,
       path: blockPath,
     });
