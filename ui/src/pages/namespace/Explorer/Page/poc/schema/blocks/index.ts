@@ -4,8 +4,9 @@ import { Column, ColumnType, Columns, ColumnsType } from "./columns";
 import { Dialog, DialogType } from "./dialog";
 import { Form, FormType } from "./form";
 import { FormCheckbox, FormCheckboxType } from "./form/checkbox";
-import { FormInput, FormInputType } from "./form/input";
+import { FormNumberInput, FormNumberInputType } from "./form/numberInput";
 import { FormSelect, FormSelectType } from "./form/select";
+import { FormStringInput, FormStringInputType } from "./form/stringInput";
 import { FormTextarea, FormTextareaType } from "./form/textarea";
 import { Headline, HeadlineType } from "./headline";
 import { Image, ImageType } from "./image";
@@ -27,8 +28,9 @@ import { z } from "zod";
 const SimpleBlockUnion = z.discriminatedUnion("type", [
   Button,
   FormCheckbox,
-  FormInput,
+  FormNumberInput,
   FormSelect,
+  FormStringInput,
   FormTextarea,
   Headline,
   Image,
@@ -49,8 +51,9 @@ export const ParentBlockUnion = z.discriminatedUnion("type", [
 export type SimpleBlockType =
   | ButtonType
   | FormCheckboxType
-  | FormInputType
+  | FormNumberInputType
   | FormSelectType
+  | FormStringInputType
   | FormTextareaType
   | HeadlineType
   | ImageType
