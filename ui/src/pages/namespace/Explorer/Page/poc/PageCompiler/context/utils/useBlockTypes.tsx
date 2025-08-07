@@ -23,6 +23,7 @@ import { Form as FormForm } from "../../../BlockEditor/Form";
 import { Headline } from "../../../BlockEditor/Headline";
 import { Image as ImageForm } from "../../../BlockEditor/Image";
 import { Loop as LoopForm } from "../../../BlockEditor/Loop";
+import { NumberInput } from "../../../BlockEditor/Form/NumberInput";
 import { QueryProvider as QueryProviderForm } from "../../../BlockEditor/QueryProvider";
 import { Select } from "../../../BlockEditor/Form/Select";
 import { StringInput } from "../../../BlockEditor/Form/StringInput";
@@ -212,7 +213,7 @@ const blockTypes: BlockTypeConfig[] = [
         path,
         match: (block) => block.type === "form",
       }),
-    formComponent: Input,
+    formComponent: NumberInput,
     defaultValues: {
       id: "",
       defaultValue: 0,

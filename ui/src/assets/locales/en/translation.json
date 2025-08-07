@@ -1806,6 +1806,10 @@
             "defaultValueLabel": "Default Value",
             "defaultValuePlaceholder": "Enter default value (optional)"
           },
+          "numberInput": {
+            "description": "An input field allows users to enter a number.",
+            "defaultValueLabel": "Default Value"
+          },
           "checkbox": {
             "description": "A checkbox allows users to select or unselect a boolean option.",
             "defaultValueLabel": "Default checked"
