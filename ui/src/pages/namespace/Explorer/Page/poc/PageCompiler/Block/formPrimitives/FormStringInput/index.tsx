@@ -21,16 +21,12 @@ export const FormStringInput = ({ blockProps }: FormInputProps) => {
       {variant === "date" ? (
         <DateInput
           id={htmlID}
-          defaultValue={String(defaultValue)}
+          defaultValue={defaultValue}
           // remount when defaultValue changes
           key={defaultValue}
         />
       ) : (
-        <TextInput
-          id={htmlID}
-          defaultValue={String(defaultValue)}
-          variant={variant}
-        />
+        <TextInput id={htmlID} defaultValue={defaultValue} variant={variant} />
       )}
     </Fieldset>
   );
