@@ -3,6 +3,7 @@ import {
   File,
   Folder,
   Layers,
+  PanelTop,
   Play,
   Users,
   Workflow,
@@ -79,6 +80,8 @@ export const fileTypeToIcon = (type: BaseFileSchemaType["type"]) => {
       return Workflow;
     case "consumer":
       return Users;
+    case "page":
+      return PanelTop;
     case "gateway":
       return BookOpen;
     default:
@@ -102,6 +105,8 @@ export const fileTypeToExplorerRoute = (type: BaseFileSchemaType["type"]) => {
       return "/n/$namespace/explorer/consumer/$";
     case "gateway":
       return "/n/$namespace/explorer/openapiSpecification/$";
+    case "page":
+      return "/n/$namespace/explorer/page/$";
     default:
       return "/n/$namespace/explorer/tree/$";
   }
