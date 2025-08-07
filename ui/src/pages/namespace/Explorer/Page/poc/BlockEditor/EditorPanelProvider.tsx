@@ -40,7 +40,7 @@ const EditorPanelContext = createContext<EditorPanelContextType | null>(null);
 const PagePreviewContainer = ({ children }: PropsWithChildren) => (
   <div className="grow sm:h-[calc(100vh-230px)] sm:overflow-y-scroll">
     <LocalDialogContainer className="h-full min-w-0 flex-1 px-3 py-5">
-      {children}
+      <div className="mx-auto max-w-screen-lg">{children}</div>
     </LocalDialogContainer>
   </div>
 );

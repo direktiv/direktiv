@@ -12,7 +12,7 @@ const MutationMethod = z.enum(mutationMethods);
 export const Mutation = z.object({
   id: Id,
   method: MutationMethod,
-  url: TemplateString,
+  url: TemplateString.min(1),
   queryParams: z.array(KeyValue).optional(),
   requestHeaders: z.array(KeyValue).optional(),
   requestBody: z.array(KeyValue).optional(),

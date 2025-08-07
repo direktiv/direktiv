@@ -9,7 +9,7 @@ import { z } from "zod";
  */
 export const KeyValue = z.object({
   key: z.string().min(1),
-  value: TemplateString,
+  value: TemplateString.min(1),
 });
 
 export type KeyValueType = z.infer<typeof KeyValue>;

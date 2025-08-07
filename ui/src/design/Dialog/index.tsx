@@ -124,7 +124,7 @@ DialogDescription.displayName = DialogPrimitive.Description.displayName;
 const DialogXClose = () => (
   <DialogPrimitive.Close
     data-slot="dialog-close"
-    className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline focus:outline-2 disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+    className="absolute right-4 top-4 z-30 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline focus:outline-2 disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
   >
     <XIcon />
   </DialogPrimitive.Close>

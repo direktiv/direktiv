@@ -1,26 +1,34 @@
 import {
   Captions,
+  ChevronsUpDown,
   Columns2,
   Database,
+  FileText,
   Heading1,
   Image,
   RectangleHorizontal,
   Repeat2,
+  SquareCheck,
   Table,
   Text,
   TextCursorInput,
+  Type,
 } from "lucide-react";
 
 import { BlockPathType } from "../../Block";
 import { BlockTypeConfig } from "./types";
+import { Checkbox } from "../../../BlockEditor/Form/Checkbox";
 import { Dialog as DialogForm } from "../../../BlockEditor/Dialog";
 import { Form as FormForm } from "../../../BlockEditor/Form";
 import { Headline } from "../../../BlockEditor/Headline";
 import { Image as ImageForm } from "../../../BlockEditor/Image";
+import { Input } from "../../../BlockEditor/Form/Input";
 import { Loop as LoopForm } from "../../../BlockEditor/Loop";
 import { QueryProvider as QueryProviderForm } from "../../../BlockEditor/QueryProvider";
+import { Select } from "../../../BlockEditor/Form/Select";
 import { Table as TableForm } from "../../../BlockEditor/Table";
 import { Text as TextForm } from "../../../BlockEditor/Text";
+import { Textarea } from "../../../BlockEditor/Form/Textarea";
 import { findAncestor } from ".";
 import { t } from "i18next";
 import { usePage } from "../pageCompilerContext";
@@ -151,7 +159,7 @@ const blockTypes: BlockTypeConfig[] = [
   {
     type: "form",
     label: t("direktivPage.blockEditor.blockName.form"),
-    icon: TextCursorInput,
+    icon: FileText,
     allow: (page, path) =>
       !findAncestor({
         page,
@@ -171,6 +179,88 @@ const blockTypes: BlockTypeConfig[] = [
         type: "button",
       },
       blocks: [],
+    },
+  },
+  {
+    type: "form-input",
+    label: t("direktivPage.blockEditor.blockName.form-input"),
+    icon: TextCursorInput,
+    allow: (page, path) =>
+      !!findAncestor({
+        page,
+        path,
+        match: (block) => block.type === "form",
+      }),
+    formComponent: Input,
+    defaultValues: {
+      id: "",
+      defaultValue: "",
+      description: "",
+      label: "",
+      optional: false,
+      type: "form-input",
+      variant: "text",
+    },
+  },
+  {
+    type: "form-checkbox",
+    label: t("direktivPage.blockEditor.blockName.form-checkbox"),
+    icon: SquareCheck,
+    allow: (page, path) =>
+      !!findAncestor({
+        page,
+        path,
+        match: (block) => block.type === "form",
+      }),
+    formComponent: Checkbox,
+    defaultValues: {
+      id: "",
+      defaultValue: false,
+      description: "",
+      label: "",
+      optional: false,
+      type: "form-checkbox",
+    },
+  },
+  {
+    type: "form-textarea",
+    label: t("direktivPage.blockEditor.blockName.form-textarea"),
+    icon: Type,
+    allow: (page, path) =>
+      !!findAncestor({
+        page,
+        path,
+        match: (block) => block.type === "form",
+      }),
+    formComponent: Textarea,
+    defaultValues: {
+      id: "",
+      defaultValue: "",
+      description: "",
+      label: "",
+      optional: false,
+      type: "form-textarea",
+    },
+  },
+  {
+    type: "form-select",
+    label: t("direktivPage.blockEditor.blockName.form-select"),
+    icon: ChevronsUpDown,
+    allow: (page, path) =>
+      !!findAncestor({
+        page,
+        path,
+        match: (block) => block.type === "form",
+      }),
+    formComponent: Select,
+    defaultValues: {
+      id: "",
+      values: [],
+      defaultValue: "",
+      description: "",
+      label: "",
+      optional: false,
+      type: "form-select",
     },
   },
 ];

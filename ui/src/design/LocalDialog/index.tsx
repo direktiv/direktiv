@@ -20,7 +20,7 @@ export const LocalDialogContent = ({ children }: PropsWithChildren) => {
   return (
     <DialogPrimitive.DialogPortal container={container}>
       <div
-        className="absolute inset-0 flex items-start justify-center px-5 pt-20"
+        className="absolute inset-0 flex items-center justify-center px-5"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="absolute inset-0 bg-black/10 backdrop-blur-sm" />

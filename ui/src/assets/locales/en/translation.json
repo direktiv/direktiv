@@ -1662,7 +1662,10 @@
       "blocks": {
         "table": { "noResult": "No entries to show" },
         "form": {
-          "success": "The form has been submitted successfully"
+          "success": "The form has been submitted successfully",
+          "optional": "optional",
+          "selectPlaceholder": "Select an option",
+          "datePickerPlaceholder": "Pick a date"
         }
       }
     },
@@ -1687,6 +1690,10 @@
         "card": "Card",
         "dialog": "Dialog",
         "form": "Form",
+        "form-checkbox": "Form: Checkbox",
+        "form-input": "Form: Input",
+        "form-select": "Form: Select",
+        "form-textarea": "Form: Textarea",
         "loop": "Loop",
         "query-provider": "Query Provider",
         "column": "Column",
@@ -1783,6 +1790,37 @@
             "requestHeadersLabel": "Request Headers",
             "requestBodyLabel": "Request Body"
           }
+        },
+        "formPrimitives": {
+          "idLabel": "ID",
+          "idPlaceholder": "unique identifier to reference this form element in the form block",
+          "label": "Label",
+          "labelPlaceholder": "Label for the form element",
+          "description": "Description",
+          "descriptionPlaceholder": "Description for the form element",
+          "optional": "Optional field",
+          "input": {
+            "description": "An input field allows users to enter text information.",
+            "variantLabel": "Input Type",
+            "defaultValueLabel": "Default Value",
+            "defaultValuePlaceholder": "Enter default value (optional)"
+          },
+          "checkbox": {
+            "description": "A checkbox allows users to select or unselect a boolean option.",
+            "defaultValueLabel": "Default checked"
+          },
+          "textarea": {
+            "description": "A textarea allows users to enter multi-line text.",
+            "defaultValueLabel": "Default Value",
+            "defaultValuePlaceholder": "Enter default text"
+          },
+          "select": {
+            "description": "A select dropdown allows users to choose from a predefined list of options.",
+            "valuesLabel": "Options",
+            "valuesPlaceholder": "Select option",
+            "defaultValueLabel": "Default selection",
+            "defaultValueLabelPlaceholder": "Select default option"
+          }
         }
       },
       "contextMenu": {
@@ -1804,6 +1842,10 @@
           "card": "card block",
           "dialog": "dialog block",
           "form": "form block",
+          "form-checkbox": "checkbox block",
+          "form-input": "input block",
+          "form-select": "select block",
+          "form-textarea": "textarea block",
           "loop": "loop block",
           "query-provider": "query provider",
           "column": "column block",

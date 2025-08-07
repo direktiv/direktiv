@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const Image = z.object({
   type: z.literal("image"),
-  src: TemplateString,
+  src: TemplateString.min(1),
   width: z.number(),
   height: z.number(),
 });
