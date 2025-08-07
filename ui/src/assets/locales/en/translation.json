@@ -1800,7 +1800,7 @@
           "description": "Description",
           "descriptionPlaceholder": "Description for the form element",
           "optional": "Optional field",
-          "input": {
+          "stringInput": {
             "description": "An input field allows users to enter text information.",
             "variantLabel": "Input Type",
             "defaultValueLabel": "Default Value",

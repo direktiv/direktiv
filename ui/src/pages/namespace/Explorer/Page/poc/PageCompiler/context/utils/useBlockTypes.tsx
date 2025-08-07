@@ -22,10 +22,10 @@ import { Dialog as DialogForm } from "../../../BlockEditor/Dialog";
 import { Form as FormForm } from "../../../BlockEditor/Form";
 import { Headline } from "../../../BlockEditor/Headline";
 import { Image as ImageForm } from "../../../BlockEditor/Image";
-import { Input } from "../../../BlockEditor/Form/Input";
 import { Loop as LoopForm } from "../../../BlockEditor/Loop";
 import { QueryProvider as QueryProviderForm } from "../../../BlockEditor/QueryProvider";
 import { Select } from "../../../BlockEditor/Form/Select";
+import { StringInput } from "../../../BlockEditor/Form/StringInput";
 import { Table as TableForm } from "../../../BlockEditor/Table";
 import { Text as TextForm } from "../../../BlockEditor/Text";
 import { Textarea } from "../../../BlockEditor/Form/Textarea";
@@ -191,7 +191,7 @@ const blockTypes: BlockTypeConfig[] = [
         path,
         match: (block) => block.type === "form",
       }),
-    formComponent: Input,
+    formComponent: StringInput,
     defaultValues: {
       id: "",
       defaultValue: "",
