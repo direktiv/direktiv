@@ -1,9 +1,9 @@
 import { Controller, useForm } from "react-hook-form";
 import {
-  FormInput as FormInputSchema,
-  FormInputType,
-  inputTypes,
-} from "../../schema/blocks/form/input";
+  FormStringInput as FormInputSchema,
+  FormStringInputType,
+  stringInputTypes,
+} from "../../schema/blocks/form/stringInput";
 import {
   Select,
   SelectContent,
@@ -20,7 +20,7 @@ import InputDesignComponent from "~/design/Input";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type InputProps = BlockEditFormProps<FormInputType>;
+type InputProps = BlockEditFormProps<FormStringInputType>;
 
 export const Input = ({
   action,
@@ -30,7 +30,7 @@ export const Input = ({
   onCancel,
 }: InputProps) => {
   const { t } = useTranslation();
-  const form = useForm<FormInputType>({
+  const form = useForm<FormStringInputType>({
     resolver: zodResolver(FormInputSchema),
     defaultValues: propBlock,
   });
@@ -63,7 +63,7 @@ export const Input = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {inputTypes.map((item) => (
+                {stringInputTypes.map((item) => (
                   <SelectItem key={item} value={item}>
                     <span>{item}</span>
                   </SelectItem>

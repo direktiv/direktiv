@@ -1,13 +1,13 @@
 import { DateInput } from "./DateInput";
 import { Fieldset } from "../utils/FieldSet";
-import { FormInputType } from "../../../../schema/blocks/form/input";
+import { FormStringInputType } from "../../../../schema/blocks/form/stringInput";
 import { TextInput } from "./TextInput";
 
 type FormInputProps = {
-  blockProps: FormInputType;
+  blockProps: FormStringInputType;
 };
 
-export const FormInput = ({ blockProps }: FormInputProps) => {
+export const FormStringInput = ({ blockProps }: FormInputProps) => {
   const { id, label, description, variant, defaultValue, optional } =
     blockProps;
   const htmlID = `form-input-${id}`;
