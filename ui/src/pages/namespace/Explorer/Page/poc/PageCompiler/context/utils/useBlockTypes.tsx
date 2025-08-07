@@ -182,8 +182,8 @@ const blockTypes: BlockTypeConfig[] = [
     },
   },
   {
-    type: "form-input",
-    label: t("direktivPage.blockEditor.blockName.form-input"),
+    type: "form-string-input",
+    label: t("direktivPage.blockEditor.blockName.form-string-input"),
     icon: TextCursorInput,
     allow: (page, path) =>
       !!findAncestor({
@@ -198,8 +198,28 @@ const blockTypes: BlockTypeConfig[] = [
       description: "",
       label: "",
       optional: false,
-      type: "form-input",
+      type: "form-string-input",
       variant: "text",
+    },
+  },
+  {
+    type: "form-number-input",
+    label: t("direktivPage.blockEditor.blockName.form-number-input"),
+    icon: TextCursorInput,
+    allow: (page, path) =>
+      !!findAncestor({
+        page,
+        path,
+        match: (block) => block.type === "form",
+      }),
+    formComponent: Input,
+    defaultValues: {
+      id: "",
+      defaultValue: 0,
+      description: "",
+      label: "",
+      optional: false,
+      type: "form-number-input",
     },
   },
   {
