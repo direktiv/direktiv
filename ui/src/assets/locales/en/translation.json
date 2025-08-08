@@ -1691,7 +1691,8 @@
         "dialog": "Dialog",
         "form": "Form",
         "form-checkbox": "Form: Checkbox",
-        "form-input": "Form: Input",
+        "form-string-input": "Form: String Input",
+        "form-number-input": "Form: Number Input",
         "form-select": "Form: Select",
         "form-textarea": "Form: Textarea",
         "loop": "Loop",
@@ -1799,11 +1800,15 @@
           "description": "Description",
           "descriptionPlaceholder": "Description for the form element",
           "optional": "Optional field",
-          "input": {
+          "stringInput": {
             "description": "An input field allows users to enter text information.",
             "variantLabel": "Input Type",
             "defaultValueLabel": "Default Value",
             "defaultValuePlaceholder": "Enter default value (optional)"
+          },
+          "numberInput": {
+            "description": "An input field allows users to enter a number.",
+            "defaultValueLabel": "Default Value"
           },
           "checkbox": {
             "description": "A checkbox allows users to select or unselect a boolean option.",
@@ -1843,7 +1848,8 @@
           "dialog": "dialog block",
           "form": "form block",
           "form-checkbox": "checkbox block",
-          "form-input": "input block",
+          "form-string-input": "string input block",
+          "form-number-input": "number input block",
           "form-select": "select block",
           "form-textarea": "textarea block",
           "loop": "loop block",

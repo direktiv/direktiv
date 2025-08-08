@@ -1,9 +1,9 @@
 import { Controller, useForm } from "react-hook-form";
 import {
-  FormInput as FormInputSchema,
-  FormInputType,
-  inputTypes,
-} from "../../schema/blocks/form/input";
+  FormStringInput as FormInputSchema,
+  FormStringInputType,
+  stringInputTypes,
+} from "../../schema/blocks/form/stringInput";
 import {
   Select,
   SelectContent,
@@ -20,17 +20,17 @@ import InputDesignComponent from "~/design/Input";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type InputProps = BlockEditFormProps<FormInputType>;
+type StringInputProps = BlockEditFormProps<FormStringInputType>;
 
-export const Input = ({
+export const StringInput = ({
   action,
   block: propBlock,
   path,
   onSubmit,
   onCancel,
-}: InputProps) => {
+}: StringInputProps) => {
   const { t } = useTranslation();
-  const form = useForm<FormInputType>({
+  const form = useForm<FormStringInputType>({
     resolver: zodResolver(FormInputSchema),
     defaultValues: propBlock,
   });
@@ -38,7 +38,7 @@ export const Input = ({
   return (
     <FormWrapper
       description={t(
-        "direktivPage.blockEditor.blockForms.formPrimitives.input.description"
+        "direktivPage.blockEditor.blockForms.formPrimitives.stringInput.description"
       )}
       form={form}
       block={propBlock}
@@ -50,7 +50,7 @@ export const Input = ({
       <BaseForm form={form} />
       <Fieldset
         label={t(
-          "direktivPage.blockEditor.blockForms.formPrimitives.input.variantLabel"
+          "direktivPage.blockEditor.blockForms.formPrimitives.stringInput.variantLabel"
         )}
         htmlFor="variant"
       >
@@ -63,7 +63,7 @@ export const Input = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {inputTypes.map((item) => (
+                {stringInputTypes.map((item) => (
                   <SelectItem key={item} value={item}>
                     <span>{item}</span>
                   </SelectItem>
@@ -75,7 +75,7 @@ export const Input = ({
       </Fieldset>
       <Fieldset
         label={t(
-          "direktivPage.blockEditor.blockForms.formPrimitives.input.defaultValueLabel"
+          "direktivPage.blockEditor.blockForms.formPrimitives.stringInput.defaultValueLabel"
         )}
         htmlFor="defaultValue"
       >
@@ -83,7 +83,7 @@ export const Input = ({
           {...form.register("defaultValue")}
           id="defaultValue"
           placeholder={t(
-            "direktivPage.blockEditor.blockForms.formPrimitives.input.defaultValuePlaceholder"
+            "direktivPage.blockEditor.blockForms.formPrimitives.stringInput.defaultValuePlaceholder"
           )}
         />
       </Fieldset>
