@@ -1,4 +1,5 @@
 import { FormBase } from "./utils";
+import { TemplateString } from "../../primitives/templateString";
 import { z } from "zod";
 
 export const stringInputTypes = [
@@ -12,7 +13,7 @@ export const stringInputTypes = [
 export const FormStringInput = FormBase.extend({
   type: z.literal("form-string-input"),
   variant: z.enum(stringInputTypes),
-  defaultValue: z.string(),
+  defaultValue: TemplateString.min(1),
 });
 
 export type FormStringInputType = z.infer<typeof FormStringInput>;
