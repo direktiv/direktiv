@@ -11,6 +11,8 @@ type ArrayError = "notAnArray";
 
 type BooleanError = "notABoolean";
 
+type NumberError = "notANumber";
+
 type StringifyError = "couldNotStringify";
 
 export type ResolveVariableError =
@@ -23,3 +25,5 @@ export type ResolveVariableArrayError = ResolveVariableError | ArrayError;
 export type ResolveVariableStringError = ResolveVariableError | StringifyError;
 
 export type ResolveVariableBooleanError = ResolveVariableError | BooleanError;
+
+export type ResolveVariableNumberError = ResolveVariableError | NumberError;

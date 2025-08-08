@@ -1656,7 +1656,8 @@
         "invalidPath": "The path is not ivalid. It points to an undefined value",
         "couldNotStringify": "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null.",
         "notAnArray": "Pointing to a value that is not an array.",
-        "notABoolean": "Pointing to a value that is not a boolean."
+        "notABoolean": "Pointing to a value that is not a boolean.",
+        "notANumber": "Pointing to a value that is not a number."
       }
     },
     "page": {
