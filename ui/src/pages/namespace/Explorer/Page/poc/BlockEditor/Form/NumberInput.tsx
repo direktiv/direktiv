@@ -18,7 +18,6 @@ import { BlockEditFormProps } from "..";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
 import Input from "~/design/Input";
-import { parse } from "path";
 import { useTranslation } from "react-i18next";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
