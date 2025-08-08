@@ -13,7 +13,7 @@ export const stringInputTypes = [
 export const FormStringInput = FormBase.extend({
   type: z.literal("form-string-input"),
   variant: z.enum(stringInputTypes),
-  defaultValue: TemplateString.min(1),
+  defaultValue: TemplateString,
 });
 
 export type FormStringInputType = z.infer<typeof FormStringInput>;
