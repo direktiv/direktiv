@@ -8,7 +8,7 @@ import { TemplateString } from "../../primitives/templateString";
 import { z } from "zod";
 
 // default value is either of a checkbox is either a static boolean or a pointer to a variable
-const DefaultValue = z.discriminatedUnion("type", [
+export const DefaultValueSchema = z.discriminatedUnion("type", [
   VariableSchema,
   BooleanSchema,
 ]);
@@ -16,7 +16,7 @@ const DefaultValue = z.discriminatedUnion("type", [
 export const FormCheckbox = FormBase.extend({
   type: z.literal("form-checkbox"),
   description: TemplateString.min(1), // overwrite description from base to be required
-  defaultValue: DefaultValue,
+  defaultValue: DefaultValueSchema,
 });
 
 export type FormCheckboxType = z.infer<typeof FormCheckbox>;
