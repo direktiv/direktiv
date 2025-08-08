@@ -27,18 +27,19 @@ const DialogBaseComponent = ({
         <DialogTrigger asChild onClick={(event) => event.stopPropagation()}>
           <Button blockProps={trigger} />
         </DialogTrigger>
-
         <LocalDialogContent>
           <DialogXClose />
-          <BlockList path={blockPath}>
-            {blocks.map((block, index) => (
-              <Block
-                key={index}
-                block={block}
-                blockPath={[...blockPath, index]}
-              />
-            ))}
-          </BlockList>
+          <div className="max-h-[55vh] overflow-y-auto p-2 pt-4">
+            <BlockList path={blockPath}>
+              {blocks.map((block, index) => (
+                <Block
+                  key={index}
+                  block={block}
+                  blockPath={[...blockPath, index]}
+                />
+              ))}
+            </BlockList>
+          </div>
         </LocalDialogContent>
       </LocalDialog>
     </div>
@@ -46,21 +47,12 @@ const DialogBaseComponent = ({
 };
 
 const EditModeDialog = (props: DialogProps) => {
-  const { setPanel } = usePageEditorPanel();
+  const { setDialog } = usePageEditorPanel();
 
   return (
     <DialogBaseComponent
       {...props}
-      onOpenChange={(open) =>
-        setPanel(
-          open
-            ? {
-                action: null,
-                dialog: props.blockPath,
-              }
-            : null
-        )
-      }
+      onOpenChange={(open) => setDialog(open ? props.blockPath : null)}
     />
   );
 };

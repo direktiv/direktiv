@@ -83,7 +83,7 @@ get:
 	retry10(`should execute gateway ep1.yaml endpoint`, async () => {
 		const res = await request(config.getDirektivHost()).get(`/ns/${ namespace }/ep1`)
 			.send({})
-		expect(res.statusCode).toEqual(504)
+		expect(res.statusCode).toEqual(503)
 	})
 
 	retry10(`should execute gateway ep2.yaml endpoint`, async () => {

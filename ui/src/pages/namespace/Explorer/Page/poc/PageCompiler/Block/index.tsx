@@ -5,6 +5,10 @@ import { Card } from "./Card";
 import { Columns } from "./Columns";
 import { Dialog } from "./Dialog";
 import { Form } from "./Form";
+import { FormCheckbox } from "./formPrimitives/FormCheckbox";
+import { FormInput } from "./formPrimitives/FormInput";
+import { FormSelect } from "./formPrimitives/FormSelect";
+import { FormTextarea } from "./formPrimitives/FormTextarea";
 import { Headline } from "./Headline";
 import { Image } from "./Image";
 import { Loop } from "./Loop";
@@ -47,6 +51,14 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         return <Table blockProps={block} />;
       case "form":
         return <Form blockProps={block} blockPath={blockPath} />;
+      case "form-input":
+        return <FormInput blockProps={block} />;
+      case "form-textarea":
+        return <FormTextarea blockProps={block} />;
+      case "form-select":
+        return <FormSelect blockProps={block} />;
+      case "form-checkbox":
+        return <FormCheckbox blockProps={block} />;
       default:
         return (
           <ParsingError

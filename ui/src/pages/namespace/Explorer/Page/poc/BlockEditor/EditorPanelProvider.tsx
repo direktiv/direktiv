@@ -24,19 +24,24 @@ type EditorPanelState =
       action: "create" | "edit" | "delete";
       block: BlockType;
       path: BlockPathType;
-      dialog?: BlockPathType | null;
     };
+
+type EditorDialogState = null | BlockPathType;
 
 type EditorPanelContextType = {
   panel: EditorPanelState;
   setPanel: React.Dispatch<React.SetStateAction<EditorPanelState>>;
+  dialog: EditorDialogState;
+  setDialog: React.Dispatch<React.SetStateAction<EditorDialogState>>;
 };
 
 const EditorPanelContext = createContext<EditorPanelContextType | null>(null);
 
 const PagePreviewContainer = ({ children }: PropsWithChildren) => (
-  <div className="grow px-3 py-5 sm:h-[calc(100vh-230px)] sm:overflow-y-scroll">
-    {children}
+  <div className="grow sm:h-[calc(100vh-230px)] sm:overflow-y-scroll">
+    <LocalDialogContainer className="h-full min-w-0 flex-1 px-3 py-5">
+      <div className="mx-auto max-w-screen-lg">{children}</div>
+    </LocalDialogContainer>
   </div>
 );
 
@@ -49,6 +54,7 @@ export const EditorPanelLayoutProvider = ({
 
   const { addBlock, deleteBlock, moveBlock } = usePageEditor();
   const [panel, setPanel] = useState<EditorPanelState>(null);
+  const [dialog, setDialog] = useState<EditorDialogState>(null);
   const { mode } = usePageStateContext();
 
   const createBlock = (type: BlockType["type"], path: BlockPathType) => {
@@ -79,16 +85,14 @@ export const EditorPanelLayoutProvider = ({
   if (mode === "edit") {
     return (
       <DndContext onDrop={onDrop}>
-        <EditorPanelContext.Provider value={{ panel, setPanel }}>
+        <EditorPanelContext.Provider
+          value={{ panel, setPanel, dialog, setDialog }}
+        >
           <div className="grow sm:grid sm:grid-cols-[350px_1fr]">
             <div className="h-[300px] overflow-y-visible border-b-2 border-gray-4 p-3 dark:border-gray-dark-4 sm:h-[calc(100vh-230px)] sm:border-b-0 sm:border-r-2">
               <EditorPanel />
             </div>
-            <PagePreviewContainer>
-              <LocalDialogContainer className="min-w-0 flex-1">
-                {children}
-              </LocalDialogContainer>
-            </PagePreviewContainer>
+            <PagePreviewContainer>{children}</PagePreviewContainer>
           </div>
           <Dialog open={panel && panel.action === "delete" ? true : false}>
             <DialogContent>
@@ -111,11 +115,7 @@ export const EditorPanelLayoutProvider = ({
     );
   }
 
-  return (
-    <LocalDialogContainer>
-      <PagePreviewContainer>{children}</PagePreviewContainer>
-    </LocalDialogContainer>
-  );
+  return <PagePreviewContainer>{children}</PagePreviewContainer>;
 };
 
 export const usePageEditorPanel = () => {

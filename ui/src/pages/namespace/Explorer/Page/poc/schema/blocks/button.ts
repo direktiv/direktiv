@@ -4,7 +4,7 @@ import { z } from "zod";
 
 export const Button = z.object({
   type: z.literal("button"),
-  label: TemplateString,
+  label: TemplateString.min(1),
   submit: Mutation.optional(),
 });
 

@@ -7,7 +7,7 @@ import { z } from "zod";
  * utilize dynamic data from a parent context, such as form data, data from an
  * API query, etc.
  */
-export const TemplateString = z.string().min(1);
+export const TemplateString = z.string();
 
 export const TemplateStringSeparator = ".";
 

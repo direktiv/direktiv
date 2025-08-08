@@ -3,6 +3,10 @@ import { Card, CardType } from "./card";
 import { Column, ColumnType, Columns, ColumnsType } from "./columns";
 import { Dialog, DialogType } from "./dialog";
 import { Form, FormType } from "./form";
+import { FormCheckbox, FormCheckboxType } from "./form/checkbox";
+import { FormInput, FormInputType } from "./form/input";
+import { FormSelect, FormSelectType } from "./form/select";
+import { FormTextarea, FormTextareaType } from "./form/textarea";
 import { Headline, HeadlineType } from "./headline";
 import { Image, ImageType } from "./image";
 import { Loop, LoopType } from "./loop";
@@ -22,6 +26,10 @@ import { z } from "zod";
 
 const SimpleBlockUnion = z.discriminatedUnion("type", [
   Button,
+  FormCheckbox,
+  FormInput,
+  FormSelect,
+  FormTextarea,
   Headline,
   Image,
   Table,
@@ -40,6 +48,10 @@ export const ParentBlockUnion = z.discriminatedUnion("type", [
 
 export type SimpleBlockType =
   | ButtonType
+  | FormCheckboxType
+  | FormInputType
+  | FormSelectType
+  | FormTextareaType
   | HeadlineType
   | ImageType
   | TableType
@@ -69,11 +81,15 @@ export const AvailableBlockTypeAttributes = z.union([
   z.literal("text"),
   z.literal("card"),
   z.literal("dialog"),
-  z.literal("form"),
   z.literal("loop"),
   z.literal("query-provider"),
   z.literal("column"),
   z.literal("columns"),
+  z.literal("form"),
+  z.literal("form-input"),
+  z.literal("form-select"),
+  z.literal("form-textarea"),
+  z.literal("form-checkbox"),
 ]);
 
 export const TriggerBlock = z.discriminatedUnion("type", [Button]);
