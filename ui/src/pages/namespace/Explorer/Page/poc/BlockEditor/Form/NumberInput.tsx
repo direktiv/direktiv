@@ -1,5 +1,5 @@
 import {
-  FormNumberInput as FormNumberInputSchema,
+  FormNumberInput,
   FormNumberInputType,
 } from "../../schema/blocks/form/numberInput";
 
@@ -23,7 +23,7 @@ export const NumberInput = ({
 }: NumberInputProps) => {
   const { t } = useTranslation();
   const form = useForm<FormNumberInputType>({
-    resolver: zodResolver(FormNumberInputSchema),
+    resolver: zodResolver(FormNumberInput),
     defaultValues: propBlock,
   });
 

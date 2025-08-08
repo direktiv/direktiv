@@ -1,6 +1,6 @@
 import { Controller, useForm } from "react-hook-form";
 import {
-  FormStringInput as FormInputSchema,
+  FormStringInput,
   FormStringInputType,
   stringInputTypes,
 } from "../../schema/blocks/form/stringInput";
@@ -31,7 +31,7 @@ export const StringInput = ({
 }: StringInputProps) => {
   const { t } = useTranslation();
   const form = useForm<FormStringInputType>({
-    resolver: zodResolver(FormInputSchema),
+    resolver: zodResolver(FormStringInput),
     defaultValues: propBlock,
   });
 
