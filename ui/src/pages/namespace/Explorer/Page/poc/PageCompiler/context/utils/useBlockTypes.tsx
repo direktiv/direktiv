@@ -216,7 +216,7 @@ const blockTypes: BlockTypeConfig[] = [
     formComponent: NumberInput,
     defaultValues: {
       id: "",
-      defaultValue: 0,
+      defaultValue: { type: "number", value: 0 },
       description: "",
       label: "",
       optional: false,
@@ -236,7 +236,7 @@ const blockTypes: BlockTypeConfig[] = [
     formComponent: Checkbox,
     defaultValues: {
       id: "",
-      defaultValue: false,
+      defaultValue: { type: "boolean", value: false },
       description: "",
       label: "",
       optional: false,
