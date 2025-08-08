@@ -8,7 +8,7 @@ import { TemplateString } from "../../primitives/templateString";
 import { z } from "zod";
 
 // default value is either of a checkbox is either a static boolean or a pointer to a variable
-export const DefaultValueSchema = z.discriminatedUnion("type", [
+const DefaultValueSchema = z.discriminatedUnion("type", [
   VariableSchema,
   BooleanSchema,
 ]);
