@@ -1,7 +1,6 @@
 import { Fieldset } from "./utils/FieldSet";
 import { FormNumberInputType } from "../../../schema/blocks/form/numberInput";
 import Input from "~/design/Input";
-import { VariableError } from "../../primitives/Variable/Error";
 import { useTranslation } from "react-i18next";
 import { useVariableNumberResolver } from "../../primitives/Variable/utils/useVariableNumberResolver";
 
