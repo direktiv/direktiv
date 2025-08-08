@@ -33,34 +33,6 @@ export const findBlock = (
     return next;
   }, parent);
 
-export const findParentBlock = (
-  page: DirektivPagesType,
-  path: BlockPathType
-): BlockType | DirektivPagesType => {
-  let current: BlockType | DirektivPagesType = page;
-
-  for (let i = 0; i < path.length - 1; i++) {
-    const index = path[i] ?? 0;
-
-    if (!isPage(current) && !isParentBlock(current)) {
-      throw new Error(
-        `Block at path [${path.slice(0, i).join(",")}] is not a parent block`
-      );
-    }
-
-    let next: BlockType | undefined = current.blocks[index];
-    if (!next) {
-      throw new Error(
-        `No block at index ${index} in path [${path.slice(0, i).join(",")}]`
-      );
-    }
-    next = next as BlockType;
-    current = next;
-  }
-
-  return current;
-};
-
 export const updateBlockInPage = (
   page: DirektivPagesType,
   path: BlockPathType,
@@ -164,7 +136,7 @@ export const isMovingBefore = (
   throw new Error("Paths should never be equal");
 };
 
-export const firstDifferentIndex = (
+const firstDifferentIndex = (
   originPath: BlockPathType,
   targetPath: BlockPathType
 ) => {
@@ -202,8 +174,8 @@ export const moveBlockWithinPage = (
   }
 
   if (
-    !targetOnRootLevel &&
     targetBeforeOrigin &&
+    !targetOnRootLevel &&
     sameParent &&
     adjustedOriginPath[index]
   ) {
