@@ -1,13 +1,19 @@
+import {
+  BlockType,
+  ParentBlockType,
+  SimpleBlockType,
+} from "../../../schema/blocks";
 import { ColumnType, ColumnsType } from "../../../schema/blocks/columns";
-import { ParentBlockType, SimpleBlockType } from "../../../schema/blocks";
 import {
   addBlockToPage,
   deleteBlockFromPage,
   findAncestor,
   findBlock,
   incrementPath,
+  isMovingBefore,
   isPage,
   isParentBlock,
+  moveBlockWithinPage,
   pathIsDescendant,
   pathsEqual,
   updateBlockInPage,
@@ -55,6 +61,18 @@ describe("isParentBlock", () => {
     const result = isParentBlock(parentBlock);
     expect(result).toEqual(true);
   });
+
+  test("query provider is a parent block", () => {
+    const queryBlock = findBlock(complex, [3]) as BlockType;
+    const result = isParentBlock(queryBlock);
+    expect(result).toEqual(true);
+  });
+
+  test("inside of query provider is not a parent block", () => {
+    const queryBlock = findBlock(complex, [3, 1]) as BlockType;
+    const result = isParentBlock(queryBlock);
+    expect(result).toEqual(false);
+  });
 });
 
 describe("isPage", () => {
@@ -80,6 +98,79 @@ describe("findBlock", () => {
     expect(result).toEqual({
       type: "text",
       content: "Column 2 text",
+    });
+  });
+
+  test("find query provider", () => {
+    const result = findBlock(complex, [3]);
+    expect(result).toEqual({
+      type: "query-provider",
+      queries: [
+        {
+          id: "fetching-resources",
+          url: "/api/get/resources",
+          queryParams: [
+            {
+              key: "query",
+              value: "my-search-query",
+            },
+          ],
+        },
+      ],
+      blocks: [
+        {
+          type: "dialog",
+          trigger: {
+            type: "button",
+            label: "open dialog",
+          },
+          blocks: [
+            {
+              type: "form",
+              trigger: {
+                type: "button",
+                label: "delete",
+              },
+              mutation: {
+                id: "my-delete",
+                url: "/api/delete/",
+                method: "DELETE",
+              },
+              blocks: [],
+            },
+          ],
+        },
+        {
+          type: "text",
+          content: "simple text",
+        },
+      ],
+    });
+  });
+
+  test("find first child of query provider", () => {
+    const result = findBlock(complex, [3, 0]);
+    expect(result).toEqual({
+      type: "dialog",
+      trigger: {
+        type: "button",
+        label: "open dialog",
+      },
+      blocks: [
+        {
+          type: "form",
+          trigger: {
+            type: "button",
+            label: "delete",
+          },
+          mutation: {
+            id: "my-delete",
+            url: "/api/delete/",
+            method: "DELETE",
+          },
+          blocks: [],
+        },
+      ],
     });
   });
 
@@ -429,6 +520,546 @@ describe("deleteBlockFromPage", () => {
     expect(() => deleteBlockFromPage(simple, [])).toThrow(
       "Invalid path, could not extract index for target block"
     );
+  });
+});
+
+describe("movingBefore", () => {
+  test("Dragging Up - Same Level - Root", () => {
+    const result = isMovingBefore([1], [0]);
+    expect(result).toEqual(true);
+  });
+
+  test("Dragging Down - Same Level - Root", () => {
+    const result = isMovingBefore([0], [2]);
+    expect(result).toEqual(false);
+  });
+
+  test("Dragging Up - Same Level - Nested", () => {
+    const result = isMovingBefore([1, 0, 1], [1, 0, 0]);
+    expect(result).toEqual(true);
+  });
+
+  // test("Dragging Down - Same Level - Nested", () => {
+  //   const result = movingBefore([0], [0, 6]);
+  //   expect(result).toEqual(false);
+  // });
+
+  test("Dragging Up - Nested to Unnested Level", () => {
+    const result = isMovingBefore([2, 0, 0], [0]);
+    expect(result).toEqual(true);
+  });
+
+  test("Dragging Down - Nested to Unnested Level", () => {
+    const result = isMovingBefore([0, 3, 3], [2]);
+    expect(result).toEqual(false);
+  });
+
+  test("Dragging Up - Unnested to Nested Level", () => {
+    const result = isMovingBefore([2], [0, 1, 0, 3]);
+    expect(result).toEqual(true);
+  });
+
+  test("Dragging Down - Unnested to Nested Level", () => {
+    const result = isMovingBefore([0, 3, 3], [3, 3, 0]);
+    expect(result).toEqual(false);
+  });
+});
+
+describe("moveBlockWithinPage", () => {
+  test("Dragging Down - Same Level", () => {
+    const block = findBlock(complex, [0]) as BlockType;
+    const result = moveBlockWithinPage(complex, [0], [2], block);
+
+    expect(result).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "text",
+          content:
+            "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
+        },
+        {
+          type: "headline",
+          level: "h1",
+          label: "Welcome to Direktiv",
+        },
+        {
+          type: "columns",
+          blocks: [
+            {
+              type: "column",
+              blocks: [{ type: "text", content: "Column 1 text" }],
+            },
+            {
+              type: "column",
+              blocks: [
+                { type: "text", content: "Column 2 text" },
+                { type: "button", label: "Edit me" },
+              ],
+            },
+          ],
+        },
+        {
+          type: "query-provider",
+          queries: [
+            {
+              id: "fetching-resources",
+              url: "/api/get/resources",
+              queryParams: [
+                {
+                  key: "query",
+                  value: "my-search-query",
+                },
+              ],
+            },
+          ],
+          blocks: [
+            {
+              type: "dialog",
+              trigger: {
+                type: "button",
+                label: "open dialog",
+              },
+              blocks: [
+                {
+                  type: "form",
+                  trigger: {
+                    type: "button",
+                    label: "delete",
+                  },
+                  mutation: {
+                    id: "my-delete",
+                    url: "/api/delete/",
+                    method: "DELETE",
+                  },
+                  blocks: [],
+                },
+              ],
+            },
+            {
+              type: "text",
+              content: "simple text",
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  test("Dragging Up - Same Level", () => {
+    const block = findBlock(complex, [3]) as BlockType;
+    const result = moveBlockWithinPage(complex, [3], [1], block);
+
+    expect(result).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "headline",
+          level: "h1",
+          label: "Welcome to Direktiv",
+        },
+        {
+          type: "query-provider",
+          queries: [
+            {
+              id: "fetching-resources",
+              url: "/api/get/resources",
+              queryParams: [
+                {
+                  key: "query",
+                  value: "my-search-query",
+                },
+              ],
+            },
+          ],
+          blocks: [
+            {
+              type: "dialog",
+              trigger: {
+                type: "button",
+                label: "open dialog",
+              },
+              blocks: [
+                {
+                  type: "form",
+                  trigger: {
+                    type: "button",
+                    label: "delete",
+                  },
+                  mutation: {
+                    id: "my-delete",
+                    url: "/api/delete/",
+                    method: "DELETE",
+                  },
+                  blocks: [],
+                },
+              ],
+            },
+            {
+              type: "text",
+              content: "simple text",
+            },
+          ],
+        },
+        {
+          type: "text",
+          content:
+            "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
+        },
+        {
+          type: "columns",
+          blocks: [
+            {
+              type: "column",
+              blocks: [{ type: "text", content: "Column 1 text" }],
+            },
+            {
+              type: "column",
+              blocks: [
+                { type: "text", content: "Column 2 text" },
+                { type: "button", label: "Edit me" },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  test("Dragging Up - Nested to Unnested Level", () => {
+    const block = findBlock(complex, [2, 1, 1]) as BlockType;
+    const result = moveBlockWithinPage(complex, [2, 1, 1], [1], block);
+
+    expect(result).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "headline",
+          level: "h1",
+          label: "Welcome to Direktiv",
+        },
+        {
+          type: "button",
+          label: "Edit me",
+        },
+        {
+          type: "text",
+          content:
+            "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
+        },
+        {
+          type: "columns",
+          blocks: [
+            {
+              type: "column",
+              blocks: [{ type: "text", content: "Column 1 text" }],
+            },
+            {
+              type: "column",
+              blocks: [{ type: "text", content: "Column 2 text" }],
+            },
+          ],
+        },
+        {
+          type: "query-provider",
+          queries: [
+            {
+              id: "fetching-resources",
+              url: "/api/get/resources",
+              queryParams: [
+                {
+                  key: "query",
+                  value: "my-search-query",
+                },
+              ],
+            },
+          ],
+          blocks: [
+            {
+              type: "dialog",
+              trigger: {
+                type: "button",
+                label: "open dialog",
+              },
+              blocks: [
+                {
+                  type: "form",
+                  trigger: {
+                    type: "button",
+                    label: "delete",
+                  },
+                  mutation: {
+                    id: "my-delete",
+                    url: "/api/delete/",
+                    method: "DELETE",
+                  },
+                  blocks: [],
+                },
+              ],
+            },
+            {
+              type: "text",
+              content: "simple text",
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  test("Dragging Down - Nested to Unnested Level", () => {
+    const block = findBlock(complex, [2, 0, 0]) as BlockType;
+    const result = moveBlockWithinPage(complex, [2, 0, 0], [3], block);
+
+    expect(result).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "headline",
+          level: "h1",
+          label: "Welcome to Direktiv",
+        },
+        {
+          type: "text",
+          content:
+            "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
+        },
+        {
+          type: "columns",
+          blocks: [
+            {
+              type: "column",
+              blocks: [],
+            },
+            {
+              type: "column",
+              blocks: [
+                { type: "text", content: "Column 2 text" },
+                { type: "button", label: "Edit me" },
+              ],
+            },
+          ],
+        },
+        {
+          type: "text",
+          content: "Column 1 text",
+        },
+        {
+          type: "query-provider",
+          queries: [
+            {
+              id: "fetching-resources",
+              url: "/api/get/resources",
+              queryParams: [
+                {
+                  key: "query",
+                  value: "my-search-query",
+                },
+              ],
+            },
+          ],
+          blocks: [
+            {
+              type: "dialog",
+              trigger: {
+                type: "button",
+                label: "open dialog",
+              },
+              blocks: [
+                {
+                  type: "form",
+                  trigger: {
+                    type: "button",
+                    label: "delete",
+                  },
+                  mutation: {
+                    id: "my-delete",
+                    url: "/api/delete/",
+                    method: "DELETE",
+                  },
+                  blocks: [],
+                },
+              ],
+            },
+            {
+              type: "text",
+              content: "simple text",
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  test("Dragging Up - Unnested to Nested Level", () => {
+    const block = findBlock(complex, [3]) as BlockType;
+    const result = moveBlockWithinPage(complex, [3], [2, 1, 1], block);
+
+    expect(result).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "headline",
+          level: "h1",
+          label: "Welcome to Direktiv",
+        },
+        {
+          type: "text",
+          content:
+            "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
+        },
+        {
+          type: "columns",
+          blocks: [
+            {
+              type: "column",
+              blocks: [{ type: "text", content: "Column 1 text" }],
+            },
+            {
+              type: "column",
+              blocks: [
+                { type: "text", content: "Column 2 text" },
+                {
+                  type: "query-provider",
+                  queries: [
+                    {
+                      id: "fetching-resources",
+                      url: "/api/get/resources",
+                      queryParams: [
+                        {
+                          key: "query",
+                          value: "my-search-query",
+                        },
+                      ],
+                    },
+                  ],
+                  blocks: [
+                    {
+                      type: "dialog",
+                      trigger: {
+                        type: "button",
+                        label: "open dialog",
+                      },
+                      blocks: [
+                        {
+                          type: "form",
+                          trigger: {
+                            type: "button",
+                            label: "delete",
+                          },
+                          mutation: {
+                            id: "my-delete",
+                            url: "/api/delete/",
+                            method: "DELETE",
+                          },
+                          blocks: [],
+                        },
+                      ],
+                    },
+                    {
+                      type: "text",
+                      content: "simple text",
+                    },
+                  ],
+                },
+                { type: "button", label: "Edit me" },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  test("Dragging Down - Unnested to Nested Level", () => {
+    const block = findBlock(complex, [0]) as BlockType;
+    const result = moveBlockWithinPage(complex, [0], [2, 0, 0], block);
+
+    expect(result).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
+      blocks: [
+        {
+          type: "text",
+          content:
+            "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
+        },
+        {
+          type: "columns",
+          blocks: [
+            {
+              type: "column",
+              blocks: [
+                {
+                  type: "headline",
+                  level: "h1",
+                  label: "Welcome to Direktiv",
+                },
+                {
+                  type: "text",
+                  content: "Column 1 text",
+                },
+              ],
+            },
+            {
+              type: "column",
+              blocks: [
+                { type: "text", content: "Column 2 text" },
+                { type: "button", label: "Edit me" },
+              ],
+            },
+          ],
+        },
+        {
+          type: "query-provider",
+          queries: [
+            {
+              id: "fetching-resources",
+              url: "/api/get/resources",
+              queryParams: [
+                {
+                  key: "query",
+                  value: "my-search-query",
+                },
+              ],
+            },
+          ],
+          blocks: [
+            {
+              type: "dialog",
+              trigger: {
+                type: "button",
+                label: "open dialog",
+              },
+              blocks: [
+                {
+                  type: "form",
+                  trigger: {
+                    type: "button",
+                    label: "delete",
+                  },
+                  mutation: {
+                    id: "my-delete",
+                    url: "/api/delete/",
+                    method: "DELETE",
+                  },
+                  blocks: [],
+                },
+              ],
+            },
+            {
+              type: "text",
+              content: "simple text",
+            },
+          ],
+        },
+      ],
+    });
   });
 });
 

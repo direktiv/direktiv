@@ -116,42 +116,79 @@ export const deleteBlockFromPage = (
   throw new Error("Could not remove block");
 };
 
+export const isMovingBefore = (
+  originPath: BlockPathType,
+  targetPath: BlockPathType
+) => {
+  const len = Math.min(originPath.length, targetPath.length);
+
+  for (let i = 0; i < len; i++) {
+    const origin = originPath[i];
+    const target = targetPath[i];
+
+    if (origin === undefined || target === undefined) {
+      throw new Error("Paths Indices must not be undefined");
+    }
+
+    if (origin >= target) return true;
+    if (origin < target) return false;
+  }
+  throw new Error("Paths should never be equal");
+};
+
+const firstDifferentIndex = (
+  originPath: BlockPathType,
+  targetPath: BlockPathType
+) => {
+  const len = Math.min(originPath.length, targetPath.length);
+  for (let i = 0; i < len; i++) {
+    if (originPath[i] !== targetPath[i]) return i;
+  }
+  return originPath.length !== targetPath.length ? len : null;
+};
+
 export const moveBlockWithinPage = (
   page: DirektivPagesType,
   originPath: BlockPathType,
   targetPath: BlockPathType,
   block: BlockType
 ): DirektivPagesType => {
-  const originIndex = originPath[originPath.length - 1];
-  const targetIndex = targetPath[targetPath.length - 1];
-
-  if (originIndex === undefined) {
-    throw new Error("Invalid path, could not extract index for origin block");
+  if (originPath.length === 0 || targetPath.length === 0) {
+    throw new Error("Paths must not be empty");
   }
 
-  if (targetIndex === undefined) {
-    throw new Error("Invalid path, could not extract index for target block");
+  const sameParent =
+    originPath.length === targetPath.length &&
+    originPath.slice(0, -1).every((v, i) => v === targetPath[i]);
+
+  const targetOnRootLevel = targetPath.length === 1;
+
+  const index = firstDifferentIndex(originPath, targetPath) ?? 0;
+
+  const targetBeforeOrigin = isMovingBefore(originPath, targetPath);
+
+  const adjustedOriginPath: BlockPathType = [...originPath];
+
+  if (targetBeforeOrigin && targetOnRootLevel && adjustedOriginPath[0]) {
+    adjustedOriginPath[0] += 1;
   }
 
-  const originParent = originPath.slice(0, -1).join("-");
-  const targetParent = targetPath.slice(0, -1).join("-");
-
-  const movingWithinSameParent = originParent === targetParent;
-
-  const movingBefore = originIndex > targetIndex || originParent > targetParent;
-  const adjustedOriginIndex =
-    movingWithinSameParent && movingBefore ? originIndex + 1 : originIndex;
-
-  const replacedLastIndexPath: BlockPathType = [
-    ...originPath.slice(0, -1),
-    adjustedOriginIndex,
-  ];
+  if (
+    targetBeforeOrigin &&
+    !targetOnRootLevel &&
+    sameParent &&
+    adjustedOriginPath[index]
+  ) {
+    adjustedOriginPath[index] += 1;
+  }
 
   const pageWithAddedBlock = addBlockToPage(page, targetPath, block, false);
+
   const pageWithDeletedBlock = deleteBlockFromPage(
     pageWithAddedBlock,
-    replacedLastIndexPath
+    adjustedOriginPath
   );
+
   return pageWithDeletedBlock;
 };
 
