@@ -57,7 +57,7 @@ export const Checkbox = ({
         )}
         htmlFor="defaultValue-type"
       >
-        <div className="flex items-center gap-4">
+        <div className="grid grid-cols-[110px,auto] items-center gap-2">
           <Controller
             control={form.control}
             name="defaultValue.type"
