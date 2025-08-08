@@ -1812,7 +1812,12 @@
           },
           "checkbox": {
             "description": "A checkbox allows users to select or unselect a boolean option.",
-            "defaultValueLabel": "Default checked"
+            "defaultValueLabel": "Default checked",
+            "defaultValueType": {
+              "boolean": "Static",
+              "variable": "Variable"
+            },
+            "defaultValueVariablePlaceholder": "Enter boolean variable name"
           },
           "textarea": {
             "description": "A textarea allows users to enter multi-line text.",

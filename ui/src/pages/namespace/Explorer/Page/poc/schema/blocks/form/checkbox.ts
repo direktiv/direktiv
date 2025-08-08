@@ -13,6 +13,15 @@ export const DefaultValueSchema = z.discriminatedUnion("type", [
   BooleanSchema,
 ]);
 
+type DefaultValueSchemaType = z.infer<typeof DefaultValueSchema>;
+
+export const allowedDefaultValueTypes = [
+  "boolean",
+  "variable",
+] as const satisfies DefaultValueSchemaType["type"][];
+
+export const DefaultValueTypeSchema = z.enum(allowedDefaultValueTypes);
+
 export const FormCheckbox = FormBase.extend({
   type: z.literal("form-checkbox"),
   description: TemplateString.min(1), // overwrite description from base to be required
