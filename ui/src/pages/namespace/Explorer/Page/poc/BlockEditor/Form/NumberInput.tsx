@@ -1,10 +1,10 @@
 import { Controller, useForm } from "react-hook-form";
 import {
   DefaultValueTypeSchema,
-  FormCheckbox,
-  FormCheckboxType,
+  FormNumberInput,
+  FormNumberInputType,
   allowedDefaultValueTypes,
-} from "../../schema/blocks/form/checkbox";
+} from "../../schema/blocks/form/numberInput";
 import {
   Select,
   SelectContent,
@@ -15,7 +15,6 @@ import {
 
 import { BaseForm } from "./BaseForm";
 import { BlockEditFormProps } from "..";
-import { Checkbox as CheckboxDesignComponent } from "~/design/Checkbox";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
 import Input from "~/design/Input";
@@ -23,25 +22,25 @@ import { useTranslation } from "react-i18next";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type CheckboxProps = BlockEditFormProps<FormCheckboxType>;
+type NumberInputProps = BlockEditFormProps<FormNumberInputType>;
 
-export const Checkbox = ({
+export const NumberInput = ({
   action,
   block: propBlock,
   path,
   onSubmit,
   onCancel,
-}: CheckboxProps) => {
+}: NumberInputProps) => {
   const { t } = useTranslation();
-  const form = useForm<FormCheckboxType>({
-    resolver: zodResolver(FormCheckbox),
+  const form = useForm<FormNumberInputType>({
+    resolver: zodResolver(FormNumberInput),
     defaultValues: propBlock,
   });
 
   return (
     <FormWrapper
       description={t(
-        "direktivPage.blockEditor.blockForms.formPrimitives.checkbox.description"
+        "direktivPage.blockEditor.blockForms.formPrimitives.numberInput.description"
       )}
       form={form}
       block={propBlock}
@@ -53,7 +52,7 @@ export const Checkbox = ({
       <BaseForm form={form} />
       <Fieldset
         label={t(
-          "direktivPage.blockEditor.blockForms.formPrimitives.checkbox.defaultValueLabel"
+          "direktivPage.blockEditor.blockForms.formPrimitives.numberInput.defaultValueLabel"
         )}
         htmlFor="defaultValue-type"
       >
@@ -69,8 +68,8 @@ export const Checkbox = ({
                   if (parsed.success) {
                     field.onChange(parsed.data);
                     // reset value
-                    if (parsed.data === "boolean") {
-                      form.setValue("defaultValue.value", false);
+                    if (parsed.data === "number") {
+                      form.setValue("defaultValue.value", 0);
                     } else {
                       form.setValue("defaultValue.value", "");
                     }
@@ -84,7 +83,7 @@ export const Checkbox = ({
                   {allowedDefaultValueTypes.map((type) => (
                     <SelectItem value={type} key={type}>
                       {t(
-                        `direktivPage.blockEditor.blockForms.formPrimitives.checkbox.defaultValueType.${type}`
+                        `direktivPage.blockEditor.blockForms.formPrimitives.numberInput.defaultValueType.${type}`
                       )}
                     </SelectItem>
                   ))}
@@ -92,23 +91,23 @@ export const Checkbox = ({
               </Select>
             )}
           />
-          {form.watch("defaultValue.type") === "boolean" ? (
+          {form.watch("defaultValue.type") === "number" ? (
             <Controller
               control={form.control}
               name="defaultValue.value"
               render={({ field }) => {
-                const parsedValue = z.boolean().safeParse(field.value);
-                const defaultValue = parsedValue.success
-                  ? parsedValue.data
-                  : false;
+                const parsedValue = z.number().safeParse(field.value);
+                const defaultValue = parsedValue.success ? parsedValue.data : 0;
 
                 return (
-                  <CheckboxDesignComponent
-                    checked={defaultValue}
-                    onCheckedChange={(value) => {
-                      if (value === "indeterminate") return;
-                      field.onChange(value);
+                  <Input
+                    {...field}
+                    value={defaultValue}
+                    onChange={(e) => {
+                      const numValue = parseInt(e.target.value);
+                      field.onChange(isNaN(numValue) ? 0 : numValue);
                     }}
+                    type="number"
                   />
                 );
               }}
@@ -128,7 +127,7 @@ export const Checkbox = ({
                     {...field}
                     value={defaultValue}
                     placeholder={t(
-                      "direktivPage.blockEditor.blockForms.formPrimitives.checkbox.defaultValueVariablePlaceholder"
+                      "direktivPage.blockEditor.blockForms.formPrimitives.numberInput.defaultValueVariablePlaceholder"
                     )}
                   />
                 );

@@ -8,6 +8,7 @@ import {
 
 import { Fieldset } from "./utils/FieldSet";
 import { FormSelectType } from "../../../schema/blocks/form/select";
+import { useTemplateStringResolver } from "../../primitives/Variable/utils/useTemplateStringResolver";
 import { useTranslation } from "react-i18next";
 
 type FormSelectProps = {
@@ -19,8 +20,11 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
   const { id, label, description, defaultValue, values, optional } = blockProps;
   const htmlID = `form-select-${id}`;
 
-  const value = values.some((v) => v === defaultValue)
-    ? defaultValue
+  const templateStringResolver = useTemplateStringResolver();
+  const resolvedDefaultValue = templateStringResolver(defaultValue);
+
+  const value = values.some((v) => v === resolvedDefaultValue)
+    ? resolvedDefaultValue
     : undefined;
 
   return (

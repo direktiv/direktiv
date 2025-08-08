@@ -1,16 +1,21 @@
 import { DateInput } from "./DateInput";
 import { Fieldset } from "../utils/FieldSet";
-import { FormInputType } from "../../../../schema/blocks/form/input";
+import { FormStringInputType } from "../../../../schema/blocks/form/stringInput";
 import { TextInput } from "./TextInput";
+import { useTemplateStringResolver } from "../../../primitives/Variable/utils/useTemplateStringResolver";
 
 type FormInputProps = {
-  blockProps: FormInputType;
+  blockProps: FormStringInputType;
 };
 
-export const FormInput = ({ blockProps }: FormInputProps) => {
+export const FormStringInput = ({ blockProps }: FormInputProps) => {
   const { id, label, description, variant, defaultValue, optional } =
     blockProps;
   const htmlID = `form-input-${id}`;
+
+  const templateStringResolver = useTemplateStringResolver();
+  const resolvedDefaultValue = templateStringResolver(defaultValue);
+
   return (
     <Fieldset
       label={label}
@@ -21,14 +26,14 @@ export const FormInput = ({ blockProps }: FormInputProps) => {
       {variant === "date" ? (
         <DateInput
           id={htmlID}
-          defaultValue={String(defaultValue)}
+          defaultValue={resolvedDefaultValue}
           // remount when defaultValue changes
           key={defaultValue}
         />
       ) : (
         <TextInput
           id={htmlID}
-          defaultValue={String(defaultValue)}
+          defaultValue={resolvedDefaultValue}
           variant={variant}
         />
       )}

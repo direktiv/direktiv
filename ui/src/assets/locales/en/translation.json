@@ -1655,7 +1655,9 @@
         "invalidJson": "Trying to process a template string on an invalid JSON object",
         "invalidPath": "The path is not ivalid. It points to an undefined value",
         "couldNotStringify": "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null.",
-        "notAnArray": "Pointing to a value that is not an array."
+        "notAnArray": "Pointing to a value that is not an array.",
+        "notABoolean": "Pointing to a value that is not a boolean.",
+        "notANumber": "Pointing to a value that is not a number."
       }
     },
     "page": {
@@ -1691,7 +1693,8 @@
         "dialog": "Dialog",
         "form": "Form",
         "form-checkbox": "Form: Checkbox",
-        "form-input": "Form: Input",
+        "form-string-input": "Form: String Input",
+        "form-number-input": "Form: Number Input",
         "form-select": "Form: Select",
         "form-textarea": "Form: Textarea",
         "loop": "Loop",
@@ -1799,15 +1802,29 @@
           "description": "Description",
           "descriptionPlaceholder": "Description for the form element",
           "optional": "Optional field",
-          "input": {
+          "stringInput": {
             "description": "An input field allows users to enter text information.",
             "variantLabel": "Input Type",
             "defaultValueLabel": "Default Value",
             "defaultValuePlaceholder": "Enter default value (optional)"
           },
+          "numberInput": {
+            "description": "An input field allows users to enter a number.",
+            "defaultValueLabel": "Default Value",
+            "defaultValueType": {
+              "number": "Static",
+              "variable": "Variable"
+            },
+            "defaultValueVariablePlaceholder": "Enter variable name"
+          },
           "checkbox": {
             "description": "A checkbox allows users to select or unselect a boolean option.",
-            "defaultValueLabel": "Default checked"
+            "defaultValueLabel": "Default checked",
+            "defaultValueType": {
+              "boolean": "Static",
+              "variable": "Variable"
+            },
+            "defaultValueVariablePlaceholder": "Enter variable name"
           },
           "textarea": {
             "description": "A textarea allows users to enter multi-line text.",
@@ -1843,7 +1860,8 @@
           "dialog": "dialog block",
           "form": "form block",
           "form-checkbox": "checkbox block",
-          "form-input": "input block",
+          "form-string-input": "string input block",
+          "form-number-input": "number input block",
           "form-select": "select block",
           "form-textarea": "textarea block",
           "loop": "loop block",

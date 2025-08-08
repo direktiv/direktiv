@@ -1,25 +1,25 @@
-import { Checkbox } from "~/design/Checkbox";
 import { Fieldset } from "./utils/FieldSet";
-import { FormCheckboxType } from "../../../schema/blocks/form/checkbox";
+import { FormNumberInputType } from "../../../schema/blocks/form/numberInput";
+import Input from "~/design/Input";
 import { useTranslation } from "react-i18next";
-import { useVariableBooleanResolver } from "../../primitives/Variable/utils/useVariableBooleanResolver";
+import { useVariableNumberResolver } from "../../primitives/Variable/utils/useVariableNumberResolver";
 
-type FormCheckboxProps = {
-  blockProps: FormCheckboxType;
+type FormNumberInputProps = {
+  blockProps: FormNumberInputType;
 };
 
-export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
+export const FormNumberInput = ({ blockProps }: FormNumberInputProps) => {
   const { t } = useTranslation();
   const { id, label, description, defaultValue, optional } = blockProps;
-  const htmlID = `form-checkbox-${id}`;
+  const htmlID = `form-input-${id}`;
 
-  const resolveVariableBoolean = useVariableBooleanResolver();
+  const resolveVariableNumber = useVariableNumberResolver();
 
   const isVariable = defaultValue.type === "variable";
 
-  let value: boolean;
+  let value: number;
   if (isVariable) {
-    const resolvedDefaultValue = resolveVariableBoolean(defaultValue.value);
+    const resolvedDefaultValue = resolveVariableNumber(defaultValue.value);
     if (!resolvedDefaultValue.success) {
       throw new Error(
         t(`direktivPage.error.templateString.${resolvedDefaultValue.error}`)
@@ -35,10 +35,9 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
       label={label}
       description={description}
       htmlFor={htmlID}
-      horizontal
       optional={optional}
     >
-      <Checkbox defaultChecked={value} id={htmlID} />
+      <Input type="number" defaultValue={value} id={htmlID} />
     </Fieldset>
   );
 };

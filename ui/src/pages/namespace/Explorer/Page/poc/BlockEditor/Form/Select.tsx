@@ -1,8 +1,5 @@
 import { Controller, useForm } from "react-hook-form";
-import {
-  FormSelect as FormSelectSchema,
-  FormSelectType,
-} from "../../schema/blocks/form/select";
+import { FormSelect, FormSelectType } from "../../schema/blocks/form/select";
 
 import { ArrayForm } from "~/components/Form/Array";
 import { BaseForm } from "./BaseForm";
@@ -24,7 +21,7 @@ export const Select = ({
 }: SelectProps) => {
   const { t } = useTranslation();
   const form = useForm<FormSelectType>({
-    resolver: zodResolver(FormSelectSchema),
+    resolver: zodResolver(FormSelect),
     defaultValues: propBlock,
   });
 
