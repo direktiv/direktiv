@@ -1,7 +1,6 @@
 import { Checkbox } from "~/design/Checkbox";
 import { Fieldset } from "./utils/FieldSet";
 import { FormCheckboxType } from "../../../schema/blocks/form/checkbox";
-import { VariableError } from "../../primitives/Variable/Error";
 import { useTranslation } from "react-i18next";
 import { useVariableBooleanResolver } from "../../primitives/Variable/utils/useVariableBooleanResolver";
 
@@ -22,16 +21,10 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
   if (isVariable) {
     const resolvedDefaultValue = resolveVariableBoolean(defaultValue.value);
     if (!resolvedDefaultValue.success) {
-      return (
-        <VariableError
-          value={defaultValue.value}
-          errorCode={resolvedDefaultValue.error}
-        >
-          {t(`direktivPage.error.templateString.${resolvedDefaultValue.error}`)}
-        </VariableError>
+      throw new Error(
+        t(`direktivPage.error.templateString.${resolvedDefaultValue.error}`)
       );
     }
-
     value = resolvedDefaultValue.data;
   } else {
     value = defaultValue.value;

@@ -22,16 +22,10 @@ export const FormNumberInput = ({ blockProps }: FormNumberInputProps) => {
   if (isVariable) {
     const resolvedDefaultValue = resolveVariableNumber(defaultValue.value);
     if (!resolvedDefaultValue.success) {
-      return (
-        <VariableError
-          value={defaultValue.value}
-          errorCode={resolvedDefaultValue.error}
-        >
-          {t(`direktivPage.error.templateString.${resolvedDefaultValue.error}`)}
-        </VariableError>
+      throw new Error(
+        t(`direktivPage.error.templateString.${resolvedDefaultValue.error}`)
       );
     }
-
     value = resolvedDefaultValue.data;
   } else {
     value = defaultValue.value;
