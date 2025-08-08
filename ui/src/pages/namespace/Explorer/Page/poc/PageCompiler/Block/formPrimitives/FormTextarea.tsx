@@ -1,32 +1,18 @@
 import { Fieldset } from "./utils/FieldSet";
 import { FormTextareaType } from "../../../schema/blocks/form/textarea";
 import { Textarea } from "~/design/TextArea";
-import { VariableError } from "../../primitives/Variable/Error";
-import { useTranslation } from "react-i18next";
-import { useVariableStringResolver } from "../../primitives/Variable/utils/useVariableStringResolver";
+import { useTemplateStringResolver } from "../../primitives/Variable/utils/useTemplateStringResolver";
 
 type FormTextareaProps = {
   blockProps: FormTextareaType;
 };
 
 export const FormTextarea = ({ blockProps }: FormTextareaProps) => {
-  const { t } = useTranslation();
   const { id, label, description, defaultValue, optional } = blockProps;
   const htmlID = `form-textarea-${id}`;
 
-  const resolveVariableString = useVariableStringResolver();
-  const resolvedDefaultValue = resolveVariableString(defaultValue);
-
-  if (!resolvedDefaultValue.success) {
-    return (
-      <VariableError
-        value={defaultValue}
-        errorCode={resolvedDefaultValue.error}
-      >
-        {t(`direktivPage.error.templateString.${resolvedDefaultValue.error}`)}
-      </VariableError>
-    );
-  }
+  const templateStringResolver = useTemplateStringResolver();
+  const resolvedDefaultValue = templateStringResolver(defaultValue);
 
   return (
     <Fieldset
@@ -35,7 +21,7 @@ export const FormTextarea = ({ blockProps }: FormTextareaProps) => {
       htmlFor={htmlID}
       optional={optional}
     >
-      <Textarea defaultValue={resolvedDefaultValue.data} id={htmlID} />
+      <Textarea defaultValue={resolvedDefaultValue} id={htmlID} />
     </Fieldset>
   );
 };
