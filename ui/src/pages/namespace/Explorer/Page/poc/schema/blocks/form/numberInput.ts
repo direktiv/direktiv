@@ -12,6 +12,15 @@ export const DefaultValueSchema = z.discriminatedUnion("type", [
   NumberSchema,
 ]);
 
+type DefaultValueSchemaType = z.infer<typeof DefaultValueSchema>;
+
+export const allowedDefaultValueTypes = [
+  "number",
+  "variable",
+] as const satisfies DefaultValueSchemaType["type"][];
+
+export const DefaultValueTypeSchema = z.enum(allowedDefaultValueTypes);
+
 export const FormNumberInput = FormBase.extend({
   type: z.literal("form-number-input"),
   defaultValue: DefaultValueSchema,

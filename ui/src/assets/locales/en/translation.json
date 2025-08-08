@@ -1808,7 +1808,12 @@
           },
           "numberInput": {
             "description": "An input field allows users to enter a number.",
-            "defaultValueLabel": "Default Value"
+            "defaultValueLabel": "Default Value",
+            "defaultValueType": {
+              "number": "Static",
+              "variable": "Variable"
+            },
+            "defaultValueVariablePlaceholder": "Enter variable name"
           },
           "checkbox": {
             "description": "A checkbox allows users to select or unselect a boolean option.",
@@ -1817,7 +1822,7 @@
               "boolean": "Static",
               "variable": "Variable"
             },
-            "defaultValueVariablePlaceholder": "Enter boolean variable name"
+            "defaultValueVariablePlaceholder": "Enter variable name"
           },
           "textarea": {
             "description": "A textarea allows users to enter multi-line text.",
