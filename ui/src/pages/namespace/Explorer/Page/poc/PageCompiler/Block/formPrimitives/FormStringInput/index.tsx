@@ -14,7 +14,7 @@ export const FormStringInput = ({ blockProps }: FormInputProps) => {
   const htmlID = `form-input-${id}`;
 
   const templateStringResolver = useTemplateStringResolver();
-  const resolvedDefaultValue = templateStringResolver(defaultValue);
+  const value = templateStringResolver(defaultValue);
 
   return (
     <Fieldset
@@ -23,18 +23,21 @@ export const FormStringInput = ({ blockProps }: FormInputProps) => {
       htmlFor={htmlID}
       optional={optional}
     >
+      {value}
       {variant === "date" ? (
         <DateInput
           id={htmlID}
-          defaultValue={resolvedDefaultValue}
+          defaultValue={value}
           // remount when defaultValue changes
-          key={defaultValue}
+          key={value}
         />
       ) : (
         <TextInput
           id={htmlID}
-          defaultValue={resolvedDefaultValue}
+          defaultValue={value}
           variant={variant}
+          // remount when defaultValue changes
+          key={value}
         />
       )}
     </Fieldset>

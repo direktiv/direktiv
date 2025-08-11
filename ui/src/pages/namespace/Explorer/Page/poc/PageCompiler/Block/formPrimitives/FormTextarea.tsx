@@ -12,7 +12,7 @@ export const FormTextarea = ({ blockProps }: FormTextareaProps) => {
   const htmlID = `form-textarea-${id}`;
 
   const templateStringResolver = useTemplateStringResolver();
-  const resolvedDefaultValue = templateStringResolver(defaultValue);
+  const value = templateStringResolver(defaultValue);
 
   return (
     <Fieldset
@@ -21,7 +21,12 @@ export const FormTextarea = ({ blockProps }: FormTextareaProps) => {
       htmlFor={htmlID}
       optional={optional}
     >
-      <Textarea defaultValue={resolvedDefaultValue} id={htmlID} />
+      <Textarea
+        defaultValue={value}
+        id={htmlID}
+        // remount when defaultValue changes
+        key={value}
+      />
     </Fieldset>
   );
 };

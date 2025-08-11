@@ -14,10 +14,10 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
   const htmlID = `form-checkbox-${id}`;
 
   const resolveVariableBoolean = useVariableBooleanResolver();
-
   const isVariable = defaultValue.type === "variable";
 
   let value: boolean;
+
   if (isVariable) {
     const resolvedDefaultValue = resolveVariableBoolean(defaultValue.value);
     if (!resolvedDefaultValue.success) {
@@ -38,7 +38,12 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
       horizontal
       optional={optional}
     >
-      <Checkbox defaultChecked={value} id={htmlID} />
+      <Checkbox
+        defaultChecked={value}
+        id={htmlID}
+        // remount when defaultValue changes
+        key={String(value)}
+      />
     </Fieldset>
   );
 };
