@@ -6,3 +6,5 @@ export const createDirektivPage = (blocks: BlockType[]): DirektivPagesType => ({
   type: "page",
   blocks,
 });
+
+export const setPage = (page: DirektivPagesType) => page;
