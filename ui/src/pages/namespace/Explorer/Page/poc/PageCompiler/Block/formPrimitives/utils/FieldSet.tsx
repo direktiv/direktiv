@@ -34,7 +34,7 @@ export const Fieldset: FC<FieldsetProps> = ({
       <div
         className={twMergeClsx(
           "flex min-h-9",
-          horizontal ? "flex-row items-center gap-3" : "flex-col gap-2"
+          horizontal ? "flex-row items-center gap-3" : "flex-col gap-1"
         )}
       >
         {children}
