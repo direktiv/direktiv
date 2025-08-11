@@ -23,7 +23,6 @@ export const FormStringInput = ({ blockProps }: FormInputProps) => {
       htmlFor={htmlID}
       optional={optional}
     >
-      {value}
       {variant === "date" ? (
         <DateInput
           id={htmlID}
