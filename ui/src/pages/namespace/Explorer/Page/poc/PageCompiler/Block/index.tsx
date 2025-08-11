@@ -6,6 +6,7 @@ import { Columns } from "./Columns";
 import { Dialog } from "./Dialog";
 import { Form } from "./Form";
 import { FormCheckbox } from "./formPrimitives/FormCheckbox";
+import { FormDateInput } from "./formPrimitives/FormDateInput";
 import { FormNumberInput } from "./formPrimitives/FormNumberInput";
 import { FormSelect } from "./formPrimitives/FormSelect";
 import { FormStringInput } from "./formPrimitives/FormStringInput";
@@ -56,6 +57,8 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         return <FormStringInput blockProps={block} />;
       case "form-number-input":
         return <FormNumberInput blockProps={block} />;
+      case "form-date-input":
+        return <FormDateInput blockProps={block} />;
       case "form-textarea":
         return <FormTextarea blockProps={block} />;
       case "form-select":
