@@ -1,4 +1,5 @@
 import {
+  Calendar,
   Captions,
   ChevronsUpDown,
   Columns2,
@@ -205,26 +206,6 @@ const blockTypes: BlockTypeConfig[] = [
     },
   },
   {
-    type: "form-date-input",
-    label: t("direktivPage.blockEditor.blockName.form-date-input"),
-    icon: TextCursorInput,
-    allow: (page, path) =>
-      !!findAncestor({
-        page,
-        path,
-        match: (block) => block.type === "form",
-      }),
-    formComponent: DateInput,
-    defaultValues: {
-      id: "",
-      defaultValue: "",
-      description: "",
-      label: "",
-      optional: false,
-      type: "form-date-input",
-    },
-  },
-  {
     type: "form-number-input",
     label: t("direktivPage.blockEditor.blockName.form-number-input"),
     icon: TextCursorInput,
@@ -242,6 +223,26 @@ const blockTypes: BlockTypeConfig[] = [
       label: "",
       optional: false,
       type: "form-number-input",
+    },
+  },
+  {
+    type: "form-date-input",
+    label: t("direktivPage.blockEditor.blockName.form-date-input"),
+    icon: Calendar,
+    allow: (page, path) =>
+      !!findAncestor({
+        page,
+        path,
+        match: (block) => block.type === "form",
+      }),
+    formComponent: DateInput,
+    defaultValues: {
+      id: "",
+      defaultValue: "",
+      description: "",
+      label: "",
+      optional: false,
+      type: "form-date-input",
     },
   },
   {
