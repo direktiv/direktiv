@@ -2,6 +2,7 @@ import { Checkbox } from "~/design/Checkbox";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormBaseType } from "../../schema/blocks/form/utils";
 import InputDesignComponent from "~/design/Input";
+import { Textarea } from "~/design/TextArea";
 import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -47,7 +48,7 @@ export const BaseForm = ({ form: anyForm }: BaseFormProps) => {
         )}
         htmlFor="description"
       >
-        <InputDesignComponent
+        <Textarea
           {...form.register("description")}
           id="description"
           placeholder={t(
