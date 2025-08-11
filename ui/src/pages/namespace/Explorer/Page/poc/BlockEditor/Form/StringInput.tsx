@@ -16,7 +16,7 @@ import { BaseForm } from "./BaseForm";
 import { BlockEditFormProps } from "..";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
-import InputDesignComponent from "~/design/Input";
+import { Textarea } from "~/design/TextArea";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -79,7 +79,7 @@ export const StringInput = ({
         )}
         htmlFor="defaultValue"
       >
-        <InputDesignComponent
+        <Textarea
           {...form.register("defaultValue")}
           id="defaultValue"
           placeholder={t(
