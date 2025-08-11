@@ -15,10 +15,9 @@ export const FormNumberInput = ({ blockProps }: FormNumberInputProps) => {
 
   const resolveVariableNumber = useVariableNumberResolver();
 
-  const isVariable = defaultValue.type === "variable";
-
   let value: number;
-  if (isVariable) {
+
+  if (defaultValue.type === "variable") {
     const resolvedDefaultValue = resolveVariableNumber(defaultValue.value);
     if (!resolvedDefaultValue.success) {
       throw new Error(
