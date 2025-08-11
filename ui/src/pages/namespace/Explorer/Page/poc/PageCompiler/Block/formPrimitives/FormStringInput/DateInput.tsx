@@ -19,7 +19,7 @@ export const DateInput = ({ id, defaultValue }: DateInputProps) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="w-[300px]">
+        <Button variant="outline">
           <CalendarIcon />{" "}
           {date
             ? moment(date).format("LL")
