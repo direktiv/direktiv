@@ -1801,7 +1801,7 @@
           "descriptionPlaceholder": "Description for the form element",
           "optional": "Optional field",
           "stringInput": {
-            "description": "An input field allows users to enter text information.",
+            "description": "An input field that allows users to enter text.",
             "variantLabel": "Input Type",
             "defaultValueLabel": "Default Value",
             "defaultValuePlaceholder": "Enter default value (optional)"
