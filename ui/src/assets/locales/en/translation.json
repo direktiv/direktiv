@@ -1692,6 +1692,7 @@
         "form": "Form",
         "form-checkbox": "Form: Checkbox",
         "form-string-input": "Form: String Input",
+        "form-date-input": "Form: Date Input",
         "form-number-input": "Form: Number Input",
         "form-select": "Form: Select",
         "form-textarea": "Form: Textarea",
@@ -1806,6 +1807,10 @@
             "defaultValueLabel": "Default Value",
             "defaultValuePlaceholder": "Enter default value (optional)"
           },
+          "dateInput": {
+            "description": "An input field that allows users to enter a date.",
+            "defaultValueLabel": "Default Value"
+          },
           "numberInput": {
             "description": "An input field that allows users to enter a number.",
             "defaultValueLabel": "Default Value"
@@ -1850,6 +1855,7 @@
           "form-checkbox": "checkbox block",
           "form-string-input": "string input block",
           "form-number-input": "number input block",
+          "form-date-input": "date input block",
           "form-select": "select block",
           "form-textarea": "textarea block",
           "loop": "loop block",

@@ -18,6 +18,7 @@ import {
 import { BlockPathType } from "../../Block";
 import { BlockTypeConfig } from "./types";
 import { Checkbox } from "../../../BlockEditor/Form/Checkbox";
+import { DateInput } from "../../../BlockEditor/Form/DateInput";
 import { Dialog as DialogForm } from "../../../BlockEditor/Dialog";
 import { Form as FormForm } from "../../../BlockEditor/Form";
 import { Headline } from "../../../BlockEditor/Headline";
@@ -201,6 +202,26 @@ const blockTypes: BlockTypeConfig[] = [
       optional: false,
       type: "form-string-input",
       variant: "text",
+    },
+  },
+  {
+    type: "form-date-input",
+    label: t("direktivPage.blockEditor.blockName.form-date-input"),
+    icon: TextCursorInput,
+    allow: (page, path) =>
+      !!findAncestor({
+        page,
+        path,
+        match: (block) => block.type === "form",
+      }),
+    formComponent: DateInput,
+    defaultValues: {
+      id: "",
+      defaultValue: "",
+      description: "",
+      label: "",
+      optional: false,
+      type: "form-date-input",
     },
   },
   {
