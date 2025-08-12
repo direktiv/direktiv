@@ -59,7 +59,13 @@ describe("Form", () => {
         );
       });
 
-      expect((screen.getByRole("textbox") as HTMLInputElement)?.value).toBe(
+      expect(
+        (
+          screen.getByRole("textbox", {
+            name: "string input",
+          }) as HTMLInputElement
+        )?.value
+      ).toBe(
         "a string input can use variable placeholders like string: ok, number: 101 and boolean: true"
       );
     });
@@ -85,7 +91,13 @@ describe("Form", () => {
         );
       });
 
-      expect((screen.getByRole("textbox") as HTMLInputElement)?.value).toBe(
+      expect(
+        (
+          screen.getByRole("textbox", {
+            name: "textarea",
+          }) as HTMLInputElement
+        )?.value
+      ).toBe(
         "a textarea can use variable placeholders like string: ok, number: 101 and boolean: true"
       );
     });
@@ -112,7 +124,9 @@ describe("Form", () => {
           />
         );
       });
-      expect(screen.getByRole("checkbox", { checked: true }));
+      expect(
+        screen.getByRole("checkbox", { name: "static checkbox", checked: true })
+      );
     });
 
     test("checkbox can have a default value from a variable", async () => {
@@ -138,7 +152,12 @@ describe("Form", () => {
           />
         );
       });
-      expect(screen.getByRole("checkbox", { checked: true }));
+      expect(
+        screen.getByRole("checkbox", {
+          name: "dynamic checkbox",
+          checked: true,
+        })
+      );
     });
     test("number input can have a static default value", async () => {
       await act(async () => {
@@ -162,9 +181,13 @@ describe("Form", () => {
           />
         );
       });
-      expect((screen.getByRole("spinbutton") as HTMLInputElement)?.value).toBe(
-        "3"
-      );
+      expect(
+        (
+          screen.getByRole("spinbutton", {
+            name: "static number input",
+          }) as HTMLInputElement
+        )?.value
+      ).toBe("3");
     });
 
     test("number input can have a default value from a variable", async () => {
@@ -190,9 +213,13 @@ describe("Form", () => {
           />
         );
       });
-      expect((screen.getByRole("spinbutton") as HTMLInputElement)?.value).toBe(
-        "19.99"
-      );
+      expect(
+        (
+          screen.getByRole("spinbutton", {
+            name: "dynamic number input",
+          }) as HTMLInputElement
+        )?.value
+      ).toBe("19.99");
     });
 
     test("date input can have a static default value", async () => {
