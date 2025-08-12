@@ -1,10 +1,14 @@
 import { CSSProperties, FC, PropsWithChildren } from "react";
-import { GripVertical, LucideIcon } from "lucide-react";
 
+import Badge from "../Badge";
 import { Card } from "../Card";
 import { DragPayloadSchemaType } from "./schema";
+import { LucideIcon } from "lucide-react";
+import { pathsEqual } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/utils";
 import { twMergeClsx } from "~/util/helpers";
+import { useBlockTypes } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/utils/useBlockTypes";
 import { useDraggable } from "@dnd-kit/core";
+import { usePageEditorPanel } from "~/pages/namespace/Explorer/Page/poc/BlockEditor/EditorPanelProvider";
 
 type DraggableProps = PropsWithChildren & {
   payload: DragPayloadSchemaType;
@@ -37,27 +41,51 @@ export const SortableItem: FC<DraggableProps> = ({
   const { attributes, listeners, setNodeRef, styles } =
     useSharedDraggable(payload);
 
-  return (
-    <div style={styles} className="relative">
-      <div
-        ref={setNodeRef}
-        {...listeners}
-        {...attributes}
-        className={twMergeClsx(
-          "absolute z-40 mt-2 h-[calc(100%-1rem)] text-gray-8 opacity-70 dark:text-gray-dark-8",
-          className
-        )}
-      >
-        <div className="flex h-full w-5 items-center justify-center rounded rounded-e-none border-2 border-gray-4 bg-white p-0 hover:cursor-move hover:border-solid hover:bg-gray-2 active:cursor-move active:border-solid active:bg-gray-2 dark:border-gray-dark-4 dark:bg-black dark:hover:bg-gray-dark-2">
-          <GripVertical />
+  const { blockTypes } = useBlockTypes();
+  const { panel, setPanel } = usePageEditorPanel();
+
+  if (payload.type === "move") {
+    const isFocused =
+      panel?.action && pathsEqual(panel.path, payload.originPath);
+
+    const findType = blockTypes.find(
+      (type) => type.type === payload.block.type
+    );
+
+    const blockTypeLabel = findType ? findType.label : "not found";
+
+    const blockPath = payload.originPath;
+
+    return (
+      <div style={styles} className="relative">
+        <div
+          ref={setNodeRef}
+          {...listeners}
+          {...attributes}
+          className={twMergeClsx(
+            "absolute z-40 mt-3 h-[calc(100%-1rem)] opacity-70",
+            className
+          )}
+        >
+          <Badge
+            className={twMergeClsx(
+              "absolute -mt-7 text-nowrap rounded-md rounded-b-none px-2 py-1 hover:cursor-move active:cursor-move",
+              isFocused && "bg-gray-8 dark:bg-gray-dark-8"
+            )}
+            variant="secondary"
+          >
+            <span className="mr-2">
+              <b>{blockTypeLabel}</b>
+            </span>
+            {blockPath.join(".")}
+          </Badge>
+        </div>
+        <div className="flex justify-center">
+          <div className="w-full">{children}</div>
         </div>
       </div>
-      <div className="flex justify-center">
-        <span className="mr-6"></span>
-        <div className="w-full">{children}</div>
-      </div>
-    </div>
-  );
+    );
+  }
 };
 
 export const DraggablePaletteItem: FC<

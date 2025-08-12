@@ -11,7 +11,6 @@ import {
   usePageStateContext,
 } from "../../context/pageCompilerContext";
 
-import Badge from "~/design/Badge";
 import { BlockPathType } from "..";
 import { BlockType } from "../../../schema/blocks";
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
@@ -93,7 +92,6 @@ const EditorBlockWrapper = ({
   };
 
   const showDragHandle = (isHovered || isFocused) && !isDragging;
-  const isHoveredOrFocused = isHovered || isFocused;
 
   return (
     <>
@@ -119,20 +117,6 @@ const EditorBlockWrapper = ({
           data-block-wrapper
           onClick={handleClickBlock}
         >
-          {isHoveredOrFocused && (
-            <Badge
-              className={twMergeClsx(
-                "absolute z-30 -mt-7 rounded-md rounded-b-none px-2 py-1",
-                isFocused && "bg-gray-8 dark:bg-gray-dark-8"
-              )}
-              variant="secondary"
-            >
-              <span className="mr-2">
-                <b>{block.type}</b>
-              </span>
-              {blockPath.join(".")}
-            </Badge>
-          )}
           <Suspense fallback={<Loading />}>
             <ErrorBoundary
               fallbackRender={({ error }) => (
