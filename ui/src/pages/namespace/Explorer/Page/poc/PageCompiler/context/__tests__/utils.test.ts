@@ -10,12 +10,12 @@ import {
   findAncestor,
   findBlock,
   incrementPath,
-  isMovingBefore,
   isPage,
   isParentBlock,
   moveBlockWithinPage,
   pathIsDescendant,
   pathsEqual,
+  reindexTargetPath,
   updateBlockInPage,
 } from "../utils";
 
@@ -231,6 +231,82 @@ describe("updateBlockInPage", () => {
         content: "I am now a text block",
       })
     ).toThrow("index 2 not found");
+  });
+});
+
+describe("reindexTargetPath", () => {
+  test("decrements path segment when target > origin at reindex level", () => {
+    const origin = [1, 0, 3];
+    const target = [1, 0, 7];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([1, 0, 6]);
+  });
+
+  test("returns unchanged copy when target < origin at reindex level", () => {
+    const origin = [1, 0, 6];
+    const target = [1, 0, 2];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([1, 0, 2]);
+    expect(result).not.toBe(target);
+  });
+
+  test("returns unchanged copy when moving between deeply nested levels in different branches", () => {
+    const origin = [1, 3, 6, 1];
+    const target = [1, 4, 6, 3];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([1, 4, 6, 3]);
+    expect(result).not.toBe(target);
+  });
+
+  test("handles moving to shallower path where target = origin at reindex level", () => {
+    const origin = [1, 0, 6, 3];
+    const target = [1, 0, 6];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([1, 0, 6]);
+    expect(result).not.toBe(target);
+  });
+
+  test("handles moving to shallower path where target > origin at reindex level", () => {
+    const origin = [2, 4, 5, 6, 7];
+    const target = [2, 4, 6];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([2, 4, 6]);
+  });
+
+  test("handles moving to shallower path where target < origin at reindex level", () => {
+    const origin = [2, 4, 5, 6, 7];
+    const target = [2, 4, 3];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([2, 4, 3]);
+  });
+
+  test("handles moving to deeper path where target > origin at reindex level", () => {
+    const origin = [1, 3, 4];
+    const target = [1, 3, 6, 1];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([1, 3, 5, 1]);
+  });
+
+  test("handles moving on root level where target > origin", () => {
+    const origin = [4];
+    const target = [7];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([6]);
+  });
+
+  test("handles moving on root level where origin > target", () => {
+    const origin = [5];
+    const target = [2];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([2]);
+  });
+
+  test("throws when origin and target path are exactly equal", () => {
+    const origin = [3, 2, 1];
+    const target = [3, 2, 1];
+    expect(() => reindexTargetPath(origin, target)).toThrow(
+      "origin and target paths must not be equal"
+    );
   });
 });
 
@@ -520,48 +596,6 @@ describe("deleteBlockFromPage", () => {
     expect(() => deleteBlockFromPage(simple, [])).toThrow(
       "Invalid path, could not extract index for target block"
     );
-  });
-});
-
-describe("movingBefore", () => {
-  test("Dragging Up - Same Level - Root", () => {
-    const result = isMovingBefore([1], [0]);
-    expect(result).toEqual(true);
-  });
-
-  test("Dragging Down - Same Level - Root", () => {
-    const result = isMovingBefore([0], [2]);
-    expect(result).toEqual(false);
-  });
-
-  test("Dragging Up - Same Level - Nested", () => {
-    const result = isMovingBefore([1, 0, 1], [1, 0, 0]);
-    expect(result).toEqual(true);
-  });
-
-  // test("Dragging Down - Same Level - Nested", () => {
-  //   const result = movingBefore([0], [0, 6]);
-  //   expect(result).toEqual(false);
-  // });
-
-  test("Dragging Up - Nested to Unnested Level", () => {
-    const result = isMovingBefore([2, 0, 0], [0]);
-    expect(result).toEqual(true);
-  });
-
-  test("Dragging Down - Nested to Unnested Level", () => {
-    const result = isMovingBefore([0, 3, 3], [2]);
-    expect(result).toEqual(false);
-  });
-
-  test("Dragging Up - Unnested to Nested Level", () => {
-    const result = isMovingBefore([2], [0, 1, 0, 3]);
-    expect(result).toEqual(true);
-  });
-
-  test("Dragging Down - Unnested to Nested Level", () => {
-    const result = isMovingBefore([0, 3, 3], [3, 3, 0]);
-    expect(result).toEqual(false);
   });
 });
 

@@ -116,35 +116,44 @@ export const deleteBlockFromPage = (
   throw new Error("Could not remove block");
 };
 
-export const isMovingBefore = (
+/**
+ * Determines if targetPath should be updated due to deleting the item at
+ * the origin path. If this affects a segment of the target path, that segment
+ * is decremented in the return value
+ */
+export const reindexTargetPath = (
   originPath: BlockPathType,
   targetPath: BlockPathType
 ) => {
-  const len = Math.min(originPath.length, targetPath.length);
-
-  for (let i = 0; i < len; i++) {
-    const origin = originPath[i];
-    const target = targetPath[i];
-
-    if (origin === undefined || target === undefined) {
-      throw new Error("Paths Indices must not be undefined");
-    }
-
-    if (origin >= target) return true;
-    if (origin < target) return false;
+  if (pathsEqual(originPath, targetPath)) {
+    throw new Error("origin and target paths must not be equal");
   }
-  throw new Error("Paths should never be equal");
-};
 
-const firstDifferentIndex = (
-  originPath: BlockPathType,
-  targetPath: BlockPathType
-) => {
-  const len = Math.min(originPath.length, targetPath.length);
-  for (let i = 0; i < len; i++) {
-    if (originPath[i] !== targetPath[i]) return i;
+  // we assume element deleted at reindexLevel shifts elements after it
+  const reindexLevel = originPath.length - 1;
+  const newTargetPath = [...targetPath];
+
+  // if targetPath is shorter than reindexLevel, it won't be affected
+  if (reindexLevel >= targetPath.length) return newTargetPath;
+
+  const originIndex = originPath[reindexLevel];
+  const targetIndex = targetPath[reindexLevel];
+
+  // this should not happen thanks to early return above
+  if (originIndex === undefined || targetIndex === undefined) {
+    throw new Error("Unexpected mismatch between path length and reindexLevel");
   }
-  return originPath.length !== targetPath.length ? len : null;
+
+  const basePathsEqual = pathsEqual(
+    originPath.slice(0, reindexLevel),
+    targetPath.slice(0, reindexLevel)
+  );
+
+  if (basePathsEqual && targetIndex > originIndex) {
+    newTargetPath[reindexLevel] = targetIndex - 1;
+    return newTargetPath;
+  }
+  return newTargetPath;
 };
 
 export const moveBlockWithinPage = (
@@ -157,39 +166,13 @@ export const moveBlockWithinPage = (
     throw new Error("Paths must not be empty");
   }
 
-  const sameParent =
-    originPath.length === targetPath.length &&
-    originPath.slice(0, -1).every((v, i) => v === targetPath[i]);
+  const pageWithoutOrigin = deleteBlockFromPage(page, originPath);
 
-  const targetOnRootLevel = targetPath.length === 1;
+  const newTargetPath = reindexTargetPath(originPath, targetPath);
 
-  const index = firstDifferentIndex(originPath, targetPath) ?? 0;
+  const newPage = addBlockToPage(pageWithoutOrigin, newTargetPath, block);
 
-  const targetBeforeOrigin = isMovingBefore(originPath, targetPath);
-
-  const adjustedOriginPath: BlockPathType = [...originPath];
-
-  if (targetBeforeOrigin && targetOnRootLevel && adjustedOriginPath[0]) {
-    adjustedOriginPath[0] += 1;
-  }
-
-  if (
-    targetBeforeOrigin &&
-    !targetOnRootLevel &&
-    sameParent &&
-    adjustedOriginPath[index]
-  ) {
-    adjustedOriginPath[index] += 1;
-  }
-
-  const pageWithAddedBlock = addBlockToPage(page, targetPath, block, false);
-
-  const pageWithDeletedBlock = deleteBlockFromPage(
-    pageWithAddedBlock,
-    adjustedOriginPath
-  );
-
-  return pageWithDeletedBlock;
+  return newPage;
 };
 
 export const incrementPath = (path: BlockPathType): BlockPathType => {
