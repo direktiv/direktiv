@@ -62,7 +62,7 @@ export const createForm = (blocks: BlockType[]) =>
   ]);
 
 describe("Form", () => {
-  describe("setting default values", () => {
+  describe("valid default values", () => {
     test("string input can use string templates in the default value attribute", async () => {
       await act(async () => {
         render(
@@ -166,105 +166,104 @@ describe("Form", () => {
       });
       expect(screen.getByRole("checkbox", { checked: true }));
     });
-  });
-
-  test("number input can have a default value", async () => {
-    await act(async () => {
-      render(
-        <PageCompiler
-          setPage={setPage}
-          page={createForm([
-            {
-              id: "static-number-input",
-              label: "static number input",
-              description: "default value is always 3",
-              optional: false,
-              type: "form-number-input",
-              defaultValue: {
-                type: "number",
-                value: 3,
+    test("number input can have a default value", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createForm([
+              {
+                id: "static-number-input",
+                label: "static number input",
+                description: "default value is always 3",
+                optional: false,
+                type: "form-number-input",
+                defaultValue: {
+                  type: "number",
+                  value: 3,
+                },
               },
-            },
-          ])}
-          mode="live"
-        />
+            ])}
+            mode="live"
+          />
+        );
+      });
+      expect((screen.getByRole("spinbutton") as HTMLInputElement)?.value).toBe(
+        "3"
       );
     });
-    expect((screen.getByRole("spinbutton") as HTMLInputElement)?.value).toBe(
-      "3"
-    );
-  });
 
-  test("number input can have a default value sourced from a variable", async () => {
-    await act(async () => {
-      render(
-        <PageCompiler
-          setPage={setPage}
-          page={createForm([
-            {
-              id: "dynamic-number-input",
-              label: "dynamic number input",
-              description:
-                "default value comes from API ({{query.user.data.accountBalance}})",
-              optional: false,
-              type: "form-number-input",
-              defaultValue: {
-                type: "variable",
-                value: "query.user.data.accountBalance",
+    test("number input can have a default value sourced from a variable", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createForm([
+              {
+                id: "dynamic-number-input",
+                label: "dynamic number input",
+                description:
+                  "default value comes from API ({{query.user.data.accountBalance}})",
+                optional: false,
+                type: "form-number-input",
+                defaultValue: {
+                  type: "variable",
+                  value: "query.user.data.accountBalance",
+                },
               },
-            },
-          ])}
-          mode="live"
-        />
+            ])}
+            mode="live"
+          />
+        );
+      });
+      expect((screen.getByRole("spinbutton") as HTMLInputElement)?.value).toBe(
+        "19.99"
       );
     });
-    expect((screen.getByRole("spinbutton") as HTMLInputElement)?.value).toBe(
-      "19.99"
-    );
-  });
 
-  test("date input can have a default value sourced from a variable", async () => {
-    await act(async () => {
-      render(
-        <PageCompiler
-          setPage={setPage}
-          page={createForm([
-            {
-              id: "static-date",
-              label: "static date",
-              description: "default value is always 2025-12-24",
-              optional: false,
-              type: "form-date-input",
-              defaultValue: "2025-12-24T00:00:00.000Z",
-            },
-          ])}
-          mode="live"
-        />
-      );
+    test("date input can have a default value sourced from a variable", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createForm([
+              {
+                id: "static-date",
+                label: "static date",
+                description: "default value is always 2025-12-24",
+                optional: false,
+                type: "form-date-input",
+                defaultValue: "2025-12-24T00:00:00.000Z",
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+      expect(screen.getByRole("button", { name: "December 24, 2025" }));
     });
-    expect(screen.getByRole("button", { name: "December 24, 2025" }));
-  });
 
-  test("date input can have a default value", async () => {
-    await act(async () => {
-      render(
-        <PageCompiler
-          setPage={setPage}
-          page={createForm([
-            {
-              id: "dynamic-date",
-              label: "dynamic date",
-              description:
-                "default value comes from the api ({{query.user.data.membershipStartDate}})",
-              optional: false,
-              type: "form-date-input",
-              defaultValue: "{{query.user.data.membershipStartDate}}",
-            },
-          ])}
-          mode="live"
-        />
-      );
+    test("date input can have a default value", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createForm([
+              {
+                id: "dynamic-date",
+                label: "dynamic date",
+                description:
+                  "default value comes from the api ({{query.user.data.membershipStartDate}})",
+                optional: false,
+                type: "form-date-input",
+                defaultValue: "{{query.user.data.membershipStartDate}}",
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+      expect(screen.getByRole("button", { name: "June 15, 2023" }));
     });
-    expect(screen.getByRole("button", { name: "June 15, 2023" }));
   });
 });
