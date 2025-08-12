@@ -141,7 +141,7 @@ describe("Form", () => {
       expect(screen.getByRole("checkbox", { checked: true }));
     });
 
-    test("checkbox can have a default value sourced from a variable", async () => {
+    test("checkbox can have a default value from a variable", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -166,7 +166,7 @@ describe("Form", () => {
       });
       expect(screen.getByRole("checkbox", { checked: true }));
     });
-    test("number input can have a default value", async () => {
+    test("number input can have a static default value", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -193,7 +193,7 @@ describe("Form", () => {
       );
     });
 
-    test("number input can have a default value sourced from a variable", async () => {
+    test("number input can have a default value from a variable", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -221,7 +221,7 @@ describe("Form", () => {
       );
     });
 
-    test("date input can have a default value sourced from a variable", async () => {
+    test("date input can have a static default value", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -243,7 +243,7 @@ describe("Form", () => {
       expect(screen.getByRole("button", { name: "December 24, 2025" }));
     });
 
-    test("date input can have a default value", async () => {
+    test("date input can have a default value from a variable", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -268,7 +268,7 @@ describe("Form", () => {
   });
 
   describe("invalid default values", () => {
-    test("using an object as a default value for a textarea will show an error", async () => {
+    test("shows an error when textarea default value is an object", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -301,7 +301,7 @@ describe("Form", () => {
       );
     });
 
-    test("using a string as a default value for a checkbox will show an error", async () => {
+    test("shows an error when checkbox default value is a string", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -333,7 +333,7 @@ describe("Form", () => {
       expect(screen.getByText("Pointing to a value that is not a boolean."));
     });
 
-    test("using a string as a default value for a number input will show an error", async () => {
+    test("shows an error when number input default value is a string", async () => {
       await act(async () => {
         render(
           <PageCompiler
