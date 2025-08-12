@@ -9,7 +9,7 @@ import {
   test,
   vi,
 } from "vitest";
-import { createDirektivPage, setPage } from "./utils";
+import { createDirektivPage, setPage, setupResizeObserverMock } from "./utils";
 
 import { BlockType } from "../../schema/blocks";
 import { PageCompiler } from "..";
@@ -21,6 +21,7 @@ const apiServer = setupServer(
 );
 
 beforeAll(() => {
+  setupResizeObserverMock();
   apiServer.listen({ onUnhandledRequest: "error" });
 });
 
@@ -30,17 +31,6 @@ afterEach(() => {
   vi.clearAllMocks();
   apiServer.resetHandlers();
 });
-
-// minimal ResizeObserver mocj required by radix-ui checkbox
-// https://github.com/radix-ui/primitives/blob/main/packages/react/checkbox/src/checkbox.test.tsx#L11
-global.ResizeObserver = class ResizeObserver {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  observe() {}
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  unobserve() {}
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  disconnect() {}
-};
 
 export const createForm = (blocks: BlockType[]) =>
   createDirektivPage([
