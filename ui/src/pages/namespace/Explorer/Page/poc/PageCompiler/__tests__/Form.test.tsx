@@ -51,7 +51,7 @@ describe("Form", () => {
                 type: "form-string-input",
                 variant: "text",
                 defaultValue:
-                  "a string input can use variable placeholders like string:{{query.user.data.status}}, number: {{query.user.data.userId}} and booleans: {{query.user.data.emailVerified}}",
+                  "a string input can use variable placeholders like string: {{query.user.data.status}}, number: {{query.user.data.userId}} and boolean: {{query.user.data.emailVerified}}",
               },
             ])}
             mode="live"
@@ -60,7 +60,7 @@ describe("Form", () => {
       });
 
       expect((screen.getByRole("textbox") as HTMLInputElement)?.value).toBe(
-        "a string input can use variable placeholders like string:ok, number: 101 and booleans: true"
+        "a string input can use variable placeholders like string: ok, number: 101 and boolean: true"
       );
     });
 
@@ -77,7 +77,7 @@ describe("Form", () => {
                 optional: false,
                 type: "form-textarea",
                 defaultValue:
-                  "a textarea can use variable placeholders like string:{{query.user.data.status}}, number: {{query.user.data.userId}} and booleans: {{query.user.data.emailVerified}}",
+                  "a textarea can use variable placeholders like string: {{query.user.data.status}}, number: {{query.user.data.userId}} and boolean: {{query.user.data.emailVerified}}",
               },
             ])}
             mode="live"
@@ -86,7 +86,7 @@ describe("Form", () => {
       });
 
       expect((screen.getByRole("textbox") as HTMLInputElement)?.value).toBe(
-        "a textarea can use variable placeholders like string:ok, number: 101 and booleans: true"
+        "a textarea can use variable placeholders like string: ok, number: 101 and boolean: true"
       );
     });
 
