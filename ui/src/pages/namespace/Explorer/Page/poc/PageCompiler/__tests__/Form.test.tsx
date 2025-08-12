@@ -167,4 +167,59 @@ describe("Form", () => {
       expect(screen.getByRole("checkbox", { checked: true }));
     });
   });
+
+  test("number input can have a default value", async () => {
+    await act(async () => {
+      render(
+        <PageCompiler
+          setPage={setPage}
+          page={createForm([
+            {
+              id: "static-number-input",
+              label: "static number input",
+              description: "default value is always 3",
+              optional: false,
+              type: "form-number-input",
+              defaultValue: {
+                type: "number",
+                value: 3,
+              },
+            },
+          ])}
+          mode="live"
+        />
+      );
+    });
+    expect((screen.getByRole("spinbutton") as HTMLInputElement)?.value).toBe(
+      "3"
+    );
+  });
+
+  test("number input can have a default value sourced from a variable", async () => {
+    await act(async () => {
+      render(
+        <PageCompiler
+          setPage={setPage}
+          page={createForm([
+            {
+              id: "dynamic-number-input",
+              label: "dynamic number input",
+              description:
+                "default value comes from API ({{query.user.data.accountBalance}})",
+              optional: false,
+              type: "form-number-input",
+              defaultValue: {
+                type: "variable",
+                value: "query.user.data.accountBalance",
+              },
+            },
+          ])}
+          mode="live"
+        />
+      );
+    });
+    expect((screen.getByRole("spinbutton") as HTMLInputElement)?.value).toBe(
+      "19.99"
+    );
+  });
 });
