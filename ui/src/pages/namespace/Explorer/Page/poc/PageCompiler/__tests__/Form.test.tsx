@@ -97,8 +97,8 @@ describe("Form", () => {
             setPage={setPage}
             page={createForm([
               {
-                id: "string",
-                label: "string input",
+                id: "textarea",
+                label: "textarea",
                 description: "",
                 optional: false,
                 type: "form-textarea",
@@ -148,9 +148,10 @@ describe("Form", () => {
             setPage={setPage}
             page={createForm([
               {
-                id: "static-checkbox",
-                label: "static checkbox",
-                description: "default values is always checked",
+                id: "dynamic-checkbox",
+                label: "dynamic checkbox",
+                description:
+                  "default value comes from the api ({{query.user.data.emailVerified}})",
                 optional: false,
                 type: "form-checkbox",
                 defaultValue: {
