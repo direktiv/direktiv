@@ -11,6 +11,7 @@ import {
 } from "vitest";
 import { createDirektivPage, setPage } from "./utils";
 
+import { BlockType } from "../../schema/blocks";
 import { PageCompiler } from "..";
 import { getUserDetailsResponse } from "./utils/api/samples";
 import { setupServer } from "msw/node";
@@ -30,58 +31,63 @@ afterEach(() => {
   apiServer.resetHandlers();
 });
 
+// minimal ResizeObserver mocj required by radix-ui checkbox
+// https://github.com/radix-ui/primitives/blob/main/packages/react/checkbox/src/checkbox.test.tsx#L11
+global.ResizeObserver = class ResizeObserver {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  observe() {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  unobserve() {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  disconnect() {}
+};
+
+export const createForm = (blocks: BlockType[]) =>
+  createDirektivPage([
+    {
+      type: "query-provider",
+      queries: [
+        {
+          id: "user",
+          url: "/user-details",
+          queryParams: [],
+        },
+      ],
+      blocks: [
+        {
+          type: "form",
+          trigger: {
+            type: "button",
+            label: "form",
+          },
+          mutation: {
+            id: "form",
+            method: "POST",
+            url: "/some-endpoint",
+          },
+          blocks,
+        },
+      ],
+    },
+  ]);
+
 describe("Form", () => {
   describe("setting default values", () => {
-    test("string inputs and textareas can use string templates in the default value attribute", async () => {
+    test("string input can use string templates in the default value attribute", async () => {
       await act(async () => {
         render(
           <PageCompiler
             setPage={setPage}
-            page={createDirektivPage([
+            page={createForm([
               {
-                type: "query-provider",
-                queries: [
-                  {
-                    id: "user",
-                    url: "/user-details",
-                    queryParams: [],
-                  },
-                ],
-                blocks: [
-                  {
-                    type: "form",
-                    trigger: {
-                      type: "button",
-                      label: "form",
-                    },
-                    mutation: {
-                      id: "form",
-                      method: "POST",
-                      url: "/some-endpoint",
-                    },
-                    blocks: [
-                      {
-                        id: "string",
-                        label: "string input",
-                        description: "",
-                        optional: false,
-                        type: "form-string-input",
-                        variant: "text",
-                        defaultValue:
-                          "a string input can use variable placeholders like string:{{query.user.data.status}}, number: {{query.user.data.userId}} and booleans: {{query.user.data.emailVerified}}",
-                      },
-                      {
-                        id: "textarea",
-                        label: "textarea",
-                        description: "",
-                        optional: false,
-                        type: "form-textarea",
-                        defaultValue:
-                          "a textarea can use variable placeholders like string:{{query.user.data.status}}, number: {{query.user.data.userId}} and booleans: {{query.user.data.emailVerified}}",
-                      },
-                    ],
-                  },
-                ],
+                id: "string",
+                label: "string input",
+                description: "",
+                optional: false,
+                type: "form-string-input",
+                variant: "text",
+                defaultValue:
+                  "a string input can use variable placeholders like string:{{query.user.data.status}}, number: {{query.user.data.userId}} and booleans: {{query.user.data.emailVerified}}",
               },
             ])}
             mode="live"
@@ -89,17 +95,85 @@ describe("Form", () => {
         );
       });
 
-      expect(
-        (screen.getAllByRole("textbox")[0] as HTMLInputElement)?.value
-      ).toBe(
+      expect((screen.getByRole("textbox") as HTMLInputElement)?.value).toBe(
         "a string input can use variable placeholders like string:ok, number: 101 and booleans: true"
       );
+    });
 
-      expect(
-        (screen.getAllByRole("textbox")[1] as HTMLTextAreaElement)?.value
-      ).toBe(
+    test("textarea can use string templates in the default value attribute", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createForm([
+              {
+                id: "string",
+                label: "string input",
+                description: "",
+                optional: false,
+                type: "form-textarea",
+                defaultValue:
+                  "a textarea can use variable placeholders like string:{{query.user.data.status}}, number: {{query.user.data.userId}} and booleans: {{query.user.data.emailVerified}}",
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+
+      expect((screen.getByRole("textbox") as HTMLInputElement)?.value).toBe(
         "a textarea can use variable placeholders like string:ok, number: 101 and booleans: true"
       );
+    });
+
+    test("checkbox can be checked by default", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createForm([
+              {
+                id: "static-checkbox",
+                label: "static checkbox",
+                description: "default values is always checked",
+                optional: false,
+                type: "form-checkbox",
+                defaultValue: {
+                  type: "boolean",
+                  value: true,
+                },
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+      expect(screen.getByRole("checkbox", { checked: true }));
+    });
+
+    test("checkbox can have a default value sourced from a variable", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createForm([
+              {
+                id: "static-checkbox",
+                label: "static checkbox",
+                description: "default values is always checked",
+                optional: false,
+                type: "form-checkbox",
+                defaultValue: {
+                  type: "variable",
+                  value: "query.user.data.emailVerified",
+                },
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+      expect(screen.getByRole("checkbox", { checked: true }));
     });
   });
 });
