@@ -266,4 +266,103 @@ describe("Form", () => {
       expect(screen.getByRole("button", { name: "June 15, 2023" }));
     });
   });
+
+  describe("invalid default values", () => {
+    test("using an object as a default value for a textarea will show an error", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createForm([
+              {
+                id: "textarea-using-an-object",
+                label: "invalid textarea",
+                description:
+                  "This textarea is using an object in the template string",
+                optional: false,
+                type: "form-textarea",
+                defaultValue: "{{query.user.data}}",
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+
+      await screen
+        .getByRole("button", {
+          name: "There was an unexpected error",
+        })
+        .click();
+      expect(
+        screen.getByText(
+          "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
+        )
+      );
+    });
+
+    test("using a string as a default value for a checkbox will show an error", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createForm([
+              {
+                id: "checkbox-pointing-to-string",
+                label: "invalid checkbox",
+                description:
+                  "This checkbox is pointing to a string for the default value",
+                optional: false,
+                type: "form-checkbox",
+                defaultValue: {
+                  type: "variable",
+                  value: "query.user.data.status",
+                },
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+
+      await screen
+        .getByRole("button", {
+          name: "There was an unexpected error",
+        })
+        .click();
+      expect(screen.getByText("Pointing to a value that is not a boolean."));
+    });
+
+    test("using a string as a default value for a number input will show an error", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createForm([
+              {
+                id: "number-using-string",
+                label: "invalid number inpuit",
+                description:
+                  "This number input is pointing to a string for the default value",
+                optional: false,
+                type: "form-number-input",
+                defaultValue: {
+                  type: "variable",
+                  value: "query.user.data.status",
+                },
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+
+      await screen
+        .getByRole("button", {
+          name: "There was an unexpected error",
+        })
+        .click();
+      expect(screen.getByText("Pointing to a value that is not a number."));
+    });
+  });
 });
