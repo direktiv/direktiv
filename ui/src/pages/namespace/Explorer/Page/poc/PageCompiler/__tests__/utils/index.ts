@@ -20,4 +20,33 @@ export const createDirektivPage = (blocks: BlockType[]): DirektivPagesType => ({
   blocks,
 });
 
+export const createDirektivPageWithForm = (blocks: BlockType[]) =>
+  createDirektivPage([
+    {
+      type: "query-provider",
+      queries: [
+        {
+          id: "user",
+          url: "/user-details",
+          queryParams: [],
+        },
+      ],
+      blocks: [
+        {
+          type: "form",
+          trigger: {
+            type: "button",
+            label: "form",
+          },
+          mutation: {
+            id: "form",
+            method: "POST",
+            url: "/some-endpoint",
+          },
+          blocks,
+        },
+      ],
+    },
+  ]);
+
 export const setPage = (page: DirektivPagesType) => page;

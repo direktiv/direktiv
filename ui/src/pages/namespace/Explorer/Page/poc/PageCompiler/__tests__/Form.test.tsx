@@ -9,9 +9,12 @@ import {
   test,
   vi,
 } from "vitest";
-import { createDirektivPage, setPage, setupResizeObserverMock } from "./utils";
+import {
+  createDirektivPageWithForm,
+  setPage,
+  setupResizeObserverMock,
+} from "./utils";
 
-import { BlockType } from "../../schema/blocks";
 import { PageCompiler } from "..";
 import { getUserDetailsResponse } from "./utils/api/samples";
 import { setupServer } from "msw/node";
@@ -32,35 +35,6 @@ afterEach(() => {
   apiServer.resetHandlers();
 });
 
-export const createForm = (blocks: BlockType[]) =>
-  createDirektivPage([
-    {
-      type: "query-provider",
-      queries: [
-        {
-          id: "user",
-          url: "/user-details",
-          queryParams: [],
-        },
-      ],
-      blocks: [
-        {
-          type: "form",
-          trigger: {
-            type: "button",
-            label: "form",
-          },
-          mutation: {
-            id: "form",
-            method: "POST",
-            url: "/some-endpoint",
-          },
-          blocks,
-        },
-      ],
-    },
-  ]);
-
 describe("Form", () => {
   describe("valid default values", () => {
     test("string input can use string templates in the default value attribute", async () => {
@@ -68,7 +42,7 @@ describe("Form", () => {
         render(
           <PageCompiler
             setPage={setPage}
-            page={createForm([
+            page={createDirektivPageWithForm([
               {
                 id: "string",
                 label: "string input",
@@ -95,7 +69,7 @@ describe("Form", () => {
         render(
           <PageCompiler
             setPage={setPage}
-            page={createForm([
+            page={createDirektivPageWithForm([
               {
                 id: "textarea",
                 label: "textarea",
@@ -121,7 +95,7 @@ describe("Form", () => {
         render(
           <PageCompiler
             setPage={setPage}
-            page={createForm([
+            page={createDirektivPageWithForm([
               {
                 id: "static-checkbox",
                 label: "static checkbox",
@@ -146,7 +120,7 @@ describe("Form", () => {
         render(
           <PageCompiler
             setPage={setPage}
-            page={createForm([
+            page={createDirektivPageWithForm([
               {
                 id: "dynamic-checkbox",
                 label: "dynamic checkbox",
@@ -171,7 +145,7 @@ describe("Form", () => {
         render(
           <PageCompiler
             setPage={setPage}
-            page={createForm([
+            page={createDirektivPageWithForm([
               {
                 id: "static-number-input",
                 label: "static number input",
@@ -198,7 +172,7 @@ describe("Form", () => {
         render(
           <PageCompiler
             setPage={setPage}
-            page={createForm([
+            page={createDirektivPageWithForm([
               {
                 id: "dynamic-number-input",
                 label: "dynamic number input",
@@ -226,7 +200,7 @@ describe("Form", () => {
         render(
           <PageCompiler
             setPage={setPage}
-            page={createForm([
+            page={createDirektivPageWithForm([
               {
                 id: "static-date",
                 label: "static date",
@@ -248,7 +222,7 @@ describe("Form", () => {
         render(
           <PageCompiler
             setPage={setPage}
-            page={createForm([
+            page={createDirektivPageWithForm([
               {
                 id: "dynamic-date",
                 label: "dynamic date",
@@ -273,7 +247,7 @@ describe("Form", () => {
         render(
           <PageCompiler
             setPage={setPage}
-            page={createForm([
+            page={createDirektivPageWithForm([
               {
                 id: "textarea-using-an-object",
                 label: "invalid textarea",
@@ -306,7 +280,7 @@ describe("Form", () => {
         render(
           <PageCompiler
             setPage={setPage}
-            page={createForm([
+            page={createDirektivPageWithForm([
               {
                 id: "checkbox-pointing-to-string",
                 label: "invalid checkbox",
@@ -338,7 +312,7 @@ describe("Form", () => {
         render(
           <PageCompiler
             setPage={setPage}
-            page={createForm([
+            page={createDirektivPageWithForm([
               {
                 id: "number-using-string",
                 label: "invalid number inpuit",
