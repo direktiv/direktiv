@@ -222,4 +222,49 @@ describe("Form", () => {
       "19.99"
     );
   });
+
+  test("date input can have a default value sourced from a variable", async () => {
+    await act(async () => {
+      render(
+        <PageCompiler
+          setPage={setPage}
+          page={createForm([
+            {
+              id: "static-date",
+              label: "static date",
+              description: "default value is always 2025-12-24",
+              optional: false,
+              type: "form-date-input",
+              defaultValue: "2025-12-24T00:00:00.000Z",
+            },
+          ])}
+          mode="live"
+        />
+      );
+    });
+    expect(screen.getByRole("button", { name: "December 24, 2025" }));
+  });
+
+  test("date input can have a default value", async () => {
+    await act(async () => {
+      render(
+        <PageCompiler
+          setPage={setPage}
+          page={createForm([
+            {
+              id: "dynamic-date",
+              label: "dynamic date",
+              description:
+                "default value comes from the api ({{query.user.data.membershipStartDate}})",
+              optional: false,
+              type: "form-date-input",
+              defaultValue: "{{query.user.data.membershipStartDate}}",
+            },
+          ])}
+          mode="live"
+        />
+      );
+    });
+    expect(screen.getByRole("button", { name: "June 15, 2023" }));
+  });
 });
