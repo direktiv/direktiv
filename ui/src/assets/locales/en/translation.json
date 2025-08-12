@@ -1665,7 +1665,7 @@
         "table": { "noResult": "No entries to show" },
         "form": {
           "success": "The form has been submitted successfully",
-          "optional": "optional",
+          "optional": "(optional)",
           "selectPlaceholder": "Select an option",
           "datePickerPlaceholder": "Pick a date"
         }
@@ -1694,6 +1694,7 @@
         "form": "Form",
         "form-checkbox": "Form: Checkbox",
         "form-string-input": "Form: String Input",
+        "form-date-input": "Form: Date Input",
         "form-number-input": "Form: Number Input",
         "form-select": "Form: Select",
         "form-textarea": "Form: Textarea",
@@ -1803,13 +1804,17 @@
           "descriptionPlaceholder": "Description for the form element",
           "optional": "Optional field",
           "stringInput": {
-            "description": "An input field allows users to enter text information.",
+            "description": "An input field that allows users to enter text.",
             "variantLabel": "Input Type",
             "defaultValueLabel": "Default Value",
             "defaultValuePlaceholder": "Enter default value (optional)"
           },
+          "dateInput": {
+            "description": "An input field that allows users to enter a date.",
+            "defaultValueLabel": "Default Value"
+          },
           "numberInput": {
-            "description": "An input field allows users to enter a number.",
+            "description": "An input field that allows users to enter a number.",
             "defaultValueLabel": "Default Value",
             "defaultValueType": {
               "number": "Static",
@@ -1862,6 +1867,7 @@
           "form-checkbox": "checkbox block",
           "form-string-input": "string input block",
           "form-number-input": "number input block",
+          "form-date-input": "date input block",
           "form-select": "select block",
           "form-textarea": "textarea block",
           "loop": "loop block",
