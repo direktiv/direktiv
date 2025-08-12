@@ -20,6 +20,7 @@ import {
 } from "../utils";
 
 import { describe, expect, test } from "vitest";
+import { BlockPathType } from "../../Block";
 import { DirektivPagesType } from "../../../schema";
 import { HeadlineType } from "../../../schema/blocks/headline";
 import complex from "../../../schema/__tests__/examples/complex";
@@ -305,7 +306,23 @@ describe("reindexTargetPath", () => {
     const origin = [3, 2, 1];
     const target = [3, 2, 1];
     expect(() => reindexTargetPath(origin, target)).toThrow(
-      "origin and target paths must not be equal"
+      "Origin and target paths must not be equal"
+    );
+  });
+
+  test("throws when origin path is empty", () => {
+    const origin: BlockPathType = [];
+    const target = [3, 2, 1];
+    expect(() => reindexTargetPath(origin, target)).toThrow(
+      "Paths must not be empty"
+    );
+  });
+
+  test("throws when target path is empty", () => {
+    const origin = [9];
+    const target: BlockPathType = [];
+    expect(() => reindexTargetPath(origin, target)).toThrow(
+      "Paths must not be empty"
     );
   });
 });

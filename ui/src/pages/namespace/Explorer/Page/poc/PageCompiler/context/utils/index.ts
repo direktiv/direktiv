@@ -125,8 +125,11 @@ export const reindexTargetPath = (
   originPath: BlockPathType,
   targetPath: BlockPathType
 ) => {
+  if (originPath.length === 0 || targetPath.length === 0) {
+    throw new Error("Paths must not be empty");
+  }
   if (pathsEqual(originPath, targetPath)) {
-    throw new Error("origin and target paths must not be equal");
+    throw new Error("Origin and target paths must not be equal");
   }
 
   // we assume element deleted at reindexLevel shifts elements after it
@@ -162,10 +165,6 @@ export const moveBlockWithinPage = (
   targetPath: BlockPathType,
   block: BlockType
 ): DirektivPagesType => {
-  if (originPath.length === 0 || targetPath.length === 0) {
-    throw new Error("Paths must not be empty");
-  }
-
   const pageWithoutOrigin = deleteBlockFromPage(page, originPath);
 
   const newTargetPath = reindexTargetPath(originPath, targetPath);
