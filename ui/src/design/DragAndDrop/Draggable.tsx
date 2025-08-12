@@ -42,50 +42,47 @@ export const SortableItem: FC<DraggableProps> = ({
     useSharedDraggable(payload);
 
   const { blockTypes } = useBlockTypes();
-  const { panel, setPanel } = usePageEditorPanel();
+  const { panel } = usePageEditorPanel();
 
-  if (payload.type === "move") {
-    const isFocused =
-      panel?.action && pathsEqual(panel.path, payload.originPath);
+  if (payload.type !== "move") return null;
 
-    const findType = blockTypes.find(
-      (type) => type.type === payload.block.type
-    );
+  const isFocused = panel?.action && pathsEqual(panel.path, payload.originPath);
 
-    const blockTypeLabel = findType ? findType.label : "not found";
+  const findType = blockTypes.find((type) => type.type === payload.block.type);
 
-    const blockPath = payload.originPath;
+  const blockTypeLabel = findType ? findType.label : "not found";
 
-    return (
-      <div style={styles} className="relative">
-        <div
-          ref={setNodeRef}
-          {...listeners}
-          {...attributes}
+  const blockPath = payload.originPath;
+
+  return (
+    <div style={styles} className="relative">
+      <div
+        ref={setNodeRef}
+        {...listeners}
+        {...attributes}
+        className={twMergeClsx(
+          "pointer-events-none absolute z-40 mt-3 h-[calc(100%-1rem)] w-full",
+          className
+        )}
+      >
+        <Badge
           className={twMergeClsx(
-            "absolute z-40 mt-3 h-[calc(100%-1rem)] opacity-70",
-            className
+            "pointer-events-auto absolute -mt-7 text-nowrap rounded-md rounded-b-none px-2 py-1 hover:cursor-move active:cursor-move",
+            isFocused && "bg-gray-8 dark:bg-gray-dark-8"
           )}
+          variant="secondary"
         >
-          <Badge
-            className={twMergeClsx(
-              "absolute -mt-7 text-nowrap rounded-md rounded-b-none px-2 py-1 hover:cursor-move active:cursor-move",
-              isFocused && "bg-gray-8 dark:bg-gray-dark-8"
-            )}
-            variant="secondary"
-          >
-            <span className="mr-2">
-              <b>{blockTypeLabel}</b>
-            </span>
-            {blockPath.join(".")}
-          </Badge>
-        </div>
-        <div className="flex justify-center">
-          <div className="w-full">{children}</div>
-        </div>
+          <span className="mr-2">
+            <b>{blockTypeLabel}</b>
+          </span>
+          {blockPath.join(".")}
+        </Badge>
       </div>
-    );
-  }
+      <div className="flex justify-center">
+        <div className="w-full">{children}</div>
+      </div>
+    </div>
+  );
 };
 
 export const DraggablePaletteItem: FC<
