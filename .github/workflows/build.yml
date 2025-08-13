@@ -91,7 +91,6 @@ jobs:
         with:
           buildkitd-flags: --debug
 
-
       - name: Set current date
         run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
