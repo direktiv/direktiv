@@ -24,6 +24,7 @@ export const FormTextarea = ({ blockProps }: FormTextareaProps) => {
       <Textarea
         defaultValue={value}
         id={htmlID}
+        name={id}
         // remount when defaultValue changes
         key={value}
       />

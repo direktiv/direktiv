@@ -38,6 +38,7 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
         defaultValue={value}
         // remount when defaultValue changes
         key={value}
+        name={id}
       >
         <SelectTrigger variant="outline" id={htmlID} value={value}>
           <SelectValue

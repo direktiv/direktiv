@@ -24,6 +24,7 @@ export const FormStringInput = ({ blockProps }: FormStringInputProps) => {
     >
       <Input
         id={htmlID}
+        name={id}
         defaultValue={value}
         type={variant}
         // remount when defaultValue changes

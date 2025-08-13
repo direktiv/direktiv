@@ -40,6 +40,7 @@ export const FormNumberInput = ({ blockProps }: FormNumberInputProps) => {
         type="number"
         defaultValue={value}
         id={htmlID}
+        name={id}
         // remount when defaultValue changes
         key={value}
       />

@@ -40,6 +40,7 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
       <Checkbox
         defaultChecked={value}
         id={htmlID}
+        name={id}
         // remount when defaultValue changes
         key={String(value)}
       />
