@@ -325,6 +325,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!! OLD PLUGIN")
 	// response already written, except if there are outbound plugins
 	if len(endpointEntry.OutboundPluginInstances) > 0 {
 		// nolint

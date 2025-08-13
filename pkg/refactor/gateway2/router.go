@@ -27,6 +27,8 @@ type router struct {
 func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *router {
 	serveMux := http.NewServeMux()
 
+	slog.Info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! BUILD ROUTER!!!!!")
+
 	for i, item := range endpoints {
 		// concat plugins configs into one list.
 		pConfigs := []core.PluginConfigV2{}

@@ -133,8 +133,8 @@ func (js *JSOutboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
 			}
 
 			// nolint
-			w.Write([]byte(responseDone.Body))
 			w.WriteHeader(responseDone.Code)
+			w.Write([]byte(responseDone.Body))
 		}
 	}
 
