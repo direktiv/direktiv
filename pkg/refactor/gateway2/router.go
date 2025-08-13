@@ -2,9 +2,12 @@ package gateway2
 
 import (
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
+	"net/http/httptest"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -31,6 +34,8 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 		pConfigs = append(pConfigs, item.PluginsConfig.Inbound...)
 		pConfigs = append(pConfigs, item.PluginsConfig.Target)
 		pConfigs = append(pConfigs, item.PluginsConfig.Outbound...)
+
+		hasOutboundConfigured := len(item.PluginsConfig.Outbound) > 0
 
 		// build plugins chain.
 		pChain := []core.PluginV2{}
@@ -62,6 +67,11 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 				return
 			}
 
+			originalWriter := w
+			if hasOutboundConfigured {
+				w = httptest.NewRecorder()
+			}
+
 			// inject consumer files.
 			r = InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
 			// inject endpoint.
@@ -86,6 +96,24 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 
 				if r = p.Execute(w, r); r == nil {
 					break
+				}
+			}
+
+			if hasOutboundConfigured {
+				//nolint:forcetypeassert
+				w := w.(*httptest.ResponseRecorder)
+				// Copy headers to the original writer.
+				for key, values := range w.Header() {
+					for _, value := range values {
+						originalWriter.Header().Set(key, value)
+					}
+				}
+				originalWriter.Header().Set("Content-Length", strconv.Itoa(w.Body.Len()))
+				originalWriter.WriteHeader(w.Code)
+				// Copy body to the original writer.
+				if _, err := io.Copy(originalWriter, w.Body); err != nil {
+					slog.With("component", "gateway").
+						Error("flushing final bytes to connection", "err", err)
 				}
 			}
 		})
