@@ -77,11 +77,11 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 
 	// Create endpoint manager
 	gatewayManager := gateway.NewGatewayManager(args.Database)
-	slog.Info("gateway manager initialized successfully")
+	slog.Info("gateway manager initialized successfully 123")
 
 	// Create endpoint manager
 	gatewayManager2 := gateway2.NewManager(args.Database)
-	slog.Info("gateway manager2 initialized successfully")
+	slog.Info("gateway manager2 initialized successfully 345")
 
 	// Create App
 	app := core.App{
