@@ -15,6 +15,10 @@ type FormDateInputProps = {
   blockProps: FormDateInputType;
 };
 
+// this formatter reflects the format of a native date input
+const formatDateInput = (date: Date | undefined) =>
+  date ? moment(date).format("YYYY-MM-DD") : "";
+
 export const FormDateInput = ({ blockProps }: FormDateInputProps) => {
   const { t } = useTranslation();
   const { id, label, description, defaultValue, optional } = blockProps;
@@ -50,6 +54,7 @@ export const FormDateInput = ({ blockProps }: FormDateInputProps) => {
           />
         </PopoverContent>
       </Popover>
+      <input type="hidden" name={id} value={formatDateInput(date)} />
     </Fieldset>
   );
 };
