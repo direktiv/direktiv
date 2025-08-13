@@ -21,7 +21,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
+	"github.com/go-git/go-git/v6/plumbing/format/gitignore"
 )
 
 type profile struct {
