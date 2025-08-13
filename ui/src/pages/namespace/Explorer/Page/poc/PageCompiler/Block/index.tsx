@@ -6,8 +6,10 @@ import { Columns } from "./Columns";
 import { Dialog } from "./Dialog";
 import { Form } from "./Form";
 import { FormCheckbox } from "./formPrimitives/FormCheckbox";
-import { FormInput } from "./formPrimitives/FormInput";
+import { FormDateInput } from "./formPrimitives/FormDateInput";
+import { FormNumberInput } from "./formPrimitives/FormNumberInput";
 import { FormSelect } from "./formPrimitives/FormSelect";
+import { FormStringInput } from "./formPrimitives/FormStringInput";
 import { FormTextarea } from "./formPrimitives/FormTextarea";
 import { Headline } from "./Headline";
 import { Image } from "./Image";
@@ -51,8 +53,12 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         return <Table blockProps={block} />;
       case "form":
         return <Form blockProps={block} blockPath={blockPath} />;
-      case "form-input":
-        return <FormInput blockProps={block} />;
+      case "form-string-input":
+        return <FormStringInput blockProps={block} />;
+      case "form-number-input":
+        return <FormNumberInput blockProps={block} />;
+      case "form-date-input":
+        return <FormDateInput blockProps={block} />;
       case "form-textarea":
         return <FormTextarea blockProps={block} />;
       case "form-select":

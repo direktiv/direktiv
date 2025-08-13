@@ -4,8 +4,10 @@ import { Column, ColumnType, Columns, ColumnsType } from "./columns";
 import { Dialog, DialogType } from "./dialog";
 import { Form, FormType } from "./form";
 import { FormCheckbox, FormCheckboxType } from "./form/checkbox";
-import { FormInput, FormInputType } from "./form/input";
+import { FormDateInput, FormDateInputType } from "./form/dateInput";
+import { FormNumberInput, FormNumberInputType } from "./form/numberInput";
 import { FormSelect, FormSelectType } from "./form/select";
+import { FormStringInput, FormStringInputType } from "./form/stringInput";
 import { FormTextarea, FormTextareaType } from "./form/textarea";
 import { Headline, HeadlineType } from "./headline";
 import { Image, ImageType } from "./image";
@@ -27,8 +29,10 @@ import { z } from "zod";
 const SimpleBlockUnion = z.discriminatedUnion("type", [
   Button,
   FormCheckbox,
-  FormInput,
+  FormDateInput,
+  FormNumberInput,
   FormSelect,
+  FormStringInput,
   FormTextarea,
   Headline,
   Image,
@@ -49,8 +53,10 @@ export const ParentBlockUnion = z.discriminatedUnion("type", [
 export type SimpleBlockType =
   | ButtonType
   | FormCheckboxType
-  | FormInputType
+  | FormDateInputType
+  | FormNumberInputType
   | FormSelectType
+  | FormStringInputType
   | FormTextareaType
   | HeadlineType
   | ImageType
@@ -86,7 +92,9 @@ export const AvailableBlockTypeAttributes = z.union([
   z.literal("column"),
   z.literal("columns"),
   z.literal("form"),
-  z.literal("form-input"),
+  z.literal("form-string-input"),
+  z.literal("form-number-input"),
+  z.literal("form-date-input"),
   z.literal("form-select"),
   z.literal("form-textarea"),
   z.literal("form-checkbox"),

@@ -1,4 +1,5 @@
 import {
+  Calendar,
   Captions,
   ChevronsUpDown,
   Columns2,
@@ -18,14 +19,16 @@ import {
 import { BlockPathType } from "../../Block";
 import { BlockTypeConfig } from "./types";
 import { Checkbox } from "../../../BlockEditor/Form/Checkbox";
+import { DateInput } from "../../../BlockEditor/Form/DateInput";
 import { Dialog as DialogForm } from "../../../BlockEditor/Dialog";
 import { Form as FormForm } from "../../../BlockEditor/Form";
 import { Headline } from "../../../BlockEditor/Headline";
 import { Image as ImageForm } from "../../../BlockEditor/Image";
-import { Input } from "../../../BlockEditor/Form/Input";
 import { Loop as LoopForm } from "../../../BlockEditor/Loop";
+import { NumberInput } from "../../../BlockEditor/Form/NumberInput";
 import { QueryProvider as QueryProviderForm } from "../../../BlockEditor/QueryProvider";
 import { Select } from "../../../BlockEditor/Form/Select";
+import { StringInput } from "../../../BlockEditor/Form/StringInput";
 import { Table as TableForm } from "../../../BlockEditor/Table";
 import { Text as TextForm } from "../../../BlockEditor/Text";
 import { Textarea } from "../../../BlockEditor/Form/Textarea";
@@ -182,8 +185,8 @@ const blockTypes: BlockTypeConfig[] = [
     },
   },
   {
-    type: "form-input",
-    label: t("direktivPage.blockEditor.blockName.form-input"),
+    type: "form-string-input",
+    label: t("direktivPage.blockEditor.blockName.form-string-input"),
     icon: TextCursorInput,
     allow: (page, path) =>
       !!findAncestor({
@@ -191,15 +194,55 @@ const blockTypes: BlockTypeConfig[] = [
         path,
         match: (block) => block.type === "form",
       }),
-    formComponent: Input,
+    formComponent: StringInput,
     defaultValues: {
       id: "",
       defaultValue: "",
       description: "",
       label: "",
       optional: false,
-      type: "form-input",
+      type: "form-string-input",
       variant: "text",
+    },
+  },
+  {
+    type: "form-number-input",
+    label: t("direktivPage.blockEditor.blockName.form-number-input"),
+    icon: TextCursorInput,
+    allow: (page, path) =>
+      !!findAncestor({
+        page,
+        path,
+        match: (block) => block.type === "form",
+      }),
+    formComponent: NumberInput,
+    defaultValues: {
+      id: "",
+      defaultValue: 0,
+      description: "",
+      label: "",
+      optional: false,
+      type: "form-number-input",
+    },
+  },
+  {
+    type: "form-date-input",
+    label: t("direktivPage.blockEditor.blockName.form-date-input"),
+    icon: Calendar,
+    allow: (page, path) =>
+      !!findAncestor({
+        page,
+        path,
+        match: (block) => block.type === "form",
+      }),
+    formComponent: DateInput,
+    defaultValues: {
+      id: "",
+      defaultValue: "",
+      description: "",
+      label: "",
+      optional: false,
+      type: "form-date-input",
     },
   },
   {
