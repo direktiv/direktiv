@@ -41,6 +41,7 @@ type gatewayManager struct {
 const anonymousUsername = "Anonymous"
 
 func NewGatewayManager(db *database.SQLStore) core.GatewayManager {
+	fmt.Println("GATEWAYMANAGER!!!!")
 	return &gatewayManager{
 		db:         db,
 		nsGateways: make(map[string]*namespaceGateway),
@@ -195,6 +196,9 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	namespace := core.SystemNamespace
 	routePath := chi.URLParam(r, "*")
 
+	slog.Info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!123")
+	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!! OLD PLUGIN123")
+
 	// get namespace from URL or use magical one
 	if chiCtx.RoutePattern() == "/ns/{namespace}/*" {
 		namespace = chi.URLParam(r, "namespace")
@@ -325,6 +329,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	slog.Info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!! OLD PLUGIN")
 	// response already written, except if there are outbound plugins
 	if len(endpointEntry.OutboundPluginInstances) > 0 {
