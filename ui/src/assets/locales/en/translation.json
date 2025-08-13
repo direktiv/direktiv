@@ -1663,7 +1663,7 @@
         "table": { "noResult": "No entries to show" },
         "form": {
           "success": "The form has been submitted successfully",
-          "optional": "optional",
+          "optional": "(optional)",
           "selectPlaceholder": "Select an option",
           "datePickerPlaceholder": "Pick a date"
         }
@@ -1691,7 +1691,9 @@
         "dialog": "Dialog",
         "form": "Form",
         "form-checkbox": "Form: Checkbox",
-        "form-input": "Form: Input",
+        "form-string-input": "Form: String Input",
+        "form-date-input": "Form: Date Input",
+        "form-number-input": "Form: Number Input",
         "form-select": "Form: Select",
         "form-textarea": "Form: Textarea",
         "loop": "Loop",
@@ -1799,11 +1801,19 @@
           "description": "Description",
           "descriptionPlaceholder": "Description for the form element",
           "optional": "Optional field",
-          "input": {
-            "description": "An input field allows users to enter text information.",
+          "stringInput": {
+            "description": "An input field that allows users to enter text.",
             "variantLabel": "Input Type",
             "defaultValueLabel": "Default Value",
             "defaultValuePlaceholder": "Enter default value (optional)"
+          },
+          "dateInput": {
+            "description": "An input field that allows users to enter a date.",
+            "defaultValueLabel": "Default Value"
+          },
+          "numberInput": {
+            "description": "An input field that allows users to enter a number.",
+            "defaultValueLabel": "Default Value"
           },
           "checkbox": {
             "description": "A checkbox allows users to select or unselect a boolean option.",
@@ -1843,7 +1853,9 @@
           "dialog": "dialog block",
           "form": "form block",
           "form-checkbox": "checkbox block",
-          "form-input": "input block",
+          "form-string-input": "string input block",
+          "form-number-input": "number input block",
+          "form-date-input": "date input block",
           "form-select": "select block",
           "form-textarea": "textarea block",
           "loop": "loop block",
