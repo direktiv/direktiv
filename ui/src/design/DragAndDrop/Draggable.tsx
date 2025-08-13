@@ -1,9 +1,9 @@
 import { CSSProperties, FC, PropsWithChildren } from "react";
+import { GripVertical, LucideIcon } from "lucide-react";
 
 import Badge from "../Badge";
 import { Card } from "../Card";
 import { DragPayloadSchemaType } from "./schema";
-import { LucideIcon } from "lucide-react";
 import { pathsEqual } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useBlockTypes } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/utils/useBlockTypes";
@@ -72,6 +72,13 @@ export const SortableItem: FC<DraggableProps> = ({
           )}
           variant="secondary"
         >
+          <GripVertical
+            size={16}
+            className={twMergeClsx(
+              "mr-2 text-gray-8",
+              isFocused && "text-black dark:text-white"
+            )}
+          />
           <span className="mr-2">
             <b>{blockTypeLabel}</b>
           </span>

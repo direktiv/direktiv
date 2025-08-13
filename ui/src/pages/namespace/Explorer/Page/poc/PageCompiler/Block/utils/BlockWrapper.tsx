@@ -16,6 +16,7 @@ import { BlockPathType } from "..";
 import { BlockType } from "../../../schema/blocks";
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { ErrorBoundary } from "react-error-boundary";
+import { GripVertical } from "lucide-react";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { SortableItem } from "~/design/DragAndDrop/Draggable";
@@ -131,6 +132,13 @@ const EditorBlockWrapper = ({
               )}
               variant="secondary"
             >
+              <GripVertical
+                size={16}
+                className={twMergeClsx(
+                  "mr-2 text-gray-8",
+                  isFocused && "text-black dark:text-white"
+                )}
+              />
               <span className="mr-2">
                 <b>{blockTypeLabel}</b>
               </span>
