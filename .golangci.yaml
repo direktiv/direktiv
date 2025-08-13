@@ -28,6 +28,9 @@ linters:
     - wrapcheck
     - wsl
     - funcorder
+    - wsl_v5
+
+    - noinlineerr
 
   settings:
     nlreturn:
@@ -79,7 +82,7 @@ linters:
           - testpackage
           - unparam
           - wastedassign
-        path: (pkg)\/(model|sidecar|utils|jqer|flow)\/.*
+        path: (pkg)\/(model|sidecar|jqer|flow)\/.*
       - linters:
           - err113
         text: 'do not define dynamic errors, use wrapped static errors instead:'

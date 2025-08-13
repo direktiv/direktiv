@@ -8,10 +8,11 @@ import (
 // ValidateState defines the fields that can be used in a validate state.
 type ValidateState struct {
 	StateCommon `yaml:",inline"`
-	Subject     string      `yaml:"subject,omitempty"`
-	Schema      interface{} `yaml:"schema"`
-	Transform   interface{} `yaml:"transform,omitempty"`
-	Transition  string      `yaml:"transition,omitempty"`
+
+	Subject    string      `yaml:"subject,omitempty"`
+	Schema     interface{} `yaml:"schema"`
+	Transform  interface{} `yaml:"transform,omitempty"`
+	Transition string      `yaml:"transition,omitempty"`
 }
 
 // GetID returns the id of a validate state.

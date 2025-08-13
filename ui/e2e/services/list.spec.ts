@@ -1,10 +1,10 @@
 import { createFile, deleteFile } from "e2e/utils/files";
+import { createNamespace, deleteNamespace } from "../utils/namespace";
 import {
-  createHttpServiceFile,
+  createRequestServiceFile,
   findServiceWithApiRequest,
   serviceWithAnError,
 } from "./utils";
-import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
 import { encode } from "js-base64";
@@ -43,7 +43,7 @@ test("Service list shows all available services", async ({ page }) => {
     name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createHttpServiceFile(),
+    yaml: createRequestServiceFile(),
   });
 
   await expect
@@ -103,7 +103,7 @@ test("Service list shows all available services", async ({ page }) => {
 
   await expect(
     page.getByTestId("service-row").getByRole("cell", {
-      name: "gcr.io/direktiv/functions/http-request:1.0",
+      name: "direktiv/request:v4",
       exact: true,
     }),
     "it renders the image name of the service"
@@ -129,7 +129,7 @@ test("Service list links the file name to the service file", async ({
     name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createHttpServiceFile(),
+    yaml: createRequestServiceFile(),
   });
 
   await page.goto(`/n/${namespace}/services`, {
@@ -159,7 +159,7 @@ test("Service list links the row to the service details page", async ({
     name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createHttpServiceFile(),
+    yaml: createRequestServiceFile(),
   });
 
   await expect
@@ -211,7 +211,7 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
     name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createHttpServiceFile(),
+    yaml: createRequestServiceFile(),
   });
 
   await expect
@@ -305,7 +305,7 @@ test("Service list will update the services when refetch button is clicked", asy
     name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createHttpServiceFile({
+    yaml: createRequestServiceFile({
       scale: 1,
       size: "large",
     }),
@@ -330,7 +330,7 @@ test("Service list will update the services when refetch button is clicked", asy
   await patchFile({
     payload: {
       data: encode(
-        createHttpServiceFile({
+        createRequestServiceFile({
           scale: 2,
           size: "small",
         })
@@ -377,7 +377,7 @@ test.describe("system namespace", () => {
       name: systemServiceName,
       namespace: systemNamespaceName,
       type: "service",
-      yaml: createHttpServiceFile(),
+      yaml: createRequestServiceFile(),
     });
   });
 
