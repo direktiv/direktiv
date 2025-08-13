@@ -66,7 +66,7 @@ export const Table = ({ blockProps }: TableProps) => {
             variableArray.data.map((item, index) => (
               <VariableContextProvider
                 key={index}
-                value={{
+                variables={{
                   ...parentVariables,
                   loop: {
                     ...parentVariables.loop,

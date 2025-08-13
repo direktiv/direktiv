@@ -1,7 +1,7 @@
 import { Block, BlockPathType } from ".";
 import {
-  State,
   VariableContextProvider,
+  Variables,
   useVariables,
 } from "../primitives/Variable/VariableContext";
 
@@ -36,13 +36,13 @@ export const QueryProvider = ({
     );
   }
 
-  const queryResults: State["query"] = Object.fromEntries(
+  const queryResults: Variables["query"] = Object.fromEntries(
     queries.map((query, index) => [query.id, data[index]?.data])
   );
 
   return (
     <VariableContextProvider
-      value={{
+      variables={{
         ...parentVariables,
         query: {
           ...parentVariables.query,

@@ -41,7 +41,7 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
       {variableArray.data.map((item, variableIndex) => (
         <VariableContextProvider
           key={variableIndex}
-          value={{
+          variables={{
             ...parentVariables,
             loop: {
               ...parentVariables.loop,
