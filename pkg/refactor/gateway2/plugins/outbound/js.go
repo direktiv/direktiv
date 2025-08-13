@@ -106,13 +106,14 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 			responseDone := o.Export().(response)
 			for k, v := range responseDone.Headers {
 				for a := range v {
-					w.Header().Add(k, v[a])
+					w.Header().Set(k, v[a])
 				}
 			}
 
 			// nolint
-			w.Write([]byte(responseDone.Body))
 			w.WriteHeader(responseDone.Code)
+			w.Write([]byte(responseDone.Body))
+
 		}
 	}
 
