@@ -1,11 +1,4 @@
-import {
-  Dispatch,
-  PropsWithChildren,
-  SetStateAction,
-  createContext,
-  useContext,
-  useState,
-} from "react";
+import { PropsWithChildren, createContext, useContext } from "react";
 
 import { VariableNamespace } from "../../../schema/primitives/variable";
 
@@ -22,34 +15,24 @@ const defaultVariables: Variables = {
   query: {},
 };
 
-type State = {
-  variables: Variables;
-  setVariables: Dispatch<SetStateAction<Variables>>;
-};
+const VariableContext = createContext<Variables | null>(null);
 
-const VariableContext = createContext<State | null>(null);
-
-type VariableContextProviderProps = PropsWithChildren<
-  Omit<State, "setVariables">
->;
+type VariableContextProviderProps = PropsWithChildren<{ variables: Variables }>;
 
 const VariableContextProvider = ({
   children,
-  variables: initialValue,
-}: VariableContextProviderProps) => {
-  const [variables, setVariables] = useState<Variables>(initialValue);
-  return (
-    <VariableContext.Provider value={{ variables, setVariables }}>
-      {children}
-    </VariableContext.Provider>
-  );
-};
+  variables,
+}: VariableContextProviderProps) => (
+  <VariableContext.Provider value={variables}>
+    {children}
+  </VariableContext.Provider>
+);
 
 const useVariableContext = () => {
   const context = useContext(VariableContext);
   return context;
 };
 
-const useVariables = () => useVariableContext()?.variables ?? defaultVariables;
+const useVariables = () => useVariableContext() ?? defaultVariables;
 
 export { VariableContextProvider, useVariables };
