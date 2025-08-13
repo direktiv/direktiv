@@ -2,6 +2,7 @@ package gateway2
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"slices"
 	"strings"
@@ -77,6 +78,12 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 						return
 					}
 				}
+
+				slog.Info("!!!!!!!!!!!!!!!!!!!!!!!!!!! SLOG")
+				fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+				fmt.Printf("%+v\n", w)
+				fmt.Printf("%+v\n", w.Header())
+
 				if r = p.Execute(w, r); r == nil {
 					break
 				}

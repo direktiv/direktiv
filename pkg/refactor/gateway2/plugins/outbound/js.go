@@ -40,8 +40,6 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 		b   []byte
 	)
 
-	fmt.Println("IN JS PLUGIN")
-
 	if r.Body != nil {
 		b, err = io.ReadAll(r.Body)
 		if err != nil {
