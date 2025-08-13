@@ -1,10 +1,10 @@
-import { Block, BlockPathType } from ".";
+import { Block, BlockPathType } from "..";
 
 import Alert from "~/design/Alert";
-import { BlockList } from "./utils/BlockList";
-import { Button } from "./Button";
-import { FormType } from "../../schema/blocks/form";
-import { usePageMutation } from "../procedures/mutation";
+import { BlockList } from "../utils/BlockList";
+import { Button } from "../Button";
+import { FormType } from "../../../schema/blocks/form";
+import { usePageMutation } from "../../procedures/mutation";
 import { useTranslation } from "react-i18next";
 
 type FormProps = {
@@ -24,10 +24,7 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         const formValues = Object.fromEntries(formData.entries());
-        console.log(
-          "Form submitted with values:",
-          JSON.stringify(formValues, null, 2)
-        );
+        console.log("🚀", formValues);
         mutate();
       }}
     >
