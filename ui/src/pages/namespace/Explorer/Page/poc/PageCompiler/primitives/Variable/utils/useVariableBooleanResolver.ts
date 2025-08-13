@@ -1,6 +1,5 @@
 import { ResolveVariableBooleanError } from "./errors";
-import { Result } from "./types";
-import { VariableType } from "../../../../schema/primitives/variable";
+import { ResolverFunctionWithError } from "./types";
 import { useVariableResolver } from "./useVariableResolver";
 import { z } from "zod";
 
@@ -8,12 +7,13 @@ import { z } from "zod";
  * A hook that works the same as useVariableResolver
  * but ensures that the resolved value is a boolean.
  */
-export const useVariableBooleanResolver = () => {
+export const useVariableBooleanResolver = (): ResolverFunctionWithError<
+  boolean,
+  ResolveVariableBooleanError
+> => {
   const resolveVariable = useVariableResolver();
-  return (
-    value: VariableType
-  ): Result<boolean, ResolveVariableBooleanError> => {
-    const variableResult = resolveVariable(value);
+  return (...args) => {
+    const variableResult = resolveVariable(...args);
 
     if (!variableResult.success) {
       return { success: false, error: variableResult.error };

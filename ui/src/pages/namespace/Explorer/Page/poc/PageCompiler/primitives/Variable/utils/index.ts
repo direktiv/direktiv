@@ -93,7 +93,7 @@ const AnyObjectSchema = z.object({}).passthrough();
 const AnyArraySchema = z.array(z.unknown());
 const AnyObjectOrArraySchema = z.union([AnyObjectSchema, AnyArraySchema]);
 
-export type PossibleValues = object | string | number | boolean | null;
+export type JsonValueType = object | string | number | boolean | null;
 
 /**
  * Retrieves a JSON-like input and a path that points to a key in the input.
@@ -116,7 +116,7 @@ export type PossibleValues = object | string | number | boolean | null;
 export const getValueFromJsonPath = (
   json: unknown,
   path: string
-): Result<PossibleValues, JsonPathError> => {
+): Result<JsonValueType, JsonPathError> => {
   const jsonParsed = AnyObjectOrArraySchema.safeParse(json);
   if (!jsonParsed.success) {
     return { success: false, error: "invalidJson" };
@@ -128,14 +128,14 @@ export const getValueFromJsonPath = (
 
   const pathSegments = path.split(TemplateStringSeparator);
 
-  let returnValue: PossibleValues = jsonParsed.data;
+  let returnValue: JsonValueType = jsonParsed.data;
 
   for (const segment of pathSegments) {
     const returnValueParsed = AnyObjectOrArraySchema.safeParse(returnValue);
     if (returnValueParsed.success && segment in returnValueParsed.data) {
       returnValue = (returnValueParsed.data as Record<string, unknown>)[
         segment
-      ] as PossibleValues;
+      ] as JsonValueType;
       continue;
     }
 

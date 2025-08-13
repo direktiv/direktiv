@@ -1,6 +1,5 @@
 import { ResolveVariableStringError } from "./errors";
-import { Result } from "./types";
-import { VariableType } from "../../../../schema/primitives/variable";
+import { ResolverFunctionWithError } from "./types";
 import { useVariableResolver } from "./useVariableResolver";
 import { z } from "zod";
 
@@ -15,10 +14,13 @@ const StringCompatible = z.union([
  * A hook that works the same as useVariableResolver
  * but ensures that the resolved value is a string.
  */
-export const useVariableStringResolver = () => {
+export const useVariableStringResolver = (): ResolverFunctionWithError<
+  string,
+  ResolveVariableStringError
+> => {
   const resolveVariable = useVariableResolver();
-  return (value: VariableType): Result<string, ResolveVariableStringError> => {
-    const variableResult = resolveVariable(value);
+  return (...args) => {
+    const variableResult = resolveVariable(...args);
 
     if (!variableResult.success) {
       return { success: false, error: variableResult.error };

@@ -1,13 +1,12 @@
 import {
-  PossibleValues,
+  JsonValueType,
   getValueFromJsonPath,
   parseVariable,
   validateVariable,
 } from ".";
 
 import { ResolveVariableError } from "./errors";
-import { Result } from "./types";
-import { VariableType } from "../../../../schema/primitives/variable";
+import { ResolverFunctionWithError } from "./types";
 import { useVariables } from "../VariableContext";
 
 /**
@@ -20,11 +19,13 @@ import { useVariables } from "../VariableContext";
  * Returns a Result object that indicates either success with the resolved value
  * or failure with an error code describing the reason
  */
-export const useVariableResolver = () => {
+export const useVariableResolver = (): ResolverFunctionWithError<
+  JsonValueType,
+  ResolveVariableError
+> => {
   const variables = useVariables();
-  return (
-    value: VariableType
-  ): Result<PossibleValues, ResolveVariableError> => {
+  return (value, options) => {
+    console.log("🚀", options);
     const variableObject = parseVariable(value);
     const validationResult = validateVariable(variableObject);
 

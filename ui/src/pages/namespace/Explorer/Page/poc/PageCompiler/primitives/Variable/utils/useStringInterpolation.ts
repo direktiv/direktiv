@@ -1,3 +1,4 @@
+import { ResolverFunction } from "./types";
 import { parseTemplateString } from ".";
 import { useTranslation } from "react-i18next";
 import { useVariableStringResolver } from "./useVariableStringResolver";
@@ -15,12 +16,12 @@ import { useVariableStringResolver } from "./useVariableStringResolver";
  * console.log(interpolateString(string)); // "company-id-apple"
  *
  */
-export const useStringInterpolation = () => {
+export const useStringInterpolation = (): ResolverFunction<string> => {
   const { t } = useTranslation();
   const resolveVariableString = useVariableStringResolver();
-  return (input: string) =>
+  return (input, options) =>
     parseTemplateString(input, (match) => {
-      const result = resolveVariableString(match);
+      const result = resolveVariableString(match, options);
       if (!result.success) {
         throw new Error(t(`direktivPage.error.templateString.${result.error}`));
       }
