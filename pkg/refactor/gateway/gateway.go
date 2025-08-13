@@ -42,6 +42,7 @@ const anonymousUsername = "Anonymous"
 
 func NewGatewayManager(db *database.SQLStore) core.GatewayManager {
 	fmt.Println("GATEWAYMANAGER!!!!")
+	slog.Info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 	return &gatewayManager{
 		db:         db,
 		nsGateways: make(map[string]*namespaceGateway),
