@@ -1,4 +1,3 @@
-import { FormEvent } from "react";
 import { VariableType } from "../../../../schema/primitives/variable";
 
 export type ValidationResult<DataType, E> = Success<DataType> | Failure<E>;
@@ -16,14 +15,14 @@ type Failure<E> = {
 type ResolverFunctionWithoutError<DataType> = (
   value: VariableType,
   options?: {
-    formEvent: FormEvent<HTMLFormElement>;
+    formData: FormData;
   }
 ) => DataType;
 
 type ResolverFunctionWithError<DataType, Error> = (
   value: VariableType,
   options?: {
-    formEvent: FormEvent<HTMLFormElement>;
+    formData: FormData;
   }
 ) => ValidationResult<DataType, Error>;
 
