@@ -10,11 +10,10 @@ type FormCheckboxProps = {
 
 export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
   const { t } = useTranslation();
-  const { id, label, description, defaultValue, optional } = blockProps;
-  const htmlID = `form-checkbox-${id}`;
-
   const resolveVariableBoolean = useVariableBooleanResolver();
+  const { id, label, description, defaultValue, optional } = blockProps;
 
+  const htmlID = `form-checkbox-${id}`;
   let value: boolean;
 
   if (defaultValue.type === "variable") {

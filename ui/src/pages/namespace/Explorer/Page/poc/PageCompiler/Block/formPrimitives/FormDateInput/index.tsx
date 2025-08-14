@@ -17,14 +17,12 @@ type FormDateInputProps = {
 
 export const FormDateInput = ({ blockProps }: FormDateInputProps) => {
   const { t } = useTranslation();
-  const { id, label, description, defaultValue, optional } = blockProps;
-  const htmlID = `form-input-${id}`;
-
   const templateStringResolver = useTemplateStringResolver();
+  const { id, label, description, defaultValue, optional } = blockProps;
+
   const value = templateStringResolver(defaultValue);
-
   const [date, setDate] = useState<Date | undefined>(parseStringToDate(value));
-
+  const htmlID = `form-input-${id}`;
   return (
     <Fieldset
       label={label}

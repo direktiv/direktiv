@@ -10,10 +10,10 @@ type FormStringInputProps = {
 export const FormStringInput = ({ blockProps }: FormStringInputProps) => {
   const { id, label, description, variant, defaultValue, optional } =
     blockProps;
-  const htmlID = `form-input-${id}`;
-
   const templateStringResolver = useTemplateStringResolver();
+
   const value = templateStringResolver(defaultValue);
+  const htmlID = `form-input-${id}`;
 
   return (
     <Fieldset
