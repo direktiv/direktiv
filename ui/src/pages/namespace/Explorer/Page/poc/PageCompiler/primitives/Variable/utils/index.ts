@@ -10,7 +10,7 @@ import {
   VariableType,
 } from "../../../../schema/primitives/variable";
 
-import { Result } from "./types";
+import { ValidationResult } from "./types";
 import { z } from "zod";
 
 /**
@@ -79,7 +79,7 @@ export const parseVariable = (variableString: VariableType): VariableObject => {
 
 export const validateVariable = (
   variable: VariableObject
-): Result<VariableObjectValidated, ValidateVariableError> => {
+): ValidationResult<VariableObjectValidated, ValidateVariableError> => {
   const { namespace, id, pointer, src } = variable;
 
   if (!namespace) return { success: false, error: "namespaceInvalid" };
@@ -116,7 +116,7 @@ export type JsonValueType = object | string | number | boolean | null;
 export const getValueFromJsonPath = (
   json: unknown,
   path: string
-): Result<JsonValueType, JsonPathError> => {
+): ValidationResult<JsonValueType, JsonPathError> => {
   const jsonParsed = AnyObjectOrArraySchema.safeParse(json);
   if (!jsonParsed.success) {
     return { success: false, error: "invalidJson" };

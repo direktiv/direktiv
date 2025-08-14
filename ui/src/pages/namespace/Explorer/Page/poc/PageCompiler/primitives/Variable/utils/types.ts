@@ -1,11 +1,11 @@
 import { FormEvent } from "react";
 import { VariableType } from "../../../../schema/primitives/variable";
 
-export type Result<T, E> = Success<T> | Failure<E>;
+export type ValidationResult<DataType, E> = Success<DataType> | Failure<E>;
 
-type Success<T> = {
+type Success<DataType> = {
   success: true;
-  data: T;
+  data: DataType;
 };
 
 type Failure<E> = {
@@ -13,20 +13,24 @@ type Failure<E> = {
   error: E;
 };
 
-type ResolverFunctionWithoutError<TType> = (
+type ResolverFunctionWithoutError<DataType> = (
   value: VariableType,
   options?: {
     formEvent: FormEvent<HTMLFormElement>;
   }
-) => TType;
+) => DataType;
 
-type ResolverFunctionWithError<TType, TError> = (
+type ResolverFunctionWithError<DataType, Error> = (
   value: VariableType,
   options?: {
     formEvent: FormEvent<HTMLFormElement>;
   }
-) => Result<TType, TError>;
+) => ValidationResult<DataType, Error>;
 
-export type ResolverFunction<TType, TError = never> = [TError] extends [never]
-  ? ResolverFunctionWithoutError<TType>
-  : ResolverFunctionWithError<TType, TError>;
+/**
+ * Unified resolver function type that conditionally returns either a direct
+ * value or a ValidationResult type based on whether an error type is provided
+ */
+export type ResolverFunction<DataType, Error = never> = [Error] extends [never]
+  ? ResolverFunctionWithoutError<DataType>
+  : ResolverFunctionWithError<DataType, Error>;
