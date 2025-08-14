@@ -1,6 +1,5 @@
 import { describe, expect, test } from "vitest";
 
-import { ColumnsType } from "../../../schema/blocks/columns";
 import { DirektivPagesType } from "../../../schema";
 import { HeadlineType } from "../../../schema/blocks/headline";
 import { addBlockToPage } from "../utils/updatePage";
@@ -14,38 +13,85 @@ describe("addBlockToPage", () => {
   };
 
   test("it adds a block at the specified index", () => {
-    const result = addBlockToPage(simple, [2, 1, 0], headline);
+    const updatedPage = addBlockToPage(simple, [2, 1, 0], headline);
 
-    expect((result.blocks[2] as ColumnsType).blocks[1]).toEqual({
-      type: "column",
+    expect(updatedPage).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
       blocks: [
         {
           type: "headline",
-          label: "New headline",
-          level: "h2",
+          level: "h1",
+          label: "Welcome to Direktiv",
         },
         {
           type: "text",
-          content: "second column text",
+          content:
+            "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
+        },
+        {
+          type: "columns",
+          blocks: [
+            {
+              type: "column",
+              blocks: [{ type: "text", content: "first column text" }],
+            },
+            {
+              type: "column",
+              blocks: [
+                {
+                  type: "headline",
+                  label: "New headline",
+                  level: "h2",
+                },
+                { type: "text", content: "second column text" },
+              ],
+            },
+          ],
         },
       ],
     });
   });
 
   test("it adds a block after the specified index", () => {
-    const result = addBlockToPage(simple, [2, 1, 0], headline, true);
+    const updatedPage = addBlockToPage(simple, [2, 1, 0], headline, true);
 
-    expect((result.blocks[2] as ColumnsType).blocks[1]).toEqual({
-      type: "column",
+    expect(updatedPage).toEqual({
+      direktiv_api: "page/v1",
+      type: "page",
       blocks: [
         {
-          type: "text",
-          content: "second column text",
+          type: "headline",
+          level: "h1",
+          label: "Welcome to Direktiv",
         },
         {
-          type: "headline",
-          label: "New headline",
-          level: "h2",
+          type: "text",
+          content:
+            "This is a block that contains longer text. You might write some Terms and Conditions here or something similar",
+        },
+        {
+          type: "columns",
+          blocks: [
+            {
+              type: "column",
+              blocks: [{ type: "text", content: "first column text" }],
+            },
+            {
+              type: "column",
+              blocks: [
+                {
+                  type: "text",
+                  content: "second column text",
+                },
+                {
+                  type: "headline",
+                  label: "New headline",
+                  level: "h2",
+                },
+              ],
+            },
+          ],
         },
       ],
     });
