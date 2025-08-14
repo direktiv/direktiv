@@ -1,5 +1,5 @@
 import { ResolveVariableBooleanError } from "./errors";
-import { ResolverFunctionWithError } from "./types";
+import { ResolverFunction } from "./types";
 import { useVariableResolver } from "./useVariableResolver";
 import { z } from "zod";
 
@@ -7,7 +7,7 @@ import { z } from "zod";
  * A hook that works the same as useVariableResolver
  * but ensures that the resolved value is a boolean.
  */
-export const useVariableBooleanResolver = (): ResolverFunctionWithError<
+export const useVariableBooleanResolver = (): ResolverFunction<
   boolean,
   ResolveVariableBooleanError
 > => {

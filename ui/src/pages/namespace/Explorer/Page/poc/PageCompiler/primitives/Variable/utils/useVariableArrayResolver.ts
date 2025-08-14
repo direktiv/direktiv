@@ -1,5 +1,5 @@
 import { ResolveVariableArrayError } from "./errors";
-import { ResolverFunctionWithError } from "./types";
+import { ResolverFunction } from "./types";
 import { useVariableResolver } from "./useVariableResolver";
 import { z } from "zod";
 
@@ -10,7 +10,7 @@ type UnknownArray = z.infer<typeof UnknownArraySchema>;
  * A hook that works the same as useVariableResolver
  * but ensures that the resolved value is an array.
  */
-export const useVariableArrayResolver = (): ResolverFunctionWithError<
+export const useVariableArrayResolver = (): ResolverFunction<
   UnknownArray,
   ResolveVariableArrayError
 > => {

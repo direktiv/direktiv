@@ -6,7 +6,7 @@ import {
 } from ".";
 
 import { ResolveVariableError } from "./errors";
-import { ResolverFunctionWithError } from "./types";
+import { ResolverFunction } from "./types";
 import { useVariables } from "../VariableContext";
 
 /**
@@ -19,7 +19,7 @@ import { useVariables } from "../VariableContext";
  * Returns a Result object that indicates either success with the resolved value
  * or failure with an error code describing the reason
  */
-export const useVariableResolver = (): ResolverFunctionWithError<
+export const useVariableResolver = (): ResolverFunction<
   JsonValueType,
   ResolveVariableError
 > => {

@@ -1,5 +1,5 @@
 import { ResolveVariableStringError } from "./errors";
-import { ResolverFunctionWithError } from "./types";
+import { ResolverFunction } from "./types";
 import { useVariableResolver } from "./useVariableResolver";
 import { z } from "zod";
 
@@ -14,7 +14,7 @@ const StringCompatible = z.union([
  * A hook that works the same as useVariableResolver
  * but ensures that the resolved value is a string.
  */
-export const useVariableStringResolver = (): ResolverFunctionWithError<
+export const useVariableStringResolver = (): ResolverFunction<
   string,
   ResolveVariableStringError
 > => {

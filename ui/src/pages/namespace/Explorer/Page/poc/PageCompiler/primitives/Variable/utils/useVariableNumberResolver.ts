@@ -1,5 +1,5 @@
 import { ResolveVariableNumberError } from "./errors";
-import { ResolverFunctionWithError } from "./types";
+import { ResolverFunction } from "./types";
 import { useVariableResolver } from "./useVariableResolver";
 import { z } from "zod";
 
@@ -7,7 +7,7 @@ import { z } from "zod";
  * A hook that works the same as useVariableResolver
  * but ensures that the resolved value is a number.
  */
-export const useVariableNumberResolver = (): ResolverFunctionWithError<
+export const useVariableNumberResolver = (): ResolverFunction<
   number,
   ResolveVariableNumberError
 > => {

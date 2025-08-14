@@ -13,16 +13,20 @@ type Failure<E> = {
   error: E;
 };
 
-export type ResolverFunction<TType> = (
+type ResolverFunctionWithoutError<TType> = (
   value: VariableType,
   options?: {
     formEvent: FormEvent<HTMLFormElement>;
   }
 ) => TType;
 
-export type ResolverFunctionWithError<TType, TError> = (
+type ResolverFunctionWithError<TType, TError> = (
   value: VariableType,
   options?: {
     formEvent: FormEvent<HTMLFormElement>;
   }
 ) => Result<TType, TError>;
+
+export type ResolverFunction<TType, TError = never> = [TError] extends [never]
+  ? ResolverFunctionWithoutError<TType>
+  : ResolverFunctionWithError<TType, TError>;
