@@ -1,7 +1,7 @@
 import { Checkbox } from "~/design/Checkbox";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormBaseType } from "../../schema/blocks/form/utils";
-import InputDesignComponent from "~/design/Input";
+import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
 import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -22,7 +22,7 @@ export const BaseForm = ({ form: anyForm }: BaseFormProps) => {
         label={t("direktivPage.blockEditor.blockForms.formPrimitives.idLabel")}
         htmlFor="id"
       >
-        <InputDesignComponent
+        <Input
           {...form.register("id")}
           id="id"
           placeholder={t(
@@ -34,7 +34,7 @@ export const BaseForm = ({ form: anyForm }: BaseFormProps) => {
         label={t("direktivPage.blockEditor.blockForms.formPrimitives.label")}
         htmlFor="label"
       >
-        <InputDesignComponent
+        <Input
           {...form.register("label")}
           id="label"
           placeholder={t(

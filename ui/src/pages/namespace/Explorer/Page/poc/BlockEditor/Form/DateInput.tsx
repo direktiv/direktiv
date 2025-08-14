@@ -7,7 +7,7 @@ import { BaseForm } from "./BaseForm";
 import { BlockEditFormProps } from "..";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
-import InputDesignComponent from "~/design/Input";
+import Input from "~/design/Input";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -46,10 +46,7 @@ export const DateInput = ({
         )}
         htmlFor="defaultValue"
       >
-        <InputDesignComponent
-          {...form.register("defaultValue")}
-          id="defaultValue"
-        />
+        <Input {...form.register("defaultValue")} id="defaultValue" />
       </Fieldset>
     </FormWrapper>
   );
