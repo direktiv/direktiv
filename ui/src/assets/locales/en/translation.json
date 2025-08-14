@@ -1804,15 +1804,15 @@
           "descriptionPlaceholder": "Description for the form element",
           "optional": "Optional field",
           "defaultValue": {
-            "label": "Default Value",
+            "label": "Default value",
             "type": {
               "boolean": "Static",
               "number": "Static",
               "variable": "Variable"
             },
-            "placeholder": "Enter default value (optional)",
-            "placeholderVariable": "Enter variable name (optional)",
-            "placeholderSelect": "Select default option (optional)"
+            "placeholder": "Enter default value",
+            "placeholderVariable": "Enter variable name",
+            "placeholderSelect": "Select default option"
           },
           "stringInput": {
             "description": "An input field that allows users to enter text.",
