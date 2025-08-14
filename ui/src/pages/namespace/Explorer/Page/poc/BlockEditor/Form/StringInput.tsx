@@ -75,7 +75,7 @@ export const StringInput = ({
       </Fieldset>
       <Fieldset
         label={t(
-          "direktivPage.blockEditor.blockForms.formPrimitives.stringInput.defaultValueLabel"
+          "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.label"
         )}
         htmlFor="defaultValue"
       >
@@ -83,7 +83,7 @@ export const StringInput = ({
           {...form.register("defaultValue")}
           id="defaultValue"
           placeholder={t(
-            "direktivPage.blockEditor.blockForms.formPrimitives.stringInput.defaultValuePlaceholder"
+            "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholder"
           )}
         />
       </Fieldset>

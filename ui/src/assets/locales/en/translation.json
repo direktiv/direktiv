@@ -1803,45 +1803,37 @@
           "description": "Description",
           "descriptionPlaceholder": "Description for the form element",
           "optional": "Optional field",
-          "stringInput": {
-            "description": "An input field that allows users to enter text.",
-            "variantLabel": "Input Type",
-            "defaultValueLabel": "Default Value",
-            "defaultValuePlaceholder": "Enter default value (optional)"
-          },
-          "dateInput": {
-            "description": "An input field that allows users to enter a date.",
-            "defaultValueLabel": "Default Value"
-          },
-          "numberInput": {
-            "description": "An input field that allows users to enter a number.",
-            "defaultValueLabel": "Default Value",
-            "defaultValueType": {
+          "defaultValue": {
+            "label": "Default Value",
+            "type": {
+              "boolean": "Static",
               "number": "Static",
               "variable": "Variable"
             },
-            "defaultValueVariablePlaceholder": "Enter variable name"
+            "placeholder": "Enter default value (optional)",
+            "placeholderVariable": "Enter variable name (optional)",
+            "placeholderSelect": "Select default option (optional)"
+          },
+          "stringInput": {
+            "description": "An input field that allows users to enter text.",
+            "variantLabel": "Input Type"
+          },
+          "dateInput": {
+            "description": "An input field that allows users to enter a date."
+          },
+          "numberInput": {
+            "description": "An input field that allows users to enter a number."
           },
           "checkbox": {
-            "description": "A checkbox allows users to select or unselect a boolean option.",
-            "defaultValueLabel": "Default checked",
-            "defaultValueType": {
-              "boolean": "Static",
-              "variable": "Variable"
-            },
-            "defaultValueVariablePlaceholder": "Enter variable name"
+            "description": "A checkbox allows users to select or unselect a boolean option."
           },
           "textarea": {
-            "description": "A textarea allows users to enter multi-line text.",
-            "defaultValueLabel": "Default Value",
-            "defaultValuePlaceholder": "Enter default text"
+            "description": "A textarea allows users to enter multi-line text."
           },
           "select": {
             "description": "A select dropdown allows users to choose from a predefined list of options.",
             "valuesLabel": "Options",
-            "valuesPlaceholder": "Select option",
-            "defaultValueLabel": "Default selection",
-            "defaultValueLabelPlaceholder": "Select default option"
+            "valuesPlaceholder": "Select option"
           }
         }
       },

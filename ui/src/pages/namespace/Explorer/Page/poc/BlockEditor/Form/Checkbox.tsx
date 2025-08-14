@@ -71,7 +71,7 @@ export const Checkbox = ({
       <BaseForm form={form} />
       <Fieldset
         label={t(
-          "direktivPage.blockEditor.blockForms.formPrimitives.checkbox.defaultValueLabel"
+          "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.label"
         )}
         htmlFor="defaultValue-type"
       >
@@ -93,7 +93,7 @@ export const Checkbox = ({
                   {allowedDefaultValueTypes.map((type) => (
                     <SelectItem value={type} key={type}>
                       {t(
-                        `direktivPage.blockEditor.blockForms.formPrimitives.checkbox.defaultValueType.${type}`
+                        `direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.type.${type}`
                       )}
                     </SelectItem>
                   ))}
@@ -138,7 +138,7 @@ export const Checkbox = ({
                     {...field}
                     value={defaultValue}
                     placeholder={t(
-                      "direktivPage.blockEditor.blockForms.formPrimitives.checkbox.defaultValueVariablePlaceholder"
+                      "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholderVariable"
                     )}
                   />
                 );

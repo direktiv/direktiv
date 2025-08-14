@@ -42,7 +42,7 @@ export const Textarea = ({
       <BaseForm form={form} />
       <Fieldset
         label={t(
-          "direktivPage.blockEditor.blockForms.formPrimitives.textarea.defaultValueLabel"
+          "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.label"
         )}
         htmlFor="defaultValue"
       >
@@ -50,7 +50,7 @@ export const Textarea = ({
           {...form.register("defaultValue")}
           id="defaultValue"
           placeholder={t(
-            "direktivPage.blockEditor.blockForms.formPrimitives.textarea.defaultValuePlaceholder"
+            "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholder"
           )}
         />
       </Fieldset>

@@ -42,7 +42,7 @@ export const DateInput = ({
       <BaseForm form={form} />
       <Fieldset
         label={t(
-          "direktivPage.blockEditor.blockForms.formPrimitives.dateInput.defaultValueLabel"
+          "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.label"
         )}
         htmlFor="defaultValue"
       >

@@ -70,7 +70,7 @@ export const NumberInput = ({
       <BaseForm form={form} />
       <Fieldset
         label={t(
-          "direktivPage.blockEditor.blockForms.formPrimitives.numberInput.defaultValueLabel"
+          "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.label"
         )}
         htmlFor="defaultValue-type"
       >
@@ -92,7 +92,7 @@ export const NumberInput = ({
                   {allowedDefaultValueTypes.map((type) => (
                     <SelectItem value={type} key={type}>
                       {t(
-                        `direktivPage.blockEditor.blockForms.formPrimitives.numberInput.defaultValueType.${type}`
+                        `direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.type.${type}`
                       )}
                     </SelectItem>
                   ))}
@@ -137,7 +137,7 @@ export const NumberInput = ({
                     {...field}
                     value={defaultValue}
                     placeholder={t(
-                      "direktivPage.blockEditor.blockForms.formPrimitives.numberInput.defaultValueVariablePlaceholder"
+                      "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholderVariable"
                     )}
                   />
                 );
