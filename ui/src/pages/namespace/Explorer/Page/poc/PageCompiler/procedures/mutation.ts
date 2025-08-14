@@ -13,16 +13,16 @@ export const usePageMutation = (mutation: MutationType) => {
   const generateUrl = useUrlGenerator();
   const resolveKeyValueArray = useKeyValueArrayResolver();
 
-  const url = generateUrl(mutation);
-
-  const requestBodyResolved = resolveKeyValueArray(requestBody ?? []);
-  const body = JSON.stringify(keyValueArrayToObject(requestBodyResolved));
-
-  const requestHeadersResolved = resolveKeyValueArray(requestHeaders ?? []);
-  const headers = keyValueArrayToObject(requestHeadersResolved);
-
   return useMutation({
     mutationFn: async () => {
+      const requestBodyResolved = resolveKeyValueArray(requestBody ?? []);
+      const body = JSON.stringify(keyValueArrayToObject(requestBodyResolved));
+
+      const requestHeadersResolved = resolveKeyValueArray(requestHeaders ?? []);
+      const headers = keyValueArrayToObject(requestHeadersResolved);
+
+      const url = generateUrl(mutation);
+
       const response = await fetch(url, {
         method,
         body,
