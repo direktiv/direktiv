@@ -7,14 +7,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { MutationType } from "../../schema/procedures/mutation";
 import { useUrlGenerator } from "./utils";
 
-export const usePageMutation = (mutation: MutationType) => {
-  const { method, requestBody, requestHeaders } = mutation;
+export const usePageMutation = () => {
   const queryClient = useQueryClient();
   const generateUrl = useUrlGenerator();
   const resolveKeyValueArray = useKeyValueArrayResolver();
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (mutation: MutationType) => {
+      const { method, requestBody, requestHeaders } = mutation;
       const requestBodyResolved = resolveKeyValueArray(requestBody ?? []);
       const body = JSON.stringify(keyValueArrayToObject(requestBodyResolved));
 

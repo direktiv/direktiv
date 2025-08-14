@@ -15,7 +15,7 @@ type FormProps = {
 
 export const Form = ({ blockProps, blockPath }: FormProps) => {
   const { mutation, trigger } = blockProps;
-  const { mutate, isPending, error, isSuccess } = usePageMutation(mutation);
+  const { mutate, isPending, error, isSuccess } = usePageMutation();
 
   const resolveVariable = useVariableResolver();
 
@@ -32,7 +32,7 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
           "💡",
           resolveVariable("query.user.data.status", { formEvent: e })
         );
-        mutate();
+        mutate(mutation);
       }}
     >
       {error && (
