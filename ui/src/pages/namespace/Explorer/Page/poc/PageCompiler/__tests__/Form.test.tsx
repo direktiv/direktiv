@@ -296,133 +296,133 @@ describe("Form", () => {
       ).toBe("free");
     });
   });
-});
 
-describe("invalid default values", () => {
-  test("shows an error when textarea default value is an object", async () => {
-    await act(async () => {
-      render(
-        <PageCompiler
-          setPage={setPage}
-          page={createDirektivPageWithForm([
-            {
-              id: "textarea-using-an-object",
-              label: "invalid textarea",
-              description:
-                "This textarea is using an object in the template string",
-              optional: false,
-              type: "form-textarea",
-              defaultValue: "{{query.user.data}}",
-            },
-          ])}
-          mode="live"
-        />
-      );
-    });
-
-    await screen
-      .getByRole("button", {
-        name: "There was an unexpected error",
-      })
-      .click();
-    expect(
-      screen.getByText(
-        "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
-      )
-    );
-  });
-
-  test("shows an error when checkbox default value is a string", async () => {
-    await act(async () => {
-      render(
-        <PageCompiler
-          setPage={setPage}
-          page={createDirektivPageWithForm([
-            {
-              id: "checkbox-pointing-to-string",
-              label: "invalid checkbox",
-              description:
-                "This checkbox is pointing to a string for the default value",
-              optional: false,
-              type: "form-checkbox",
-              defaultValue: {
-                type: "variable",
-                value: "query.user.data.status",
+  describe("invalid default values", () => {
+    test("shows an error when textarea default value is an object", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm([
+              {
+                id: "textarea-using-an-object",
+                label: "invalid textarea",
+                description:
+                  "This textarea is using an object in the template string",
+                optional: false,
+                type: "form-textarea",
+                defaultValue: "{{query.user.data}}",
               },
-            },
-          ])}
-          mode="live"
-        />
+            ])}
+            mode="live"
+          />
+        );
+      });
+
+      await screen
+        .getByRole("button", {
+          name: "There was an unexpected error",
+        })
+        .click();
+      expect(
+        screen.getByText(
+          "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
+        )
       );
     });
 
-    await screen
-      .getByRole("button", {
-        name: "There was an unexpected error",
-      })
-      .click();
-    expect(screen.getByText("Pointing to a value that is not a boolean."));
-  });
-
-  test("shows an error when number input default value is a string", async () => {
-    await act(async () => {
-      render(
-        <PageCompiler
-          setPage={setPage}
-          page={createDirektivPageWithForm([
-            {
-              id: "number-using-string",
-              label: "invalid number inpuit",
-              description:
-                "This number input is pointing to a string for the default value",
-              optional: false,
-              type: "form-number-input",
-              defaultValue: {
-                type: "variable",
-                value: "query.user.data.status",
+    test("shows an error when checkbox default value is a string", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm([
+              {
+                id: "checkbox-pointing-to-string",
+                label: "invalid checkbox",
+                description:
+                  "This checkbox is pointing to a string for the default value",
+                optional: false,
+                type: "form-checkbox",
+                defaultValue: {
+                  type: "variable",
+                  value: "query.user.data.status",
+                },
               },
-            },
-          ])}
-          mode="live"
-        />
-      );
+            ])}
+            mode="live"
+          />
+        );
+      });
+
+      await screen
+        .getByRole("button", {
+          name: "There was an unexpected error",
+        })
+        .click();
+      expect(screen.getByText("Pointing to a value that is not a boolean."));
     });
 
-    await screen
-      .getByRole("button", {
-        name: "There was an unexpected error",
-      })
-      .click();
-    expect(screen.getByText("Pointing to a value that is not a number."));
-  });
+    test("shows an error when number input default value is a string", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm([
+              {
+                id: "number-using-string",
+                label: "invalid number inpuit",
+                description:
+                  "This number input is pointing to a string for the default value",
+                optional: false,
+                type: "form-number-input",
+                defaultValue: {
+                  type: "variable",
+                  value: "query.user.data.status",
+                },
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
 
-  test("select input can have a default value from a variable", async () => {
-    await act(async () => {
-      render(
-        <PageCompiler
-          setPage={setPage}
-          page={createDirektivPageWithForm([
-            {
-              id: "dynamic-select",
-              label: "dynamic select",
-              description:
-                "default value comes from API ({{query.user.data.subscriptionPlan}})",
-              optional: false,
-              type: "form-select",
-              values: ["free", "pro", "enterprise"],
-              defaultValue: "{{query.user.data.subscriptionPlan}}",
-            },
-          ])}
-          mode="live"
-        />
-      );
+      await screen
+        .getByRole("button", {
+          name: "There was an unexpected error",
+        })
+        .click();
+      expect(screen.getByText("Pointing to a value that is not a number."));
     });
-    expect(
-      (
-        screen.getByRole("combobox", {
-          name: "dynamic select",
-        }) as HTMLInputElement
-      )?.value
-    ).toBe("pro");
+
+    test("select input can have a default value from a variable", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm([
+              {
+                id: "dynamic-select",
+                label: "dynamic select",
+                description:
+                  "default value comes from API ({{query.user.data.subscriptionPlan}})",
+                optional: false,
+                type: "form-select",
+                values: ["free", "pro", "enterprise"],
+                defaultValue: "{{query.user.data.subscriptionPlan}}",
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+      expect(
+        (
+          screen.getByRole("combobox", {
+            name: "dynamic select",
+          }) as HTMLInputElement
+        )?.value
+      ).toBe("pro");
+    });
   });
 });
