@@ -645,3 +645,25 @@ export const dataTypesResponse = {
   string: "hello world",
   undefined,
 };
+
+export const getUserDetailsResponse = {
+  meta: {
+    subscriptionPlanOptions: [
+      { value: "free", label: "Free Plan" },
+      { value: "pro", label: "Pro Plan" },
+      { value: "enterprise", label: "Enterprise Plan" },
+    ],
+  },
+  data: {
+    status: "ok",
+    userId: 101,
+    accountBalance: 19.99,
+    emailVerified: true,
+    twoFactorEnabled: false,
+    lastLogin: null,
+    profile: { firstName: "Alice" },
+    subscriptionPlan: "pro",
+    recentActivity: ["login", 1623456789, false, null, { action: "purchase" }],
+    membershipStartDate: "2023-06-15T09:30:00Z",
+  },
+};

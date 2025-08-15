@@ -9,13 +9,10 @@ import {
   test,
   vi,
 } from "vitest";
+import { createDirektivPage, setPage } from "./utils";
 
-import { DirektivPagesType } from "../../schema";
 import { PageCompiler } from "..";
-import { createDirektivPage } from "./utils";
 import { setupServer } from "msw/node";
-
-const setPage = (page: DirektivPagesType) => page;
 
 const apiRequestMock = vi.fn();
 

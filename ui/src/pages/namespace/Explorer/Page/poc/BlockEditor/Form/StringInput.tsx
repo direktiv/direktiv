@@ -1,6 +1,6 @@
 import { Controller, useForm } from "react-hook-form";
 import {
-  FormStringInput as FormInputSchema,
+  FormStringInput,
   FormStringInputType,
   stringInputTypes,
 } from "../../schema/blocks/form/stringInput";
@@ -16,7 +16,7 @@ import { BaseForm } from "./BaseForm";
 import { BlockEditFormProps } from "..";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
-import InputDesignComponent from "~/design/Input";
+import Input from "~/design/Input";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -31,7 +31,7 @@ export const StringInput = ({
 }: StringInputProps) => {
   const { t } = useTranslation();
   const form = useForm<FormStringInputType>({
-    resolver: zodResolver(FormInputSchema),
+    resolver: zodResolver(FormStringInput),
     defaultValues: propBlock,
   });
 
@@ -75,15 +75,15 @@ export const StringInput = ({
       </Fieldset>
       <Fieldset
         label={t(
-          "direktivPage.blockEditor.blockForms.formPrimitives.stringInput.defaultValueLabel"
+          "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.label"
         )}
         htmlFor="defaultValue"
       >
-        <InputDesignComponent
+        <Input
           {...form.register("defaultValue")}
           id="defaultValue"
           placeholder={t(
-            "direktivPage.blockEditor.blockForms.formPrimitives.stringInput.defaultValuePlaceholder"
+            "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholder"
           )}
         />
       </Fieldset>

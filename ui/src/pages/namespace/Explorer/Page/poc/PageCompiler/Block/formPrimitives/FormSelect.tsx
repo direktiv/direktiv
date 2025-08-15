@@ -8,6 +8,7 @@ import {
 
 import { Fieldset } from "./utils/FieldSet";
 import { FormSelectType } from "../../../schema/blocks/form/select";
+import { useTemplateStringResolver } from "../../primitives/Variable/utils/useTemplateStringResolver";
 import { useTranslation } from "react-i18next";
 
 type FormSelectProps = {
@@ -16,11 +17,13 @@ type FormSelectProps = {
 
 export const FormSelect = ({ blockProps }: FormSelectProps) => {
   const { t } = useTranslation();
+  const templateStringResolver = useTemplateStringResolver();
   const { id, label, description, defaultValue, values, optional } = blockProps;
-  const htmlID = `form-select-${id}`;
 
-  const value = values.some((v) => v === defaultValue)
-    ? defaultValue
+  const resolvedDefaultValue = templateStringResolver(defaultValue);
+  const htmlID = `form-select-${id}`;
+  const value = values.some((v) => v === resolvedDefaultValue)
+    ? resolvedDefaultValue
     : undefined;
 
   return (
@@ -30,8 +33,12 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
       htmlFor={htmlID}
       optional={optional}
     >
-      <Select defaultValue={value}>
-        <SelectTrigger variant="outline" id={htmlID}>
+      <Select
+        defaultValue={value}
+        // remount when defaultValue changes
+        key={value}
+      >
+        <SelectTrigger variant="outline" id={htmlID} value={value}>
           <SelectValue
             placeholder={t("direktivPage.page.blocks.form.selectPlaceholder")}
           />

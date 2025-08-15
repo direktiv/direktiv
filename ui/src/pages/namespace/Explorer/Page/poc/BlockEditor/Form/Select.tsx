@@ -1,8 +1,5 @@
 import { Controller, useForm } from "react-hook-form";
-import {
-  FormSelect as FormSelectSchema,
-  FormSelectType,
-} from "../../schema/blocks/form/select";
+import { FormSelect, FormSelectType } from "../../schema/blocks/form/select";
 
 import { ArrayForm } from "~/components/Form/Array";
 import { BaseForm } from "./BaseForm";
@@ -24,7 +21,7 @@ export const Select = ({
 }: SelectProps) => {
   const { t } = useTranslation();
   const form = useForm<FormSelectType>({
-    resolver: zodResolver(FormSelectSchema),
+    resolver: zodResolver(FormSelect),
     defaultValues: propBlock,
   });
 
@@ -73,7 +70,7 @@ export const Select = ({
       />
       <Fieldset
         label={t(
-          "direktivPage.blockEditor.blockForms.formPrimitives.select.defaultValueLabel"
+          "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.label"
         )}
         htmlFor="defaultValue"
       >
@@ -81,7 +78,7 @@ export const Select = ({
           {...form.register("defaultValue")}
           id="defaultValue"
           placeholder={t(
-            "direktivPage.blockEditor.blockForms.formPrimitives.select.defaultValueLabelPlaceholder"
+            "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholderSelect"
           )}
         />
       </Fieldset>
