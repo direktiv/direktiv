@@ -78,6 +78,10 @@ export default {
             },
           ],
         },
+        {
+          type: "text",
+          content: "simple text",
+        },
       ],
     },
   ],

@@ -2,7 +2,6 @@ import { BlockType, ParentBlockUnion } from "../../../schema/blocks";
 import { DirektivPagesSchema, DirektivPagesType } from "../../../schema";
 
 import { BlockPathType } from "../../Block";
-import { clonePage } from "../../../BlockEditor/utils";
 import { z } from "zod";
 
 export const isParentBlock = (
@@ -33,126 +32,47 @@ export const findBlock = (
     return next;
   }, parent);
 
-export const updateBlockInPage = (
-  page: DirektivPagesType,
-  path: BlockPathType,
-  block: BlockType
-): DirektivPagesType => {
-  const targetIndex = path[path.length - 1];
-
-  if (targetIndex === undefined) {
-    throw new Error("Invalid path, could not extract index for target block");
-  }
-
-  const newPage = clonePage(page);
-  const parent = findBlock(newPage, path.slice(0, -1));
-
-  if (!(isPage(parent) || isParentBlock(parent))) {
-    throw new Error("Invalid parent block");
-  }
-  if (!(targetIndex >= 0 && targetIndex < parent.blocks.length)) {
-    throw new Error("Index for updating block out of bounds");
-  }
-  parent.blocks[targetIndex] = block;
-  return newPage;
-};
-
-export const addBlockToPage = (
-  page: DirektivPagesType,
-  path: BlockPathType,
-  block: BlockType,
-  after = false
-) => {
-  let index = path[path.length - 1];
-
-  if (index === undefined) {
-    throw new Error("Invalid path, could not extract index for new block");
-  }
-
-  const newPage = clonePage(page);
-  const parent = findBlock(newPage, path.slice(0, -1));
-
-  if (after) {
-    index++;
-  }
-
-  if (isPage(parent) || isParentBlock(parent)) {
-    const newList: BlockType[] = [
-      ...parent.blocks.slice(0, index),
-      block,
-      ...parent.blocks.slice(index),
-    ];
-
-    parent.blocks = newList;
-    return newPage;
-  }
-
-  throw new Error("Could not add block");
-};
-
-export const deleteBlockFromPage = (
-  page: DirektivPagesType,
-  path: BlockPathType
-) => {
-  const index = path[path.length - 1];
-
-  if (index === undefined) {
-    throw new Error("Invalid path, could not extract index for target block");
-  }
-
-  const newPage = clonePage(page);
-  const parent = findBlock(newPage, path.slice(0, -1));
-
-  if (isPage(parent) || isParentBlock(parent)) {
-    const newList: BlockType[] = [
-      ...parent.blocks.slice(0, index),
-      ...parent.blocks.slice(index + 1),
-    ];
-
-    parent.blocks = newList;
-    return newPage;
-  }
-
-  throw new Error("Could not remove block");
-};
-
-export const moveBlockWithinPage = (
-  page: DirektivPagesType,
+/**
+ * Determines if targetPath should be updated due to deleting the item at
+ * the origin path. If this affects a segment of the target path, that segment
+ * is decremented in the return value
+ */
+export const reindexTargetPath = (
   originPath: BlockPathType,
-  targetPath: BlockPathType,
-  block: BlockType
-): DirektivPagesType => {
-  const originIndex = originPath[originPath.length - 1];
-  const targetIndex = targetPath[targetPath.length - 1];
-
-  if (originIndex === undefined) {
-    throw new Error("Invalid path, could not extract index for origin block");
+  targetPath: BlockPathType
+) => {
+  if (originPath.length === 0 || targetPath.length === 0) {
+    throw new Error("Paths must not be empty");
+  }
+  if (pathsEqual(originPath, targetPath)) {
+    throw new Error("Origin and target paths must not be equal");
   }
 
-  if (targetIndex === undefined) {
-    throw new Error("Invalid path, could not extract index for target block");
+  // we assume element deleted at reindexLevel shifts elements after it
+  const reindexLevel = originPath.length - 1;
+  const newTargetPath = [...targetPath];
+
+  // if targetPath is shorter than reindexLevel, it won't be affected
+  if (reindexLevel >= targetPath.length) return newTargetPath;
+
+  const originIndex = originPath[reindexLevel];
+  const targetIndex = targetPath[reindexLevel];
+
+  // this should not happen thanks to early return above
+  if (originIndex === undefined || targetIndex === undefined) {
+    throw new Error("Unexpected mismatch between path length and reindexLevel");
   }
 
-  const originParent = originPath.slice(0, -1).join("-");
-  const targetParent = targetPath.slice(0, -1).join("-");
-
-  const movingWithinSameParent = originParent === targetParent;
-
-  const movingBefore = originIndex > targetIndex || originParent > targetParent;
-  const adjustedOriginIndex =
-    movingWithinSameParent && movingBefore ? originIndex + 1 : originIndex;
-
-  const replacedLastIndexPath: BlockPathType = [
-    ...originPath.slice(0, -1),
-    adjustedOriginIndex,
-  ];
-
-  const pageWithAddedBlock = addBlockToPage(page, targetPath, block, false);
-  const pageWithDeletedBlock = deleteBlockFromPage(
-    pageWithAddedBlock,
-    replacedLastIndexPath
+  const basePathsEqual = pathsEqual(
+    originPath.slice(0, reindexLevel),
+    targetPath.slice(0, reindexLevel)
   );
-  return pageWithDeletedBlock;
+
+  if (basePathsEqual && targetIndex > originIndex) {
+    newTargetPath[reindexLevel] = targetIndex - 1;
+    return newTargetPath;
+  }
+  return newTargetPath;
 };
 
 export const incrementPath = (path: BlockPathType): BlockPathType => {
