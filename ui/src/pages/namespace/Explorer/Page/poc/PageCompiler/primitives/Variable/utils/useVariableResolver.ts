@@ -27,7 +27,7 @@ export const useVariableResolver = (): ResolverFunction<
   return (value, options) => {
     if (options?.formData) {
       // TODO: can we determine checkboxes false values?
-      const formValues = Object.fromEntries(options.formData.entries());
+      // const formValues = Object.fromEntries(options.formData.entries());
     }
 
     const variableObject = parseVariable(value);
