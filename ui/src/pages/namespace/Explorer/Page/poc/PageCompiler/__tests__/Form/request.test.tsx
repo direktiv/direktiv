@@ -32,7 +32,84 @@ afterEach(() => {
 });
 
 describe("form request", () => {
-  describe("request headers", () => {
+  describe("url", () => {
+    test("variables will be resolved and stringified", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm([], {
+              id: "save-user",
+              method: "POST",
+              url: "/save-user",
+              queryParams: [
+                {
+                  key: "string",
+                  value: "{{query.user.data.status}}",
+                },
+                {
+                  key: "boolean",
+                  value: "{{query.user.data.emailVerified}}",
+                },
+                {
+                  key: "number",
+                  value: "{{query.user.data.accountBalance}}",
+                },
+                {
+                  key: "null",
+                  value: "{{query.user.data.lastLogin}}",
+                },
+              ],
+            })}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button").click();
+
+      await waitFor(() => {
+        expect(apiRequestMock).toHaveBeenCalledTimes(1);
+        const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
+        const requestUrl = new URL(formRequest.url);
+        expect(requestUrl.search).toBe(
+          "?string=ok&boolean=true&number=19.99&null=null"
+        );
+      });
+    });
+
+    test("it shows an error when submitting a form that uses variables that can not be stringified", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm([], {
+              id: "save-user",
+              method: "POST",
+              url: "/save-user",
+              queryParams: [
+                {
+                  key: "object",
+                  value: "String: {{query.user.data.profile}}",
+                },
+              ],
+            })}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button").click();
+
+      await waitFor(() => {
+        expect(screen.getByRole("form").textContent).toContain(
+          "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
+        );
+      });
+    });
+  });
+
+  describe("headers", () => {
     test("variables will be resolved and stringified", async () => {
       await act(async () => {
         render(
