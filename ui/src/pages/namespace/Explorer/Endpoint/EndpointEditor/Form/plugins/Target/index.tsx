@@ -111,7 +111,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
               <TableCell colSpan={2}>
                 {values["x-direktiv-config"]?.plugins?.target?.type ? (
                   <DialogTrigger asChild>
-                    <div className="cursor-pointer">
+                    <div className="cursor-pointer hover:underline">
                       {t(
                         `pages.explorer.endpoint.editor.form.plugins.target.types.${values["x-direktiv-config"].plugins?.target?.type}`
                       )}
