@@ -1,4 +1,3 @@
-import { HttpResponse, http } from "msw";
 import { act, render, screen } from "@testing-library/react";
 import {
   afterAll,
@@ -13,15 +12,12 @@ import {
   createDirektivPageWithForm,
   setPage,
   setupResizeObserverMock,
-} from "./utils";
+} from "../utils";
 
-import { PageCompiler } from "..";
-import { getUserDetailsResponse } from "./utils/api/samples";
-import { setupServer } from "msw/node";
+import { PageCompiler } from "../..";
+import { setupFormApi } from "./utils";
 
-const apiServer = setupServer(
-  http.get("/user-details", () => HttpResponse.json(getUserDetailsResponse))
-);
+const { apiServer } = setupFormApi();
 
 beforeAll(() => {
   setupResizeObserverMock();
@@ -35,8 +31,8 @@ afterEach(() => {
   apiServer.resetHandlers();
 });
 
-describe("Form", () => {
-  describe("valid default values", () => {
+describe("default form values", () => {
+  describe("valid", () => {
     test("string input can use string templates in the default value attribute", async () => {
       await act(async () => {
         render(
@@ -297,7 +293,7 @@ describe("Form", () => {
     });
   });
 
-  describe("invalid default values", () => {
+  describe("invalid", () => {
     test("shows an error when textarea default value is an object", async () => {
       await act(async () => {
         render(

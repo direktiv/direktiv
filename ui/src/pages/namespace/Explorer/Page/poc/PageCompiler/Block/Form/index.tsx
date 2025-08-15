@@ -23,6 +23,7 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
   return (
     <form
       id={mutation.id}
+      name={mutation.id}
       onSubmit={(e) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
