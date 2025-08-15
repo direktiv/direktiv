@@ -25,7 +25,11 @@ export const useVariableResolver = (): ResolverFunction<
 > => {
   const variables = useVariables();
   return (value, options) => {
-    console.log("🚀", options);
+    if (options?.formData) {
+      // TODO: can we determine checkboxes false values?
+      const formValues = Object.fromEntries(options.formData.entries());
+    }
+
     const variableObject = parseVariable(value);
     const validationResult = validateVariable(variableObject);
 

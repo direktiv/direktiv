@@ -1,11 +1,21 @@
 import { KeyValueType } from "../../../schema/primitives/keyValue";
 import { useStringInterpolation } from "../Variable/utils/useStringInterpolation";
 
-export const useKeyValueArrayResolver = () => {
+// TODO: add useExtendedKeyValueArrayResolver
+type ResolverFunction<DataType> = (
+  value: DataType,
+  options?: {
+    formData: FormData;
+  }
+) => DataType;
+
+export const useKeyValueArrayResolver = (): ResolverFunction<
+  KeyValueType[]
+> => {
   const interpolateString = useStringInterpolation();
-  return (input: KeyValueType[]): KeyValueType[] =>
+  return (input, options) =>
     input.map(({ key, value }) => {
-      const parsedValue = interpolateString(value);
+      const parsedValue = interpolateString(value, options);
       return { key, value: parsedValue };
     });
 };

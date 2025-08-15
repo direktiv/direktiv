@@ -13,12 +13,23 @@ export const usePageMutation = () => {
   const resolveKeyValueArray = useKeyValueArrayResolver();
 
   return useMutation({
-    mutationFn: async (mutation: MutationType) => {
+    mutationFn: async ({
+      mutation,
+      formData,
+    }: {
+      mutation: MutationType;
+      formData: FormData;
+    }) => {
       const { method, requestBody, requestHeaders } = mutation;
-      const requestBodyResolved = resolveKeyValueArray(requestBody ?? []);
+      const requestBodyResolved = resolveKeyValueArray(requestBody ?? [], {
+        formData,
+      });
       const body = JSON.stringify(keyValueArrayToObject(requestBodyResolved));
 
-      const requestHeadersResolved = resolveKeyValueArray(requestHeaders ?? []);
+      const requestHeadersResolved = resolveKeyValueArray(
+        requestHeaders ?? [],
+        { formData }
+      );
       const headers = keyValueArrayToObject(requestHeadersResolved);
 
       const url = generateUrl(mutation);

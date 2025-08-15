@@ -6,7 +6,6 @@ import { Button } from "../Button";
 import { FormType } from "../../../schema/blocks/form";
 import { usePageMutation } from "../../procedures/mutation";
 import { useTranslation } from "react-i18next";
-import { useVariableResolver } from "../../primitives/Variable/utils/useVariableResolver";
 
 type FormProps = {
   blockProps: FormType;
@@ -17,8 +16,6 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
   const { mutation, trigger } = blockProps;
   const { mutate, isPending, error, isSuccess } = usePageMutation();
 
-  const resolveVariable = useVariableResolver();
-
   const { t } = useTranslation();
   return (
     <form
@@ -27,13 +24,10 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
       onSubmit={(e) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        const formValues = Object.fromEntries(formData.entries());
-        console.log("📝 form values", formValues);
-        console.log(
-          "💡",
-          resolveVariable("query.user.data.status", { formEvent: e })
-        );
-        mutate(mutation);
+        mutate({
+          mutation,
+          formData,
+        });
       }}
     >
       {error && (
