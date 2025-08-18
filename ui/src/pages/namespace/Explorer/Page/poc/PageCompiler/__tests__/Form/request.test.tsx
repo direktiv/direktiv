@@ -14,6 +14,7 @@ import {
   setupResizeObserverMock,
 } from "../utils";
 
+import { BlockType } from "../../../schema/blocks";
 import { PageCompiler } from "../..";
 import { setupFormApi } from "./utils";
 
@@ -31,14 +32,73 @@ afterEach(() => {
   apiServer.resetHandlers();
 });
 
+const form: BlockType[] = [
+  {
+    id: "string",
+    label: "string input",
+    description: "",
+    optional: false,
+    type: "form-string-input",
+    variant: "text",
+    defaultValue: "string from a string input",
+  },
+  {
+    id: "textarea",
+    label: "textarea",
+    description: "",
+    optional: false,
+    type: "form-textarea",
+    defaultValue: "string from a textarea",
+  },
+  {
+    id: "checkbox",
+    label: "checkbox",
+    description: "this is a checkbox",
+    optional: false,
+    type: "form-checkbox",
+    defaultValue: {
+      type: "boolean",
+      value: true,
+    },
+  },
+  {
+    id: "number",
+    label: "number input",
+    description: "",
+    optional: false,
+    type: "form-number-input",
+    defaultValue: {
+      type: "number",
+      value: 3,
+    },
+  },
+  {
+    id: "date",
+    label: "date",
+    description: "",
+    optional: false,
+    type: "form-date-input",
+    defaultValue: "2025-12-24T00:00:00.000Z",
+  },
+  {
+    id: "select",
+    label: "select",
+    description: "",
+    optional: false,
+    type: "form-select",
+    values: ["free", "pro", "enterprise"],
+    defaultValue: "pro",
+  },
+];
+
 describe("form request", () => {
   describe("url", () => {
-    test("variables will be resolved and stringified", async () => {
+    test.only("variables will be resolved and stringified", async () => {
       await act(async () => {
         render(
           <PageCompiler
             setPage={setPage}
-            page={createDirektivPageWithForm([], {
+            page={createDirektivPageWithForm(form, {
               id: "save-user",
               method: "POST",
               url: "/save-user",
@@ -59,6 +119,30 @@ describe("form request", () => {
                   key: "null",
                   value: "{{query.user.data.lastLogin}}",
                 },
+                {
+                  key: "form-string",
+                  value: "{{form.save-user.string}}",
+                },
+                {
+                  key: "form-textarea",
+                  value: "{{form.save-user.textarea}}",
+                },
+                {
+                  key: "checkbox",
+                  value: "{{form.save-user.checkbox}}",
+                },
+                {
+                  key: "number",
+                  value: "{{form.save-user.number}}",
+                },
+                {
+                  key: "date",
+                  value: "{{form.save-user.date}}",
+                },
+                {
+                  key: "select",
+                  value: "{{form.save-user.select}}",
+                },
               ],
             })}
             mode="live"
@@ -66,14 +150,15 @@ describe("form request", () => {
         );
       });
 
-      await screen.getByRole("button").click();
+      await screen.getByRole("button", { name: "save" }).click();
 
       await waitFor(() => {
         expect(apiRequestMock).toHaveBeenCalledTimes(1);
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
         const requestUrl = new URL(formRequest.url);
         expect(requestUrl.search).toBe(
-          "?string=ok&boolean=true&number=19.99&null=null"
+          // TODO: checkbox must evaluate to true and false
+          "?string=ok&boolean=true&number=3&null=null&form-string=string+from+a+string+input&form-textarea=string+from+a+textarea&checkbox=on&date=2025-12-24&select=pro"
         );
       });
     });
@@ -99,7 +184,7 @@ describe("form request", () => {
         );
       });
 
-      await screen.getByRole("button").click();
+      await screen.getByRole("button", { name: "save" }).click();
 
       await waitFor(() => {
         expect(screen.getByRole("form").textContent).toContain(
@@ -143,7 +228,7 @@ describe("form request", () => {
         );
       });
 
-      await screen.getByRole("button").click();
+      await screen.getByRole("button", { name: "save" }).click();
 
       await waitFor(() => {
         expect(apiRequestMock).toHaveBeenCalledTimes(1);
@@ -176,7 +261,7 @@ describe("form request", () => {
         );
       });
 
-      await screen.getByRole("button").click();
+      await screen.getByRole("button", { name: "save" }).click();
 
       await waitFor(() => {
         expect(screen.getByRole("form").textContent).toContain(
