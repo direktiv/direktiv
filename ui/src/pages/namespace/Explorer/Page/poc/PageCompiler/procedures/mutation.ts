@@ -16,26 +16,27 @@ export const usePageMutation = () => {
   return useMutation({
     mutationFn: async ({
       mutation,
-      variables,
+      options,
     }: {
       mutation: MutationType;
-      variables: InjectedVariables;
+      options?: { variables: InjectedVariables };
     }) => {
       const { method, requestBody, requestHeaders } = mutation;
 
-      const requestBodyResolved = resolveKeyValueArray(requestBody ?? [], {
-        variables,
-      });
+      const requestBodyResolved = resolveKeyValueArray(
+        requestBody ?? [],
+        options
+      );
 
       const body = JSON.stringify(keyValueArrayToObject(requestBodyResolved));
 
       const requestHeadersResolved = resolveKeyValueArray(
         requestHeaders ?? [],
-        { variables }
+        options
       );
       const headers = keyValueArrayToObject(requestHeadersResolved);
 
-      const url = generateUrl(mutation);
+      const url = generateUrl(mutation, options);
 
       const response = await fetch(url, {
         method,

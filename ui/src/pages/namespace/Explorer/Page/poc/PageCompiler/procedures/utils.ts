@@ -3,6 +3,7 @@ import {
   useKeyValueArrayResolver,
 } from "../primitives/keyValue/utils";
 
+import { InjectedVariables } from "../primitives/Variable/VariableContext";
 import { MutationType } from "../../schema/procedures/mutation";
 import { QueryType } from "../../schema/procedures/query";
 import { useStringInterpolation } from "../primitives/Variable/utils/useStringInterpolation";
@@ -14,9 +15,15 @@ export const useUrlGenerator = () => {
   const resolveKeyValueArray = useKeyValueArrayResolver();
   const interpolateString = useStringInterpolation();
 
-  return (input: QueryType | MutationType) => {
+  return (
+    input: QueryType | MutationType,
+    options?: { variables: InjectedVariables }
+  ) => {
     const { url, queryParams } = input;
-    const queryParamsResolved = resolveKeyValueArray(queryParams ?? []);
+    const queryParamsResolved = resolveKeyValueArray(
+      queryParams ?? [],
+      options
+    );
     const searchParams = new URLSearchParams(
       keyValueArrayToObject(queryParamsResolved)
     );
