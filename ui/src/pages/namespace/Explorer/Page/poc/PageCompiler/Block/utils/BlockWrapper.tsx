@@ -11,12 +11,10 @@ import {
   usePageStateContext,
 } from "../../context/pageCompilerContext";
 
-import Badge from "~/design/Badge";
 import { BlockPathType } from "..";
 import { BlockType } from "../../../schema/blocks";
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { ErrorBoundary } from "react-error-boundary";
-import { GripVertical } from "lucide-react";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { SortableItem } from "~/design/DragAndDrop/Draggable";
@@ -63,7 +61,8 @@ const EditorBlockWrapper = ({
     return () => document.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  const isFocused = panel?.action && pathsEqual(panel.path, blockPath);
+  const isFocused =
+    panel?.action && pathsEqual(panel.path, blockPath) ? true : false;
 
   const handleClickBlock = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
@@ -95,7 +94,8 @@ const EditorBlockWrapper = ({
     });
   };
 
-  const showDragHandle = (isHovered || isFocused) && !isDragging;
+  const showDragHandle = isHovered || isFocused;
+
   const findType = blockTypes.find((type) => type.type === block.type);
 
   const blockTypeLabel = findType ? findType.label : "not found";
@@ -108,6 +108,9 @@ const EditorBlockWrapper = ({
           block,
           originPath: blockPath,
         }}
+        blockTypeLabel={blockTypeLabel}
+        blockPath={blockPath}
+        isFocused={isFocused}
         className={twMergeClsx(showDragHandle ? "visible" : "invisible")}
       >
         <div
@@ -124,27 +127,6 @@ const EditorBlockWrapper = ({
           data-block-wrapper
           onClick={handleClickBlock}
         >
-          {isFocused && isDragging && (
-            <Badge
-              className={twMergeClsx(
-                "pointer-events-auto absolute -mt-7 text-nowrap rounded-md rounded-b-none px-2 py-1 hover:cursor-move active:cursor-move",
-                isFocused && "bg-gray-8 dark:bg-gray-dark-8"
-              )}
-              variant="secondary"
-            >
-              <GripVertical
-                size={16}
-                className={twMergeClsx(
-                  "mr-2 text-gray-8",
-                  isFocused && "text-black dark:text-white"
-                )}
-              />
-              <span className="mr-2">
-                <b>{blockTypeLabel}</b>
-              </span>
-              {blockPath.join(".")}
-            </Badge>
-          )}
           <Suspense fallback={<Loading />}>
             <ErrorBoundary
               fallbackRender={({ error }) => (

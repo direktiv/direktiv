@@ -1,18 +1,19 @@
 import { CSSProperties, FC, PropsWithChildren } from "react";
-import { GripVertical, LucideIcon } from "lucide-react";
 
-import Badge from "../Badge";
+import { BlockPathType } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/Block";
 import { Card } from "../Card";
+import { DragHandle } from "./DragHandle";
 import { DragPayloadSchemaType } from "./schema";
-import { pathsEqual } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/utils";
+import { LucideIcon } from "lucide-react";
 import { twMergeClsx } from "~/util/helpers";
-import { useBlockTypes } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/utils/useBlockTypes";
 import { useDraggable } from "@dnd-kit/core";
-import { usePageEditorPanel } from "~/pages/namespace/Explorer/Page/poc/BlockEditor/EditorPanelProvider";
 
 type DraggableProps = PropsWithChildren & {
   payload: DragPayloadSchemaType;
+  blockTypeLabel: string;
+  blockPath: BlockPathType;
   className?: string;
+  isFocused: boolean;
 };
 
 const useSharedDraggable = (payload: DragPayloadSchemaType) => {
@@ -35,24 +36,14 @@ const useSharedDraggable = (payload: DragPayloadSchemaType) => {
 
 export const SortableItem: FC<DraggableProps> = ({
   payload,
+  blockTypeLabel,
+  blockPath,
+  isFocused,
   className,
   children,
 }) => {
   const { attributes, listeners, setNodeRef, styles } =
     useSharedDraggable(payload);
-
-  const { blockTypes } = useBlockTypes();
-  const { panel } = usePageEditorPanel();
-
-  if (payload.type !== "move") return null;
-
-  const isFocused = panel?.action && pathsEqual(panel.path, payload.originPath);
-
-  const findType = blockTypes.find((type) => type.type === payload.block.type);
-
-  const blockTypeLabel = findType ? findType.label : "not found";
-
-  const blockPath = payload.originPath;
 
   return (
     <div style={styles} className="relative">
@@ -65,25 +56,11 @@ export const SortableItem: FC<DraggableProps> = ({
           className
         )}
       >
-        <Badge
-          className={twMergeClsx(
-            "pointer-events-auto absolute -mt-7 text-nowrap rounded-md rounded-b-none px-2 py-1 hover:cursor-move active:cursor-move",
-            isFocused && "bg-gray-8 dark:bg-gray-dark-8"
-          )}
-          variant="secondary"
-        >
-          <GripVertical
-            size={16}
-            className={twMergeClsx(
-              "mr-2 text-gray-8",
-              isFocused && "text-black dark:text-white"
-            )}
-          />
-          <span className="mr-2">
-            <b>{blockTypeLabel}</b>
-          </span>
-          {blockPath.join(".")}
-        </Badge>
+        <DragHandle
+          isFocused={isFocused}
+          blockTypeLabel={blockTypeLabel}
+          blockPath={blockPath}
+        />
       </div>
       <div className="flex justify-center">
         <div className="w-full">{children}</div>
