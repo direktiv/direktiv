@@ -168,7 +168,7 @@ describe("form request", () => {
         render(
           <PageCompiler
             setPage={setPage}
-            page={createDirektivPageWithForm([], {
+            page={createDirektivPageWithForm(form, {
               id: "save-user",
               method: "POST",
               url: "/save-user",
@@ -200,7 +200,7 @@ describe("form request", () => {
         render(
           <PageCompiler
             setPage={setPage}
-            page={createDirektivPageWithForm([], {
+            page={createDirektivPageWithForm(form, {
               id: "save-user",
               method: "POST",
               url: "/save-user",
@@ -245,7 +245,7 @@ describe("form request", () => {
         render(
           <PageCompiler
             setPage={setPage}
-            page={createDirektivPageWithForm([], {
+            page={createDirektivPageWithForm(form, {
               id: "save-user",
               method: "POST",
               url: "/save-user",
