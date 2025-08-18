@@ -16,12 +16,13 @@ type DatePickerProps = {
 
 export const DatePicker = ({ defaultValue, id }: DatePickerProps) => {
   const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(
     parseStringToDate(defaultValue)
   );
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={(open) => setOpen(open)}>
       <StopPropagation asChild>
         <PopoverTrigger asChild>
           <Button variant="outline">
@@ -33,12 +34,17 @@ export const DatePicker = ({ defaultValue, id }: DatePickerProps) => {
         </PopoverTrigger>
       </StopPropagation>
       <PopoverContent className="w-auto">
-        <DatepickerDesignComponent
-          id={id}
-          mode="single"
-          selected={date}
-          onSelect={setDate}
-        />
+        <StopPropagation>
+          <DatepickerDesignComponent
+            id={id}
+            mode="single"
+            selected={date}
+            onSelect={(date) => {
+              setOpen(false);
+              setDate(date);
+            }}
+          />
+        </StopPropagation>
       </PopoverContent>
     </Popover>
   );
