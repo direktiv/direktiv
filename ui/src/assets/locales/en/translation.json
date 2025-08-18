@@ -244,7 +244,6 @@
         "goToServices": "Go to services",
         "editor": {
           "saveBtn": "Save",
-          "unsavedNote": "unsaved changes",
           "form": {
             "serialisationError": "There was an error serializing the form data",
             "image": "Image",
@@ -471,8 +470,7 @@
               }
             }
           },
-          "saveBtn": "Save",
-          "unsavedNote": "unsaved changes"
+          "saveBtn": "Save"
         }
       },
       "consumer": {
@@ -488,8 +486,7 @@
             "tagsPlaceholder": "Enter a tag",
             "groupsPlaceholder": "Enter a group"
           },
-          "saveBtn": "Save",
-          "unsavedNote": "unsaved changes"
+          "saveBtn": "Save"
         }
       }
     },
@@ -1677,8 +1674,7 @@
         "addBlockTab": "Add Block",
         "saveButton": "Save",
         "cancelButton": "Cancel",
-        "confirmButton": "Confirm",
-        "unsavedChanges": "unsaved changes"
+        "confirmButton": "Confirm"
       },
 
       "toolbar": {
