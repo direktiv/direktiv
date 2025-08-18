@@ -5,11 +5,13 @@ import { Card } from "~/design/Card";
 import { DirektivPagesType } from "../schema";
 import Editor from "~/design/Editor";
 import EditorModeSwitcher from "./EditorModeSwitcher";
+import NavigationBlocker from "~/components/NavigationBlocker";
 import { PageCompiler } from "../PageCompiler";
 import { PageCompilerMode } from "../PageCompiler/context/pageCompilerContext";
 import { Save } from "lucide-react";
 import { UnsavedChanges } from "~/components/UnsavedChanges";
 import { jsonToYaml } from "../../../utils";
+import useNavigationBlocker from "~/hooks/useNavigationBlocker";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
@@ -22,6 +24,7 @@ type PageEditorProps = {
 export type PageEditorMode = PageCompilerMode | "code";
 
 const PageEditor = ({ isPending, page: pageProp, onSave }: PageEditorProps) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const [page, setPage] = useState(pageProp);
   const [mode, setMode] = useState<PageEditorMode>("edit");
@@ -33,10 +36,9 @@ const PageEditor = ({ isPending, page: pageProp, onSave }: PageEditorProps) => {
 
   const disableSaveBtn = isPending || !isDirty;
 
-  const { t } = useTranslation();
-
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
+      {isDirty && <NavigationBlocker />}
       <Card className="flex grow">
         {mode === "code" ? (
           <Editor
