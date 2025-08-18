@@ -1,3 +1,7 @@
+import {
+  NavigationBlocker,
+  UnsavedChangesHint,
+} from "~/components/NavigationBlocker";
 import { decode, encode } from "js-base64";
 import { omitEmptyFields, serializeServiceFile } from "./utils";
 
@@ -9,11 +13,9 @@ import { FC } from "react";
 import { FileSchemaType } from "~/api/files/schema";
 import { Form } from "./Form";
 import FormErrors from "~/components/FormErrors";
-import NavigationBlocker from "~/components/NavigationBlocker";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { ServiceFormSchemaType } from "./schema";
-import { UnsavedChanges } from "~/components/UnsavedChanges";
 import { jsonToYaml } from "../../utils";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -101,7 +103,7 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
                 </Card>
               </div>
               <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-                {isDirty && <UnsavedChanges />}
+                {isDirty && <UnsavedChangesHint />}
                 <Button
                   variant={isDirty ? "primary" : "outline"}
                   disabled={disableButton}

@@ -1,3 +1,7 @@
+import {
+  NavigationBlocker,
+  UnsavedChangesHint,
+} from "~/components/NavigationBlocker";
 import { useMemo, useState } from "react";
 
 import Button from "~/design/Button";
@@ -5,13 +9,10 @@ import { Card } from "~/design/Card";
 import { DirektivPagesType } from "../schema";
 import Editor from "~/design/Editor";
 import EditorModeSwitcher from "./EditorModeSwitcher";
-import NavigationBlocker from "~/components/NavigationBlocker";
 import { PageCompiler } from "../PageCompiler";
 import { PageCompilerMode } from "../PageCompiler/context/pageCompilerContext";
 import { Save } from "lucide-react";
-import { UnsavedChanges } from "~/components/UnsavedChanges";
 import { jsonToYaml } from "../../../utils";
-import useNavigationBlocker from "~/hooks/useNavigationBlocker";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
@@ -52,7 +53,7 @@ const PageEditor = ({ isPending, page: pageProp, onSave }: PageEditorProps) => {
         )}
       </Card>
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        {isDirty && <UnsavedChanges />}
+        {isDirty && <UnsavedChangesHint />}
         <EditorModeSwitcher value={mode} onChange={setMode} />
         <Button
           variant="primary"
