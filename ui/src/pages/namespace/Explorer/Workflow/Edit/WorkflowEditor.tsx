@@ -73,7 +73,6 @@ const WorkflowEditor: FC<{
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
       {hasUnsavedChanges && <NavigationBlocker />}
-
       <WorkspaceLayout
         layout={currentLayout}
         diagramComponent={
