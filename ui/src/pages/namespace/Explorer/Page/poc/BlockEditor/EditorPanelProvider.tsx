@@ -79,12 +79,17 @@ export const EditorPanelLayoutProvider = ({
     }
     if (drag.type === "move") {
       moveBlock(drag.originPath, drop.targetPath, drag.block);
+      setPanel({
+        action: "edit",
+        path: drop.targetPath,
+        block: drag.block,
+      });
     }
   };
 
   if (mode === "edit") {
     return (
-      <DndContext onDrop={onDrop}>
+      <DndContext onDrop={onDrop} onDrag={() => setPanel(null)}>
         <EditorPanelContext.Provider
           value={{ panel, setPanel, dialog, setDialog }}
         >
