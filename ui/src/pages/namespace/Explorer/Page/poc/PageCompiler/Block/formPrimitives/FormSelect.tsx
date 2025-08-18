@@ -46,7 +46,6 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
             />
           </SelectTrigger>
         </StopPropagation>
-
         <SelectContent>
           {values.map((value) => (
             <SelectItem key={value} value={value}>
