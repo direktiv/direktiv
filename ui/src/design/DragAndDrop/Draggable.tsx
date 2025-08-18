@@ -10,7 +10,9 @@ import { useDraggable } from "@dnd-kit/core";
 
 type DraggableProps = PropsWithChildren & {
   payload: DragPayloadSchemaType;
-  blockTypeLabel: string;
+};
+
+type SortableProps = PropsWithChildren & {
   blockPath: BlockPathType;
   className?: string;
   isFocused: boolean;
@@ -34,9 +36,8 @@ const useSharedDraggable = (payload: DragPayloadSchemaType) => {
   return { attributes, listeners, setNodeRef, styles };
 };
 
-export const SortableItem: FC<DraggableProps> = ({
+export const SortableItem: FC<DraggableProps & SortableProps> = ({
   payload,
-  blockTypeLabel,
   blockPath,
   isFocused,
   className,
@@ -44,6 +45,7 @@ export const SortableItem: FC<DraggableProps> = ({
 }) => {
   const { attributes, listeners, setNodeRef, styles } =
     useSharedDraggable(payload);
+  if (payload.type !== "move") return null;
 
   return (
     <div style={styles} className="relative">
@@ -58,7 +60,7 @@ export const SortableItem: FC<DraggableProps> = ({
       >
         <DragHandle
           isFocused={isFocused}
-          blockTypeLabel={blockTypeLabel}
+          blockTypeLabel={payload.block.type}
           blockPath={blockPath}
         />
       </div>

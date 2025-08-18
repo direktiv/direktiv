@@ -31,7 +31,7 @@ export const DragHandle: FC<DraggableProps> = ({
         isFocused && "text-black dark:text-white"
       )}
     />
-    <span className="mr-2">
+    <span className="mr-2 capitalize">
       <b>{blockTypeLabel}</b>
     </span>
     {blockPath.join(".")}

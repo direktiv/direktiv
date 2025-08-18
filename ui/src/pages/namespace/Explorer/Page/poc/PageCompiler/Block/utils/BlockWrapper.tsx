@@ -19,7 +19,6 @@ import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { SortableItem } from "~/design/DragAndDrop/Draggable";
 import { twMergeClsx } from "~/util/helpers";
-import { useBlockTypes } from "../../context/utils/useBlockTypes";
 import { useDndContext } from "@dnd-kit/core";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 import { useTranslation } from "react-i18next";
@@ -43,7 +42,6 @@ const EditorBlockWrapper = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const dndContext = useDndContext();
   const isDragging = !!dndContext.active;
-  const { blockTypes } = useBlockTypes();
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -96,10 +94,6 @@ const EditorBlockWrapper = ({
 
   const showDragHandle = isHovered || isFocused;
 
-  const findType = blockTypes.find((type) => type.type === block.type);
-
-  const blockTypeLabel = findType ? findType.label : "not found";
-
   return (
     <>
       <SortableItem
@@ -108,7 +102,6 @@ const EditorBlockWrapper = ({
           block,
           originPath: blockPath,
         }}
-        blockTypeLabel={blockTypeLabel}
         blockPath={blockPath}
         isFocused={isFocused}
         className={twMergeClsx(showDragHandle ? "visible" : "invisible")}
