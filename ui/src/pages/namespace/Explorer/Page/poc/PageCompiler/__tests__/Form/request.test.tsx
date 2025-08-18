@@ -93,7 +93,7 @@ const form: BlockType[] = [
 
 describe("form request", () => {
   describe("url", () => {
-    test.only("variables will be resolved and stringified", async () => {
+    test("variables will be resolved and stringified", async () => {
       await act(async () => {
         render(
           <PageCompiler
