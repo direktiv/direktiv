@@ -12,6 +12,7 @@ import FormErrors from "~/components/FormErrors";
 import NavigationBlocker from "~/components/NavigationBlocker";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
+import { UnsavedChanges } from "~/components/UnsavedChanges";
 import { jsonToYaml } from "../../utils";
 import { serializeConsumerFile } from "./utils";
 import { useTheme } from "~/util/store/theme";
@@ -95,13 +96,7 @@ const ConsumerEditor: FC<ConsumerEditorProps> = ({ data }) => {
                 </Card>
               </div>
               <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-                {isDirty && (
-                  <div className="text-sm text-gray-8 dark:text-gray-dark-8">
-                    <span className="text-center" data-testid="unsaved-note">
-                      {t("pages.explorer.consumer.editor.unsavedNote")}
-                    </span>
-                  </div>
-                )}
+                {isDirty && <UnsavedChanges />}
                 <Button
                   variant={isDirty ? "primary" : "outline"}
                   disabled={disableButton}

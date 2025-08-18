@@ -1677,7 +1677,8 @@
         "addBlockTab": "Add Block",
         "saveButton": "Save",
         "cancelButton": "Cancel",
-        "confirmButton": "Confirm"
+        "confirmButton": "Confirm",
+        "unsavedChanges": "unsaved changes"
       },
 
       "toolbar": {

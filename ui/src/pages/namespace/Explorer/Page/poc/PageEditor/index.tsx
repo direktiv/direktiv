@@ -1,3 +1,5 @@
+import { useMemo, useState } from "react";
+
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { DirektivPagesType } from "../schema";
@@ -6,8 +8,8 @@ import EditorModeSwitcher from "./EditorModeSwitcher";
 import { PageCompiler } from "../PageCompiler";
 import { PageCompilerMode } from "../PageCompiler/context/pageCompilerContext";
 import { Save } from "lucide-react";
+import { UnsavedChanges } from "~/components/UnsavedChanges";
 import { jsonToYaml } from "../../../utils";
-import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
@@ -24,6 +26,13 @@ const PageEditor = ({ isPending, page: pageProp, onSave }: PageEditorProps) => {
   const [page, setPage] = useState(pageProp);
   const [mode, setMode] = useState<PageEditorMode>("edit");
 
+  const isDirty = useMemo(
+    () => JSON.stringify(page) !== JSON.stringify(pageProp),
+    [page, pageProp]
+  );
+
+  const disableSaveBtn = isPending || !isDirty;
+
   const { t } = useTranslation();
 
   return (
@@ -37,19 +46,16 @@ const PageEditor = ({ isPending, page: pageProp, onSave }: PageEditorProps) => {
             className="p-5"
           />
         ) : (
-          <PageCompiler
-            mode={mode}
-            page={page}
-            setPage={(page) => setPage(page)}
-          />
+          <PageCompiler mode={mode} page={page} setPage={setPage} />
         )}
       </Card>
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
+        {isDirty && <UnsavedChanges />}
         <EditorModeSwitcher value={mode} onChange={setMode} />
         <Button
-          variant="outline"
+          variant="primary"
           type="button"
-          disabled={isPending}
+          disabled={disableSaveBtn}
           onClick={() => {
             onSave(page);
           }}
