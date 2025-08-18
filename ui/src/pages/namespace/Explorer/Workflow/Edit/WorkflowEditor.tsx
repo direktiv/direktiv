@@ -12,6 +12,7 @@ import { CodeEditor } from "./CodeEditor";
 import { Diagram } from "./Diagram";
 import { EditorLayoutSwitcher } from "~/components/EditorLayoutSwitcher";
 import { FileSchemaType } from "~/api/files/schema";
+import { NavigationBlocker } from "~/components/NavigationBlocker";
 import RunWorkflow from "../components/RunWorkflow";
 import { WorkspaceLayout } from "~/components/WorkspaceLayout";
 import { useEditorLayout } from "~/util/store/editor";
@@ -71,6 +72,8 @@ const WorkflowEditor: FC<{
 
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
+      {hasUnsavedChanges && <NavigationBlocker />}
+
       <WorkspaceLayout
         layout={currentLayout}
         diagramComponent={
