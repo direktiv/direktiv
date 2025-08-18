@@ -7,7 +7,7 @@ import {
 
 import { ResolveVariableError } from "./errors";
 import { ResolverFunction } from "./types";
-import { useVariables } from "../VariableContext";
+import { useGetVariables } from "../VariableContext";
 
 /**
  * A hook that returns a function to resolve a variable path string to its
@@ -23,13 +23,9 @@ export const useVariableResolver = (): ResolverFunction<
   JsonValueType,
   ResolveVariableError
 > => {
-  const variables = useVariables();
+  const variableResolver = useGetVariables();
   return (value, options) => {
-    if (options?.formData) {
-      // TODO: can we determine checkboxes false values?
-      // const formValues = Object.fromEntries(options.formData.entries());
-    }
-
+    const variables = variableResolver(options?.variables);
     const variableObject = parseVariable(value);
     const validationResult = validateVariable(variableObject);
 

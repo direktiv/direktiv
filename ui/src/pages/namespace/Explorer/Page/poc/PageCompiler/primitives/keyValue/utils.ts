@@ -1,12 +1,11 @@
+import { InjectedVariables } from "../Variable/VariableContext";
 import { KeyValueType } from "../../../schema/primitives/keyValue";
 import { useStringInterpolation } from "../Variable/utils/useStringInterpolation";
 
 // TODO: add useExtendedKeyValueArrayResolver
 type ResolverFunction<DataType> = (
   value: DataType,
-  options?: {
-    formData: FormData;
-  }
+  options?: { variables: InjectedVariables }
 ) => DataType;
 
 export const useKeyValueArrayResolver = (): ResolverFunction<

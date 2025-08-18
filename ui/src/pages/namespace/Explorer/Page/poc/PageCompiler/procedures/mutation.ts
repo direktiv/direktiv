@@ -4,6 +4,7 @@ import {
 } from "../primitives/keyValue/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { InjectedVariables } from "../primitives/Variable/VariableContext";
 import { MutationType } from "../../schema/procedures/mutation";
 import { useUrlGenerator } from "./utils";
 
@@ -15,20 +16,22 @@ export const usePageMutation = () => {
   return useMutation({
     mutationFn: async ({
       mutation,
-      formData,
+      variables,
     }: {
       mutation: MutationType;
-      formData: FormData;
+      variables: InjectedVariables;
     }) => {
       const { method, requestBody, requestHeaders } = mutation;
+
       const requestBodyResolved = resolveKeyValueArray(requestBody ?? [], {
-        formData,
+        variables,
       });
+
       const body = JSON.stringify(keyValueArrayToObject(requestBodyResolved));
 
       const requestHeadersResolved = resolveKeyValueArray(
         requestHeaders ?? [],
-        { formData }
+        { variables }
       );
       const headers = keyValueArrayToObject(requestHeadersResolved);
 

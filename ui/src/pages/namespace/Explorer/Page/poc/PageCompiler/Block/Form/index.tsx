@@ -24,9 +24,12 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
       onSubmit={(e) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
+        const formValues = Object.fromEntries(formData.entries());
         mutate({
           mutation,
-          formData,
+          variables: {
+            form: { [mutation.id]: formValues },
+          },
         });
       }}
     >
