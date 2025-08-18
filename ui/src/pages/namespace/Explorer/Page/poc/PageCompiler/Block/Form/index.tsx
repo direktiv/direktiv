@@ -27,7 +27,7 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
         const formValues = Object.fromEntries(formData.entries());
         mutate({
           mutation,
-          options: { variables: { form: formValues } },
+          options: { variables: { form: { [mutation.id]: formValues } } },
         });
       }}
     >
