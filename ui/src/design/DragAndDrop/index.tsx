@@ -8,9 +8,14 @@ import { FC, PropsWithChildren } from "react";
 
 type DndContextProps = PropsWithChildren & {
   onDrop: (payload: DragAndDropPayloadSchemaType) => void;
+  onDrag?: () => void;
 };
 
-export const DndContext: FC<DndContextProps> = ({ children, onDrop }) => {
+export const DndContext: FC<DndContextProps> = ({
+  children,
+  onDrag,
+  onDrop,
+}) => {
   const onDragEnd = (e: DragEndEvent) => {
     const parsedDragPayload = DragPayloadSchema.safeParse(
       e.active.data.current
@@ -26,5 +31,9 @@ export const DndContext: FC<DndContextProps> = ({ children, onDrop }) => {
     });
   };
 
-  return <DndKitContext onDragEnd={onDragEnd}>{children}</DndKitContext>;
+  return (
+    <DndKitContext onDragEnd={onDragEnd} onDragStart={onDrag}>
+      {children}
+    </DndKitContext>
+  );
 };
