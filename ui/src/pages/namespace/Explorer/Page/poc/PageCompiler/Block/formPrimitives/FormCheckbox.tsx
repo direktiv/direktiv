@@ -1,6 +1,8 @@
 import { Checkbox } from "~/design/Checkbox";
 import { Fieldset } from "./utils/FieldSet";
 import { FormCheckboxType } from "../../../schema/blocks/form/checkbox";
+import { StopPropagation } from "~/components/StopPropagation";
+import { usePageStateContext } from "../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 import { useVariableBooleanResolver } from "../../primitives/Variable/utils/useVariableBooleanResolver";
 
@@ -12,6 +14,7 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
   const { t } = useTranslation();
   const resolveVariableBoolean = useVariableBooleanResolver();
   const { id, label, description, defaultValue, optional } = blockProps;
+  const { mode } = usePageStateContext();
 
   const htmlID = `form-checkbox-${id}`;
   let value: boolean;
@@ -35,13 +38,16 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
       htmlFor={htmlID}
       horizontal
       optional={optional}
+      onClickLabel={(event) => mode === "edit" && event.preventDefault()}
     >
-      <Checkbox
-        defaultChecked={value}
-        id={htmlID}
-        // remount when defaultValue changes
-        key={String(value)}
-      />
+      <StopPropagation asChild>
+        <Checkbox
+          defaultChecked={value}
+          id={htmlID}
+          // remount when defaultValue changes
+          key={String(value)}
+        />
+      </StopPropagation>
     </Fieldset>
   );
 };

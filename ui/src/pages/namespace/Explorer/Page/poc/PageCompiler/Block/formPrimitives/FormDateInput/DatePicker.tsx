@@ -3,6 +3,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import Button from "~/design/Button";
 import { CalendarIcon } from "lucide-react";
 import { Datepicker as DatepickerDesignComponent } from "~/design/Datepicker";
+import { StopPropagation } from "~/components/StopPropagation";
 import moment from "moment";
 import { parseStringToDate } from "./utils";
 import { useState } from "react";
@@ -21,14 +22,16 @@ export const DatePicker = ({ defaultValue, id }: DatePickerProps) => {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline">
-          <CalendarIcon />{" "}
-          {date
-            ? moment(date).format("LL")
-            : t("direktivPage.page.blocks.form.datePickerPlaceholder")}
-        </Button>
-      </PopoverTrigger>
+      <StopPropagation asChild>
+        <PopoverTrigger asChild>
+          <Button variant="outline">
+            <CalendarIcon />{" "}
+            {date
+              ? moment(date).format("LL")
+              : t("direktivPage.page.blocks.form.datePickerPlaceholder")}
+          </Button>
+        </PopoverTrigger>
+      </StopPropagation>
       <PopoverContent className="w-auto">
         <DatepickerDesignComponent
           id={id}
