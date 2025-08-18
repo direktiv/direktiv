@@ -221,6 +221,30 @@ describe("form request", () => {
                   key: "Null-Value",
                   value: "Null: {{query.user.data.lastLogin}}",
                 },
+                {
+                  key: "Form-String-Value",
+                  value: "String: {{form.save-user.string}}",
+                },
+                {
+                  key: "Form-Textarea-Value",
+                  value: "Textarea: {{form.save-user.textarea}}",
+                },
+                {
+                  key: "Form-Checkbox-Value",
+                  value: "Checkbox: {{form.save-user.checkbox}}",
+                },
+                {
+                  key: "Form-Number-Value",
+                  value: "Number: {{form.save-user.number}}",
+                },
+                {
+                  key: "Form-Date-Value",
+                  value: "Date: {{form.save-user.date}}",
+                },
+                {
+                  key: "Form-Select-Value",
+                  value: "Select: {{form.save-user.select}}",
+                },
               ],
             })}
             mode="live"
@@ -237,6 +261,23 @@ describe("form request", () => {
         expect(formRequest.headers.get("Boolean-Value")).toBe("Boolean: true");
         expect(formRequest.headers.get("Number-Value")).toBe("Number: 19.99");
         expect(formRequest.headers.get("Null-Value")).toBe("Null: null");
+        expect(formRequest.headers.get("Form-String-Value")).toBe(
+          "String: string from a string input"
+        );
+        expect(formRequest.headers.get("Form-Textarea-Value")).toBe(
+          "Textarea: string from a textarea"
+        );
+        // TODO: checkbox must evaluate to true and false
+        expect(formRequest.headers.get("Form-Checkbox-Value")).toBe(
+          "Checkbox: on"
+        );
+        expect(formRequest.headers.get("Form-Number-Value")).toBe("Number: 3");
+        expect(formRequest.headers.get("Form-Date-Value")).toBe(
+          "Date: 2025-12-24"
+        );
+        expect(formRequest.headers.get("Form-Select-Value")).toBe(
+          "Select: pro"
+        );
       });
     });
 
