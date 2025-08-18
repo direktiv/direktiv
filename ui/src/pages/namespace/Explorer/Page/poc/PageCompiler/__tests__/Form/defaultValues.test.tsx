@@ -291,6 +291,36 @@ describe("default form values", () => {
         )?.value
       ).toBe("free");
     });
+
+    test("select input can have a default value from a variable", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm([
+              {
+                id: "dynamic-select",
+                label: "dynamic select",
+                description:
+                  "default value comes from API ({{query.user.data.subscriptionPlan}})",
+                optional: false,
+                type: "form-select",
+                values: ["free", "pro", "enterprise"],
+                defaultValue: "{{query.user.data.subscriptionPlan}}",
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+      expect(
+        (
+          screen.getByRole("combobox", {
+            name: "dynamic select",
+          }) as HTMLInputElement
+        )?.value
+      ).toBe("pro");
+    });
   });
 
   describe("invalid", () => {
@@ -391,34 +421,38 @@ describe("default form values", () => {
       expect(screen.getByText("Pointing to a value that is not a number."));
     });
 
-    test("select input can have a default value from a variable", async () => {
+    test("shows an error when select input default value is an object", async () => {
       await act(async () => {
         render(
           <PageCompiler
             setPage={setPage}
             page={createDirektivPageWithForm([
               {
-                id: "dynamic-select",
+                id: "select-pointing-to-object",
                 label: "dynamic select",
                 description:
-                  "default value comes from API ({{query.user.data.subscriptionPlan}})",
+                  "This select input is pointing to an object for the default value",
                 optional: false,
                 type: "form-select",
                 values: ["free", "pro", "enterprise"],
-                defaultValue: "{{query.user.data.subscriptionPlan}}",
+                defaultValue: "{{query.user.data}}",
               },
             ])}
             mode="live"
           />
         );
       });
+
+      await screen
+        .getByRole("button", {
+          name: "There was an unexpected error",
+        })
+        .click();
       expect(
-        (
-          screen.getByRole("combobox", {
-            name: "dynamic select",
-          }) as HTMLInputElement
-        )?.value
-      ).toBe("pro");
+        screen.getByText(
+          "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
+        )
+      );
     });
   });
 });

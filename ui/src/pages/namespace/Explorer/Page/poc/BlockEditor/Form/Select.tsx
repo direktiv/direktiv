@@ -70,7 +70,7 @@ export const Select = ({
       />
       <Fieldset
         label={t(
-          "direktivPage.blockEditor.blockForms.formPrimitives.select.defaultValueLabel"
+          "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.label"
         )}
         htmlFor="defaultValue"
       >
@@ -78,7 +78,7 @@ export const Select = ({
           {...form.register("defaultValue")}
           id="defaultValue"
           placeholder={t(
-            "direktivPage.blockEditor.blockForms.formPrimitives.select.defaultValueLabelPlaceholder"
+            "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholderSelect"
           )}
         />
       </Fieldset>

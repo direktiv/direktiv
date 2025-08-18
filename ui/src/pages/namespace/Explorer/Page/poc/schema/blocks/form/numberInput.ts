@@ -6,7 +6,7 @@ import {
 import { FormBase } from "./utils";
 import { z } from "zod";
 
-// default value is either of a number input is either a static number or a pointer to a variable
+// default value is either a static number or a pointer to a variable
 const DefaultValueSchema = z.discriminatedUnion("type", [
   VariableSchema,
   NumberSchema,

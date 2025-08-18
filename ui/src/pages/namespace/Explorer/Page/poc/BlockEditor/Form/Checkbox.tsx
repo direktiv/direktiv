@@ -1,4 +1,4 @@
-import { Controller, useForm } from "react-hook-form";
+import { Controller, ControllerRenderProps, useForm } from "react-hook-form";
 import {
   DefaultValueTypeSchema,
   FormCheckbox,
@@ -38,6 +38,24 @@ export const Checkbox = ({
     defaultValues: propBlock,
   });
 
+  const onSelectChange = (
+    field: ControllerRenderProps<FormCheckboxType, "defaultValue.type">,
+    value: string
+  ) => {
+    const parsedValueType = DefaultValueTypeSchema.safeParse(value);
+    if (parsedValueType.data) {
+      field.onChange(parsedValueType.data);
+      switch (parsedValueType.data) {
+        case "boolean":
+          form.setValue("defaultValue.value", false);
+          break;
+        case "variable":
+          form.setValue("defaultValue.value", "");
+          break;
+      }
+    }
+  };
+
   return (
     <FormWrapper
       description={t(
@@ -53,7 +71,7 @@ export const Checkbox = ({
       <BaseForm form={form} />
       <Fieldset
         label={t(
-          "direktivPage.blockEditor.blockForms.formPrimitives.checkbox.defaultValueLabel"
+          "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.label"
         )}
         htmlFor="defaultValue-type"
       >
@@ -65,16 +83,7 @@ export const Checkbox = ({
               <Select
                 value={field.value}
                 onValueChange={(value) => {
-                  const parsed = DefaultValueTypeSchema.safeParse(value);
-                  if (parsed.success) {
-                    field.onChange(parsed.data);
-                    // reset value
-                    if (parsed.data === "boolean") {
-                      form.setValue("defaultValue.value", false);
-                    } else {
-                      form.setValue("defaultValue.value", "");
-                    }
-                  }
+                  onSelectChange(field, value);
                 }}
               >
                 <SelectTrigger variant="outline" id="defaultValue-type">
@@ -84,7 +93,7 @@ export const Checkbox = ({
                   {allowedDefaultValueTypes.map((type) => (
                     <SelectItem value={type} key={type}>
                       {t(
-                        `direktivPage.blockEditor.blockForms.formPrimitives.checkbox.defaultValueType.${type}`
+                        `direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.type.${type}`
                       )}
                     </SelectItem>
                   ))}
@@ -92,7 +101,7 @@ export const Checkbox = ({
               </Select>
             )}
           />
-          {form.watch("defaultValue.type") === "boolean" ? (
+          {form.watch("defaultValue.type") === "boolean" && (
             <Controller
               control={form.control}
               name="defaultValue.value"
@@ -113,7 +122,8 @@ export const Checkbox = ({
                 );
               }}
             />
-          ) : (
+          )}
+          {form.watch("defaultValue.type") === "variable" && (
             <Controller
               control={form.control}
               name="defaultValue.value"
@@ -128,7 +138,7 @@ export const Checkbox = ({
                     {...field}
                     value={defaultValue}
                     placeholder={t(
-                      "direktivPage.blockEditor.blockForms.formPrimitives.checkbox.defaultValueVariablePlaceholder"
+                      "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholderVariable"
                     )}
                   />
                 );

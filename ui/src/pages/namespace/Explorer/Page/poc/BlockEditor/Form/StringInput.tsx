@@ -16,7 +16,7 @@ import { BaseForm } from "./BaseForm";
 import { BlockEditFormProps } from "..";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
-import { Textarea } from "~/design/TextArea";
+import Input from "~/design/Input";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -75,15 +75,15 @@ export const StringInput = ({
       </Fieldset>
       <Fieldset
         label={t(
-          "direktivPage.blockEditor.blockForms.formPrimitives.stringInput.defaultValueLabel"
+          "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.label"
         )}
         htmlFor="defaultValue"
       >
-        <Textarea
+        <Input
           {...form.register("defaultValue")}
           id="defaultValue"
           placeholder={t(
-            "direktivPage.blockEditor.blockForms.formPrimitives.stringInput.defaultValuePlaceholder"
+            "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholder"
           )}
         />
       </Fieldset>

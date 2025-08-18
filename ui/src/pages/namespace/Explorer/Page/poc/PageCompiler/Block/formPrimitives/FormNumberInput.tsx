@@ -10,11 +10,10 @@ type FormNumberInputProps = {
 
 export const FormNumberInput = ({ blockProps }: FormNumberInputProps) => {
   const { t } = useTranslation();
-  const { id, label, description, defaultValue, optional } = blockProps;
-  const htmlID = `form-input-${id}`;
-
   const resolveVariableNumber = useVariableNumberResolver();
+  const { id, label, description, defaultValue, optional } = blockProps;
 
+  const htmlID = `form-input-${id}`;
   let value: number;
 
   if (defaultValue.type === "variable") {

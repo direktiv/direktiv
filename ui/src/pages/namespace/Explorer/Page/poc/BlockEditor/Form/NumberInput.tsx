@@ -1,4 +1,4 @@
-import { Controller, useForm } from "react-hook-form";
+import { Controller, ControllerRenderProps, useForm } from "react-hook-form";
 import {
   DefaultValueTypeSchema,
   FormNumberInput,
@@ -37,6 +37,24 @@ export const NumberInput = ({
     defaultValues: propBlock,
   });
 
+  const onSelectChange = (
+    field: ControllerRenderProps<FormNumberInputType, "defaultValue.type">,
+    value: string
+  ) => {
+    const parsedValueType = DefaultValueTypeSchema.safeParse(value);
+    if (parsedValueType.data) {
+      field.onChange(parsedValueType.data);
+      switch (parsedValueType.data) {
+        case "number":
+          form.setValue("defaultValue.value", 0);
+          break;
+        case "variable":
+          form.setValue("defaultValue.value", "");
+          break;
+      }
+    }
+  };
+
   return (
     <FormWrapper
       description={t(
@@ -52,7 +70,7 @@ export const NumberInput = ({
       <BaseForm form={form} />
       <Fieldset
         label={t(
-          "direktivPage.blockEditor.blockForms.formPrimitives.numberInput.defaultValueLabel"
+          "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.label"
         )}
         htmlFor="defaultValue-type"
       >
@@ -64,16 +82,7 @@ export const NumberInput = ({
               <Select
                 value={field.value}
                 onValueChange={(value) => {
-                  const parsed = DefaultValueTypeSchema.safeParse(value);
-                  if (parsed.success) {
-                    field.onChange(parsed.data);
-                    // reset value
-                    if (parsed.data === "number") {
-                      form.setValue("defaultValue.value", 0);
-                    } else {
-                      form.setValue("defaultValue.value", "");
-                    }
-                  }
+                  onSelectChange(field, value);
                 }}
               >
                 <SelectTrigger variant="outline" id="defaultValue-type">
@@ -83,7 +92,7 @@ export const NumberInput = ({
                   {allowedDefaultValueTypes.map((type) => (
                     <SelectItem value={type} key={type}>
                       {t(
-                        `direktivPage.blockEditor.blockForms.formPrimitives.numberInput.defaultValueType.${type}`
+                        `direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.type.${type}`
                       )}
                     </SelectItem>
                   ))}
@@ -91,7 +100,7 @@ export const NumberInput = ({
               </Select>
             )}
           />
-          {form.watch("defaultValue.type") === "number" ? (
+          {form.watch("defaultValue.type") === "number" && (
             <Controller
               control={form.control}
               name="defaultValue.value"
@@ -112,7 +121,8 @@ export const NumberInput = ({
                 );
               }}
             />
-          ) : (
+          )}
+          {form.watch("defaultValue.type") === "variable" && (
             <Controller
               control={form.control}
               name="defaultValue.value"
@@ -127,7 +137,7 @@ export const NumberInput = ({
                     {...field}
                     value={defaultValue}
                     placeholder={t(
-                      "direktivPage.blockEditor.blockForms.formPrimitives.numberInput.defaultValueVariablePlaceholder"
+                      "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholderVariable"
                     )}
                   />
                 );
