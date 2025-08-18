@@ -1,8 +1,6 @@
-import { ColumnType, ColumnsType } from "../../../schema/blocks/columns";
 import { ParentBlockType, SimpleBlockType } from "../../../schema/blocks";
+import { describe, expect, test } from "vitest";
 import {
-  addBlockToPage,
-  deleteBlockFromPage,
   findAncestor,
   findBlock,
   incrementPath,
@@ -10,12 +8,12 @@ import {
   isParentBlock,
   pathIsDescendant,
   pathsEqual,
-  updateBlockInPage,
+  reindexTargetPath,
 } from "../utils";
 
-import { describe, expect, test } from "vitest";
+import { BlockPathType } from "../../Block";
+import { ColumnsType } from "../../../schema/blocks/columns";
 import { DirektivPagesType } from "../../../schema";
-import { HeadlineType } from "../../../schema/blocks/headline";
 import complex from "../../../schema/__tests__/examples/complex";
 import simple from "../../../schema/__tests__/examples/simple";
 
@@ -83,6 +81,79 @@ describe("findBlock", () => {
     });
   });
 
+  test("it returns the block including nested blocks (1)", () => {
+    const result = findBlock(complex, [3]);
+    expect(result).toEqual({
+      type: "query-provider",
+      queries: [
+        {
+          id: "fetching-resources",
+          url: "/api/get/resources",
+          queryParams: [
+            {
+              key: "query",
+              value: "my-search-query",
+            },
+          ],
+        },
+      ],
+      blocks: [
+        {
+          type: "dialog",
+          trigger: {
+            type: "button",
+            label: "open dialog",
+          },
+          blocks: [
+            {
+              type: "form",
+              trigger: {
+                type: "button",
+                label: "delete",
+              },
+              mutation: {
+                id: "my-delete",
+                url: "/api/delete/",
+                method: "DELETE",
+              },
+              blocks: [],
+            },
+          ],
+        },
+        {
+          type: "text",
+          content: "simple text",
+        },
+      ],
+    });
+  });
+
+  test("it returns the block including nested blocks (2)", () => {
+    const result = findBlock(complex, [3, 0]);
+    expect(result).toEqual({
+      type: "dialog",
+      trigger: {
+        type: "button",
+        label: "open dialog",
+      },
+      blocks: [
+        {
+          type: "form",
+          trigger: {
+            type: "button",
+            label: "delete",
+          },
+          mutation: {
+            id: "my-delete",
+            url: "/api/delete/",
+            method: "DELETE",
+          },
+          blocks: [],
+        },
+      ],
+    });
+  });
+
   test("it returns the whole input object if the path is empty", () => {
     const result = findBlock(complex, []);
     expect(result).toEqual(complex);
@@ -93,265 +164,95 @@ describe("findBlock", () => {
   });
 });
 
-describe("updateBlockInPage", () => {
-  test("it updates the block at the specified path", () => {
-    const result = updateBlockInPage(complex, [2, 1, 1], {
-      type: "text",
-      content: "I am now a text block",
-    });
-
-    const targetBlock = (
-      (result.blocks[2] as ColumnsType).blocks[1] as ColumnType
-    ).blocks[1];
-
-    expect(targetBlock).toEqual({
-      type: "text",
-      content: "I am now a text block",
-    });
+describe("reindexTargetPath", () => {
+  test("decrements path segment when target > origin at reindex level", () => {
+    const origin = [1, 0, 3];
+    const target = [1, 0, 7];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([1, 0, 6]);
   });
 
-  test("it throws an error if an empty array is given as index", () => {
-    expect(() =>
-      updateBlockInPage(simple, [], {
-        type: "text",
-        content: "I am now a text block",
-      })
-    ).toThrow("Invalid path, could not extract index for target block");
+  test("returns unchanged copy when target < origin at reindex level", () => {
+    const origin = [1, 0, 6];
+    const target = [1, 0, 2];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([1, 0, 2]);
+    expect(result).not.toBe(target);
   });
 
-  test("it throws an error if the target block index is out of bounds", () => {
-    expect(() =>
-      updateBlockInPage(complex, [2, 1, 9], {
-        type: "text",
-        content: "I am now a text block",
-      })
-    ).toThrow("Index for updating block out of bounds");
+  test("returns unchanged copy when moving between deeply nested levels in different branches", () => {
+    const origin = [1, 3, 6, 1];
+    const target = [1, 4, 6, 3];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([1, 4, 6, 3]);
+    expect(result).not.toBe(target);
   });
 
-  test("it throws an error if the page is not valid", () => {
-    const fakePage = {
-      type: "this makes no sense",
-      lorem: "ipsum",
-    } as unknown;
-
-    expect(() =>
-      updateBlockInPage(fakePage as DirektivPagesType, [2, 1, 1], {
-        type: "text",
-        content: "I am now a text block",
-      })
-    ).toThrow("index 2 not found");
-  });
-});
-
-describe("addBlockToPage", () => {
-  const headline: HeadlineType = {
-    type: "headline",
-    label: "New headline",
-    level: "h2",
-  };
-
-  test("it adds a block at the specified index", () => {
-    const result = addBlockToPage(simple, [2, 1, 0], headline);
-
-    expect((result.blocks[2] as ColumnsType).blocks[1]).toEqual({
-      type: "column",
-      blocks: [
-        {
-          type: "headline",
-          label: "New headline",
-          level: "h2",
-        },
-        {
-          type: "text",
-          content: "second column text",
-        },
-      ],
-    });
+  test("handles moving to shallower path where target = origin at reindex level", () => {
+    const origin = [1, 0, 6, 3];
+    const target = [1, 0, 6];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([1, 0, 6]);
+    expect(result).not.toBe(target);
   });
 
-  test("it adds a block after the specified index", () => {
-    const result = addBlockToPage(simple, [2, 1, 0], headline, true);
-
-    expect((result.blocks[2] as ColumnsType).blocks[1]).toEqual({
-      type: "column",
-      blocks: [
-        {
-          type: "text",
-          content: "second column text",
-        },
-        {
-          type: "headline",
-          label: "New headline",
-          level: "h2",
-        },
-      ],
-    });
+  test("handles moving to shallower path where target > origin at reindex level", () => {
+    const origin = [2, 4, 5, 6, 7];
+    const target = [2, 4, 6];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([2, 4, 6]);
   });
 
-  test("it throws an error if the specified index is empty", () => {
-    expect(() => addBlockToPage(simple, [], headline)).toThrow(
-      "Invalid path, could not extract index for new block"
+  test("handles moving to shallower path where target < origin at reindex level", () => {
+    const origin = [2, 4, 5, 6, 7];
+    const target = [2, 4, 3];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([2, 4, 3]);
+  });
+
+  test("handles moving to deeper path where target > origin at reindex level", () => {
+    const origin = [1, 3, 4];
+    const target = [1, 3, 6, 1];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([1, 3, 5, 1]);
+  });
+
+  test("handles moving on root level where target > origin", () => {
+    const origin = [4];
+    const target = [7];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([6]);
+  });
+
+  test("handles moving on root level where origin > target", () => {
+    const origin = [5];
+    const target = [2];
+    const result = reindexTargetPath(origin, target);
+    expect(result).toEqual([2]);
+  });
+
+  test("throws when origin and target path are exactly equal", () => {
+    const origin = [3, 2, 1];
+    const target = [3, 2, 1];
+    expect(() => reindexTargetPath(origin, target)).toThrow(
+      "Origin and target paths must not be equal"
     );
   });
 
-  test("inserts block in another block (level below)", () => {
-    const page: DirektivPagesType = {
-      direktiv_api: "page/v1",
-      type: "page",
-      blocks: [{ type: "card", blocks: [] }],
-    };
-
-    const updatedPage = addBlockToPage(page, [0, 0], headline);
-
-    expect(updatedPage).toEqual({
-      direktiv_api: "page/v1",
-      type: "page",
-      blocks: [
-        {
-          type: "card",
-          blocks: [
-            {
-              type: "headline",
-              level: "h2",
-              label: "New headline",
-            },
-          ],
-        },
-      ],
-    });
+  test("throws when origin path is empty", () => {
+    const origin: BlockPathType = [];
+    const target = [3, 2, 1];
+    expect(() => reindexTargetPath(origin, target)).toThrow(
+      "Paths must not be empty"
+    );
   });
 
-  test("inserts block in another block (level below) - insert before - defined through path", () => {
-    const page: DirektivPagesType = {
-      direktiv_api: "page/v1",
-      type: "page",
-      blocks: [
-        { type: "card", blocks: [{ type: "text", content: "Original Block" }] },
-      ],
-    };
-
-    const updatedPage = addBlockToPage(page, [0, 0], headline);
-
-    expect(updatedPage).toEqual({
-      direktiv_api: "page/v1",
-      type: "page",
-      blocks: [
-        {
-          type: "card",
-          blocks: [
-            {
-              type: "headline",
-              level: "h2",
-              label: "New headline",
-            },
-            { type: "text", content: "Original Block" },
-          ],
-        },
-      ],
-    });
-  });
-
-  test("inserts block in another block (level below) - insert before - defined through property 'after'", () => {
-    const page: DirektivPagesType = {
-      direktiv_api: "page/v1",
-      type: "page",
-      blocks: [
-        { type: "card", blocks: [{ type: "text", content: "Original Block" }] },
-      ],
-    };
-
-    const updatedPage = addBlockToPage(page, [0, 0], headline);
-
-    expect(updatedPage).toEqual({
-      direktiv_api: "page/v1",
-      type: "page",
-      blocks: [
-        {
-          type: "card",
-          blocks: [
-            {
-              type: "headline",
-              level: "h2",
-              label: "New headline",
-            },
-            { type: "text", content: "Original Block" },
-          ],
-        },
-      ],
-    });
-  });
-
-  test("inserts block in another block (level below) - insert after - defined through path", () => {
-    const page: DirektivPagesType = {
-      direktiv_api: "page/v1",
-      type: "page",
-      blocks: [
-        {
-          type: "card",
-          blocks: [
-            { type: "text", content: "First Block" },
-            { type: "text", content: "Second Block" },
-          ],
-        },
-      ],
-    };
-
-    const updatedPage = addBlockToPage(page, [0, 1], headline);
-
-    expect(updatedPage).toEqual({
-      direktiv_api: "page/v1",
-      type: "page",
-      blocks: [
-        {
-          type: "card",
-          blocks: [
-            { type: "text", content: "First Block" },
-            {
-              type: "headline",
-              level: "h2",
-              label: "New headline",
-            },
-            { type: "text", content: "Second Block" },
-          ],
-        },
-      ],
-    });
-  });
-  test("inserts block in another block (level below) - insert after - defined through property 'after'", () => {
-    const page: DirektivPagesType = {
-      direktiv_api: "page/v1",
-      type: "page",
-      blocks: [
-        {
-          type: "card",
-          blocks: [
-            { type: "text", content: "First Block" },
-            { type: "text", content: "Second Block" },
-          ],
-        },
-      ],
-    };
-
-    const updatedPage = addBlockToPage(page, [0, 0], headline, true);
-
-    expect(updatedPage).toEqual({
-      direktiv_api: "page/v1",
-      type: "page",
-      blocks: [
-        {
-          type: "card",
-          blocks: [
-            { type: "text", content: "First Block" },
-            {
-              type: "headline",
-              level: "h2",
-              label: "New headline",
-            },
-            { type: "text", content: "Second Block" },
-          ],
-        },
-      ],
-    });
+  test("throws when target path is empty", () => {
+    const origin = [9];
+    const target: BlockPathType = [];
+    expect(() => reindexTargetPath(origin, target)).toThrow(
+      "Paths must not be empty"
+    );
   });
 });
 
@@ -404,31 +305,6 @@ describe("pathIsDescendant", () => {
   test("returns false when descendant does not start with ancestor", () => {
     expect(pathIsDescendant([0, 4, 3, 1], [4, 3])).toBe(false);
     expect(pathIsDescendant([1, 2, 3], [2])).toBe(false);
-  });
-});
-
-describe("deleteBlockFromPage", () => {
-  test("it deletes a block from the page", () => {
-    const result = deleteBlockFromPage(simple, [2, 0, 0]);
-    expect(result.blocks[2] as ColumnsType).toEqual({
-      type: "columns",
-      blocks: [
-        {
-          type: "column",
-          blocks: [],
-        },
-        {
-          type: "column",
-          blocks: [{ type: "text", content: "second column text" }],
-        },
-      ],
-    });
-  });
-
-  test("it throws an error if an empty array is given as index", () => {
-    expect(() => deleteBlockFromPage(simple, [])).toThrow(
-      "Invalid path, could not extract index for target block"
-    );
   });
 });
 

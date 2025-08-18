@@ -1655,7 +1655,9 @@
         "invalidJson": "Trying to process a template string on an invalid JSON object",
         "invalidPath": "The path is not ivalid. It points to an undefined value",
         "couldNotStringify": "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null.",
-        "notAnArray": "Pointing to a value that is not an array."
+        "notAnArray": "Pointing to a value that is not an array.",
+        "notABoolean": "Pointing to a value that is not a boolean.",
+        "notANumber": "Pointing to a value that is not a number."
       }
     },
     "page": {
@@ -1801,35 +1803,37 @@
           "description": "Description",
           "descriptionPlaceholder": "Description for the form element",
           "optional": "Optional field",
+          "defaultValue": {
+            "label": "Default value",
+            "type": {
+              "boolean": "Static",
+              "number": "Static",
+              "variable": "Variable"
+            },
+            "placeholder": "Enter default value",
+            "placeholderVariable": "Enter variable name",
+            "placeholderSelect": "Select default option"
+          },
           "stringInput": {
             "description": "An input field that allows users to enter text.",
-            "variantLabel": "Input Type",
-            "defaultValueLabel": "Default Value",
-            "defaultValuePlaceholder": "Enter default value (optional)"
+            "variantLabel": "Input Type"
           },
           "dateInput": {
-            "description": "An input field that allows users to enter a date.",
-            "defaultValueLabel": "Default Value"
+            "description": "An input field that allows users to enter a date."
           },
           "numberInput": {
-            "description": "An input field that allows users to enter a number.",
-            "defaultValueLabel": "Default Value"
+            "description": "An input field that allows users to enter a number."
           },
           "checkbox": {
-            "description": "A checkbox allows users to select or unselect a boolean option.",
-            "defaultValueLabel": "Default checked"
+            "description": "A checkbox allows users to select or unselect a boolean option."
           },
           "textarea": {
-            "description": "A textarea allows users to enter multi-line text.",
-            "defaultValueLabel": "Default Value",
-            "defaultValuePlaceholder": "Enter default text"
+            "description": "A textarea allows users to enter multi-line text."
           },
           "select": {
             "description": "A select dropdown allows users to choose from a predefined list of options.",
             "valuesLabel": "Options",
-            "valuesPlaceholder": "Select option",
-            "defaultValueLabel": "Default selection",
-            "defaultValueLabelPlaceholder": "Select default option"
+            "valuesPlaceholder": "Select option"
           }
         }
       },

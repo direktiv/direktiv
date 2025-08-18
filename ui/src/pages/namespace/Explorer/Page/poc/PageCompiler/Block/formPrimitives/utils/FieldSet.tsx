@@ -1,5 +1,6 @@
 import { FC, PropsWithChildren } from "react";
 
+import { TemplateString } from "../../../primitives/TemplateString";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 
@@ -23,7 +24,9 @@ export const Fieldset: FC<FieldsetProps> = ({
   return (
     <fieldset className="flex flex-col gap-1">
       <label className="flex grow gap-1 text-sm font-bold" htmlFor={htmlFor}>
-        <span>{label}</span>
+        <span>
+          <TemplateString value={label} />
+        </span>
         {optional && (
           <span className="font-normal text-gray-9 dark:text-gray-dark-9">
             {" "}
@@ -40,7 +43,7 @@ export const Fieldset: FC<FieldsetProps> = ({
         {children}
         {description && (
           <div className="basis-full text-sm text-gray-9 dark:text-gray-dark-9">
-            {description}
+            <TemplateString value={description} />
           </div>
         )}
       </div>

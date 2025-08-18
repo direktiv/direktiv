@@ -2,14 +2,14 @@ import { FC, PropsWithChildren, createContext, useContext } from "react";
 import {
   addBlockToPage,
   deleteBlockFromPage,
-  findBlock,
   moveBlockWithinPage,
   updateBlockInPage,
-} from "./utils";
+} from "./utils/updatePage";
 
 import { BlockPathType } from "../Block";
 import { BlockType } from "../../schema/blocks";
 import { DirektivPagesType } from "../../schema";
+import { findBlock } from "./utils";
 
 export type PageCompilerMode = "edit" | "live";
 

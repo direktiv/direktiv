@@ -5,27 +5,34 @@ import {
 } from "./array";
 
 import { FlatObjectSchema } from "./object";
+import { TemplateString } from "../templateString";
 import z from "zod";
 
 const StringSchema = z.object({
   type: z.literal("string"),
-  value: z.string(),
+  value: TemplateString.min(1),
 });
 
-const VariableSchema = z.object({
+export const VariableSchema = z.object({
   type: z.literal("variable"),
   value: z.string(),
 });
 
-const BooleanSchema = z.object({
+export const BooleanSchema = z.object({
   type: z.literal("boolean"),
   value: z.boolean(),
+});
+
+export const NumberSchema = z.object({
+  type: z.literal("number"),
+  value: z.number(),
 });
 
 const DataType = z.discriminatedUnion("type", [
   StringSchema,
   VariableSchema,
   BooleanSchema,
+  NumberSchema,
   StringArraySchema,
   BooleanArraySchema,
   NumberArraySchema,
@@ -40,3 +47,5 @@ export const ExtendedKeyValueSchema = z.object({
   key: z.string().min(1),
   value: DataType,
 });
+
+export type ExtendedKeyValueSchema = z.infer<typeof ExtendedKeyValueSchema>;

@@ -11,17 +11,13 @@ const StringCompatible = z.union([
   z.null(),
 ]);
 
-type StringCompatibleType = z.infer<typeof StringCompatible>;
-
 /**
  * A hook that works the same as useVariableResolver
  * but ensures that the resolved value is a string.
  */
 export const useVariableStringResolver = () => {
   const resolveVariable = useVariableResolver();
-  return (
-    value: VariableType
-  ): Result<StringCompatibleType, ResolveVariableStringError> => {
+  return (value: VariableType): Result<string, ResolveVariableStringError> => {
     const variableResult = resolveVariable(value);
 
     if (!variableResult.success) {
@@ -33,6 +29,6 @@ export const useVariableStringResolver = () => {
       return { success: false, error: "couldNotStringify" };
     }
 
-    return { success: true, data: `${dataParsed.data}` };
+    return { success: true, data: String(dataParsed.data) };
   };
 };

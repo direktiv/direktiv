@@ -9,15 +9,14 @@ import {
   test,
   vi,
 } from "vitest";
+import { createDirektivPage, setPage } from "./utils";
 import {
   dataTypesResponse,
   getClientDetailsResponse,
   getCompanyListResponse,
 } from "./utils/api/samples";
 
-import { DirektivPagesType } from "../../schema";
 import { PageCompiler } from "..";
-import { createDirektivPage } from "./utils";
 import { setupServer } from "msw/node";
 
 const apiServer = setupServer(
@@ -25,8 +24,6 @@ const apiServer = setupServer(
   http.get("/client/101", () => HttpResponse.json(getClientDetailsResponse)),
   http.get("/data-types", () => HttpResponse.json(dataTypesResponse))
 );
-
-const setPage = (page: DirektivPagesType) => page;
 
 beforeAll(() => {
   apiServer.listen({ onUnhandledRequest: "error" });
