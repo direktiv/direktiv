@@ -28,11 +28,41 @@ const VariableContextProvider = ({
   </VariableContext.Provider>
 );
 
-const useVariableContext = () => {
+export type InjectedVariables = Partial<Variables>;
+
+/**
+ * returns a function to get the current variables context.
+ * the function allows to inject variables into the results
+ */
+const useGetVariables = () => {
   const context = useContext(VariableContext);
-  return context;
+  const variables = context ?? defaultVariables;
+  return (injectedVariables?: InjectedVariables): Variables => {
+    if (!injectedVariables) return variables;
+    return {
+      ...variables,
+      form: {
+        ...variables.form,
+        ...injectedVariables.form,
+      },
+      loop: {
+        ...variables.loop,
+        ...injectedVariables.loop,
+      },
+      query: {
+        ...variables.query,
+        ...injectedVariables.query,
+      },
+    };
+  };
 };
 
-const useVariables = () => useVariableContext() ?? defaultVariables;
+/**
+ * returns the current variables of the context.
+ */
+const useVariables = () => {
+  const getVariables = useGetVariables();
+  return getVariables();
+};
 
-export { VariableContextProvider, useVariables };
+export { VariableContextProvider, useGetVariables, useVariables };
