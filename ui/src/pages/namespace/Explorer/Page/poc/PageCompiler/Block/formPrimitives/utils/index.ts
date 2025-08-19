@@ -4,12 +4,12 @@ import { InjectedVariables } from "../../../primitives/Variable/VariableContext"
 
 const separator = "::";
 
-export const serializeFieldName = (
+export const encodeElementKey = (
   elementType: Block["type"],
   elementId: string
 ) => [elementType, elementId].join(separator);
 
-const deserializeFieldName = (elementName: string) => {
+const decodeElementKey = (elementName: string) => {
   const [elementType, elementId] = elementName.split(separator, 2);
 
   if (!elementType || !elementId) throw new Error("invalid form element name");
@@ -27,7 +27,7 @@ export const createFormContextVariables = (
 
   const transformedEntries = Object.entries(formValues).map(
     ([serializedKey, value]) => {
-      const [, elementId] = deserializeFieldName(serializedKey);
+      const [, elementId] = decodeElementKey(serializedKey);
       return [elementId, value];
     }
   );

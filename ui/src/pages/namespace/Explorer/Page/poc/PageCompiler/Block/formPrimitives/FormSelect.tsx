@@ -8,7 +8,7 @@ import {
 
 import { Fieldset } from "./utils/FieldSet";
 import { FormSelectType } from "../../../schema/blocks/form/select";
-import { serializeFieldName } from "./utils";
+import { encodeElementKey } from "./utils";
 import { useTemplateStringResolver } from "../../primitives/Variable/utils/useTemplateStringResolver";
 import { useTranslation } from "react-i18next";
 
@@ -23,7 +23,7 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
     blockProps;
 
   const resolvedDefaultValue = templateStringResolver(defaultValue);
-  const fieldName = serializeFieldName(type, id);
+  const fieldName = encodeElementKey(type, id);
   const value = values.some((v) => v === resolvedDefaultValue)
     ? resolvedDefaultValue
     : undefined;

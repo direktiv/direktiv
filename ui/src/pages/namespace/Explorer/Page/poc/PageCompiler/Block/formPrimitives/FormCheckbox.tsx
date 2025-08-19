@@ -1,7 +1,7 @@
 import { Checkbox } from "~/design/Checkbox";
 import { Fieldset } from "./utils/FieldSet";
 import { FormCheckboxType } from "../../../schema/blocks/form/checkbox";
-import { serializeFieldName } from "./utils";
+import { encodeElementKey } from "./utils";
 import { useTranslation } from "react-i18next";
 import { useVariableBooleanResolver } from "../../primitives/Variable/utils/useVariableBooleanResolver";
 
@@ -14,7 +14,7 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
   const resolveVariableBoolean = useVariableBooleanResolver();
   const { id, label, description, defaultValue, optional, type } = blockProps;
 
-  const fieldName = serializeFieldName(type, id);
+  const fieldName = encodeElementKey(type, id);
   let value: boolean;
 
   if (defaultValue.type === "variable") {

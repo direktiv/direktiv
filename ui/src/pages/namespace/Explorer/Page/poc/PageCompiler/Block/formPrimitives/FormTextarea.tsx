@@ -1,7 +1,7 @@
 import { Fieldset } from "./utils/FieldSet";
 import { FormTextareaType } from "../../../schema/blocks/form/textarea";
 import { Textarea } from "~/design/TextArea";
-import { serializeFieldName } from "./utils";
+import { encodeElementKey } from "./utils";
 import { useTemplateStringResolver } from "../../primitives/Variable/utils/useTemplateStringResolver";
 
 type FormTextareaProps = {
@@ -13,7 +13,7 @@ export const FormTextarea = ({ blockProps }: FormTextareaProps) => {
   const templateStringResolver = useTemplateStringResolver();
 
   const value = templateStringResolver(defaultValue);
-  const fieldName = serializeFieldName(type, id);
+  const fieldName = encodeElementKey(type, id);
 
   return (
     <Fieldset

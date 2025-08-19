@@ -1,7 +1,7 @@
 import { Fieldset } from "./utils/FieldSet";
 import { FormNumberInputType } from "../../../schema/blocks/form/numberInput";
 import Input from "~/design/Input";
-import { serializeFieldName } from "./utils";
+import { encodeElementKey } from "./utils";
 import { useTranslation } from "react-i18next";
 import { useVariableNumberResolver } from "../../primitives/Variable/utils/useVariableNumberResolver";
 
@@ -14,7 +14,7 @@ export const FormNumberInput = ({ blockProps }: FormNumberInputProps) => {
   const resolveVariableNumber = useVariableNumberResolver();
   const { id, label, description, defaultValue, optional, type } = blockProps;
 
-  const fieldName = serializeFieldName(type, id);
+  const fieldName = encodeElementKey(type, id);
   let value: number;
 
   if (defaultValue.type === "variable") {

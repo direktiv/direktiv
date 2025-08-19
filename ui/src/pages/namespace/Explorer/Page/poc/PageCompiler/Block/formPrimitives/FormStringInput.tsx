@@ -1,7 +1,7 @@
 import { Fieldset } from "./utils/FieldSet";
 import { FormStringInputType } from "../../../schema/blocks/form/stringInput";
 import Input from "~/design/Input";
-import { serializeFieldName } from "./utils";
+import { encodeElementKey } from "./utils";
 import { useTemplateStringResolver } from "../../primitives/Variable/utils/useTemplateStringResolver";
 
 type FormStringInputProps = {
@@ -14,7 +14,7 @@ export const FormStringInput = ({ blockProps }: FormStringInputProps) => {
   const templateStringResolver = useTemplateStringResolver();
 
   const value = templateStringResolver(defaultValue);
-  const fieldName = serializeFieldName(type, id);
+  const fieldName = encodeElementKey(type, id);
 
   return (
     <Fieldset
