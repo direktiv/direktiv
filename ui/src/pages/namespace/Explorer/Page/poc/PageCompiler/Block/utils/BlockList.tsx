@@ -1,4 +1,4 @@
-import { ReactElement, Suspense } from "react";
+import { ReactElement, Suspense, useMemo } from "react";
 
 import { BlockPathType } from "..";
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
@@ -40,7 +40,7 @@ const EditorBlockList = ({
 }: BlockListComponentProps) => {
   const validateDropzone = useValidateDropzone();
 
-  const newBlockTargetPath = [...path, 0];
+  const dropzonePayload = useMemo(() => ({ targetPath: [...path, 0] }), [path]);
 
   return (
     <BlockListWrapper horizontal={horizontal}>
@@ -51,7 +51,7 @@ const EditorBlockList = ({
               validate={(payload, targetPath) =>
                 validateDropzone(payload, targetPath)
               }
-              payload={{ targetPath: newBlockTargetPath }}
+              payload={dropzonePayload}
             />
           </div>
         )}
