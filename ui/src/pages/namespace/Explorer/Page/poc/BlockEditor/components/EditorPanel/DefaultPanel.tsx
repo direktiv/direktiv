@@ -13,18 +13,18 @@ export const DefaultPanel = () => {
   return (
     <div className="h-[300px] overflow-y-clip border-b-2 border-gray-4 p-3 dark:border-gray-dark-4 sm:h-[calc(100vh-230px)] sm:border-b-0 sm:border-r-2">
       <Tabs defaultValue="addBlock">
-        <TabsList variant="boxed">
-          <TabsTrigger variant="boxed" value="addBlock">
+        <TabsList className="w-full" variant="boxed">
+          <TabsTrigger className="w-full" variant="boxed" value="addBlock">
             <Blocks size={16} />
             {t("direktivPage.blockEditor.generic.addBlockTab")}
           </TabsTrigger>
-          <TabsTrigger variant="boxed" value="settings">
+          <TabsTrigger className="w-full" variant="boxed" value="settings">
             <Settings size={16} />
             {t("direktivPage.blockEditor.generic.settingsTab")}
           </TabsTrigger>
         </TabsList>
         <TabsContent value="addBlock" asChild>
-          <div className="grid grid-cols-3 gap-2 overflow-visible sm:grid-cols-1">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-1">
             {blockTypes.map((type, index) => (
               <DraggablePaletteItem
                 key={index}
