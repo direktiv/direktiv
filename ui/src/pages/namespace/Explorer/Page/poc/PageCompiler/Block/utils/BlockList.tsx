@@ -48,10 +48,9 @@ const EditorBlockList = ({
         {!children.length && (
           <div className="flex h-full min-h-[25px] flex-col justify-center">
             <Dropzone
-              validate={(payload, targetPath) => {
-                console.log("validate in blocklist");
-                return validateDropzone(payload, targetPath);
-              }}
+              validate={(payload, targetPath) =>
+                validateDropzone(payload, targetPath)
+              }
               payload={{ targetPath: newBlockTargetPath }}
             />
           </div>

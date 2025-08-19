@@ -3,7 +3,7 @@ import {
   DragPayloadSchemaType,
   DropPayloadSchemaType,
 } from "./schema";
-import { FC, PropsWithChildren, useEffect, useMemo } from "react";
+import { FC, PropsWithChildren, useMemo } from "react";
 import { useDndContext, useDroppable } from "@dnd-kit/core";
 
 import Badge from "~/design/Badge";
@@ -27,18 +27,6 @@ export const Dropzone: FC<DroppableProps> = ({
 }) => {
   const { active: activeDraggable } = useDndContext();
 
-  useEffect(
-    // big problem here, payload was "new" on every rerender
-    () => console.log("payload updated to ", payload),
-    [payload]
-  );
-
-  useEffect(
-    // no problem here
-    () => console.log("activeDraggable updated to ", activeDraggable),
-    [activeDraggable]
-  );
-
   const status = useMemo(() => {
     const { targetPath } = payload;
 
@@ -50,7 +38,6 @@ export const Dropzone: FC<DroppableProps> = ({
       ? parsedDragPayload.data
       : null;
 
-    console.log("memoized validate");
     return validate(draggedPayload, targetPath);
   }, [validate, payload, activeDraggable?.data]);
 

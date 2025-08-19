@@ -20,7 +20,6 @@ export const useValidateDropzone = () => {
       payload: DragPayloadSchemaType | null,
       targetPath: BlockPathType
     ): DropzoneStatus => {
-      console.log("validating dropzone");
       if (!payload) {
         return "hidden";
       }
