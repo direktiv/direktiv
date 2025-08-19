@@ -8,11 +8,11 @@ import { LucideIcon } from "lucide-react";
 import { twMergeClsx } from "~/util/helpers";
 import { useDraggable } from "@dnd-kit/core";
 
-type DraggableProps = PropsWithChildren & {
+type DraggableBaseProps = PropsWithChildren & {
   payload: DragPayloadSchemaType;
 };
 
-type SortableProps = PropsWithChildren & {
+type SortableItemProps = DraggableBaseProps & {
   blockPath: BlockPathType;
   className?: string;
   isFocused: boolean;
@@ -36,7 +36,7 @@ const useSharedDraggable = (payload: DragPayloadSchemaType) => {
   return { attributes, listeners, setNodeRef, styles };
 };
 
-export const SortableItem: FC<DraggableProps & SortableProps> = ({
+export const SortableItem: FC<SortableItemProps> = ({
   payload,
   blockPath,
   isFocused,
@@ -71,9 +71,15 @@ export const SortableItem: FC<DraggableProps & SortableProps> = ({
   );
 };
 
-export const DraggablePaletteItem: FC<
-  DraggableProps & { icon: LucideIcon }
-> = ({ payload, icon: Icon, children }) => {
+type DraggablePaletteItemProps = DraggableBaseProps & {
+  icon: LucideIcon;
+};
+
+export const DraggablePaletteItem: FC<DraggablePaletteItemProps> = ({
+  payload,
+  icon: Icon,
+  children,
+}) => {
   const { attributes, listeners, setNodeRef, styles } =
     useSharedDraggable(payload);
 
