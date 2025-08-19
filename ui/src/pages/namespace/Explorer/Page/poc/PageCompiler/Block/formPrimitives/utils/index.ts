@@ -18,6 +18,25 @@ const decodeElementKey = (elementName: string) => {
   return [elementType as Block["type"], elementId] as const;
 };
 
+const resolveFormValue = (
+  blockType: Block["type"],
+  value: FormDataEntryValue
+) => {
+  switch (blockType) {
+    case "form-checkbox":
+      // TODO: implement true/false
+      return value === "on";
+    case "form-string-input":
+    case "form-number-input":
+    case "form-date-input":
+    case "form-select":
+    case "form-textarea":
+      return value;
+    default:
+      throw new Error("invalid form element type");
+  }
+};
+
 export const createFormContextVariables = (
   e: FormEvent<HTMLFormElement>,
   formName: string
@@ -27,8 +46,9 @@ export const createFormContextVariables = (
 
   const transformedEntries = Object.entries(formValues).map(
     ([serializedKey, value]) => {
-      const [, elementId] = decodeElementKey(serializedKey);
-      return [elementId, value];
+      const [blockType, elementId] = decodeElementKey(serializedKey);
+      const resolvedValue = resolveFormValue(blockType, value);
+      return [elementId, resolvedValue];
     }
   );
 
