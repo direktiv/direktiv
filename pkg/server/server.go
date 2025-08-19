@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"log"
 	"log/slog"
@@ -16,9 +15,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/extensions"
-	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/gateway"
-	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
 	"github.com/direktiv/direktiv/pkg/service"
@@ -28,46 +25,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
-
-func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *filestore.File) ([]*core.ServiceFileData, error) {
-	var wf model.Workflow
-
-	err := wf.Load(f.Data)
-	if err != nil {
-		return nil, err
-	}
-
-	list := make([]*core.ServiceFileData, 0)
-
-	for _, fn := range wf.Functions {
-		if fn.GetType() != model.ReusableContainerFunctionType {
-			continue
-		}
-
-		serviceDef, ok := fn.(*model.ReusableFunctionDefinition)
-		if !ok {
-			return nil, errors.New("parse workflow def cast incorrectly")
-		}
-
-		list = append(list, &core.ServiceFileData{
-			Typ:       core.ServiceTypeWorkflow,
-			Name:      serviceDef.ID,
-			Namespace: ns.Name,
-			FilePath:  f.Path,
-
-			ServiceFile: core.ServiceFile{
-				Image:   serviceDef.Image,
-				Cmd:     serviceDef.Cmd,
-				Size:    serviceDef.Size.String(),
-				Envs:    serviceDef.Envs,
-				Patches: serviceDef.Patches,
-				Scale:   0,
-			},
-		})
-	}
-
-	return list, nil
-}
 
 //nolint:gocognit
 func Run(circuit *core.Circuit) error {

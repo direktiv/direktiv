@@ -14,7 +14,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/go-git/go-git/v6/plumbing/format/gitignore"
 )

@@ -94,15 +94,6 @@ func renderServiceFiles(db *database.DB, serviceManager core.ServiceManager) {
 					FilePath:    file.Path,
 					ServiceFile: *serviceDef,
 				})
-			} else if file.Typ == filestore.FileTypeWorkflow {
-				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file)
-				if err != nil {
-					slog.Error("parse workflow def", "error", err)
-
-					continue
-				}
-
-				funConfigList = append(funConfigList, sub...)
 			}
 		}
 	}
