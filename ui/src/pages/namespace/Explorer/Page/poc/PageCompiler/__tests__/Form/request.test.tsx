@@ -208,7 +208,7 @@ describe("form request", () => {
     });
   });
 
-  describe("headers", () => {
+  describe("request headers", () => {
     test("variables will be resolved and stringified", async () => {
       await act(async () => {
         render(
@@ -311,6 +311,124 @@ describe("form request", () => {
               method: "POST",
               url: "/save-user",
               requestHeaders: [
+                {
+                  key: "object",
+                  value: "String: {{query.user.data.profile}}",
+                },
+              ],
+            })}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button", { name: "save" }).click();
+
+      await waitFor(() => {
+        expect(screen.getByRole("form").textContent).toContain(
+          "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
+        );
+      });
+    });
+  });
+
+  describe("request body", () => {
+    test("variables will be resolved and stringified", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm(form, {
+              id: "save-user",
+              method: "POST",
+              url: "/save-user",
+              requestBody: [
+                {
+                  key: "String-Value",
+                  value: "String: {{query.user.data.status}}",
+                },
+                {
+                  key: "Boolean-Value",
+                  value: "Boolean: {{query.user.data.emailVerified}}",
+                },
+                {
+                  key: "Number-Value",
+                  value: "Number: {{query.user.data.accountBalance}}",
+                },
+                {
+                  key: "Null-Value",
+                  value: "Null: {{query.user.data.lastLogin}}",
+                },
+                {
+                  key: "Form-String-Value",
+                  value: "String: {{form.save-user.string}}",
+                },
+                {
+                  key: "Form-Textarea-Value",
+                  value: "Textarea: {{form.save-user.textarea}}",
+                },
+                {
+                  key: "Form-Checkbox-Checked-Value",
+                  value: "Checkbox: {{form.save-user.checkbox-checked}}",
+                },
+                {
+                  key: "Form-Checkbox-Unchecked-Value",
+                  value: "Checkbox: {{form.save-user.checkbox-unchecked}}",
+                },
+                {
+                  key: "Form-Number-Value",
+                  value: "Number: {{form.save-user.number}}",
+                },
+                {
+                  key: "Form-Date-Value",
+                  value: "Date: {{form.save-user.date}}",
+                },
+                {
+                  key: "Form-Select-Value",
+                  value: "Select: {{form.save-user.select}}",
+                },
+              ],
+            })}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button", { name: "save" }).click();
+
+      await waitFor(async () => {
+        expect(apiRequestMock).toHaveBeenCalledTimes(1);
+        const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
+        const text = JSON.parse(await formRequest.text());
+
+        expect(text["String-Value"]).toBe("String: ok");
+        expect(text["Boolean-Value"]).toBe("Boolean: true");
+        expect(text["Number-Value"]).toBe("Number: 19.99");
+        expect(text["Null-Value"]).toBe("Null: null");
+        expect(text["Form-String-Value"]).toBe(
+          "String: string from a string input"
+        );
+        expect(text["Form-Textarea-Value"]).toBe(
+          "Textarea: string from a textarea"
+        );
+        expect(text["Form-Checkbox-Checked-Value"]).toBe("Checkbox: true");
+        expect(text["Form-Checkbox-Unchecked-Value"]).toBe("Checkbox: false");
+        expect(text["Form-Number-Value"]).toBe("Number: 3");
+        expect(text["Form-Date-Value"]).toBe("Date: 2025-12-24");
+        expect(text["Form-Select-Value"]).toBe("Select: pro");
+      });
+    });
+
+    test("it shows an error when submitting a form that uses variables that can not be stringified", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm(form, {
+              id: "save-user",
+              method: "POST",
+              url: "/save-user",
+              requestBody: [
                 {
                   key: "object",
                   value: "String: {{query.user.data.profile}}",
