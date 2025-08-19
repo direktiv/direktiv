@@ -24,15 +24,19 @@ type PageEditorProps = {
 
 export type PageEditorMode = PageCompilerMode | "code";
 
-const PageEditor = ({ isPending, page: pageProp, onSave }: PageEditorProps) => {
+const PageEditor = ({
+  isPending,
+  page: chachedPage,
+  onSave,
+}: PageEditorProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const [page, setPage] = useState(pageProp);
+  const [page, setPage] = useState(chachedPage);
   const [mode, setMode] = useState<PageEditorMode>("edit");
 
   const isDirty = useMemo(
-    () => JSON.stringify(page) !== JSON.stringify(pageProp),
-    [page, pageProp]
+    () => JSON.stringify(page) !== JSON.stringify(chachedPage),
+    [page, chachedPage]
   );
 
   const disableSaveBtn = isPending || !isDirty;
