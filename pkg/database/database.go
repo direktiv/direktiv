@@ -14,8 +14,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore/datasql"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
-	"github.com/direktiv/direktiv/pkg/instancestore"
-	"github.com/direktiv/direktiv/pkg/instancestore/instancestoresql"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	tsPostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -48,10 +46,6 @@ func (tx *DB) FileStore() filestore.FileStore {
 
 func (tx *DB) DataStore() datastore.Store {
 	return datasql.NewStore(tx.db)
-}
-
-func (tx *DB) InstanceStore() instancestore.Store {
-	return instancestoresql.NewSQLInstanceStore(tx.db)
 }
 
 func (tx *DB) Commit(ctx context.Context) error {
