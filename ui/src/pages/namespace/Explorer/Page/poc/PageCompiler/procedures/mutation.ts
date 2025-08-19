@@ -4,7 +4,7 @@ import {
 } from "../primitives/keyValue/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { InjectedVariables } from "../primitives/Variable/VariableContext";
+import { FormVariables } from "../primitives/Variable/VariableContext";
 import { MutationType } from "../../schema/procedures/mutation";
 import { useUrlGenerator } from "./utils";
 
@@ -16,27 +16,27 @@ export const usePageMutation = () => {
   return useMutation({
     mutationFn: async ({
       mutation,
-      options,
+      formVariables,
     }: {
       mutation: MutationType;
-      options?: { variables: InjectedVariables };
+      formVariables: FormVariables;
     }) => {
       const { method, requestBody, requestHeaders } = mutation;
 
       const requestBodyResolved = resolveKeyValueArray(
         requestBody ?? [],
-        options
+        formVariables
       );
 
       const body = JSON.stringify(keyValueArrayToObject(requestBodyResolved));
 
       const requestHeadersResolved = resolveKeyValueArray(
         requestHeaders ?? [],
-        options
+        formVariables
       );
       const headers = keyValueArrayToObject(requestHeadersResolved);
 
-      const url = generateUrl(mutation, options);
+      const url = generateUrl(mutation, formVariables);
 
       const response = await fetch(url, {
         method,
@@ -46,7 +46,6 @@ export const usePageMutation = () => {
       if (!response.ok) {
         throw new Error(`${response.status}: ${response.statusText}`);
       }
-
       return;
     },
     onSuccess: () => {

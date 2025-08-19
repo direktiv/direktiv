@@ -1,4 +1,4 @@
-import { InjectedVariables } from "../VariableContext";
+import { FormVariables } from "../VariableContext";
 import { VariableType } from "../../../../schema/primitives/variable";
 
 export type ValidationResult<DataType, E> = Success<DataType> | Failure<E>;
@@ -15,16 +15,12 @@ type Failure<E> = {
 
 type ResolverFunctionWithoutError<DataType> = (
   value: VariableType,
-  options?: {
-    variables: InjectedVariables;
-  }
+  formVariables?: FormVariables
 ) => DataType;
 
 type ResolverFunctionWithError<DataType, Error> = (
   value: VariableType,
-  options?: {
-    variables: InjectedVariables;
-  }
+  formVariables?: FormVariables
 ) => ValidationResult<DataType, Error>;
 
 /**

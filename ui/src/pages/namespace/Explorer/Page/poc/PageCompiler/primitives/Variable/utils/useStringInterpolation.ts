@@ -19,9 +19,9 @@ import { useVariableStringResolver } from "./useVariableStringResolver";
 export const useStringInterpolation = (): ResolverFunction<string> => {
   const { t } = useTranslation();
   const resolveVariableString = useVariableStringResolver();
-  return (input, options) =>
+  return (input, formVariables) =>
     parseTemplateString(input, (match) => {
-      const result = resolveVariableString(match, options);
+      const result = resolveVariableString(match, formVariables);
       if (!result.success) {
         throw new Error(t(`direktivPage.error.templateString.${result.error}`));
       }

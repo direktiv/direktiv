@@ -28,30 +28,22 @@ const VariableContextProvider = ({
   </VariableContext.Provider>
 );
 
-export type InjectedVariables = Partial<Variables>;
+export type FormVariables = Variables["form"];
 
 /**
  * returns a function to get the current variables context.
- * the function allows to inject variables into the results
+ * the function allows to inject form variables into the results
  */
 const useGetVariables = () => {
   const context = useContext(VariableContext);
   const variables = context ?? defaultVariables;
-  return (injectedVariables?: InjectedVariables): Variables => {
-    if (!injectedVariables) return variables;
+  return (formVariables?: FormVariables): Variables => {
+    if (!formVariables) return variables;
     return {
       ...variables,
       form: {
         ...variables.form,
-        ...injectedVariables.form,
-      },
-      loop: {
-        ...variables.loop,
-        ...injectedVariables.loop,
-      },
-      query: {
-        ...variables.query,
-        ...injectedVariables.query,
+        ...formVariables,
       },
     };
   };

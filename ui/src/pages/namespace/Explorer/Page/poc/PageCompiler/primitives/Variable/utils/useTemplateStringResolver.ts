@@ -22,9 +22,9 @@ export const useTemplateStringResolver =
   (): ResolverFunction<TemplateStringType> => {
     const { t } = useTranslation();
     const resolveVariableString = useVariableStringResolver();
-    return (value, options) => {
+    return (value, formVariables) => {
       const templateFragments = parseTemplateString(value, (match) => {
-        const result = resolveVariableString(match, options);
+        const result = resolveVariableString(match, formVariables);
         if (!result.success) {
           throw new Error(
             t(`direktivPage.error.templateString.${result.error}`)

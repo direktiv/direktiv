@@ -24,11 +24,8 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
       name={mutation.id}
       onSubmit={(e) => {
         e.preventDefault();
-        const variables = createFormContextVariables(e, mutation.id);
-        mutate({
-          mutation,
-          options: { variables: { form: variables } },
-        });
+        const formVariables = createFormContextVariables(e, mutation.id);
+        mutate({ mutation, formVariables });
       }}
     >
       {error && (

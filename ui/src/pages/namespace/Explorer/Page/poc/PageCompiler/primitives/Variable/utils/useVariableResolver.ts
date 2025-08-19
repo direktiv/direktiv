@@ -24,8 +24,8 @@ export const useVariableResolver = (): ResolverFunction<
   ResolveVariableError
 > => {
   const variableResolver = useGetVariables();
-  return (value, options) => {
-    const variables = variableResolver(options?.variables);
+  return (value, formVariables) => {
+    const variables = variableResolver(formVariables);
     const variableObject = parseVariable(value);
     const validationResult = validateVariable(variableObject);
 

@@ -1,6 +1,6 @@
 import { BlockType as Block } from "../../../../schema/blocks";
 import { FormEvent } from "react";
-import { InjectedVariables } from "../../../primitives/Variable/VariableContext";
+import { FormVariables } from "../../../primitives/Variable/VariableContext";
 
 const separator = "::";
 
@@ -37,7 +37,7 @@ const resolveFormValue = (
 export const createFormContextVariables = (
   e: FormEvent<HTMLFormElement>,
   formName: string
-): InjectedVariables["form"] => {
+): FormVariables => {
   const formData = new FormData(e.currentTarget);
   const formValues = Object.fromEntries(formData.entries());
 
