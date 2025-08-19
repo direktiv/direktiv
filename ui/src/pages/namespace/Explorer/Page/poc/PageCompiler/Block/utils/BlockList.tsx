@@ -47,12 +47,7 @@ const EditorBlockList = ({
       <Suspense fallback={<Loading />}>
         {!children.length && (
           <div className="flex h-full min-h-[25px] flex-col justify-center">
-            <Dropzone
-              validate={(payload, targetPath) =>
-                validateDropzone(payload, targetPath)
-              }
-              payload={dropzonePayload}
-            />
+            <Dropzone validate={validateDropzone} payload={dropzonePayload} />
           </div>
         )}
         {children}
