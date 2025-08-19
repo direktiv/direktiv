@@ -104,7 +104,7 @@ const form: BlockType[] = [
 
 describe("form request", () => {
   describe("url", () => {
-    test("variables will be resolved and stringified", async () => {
+    test("resolves variables in URL path", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -131,7 +131,7 @@ describe("form request", () => {
       });
     });
 
-    test("it shows an error when submitting a form that uses variables that can not be stringified", async () => {
+    test("shows error for non-stringifiable variables in URL", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -157,7 +157,7 @@ describe("form request", () => {
   });
 
   describe("query params", () => {
-    test("variables will be resolved and stringified", async () => {
+    test("resolves all variable types in query parameters", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -230,7 +230,7 @@ describe("form request", () => {
       });
     });
 
-    test("it shows an error when submitting a form that uses variables that can not be stringified", async () => {
+    test("shows error for non-stringifiable variables in query params", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -262,7 +262,7 @@ describe("form request", () => {
   });
 
   describe("request headers", () => {
-    test("variables will be resolved and stringified", async () => {
+    test("resolves all variable types in request headers", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -354,7 +354,7 @@ describe("form request", () => {
       });
     });
 
-    test("it shows an error when submitting a form that uses variables that can not be stringified", async () => {
+    test("shows error for non-stringifiable variables in headers", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -386,7 +386,7 @@ describe("form request", () => {
   });
 
   describe("request body", () => {
-    test("variables will be resolved and stringified", async () => {
+    test("resolves all variable types in request body", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -472,7 +472,7 @@ describe("form request", () => {
       });
     });
 
-    test("it shows an error when submitting a form that uses variables that can not be stringified", async () => {
+    test("shows error for non-stringifiable variables in body", async () => {
       await act(async () => {
         render(
           <PageCompiler
