@@ -2,6 +2,7 @@ import {
   PropsWithChildren,
   Suspense,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -59,6 +60,13 @@ const EditorBlockWrapper = ({
     document.addEventListener("mousemove", handleMouseMove);
     return () => document.removeEventListener("mousemove", handleMouseMove);
   }, []);
+
+  const dropzonePayload = useMemo(
+    () => ({
+      targetPath: incrementPath(blockPath),
+    }),
+    [blockPath]
+  );
 
   const isFocused = panel?.action && pathsEqual(panel.path, blockPath);
 
@@ -146,10 +154,7 @@ const EditorBlockWrapper = ({
           </Suspense>
         </div>
       </SortableItem>
-      <Dropzone
-        payload={{ targetPath: incrementPath(blockPath) }}
-        validate={validateDropzone}
-      />
+      <Dropzone payload={dropzonePayload} validate={validateDropzone} />
     </>
   );
 };

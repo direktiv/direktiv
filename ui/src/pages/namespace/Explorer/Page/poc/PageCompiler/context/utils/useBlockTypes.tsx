@@ -34,6 +34,7 @@ import { Text as TextForm } from "../../../BlockEditor/Text";
 import { Textarea } from "../../../BlockEditor/Form/Textarea";
 import { findAncestor } from ".";
 import { t } from "i18next";
+import { useCallback } from "react";
 import { usePage } from "../pageCompilerContext";
 
 const blockTypes: BlockTypeConfig[] = [
@@ -311,14 +312,20 @@ const blockTypes: BlockTypeConfig[] = [
 export const useBlockTypes = () => {
   const page = usePage();
 
-  const getBlockConfig = <T extends BlockTypeConfig["type"]>(type: T) =>
-    blockTypes.find(
-      (config): config is Extract<BlockTypeConfig, { type: T }> =>
-        config.type === type
-    );
+  const getBlockConfig = useCallback(
+    <T extends BlockTypeConfig["type"]>(type: T) =>
+      blockTypes.find(
+        (config): config is Extract<BlockTypeConfig, { type: T }> =>
+          config.type === type
+      ),
+    []
+  );
 
-  const getAllowedTypes = (path: BlockPathType) =>
-    blockTypes.filter((type) => type.allow(page, path));
+  const getAllowedTypes = useCallback(
+    (path: BlockPathType) =>
+      blockTypes.filter((type) => type.allow(page, path)),
+    [page]
+  );
 
   return {
     blockTypes,

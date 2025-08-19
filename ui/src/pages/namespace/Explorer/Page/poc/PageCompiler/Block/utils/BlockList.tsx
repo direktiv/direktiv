@@ -46,10 +46,12 @@ const EditorBlockList = ({
     <BlockListWrapper horizontal={horizontal}>
       <Suspense fallback={<Loading />}>
         {!children.length && (
-          // <div className="w-full self-center">
           <div className="flex h-full min-h-[25px] flex-col justify-center">
             <Dropzone
-              validate={validateDropzone}
+              validate={(payload, targetPath) => {
+                console.log("validate in blocklist");
+                return validateDropzone(payload, targetPath);
+              }}
               payload={{ targetPath: newBlockTargetPath }}
             />
           </div>
