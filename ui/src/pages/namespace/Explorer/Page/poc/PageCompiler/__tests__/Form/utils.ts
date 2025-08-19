@@ -11,6 +11,10 @@ export const setupFormApi = () => {
     http.post("/save-user", (...args) => {
       apiRequestMock(...args);
       return HttpResponse.json({ status: "ok" });
+    }),
+    http.delete("/blog-post/*", (...args) => {
+      apiRequestMock(...args);
+      return HttpResponse.json({ status: "ok" });
     })
   );
 

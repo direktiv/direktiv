@@ -28,7 +28,8 @@ export const useUrlGenerator = () => {
       keyValueArrayToObject(queryParamsResolved)
     );
     const paramsString = searchParams.toString();
-    const interpolatedUrl = interpolateString(url);
+
+    const interpolatedUrl = interpolateString(url, options);
 
     const requestUrl = paramsString
       ? interpolatedUrl.concat("?", paramsString)

@@ -110,6 +110,59 @@ describe("form request", () => {
           <PageCompiler
             setPage={setPage}
             page={createDirektivPageWithForm(form, {
+              id: "delete-blog-post",
+              method: "DELETE",
+              url: "/blog-post/{{query.user.data.userId}}/{{form.delete-blog-post.string}}",
+            })}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button", { name: "save" }).click();
+
+      await waitFor(() => {
+        expect(apiRequestMock).toHaveBeenCalledTimes(1);
+        const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
+        const requestUrl = new URL(formRequest.url);
+        expect(requestUrl.pathname).toBe(
+          "/blog-post/101/string%20from%20a%20string%20input"
+        );
+      });
+    });
+
+    test("it shows an error when submitting a form that uses variables that can not be stringified", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm(form, {
+              id: "save-user",
+              method: "POST",
+              url: "/save-user/{{query.user.data.profile}}",
+            })}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button", { name: "save" }).click();
+
+      await waitFor(() => {
+        expect(screen.getByRole("form").textContent).toContain(
+          "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
+        );
+      });
+    });
+  });
+
+  describe("query params", () => {
+    test("variables will be resolved and stringified", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm(form, {
               id: "save-user",
               method: "POST",
               url: "/save-user",
