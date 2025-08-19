@@ -1,6 +1,7 @@
 import { Fieldset } from "./utils/FieldSet";
 import { FormTextareaType } from "../../../schema/blocks/form/textarea";
 import { Textarea } from "~/design/TextArea";
+import { serializeFieldName } from "./utils";
 import { useTemplateStringResolver } from "../../primitives/Variable/utils/useTemplateStringResolver";
 
 type FormTextareaProps = {
@@ -8,23 +9,23 @@ type FormTextareaProps = {
 };
 
 export const FormTextarea = ({ blockProps }: FormTextareaProps) => {
-  const { id, label, description, defaultValue, optional } = blockProps;
+  const { id, label, description, defaultValue, optional, type } = blockProps;
   const templateStringResolver = useTemplateStringResolver();
 
   const value = templateStringResolver(defaultValue);
-  const htmlID = `form-textarea-${id}`;
+  const fieldName = serializeFieldName(type, id);
 
   return (
     <Fieldset
       label={label}
       description={description}
-      htmlFor={htmlID}
+      htmlFor={fieldName}
       optional={optional}
     >
       <Textarea
         defaultValue={value}
-        id={htmlID}
-        name={id}
+        id={fieldName}
+        name={fieldName}
         // remount when defaultValue changes
         key={value}
       />

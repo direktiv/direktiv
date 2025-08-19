@@ -1,6 +1,7 @@
 import { Checkbox } from "~/design/Checkbox";
 import { Fieldset } from "./utils/FieldSet";
 import { FormCheckboxType } from "../../../schema/blocks/form/checkbox";
+import { serializeFieldName } from "./utils";
 import { useTranslation } from "react-i18next";
 import { useVariableBooleanResolver } from "../../primitives/Variable/utils/useVariableBooleanResolver";
 
@@ -11,9 +12,9 @@ type FormCheckboxProps = {
 export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
   const { t } = useTranslation();
   const resolveVariableBoolean = useVariableBooleanResolver();
-  const { id, label, description, defaultValue, optional } = blockProps;
+  const { id, label, description, defaultValue, optional, type } = blockProps;
 
-  const htmlID = `form-checkbox-${id}`;
+  const fieldName = serializeFieldName(type, id);
   let value: boolean;
 
   if (defaultValue.type === "variable") {
@@ -32,14 +33,14 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
     <Fieldset
       label={label}
       description={description}
-      htmlFor={htmlID}
+      htmlFor={fieldName}
       horizontal
       optional={optional}
     >
       <Checkbox
         defaultChecked={value}
-        id={htmlID}
-        name={id}
+        id={fieldName}
+        name={fieldName}
         // remount when defaultValue changes
         key={String(value)}
       />

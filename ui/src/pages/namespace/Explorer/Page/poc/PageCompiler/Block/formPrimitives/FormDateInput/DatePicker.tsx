@@ -10,15 +10,14 @@ import { useTranslation } from "react-i18next";
 
 type DatePickerProps = {
   defaultValue: string;
-  name: string;
-  id: string;
+  fieldName: string;
 };
 
 // this formatter reflects the format of a native date input
 const formatDateInput = (date: Date | undefined) =>
   date ? moment(date).format("YYYY-MM-DD") : "";
 
-export const DatePicker = ({ defaultValue, id, name }: DatePickerProps) => {
+export const DatePicker = ({ defaultValue, fieldName }: DatePickerProps) => {
   const { t } = useTranslation();
   const [date, setDate] = useState<Date | undefined>(
     parseStringToDate(defaultValue)
@@ -37,14 +36,14 @@ export const DatePicker = ({ defaultValue, id, name }: DatePickerProps) => {
         </PopoverTrigger>
         <PopoverContent className="w-auto">
           <DatepickerDesignComponent
-            id={id}
+            id={fieldName}
             mode="single"
             selected={date}
             onSelect={setDate}
           />
         </PopoverContent>
       </Popover>
-      <input type="hidden" name={name} value={formatDateInput(date)} />
+      <input type="hidden" name={fieldName} value={formatDateInput(date)} />
     </>
   );
 };

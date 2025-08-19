@@ -1,6 +1,7 @@
 import { Fieldset } from "./utils/FieldSet";
 import { FormNumberInputType } from "../../../schema/blocks/form/numberInput";
 import Input from "~/design/Input";
+import { serializeFieldName } from "./utils";
 import { useTranslation } from "react-i18next";
 import { useVariableNumberResolver } from "../../primitives/Variable/utils/useVariableNumberResolver";
 
@@ -11,9 +12,9 @@ type FormNumberInputProps = {
 export const FormNumberInput = ({ blockProps }: FormNumberInputProps) => {
   const { t } = useTranslation();
   const resolveVariableNumber = useVariableNumberResolver();
-  const { id, label, description, defaultValue, optional } = blockProps;
+  const { id, label, description, defaultValue, optional, type } = blockProps;
 
-  const htmlID = `form-input-${id}`;
+  const fieldName = serializeFieldName(type, id);
   let value: number;
 
   if (defaultValue.type === "variable") {
@@ -32,14 +33,14 @@ export const FormNumberInput = ({ blockProps }: FormNumberInputProps) => {
     <Fieldset
       label={label}
       description={description}
-      htmlFor={htmlID}
+      htmlFor={fieldName}
       optional={optional}
     >
       <Input
         type="number"
         defaultValue={value}
-        id={htmlID}
-        name={id}
+        id={fieldName}
+        name={fieldName}
         // remount when defaultValue changes
         key={value}
       />
