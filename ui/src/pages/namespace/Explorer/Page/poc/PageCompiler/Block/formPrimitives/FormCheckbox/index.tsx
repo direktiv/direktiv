@@ -1,9 +1,9 @@
-import { Checkbox } from "~/design/Checkbox";
-import { Fieldset } from "./utils/FieldSet";
-import { FormCheckboxType } from "../../../schema/blocks/form/checkbox";
-import { encodeElementKey } from "./utils";
+import { Checkbox } from "./Checkbox";
+import { Fieldset } from "../utils/FieldSet";
+import { FormCheckboxType } from "../../../../schema/blocks/form/checkbox";
+import { encodeElementKey } from "../utils";
 import { useTranslation } from "react-i18next";
-import { useVariableBooleanResolver } from "../../primitives/Variable/utils/useVariableBooleanResolver";
+import { useVariableBooleanResolver } from "../../../primitives/Variable/utils/useVariableBooleanResolver";
 
 type FormCheckboxProps = {
   blockProps: FormCheckboxType;
@@ -38,9 +38,8 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
       optional={optional}
     >
       <Checkbox
-        defaultChecked={value}
-        id={fieldName}
-        name={fieldName}
+        defaultValue={value}
+        fieldName={fieldName}
         // remount when defaultValue changes
         key={String(value)}
       />
