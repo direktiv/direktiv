@@ -21,7 +21,7 @@ const decodeElementKey = (elementName: string) => {
 export const createFormContextVariables = (
   e: FormEvent<HTMLFormElement>,
   formName: string
-): InjectedVariables => {
+): InjectedVariables["form"] => {
   const formData = new FormData(e.currentTarget);
   const formValues = Object.fromEntries(formData.entries());
 
@@ -34,5 +34,5 @@ export const createFormContextVariables = (
 
   const processedFormValues = Object.fromEntries(transformedEntries);
 
-  return { form: { [formName]: processedFormValues } };
+  return { [formName]: processedFormValues };
 };

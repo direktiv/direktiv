@@ -27,7 +27,7 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
         const variables = createFormContextVariables(e, mutation.id);
         mutate({
           mutation,
-          options: { variables },
+          options: { variables: { form: variables } },
         });
       }}
     >
