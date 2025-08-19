@@ -11,7 +11,6 @@ import {
   usePageStateContext,
 } from "../../context/pageCompilerContext";
 
-import Badge from "~/design/Badge";
 import { BlockPathType } from "..";
 import { BlockType } from "../../../schema/blocks";
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
@@ -60,7 +59,8 @@ const EditorBlockWrapper = ({
     return () => document.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  const isFocused = panel?.action && pathsEqual(panel.path, blockPath);
+  const isFocused =
+    panel?.action && pathsEqual(panel.path, blockPath) ? true : false;
 
   const handleClickBlock = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
@@ -92,8 +92,7 @@ const EditorBlockWrapper = ({
     });
   };
 
-  const showDragHandle = (isHovered || isFocused) && !isDragging;
-  const isHoveredOrFocused = isHovered || isFocused;
+  const showDragHandle = isHovered || isFocused;
 
   return (
     <>
@@ -103,6 +102,8 @@ const EditorBlockWrapper = ({
           block,
           originPath: blockPath,
         }}
+        blockPath={blockPath}
+        isFocused={isFocused}
         className={twMergeClsx(showDragHandle ? "visible" : "invisible")}
       >
         <div
@@ -119,20 +120,6 @@ const EditorBlockWrapper = ({
           data-block-wrapper
           onClick={handleClickBlock}
         >
-          {isHoveredOrFocused && (
-            <Badge
-              className={twMergeClsx(
-                "absolute z-30 -mt-7 rounded-md rounded-b-none px-2 py-1",
-                isFocused && "bg-gray-8 dark:bg-gray-dark-8"
-              )}
-              variant="secondary"
-            >
-              <span className="mr-2">
-                <b>{block.type}</b>
-              </span>
-              {blockPath.join(".")}
-            </Badge>
-          )}
           <Suspense fallback={<Loading />}>
             <ErrorBoundary
               fallbackRender={({ error }) => (
