@@ -11,15 +11,13 @@ type FormDateInputProps = {
 export const FormDateInput = ({ blockProps }: FormDateInputProps) => {
   const templateStringResolver = useTemplateStringResolver();
   const { id, label, description, defaultValue, optional, type } = blockProps;
-
   const value = templateStringResolver(defaultValue);
-  const htmlID = `form-input-${id}`;
   const fieldName = encodeElementKey(type, id);
   return (
     <Fieldset
       label={label}
       description={description}
-      htmlFor={htmlID}
+      htmlFor={fieldName}
       optional={optional}
     >
       <DatePicker
