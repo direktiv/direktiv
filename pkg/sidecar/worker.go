@@ -23,9 +23,13 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
-	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/direktiv/direktiv/pkg/utils"
+)
+
+const (
+	DirektivActionIDHeader = "Direktiv-ActionID"
+	DirektivCallPathHeader = "direktiv-callpath"
 )
 
 type inboundWorker struct {
@@ -546,7 +550,7 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 		}
 	}
 
-	callPath := req.r.Header.Get(flow.DirektivCallPathHeader)
+	callPath := req.r.Header.Get(DirektivCallPathHeader)
 
 	ir := &functionRequest{
 		actionId:      aid,
@@ -743,7 +747,7 @@ func (worker *inboundWorker) respondToFlow(w http.ResponseWriter, actionId strin
 		ErrMsg:  out.errMsg,
 		ErrCode: out.errCode,
 	}
-	w.Header().Add(flow.DirektivActionIDHeader, actionId)
+	w.Header().Add(DirektivActionIDHeader, actionId)
 	b, err := json.Marshal(ar)
 	if err != nil {
 		slog.Error("failed to report results for request", "action_id", actionId, "error", err)

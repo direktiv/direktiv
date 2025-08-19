@@ -17,7 +17,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/gateway"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/pubsub"
@@ -165,7 +164,7 @@ func Run(circuit *core.Circuit) error {
 
 	// Create syncNamespace function
 	slog.Info("initializing sync namespace routine")
-	//TODO: fix app.SyncNamespace init.
+	// TODO: fix app.SyncNamespace init.
 
 	bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
 		renderServiceFiles(db, app.ServiceManager)
@@ -175,13 +174,6 @@ func Run(circuit *core.Circuit) error {
 	})
 	// Call at least once before booting
 	renderServiceFiles(db, app.ServiceManager)
-
-	slog.Debug("Rendering event-listeners on server start")
-	err = flow.RenderAllStartEventListeners(circuit.Context(), db)
-	if err != nil {
-		slog.Error("rendering event listener on server start", "error", err)
-	}
-	slog.Debug("Completed rendering event-listeners on server start")
 
 	// endpoint manager
 	bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
