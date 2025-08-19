@@ -253,20 +253,6 @@ func writeJSON(w http.ResponseWriter, v any) {
 	_ = json.NewEncoder(w).Encode(payLoad)
 }
 
-func writeJSONWithMeta(w http.ResponseWriter, data any, meta any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	payload := struct {
-		Meta any `json:"meta"`
-		Data any `json:"data"`
-	}{
-		Data: data,
-		Meta: meta,
-	}
-	_ = json.NewEncoder(w).Encode(payload)
-}
-
 func writeOk(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 

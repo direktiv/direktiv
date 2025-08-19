@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -66,15 +65,6 @@ func writeInternalError(w http.ResponseWriter, err error) {
 	writeError(w, &Error{
 		Code:    "internal",
 		Message: "internal server error",
-	})
-
-	slog.Error("internal", "err", err)
-}
-
-func writeBadrequestError(w http.ResponseWriter, err error) {
-	writeError(w, &Error{
-		Code:    "request",
-		Message: fmt.Sprintf("bad request %v", err),
 	})
 
 	slog.Error("internal", "err", err)

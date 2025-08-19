@@ -1,10 +1,8 @@
 package engine
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"time"
 )
@@ -49,15 +47,6 @@ func DecodeActionRequest(r *http.Request) (ActionRequest, error) {
 	}
 
 	return c, nil
-}
-
-func EncodeActionRequest(ar ActionRequest) (io.Reader, error) {
-	encodedRequest, err := json.Marshal(ar)
-	if err != nil {
-		return nil, fmt.Errorf("error encoding response: %w", err)
-	}
-
-	return bytes.NewReader(encodedRequest), nil
 }
 
 type ActionResponse struct {
