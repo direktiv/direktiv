@@ -11,10 +11,7 @@ export const encodeElementKey = (
 
 const decodeElementKey = (elementName: string) => {
   const [elementType, elementId] = elementName.split(separator, 2);
-
   if (!elementType || !elementId) throw new Error("invalid form element name");
-
-  // TODO: can we get rid of this type assertion?
   return [elementType as Block["type"], elementId] as const;
 };
 
@@ -24,10 +21,10 @@ const resolveFormValue = (
 ) => {
   switch (blockType) {
     case "form-checkbox":
-      // TODO: implement true/false
-      return value === "on";
-    case "form-string-input":
+      return value === "true";
     case "form-number-input":
+      return parseInt(String(value));
+    case "form-string-input":
     case "form-date-input":
     case "form-select":
     case "form-textarea":

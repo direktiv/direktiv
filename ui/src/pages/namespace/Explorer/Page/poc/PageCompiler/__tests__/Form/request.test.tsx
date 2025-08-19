@@ -51,14 +51,25 @@ const form: BlockType[] = [
     defaultValue: "string from a textarea",
   },
   {
-    id: "checkbox",
+    id: "checkbox-checked",
     label: "checkbox",
-    description: "this is a checkbox",
+    description: "this is a checked checkbox",
     optional: false,
     type: "form-checkbox",
     defaultValue: {
       type: "boolean",
       value: true,
+    },
+  },
+  {
+    id: "checkbox-unchecked",
+    label: "checkbox",
+    description: "this is a unchecked checkbox",
+    optional: false,
+    type: "form-checkbox",
+    defaultValue: {
+      type: "boolean",
+      value: false,
     },
   },
   {
@@ -128,8 +139,12 @@ describe("form request", () => {
                   value: "{{form.save-user.textarea}}",
                 },
                 {
-                  key: "checkbox",
-                  value: "{{form.save-user.checkbox}}",
+                  key: "checkbox-checked",
+                  value: "{{form.save-user.checkbox-checked}}",
+                },
+                {
+                  key: "checkbox-unchecked",
+                  value: "{{form.save-user.checkbox-unchecked}}",
                 },
                 {
                   key: "number",
@@ -157,8 +172,7 @@ describe("form request", () => {
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
         const requestUrl = new URL(formRequest.url);
         expect(requestUrl.search).toBe(
-          // TODO: checkbox must evaluate to true and false
-          "?string=ok&boolean=true&number=3&null=null&form-string=string+from+a+string+input&form-textarea=string+from+a+textarea&checkbox=on&date=2025-12-24&select=pro"
+          "?string=ok&boolean=true&number=3&null=null&form-string=string+from+a+string+input&form-textarea=string+from+a+textarea&checkbox-checked=true&checkbox-unchecked=false&date=2025-12-24&select=pro"
         );
       });
     });
@@ -230,8 +244,12 @@ describe("form request", () => {
                   value: "Textarea: {{form.save-user.textarea}}",
                 },
                 {
-                  key: "Form-Checkbox-Value",
-                  value: "Checkbox: {{form.save-user.checkbox}}",
+                  key: "Form-Checkbox-Checked-Value",
+                  value: "Checkbox: {{form.save-user.checkbox-checked}}",
+                },
+                {
+                  key: "Form-Checkbox-Unchecked-Value",
+                  value: "Checkbox: {{form.save-user.checkbox-unchecked}}",
                 },
                 {
                   key: "Form-Number-Value",
@@ -267,9 +285,11 @@ describe("form request", () => {
         expect(formRequest.headers.get("Form-Textarea-Value")).toBe(
           "Textarea: string from a textarea"
         );
-        // TODO: checkbox must evaluate to true and false
-        expect(formRequest.headers.get("Form-Checkbox-Value")).toBe(
-          "Checkbox: on"
+        expect(formRequest.headers.get("Form-Checkbox-Checked-Value")).toBe(
+          "Checkbox: true"
+        );
+        expect(formRequest.headers.get("Form-Checkbox-Unchecked-Value")).toBe(
+          "Checkbox: false"
         );
         expect(formRequest.headers.get("Form-Number-Value")).toBe("Number: 3");
         expect(formRequest.headers.get("Form-Date-Value")).toBe(
