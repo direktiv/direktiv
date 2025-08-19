@@ -19,6 +19,7 @@ const blocks: HeadlineType[] = [
 
 export const Default = () => {
   const [actions, setActions] = useState<string[]>([]);
+  const [clicked, setClicked] = useState<number>(0);
 
   return (
     <DndContext
@@ -56,15 +57,20 @@ export const Default = () => {
             return (
               <div key={index} className="my-2 flex flex-col items-center">
                 <SortableItem
+                  isFocused={clicked === index}
+                  blockPath={blockPath}
                   payload={{
                     type: "move",
                     block,
                     originPath: blockPath,
                   }}
                 >
-                  {block.type === "headline" && (
-                    <div className="border-2 p-2">{block.label}</div>
-                  )}
+                  <div
+                    onClick={() => setClicked(index)}
+                    className="mb-4 mt-2 w-48 border-2 p-2"
+                  >
+                    {block.label}
+                  </div>
                 </SortableItem>
                 <Dropzone payload={{ targetPath: [index + 1] }} />
               </div>
