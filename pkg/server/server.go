@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -20,8 +19,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/gateway"
-	"github.com/direktiv/direktiv/pkg/instancestore"
-	"github.com/direktiv/direktiv/pkg/mirror"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
@@ -145,18 +142,6 @@ func Run(circuit *core.Circuit) error {
 		return fmt.Errorf("initializing service manager, err: %w", err)
 	}
 
-	// Initialize legacy server
-	slog.Info("initializing legacy server")
-	srv, err := flow.InitLegacyServer(circuit, config, bus, db, rawDB, app.ServiceManager)
-	if err != nil {
-		return fmt.Errorf("initialize legacy server, err: %w", err)
-	}
-
-	instanceManager := &instancestore.InstanceManager{
-		Start:  srv.Engine.StartWorkflow,
-		Cancel: srv.Engine.CancelInstance,
-	}
-
 	circuit.Start(func() error {
 		err := app.ServiceManager.Run(circuit)
 		if err != nil {
@@ -180,49 +165,16 @@ func Run(circuit *core.Circuit) error {
 
 	// Create syncNamespace function
 	slog.Info("initializing sync namespace routine")
-	app.SyncNamespace = func(namespace any, mirrorConfig any) (any, error) {
-		ns := namespace.(*datastore.Namespace)            //nolint:forcetypeassert
-		mConfig := mirrorConfig.(*datastore.MirrorConfig) //nolint:forcetypeassert
-		proc, err := srv.MirrorManager.NewProcess(context.Background(), ns, datastore.ProcessTypeSync)
-		if err != nil {
-			return nil, err
-		}
+	//TODO: fix app.SyncNamespace init.
 
-		go func() {
-			srv.MirrorManager.Execute(context.Background(), proc, mConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
-			err := srv.Bus.Publish(&pubsub.NamespacesChangeEvent{
-				Action: "sync",
-				Name:   ns.Name,
-			})
-			if err != nil {
-				slog.Error("pubsub publish", "error", err)
-			}
-		}()
-
-		return proc, nil
-	}
-
-	srv.Bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
+	bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
 		renderServiceFiles(db, app.ServiceManager)
 	})
-	srv.Bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
+	bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
 		renderServiceFiles(db, app.ServiceManager)
 	})
 	// Call at least once before booting
 	renderServiceFiles(db, app.ServiceManager)
-
-	srv.Bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(data string) {
-		event := &pubsub.FileSystemChangeEvent{}
-		err := json.Unmarshal([]byte(data), event)
-		if err != nil {
-			panic("Logic Error could not parse file system change event")
-		}
-
-		err = srv.ConfigureWorkflow(event)
-		if err != nil {
-			slog.Error("configure workflow", "error", err)
-		}
-	})
 
 	slog.Debug("Rendering event-listeners on server start")
 	err = flow.RenderAllStartEventListeners(circuit.Context(), db)
@@ -250,7 +202,7 @@ func Run(circuit *core.Circuit) error {
 	}
 
 	// Start api v2 server
-	err = api.Initialize(circuit, app, db, bus, instanceManager, srv.Engine.WakeEventsWaiter, srv.Engine.EventsInvoke)
+	err = api.Initialize(circuit, app, db, bus)
 	if err != nil {
 		return fmt.Errorf("initializing api v2, err: %w", err)
 	}

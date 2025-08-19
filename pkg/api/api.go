@@ -16,9 +16,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/events"
 	"github.com/direktiv/direktiv/pkg/extensions"
-	"github.com/direktiv/direktiv/pkg/instancestore"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
@@ -29,7 +27,7 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, wakeByEvents events.WakeEventsWaiter, startByEvents events.WorkflowStart) error {
+func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsub2.Bus) error {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
@@ -59,7 +57,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 	}
 	instCtr := &instController{
 		db:      db,
-		manager: instanceManager,
+		manager: nil,
 	}
 	notificationsCtr := &notificationsController{
 		db: db,
@@ -69,8 +67,8 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 	}
 	eventsCtr := eventsController{
 		store:         db.DataStore(),
-		wakeInstance:  wakeByEvents,
-		startWorkflow: startByEvents,
+		wakeInstance:  nil,
+		startWorkflow: nil,
 	}
 
 	jxCtr := jxController{}

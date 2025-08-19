@@ -14,13 +14,11 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
-	eventsstore "github.com/direktiv/direktiv/pkg/events"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/mirror"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
-	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"github.com/nats-io/nats.go"
@@ -83,159 +81,6 @@ func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 }
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
-
-//nolint:revive
-func InitLegacyServer(circuit *core.Circuit, config *core.Config, bus *pubsub2.Bus, db *database.DB, rawDB *sql.DB, serviceManager core.ServiceManager) (*server, error) {
-	srv := new(server)
-	srv.ID = uuid.New()
-	srv.initJQ()
-	srv.config = config
-	srv.db = db
-	srv.rawDB = rawDB
-	srv.Bus = bus
-	srv.ServiceManager = serviceManager
-
-	var err error
-	slog.Debug("starting flow server")
-
-	otelProvider, err := telemetry.InitOpenTelemetry(circuit.Context(), config.OtelBackend)
-	if err != nil {
-		return nil, fmt.Errorf("telemetry init failed: %w", err)
-	}
-
-	slog.Debug("initializing pub-sub")
-
-	srv.pubsub, err = pubsub.InitPubSub(srv, config.DB)
-	if err != nil {
-		return nil, err
-	}
-
-	slog.Info("pub-sub was initialized successfully")
-
-	slog.Debug("initializing timers")
-
-	srv.timers, err = initTimers(srv.pubsub)
-	if err != nil {
-		return nil, err
-	}
-	slog.Info("timers where initialized successfully")
-
-	slog.Debug("initializing engine")
-
-	srv.Engine = initEngine(srv)
-	slog.Info("engine was started")
-
-	slog.Debug("initializing flow server")
-
-	srv.flow, err = initFlowServer(circuit.Context(), srv)
-	if err != nil {
-		return nil, err
-	}
-
-	slog.Debug("initializing mirror manager")
-	slog.Debug("mirror manager was started")
-
-	slog.Debug("initializing events")
-	srv.events = initEvents(srv, db.DataStore().StagingEvents().Append)
-
-	slog.Debug("initializing EventWorkers")
-
-	interval := 1 * time.Second // TODO: Adjust the polling interval
-	eventWorker := eventsstore.NewEventWorker(db.DataStore().StagingEvents(), interval, srv.events.handleEvent)
-
-	circuit.Start(func() error {
-		eventWorker.Start(circuit.Context())
-
-		return nil
-	})
-	slog.Info("events-engine was started")
-
-	cc := func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
-		err = srv.flow.configureWorkflowStarts(ctx, db, nsID, nsName, file)
-		if err != nil {
-			return err
-		}
-
-		err = srv.flow.placeholdSecrets(ctx, db, nsName, file)
-		if err != nil {
-			slog.Debug("failed setting up placeholder secrets", "error", err, "namespace", nsName, "file", file.Path)
-		}
-
-		return nil
-	}
-
-	srv.MirrorManager = mirror.NewManager(
-		&mirrorCallbacks{
-			store:    db.DataStore().Mirror(),
-			fstore:   db.FileStore(),
-			varstore: db.DataStore().RuntimeVariables(),
-			wfconf:   cc,
-		},
-	)
-	srv.MirrorManager.SetMirrorHistoryHours(config.MirrorHistoryHours)
-
-	srv.registerFunctions()
-
-	go srv.cronPoller()
-
-	circuit.Start(func() error {
-		<-circuit.Done()
-		err = otelProvider.Shutdown(circuit.Context())
-		if err != nil {
-			slog.Error("shutting down opentelemetry failed", slog.Any("error", err))
-		}
-		srv.cleanup(srv.pubsub.Close)
-		srv.cleanup(srv.timers.Close)
-		if srv.nats != nil {
-			srv.nats.Close()
-			slog.Info("connection closed for NATS")
-		}
-
-		return nil
-	})
-
-	if config.NatsInstalled {
-		var err error
-		slog.Info("conncting to NATS", "config.NatsHost", config.NatsHost, "config.NatsPort", config.NatsPort)
-		for i := range 12 {
-			err = srv.initNATS(config)
-			if err == nil {
-				slog.Info("connection to NATS established")
-				break
-			}
-			slog.Error("failed to connect to NATS, retrying...", "attempt", i+1, "error", err)
-			time.Sleep(time.Duration(i+2) * time.Second)
-		}
-
-		if err != nil {
-			return nil, fmt.Errorf("initialize NATS connection, err: %w", err)
-		}
-
-		if err := srv.publishDemoMessage("test", "test-connection"); err != nil {
-			return nil, fmt.Errorf("testing NATS connection, err: %w", err)
-		}
-		slog.Info("connected to NATS")
-	}
-
-	srv.ConfigureWorkflow = func(event *pubsub2.FileSystemChangeEvent) error {
-		// If this is a delete workflow file
-		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
-			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.NamespaceID, event.DeleteFileID)
-		}
-		file, err := db.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context(), event.FilePath)
-		if err != nil {
-			return err
-		}
-		err = srv.flow.configureWorkflowStarts(circuit.Context(), db, event.NamespaceID, event.Namespace, file)
-		if err != nil {
-			return err
-		}
-
-		return srv.flow.placeholdSecrets(circuit.Context(), db, event.Namespace, file)
-	}
-
-	return srv, nil
-}
 
 func (srv *server) cleanup(closer func() error) {
 	err := closer()
