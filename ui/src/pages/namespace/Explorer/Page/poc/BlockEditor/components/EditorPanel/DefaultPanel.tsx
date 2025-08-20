@@ -2,6 +2,7 @@ import { Blocks, Settings } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 
 import { DraggablePaletteItem } from "~/design/DragAndDrop/Draggable";
+import { PanelContainer } from "./PanelContainer";
 import { useBlockTypes } from "../../../PageCompiler/context/utils/useBlockTypes";
 import { useTranslation } from "react-i18next";
 
@@ -11,7 +12,7 @@ export const DefaultPanel = () => {
   const { blockTypes } = useBlockTypes();
 
   return (
-    <div className="h-[300px] overflow-y-clip border-b-2 border-gray-4 dark:border-gray-dark-4 sm:h-[calc(100vh-230px)] sm:border-b-0 sm:border-r-2">
+    <PanelContainer className="overflow-y-clip">
       <Tabs defaultValue="addBlock">
         <TabsList className="w-full rounded-none border-b border-gray-5 bg-gray-1 p-5 pb-0 dark:border-gray-dark-5 dark:bg-gray-dark-1">
           <TabsTrigger className="w-full" value="addBlock">
@@ -38,6 +39,6 @@ export const DefaultPanel = () => {
         </TabsContent>
         <TabsContent value="settings" asChild></TabsContent>
       </Tabs>
-    </div>
+    </PanelContainer>
   );
 };
