@@ -8,10 +8,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 type LineageData struct {
@@ -76,7 +74,7 @@ func (e *instController) mountRouter(r chi.Router) {
 	r.Patch("/{instanceID}", e.dummy)
 
 	r.Get("/", e.dummy)
-	r.Post("/", e.dummy)
+	r.Post("/", e.create)
 }
 
 func (e *instController) dummy(w http.ResponseWriter, r *http.Request) {
@@ -88,24 +86,6 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 
 	wait := r.URL.Query().Get("wait") == "true"
 
-	ctx := telemetry.GetContextFromRequest(r.Context(), r)
-	ctx, span := telemetry.Tracer.Start(ctx, "api-request")
-	span.SetAttributes(
-		attribute.KeyValue{
-			Key:   "namespace",
-			Value: attribute.StringValue(ns.Name),
-		},
-		attribute.KeyValue{
-			Key:   "path",
-			Value: attribute.StringValue(path),
-		},
-		attribute.KeyValue{
-			Key:   "wait",
-			Value: attribute.BoolValue(wait),
-		},
-	)
-	defer span.End()
-
 	input, err := io.ReadAll(r.Body)
 	if err != nil {
 		return
@@ -115,7 +95,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		input = []byte(`{}`)
 	}
 
-	id, err := e.jsEngine.ExecWorkflow(ctx, ns.Name, path, string(input))
+	id, err := e.jsEngine.ExecWorkflow(r.Context(), ns.Name, path, string(input))
 	if err != nil {
 		// telemetry.ReportError(span, err)
 		writeError(w, &Error{
@@ -126,7 +106,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := e.db.DataStore().JSInstances().GetByID(ctx, id)
+	data, err := e.db.DataStore().JSInstances().GetByID(r.Context(), id)
 	if err != nil {
 		writeError(w, &Error{
 			Code:    err.Error(),
