@@ -121,8 +121,11 @@ type App struct {
 	Version *Version
 	Config  *Config
 
-	ServiceManager  ServiceManager
+	ServiceManager ServiceManager
+
 	RegistryManager RegistryManager
 	GatewayManager  GatewayManager
 	SyncNamespace   SyncNamespace
+
+	JSEngine JSEngine
 }

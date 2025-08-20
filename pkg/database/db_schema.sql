@@ -119,6 +119,29 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS "js_instances" (
+    "id" uuid,
+    "namespace" text NOT NULL,
+    "workflow_path" text NOT NULL,
+    "workflow_data" text NOT NULL,
+
+    "status" integer NOT NULL,
+
+    "input" text NOT NULL,
+    "memory" text,
+    "output" text,
+    "error" text,
+
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "ended_at" timestamptz,
+
+    PRIMARY KEY ("id"),
+    CONSTRAINT "fk_namespaces_js_instances"
+    FOREIGN KEY ("namespace") REFERENCES "namespaces"("name") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+
 CREATE TABLE IF NOT EXISTS "instance_messages" (
     "id" uuid NOT NULL,
     "instance_id" uuid NOT NULL,
