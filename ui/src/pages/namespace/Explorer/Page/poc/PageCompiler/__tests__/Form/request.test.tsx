@@ -112,7 +112,7 @@ describe("form request", () => {
             page={createDirektivPageWithForm(form, {
               id: "delete-blog-post",
               method: "DELETE",
-              url: "/blog-post/{{query.user.data.userId}}/{{form.delete-blog-post.string}}",
+              url: "/blog-post/{{query.user.data.userId}}/{{this.form.string}}",
             })}
             mode="live"
           />
@@ -185,31 +185,31 @@ describe("form request", () => {
                 },
                 {
                   key: "form-string",
-                  value: "{{form.save-user.string}}",
+                  value: "{{this.form.string}}",
                 },
                 {
                   key: "form-textarea",
-                  value: "{{form.save-user.textarea}}",
+                  value: "{{this.form.textarea}}",
                 },
                 {
                   key: "checkbox-checked",
-                  value: "{{form.save-user.checkbox-checked}}",
+                  value: "{{this.form.checkbox-checked}}",
                 },
                 {
                   key: "checkbox-unchecked",
-                  value: "{{form.save-user.checkbox-unchecked}}",
+                  value: "{{this.form.checkbox-unchecked}}",
                 },
                 {
                   key: "number",
-                  value: "{{form.save-user.number}}",
+                  value: "{{this.form.number}}",
                 },
                 {
                   key: "date",
-                  value: "{{form.save-user.date}}",
+                  value: "{{this.form.date}}",
                 },
                 {
                   key: "select",
-                  value: "{{form.save-user.select}}",
+                  value: "{{this.form.select}}",
                 },
               ],
             })}
@@ -290,31 +290,31 @@ describe("form request", () => {
                 },
                 {
                   key: "Form-String-Value",
-                  value: "String: {{form.save-user.string}}",
+                  value: "String: {{this.form.string}}",
                 },
                 {
                   key: "Form-Textarea-Value",
-                  value: "Textarea: {{form.save-user.textarea}}",
+                  value: "Textarea: {{this.form.textarea}}",
                 },
                 {
                   key: "Form-Checkbox-Checked-Value",
-                  value: "Checkbox: {{form.save-user.checkbox-checked}}",
+                  value: "Checkbox: {{this.form.checkbox-checked}}",
                 },
                 {
                   key: "Form-Checkbox-Unchecked-Value",
-                  value: "Checkbox: {{form.save-user.checkbox-unchecked}}",
+                  value: "Checkbox: {{this.form.checkbox-unchecked}}",
                 },
                 {
                   key: "Form-Number-Value",
-                  value: "Number: {{form.save-user.number}}",
+                  value: "Number: {{this.form.number}}",
                 },
                 {
                   key: "Form-Date-Value",
-                  value: "Date: {{form.save-user.date}}",
+                  value: "Date: {{this.form.date}}",
                 },
                 {
                   key: "Form-Select-Value",
-                  value: "Select: {{form.save-user.select}}",
+                  value: "Select: {{this.form.select}}",
                 },
               ],
             })}
@@ -414,31 +414,31 @@ describe("form request", () => {
                 },
                 {
                   key: "Form-String-Value",
-                  value: "String: {{form.save-user.string}}",
+                  value: "String: {{this.form.string}}",
                 },
                 {
                   key: "Form-Textarea-Value",
-                  value: "Textarea: {{form.save-user.textarea}}",
+                  value: "Textarea: {{this.form.textarea}}",
                 },
                 {
                   key: "Form-Checkbox-Checked-Value",
-                  value: "Checkbox: {{form.save-user.checkbox-checked}}",
+                  value: "Checkbox: {{this.form.checkbox-checked}}",
                 },
                 {
                   key: "Form-Checkbox-Unchecked-Value",
-                  value: "Checkbox: {{form.save-user.checkbox-unchecked}}",
+                  value: "Checkbox: {{this.form.checkbox-unchecked}}",
                 },
                 {
                   key: "Form-Number-Value",
-                  value: "Number: {{form.save-user.number}}",
+                  value: "Number: {{this.form.number}}",
                 },
                 {
                   key: "Form-Date-Value",
-                  value: "Date: {{form.save-user.date}}",
+                  value: "Date: {{this.form.date}}",
                 },
                 {
                   key: "Form-Select-Value",
-                  value: "Select: {{form.save-user.select}}",
+                  value: "Select: {{this.form.select}}",
                 },
               ],
             })}

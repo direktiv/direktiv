@@ -9,7 +9,7 @@ import {
 } from "~/design/Table";
 import {
   VariableContextProvider,
-  useVariables,
+  useGlobalVariableScope,
 } from "../../primitives/Variable/VariableContext";
 
 import { ActionsCell } from "./ActionsCell";
@@ -29,11 +29,11 @@ export const Table = ({ blockProps }: TableProps) => {
   const { columns, actions, data: loop } = blockProps;
   const { t } = useTranslation();
   const resolveVariableArray = useVariableArrayResolver();
-  const parentVariables = useVariables();
+  const parentVariableScope = useGlobalVariableScope();
 
   const variableArray = resolveVariableArray(loop.data);
 
-  if (parentVariables.loop[loop.id]) {
+  if (parentVariableScope.loop[loop.id]) {
     throw new Error(t("direktivPage.error.duplicateId", { id: loop.id }));
   }
 
@@ -67,9 +67,9 @@ export const Table = ({ blockProps }: TableProps) => {
               <VariableContextProvider
                 key={index}
                 variables={{
-                  ...parentVariables,
+                  ...parentVariableScope,
                   loop: {
-                    ...parentVariables.loop,
+                    ...parentVariableScope.loop,
                     [loop.id]: item,
                   },
                 }}

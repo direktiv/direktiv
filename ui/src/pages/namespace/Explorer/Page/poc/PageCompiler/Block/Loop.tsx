@@ -1,7 +1,7 @@
 import { Block, BlockPathType } from ".";
 import {
   VariableContextProvider,
-  useVariables,
+  useGlobalVariableScope,
 } from "../primitives/Variable/VariableContext";
 
 import { BlockList } from "./utils/BlockList";
@@ -19,11 +19,11 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   const { blocks, data, id } = blockProps;
   const { t } = useTranslation();
   const resolveVariableArray = useVariableArrayResolver();
-  const parentVariables = useVariables();
+  const parentVariableScope = useGlobalVariableScope();
 
   const variableArray = resolveVariableArray(data);
 
-  if (parentVariables.loop[id]) {
+  if (parentVariableScope.loop[id]) {
     throw new Error(t("direktivPage.error.duplicateId", { id }));
   }
 
@@ -42,9 +42,9 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
         <VariableContextProvider
           key={variableIndex}
           variables={{
-            ...parentVariables,
+            ...parentVariableScope,
             loop: {
-              ...parentVariables.loop,
+              ...parentVariableScope.loop,
               [id]: item,
             },
           }}

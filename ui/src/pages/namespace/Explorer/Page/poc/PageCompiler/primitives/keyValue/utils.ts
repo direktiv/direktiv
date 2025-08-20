@@ -1,11 +1,11 @@
-import { FormVariables } from "../Variable/VariableContext";
 import { KeyValueType } from "../../../schema/primitives/keyValue";
+import { LocalVariables } from "../Variable/LocalVariables";
 import { useStringInterpolation } from "../Variable/utils/useStringInterpolation";
 
 // TODO: add useExtendedKeyValueArrayResolver
 type ResolverFunction<DataType> = (
   value: DataType,
-  formVariables?: FormVariables
+  localVariables?: LocalVariables
 ) => DataType;
 
 export const useKeyValueArrayResolver = (): ResolverFunction<

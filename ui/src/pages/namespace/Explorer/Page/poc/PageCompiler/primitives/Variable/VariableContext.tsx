@@ -1,25 +1,27 @@
 import { PropsWithChildren, createContext, useContext } from "react";
 
-import { VariableNamespace } from "../../../schema/primitives/variable";
+import { GlobalVariableNamespace } from "../../../schema/primitives/variable";
 
 type VariableId = string;
 type DefinedValue = Exclude<unknown, undefined>;
+export type Variable = Record<VariableId, DefinedValue>;
 
-export type Variables = {
-  [keys in VariableNamespace]: Record<VariableId, DefinedValue>;
+export type GlobalVariableScope = {
+  [keys in GlobalVariableNamespace]: Variable;
 };
 
-const defaultVariables: Variables = {
+const defaultVariableScope: GlobalVariableScope = {
   loop: {},
-  form: {},
   query: {},
 };
 
-const VariableContext = createContext<Variables | null>(null);
+const VariableContext = createContext<GlobalVariableScope | null>(null);
 
-type VariableContextProviderProps = PropsWithChildren<{ variables: Variables }>;
+type VariableContextProviderProps = PropsWithChildren<{
+  variables: GlobalVariableScope;
+}>;
 
-const VariableContextProvider = ({
+export const VariableContextProvider = ({
   children,
   variables,
 }: VariableContextProviderProps) => (
@@ -28,33 +30,8 @@ const VariableContextProvider = ({
   </VariableContext.Provider>
 );
 
-export type FormVariables = Variables["form"];
-
-/**
- * returns a function to get the current variables context.
- * the function allows to inject form variables into the results
- */
-const useGetVariables = () => {
+export const useGlobalVariableScope = () => {
   const context = useContext(VariableContext);
-  const variables = context ?? defaultVariables;
-  return (formVariables?: FormVariables): Variables => {
-    if (!formVariables) return variables;
-    return {
-      ...variables,
-      form: {
-        ...variables.form,
-        ...formVariables,
-      },
-    };
-  };
+  const variables = context ?? defaultVariableScope;
+  return variables;
 };
-
-/**
- * returns the current variables of the context.
- */
-const useVariables = () => {
-  const getVariables = useGetVariables();
-  return getVariables();
-};
-
-export { VariableContextProvider, useGetVariables, useVariables };

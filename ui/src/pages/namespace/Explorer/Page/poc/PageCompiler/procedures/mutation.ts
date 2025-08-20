@@ -4,7 +4,7 @@ import {
 } from "../primitives/keyValue/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { FormVariables } from "../primitives/Variable/VariableContext";
+import { LocalVariables } from "../primitives/Variable/LocalVariables";
 import { MutationType } from "../../schema/procedures/mutation";
 import { useUrlGenerator } from "./utils";
 
@@ -19,7 +19,7 @@ export const usePageMutation = () => {
       formVariables,
     }: {
       mutation: MutationType;
-      formVariables: FormVariables;
+      formVariables: LocalVariables;
     }) => {
       const { method, requestBody, requestHeaders } = mutation;
 

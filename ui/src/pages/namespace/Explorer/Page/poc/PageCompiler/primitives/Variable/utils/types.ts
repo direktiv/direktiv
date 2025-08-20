@@ -1,4 +1,4 @@
-import { FormVariables } from "../VariableContext";
+import { LocalVariables } from "../LocalVariables";
 import { VariableType } from "../../../../schema/primitives/variable";
 
 export type ValidationResult<DataType, E> = Success<DataType> | Failure<E>;
@@ -15,12 +15,12 @@ type Failure<E> = {
 
 type ResolverFunctionWithoutError<DataType> = (
   value: VariableType,
-  formVariables?: FormVariables
+  localVariables?: LocalVariables
 ) => DataType;
 
 type ResolverFunctionWithError<DataType, Error> = (
   value: VariableType,
-  formVariables?: FormVariables
+  localVariables?: LocalVariables
 ) => ValidationResult<DataType, Error>;
 
 /**

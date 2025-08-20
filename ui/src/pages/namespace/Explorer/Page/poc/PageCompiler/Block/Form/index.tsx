@@ -4,7 +4,7 @@ import Alert from "~/design/Alert";
 import { BlockList } from "../utils/BlockList";
 import { Button } from "../Button";
 import { FormType } from "../../../schema/blocks/form";
-import { createFormContextVariables } from "../formPrimitives/utils";
+import { createLocalFormVariables } from "../formPrimitives/utils";
 import { usePageMutation } from "../../procedures/mutation";
 import { useTranslation } from "react-i18next";
 
@@ -22,9 +22,9 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
     <form
       id={mutation.id}
       name={mutation.id}
-      onSubmit={(e) => {
-        e.preventDefault();
-        const formVariables = createFormContextVariables(e, mutation.id);
+      onSubmit={(formEvent) => {
+        formEvent.preventDefault();
+        const formVariables = createLocalFormVariables(formEvent);
         mutate({ mutation, formVariables });
       }}
     >
