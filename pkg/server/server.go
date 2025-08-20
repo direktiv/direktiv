@@ -11,6 +11,7 @@ import (
 
 	"github.com/caarlos0/env/v10"
 	"github.com/direktiv/direktiv/pkg/api"
+	"github.com/direktiv/direktiv/pkg/cluster"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
@@ -45,6 +46,15 @@ func Run(circuit *core.Circuit) error {
 		},
 		Config: config,
 	}
+
+	// create certs for communication
+	slog.Info("initializing cluster manager")
+
+	cm, err := cluster.NewClusterManager(config.DirektivNamespace)
+	if err != nil {
+		return fmt.Errorf("initialize cluster manager, err: %w", err)
+	}
+	cm.Start(circuit)
 
 	// Create DB connection
 	slog.Info("initializing db connection")
@@ -149,13 +159,12 @@ func Run(circuit *core.Circuit) error {
 			return fmt.Errorf("initializing extensions, err: %w", err)
 		}
 	}
-
+	slog.Info("api server v2 starting")
 	// Start api v2 server
 	err = api.Initialize(circuit, app, db, bus)
 	if err != nil {
 		return fmt.Errorf("initializing api v2, err: %w", err)
 	}
-	slog.Info("api server v2 started")
 
 	return nil
 }

@@ -57,6 +57,9 @@ spec:
           {{- if .Values.flow.extraVolumeMounts -}}
           {{ toYaml .Values.flow.extraVolumeMounts | nindent 10 }}
           {{- end }}
+          - name: direktiv-tls-volume
+            mountPath: /etc/direktiv-tls
+            readOnly: true
           ports:
             - name: flow-api
               containerPort: 6665
@@ -66,6 +69,10 @@ spec:
             value: {{ .Values.flow.debug | quote }}
           - name: DIREKTIV_API_PORT
             value: "6665"
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
           {{- if ne .Values.apikey "none" }}
           - name: DIREKTIV_API_KEY
             valueFrom:
@@ -147,7 +154,6 @@ spec:
           - name: {{ .name | quote }}
             value: {{ .value | quote }}
           {{- end }}
-
           - name: DIREKTIV_KNATIVE_SIZE_MEMORY_SMALL
             value: "{{ .Values.functions.limits.memory.small }}"
           - name: DIREKTIV_KNATIVE_SIZE_CPU_SMALL
@@ -188,6 +194,9 @@ spec:
         {{- if .Values.flow.extraVolumes }}
         {{ toYaml .Values.flow.extraVolumes | nindent 8 }}
         {{- end }}
+        - name: direktiv-tls-volume
+          secret:
+            secretName: direktiv-tls-secret
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
