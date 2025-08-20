@@ -22,6 +22,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/service/registry"
 	"github.com/direktiv/direktiv/pkg/telemetry"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -186,28 +187,23 @@ func initDB(config *core.Config) (*database.DB, error) {
 		),
 	}
 
-	var err error
 	var db *gorm.DB
-	//nolint:intrange
-	for i := 0; i < 10; i++ {
-		slog.Info("connecting to database...")
+	var err error
 
+	utils.Retry(time.Second, 10, func() error {
+		slog.Info("connecting to database...")
 		db, err = gorm.Open(postgres.New(postgres.Config{
 			DSN:                  config.DB,
 			PreferSimpleProtocol: false, // disables implicit prepared statement usage
 			// Conn:                 edb.DB(),
 		}), gormConf)
-		if err == nil {
-			slog.Info("successfully connected to the database.")
 
-			break
-		}
-		time.Sleep(time.Second)
-	}
-
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
+	slog.Info("successfully connected to the database")
 
 	res := db.Exec(database.Schema)
 	if res.Error != nil {
