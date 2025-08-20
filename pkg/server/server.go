@@ -16,6 +16,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/gateway"
+	"github.com/direktiv/direktiv/pkg/jsengine"
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
 	"github.com/direktiv/direktiv/pkg/service"
@@ -102,6 +103,20 @@ func Run(circuit *core.Circuit) error {
 		err := app.ServiceManager.Run(circuit)
 		if err != nil {
 			return fmt.Errorf("service manager, err: %w", err)
+		}
+
+		return nil
+	})
+
+	// Create js engine
+	app.JSEngine, err = jsengine.NewEngine(db)
+	if err != nil {
+		return fmt.Errorf("initializing js_engine, err: %w", err)
+	}
+	circuit.Start(func() error {
+		err := app.JSEngine.Run(circuit)
+		if err != nil {
+			return fmt.Errorf("js_engine, err: %w", err)
 		}
 
 		return nil
