@@ -1,6 +1,7 @@
 import { Fieldset } from "./utils/FieldSet";
 import { FormNumberInputType } from "../../../schema/blocks/form/numberInput";
 import Input from "~/design/Input";
+import { StopPropagation } from "~/components/StopPropagation";
 import { encodeElementKey } from "./utils";
 import { useTranslation } from "react-i18next";
 import { useVariableNumberResolver } from "../../primitives/Variable/utils/useVariableNumberResolver";
@@ -36,14 +37,16 @@ export const FormNumberInput = ({ blockProps }: FormNumberInputProps) => {
       htmlFor={fieldName}
       optional={optional}
     >
-      <Input
-        type="number"
-        defaultValue={value}
-        id={fieldName}
-        name={fieldName}
-        // remount when defaultValue changes
-        key={value}
-      />
+      <StopPropagation>
+        <Input
+          type="number"
+          defaultValue={value}
+          id={fieldName}
+          name={fieldName}
+          // remount when defaultValue changes
+          key={value}
+        />
+      </StopPropagation>
     </Fieldset>
   );
 };

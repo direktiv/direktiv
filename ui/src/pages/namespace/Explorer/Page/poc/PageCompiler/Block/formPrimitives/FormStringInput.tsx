@@ -1,6 +1,7 @@
 import { Fieldset } from "./utils/FieldSet";
 import { FormStringInputType } from "../../../schema/blocks/form/stringInput";
 import Input from "~/design/Input";
+import { StopPropagation } from "~/components/StopPropagation";
 import { encodeElementKey } from "./utils";
 import { useTemplateStringResolver } from "../../primitives/Variable/utils/useTemplateStringResolver";
 
@@ -23,14 +24,16 @@ export const FormStringInput = ({ blockProps }: FormStringInputProps) => {
       htmlFor={fieldName}
       optional={optional}
     >
-      <Input
-        id={fieldName}
-        name={fieldName}
-        defaultValue={value}
-        type={variant}
-        // remount when defaultValue changes
-        key={value}
-      />
+      <StopPropagation>
+        <Input
+          id={fieldName}
+          name={fieldName}
+          defaultValue={value}
+          type={variant}
+          // remount when defaultValue changes
+          key={value}
+        />
+      </StopPropagation>
     </Fieldset>
   );
 };

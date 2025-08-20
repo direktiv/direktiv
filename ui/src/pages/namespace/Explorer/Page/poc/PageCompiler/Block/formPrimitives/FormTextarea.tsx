@@ -1,5 +1,6 @@
 import { Fieldset } from "./utils/FieldSet";
 import { FormTextareaType } from "../../../schema/blocks/form/textarea";
+import { StopPropagation } from "~/components/StopPropagation";
 import { Textarea } from "~/design/TextArea";
 import { encodeElementKey } from "./utils";
 import { useTemplateStringResolver } from "../../primitives/Variable/utils/useTemplateStringResolver";
@@ -22,13 +23,15 @@ export const FormTextarea = ({ blockProps }: FormTextareaProps) => {
       htmlFor={fieldName}
       optional={optional}
     >
-      <Textarea
-        defaultValue={value}
-        id={fieldName}
-        name={fieldName}
-        // remount when defaultValue changes
-        key={value}
-      />
+      <StopPropagation>
+        <Textarea
+          defaultValue={value}
+          id={fieldName}
+          name={fieldName}
+          // remount when defaultValue changes
+          key={value}
+        />
+      </StopPropagation>
     </Fieldset>
   );
 };

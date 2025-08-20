@@ -8,6 +8,7 @@ import {
 
 import { Fieldset } from "./utils/FieldSet";
 import { FormSelectType } from "../../../schema/blocks/form/select";
+import { StopPropagation } from "~/components/StopPropagation";
 import { encodeElementKey } from "./utils";
 import { useTemplateStringResolver } from "../../primitives/Variable/utils/useTemplateStringResolver";
 import { useTranslation } from "react-i18next";
@@ -41,11 +42,13 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
         key={value}
         name={fieldName}
       >
-        <SelectTrigger variant="outline" id={fieldName} value={value}>
-          <SelectValue
-            placeholder={t("direktivPage.page.blocks.form.selectPlaceholder")}
-          />
-        </SelectTrigger>
+        <StopPropagation>
+          <SelectTrigger variant="outline" id={fieldName} value={value}>
+            <SelectValue
+              placeholder={t("direktivPage.page.blocks.form.selectPlaceholder")}
+            />
+          </SelectTrigger>
+        </StopPropagation>
         <SelectContent>
           {values.map((value) => (
             <SelectItem key={value} value={value}>
