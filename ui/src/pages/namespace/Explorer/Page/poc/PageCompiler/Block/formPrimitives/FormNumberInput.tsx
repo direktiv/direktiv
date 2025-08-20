@@ -36,7 +36,7 @@ export const FormNumberInput = ({ blockProps }: FormNumberInputProps) => {
       htmlFor={htmlID}
       optional={optional}
     >
-      <StopPropagation asChild>
+      <StopPropagation>
         <Input
           type="number"
           defaultValue={value}

@@ -22,7 +22,7 @@ export const FormTextarea = ({ blockProps }: FormTextareaProps) => {
       htmlFor={htmlID}
       optional={optional}
     >
-      <StopPropagation asChild>
+      <StopPropagation>
         <Textarea
           defaultValue={value}
           id={htmlID}

@@ -23,7 +23,7 @@ export const FormStringInput = ({ blockProps }: FormStringInputProps) => {
       htmlFor={htmlID}
       optional={optional}
     >
-      <StopPropagation asChild>
+      <StopPropagation>
         <Input
           id={htmlID}
           defaultValue={value}

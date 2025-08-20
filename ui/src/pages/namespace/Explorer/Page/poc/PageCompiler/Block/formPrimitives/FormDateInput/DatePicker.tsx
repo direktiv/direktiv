@@ -22,7 +22,7 @@ export const DatePicker = ({ defaultValue, id }: DatePickerProps) => {
   );
 
   return (
-    <Popover open={open} onOpenChange={(open) => setOpen(open)}>
+    <Popover open={open} onOpenChange={setOpen}>
       <StopPropagation asChild>
         <PopoverTrigger asChild>
           <Button variant="outline">
