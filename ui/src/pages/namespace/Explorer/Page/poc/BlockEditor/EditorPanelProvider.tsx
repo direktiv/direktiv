@@ -21,13 +21,7 @@ export type EditorPanelAction = {
   path: BlockPathType;
 };
 
-type EditorPanelState =
-  | null
-  | {
-      action: null;
-      dialog?: BlockPathType | null;
-    }
-  | EditorPanelAction;
+type EditorPanelState = null | EditorPanelAction;
 
 type EditorDialogState = null | BlockPathType;
 
@@ -97,11 +91,7 @@ export const EditorPanelLayoutProvider = ({
           value={{ panel, setPanel, dialog, setDialog }}
         >
           <div className="grow sm:grid sm:grid-cols-[350px_1fr]">
-            {panel !== null && panel?.action ? (
-              <ActionPanel panel={panel} />
-            ) : (
-              <DefaultPanel />
-            )}
+            {panel?.action ? <ActionPanel panel={panel} /> : <DefaultPanel />}
             <PagePreviewContainer>{children}</PagePreviewContainer>
           </div>
           <Dialog open={panel && panel.action === "delete" ? true : false}>
