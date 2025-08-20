@@ -14,9 +14,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/gateway"
-	"github.com/direktiv/direktiv/pkg/jsengine"
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
 	"github.com/direktiv/direktiv/pkg/service"
@@ -110,7 +110,7 @@ func Run(circuit *core.Circuit) error {
 	})
 
 	// Create js engine
-	app.JSEngine, err = jsengine.NewEngine(db)
+	app.JSEngine, err = engine.NewEngine(db)
 	if err != nil {
 		return fmt.Errorf("initializing js_engine, err: %w", err)
 	}

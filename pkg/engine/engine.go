@@ -1,4 +1,4 @@
-package jsengine
+package engine
 
 import (
 	"context"

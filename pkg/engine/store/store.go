@@ -1,4 +1,4 @@
-package nats
+package store
 
 import (
 	"context"
@@ -7,17 +7,18 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 )
 
-type Store struct {
+type store struct {
 	nc     *nats.Conn
 	js     nats.JetStreamContext
 	stream string
 }
 
-func NewStore(ctx context.Context, url, name string) (*Store, error) {
+func NewStore(ctx context.Context, url, name string) (engine.Store, error) {
 	nc, err := nats.Connect(url, nats.Name(name))
 	if err != nil {
 		return nil, err
@@ -46,26 +47,17 @@ func NewStore(ctx context.Context, url, name string) (*Store, error) {
 		}
 	}
 
-	return &Store{nc: nc, js: js, stream: name}, nil
+	return &store{nc: nc, js: js, stream: name}, nil
 }
 
-type Message struct {
-	Namespace string    `json:"namespace"`
-	ID        string    `json:"id"`
-	Type      string    `json:"type"`
-	CreatedAt time.Time `json:"created_at"`
-
-	Data json.RawMessage `json:"data"`
-}
-
-func (s *Store) PutMessage(ctx context.Context, namespace, instanceID, typ string, payload any) (uuid.UUID, error) {
+func (s *store) Put(ctx context.Context, namespace, instanceID, typ string, payload any) (uuid.UUID, error) {
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		return uuid.Nil, err
 	}
 
 	msgID := uuid.New()
-	msg := Message{
+	msg := engine.Message{
 		Namespace: namespace,
 		ID:        msgID.String(),
 		Type:      typ,
@@ -89,7 +81,7 @@ func (s *Store) PutMessage(ctx context.Context, namespace, instanceID, typ strin
 	return msgID, err
 }
 
-func (s *Store) QueryByInstance(ctx context.Context, namespace, instanceID uuid.UUID, typ string) ([]Message, error) {
+func (s *store) QueryByInstance(ctx context.Context, namespace, instanceID uuid.UUID, typ string) ([]engine.Message, error) {
 	subj := fmt.Sprintf("engineMessages.%s.instanceID.%s.type.%s", namespace, instanceID, typ)
 
 	// Fetch from base (no eventType) and typed subjects, then merge by At.
@@ -101,7 +93,7 @@ func (s *Store) QueryByInstance(ctx context.Context, namespace, instanceID uuid.
 	return all, nil
 }
 
-func (s *Store) fetchAllFromSubject(ctx context.Context, subj string) ([]Message, error) {
+func (s *store) fetchAllFromSubject(ctx context.Context, subj string) ([]engine.Message, error) {
 	durable := fmt.Sprintf("consumer_%d", time.Now().UnixNano())
 	cfg := &nats.ConsumerConfig{
 		Durable:       durable,
@@ -124,7 +116,7 @@ func (s *Store) fetchAllFromSubject(ctx context.Context, subj string) ([]Message
 	batch := 100
 	wait := 400 * time.Millisecond
 
-	var out []Message
+	var out []engine.Message
 
 	for {
 		msgList, fetchErr := sub.Fetch(batch, nats.MaxWait(wait), nats.Context(ctx))
@@ -135,7 +127,7 @@ func (s *Store) fetchAllFromSubject(ctx context.Context, subj string) ([]Message
 			break
 		}
 		for _, m := range msgList {
-			var msg Message
+			var msg engine.Message
 			if err := json.Unmarshal(m.Data, &msg); err != nil {
 				continue // skip bad payloads
 			}
