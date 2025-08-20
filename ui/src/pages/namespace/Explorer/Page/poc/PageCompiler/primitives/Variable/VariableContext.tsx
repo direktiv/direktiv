@@ -10,7 +10,7 @@ export type GlobalVariableScope = {
   [keys in GlobalVariableNamespace]: Variable;
 };
 
-const defaultVariableScope: GlobalVariableScope = {
+const defaultState: GlobalVariableScope = {
   loop: {},
   query: {},
 };
@@ -32,6 +32,6 @@ export const VariableContextProvider = ({
 
 export const useGlobalVariableScope = () => {
   const context = useContext(VariableContext);
-  const variables = context ?? defaultVariableScope;
+  const variables = context ?? defaultState;
   return variables;
 };

@@ -15,7 +15,7 @@ export type LocalVariables = VariableScope["this"];
  * returns a function that allows to inject local
  * variables into the global variables object.
  */
-export const useCreateVariableInjection = () => {
+export const useLocalVariableInjection = () => {
   const globalVariables = useGlobalVariableScope();
   return (localVariables?: LocalVariables): VariableScope => ({
     ...globalVariables,

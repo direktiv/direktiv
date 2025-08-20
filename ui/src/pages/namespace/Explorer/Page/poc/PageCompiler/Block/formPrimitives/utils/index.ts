@@ -51,7 +51,7 @@ const resolveFormValue = (
  *   }
  * }
  *
- * Usage as template string: {{this.form.username}}
+ * To eventually be used as template string: {{this.form.username}}
  */
 export const createLocalFormVariables = (
   formEvent: FormEvent<HTMLFormElement>

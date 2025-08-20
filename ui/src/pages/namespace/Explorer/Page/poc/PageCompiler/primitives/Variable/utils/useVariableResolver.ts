@@ -7,7 +7,7 @@ import {
 
 import { ResolveVariableError } from "./errors";
 import { ResolverFunction } from "./types";
-import { useCreateVariableInjection } from "../LocalVariables";
+import { useLocalVariableInjection } from "../LocalVariables";
 
 /**
  * A hook that returns a function to resolve a variable path string to its
@@ -23,11 +23,9 @@ export const useVariableResolver = (): ResolverFunction<
   JsonValueType,
   ResolveVariableError
 > => {
-  const injectLocalVariable = useCreateVariableInjection();
+  const injectLocalVariable = useLocalVariableInjection();
   return (value, localVariables) => {
-    // TODO: solve this here!!!
     const variables = injectLocalVariable(localVariables);
-
     const variableObject = parseVariable(value);
     const validationResult = validateVariable(variableObject);
 

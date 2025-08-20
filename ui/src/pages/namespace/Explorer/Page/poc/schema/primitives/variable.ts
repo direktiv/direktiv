@@ -4,16 +4,16 @@ export const Variable = z.string().min(1);
 
 export type VariableType = z.infer<typeof Variable>;
 
-const GlobalVariableNamespaces = ["query", "loop"] as const;
-const LocalVariableNamespace = "this" as const;
+const globalVariableNamespaces = ["query", "loop"] as const;
+const localVariableNamespace = "this" as const;
 
-export type GlobalVariableNamespace = (typeof GlobalVariableNamespaces)[number];
-export type LocalVariableNamespace = typeof LocalVariableNamespace;
+export type GlobalVariableNamespace = (typeof globalVariableNamespaces)[number];
+export type LocalVariableNamespace = typeof localVariableNamespace;
 type VariableNamespace = GlobalVariableNamespace | LocalVariableNamespace;
 
 export const VariableNamespaceSchema = z.enum([
-  ...GlobalVariableNamespaces,
-  LocalVariableNamespace,
+  ...globalVariableNamespaces,
+  localVariableNamespace,
 ]);
 
 /**
