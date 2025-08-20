@@ -39,7 +39,7 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
         // remount when defaultValue changes
         key={value}
       >
-        <StopPropagation asChild>
+        <StopPropagation>
           <SelectTrigger variant="outline" id={htmlID} value={value}>
             <SelectValue
               placeholder={t("direktivPage.page.blocks.form.selectPlaceholder")}

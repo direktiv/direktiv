@@ -40,7 +40,7 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
       optional={optional}
       onClickLabel={(event) => mode === "edit" && event.preventDefault()}
     >
-      <StopPropagation asChild>
+      <StopPropagation>
         <Checkbox
           defaultChecked={value}
           id={htmlID}

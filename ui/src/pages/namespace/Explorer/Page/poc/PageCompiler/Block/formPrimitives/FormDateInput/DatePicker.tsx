@@ -23,7 +23,7 @@ export const DatePicker = ({ defaultValue, id }: DatePickerProps) => {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <StopPropagation asChild>
+      <StopPropagation>
         <PopoverTrigger asChild>
           <Button variant="outline">
             <CalendarIcon />{" "}
@@ -33,8 +33,8 @@ export const DatePicker = ({ defaultValue, id }: DatePickerProps) => {
           </Button>
         </PopoverTrigger>
       </StopPropagation>
-      <PopoverContent className="w-auto">
-        <StopPropagation>
+      <StopPropagation>
+        <PopoverContent className="w-auto">
           <DatepickerDesignComponent
             id={id}
             mode="single"
@@ -44,8 +44,8 @@ export const DatePicker = ({ defaultValue, id }: DatePickerProps) => {
               setDate(date);
             }}
           />
-        </StopPropagation>
-      </PopoverContent>
+        </PopoverContent>
+      </StopPropagation>
     </Popover>
   );
 };
