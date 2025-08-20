@@ -12,6 +12,7 @@ import { CodeEditor } from "../../Workflow/Edit/CodeEditor";
 import { FileSchemaType } from "~/api/files/schema";
 import { OpenapiSpecificationFormSchema } from "./schema";
 import { Save } from "lucide-react";
+import { UnsavedChangesHint } from "~/components/NavigationBlocker";
 import { useToast } from "~/design/Toast";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
@@ -106,13 +107,7 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
               updatedAt={data.updatedAt}
             />
             <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-              {hasUnsavedChanges && (
-                <div className="text-sm text-gray-8 dark:text-gray-dark-8">
-                  <span className="text-center" data-testid="unsaved-note">
-                    {t("pages.explorer.consumer.editor.unsavedNote")}
-                  </span>
-                </div>
-              )}
+              {hasUnsavedChanges && <UnsavedChangesHint />}
               <Button
                 variant={hasUnsavedChanges ? "primary" : "outline"}
                 disabled={isPending}

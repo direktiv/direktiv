@@ -8,6 +8,7 @@ import {
 
 import { Fieldset } from "./utils/FieldSet";
 import { FormSelectType } from "../../../schema/blocks/form/select";
+import { StopPropagation } from "~/components/StopPropagation";
 import { useTemplateStringResolver } from "../../primitives/Variable/utils/useTemplateStringResolver";
 import { useTranslation } from "react-i18next";
 
@@ -38,11 +39,13 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
         // remount when defaultValue changes
         key={value}
       >
-        <SelectTrigger variant="outline" id={htmlID} value={value}>
-          <SelectValue
-            placeholder={t("direktivPage.page.blocks.form.selectPlaceholder")}
-          />
-        </SelectTrigger>
+        <StopPropagation>
+          <SelectTrigger variant="outline" id={htmlID} value={value}>
+            <SelectValue
+              placeholder={t("direktivPage.page.blocks.form.selectPlaceholder")}
+            />
+          </SelectTrigger>
+        </StopPropagation>
         <SelectContent>
           {values.map((value) => (
             <SelectItem key={value} value={value}>

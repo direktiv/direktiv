@@ -1,14 +1,21 @@
 import { CSSProperties, FC, PropsWithChildren } from "react";
-import { GripVertical, LucideIcon } from "lucide-react";
 
+import { BlockPathType } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/Block";
 import { Card } from "../Card";
+import { DragHandle } from "./DragHandle";
 import { DragPayloadSchemaType } from "./schema";
+import { LucideIcon } from "lucide-react";
 import { twMergeClsx } from "~/util/helpers";
 import { useDraggable } from "@dnd-kit/core";
 
-type DraggableProps = PropsWithChildren & {
+type DraggableBaseProps = PropsWithChildren & {
   payload: DragPayloadSchemaType;
+};
+
+type SortableItemProps = DraggableBaseProps & {
+  blockPath: BlockPathType;
   className?: string;
+  isFocused: boolean;
 };
 
 const useSharedDraggable = (payload: DragPayloadSchemaType) => {
@@ -29,13 +36,16 @@ const useSharedDraggable = (payload: DragPayloadSchemaType) => {
   return { attributes, listeners, setNodeRef, styles };
 };
 
-export const SortableItem: FC<DraggableProps> = ({
+export const SortableItem: FC<SortableItemProps> = ({
   payload,
+  blockPath,
+  isFocused,
   className,
   children,
 }) => {
   const { attributes, listeners, setNodeRef, styles } =
     useSharedDraggable(payload);
+  if (payload.type !== "move") return null;
 
   return (
     <div style={styles} className="relative">
@@ -44,25 +54,32 @@ export const SortableItem: FC<DraggableProps> = ({
         {...listeners}
         {...attributes}
         className={twMergeClsx(
-          "absolute z-40 mt-2 h-[calc(100%-1rem)] text-gray-8 opacity-70 dark:text-gray-dark-8",
+          "pointer-events-none absolute z-40 mt-3 h-[calc(100%-1rem)] w-full",
           className
         )}
       >
-        <div className="flex h-full w-5 items-center justify-center rounded rounded-e-none border-2 border-gray-4 bg-white p-0 hover:cursor-move hover:border-solid hover:bg-gray-2 active:cursor-move active:border-solid active:bg-gray-2 dark:border-gray-dark-4 dark:bg-black dark:hover:bg-gray-dark-2">
-          <GripVertical />
-        </div>
+        <DragHandle
+          isFocused={isFocused}
+          blockTypeLabel={payload.block.type}
+          blockPath={blockPath}
+        />
       </div>
       <div className="flex justify-center">
-        <span className="mr-6"></span>
         <div className="w-full">{children}</div>
       </div>
     </div>
   );
 };
 
-export const DraggablePaletteItem: FC<
-  DraggableProps & { icon: LucideIcon }
-> = ({ payload, icon: Icon, children }) => {
+type DraggablePaletteItemProps = DraggableBaseProps & {
+  icon: LucideIcon;
+};
+
+export const DraggablePaletteItem: FC<DraggablePaletteItemProps> = ({
+  payload,
+  icon: Icon,
+  children,
+}) => {
   const { attributes, listeners, setNodeRef, styles } =
     useSharedDraggable(payload);
 

@@ -1,4 +1,4 @@
-import { FC, PropsWithChildren } from "react";
+import { FC, MouseEvent, PropsWithChildren } from "react";
 
 import { TemplateString } from "../../../primitives/TemplateString";
 import { twMergeClsx } from "~/util/helpers";
@@ -10,6 +10,7 @@ type FieldsetProps = PropsWithChildren & {
   htmlFor: string;
   optional: boolean;
   horizontal?: boolean;
+  onClickLabel?: (event: MouseEvent<HTMLElement>) => void;
 };
 
 export const Fieldset: FC<FieldsetProps> = ({
@@ -19,11 +20,16 @@ export const Fieldset: FC<FieldsetProps> = ({
   htmlFor,
   horizontal,
   optional,
+  onClickLabel,
 }) => {
   const { t } = useTranslation();
   return (
     <fieldset className="flex flex-col gap-1">
-      <label className="flex grow gap-1 text-sm font-bold" htmlFor={htmlFor}>
+      <label
+        className="flex grow gap-1 text-sm font-bold"
+        htmlFor={htmlFor}
+        onClick={onClickLabel}
+      >
         <span>
           <TemplateString value={label} />
         </span>
