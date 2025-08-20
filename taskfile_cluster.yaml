@@ -62,6 +62,11 @@ tasks:
     deps: ["database"]
     cmds:
     - |
+      helm repo add nats https://nats-io.github.io/k8s/helm/charts
+      helm repo update
+      helm install nats nats/nats
+
+    - |
        helm install --set database.host=postgres.default.svc \
         -f kind/nginx-tcp.yaml \
         --set database.port=5432 \
