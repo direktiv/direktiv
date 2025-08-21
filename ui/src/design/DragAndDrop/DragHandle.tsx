@@ -8,7 +8,6 @@ import { twMergeClsx } from "~/util/helpers";
 type DraggableProps = PropsWithChildren & {
   blockTypeLabel: string;
   blockPath: BlockPathType;
-  className?: string;
   isFocused: boolean;
 };
 

@@ -5,26 +5,23 @@ import {
   usePageStateContext,
 } from "../PageCompiler/context/pageCompilerContext";
 
+import { ActionPanel } from "./components/EditorPanel/ActionPanel";
 import { BlockDeleteForm } from "./components/Delete";
 import { BlockPathType } from "../PageCompiler/Block";
 import { BlockType } from "../schema/blocks";
+import { DefaultPanel } from "./components/EditorPanel/DefaultPanel";
 import { DndContext } from "~/design/DragAndDrop";
 import { DragAndDropPayloadSchemaType } from "~/design/DragAndDrop/schema";
-import { EditorPanel } from "./components/EditorPanel";
 import { LocalDialogContainer } from "~/design/LocalDialog/container";
 import { getBlockConfig } from "../PageCompiler/context/utils/useBlockTypes";
 
-type EditorPanelState =
-  | null
-  | {
-      action: null;
-      dialog?: BlockPathType | null;
-    }
-  | {
-      action: "create" | "edit" | "delete";
-      block: BlockType;
-      path: BlockPathType;
-    };
+export type EditorPanelAction = {
+  action: "create" | "edit" | "delete";
+  block: BlockType;
+  path: BlockPathType;
+};
+
+type EditorPanelState = null | EditorPanelAction;
 
 type EditorDialogState = null | BlockPathType;
 
@@ -92,9 +89,7 @@ export const EditorPanelLayoutProvider = ({
           value={{ panel, setPanel, dialog, setDialog }}
         >
           <div className="grow sm:grid sm:grid-cols-[350px_1fr]">
-            <div className="h-[300px] overflow-y-visible border-b-2 border-gray-4 p-3 dark:border-gray-dark-4 sm:h-[calc(100vh-230px)] sm:border-b-0 sm:border-r-2">
-              <EditorPanel />
-            </div>
+            {panel?.action ? <ActionPanel panel={panel} /> : <DefaultPanel />}
             <PagePreviewContainer>{children}</PagePreviewContainer>
           </div>
           <Dialog open={panel && panel.action === "delete" ? true : false}>
