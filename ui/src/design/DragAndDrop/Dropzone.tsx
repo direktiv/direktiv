@@ -3,7 +3,7 @@ import {
   DragPayloadSchemaType,
   DropPayloadSchemaType,
 } from "./schema";
-import { FC, PropsWithChildren, useMemo } from "react";
+import { FC, useMemo } from "react";
 import { useDndContext, useDroppable } from "@dnd-kit/core";
 
 import Badge from "~/design/Badge";
@@ -13,7 +13,7 @@ import { twMergeClsx } from "~/util/helpers";
 
 export type DropzoneStatus = "hidden" | "allowed" | "forbidden";
 
-type DroppableProps = PropsWithChildren & {
+type DroppableProps = {
   payload: DropPayloadSchemaType;
   validate?: (
     payload: DragPayloadSchemaType | null,
