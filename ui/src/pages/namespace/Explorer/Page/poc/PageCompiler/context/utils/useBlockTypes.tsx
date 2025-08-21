@@ -37,7 +37,7 @@ import { t } from "i18next";
 import { useCallback } from "react";
 import { usePage } from "../pageCompilerContext";
 
-const blockTypes: BlockTypeConfig[] = [
+export const blockTypes: BlockTypeConfig[] = [
   {
     type: "headline",
     label: t("direktivPage.blockEditor.blockName.headline"),
@@ -309,27 +309,18 @@ const blockTypes: BlockTypeConfig[] = [
   },
 ];
 
-export const useBlockTypes = () => {
-  const page = usePage();
-
-  const getBlockConfig = useCallback(
-    <T extends BlockTypeConfig["type"]>(type: T) =>
-      blockTypes.find(
-        (config): config is Extract<BlockTypeConfig, { type: T }> =>
-          config.type === type
-      ),
-    []
+export const getBlockConfig = <T extends BlockTypeConfig["type"]>(type: T) =>
+  blockTypes.find(
+    (config): config is Extract<BlockTypeConfig, { type: T }> =>
+      config.type === type
   );
 
-  const getAllowedTypes = useCallback(
+export const useAllowedBlockTypes = () => {
+  const page = usePage();
+
+  return useCallback(
     (path: BlockPathType) =>
       blockTypes.filter((type) => type.allow(page, path)),
     [page]
   );
-
-  return {
-    blockTypes,
-    getAllowedTypes,
-    getBlockConfig,
-  };
 };

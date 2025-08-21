@@ -7,13 +7,13 @@ import {
 import { BlockPathType } from "..";
 import { DragPayloadSchemaType } from "~/design/DragAndDrop/schema";
 import { DropzoneStatus } from "~/design/DragAndDrop/Dropzone";
-import { useBlockTypes } from "../../context/utils/useBlockTypes";
+import { useAllowedBlockTypes } from "../../context/utils/useBlockTypes";
 import { useCallback } from "react";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 
 export const useValidateDropzone = () => {
   const { dialog } = usePageEditorPanel();
-  const { getAllowedTypes } = useBlockTypes();
+  const getAllowedTypes = useAllowedBlockTypes();
 
   const enable = useCallback(
     (
