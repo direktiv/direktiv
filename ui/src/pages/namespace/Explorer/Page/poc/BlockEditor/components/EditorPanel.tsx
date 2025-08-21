@@ -3,15 +3,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 
 import { BlockForm } from "..";
 import { DraggablePaletteItem } from "~/design/DragAndDrop/Draggable";
-import { useBlockTypes } from "../../PageCompiler/context/utils/useBlockTypes";
+import { blockTypes } from "../../PageCompiler/context/utils/useBlockTypes";
 import { usePageEditorPanel } from "../EditorPanelProvider";
 import { useTranslation } from "react-i18next";
 
 export const EditorPanel = () => {
   const { panel } = usePageEditorPanel();
   const { t } = useTranslation();
-
-  const { blockTypes } = useBlockTypes();
 
   if (panel?.action) {
     return (

@@ -1,4 +1,4 @@
-import { ReactElement, Suspense } from "react";
+import { ReactElement, Suspense, useMemo } from "react";
 
 import { BlockPathType } from "..";
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
@@ -40,18 +40,14 @@ const EditorBlockList = ({
 }: BlockListComponentProps) => {
   const validateDropzone = useValidateDropzone();
 
-  const newBlockTargetPath = [...path, 0];
+  const dropzonePayload = useMemo(() => ({ targetPath: [...path, 0] }), [path]);
 
   return (
     <BlockListWrapper horizontal={horizontal}>
       <Suspense fallback={<Loading />}>
         {!children.length && (
-          // <div className="w-full self-center">
           <div className="flex h-full min-h-[25px] flex-col justify-center">
-            <Dropzone
-              validate={validateDropzone}
-              payload={{ targetPath: newBlockTargetPath }}
-            />
+            <Dropzone validate={validateDropzone} payload={dropzonePayload} />
           </div>
         )}
         {children}
