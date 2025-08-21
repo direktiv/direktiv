@@ -34,9 +34,10 @@ import { Text as TextForm } from "../../../BlockEditor/Text";
 import { Textarea } from "../../../BlockEditor/Form/Textarea";
 import { findAncestor } from ".";
 import { t } from "i18next";
+import { useCallback } from "react";
 import { usePage } from "../pageCompilerContext";
 
-const blockTypes: BlockTypeConfig[] = [
+export const blockTypes: BlockTypeConfig[] = [
   {
     type: "headline",
     label: t("direktivPage.blockEditor.blockName.headline"),
@@ -308,21 +309,18 @@ const blockTypes: BlockTypeConfig[] = [
   },
 ];
 
-export const useBlockTypes = () => {
+export const getBlockConfig = <T extends BlockTypeConfig["type"]>(type: T) =>
+  blockTypes.find(
+    (config): config is Extract<BlockTypeConfig, { type: T }> =>
+      config.type === type
+  );
+
+export const useAllowedBlockTypes = () => {
   const page = usePage();
 
-  const getBlockConfig = <T extends BlockTypeConfig["type"]>(type: T) =>
-    blockTypes.find(
-      (config): config is Extract<BlockTypeConfig, { type: T }> =>
-        config.type === type
-    );
-
-  const getAllowedTypes = (path: BlockPathType) =>
-    blockTypes.filter((type) => type.allow(page, path));
-
-  return {
-    blockTypes,
-    getAllowedTypes,
-    getBlockConfig,
-  };
+  return useCallback(
+    (path: BlockPathType) =>
+      blockTypes.filter((type) => type.allow(page, path)),
+    [page]
+  );
 };

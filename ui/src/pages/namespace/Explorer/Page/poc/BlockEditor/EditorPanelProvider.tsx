@@ -12,7 +12,7 @@ import { DndContext } from "~/design/DragAndDrop";
 import { DragAndDropPayloadSchemaType } from "~/design/DragAndDrop/schema";
 import { EditorPanel } from "./components/EditorPanel";
 import { LocalDialogContainer } from "~/design/LocalDialog/container";
-import { useBlockTypes } from "../PageCompiler/context/utils/useBlockTypes";
+import { getBlockConfig } from "../PageCompiler/context/utils/useBlockTypes";
 
 type EditorPanelState =
   | null
@@ -50,8 +50,6 @@ export const EditorPanelLayoutProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { getBlockConfig } = useBlockTypes();
-
   const { addBlock, deleteBlock, moveBlock } = usePageEditor();
   const [panel, setPanel] = useState<EditorPanelState>(null);
   const [dialog, setDialog] = useState<EditorDialogState>(null);

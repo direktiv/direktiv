@@ -3,8 +3,8 @@ import { ComponentType, Key } from "react";
 import { BlockPathType } from "../PageCompiler/Block";
 import { BlockType } from "../schema/blocks";
 import { NoFormBlockSidePanel } from "./NoFormBlockSidePanel";
+import { getBlockConfig } from "../PageCompiler/context/utils/useBlockTypes";
 import { isPage } from "../PageCompiler/context/utils";
-import { useBlockTypes } from "../PageCompiler/context/utils/useBlockTypes";
 import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
 import { usePageEditorPanel } from "./EditorPanelProvider";
 
@@ -28,7 +28,6 @@ type BlockFormProps = {
 export const BlockForm = ({ action, block, path }: BlockFormProps) => {
   const { addBlock, updateBlock } = usePageEditor();
   const { setPanel } = usePageEditorPanel();
-  const { getBlockConfig } = useBlockTypes();
 
   if (isPage(block)) {
     throw Error("Unexpected page object when parsing block");
