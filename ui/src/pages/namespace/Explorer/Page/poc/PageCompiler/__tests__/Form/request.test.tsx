@@ -398,47 +398,80 @@ describe("form request", () => {
               requestBody: [
                 {
                   key: "String-Value",
-                  value: "String: {{query.user.data.status}}",
+                  value: {
+                    type: "string",
+                    value: "String: {{query.user.data.status}}",
+                  },
                 },
                 {
                   key: "Boolean-Value",
-                  value: "Boolean: {{query.user.data.emailVerified}}",
+                  value: {
+                    type: "string",
+                    value: "Boolean: {{query.user.data.emailVerified}}",
+                  },
                 },
                 {
                   key: "Number-Value",
-                  value: "Number: {{query.user.data.accountBalance}}",
+                  value: {
+                    type: "string",
+                    value: "Number: {{query.user.data.accountBalance}}",
+                  },
                 },
                 {
                   key: "Null-Value",
-                  value: "Null: {{query.user.data.lastLogin}}",
+                  value: {
+                    type: "string",
+                    value: "Null: {{query.user.data.lastLogin}}",
+                  },
                 },
                 {
                   key: "Form-String-Value",
-                  value: "String: {{this.form.string}}",
+                  value: {
+                    type: "string",
+                    value: "String: {{this.form.string}}",
+                  },
                 },
                 {
                   key: "Form-Textarea-Value",
-                  value: "Textarea: {{this.form.textarea}}",
+                  value: {
+                    type: "string",
+                    value: "Textarea: {{this.form.textarea}}",
+                  },
                 },
                 {
                   key: "Form-Checkbox-Checked-Value",
-                  value: "Checkbox: {{this.form.checkbox-checked}}",
+                  value: {
+                    type: "string",
+                    value: "Checkbox: {{this.form.checkbox-checked}}",
+                  },
                 },
                 {
                   key: "Form-Checkbox-Unchecked-Value",
-                  value: "Checkbox: {{this.form.checkbox-unchecked}}",
+                  value: {
+                    type: "string",
+                    value: "Checkbox: {{this.form.checkbox-unchecked}}",
+                  },
                 },
                 {
                   key: "Form-Number-Value",
-                  value: "Number: {{this.form.number}}",
+                  value: {
+                    type: "string",
+                    value: "Number: {{this.form.number}}",
+                  },
                 },
                 {
                   key: "Form-Date-Value",
-                  value: "Date: {{this.form.date}}",
+                  value: {
+                    type: "string",
+                    value: "Date: {{this.form.date}}",
+                  },
                 },
                 {
                   key: "Form-Select-Value",
-                  value: "Select: {{this.form.select}}",
+                  value: {
+                    type: "string",
+                    value: "Select: {{this.form.select}}",
+                  },
                 },
               ],
             })}
@@ -484,7 +517,10 @@ describe("form request", () => {
               requestBody: [
                 {
                   key: "object",
-                  value: "String: {{query.user.data.profile}}",
+                  value: {
+                    type: "string",
+                    value: "String: {{query.user.data.profile}}",
+                  },
                 },
               ],
             })}
