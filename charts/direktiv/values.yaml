@@ -218,6 +218,13 @@ nats:
         secretName: direktiv-tls-secret
         cert: server.crt
         key: server.key
+    jetstream:
+      enabled: true
+      fileStore:
+        enabled: true
+        pvc:
+          enabled: true
+          size: 10Gi
     cluster:
       enabled: true
       tls:

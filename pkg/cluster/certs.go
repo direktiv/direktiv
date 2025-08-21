@@ -9,8 +9,10 @@ import (
 	"crypto/x509/pkix"
 	"encoding/json"
 	"encoding/pem"
+	"fmt"
 	"log/slog"
 	"math/big"
+	"os"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,7 +20,7 @@ import (
 
 const (
 	rotationInterval = 10
-	secretName       = "direktiv-tls-secret"
+	secretName       = "direktiv-tls-secret" //nolint:gosec
 	dummyKey         = "dummy.crt"
 )
 
@@ -26,7 +28,7 @@ type changeMarker struct {
 	Time int64 `json:"time"`
 }
 
-func (c *ClusterManager) requiresRefresh(ctx context.Context) (bool, error) {
+func (c *CertificateManager) requiresRefresh(ctx context.Context) (bool, error) {
 	s, err := c.client.CoreV1().Secrets(c.ns).Get(ctx, secretName, metav1.GetOptions{})
 	if err != nil {
 		return false, err
@@ -54,10 +56,11 @@ func (c *ClusterManager) requiresRefresh(ctx context.Context) (bool, error) {
 		return true, nil
 	}
 
+	// mark certs ready
 	return false, nil
 }
 
-func (c *ClusterManager) checkAndUpdate(ctx context.Context) error {
+func (c *CertificateManager) checkAndUpdate(ctx context.Context) error {
 	r, err := c.requiresRefresh(ctx)
 	if err != nil {
 		return err
@@ -65,7 +68,7 @@ func (c *ClusterManager) checkAndUpdate(ctx context.Context) error {
 
 	if r {
 		slog.Info("certificates require refresh")
-		err = c.rotateCerts()
+		err = c.rotateCerts(ctx)
 		if err != nil {
 			return err
 		}
@@ -74,43 +77,43 @@ func (c *ClusterManager) checkAndUpdate(ctx context.Context) error {
 	return nil
 }
 
-func (c *ClusterManager) refreshCerts(ctx context.Context) error {
+func (c *CertificateManager) refreshCerts(ctx context.Context) error {
 	// initial check and update of certs
 	err := c.checkAndUpdate(ctx)
 	if err != nil {
 		return err
 	}
 
-	interval := time.NewTicker(10 * time.Second)
+	c.certTicker = time.NewTicker(10 * time.Second)
+	defer c.certTicker.Stop()
 
 	for {
 		select {
-		case <-interval.C:
+		case <-c.certTicker.C:
 			err := c.checkAndUpdate(ctx)
 			if err != nil {
 				return err
 			}
 		case <-ctx.Done():
 			slog.Info("stopped certificate loop")
-			interval.Stop()
 			return nil
 		}
 	}
 }
 
-func (c *ClusterManager) rotateCerts() error {
+func (c *CertificateManager) rotateCerts(ctx context.Context) error {
 	slog.Info("rotating certificates")
 	caTemplate, caPrivKey, err := generateCA()
 	if err != nil {
 		return err
 	}
 
-	srvCrt, srvKey, err := generateCerts(2, "server", caTemplate, caPrivKey)
+	srvCrt, srvKey, err := generateCerts(2, c.ns, caTemplate, caPrivKey)
 	if err != nil {
 		return err
 	}
 
-	secret, err := c.client.CoreV1().Secrets(c.ns).Get(context.Background(), secretName, metav1.GetOptions{})
+	secret, err := c.client.CoreV1().Secrets(c.ns).Get(ctx, secretName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -121,8 +124,6 @@ func (c *ClusterManager) rotateCerts() error {
 	}
 
 	secret.Data = map[string][]byte{}
-
-	time.Now().Unix()
 
 	marker := &changeMarker{
 		Time: time.Now().Unix(),
@@ -172,7 +173,7 @@ func (c *ClusterManager) rotateCerts() error {
 	}
 
 	slog.Info("storing new certificates")
-	_, err = c.client.CoreV1().Secrets(c.ns).Update(context.Background(), secret, metav1.UpdateOptions{})
+	_, err = c.client.CoreV1().Secrets(c.ns).Update(ctx, secret, metav1.UpdateOptions{})
 
 	return err
 }
@@ -187,7 +188,7 @@ func generateCA() (x509.Certificate, *rsa.PrivateKey, error) {
 		SerialNumber: big.NewInt(1),
 		Subject: pkix.Name{
 			Organization: []string{"Direktiv CA"},
-			CommonName:   "ca.direktiv-nats-headless",
+			CommonName:   "ca.direktiv-nats",
 		},
 		NotBefore:             time.Now(),
 		NotAfter:              time.Now().AddDate(10, 0, 0), // 10 years
@@ -199,13 +200,14 @@ func generateCA() (x509.Certificate, *rsa.PrivateKey, error) {
 	return caTemplate, caPriv, nil
 }
 
-func generateCerts(id int64, t string, caTemplate x509.Certificate, caPriv *rsa.PrivateKey) ([]byte, []byte, error) {
+func generateCerts(id int64, ns string, caTemplate x509.Certificate, caPriv *rsa.PrivateKey) ([]byte, []byte, error) {
 	serverPriv, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return []byte{}, []byte{}, err
 	}
 
-	// DIREKTIV_DEPLOYMENT_NAME
+	// set the deployment name in dns names
+	deploymentName := os.Getenv("DIREKTIV_DEPLOYMENT_NAME")
 
 	keyUsage := x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature
 	extKeyUsage := []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth}
@@ -214,14 +216,18 @@ func generateCerts(id int64, t string, caTemplate x509.Certificate, caPriv *rsa.
 		SerialNumber: big.NewInt(id),
 		Subject: pkix.Name{
 			Organization: []string{"Direktiv CA"},
-			CommonName:   "*.direktiv-nats-headless",
+			CommonName:   fmt.Sprintf("*.%s-nats", deploymentName),
 		},
 		NotBefore:   time.Now(),
 		NotAfter:    time.Now().AddDate(1, 0, 0),
 		KeyUsage:    keyUsage,
 		ExtKeyUsage: extKeyUsage,
-		DNSNames:    []string{"*.direktiv-nats-headless"},
+		DNSNames: []string{
+			fmt.Sprintf("*.%s-nats-headless", deploymentName),
+			fmt.Sprintf("%s-nats.%s.svc", deploymentName, ns),
+		},
 	}
+
 	crtBytes, err := x509.CreateCertificate(rand.Reader, &serverTemplate, &caTemplate, &serverPriv.PublicKey, caPriv)
 
 	return crtBytes, x509.MarshalPKCS1PrivateKey(serverPriv), err
