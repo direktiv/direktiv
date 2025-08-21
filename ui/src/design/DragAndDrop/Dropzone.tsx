@@ -3,7 +3,7 @@ import {
   DragPayloadSchemaType,
   DropPayloadSchemaType,
 } from "./schema";
-import { FC, PropsWithChildren } from "react";
+import { FC, useMemo } from "react";
 import { useDndContext, useDroppable } from "@dnd-kit/core";
 
 import Badge from "~/design/Badge";
@@ -13,7 +13,7 @@ import { twMergeClsx } from "~/util/helpers";
 
 export type DropzoneStatus = "hidden" | "allowed" | "forbidden";
 
-type DroppableProps = PropsWithChildren & {
+type DroppableProps = {
   payload: DropPayloadSchemaType;
   validate?: (
     payload: DragPayloadSchemaType | null,
@@ -24,20 +24,22 @@ type DroppableProps = PropsWithChildren & {
 export const Dropzone: FC<DroppableProps> = ({
   payload,
   validate = () => "allowed",
-  children,
 }) => {
   const { active: activeDraggable } = useDndContext();
-  const { targetPath } = payload;
 
-  const parsedDragPayload = DragPayloadSchema.safeParse(
-    activeDraggable?.data.current
-  );
+  const status = useMemo(() => {
+    const { targetPath } = payload;
 
-  const draggedPayload = parsedDragPayload.success
-    ? parsedDragPayload.data
-    : null;
+    const parsedDragPayload = DragPayloadSchema.safeParse(
+      activeDraggable?.data.current
+    );
 
-  const status = validate(draggedPayload, targetPath);
+    const draggedPayload = parsedDragPayload.success
+      ? parsedDragPayload.data
+      : null;
+
+    return validate(draggedPayload, targetPath);
+  }, [validate, payload, activeDraggable?.data]);
 
   const { setNodeRef, isOver } = useDroppable({
     disabled: status !== "allowed",
@@ -66,7 +68,6 @@ export const Dropzone: FC<DroppableProps> = ({
             : [isDragging && "bg-gray-4 dark:bg-gray-dark-4"]
         )}
       >
-        {children}
         {showPlusIndicator && isOver && (
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <div className="z-10 flex flex-col">
