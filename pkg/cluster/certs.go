@@ -22,6 +22,8 @@ const (
 	rotationInterval = 10
 	secretName       = "direktiv-tls-secret" //nolint:gosec
 	dummyKey         = "dummy.crt"
+
+	hoursToRefresh = 168
 )
 
 type changeMarker struct {
@@ -52,7 +54,7 @@ func (c *CertificateManager) requiresRefresh(ctx context.Context) (bool, error) 
 	}
 
 	updated := time.Unix(marker.Time, 0)
-	if time.Now().After(updated.Add(1 * time.Minute)) {
+	if time.Now().After(updated.Add(hoursToRefresh * time.Hour)) {
 		return true, nil
 	}
 
