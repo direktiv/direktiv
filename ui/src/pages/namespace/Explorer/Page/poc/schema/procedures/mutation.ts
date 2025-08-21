@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ExtendedKeyValueSchema } from "../primitives/extendedKeyValue";
 import { Id } from "../primitives/id";
 import { KeyValue } from "../primitives/keyValue";
@@ -15,7 +14,7 @@ export const Mutation = z.object({
   url: TemplateString.min(1),
   queryParams: z.array(KeyValue).optional(),
   requestHeaders: z.array(KeyValue).optional(),
-  requestBody: z.array(KeyValue).optional(),
+  requestBody: z.array(ExtendedKeyValueSchema).optional(),
 });
 
 export type MutationType = z.infer<typeof Mutation>;
