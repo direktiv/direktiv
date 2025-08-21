@@ -3,13 +3,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 
 import { DraggablePaletteItem } from "~/design/DragAndDrop/Draggable";
 import { PanelContainer } from "./PanelContainer";
-import { useBlockTypes } from "../../../PageCompiler/context/utils/useBlockTypes";
+import { blockTypes } from "../../../PageCompiler/context/utils/useBlockTypes";
 import { useTranslation } from "react-i18next";
 
 export const DefaultPanel = () => {
   const { t } = useTranslation();
-
-  const { blockTypes } = useBlockTypes();
 
   return (
     <PanelContainer className="overflow-y-clip">
