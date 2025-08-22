@@ -57,6 +57,9 @@ func Run(circuit *core.Circuit) error {
 	}
 	cm.Start(circuit)
 
+	// wait for nats to be up and running and certs are done
+	checkNATSConnectivity()
+
 	// Create DB connection
 	slog.Info("initializing db connection")
 	db, err := initDB(config)
@@ -267,4 +270,27 @@ func initSLog(cfg *core.Config) {
 	slogger := slog.New(ctxHandler)
 
 	slog.SetDefault(slogger)
+}
+
+func checkNATSConnectivity() {
+	// waiting for nats to be available
+	// this waits for certificates as well
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			slog.Info("checking nats connection")
+			_, err := natsclient.NewNATSConnection()
+			if err == nil {
+				slog.Info("nats available")
+				return
+			}
+			slog.Error("nats connection not available", slog.Any("error", err))
+		case <-time.After(2 * time.Minute):
+			// can not recover from nats not connecting
+			panic("cannot connect to nats")
+		}
+	}
 }
