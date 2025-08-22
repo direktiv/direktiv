@@ -149,7 +149,7 @@ describe("form request", () => {
       await screen.getByRole("button", { name: "save" }).click();
 
       await waitFor(() => {
-        expect(screen.getByRole("form").textContent).toContain(
+        expect(screen.getByTestId("toast-error").textContent).toContain(
           "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
         );
       });
@@ -254,7 +254,7 @@ describe("form request", () => {
       await screen.getByRole("button", { name: "save" }).click();
 
       await waitFor(() => {
-        expect(screen.getByRole("form").textContent).toContain(
+        expect(screen.getByTestId("toast-error").textContent).toContain(
           "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
         );
       });
@@ -378,7 +378,7 @@ describe("form request", () => {
       await screen.getByRole("button", { name: "save" }).click();
 
       await waitFor(() => {
-        expect(screen.getByRole("form").textContent).toContain(
+        expect(screen.getByTestId("toast-error").textContent).toContain(
           "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
         );
       });
@@ -494,9 +494,8 @@ describe("form request", () => {
       });
 
       await screen.getByRole("button", { name: "save" }).click();
-
       await waitFor(() => {
-        expect(screen.getByRole("form").textContent).toContain(
+        expect(screen.getByTestId("toast-error").textContent).toContain(
           "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
         );
       });

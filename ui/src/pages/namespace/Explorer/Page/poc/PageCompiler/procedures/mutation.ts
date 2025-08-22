@@ -8,7 +8,11 @@ import { LocalVariables } from "../primitives/Variable/LocalVariables";
 import { MutationType } from "../../schema/procedures/mutation";
 import { useUrlGenerator } from "./utils";
 
-export const usePageMutation = () => {
+type UsePageMutationParams = {
+  onError?: (error: Error) => void;
+};
+
+export const usePageMutation = ({ onError }: UsePageMutationParams = {}) => {
   const queryClient = useQueryClient();
   const generateUrl = useUrlGenerator();
   const resolveKeyValueArray = useKeyValueArrayResolver();
@@ -50,6 +54,9 @@ export const usePageMutation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries();
+    },
+    onError: (error) => {
+      onError?.(error);
     },
   });
 };

@@ -9,6 +9,7 @@ import { BlockList } from "./Block/utils/BlockList";
 import { DirektivPagesSchema } from "../schema";
 import { EditorPanelLayoutProvider } from "../BlockEditor/EditorPanelProvider";
 import { ParsingError } from "./Block/utils/ParsingError";
+import { Toaster } from "~/design/Toast";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -49,6 +50,8 @@ export const PageCompiler = ({ page, setPage, mode }: PageCompilerProps) => {
           </BlockList>
         </EditorPanelLayoutProvider>
       </QueryClientProvider>
+      {/* When embedded in Direktiv to be used as a preview, there is already a toaster provider on the page. */}
+      {mode === "live" && <Toaster />}
     </PageCompilerContextProvider>
   );
 };
