@@ -18,6 +18,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/pubsub"
+	"github.com/direktiv/direktiv/pkg/secrets"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
 )
@@ -27,7 +28,8 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsub.Bus) error {
+func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsub.Bus,
+	sh *secrets.Handler) error {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
@@ -43,6 +45,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 		db: db,
 	}
 	secCtr := &secretsController{
+		sh: sh,
 		db: db,
 	}
 	nsCtr := &nsController{

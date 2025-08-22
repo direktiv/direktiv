@@ -6,12 +6,18 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/database"
-	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/secrets"
 	"github.com/go-chi/chi/v5"
 )
 
+type secretRequest struct {
+	Name string `json:"name"`
+	Data []byte `json:"data"`
+}
+
 type secretsController struct {
 	db *database.DB
+	sh *secrets.Handler
 }
 
 func (e *secretsController) mountRouter(r chi.Router) {
@@ -24,49 +30,25 @@ func (e *secretsController) mountRouter(r chi.Router) {
 }
 
 func (e *secretsController) get(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 	secretName := chi.URLParam(r, "secretName")
 
-	db, err := e.db.BeginTx(r.Context())
+	s, err := e.sh.SecretsForNamespace(namespace).Get(r.Context(), secretName)
 	if err != nil {
-		writeInternalError(w, err)
-		return
-	}
-	defer db.Rollback()
-	dStore := db.DataStore()
-
-	// Fetch one
-	secret, err := dStore.Secrets().Get(r.Context(), ns.Name, secretName)
-	if err != nil {
-		writeDataStoreError(w, err)
+		writeSecretsError(w, err)
 		return
 	}
 
-	writeJSON(w, convertSecret(secret))
+	writeJSON(w, convert(s))
 }
 
 func (e *secretsController) delete(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 	secretName := chi.URLParam(r, "secretName")
 
-	db, err := e.db.BeginTx(r.Context())
+	err := e.sh.SecretsForNamespace(namespace).Delete(r.Context(), secretName)
 	if err != nil {
-		writeInternalError(w, err)
-		return
-	}
-	defer db.Rollback()
-	dStore := db.DataStore()
-
-	// Fetch one
-	err = dStore.Secrets().Delete(r.Context(), ns.Name, secretName)
-	if err != nil {
-		writeDataStoreError(w, err)
-		return
-	}
-
-	err = db.Commit(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+		writeSecretsError(w, err)
 		return
 	}
 
@@ -74,126 +56,69 @@ func (e *secretsController) delete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *secretsController) update(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 	secretName := chi.URLParam(r, "secretName")
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
-		return
-	}
-	defer db.Rollback()
-	dStore := db.DataStore()
-
-	// Parse request body.
-	req := &struct {
-		Data []byte `json:"data"`
-	}{}
+	var req secretRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJSONError(w, err)
 		return
 	}
 
-	err = dStore.Secrets().Update(r.Context(), &datastore.Secret{
-		Namespace: ns.Name,
-		Name:      secretName,
-		Data:      req.Data,
+	s, err := e.sh.SecretsForNamespace(namespace).Update(r.Context(), &secrets.Secret{
+		Name: secretName,
+		Data: req.Data,
 	})
+
 	if err != nil {
-		writeDataStoreError(w, err)
+		writeSecretsError(w, err)
 		return
 	}
 
-	// Fetch the updated one
-	secret, err := dStore.Secrets().Get(r.Context(), ns.Name, secretName)
-	if err != nil {
-		writeDataStoreError(w, err)
-		return
-	}
-
-	err = db.Commit(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
-		return
-	}
-
-	writeJSON(w, convertSecret(secret))
+	writeJSON(w, convert(s))
 }
 
 func (e *secretsController) create(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
-		return
-	}
-	defer db.Rollback()
-	dStore := db.DataStore()
-
-	// Parse request.
-	req := struct {
-		Name string `json:"name"`
-		Data []byte `json:"data"`
-	}{}
+	// parse request
+	var req secretRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJSONError(w, err)
 		return
 	}
-	// Create secret.
-	err = dStore.Secrets().Set(r.Context(), &datastore.Secret{
-		Namespace: ns.Name,
-		Name:      req.Name,
-		Data:      req.Data,
+
+	s, err := e.sh.SecretsForNamespace(namespace).Set(r.Context(), &secrets.Secret{
+		Name: req.Name,
+		Data: req.Data,
 	})
+
 	if err != nil {
-		writeDataStoreError(w, err)
+		writeSecretsError(w, err)
 		return
 	}
 
-	// Fetch the new one
-	secret, err := dStore.Secrets().Get(r.Context(), ns.Name, req.Name)
-	if err != nil {
-		writeDataStoreError(w, err)
-		return
-	}
-
-	err = db.Commit(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
-		return
-	}
-
-	writeJSON(w, convertSecret(secret))
+	writeJSON(w, convert(s))
 }
 
 func (e *secretsController) list(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 
-	db, err := e.db.BeginTx(r.Context())
+	secretsList, err := e.sh.SecretsForNamespace(namespace).GetAll(r.Context())
 	if err != nil {
-		writeInternalError(w, err)
-		return
-	}
-	defer db.Rollback()
-	dStore := db.DataStore()
-
-	var list []*datastore.Secret
-	list, err = dStore.Secrets().GetAll(r.Context(), ns.Name)
-	if err != nil {
-		writeDataStoreError(w, err)
+		writeSecretsError(w, err)
 		return
 	}
 
-	res := make([]any, len(list))
-	for i := range list {
-		res[i] = convertSecret(list[i])
+	res := make([]any, len(secretsList))
+	for i := range secretsList {
+		res[i] = convert(secretsList[i])
 	}
 
 	writeJSON(w, res)
 }
 
-func convertSecret(v *datastore.Secret) any {
+func convert(v *secrets.Secret) any {
 	type secretForAPI struct {
 		Name string `json:"name"`
 

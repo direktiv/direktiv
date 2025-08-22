@@ -95,10 +95,10 @@ func TestDBSecrets(t *testing.T) {
 
 }
 
-func buildSecrets(ctx context.Context, db *database.DB, bus *pubsub.Bus) (*secrets.SecretsHandler, *cache.Cache) {
+func buildSecrets(ctx context.Context, db *database.DB, bus *pubsub.Bus) (*secrets.Handler, *cache.Cache) {
 	circuit := core.NewCircuit(ctx, os.Interrupt)
 	cache, _ := cache.NewCache(bus, true)
 	go cache.Run(circuit)
 
-	return secrets.NewSecretsHandler(db, cache), cache
+	return secrets.NewHandler(db, cache), cache
 }

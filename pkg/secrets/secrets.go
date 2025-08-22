@@ -3,6 +3,7 @@ package secrets
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -10,6 +11,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/cache"
 	"github.com/direktiv/direktiv/pkg/database"
 )
+
+var ErrNotFound = errors.New("ErrNotFound")
 
 type Secret struct {
 	Name string `json:"name"`
@@ -28,38 +31,38 @@ type Secrets interface {
 	Delete(ctx context.Context, name string) error
 }
 
-type SecretsHandler struct {
+type Handler struct {
 	db    *database.DB
 	cache *cache.Cache
 }
 
-type SecretsWrapper struct {
+type Wrapper struct {
 	namespace string
 	secrets   Secrets
 	cache     *cache.Cache
 }
 
-func NewSecretsHandler(db *database.DB, cache *cache.Cache) *SecretsHandler {
-	return &SecretsHandler{
+func NewHandler(db *database.DB, cache *cache.Cache) *Handler {
+	return &Handler{
 		db:    db,
 		cache: cache,
 	}
 }
 
-func (sm *SecretsHandler) SecretsForNamespace(namespace string) Secrets {
+func (sm *Handler) SecretsForNamespace(namespace string) Secrets {
 	dbs := &DBSecrets{
 		namespace: namespace,
 		db:        sm.db,
 	}
 
-	return &SecretsWrapper{
+	return &Wrapper{
 		secrets:   dbs,
 		cache:     sm.cache,
 		namespace: namespace,
 	}
 }
 
-func (sw *SecretsWrapper) Get(ctx context.Context, name string) (*Secret, error) {
+func (sw *Wrapper) Get(ctx context.Context, name string) (*Secret, error) {
 	var secret *Secret
 	value, exists := sw.cache.Get(sw.keyNameforSecret(name))
 	if exists {
@@ -78,7 +81,7 @@ func (sw *SecretsWrapper) Get(ctx context.Context, name string) (*Secret, error)
 	return s, err
 }
 
-func (sw *SecretsWrapper) Set(ctx context.Context, secret *Secret) (*Secret, error) {
+func (sw *Wrapper) Set(ctx context.Context, secret *Secret) (*Secret, error) {
 	// set in implementation first
 	v, err := sw.secrets.Set(ctx, secret)
 	if err != nil {
@@ -93,27 +96,30 @@ func (sw *SecretsWrapper) Set(ctx context.Context, secret *Secret) (*Secret, err
 	return v, err
 }
 
-func (sw *SecretsWrapper) GetAll(ctx context.Context) ([]*Secret, error) {
+func (sw *Wrapper) GetAll(ctx context.Context) ([]*Secret, error) {
 	return sw.secrets.GetAll(ctx)
 }
 
-func (sw *SecretsWrapper) Update(ctx context.Context, secret *Secret) (*Secret, error) {
+func (sw *Wrapper) Update(ctx context.Context, secret *Secret) (*Secret, error) {
 	s, err := sw.secrets.Update(ctx, secret)
+	if err != nil {
+		return nil, err
+	}
 	sw.addToCache(s)
 
 	return s, err
 }
 
-func (sw *SecretsWrapper) Delete(ctx context.Context, name string) error {
+func (sw *Wrapper) Delete(ctx context.Context, name string) error {
 	sw.cache.Delete(sw.keyNameforSecret(name))
 	return sw.secrets.Delete(ctx, name)
 }
 
-func (sw *SecretsWrapper) keyNameforSecret(name string) string {
+func (sw *Wrapper) keyNameforSecret(name string) string {
 	return fmt.Sprintf("secret-%s-%s", sw.namespace, name)
 }
 
-func (sw *SecretsWrapper) addToCache(secret *Secret) {
+func (sw *Wrapper) addToCache(secret *Secret) {
 	b, err := json.Marshal(secret)
 	if err != nil {
 		slog.Error("error caching secret", slog.Any("error", err))

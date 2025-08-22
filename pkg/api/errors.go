@@ -9,6 +9,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/secrets"
 )
 
 type Error struct {
@@ -84,6 +85,19 @@ func writeNotJSONError(w http.ResponseWriter, err error) {
 		Code:    "request_body_not_json",
 		Message: "couldn't parse request payload in json format",
 	})
+}
+
+func writeSecretsError(w http.ResponseWriter, err error) {
+	if errors.Is(err, secrets.ErrNotFound) {
+		writeError(w, &Error{
+			Code:    "secret_not_found",
+			Message: "requested secret is not found",
+		})
+
+		return
+	}
+
+	writeInternalError(w, err)
 }
 
 func writeDataStoreError(w http.ResponseWriter, err error) {

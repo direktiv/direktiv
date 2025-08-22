@@ -20,6 +20,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/gateway"
 	"github.com/direktiv/direktiv/pkg/natsclient"
 	"github.com/direktiv/direktiv/pkg/pubsub"
+	"github.com/direktiv/direktiv/pkg/secrets"
 	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/service/registry"
 	"github.com/direktiv/direktiv/pkg/telemetry"
@@ -106,6 +107,9 @@ func Run(circuit *core.Circuit) error {
 		return nil
 	})
 
+	slog.Info("initializing secrets handler")
+	secretsHandler := secrets.NewHandler(db, cache)
+
 	// Create service manager
 	slog.Info("initializing service manager")
 	app.ServiceManager, err = service.NewManager(config, func() ([]string, error) {
@@ -177,7 +181,7 @@ func Run(circuit *core.Circuit) error {
 	}
 	slog.Info("api server v2 starting")
 	// Start api v2 server
-	err = api.Initialize(circuit, app, db, bus)
+	err = api.Initialize(circuit, app, db, bus, secretsHandler)
 	if err != nil {
 		return fmt.Errorf("initializing api v2, err: %w", err)
 	}
