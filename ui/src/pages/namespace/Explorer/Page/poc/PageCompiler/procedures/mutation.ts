@@ -1,5 +1,6 @@
 import {
   keyValueArrayToObject,
+  useExtenedKeyValueArrayResolver,
   useKeyValueArrayResolver,
 } from "../primitives/keyValue/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -16,6 +17,7 @@ export const usePageMutation = ({ onError }: UsePageMutationParams = {}) => {
   const queryClient = useQueryClient();
   const generateUrl = useUrlGenerator();
   const resolveKeyValueArray = useKeyValueArrayResolver();
+  const resolveExtendedKeyValueArray = useExtenedKeyValueArrayResolver();
 
   return useMutation({
     mutationFn: async ({
@@ -27,7 +29,7 @@ export const usePageMutation = ({ onError }: UsePageMutationParams = {}) => {
     }) => {
       const { method, requestBody, requestHeaders } = mutation;
 
-      const requestBodyResolved = resolveKeyValueArray(
+      const requestBodyResolved = resolveExtendedKeyValueArray(
         requestBody ?? [],
         formVariables
       );

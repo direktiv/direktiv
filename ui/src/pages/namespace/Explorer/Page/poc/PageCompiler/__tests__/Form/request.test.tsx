@@ -124,7 +124,7 @@ describe("form request", () => {
       await waitFor(() => {
         expect(apiRequestMock).toHaveBeenCalledTimes(1);
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
-        const requestUrl = new URL(formRequest.url);
+        const requestUrl = new URL(formRequest.clone().url);
         expect(requestUrl.pathname).toBe(
           "/blog-post/101/string%20from%20a%20string%20input"
         );
@@ -223,7 +223,7 @@ describe("form request", () => {
       await waitFor(() => {
         expect(apiRequestMock).toHaveBeenCalledTimes(1);
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
-        const requestUrl = new URL(formRequest.url);
+        const requestUrl = new URL(formRequest.clone().url);
         expect(requestUrl.search).toBe(
           "?string=ok&boolean=true&number=3&null=null&form-string=string+from+a+string+input&form-textarea=string+from+a+textarea&checkbox-checked=true&checkbox-unchecked=false&date=2025-12-24&select=pro"
         );
@@ -273,7 +273,7 @@ describe("form request", () => {
               url: "/save-user",
               requestHeaders: [
                 {
-                  key: "String-Value",
+                  key: "Value",
                   value: "String: {{query.user.data.status}}",
                 },
                 {
@@ -328,27 +328,35 @@ describe("form request", () => {
       await waitFor(() => {
         expect(apiRequestMock).toHaveBeenCalledTimes(1);
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
-        expect(formRequest.headers.get("String-Value")).toBe("String: ok");
-        expect(formRequest.headers.get("Boolean-Value")).toBe("Boolean: true");
-        expect(formRequest.headers.get("Number-Value")).toBe("Number: 19.99");
-        expect(formRequest.headers.get("Null-Value")).toBe("Null: null");
-        expect(formRequest.headers.get("Form-String-Value")).toBe(
+        expect(formRequest.clone().headers.get("Value")).toBe("String: ok");
+        expect(formRequest.clone().headers.get("Boolean-Value")).toBe(
+          "Boolean: true"
+        );
+        expect(formRequest.clone().headers.get("Number-Value")).toBe(
+          "Number: 19.99"
+        );
+        expect(formRequest.clone().headers.get("Null-Value")).toBe(
+          "Null: null"
+        );
+        expect(formRequest.clone().headers.get("Form-String-Value")).toBe(
           "String: string from a string input"
         );
-        expect(formRequest.headers.get("Form-Textarea-Value")).toBe(
+        expect(formRequest.clone().headers.get("Form-Textarea-Value")).toBe(
           "Textarea: string from a textarea"
         );
-        expect(formRequest.headers.get("Form-Checkbox-Checked-Value")).toBe(
-          "Checkbox: true"
+        expect(
+          formRequest.clone().headers.get("Form-Checkbox-Checked-Value")
+        ).toBe("Checkbox: true");
+        expect(
+          formRequest.clone().headers.get("Form-Checkbox-Unchecked-Value")
+        ).toBe("Checkbox: false");
+        expect(formRequest.clone().headers.get("Form-Number-Value")).toBe(
+          "Number: 3"
         );
-        expect(formRequest.headers.get("Form-Checkbox-Unchecked-Value")).toBe(
-          "Checkbox: false"
-        );
-        expect(formRequest.headers.get("Form-Number-Value")).toBe("Number: 3");
-        expect(formRequest.headers.get("Form-Date-Value")).toBe(
+        expect(formRequest.clone().headers.get("Form-Date-Value")).toBe(
           "Date: 2025-12-24"
         );
-        expect(formRequest.headers.get("Form-Select-Value")).toBe(
+        expect(formRequest.clone().headers.get("Form-Select-Value")).toBe(
           "Select: pro"
         );
       });
@@ -386,7 +394,7 @@ describe("form request", () => {
   });
 
   describe("request body", () => {
-    test("resolves all variable types in request body", async () => {
+    test("resolves string types in request body", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -396,158 +404,277 @@ describe("form request", () => {
               method: "POST",
               url: "/save-user",
               requestBody: [
-                /**
-                 * strings
-                 */
                 {
-                  key: "string-string-from-query",
+                  key: "string-from-query",
                   value: {
                     type: "string",
                     value: "{{query.user.data.status}}",
                   },
                 },
                 {
-                  key: "string-string-from-textarea",
+                  key: "string-from-textarea",
                   value: {
                     type: "string",
                     value: "{{this.form.textarea}}",
                   },
                 },
                 {
-                  key: "string-string-from-input",
+                  key: "string-from-input",
                   value: {
                     type: "string",
                     value: "{{this.form.string}}",
                   },
                 },
                 {
-                  key: "string-number-from-query",
-                  value: {
-                    type: "string",
-                    value: "{{query.user.data.accountBalance}}",
-                  },
-                },
-                {
-                  key: "string-null-from-query",
-                  value: {
-                    type: "string",
-                    value: "{{query.user.data.lastLogin}}",
-                  },
-                },
-                {
-                  key: "string-true-from-query",
-                  value: {
-                    type: "string",
-                    value: "{{query.user.data.emailVerified}}",
-                  },
-                },
-                {
-                  key: "string-true-from-checkbox",
-                  value: {
-                    type: "string",
-                    value: "{{this.form.checkbox-checked}}",
-                  },
-                },
-                {
-                  key: "string-false-from-checkbox",
-                  value: {
-                    type: "string",
-                    value: "{{this.form.checkbox-unchecked}}",
-                  },
-                },
-                {
-                  key: "string-number-from-input",
-                  value: {
-                    type: "string",
-                    value: "{{this.form.number}}",
-                  },
-                },
-                {
-                  key: "string-date-string-from-input",
+                  key: "string-from-date-input",
                   value: {
                     type: "string",
                     value: "{{this.form.date}}",
                   },
                 },
                 {
-                  key: "string-select-string-from-input",
+                  key: "string-from-select",
                   value: {
                     type: "string",
                     value: "{{this.form.select}}",
                   },
                 },
-                /**
-                 * variables
-                 */
                 {
-                  key: "variable-true-from-checkbox",
+                  key: "number-from-query",
+                  value: {
+                    type: "string",
+                    value: "{{query.user.data.accountBalance}}",
+                  },
+                },
+                {
+                  key: "number-from-input",
+                  value: {
+                    type: "string",
+                    value: "{{this.form.number}}",
+                  },
+                },
+                {
+                  key: "null-from-query",
+                  value: {
+                    type: "string",
+                    value: "{{query.user.data.lastLogin}}",
+                  },
+                },
+                {
+                  key: "true-from-query",
+                  value: {
+                    type: "string",
+                    value: "{{query.user.data.emailVerified}}",
+                  },
+                },
+                {
+                  key: "true-from-checkbox",
+                  value: {
+                    type: "string",
+                    value: "{{this.form.checkbox-checked}}",
+                  },
+                },
+                {
+                  key: "false-from-checkbox",
+                  value: {
+                    type: "string",
+                    value: "{{this.form.checkbox-unchecked}}",
+                  },
+                },
+              ],
+            })}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button", { name: "save" }).click();
+
+      await waitFor(async () => {
+        expect(apiRequestMock).toHaveBeenCalledTimes(1);
+        const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
+        const text = JSON.parse(await formRequest.clone().text());
+
+        expect(text["string-from-query"]).toBe("ok");
+        expect(text["string-from-textarea"]).toBe("string from a textarea");
+        expect(text["string-from-input"]).toBe("string from a string input");
+        expect(text["string-from-date-input"]).toBe("2025-12-24");
+        expect(text["string-from-select"]).toBe("pro");
+        expect(text["number-from-query"]).toBe("19.99");
+        expect(text["number-from-input"]).toBe("3");
+        expect(text["null-from-query"]).toBe("null");
+        expect(text["true-from-query"]).toBe("true");
+        expect(text["true-from-checkbox"]).toBe("true");
+        expect(text["false-from-checkbox"]).toBe("false");
+      });
+    });
+
+    test("resolves variable types in request body", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm(form, {
+              id: "save-user",
+              method: "POST",
+              url: "/save-user",
+              requestBody: [
+                {
+                  key: "true-from-query",
+                  value: {
+                    type: "variable",
+                    value: "query.user.data.emailVerified",
+                  },
+                },
+                {
+                  key: "true-from-checkbox",
                   value: {
                     type: "variable",
                     value: "this.form.checkbox-checked",
                   },
                 },
                 {
-                  key: "variable-false-from-checkbox",
+                  key: "false-from-checkbox",
                   value: {
                     type: "variable",
                     value: "this.form.checkbox-unchecked",
                   },
                 },
                 {
-                  key: "variable-number-from-input",
+                  key: "number-from-query",
+                  value: {
+                    type: "variable",
+                    value: "query.user.data.accountBalance",
+                  },
+                },
+
+                {
+                  key: "number-from-input",
                   value: {
                     type: "variable",
                     value: "this.form.number",
                   },
                 },
                 {
-                  key: "variable-number-from-query",
-                  value: {
-                    type: "variable",
-                    value: "query.user.data.accountBalance",
-                  },
-                },
-                {
-                  key: "variable-array-from-query",
+                  key: "array-from-query",
                   value: {
                     type: "variable",
                     value: "query.user.meta.subscriptionPlanOptions",
                   },
                 },
                 {
-                  key: "variable-object-from-query",
+                  key: "null-from-query",
                   value: {
-                    type: "string",
-                    value: "query.user.data.status",
-                  },
-                },
-                {
-                  key: "variable-null-from-query",
-                  value: {
-                    type: "string",
+                    type: "variable",
                     value: "query.user.data.lastLogin",
                   },
                 },
-                /**
-                 * boolean
-                 */
                 {
-                  key: "boolean-true",
+                  key: "object-from-query",
+                  value: {
+                    type: "variable",
+                    value: "query.user.data",
+                  },
+                },
+              ],
+            })}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button", { name: "save" }).click();
+
+      await waitFor(async () => {
+        expect(apiRequestMock).toHaveBeenCalledTimes(1);
+        const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
+        const text = JSON.parse(await formRequest.clone().text());
+
+        expect(text["true-from-query"]).toBe(true);
+        expect(text["true-from-checkbox"]).toBe(true);
+        expect(text["false-from-checkbox"]).toBe(false);
+        expect(text["number-from-query"]).toBe(19.99);
+        expect(text["number-from-input"]).toBe(3);
+        expect(text["array-from-query"]).toEqual([
+          { label: "Free Plan", value: "free" },
+          { label: "Pro Plan", value: "pro" },
+          { label: "Enterprise Plan", value: "enterprise" },
+        ]);
+        expect(text["null-from-query"]).toBe(null);
+        expect(text["object-from-query"]).toEqual({
+          accountBalance: 19.99,
+          emailVerified: true,
+          lastLogin: null,
+          membershipStartDate: "2023-06-15T09:30:00Z",
+          profile: { firstName: "Alice" },
+          recentActivity: [
+            "login",
+            1623456789,
+            false,
+            null,
+            { action: "purchase" },
+          ],
+          status: "ok",
+          subscriptionPlan: "pro",
+          twoFactorEnabled: false,
+          userId: 101,
+        });
+      });
+    });
+
+    test("resolves boolean types in request body", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm(form, {
+              id: "save-user",
+              method: "POST",
+              url: "/save-user",
+              requestBody: [
+                {
+                  key: "true",
                   value: {
                     type: "boolean",
                     value: true,
                   },
                 },
                 {
-                  key: "boolean-false",
+                  key: "false",
                   value: {
                     type: "boolean",
                     value: false,
                   },
                 },
-                /**
-                 * number
-                 */
+              ],
+            })}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button", { name: "save" }).click();
+
+      await waitFor(async () => {
+        expect(apiRequestMock).toHaveBeenCalledTimes(1);
+        const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
+        const text = JSON.parse(await formRequest.clone().text());
+
+        expect(text["true"]).toBe(true);
+        expect(text["false"]).toBe(false);
+      });
+    });
+
+    test("resolves number types in request body", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm(form, {
+              id: "save-user",
+              method: "POST",
+              url: "/save-user",
+              requestBody: [
                 {
                   key: "number",
                   value: {
@@ -555,9 +682,34 @@ describe("form request", () => {
                     value: 3,
                   },
                 },
-                /**
-                 * object
-                 */
+              ],
+            })}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button", { name: "save" }).click();
+
+      await waitFor(async () => {
+        expect(apiRequestMock).toHaveBeenCalledTimes(1);
+        const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
+        const text = JSON.parse(await formRequest.clone().text());
+
+        expect(text["number"]).toBe(3);
+      });
+    });
+
+    test("resolves object types in request body", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm(form, {
+              id: "save-user",
+              method: "POST",
+              url: "/save-user",
+              requestBody: [
                 {
                   key: "object",
                   value: {
@@ -565,7 +717,7 @@ describe("form request", () => {
                     value: [
                       {
                         key: "string",
-                        value: "string",
+                        value: "hello",
                       },
                       {
                         key: "number",
@@ -578,9 +730,38 @@ describe("form request", () => {
                     ],
                   },
                 },
-                /**
-                 * arrays
-                 */
+              ],
+            })}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button", { name: "save" }).click();
+
+      await waitFor(async () => {
+        expect(apiRequestMock).toHaveBeenCalledTimes(1);
+        const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
+        const text = JSON.parse(await formRequest.clone().text());
+
+        expect(text["object"]).toEqual({
+          string: "hello",
+          number: 1,
+          boolean: true,
+        });
+      });
+    });
+
+    test("resolves array types in request body", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm(form, {
+              id: "save-user",
+              method: "POST",
+              url: "/save-user",
+              requestBody: [
                 {
                   key: "string-array",
                   value: {
@@ -614,30 +795,15 @@ describe("form request", () => {
       await waitFor(async () => {
         expect(apiRequestMock).toHaveBeenCalledTimes(1);
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
-        const text = JSON.parse(await formRequest.text());
+        const text = JSON.parse(await formRequest.clone().text());
 
-        // TODO: update test results
-        expect(text["string-string-from-query"]).toMatchInlineSnapshot();
-
-        // expect(text["String-Value"]).toBe("String: ok");
-        // expect(text["Boolean-Value"]).toBe("Boolean: true");
-        // expect(text["Number-Value"]).toBe("Number: 19.99");
-        // expect(text["Null-Value"]).toBe("Null: null");
-        // expect(text["Form-String-Value"]).toBe(
-        //   "String: string from a string input"
-        // );
-        // expect(text["Form-Textarea-Value"]).toBe(
-        //   "Textarea: string from a textarea"
-        // );
-        // expect(text["Form-Checkbox-Checked-Value"]).toBe("Checkbox: true");
-        // expect(text["Form-Checkbox-Unchecked-Value"]).toBe("Checkbox: false");
-        // expect(text["Form-Number-Value"]).toBe("Number: 3");
-        // expect(text["Form-Date-Value"]).toBe("Date: 2025-12-24");
-        // expect(text["Form-Select-Value"]).toBe("Select: pro");
+        expect(text["string-array"]).toEqual(["a", "b", "c"]);
+        expect(text["boolean-array"]).toEqual([true, false, false]);
+        expect(text["number-array"]).toEqual([1, 2, 3]);
       });
     });
 
-    test("shows error for non-stringifiable variables in body", async () => {
+    test("shows error for non-serializable veriables in request body", async () => {
       await act(async () => {
         render(
           <PageCompiler
