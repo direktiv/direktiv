@@ -43,9 +43,9 @@ const DataType = z.discriminatedUnion("type", [
  * An extended key-value pair that supports multiple data types for the value,
  * including strings, variables, booleans, arrays, and objects.
  */
-export const ExtendedKeyValueSchema = z.object({
+export const ExtendedKeyValue = z.object({
   key: z.string().min(1),
   value: DataType,
 });
 
-export type ExtendedKeyValueSchema = z.infer<typeof ExtendedKeyValueSchema>;
+export type ExtendedKeyValueType = z.infer<typeof ExtendedKeyValue>;

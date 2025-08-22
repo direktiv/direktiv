@@ -1,4 +1,4 @@
-import { ExtendedKeyValueSchema } from "../primitives/extendedKeyValue";
+import { ExtendedKeyValue } from "../primitives/extendedKeyValue";
 import { Id } from "../primitives/id";
 import { KeyValue } from "../primitives/keyValue";
 import { TemplateString } from "../primitives/templateString";
@@ -14,7 +14,7 @@ export const Mutation = z.object({
   url: TemplateString.min(1),
   queryParams: z.array(KeyValue).optional(),
   requestHeaders: z.array(KeyValue).optional(),
-  requestBody: z.array(ExtendedKeyValueSchema).optional(),
+  requestBody: z.array(ExtendedKeyValue).optional(),
 });
 
 export type MutationType = z.infer<typeof Mutation>;
