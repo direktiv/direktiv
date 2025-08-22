@@ -1,24 +1,26 @@
 import {
-  GlobalVariableScope,
+  ContextVariables,
   Variable,
-  useGlobalVariableScope,
+  useVariablesContext,
 } from "./VariableContext";
 
 import { LocalVariableNamespace } from "../../../schema/primitives/variable";
 
-type LocalVariableScope = Record<LocalVariableNamespace, Variable>;
-type VariableScope = GlobalVariableScope & LocalVariableScope;
+type LocalVariables = Record<LocalVariableNamespace, Variable>;
+type LocalAndContextVariables = ContextVariables & LocalVariables;
 
-export type LocalVariables = VariableScope["this"];
+export type LocalVariablesContent = LocalAndContextVariables["this"];
 
 /**
- * returns a function that allows to inject local
- * variables into the global variables object.
+ * returns a function that accepts local variables, and returns
+ * a merged object of context variables and local variables.
  */
-export const useLocalVariableInjection = () => {
-  const globalVariables = useGlobalVariableScope();
-  return (localVariables?: LocalVariables): VariableScope => ({
-    ...globalVariables,
+export const useMergeLocalWithContextVariables = () => {
+  const contextVariables = useVariablesContext();
+  return (
+    localVariables?: LocalVariablesContent
+  ): LocalAndContextVariables => ({
+    ...contextVariables,
     this: { ...(localVariables ?? {}) },
   });
 };

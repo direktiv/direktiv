@@ -1,18 +1,16 @@
 import { BlockType as Block } from "../../../../schema/blocks";
 import { FormEvent } from "react";
-import { LocalVariables } from "../../../primitives/Variable/LocalVariables";
+import { LocalVariablesContent } from "../../../primitives/Variable/LocalVariables";
 
 const keySeparator = "::";
 
-export const encodeElementKey = (
-  elementType: Block["type"],
-  elementId: string
-) => [elementType, elementId].join(keySeparator);
+export const encodeBlockKey = (blockType: Block["type"], elementId: string) =>
+  [blockType, elementId].join(keySeparator);
 
-const decodeElementKey = (elementName: string) => {
-  const [elementType, elementId] = elementName.split(keySeparator, 2);
-  if (!elementType || !elementId) throw new Error("invalid form element name");
-  return [elementType as Block["type"], elementId] as const;
+const decodeBlockKey = (blockKey: string) => {
+  const [blockType, elementId] = blockKey.split(keySeparator, 2);
+  if (!blockType || !elementId) throw new Error("invalid form element name");
+  return [blockType as Block["type"], elementId] as const;
 };
 
 const resolveFormValue = (
@@ -30,7 +28,7 @@ const resolveFormValue = (
     case "form-textarea":
       return value;
     default:
-      throw new Error("invalid form element type");
+      throw new Error("block type is not a valid form element");
   }
 };
 
@@ -55,13 +53,13 @@ const resolveFormValue = (
  */
 export const createLocalFormVariables = (
   formEvent: FormEvent<HTMLFormElement>
-): LocalVariables => {
+): LocalVariablesContent => {
   const formData = new FormData(formEvent.currentTarget);
   const formValues = Object.fromEntries(formData.entries());
 
   const transformedEntries = Object.entries(formValues).map(
     ([serializedKey, value]) => {
-      const [blockType, elementId] = decodeElementKey(serializedKey);
+      const [blockType, elementId] = decodeBlockKey(serializedKey);
       const resolvedValue = resolveFormValue(blockType, value);
       return [elementId, resolvedValue];
     }

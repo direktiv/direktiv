@@ -1,8 +1,8 @@
 import { Block, BlockPathType } from ".";
 import {
-  GlobalVariableScope,
+  ContextVariables,
   VariableContextProvider,
-  useGlobalVariableScope,
+  useVariablesContext,
 } from "../primitives/Variable/VariableContext";
 
 import { BlockList } from "./utils/BlockList";
@@ -21,11 +21,11 @@ export const QueryProvider = ({
 }: QueryProviderProps) => {
   const { blocks, queries } = blockProps;
   const { t } = useTranslation();
-  const parentVariableScope = useGlobalVariableScope();
+  const parentVariables = useVariablesContext();
   const data = usePageSuspenseQueries(queries);
 
   const queryWithDuplicateId = queries.find(
-    (query) => !!parentVariableScope.query[query.id]
+    (query) => !!parentVariables.query[query.id]
   );
 
   if (queryWithDuplicateId) {
@@ -36,16 +36,16 @@ export const QueryProvider = ({
     );
   }
 
-  const queryResults: GlobalVariableScope["query"] = Object.fromEntries(
+  const queryResults: ContextVariables["query"] = Object.fromEntries(
     queries.map((query, index) => [query.id, data[index]?.data])
   );
 
   return (
     <VariableContextProvider
       variables={{
-        ...parentVariableScope,
+        ...parentVariables,
         query: {
-          ...parentVariableScope.query,
+          ...parentVariables.query,
           ...queryResults,
         },
       }}

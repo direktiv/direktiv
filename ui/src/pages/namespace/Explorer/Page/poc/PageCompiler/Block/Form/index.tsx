@@ -4,8 +4,10 @@ import Alert from "~/design/Alert";
 import { BlockList } from "../utils/BlockList";
 import { Button } from "../Button";
 import { FormType } from "../../../schema/blocks/form";
+import { StopPropagation } from "~/components/StopPropagation";
 import { createLocalFormVariables } from "../formPrimitives/utils";
 import { usePageMutation } from "../../procedures/mutation";
+import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
 type FormProps = {
@@ -15,9 +17,18 @@ type FormProps = {
 
 export const Form = ({ blockProps, blockPath }: FormProps) => {
   const { mutation, trigger } = blockProps;
-  const { mutate, isPending, error, isSuccess } = usePageMutation();
-
   const { t } = useTranslation();
+  const { toast } = useToast();
+  const { mutate, isPending, isSuccess } = usePageMutation({
+    onError: (error) => {
+      toast({
+        title: t("direktivPage.page.blocks.form.error"),
+        description: error.message,
+        variant: "error",
+        duration: Infinity,
+      });
+    },
+  });
   return (
     <form
       id={mutation.id}
@@ -28,12 +39,6 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
         mutate({ mutation, formVariables });
       }}
     >
-      {error && (
-        <Alert variant="error" className="mb-4">
-          {error.message}
-        </Alert>
-      )}
-
       {isSuccess ? (
         <Alert variant="success" className="mb-4">
           {t("direktivPage.page.blocks.form.success")}
@@ -50,12 +55,14 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
             ))}
           </BlockList>
           <div className="mt-4 flex justify-end">
-            <Button
-              disabled={isPending}
-              loading={isPending}
-              blockProps={trigger}
-              as="button"
-            />
+            <StopPropagation>
+              <Button
+                disabled={isPending}
+                loading={isPending}
+                blockProps={trigger}
+                as="button"
+              />
+            </StopPropagation>
           </div>
         </>
       )}

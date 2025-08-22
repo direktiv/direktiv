@@ -1662,6 +1662,7 @@
         "table": { "noResult": "No entries to show" },
         "form": {
           "success": "The form has been submitted successfully",
+          "error": "Form submission failed",
           "optional": "(optional)",
           "selectPlaceholder": "Select an option",
           "datePickerPlaceholder": "Pick a date"

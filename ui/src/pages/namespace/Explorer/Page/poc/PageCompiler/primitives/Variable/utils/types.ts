@@ -1,4 +1,4 @@
-import { LocalVariables } from "../LocalVariables";
+import { LocalVariablesContent } from "../LocalVariables";
 import { VariableType } from "../../../../schema/primitives/variable";
 
 export type ValidationResult<DataType, E> = Success<DataType> | Failure<E>;
@@ -15,12 +15,12 @@ type Failure<E> = {
 
 type ResolverFunctionWithoutError<DataType> = (
   value: VariableType,
-  localVariables?: LocalVariables
+  localVariables?: LocalVariablesContent
 ) => DataType;
 
 type ResolverFunctionWithError<DataType, Error> = (
   value: VariableType,
-  localVariables?: LocalVariables
+  localVariables?: LocalVariablesContent
 ) => ValidationResult<DataType, Error>;
 
 /**

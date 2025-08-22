@@ -1,24 +1,24 @@
 import { PropsWithChildren, createContext, useContext } from "react";
 
-import { GlobalVariableNamespace } from "../../../schema/primitives/variable";
+import { ContextVariableNamespace } from "../../../schema/primitives/variable";
 
 type VariableId = string;
 type DefinedValue = Exclude<unknown, undefined>;
 export type Variable = Record<VariableId, DefinedValue>;
 
-export type GlobalVariableScope = {
-  [keys in GlobalVariableNamespace]: Variable;
+export type ContextVariables = {
+  [keys in ContextVariableNamespace]: Variable;
 };
 
-const defaultState: GlobalVariableScope = {
+const defaultState: ContextVariables = {
   loop: {},
   query: {},
 };
 
-const VariableContext = createContext<GlobalVariableScope | null>(null);
+const VariableContext = createContext<ContextVariables | null>(null);
 
 type VariableContextProviderProps = PropsWithChildren<{
-  variables: GlobalVariableScope;
+  variables: ContextVariables;
 }>;
 
 export const VariableContextProvider = ({
@@ -30,7 +30,7 @@ export const VariableContextProvider = ({
   </VariableContext.Provider>
 );
 
-export const useGlobalVariableScope = () => {
+export const useVariablesContext = () => {
   const context = useContext(VariableContext);
   const variables = context ?? defaultState;
   return variables;
