@@ -1,6 +1,6 @@
 import { BlockType as Block } from "../../../../schema/blocks";
 import { FormEvent } from "react";
-import { LocalVariables } from "../../../primitives/Variable/LocalVariables";
+import { LocalVariablesContent } from "../../../primitives/Variable/LocalVariables";
 
 const keySeparator = "::";
 
@@ -55,7 +55,7 @@ const resolveFormValue = (
  */
 export const createLocalFormVariables = (
   formEvent: FormEvent<HTMLFormElement>
-): LocalVariables => {
+): LocalVariablesContent => {
   const formData = new FormData(formEvent.currentTarget);
   const formValues = Object.fromEntries(formData.entries());
 

@@ -3,7 +3,7 @@ import {
   useKeyValueArrayResolver,
 } from "../primitives/keyValue/utils";
 
-import { LocalVariables } from "../primitives/Variable/LocalVariables";
+import { LocalVariablesContent } from "../primitives/Variable/LocalVariables";
 import { MutationType } from "../../schema/procedures/mutation";
 import { QueryType } from "../../schema/procedures/query";
 import { useStringInterpolation } from "../primitives/Variable/utils/useStringInterpolation";
@@ -15,7 +15,10 @@ export const useUrlGenerator = () => {
   const resolveKeyValueArray = useKeyValueArrayResolver();
   const interpolateString = useStringInterpolation();
 
-  return (input: QueryType | MutationType, variables?: LocalVariables) => {
+  return (
+    input: QueryType | MutationType,
+    variables?: LocalVariablesContent
+  ) => {
     const { url, queryParams } = input;
     const queryParamsResolved = resolveKeyValueArray(
       queryParams ?? [],

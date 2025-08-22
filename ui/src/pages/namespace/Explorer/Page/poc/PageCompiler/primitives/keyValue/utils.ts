@@ -1,10 +1,10 @@
 import { KeyValueType } from "../../../schema/primitives/keyValue";
-import { LocalVariables } from "../Variable/LocalVariables";
+import { LocalVariablesContent } from "../Variable/LocalVariables";
 import { useStringInterpolation } from "../Variable/utils/useStringInterpolation";
 
 type ResolverFunction<DataType> = (
   value: DataType,
-  localVariables?: LocalVariables
+  localVariables?: LocalVariablesContent
 ) => DataType;
 
 export const useKeyValueArrayResolver = (): ResolverFunction<
