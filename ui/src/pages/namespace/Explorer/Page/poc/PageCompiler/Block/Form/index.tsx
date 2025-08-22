@@ -4,6 +4,7 @@ import Alert from "~/design/Alert";
 import { BlockList } from "../utils/BlockList";
 import { Button } from "../Button";
 import { FormType } from "../../../schema/blocks/form";
+import { StopPropagation } from "~/components/StopPropagation";
 import { createLocalFormVariables } from "../formPrimitives/utils";
 import { usePageMutation } from "../../procedures/mutation";
 import { useToast } from "~/design/Toast";
@@ -54,12 +55,14 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
             ))}
           </BlockList>
           <div className="mt-4 flex justify-end">
-            <Button
-              disabled={isPending}
-              loading={isPending}
-              blockProps={trigger}
-              as="button"
-            />
+            <StopPropagation>
+              <Button
+                disabled={isPending}
+                loading={isPending}
+                blockProps={trigger}
+                as="button"
+              />
+            </StopPropagation>
           </div>
         </>
       )}
