@@ -33,7 +33,13 @@ func (e *secretsController) get(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 	secretName := chi.URLParam(r, "secretName")
 
-	s, err := e.sh.SecretsForNamespace(namespace).Get(r.Context(), secretName)
+	sh, err := e.sh.SecretsForNamespace(r.Context(), namespace)
+	if err != nil {
+		writeSecretsError(w, err)
+		return
+	}
+
+	s, err := sh.Get(r.Context(), secretName)
 	if err != nil {
 		writeSecretsError(w, err)
 		return
@@ -46,7 +52,13 @@ func (e *secretsController) delete(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 	secretName := chi.URLParam(r, "secretName")
 
-	err := e.sh.SecretsForNamespace(namespace).Delete(r.Context(), secretName)
+	sh, err := e.sh.SecretsForNamespace(r.Context(), namespace)
+	if err != nil {
+		writeSecretsError(w, err)
+		return
+	}
+
+	err = sh.Delete(r.Context(), secretName)
 	if err != nil {
 		writeSecretsError(w, err)
 		return
@@ -65,7 +77,13 @@ func (e *secretsController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s, err := e.sh.SecretsForNamespace(namespace).Update(r.Context(), &secrets.Secret{
+	sh, err := e.sh.SecretsForNamespace(r.Context(), namespace)
+	if err != nil {
+		writeSecretsError(w, err)
+		return
+	}
+
+	s, err := sh.Update(r.Context(), &secrets.Secret{
 		Name: secretName,
 		Data: req.Data,
 	})
@@ -88,7 +106,13 @@ func (e *secretsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s, err := e.sh.SecretsForNamespace(namespace).Set(r.Context(), &secrets.Secret{
+	sh, err := e.sh.SecretsForNamespace(r.Context(), namespace)
+	if err != nil {
+		writeSecretsError(w, err)
+		return
+	}
+
+	s, err := sh.Set(r.Context(), &secrets.Secret{
 		Name: req.Name,
 		Data: req.Data,
 	})
@@ -104,7 +128,13 @@ func (e *secretsController) create(w http.ResponseWriter, r *http.Request) {
 func (e *secretsController) list(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
-	secretsList, err := e.sh.SecretsForNamespace(namespace).GetAll(r.Context())
+	sh, err := e.sh.SecretsForNamespace(r.Context(), namespace)
+	if err != nil {
+		writeSecretsError(w, err)
+		return
+	}
+
+	secretsList, err := sh.GetAll(r.Context())
 	if err != nil {
 		writeSecretsError(w, err)
 		return

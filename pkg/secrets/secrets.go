@@ -2,17 +2,17 @@ package secrets
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/cache"
 	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/datastore"
 )
 
 var ErrNotFound = errors.New("ErrNotFound")
+var ErrNamespaceNotFound = errors.New("ErrNamespaceNotFound")
 
 type Secret struct {
 	Name string `json:"name"`
@@ -49,7 +49,18 @@ func NewHandler(db *database.DB, cache *cache.Cache) *Handler {
 	}
 }
 
-func (sm *Handler) SecretsForNamespace(namespace string) Secrets {
+func (sm *Handler) SecretsForNamespace(ctx context.Context, namespace string) (Secrets, error) {
+
+	// we can check for namespace here
+	_, err := sm.db.DataStore().Namespaces().GetByName(ctx, namespace)
+	if err != nil {
+		if errors.Is(err, datastore.ErrNotFound) {
+			return nil, ErrNamespaceNotFound
+		}
+
+		return nil, err
+	}
+
 	dbs := &DBSecrets{
 		namespace: namespace,
 		db:        sm.db,
@@ -59,23 +70,21 @@ func (sm *Handler) SecretsForNamespace(namespace string) Secrets {
 		secrets:   dbs,
 		cache:     sm.cache,
 		namespace: namespace,
-	}
+	}, nil
 }
 
 func (sw *Wrapper) Get(ctx context.Context, name string) (*Secret, error) {
-	var secret *Secret
 	value, exists := sw.cache.Get(sw.keyNameforSecret(name))
 	if exists {
-		err := json.Unmarshal(value, &secret)
-		// if no error we return the value, otherwise fetching from implementation
-		if err == nil {
-			return secret, nil
+		s, ok := value.(*Secret)
+		if ok {
+			return s, nil
 		}
 	}
 
 	s, err := sw.secrets.Get(ctx, name)
 	if err == nil {
-		sw.addToCache(s)
+		sw.cache.Set(sw.keyNameforSecret(name), s)
 	}
 
 	return s, err
@@ -91,7 +100,7 @@ func (sw *Wrapper) Set(ctx context.Context, secret *Secret) (*Secret, error) {
 	secret.CreatedAt = v.CreatedAt
 	secret.UpdatedAt = v.UpdatedAt
 
-	sw.addToCache(secret)
+	sw.cache.Set(sw.keyNameforSecret(secret.Name), secret)
 
 	return v, err
 }
@@ -105,7 +114,7 @@ func (sw *Wrapper) Update(ctx context.Context, secret *Secret) (*Secret, error) 
 	if err != nil {
 		return nil, err
 	}
-	sw.addToCache(s)
+	sw.cache.Set(sw.keyNameforSecret(secret.Name), s)
 
 	return s, err
 }
@@ -117,13 +126,4 @@ func (sw *Wrapper) Delete(ctx context.Context, name string) error {
 
 func (sw *Wrapper) keyNameforSecret(name string) string {
 	return fmt.Sprintf("secret-%s-%s", sw.namespace, name)
-}
-
-func (sw *Wrapper) addToCache(secret *Secret) {
-	b, err := json.Marshal(secret)
-	if err != nil {
-		slog.Error("error caching secret", slog.Any("error", err))
-	}
-
-	sw.cache.Set(sw.keyNameforSecret(secret.Name), b)
 }

@@ -239,7 +239,7 @@ func (e *varController) update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *varController) create(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -273,7 +273,7 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 
 	// Create variable.
 	newVar, err := dStore.RuntimeVariables().Create(r.Context(), &datastore.RuntimeVariable{
-		Namespace:    ns.Name,
+		Namespace:    namespace,
 		Name:         req.Name,
 		Data:         req.Data,
 		MimeType:     req.MimeType,
@@ -305,7 +305,7 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 		e.listRaw(w, r)
 		return
 	}
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -339,9 +339,9 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 	if forInstanceID != "" {
 		list, err = dStore.RuntimeVariables().ListForInstance(r.Context(), uuid.MustParse(forInstanceID))
 	} else if forWorkflowPath != "" {
-		list, err = dStore.RuntimeVariables().ListForWorkflow(r.Context(), ns.Name, forWorkflowPath)
+		list, err = dStore.RuntimeVariables().ListForWorkflow(r.Context(), namespace, forWorkflowPath)
 	} else {
-		list, err = dStore.RuntimeVariables().ListForNamespace(r.Context(), ns.Name)
+		list, err = dStore.RuntimeVariables().ListForNamespace(r.Context(), namespace)
 	}
 	if err != nil {
 		writeDataStoreError(w, err)
@@ -368,7 +368,7 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *varController) listRaw(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -394,9 +394,9 @@ func (e *varController) listRaw(w http.ResponseWriter, r *http.Request) {
 	if forInstanceID != "" {
 		list, err = dStore.RuntimeVariables().ListForInstance(r.Context(), uuid.MustParse(forInstanceID))
 	} else if forWorkflowPath != "" {
-		list, err = dStore.RuntimeVariables().ListForWorkflow(r.Context(), ns.Name, forWorkflowPath)
+		list, err = dStore.RuntimeVariables().ListForWorkflow(r.Context(), namespace, forWorkflowPath)
 	} else {
-		list, err = dStore.RuntimeVariables().ListForNamespace(r.Context(), ns.Name)
+		list, err = dStore.RuntimeVariables().ListForNamespace(r.Context(), namespace)
 	}
 	if errors.Is(err, datastore.ErrNotFound) {
 		w.WriteHeader(http.StatusNotFound)

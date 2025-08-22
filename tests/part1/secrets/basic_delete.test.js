@@ -41,8 +41,8 @@ describe('Test invalid secret delete calls', () => {
 			wantError: {
 				statusCode: 404,
 				error: {
-					code: 'resource_not_found',
-					message: 'requested resource is not found',
+					code: 'secret_not_found',
+    			  	message: 'requested secret is not found'
 				},
 			},
 		},

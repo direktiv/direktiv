@@ -97,6 +97,15 @@ func writeSecretsError(w http.ResponseWriter, err error) {
 		return
 	}
 
+	if errors.Is(err, secrets.ErrNamespaceNotFound) {
+		writeError(w, &Error{
+			Code:    "namespace_not_found",
+			Message: "requested namespace is not found",
+		})
+
+		return
+	}
+
 	writeInternalError(w, err)
 }
 

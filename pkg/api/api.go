@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/cache"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
-	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/secrets"
@@ -29,7 +29,7 @@ const (
 )
 
 func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsub.Bus,
-	sh *secrets.Handler) error {
+	cache *cache.Cache) error {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
@@ -45,7 +45,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 		db: db,
 	}
 	secCtr := &secretsController{
-		sh: sh,
+		sh: secrets.NewHandler(db, cache),
 		db: db,
 	}
 	nsCtr := &nsController{
@@ -76,7 +76,10 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 
 	jxCtr := jxController{}
 
-	mw := &appMiddlewares{dStore: db.DataStore()}
+	mw := &appMiddlewares{
+		dStore: db.DataStore(),
+		cache:  cache,
+	}
 
 	r := chi.NewRouter()
 	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
@@ -138,7 +141,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 					extensions.CheckAPITokenMiddleware,
 					extensions.CheckAPIKeyMiddleware)
 			}
-			r.Use(mw.injectNamespace)
+			r.Use(mw.checkNamespace)
 
 			r.Route("/namespaces/{namespace}/instances", func(r chi.Router) {
 				instCtr.mountRouter(r)
@@ -260,11 +263,4 @@ func writeOk(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusOK)
-}
-
-func extractContextNamespace(r *http.Request) *datastore.Namespace {
-	//nolint:forcetypeassert
-	ns := r.Context().Value(ctxKeyNamespace).(*datastore.Namespace)
-
-	return ns
 }

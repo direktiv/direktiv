@@ -20,7 +20,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/gateway"
 	"github.com/direktiv/direktiv/pkg/natsclient"
 	"github.com/direktiv/direktiv/pkg/pubsub"
-	"github.com/direktiv/direktiv/pkg/secrets"
 	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/service/registry"
 	"github.com/direktiv/direktiv/pkg/telemetry"
@@ -97,7 +96,7 @@ func Run(circuit *core.Circuit) error {
 	})
 
 	// creates bus with pub sub
-	cache, err := cache.NewCache(bus, false)
+	cache, err := cache.NewCache(bus, os.Getenv("POD_NAME"), false)
 	circuit.Start(func() error {
 		cache.Run(circuit)
 		if err != nil {
@@ -106,9 +105,6 @@ func Run(circuit *core.Circuit) error {
 
 		return nil
 	})
-
-	slog.Info("initializing secrets handler")
-	secretsHandler := secrets.NewHandler(db, cache)
 
 	// Create service manager
 	slog.Info("initializing service manager")
@@ -181,7 +177,7 @@ func Run(circuit *core.Circuit) error {
 	}
 	slog.Info("api server v2 starting")
 	// Start api v2 server
-	err = api.Initialize(circuit, app, db, bus, secretsHandler)
+	err = api.Initialize(circuit, app, db, bus, cache)
 	if err != nil {
 		return fmt.Errorf("initializing api v2, err: %w", err)
 	}
