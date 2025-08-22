@@ -29,13 +29,13 @@ func TestCache(t *testing.T) {
 
 	circuit := core.NewCircuit(ctx, os.Interrupt)
 
-	cache1, _ := cache.NewCache(bus)
+	cache1, _ := cache.NewCache(bus, false)
 	go cache1.Run(circuit)
-	cache2, _ := cache.NewCache(bus)
+	cache2, _ := cache.NewCache(bus, false)
 	go cache2.Run(circuit)
 
-	cache1.Set("hello", "world")
-	cache2.Set("hello", "world2")
+	cache1.Set("hello", []byte("world"))
+	cache2.Set("hello", []byte("world2"))
 
 	// cache 1 needs to be unset
 	require.Eventually(t, func() bool {

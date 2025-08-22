@@ -93,7 +93,7 @@ func Run(circuit *core.Circuit) error {
 	})
 
 	// creates bus with pub sub
-	cache, err := cache.NewCache(bus)
+	cache, err := cache.NewCache(bus, false)
 	circuit.Start(func() error {
 		cache.Run(circuit)
 		if err != nil {
