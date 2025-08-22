@@ -170,14 +170,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event.
 	if file.Typ.IsDirektivSpecFile() {
-		err = e.bus.DebouncedPublish(&pubsub.FileSystemChangeEvent{
-			Action:       "delete",
-			FileType:     string(file.Typ),
-			Namespace:    ns.Name,
-			NamespaceID:  ns.ID,
-			FilePath:     file.Path,
-			DeleteFileID: file.ID,
-		})
+		err = e.bus.Publish(pubsub.FileSystemChangeEvent, nil)
 		if err != nil {
 			slog.Error("pubsub publish", "err", err)
 		}
@@ -255,13 +248,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event.
 	if newFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.DebouncedPublish(&pubsub.FileSystemChangeEvent{
-			Action:      "create",
-			FileType:    string(newFile.Typ),
-			Namespace:   ns.Name,
-			NamespaceID: ns.ID,
-			FilePath:    newFile.Path,
-		})
+		err = e.bus.Publish(pubsub.FileSystemChangeEvent, nil)
 		// nolint:staticcheck
 		if err != nil {
 			slog.With("component", "api").
@@ -368,14 +355,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event (rename).
 	if req.Path != "" && updatedFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.DebouncedPublish(&pubsub.FileSystemChangeEvent{
-			Action:      "rename",
-			FileType:    string(updatedFile.Typ),
-			Namespace:   ns.Name,
-			NamespaceID: ns.ID,
-			FilePath:    updatedFile.Path,
-			OldPath:     oldFile.Path,
-		})
+		err = e.bus.Publish(pubsub.FileSystemChangeEvent, nil)
 		if err != nil {
 			slog.Error("pubsub publish", "err", err)
 		}
@@ -383,13 +363,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event (update).
 	if req.Data != "" && updatedFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.DebouncedPublish(&pubsub.FileSystemChangeEvent{
-			Action:      "update",
-			FileType:    string(updatedFile.Typ),
-			Namespace:   ns.Name,
-			NamespaceID: ns.ID,
-			FilePath:    updatedFile.Path,
-		})
+		err = e.bus.Publish(pubsub.FileSystemChangeEvent, nil)
 		// nolint:staticcheck
 		if err != nil {
 			slog.With("component", "api").

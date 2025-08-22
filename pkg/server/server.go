@@ -11,17 +11,19 @@ import (
 
 	"github.com/caarlos0/env/v10"
 	"github.com/direktiv/direktiv/pkg/api"
-	"github.com/direktiv/direktiv/pkg/cluster"
+	"github.com/direktiv/direktiv/pkg/cache"
+	"github.com/direktiv/direktiv/pkg/certificates"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/gateway"
+	"github.com/direktiv/direktiv/pkg/natsclient"
 	"github.com/direktiv/direktiv/pkg/pubsub"
-	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
 	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/service/registry"
 	"github.com/direktiv/direktiv/pkg/telemetry"
+	_ "github.com/lib/pq" //nolint:revive
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -48,11 +50,10 @@ func Run(circuit *core.Circuit) error {
 	}
 
 	// create certs for communication
-	slog.Info("initializing cluster manager")
-
-	cm, err := cluster.NewClusterManager(config.DirektivNamespace)
+	slog.Info("initializing certificate updater")
+	cm, err := certificates.NewCertificateUpdater(config.DirektivNamespace)
 	if err != nil {
-		return fmt.Errorf("initialize cluster manager, err: %w", err)
+		return fmt.Errorf("initialize certificate updater, err: %w", err)
 	}
 	cm.Start(circuit)
 
@@ -75,14 +76,26 @@ func Run(circuit *core.Circuit) error {
 	}
 
 	// Create Bus
-	slog.Info("initializing pubsub2")
-	coreBus, err := pubsubSQL.NewPostgresCoreBus(rawDB, app.Config.DB)
+	slog.Info("initializing pubsub")
+	nc, err := natsclient.NewNATSConnection()
 	if err != nil {
-		return fmt.Errorf("creating pubsub core bus, err: %w", err)
+		return fmt.Errorf("can not connect to nats")
 	}
-	bus := pubsub.NewBus(coreBus)
+
+	bus := pubsub.NewBus(nc.Conn)
 	circuit.Start(func() error {
 		err := bus.Loop(circuit)
+		if err != nil {
+			return fmt.Errorf("pubsub bus loop, err: %w", err)
+		}
+
+		return nil
+	})
+
+	// creates bus with pub sub
+	cache, err := cache.NewCache(bus)
+	circuit.Start(func() error {
+		cache.Run(circuit)
 		if err != nil {
 			return fmt.Errorf("pubsub bus loop, err: %w", err)
 		}
@@ -133,20 +146,20 @@ func Run(circuit *core.Circuit) error {
 	slog.Info("initializing sync namespace routine")
 	// TODO: fix app.SyncNamespace init.
 
-	bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
+	bus.Subscribe(pubsub.FileSystemChangeEvent, func(_ []byte) {
 		renderServiceFiles(db, app.ServiceManager)
 	})
-	bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
+	bus.Subscribe(pubsub.NamespacesChangeEvent, func(_ []byte) {
 		renderServiceFiles(db, app.ServiceManager)
 	})
 	// Call at least once before booting
 	renderServiceFiles(db, app.ServiceManager)
 
 	// endpoint manager
-	bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
+	bus.Subscribe(pubsub.FileSystemChangeEvent, func(_ []byte) {
 		renderGatewayFiles(db, app.GatewayManager)
 	})
-	bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
+	bus.Subscribe(pubsub.NamespacesChangeEvent, func(_ []byte) {
 		renderGatewayFiles(db, app.GatewayManager)
 	})
 	// initial loading of routes and consumers

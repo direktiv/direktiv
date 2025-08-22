@@ -1,4 +1,4 @@
-package cluster
+package certificates
 
 import (
 	"bytes"
@@ -30,7 +30,7 @@ type changeMarker struct {
 	Time int64 `json:"time"`
 }
 
-func (c *CertificateManager) requiresRefresh(ctx context.Context) (bool, error) {
+func (c *CertificateUpdater) requiresRefresh(ctx context.Context) (bool, error) {
 	s, err := c.client.CoreV1().Secrets(c.ns).Get(ctx, secretName, metav1.GetOptions{})
 	if err != nil {
 		return false, err
@@ -62,7 +62,7 @@ func (c *CertificateManager) requiresRefresh(ctx context.Context) (bool, error) 
 	return false, nil
 }
 
-func (c *CertificateManager) checkAndUpdate(ctx context.Context) error {
+func (c *CertificateUpdater) checkAndUpdate(ctx context.Context) error {
 	r, err := c.requiresRefresh(ctx)
 	if err != nil {
 		return err
@@ -79,31 +79,7 @@ func (c *CertificateManager) checkAndUpdate(ctx context.Context) error {
 	return nil
 }
 
-func (c *CertificateManager) refreshCerts(ctx context.Context) error {
-	// initial check and update of certs
-	err := c.checkAndUpdate(ctx)
-	if err != nil {
-		return err
-	}
-
-	c.certTicker = time.NewTicker(10 * time.Second)
-	defer c.certTicker.Stop()
-
-	for {
-		select {
-		case <-c.certTicker.C:
-			err := c.checkAndUpdate(ctx)
-			if err != nil {
-				return err
-			}
-		case <-ctx.Done():
-			slog.Info("stopped certificate loop")
-			return nil
-		}
-	}
-}
-
-func (c *CertificateManager) rotateCerts(ctx context.Context) error {
+func (c *CertificateUpdater) rotateCerts(ctx context.Context) error {
 	slog.Info("rotating certificates")
 	caTemplate, caPrivKey, err := generateCA()
 	if err != nil {

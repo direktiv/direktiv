@@ -17,7 +17,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/extensions"
-	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
+	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
 )
@@ -27,7 +27,7 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsub2.Bus) error {
+func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsub.Bus) error {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}

@@ -1,4 +1,4 @@
-package cluster
+package natsclient
 
 import (
 	"crypto/tls"
