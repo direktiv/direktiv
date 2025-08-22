@@ -11,8 +11,8 @@ export const useExtenedKeyValueArrayResolver = (): KeyValueResolverFunction<
   const { t } = useTranslation();
   const interpolateString = useStringInterpolation();
   const resolveVariable = useVariableResolver();
-  return (input, localVariables) =>
-    input.map(({ key, value: valueType }) => {
+  return (keyValueArray, localVariables) =>
+    keyValueArray.map(({ key, value: valueType }) => {
       switch (valueType.type) {
         case "string": {
           return {

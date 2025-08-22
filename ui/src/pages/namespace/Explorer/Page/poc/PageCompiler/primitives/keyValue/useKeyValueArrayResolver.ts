@@ -6,8 +6,8 @@ export const useKeyValueArrayResolver = (): KeyValueResolverFunction<
   KeyValueType[]
 > => {
   const interpolateString = useStringInterpolation();
-  return (input, localVariables) =>
-    input.map(({ key, value }) => {
+  return (keyValueArray, localVariables) =>
+    keyValueArray.map(({ key, value }) => {
       const parsedValue = interpolateString(value, localVariables);
       return { key, value: parsedValue };
     });
