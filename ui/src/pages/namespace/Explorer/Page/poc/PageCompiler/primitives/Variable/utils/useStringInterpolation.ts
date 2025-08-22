@@ -23,7 +23,11 @@ export const useStringInterpolation = (): ResolverFunction<string> => {
     parseTemplateString(input, (match) => {
       const result = resolveVariableString(match, localVariables);
       if (!result.success) {
-        throw new Error(t(`direktivPage.error.templateString.${result.error}`));
+        throw new Error(
+          t(`direktivPage.error.templateString.${result.error}`, {
+            variable: match,
+          })
+        );
       }
       return result.data;
     }).join("");

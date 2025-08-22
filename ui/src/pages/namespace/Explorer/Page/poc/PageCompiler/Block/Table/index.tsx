@@ -40,8 +40,10 @@ export const Table = ({ blockProps }: TableProps) => {
   if (!variableArray.success) {
     return (
       <VariableError value={loop.data} errorCode={variableArray.error}>
-        {t(`direktivPage.error.templateString.${variableArray.error}`)} (
-        {variableArray.error})
+        {t(`direktivPage.error.templateString.${variableArray.error}`, {
+          variable: loop.data,
+        })}{" "}
+        ({variableArray.error})
       </VariableError>
     );
   }

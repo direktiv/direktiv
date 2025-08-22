@@ -27,7 +27,9 @@ export const useTemplateStringResolver =
         const result = resolveVariableString(match, localVariables);
         if (!result.success) {
           throw new Error(
-            t(`direktivPage.error.templateString.${result.error}`)
+            t(`direktivPage.error.templateString.${result.error}`, {
+              variable: match,
+            })
           );
         }
         return String(result.data);

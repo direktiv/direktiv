@@ -30,8 +30,10 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   if (!variableArray.success) {
     return (
       <VariableError value={data} errorCode={variableArray.error}>
-        {t(`direktivPage.error.templateString.${variableArray.error}`)} (
-        {variableArray.error})
+        {t(`direktivPage.error.templateString.${variableArray.error}`, {
+          variable: data,
+        })}{" "}
+        ({variableArray.error})
       </VariableError>
     );
   }

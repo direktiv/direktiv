@@ -352,7 +352,7 @@ describe("default form values", () => {
         .click();
       expect(
         screen.getByText(
-          "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
+          "Variable error (query.user.data): Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
         )
       );
     });
@@ -386,7 +386,11 @@ describe("default form values", () => {
           name: "There was an unexpected error",
         })
         .click();
-      expect(screen.getByText("Pointing to a value that is not a boolean."));
+      expect(
+        screen.getByText(
+          "Variable error (query.user.data.status): Pointing to a value that is not a boolean."
+        )
+      );
     });
 
     test("shows an error when number input default value is a string", async () => {
@@ -418,7 +422,11 @@ describe("default form values", () => {
           name: "There was an unexpected error",
         })
         .click();
-      expect(screen.getByText("Pointing to a value that is not a number."));
+      expect(
+        screen.getByText(
+          "Variable error (query.user.data.status): Pointing to a value that is not a number."
+        )
+      );
     });
 
     test("shows an error when select input default value is an object", async () => {
@@ -450,7 +458,7 @@ describe("default form values", () => {
         .click();
       expect(
         screen.getByText(
-          "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
+          "Variable error (query.user.data): Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
         )
       );
     });
