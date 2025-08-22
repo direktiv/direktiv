@@ -106,7 +106,7 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({
               return (
                 <TableRow
                   key={id}
-                  className="cursor-pointer"
+                  className="cursor-pointer hover:underline"
                   onClick={() => {
                     setSelectedPlugin(type);
                     setDialogOpen(true);
