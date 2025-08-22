@@ -2,7 +2,7 @@ import { Checkbox } from "./Checkbox";
 import { Fieldset } from "../utils/FieldSet";
 import { FormCheckboxType } from "../../../../schema/blocks/form/checkbox";
 import { StopPropagation } from "~/components/StopPropagation";
-import { encodeElementKey } from "../utils";
+import { encodeBlockKey } from "../utils";
 import { usePageStateContext } from "../../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 import { useVariableBooleanResolver } from "../../../primitives/Variable/utils/useVariableBooleanResolver";
@@ -17,7 +17,7 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
   const { id, label, description, defaultValue, optional, type } = blockProps;
   const { mode } = usePageStateContext();
 
-  const fieldName = encodeElementKey(type, id);
+  const fieldName = encodeBlockKey(type, id);
   let value: boolean;
 
   if (defaultValue.type === "variable") {

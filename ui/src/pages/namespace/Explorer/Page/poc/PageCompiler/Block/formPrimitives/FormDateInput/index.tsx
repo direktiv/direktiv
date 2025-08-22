@@ -1,7 +1,7 @@
 import { DatePicker } from "./DatePicker";
 import { Fieldset } from "../utils/FieldSet";
 import { FormDateInputType } from "../../../../schema/blocks/form/dateInput";
-import { encodeElementKey } from "../utils";
+import { encodeBlockKey } from "../utils";
 import { useTemplateStringResolver } from "../../../primitives/Variable/utils/useTemplateStringResolver";
 
 type FormDateInputProps = {
@@ -12,7 +12,7 @@ export const FormDateInput = ({ blockProps }: FormDateInputProps) => {
   const templateStringResolver = useTemplateStringResolver();
   const { id, label, description, defaultValue, optional, type } = blockProps;
   const value = templateStringResolver(defaultValue);
-  const fieldName = encodeElementKey(type, id);
+  const fieldName = encodeBlockKey(type, id);
   return (
     <Fieldset
       label={label}

@@ -2,7 +2,7 @@ import { Fieldset } from "./utils/FieldSet";
 import { FormTextareaType } from "../../../schema/blocks/form/textarea";
 import { StopPropagation } from "~/components/StopPropagation";
 import { Textarea } from "~/design/TextArea";
-import { encodeElementKey } from "./utils";
+import { encodeBlockKey } from "./utils";
 import { useTemplateStringResolver } from "../../primitives/Variable/utils/useTemplateStringResolver";
 
 type FormTextareaProps = {
@@ -14,7 +14,7 @@ export const FormTextarea = ({ blockProps }: FormTextareaProps) => {
   const templateStringResolver = useTemplateStringResolver();
 
   const value = templateStringResolver(defaultValue);
-  const fieldName = encodeElementKey(type, id);
+  const fieldName = encodeBlockKey(type, id);
 
   return (
     <Fieldset
