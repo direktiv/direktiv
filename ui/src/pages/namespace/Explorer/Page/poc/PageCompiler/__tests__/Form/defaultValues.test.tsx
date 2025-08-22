@@ -1,4 +1,3 @@
-import { HttpResponse, http } from "msw";
 import { act, render, screen } from "@testing-library/react";
 import {
   afterAll,
@@ -13,15 +12,12 @@ import {
   createDirektivPageWithForm,
   setPage,
   setupResizeObserverMock,
-} from "./utils";
+} from "../utils";
 
-import { PageCompiler } from "..";
-import { getUserDetailsResponse } from "./utils/api/samples";
-import { setupServer } from "msw/node";
+import { PageCompiler } from "../..";
+import { setupFormApi } from "./utils";
 
-const apiServer = setupServer(
-  http.get("/user-details", () => HttpResponse.json(getUserDetailsResponse))
-);
+const { apiServer } = setupFormApi();
 
 beforeAll(() => {
   setupResizeObserverMock();
@@ -35,8 +31,8 @@ afterEach(() => {
   apiServer.resetHandlers();
 });
 
-describe("Form", () => {
-  describe("valid default values", () => {
+describe("default form values", () => {
+  describe("valid", () => {
     test("string input can use string templates in the default value attribute", async () => {
       await act(async () => {
         render(
@@ -326,137 +322,145 @@ describe("Form", () => {
       ).toBe("pro");
     });
   });
-});
 
-describe("invalid default values", () => {
-  test("shows an error when textarea default value is an object", async () => {
-    await act(async () => {
-      render(
-        <PageCompiler
-          setPage={setPage}
-          page={createDirektivPageWithForm([
-            {
-              id: "textarea-pointing-to-object",
-              label: "invalid textarea",
-              description:
-                "This textarea is using an object in the template string",
-              optional: false,
-              type: "form-textarea",
-              defaultValue: "{{query.user.data}}",
-            },
-          ])}
-          mode="live"
-        />
-      );
-    });
-
-    await screen
-      .getByRole("button", {
-        name: "There was an unexpected error",
-      })
-      .click();
-    expect(
-      screen.getByText(
-        "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
-      )
-    );
-  });
-
-  test("shows an error when checkbox default value is a string", async () => {
-    await act(async () => {
-      render(
-        <PageCompiler
-          setPage={setPage}
-          page={createDirektivPageWithForm([
-            {
-              id: "checkbox-pointing-to-string",
-              label: "invalid checkbox",
-              description:
-                "This checkbox is pointing to a string for the default value",
-              optional: false,
-              type: "form-checkbox",
-              defaultValue: {
-                type: "variable",
-                value: "query.user.data.status",
+  describe("invalid", () => {
+    test("shows an error when textarea default value is an object", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm([
+              {
+                id: "textarea-using-an-object",
+                label: "invalid textarea",
+                description:
+                  "This textarea is using an object in the template string",
+                optional: false,
+                type: "form-textarea",
+                defaultValue: "{{query.user.data}}",
               },
-            },
-          ])}
-          mode="live"
-        />
+            ])}
+            mode="live"
+          />
+        );
+      });
+
+      await screen
+        .getByRole("button", {
+          name: "There was an unexpected error",
+        })
+        .click();
+      expect(
+        screen.getByText(
+          "Variable error (query.user.data): Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
+        )
       );
     });
 
-    await screen
-      .getByRole("button", {
-        name: "There was an unexpected error",
-      })
-      .click();
-    expect(screen.getByText("Pointing to a value that is not a boolean."));
-  });
-
-  test("shows an error when number input default value is a string", async () => {
-    await act(async () => {
-      render(
-        <PageCompiler
-          setPage={setPage}
-          page={createDirektivPageWithForm([
-            {
-              id: "number-pointing-to-string",
-              label: "invalid number inpuit",
-              description:
-                "This number input is pointing to a string for the default value",
-              optional: false,
-              type: "form-number-input",
-              defaultValue: {
-                type: "variable",
-                value: "query.user.data.status",
+    test("shows an error when checkbox default value is a string", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm([
+              {
+                id: "checkbox-pointing-to-string",
+                label: "invalid checkbox",
+                description:
+                  "This checkbox is pointing to a string for the default value",
+                optional: false,
+                type: "form-checkbox",
+                defaultValue: {
+                  type: "variable",
+                  value: "query.user.data.status",
+                },
               },
-            },
-          ])}
-          mode="live"
-        />
+            ])}
+            mode="live"
+          />
+        );
+      });
+
+      await screen
+        .getByRole("button", {
+          name: "There was an unexpected error",
+        })
+        .click();
+      expect(
+        screen.getByText(
+          "Variable error (query.user.data.status): Pointing to a value that is not a boolean."
+        )
       );
     });
 
-    await screen
-      .getByRole("button", {
-        name: "There was an unexpected error",
-      })
-      .click();
-    expect(screen.getByText("Pointing to a value that is not a number."));
-  });
+    test("shows an error when number input default value is a string", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm([
+              {
+                id: "number-using-string",
+                label: "invalid number inpuit",
+                description:
+                  "This number input is pointing to a string for the default value",
+                optional: false,
+                type: "form-number-input",
+                defaultValue: {
+                  type: "variable",
+                  value: "query.user.data.status",
+                },
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
 
-  test("shows an error when select input default value is an object", async () => {
-    await act(async () => {
-      render(
-        <PageCompiler
-          setPage={setPage}
-          page={createDirektivPageWithForm([
-            {
-              id: "select-pointing-to-object",
-              label: "dynamic select",
-              description:
-                "This select input is pointing to an object for the default value",
-              optional: false,
-              type: "form-select",
-              values: ["free", "pro", "enterprise"],
-              defaultValue: "{{query.user.data}}",
-            },
-          ])}
-          mode="live"
-        />
+      await screen
+        .getByRole("button", {
+          name: "There was an unexpected error",
+        })
+        .click();
+      expect(
+        screen.getByText(
+          "Variable error (query.user.data.status): Pointing to a value that is not a number."
+        )
       );
     });
 
-    await screen
-      .getByRole("button", {
-        name: "There was an unexpected error",
-      })
-      .click();
-    expect(
-      screen.getByText(
-        "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
-      )
-    );
+    test("shows an error when select input default value is an object", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm([
+              {
+                id: "select-pointing-to-object",
+                label: "dynamic select",
+                description:
+                  "This select input is pointing to an object for the default value",
+                optional: false,
+                type: "form-select",
+                values: ["free", "pro", "enterprise"],
+                defaultValue: "{{query.user.data}}",
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+
+      await screen
+        .getByRole("button", {
+          name: "There was an unexpected error",
+        })
+        .click();
+      expect(
+        screen.getByText(
+          "Variable error (query.user.data): Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null."
+        )
+      );
+    });
   });
 });

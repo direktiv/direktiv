@@ -1,36 +1,37 @@
-import { FC, PropsWithChildren, createContext, useContext } from "react";
+import { PropsWithChildren, createContext, useContext } from "react";
 
-import { VariableNamespace } from "../../../schema/primitives/variable";
+import { ContextVariableNamespace } from "../../../schema/primitives/variable";
 
 type VariableId = string;
 type DefinedValue = Exclude<unknown, undefined>;
+export type Variable = Record<VariableId, DefinedValue>;
 
-export type State = {
-  [keys in VariableNamespace]: Record<VariableId, DefinedValue>;
+export type ContextVariables = {
+  [keys in ContextVariableNamespace]: Variable;
 };
 
-const defaultState: State = {
+const defaultState: ContextVariables = {
   loop: {},
-  form: {},
   query: {},
 };
 
-const VariableContext = createContext<State | null>(null);
+const VariableContext = createContext<ContextVariables | null>(null);
 
-type VariableContextProviderProps = PropsWithChildren<{ value: State }>;
+type VariableContextProviderProps = PropsWithChildren<{
+  variables: ContextVariables;
+}>;
 
-const VariableContextProvider: FC<VariableContextProviderProps> = ({
+export const VariableContextProvider = ({
   children,
-  value,
-}) => (
-  <VariableContext.Provider value={value}>{children}</VariableContext.Provider>
+  variables,
+}: VariableContextProviderProps) => (
+  <VariableContext.Provider value={variables}>
+    {children}
+  </VariableContext.Provider>
 );
 
-const useVariableContext = () => {
+export const useVariablesContext = () => {
   const context = useContext(VariableContext);
-  return context;
+  const variables = context ?? defaultState;
+  return variables;
 };
-
-const useVariables = () => useVariableContext() ?? defaultState;
-
-export { VariableContextProvider, useVariables };

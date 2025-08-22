@@ -1,5 +1,6 @@
 import { BlockType } from "../../../schema/blocks";
 import { DirektivPagesType } from "../../../schema";
+import { MutationType } from "../../../schema/procedures/mutation";
 
 // minimal ResizeObserver mock required by radix-ui checkbox
 // https://github.com/radix-ui/primitives/blob/main/packages/react/checkbox/src/checkbox.test.tsx#L11
@@ -20,7 +21,14 @@ export const createDirektivPage = (blocks: BlockType[]): DirektivPagesType => ({
   blocks,
 });
 
-export const createDirektivPageWithForm = (blocks: BlockType[]) =>
+export const createDirektivPageWithForm = (
+  blocks: BlockType[],
+  mutation: MutationType = {
+    id: "form",
+    method: "POST",
+    url: "/some-endpoint",
+  }
+) =>
   createDirektivPage([
     {
       type: "query-provider",
@@ -36,13 +44,9 @@ export const createDirektivPageWithForm = (blocks: BlockType[]) =>
           type: "form",
           trigger: {
             type: "button",
-            label: "form",
+            label: "save",
           },
-          mutation: {
-            id: "form",
-            method: "POST",
-            url: "/some-endpoint",
-          },
+          mutation,
           blocks,
         },
       ],

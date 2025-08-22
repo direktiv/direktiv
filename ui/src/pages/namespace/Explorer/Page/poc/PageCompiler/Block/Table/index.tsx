@@ -9,7 +9,7 @@ import {
 } from "~/design/Table";
 import {
   VariableContextProvider,
-  useVariables,
+  useVariablesContext,
 } from "../../primitives/Variable/VariableContext";
 
 import { ActionsCell } from "./ActionsCell";
@@ -29,7 +29,7 @@ export const Table = ({ blockProps }: TableProps) => {
   const { columns, actions, data: loop } = blockProps;
   const { t } = useTranslation();
   const resolveVariableArray = useVariableArrayResolver();
-  const parentVariables = useVariables();
+  const parentVariables = useVariablesContext();
 
   const variableArray = resolveVariableArray(loop.data);
 
@@ -40,8 +40,10 @@ export const Table = ({ blockProps }: TableProps) => {
   if (!variableArray.success) {
     return (
       <VariableError value={loop.data} errorCode={variableArray.error}>
-        {t(`direktivPage.error.templateString.${variableArray.error}`)} (
-        {variableArray.error})
+        {t(`direktivPage.error.templateString.${variableArray.error}`, {
+          variable: loop.data,
+        })}{" "}
+        ({variableArray.error})
       </VariableError>
     );
   }
@@ -66,7 +68,7 @@ export const Table = ({ blockProps }: TableProps) => {
             variableArray.data.map((item, index) => (
               <VariableContextProvider
                 key={index}
-                value={{
+                variables={{
                   ...parentVariables,
                   loop: {
                     ...parentVariables.loop,

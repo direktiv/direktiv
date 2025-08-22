@@ -11,10 +11,14 @@ import { useTranslation } from "react-i18next";
 
 type DatePickerProps = {
   defaultValue: string;
-  id: string;
+  fieldName: string;
 };
 
-export const DatePicker = ({ defaultValue, id }: DatePickerProps) => {
+// this formatter reflects the format of a native date input
+const formatDateInput = (date: Date | undefined) =>
+  date ? moment(date).format("YYYY-MM-DD") : "";
+
+export const DatePicker = ({ defaultValue, fieldName }: DatePickerProps) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(
@@ -22,30 +26,33 @@ export const DatePicker = ({ defaultValue, id }: DatePickerProps) => {
   );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <StopPropagation>
-        <PopoverTrigger asChild>
-          <Button variant="outline">
-            <CalendarIcon />{" "}
-            {date
-              ? moment(date).format("LL")
-              : t("direktivPage.page.blocks.form.datePickerPlaceholder")}
-          </Button>
-        </PopoverTrigger>
-      </StopPropagation>
-      <StopPropagation>
-        <PopoverContent className="w-auto">
-          <DatepickerDesignComponent
-            id={id}
-            mode="single"
-            selected={date}
-            onSelect={(date) => {
-              setOpen(false);
-              setDate(date);
-            }}
-          />
-        </PopoverContent>
-      </StopPropagation>
-    </Popover>
+    <>
+      <Popover open={open} onOpenChange={setOpen}>
+        <StopPropagation>
+          <PopoverTrigger asChild>
+            <Button variant="outline">
+              <CalendarIcon />{" "}
+              {date
+                ? moment(date).format("LL")
+                : t("direktivPage.page.blocks.form.datePickerPlaceholder")}
+            </Button>
+          </PopoverTrigger>
+        </StopPropagation>
+        <StopPropagation>
+          <PopoverContent className="w-auto">
+            <DatepickerDesignComponent
+              id={fieldName}
+              mode="single"
+              selected={date}
+              onSelect={(date) => {
+                setOpen(false);
+                setDate(date);
+              }}
+            />
+          </PopoverContent>
+        </StopPropagation>
+      </Popover>
+      <input type="hidden" name={fieldName} value={formatDateInput(date)} />
+    </>
   );
 };

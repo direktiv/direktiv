@@ -1,3 +1,4 @@
+import { ResolverFunction } from "./types";
 import { TemplateStringType } from "../../../../schema/primitives/templateString";
 import { parseTemplateString } from ".";
 import { useTranslation } from "react-i18next";
@@ -17,19 +18,23 @@ import { useVariableStringResolver } from "./useVariableStringResolver";
  *
  * console.log(resolvedString); // "Hello John, your order 12345 is ready!"
  */
-export const useTemplateStringResolver = () => {
-  const { t } = useTranslation();
-  const resolveVariableString = useVariableStringResolver();
+export const useTemplateStringResolver =
+  (): ResolverFunction<TemplateStringType> => {
+    const { t } = useTranslation();
+    const resolveVariableString = useVariableStringResolver();
+    return (value, localVariables) => {
+      const templateFragments = parseTemplateString(value, (match) => {
+        const result = resolveVariableString(match, localVariables);
+        if (!result.success) {
+          throw new Error(
+            t(`direktivPage.error.templateString.${result.error}`, {
+              variable: match,
+            })
+          );
+        }
+        return String(result.data);
+      });
 
-  return (value: TemplateStringType): string => {
-    const templateFragments = parseTemplateString(value, (match) => {
-      const result = resolveVariableString(match);
-      if (!result.success) {
-        throw new Error(t(`direktivPage.error.templateString.${result.error}`));
-      }
-      return String(result.data);
-    });
-
-    return templateFragments.join("");
+      return templateFragments.join("");
+    };
   };
-};

@@ -1,7 +1,7 @@
 import { Block, BlockPathType } from ".";
 import {
   VariableContextProvider,
-  useVariables,
+  useVariablesContext,
 } from "../primitives/Variable/VariableContext";
 
 import { BlockList } from "./utils/BlockList";
@@ -19,7 +19,7 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   const { blocks, data, id } = blockProps;
   const { t } = useTranslation();
   const resolveVariableArray = useVariableArrayResolver();
-  const parentVariables = useVariables();
+  const parentVariables = useVariablesContext();
 
   const variableArray = resolveVariableArray(data);
 
@@ -30,8 +30,10 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   if (!variableArray.success) {
     return (
       <VariableError value={data} errorCode={variableArray.error}>
-        {t(`direktivPage.error.templateString.${variableArray.error}`)} (
-        {variableArray.error})
+        {t(`direktivPage.error.templateString.${variableArray.error}`, {
+          variable: data,
+        })}{" "}
+        ({variableArray.error})
       </VariableError>
     );
   }
@@ -41,7 +43,7 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
       {variableArray.data.map((item, variableIndex) => (
         <VariableContextProvider
           key={variableIndex}
-          value={{
+          variables={{
             ...parentVariables,
             loop: {
               ...parentVariables.loop,

@@ -9,6 +9,7 @@ import {
 import { Fieldset } from "./utils/FieldSet";
 import { FormSelectType } from "../../../schema/blocks/form/select";
 import { StopPropagation } from "~/components/StopPropagation";
+import { encodeBlockKey } from "./utils";
 import { useTemplateStringResolver } from "../../primitives/Variable/utils/useTemplateStringResolver";
 import { useTranslation } from "react-i18next";
 
@@ -19,10 +20,11 @@ type FormSelectProps = {
 export const FormSelect = ({ blockProps }: FormSelectProps) => {
   const { t } = useTranslation();
   const templateStringResolver = useTemplateStringResolver();
-  const { id, label, description, defaultValue, values, optional } = blockProps;
+  const { id, label, description, defaultValue, values, optional, type } =
+    blockProps;
 
   const resolvedDefaultValue = templateStringResolver(defaultValue);
-  const htmlID = `form-select-${id}`;
+  const fieldName = encodeBlockKey(type, id);
   const value = values.some((v) => v === resolvedDefaultValue)
     ? resolvedDefaultValue
     : undefined;
@@ -31,16 +33,17 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
     <Fieldset
       label={label}
       description={description}
-      htmlFor={htmlID}
+      htmlFor={fieldName}
       optional={optional}
     >
       <Select
         defaultValue={value}
         // remount when defaultValue changes
         key={value}
+        name={fieldName}
       >
         <StopPropagation>
-          <SelectTrigger variant="outline" id={htmlID} value={value}>
+          <SelectTrigger variant="outline" id={fieldName} value={value}>
             <SelectValue
               placeholder={t("direktivPage.page.blocks.form.selectPlaceholder")}
             />

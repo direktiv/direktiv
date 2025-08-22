@@ -1,6 +1,7 @@
 import { DatePicker } from "./DatePicker";
 import { Fieldset } from "../utils/FieldSet";
 import { FormDateInputType } from "../../../../schema/blocks/form/dateInput";
+import { encodeBlockKey } from "../utils";
 import { useTemplateStringResolver } from "../../../primitives/Variable/utils/useTemplateStringResolver";
 
 type FormDateInputProps = {
@@ -9,20 +10,19 @@ type FormDateInputProps = {
 
 export const FormDateInput = ({ blockProps }: FormDateInputProps) => {
   const templateStringResolver = useTemplateStringResolver();
-  const { id, label, description, defaultValue, optional } = blockProps;
-
+  const { id, label, description, defaultValue, optional, type } = blockProps;
   const value = templateStringResolver(defaultValue);
-  const htmlID = `form-input-${id}`;
+  const fieldName = encodeBlockKey(type, id);
   return (
     <Fieldset
       label={label}
       description={description}
-      htmlFor={htmlID}
+      htmlFor={fieldName}
       optional={optional}
     >
       <DatePicker
         defaultValue={value}
-        id={htmlID}
+        fieldName={fieldName}
         // remount when defaultValue changes
         key={value}
       />

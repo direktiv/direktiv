@@ -1,10 +1,11 @@
-import { Checkbox } from "~/design/Checkbox";
-import { Fieldset } from "./utils/FieldSet";
-import { FormCheckboxType } from "../../../schema/blocks/form/checkbox";
+import { Checkbox } from "./Checkbox";
+import { Fieldset } from "../utils/FieldSet";
+import { FormCheckboxType } from "../../../../schema/blocks/form/checkbox";
 import { StopPropagation } from "~/components/StopPropagation";
-import { usePageStateContext } from "../../context/pageCompilerContext";
+import { encodeBlockKey } from "../utils";
+import { usePageStateContext } from "../../../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
-import { useVariableBooleanResolver } from "../../primitives/Variable/utils/useVariableBooleanResolver";
+import { useVariableBooleanResolver } from "../../../primitives/Variable/utils/useVariableBooleanResolver";
 
 type FormCheckboxProps = {
   blockProps: FormCheckboxType;
@@ -13,17 +14,19 @@ type FormCheckboxProps = {
 export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
   const { t } = useTranslation();
   const resolveVariableBoolean = useVariableBooleanResolver();
-  const { id, label, description, defaultValue, optional } = blockProps;
+  const { id, label, description, defaultValue, optional, type } = blockProps;
   const { mode } = usePageStateContext();
 
-  const htmlID = `form-checkbox-${id}`;
+  const fieldName = encodeBlockKey(type, id);
   let value: boolean;
 
   if (defaultValue.type === "variable") {
     const resolvedDefaultValue = resolveVariableBoolean(defaultValue.value);
     if (!resolvedDefaultValue.success) {
       throw new Error(
-        t(`direktivPage.error.templateString.${resolvedDefaultValue.error}`)
+        t(`direktivPage.error.templateString.${resolvedDefaultValue.error}`, {
+          variable: defaultValue.value,
+        })
       );
     }
     value = resolvedDefaultValue.data;
@@ -35,15 +38,15 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
     <Fieldset
       label={label}
       description={description}
-      htmlFor={htmlID}
+      htmlFor={fieldName}
       horizontal
       optional={optional}
       onClickLabel={(event) => mode === "edit" && event.preventDefault()}
     >
       <StopPropagation>
         <Checkbox
-          defaultChecked={value}
-          id={htmlID}
+          defaultValue={value}
+          fieldName={fieldName}
           // remount when defaultValue changes
           key={String(value)}
         />

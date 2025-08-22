@@ -1,6 +1,5 @@
 import { ResolveVariableNumberError } from "./errors";
-import { Result } from "./types";
-import { VariableType } from "../../../../schema/primitives/variable";
+import { ResolverFunction } from "./types";
 import { useVariableResolver } from "./useVariableResolver";
 import { z } from "zod";
 
@@ -8,10 +7,13 @@ import { z } from "zod";
  * A hook that works the same as useVariableResolver
  * but ensures that the resolved value is a number.
  */
-export const useVariableNumberResolver = () => {
+export const useVariableNumberResolver = (): ResolverFunction<
+  number,
+  ResolveVariableNumberError
+> => {
   const resolveVariable = useVariableResolver();
-  return (value: VariableType): Result<number, ResolveVariableNumberError> => {
-    const variableResult = resolveVariable(value);
+  return (...args) => {
+    const variableResult = resolveVariable(...args);
 
     if (!variableResult.success) {
       return { success: false, error: variableResult.error };

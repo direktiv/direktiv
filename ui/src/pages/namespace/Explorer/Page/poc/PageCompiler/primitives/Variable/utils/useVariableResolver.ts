@@ -1,14 +1,13 @@
 import {
-  PossibleValues,
+  JsonValueType,
   getValueFromJsonPath,
   parseVariable,
   validateVariable,
 } from ".";
 
 import { ResolveVariableError } from "./errors";
-import { Result } from "./types";
-import { VariableType } from "../../../../schema/primitives/variable";
-import { useVariables } from "../VariableContext";
+import { ResolverFunction } from "./types";
+import { useMergeLocalWithContextVariables } from "../LocalVariables";
 
 /**
  * A hook that returns a function to resolve a variable path string to its
@@ -20,11 +19,13 @@ import { useVariables } from "../VariableContext";
  * Returns a Result object that indicates either success with the resolved value
  * or failure with an error code describing the reason
  */
-export const useVariableResolver = () => {
-  const variables = useVariables();
-  return (
-    value: VariableType
-  ): Result<PossibleValues, ResolveVariableError> => {
+export const useVariableResolver = (): ResolverFunction<
+  JsonValueType,
+  ResolveVariableError
+> => {
+  const mergeLocalWithContextVariables = useMergeLocalWithContextVariables();
+  return (value, localVariables) => {
+    const variables = mergeLocalWithContextVariables(localVariables);
     const variableObject = parseVariable(value);
     const validationResult = validateVariable(variableObject);
 

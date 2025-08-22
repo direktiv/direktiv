@@ -1,8 +1,8 @@
 import { Block, BlockPathType } from ".";
 import {
-  State,
+  ContextVariables,
   VariableContextProvider,
-  useVariables,
+  useVariablesContext,
 } from "../primitives/Variable/VariableContext";
 
 import { BlockList } from "./utils/BlockList";
@@ -21,7 +21,7 @@ export const QueryProvider = ({
 }: QueryProviderProps) => {
   const { blocks, queries } = blockProps;
   const { t } = useTranslation();
-  const parentVariables = useVariables();
+  const parentVariables = useVariablesContext();
   const data = usePageSuspenseQueries(queries);
 
   const queryWithDuplicateId = queries.find(
@@ -36,13 +36,13 @@ export const QueryProvider = ({
     );
   }
 
-  const queryResults: State["query"] = Object.fromEntries(
+  const queryResults: ContextVariables["query"] = Object.fromEntries(
     queries.map((query, index) => [query.id, data[index]?.data])
   );
 
   return (
     <VariableContextProvider
-      value={{
+      variables={{
         ...parentVariables,
         query: {
           ...parentVariables.query,

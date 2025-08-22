@@ -1645,16 +1645,16 @@
         "table": { "noResult": "No entries to show" }
       },
       "templateString": {
-        "namespaceInvalid": "The template string does not have a valid namespace.",
-        "idUndefined": "The template string is missing an id.",
-        "pointerUndefined": "The template string is missing a pointer.",
-        "NoStateForId": "Could not find any state for the id",
-        "invalidJson": "Trying to process a template string on an invalid JSON object",
-        "invalidPath": "The path is not ivalid. It points to an undefined value",
-        "couldNotStringify": "Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null.",
-        "notAnArray": "Pointing to a value that is not an array.",
-        "notABoolean": "Pointing to a value that is not a boolean.",
-        "notANumber": "Pointing to a value that is not a number."
+        "namespaceInvalid": "Variable error ({{variable}}): The template string does not have a valid namespace.",
+        "idUndefined": "Variable error ({{variable}}): The template string is missing an id.",
+        "pointerUndefined": "Variable error ({{variable}}): The template string is missing a pointer.",
+        "NoStateForId": "Variable error ({{variable}}): Could not find any state for the id",
+        "invalidJson": "Variable error ({{variable}}): Trying to process a template string on an invalid JSON object",
+        "invalidPath": "Variable error ({{variable}}): The path is not valid. It points to an undefined value",
+        "couldNotStringify": "Variable error ({{variable}}): Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null.",
+        "notAnArray": "Variable error ({{variable}}): Pointing to a value that is not an array.",
+        "notABoolean": "Variable error ({{variable}}): Pointing to a value that is not a boolean.",
+        "notANumber": "Variable error ({{variable}}): Pointing to a value that is not a number."
       }
     },
     "page": {
@@ -1662,6 +1662,7 @@
         "table": { "noResult": "No entries to show" },
         "form": {
           "success": "The form has been submitted successfully",
+          "error": "Form submission failed",
           "optional": "(optional)",
           "selectPlaceholder": "Select an option",
           "datePickerPlaceholder": "Pick a date"
