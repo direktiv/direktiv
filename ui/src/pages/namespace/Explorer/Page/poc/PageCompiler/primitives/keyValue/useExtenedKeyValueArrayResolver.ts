@@ -5,14 +5,42 @@ import { useStringInterpolation } from "../Variable/utils/useStringInterpolation
 import { useTranslation } from "react-i18next";
 import { useVariableResolver } from "../Variable/utils/useVariableResolver";
 
-export const useExtenedKeyValueArrayResolver = (): KeyValueResolverFunction<
+/**
+ * Hook that returns a function to resolve an array of extended key-value pairs.
+ * Transforms them into a regular key-value array by interpolating template variables
+ * and resolving different value types using provided local and context variables.
+ *
+ * keyValueArray input:
+ * [
+ *   {
+ *     key: "name",
+ *     value: {
+ *       type: "string",
+ *       value: "{{this.form.firstName}} {{this.form.lastName}}",
+ *     },
+ *   },
+ *   {
+ *     key: "isActive",
+ *     value: { type: "variable", value: "query.user.data.isActive" },
+ *   },
+ * ];
+ *
+ * localVariables:
+ * { this: { form: { firstName: "John", lastName: "Doe" } } }
+ *
+ * output: [
+ *   { key: "name", value: "John Doe" },
+ *   { key: "isActive", value: true }
+ * ]
+ */
+export const useExtendedKeyValueArrayResolver = (): KeyValueResolverFunction<
   ExtendedKeyValueType[]
 > => {
   const { t } = useTranslation();
   const interpolateString = useStringInterpolation();
   const resolveVariable = useVariableResolver();
-  return (keyValueArray, localVariables) =>
-    keyValueArray.map(({ key, value: valueType }) => {
+  return (extendedKeyValueArray, localVariables) =>
+    extendedKeyValueArray.map(({ key, value: valueType }) => {
       switch (valueType.type) {
         case "string": {
           return {

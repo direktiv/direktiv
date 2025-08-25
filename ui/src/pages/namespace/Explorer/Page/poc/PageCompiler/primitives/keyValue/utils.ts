@@ -4,16 +4,16 @@ import { LocalVariablesContent } from "../Variable/LocalVariables";
 export type KeyValueResolverFunction<InputType> = (
   value: InputType,
   localVariables?: LocalVariablesContent
-) => ExtendedKeyValueType[];
+) => KeyValue[];
 
-const keyValueToObject = (kv: ExtendedKeyValueType) => ({
+const keyValueToObject = (kv: KeyValue) => ({
   [kv.key]: kv.value,
 });
 
-export const keyValueArrayToObject = (kv: ExtendedKeyValueType[]) =>
+export const keyValueArrayToObject = (kv: KeyValue[]) =>
   kv.reduce((acc, curr) => ({ ...acc, ...keyValueToObject(curr) }), {});
 
-export type ExtendedKeyValueType = {
+export type KeyValue = {
   key: string;
   value: JsonValueType;
 };

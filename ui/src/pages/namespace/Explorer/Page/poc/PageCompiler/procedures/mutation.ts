@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LocalVariablesContent } from "../primitives/Variable/LocalVariables";
 import { MutationType } from "../../schema/procedures/mutation";
 import { keyValueArrayToObject } from "../primitives/keyValue/utils";
-import { useExtenedKeyValueArrayResolver } from "../primitives/keyValue/useExtenedKeyValueArrayResolver";
+import { useExtendedKeyValueArrayResolver } from "../primitives/keyValue/useExtenedKeyValueArrayResolver";
 import { useKeyValueArrayResolver } from "../primitives/keyValue/useKeyValueArrayResolver";
 import { useUrlGenerator } from "./utils";
 
@@ -15,7 +15,7 @@ export const usePageMutation = ({ onError }: UsePageMutationParams = {}) => {
   const queryClient = useQueryClient();
   const generateUrl = useUrlGenerator();
   const resolveKeyValueArray = useKeyValueArrayResolver();
-  const resolveExtendedKeyValueArray = useExtenedKeyValueArrayResolver();
+  const resolveExtendedKeyValueArray = useExtendedKeyValueArrayResolver();
 
   return useMutation({
     mutationFn: async ({
