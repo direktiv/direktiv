@@ -51,7 +51,7 @@ func NewStore(ctx context.Context, url, name string) (engine.Store, error) {
 	return &store{nc: nc, js: js, stream: name}, nil
 }
 
-func (s *store) PutInstanceMessage(ctx context.Context, namespace string, instanceID uuid.UUID, typ string, payload any) (uuid.UUID, error) {
+func (s *store) PushInstanceMessage(ctx context.Context, namespace string, instanceID uuid.UUID, typ string, payload any) (uuid.UUID, error) {
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		return uuid.Nil, err
@@ -85,7 +85,7 @@ func (s *store) PutInstanceMessage(ctx context.Context, namespace string, instan
 	return msgID, nil
 }
 
-func (s *store) GetInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID, typ string) ([]engine.Message, error) {
+func (s *store) PullInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID, typ string) ([]engine.Message, error) {
 	subj := fmt.Sprintf("engineMessages.%s.instanceID.%s.type.%s", namespace, instanceID, typ)
 
 	// Fetch from base (no eventType) and typed subjects, then merge by At.
