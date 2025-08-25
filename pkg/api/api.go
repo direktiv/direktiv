@@ -56,9 +56,9 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 		syncNamespace: app.SyncNamespace,
 	}
 	instCtr := &instController{
-		db:       db,
-		manager:  nil,
-		jsEngine: app.JSEngine,
+		db:      db,
+		manager: nil,
+		engine:  app.Engine,
 	}
 	notificationsCtr := &notificationsController{
 		db: db,

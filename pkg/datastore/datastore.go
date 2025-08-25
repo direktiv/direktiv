@@ -18,7 +18,6 @@ type Store interface {
 
 	Secrets() SecretsStore
 	HeartBeats() HeartBeatsStore
-	JSInstances() JSInstancesStore
 
 	RuntimeVariables() RuntimeVariablesStore
 
@@ -39,8 +38,6 @@ var (
 	// ErrDuplication is a common error type that should be returned by any store implementation
 	// when tying to violate unique constraints.
 	ErrDuplication = errors.New("ErrDuplication")
-
-	ErrInvalidArgument = errors.New("ErrInvalidArgument")
 )
 
 // SymmetricEncryptionKey a symmetric encryption key to encrypt and decrypt sensitive data in the database.

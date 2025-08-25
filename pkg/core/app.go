@@ -127,5 +127,5 @@ type App struct {
 	GatewayManager  GatewayManager
 	SyncNamespace   SyncNamespace
 
-	JSEngine JSEngine
+	Engine Engine
 }

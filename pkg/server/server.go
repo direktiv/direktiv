@@ -110,14 +110,14 @@ func Run(circuit *core.Circuit) error {
 	})
 
 	// Create js engine
-	app.JSEngine, err = engine.NewEngine(db)
+	app.Engine, err = engine.NewEngine(db)
 	if err != nil {
-		return fmt.Errorf("initializing js_engine, err: %w", err)
+		return fmt.Errorf("initializing engine, err: %w", err)
 	}
 	circuit.Start(func() error {
-		err := app.JSEngine.Run(circuit)
+		err := app.Engine.Start(circuit)
 		if err != nil {
-			return fmt.Errorf("js_engine, err: %w", err)
+			return fmt.Errorf("engine, err: %w", err)
 		}
 
 		return nil

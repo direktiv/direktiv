@@ -16,13 +16,13 @@ type engine struct {
 	db *database.DB
 }
 
-func NewEngine(db *database.DB) (core.JSEngine, error) {
+func NewEngine(db *database.DB) (core.Engine, error) {
 	return &engine{
 		db: db,
 	}, nil
 }
 
-func (e *engine) Run(circuit *core.Circuit) error {
+func (e *engine) Start(circuit *core.Circuit) error {
 	cycleTime := time.Second
 	for {
 		if circuit.IsDone() {

@@ -61,7 +61,3 @@ func (s *store) Namespaces() datastore.NamespacesStore {
 func (s *store) Traces() datastore.TracesStore {
 	return &sqlTracesStore{db: s.db}
 }
-
-func (s *store) JSInstances() datastore.JSInstancesStore {
-	return &sqlJSInstancesStore{db: s.db}
-}

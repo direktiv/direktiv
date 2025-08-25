@@ -58,9 +58,9 @@ func marshalForAPIJS(ins *datastore.JSInstance) *InstanceData {
 }
 
 type instController struct {
-	db       *database.DB
-	manager  any
-	jsEngine core.JSEngine
+	db      *database.DB
+	manager any
+	engine  core.Engine
 }
 
 func (e *instController) mountRouter(r chi.Router) {
@@ -95,7 +95,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		input = []byte(`{}`)
 	}
 
-	id, err := e.jsEngine.ExecWorkflow(r.Context(), ns.Name, path, string(input))
+	id, err := e.engine.ExecWorkflow(r.Context(), ns.Name, path, string(input))
 	if err != nil {
 		// telemetry.ReportError(span, err)
 		writeError(w, &Error{
