@@ -24,6 +24,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/service/registry"
 	"github.com/direktiv/direktiv/pkg/telemetry"
 	"github.com/direktiv/direktiv/pkg/utils"
+	"github.com/nats-io/nats.go"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -209,6 +210,19 @@ func initDB(config *core.Config) (*database.DB, error) {
 		return nil, err
 	}
 	slog.Info("successfully connected to the database")
+
+	var nc *nats.Conn
+	utils.Retry(time.Second, 10, func() error {
+		slog.Info("test connection to nats...")
+		nc, err = nats.Connect("nats://nats:4222")
+
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+	nc.Drain()
+	slog.Info("successfully connected to the nats")
 
 	res := db.Exec(database.Schema)
 	if res.Error != nil {
