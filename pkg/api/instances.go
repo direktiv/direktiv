@@ -83,7 +83,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := e.engine.GetInstance(r.Context(), ns.Name, id)
+	data, err := e.engine.GetInstanceMessages(r.Context(), ns.Name, id)
 	if err != nil {
 		writeError(w, &Error{
 			Code:    err.Error(),

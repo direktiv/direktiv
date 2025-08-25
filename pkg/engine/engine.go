@@ -68,7 +68,7 @@ func (e *engine) ExecWorkflow(ctx context.Context, namespace string, path string
 		endMsg.EndedAt = time.Now()
 	}
 
-	_, err = e.store.PushInstanceMessage(ctx, namespace, id, "stateChange", endMsg)
+	_, err = e.store.PushInstanceMessage(ctx, namespace, id, "end", endMsg)
 	if err != nil {
 		return id, fmt.Errorf("put end instance message: %s", err)
 	}
@@ -76,9 +76,8 @@ func (e *engine) ExecWorkflow(ctx context.Context, namespace string, path string
 	return id, err
 }
 
-// TODO: fix this api
-func (e *engine) GetInstance(ctx context.Context, namespace string, instanceID uuid.UUID) (any, error) {
-	return e.store.PullInstanceMessages(ctx, namespace, instanceID, "stateChange")
+func (e *engine) GetInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID) (any, error) {
+	return e.store.PullInstanceMessages(ctx, namespace, instanceID, "*")
 }
 
 func (e *engine) createWorkflowInstance(ctx context.Context, namespace string, path string, input string) (uuid.UUID, []byte, error) {
@@ -101,7 +100,7 @@ func (e *engine) createWorkflowInstance(ctx context.Context, namespace string, p
 
 	id := uuid.New()
 
-	_, err = e.store.PushInstanceMessage(ctx, namespace, id, "stateChange", InstanceMessage{
+	_, err = e.store.PushInstanceMessage(ctx, namespace, id, "init", InstanceMessage{
 		InstanceID:   id,
 		Namespace:    namespace,
 		WorkflowPath: path,
