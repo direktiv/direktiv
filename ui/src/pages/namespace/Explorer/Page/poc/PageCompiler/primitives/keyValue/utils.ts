@@ -13,7 +13,7 @@ const keyValueToObject = (kv: KeyValue) => ({
 export const keyValueArrayToObject = (kv: KeyValue[]) =>
   kv.reduce((acc, curr) => ({ ...acc, ...keyValueToObject(curr) }), {});
 
-export type KeyValue = {
+type KeyValue = {
   key: string;
   value: JsonValueType;
 };

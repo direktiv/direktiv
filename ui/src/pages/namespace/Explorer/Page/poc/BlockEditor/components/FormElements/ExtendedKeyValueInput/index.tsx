@@ -1,11 +1,12 @@
 import {
   ExtendedKeyValue,
   ExtendedKeyValueType,
-} from "../../../schema/primitives/extendedKeyValue";
+} from "../../../../schema/primitives/extendedKeyValue";
 
 import { ArrayForm } from "~/components/Form/Array";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
+import { ValueInput } from "./ValueInput";
 import { useTranslation } from "react-i18next";
 
 type ExtendedKeyValueInputProps = {
@@ -35,7 +36,7 @@ export const ExtendedKeyValueInput = ({
         }}
         itemIsValid={(item) => ExtendedKeyValue.safeParse(item).success}
         renderItem={({ value: itemValue, setValue, handleKeyDown }) => (
-          <>
+          <div className="flex flex-col gap-2">
             <Input
               placeholder={t(
                 "direktivPage.blockEditor.blockForms.keyValue.key"
@@ -49,20 +50,17 @@ export const ExtendedKeyValueInput = ({
                 });
               }}
             />
-            <Input
-              placeholder={t(
-                "direktivPage.blockEditor.blockForms.keyValue.value"
-              )}
+            <ValueInput
               value={itemValue.value}
-              onKeyDown={handleKeyDown}
-              onChange={(e) => {
+              onChange={(newValue) => {
                 setValue({
                   ...itemValue,
-                  value: e.target.value,
+                  value: newValue,
                 });
               }}
+              onKeyDown={handleKeyDown}
             />
-          </>
+          </div>
         )}
       />
     </Fieldset>
