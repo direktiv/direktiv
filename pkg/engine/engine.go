@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
@@ -40,7 +41,7 @@ func (e *engine) ExecWorkflow(ctx context.Context, namespace string, path string
 	}
 	id, fileData, err := e.createWorkflowInstance(ctx, namespace, path, input)
 	if err != nil {
-		return uuid.Nil, err
+		return uuid.Nil, fmt.Errorf("create workflow instance: %s", err)
 	}
 
 	ret, err := e.execJSScript(fileData, input)
@@ -70,7 +71,7 @@ func (e *engine) ExecWorkflow(ctx context.Context, namespace string, path string
 
 	_, err = e.store.PutInstanceMessage(ctx, namespace, id, "stateChange", endMsg)
 	if err != nil {
-		return id, err
+		return id, fmt.Errorf("put end instance message: %s", err)
 	}
 
 	return id, err
