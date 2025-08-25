@@ -3,6 +3,8 @@ package certificates
 import (
 	"log/slog"
 	"math/rand"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
@@ -41,7 +43,13 @@ func (c *CertificateUpdater) Start(circuit *core.Circuit) {
 		slog.Info("run certificate loop")
 		// for concurrent startup we delay it by up to ten seconds
 		// if nodes startup we are trying to run them with a random delay
-		time.Sleep(time.Duration(rand.Intn(10)) * time.Second) //nolint:gosec
+		delay := os.Getenv("DIREKTIV_NATS_CERT_DELAY")
+		d, err := strconv.Atoi(delay)
+		if err != nil {
+			d = 10
+		}
+
+		time.Sleep(time.Duration(rand.Intn(d)) * time.Second) //nolint:gosec
 
 		for {
 			err := c.checkAndUpdate(circuit.Context())

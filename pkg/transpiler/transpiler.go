@@ -19,14 +19,16 @@ type Transpiler struct {
 }
 
 func NewTranspiler() (*Transpiler, error) {
-
 	fn := randstr.String(8, "abcdefghijklmnopqrstuvwABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	vm := sobek.New()
 
-	vm.Set(fn, func(call sobek.FunctionCall) sobek.Value {
+	err := vm.Set(fn, func(call sobek.FunctionCall) sobek.Value {
 		bs, _ := base64.StdEncoding.DecodeString(call.Argument(0).String())
 		return vm.ToValue(string(bs))
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	program, err := sobek.Compile("", TypescriptSource, true)
 	if err != nil {
@@ -43,7 +45,6 @@ func NewTranspiler() (*Transpiler, error) {
 		prg: program,
 		fn:  fn,
 	}, nil
-
 }
 
 func (t *Transpiler) Transpile(script string) (string, string, error) {
@@ -56,7 +57,7 @@ func (t *Transpiler) Transpile(script string) (string, string, error) {
 	}
 
 	// returns mapping and source file
-	g := value.Export().(map[string]any)
+	g := value.Export().(map[string]any) //nolint:forcetypeassert
 
 	scriptOut, ok := g["outputText"].(string)
 	if !ok {

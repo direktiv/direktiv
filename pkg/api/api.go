@@ -28,48 +28,54 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsub.Bus,
-	cache *cache.Cache) error {
+type Config struct {
+	DB             *database.DB
+	Bus            *pubsub.Bus
+	Cache          *cache.Cache
+	SecretsHandler *secrets.Handler
+}
+
+func Initialize(circuit *core.Circuit, app core.App, config *Config) error {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
 
 	fsCtr := &fsController{
-		db:  db,
-		bus: bus,
+		db:  config.DB,
+		bus: config.Bus,
 	}
 	regCtr := &registryController{
 		manager: app.RegistryManager,
 	}
 	varCtr := &varController{
-		db: db,
+		db: config.DB,
 	}
 	secCtr := &secretsController{
-		sh: secrets.NewHandler(db, cache),
-		db: db,
+		sh: config.SecretsHandler,
+		db: config.DB,
 	}
 	nsCtr := &nsController{
-		db:              db,
-		bus:             bus,
+		db:              config.DB,
+		bus:             config.Bus,
 		registryManager: app.RegistryManager,
 	}
 	mirrorsCtr := &mirrorsController{
-		db:            db,
-		bus:           bus,
+		db:            config.DB,
+		bus:           config.Bus,
 		syncNamespace: app.SyncNamespace,
 	}
 	instCtr := &instController{
-		db:      db,
+		db:      config.DB,
 		manager: nil,
 	}
 	notificationsCtr := &notificationsController{
-		db: db,
+		db: config.DB,
 	}
 	metricsCtr := &metricsController{
-		db: db,
+		db: config.DB,
 	}
 	eventsCtr := eventsController{
-		store:         db.DataStore(),
+		store:         config.DB.DataStore(),
 		wakeInstance:  nil,
 		startWorkflow: nil,
 	}
@@ -77,8 +83,8 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 	jxCtr := jxController{}
 
 	mw := &appMiddlewares{
-		dStore: db.DataStore(),
-		cache:  cache,
+		dStore: config.DB.DataStore(),
+		cache:  config.Cache,
 	}
 
 	r := chi.NewRouter()

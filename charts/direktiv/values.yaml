@@ -203,6 +203,7 @@ functions:
     #       cpu:    "1"
 
 nats:
+  delay: 15
   tlsCA:
     enabled: true
     secretName: direktiv-tls-secret

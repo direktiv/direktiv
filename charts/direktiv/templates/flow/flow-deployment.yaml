@@ -172,6 +172,8 @@ spec:
             value: "{{ .Values.functions.limits.cpu.large }}"
           - name: DIREKTIV_KNATIVE_SIZE_DISK_LARGE
             value: "{{ .Values.functions.limits.disk.large }}"
+          - name: DIREKTIV_NATS_CERT_DELAY
+            value: "{{ default 10 .Values.nats.delay }}"
           - name: DIREKTIV_NATS_INSTALLED
             value: "{{ .Values.nats.install }}"
           - name: DIREKTIV_NATS_HOST

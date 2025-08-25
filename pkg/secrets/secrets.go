@@ -11,8 +11,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 )
 
-var ErrNotFound = errors.New("ErrNotFound")
-var ErrNamespaceNotFound = errors.New("ErrNamespaceNotFound")
+var (
+	ErrNotFound          = errors.New("ErrNotFound")
+	ErrNamespaceNotFound = errors.New("ErrNamespaceNotFound")
+)
 
 type Secret struct {
 	Name string `json:"name"`
@@ -50,7 +52,6 @@ func NewHandler(db *database.DB, cache *cache.Cache) *Handler {
 }
 
 func (sm *Handler) SecretsForNamespace(ctx context.Context, namespace string) (Secrets, error) {
-
 	// we can check for namespace here
 	_, err := sm.db.DataStore().Namespaces().GetByName(ctx, namespace)
 	if err != nil {

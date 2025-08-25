@@ -98,7 +98,6 @@ func (c *Cache) publish(key string) {
 	if err != nil {
 		slog.Error("can not publish cache", slog.Any("error", err))
 	}
-
 }
 
 func (c *Cache) subscribe() {

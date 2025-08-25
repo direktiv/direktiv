@@ -24,8 +24,6 @@ func (a *appMiddlewares) checkNamespace(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		namespace := chi.URLParam(r, "namespace")
 
-		var namespaces = make([]string, 0)
-
 		namespaces, err := a.fetchNamespacesFromCache()
 		if err != nil {
 			writeInternalError(w, err)
@@ -53,13 +51,11 @@ func (a *appMiddlewares) checkNamespace(next http.Handler) http.Handler {
 					Code:    "resource_not_found",
 					Message: "requested resource(namespace) is not found",
 				})
+
 				return
 			}
 		}
 
-		if next == nil {
-			fmt.Println("next is nil")
-		}
 		next.ServeHTTP(w, r)
 	})
 }
@@ -87,7 +83,7 @@ func (a *appMiddlewares) fetchNamespacesFromDB(ctx context.Context) ([]string, e
 	if err != nil {
 		return []string{}, err
 	}
-	names := make([]string, len(nsList))
+	names := make([]string, 0)
 	for i := range nsList {
 		names = append(names, nsList[i].Name)
 	}
