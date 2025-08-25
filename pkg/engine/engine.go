@@ -8,17 +8,18 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
-	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/google/uuid"
 )
 
 type engine struct {
-	db *database.DB
+	db    *database.DB
+	store Store
 }
 
-func NewEngine(db *database.DB) (core.Engine, error) {
+func NewEngine(db *database.DB, store Store) (core.Engine, error) {
 	return &engine{
-		db: db,
+		db:    db,
+		store: store,
 	}, nil
 }
 
@@ -43,35 +44,41 @@ func (e *engine) ExecWorkflow(ctx context.Context, namespace string, path string
 	}
 
 	ret, err := e.execJSScript(fileData, input)
-	patch := map[string]any{
-		"ended_at": true,
+	endMsg := InstanceMessage{
+		InstanceID:   id,
+		Namespace:    namespace,
+		WorkflowPath: path,
+		Status:       0,
+		EndedAt:      time.Now(),
+		Memory:       sql.NullString{},
+		Output:       sql.NullString{},
+		Error:        sql.NullString{},
 	}
 	if err != nil {
-		patch["status"] = 2
-		patch["error"] = []byte(err.Error())
+		endMsg.Status = 2
+		endMsg.Error = sql.NullString{Valid: true, String: err.Error()}
+		endMsg.EndedAt = time.Now()
 	} else {
 		retBytes, err := json.Marshal(ret)
 		if err != nil {
 			panic(err)
 		}
-		patch["status"] = 3
-		patch["output"] = retBytes
+		endMsg.Status = 3
+		endMsg.Output = sql.NullString{Valid: true, String: string(retBytes)}
+		endMsg.EndedAt = time.Now()
 	}
 
-	db, err := e.db.BeginTx(ctx)
+	_, err = e.store.PutInstanceMessage(ctx, namespace, id, "stateChange", endMsg)
 	if err != nil {
 		return id, err
 	}
-	defer db.Rollback()
-	dStore := db.DataStore()
-
-	err = dStore.JSInstances().Patch(ctx, id, patch)
-	if err != nil {
-		return id, err
-	}
-	err = db.Commit(ctx)
 
 	return id, err
+}
+
+// TODO: fix this api
+func (e *engine) GetInstance(ctx context.Context, namespace string, instanceID uuid.UUID) (any, error) {
+	return e.store.GetInstanceMessages(ctx, namespace, instanceID, "stateChange")
 }
 
 func (e *engine) createWorkflowInstance(ctx context.Context, namespace string, path string, input string) (uuid.UUID, []byte, error) {
@@ -81,7 +88,6 @@ func (e *engine) createWorkflowInstance(ctx context.Context, namespace string, p
 	}
 
 	defer db.Rollback()
-	dStore := db.DataStore()
 	fStore := db.FileStore()
 
 	file, err := fStore.ForNamespace(namespace).GetFile(ctx, path)
@@ -94,11 +100,12 @@ func (e *engine) createWorkflowInstance(ctx context.Context, namespace string, p
 	}
 
 	id := uuid.New()
-	err = dStore.JSInstances().Create(ctx, &datastore.JSInstance{
-		ID:           id,
+
+	_, err = e.store.PutInstanceMessage(ctx, namespace, id, "stateChange", InstanceMessage{
+		InstanceID:   id,
 		Namespace:    namespace,
 		WorkflowPath: path,
-		WorkflowData: string(fileData),
+		WorkflowText: string(fileData),
 		Status:       0,
 		Input:        sql.NullString{String: input, Valid: true},
 		Memory:       sql.NullString{},

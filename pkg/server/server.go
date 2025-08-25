@@ -15,6 +15,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/engine"
+	store2 "github.com/direktiv/direktiv/pkg/engine/store"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/gateway"
 	"github.com/direktiv/direktiv/pkg/pubsub"
@@ -110,7 +111,11 @@ func Run(circuit *core.Circuit) error {
 	})
 
 	// Create js engine
-	app.Engine, err = engine.NewEngine(db)
+	store, err := store2.NewStore(circuit.Context(), "nats://nats:4222", "foooo")
+	if err != nil {
+		return fmt.Errorf("initializing engine, err: %w", err)
+	}
+	app.Engine, err = engine.NewEngine(db, store)
 	if err != nil {
 		return fmt.Errorf("initializing engine, err: %w", err)
 	}

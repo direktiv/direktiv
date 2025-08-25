@@ -21,13 +21,16 @@ type store struct {
 func NewStore(ctx context.Context, url, name string) (engine.Store, error) {
 	nc, err := nats.Connect(url, nats.Name(name))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("nats connect: %s", err)
 	}
 	js, err := nc.JetStream()
 	if err != nil {
 		_ = nc.Drain()
-		return nil, err
+		return nil, fmt.Errorf("nats jetstream: %s", err)
 	}
+
+	// res, err := js.AccountInfo()
+	// fmt.Printf("jetstream info: res: %v, err: %s\n", res, err)
 
 	_, err = js.AddStream(&nats.StreamConfig{
 		Name: name,
@@ -43,14 +46,14 @@ func NewStore(ctx context.Context, url, name string) (engine.Store, error) {
 	if err != nil {
 		if _, infoErr := js.StreamInfo(name); infoErr != nil {
 			_ = nc.Drain()
-			return nil, err
+			return nil, fmt.Errorf("nats add jetstream: %s", err)
 		}
 	}
 
 	return &store{nc: nc, js: js, stream: name}, nil
 }
 
-func (s *store) Put(ctx context.Context, namespace, instanceID, typ string, payload any) (uuid.UUID, error) {
+func (s *store) PutInstanceMessage(ctx context.Context, namespace string, instanceID uuid.UUID, typ string, payload any) (uuid.UUID, error) {
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		return uuid.Nil, err
@@ -81,7 +84,7 @@ func (s *store) Put(ctx context.Context, namespace, instanceID, typ string, payl
 	return msgID, err
 }
 
-func (s *store) QueryByInstance(ctx context.Context, namespace, instanceID uuid.UUID, typ string) ([]engine.Message, error) {
+func (s *store) GetInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID, typ string) ([]engine.Message, error) {
 	subj := fmt.Sprintf("engineMessages.%s.instanceID.%s.type.%s", namespace, instanceID, typ)
 
 	// Fetch from base (no eventType) and typed subjects, then merge by At.

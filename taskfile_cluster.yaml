@@ -64,8 +64,11 @@ tasks:
     - |
       helm repo add nats https://nats-io.github.io/k8s/helm/charts
       helm repo update
-      helm install nats nats/nats
-
+      helm install nats nats/nats \
+      --set config.jetstream.enabled=true \
+      --set config.jetstream.memStorage.enabled=true \
+      --set config.jetstream.memStorage.size=1Gi \
+      --set config.jetstream.fileStorage.enabled=false
     - |
        helm install --set database.host=postgres.default.svc \
         -f kind/nginx-tcp.yaml \

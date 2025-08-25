@@ -5,8 +5,10 @@ import request from './request'
 
 async function deleteAllNamespaces () {
 	const listResponse = await request(config.getDirektivHost()).get(`/api/v2/namespaces`)
-	if (listResponse.statusCode !== 200)
+	if (listResponse.statusCode !== 200) {
+		console.log(listResponse)
 		throw Error(`none ok namespaces list statusCode(${ listResponse.statusCode })`)
+	}
 
 	for (const namespace of listResponse.body.data) {
 		const response = await request(config.getDirektivHost()).delete(`/api/v2/namespaces/${ namespace.name }`)

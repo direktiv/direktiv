@@ -7,7 +7,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
-	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -42,21 +41,6 @@ type InstanceData struct {
 	Metadata       []byte `json:"metadata,omitempty"`
 }
 
-func marshalForAPIJS(ins *datastore.JSInstance) *InstanceData {
-	resp := &InstanceData{
-		ID:           ins.ID,
-		CreatedAt:    ins.CreatedAt,
-		EndedAt:      nil,
-		Status:       ins.StatusString(),
-		WorkflowPath: ins.WorkflowPath,
-		Invoker:      "test",
-		Definition:   []byte(ins.WorkflowData),
-		Namespace:    ins.Namespace,
-	}
-
-	return resp
-}
-
 type instController struct {
 	db      *database.DB
 	manager any
@@ -84,20 +68,13 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	ns := extractContextNamespace(r)
 	path := r.URL.Query().Get("path")
 
-	wait := r.URL.Query().Get("wait") == "true"
-
 	input, err := io.ReadAll(r.Body)
 	if err != nil {
 		return
 	}
 
-	if wait && len(input) == 0 {
-		input = []byte(`{}`)
-	}
-
 	id, err := e.engine.ExecWorkflow(r.Context(), ns.Name, path, string(input))
 	if err != nil {
-		// telemetry.ReportError(span, err)
 		writeError(w, &Error{
 			Code:    err.Error(),
 			Message: err.Error(),
@@ -106,7 +83,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := e.db.DataStore().JSInstances().GetByID(r.Context(), id)
+	data, err := e.engine.GetInstance(r.Context(), ns.Name, id)
 	if err != nil {
 		writeError(w, &Error{
 			Code:    err.Error(),
@@ -116,5 +93,5 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, marshalForAPIJS(data))
+	writeJSON(w, data)
 }
