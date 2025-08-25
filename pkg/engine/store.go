@@ -2,7 +2,6 @@ package engine
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"time"
 
@@ -27,14 +26,14 @@ type InstanceMessage struct {
 	InstanceID   uuid.UUID `json:"instanceId"`
 	Namespace    string    `json:"namespace"`
 	WorkflowPath string    `json:"workflowPath"`
-	WorkflowText string    `json:"workflowText"`
+	Status       int       `json:"status"`
 
-	Status int `json:"status"`
+	WorkflowText string `json:"workflowText,omitempty"`
 
-	Input  sql.NullString `json:"input"`
-	Memory sql.NullString `json:"memory"`
-	Output sql.NullString `json:"output"`
-	Error  sql.NullString `json:"error"`
+	Input  json.RawMessage `json:"input,omitempty"`
+	Memory json.RawMessage `json:"memory,omitempty"`
+	Output json.RawMessage `json:"output,omitempty"`
 
-	EndedAt time.Time `json:"endedAt"`
+	Error   error     `json:"error,omitempty"`
+	EndedAt time.Time `json:"endedAt,omitempty"`
 }

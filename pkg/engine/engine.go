@@ -2,7 +2,6 @@ package engine
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -51,13 +50,13 @@ func (e *engine) ExecWorkflow(ctx context.Context, namespace string, path string
 		WorkflowPath: path,
 		Status:       0,
 		EndedAt:      time.Now(),
-		Memory:       sql.NullString{},
-		Output:       sql.NullString{},
-		Error:        sql.NullString{},
+		Memory:       nil,
+		Output:       nil,
+		Error:        nil,
 	}
 	if err != nil {
 		endMsg.Status = 2
-		endMsg.Error = sql.NullString{Valid: true, String: err.Error()}
+		endMsg.Error = err
 		endMsg.EndedAt = time.Now()
 	} else {
 		retBytes, err := json.Marshal(ret)
@@ -65,7 +64,7 @@ func (e *engine) ExecWorkflow(ctx context.Context, namespace string, path string
 			panic(err)
 		}
 		endMsg.Status = 3
-		endMsg.Output = sql.NullString{Valid: true, String: string(retBytes)}
+		endMsg.Output = retBytes
 		endMsg.EndedAt = time.Now()
 	}
 
@@ -108,10 +107,10 @@ func (e *engine) createWorkflowInstance(ctx context.Context, namespace string, p
 		WorkflowPath: path,
 		WorkflowText: string(fileData),
 		Status:       0,
-		Input:        sql.NullString{String: input, Valid: true},
-		Memory:       sql.NullString{},
-		Output:       sql.NullString{},
-		Error:        sql.NullString{},
+		Input:        json.RawMessage(input),
+		Memory:       nil,
+		Output:       nil,
+		Error:        nil,
 	})
 	if err != nil {
 		return uuid.Nil, nil, fmt.Errorf("put instance message: %s", err)
