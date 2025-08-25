@@ -21,9 +21,9 @@ func (e *registryController) mountRouter(r chi.Router) {
 }
 
 func (e *registryController) all(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 
-	list, err := e.manager.ListRegistries(ns.Name)
+	list, err := e.manager.ListRegistries(namespace)
 	if err != nil {
 		writeError(w, &Error{
 			Code:    "internal",
@@ -37,10 +37,10 @@ func (e *registryController) all(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *registryController) delete(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 	id := chi.URLParam(r, "id")
 
-	err := e.manager.DeleteRegistry(ns.Name, id)
+	err := e.manager.DeleteRegistry(namespace, id)
 	if errors.Is(err, core.ErrNotFound) {
 		writeError(w, &Error{
 			Code:    "resource_not_found",
@@ -59,7 +59,7 @@ func (e *registryController) delete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *registryController) create(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 
 	reg := &core.Registry{}
 
@@ -69,7 +69,7 @@ func (e *registryController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	reg.Namespace = ns.Name
+	reg.Namespace = namespace
 	newReg, err := e.manager.StoreRegistry(reg)
 	if err != nil {
 		writeInternalError(w, err)

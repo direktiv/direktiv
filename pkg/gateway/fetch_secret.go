@@ -8,7 +8,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/secrets"
 )
 
 type fetchSecretArgs struct {
@@ -18,7 +18,7 @@ type fetchSecretArgs struct {
 
 // fetchSecret gets a secret from the database by parsing an expression, this expression like:
 // "fetchSecret(namespaceName,secretName)".
-func fetchSecret(db *database.DB, namespace string, callExpression string) (string, error) {
+func fetchSecret(sh *secrets.Handler, namespace string, callExpression string) (string, error) {
 	callExpression = strings.TrimSpace(callExpression)
 	if !strings.HasPrefix(callExpression, "fetchSecret") {
 		return callExpression, nil
@@ -38,10 +38,16 @@ func fetchSecret(db *database.DB, namespace string, callExpression string) (stri
 		return "", fmt.Errorf("trying to fetch secret from different namespace")
 	}
 
-	s, err := db.DataStore().Secrets().Get(context.Background(), fArgs.namespace, fArgs.secretName)
+	sn, err := sh.SecretsForNamespace(context.Background(), fArgs.namespace)
 	if err != nil {
-		return "", fmt.Errorf("can not fetch secret: %w", err)
+		return "", err
 	}
+
+	s, err := sn.Get(context.Background(), fArgs.secretName)
+	if err != nil {
+		return "", err
+	}
+
 	if !utf8.Valid(s.Data) {
 		return "", fmt.Errorf("secret '%s' has none utf8 content", fArgs.secretName)
 	}

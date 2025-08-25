@@ -1,18 +1,18 @@
 dependencies:
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx
-  version: 4.12.0
+  version: 4.13.1
 - name: fluent-bit
   repository: https://fluent.github.io/helm-charts
-  version: 0.48.5
+  version: 0.52.0
 - name: victoria-logs-single
   repository: https://victoriametrics.github.io/helm-charts/
-  version: 0.9.2
+  version: 0.11.6
 - name: nats
   repository: https://nats-io.github.io/k8s/helm/charts
-  version: 1.2.6
+  version: 1.3.11
 - name: opentelemetry-collector
   repository: https://open-telemetry.github.io/opentelemetry-helm-charts
   version: 0.117.3
-digest: sha256:e421e913c5e2c4a6ca8d1cad43bd5ff70a1dea930f0a09e259105d1faf6e0846
-generated: "2025-04-03T12:19:34.76186882+02:00"
+digest: sha256:e70c49afa2447393c3558516cf08b5c7cb21a8451d89935a2552bfee4cfd56ab
+generated: "2025-08-19T16:17:02.107891792+02:00"

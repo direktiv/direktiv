@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/cmdserver"
@@ -70,14 +71,16 @@ var startAPICmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("starting 'api' service...")
 
-		circuit := core.NewCircuit(context.Background(), os.Interrupt)
+		circuit := core.NewCircuit(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-		err := server.Run(circuit)
-		if err != nil {
-			slog.Error("booting api server", "err", err)
-			os.Exit(1)
-		}
-		slog.Info("api server booted successfully")
+		circuit.Start(func() error {
+			err := server.Run(circuit)
+			if err != nil {
+				slog.Error("booting api server", "err", err)
+				return err
+			}
+			return nil
+		})
 
 		// wait until server is done.
 		<-circuit.Done()

@@ -23,9 +23,9 @@ func (e *serviceController) mountRouter(r chi.Router) {
 }
 
 func (e *serviceController) all(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 
-	list, err := e.manager.GeAll(ns.Name)
+	list, err := e.manager.GeAll(namespace)
 	if err != nil {
 		writeInternalError(w, err)
 
@@ -36,10 +36,10 @@ func (e *serviceController) all(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *serviceController) pods(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 	serviceID := chi.URLParam(r, "serviceID")
 
-	svc, err := e.manager.GetPods(ns.Name, serviceID)
+	svc, err := e.manager.GetPods(namespace, serviceID)
 	if errors.Is(err, core.ErrNotFound) {
 		writeError(w, &Error{
 			Code:    "resource_not_found",
@@ -58,10 +58,10 @@ func (e *serviceController) pods(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *serviceController) rebuild(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 	serviceID := chi.URLParam(r, "serviceID")
 
-	err := e.manager.Rebuild(ns.Name, serviceID)
+	err := e.manager.Rebuild(namespace, serviceID)
 	if errors.Is(err, core.ErrNotFound) {
 		writeError(w, &Error{
 			Code:    "resource_not_found",
@@ -80,11 +80,11 @@ func (e *serviceController) rebuild(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *serviceController) logs(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 	serviceID := chi.URLParam(r, "serviceID")
 	podID := chi.URLParam(r, "podID")
 
-	readCloser, err := e.manager.StreamLogs(ns.Name, serviceID, podID)
+	readCloser, err := e.manager.StreamLogs(namespace, serviceID, podID)
 	if errors.Is(err, core.ErrNotFound) {
 		writeError(w, &Error{
 			Code:    "resource_not_found",

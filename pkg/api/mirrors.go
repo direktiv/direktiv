@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/core"
@@ -21,7 +22,7 @@ func (e *mirrorsController) mountRouter(r chi.Router) {
 }
 
 func (e *mirrorsController) create(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -30,23 +31,30 @@ func (e *mirrorsController) create(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Rollback()
 
-	mirConfig, err := db.DataStore().Mirror().GetConfig(r.Context(), ns.Name)
+	mirConfig, err := db.DataStore().Mirror().GetConfig(r.Context(), namespace)
 	if err != nil {
 		writeDataStoreError(w, err)
 		return
 	}
 
-	proc, err := e.syncNamespace(ns, mirConfig)
-	if err != nil {
-		writeDataStoreError(w, err)
-		return
-	}
+	// TODO: sync
+	fmt.Println(namespace)
+	fmt.Println(mirConfig)
 
-	writeJSON(w, proc)
+	fmt.Println("------")
+	fmt.Println(e.syncNamespace)
+
+	// proc, err := e.syncNamespace(nil, mirConfig)
+	// if err != nil {
+	// 	writeDataStoreError(w, err)
+	// 	return
+	// }
+
+	// writeJSON(w, proc)
 }
 
 func (e *mirrorsController) list(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -55,7 +63,7 @@ func (e *mirrorsController) list(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Rollback()
 
-	processes, err := db.DataStore().Mirror().GetProcessesByNamespace(r.Context(), ns.Name)
+	processes, err := db.DataStore().Mirror().GetProcessesByNamespace(r.Context(), namespace)
 	if err != nil {
 		writeDataStoreError(w, err)
 		return
