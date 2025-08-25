@@ -6,8 +6,8 @@ import request from "../common/request";
 import common from "../common";
 
 
-const namespace = basename(__filename.replace('.', '-'));
-
+const namespace = basename(__filename.replaceAll('.', '-'));
+console.log(namespace)
 describe('Test js engine', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
