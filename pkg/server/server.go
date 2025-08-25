@@ -112,7 +112,7 @@ func Run(circuit *core.Circuit) error {
 	})
 
 	// Create js engine
-	store, err := store2.NewStore(circuit.Context(), "nats://nats:4222", "foooo")
+	store, err := store2.NewStore(circuit.Context(), "nats://nats:4222")
 	if err != nil {
 		return fmt.Errorf("initializing engine, err: %w", err)
 	}

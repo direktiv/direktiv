@@ -18,8 +18,11 @@ type store struct {
 	stream string
 }
 
-func NewStore(ctx context.Context, url, name string) (engine.Store, error) {
-	nc, err := nats.Connect(url, nats.Name(name))
+const natsClientName = "engine_messages_store"
+const instanceMessagesSubject = "instanceMessages.%s.instanceID.%s.type.%s"
+
+func NewStore(ctx context.Context, url string) (engine.Store, error) {
+	nc, err := nats.Connect(url, nats.Name(natsClientName))
 	if err != nil {
 		return nil, fmt.Errorf("nats connect: %s", err)
 	}
@@ -33,9 +36,9 @@ func NewStore(ctx context.Context, url, name string) (engine.Store, error) {
 	// fmt.Printf("jetstream info: res: %v, err: %s\n", res, err)
 
 	_, err = js.AddStream(&nats.StreamConfig{
-		Name: name,
-		// engineMessages.<namespace>.instanceID.<instanceID>.type.<type>
-		Subjects:    []string{"engineMessages.*.instanceID.*.type.*"},
+		Name: natsClientName,
+		// instanceMessages.<namespace>.instanceID.<instanceID>.type.<type>
+		Subjects:    []string{fmt.Sprintf(instanceMessagesSubject, "*", "*", "*")},
 		Storage:     nats.FileStorage,
 		Retention:   nats.LimitsPolicy,
 		MaxAge:      0,              // keep forever; set if you want TTL
@@ -48,13 +51,13 @@ func NewStore(ctx context.Context, url, name string) (engine.Store, error) {
 		return nil, fmt.Errorf("nats add jetstream: %s", err)
 	}
 
-	return &store{nc: nc, js: js, stream: name}, nil
+	return &store{nc: nc, js: js, stream: natsClientName}, nil
 }
 
 func (s *store) PushInstanceMessage(ctx context.Context, namespace string, instanceID uuid.UUID, typ string, payload any) (uuid.UUID, error) {
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		return uuid.Nil, err
+		return uuid.Nil, fmt.Errorf("marshalling payload: %s", err)
 	}
 
 	msgID := uuid.New()
@@ -67,15 +70,15 @@ func (s *store) PushInstanceMessage(ctx context.Context, namespace string, insta
 	}
 	msgBytes, err := json.Marshal(msg)
 	if err != nil {
-		return uuid.Nil, err
+		return uuid.Nil, fmt.Errorf("marshalling engine message: %s", err)
 	}
 
 	msgNats := &nats.Msg{
-		Subject: fmt.Sprintf("engineMessages.%s.instanceID.%s.type.%s", namespace, instanceID, typ),
+		Subject: fmt.Sprintf(instanceMessagesSubject, namespace, instanceID, typ),
 		Data:    msgBytes,
 		Header:  nats.Header{},
 	}
-	msgNats.Header.Set("Nats-Msg-Id", fmt.Sprintf("%s:%s:%s:%s", namespace, instanceID, typ, msgID.String()))
+	msgNats.Header.Set("Nats-Msg-Id", fmt.Sprintf("%s:%s:%s:%s", namespace, instanceID, typ, msgID))
 
 	_, err = s.js.PublishMsg(msgNats, nats.Context(ctx))
 	if err != nil {
@@ -86,18 +89,17 @@ func (s *store) PushInstanceMessage(ctx context.Context, namespace string, insta
 }
 
 func (s *store) PullInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID, typ string) ([]engine.Message, error) {
-	subj := fmt.Sprintf("engineMessages.%s.instanceID.%s.type.%s", namespace, instanceID, typ)
+	subj := fmt.Sprintf(instanceMessagesSubject, namespace, instanceID, typ)
 
-	// Fetch from base (no eventType) and typed subjects, then merge by At.
-	all, err := s.fetchAllFromSubject(ctx, subj)
+	all, err := s.pullFromSubject(ctx, subj)
 	if err != nil {
-		return nil, fmt.Errorf("fetch all from subject: %s", err)
+		return nil, fmt.Errorf("pull from subject: %s", err)
 	}
 
 	return all, nil
 }
 
-func (s *store) fetchAllFromSubject(ctx context.Context, subj string) ([]engine.Message, error) {
+func (s *store) pullFromSubject(ctx context.Context, subj string) ([]engine.Message, error) {
 	durable := fmt.Sprintf("consumer_%d", time.Now().UnixNano())
 	cfg := &nats.ConsumerConfig{
 		Durable:       durable,
