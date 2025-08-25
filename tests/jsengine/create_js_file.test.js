@@ -6,7 +6,7 @@ import request from "../common/request";
 import common from "../common";
 
 
-const namespace = basename(__filename)
+const namespace = basename(__filename.replace('.', '-'));
 
 describe('Test js engine', () => {
 	beforeAll(helpers.deleteAllNamespaces)

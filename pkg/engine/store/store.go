@@ -44,10 +44,8 @@ func NewStore(ctx context.Context, url, name string) (engine.Store, error) {
 		AllowDirect: true,           // speeds up direct gets (if you use them)
 	})
 	if err != nil {
-		if _, infoErr := js.StreamInfo(name); infoErr != nil {
-			_ = nc.Drain()
-			return nil, fmt.Errorf("nats add jetstream: %s", err)
-		}
+		_ = nc.Drain()
+		return nil, fmt.Errorf("nats add jetstream: %s", err)
 	}
 
 	return &store{nc: nc, js: js, stream: name}, nil
@@ -80,8 +78,11 @@ func (s *store) PutInstanceMessage(ctx context.Context, namespace string, instan
 	msgNats.Header.Set("Nats-Msg-Id", fmt.Sprintf("%s:%s:%s:%s", namespace, instanceID, typ, msgID.String()))
 
 	_, err = s.js.PublishMsg(msgNats, nats.Context(ctx))
+	if err != nil {
+		return msgID, fmt.Errorf("nats publish message: %s", err)
+	}
 
-	return msgID, err
+	return msgID, nil
 }
 
 func (s *store) GetInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID, typ string) ([]engine.Message, error) {
@@ -90,7 +91,7 @@ func (s *store) GetInstanceMessages(ctx context.Context, namespace string, insta
 	// Fetch from base (no eventType) and typed subjects, then merge by At.
 	all, err := s.fetchAllFromSubject(ctx, subj)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("fetch all from subject: %s", err)
 	}
 
 	return all, nil
@@ -107,24 +108,23 @@ func (s *store) fetchAllFromSubject(ctx context.Context, subj string) ([]engine.
 
 	_, err := s.js.AddConsumer(s.stream, cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("add consumer: %s", err)
 	}
 	defer func() { _ = s.js.DeleteConsumer(s.stream, durable) }()
 
 	sub, err := s.js.PullSubscribe(subj, durable, nats.Bind(s.stream, durable))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("pull subscribe: %s", err)
 	}
 
 	batch := 100
-	wait := 400 * time.Millisecond
 
 	var out []engine.Message
 
 	for {
-		msgList, fetchErr := sub.Fetch(batch, nats.MaxWait(wait), nats.Context(ctx))
+		msgList, fetchErr := sub.Fetch(batch, nats.MaxWait(10*time.Millisecond))
 		if fetchErr != nil && !errors.Is(fetchErr, nats.ErrTimeout) {
-			return nil, fetchErr
+			return nil, fmt.Errorf("subscriber fetch: %s", err)
 		}
 		if len(msgList) == 0 {
 			break

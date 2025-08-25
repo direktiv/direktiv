@@ -114,7 +114,7 @@ func (e *engine) createWorkflowInstance(ctx context.Context, namespace string, p
 		Error:        sql.NullString{},
 	})
 	if err != nil {
-		return uuid.Nil, nil, err
+		return uuid.Nil, nil, fmt.Errorf("put instance message: %s", err)
 	}
 
 	err = db.Commit(ctx)
