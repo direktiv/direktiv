@@ -1,4 +1,5 @@
 import { TemplateString } from "../templateString";
+import { jsonSchema } from "./json";
 import z from "zod";
 
 const StringSchema = z.object({
@@ -21,6 +22,11 @@ export type BooleanSchemaType = z.infer<typeof BooleanSchema>;
 export const NumberSchema = z.object({
   type: z.literal("number"),
   value: z.number(),
+});
+
+export const JsonSchema = z.object({
+  type: z.literal("json"),
+  value: jsonSchema,
 });
 
 const DataType = z.discriminatedUnion("type", [
