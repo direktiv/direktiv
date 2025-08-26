@@ -1659,6 +1659,7 @@
     },
     "page": {
       "blocks": {
+        "loop": { "hiddenItems": "{{number}} hidden loop entries" },
         "table": { "noResult": "No entries to show" },
         "form": {
           "success": "The form has been submitted successfully",
