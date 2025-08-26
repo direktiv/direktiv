@@ -1,4 +1,8 @@
 import {
+  ExtendedKeyValueType,
+  ValueType,
+} from "../../../../schema/primitives/extendedKeyValue";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -7,7 +11,6 @@ import {
 } from "~/design/Select";
 
 import { BooleanValueInput } from "./BooleanValueInput";
-import { ExtendedKeyValueType } from "../../../../schema/primitives/extendedKeyValue";
 import { NumberValueInput } from "./NumberValueInput";
 import { StringValueInput } from "./StringValueInput";
 import { VariableValueInput } from "./VariableValueInput";
@@ -18,11 +21,13 @@ type ValueInputProps = {
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
+const values: ValueType[] = ["string", "variable", "boolean", "number"];
+
 export const ValueInput = ({ value, onChange, onKeyDown }: ValueInputProps) => (
-  <div className="flex gap-2">
+  <>
     <Select
       value={value.type}
-      onValueChange={(newType: ExtendedKeyValueType["value"]["type"]) => {
+      onValueChange={(newType: ValueType) => {
         let newValue: ExtendedKeyValueType["value"];
         switch (newType) {
           case "string":
@@ -32,29 +37,27 @@ export const ValueInput = ({ value, onChange, onKeyDown }: ValueInputProps) => (
             newValue = { type: "variable", value: "" };
             break;
           case "boolean":
-            newValue = { type: "boolean", value: false };
+            newValue = { type: "boolean", value: true };
             break;
           case "number":
             newValue = { type: "number", value: 0 };
             break;
-          default:
-            newValue = { type: "string", value: "" };
         }
         onChange(newValue);
       }}
     >
-      <SelectTrigger className="w-32">
+      <SelectTrigger variant="outline">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="string">String</SelectItem>
-        <SelectItem value="variable">Variable</SelectItem>
-        <SelectItem value="boolean">Boolean</SelectItem>
-        <SelectItem value="number">Number</SelectItem>
+        {values.map((valueType) => (
+          <SelectItem key={valueType} value={valueType}>
+            {valueType}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
 
-    {/* Render value input based on type */}
     {value.type === "string" && (
       <StringValueInput
         value={value.value}
@@ -85,5 +88,5 @@ export const ValueInput = ({ value, onChange, onKeyDown }: ValueInputProps) => (
         onKeyDown={onKeyDown}
       />
     )}
-  </div>
+  </>
 );

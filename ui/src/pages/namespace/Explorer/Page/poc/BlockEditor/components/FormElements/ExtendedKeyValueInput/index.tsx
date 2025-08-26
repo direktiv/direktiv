@@ -36,7 +36,7 @@ export const ExtendedKeyValueInput = ({
         }}
         itemIsValid={(item) => ExtendedKeyValue.safeParse(item).success}
         renderItem={({ value: itemValue, setValue, handleKeyDown }) => (
-          <div className="flex flex-col gap-2">
+          <>
             <Input
               placeholder={t(
                 "direktivPage.blockEditor.blockForms.keyValue.key"
@@ -60,7 +60,7 @@ export const ExtendedKeyValueInput = ({
               }}
               onKeyDown={handleKeyDown}
             />
-          </div>
+          </>
         )}
       />
     </Fieldset>

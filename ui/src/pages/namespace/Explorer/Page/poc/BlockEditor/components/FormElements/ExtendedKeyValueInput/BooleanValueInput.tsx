@@ -11,22 +11,27 @@ type BooleanValueInputProps = {
   onChange: (value: boolean) => void;
 };
 
+const booleanValues = ["true", "false"] as const;
+
 export const BooleanValueInput = ({
   value,
   onChange,
 }: BooleanValueInputProps) => (
   <Select
     value={value.toString()}
-    onValueChange={(val: "true" | "false") => {
+    onValueChange={(val: (typeof booleanValues)[number]) => {
       onChange(val === "true");
     }}
   >
-    <SelectTrigger className="flex-1">
+    <SelectTrigger variant="outline">
       <SelectValue />
     </SelectTrigger>
     <SelectContent>
-      <SelectItem value="true">true</SelectItem>
-      <SelectItem value="false">false</SelectItem>
+      {booleanValues.map((value) => (
+        <SelectItem key={value} value={value}>
+          {value}
+        </SelectItem>
+      ))}
     </SelectContent>
   </Select>
 );
