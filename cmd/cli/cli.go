@@ -69,19 +69,16 @@ var startAPICmd = &cobra.Command{
 	Short: "direktiv API service",
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		slog.Info("starting 'api' service...")
+		slog.Info("service 'api' starting...")
 
 		circuit := core.NewCircuit(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-		circuit.Go(func() error {
-			err := server.Run(circuit)
-			if err != nil {
-				slog.Error("booting api server", "err", err)
-				return err
-			}
-
-			return nil
-		})
+		err := server.Start(circuit)
+		if err != nil {
+			slog.Error("booting api server", "err", err)
+			os.Exit(1)
+		}
+		slog.Info("service 'api' started successfully")
 
 		// wait until server is done.
 		<-circuit.Done()
@@ -89,7 +86,7 @@ var startAPICmd = &cobra.Command{
 
 		go func() {
 			time.Sleep(time.Second * 15)
-			slog.Error("ungraceful api server termination")
+			slog.Error("harsh api server termination")
 			os.Exit(1)
 		}()
 

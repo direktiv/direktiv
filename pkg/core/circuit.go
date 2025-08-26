@@ -10,9 +10,36 @@ import (
 
 // nolint: containedctx
 type Circuit struct {
-	context context.Context
-	cancel  context.CancelFunc
-	wg      sync.WaitGroup
+	ctx  context.Context
+	stop context.CancelFunc
+	wg   sync.WaitGroup
+}
+
+func NewCircuit(parent context.Context, signals ...os.Signal) *Circuit {
+	appCtx, appCancel := signal.NotifyContext(parent, signals...)
+
+	return &Circuit{
+		ctx:  appCtx,
+		stop: appCancel,
+		wg:   sync.WaitGroup{},
+	}
+}
+
+func (c *Circuit) Context() context.Context {
+	return c.ctx
+}
+
+func (c *Circuit) Done() <-chan struct{} {
+	return c.ctx.Done()
+}
+
+func (c *Circuit) IsDone() bool {
+	select {
+	case <-c.ctx.Done():
+		return true
+	default:
+		return false
+	}
 }
 
 // Go lunches a goroutine and tracking it via a sync.WaitGroup. It enables simplified api to lunch graceful go
@@ -24,43 +51,11 @@ func (c *Circuit) Go(job func() error) {
 		err := job()
 		if err != nil {
 			slog.Error("job crash", "err", err)
-			c.cancel()
+			c.stop()
 		}
 	}()
 }
 
-func (c *Circuit) IsDone() bool {
-	select {
-	case <-c.context.Done():
-		return true
-	default:
-		return false
-	}
-}
-
 func (c *Circuit) Wait() {
 	c.wg.Wait()
-}
-
-func (c *Circuit) Done() <-chan struct{} {
-	return c.context.Done()
-}
-
-func (c *Circuit) Context() context.Context {
-	return c.context
-}
-
-func (c *Circuit) OnCancel(f func()) {
-	<-c.context.Done()
-	f()
-}
-
-func NewCircuit(parent context.Context, signals ...os.Signal) *Circuit {
-	appCtx, appCancel := signal.NotifyContext(parent, signals...)
-
-	return &Circuit{
-		context: appCtx,
-		cancel:  appCancel,
-		wg:      sync.WaitGroup{},
-	}
 }

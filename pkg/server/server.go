@@ -34,7 +34,7 @@ import (
 )
 
 //nolint:gocognit
-func Run(circuit *core.Circuit) error {
+func Start(circuit *core.Circuit) error {
 	var err error
 	config := &core.Config{}
 	if err := env.Parse(config); err != nil {
@@ -204,8 +204,9 @@ func Run(circuit *core.Circuit) error {
 			return fmt.Errorf("initializing extensions, err: %w", err)
 		}
 	}
-	slog.Info("api server v2 starting")
-	// Start api v2 server
+
+	// Start api server
+	slog.Info("initializing api server")
 	err = api.Initialize(circuit, app, &api.Config{
 		DB:             db,
 		Bus:            bus,
@@ -213,7 +214,7 @@ func Run(circuit *core.Circuit) error {
 		SecretsHandler: sh,
 	})
 	if err != nil {
-		return fmt.Errorf("initializing api v2, err: %w", err)
+		return fmt.Errorf("initializing api server, err: %w", err)
 	}
 
 	return nil

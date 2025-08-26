@@ -235,20 +235,24 @@ func Initialize(circuit *core.Circuit, app core.App, config *Config) error {
 	circuit.Go(func() error {
 		err := apiServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			return fmt.Errorf("listen on port, err: %w", err)
+			return fmt.Errorf("shutdown api server, err: %w", err)
 		}
 
 		return nil
 	})
 
-	circuit.OnCancel(func() {
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownWaitTime)
+	circuit.Go(func() error {
+		<-circuit.Done()
+
+		slog.Info("shutdown api server...")
+		shutdownCtx, _ := context.WithTimeout(context.Background(), shutdownWaitTime)
 		err := apiServer.Shutdown(shutdownCtx)
 		if err != nil {
-			slog.Error("api v2 shutdown server", "err", err)
-			panic(err)
+			slog.Error("shutdown api server", "err", err)
 		}
-		cancel()
+		slog.Info("shutdown api server successful")
+
+		return nil
 	})
 
 	return nil
