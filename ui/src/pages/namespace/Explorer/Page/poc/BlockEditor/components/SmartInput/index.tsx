@@ -95,55 +95,6 @@ export const SmartInput = ({
     },
   });
 
-  if (true) {
-    return (
-      <Dialog open={dialog} onOpenChange={setDialog}>
-        <DialogTrigger asChild>
-          <Button icon variant="ghost" type="button">
-            <SquareArrowOutUpRight
-              className="text-gray-11"
-              onClick={() => setDialog(true)}
-            />
-          </Button>
-        </DialogTrigger>
-        <DialogContent
-          ref={setDialogContainer}
-          className="min-w-[600px] max-w-[600px] p-4"
-          onInteractOutside={(event) => {
-            event.preventDefault();
-          }}
-        >
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" type="button">
-                {t("direktivPage.blockEditor.smartInput.variableBtn")}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="start" container={dialogContainer}>
-              <Command>
-                <CommandInput placeholder="select context type" />
-                <CommandList>
-                  <CommandGroup heading="context type">
-                    {types.map((option) => (
-                      <CommandItem
-                        key={option.value}
-                        onSelect={(option) => {
-                          console.log(option);
-                        }}
-                      >
-                        {option.label}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
   return (
     <Dialog open={dialog} onOpenChange={setDialog}>
       <InputWithButton>
@@ -163,41 +114,84 @@ export const SmartInput = ({
             />
           )}
         </FakeInput>
+        <DialogTrigger asChild>
+          <Button icon variant="ghost" type="button">
+            <SquareArrowOutUpRight
+              className="text-gray-11"
+              onClick={() => setDialog(true)}
+            />
+          </Button>
+        </DialogTrigger>
       </InputWithButton>
 
-      {dialog && (
-        <>
-          <Alert variant="info" className="text-sm">
-            {t("direktivPage.blockEditor.smartInput.templateHelp")}
-          </Alert>
-          <FakeInput wrap className="flex flex-col gap-2 p-2">
-            <Toolbar></Toolbar>
-            <EditorContent
-              id={id}
-              editor={editor}
-              className={twMergeClsx(
-                "max-w-full",
-                "min-h-9 text-sm [&>*]:outline-none",
-                "[&_*.is-empty]:before:absolute",
-                "[&_*.is-empty]:before:pointer-events-none",
-                "[&_*.is-empty]:before:content-[attr(data-placeholder)]",
-                "[&_*.is-empty]:before:text-gray-11"
-              )}
-            />
-          </FakeInput>
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              className="h-8"
-              icon
-              onClick={() => setDialog(false)}
-            >
-              <Check size="12" />
-            </Button>
-          </div>
-        </>
-      )}
+      <DialogContent
+        ref={setDialogContainer}
+        className="min-w-[600px] max-w-[600px] p-4"
+        onInteractOutside={(event) => {
+          event.preventDefault();
+        }}
+      >
+        {dialog && (
+          <>
+            <Alert variant="info" className="text-sm">
+              {t("direktivPage.blockEditor.smartInput.templateHelp")}
+            </Alert>
+            <FakeInput wrap className="flex flex-col gap-2 p-2">
+              <Toolbar>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" type="button">
+                      {t("direktivPage.blockEditor.smartInput.variableBtn")}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" container={dialogContainer}>
+                    <Command>
+                      <CommandInput placeholder="select context type" />
+                      <CommandList>
+                        <CommandGroup heading="context type">
+                          {types.map((option) => (
+                            <CommandItem
+                              key={option.value}
+                              onSelect={(option) => {
+                                console.log(option);
+                              }}
+                            >
+                              {option.label}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </Toolbar>
+              <EditorContent
+                id={id}
+                editor={editor}
+                className={twMergeClsx(
+                  "max-w-full",
+                  "min-h-9 text-sm [&>*]:outline-none",
+                  "[&_*.is-empty]:before:absolute",
+                  "[&_*.is-empty]:before:pointer-events-none",
+                  "[&_*.is-empty]:before:content-[attr(data-placeholder)]",
+                  "[&_*.is-empty]:before:text-gray-11"
+                )}
+              />
+            </FakeInput>
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-8"
+                icon
+                onClick={() => setDialog(false)}
+              >
+                <Check size="12" />
+              </Button>
+            </div>
+          </>
+        )}
+      </DialogContent>
     </Dialog>
   );
 };
