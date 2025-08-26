@@ -423,56 +423,56 @@ describe("form request", () => {
               url: "/save-user",
               requestBody: [
                 {
-                  key: "String",
+                  key: "string",
                   value: {
                     type: "string",
                     value: "String: {{query.user.data.status}}",
                   },
                 },
                 {
-                  key: "Boolean",
+                  key: "boolean",
                   value: {
                     type: "string",
                     value: "Boolean: {{query.user.data.emailVerified}}",
                   },
                 },
                 {
-                  key: "Number",
+                  key: "number",
                   value: {
                     type: "string",
                     value: "Number: {{query.user.data.accountBalance}}",
                   },
                 },
                 {
-                  key: "Null",
+                  key: "null",
                   value: {
                     type: "string",
                     value: "Null: {{query.user.data.lastLogin}}",
                   },
                 },
                 {
-                  key: "Input",
+                  key: "input",
                   value: {
                     type: "string",
                     value: "Input: {{this.form.string}}",
                   },
                 },
                 {
-                  key: "Textarea",
+                  key: "textarea",
                   value: {
                     type: "string",
                     value: "Textarea: {{this.form.textarea}}",
                   },
                 },
                 {
-                  key: "Checkbox-Checked",
+                  key: "checkbox-checked",
                   value: {
                     type: "string",
                     value: "Checkbox (checked): {{this.form.checkbox-checked}}",
                   },
                 },
                 {
-                  key: "Checkbox-Unchecked",
+                  key: "checkbox-unchecked",
                   value: {
                     type: "string",
                     value:
@@ -480,14 +480,14 @@ describe("form request", () => {
                   },
                 },
                 {
-                  key: "Input-Number",
+                  key: "input-number",
                   value: {
                     type: "string",
                     value: "Input Number: {{this.form.number}}",
                   },
                 },
                 {
-                  key: "Input-Floating-Number",
+                  key: "input-floating-number",
                   value: {
                     type: "string",
                     value:
@@ -495,14 +495,14 @@ describe("form request", () => {
                   },
                 },
                 {
-                  key: "Input-Date",
+                  key: "input-date",
                   value: {
                     type: "string",
                     value: "Input Date: {{this.form.date}}",
                   },
                 },
                 {
-                  key: "Select",
+                  key: "select",
                   value: {
                     type: "string",
                     value: "Select: {{this.form.select}}",
@@ -522,26 +522,26 @@ describe("form request", () => {
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
         const jsonResponse = JSON.parse(await formRequest.clone().text());
 
-        expect(jsonResponse["String"]).toBe("String: ok");
-        expect(jsonResponse["Boolean"]).toBe("Boolean: true");
-        expect(jsonResponse["Number"]).toBe("Number: 19.99");
-        expect(jsonResponse["Null"]).toBe("Null: null");
-        expect(jsonResponse["Input"]).toBe("Input: string from a string input");
-        expect(jsonResponse["Textarea"]).toBe(
+        expect(jsonResponse["string"]).toBe("String: ok");
+        expect(jsonResponse["boolean"]).toBe("Boolean: true");
+        expect(jsonResponse["number"]).toBe("Number: 19.99");
+        expect(jsonResponse["null"]).toBe("Null: null");
+        expect(jsonResponse["input"]).toBe("Input: string from a string input");
+        expect(jsonResponse["textarea"]).toBe(
           "Textarea: string from a textarea"
         );
-        expect(jsonResponse["Checkbox-Checked"]).toBe(
+        expect(jsonResponse["checkbox-checked"]).toBe(
           "Checkbox (checked): true"
         );
-        expect(jsonResponse["Checkbox-Unchecked"]).toBe(
+        expect(jsonResponse["checkbox-unchecked"]).toBe(
           "Checkbox (unchecked): false"
         );
-        expect(jsonResponse["Input-Number"]).toBe("Input Number: 3");
-        expect(jsonResponse["Input-Floating-Number"]).toBe(
+        expect(jsonResponse["input-number"]).toBe("Input Number: 3");
+        expect(jsonResponse["input-floating-number"]).toBe(
           "Input Floating Number: 4.99"
         );
-        expect(jsonResponse["Input-Date"]).toBe("Input Date: 2025-12-24");
-        expect(jsonResponse["Select"]).toBe("Select: pro");
+        expect(jsonResponse["input-date"]).toBe("Input Date: 2025-12-24");
+        expect(jsonResponse["select"]).toBe("Select: pro");
       });
     });
 
@@ -556,98 +556,98 @@ describe("form request", () => {
               url: "/save-user",
               requestBody: [
                 {
-                  key: "String",
+                  key: "string",
                   value: {
                     type: "variable",
                     value: "query.user.data.status",
                   },
                 },
                 {
-                  key: "Boolean",
+                  key: "boolean",
                   value: {
                     type: "variable",
                     value: "query.user.data.emailVerified",
                   },
                 },
                 {
-                  key: "Number",
+                  key: "number",
                   value: {
                     type: "variable",
                     value: "query.user.data.accountBalance",
                   },
                 },
                 {
-                  key: "Null",
+                  key: "null",
                   value: {
                     type: "variable",
                     value: "query.user.data.lastLogin",
                   },
                 },
                 {
-                  key: "Input",
+                  key: "input",
                   value: {
                     type: "variable",
                     value: "this.form.string",
                   },
                 },
                 {
-                  key: "Textarea",
+                  key: "textarea",
                   value: {
                     type: "variable",
                     value: "this.form.textarea",
                   },
                 },
                 {
-                  key: "Checkbox-Checked",
+                  key: "checkbox-checked",
                   value: {
                     type: "variable",
                     value: "this.form.checkbox-checked",
                   },
                 },
                 {
-                  key: "Checkbox-Unchecked",
+                  key: "checkbox-unchecked",
                   value: {
                     type: "variable",
                     value: "this.form.checkbox-unchecked",
                   },
                 },
                 {
-                  key: "Input-Number",
+                  key: "input-number",
                   value: {
                     type: "variable",
                     value: "this.form.number",
                   },
                 },
                 {
-                  key: "Input-Floating-Number",
+                  key: "input-floating-number",
                   value: {
                     type: "variable",
                     value: "this.form.floating-number",
                   },
                 },
                 {
-                  key: "Input-Date",
+                  key: "input-date",
                   value: {
                     type: "variable",
                     value: "this.form.date",
                   },
                 },
                 {
-                  key: "Select",
+                  key: "select",
                   value: {
                     type: "variable",
                     value: "this.form.select",
                   },
                 },
                 {
-                  key: "Array",
+                  key: "array",
                   value: {
                     type: "variable",
                     value: "query.user.meta.subscriptionPlanOptions",
                   },
                 },
                 {
-                  key: "Object",
+                  key: "object",
                   value: {
                     type: "variable",
                     value: "query.user.data",
@@ -667,24 +667,24 @@ describe("form request", () => {
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
         const jsonResponse = JSON.parse(await formRequest.clone().text());
 
-        expect(jsonResponse["String"]).toBe("ok");
-        expect(jsonResponse["Boolean"]).toBe(true);
-        expect(jsonResponse["Number"]).toBe(19.99);
-        expect(jsonResponse["Null"]).toBe(null);
-        expect(jsonResponse["Input"]).toBe("string from a string input");
-        expect(jsonResponse["Textarea"]).toBe("string from a textarea");
-        expect(jsonResponse["Checkbox-Checked"]).toBe(true);
-        expect(jsonResponse["Checkbox-Unchecked"]).toBe(false);
-        expect(jsonResponse["Input-Number"]).toBe(3);
-        expect(jsonResponse["Input-Floating-Number"]).toBe(4.99);
-        expect(jsonResponse["Input-Date"]).toBe("2025-12-24");
-        expect(jsonResponse["Select"]).toBe("pro");
-        expect(jsonResponse["Array"]).toEqual([
+        expect(jsonResponse["string"]).toBe("ok");
+        expect(jsonResponse["boolean"]).toBe(true);
+        expect(jsonResponse["number"]).toBe(19.99);
+        expect(jsonResponse["null"]).toBe(null);
+        expect(jsonResponse["input"]).toBe("string from a string input");
+        expect(jsonResponse["textarea"]).toBe("string from a textarea");
+        expect(jsonResponse["checkbox-checked"]).toBe(true);
+        expect(jsonResponse["checkbox-unchecked"]).toBe(false);
+        expect(jsonResponse["input-number"]).toBe(3);
+        expect(jsonResponse["input-floating-number"]).toBe(4.99);
+        expect(jsonResponse["input-date"]).toBe("2025-12-24");
+        expect(jsonResponse["select"]).toBe("pro");
+        expect(jsonResponse["array"]).toEqual([
           { label: "Free Plan", value: "free" },
           { label: "Pro Plan", value: "pro" },
           { label: "Enterprise Plan", value: "enterprise" },
         ]);
-        expect(jsonResponse["Object"]).toEqual({
+        expect(jsonResponse["object"]).toEqual({
           accountBalance: 19.99,
           emailVerified: true,
           lastLogin: null,
@@ -716,14 +716,14 @@ describe("form request", () => {
               url: "/save-user",
               requestBody: [
                 {
-                  key: "Boolean-True",
+                  key: "boolean-true",
                   value: {
                     type: "boolean",
                     value: true,
                   },
                 },
                 {
-                  key: "Boolean-False",
+                  key: "boolean-false",
                   value: {
                     type: "boolean",
                     value: false,
@@ -743,8 +743,8 @@ describe("form request", () => {
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
         const jsonResponse = JSON.parse(await formRequest.clone().text());
 
-        expect(jsonResponse["Boolean-True"]).toBe(true);
-        expect(jsonResponse["Boolean-False"]).toBe(false);
+        expect(jsonResponse["boolean-true"]).toBe(true);
+        expect(jsonResponse["boolean-false"]).toBe(false);
       });
     });
 
@@ -759,14 +759,14 @@ describe("form request", () => {
               url: "/save-user",
               requestBody: [
                 {
-                  key: "Number-Integer",
+                  key: "number-integer",
                   value: {
                     type: "number",
                     value: 3,
                   },
                 },
                 {
-                  key: "Number-Float",
+                  key: "number-float",
                   value: {
                     type: "number",
                     value: 4.99,
@@ -786,8 +786,8 @@ describe("form request", () => {
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
         const jsonResponse = JSON.parse(await formRequest.clone().text());
 
-        expect(jsonResponse["Number-Integer"]).toBe(3);
-        expect(jsonResponse["Number-Float"]).toBe(4.99);
+        expect(jsonResponse["number-integer"]).toBe(3);
+        expect(jsonResponse["number-float"]).toBe(4.99);
       });
     });
 
