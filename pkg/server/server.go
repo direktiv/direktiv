@@ -3,9 +3,11 @@ package server
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"log/slog"
+	"net/http"
 	"os"
 	"time"
 
@@ -207,7 +209,7 @@ func Start(circuit *core.Circuit) error {
 
 	// Start api server
 	slog.Info("initializing api server")
-	err = api.Initialize(circuit, app, &api.Config{
+	srv, err := api.Initialize(app, &api.Config{
 		DB:             db,
 		Bus:            bus,
 		Cache:          cache,
@@ -216,6 +218,29 @@ func Start(circuit *core.Circuit) error {
 	if err != nil {
 		return fmt.Errorf("initializing api server, err: %w", err)
 	}
+
+	circuit.Go(func() error {
+		err := srv.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return fmt.Errorf("shutdown api server, err: %w", err)
+		}
+
+		return nil
+	})
+
+	circuit.Go(func() error {
+		<-circuit.Done()
+
+		slog.Info("shutdown api server...")
+		shutdownCtx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+		err := srv.Shutdown(shutdownCtx)
+		if err != nil {
+			slog.Error("shutdown api server", "err", err)
+		}
+		slog.Info("shutdown api server successful")
+
+		return nil
+	})
 
 	return nil
 }

@@ -1,11 +1,7 @@
 package api
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
-	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -24,7 +20,6 @@ import (
 )
 
 const (
-	shutdownWaitTime  = 5 * time.Second
 	readHeaderTimeout = 5 * time.Second
 )
 
@@ -35,7 +30,7 @@ type Config struct {
 	SecretsHandler *secrets.Handler
 }
 
-func Initialize(circuit *core.Circuit, app core.App, config *Config) error {
+func Initialize(app core.App, config *Config) (*http.Server, error) {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
@@ -232,30 +227,7 @@ func Initialize(circuit *core.Circuit, app core.App, config *Config) error {
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
 
-	circuit.Go(func() error {
-		err := apiServer.ListenAndServe()
-		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			return fmt.Errorf("shutdown api server, err: %w", err)
-		}
-
-		return nil
-	})
-
-	circuit.Go(func() error {
-		<-circuit.Done()
-
-		slog.Info("shutdown api server...")
-		shutdownCtx, _ := context.WithTimeout(context.Background(), shutdownWaitTime)
-		err := apiServer.Shutdown(shutdownCtx)
-		if err != nil {
-			slog.Error("shutdown api server", "err", err)
-		}
-		slog.Info("shutdown api server successful")
-
-		return nil
-	})
-
-	return nil
+	return apiServer, nil
 }
 
 func writeJSON(w http.ResponseWriter, v any) {
