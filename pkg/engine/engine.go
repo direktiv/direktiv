@@ -40,7 +40,7 @@ func (e *engine) ExecWorkflow(ctx context.Context, namespace string, path string
 	}
 	id, fileData, err := e.createWorkflowInstance(ctx, namespace, path, input)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("create workflow instance: %s", err)
+		return uuid.Nil, fmt.Errorf("create workflow instance: %w", err)
 	}
 
 	ret, err := e.execJSScript(fileData, input)
@@ -70,7 +70,7 @@ func (e *engine) ExecWorkflow(ctx context.Context, namespace string, path string
 
 	_, err = e.store.PushInstanceMessage(ctx, namespace, id, "end", endMsg)
 	if err != nil {
-		return id, fmt.Errorf("put end instance message: %s", err)
+		return id, fmt.Errorf("put end instance message: %w", err)
 	}
 
 	return id, err
@@ -112,7 +112,7 @@ func (e *engine) createWorkflowInstance(ctx context.Context, namespace string, p
 		Error:        nil,
 	})
 	if err != nil {
-		return uuid.Nil, nil, fmt.Errorf("put instance message: %s", err)
+		return uuid.Nil, nil, fmt.Errorf("put instance message: %w", err)
 	}
 
 	err = db.Commit(ctx)

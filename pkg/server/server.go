@@ -315,6 +315,7 @@ func checkNATSConnectivity() {
 			if err == nil {
 				nc.Close()
 				slog.Info("nats available")
+
 				return
 			}
 			slog.Error("nats connection not available", slog.Any("error", err))

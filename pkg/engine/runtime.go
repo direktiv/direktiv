@@ -24,7 +24,7 @@ func (e *engine) execJSScript(script []byte, input string) (any, error) {
 
 	_, err := vm.RunString(jsHiddenCode + string(script))
 	if err != nil {
-		return nil, fmt.Errorf("run script: %s", err)
+		return nil, fmt.Errorf("run script: %w", err)
 	}
 	start, ok := goja.AssertFunction(vm.Get("start"))
 	if !ok {
@@ -34,16 +34,16 @@ func (e *engine) execJSScript(script []byte, input string) (any, error) {
 	var inputMap map[string]any
 	err = json.Unmarshal([]byte(input), &inputMap)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal input: %s", err)
+		return nil, fmt.Errorf("unmarshal input: %w", err)
 	}
 
 	res, err := start(goja.Undefined(), vm.ToValue(inputMap))
 	if err != nil {
-		return nil, fmt.Errorf("invoke start: %s", err)
+		return nil, fmt.Errorf("invoke start: %w", err)
 	}
 	var result map[string]any
 	if err := vm.ExportTo(res, &result); err != nil {
-		return nil, fmt.Errorf("export output: %s", err)
+		return nil, fmt.Errorf("export output: %w", err)
 	}
 
 	return result, nil

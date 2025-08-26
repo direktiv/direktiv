@@ -79,6 +79,7 @@ var startAPICmd = &cobra.Command{
 				slog.Error("booting api server", "err", err)
 				return err
 			}
+
 			return nil
 		})
 

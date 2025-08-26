@@ -18,14 +18,16 @@ type store struct {
 	stream string
 }
 
-const natsClientName = "engine_messages_store"
-const instanceMessagesSubject = "instanceMessages.%s.instanceID.%s.type.%s"
+const (
+	natsClientName          = "engine_messages_store"
+	instanceMessagesSubject = "instanceMessages.%s.instanceID.%s.type.%s"
+)
 
 func NewStore(ctx context.Context, nc *nats.Conn) (engine.Store, error) {
 	js, err := nc.JetStream()
 	if err != nil {
 		_ = nc.Drain()
-		return nil, fmt.Errorf("nats jetstream: %s", err)
+		return nil, fmt.Errorf("nats jetstream: %w", err)
 	}
 
 	// res, err := js.AccountInfo()
@@ -44,7 +46,7 @@ func NewStore(ctx context.Context, nc *nats.Conn) (engine.Store, error) {
 	})
 	if err != nil {
 		_ = nc.Drain()
-		return nil, fmt.Errorf("nats add jetstream: %s", err)
+		return nil, fmt.Errorf("nats add jetstream: %w", err)
 	}
 
 	return &store{nc: nc, js: js, stream: natsClientName}, nil
@@ -53,7 +55,7 @@ func NewStore(ctx context.Context, nc *nats.Conn) (engine.Store, error) {
 func (s *store) PushInstanceMessage(ctx context.Context, namespace string, instanceID uuid.UUID, typ string, payload any) (uuid.UUID, error) {
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("marshalling payload: %s", err)
+		return uuid.Nil, fmt.Errorf("marshalling payload: %w", err)
 	}
 
 	msgID := uuid.New()
@@ -66,7 +68,7 @@ func (s *store) PushInstanceMessage(ctx context.Context, namespace string, insta
 	}
 	msgBytes, err := json.Marshal(msg)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("marshalling engine message: %s", err)
+		return uuid.Nil, fmt.Errorf("marshalling engine message: %w", err)
 	}
 
 	msgNats := &nats.Msg{
@@ -78,7 +80,7 @@ func (s *store) PushInstanceMessage(ctx context.Context, namespace string, insta
 
 	_, err = s.js.PublishMsg(msgNats, nats.Context(ctx))
 	if err != nil {
-		return msgID, fmt.Errorf("nats publish message: %s", err)
+		return msgID, fmt.Errorf("nats publish message: %w", err)
 	}
 
 	return msgID, nil
@@ -89,7 +91,7 @@ func (s *store) PullInstanceMessages(ctx context.Context, namespace string, inst
 
 	all, err := s.pullFromSubject(ctx, subj)
 	if err != nil {
-		return nil, fmt.Errorf("pull from subject: %s", err)
+		return nil, fmt.Errorf("pull from subject: %w", err)
 	}
 
 	return all, nil
@@ -106,13 +108,13 @@ func (s *store) pullFromSubject(ctx context.Context, subj string) ([]engine.Mess
 
 	_, err := s.js.AddConsumer(s.stream, cfg)
 	if err != nil {
-		return nil, fmt.Errorf("add consumer: %s", err)
+		return nil, fmt.Errorf("add consumer: %w", err)
 	}
 	defer func() { _ = s.js.DeleteConsumer(s.stream, durable) }()
 
 	sub, err := s.js.PullSubscribe(subj, durable, nats.Bind(s.stream, durable))
 	if err != nil {
-		return nil, fmt.Errorf("pull subscribe: %s", err)
+		return nil, fmt.Errorf("pull subscribe: %w", err)
 	}
 
 	batch := 100
@@ -122,7 +124,7 @@ func (s *store) pullFromSubject(ctx context.Context, subj string) ([]engine.Mess
 	for {
 		msgList, fetchErr := sub.Fetch(batch, nats.MaxWait(10*time.Millisecond))
 		if fetchErr != nil && !errors.Is(fetchErr, nats.ErrTimeout) {
-			return nil, fmt.Errorf("subscriber fetch: %s", err)
+			return nil, fmt.Errorf("subscriber fetch: %w", err)
 		}
 		if len(msgList) == 0 {
 			break
