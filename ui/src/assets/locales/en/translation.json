@@ -1677,7 +1677,6 @@
         "cancelButton": "Cancel",
         "confirmButton": "Confirm"
       },
-
       "toolbar": {
         "code": "Code View",
         "edit": "Edit",
@@ -1867,6 +1866,9 @@
           "image": "image block",
           "table": "table block"
         }
+      },
+      "smartInput": {
+        "templateHelp": "Hints on editing a template string ..."
       },
       "delete": {
         "warning": "This will remove the current block and all content (including blocks nested into it). Are you sure you want to proceed?"
