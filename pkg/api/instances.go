@@ -65,7 +65,7 @@ func (e *instController) dummy(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *instController) create(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 	path := r.URL.Query().Get("path")
 
 	input, err := io.ReadAll(r.Body)
@@ -73,7 +73,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := e.engine.ExecWorkflow(r.Context(), ns.Name, path, string(input))
+	id, err := e.engine.ExecWorkflow(r.Context(), namespace, path, string(input))
 	if err != nil {
 		writeError(w, &Error{
 			Code:    err.Error(),
@@ -83,7 +83,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := e.engine.GetInstanceMessages(r.Context(), ns.Name, id)
+	data, err := e.engine.GetInstanceMessages(r.Context(), namespace, id)
 	if err != nil {
 		writeError(w, &Error{
 			Code:    err.Error(),
