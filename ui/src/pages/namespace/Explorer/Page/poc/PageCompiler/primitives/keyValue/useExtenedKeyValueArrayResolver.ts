@@ -1,6 +1,5 @@
-import { KeyValueResolverFunction, keyValueArrayToObject } from "./utils";
-
 import { ExtendedKeyValueType } from "../../../schema/primitives/extendedKeyValue";
+import { KeyValueResolverFunction } from "./utils";
 import { useStringInterpolation } from "../Variable/utils/useStringInterpolation";
 import { useTranslation } from "react-i18next";
 import { useVariableResolver } from "../Variable/utils/useVariableResolver";
@@ -62,13 +61,7 @@ export const useExtendedKeyValueArrayResolver = (): KeyValueResolverFunction<
           }
           return { key, value: resolvedVariable.data };
         }
-        case "object": {
-          return { key, value: keyValueArrayToObject(valueType.value) };
-        }
         case "boolean":
-        case "string-array":
-        case "boolean-array":
-        case "number-array":
         case "number":
           {
             return { key, value: valueType.value };
