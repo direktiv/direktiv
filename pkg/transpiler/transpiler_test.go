@@ -12,7 +12,7 @@ func TestTranspiler(t *testing.T) {
 	tt, err := transpiler.NewTranspiler()
 	assert.NoError(t, err)
 
-	_, _, err = tt.Transpile("const hallo = \"world\"")
+	_, _, err = tt.Transpile("const hallo = \"world\"", "dummy")
 	assert.NoError(t, err)
 
 	script := `const flow : FlowDefintion = {
@@ -33,7 +33,7 @@ func TestTranspiler(t *testing.T) {
 	}
 	`
 
-	_, _, err = tt.Transpile(script)
+	_, _, err = tt.Transpile(script, "dummy")
 
 	assert.NoError(t, err)
 }

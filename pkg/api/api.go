@@ -65,8 +65,7 @@ func Initialize(circuit *core.Circuit, app core.App, config *Config) error {
 		syncNamespace: app.SyncNamespace,
 	}
 	instCtr := &instController{
-		db:      config.DB,
-		manager: nil,
+		db: config.DB,
 	}
 	notificationsCtr := &notificationsController{
 		db: config.DB,

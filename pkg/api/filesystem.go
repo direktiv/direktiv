@@ -12,6 +12,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/pubsub"
+	"github.com/direktiv/direktiv/pkg/transpiler"
 	"github.com/go-chi/chi/v5"
 	"gopkg.in/yaml.v3"
 )
@@ -213,13 +214,12 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	// Validate if data is valid yaml with direktiv files.
+	// Validate if data is valid typescript with direktiv files.
 	isDirektivFile := req.Typ != filestore.FileTypeDirectory && req.Typ != filestore.FileTypeFile
-	var data struct{}
-	if err = yaml.Unmarshal(decodedBytes, &data); err != nil && isDirektivFile {
+	if err = transpiler.TestCompile(string(decodedBytes)); err != nil && isDirektivFile {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
-			Message: "file data has invalid yaml string",
+			Message: "file data has invalid typescript",
 		})
 
 		return

@@ -8,12 +8,10 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/cache"
 	"github.com/direktiv/direktiv/pkg/database"
-	"github.com/direktiv/direktiv/pkg/datastore"
 )
 
 var (
-	ErrNotFound          = errors.New("ErrNotFound")
-	ErrNamespaceNotFound = errors.New("ErrNamespaceNotFound")
+	ErrNotFound = errors.New("ErrNotFound")
 )
 
 type Secret struct {
@@ -52,16 +50,6 @@ func NewHandler(db *database.DB, cache *cache.Cache) *Handler {
 }
 
 func (sm *Handler) SecretsForNamespace(ctx context.Context, namespace string) (Secrets, error) {
-	// we can check for namespace here
-	_, err := sm.db.DataStore().Namespaces().GetByName(ctx, namespace)
-	if err != nil {
-		if errors.Is(err, datastore.ErrNotFound) {
-			return nil, ErrNamespaceNotFound
-		}
-
-		return nil, err
-	}
-
 	dbs := &DBSecrets{
 		namespace: namespace,
 		db:        sm.db,
