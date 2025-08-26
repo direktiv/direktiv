@@ -84,6 +84,17 @@ const form: BlockType[] = [
     },
   },
   {
+    id: "floating-number",
+    label: "number input",
+    description: "",
+    optional: false,
+    type: "form-number-input",
+    defaultValue: {
+      type: "number",
+      value: 4.99,
+    },
+  },
+  {
     id: "date",
     label: "date",
     description: "",
