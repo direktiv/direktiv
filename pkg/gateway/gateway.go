@@ -16,9 +16,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/secrets"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
-	"github.com/pkg/errors"
 )
 
 // manager struct implements core.GatewayManager by wrapping a pointer to router struct. Whenever endpoint and
@@ -28,6 +28,7 @@ type manager struct {
 	routerPointer unsafe.Pointer
 
 	db *database.DB
+	sh *secrets.Handler
 }
 
 func (m *manager) atomicLoadRouter() *router {
@@ -45,9 +46,10 @@ func (m *manager) atomicSetRouter(inner *router) {
 
 var _ core.GatewayManager = &manager{}
 
-func NewManager(db *database.DB) core.GatewayManager {
+func NewManager(db *database.DB, sh *secrets.Handler) core.GatewayManager {
 	return &manager{
 		db: db,
+		sh: sh,
 	}
 }
 
@@ -106,10 +108,8 @@ func (m *manager) SetEndpoints(list []core.Endpoint, cList []core.Consumer,
 ) error {
 	cList = slices.Clone(cList)
 
-	err := m.interpolateConsumersList(cList)
-	if err != nil {
-		return errors.Wrap(err, "interpolate consumer files")
-	}
+	m.interpolateConsumersList(cList)
+
 	newOne := buildRouter(list, cList, glist)
 	m.atomicSetRouter(newOne)
 
@@ -117,29 +117,23 @@ func (m *manager) SetEndpoints(list []core.Endpoint, cList []core.Consumer,
 }
 
 // interpolateConsumersList translates matic consumer function "fetchSecret" in consumer files.
-func (m *manager) interpolateConsumersList(list []core.Consumer) error {
-	db, err := m.db.BeginTx(context.Background())
-	if err != nil {
-		return fmt.Errorf("could not begin transaction: %w", err)
-	}
-	defer db.Rollback()
+func (m *manager) interpolateConsumersList(list []core.Consumer) {
+	var err error
 
 	for i, c := range list {
-		c.Password, err = fetchSecret(db, c.Namespace, c.Password)
+		c.Password, err = fetchSecret(m.sh, c.Namespace, c.Password)
 		if err != nil {
 			c.Errors = append(c.Errors, fmt.Sprintf("couldn't fetch secret %s", c.Password))
 			continue
 		}
 
-		c.APIKey, err = fetchSecret(db, c.Namespace, c.APIKey)
+		c.APIKey, err = fetchSecret(m.sh, c.Namespace, c.APIKey)
 		if err != nil {
 			c.Errors = append(c.Errors, fmt.Sprintf("couldn't fetch secret %s", c.APIKey))
 			continue
 		}
 		list[i] = c
 	}
-
-	return nil
 }
 
 func consumersForAPI(consumers []core.Consumer) any {

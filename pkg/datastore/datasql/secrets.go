@@ -98,7 +98,7 @@ func (s sqlSecretsStore) Set(ctx context.Context, secret *datastore.Secret) erro
 	} else {
 		if secret.Data == nil {
 			res = s.db.WithContext(ctx).Exec(`
-				UPDATE secrets SET data=NULL WHERE namespace=? AND name=?, updated_at=CURRENT_TIMESTAMP 
+				UPDATE secrets SET data=NULL, updated_at=CURRENT_TIMESTAMP WHERE namespace=? AND name=?
 				`, x.Namespace, x.Name)
 		} else {
 			var err error
@@ -107,7 +107,7 @@ func (s sqlSecretsStore) Set(ctx context.Context, secret *datastore.Secret) erro
 				return err
 			}
 			res = s.db.WithContext(ctx).Exec(`
-				UPDATE secrets SET data=? WHERE namespace=? AND name=?, updated_at=CURRENT_TIMESTAMP 
+				UPDATE secrets SET data=?, updated_at=CURRENT_TIMESTAMP WHERE namespace=? AND name=?
 				`, secret.Data, x.Namespace, x.Name)
 		}
 	}
