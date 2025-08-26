@@ -115,7 +115,7 @@ const form: BlockType[] = [
 
 describe("form request", () => {
   describe("url", () => {
-    test("resolves variables in URL path", async () => {
+    test("interpolates variables in URL path", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -168,7 +168,7 @@ describe("form request", () => {
   });
 
   describe("query params", () => {
-    test("resolves all variable types in query parameters", async () => {
+    test("interpolates variables in query parameters", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -277,7 +277,7 @@ describe("form request", () => {
   });
 
   describe("request headers", () => {
-    test("resolves all variable types in request headers", async () => {
+    test("interpolates variables in request headers", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -412,7 +412,7 @@ describe("form request", () => {
   });
 
   describe("request body", () => {
-    test("resolves string types in request body", async () => {
+    test("interpolates variables in request body", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -520,26 +520,32 @@ describe("form request", () => {
       await waitFor(async () => {
         expect(apiRequestMock).toHaveBeenCalledTimes(1);
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
-        const text = JSON.parse(await formRequest.clone().text());
+        const jsonResponse = JSON.parse(await formRequest.clone().text());
 
-        expect(text["String"]).toBe("String: ok");
-        expect(text["Boolean"]).toBe("Boolean: true");
-        expect(text["Number"]).toBe("Number: 19.99");
-        expect(text["Null"]).toBe("Null: null");
-        expect(text["Input"]).toBe("Input: string from a string input");
-        expect(text["Textarea"]).toBe("Textarea: string from a textarea");
-        expect(text["Checkbox-Checked"]).toBe("Checkbox (checked): true");
-        expect(text["Checkbox-Unchecked"]).toBe("Checkbox (unchecked): false");
-        expect(text["Input-Number"]).toBe("Input Number: 3");
-        expect(text["Input-Floating-Number"]).toBe(
+        expect(jsonResponse["String"]).toBe("String: ok");
+        expect(jsonResponse["Boolean"]).toBe("Boolean: true");
+        expect(jsonResponse["Number"]).toBe("Number: 19.99");
+        expect(jsonResponse["Null"]).toBe("Null: null");
+        expect(jsonResponse["Input"]).toBe("Input: string from a string input");
+        expect(jsonResponse["Textarea"]).toBe(
+          "Textarea: string from a textarea"
+        );
+        expect(jsonResponse["Checkbox-Checked"]).toBe(
+          "Checkbox (checked): true"
+        );
+        expect(jsonResponse["Checkbox-Unchecked"]).toBe(
+          "Checkbox (unchecked): false"
+        );
+        expect(jsonResponse["Input-Number"]).toBe("Input Number: 3");
+        expect(jsonResponse["Input-Floating-Number"]).toBe(
           "Input Floating Number: 4.99"
         );
-        expect(text["Input-Date"]).toBe("Input Date: 2025-12-24");
-        expect(text["Select"]).toBe("Select: pro");
+        expect(jsonResponse["Input-Date"]).toBe("Input Date: 2025-12-24");
+        expect(jsonResponse["Select"]).toBe("Select: pro");
       });
     });
 
-    test("resolves variable types in request body", async () => {
+    test("resolves variable pointer in request body", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -550,57 +556,98 @@ describe("form request", () => {
               url: "/save-user",
               requestBody: [
                 {
-                  key: "true-from-query",
+                  key: "String",
+                  value: {
+                    type: "variable",
+                    value: "query.user.data.status",
+                  },
+                },
+                {
+                  key: "Boolean",
                   value: {
                     type: "variable",
                     value: "query.user.data.emailVerified",
                   },
                 },
                 {
-                  key: "true-from-checkbox",
-                  value: {
-                    type: "variable",
-                    value: "this.form.checkbox-checked",
-                  },
-                },
-                {
-                  key: "false-from-checkbox",
-                  value: {
-                    type: "variable",
-                    value: "this.form.checkbox-unchecked",
-                  },
-                },
-                {
-                  key: "number-from-query",
+                  key: "Number",
                   value: {
                     type: "variable",
                     value: "query.user.data.accountBalance",
                   },
                 },
-
                 {
-                  key: "number-from-input",
-                  value: {
-                    type: "variable",
-                    value: "this.form.number",
-                  },
-                },
-                {
-                  key: "array-from-query",
-                  value: {
-                    type: "variable",
-                    value: "query.user.meta.subscriptionPlanOptions",
-                  },
-                },
-                {
-                  key: "null-from-query",
+                  key: "Null",
                   value: {
                     type: "variable",
                     value: "query.user.data.lastLogin",
                   },
                 },
                 {
-                  key: "object-from-query",
+                  key: "Input",
+                  value: {
+                    type: "variable",
+                    value: "this.form.string",
+                  },
+                },
+                {
+                  key: "Textarea",
+                  value: {
+                    type: "variable",
+                    value: "this.form.textarea",
+                  },
+                },
+                {
+                  key: "Checkbox-Checked",
+                  value: {
+                    type: "variable",
+                    value: "this.form.checkbox-checked",
+                  },
+                },
+                {
+                  key: "Checkbox-Unchecked",
+                  value: {
+                    type: "variable",
+                    value: "this.form.checkbox-unchecked",
+                  },
+                },
+                {
+                  key: "Input-Number",
+                  value: {
+                    type: "variable",
+                    value: "this.form.number",
+                  },
+                },
+                {
+                  key: "Input-Floating-Number",
+                  value: {
+                    type: "variable",
+                    value: "this.form.floating-number",
+                  },
+                },
+                {
+                  key: "Input-Date",
+                  value: {
+                    type: "variable",
+                    value: "this.form.date",
+                  },
+                },
+                {
+                  key: "Select",
+                  value: {
+                    type: "variable",
+                    value: "this.form.select",
+                  },
+                },
+                {
+                  key: "Array",
+                  value: {
+                    type: "variable",
+                    value: "query.user.meta.subscriptionPlanOptions",
+                  },
+                },
+                {
+                  key: "Object",
                   value: {
                     type: "variable",
                     value: "query.user.data",
@@ -618,20 +665,26 @@ describe("form request", () => {
       await waitFor(async () => {
         expect(apiRequestMock).toHaveBeenCalledTimes(1);
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
-        const text = JSON.parse(await formRequest.clone().text());
+        const jsonResponse = JSON.parse(await formRequest.clone().text());
 
-        expect(text["true-from-query"]).toBe(true);
-        expect(text["true-from-checkbox"]).toBe(true);
-        expect(text["false-from-checkbox"]).toBe(false);
-        expect(text["number-from-query"]).toBe(19.99);
-        expect(text["number-from-input"]).toBe(3);
-        expect(text["array-from-query"]).toEqual([
+        expect(jsonResponse["String"]).toBe("ok");
+        expect(jsonResponse["Boolean"]).toBe(true);
+        expect(jsonResponse["Number"]).toBe(19.99);
+        expect(jsonResponse["Null"]).toBe(null);
+        expect(jsonResponse["Input"]).toBe("string from a string input");
+        expect(jsonResponse["Textarea"]).toBe("string from a textarea");
+        expect(jsonResponse["Checkbox-Checked"]).toBe(true);
+        expect(jsonResponse["Checkbox-Unchecked"]).toBe(false);
+        expect(jsonResponse["Input-Number"]).toBe(3);
+        expect(jsonResponse["Input-Floating-Number"]).toBe(4.99);
+        expect(jsonResponse["Input-Date"]).toBe("2025-12-24");
+        expect(jsonResponse["Select"]).toBe("pro");
+        expect(jsonResponse["Array"]).toEqual([
           { label: "Free Plan", value: "free" },
           { label: "Pro Plan", value: "pro" },
           { label: "Enterprise Plan", value: "enterprise" },
         ]);
-        expect(text["null-from-query"]).toBe(null);
-        expect(text["object-from-query"]).toEqual({
+        expect(jsonResponse["Object"]).toEqual({
           accountBalance: 19.99,
           emailVerified: true,
           lastLogin: null,
@@ -652,7 +705,7 @@ describe("form request", () => {
       });
     });
 
-    test("resolves boolean types in request body", async () => {
+    test("can use booleans in request body", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -663,14 +716,14 @@ describe("form request", () => {
               url: "/save-user",
               requestBody: [
                 {
-                  key: "true",
+                  key: "Boolean-True",
                   value: {
                     type: "boolean",
                     value: true,
                   },
                 },
                 {
-                  key: "false",
+                  key: "Boolean-False",
                   value: {
                     type: "boolean",
                     value: false,
@@ -688,14 +741,14 @@ describe("form request", () => {
       await waitFor(async () => {
         expect(apiRequestMock).toHaveBeenCalledTimes(1);
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
-        const text = JSON.parse(await formRequest.clone().text());
+        const jsonResponse = JSON.parse(await formRequest.clone().text());
 
-        expect(text["true"]).toBe(true);
-        expect(text["false"]).toBe(false);
+        expect(jsonResponse["Boolean-True"]).toBe(true);
+        expect(jsonResponse["Boolean-False"]).toBe(false);
       });
     });
 
-    test("resolves number types in request body", async () => {
+    test("can use numbers in request body", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -706,10 +759,17 @@ describe("form request", () => {
               url: "/save-user",
               requestBody: [
                 {
-                  key: "number",
+                  key: "Number-Integer",
                   value: {
                     type: "number",
                     value: 3,
+                  },
+                },
+                {
+                  key: "Number-Float",
+                  value: {
+                    type: "number",
+                    value: 4.99,
                   },
                 },
               ],
@@ -724,9 +784,10 @@ describe("form request", () => {
       await waitFor(async () => {
         expect(apiRequestMock).toHaveBeenCalledTimes(1);
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
-        const text = JSON.parse(await formRequest.clone().text());
+        const jsonResponse = JSON.parse(await formRequest.clone().text());
 
-        expect(text["number"]).toBe(3);
+        expect(jsonResponse["Number-Integer"]).toBe(3);
+        expect(jsonResponse["Number-Float"]).toBe(4.99);
       });
     });
 
