@@ -2,6 +2,7 @@ import { Check, SquareArrowOutUpRight } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { FC, PropsWithChildren, useState } from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
@@ -31,7 +32,7 @@ const FakeInput: FC<FakeInputProps> = ({
       // Todo:
       // - consolidate this with the input styling?
       // - focus ring does not work as expected
-      sidebar && "max-w-[300px]",
+      sidebar && "min-w-[300px] max-w-[300px]",
       !wrap && "h-9",
       "rounded-md border bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
       "border-gray-4 placeholder:text-gray-8 focus:ring-gray-4 focus:ring-offset-gray-1",
@@ -60,6 +61,7 @@ export const SmartInput = ({
 }) => {
   const { t } = useTranslation();
   const [dialog, setDialog] = useState(false);
+
   const editor = useEditor({
     extensions: [
       Document,
@@ -113,9 +115,14 @@ export const SmartInput = ({
             </Alert>
             <FakeInput wrap className="flex flex-col gap-2 p-2">
               <Toolbar>
-                <Button variant="outline" type="button">
-                  Variables
-                </Button>
+                <Popover>
+                  <PopoverTrigger>
+                    <Button variant="outline" type="button">
+                      {t("direktivPage.blockEditor.smartInput.variableBtn")}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent></PopoverContent>
+                </Popover>
               </Toolbar>
               <EditorContent
                 id={id}

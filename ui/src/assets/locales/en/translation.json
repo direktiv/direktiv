@@ -1868,7 +1868,8 @@
         }
       },
       "smartInput": {
-        "templateHelp": "Hints on editing a template string ..."
+        "templateHelp": "Hints on editing a template string ...",
+        "variableBtn": "Variables"
       },
       "delete": {
         "warning": "This will remove the current block and all content (including blocks nested into it). Are you sure you want to proceed?"
