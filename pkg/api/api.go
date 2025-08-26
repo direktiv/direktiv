@@ -13,11 +13,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/cache"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
-	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/pubsub"
+	"github.com/direktiv/direktiv/pkg/secrets"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
 )
@@ -27,53 +28,64 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsub.Bus) error {
+type Config struct {
+	DB             *database.DB
+	Bus            *pubsub.Bus
+	Cache          *cache.Cache
+	SecretsHandler *secrets.Handler
+}
+
+func Initialize(circuit *core.Circuit, app core.App, config *Config) error {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
 
 	fsCtr := &fsController{
-		db:  db,
-		bus: bus,
+		db:  config.DB,
+		bus: config.Bus,
 	}
 	regCtr := &registryController{
 		manager: app.RegistryManager,
 	}
 	varCtr := &varController{
-		db: db,
+		db: config.DB,
 	}
 	secCtr := &secretsController{
-		db: db,
+		sh: config.SecretsHandler,
+		db: config.DB,
 	}
 	nsCtr := &nsController{
-		db:              db,
-		bus:             bus,
+		db:              config.DB,
+		bus:             config.Bus,
 		registryManager: app.RegistryManager,
 	}
 	mirrorsCtr := &mirrorsController{
-		db:            db,
-		bus:           bus,
+		db:            config.DB,
+		bus:           config.Bus,
 		syncNamespace: app.SyncNamespace,
 	}
 	instCtr := &instController{
-		db:      db,
+		db:      config.DB,
 		manager: nil,
 	}
 	notificationsCtr := &notificationsController{
-		db: db,
+		db: config.DB,
 	}
 	metricsCtr := &metricsController{
-		db: db,
+		db: config.DB,
 	}
 	eventsCtr := eventsController{
-		store:         db.DataStore(),
+		store:         config.DB.DataStore(),
 		wakeInstance:  nil,
 		startWorkflow: nil,
 	}
 
 	jxCtr := jxController{}
 
-	mw := &appMiddlewares{dStore: db.DataStore()}
+	mw := &appMiddlewares{
+		dStore: config.DB.DataStore(),
+		cache:  config.Cache,
+	}
 
 	r := chi.NewRouter()
 	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
@@ -135,7 +147,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB, bus *pubsu
 					extensions.CheckAPITokenMiddleware,
 					extensions.CheckAPIKeyMiddleware)
 			}
-			r.Use(mw.injectNamespace)
+			r.Use(mw.checkNamespace)
 
 			r.Route("/namespaces/{namespace}/instances", func(r chi.Router) {
 				instCtr.mountRouter(r)
@@ -257,11 +269,4 @@ func writeOk(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusOK)
-}
-
-func extractContextNamespace(r *http.Request) *datastore.Namespace {
-	//nolint:forcetypeassert
-	ns := r.Context().Value(ctxKeyNamespace).(*datastore.Namespace)
-
-	return ns
 }

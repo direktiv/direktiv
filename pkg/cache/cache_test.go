@@ -29,9 +29,9 @@ func TestCache(t *testing.T) {
 
 	circuit := core.NewCircuit(ctx, os.Interrupt)
 
-	cache1, _ := cache.NewCache(bus, false)
+	cache1, _ := cache.NewCache(bus, "host1", false)
 	go cache1.Run(circuit)
-	cache2, _ := cache.NewCache(bus, false)
+	cache2, _ := cache.NewCache(bus, "host2", false)
 	go cache2.Run(circuit)
 
 	cache1.Set("hello", []byte("world"))

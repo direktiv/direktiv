@@ -2,6 +2,7 @@ package secrets
 
 import (
 	"context"
+	"errors"
 
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
@@ -23,6 +24,10 @@ func (dbs *DBSecrets) Get(ctx context.Context, name string) (*Secret, error) {
 	// Fetch one
 	s, err := dStore.Secrets().Get(ctx, dbs.namespace, name)
 	if err != nil {
+		if errors.Is(err, datastore.ErrNotFound) {
+			return nil, ErrNotFound
+		}
+
 		return nil, err
 	}
 
@@ -99,12 +104,25 @@ func (dbs *DBSecrets) Update(ctx context.Context, secret *Secret) (*Secret, erro
 	defer db.Rollback()
 	dStore := db.DataStore()
 
+	_, err = dStore.Secrets().Get(ctx, dbs.namespace, secret.Name)
+	if err != nil {
+		if errors.Is(err, datastore.ErrNotFound) {
+			return nil, ErrNotFound
+		}
+
+		return nil, err
+	}
+
 	err = dStore.Secrets().Update(ctx, &datastore.Secret{
 		Namespace: dbs.namespace,
 		Name:      secret.Name,
 		Data:      secret.Data,
 	})
 	if err != nil {
+		if errors.Is(err, datastore.ErrNotFound) {
+			return nil, ErrNotFound
+		}
+
 		return nil, err
 	}
 
@@ -138,6 +156,10 @@ func (dbs *DBSecrets) Delete(ctx context.Context, name string) error {
 	// Fetch one
 	err = dStore.Secrets().Delete(ctx, dbs.namespace, name)
 	if err != nil {
+		if errors.Is(err, datastore.ErrNotFound) {
+			return ErrNotFound
+		}
+
 		return err
 	}
 

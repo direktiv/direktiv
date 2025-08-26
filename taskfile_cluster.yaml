@@ -74,6 +74,7 @@ tasks:
         --set pullPolicy=Always \
         --set ingress-nginx.controller.hostPort.enabled=true \
         --set image=direktiv \
+        --set nats.delay=0 \
         --set registry=localhost:5001 \
         --set tag=dev \
         {{- if eq .TELEMETRY "true" }}

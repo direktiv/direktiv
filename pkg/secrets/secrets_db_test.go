@@ -37,11 +37,11 @@ func TestDBSecrets(t *testing.T) {
 	require.NoError(t, err)
 	bus := pubsub.NewBus(nc)
 
-	sh1, cache1 := buildSecrets(ctx, db, bus)
-	sh2, cache2 := buildSecrets(ctx, db, bus)
+	sh1, cache1 := buildSecrets(ctx, db, bus, "host1")
+	sh2, cache2 := buildSecrets(ctx, db, bus, "host2")
 
-	sec1 := sh1.SecretsForNamespace(ns.Name)
-	sec2 := sh2.SecretsForNamespace(ns.Name)
+	sec1, _ := sh1.SecretsForNamespace(ctx, ns.Name)
+	sec2, _ := sh2.SecretsForNamespace(ctx, ns.Name)
 
 	// set on one
 	sec1.Set(ctx, &secrets.Secret{
@@ -95,10 +95,10 @@ func TestDBSecrets(t *testing.T) {
 
 }
 
-func buildSecrets(ctx context.Context, db *database.DB, bus *pubsub.Bus) (*secrets.SecretsHandler, *cache.Cache) {
+func buildSecrets(ctx context.Context, db *database.DB, bus *pubsub.Bus, host string) (*secrets.Handler, *cache.Cache) {
 	circuit := core.NewCircuit(ctx, os.Interrupt)
-	cache, _ := cache.NewCache(bus, true)
+	cache, _ := cache.NewCache(bus, host, true)
 	go cache.Run(circuit)
 
-	return secrets.NewSecretsHandler(db, cache), cache
+	return secrets.NewHandler(db, cache), cache
 }
