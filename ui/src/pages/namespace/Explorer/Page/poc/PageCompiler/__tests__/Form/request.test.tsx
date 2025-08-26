@@ -195,11 +195,11 @@ describe("form request", () => {
                   value: "{{query.user.data.lastLogin}}",
                 },
                 {
-                  key: "form-string",
+                  key: "input",
                   value: "{{this.form.string}}",
                 },
                 {
-                  key: "form-textarea",
+                  key: "textarea",
                   value: "{{this.form.textarea}}",
                 },
                 {
@@ -211,11 +211,15 @@ describe("form request", () => {
                   value: "{{this.form.checkbox-unchecked}}",
                 },
                 {
-                  key: "number",
+                  key: "input-number",
                   value: "{{this.form.number}}",
                 },
                 {
-                  key: "date",
+                  key: "input-floating-number",
+                  value: "{{this.form.floating-number}}",
+                },
+                {
+                  key: "input-date",
                   value: "{{this.form.date}}",
                 },
                 {
@@ -236,7 +240,7 @@ describe("form request", () => {
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
         const requestUrl = new URL(formRequest.clone().url);
         expect(requestUrl.search).toBe(
-          "?string=ok&boolean=true&number=3&null=null&form-string=string+from+a+string+input&form-textarea=string+from+a+textarea&checkbox-checked=true&checkbox-unchecked=false&date=2025-12-24&select=pro"
+          "?string=ok&boolean=true&number=19.99&null=null&input=string+from+a+string+input&textarea=string+from+a+textarea&checkbox-checked=true&checkbox-unchecked=false&input-number=3&input-floating-number=4.99&input-date=2025-12-24&select=pro"
         );
       });
     });
@@ -284,47 +288,52 @@ describe("form request", () => {
               url: "/save-user",
               requestHeaders: [
                 {
-                  key: "Value",
+                  key: "String",
                   value: "String: {{query.user.data.status}}",
                 },
                 {
-                  key: "Boolean-Value",
+                  key: "Boolean",
                   value: "Boolean: {{query.user.data.emailVerified}}",
                 },
                 {
-                  key: "Number-Value",
+                  key: "Number",
                   value: "Number: {{query.user.data.accountBalance}}",
                 },
                 {
-                  key: "Null-Value",
+                  key: "Null",
                   value: "Null: {{query.user.data.lastLogin}}",
                 },
                 {
-                  key: "Form-String-Value",
-                  value: "String: {{this.form.string}}",
+                  key: "Input",
+                  value: "Input: {{this.form.string}}",
                 },
                 {
-                  key: "Form-Textarea-Value",
+                  key: "Textarea",
                   value: "Textarea: {{this.form.textarea}}",
                 },
                 {
-                  key: "Form-Checkbox-Checked-Value",
-                  value: "Checkbox: {{this.form.checkbox-checked}}",
+                  key: "Checkbox-Checked",
+                  value: "Checkbox (checked): {{this.form.checkbox-checked}}",
                 },
                 {
-                  key: "Form-Checkbox-Unchecked-Value",
-                  value: "Checkbox: {{this.form.checkbox-unchecked}}",
+                  key: "Checkbox-Unchecked",
+                  value:
+                    "Checkbox (unchecked): {{this.form.checkbox-unchecked}}",
                 },
                 {
-                  key: "Form-Number-Value",
-                  value: "Number: {{this.form.number}}",
+                  key: "Input-Number",
+                  value: "Input Number: {{this.form.number}}",
                 },
                 {
-                  key: "Form-Date-Value",
-                  value: "Date: {{this.form.date}}",
+                  key: "Input-Floating-Number",
+                  value: "Input Floating Number: {{this.form.floating-number}}",
                 },
                 {
-                  key: "Form-Select-Value",
+                  key: "Input-Date",
+                  value: "Input Date: {{this.form.date}}",
+                },
+                {
+                  key: "Select",
                   value: "Select: {{this.form.select}}",
                 },
               ],
@@ -339,37 +348,35 @@ describe("form request", () => {
       await waitFor(() => {
         expect(apiRequestMock).toHaveBeenCalledTimes(1);
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
-        expect(formRequest.clone().headers.get("Value")).toBe("String: ok");
-        expect(formRequest.clone().headers.get("Boolean-Value")).toBe(
+        expect(formRequest.clone().headers.get("String")).toBe("String: ok");
+        expect(formRequest.clone().headers.get("Boolean")).toBe(
           "Boolean: true"
         );
-        expect(formRequest.clone().headers.get("Number-Value")).toBe(
-          "Number: 19.99"
+        expect(formRequest.clone().headers.get("Number")).toBe("Number: 19.99");
+        expect(formRequest.clone().headers.get("Null")).toBe("Null: null");
+        expect(formRequest.clone().headers.get("Input")).toBe(
+          "Input: string from a string input"
         );
-        expect(formRequest.clone().headers.get("Null-Value")).toBe(
-          "Null: null"
-        );
-        expect(formRequest.clone().headers.get("Form-String-Value")).toBe(
-          "String: string from a string input"
-        );
-        expect(formRequest.clone().headers.get("Form-Textarea-Value")).toBe(
+        expect(formRequest.clone().headers.get("Textarea")).toBe(
           "Textarea: string from a textarea"
         );
-        expect(
-          formRequest.clone().headers.get("Form-Checkbox-Checked-Value")
-        ).toBe("Checkbox: true");
-        expect(
-          formRequest.clone().headers.get("Form-Checkbox-Unchecked-Value")
-        ).toBe("Checkbox: false");
-        expect(formRequest.clone().headers.get("Form-Number-Value")).toBe(
-          "Number: 3"
+        expect(formRequest.clone().headers.get("Checkbox-Checked")).toBe(
+          "Checkbox (checked): true"
         );
-        expect(formRequest.clone().headers.get("Form-Date-Value")).toBe(
-          "Date: 2025-12-24"
+        expect(formRequest.clone().headers.get("Checkbox-Unchecked")).toBe(
+          "Checkbox (unchecked): false"
         );
-        expect(formRequest.clone().headers.get("Form-Select-Value")).toBe(
-          "Select: pro"
+        expect(formRequest.clone().headers.get("Input-Number")).toBe(
+          "Input Number: 3"
         );
+
+        expect(formRequest.clone().headers.get("Input-Floating-Number")).toBe(
+          "Input Floating Number: 4.99"
+        );
+        expect(formRequest.clone().headers.get("Input-Date")).toBe(
+          "Input Date: 2025-12-24"
+        );
+        expect(formRequest.clone().headers.get("Select")).toBe("Select: pro");
       });
     });
 
@@ -416,80 +423,89 @@ describe("form request", () => {
               url: "/save-user",
               requestBody: [
                 {
-                  key: "string-from-query",
+                  key: "String",
                   value: {
                     type: "string",
-                    value: "{{query.user.data.status}}",
+                    value: "String: {{query.user.data.status}}",
                   },
                 },
                 {
-                  key: "string-from-textarea",
+                  key: "Boolean",
                   value: {
                     type: "string",
-                    value: "{{this.form.textarea}}",
+                    value: "Boolean: {{query.user.data.emailVerified}}",
                   },
                 },
                 {
-                  key: "string-from-input",
+                  key: "Number",
                   value: {
                     type: "string",
-                    value: "{{this.form.string}}",
+                    value: "Number: {{query.user.data.accountBalance}}",
                   },
                 },
                 {
-                  key: "string-from-date-input",
+                  key: "Null",
                   value: {
                     type: "string",
-                    value: "{{this.form.date}}",
+                    value: "Null: {{query.user.data.lastLogin}}",
                   },
                 },
                 {
-                  key: "string-from-select",
+                  key: "Input",
                   value: {
                     type: "string",
-                    value: "{{this.form.select}}",
+                    value: "Input: {{this.form.string}}",
                   },
                 },
                 {
-                  key: "number-from-query",
+                  key: "Textarea",
                   value: {
                     type: "string",
-                    value: "{{query.user.data.accountBalance}}",
+                    value: "Textarea: {{this.form.textarea}}",
                   },
                 },
                 {
-                  key: "number-from-input",
+                  key: "Checkbox-Checked",
                   value: {
                     type: "string",
-                    value: "{{this.form.number}}",
+                    value: "Checkbox (checked): {{this.form.checkbox-checked}}",
                   },
                 },
                 {
-                  key: "null-from-query",
+                  key: "Checkbox-Unchecked",
                   value: {
                     type: "string",
-                    value: "{{query.user.data.lastLogin}}",
+                    value:
+                      "Checkbox (unchecked): {{this.form.checkbox-unchecked}}",
                   },
                 },
                 {
-                  key: "true-from-query",
+                  key: "Input-Number",
                   value: {
                     type: "string",
-                    value: "{{query.user.data.emailVerified}}",
+                    value: "Input Number: {{this.form.number}}",
                   },
                 },
                 {
-                  key: "true-from-checkbox",
+                  key: "Input-Floating-Number",
                   value: {
                     type: "string",
-                    value: "{{this.form.checkbox-checked}}",
+                    value:
+                      "Input Floating Number: {{this.form.floating-number}}",
                   },
                 },
                 {
-                  key: "false-from-checkbox",
+                  key: "Input-Date",
                   value: {
                     type: "string",
-                    value: "{{this.form.checkbox-unchecked}}",
+                    value: "Input Date: {{this.form.date}}",
+                  },
+                },
+                {
+                  key: "Select",
+                  value: {
+                    type: "string",
+                    value: "Select: {{this.form.select}}",
                   },
                 },
               ],
@@ -506,17 +522,20 @@ describe("form request", () => {
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
         const text = JSON.parse(await formRequest.clone().text());
 
-        expect(text["string-from-query"]).toBe("ok");
-        expect(text["string-from-textarea"]).toBe("string from a textarea");
-        expect(text["string-from-input"]).toBe("string from a string input");
-        expect(text["string-from-date-input"]).toBe("2025-12-24");
-        expect(text["string-from-select"]).toBe("pro");
-        expect(text["number-from-query"]).toBe("19.99");
-        expect(text["number-from-input"]).toBe("3");
-        expect(text["null-from-query"]).toBe("null");
-        expect(text["true-from-query"]).toBe("true");
-        expect(text["true-from-checkbox"]).toBe("true");
-        expect(text["false-from-checkbox"]).toBe("false");
+        expect(text["String"]).toBe("String: ok");
+        expect(text["Boolean"]).toBe("Boolean: true");
+        expect(text["Number"]).toBe("Number: 19.99");
+        expect(text["Null"]).toBe("Null: null");
+        expect(text["Input"]).toBe("Input: string from a string input");
+        expect(text["Textarea"]).toBe("Textarea: string from a textarea");
+        expect(text["Checkbox-Checked"]).toBe("Checkbox (checked): true");
+        expect(text["Checkbox-Unchecked"]).toBe("Checkbox (unchecked): false");
+        expect(text["Input-Number"]).toBe("Input Number: 3");
+        expect(text["Input-Floating-Number"]).toBe(
+          "Input Floating Number: 4.99"
+        );
+        expect(text["Input-Date"]).toBe("Input Date: 2025-12-24");
+        expect(text["Select"]).toBe("Select: pro");
       });
     });
 
