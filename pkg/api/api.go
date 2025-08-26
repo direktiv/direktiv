@@ -23,14 +23,14 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-type Config struct {
+type InitializeArgs struct {
 	DB             *database.DB
 	Bus            *pubsub.Bus
 	Cache          *cache.Cache
 	SecretsHandler *secrets.Handler
 }
 
-func Initialize(app core.App, config *Config) (*http.Server, error) {
+func Initialize(app core.App, config *InitializeArgs) (*http.Server, error) {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}

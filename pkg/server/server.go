@@ -209,7 +209,7 @@ func Start(circuit *core.Circuit) error {
 
 	// Start api server
 	slog.Info("initializing api server")
-	srv, err := api.Initialize(app, &api.Config{
+	srv, err := api.Initialize(app, &api.InitializeArgs{
 		DB:             db,
 		Bus:            bus,
 		Cache:          cache,
