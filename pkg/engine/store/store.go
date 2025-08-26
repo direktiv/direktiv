@@ -21,11 +21,7 @@ type store struct {
 const natsClientName = "engine_messages_store"
 const instanceMessagesSubject = "instanceMessages.%s.instanceID.%s.type.%s"
 
-func NewStore(ctx context.Context, url string) (engine.Store, error) {
-	nc, err := nats.Connect(url, nats.Name(natsClientName))
-	if err != nil {
-		return nil, fmt.Errorf("nats connect: %s", err)
-	}
+func NewStore(ctx context.Context, nc *nats.Conn) (engine.Store, error) {
 	js, err := nc.JetStream()
 	if err != nil {
 		_ = nc.Drain()

@@ -84,12 +84,12 @@ func Run(circuit *core.Circuit) error {
 
 	// Create Bus
 	slog.Info("initializing pubsub")
-	nc, err := natsclient.NewNATSConnection()
+	nc, err := natsclient.Connect()
 	if err != nil {
 		return fmt.Errorf("can not connect to nats")
 	}
 
-	bus := pubsub.NewBus(nc.Conn)
+	bus := pubsub.NewBus(nc)
 	circuit.Start(func() error {
 		err := bus.Loop(circuit)
 		if err != nil {
@@ -141,7 +141,11 @@ func Run(circuit *core.Circuit) error {
 	})
 
 	// Create js engine
-	store, err := store2.NewStore(circuit.Context(), "nats://nats:4222")
+	nc, err = natsclient.Connect()
+	if err != nil {
+		return fmt.Errorf("can not connect to nats")
+	}
+	store, err := store2.NewStore(circuit.Context(), nc)
 	if err != nil {
 		return fmt.Errorf("initializing engine, err: %w", err)
 	}
@@ -307,8 +311,9 @@ func checkNATSConnectivity() {
 		select {
 		case <-ticker.C:
 			slog.Info("checking nats connection")
-			_, err := natsclient.NewNATSConnection()
+			nc, err := natsclient.Connect()
 			if err == nil {
+				nc.Close()
 				slog.Info("nats available")
 				return
 			}

@@ -10,24 +10,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-type NATSConnection struct {
-	Conn *nats.Conn
-}
-
-func NewNATSConnection() (*NATSConnection, error) {
-	conn, err := natsConnect()
-	if err != nil {
-		return nil, err
-	}
-
-	nc := &NATSConnection{
-		Conn: conn,
-	}
-
-	return nc, nil
-}
-
-func natsConnect() (*nats.Conn, error) {
+func Connect() (*nats.Conn, error) {
 	// set the deployment name in dns names
 	deploymentName := os.Getenv("DIREKTIV_DEPLOYMENT_NAME")
 
