@@ -102,10 +102,10 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
 };
 
 const LoopItemBadge: FC<PropsWithChildren> = ({ children }) => (
-  <div className="absolute flex flex-col justify-center items-center mt-1 h-[2px] w-full">
-        <Badge className="bg-gray-4 text-black dark:bg-gray-dark-4 dark:text-white">
-          <EyeOff className="mr-2" size={16} />
-          <span>{children}</span>
-        </Badge>
+  <div className="absolute mt-1 flex h-[2px] w-full flex-col items-center justify-center">
+    <Badge className="bg-gray-4 text-black dark:bg-gray-dark-4 dark:text-white">
+      <EyeOff className="mr-2" size={16} />
+      <span>{children}</span>
+    </Badge>
   </div>
 );
