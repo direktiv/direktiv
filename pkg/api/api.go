@@ -232,7 +232,7 @@ func Initialize(circuit *core.Circuit, app core.App, config *Config) error {
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
 
-	circuit.Start(func() error {
+	circuit.Go(func() error {
 		err := apiServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return fmt.Errorf("listen on port, err: %w", err)

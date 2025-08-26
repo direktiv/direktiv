@@ -15,9 +15,9 @@ type Circuit struct {
 	wg      sync.WaitGroup
 }
 
-// Start lunches a goroutine and tracking it via a sync.WaitGroup. It enables simplified api to lunch graceful go
+// Go lunches a goroutine and tracking it via a sync.WaitGroup. It enables simplified api to lunch graceful go
 // routines.
-func (c *Circuit) Start(job func() error) {
+func (c *Circuit) Go(job func() error) {
 	c.wg.Add(1)
 	go func() {
 		defer c.wg.Done()

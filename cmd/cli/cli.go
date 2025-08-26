@@ -73,7 +73,7 @@ var startAPICmd = &cobra.Command{
 
 		circuit := core.NewCircuit(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-		circuit.Start(func() error {
+		circuit.Go(func() error {
 			err := server.Run(circuit)
 			if err != nil {
 				slog.Error("booting api server", "err", err)

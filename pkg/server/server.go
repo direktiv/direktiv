@@ -90,7 +90,7 @@ func Run(circuit *core.Circuit) error {
 	}
 
 	bus := pubsub.NewBus(nc)
-	circuit.Start(func() error {
+	circuit.Go(func() error {
 		err := bus.Loop(circuit)
 		if err != nil {
 			return fmt.Errorf("pubsub bus loop, err: %w", err)
@@ -101,7 +101,7 @@ func Run(circuit *core.Circuit) error {
 
 	// creates bus with pub sub
 	cache, err := cache.NewCache(bus, os.Getenv("POD_NAME"), false)
-	circuit.Start(func() error {
+	circuit.Go(func() error {
 		cache.Run(circuit)
 		if err != nil {
 			return fmt.Errorf("pubsub bus loop, err: %w", err)
@@ -131,7 +131,7 @@ func Run(circuit *core.Circuit) error {
 		return fmt.Errorf("initializing service manager, err: %w", err)
 	}
 
-	circuit.Start(func() error {
+	circuit.Go(func() error {
 		err := app.ServiceManager.Run(circuit)
 		if err != nil {
 			return fmt.Errorf("service manager, err: %w", err)
@@ -153,7 +153,7 @@ func Run(circuit *core.Circuit) error {
 	if err != nil {
 		return fmt.Errorf("initializing engine, err: %w", err)
 	}
-	circuit.Start(func() error {
+	circuit.Go(func() error {
 		err := app.Engine.Start(circuit)
 		if err != nil {
 			return fmt.Errorf("engine, err: %w", err)
