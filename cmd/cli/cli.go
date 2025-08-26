@@ -84,14 +84,12 @@ var startAPICmd = &cobra.Command{
 		<-circuit.Done()
 		slog.Info("terminating api server")
 
-		go func() {
-			time.Sleep(time.Second * 15)
-			slog.Error("harsh api server termination")
-			os.Exit(1)
-		}()
-
-		circuit.Wait()
-		slog.Info("graceful api server termination")
+		err = circuit.Wait(time.Second * 10)
+		if err != nil {
+			slog.Info("harsh api server termination")
+		} else {
+			slog.Info("graceful api server termination")
+		}
 	},
 }
 

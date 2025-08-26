@@ -2,10 +2,12 @@ package core
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"os"
 	"os/signal"
 	"sync"
+	"time"
 )
 
 // nolint: containedctx
@@ -56,6 +58,21 @@ func (c *Circuit) Go(job func() error) {
 	}()
 }
 
-func (c *Circuit) Wait() {
-	c.wg.Wait()
+func (c *Circuit) Wait(timeout time.Duration) error {
+	done := make(chan struct{})
+
+	go func() {
+		c.wg.Wait()
+		close(done)
+	}()
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	select {
+	case <-done:
+		return nil
+	case <-ctx.Done():
+		return errors.New("timeout exceeded")
+	}
 }
