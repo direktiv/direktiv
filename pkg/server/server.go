@@ -11,6 +11,8 @@ import (
 
 	"github.com/caarlos0/env/v10"
 	"github.com/direktiv/direktiv/pkg/api"
+	"github.com/direktiv/direktiv/pkg/cache"
+	"github.com/direktiv/direktiv/pkg/certificates"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
@@ -18,13 +20,14 @@ import (
 	store2 "github.com/direktiv/direktiv/pkg/engine/store"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/gateway"
+	"github.com/direktiv/direktiv/pkg/natsclient"
 	"github.com/direktiv/direktiv/pkg/pubsub"
-	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
+	"github.com/direktiv/direktiv/pkg/secrets"
 	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/service/registry"
 	"github.com/direktiv/direktiv/pkg/telemetry"
+	_ "github.com/lib/pq" //nolint:revive
 	"github.com/direktiv/direktiv/pkg/utils"
-	"github.com/nats-io/nats.go"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -50,6 +53,17 @@ func Run(circuit *core.Circuit) error {
 		Config: config,
 	}
 
+	// create certs for communication
+	slog.Info("initializing certificate updater")
+	cm, err := certificates.NewCertificateUpdater(config.DirektivNamespace)
+	if err != nil {
+		return fmt.Errorf("initialize certificate updater, err: %w", err)
+	}
+	cm.Start(circuit)
+
+	// wait for nats to be up and running and certs are done
+	checkNATSConnectivity()
+
 	// Create DB connection
 	slog.Info("initializing db connection")
 	db, err := initDB(config)
@@ -69,12 +83,13 @@ func Run(circuit *core.Circuit) error {
 	}
 
 	// Create Bus
-	slog.Info("initializing pubsub2")
-	coreBus, err := pubsubSQL.NewPostgresCoreBus(rawDB, app.Config.DB)
+	slog.Info("initializing pubsub")
+	nc, err := natsclient.NewNATSConnection()
 	if err != nil {
-		return fmt.Errorf("creating pubsub core bus, err: %w", err)
+		return fmt.Errorf("can not connect to nats")
 	}
-	bus := pubsub.NewBus(coreBus)
+
+	bus := pubsub.NewBus(nc.Conn)
 	circuit.Start(func() error {
 		err := bus.Loop(circuit)
 		if err != nil {
@@ -83,6 +98,20 @@ func Run(circuit *core.Circuit) error {
 
 		return nil
 	})
+
+	// creates bus with pub sub
+	cache, err := cache.NewCache(bus, os.Getenv("POD_NAME"), false)
+	circuit.Start(func() error {
+		cache.Run(circuit)
+		if err != nil {
+			return fmt.Errorf("pubsub bus loop, err: %w", err)
+		}
+
+		return nil
+	})
+
+	slog.Info("initializing secrets handler")
+	sh := secrets.NewHandler(db, cache)
 
 	// Create service manager
 	slog.Info("initializing service manager")
@@ -139,26 +168,26 @@ func Run(circuit *core.Circuit) error {
 
 	// Create endpoint manager
 	slog.Info("initializing gateway manager")
-	app.GatewayManager = gateway.NewManager(db)
+	app.GatewayManager = gateway.NewManager(db, sh)
 
 	// Create syncNamespace function
 	slog.Info("initializing sync namespace routine")
 	// TODO: fix app.SyncNamespace init.
 
-	bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
+	bus.Subscribe(pubsub.FileSystemChangeEvent, func(_ []byte) {
 		renderServiceFiles(db, app.ServiceManager)
 	})
-	bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
+	bus.Subscribe(pubsub.NamespacesChangeEvent, func(_ []byte) {
 		renderServiceFiles(db, app.ServiceManager)
 	})
 	// Call at least once before booting
 	renderServiceFiles(db, app.ServiceManager)
 
 	// endpoint manager
-	bus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
+	bus.Subscribe(pubsub.FileSystemChangeEvent, func(_ []byte) {
 		renderGatewayFiles(db, app.GatewayManager)
 	})
-	bus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
+	bus.Subscribe(pubsub.NamespacesChangeEvent, func(_ []byte) {
 		renderGatewayFiles(db, app.GatewayManager)
 	})
 	// initial loading of routes and consumers
@@ -171,13 +200,17 @@ func Run(circuit *core.Circuit) error {
 			return fmt.Errorf("initializing extensions, err: %w", err)
 		}
 	}
-
+	slog.Info("api server v2 starting")
 	// Start api v2 server
-	err = api.Initialize(circuit, app, db, bus)
+	err = api.Initialize(circuit, app, &api.Config{
+		DB:             db,
+		Bus:            bus,
+		Cache:          cache,
+		SecretsHandler: sh,
+	})
 	if err != nil {
 		return fmt.Errorf("initializing api v2, err: %w", err)
 	}
-	slog.Info("api server v2 started")
 
 	return nil
 }
@@ -210,19 +243,6 @@ func initDB(config *core.Config) (*database.DB, error) {
 		return nil, err
 	}
 	slog.Info("successfully connected to the database")
-
-	var nc *nats.Conn
-	utils.Retry(time.Second, 10, func() error {
-		slog.Info("test connection to nats...")
-		nc, err = nats.Connect("nats://nats:4222")
-
-		return err
-	})
-	if err != nil {
-		return nil, err
-	}
-	nc.Drain()
-	slog.Info("successfully connected to the nats")
 
 	res := db.Exec(database.Schema)
 	if res.Error != nil {
@@ -275,4 +295,27 @@ func initSLog(cfg *core.Config) {
 	slogger := slog.New(ctxHandler)
 
 	slog.SetDefault(slogger)
+}
+
+func checkNATSConnectivity() {
+	// waiting for nats to be available
+	// this waits for certificates as well
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			slog.Info("checking nats connection")
+			_, err := natsclient.NewNATSConnection()
+			if err == nil {
+				slog.Info("nats available")
+				return
+			}
+			slog.Error("nats connection not available", slog.Any("error", err))
+		case <-time.After(2 * time.Minute):
+			// can not recover from nats not connecting
+			panic("cannot connect to nats")
+		}
+	}
 }

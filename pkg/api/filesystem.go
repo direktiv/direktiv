@@ -35,7 +35,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -50,7 +50,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 	path = filepath.Clean("/" + path)
 
 	// Fetch file
-	file, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), path)
+	file, err := fStore.ForNamespace(namespace).GetFile(r.Context(), path)
 	if err != nil {
 		writeFileStoreError(w, err)
 		return
@@ -58,7 +58,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 
 	var children []*filestore.File
 	if file.Typ == filestore.FileTypeDirectory {
-		children, err = fStore.ForNamespace(ns.Name).ReadDirectory(r.Context(), path)
+		children, err = fStore.ForNamespace(namespace).ReadDirectory(r.Context(), path)
 		if err != nil {
 			writeInternalError(w, err)
 			return
@@ -85,7 +85,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *fsController) readRaw(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -100,7 +100,7 @@ func (e *fsController) readRaw(w http.ResponseWriter, r *http.Request) {
 	path = filepath.Clean("/" + path)
 
 	// fetch file.
-	file, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), path)
+	file, err := fStore.ForNamespace(namespace).GetFile(r.Context(), path)
 	if errors.Is(err, filestore.ErrNotFound) {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -128,7 +128,7 @@ func (e *fsController) readRaw(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -143,7 +143,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 	path = filepath.Clean("/" + path)
 
 	// Fetch file
-	file, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), path)
+	file, err := fStore.ForNamespace(namespace).GetFile(r.Context(), path)
 	if err != nil {
 		writeFileStoreError(w, err)
 		return
@@ -156,7 +156,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 
 	// Remove all associated runtime variables.
 	dStore := db.DataStore()
-	err = dStore.RuntimeVariables().DeleteForWorkflow(r.Context(), ns.Name, path)
+	err = dStore.RuntimeVariables().DeleteForWorkflow(r.Context(), namespace, path)
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -168,16 +168,10 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: yassir, check the logic of sending events on fs change in all actions.
 	// Publish pubsub event.
 	if file.Typ.IsDirektivSpecFile() {
-		err = e.bus.DebouncedPublish(&pubsub.FileSystemChangeEvent{
-			Action:       "delete",
-			FileType:     string(file.Typ),
-			Namespace:    ns.Name,
-			NamespaceID:  ns.ID,
-			FilePath:     file.Path,
-			DeleteFileID: file.ID,
-		})
+		err = e.bus.Publish(pubsub.FileSystemChangeEvent, nil)
 		if err != nil {
 			slog.Error("pubsub publish", "err", err)
 		}
@@ -187,7 +181,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -236,7 +230,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	path = filepath.Clean("/" + path)
 
 	// Create file.
-	newFile, err := fStore.ForNamespace(ns.Name).CreateFile(r.Context(),
+	newFile, err := fStore.ForNamespace(namespace).CreateFile(r.Context(),
 		"/"+path+"/"+req.Name,
 		req.Typ,
 		req.MIMEType,
@@ -255,13 +249,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event.
 	if newFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.DebouncedPublish(&pubsub.FileSystemChangeEvent{
-			Action:      "create",
-			FileType:    string(newFile.Typ),
-			Namespace:   ns.Name,
-			NamespaceID: ns.ID,
-			FilePath:    newFile.Path,
-		})
+		err = e.bus.Publish(pubsub.FileSystemChangeEvent, nil)
 		// nolint:staticcheck
 		if err != nil {
 			slog.With("component", "api").
@@ -273,7 +261,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -322,7 +310,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch file.
-	oldFile, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), path)
+	oldFile, err := fStore.ForNamespace(namespace).GetFile(r.Context(), path)
 	if err != nil {
 		writeFileStoreError(w, err)
 		return
@@ -345,7 +333,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// Update workflow_path of all associated runtime variables.
-		err = dStore.RuntimeVariables().SetWorkflowPath(r.Context(), ns.Name, path, req.Path)
+		err = dStore.RuntimeVariables().SetWorkflowPath(r.Context(), namespace, path, req.Path)
 		if err != nil {
 			writeInternalError(w, err)
 			return
@@ -353,7 +341,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		oldFile.Path = req.Path
 	}
 
-	updatedFile, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), oldFile.Path)
+	updatedFile, err := fStore.ForNamespace(namespace).GetFile(r.Context(), oldFile.Path)
 	if err != nil {
 		writeFileStoreError(w, err)
 		return
@@ -368,14 +356,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event (rename).
 	if req.Path != "" && updatedFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.DebouncedPublish(&pubsub.FileSystemChangeEvent{
-			Action:      "rename",
-			FileType:    string(updatedFile.Typ),
-			Namespace:   ns.Name,
-			NamespaceID: ns.ID,
-			FilePath:    updatedFile.Path,
-			OldPath:     oldFile.Path,
-		})
+		err = e.bus.Publish(pubsub.FileSystemChangeEvent, nil)
 		if err != nil {
 			slog.Error("pubsub publish", "err", err)
 		}
@@ -383,13 +364,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event (update).
 	if req.Data != "" && updatedFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.DebouncedPublish(&pubsub.FileSystemChangeEvent{
-			Action:      "update",
-			FileType:    string(updatedFile.Typ),
-			Namespace:   ns.Name,
-			NamespaceID: ns.ID,
-			FilePath:    updatedFile.Path,
-		})
+		err = e.bus.Publish(pubsub.FileSystemChangeEvent, nil)
 		// nolint:staticcheck
 		if err != nil {
 			slog.With("component", "api").

@@ -7,7 +7,6 @@ import (
 	"sort"
 
 	"github.com/direktiv/direktiv/pkg/database"
-	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -30,7 +29,7 @@ type apiNotification struct {
 }
 
 func (c *notificationsController) list(w http.ResponseWriter, r *http.Request) {
-	ns := extractContextNamespace(r)
+	namespace := chi.URLParam(r, "namespace")
 
 	notifications := make([]*apiNotification, 0)
 
@@ -43,7 +42,7 @@ func (c *notificationsController) list(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Rollback()
 
-	secretIssues, err := c.lintSecrets(ctx, db, ns)
+	secretIssues, err := c.lintSecrets(ctx, db, namespace)
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -56,8 +55,8 @@ func (c *notificationsController) list(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, notifications)
 }
 
-func (c *notificationsController) lintSecrets(ctx context.Context, tx *database.DB, ns *datastore.Namespace) ([]*apiNotification, error) {
-	secrets, err := tx.DataStore().Secrets().GetAll(ctx, ns.Name)
+func (c *notificationsController) lintSecrets(ctx context.Context, tx *database.DB, ns string) ([]*apiNotification, error) {
+	secrets, err := tx.DataStore().Secrets().GetAll(ctx, ns)
 	if err != nil {
 		return nil, err
 	}
