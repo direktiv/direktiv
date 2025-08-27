@@ -2,7 +2,6 @@ package engine
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"regexp"
 
@@ -17,7 +16,7 @@ function transition(funcName, state) {
 
 `
 
-func (e *engine) execJSScript(script []byte, input string) (any, error) {
+func (e *engine) execJSScript(script []byte, fn string, input string) (any, error) {
 	vm := goja.New()
 	vm.Set("print", jsPrint)
 	vm.Set("commitState", jsCommitState)
@@ -26,9 +25,9 @@ func (e *engine) execJSScript(script []byte, input string) (any, error) {
 	if err != nil {
 		return nil, fmt.Errorf("run script: %w", err)
 	}
-	start, ok := goja.AssertFunction(vm.Get("start"))
+	start, ok := goja.AssertFunction(vm.Get(fn))
 	if !ok {
-		return nil, errors.New("no start function")
+		return nil, fmt.Errorf("start function '%s' does not exist", fn)
 	}
 
 	var inputMap map[string]any

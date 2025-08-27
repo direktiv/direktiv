@@ -34,25 +34,43 @@ func (e *engine) Start(circuit *core.Circuit) error {
 	}
 }
 
-func (e *engine) ExecWorkflow(ctx context.Context, namespace string, path string, input string) (uuid.UUID, error) {
+func (e *engine) ExecWorkflow(ctx context.Context, namespace string, script string, fn string, args any, labels map[string]string) (uuid.UUID, error) {
+	input, ok := args.(string)
+	if !ok {
+		return uuid.Nil, fmt.Errorf("invalid input")
+	}
 	if input == "" {
 		input = "{}"
 	}
-	id, fileData, err := e.createWorkflowInstance(ctx, namespace, path, input)
+
+	id := uuid.New()
+
+	_, err := e.store.PushInstanceMessage(ctx, namespace, id, "init", InstanceMessage{
+		InstanceID: id,
+		Namespace:  namespace,
+		Script:     script,
+		Labels:     labels,
+		Status:     0,
+		Input:      json.RawMessage(input),
+		Memory:     nil,
+		Output:     nil,
+		Error:      nil,
+	})
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("create workflow instance: %w", err)
 	}
 
-	ret, err := e.execJSScript(fileData, input)
+	ret, err := e.execJSScript([]byte(script), fn, input)
 	endMsg := InstanceMessage{
-		InstanceID:   id,
-		Namespace:    namespace,
-		WorkflowPath: path,
-		Status:       0,
-		EndedAt:      time.Now(),
-		Memory:       nil,
-		Output:       nil,
-		Error:        nil,
+		InstanceID: id,
+		Namespace:  namespace,
+		Script:     script,
+		Labels:     labels,
+		Status:     0,
+		EndedAt:    time.Now(),
+		Memory:     nil,
+		Output:     nil,
+		Error:      nil,
 	}
 	if err != nil {
 		endMsg.Status = 2
@@ -78,47 +96,4 @@ func (e *engine) ExecWorkflow(ctx context.Context, namespace string, path string
 
 func (e *engine) GetInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID) (any, error) {
 	return e.store.PullInstanceMessages(ctx, namespace, instanceID, "*")
-}
-
-func (e *engine) createWorkflowInstance(ctx context.Context, namespace string, path string, input string) (uuid.UUID, []byte, error) {
-	db, err := e.db.BeginTx(ctx)
-	if err != nil {
-		return uuid.Nil, nil, err
-	}
-
-	defer db.Rollback()
-	fStore := db.FileStore()
-
-	file, err := fStore.ForNamespace(namespace).GetFile(ctx, path)
-	if err != nil {
-		return uuid.Nil, nil, err
-	}
-	fileData, err := fStore.ForFile(file).GetData(ctx)
-	if err != nil {
-		return uuid.Nil, nil, err
-	}
-
-	id := uuid.New()
-
-	_, err = e.store.PushInstanceMessage(ctx, namespace, id, "init", InstanceMessage{
-		InstanceID:   id,
-		Namespace:    namespace,
-		WorkflowPath: path,
-		WorkflowText: string(fileData),
-		Status:       0,
-		Input:        json.RawMessage(input),
-		Memory:       nil,
-		Output:       nil,
-		Error:        nil,
-	})
-	if err != nil {
-		return uuid.Nil, nil, fmt.Errorf("put instance message: %w", err)
-	}
-
-	err = db.Commit(ctx)
-	if err != nil {
-		return uuid.Nil, nil, err
-	}
-
-	return id, fileData, nil
 }

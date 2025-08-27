@@ -23,12 +23,12 @@ type Message struct {
 }
 
 type InstanceMessage struct {
-	InstanceID   uuid.UUID `json:"instanceId"`
-	Namespace    string    `json:"namespace"`
-	WorkflowPath string    `json:"workflowPath"`
-	Status       int       `json:"status"`
+	InstanceID uuid.UUID `json:"instanceId"`
+	Namespace  string    `json:"namespace"`
+	Script     string    `json:"script"`
+	Status     int       `json:"status"`
 
-	WorkflowText string `json:"workflowText,omitempty"`
+	Labels map[string]string `json:"labels"`
 
 	Input  json.RawMessage `json:"input,omitempty"`
 	Memory json.RawMessage `json:"memory,omitempty"`

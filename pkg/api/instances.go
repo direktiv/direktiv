@@ -75,7 +75,40 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := e.engine.ExecWorkflow(r.Context(), namespace, path, string(input))
+	db, err := e.db.BeginTx(r.Context())
+	if err != nil {
+		writeError(w, &Error{
+			Code:    err.Error(),
+			Message: err.Error(),
+		})
+
+		return
+	}
+	defer db.Rollback()
+	fStore := db.FileStore()
+
+	file, err := fStore.ForNamespace(namespace).GetFile(r.Context(), path)
+	if err != nil {
+		writeError(w, &Error{
+			Code:    err.Error(),
+			Message: err.Error(),
+		})
+
+		return
+	}
+	fileData, err := fStore.ForFile(file).GetData(r.Context())
+	if err != nil {
+		writeError(w, &Error{
+			Code:    err.Error(),
+			Message: err.Error(),
+		})
+
+		return
+	}
+
+	id, err := e.engine.ExecWorkflow(r.Context(), namespace, string(fileData), "start", string(input), map[string]string{
+		"workflowPath": path,
+	})
 	if err != nil {
 		writeError(w, &Error{
 			Code:    err.Error(),
