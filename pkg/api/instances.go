@@ -1,8 +1,8 @@
 package api
 
 import (
-	"io"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -107,6 +107,7 @@ func (e instController) testTranspile(w http.ResponseWriter, r *http.Request) {
 			Code:    "resource_not_found",
 			Message: "path not provided",
 		})
+
 		return
 	}
 

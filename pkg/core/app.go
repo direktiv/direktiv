@@ -129,6 +129,6 @@ type App struct {
 	GatewayManager  GatewayManager
 	SyncNamespace   SyncNamespace
 
-	Engine Engine
-	SecretsManager  SecretsManager
+	Engine         Engine
+	SecretsManager SecretsManager
 }
