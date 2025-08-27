@@ -9,9 +9,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 )
 
-var (
-	ErrNotFound = errors.New("ErrNotFound")
-)
+var ErrNotFound = errors.New("ErrNotFound")
 
 type Manager struct {
 	db    *database.DB

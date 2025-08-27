@@ -63,7 +63,6 @@ func (e *instController) dummy(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e instController) execute(w http.ResponseWriter, r *http.Request) {
-
 	namespace := chi.URLParam(r, "namespace")
 	path := r.URL.Query().Get("path")
 

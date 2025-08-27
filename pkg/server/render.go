@@ -52,10 +52,6 @@ func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 	}
 }
 
-func renderWorkflowFiles(db *database.DB) {
-
-}
-
 func renderServiceFiles(db *database.DB, serviceManager core.ServiceManager) {
 	ctx := context.Background()
 	slog := slog.With("subscriber", "services file watcher")

@@ -206,7 +206,6 @@ func initDB(config *core.Config) (*database.DB, error) {
 		PreferSimpleProtocol: false, // disables implicit prepared statement usage
 		// Conn:                 edb.DB(),
 	}), gormConf)
-
 	if err != nil {
 		return nil, err
 	}
