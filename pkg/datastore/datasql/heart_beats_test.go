@@ -2,16 +2,17 @@ package datasql_test
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/google/uuid"
+
+	"github.com/direktiv/direktiv/internal/testutils"
 	"github.com/direktiv/direktiv/pkg/datastore"
 )
 
 func Test_HeartBeats(t *testing.T) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}

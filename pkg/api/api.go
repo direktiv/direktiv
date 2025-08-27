@@ -9,12 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/cache"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/extensions"
-	"github.com/direktiv/direktiv/pkg/pubsub"
-	"github.com/direktiv/direktiv/pkg/secrets"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
 )
@@ -23,55 +20,47 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-type InitializeArgs struct {
-	DB             *database.DB
-	Bus            *pubsub.Bus
-	Cache          *cache.Cache
-	SecretsHandler *secrets.Handler
-}
-
-func Initialize(app core.App, config *InitializeArgs) (*http.Server, error) {
+func Initialize(circuit *core.Circuit, app core.App, db *database.DB) (*http.Server, error) {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
 
 	fsCtr := &fsController{
-		db:  config.DB,
-		bus: config.Bus,
+		db:  db,
+		bus: app.PubSub,
 	}
 	regCtr := &registryController{
 		manager: app.RegistryManager,
 	}
 	varCtr := &varController{
-		db: config.DB,
+		db: db,
 	}
 	secCtr := &secretsController{
-		sh: config.SecretsHandler,
-		db: config.DB,
+		app: app,
 	}
 	nsCtr := &nsController{
-		db:              config.DB,
-		bus:             config.Bus,
+		db:              db,
+		bus:             app.PubSub,
 		registryManager: app.RegistryManager,
 	}
 	mirrorsCtr := &mirrorsController{
-		db:            config.DB,
-		bus:           config.Bus,
+		db:            db,
+		bus:           app.PubSub,
 		syncNamespace: app.SyncNamespace,
 	}
 	instCtr := &instController{
-		db:      config.DB,
+		db:      db,
 		manager: nil,
 		engine:  app.Engine,
 	}
 	notificationsCtr := &notificationsController{
-		db: config.DB,
+		db: db,
 	}
 	metricsCtr := &metricsController{
-		db: config.DB,
+		db: db,
 	}
 	eventsCtr := eventsController{
-		store:         config.DB.DataStore(),
+		store:         db.DataStore(),
 		wakeInstance:  nil,
 		startWorkflow: nil,
 	}
@@ -79,8 +68,8 @@ func Initialize(app core.App, config *InitializeArgs) (*http.Server, error) {
 	jxCtr := jxController{}
 
 	mw := &appMiddlewares{
-		dStore: config.DB.DataStore(),
-		cache:  config.Cache,
+		db:    db,
+		cache: app.Cache,
 	}
 
 	r := chi.NewRouter()

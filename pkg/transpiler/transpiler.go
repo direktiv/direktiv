@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"encoding/base64"
 	"fmt"
+	"path/filepath"
 
 	"github.com/grafana/sobek"
 	"github.com/thanhpk/randstr"
@@ -47,9 +48,9 @@ func NewTranspiler() (*Transpiler, error) {
 	}, nil
 }
 
-func (t *Transpiler) Transpile(script string) (string, string, error) {
-	s := fmt.Sprintf("ts.transpileModule(%s('%s'), { compilerOptions: { sourceMap: true }, fileName: \"my/myfile.js\", moduleName: \"default\", reportDiagnostics: false })",
-		t.fn, base64.StdEncoding.EncodeToString([]byte(script)))
+func (t *Transpiler) Transpile(script, name string) (string, string, error) {
+	s := fmt.Sprintf("ts.transpileModule(%s('%s'), { compilerOptions: { sourceMap: true }, fileName: \"%s\", moduleName: \"default\", reportDiagnostics: false })",
+		t.fn, base64.StdEncoding.EncodeToString([]byte(script)), filepath.Base(name))
 
 	value, err := t.vm.RunString(s)
 	if err != nil {

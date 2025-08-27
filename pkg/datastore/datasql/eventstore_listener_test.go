@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/internal/testutils"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/google/uuid"
 )
@@ -50,7 +50,7 @@ func testUpdate(t *testing.T) {
 }
 
 func testPaginationAndBoundaryCheck(t *testing.T) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unexpected NewTestDBWithNamespace() error = %v", err)
 	}
@@ -121,7 +121,7 @@ func testPaginationAndBoundaryCheck(t *testing.T) {
 func testDeleteByWorkflow(t *testing.T) {
 	eID := uuid.New()
 	wf := uuid.New()
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unexpected NewTestDBWithNamespace() error = %v", err)
 	}
@@ -157,7 +157,7 @@ func testDeleteByWorkflow(t *testing.T) {
 }
 
 func setupTest(t *testing.T) (datastore.EventListenerStore, *datastore.EventListener, uuid.UUID, string) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unexpected NewTestDBWithNamespace() error = %v", err)
 	}

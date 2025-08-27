@@ -6,13 +6,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/internal/testutils"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/google/uuid"
 )
 
 func TestRoot_CreateFile(t *testing.T) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
@@ -120,7 +120,7 @@ func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, rootID uu
 }
 
 func TestRoot_CorrectReadDirectory(t *testing.T) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
@@ -183,7 +183,7 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 }
 
 func TestRoot_RenamePath(t *testing.T) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}

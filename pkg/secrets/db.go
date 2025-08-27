@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 )
@@ -13,7 +14,7 @@ type DBSecrets struct {
 	db        *database.DB
 }
 
-func (dbs *DBSecrets) Get(ctx context.Context, name string) (*Secret, error) {
+func (dbs *DBSecrets) Get(ctx context.Context, name string) (*core.Secret, error) {
 	db, err := dbs.db.BeginTx(ctx)
 	if err != nil {
 		return nil, err
@@ -31,7 +32,7 @@ func (dbs *DBSecrets) Get(ctx context.Context, name string) (*Secret, error) {
 		return nil, err
 	}
 
-	return &Secret{
+	return &core.Secret{
 		Name:      name,
 		Data:      s.Data,
 		CreatedAt: s.CreatedAt,
@@ -39,7 +40,7 @@ func (dbs *DBSecrets) Get(ctx context.Context, name string) (*Secret, error) {
 	}, nil
 }
 
-func (dbs *DBSecrets) Set(ctx context.Context, secret *Secret) (*Secret, error) {
+func (dbs *DBSecrets) Set(ctx context.Context, secret *core.Secret) (*core.Secret, error) {
 	db, err := dbs.db.BeginTx(ctx)
 	if err != nil {
 		return nil, err
@@ -69,7 +70,7 @@ func (dbs *DBSecrets) Set(ctx context.Context, secret *Secret) (*Secret, error) 
 	return secret, db.Commit(ctx)
 }
 
-func (dbs *DBSecrets) GetAll(ctx context.Context) ([]*Secret, error) {
+func (dbs *DBSecrets) GetAll(ctx context.Context) ([]*core.Secret, error) {
 	db, err := dbs.db.BeginTx(ctx)
 	if err != nil {
 		return nil, err
@@ -83,9 +84,9 @@ func (dbs *DBSecrets) GetAll(ctx context.Context) ([]*Secret, error) {
 		return nil, err
 	}
 
-	res := make([]*Secret, len(list))
+	res := make([]*core.Secret, len(list))
 	for i := range list {
-		res[i] = &Secret{
+		res[i] = &core.Secret{
 			Name:      list[i].Name,
 			Data:      list[i].Data,
 			CreatedAt: list[i].CreatedAt,
@@ -96,7 +97,7 @@ func (dbs *DBSecrets) GetAll(ctx context.Context) ([]*Secret, error) {
 	return res, nil
 }
 
-func (dbs *DBSecrets) Update(ctx context.Context, secret *Secret) (*Secret, error) {
+func (dbs *DBSecrets) Update(ctx context.Context, secret *core.Secret) (*core.Secret, error) {
 	db, err := dbs.db.BeginTx(ctx)
 	if err != nil {
 		return nil, err
@@ -137,7 +138,7 @@ func (dbs *DBSecrets) Update(ctx context.Context, secret *Secret) (*Secret, erro
 		return nil, err
 	}
 
-	return &Secret{
+	return &core.Secret{
 		Name:      s.Name,
 		Data:      s.Data,
 		CreatedAt: s.CreatedAt,

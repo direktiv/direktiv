@@ -8,7 +8,6 @@ import (
 
 	"github.com/dgraph-io/ristretto/v2"
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/pubsub"
 )
 
 type cacheMessage struct {
@@ -18,11 +17,11 @@ type cacheMessage struct {
 
 type Cache struct {
 	cache    *ristretto.Cache[string, any]
-	bus      *pubsub.Bus
+	bus      core.PubSub
 	hostname string
 }
 
-func NewCache(bus *pubsub.Bus, hostname string, enableMetrics bool) (*Cache, error) {
+func NewCache(bus core.PubSub, hostname string, enableMetrics bool) (core.Cache, error) {
 	cache, err := ristretto.NewCache(&ristretto.Config[string, any]{
 		NumCounters: 10000000,
 		MaxCost:     1073741824,
@@ -94,14 +93,14 @@ func (c *Cache) publish(key string) {
 		slog.Error("can not publish cache", slog.Any("error", err))
 	}
 
-	err = c.bus.Publish(pubsub.CacheDeleteEvent, b)
+	err = c.bus.Publish(core.CacheDeleteEvent, b)
 	if err != nil {
 		slog.Error("can not publish cache", slog.Any("error", err))
 	}
 }
 
 func (c *Cache) subscribe() {
-	c.bus.Subscribe(pubsub.CacheDeleteEvent, func(data []byte) {
+	c.bus.Subscribe(core.CacheDeleteEvent, func(data []byte) {
 		var cm cacheMessage
 		err := json.Unmarshal(data, &cm)
 		if err != nil {

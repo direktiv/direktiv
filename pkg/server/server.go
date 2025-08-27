@@ -28,7 +28,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/service/registry"
 	"github.com/direktiv/direktiv/pkg/telemetry"
-	"github.com/direktiv/direktiv/pkg/utils"
 	_ "github.com/lib/pq" //nolint:revive
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -91,18 +90,19 @@ func Start(circuit *core.Circuit) error {
 		return fmt.Errorf("can not connect to nats")
 	}
 
-	bus := pubsub.NewBus(nc)
+	pubSub := pubsub.NewPubSub(nc)
 	circuit.Go(func() error {
-		err := bus.Loop(circuit)
+		err := pubSub.Loop(circuit)
 		if err != nil {
 			return fmt.Errorf("pubsub bus loop, err: %w", err)
 		}
 
 		return nil
 	})
+	app.PubSub = pubSub
 
 	// creates bus with pub sub
-	cache, err := cache.NewCache(bus, os.Getenv("POD_NAME"), false)
+	cache, err := cache.NewCache(pubSub, os.Getenv("POD_NAME"), false)
 	circuit.Go(func() error {
 		cache.Run(circuit)
 		if err != nil {
@@ -111,9 +111,10 @@ func Start(circuit *core.Circuit) error {
 
 		return nil
 	})
+	app.Cache = cache
 
 	slog.Info("initializing secrets handler")
-	sh := secrets.NewHandler(db, cache)
+	app.SecretsManager = secrets.NewManager(db, cache)
 
 	// Create service manager
 	slog.Info("initializing service manager")
@@ -174,26 +175,26 @@ func Start(circuit *core.Circuit) error {
 
 	// Create endpoint manager
 	slog.Info("initializing gateway manager")
-	app.GatewayManager = gateway.NewManager(db, sh)
+	app.GatewayManager = gateway.NewManager(app)
 
 	// Create syncNamespace function
 	slog.Info("initializing sync namespace routine")
 	// TODO: fix app.SyncNamespace init.
 
-	bus.Subscribe(pubsub.FileSystemChangeEvent, func(_ []byte) {
+	pubSub.Subscribe(core.FileSystemChangeEvent, func(_ []byte) {
 		renderServiceFiles(db, app.ServiceManager)
 	})
-	bus.Subscribe(pubsub.NamespacesChangeEvent, func(_ []byte) {
+	pubSub.Subscribe(core.NamespacesChangeEvent, func(_ []byte) {
 		renderServiceFiles(db, app.ServiceManager)
 	})
 	// Call at least once before booting
 	renderServiceFiles(db, app.ServiceManager)
 
 	// endpoint manager
-	bus.Subscribe(pubsub.FileSystemChangeEvent, func(_ []byte) {
+	pubSub.Subscribe(core.FileSystemChangeEvent, func(_ []byte) {
 		renderGatewayFiles(db, app.GatewayManager)
 	})
-	bus.Subscribe(pubsub.NamespacesChangeEvent, func(_ []byte) {
+	pubSub.Subscribe(core.NamespacesChangeEvent, func(_ []byte) {
 		renderGatewayFiles(db, app.GatewayManager)
 	})
 	// initial loading of routes and consumers
@@ -202,19 +203,14 @@ func Start(circuit *core.Circuit) error {
 	// initialize extensions
 	if extensions.Initialize != nil {
 		slog.Info("initializing extensions")
-		if err = extensions.Initialize(db, bus, config); err != nil {
+		if err = extensions.Initialize(db, pubSub, config); err != nil {
 			return fmt.Errorf("initializing extensions, err: %w", err)
 		}
 	}
 
 	// Start api server
 	slog.Info("initializing api server")
-	srv, err := api.Initialize(app, &api.InitializeArgs{
-		DB:             db,
-		Bus:            bus,
-		Cache:          cache,
-		SecretsHandler: sh,
-	})
+	srv, err := api.Initialize(circuit, app, db)
 	if err != nil {
 		return fmt.Errorf("initializing api server, err: %w", err)
 	}
@@ -256,36 +252,27 @@ func initDB(config *core.Config) (*database.DB, error) {
 		),
 	}
 
-	var db *gorm.DB
-	var err error
-
-	utils.Retry(time.Second, 10, func() error {
-		slog.Info("connecting to database...")
-		db, err = gorm.Open(postgres.New(postgres.Config{
-			DSN:                  config.DB,
-			PreferSimpleProtocol: false, // disables implicit prepared statement usage
-			// Conn:                 edb.DB(),
-		}), gormConf)
-
-		return err
-	})
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		DSN:                  config.DB,
+		PreferSimpleProtocol: false, // disables implicit prepared statement usage
+		// Conn:                 edb.DB(),
+	}), gormConf)
 	if err != nil {
 		return nil, err
 	}
-	slog.Info("successfully connected to the database")
 
 	res := db.Exec(database.Schema)
 	if res.Error != nil {
 		return nil, fmt.Errorf("provisioning schema, err: %w", res.Error)
 	}
-	slog.Info("Schema provisioned successfully")
+	slog.Info("schema provisioned successfully")
 
 	if extensions.AdditionalSchema != "" {
 		res = db.Exec(extensions.AdditionalSchema)
 		if res.Error != nil {
 			return nil, fmt.Errorf("provisioning additional schema, err: %w", res.Error)
 		}
-		slog.Info("Additional schema provisioned successfully")
+		slog.Info("additional schema provisioned successfully")
 	}
 
 	gdb, err := db.DB()
@@ -293,7 +280,7 @@ func initDB(config *core.Config) (*database.DB, error) {
 		return nil, fmt.Errorf("modifying gorm driver, err: %w", err)
 	}
 
-	slog.Debug("Database connection pool limits set", "maxIdleConns", 32, "maxOpenConns", 16)
+	slog.Debug("database connection pool limits set", "maxIdleConns", 32, "maxOpenConns", 16)
 	gdb.SetMaxIdleConns(32)
 	gdb.SetMaxOpenConns(16)
 

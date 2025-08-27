@@ -23,15 +23,15 @@ func TestCache(t *testing.T) {
 	cs, _ := natsContainer.ConnectionString(context.Background())
 	nc, err := nats.Connect(cs)
 	require.NoError(t, err)
-	bus := pubsub.NewBus(nc)
+	buss := pubsub.NewPubSub(nc)
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	circuit := core.NewCircuit(ctx, os.Interrupt)
 
-	cache1, _ := cache.NewCache(bus, "host1", false)
+	cache1, _ := cache.NewCache(buss, "host1", false)
 	go cache1.Run(circuit)
-	cache2, _ := cache.NewCache(bus, "host2", false)
+	cache2, _ := cache.NewCache(buss, "host2", false)
 	go cache2.Run(circuit)
 
 	cache1.Set("hello", []byte("world"))

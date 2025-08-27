@@ -16,7 +16,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/secrets"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
 )
@@ -27,8 +26,8 @@ import (
 type manager struct {
 	routerPointer unsafe.Pointer
 
-	db *database.DB
-	sh *secrets.Handler
+	app core.App
+	db  *database.DB
 }
 
 func (m *manager) atomicLoadRouter() *router {
@@ -46,10 +45,9 @@ func (m *manager) atomicSetRouter(inner *router) {
 
 var _ core.GatewayManager = &manager{}
 
-func NewManager(db *database.DB, sh *secrets.Handler) core.GatewayManager {
+func NewManager(app core.App) core.GatewayManager {
 	return &manager{
-		db: db,
-		sh: sh,
+		app: app,
 	}
 }
 
@@ -121,13 +119,13 @@ func (m *manager) interpolateConsumersList(list []core.Consumer) {
 	var err error
 
 	for i, c := range list {
-		c.Password, err = fetchSecret(m.sh, c.Namespace, c.Password)
+		c.Password, err = fetchSecret(m.app.SecretsManager, c.Namespace, c.Password)
 		if err != nil {
 			c.Errors = append(c.Errors, fmt.Sprintf("couldn't fetch secret %s", c.Password))
 			continue
 		}
 
-		c.APIKey, err = fetchSecret(m.sh, c.Namespace, c.APIKey)
+		c.APIKey, err = fetchSecret(m.app.SecretsManager, c.Namespace, c.APIKey)
 		if err != nil {
 			c.Errors = append(c.Errors, fmt.Sprintf("couldn't fetch secret %s", c.APIKey))
 			continue

@@ -2,11 +2,13 @@ package api
 
 import (
 	"io"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/transpiler"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -94,4 +96,80 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, data)
+}
+
+func (e instController) testTranspile(w http.ResponseWriter, r *http.Request) {
+	namespace := chi.URLParam(r, "namespace")
+	path := r.URL.Query().Get("path")
+
+	if path == "" {
+		writeError(w, &Error{
+			Code:    "resource_not_found",
+			Message: "path not provided",
+		})
+		return
+	}
+
+	compiler, err := transpiler.NewCompiler(e.db)
+	if err != nil {
+		writeInternalError(w, err)
+		return
+	}
+
+	flow, err := compiler.Compile(r.Context(), namespace, path)
+	if err != nil {
+		writeInternalError(w, err)
+		return
+	}
+
+	fmt.Printf("%+v\n", flow)
+
+	// wait := r.URL.Query().Get("wait") == "true"
+	// output := r.URL.Query().Get("output") == "true"
+
+	// ctx := telemetry.GetContextFromRequest(r.Context(), r)
+	// ctx, span := telemetry.Tracer.Start(ctx, "api-request")
+	// span.SetAttributes(
+	// 	attribute.KeyValue{
+	// 		Key:   "namespace",
+	// 		Value: attribute.StringValue(ns.Name),
+	// 	},
+	// 	attribute.KeyValue{
+	// 		Key:   "path",
+	// 		Value: attribute.StringValue(path),
+	// 	},
+	// 	attribute.KeyValue{
+	// 		Key:   "wait",
+	// 		Value: attribute.BoolValue(wait),
+	// 	},
+	// )
+	// defer span.End()
+
+	// input, err := io.ReadAll(r.Body)
+	// if err != nil {
+	// 	return
+	// }
+
+	// if wait && len(input) == 0 {
+	// 	input = []byte(`{}`)
+	// }
+
+	// data, err := e.manager.Start(ctx, ns.Name, path, input)
+	// if err != nil {
+	// 	// telemetry.ReportError(span, err)
+	// 	writeError(w, &Error{
+	// 		Code:    err.Error(),
+	// 		Message: err.Error(),
+	// 	})
+
+	// 	return
+	// }
+
+	// if wait {
+	// 	e.handleWait(ctx, w, r, data, output)
+
+	// 	return
+	// }
+
+	// writeJSON(w, marshalForAPI(data))
 }

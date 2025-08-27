@@ -5,8 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/database"
-	"github.com/direktiv/direktiv/pkg/secrets"
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -16,8 +15,7 @@ type secretRequest struct {
 }
 
 type secretsController struct {
-	db *database.DB
-	sh *secrets.Handler
+	app core.App
 }
 
 func (e *secretsController) mountRouter(r chi.Router) {
@@ -33,7 +31,7 @@ func (e *secretsController) get(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 	secretName := chi.URLParam(r, "secretName")
 
-	sh, err := e.sh.SecretsForNamespace(r.Context(), namespace)
+	sh, err := e.app.SecretsManager.SecretsForNamespace(r.Context(), namespace)
 	if err != nil {
 		writeSecretsError(w, err)
 		return
@@ -52,7 +50,7 @@ func (e *secretsController) delete(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 	secretName := chi.URLParam(r, "secretName")
 
-	sh, err := e.sh.SecretsForNamespace(r.Context(), namespace)
+	sh, err := e.app.SecretsManager.SecretsForNamespace(r.Context(), namespace)
 	if err != nil {
 		writeSecretsError(w, err)
 		return
@@ -77,13 +75,13 @@ func (e *secretsController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sh, err := e.sh.SecretsForNamespace(r.Context(), namespace)
+	sh, err := e.app.SecretsManager.SecretsForNamespace(r.Context(), namespace)
 	if err != nil {
 		writeSecretsError(w, err)
 		return
 	}
 
-	s, err := sh.Update(r.Context(), &secrets.Secret{
+	s, err := sh.Update(r.Context(), &core.Secret{
 		Name: secretName,
 		Data: req.Data,
 	})
@@ -105,13 +103,13 @@ func (e *secretsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sh, err := e.sh.SecretsForNamespace(r.Context(), namespace)
+	sh, err := e.app.SecretsManager.SecretsForNamespace(r.Context(), namespace)
 	if err != nil {
 		writeSecretsError(w, err)
 		return
 	}
 
-	s, err := sh.Set(r.Context(), &secrets.Secret{
+	s, err := sh.Set(r.Context(), &core.Secret{
 		Name: req.Name,
 		Data: req.Data,
 	})
@@ -126,7 +124,7 @@ func (e *secretsController) create(w http.ResponseWriter, r *http.Request) {
 func (e *secretsController) list(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
-	sh, err := e.sh.SecretsForNamespace(r.Context(), namespace)
+	sh, err := e.app.SecretsManager.SecretsForNamespace(r.Context(), namespace)
 	if err != nil {
 		writeSecretsError(w, err)
 		return
@@ -146,7 +144,7 @@ func (e *secretsController) list(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, res)
 }
 
-func convert(v *secrets.Secret) any {
+func convert(v *core.Secret) any {
 	type secretForAPI struct {
 		Name string `json:"name"`
 
