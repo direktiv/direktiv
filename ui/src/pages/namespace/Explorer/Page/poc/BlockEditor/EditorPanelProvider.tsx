@@ -9,6 +9,7 @@ import { ActionPanel } from "./components/EditorPanel/ActionPanel";
 import { BlockDeleteForm } from "./components/Delete";
 import { BlockPathType } from "../PageCompiler/Block";
 import { BlockType } from "../schema/blocks";
+import { ContextVariables } from "../PageCompiler/primitives/Variable/VariableContext";
 import { DefaultPanel } from "./components/EditorPanel/DefaultPanel";
 import { DndContext } from "~/design/DragAndDrop";
 import { DragAndDropPayloadSchemaType } from "~/design/DragAndDrop/schema";
@@ -30,6 +31,8 @@ type EditorPanelContextType = {
   setPanel: React.Dispatch<React.SetStateAction<EditorPanelState>>;
   dialog: EditorDialogState;
   setDialog: React.Dispatch<React.SetStateAction<EditorDialogState>>;
+  variables: ContextVariables;
+  setVariables: React.Dispatch<React.SetStateAction<ContextVariables>>;
 };
 
 const EditorPanelContext = createContext<EditorPanelContextType | null>(null);
@@ -50,6 +53,10 @@ export const EditorPanelLayoutProvider = ({
   const { addBlock, deleteBlock, moveBlock } = usePageEditor();
   const [panel, setPanel] = useState<EditorPanelState>(null);
   const [dialog, setDialog] = useState<EditorDialogState>(null);
+  const [variables, setVariables] = useState<ContextVariables>({
+    loop: {},
+    query: {},
+  });
   const { mode } = usePageStateContext();
 
   const createBlock = (type: BlockType["type"], path: BlockPathType) => {
@@ -86,7 +93,14 @@ export const EditorPanelLayoutProvider = ({
     return (
       <DndContext onDrop={onDrop} onDrag={() => setPanel(null)}>
         <EditorPanelContext.Provider
-          value={{ panel, setPanel, dialog, setDialog }}
+          value={{
+            panel,
+            setPanel,
+            dialog,
+            setDialog,
+            variables,
+            setVariables,
+          }}
         >
           <div className="grow sm:grid sm:grid-cols-[350px_1fr]">
             {panel?.action ? <ActionPanel panel={panel} /> : <DefaultPanel />}

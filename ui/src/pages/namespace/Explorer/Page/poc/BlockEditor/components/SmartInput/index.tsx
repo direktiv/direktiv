@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
+import { ContextVariables } from "../../../PageCompiler/primitives/Variable/VariableContext";
 import Document from "@tiptap/extension-document";
 import { InputWithButton } from "~/design/InputWithButton";
 import Paragraph from "@tiptap/extension-paragraph";
@@ -20,12 +21,6 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Text from "@tiptap/extension-text";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
-
-const types = [
-  { value: "loop", label: "loop" },
-  { value: "query", label: "query" },
-  { value: "form", label: "form" },
-] as const;
 
 type FakeInputProps = PropsWithChildren & {
   wrap?: boolean;
@@ -67,10 +62,12 @@ export const SmartInput = ({
   onChange,
   value,
   id,
+  variables,
 }: {
   onChange: (content: string) => void;
   value: string;
   id: string;
+  variables: ContextVariables;
 }) => {
   const { t } = useTranslation();
   const [dialog, setDialog] = useState(false);
@@ -149,16 +146,18 @@ export const SmartInput = ({
                       <CommandInput placeholder="select context type" />
                       <CommandList>
                         <CommandGroup heading="context type">
-                          {types.map((option) => (
-                            <CommandItem
-                              key={option.value}
-                              onSelect={(option) => {
-                                console.log(option);
-                              }}
-                            >
-                              {option.label}
-                            </CommandItem>
-                          ))}
+                          {Object.entries(variables).map(
+                            ([namespace, content]) => (
+                              <CommandItem
+                                key={namespace}
+                                onSelect={(namespace) => {
+                                  console.log(namespace, content);
+                                }}
+                              >
+                                {namespace}
+                              </CommandItem>
+                            )
+                          )}
                         </CommandGroup>
                       </CommandList>
                     </Command>

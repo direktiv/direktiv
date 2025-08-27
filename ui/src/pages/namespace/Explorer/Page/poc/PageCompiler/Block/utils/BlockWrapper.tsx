@@ -24,6 +24,7 @@ import { useDndContext } from "@dnd-kit/core";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 import { useTranslation } from "react-i18next";
 import { useValidateDropzone } from "./useValidateDropzone";
+import { useVariablesContext } from "../../primitives/Variable/VariableContext";
 
 type BlockWrapperProps = PropsWithChildren<{
   blockPath: BlockPathType;
@@ -37,7 +38,8 @@ const EditorBlockWrapper = ({
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
   const page = usePage();
-  const { panel, setPanel } = usePageEditorPanel();
+  const variables = useVariablesContext();
+  const { panel, setPanel, setVariables } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
   const validateDropzone = useValidateDropzone();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -68,6 +70,12 @@ const EditorBlockWrapper = ({
   );
 
   const isFocused = !!(panel?.action && pathsEqual(panel.path, blockPath));
+
+  useEffect(() => {
+    if (isFocused) {
+      setVariables(variables);
+    }
+  }, [isFocused, setVariables, variables]);
 
   const handleClickBlock = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();

@@ -5,6 +5,7 @@ import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "./components/FormWrapper";
 import { SmartInput } from "./components/SmartInput";
 import { useForm } from "react-hook-form";
+import { usePageEditorPanel } from "./EditorPanelProvider";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -22,6 +23,8 @@ export const Text = ({
     resolver: zodResolver(TextSchema),
     defaultValues: propBlock,
   });
+
+  const { variables } = usePageEditorPanel();
 
   return (
     <FormWrapper
@@ -41,6 +44,7 @@ export const Text = ({
           value={form.watch("content")}
           onChange={(content) => form.setValue("content", content)}
           id="content"
+          variables={variables}
         />
         {/* <Textarea
           {...form.register("content")}
