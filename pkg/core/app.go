@@ -123,9 +123,12 @@ type App struct {
 	Cache   Cache
 	PubSub  PubSub
 
-	ServiceManager  ServiceManager
+	ServiceManager ServiceManager
+
 	RegistryManager RegistryManager
 	GatewayManager  GatewayManager
 	SyncNamespace   SyncNamespace
+
+	Engine Engine
 	SecretsManager  SecretsManager
 }

@@ -169,6 +169,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: yassir, check the logic of sending events on fs change in all actions.
 	// Publish pubsub event.
 	if file.Typ.IsDirektivSpecFile() {
 		err = e.bus.Publish(core.FileSystemChangeEvent, nil)

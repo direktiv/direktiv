@@ -1,10 +1,12 @@
 package api
 
 import (
+	"io"
 	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/transpiler"
 	"github.com/go-chi/chi/v5"
@@ -42,7 +44,9 @@ type InstanceData struct {
 }
 
 type instController struct {
-	db *database.DB
+	db      *database.DB
+	manager any
+	engine  core.Engine
 }
 
 func (e *instController) mountRouter(r chi.Router) {
@@ -56,13 +60,45 @@ func (e *instController) mountRouter(r chi.Router) {
 	r.Patch("/{instanceID}", e.dummy)
 
 	r.Get("/", e.dummy)
-	r.Post("/", e.execute)
+	r.Post("/", e.create)
 }
 
 func (e *instController) dummy(w http.ResponseWriter, r *http.Request) {
 }
 
-func (e instController) execute(w http.ResponseWriter, r *http.Request) {
+func (e *instController) create(w http.ResponseWriter, r *http.Request) {
+	namespace := chi.URLParam(r, "namespace")
+	path := r.URL.Query().Get("path")
+
+	input, err := io.ReadAll(r.Body)
+	if err != nil {
+		return
+	}
+
+	id, err := e.engine.ExecWorkflow(r.Context(), namespace, path, string(input))
+	if err != nil {
+		writeError(w, &Error{
+			Code:    err.Error(),
+			Message: err.Error(),
+		})
+
+		return
+	}
+
+	data, err := e.engine.GetInstanceMessages(r.Context(), namespace, id)
+	if err != nil {
+		writeError(w, &Error{
+			Code:    err.Error(),
+			Message: err.Error(),
+		})
+
+		return
+	}
+
+	writeJSON(w, data)
+}
+
+func (e instController) testTranspile(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 	path := r.URL.Query().Get("path")
 

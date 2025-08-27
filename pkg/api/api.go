@@ -1,11 +1,7 @@
 package api
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
-	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -21,11 +17,10 @@ import (
 )
 
 const (
-	shutdownWaitTime  = 5 * time.Second
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Initialize(circuit *core.Circuit, app core.App, db *database.DB) error {
+func Initialize(circuit *core.Circuit, app core.App, db *database.DB) (*http.Server, error) {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
@@ -54,7 +49,9 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB) error {
 		syncNamespace: app.SyncNamespace,
 	}
 	instCtr := &instController{
-		db: db,
+		db:      db,
+		manager: nil,
+		engine:  app.Engine,
 	}
 	notificationsCtr := &notificationsController{
 		db: db,
@@ -219,26 +216,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB) error {
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
 
-	circuit.Start(func() error {
-		err := apiServer.ListenAndServe()
-		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			return fmt.Errorf("listen on port, err: %w", err)
-		}
-
-		return nil
-	})
-
-	circuit.OnCancel(func() {
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownWaitTime)
-		err := apiServer.Shutdown(shutdownCtx)
-		if err != nil {
-			slog.Error("api v2 shutdown server", "err", err)
-			panic(err)
-		}
-		cancel()
-	})
-
-	return nil
+	return apiServer, nil
 }
 
 func writeJSON(w http.ResponseWriter, v any) {

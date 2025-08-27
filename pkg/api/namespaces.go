@@ -84,6 +84,7 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 			Error("deleting registry namespace", "err", err)
 	}
 
+	// TODO: yassir, check the logic of sending events on ns change in all actions.
 	err = e.bus.Publish(core.NamespacesChangeEvent, nil)
 	if err != nil {
 		slog.Error("pubsub publish filesystem event", "err", err)

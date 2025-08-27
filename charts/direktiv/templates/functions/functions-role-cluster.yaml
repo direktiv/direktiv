@@ -29,6 +29,3 @@ rules:
 - apiGroups: ["autoscaling"]
   resources: ["horizontalpodautoscalers"]
   verbs: ["patch", "create", "list", "watch", "get", "delete", "update"]
-- apiGroups: ["coordination.k8s.io"]
-  resources: ["leases"]
-  verbs: ["get", "create", "delete", "update", "patch"]

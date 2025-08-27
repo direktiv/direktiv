@@ -3,9 +3,11 @@ package server
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"log/slog"
+	"net/http"
 	"os"
 	"time"
 
@@ -16,6 +18,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/engine"
+	store2 "github.com/direktiv/direktiv/pkg/engine/store"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/gateway"
 	"github.com/direktiv/direktiv/pkg/natsclient"
@@ -24,6 +28,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/service/registry"
 	"github.com/direktiv/direktiv/pkg/telemetry"
+	"github.com/direktiv/direktiv/pkg/utils"
 	_ "github.com/lib/pq" //nolint:revive
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -31,7 +36,7 @@ import (
 )
 
 //nolint:gocognit
-func Run(circuit *core.Circuit) error {
+func Start(circuit *core.Circuit) error {
 	var err error
 	config := &core.Config{}
 	if err := env.Parse(config); err != nil {
@@ -81,13 +86,13 @@ func Run(circuit *core.Circuit) error {
 
 	// Create Bus
 	slog.Info("initializing pubsub")
-	nc, err := natsclient.NewNATSConnection()
+	nc, err := natsclient.Connect()
 	if err != nil {
 		return fmt.Errorf("can not connect to nats")
 	}
 
 	pubSub := pubsub.NewPubSub(nc.Conn)
-	circuit.Start(func() error {
+	circuit.Go(func() error {
 		err := pubSub.Loop(circuit)
 		if err != nil {
 			return fmt.Errorf("pubsub bus loop, err: %w", err)
@@ -99,7 +104,7 @@ func Run(circuit *core.Circuit) error {
 
 	// creates bus with pub sub
 	cache, err := cache.NewCache(pubSub, os.Getenv("POD_NAME"), false)
-	circuit.Start(func() error {
+	circuit.Go(func() error {
 		cache.Run(circuit)
 		if err != nil {
 			return fmt.Errorf("pubsub bus loop, err: %w", err)
@@ -129,7 +134,7 @@ func Run(circuit *core.Circuit) error {
 		return fmt.Errorf("initializing service manager, err: %w", err)
 	}
 
-	circuit.Start(func() error {
+	circuit.Go(func() error {
 		err := app.ServiceManager.Run(circuit)
 		if err != nil {
 			return fmt.Errorf("service manager, err: %w", err)
@@ -137,6 +142,29 @@ func Run(circuit *core.Circuit) error {
 
 		return nil
 	})
+
+	// Create js engine
+	nc, err = natsclient.Connect()
+	if err != nil {
+		return fmt.Errorf("can not connect to nats")
+	}
+	store, err := store2.NewStore(circuit.Context(), nc)
+	if err != nil {
+		return fmt.Errorf("initializing engine, err: %w", err)
+	}
+	app.Engine, err = engine.NewEngine(db, store)
+	if err != nil {
+		return fmt.Errorf("initializing engine, err: %w", err)
+	}
+	circuit.Go(func() error {
+		err := app.Engine.Start(circuit)
+		if err != nil {
+			return fmt.Errorf("engine, err: %w", err)
+		}
+
+		return nil
+	})
+
 
 	// Create registry manager
 	slog.Info("initializing registry manager")
@@ -180,12 +208,36 @@ func Run(circuit *core.Circuit) error {
 			return fmt.Errorf("initializing extensions, err: %w", err)
 		}
 	}
-	slog.Info("api server v2 starting")
-	// Start api v2 server
-	err = api.Initialize(circuit, app, db)
+
+	// Start api server
+	slog.Info("initializing api server")
+	srv, err := api.Initialize(circuit, app, db)
 	if err != nil {
-		return fmt.Errorf("initializing api v2, err: %w", err)
+		return fmt.Errorf("initializing api server, err: %w", err)
 	}
+
+	circuit.Go(func() error {
+		err := srv.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return fmt.Errorf("shutdown api server, err: %w", err)
+		}
+
+		return nil
+	})
+
+	circuit.Go(func() error {
+		<-circuit.Done()
+
+		slog.Info("shutdown api server...")
+		shutdownCtx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+		err := srv.Shutdown(shutdownCtx)
+		if err != nil {
+			slog.Error("shutdown api server", "err", err)
+		}
+		slog.Info("shutdown api server successful")
+
+		return nil
+	})
 
 	return nil
 }
@@ -273,9 +325,11 @@ func checkNATSConnectivity() {
 		select {
 		case <-ticker.C:
 			slog.Info("checking nats connection")
-			_, err := natsclient.NewNATSConnection()
+			nc, err := natsclient.Connect()
 			if err == nil {
+				nc.Close()
 				slog.Info("nats available")
+
 				return
 			}
 			slog.Error("nats connection not available", slog.Any("error", err))
