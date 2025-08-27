@@ -1659,6 +1659,12 @@
     },
     "page": {
       "blocks": {
+        "loop": {
+          "hiddenItems": "{{count}} hidden loop entries",
+          "hiddenItems_one": "{{count}} hidden loop entry",
+          "infoHiddenItems_first": "Click on the Live View Button",
+          "infoHiddenItems_second": "to see the full list"
+        },
         "table": { "noResult": "No entries to show" },
         "form": {
           "success": "The form has been submitted successfully",
