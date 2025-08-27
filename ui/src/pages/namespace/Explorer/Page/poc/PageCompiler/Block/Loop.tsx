@@ -1,5 +1,11 @@
 import { Block, BlockPathType } from ".";
-import { FC, PropsWithChildren } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
 import {
   VariableContextProvider,
   useVariablesContext,
@@ -7,7 +13,6 @@ import {
 
 import Badge from "~/design/Badge";
 import { BlockList } from "./utils/BlockList";
-import { EyeOff } from "lucide-react";
 import { LoopType } from "../../schema/blocks/loop";
 import { VariableError } from "../primitives/Variable/Error";
 import { usePageStateContext } from "../context/pageCompilerContext";
@@ -43,40 +48,13 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
     );
   }
 
-  if (mode === "edit") {
-    const loopSize = variableArray.data.length - 1;
-    const firstLoopItem = variableArray.data[0];
-
-    return (
-      <VariableContextProvider
-        variables={{
-          ...parentVariables,
-          loop: {
-            ...parentVariables.loop,
-            [id]: firstLoopItem,
-          },
-        }}
-      >
-        <BlockList path={blockPath}>
-          {blocks.map((block, blockIndex) => {
-            const path = [...blockPath, blockIndex];
-            return (
-              <Block key={path.join(".")} block={block} blockPath={path} />
-            );
-          })}
-        </BlockList>
-        <LoopItemBadge>
-          {t(`direktivPage.page.blocks.loop.hiddenItems`, {
-            number: loopSize,
-          })}
-        </LoopItemBadge>
-      </VariableContextProvider>
-    );
-  }
+  const loopItems =
+    mode === "edit" ? variableArray.data.slice(0, 1) : variableArray.data;
+  const hiddenItemsCount = variableArray.data.length - 1;
 
   return (
     <BlockList path={blockPath}>
-      {variableArray.data.map((item, variableIndex) => (
+      {loopItems.map((item, variableIndex) => (
         <VariableContextProvider
           key={variableIndex}
           variables={{
@@ -95,17 +73,36 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
               );
             })}
           </BlockList>
+          {mode === "edit" && blocks.length > 0 && hiddenItemsCount > 0 && (
+            <LoopItemBadge count={hiddenItemsCount} />
+          )}
         </VariableContextProvider>
       ))}
     </BlockList>
   );
 };
 
-const LoopItemBadge: FC<PropsWithChildren> = ({ children }) => (
-  <div className="absolute mt-1 flex h-[2px] w-full flex-col items-center justify-center">
-    <Badge className="bg-gray-4 text-black dark:bg-gray-dark-4 dark:text-white">
-      <EyeOff className="mr-2" size={16} />
-      <span>{children}</span>
-    </Badge>
-  </div>
-);
+const LoopItemBadge = ({ count }: { count: number }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="absolute -bottom-1 flex h-[2px] w-full flex-col items-center justify-center">
+      <Badge className="bg-gray-4 text-black dark:bg-gray-dark-4 dark:text-white">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger className="flex">
+              <EyeOff className="mr-2" size={16} />
+              {t(`direktivPage.page.blocks.loop.hiddenItems`, {
+                count,
+              })}
+            </TooltipTrigger>
+            <TooltipContent>
+              {t(`direktivPage.page.blocks.loop.infoHiddenItems_first`)}
+              <Eye className="mx-1 inline" size={16} />
+              {t(`direktivPage.page.blocks.loop.infoHiddenItems_second`)}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </Badge>
+    </div>
+  );
+};
