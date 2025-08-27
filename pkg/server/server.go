@@ -28,7 +28,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/service/registry"
 	"github.com/direktiv/direktiv/pkg/telemetry"
-	"github.com/direktiv/direktiv/pkg/utils"
 	_ "github.com/lib/pq" //nolint:revive
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -91,7 +90,7 @@ func Start(circuit *core.Circuit) error {
 		return fmt.Errorf("can not connect to nats")
 	}
 
-	pubSub := pubsub.NewPubSub(nc.Conn)
+	pubSub := pubsub.NewPubSub(nc)
 	circuit.Go(func() error {
 		err := pubSub.Loop(circuit)
 		if err != nil {
@@ -164,7 +163,6 @@ func Start(circuit *core.Circuit) error {
 
 		return nil
 	})
-
 
 	// Create registry manager
 	slog.Info("initializing registry manager")
