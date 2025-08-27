@@ -1706,7 +1706,8 @@
       "blockForms": {
         "keyValue": {
           "key": "Key",
-          "value": "Value"
+          "value": "Value",
+          "variable": "variable name"
         },
         "text": {
           "description": "Text blocks are used to display a block of text.",

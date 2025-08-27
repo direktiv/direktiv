@@ -23,7 +23,7 @@ export const BooleanValueInput = ({
       onChange(val === "true");
     }}
   >
-    <SelectTrigger variant="outline">
+    <SelectTrigger variant="outline" className="flex-1">
       <SelectValue />
     </SelectTrigger>
     <SelectContent>

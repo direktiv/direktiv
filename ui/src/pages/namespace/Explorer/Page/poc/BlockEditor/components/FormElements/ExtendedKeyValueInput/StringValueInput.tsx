@@ -1,4 +1,5 @@
 import Input from "~/design/Input";
+import { useTranslation } from "react-i18next";
 
 type StringValueInputProps = {
   value: string;
@@ -10,10 +11,14 @@ export const StringValueInput = ({
   value,
   onChange,
   onKeyDown,
-}: StringValueInputProps) => (
-  <Input
-    value={value}
-    onKeyDown={onKeyDown}
-    onChange={(e) => onChange(e.target.value)}
-  />
-);
+}: StringValueInputProps) => {
+  const { t } = useTranslation();
+  return (
+    <Input
+      placeholder={t("direktivPage.blockEditor.blockForms.keyValue.value")}
+      value={value}
+      onKeyDown={onKeyDown}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  );
+};
