@@ -6,14 +6,13 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
-	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/go-chi/chi/v5"
 )
 
 type mirrorsController struct {
 	db            *database.DB
 	syncNamespace core.SyncNamespace
-	bus           *pubsub.Bus
+	bus           core.PubSub
 }
 
 func (e *mirrorsController) mountRouter(r chi.Router) {

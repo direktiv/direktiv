@@ -8,7 +8,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/secrets"
 )
 
 type fetchSecretArgs struct {
@@ -18,7 +17,7 @@ type fetchSecretArgs struct {
 
 // fetchSecret gets a secret from the database by parsing an expression, this expression like:
 // "fetchSecret(namespaceName,secretName)".
-func fetchSecret(sh *secrets.Handler, namespace string, callExpression string) (string, error) {
+func fetchSecret(sm core.SecretsManager, namespace string, callExpression string) (string, error) {
 	callExpression = strings.TrimSpace(callExpression)
 	if !strings.HasPrefix(callExpression, "fetchSecret") {
 		return callExpression, nil
@@ -38,7 +37,7 @@ func fetchSecret(sh *secrets.Handler, namespace string, callExpression string) (
 		return "", fmt.Errorf("trying to fetch secret from different namespace")
 	}
 
-	sn, err := sh.SecretsForNamespace(context.Background(), fArgs.namespace)
+	sn, err := sm.SecretsForNamespace(context.Background(), fArgs.namespace)
 	if err != nil {
 		return "", err
 	}

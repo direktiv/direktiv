@@ -120,9 +120,12 @@ type SyncNamespace func(namespace any, mirrorConfig any) (any, error)
 type App struct {
 	Version *Version
 	Config  *Config
+	Cache   Cache
+	PubSub  PubSub
 
 	ServiceManager  ServiceManager
 	RegistryManager RegistryManager
 	GatewayManager  GatewayManager
 	SyncNamespace   SyncNamespace
+	SecretsManager  SecretsManager
 }

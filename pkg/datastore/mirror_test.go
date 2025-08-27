@@ -4,14 +4,14 @@ import (
 	"context"
 	"testing"
 
+	"github.com/direktiv/direktiv/internal/testutils"
 	"github.com/direktiv/direktiv/pkg/datastore"
 
-	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/google/uuid"
 )
 
 func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
@@ -90,7 +90,7 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 }
 
 func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}

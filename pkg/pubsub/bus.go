@@ -7,30 +7,22 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-type Type string
-
-const (
-	FileSystemChangeEvent Type = "filesystem.change"
-	NamespacesChangeEvent Type = "namespace.change"
-	CacheDeleteEvent      Type = "cache.delete"
-)
-
-type Bus struct {
+type PubSub struct {
 	nc *nats.Conn
 }
 
-func NewBus(conn *nats.Conn) *Bus {
-	return &Bus{
+func NewPubSub(conn *nats.Conn) core.PubSub {
+	return &PubSub{
 		nc: conn,
 	}
 }
 
-func (b *Bus) Loop(circuit *core.Circuit) error {
+func (b *PubSub) Loop(circuit *core.Circuit) error {
 	<-circuit.Done()
 	return b.nc.Drain()
 }
 
-func (b *Bus) Subscribe(channel Type, handler func(data []byte)) {
+func (b *PubSub) Subscribe(channel core.Type, handler func(data []byte)) {
 	_, err := b.nc.Subscribe(string(channel), func(msg *nats.Msg) {
 		slog.Debug("received message", slog.String("channel", msg.Subject))
 		handler(msg.Data)
@@ -41,7 +33,7 @@ func (b *Bus) Subscribe(channel Type, handler func(data []byte)) {
 	}
 }
 
-func (b *Bus) Publish(channel Type, data []byte) error {
+func (b *PubSub) Publish(channel core.Type, data []byte) error {
 	if data == nil {
 		data = []byte("")
 	}

@@ -11,7 +11,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -19,7 +18,7 @@ import (
 type nsController struct {
 	db              *database.DB
 	registryManager core.RegistryManager
-	bus             *pubsub.Bus
+	bus             core.PubSub
 }
 
 func (e *nsController) mountRouter(r chi.Router) {
@@ -85,7 +84,7 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 			Error("deleting registry namespace", "err", err)
 	}
 
-	err = e.bus.Publish(pubsub.NamespacesChangeEvent, nil)
+	err = e.bus.Publish(core.NamespacesChangeEvent, nil)
 	if err != nil {
 		slog.Error("pubsub publish filesystem event", "err", err)
 	}
@@ -287,7 +286,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = e.bus.Publish(pubsub.NamespacesChangeEvent, nil)
+	err = e.bus.Publish(core.NamespacesChangeEvent, nil)
 	if err != nil {
 		slog.Error("pubsub publish", "err", err)
 	}

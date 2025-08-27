@@ -21,24 +21,24 @@ func TestPubSub(t *testing.T) {
 	cs, _ := natsContainer.ConnectionString(context.Background())
 	nc, err := nats.Connect(cs)
 	require.NoError(t, err)
-	busPublish := pubsub.NewBus(nc)
+	busPublish := pubsub.NewPubSub(nc)
 
 	circuit := core.NewCircuit(context.Background())
 	go busPublish.Loop(circuit)
 
 	nc2, err := nats.Connect(cs)
 	require.NoError(t, err)
-	busReceive := pubsub.NewBus(nc2)
+	busReceive := pubsub.NewPubSub(nc2)
 
 	dataSend := []byte("test data")
 	var dataReceived []byte
 
-	busReceive.Subscribe(pubsub.FileSystemChangeEvent, func(data []byte) {
+	busReceive.Subscribe(core.FileSystemChangeEvent, func(data []byte) {
 		dataReceived = data
 	})
 
 	require.Eventually(t, func() bool {
-		busPublish.Publish(pubsub.FileSystemChangeEvent, dataSend)
+		busPublish.Publish(core.FileSystemChangeEvent, dataSend)
 		return string(dataReceived) == string(dataSend)
 	}, 3*time.Second, 100*time.Millisecond, "data not received")
 }

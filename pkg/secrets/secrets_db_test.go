@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/testutils"
 	"github.com/direktiv/direktiv/pkg/cache"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
@@ -20,7 +21,7 @@ import (
 func TestDBSecrets(t *testing.T) {
 
 	// create database
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
@@ -35,16 +36,16 @@ func TestDBSecrets(t *testing.T) {
 	cs, _ := natsContainer.ConnectionString(context.Background())
 	nc, err := nats.Connect(cs)
 	require.NoError(t, err)
-	bus := pubsub.NewBus(nc)
+	buss := pubsub.NewPubSub(nc)
 
-	sh1, cache1 := buildSecrets(ctx, db, bus, "host1")
-	sh2, cache2 := buildSecrets(ctx, db, bus, "host2")
+	sh1, cache1 := buildSecrets(ctx, db, buss, "host1")
+	sh2, cache2 := buildSecrets(ctx, db, buss, "host2")
 
 	sec1, _ := sh1.SecretsForNamespace(ctx, ns.Name)
 	sec2, _ := sh2.SecretsForNamespace(ctx, ns.Name)
 
 	// set on one
-	sec1.Set(ctx, &secrets.Secret{
+	sec1.Set(ctx, &core.Secret{
 		Name: "hello",
 		Data: []byte("world"),
 	})
@@ -61,7 +62,7 @@ func TestDBSecrets(t *testing.T) {
 	require.Equal(t, uint64(1), cache2.Misses())
 
 	// set on one
-	sec1.Update(ctx, &secrets.Secret{
+	sec1.Update(ctx, &core.Secret{
 		Name: "hello",
 		Data: []byte("world2"),
 	})
@@ -95,10 +96,10 @@ func TestDBSecrets(t *testing.T) {
 
 }
 
-func buildSecrets(ctx context.Context, db *database.DB, bus *pubsub.Bus, host string) (*secrets.Handler, *cache.Cache) {
+func buildSecrets(ctx context.Context, db *database.DB, bus core.PubSub, host string) (core.SecretsManager, core.Cache) {
 	circuit := core.NewCircuit(ctx, os.Interrupt)
 	cache, _ := cache.NewCache(bus, host, true)
 	go cache.Run(circuit)
 
-	return secrets.NewHandler(db, cache), cache
+	return secrets.NewManager(db, cache), cache
 }

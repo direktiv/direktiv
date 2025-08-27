@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/transpiler"
 	"github.com/go-chi/chi/v5"
 	"gopkg.in/yaml.v3"
@@ -19,7 +19,7 @@ import (
 
 type fsController struct {
 	db  *database.DB
-	bus *pubsub.Bus
+	bus core.PubSub
 }
 
 func (e *fsController) mountRouter(r chi.Router) {
@@ -171,7 +171,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event.
 	if file.Typ.IsDirektivSpecFile() {
-		err = e.bus.Publish(pubsub.FileSystemChangeEvent, nil)
+		err = e.bus.Publish(core.FileSystemChangeEvent, nil)
 		if err != nil {
 			slog.Error("pubsub publish", "err", err)
 		}
@@ -248,7 +248,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event.
 	if newFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.Publish(pubsub.FileSystemChangeEvent, nil)
+		err = e.bus.Publish(core.FileSystemChangeEvent, nil)
 		// nolint:staticcheck
 		if err != nil {
 			slog.With("component", "api").
@@ -355,7 +355,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event (rename).
 	if req.Path != "" && updatedFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.Publish(pubsub.FileSystemChangeEvent, nil)
+		err = e.bus.Publish(core.FileSystemChangeEvent, nil)
 		if err != nil {
 			slog.Error("pubsub publish", "err", err)
 		}
@@ -363,7 +363,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event (update).
 	if req.Data != "" && updatedFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.Publish(pubsub.FileSystemChangeEvent, nil)
+		err = e.bus.Publish(core.FileSystemChangeEvent, nil)
 		// nolint:staticcheck
 		if err != nil {
 			slog.With("component", "api").

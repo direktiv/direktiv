@@ -6,16 +6,14 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/direktiv/direktiv/pkg/cache"
-	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/go-chi/chi/v5"
 )
 
-// const ctxKeyNamespace = "namespace"
-
 type appMiddlewares struct {
-	dStore datastore.Store
-	cache  *cache.Cache
+	db    *database.DB
+	cache core.Cache
 }
 
 const cacheKey = "api-namespaces"
@@ -79,7 +77,7 @@ func (a *appMiddlewares) fetchNamespacesFromCache() ([]string, error) {
 }
 
 func (a *appMiddlewares) fetchNamespacesFromDB(ctx context.Context) ([]string, error) {
-	nsList, err := a.dStore.Namespaces().GetAll(ctx)
+	nsList, err := a.db.DataStore().Namespaces().GetAll(ctx)
 	if err != nil {
 		return []string{}, err
 	}

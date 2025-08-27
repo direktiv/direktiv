@@ -2,16 +2,17 @@ package filestore_test
 
 import (
 	"context"
-	"github.com/direktiv/direktiv/pkg/datastore"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/internal/testutils"
+	"github.com/direktiv/direktiv/pkg/datastore"
+
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/google/uuid"
 )
 
 func Test_CorrectSetPath(t *testing.T) {
-	db, err := database.NewTestDB(t)
+	db, err := testutils.NewTestDB(t)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
@@ -184,7 +185,7 @@ func assertAllPathsInRoot(t *testing.T, fs filestore.FileStore, rootID uuid.UUID
 }
 
 func Test_UpdateFile(t *testing.T) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
