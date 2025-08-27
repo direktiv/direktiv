@@ -51,6 +51,8 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   const loopItems =
     mode === "edit" ? variableArray.data.slice(0, 1) : variableArray.data;
   const hiddenItemsCount = variableArray.data.length - 1;
+  const showBadge =
+    mode === "edit" && blocks.length > 0 && hiddenItemsCount > 0;
 
   return (
     <BlockList path={blockPath}>
@@ -73,9 +75,7 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
               );
             })}
           </BlockList>
-          {mode === "edit" && blocks.length > 0 && hiddenItemsCount > 0 && (
-            <LoopItemBadge count={hiddenItemsCount} />
-          )}
+          {showBadge && <LoopItemBadge count={hiddenItemsCount} />}
         </VariableContextProvider>
       ))}
     </BlockList>
