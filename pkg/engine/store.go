@@ -34,6 +34,6 @@ type InstanceMessage struct {
 	Memory json.RawMessage `json:"memory,omitempty"`
 	Output json.RawMessage `json:"output,omitempty"`
 
-	Error   error     `json:"error,omitempty"`
+	Error   string    `json:"error,omitempty"`
 	EndedAt time.Time `json:"endedAt,omitempty"`
 }

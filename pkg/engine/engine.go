@@ -54,7 +54,7 @@ func (e *engine) ExecWorkflow(ctx context.Context, namespace string, script stri
 		Input:      json.RawMessage(input),
 		Memory:     nil,
 		Output:     nil,
-		Error:      nil,
+		Error:      "",
 	})
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("create workflow instance: %w", err)
@@ -70,11 +70,11 @@ func (e *engine) ExecWorkflow(ctx context.Context, namespace string, script stri
 		EndedAt:    time.Now(),
 		Memory:     nil,
 		Output:     nil,
-		Error:      nil,
+		Error:      "",
 	}
 	if err != nil {
 		endMsg.Status = 2
-		endMsg.Error = err
+		endMsg.Error = err.Error()
 		endMsg.EndedAt = time.Now()
 	} else {
 		retBytes, err := json.Marshal(ret)
