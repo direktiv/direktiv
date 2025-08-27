@@ -111,6 +111,7 @@ func Start(circuit *core.Circuit) error {
 
 		return nil
 	})
+	app.Cache = cache
 
 	slog.Info("initializing secrets handler")
 	app.SecretsManager = secrets.NewManager(db, cache)
