@@ -92,6 +92,15 @@ export const SmartInput = ({
     },
   });
 
+  type VariableBuilderState = null | {
+    namespace: string;
+    id?: string;
+    idOptions?: string[];
+  };
+
+  const [variableBuilder, setVariableBuilder] =
+    useState<VariableBuilderState>(null);
+
   return (
     <Dialog open={dialog} onOpenChange={setDialog}>
       <InputWithButton>
@@ -142,25 +151,67 @@ export const SmartInput = ({
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent align="start" container={dialogContainer}>
-                    <Command>
-                      <CommandInput placeholder="select context type" />
-                      <CommandList>
-                        <CommandGroup heading="context type">
-                          {Object.entries(variables).map(
-                            ([namespace, content]) => (
-                              <CommandItem
-                                key={namespace}
-                                onSelect={(namespace) => {
-                                  console.log(namespace, content);
-                                }}
-                              >
-                                {namespace}
-                              </CommandItem>
-                            )
-                          )}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
+                    {!variableBuilder?.namespace && (
+                      <Command>
+                        <CommandInput placeholder="select variable namespace" />
+                        <CommandList>
+                          <CommandGroup heading="namespace">
+                            {Object.entries(variables).map(
+                              ([namespace, blockIds]) => (
+                                <CommandItem
+                                  key={namespace}
+                                  onSelect={() =>
+                                    setVariableBuilder({
+                                      namespace,
+                                      idOptions: Object.keys(blockIds),
+                                    })
+                                  }
+                                >
+                                  {namespace}
+                                </CommandItem>
+                              )
+                            )}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    )}
+                    {!!variableBuilder?.namespace &&
+                      variableBuilder.idOptions && (
+                        <Command>
+                          <CommandInput placeholder="select block id" />
+                          <CommandList>
+                            <CommandGroup heading="block scope">
+                              {variableBuilder.idOptions.map((id) => (
+                                <CommandItem
+                                  key={id}
+                                  onSelect={() =>
+                                    setVariableBuilder({
+                                      ...variableBuilder,
+                                      id,
+                                      idOptions: [],
+                                    })
+                                  }
+                                >
+                                  {id}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      )}
+                    {!!variableBuilder?.namespace && variableBuilder.id && (
+                      <div>
+                        <div>
+                          {`Debug: you selected {{${variableBuilder.namespace}.${variableBuilder.id}}}`}
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={() => setVariableBuilder(null)}
+                        >
+                          Reset
+                        </Button>
+                      </div>
+                    )}
                   </PopoverContent>
                 </Popover>
               </Toolbar>
