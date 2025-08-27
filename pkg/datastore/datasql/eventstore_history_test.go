@@ -8,13 +8,13 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/cloudevents/sdk-go/v2/types"
-	"github.com/direktiv/direktiv/internal/testutils"
+	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/google/uuid"
 )
 
 func setupEventHistoryStore(t *testing.T) (datastore.EventHistoryStore, uuid.UUID, string) {
-	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unexpected NewTestDBWithNamespace() error: %v", err)
 	}

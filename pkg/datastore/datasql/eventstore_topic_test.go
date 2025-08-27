@@ -5,14 +5,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/internal/testutils"
+	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/google/uuid"
 )
 
 func Test_TopicAddGet(t *testing.T) {
 	// Create a mock database
-	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unexpected NewTestDBWithNamespace() error: %v", err)
 	}

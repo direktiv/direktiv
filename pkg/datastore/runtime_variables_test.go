@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/direktiv/direktiv/internal/testutils"
+	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/filestore"
 
@@ -13,7 +13,7 @@ import (
 )
 
 func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
-	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
@@ -94,7 +94,7 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 }
 
 func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
-	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
@@ -158,7 +158,7 @@ func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
 }
 
 func Test_sqlRuntimeVariablesStore_InvalidName(t *testing.T) {
-	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
@@ -183,7 +183,7 @@ func Test_sqlRuntimeVariablesStore_InvalidName(t *testing.T) {
 }
 
 func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
-	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
@@ -278,7 +278,7 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 }
 
 func Test_sqlRuntimeVariablesStore_CreateAndUpdate(t *testing.T) {
-	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}

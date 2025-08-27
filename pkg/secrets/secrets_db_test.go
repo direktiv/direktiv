@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/internal/testutils"
 	"github.com/direktiv/direktiv/pkg/cache"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
@@ -21,7 +20,7 @@ import (
 func TestDBSecrets(t *testing.T) {
 
 	// create database
-	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}

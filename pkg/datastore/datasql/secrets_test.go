@@ -4,14 +4,14 @@ import (
 	"context"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/google/uuid"
 
-	"github.com/direktiv/direktiv/internal/testutils"
 	"github.com/direktiv/direktiv/pkg/datastore"
 )
 
 func Test_Secrets(t *testing.T) {
-	db, ns, err := testutils.NewTestDBWithNamespace(t, uuid.NewString())
+	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
