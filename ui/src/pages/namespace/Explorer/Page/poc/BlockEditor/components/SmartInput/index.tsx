@@ -54,6 +54,10 @@ export const SmartInput = ({
     },
   });
 
+  const insertText = (text: string) => {
+    editor.chain().focus().insertContent(text).run();
+  };
+
   return (
     <Dialog open={dialog} onOpenChange={setDialog}>
       <InputWithButton>
@@ -98,8 +102,9 @@ export const SmartInput = ({
             <FakeInput wrap className="flex flex-col gap-2 p-2">
               <Toolbar>
                 <VariablePicker
-                  variables={variables}
                   container={dialogContainer ?? undefined}
+                  variables={variables}
+                  onSubmit={insertText}
                 />
               </Toolbar>
               <EditorContent

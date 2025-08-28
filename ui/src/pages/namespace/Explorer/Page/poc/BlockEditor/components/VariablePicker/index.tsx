@@ -6,14 +6,21 @@ import {
   CommandList,
 } from "~/design/Command";
 import { FC, useState } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
+import {
+  Popover,
+  PopoverClose,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/design/Popover";
 
 import Button from "~/design/Button";
+import { Check } from "lucide-react";
 import { ContextVariables } from "../../../PageCompiler/primitives/Variable/VariableContext";
 import { useTranslation } from "react-i18next";
 
 type VariablePickerProps = {
   variables: ContextVariables;
+  onSubmit: (value: string) => void;
   container?: HTMLDivElement;
 };
 
@@ -26,6 +33,7 @@ type VariableBuilderState = null | {
 export const VariablePicker: FC<VariablePickerProps> = ({
   variables,
   container,
+  onSubmit,
 }) => {
   const { t } = useTranslation();
 
@@ -87,12 +95,21 @@ export const VariablePicker: FC<VariablePickerProps> = ({
         )}
         {!!variableBuilder?.namespace && variableBuilder.id && (
           <div>
-            <div>
-              {`Debug: you selected {{${variableBuilder.namespace}.${variableBuilder.id}}}`}
-            </div>
-            <Button type="button" onClick={() => setVariableBuilder(null)}>
-              Reset
-            </Button>
+            <PopoverClose>
+              <Button
+                variant="outline"
+                icon
+                type="button"
+                onClick={() => {
+                  onSubmit(
+                    ` {{${variableBuilder.namespace}.${variableBuilder.id}}}`
+                  );
+                  setVariableBuilder(null);
+                }}
+              >
+                <Check />
+              </Button>
+            </PopoverClose>
           </div>
         )}
       </PopoverContent>
