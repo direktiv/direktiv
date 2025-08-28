@@ -12,7 +12,7 @@ export const FormDateInput = ({ blockProps }: FormDateInputProps) => {
   const templateStringResolver = useTemplateStringResolver();
   const { id, label, description, defaultValue, optional, type } = blockProps;
   const value = templateStringResolver(defaultValue);
-  const fieldName = encodeBlockKey(type, id);
+  const fieldName = encodeBlockKey(type, id, optional);
   return (
     <Fieldset
       label={label}

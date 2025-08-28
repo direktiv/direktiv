@@ -4,13 +4,17 @@ import { LocalVariablesContent } from "../../../primitives/Variable/LocalVariabl
 
 const keySeparator = "::";
 
-export const encodeBlockKey = (blockType: Block["type"], elementId: string) =>
-  [blockType, elementId].join(keySeparator);
+export const encodeBlockKey = (
+  blockType: Block["type"],
+  elementId: string,
+  optional: boolean
+) => [blockType, elementId, optional].join(keySeparator);
 
 const decodeBlockKey = (blockKey: string) => {
-  const [blockType, elementId] = blockKey.split(keySeparator, 2);
-  if (!blockType || !elementId) throw new Error("invalid form element name");
-  return [blockType as Block["type"], elementId] as const;
+  const [blockType, elementId, optional] = blockKey.split(keySeparator, 3);
+  if (!blockType || !elementId || !optional)
+    throw new Error("invalid form element name");
+  return [blockType as Block["type"], elementId, optional] as const;
 };
 
 const resolveFormValue = (

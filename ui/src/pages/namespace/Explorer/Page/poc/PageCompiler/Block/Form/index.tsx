@@ -35,7 +35,9 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
       name={mutation.id}
       onSubmit={(formEvent) => {
         formEvent.preventDefault();
-        const formVariables = createLocalFormVariables(formEvent);
+        const { formVariables, missingRequiredFields } =
+          createLocalFormVariables(formEvent);
+
         mutate({ mutation, formVariables });
       }}
     >

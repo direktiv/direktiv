@@ -14,7 +14,7 @@ export const FormTextarea = ({ blockProps }: FormTextareaProps) => {
   const templateStringResolver = useTemplateStringResolver();
 
   const value = templateStringResolver(defaultValue);
-  const fieldName = encodeBlockKey(type, id);
+  const fieldName = encodeBlockKey(type, id, optional);
 
   return (
     <Fieldset

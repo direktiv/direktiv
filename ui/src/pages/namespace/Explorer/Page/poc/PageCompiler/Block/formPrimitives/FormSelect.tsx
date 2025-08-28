@@ -24,7 +24,7 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
     blockProps;
 
   const resolvedDefaultValue = templateStringResolver(defaultValue);
-  const fieldName = encodeBlockKey(type, id);
+  const fieldName = encodeBlockKey(type, id, optional);
   const value = values.some((v) => v === resolvedDefaultValue)
     ? resolvedDefaultValue
     : undefined;
