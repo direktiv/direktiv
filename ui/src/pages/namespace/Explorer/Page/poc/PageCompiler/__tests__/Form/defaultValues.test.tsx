@@ -272,7 +272,7 @@ describe("default form values", () => {
               {
                 id: "static-select",
                 label: "static select",
-                description: "default value is always two",
+                description: "default value is always free",
                 optional: false,
                 type: "form-select",
                 values: {
