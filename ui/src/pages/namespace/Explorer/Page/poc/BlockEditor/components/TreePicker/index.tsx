@@ -35,13 +35,36 @@ export const TreePicker: FC<TreePickerProps> = ({
 
   const currentTree = useMemo(() => getSublist(tree, path), [tree, path]);
 
+  const allowSubmit = useMemo(() => path.length, [path]);
+
+  const formattedPath = useMemo(() => `{{${path.join(".")}}}`, [path]);
+
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline" type="button">
-          {t("direktivPage.blockEditor.smartInput.variableBtn")}
-        </Button>
-      </PopoverTrigger>
+      <div className="flex">
+        <PopoverTrigger asChild>
+          <Button variant="outline" type="button">
+            {t("direktivPage.blockEditor.smartInput.variableBtn")}
+          </Button>
+        </PopoverTrigger>
+        <div className="self-center px-3 text-sm text-gray-11">
+          {formattedPath}
+        </div>
+        <PopoverClose>
+          <Button
+            variant="outline"
+            icon
+            type="button"
+            disabled={!allowSubmit}
+            onClick={() => {
+              onSubmit(formattedPath);
+              setPath([]);
+            }}
+          >
+            <Check />
+          </Button>
+        </PopoverClose>
+      </div>
       <PopoverContent align="start" container={container}>
         <Command>
           <CommandInput placeholder="select a value" />
@@ -55,23 +78,7 @@ export const TreePicker: FC<TreePickerProps> = ({
             </CommandGroup>
           </CommandList>
         </Command>
-        {path.length >= 2 && (
-          <div>
-            <PopoverClose>
-              <Button
-                variant="outline"
-                icon
-                type="button"
-                onClick={() => {
-                  onSubmit(` {{${path.join(".")}}}`);
-                  setPath([]);
-                }}
-              >
-                <Check />
-              </Button>
-            </PopoverClose>
-          </div>
-        )}
+        {path.length >= 3 && <div></div>}
       </PopoverContent>
     </Popover>
   );
