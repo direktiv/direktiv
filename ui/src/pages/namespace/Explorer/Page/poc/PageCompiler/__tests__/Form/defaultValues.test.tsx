@@ -276,7 +276,7 @@ describe("default form values", () => {
                 optional: false,
                 type: "form-select",
                 values: {
-                  type: "string-array",
+                  type: "array",
                   value: ["free", "pro", "enterprise"],
                 },
                 defaultValue: "free",
@@ -309,7 +309,7 @@ describe("default form values", () => {
                 optional: false,
                 type: "form-select",
                 values: {
-                  type: "string-array",
+                  type: "array",
                   value: ["free", "pro", "enterprise"],
                 },
                 defaultValue: "{{query.user.data.subscriptionPlan}}",
@@ -449,7 +449,7 @@ describe("default form values", () => {
                 optional: false,
                 type: "form-select",
                 values: {
-                  type: "string-array",
+                  type: "array",
                   value: ["free", "pro", "enterprise"],
                 },
                 defaultValue: "{{query.user.data}}",

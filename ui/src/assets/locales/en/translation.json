@@ -1841,7 +1841,7 @@
             "valuesPlaceholder": "Select option",
             "type": {
               "variable": "Variable",
-              "string-array": "Static"
+              "array": "Static"
             }
           }
         }

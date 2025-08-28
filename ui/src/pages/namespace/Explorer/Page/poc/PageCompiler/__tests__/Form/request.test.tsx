@@ -97,7 +97,7 @@ const form: BlockType[] = [
     description: "",
     optional: false,
     type: "form-select",
-    values: { type: "string-array", value: ["free", "pro", "enterprise"] },
+    values: { type: "array", value: ["free", "pro", "enterprise"] },
     defaultValue: "pro",
   },
 ];

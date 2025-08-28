@@ -46,7 +46,7 @@ export const Select = ({
     if (parsedValueType.data) {
       field.onChange(parsedValueType.data);
       switch (parsedValueType.data) {
-        case "string-array":
+        case "array":
           form.setValue("values.value", []);
           break;
         case "variable":
@@ -101,7 +101,7 @@ export const Select = ({
           )}
         />
 
-        {form.watch("values.type") === "string-array" && (
+        {form.watch("values.type") === "array" && (
           <Controller
             control={form.control}
             name="values.value"

@@ -45,7 +45,7 @@ describe("select input", () => {
               optional: false,
               type: "form-select",
               values: {
-                type: "string-array",
+                type: "array",
                 value: ["one", "two", "three"],
               },
               defaultValue: "",
