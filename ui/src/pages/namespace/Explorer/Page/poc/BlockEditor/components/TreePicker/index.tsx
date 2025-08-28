@@ -5,7 +5,7 @@ import {
   CommandItem,
   CommandList,
 } from "~/design/Command";
-import { FC, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import {
   Popover,
   PopoverClose,
@@ -33,6 +33,8 @@ export const TreePicker: FC<TreePickerProps> = ({
 
   const [path, setPath] = useState<string[]>([]);
 
+  const currentTree = useMemo(() => getSublist(tree, path), [tree, path]);
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -41,38 +43,19 @@ export const TreePicker: FC<TreePickerProps> = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" container={container}>
-        {!path.length && (
-          <Command>
-            <CommandInput placeholder="select variable namespace" />
-            <CommandList>
-              <CommandGroup heading="namespace">
-                {Object.entries(tree).map(([namespace]) => (
-                  <CommandItem
-                    key={namespace}
-                    onSelect={() => setPath([namespace])}
-                  >
-                    {namespace}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        )}
-        {!!path.length && (
-          <Command>
-            <CommandInput placeholder="select block id" />
-            <CommandList>
-              <CommandGroup heading="block scope">
-                {getSublist(tree, path).map((id) => (
-                  <CommandItem key={id} onSelect={() => setPath([...path, id])}>
-                    {id}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        )}
-        {path.length === 2 && (
+        <Command>
+          <CommandInput placeholder="select a value" />
+          <CommandList>
+            <CommandGroup heading="value">
+              {currentTree?.map((key) => (
+                <CommandItem key={key} onSelect={() => setPath([...path, key])}>
+                  {key}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+        {path.length >= 2 && (
           <div>
             <PopoverClose>
               <Button
