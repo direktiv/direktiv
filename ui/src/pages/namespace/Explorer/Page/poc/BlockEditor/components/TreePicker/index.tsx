@@ -12,44 +12,19 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/design/Popover";
+import { Tree, getSublist } from "./utils";
 
 import Button from "~/design/Button";
 import { Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import z from "zod";
 
-type Tree = {
-  [key: string]: Tree | unknown;
-};
-
-const TreeSchema: z.ZodType<Tree> = z.lazy(() =>
-  z.record(z.union([TreeSchema, z.unknown()]))
-);
-
-const isTree = (value: unknown): value is Tree =>
-  TreeSchema.safeParse(value).success;
-
-type VariablePickerProps = {
+type TreePickerProps = {
   tree: Tree;
   onSubmit: (value: string) => void;
   container?: HTMLDivElement;
 };
 
-const getSubtree = (tree: Tree, path: string[]): Tree =>
-  path.reduce<Tree>((current, segment) => {
-    const next = current[segment];
-    return isTree(next) ? next : current;
-  }, tree);
-
-const getSublist = (tree: Tree, path: string[]): string[] => {
-  const subtree = getSubtree(tree, path);
-  if (typeof subtree === "string" || typeof subtree === "undefined") {
-    return [];
-  }
-  return Object.keys(subtree);
-};
-
-export const VariablePicker: FC<VariablePickerProps> = ({
+export const TreePicker: FC<TreePickerProps> = ({
   tree,
   container,
   onSubmit,

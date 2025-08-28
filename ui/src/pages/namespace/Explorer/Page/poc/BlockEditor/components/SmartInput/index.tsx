@@ -12,7 +12,7 @@ import { InputWithButton } from "~/design/InputWithButton";
 import Paragraph from "@tiptap/extension-paragraph";
 import Placeholder from "@tiptap/extension-placeholder";
 import Text from "@tiptap/extension-text";
-import { VariablePicker } from "../VariablePicker";
+import { TreePicker } from "../TreePicker";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 
@@ -101,7 +101,7 @@ export const SmartInput = ({
             </Alert>
             <FakeInput wrap className="flex flex-col gap-2 p-2">
               <Toolbar>
-                <VariablePicker
+                <TreePicker
                   container={dialogContainer ?? undefined}
                   tree={variables}
                   onSubmit={insertText}
