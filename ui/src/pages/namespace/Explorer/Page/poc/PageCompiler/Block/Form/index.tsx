@@ -7,6 +7,7 @@ import { FormType } from "../../../schema/blocks/form";
 import { StopPropagation } from "~/components/StopPropagation";
 import { createLocalFormVariables } from "../formPrimitives/utils";
 import { usePageMutation } from "../../procedures/mutation";
+import { useState } from "react";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
@@ -19,6 +20,8 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
   const { mutation, trigger } = blockProps;
   const { t } = useTranslation();
   const { toast } = useToast();
+  const [missingFields, setMissingFields] = useState<string[]>([]);
+
   const { mutate, isPending, isSuccess } = usePageMutation({
     onError: (error) => {
       toast({
@@ -38,6 +41,10 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
         const { formVariables, missingRequiredFields } =
           createLocalFormVariables(formEvent);
 
+        if (missingRequiredFields.length > 0) {
+          setMissingFields(missingRequiredFields);
+          return;
+        }
         mutate({ mutation, formVariables });
       }}
     >
@@ -47,6 +54,12 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
         </Alert>
       ) : (
         <>
+          {missingFields.length > 0 && (
+            <Alert variant="error" className="mb-4">
+              {t("direktivPage.page.blocks.form.incompleteForm")}{" "}
+              {missingFields.join(", ")}
+            </Alert>
+          )}
           <BlockList path={blockPath}>
             {blockProps.blocks.map((block, index) => (
               <Block

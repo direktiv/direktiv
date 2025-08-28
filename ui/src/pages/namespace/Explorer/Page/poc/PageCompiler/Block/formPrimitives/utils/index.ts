@@ -14,7 +14,7 @@ const decodeBlockKey = (blockKey: string) => {
   const [blockType, elementId, optional] = blockKey.split(keySeparator, 3);
   if (!blockType || !elementId || !optional)
     throw new Error("invalid form element name");
-  return [blockType as Block["type"], elementId, optional] as const;
+  return [blockType as Block["type"], elementId, optional === "true"] as const;
 };
 
 const resolveFormValue = (
@@ -55,21 +55,37 @@ const resolveFormValue = (
  *
  * To eventually be used as template string: {{this.form.username}}
  */
+
+type createLocalFormVariablesReturnType = {
+  formVariables: LocalVariablesContent;
+  missingRequiredFields: string[];
+};
+
 export const createLocalFormVariables = (
   formEvent: FormEvent<HTMLFormElement>
-): LocalVariablesContent => {
+): createLocalFormVariablesReturnType => {
   const formData = new FormData(formEvent.currentTarget);
   const formValues = Object.fromEntries(formData.entries());
+  const missingRequiredFields: string[] = [];
 
   const transformedEntries = Object.entries(formValues).map(
     ([serializedKey, value]) => {
-      const [blockType, elementId] = decodeBlockKey(serializedKey);
+      const [blockType, elementId, optional] = decodeBlockKey(serializedKey);
       const resolvedValue = resolveFormValue(blockType, value);
+      if (
+        !optional &&
+        // TODO: make this a helper function similar to resolveFormValue
+        (!value || (blockType === "form-checkbox" && resolvedValue === false))
+      ) {
+        missingRequiredFields.push(elementId);
+      }
       return [elementId, resolvedValue];
     }
   );
 
   const processedFormValues = Object.fromEntries(transformedEntries);
 
-  return { ["form"]: processedFormValues };
+  const formVariables = { ["form"]: processedFormValues };
+
+  return { formVariables, missingRequiredFields };
 };
