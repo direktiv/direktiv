@@ -103,7 +103,7 @@ export const SmartInput = ({
               <Toolbar>
                 <VariablePicker
                   container={dialogContainer ?? undefined}
-                  variables={variables}
+                  tree={variables}
                   onSubmit={insertText}
                 />
               </Toolbar>

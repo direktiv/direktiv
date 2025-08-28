@@ -15,30 +15,48 @@ import {
 
 import Button from "~/design/Button";
 import { Check } from "lucide-react";
-import { ContextVariables } from "../../../PageCompiler/primitives/Variable/VariableContext";
 import { useTranslation } from "react-i18next";
+import z from "zod";
+
+type Tree = {
+  [key: string]: Tree | unknown;
+};
+
+const TreeSchema: z.ZodType<Tree> = z.lazy(() =>
+  z.record(z.union([TreeSchema, z.unknown()]))
+);
+
+const isTree = (value: unknown): value is Tree =>
+  TreeSchema.safeParse(value).success;
 
 type VariablePickerProps = {
-  variables: ContextVariables;
+  tree: Tree;
   onSubmit: (value: string) => void;
   container?: HTMLDivElement;
 };
 
-type VariableBuilderState = null | {
-  namespace: string;
-  id?: string;
-  idOptions?: string[];
+const getSubtree = (tree: Tree, path: string[]): Tree =>
+  path.reduce<Tree>((current, segment) => {
+    const next = current[segment];
+    return isTree(next) ? next : current;
+  }, tree);
+
+const getSublist = (tree: Tree, path: string[]): string[] => {
+  const subtree = getSubtree(tree, path);
+  if (typeof subtree === "string" || typeof subtree === "undefined") {
+    return [];
+  }
+  return Object.keys(subtree);
 };
 
 export const VariablePicker: FC<VariablePickerProps> = ({
-  variables,
+  tree,
   container,
   onSubmit,
 }) => {
   const { t } = useTranslation();
 
-  const [variableBuilder, setVariableBuilder] =
-    useState<VariableBuilderState>(null);
+  const [path, setPath] = useState<string[]>([]);
 
   return (
     <Popover>
@@ -48,20 +66,15 @@ export const VariablePicker: FC<VariablePickerProps> = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" container={container}>
-        {!variableBuilder?.namespace && (
+        {!path.length && (
           <Command>
             <CommandInput placeholder="select variable namespace" />
             <CommandList>
               <CommandGroup heading="namespace">
-                {Object.entries(variables).map(([namespace, blockIds]) => (
+                {Object.entries(tree).map(([namespace]) => (
                   <CommandItem
                     key={namespace}
-                    onSelect={() =>
-                      setVariableBuilder({
-                        namespace,
-                        idOptions: Object.keys(blockIds),
-                      })
-                    }
+                    onSelect={() => setPath([namespace])}
                   >
                     {namespace}
                   </CommandItem>
@@ -70,22 +83,13 @@ export const VariablePicker: FC<VariablePickerProps> = ({
             </CommandList>
           </Command>
         )}
-        {!!variableBuilder?.namespace && variableBuilder.idOptions && (
+        {!!path.length && (
           <Command>
             <CommandInput placeholder="select block id" />
             <CommandList>
               <CommandGroup heading="block scope">
-                {variableBuilder.idOptions.map((id) => (
-                  <CommandItem
-                    key={id}
-                    onSelect={() =>
-                      setVariableBuilder({
-                        ...variableBuilder,
-                        id,
-                        idOptions: [],
-                      })
-                    }
-                  >
+                {getSublist(tree, path).map((id) => (
+                  <CommandItem key={id} onSelect={() => setPath([...path, id])}>
                     {id}
                   </CommandItem>
                 ))}
@@ -93,7 +97,7 @@ export const VariablePicker: FC<VariablePickerProps> = ({
             </CommandList>
           </Command>
         )}
-        {!!variableBuilder?.namespace && variableBuilder.id && (
+        {path.length === 2 && (
           <div>
             <PopoverClose>
               <Button
@@ -101,10 +105,8 @@ export const VariablePicker: FC<VariablePickerProps> = ({
                 icon
                 type="button"
                 onClick={() => {
-                  onSubmit(
-                    ` {{${variableBuilder.namespace}.${variableBuilder.id}}}`
-                  );
-                  setVariableBuilder(null);
+                  onSubmit(` {{${path.join(".")}}}`);
+                  setPath([]);
                 }}
               >
                 <Check />
