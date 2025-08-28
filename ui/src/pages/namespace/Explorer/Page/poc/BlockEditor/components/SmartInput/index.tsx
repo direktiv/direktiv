@@ -1,15 +1,7 @@
 import { Check, SquareArrowOutUpRight } from "lucide-react";
-import {
-  Command,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "~/design/Command";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { FC, PropsWithChildren, useState } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
@@ -20,6 +12,7 @@ import { InputWithButton } from "~/design/InputWithButton";
 import Paragraph from "@tiptap/extension-paragraph";
 import Placeholder from "@tiptap/extension-placeholder";
 import Text from "@tiptap/extension-text";
+import { VariablePicker } from "../VariablePicker";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 
@@ -60,15 +53,6 @@ export const SmartInput = ({
       onChange(editor.getText());
     },
   });
-
-  type VariableBuilderState = null | {
-    namespace: string;
-    id?: string;
-    idOptions?: string[];
-  };
-
-  const [variableBuilder, setVariableBuilder] =
-    useState<VariableBuilderState>(null);
 
   return (
     <Dialog open={dialog} onOpenChange={setDialog}>
@@ -113,76 +97,10 @@ export const SmartInput = ({
             </Alert>
             <FakeInput wrap className="flex flex-col gap-2 p-2">
               <Toolbar>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" type="button">
-                      {t("direktivPage.blockEditor.smartInput.variableBtn")}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent align="start" container={dialogContainer}>
-                    {!variableBuilder?.namespace && (
-                      <Command>
-                        <CommandInput placeholder="select variable namespace" />
-                        <CommandList>
-                          <CommandGroup heading="namespace">
-                            {Object.entries(variables).map(
-                              ([namespace, blockIds]) => (
-                                <CommandItem
-                                  key={namespace}
-                                  onSelect={() =>
-                                    setVariableBuilder({
-                                      namespace,
-                                      idOptions: Object.keys(blockIds),
-                                    })
-                                  }
-                                >
-                                  {namespace}
-                                </CommandItem>
-                              )
-                            )}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    )}
-                    {!!variableBuilder?.namespace &&
-                      variableBuilder.idOptions && (
-                        <Command>
-                          <CommandInput placeholder="select block id" />
-                          <CommandList>
-                            <CommandGroup heading="block scope">
-                              {variableBuilder.idOptions.map((id) => (
-                                <CommandItem
-                                  key={id}
-                                  onSelect={() =>
-                                    setVariableBuilder({
-                                      ...variableBuilder,
-                                      id,
-                                      idOptions: [],
-                                    })
-                                  }
-                                >
-                                  {id}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      )}
-                    {!!variableBuilder?.namespace && variableBuilder.id && (
-                      <div>
-                        <div>
-                          {`Debug: you selected {{${variableBuilder.namespace}.${variableBuilder.id}}}`}
-                        </div>
-                        <Button
-                          type="button"
-                          onClick={() => setVariableBuilder(null)}
-                        >
-                          Reset
-                        </Button>
-                      </div>
-                    )}
-                  </PopoverContent>
-                </Popover>
+                <VariablePicker
+                  variables={variables}
+                  container={dialogContainer ?? undefined}
+                />
               </Toolbar>
               <EditorContent
                 id={id}
