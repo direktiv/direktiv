@@ -275,7 +275,10 @@ describe("default form values", () => {
                 description: "default value is always two",
                 optional: false,
                 type: "form-select",
-                values: ["free", "pro", "enterprise"],
+                values: {
+                  type: "string-array",
+                  value: ["free", "pro", "enterprise"],
+                },
                 defaultValue: "free",
               },
             ])}
@@ -305,7 +308,10 @@ describe("default form values", () => {
                   "default value comes from API ({{query.user.data.subscriptionPlan}})",
                 optional: false,
                 type: "form-select",
-                values: ["free", "pro", "enterprise"],
+                values: {
+                  type: "string-array",
+                  value: ["free", "pro", "enterprise"],
+                },
                 defaultValue: "{{query.user.data.subscriptionPlan}}",
               },
             ])}
@@ -442,7 +448,10 @@ describe("default form values", () => {
                   "This select input is pointing to an object for the default value",
                 optional: false,
                 type: "form-select",
-                values: ["free", "pro", "enterprise"],
+                values: {
+                  type: "string-array",
+                  value: ["free", "pro", "enterprise"],
+                },
                 defaultValue: "{{query.user.data}}",
               },
             ])}

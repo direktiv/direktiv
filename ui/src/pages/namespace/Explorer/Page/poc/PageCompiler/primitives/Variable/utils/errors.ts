@@ -9,6 +9,8 @@ type VariableError = "NoStateForId";
 
 type ArrayError = "notAnArray";
 
+type StringArrayError = "notAnArrayOfStrings";
+
 type BooleanError = "notABoolean";
 
 type NumberError = "notANumber";
@@ -21,6 +23,10 @@ export type ResolveVariableError =
   | VariableError;
 
 export type ResolveVariableArrayError = ResolveVariableError | ArrayError;
+
+export type ResolveVariableStringArrayError =
+  | ResolveVariableArrayError
+  | StringArrayError;
 
 export type ResolveVariableStringError = ResolveVariableError | StringifyError;
 
