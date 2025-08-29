@@ -195,7 +195,7 @@ describe("form request", () => {
                   value: "{{query.user.data.lastLogin}}",
                 },
                 {
-                  key: "input",
+                  key: "input-string",
                   value: "{{this.form.string}}",
                 },
                 {
@@ -240,7 +240,7 @@ describe("form request", () => {
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
         const requestUrl = new URL(formRequest.clone().url);
         expect(requestUrl.search).toBe(
-          "?string=ok&boolean=true&number=19.99&null=null&input=string+from+a+string+input&textarea=string+from+a+textarea&checkbox-checked=true&checkbox-unchecked=false&input-number=3&input-floating-number=4.99&input-date=2025-12-24&select=pro"
+          "?string=ok&boolean=true&number=19.99&null=null&input-string=string+from+a+string+input&textarea=string+from+a+textarea&checkbox-checked=true&checkbox-unchecked=false&input-number=3&input-floating-number=4.99&input-date=2025-12-24&select=pro"
         );
       });
     });
@@ -304,8 +304,8 @@ describe("form request", () => {
                   value: "Null: {{query.user.data.lastLogin}}",
                 },
                 {
-                  key: "Input",
-                  value: "Input: {{this.form.string}}",
+                  key: "Input-String",
+                  value: "Input String: {{this.form.string}}",
                 },
                 {
                   key: "Textarea",
@@ -354,8 +354,8 @@ describe("form request", () => {
         );
         expect(formRequest.clone().headers.get("Number")).toBe("Number: 19.99");
         expect(formRequest.clone().headers.get("Null")).toBe("Null: null");
-        expect(formRequest.clone().headers.get("Input")).toBe(
-          "Input: string from a string input"
+        expect(formRequest.clone().headers.get("Input-String")).toBe(
+          "Input String: string from a string input"
         );
         expect(formRequest.clone().headers.get("Textarea")).toBe(
           "Textarea: string from a textarea"
@@ -451,10 +451,10 @@ describe("form request", () => {
                   },
                 },
                 {
-                  key: "input",
+                  key: "input-string",
                   value: {
                     type: "string",
-                    value: "Input: {{this.form.string}}",
+                    value: "Input String: {{this.form.string}}",
                   },
                 },
                 {
@@ -526,7 +526,9 @@ describe("form request", () => {
         expect(jsonResponse["boolean"]).toBe("Boolean: true");
         expect(jsonResponse["number"]).toBe("Number: 19.99");
         expect(jsonResponse["null"]).toBe("Null: null");
-        expect(jsonResponse["input"]).toBe("Input: string from a string input");
+        expect(jsonResponse["input-string"]).toBe(
+          "Input String: string from a string input"
+        );
         expect(jsonResponse["textarea"]).toBe(
           "Textarea: string from a textarea"
         );
@@ -584,7 +586,7 @@ describe("form request", () => {
                   },
                 },
                 {
-                  key: "input",
+                  key: "input-string",
                   value: {
                     type: "variable",
                     value: "this.form.string",
@@ -671,7 +673,7 @@ describe("form request", () => {
         expect(jsonResponse["boolean"]).toBe(true);
         expect(jsonResponse["number"]).toBe(19.99);
         expect(jsonResponse["null"]).toBe(null);
-        expect(jsonResponse["input"]).toBe("string from a string input");
+        expect(jsonResponse["input-string"]).toBe("string from a string input");
         expect(jsonResponse["textarea"]).toBe("string from a textarea");
         expect(jsonResponse["checkbox-checked"]).toBe(true);
         expect(jsonResponse["checkbox-unchecked"]).toBe(false);
