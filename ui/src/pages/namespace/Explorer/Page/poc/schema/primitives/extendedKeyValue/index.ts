@@ -8,7 +8,7 @@ const StringSchema = z.object({
 
 export const VariableSchema = z.object({
   type: z.literal("variable"),
-  value: z.string(),
+  value: z.string().min(1),
 });
 
 export const BooleanSchema = z.object({
