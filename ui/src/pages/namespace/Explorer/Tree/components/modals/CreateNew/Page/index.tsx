@@ -117,7 +117,11 @@ const NewPage = ({
             <label className="w-[90px] text-right text-[14px]" htmlFor="name">
               {t("pages.explorer.tree.newPage.nameLabel")}
             </label>
-            <Input id="name" placeholder="page-name" {...register("name")} />
+            <Input
+              id="name"
+              placeholder={t("pages.explorer.tree.newPage.namePlaceholder")}
+              {...register("name")}
+            />
           </fieldset>
         </form>
       </div>

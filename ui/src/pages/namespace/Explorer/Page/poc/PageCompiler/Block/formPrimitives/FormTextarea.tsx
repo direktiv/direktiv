@@ -3,7 +3,7 @@ import { FormTextareaType } from "../../../schema/blocks/form/textarea";
 import { StopPropagation } from "~/components/StopPropagation";
 import { Textarea } from "~/design/TextArea";
 import { encodeBlockKey } from "./utils";
-import { useTemplateStringResolver } from "../../primitives/Variable/utils/useTemplateStringResolver";
+import { useStringInterpolation } from "../../primitives/Variable/utils/useStringInterpolation";
 
 type FormTextareaProps = {
   blockProps: FormTextareaType;
@@ -11,9 +11,9 @@ type FormTextareaProps = {
 
 export const FormTextarea = ({ blockProps }: FormTextareaProps) => {
   const { id, label, description, defaultValue, optional, type } = blockProps;
-  const templateStringResolver = useTemplateStringResolver();
+  const interpolateString = useStringInterpolation();
 
-  const value = templateStringResolver(defaultValue);
+  const value = interpolateString(defaultValue);
   const fieldName = encodeBlockKey(type, id, optional);
 
   return (
