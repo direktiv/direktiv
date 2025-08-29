@@ -3,7 +3,7 @@ import { FormStringInputType } from "../../../schema/blocks/form/stringInput";
 import Input from "~/design/Input";
 import { StopPropagation } from "~/components/StopPropagation";
 import { encodeBlockKey } from "./utils";
-import { useTemplateStringResolver } from "../../primitives/Variable/utils/useTemplateStringResolver";
+import { useStringInterpolation } from "../../primitives/Variable/utils/useStringInterpolation";
 
 type FormStringInputProps = {
   blockProps: FormStringInputType;
@@ -12,9 +12,9 @@ type FormStringInputProps = {
 export const FormStringInput = ({ blockProps }: FormStringInputProps) => {
   const { id, label, description, variant, defaultValue, optional, type } =
     blockProps;
-  const templateStringResolver = useTemplateStringResolver();
+  const interpolateString = useStringInterpolation();
 
-  const value = templateStringResolver(defaultValue);
+  const value = interpolateString(defaultValue);
   const fieldName = encodeBlockKey(type, id);
 
   return (

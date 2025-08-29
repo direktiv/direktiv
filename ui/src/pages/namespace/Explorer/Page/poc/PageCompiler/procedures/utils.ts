@@ -1,11 +1,8 @@
-import {
-  keyValueArrayToObject,
-  useKeyValueArrayResolver,
-} from "../primitives/keyValue/utils";
-
 import { LocalVariablesContent } from "../primitives/Variable/LocalVariables";
 import { MutationType } from "../../schema/procedures/mutation";
 import { QueryType } from "../../schema/procedures/query";
+import { keyValueArrayToObject } from "../primitives/keyValue/utils";
+import { useKeyValueArrayResolver } from "../primitives/keyValue/useKeyValueArrayResolver";
 import { useStringInterpolation } from "../primitives/Variable/utils/useStringInterpolation";
 
 /**

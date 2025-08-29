@@ -10,7 +10,7 @@ import { Fieldset } from "./utils/FieldSet";
 import { FormSelectType } from "../../../schema/blocks/form/select";
 import { StopPropagation } from "~/components/StopPropagation";
 import { encodeBlockKey } from "./utils";
-import { useTemplateStringResolver } from "../../primitives/Variable/utils/useTemplateStringResolver";
+import { useStringInterpolation } from "../../primitives/Variable/utils/useStringInterpolation";
 import { useTranslation } from "react-i18next";
 import { useVariableStringArrayResolver } from "../../primitives/Variable/utils/useVariableStringArrayResolver";
 
@@ -20,12 +20,12 @@ type FormSelectProps = {
 
 export const FormSelect = ({ blockProps }: FormSelectProps) => {
   const { t } = useTranslation();
-  const templateStringResolver = useTemplateStringResolver();
+  const interpolateString = useStringInterpolation();
   const variableResolver = useVariableStringArrayResolver();
   const { id, label, description, defaultValue, values, optional, type } =
     blockProps;
 
-  const resolvedDefaultValue = templateStringResolver(defaultValue);
+  const resolvedDefaultValue = interpolateString(defaultValue);
   const fieldName = encodeBlockKey(type, id);
 
   let resolvedValues: string[];
