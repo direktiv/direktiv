@@ -1,10 +1,3 @@
-import {
-  BooleanArraySchema,
-  NumberArraySchema,
-  StringArraySchema,
-} from "./array";
-
-import { FlatObjectSchema } from "./object";
 import { TemplateString } from "../templateString";
 import z from "zod";
 
@@ -15,7 +8,7 @@ const StringSchema = z.object({
 
 export const VariableSchema = z.object({
   type: z.literal("variable"),
-  value: z.string(),
+  value: z.string().min(1),
 });
 
 export const BooleanSchema = z.object({
@@ -33,19 +26,17 @@ const DataType = z.discriminatedUnion("type", [
   VariableSchema,
   BooleanSchema,
   NumberSchema,
-  StringArraySchema,
-  BooleanArraySchema,
-  NumberArraySchema,
-  FlatObjectSchema,
 ]);
 
 /**
  * An extended key-value pair that supports multiple data types for the value,
  * including strings, variables, booleans, arrays, and objects.
  */
-export const ExtendedKeyValueSchema = z.object({
+export const ExtendedKeyValue = z.object({
   key: z.string().min(1),
   value: DataType,
 });
 
-export type ExtendedKeyValueSchema = z.infer<typeof ExtendedKeyValueSchema>;
+export type ExtendedKeyValueType = z.infer<typeof ExtendedKeyValue>;
+
+export type ValueType = ExtendedKeyValueType["value"]["type"];

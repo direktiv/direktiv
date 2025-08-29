@@ -1,26 +1,19 @@
-import { KeyValueType } from "../../../schema/primitives/keyValue";
+import { JsonValueType } from "../Variable/utils";
 import { LocalVariablesContent } from "../Variable/LocalVariables";
-import { useStringInterpolation } from "../Variable/utils/useStringInterpolation";
 
-type ResolverFunction<DataType> = (
-  value: DataType,
+export type KeyValueResolverFunction<InputType> = (
+  value: InputType,
   localVariables?: LocalVariablesContent
-) => DataType;
+) => KeyValue[];
 
-export const useKeyValueArrayResolver = (): ResolverFunction<
-  KeyValueType[]
-> => {
-  const interpolateString = useStringInterpolation();
-  return (input, localVariables) =>
-    input.map(({ key, value }) => {
-      const parsedValue = interpolateString(value, localVariables);
-      return { key, value: parsedValue };
-    });
-};
-
-const keyValueToObject = (kv: KeyValueType) => ({
+const keyValueToObject = (kv: KeyValue) => ({
   [kv.key]: kv.value,
 });
 
-export const keyValueArrayToObject = (kv: KeyValueType[]) =>
+export const keyValueArrayToObject = (kv: KeyValue[]) =>
   kv.reduce((acc, curr) => ({ ...acc, ...keyValueToObject(curr) }), {});
+
+type KeyValue = {
+  key: string;
+  value: JsonValueType;
+};

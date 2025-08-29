@@ -21,7 +21,7 @@ const resolveFormValue = (
     case "form-checkbox":
       return value === "true";
     case "form-number-input":
-      return parseInt(String(value));
+      return parseFloat(String(value));
     case "form-string-input":
     case "form-date-input":
     case "form-select":
