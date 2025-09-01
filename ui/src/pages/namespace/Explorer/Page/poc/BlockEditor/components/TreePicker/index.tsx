@@ -23,11 +23,13 @@ type TreePickerProps = {
   tree: Tree;
   onSubmit: (value: string) => void;
   container?: HTMLDivElement;
+  placeholders?: string[];
 };
 
 export const TreePicker: FC<TreePickerProps> = ({
   tree,
   container,
+  placeholders = [],
   onSubmit,
 }) => {
   const { t } = useTranslation();
@@ -36,9 +38,26 @@ export const TreePicker: FC<TreePickerProps> = ({
   const currentTree = useMemo(() => getSublist(tree, path), [tree, path]);
   const allowSubmit = useMemo(() => path.length, [path]);
   const allowCustomSegment = useMemo(() => search.length > 0, [search]);
-  const formattedPath = useMemo(
-    () => (path.length ? `{{${path.join(".")}}}` : null),
-    [path]
+  const formattedPath = useMemo(() => `{{${path.join(".")}}}`, [path]);
+  const previewPath = useMemo(
+    () =>
+      placeholders.map((placeholder, index) => (
+        <>
+          {path[index] ? (
+            <span key={index} className="text-gray-12">
+              {path[index]}
+            </span>
+          ) : (
+            <span key={index} className="text-gray-11">
+              {placeholder}
+            </span>
+          )}
+          {index < placeholders.length - 1 && (
+            <span className="text-gray-11">.</span>
+          )}
+        </>
+      )),
+    [path, placeholders]
   );
 
   return (
@@ -50,9 +69,9 @@ export const TreePicker: FC<TreePickerProps> = ({
           </Button>
         </PopoverTrigger>
         <div className="self-center px-3 text-sm text-gray-11">
-          {formattedPath}
+          {previewPath}
         </div>
-        <PopoverClose>
+        <PopoverClose className="ml-auto">
           <Button
             variant="outline"
             icon
@@ -100,7 +119,6 @@ export const TreePicker: FC<TreePickerProps> = ({
             </CommandGroup>
           </CommandList>
         </Command>
-        {path.length >= 3 && <div></div>}
       </PopoverContent>
     </Popover>
   );

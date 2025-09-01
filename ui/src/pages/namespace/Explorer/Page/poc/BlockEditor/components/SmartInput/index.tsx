@@ -20,6 +20,8 @@ const Toolbar: FC<PropsWithChildren> = ({ children }) => (
   <div className="border-b pb-2">{children}</div>
 );
 
+const placeholders = ["namespace", "id", "pointer"];
+
 export const SmartInput = ({
   onChange,
   value,
@@ -105,6 +107,7 @@ export const SmartInput = ({
                   container={dialogContainer ?? undefined}
                   tree={variables}
                   onSubmit={insertText}
+                  placeholders={placeholders}
                 />
               </Toolbar>
               <EditorContent
