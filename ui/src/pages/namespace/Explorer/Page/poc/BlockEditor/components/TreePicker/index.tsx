@@ -1,5 +1,7 @@
+import { Check, Plus } from "lucide-react";
 import {
   Command,
+  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -15,7 +17,6 @@ import {
 import { Tree, getSublist } from "./utils";
 
 import Button from "~/design/Button";
-import { Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 type TreePickerProps = {
@@ -31,8 +32,10 @@ export const TreePicker: FC<TreePickerProps> = ({
 }) => {
   const { t } = useTranslation();
   const [path, setPath] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
   const currentTree = useMemo(() => getSublist(tree, path), [tree, path]);
   const allowSubmit = useMemo(() => path.length, [path]);
+  const allowCustomSegment = useMemo(() => search.length > 0, [search]);
   const formattedPath = useMemo(
     () => (path.length ? `{{${path.join(".")}}}` : null),
     [path]
@@ -68,8 +71,26 @@ export const TreePicker: FC<TreePickerProps> = ({
       </div>
       <PopoverContent align="start" container={container}>
         <Command>
-          <CommandInput placeholder="select a value" />
+          <CommandInput
+            placeholder="select a value"
+            value={search}
+            onValueChange={setSearch}
+          >
+            <Button
+              icon
+              type="button"
+              variant="ghost"
+              onClick={() => setPath([...path, search])}
+              className="pr-0"
+              disabled={!allowCustomSegment}
+            >
+              <Plus size="xs" />
+            </Button>
+          </CommandInput>
           <CommandList>
+            <CommandEmpty>
+              <div>{t("direktivPage.blockEditor.smartInput.listEmpty")}</div>
+            </CommandEmpty>
             <CommandGroup heading="value">
               {currentTree?.map((key) => (
                 <CommandItem key={key} onSelect={() => setPath([...path, key])}>
