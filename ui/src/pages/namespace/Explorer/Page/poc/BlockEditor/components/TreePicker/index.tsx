@@ -90,9 +90,13 @@ export const TreePicker: FC<TreePickerProps> = ({
           </CommandInput>
           <CommandList>
             <CommandEmpty>
-              <div>{t("direktivPage.blockEditor.smartInput.listEmpty")}</div>
+              <div className="text-sm text-gray-11">
+                {t("direktivPage.blockEditor.smartInput.listEmpty")}
+              </div>
             </CommandEmpty>
-            <CommandGroup heading="value">
+            <CommandGroup
+              heading={t("direktivPage.blockEditor.smartInput.valuesHeader")}
+            >
               {currentTree?.map((key) => (
                 <CommandItem key={key} onSelect={() => setPath([...path, key])}>
                   {key}

@@ -1871,6 +1871,7 @@
         "templateHelp": "Hints on editing a template string ...",
         "variableBtn": "Add variable",
         "placeholder": "Select or add a value",
+        "valuesHeader": "Known segments",
         "listEmpty": "No known values found at current level. You can add a custom segment, or finish editing."
       },
       "delete": {
