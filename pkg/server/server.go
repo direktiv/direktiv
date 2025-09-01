@@ -47,7 +47,7 @@ func Start(circuit *core.Circuit) error {
 	initSLog(config)
 
 	// Create App struct
-	app := api.App{
+	app := api.InitializeArgs{
 		Version: &core.Version{
 			UnixTime: time.Now().Unix(),
 		},
@@ -67,7 +67,7 @@ func Start(circuit *core.Circuit) error {
 
 	// Create DB connection
 	slog.Info("initializing db connection")
-	db, err := initDB(config)
+	app.DB, err = initDB(config)
 	if err != nil {
 		return fmt.Errorf("initialize db, err: %w", err)
 	}
@@ -114,12 +114,12 @@ func Start(circuit *core.Circuit) error {
 	app.Cache = cache
 
 	slog.Info("initializing secrets handler")
-	app.SecretsManager = secrets.NewManager(db, cache)
+	app.SecretsManager = secrets.NewManager(app.DB, cache)
 
 	// Create service manager
 	slog.Info("initializing service manager")
 	app.ServiceManager, err = service.NewManager(config, func() ([]string, error) {
-		beats, err := db.DataStore().HeartBeats().Since(context.Background(), "life_services", 100)
+		beats, err := app.DB.DataStore().HeartBeats().Since(context.Background(), "life_services", 100)
 		if err != nil {
 			return nil, err
 		}
@@ -152,7 +152,7 @@ func Start(circuit *core.Circuit) error {
 	if err != nil {
 		return fmt.Errorf("initializing engine, err: %w", err)
 	}
-	app.Engine, err = engine.NewEngine(db, eStore)
+	app.Engine, err = engine.NewEngine(app.DB, eStore)
 	if err != nil {
 		return fmt.Errorf("initializing engine, err: %w", err)
 	}
@@ -182,35 +182,35 @@ func Start(circuit *core.Circuit) error {
 	// TODO: fix app.SyncNamespace init.
 
 	pubSub.Subscribe(core.FileSystemChangeEvent, func(_ []byte) {
-		renderServiceFiles(db, app.ServiceManager)
+		renderServiceFiles(app.DB, app.ServiceManager)
 	})
 	pubSub.Subscribe(core.NamespacesChangeEvent, func(_ []byte) {
-		renderServiceFiles(db, app.ServiceManager)
+		renderServiceFiles(app.DB, app.ServiceManager)
 	})
 	// Call at least once before booting
-	renderServiceFiles(db, app.ServiceManager)
+	renderServiceFiles(app.DB, app.ServiceManager)
 
 	// endpoint manager
 	pubSub.Subscribe(core.FileSystemChangeEvent, func(_ []byte) {
-		renderGatewayFiles(db, app.GatewayManager)
+		renderGatewayFiles(app.DB, app.GatewayManager)
 	})
 	pubSub.Subscribe(core.NamespacesChangeEvent, func(_ []byte) {
-		renderGatewayFiles(db, app.GatewayManager)
+		renderGatewayFiles(app.DB, app.GatewayManager)
 	})
 	// initial loading of routes and consumers
-	renderGatewayFiles(db, app.GatewayManager)
+	renderGatewayFiles(app.DB, app.GatewayManager)
 
 	// initialize extensions
 	if extensions.Initialize != nil {
 		slog.Info("initializing extensions")
-		if err = extensions.Initialize(db, pubSub, config); err != nil {
+		if err = extensions.Initialize(app.DB, pubSub, config); err != nil {
 			return fmt.Errorf("initializing extensions, err: %w", err)
 		}
 	}
 
 	// Start api server
 	slog.Info("initializing api server")
-	srv, err := api.Initialize(circuit, app, db)
+	srv, err := api.Initialize(circuit, app)
 	if err != nil {
 		return fmt.Errorf("initializing api server, err: %w", err)
 	}

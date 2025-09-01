@@ -22,7 +22,7 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-type App struct {
+type InitializeArgs struct {
 	Version *core.Version
 	Config  *core.Config
 	Cache   core.Cache
@@ -33,53 +33,54 @@ type App struct {
 	RegistryManager core.RegistryManager
 	GatewayManager  core.GatewayManager
 	SyncNamespace   core.SyncNamespace
+	SecretsManager  core.SecretsManager
 
-	Engine         *engine.Engine
-	SecretsManager core.SecretsManager
+	Engine *engine.Engine
+	DB     *database.DB
 }
 
-func Initialize(circuit *core.Circuit, app App, db *database.DB) (*http.Server, error) {
+func Initialize(circuit *core.Circuit, app InitializeArgs) (*http.Server, error) {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
 
 	fsCtr := &fsController{
-		db:  db,
+		db:  app.DB,
 		bus: app.PubSub,
 	}
 	regCtr := &registryController{
 		manager: app.RegistryManager,
 	}
 	varCtr := &varController{
-		db: db,
+		db: app.DB,
 	}
 	secCtr := &secretsController{
 		secretsManager: app.SecretsManager,
 	}
 	nsCtr := &nsController{
-		db:              db,
+		db:              app.DB,
 		bus:             app.PubSub,
 		registryManager: app.RegistryManager,
 	}
 	mirrorsCtr := &mirrorsController{
-		db:            db,
+		db:            app.DB,
 		bus:           app.PubSub,
 		syncNamespace: app.SyncNamespace,
 	}
 	instCtr := &instController{
-		db:           db,
+		db:           app.DB,
 		manager:      nil,
 		engine:       app.Engine,
 		allInstances: make([]uuid.UUID, 0),
 	}
 	notificationsCtr := &notificationsController{
-		db: db,
+		db: app.DB,
 	}
 	metricsCtr := &metricsController{
-		db: db,
+		db: app.DB,
 	}
 	eventsCtr := eventsController{
-		store:         db.DataStore(),
+		store:         app.DB.DataStore(),
 		wakeInstance:  nil,
 		startWorkflow: nil,
 	}
@@ -87,7 +88,7 @@ func Initialize(circuit *core.Circuit, app App, db *database.DB) (*http.Server, 
 	jxCtr := jxController{}
 
 	mw := &appMiddlewares{
-		db:    db,
+		db:    app.DB,
 		cache: app.Cache,
 	}
 
