@@ -9,6 +9,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/transpiler"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -47,7 +48,7 @@ type InstanceData struct {
 type instController struct {
 	db           *database.DB
 	manager      any
-	engine       core.Engine
+	engine       *engine.Engine
 	allInstances []uuid.UUID
 }
 

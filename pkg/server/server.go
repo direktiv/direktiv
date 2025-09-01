@@ -47,7 +47,7 @@ func Start(circuit *core.Circuit) error {
 	initSLog(config)
 
 	// Create App struct
-	app := core.App{
+	app := api.App{
 		Version: &core.Version{
 			UnixTime: time.Now().Unix(),
 		},
@@ -175,7 +175,7 @@ func Start(circuit *core.Circuit) error {
 
 	// Create endpoint manager
 	slog.Info("initializing gateway manager")
-	app.GatewayManager = gateway.NewManager(app)
+	app.GatewayManager = gateway.NewManager(app.SecretsManager)
 
 	// Create syncNamespace function
 	slog.Info("initializing sync namespace routine")

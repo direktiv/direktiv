@@ -26,8 +26,8 @@ import (
 type manager struct {
 	routerPointer unsafe.Pointer
 
-	app core.App
-	db  *database.DB
+	secretsManager core.SecretsManager
+	db             *database.DB
 }
 
 func (m *manager) atomicLoadRouter() *router {
@@ -45,9 +45,9 @@ func (m *manager) atomicSetRouter(inner *router) {
 
 var _ core.GatewayManager = &manager{}
 
-func NewManager(app core.App) core.GatewayManager {
+func NewManager(secretsManager core.SecretsManager) core.GatewayManager {
 	return &manager{
-		app: app,
+		secretsManager: secretsManager,
 	}
 }
 
@@ -119,13 +119,13 @@ func (m *manager) interpolateConsumersList(list []core.Consumer) {
 	var err error
 
 	for i, c := range list {
-		c.Password, err = fetchSecret(m.app.SecretsManager, c.Namespace, c.Password)
+		c.Password, err = fetchSecret(m.secretsManager, c.Namespace, c.Password)
 		if err != nil {
 			c.Errors = append(c.Errors, fmt.Sprintf("couldn't fetch secret %s", c.Password))
 			continue
 		}
 
-		c.APIKey, err = fetchSecret(m.app.SecretsManager, c.Namespace, c.APIKey)
+		c.APIKey, err = fetchSecret(m.secretsManager, c.Namespace, c.APIKey)
 		if err != nil {
 			c.Errors = append(c.Errors, fmt.Sprintf("couldn't fetch secret %s", c.APIKey))
 			continue

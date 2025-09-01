@@ -116,19 +116,3 @@ type Version struct {
 // TODO: Fix this temp type.
 // SyncNamespace is a temporary type until we fix mirroring logic.
 type SyncNamespace func(namespace any, mirrorConfig any) (any, error)
-
-type App struct {
-	Version *Version
-	Config  *Config
-	Cache   Cache
-	PubSub  PubSub
-
-	ServiceManager ServiceManager
-
-	RegistryManager RegistryManager
-	GatewayManager  GatewayManager
-	SyncNamespace   SyncNamespace
-
-	Engine         Engine
-	SecretsManager SecretsManager
-}

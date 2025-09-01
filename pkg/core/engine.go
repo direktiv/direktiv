@@ -1,7 +1,6 @@
 package core
 
 import (
-	"context"
 	"encoding/json"
 	"time"
 
@@ -35,11 +34,4 @@ type InstanceMessage struct {
 
 func (m InstanceMessage) StatusString() string {
 	return "complete"
-}
-
-type Engine interface {
-	Start(circuit *Circuit) error
-	ExecWorkflow(ctx context.Context, namespace string, script string, fn string, args any, labels map[string]string) (uuid.UUID, error)
-	GetInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID) ([]EngineMessage, error)
-	ListInstances(ctx context.Context, namespace string) ([]uuid.UUID, error)
 }

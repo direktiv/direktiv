@@ -15,7 +15,7 @@ type secretRequest struct {
 }
 
 type secretsController struct {
-	app core.App
+	secretsManager core.SecretsManager
 }
 
 func (e *secretsController) mountRouter(r chi.Router) {
@@ -31,7 +31,7 @@ func (e *secretsController) get(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 	secretName := chi.URLParam(r, "secretName")
 
-	sh, err := e.app.SecretsManager.SecretsForNamespace(r.Context(), namespace)
+	sh, err := e.secretsManager.SecretsForNamespace(r.Context(), namespace)
 	if err != nil {
 		writeSecretsError(w, err)
 		return
@@ -50,7 +50,7 @@ func (e *secretsController) delete(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 	secretName := chi.URLParam(r, "secretName")
 
-	sh, err := e.app.SecretsManager.SecretsForNamespace(r.Context(), namespace)
+	sh, err := e.secretsManager.SecretsForNamespace(r.Context(), namespace)
 	if err != nil {
 		writeSecretsError(w, err)
 		return
@@ -75,7 +75,7 @@ func (e *secretsController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sh, err := e.app.SecretsManager.SecretsForNamespace(r.Context(), namespace)
+	sh, err := e.secretsManager.SecretsForNamespace(r.Context(), namespace)
 	if err != nil {
 		writeSecretsError(w, err)
 		return
@@ -103,7 +103,7 @@ func (e *secretsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sh, err := e.app.SecretsManager.SecretsForNamespace(r.Context(), namespace)
+	sh, err := e.secretsManager.SecretsForNamespace(r.Context(), namespace)
 	if err != nil {
 		writeSecretsError(w, err)
 		return
@@ -124,7 +124,7 @@ func (e *secretsController) create(w http.ResponseWriter, r *http.Request) {
 func (e *secretsController) list(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
-	sh, err := e.app.SecretsManager.SecretsForNamespace(r.Context(), namespace)
+	sh, err := e.secretsManager.SecretsForNamespace(r.Context(), namespace)
 	if err != nil {
 		writeSecretsError(w, err)
 		return

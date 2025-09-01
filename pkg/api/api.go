@@ -11,6 +11,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
@@ -21,7 +22,23 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Initialize(circuit *core.Circuit, app core.App, db *database.DB) (*http.Server, error) {
+type App struct {
+	Version *core.Version
+	Config  *core.Config
+	Cache   core.Cache
+	PubSub  core.PubSub
+
+	ServiceManager core.ServiceManager
+
+	RegistryManager core.RegistryManager
+	GatewayManager  core.GatewayManager
+	SyncNamespace   core.SyncNamespace
+
+	Engine         *engine.Engine
+	SecretsManager core.SecretsManager
+}
+
+func Initialize(circuit *core.Circuit, app App, db *database.DB) (*http.Server, error) {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
@@ -37,7 +54,7 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB) (*http.Ser
 		db: db,
 	}
 	secCtr := &secretsController{
-		app: app,
+		secretsManager: app.SecretsManager,
 	}
 	nsCtr := &nsController{
 		db:              db,
