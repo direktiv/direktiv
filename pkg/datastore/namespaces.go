@@ -4,13 +4,9 @@ import (
 	"context"
 	"errors"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Namespace struct {
-	ID uuid.UUID `json:"-"`
-
 	Name string `json:"name"`
 
 	CreatedAt time.Time `json:"createdAt"`
@@ -24,10 +20,6 @@ var (
 
 // NamespacesStore responsible for fetching and setting namespaces from datastore.
 type NamespacesStore interface {
-	// GetByID gets a single namespace object from store. if no record found,
-	// it returns datastore.ErrNotFound error.
-	GetByID(ctx context.Context, id uuid.UUID) (*Namespace, error)
-
 	// GetByName gets a single namespace object from store. if no record found,
 	// it returns datastore.ErrNotFound error.
 	GetByName(ctx context.Context, name string) (*Namespace, error)
