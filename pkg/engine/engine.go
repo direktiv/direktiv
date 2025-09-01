@@ -11,9 +11,14 @@ import (
 	"github.com/google/uuid"
 )
 
+type store interface {
+	PushInstanceMessage(ctx context.Context, namespace string, instanceID uuid.UUID, typ string, payload any) (uuid.UUID, error)
+	PullInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID, typ string) ([]core.EngineMessage, error)
+}
+
 type engine struct {
 	db    *database.DB
-	store Store
+	store store
 }
 
 func (e *engine) ListInstances(ctx context.Context, namespace string) ([]uuid.UUID, error) {
@@ -21,7 +26,7 @@ func (e *engine) ListInstances(ctx context.Context, namespace string) ([]uuid.UU
 	panic("implement me")
 }
 
-func NewEngine(db *database.DB, store Store) (core.Engine, error) {
+func NewEngine(db *database.DB, store store) (core.Engine, error) {
 	return &engine{
 		db:    db,
 		store: store,

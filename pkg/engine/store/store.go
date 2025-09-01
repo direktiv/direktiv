@@ -8,12 +8,11 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 )
 
-type store struct {
+type Store struct {
 	nc     *nats.Conn
 	js     nats.JetStreamContext
 	stream string
@@ -24,7 +23,7 @@ const (
 	instanceMessagesSubject = "instanceMessages.%s.instanceID.%s.type.%s"
 )
 
-func NewStore(ctx context.Context, nc *nats.Conn) (engine.Store, error) {
+func NewStore(ctx context.Context, nc *nats.Conn) (*Store, error) {
 	js, err := nc.JetStream()
 	if err != nil {
 		_ = nc.Drain()
@@ -50,10 +49,10 @@ func NewStore(ctx context.Context, nc *nats.Conn) (engine.Store, error) {
 		return nil, fmt.Errorf("nats add jetstream: %w", err)
 	}
 
-	return &store{nc: nc, js: js, stream: natsClientName}, nil
+	return &Store{nc: nc, js: js, stream: natsClientName}, nil
 }
 
-func (s *store) PushInstanceMessage(ctx context.Context, namespace string, instanceID uuid.UUID, typ string, payload any) (uuid.UUID, error) {
+func (s *Store) PushInstanceMessage(ctx context.Context, namespace string, instanceID uuid.UUID, typ string, payload any) (uuid.UUID, error) {
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("marshalling payload: %w", err)
@@ -87,7 +86,7 @@ func (s *store) PushInstanceMessage(ctx context.Context, namespace string, insta
 	return msgID, nil
 }
 
-func (s *store) PullInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID, typ string) ([]core.EngineMessage, error) {
+func (s *Store) PullInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID, typ string) ([]core.EngineMessage, error) {
 	subj := fmt.Sprintf(instanceMessagesSubject, namespace, instanceID, typ)
 
 	all, err := s.pullFromSubject(ctx, subj)
@@ -98,7 +97,7 @@ func (s *store) PullInstanceMessages(ctx context.Context, namespace string, inst
 	return all, nil
 }
 
-func (s *store) pullFromSubject(ctx context.Context, subj string) ([]core.EngineMessage, error) {
+func (s *Store) pullFromSubject(ctx context.Context, subj string) ([]core.EngineMessage, error) {
 	durable := fmt.Sprintf("consumer_%d", time.Now().UnixNano())
 	cfg := &nats.ConsumerConfig{
 		Durable:       durable,

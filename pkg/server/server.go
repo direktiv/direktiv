@@ -19,7 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/engine"
-	store2 "github.com/direktiv/direktiv/pkg/engine/store"
+	engineStore "github.com/direktiv/direktiv/pkg/engine/store"
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/gateway"
 	"github.com/direktiv/direktiv/pkg/natsclient"
@@ -148,11 +148,11 @@ func Start(circuit *core.Circuit) error {
 	if err != nil {
 		return fmt.Errorf("can not connect to nats")
 	}
-	store, err := store2.NewStore(circuit.Context(), nc)
+	eStore, err := engineStore.NewStore(circuit.Context(), nc)
 	if err != nil {
 		return fmt.Errorf("initializing engine, err: %w", err)
 	}
-	app.Engine, err = engine.NewEngine(db, store)
+	app.Engine, err = engine.NewEngine(db, eStore)
 	if err != nil {
 		return fmt.Errorf("initializing engine, err: %w", err)
 	}
