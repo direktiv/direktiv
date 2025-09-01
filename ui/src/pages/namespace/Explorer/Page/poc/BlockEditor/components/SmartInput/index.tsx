@@ -108,6 +108,7 @@ export const SmartInput = ({
                   tree={variables}
                   onSubmit={insertText}
                   placeholders={placeholders}
+                  minDepth={3}
                 />
               </Toolbar>
               <EditorContent

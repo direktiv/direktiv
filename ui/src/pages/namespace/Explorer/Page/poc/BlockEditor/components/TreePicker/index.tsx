@@ -23,6 +23,7 @@ import { useTranslation } from "react-i18next";
 type TreePickerProps = {
   tree: Tree;
   onSubmit: (value: string) => void;
+  minDepth?: number;
   container?: HTMLDivElement;
   placeholders?: string[];
 };
@@ -31,13 +32,14 @@ export const TreePicker: FC<TreePickerProps> = ({
   tree,
   container,
   placeholders = [],
+  minDepth = 0,
   onSubmit,
 }) => {
   const { t } = useTranslation();
   const [path, setPath] = useState<string[]>([]);
   const [search, setSearch] = useState("");
-  const currentTree = useMemo(() => getSublist(tree, path), [tree, path]);
-  const allowSubmit = useMemo(() => path.length, [path]);
+  const currentTree = useMemo(() => getSublist(tree, path), [path, tree]);
+  const allowSubmit = useMemo(() => path.length >= minDepth, [path, minDepth]);
   const allowCustomSegment = useMemo(() => search.length > 0, [search]);
   const formattedPath = useMemo(() => `{{${path.join(".")}}}`, [path]);
   const previewPath = useMemo(
