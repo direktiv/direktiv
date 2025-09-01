@@ -16,24 +16,24 @@ type store interface {
 	PullInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID, typ string) ([]core.EngineMessage, error)
 }
 
-type engine struct {
+type Engine struct {
 	db    *database.DB
 	store store
 }
 
-func (e *engine) ListInstances(ctx context.Context, namespace string) ([]uuid.UUID, error) {
+func (e *Engine) ListInstances(ctx context.Context, namespace string) ([]uuid.UUID, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func NewEngine(db *database.DB, store store) (core.Engine, error) {
-	return &engine{
+func NewEngine(db *database.DB, store store) (*Engine, error) {
+	return &Engine{
 		db:    db,
 		store: store,
 	}, nil
 }
 
-func (e *engine) Start(circuit *core.Circuit) error {
+func (e *Engine) Start(circuit *core.Circuit) error {
 	cycleTime := time.Second
 	for {
 		if circuit.IsDone() {
@@ -44,7 +44,7 @@ func (e *engine) Start(circuit *core.Circuit) error {
 	}
 }
 
-func (e *engine) ExecWorkflow(ctx context.Context, namespace string, script string, fn string, args any, labels map[string]string) (uuid.UUID, error) {
+func (e *Engine) ExecWorkflow(ctx context.Context, namespace string, script string, fn string, args any, labels map[string]string) (uuid.UUID, error) {
 	input, ok := args.(string)
 	if !ok {
 		return uuid.Nil, fmt.Errorf("invalid input")
@@ -104,6 +104,6 @@ func (e *engine) ExecWorkflow(ctx context.Context, namespace string, script stri
 	return id, err
 }
 
-func (e *engine) GetInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID) ([]core.EngineMessage, error) {
+func (e *Engine) GetInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID) ([]core.EngineMessage, error) {
 	return e.store.PullInstanceMessages(ctx, namespace, instanceID, "*")
 }

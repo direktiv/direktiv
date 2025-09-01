@@ -16,7 +16,7 @@ function transition(funcName, state) {
 
 `
 
-func (e *engine) execJSScript(script []byte, fn string, input string) (any, error) {
+func (e *Engine) execJSScript(script []byte, fn string, input string) (any, error) {
 	vm := goja.New()
 	vm.Set("print", jsPrint)
 	vm.Set("commitState", jsCommitState)
