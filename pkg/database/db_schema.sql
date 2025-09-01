@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS  "filesystem_roots" (
 );
 
 CREATE TABLE IF NOT EXISTS "filesystem_files" (
+    -- TODO: remove this id field as its not needed at all.
     "id" uuid,
     "root_id" uuid NOT NULL,
     "path" text NOT NULL,

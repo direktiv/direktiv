@@ -81,7 +81,7 @@ func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 
 	// check if new path doesn't exist.
 	count := 0
-	tx := q.db.WithContext(ctx).Raw("SELECT count(id) FROM filesystem_files WHERE root_id = ? AND path = ?", q.file.RootID, path).Scan(&count)
+	tx := q.db.WithContext(ctx).Raw("SELECT count(*) FROM filesystem_files WHERE root_id = ? AND path = ?", q.file.RootID, path).Scan(&count)
 	if tx.Error != nil {
 		return tx.Error
 	}
@@ -93,7 +93,7 @@ func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 	parentDir := filepath.Dir(path)
 	if parentDir != "/" {
 		count = 0
-		tx = q.db.WithContext(ctx).Raw("SELECT count(id) FROM filesystem_files WHERE root_id = ? AND typ = ? AND path = ?", q.file.RootID, filestore.FileTypeDirectory, parentDir).Scan(&count)
+		tx = q.db.WithContext(ctx).Raw("SELECT count(*) FROM filesystem_files WHERE root_id = ? AND typ = ? AND path = ?", q.file.RootID, filestore.FileTypeDirectory, parentDir).Scan(&count)
 		if tx.Error != nil {
 			return tx.Error
 		}
@@ -122,7 +122,7 @@ func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 var _ filestore.FileQuery = &FileQuery{}
 
 func (q *FileQuery) Delete(ctx context.Context, force bool) error {
-	res := q.db.WithContext(ctx).Exec(`DELETE FROM filesystem_files WHERE id = ?`, q.file.ID)
+	res := q.db.WithContext(ctx).Exec(`DELETE FROM filesystem_files WHERE root_id = ? AND path = ?`, q.file.RootID, q.file.Path)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -150,8 +150,8 @@ func (q *FileQuery) GetData(ctx context.Context) ([]byte, error) {
 	res := q.db.WithContext(ctx).Raw(`
 					SELECT *
 					FROM filesystem_files
-					WHERE id=?
-					`, q.file.ID).First(rev)
+					WHERE root_id = ? AND path = ?`,
+		q.file.RootID, q.file.Path).First(rev)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -168,8 +168,8 @@ func (q *FileQuery) SetData(ctx context.Context, data []byte) (string, error) {
 
 	res := q.db.WithContext(ctx).Exec(`
 					UPDATE filesystem_files
-					SET data=?, checksum=?, updated_at=CURRENT_TIMESTAMP WHERE id=? 
-					`, data, newChecksum, q.file.ID)
+					SET data=?, checksum=?, updated_at=CURRENT_TIMESTAMP WHERE root_id = ? AND path = ?
+					`, data, newChecksum, q.file.RootID, q.file.Path)
 	if res.Error != nil {
 		return "", res.Error
 	}

@@ -38,7 +38,6 @@ func (t FileType) IsDirektivSpecFile() bool {
 
 // File represents a file in the filestore, File can be either ordinary file or directory.
 type File struct {
-	ID uuid.UUID `json:"-"`
 	// Path is the full path of the file, files and directories are only different when they have different paths. As
 	// in typical filesystems, paths are unique within the filesystem.
 	Path string `json:"path,omitempty"`
