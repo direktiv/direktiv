@@ -1,4 +1,4 @@
-import { Check, Plus } from "lucide-react";
+import { Check, Plus, X } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -52,11 +52,11 @@ export const TreePicker: FC<TreePickerProps> = ({
             {path[index]}
           </span>
         ) : (
-          <span key={index} className="text-gray-11">
+          <span key={index} className="text-gray-10">
             {placeholders[index]}
           </span>
         )}
-        {index < previewLength - 1 && <span className="text-gray-11">.</span>}
+        {index < previewLength - 1 && <span className="text-gray-10">.</span>}
       </>
     ));
   }, [path, placeholders]);
@@ -70,7 +70,7 @@ export const TreePicker: FC<TreePickerProps> = ({
           </Button>
         </PopoverTrigger>
       </div>
-      <PopoverContent align="start" container={container}>
+      <PopoverContent className="w-96" align="start" container={container}>
         <Command>
           <CommandInput
             placeholder={t("direktivPage.blockEditor.smartInput.placeholder")}
@@ -108,10 +108,12 @@ export const TreePicker: FC<TreePickerProps> = ({
             </CommandGroup>
           </CommandList>
           <div className="flex items-center p-2">
-            <FakeInput wrap className="mr-2 w-full">
+            <FakeInput wrap className="mr-2 w-full text-gray-10">
+              {"{{"}
               {previewPath}
+              {"}}"}
             </FakeInput>
-            <PopoverClose className="ml-auto">
+            <PopoverClose className="ml-auto flex gap-2">
               <Button
                 variant="outline"
                 icon
@@ -125,6 +127,14 @@ export const TreePicker: FC<TreePickerProps> = ({
                 }}
               >
                 <Check />
+              </Button>
+              <Button
+                variant="outline"
+                icon
+                type="button"
+                onClick={() => setPath([])}
+              >
+                <X />
               </Button>
             </PopoverClose>
           </div>
