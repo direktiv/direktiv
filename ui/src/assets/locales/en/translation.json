@@ -1653,6 +1653,7 @@
         "invalidPath": "Variable error ({{variable}}): The path is not valid. It points to an undefined value",
         "couldNotStringify": "Variable error ({{variable}}): Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null.",
         "notAnArray": "Variable error ({{variable}}): Pointing to a value that is not an array.",
+        "notAnArrayOfStrings": "Variable error ({{variable}}): Pointing to a value that is not an array of strings.",
         "notABoolean": "Variable error ({{variable}}): Pointing to a value that is not a boolean.",
         "notANumber": "Variable error ({{variable}}): Pointing to a value that is not a number."
       }
@@ -1838,7 +1839,11 @@
           "select": {
             "description": "A select dropdown allows users to choose from a predefined list of options.",
             "valuesLabel": "Options",
-            "valuesPlaceholder": "Select option"
+            "valuesPlaceholder": "Select option",
+            "type": {
+              "variable": "Variable",
+              "array": "Static"
+            }
           }
         }
       },
