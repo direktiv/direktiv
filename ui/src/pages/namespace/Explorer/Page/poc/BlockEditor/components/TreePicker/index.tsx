@@ -61,6 +61,11 @@ export const TreePicker: FC<TreePickerProps> = ({
     ));
   }, [path, placeholders]);
 
+  const addCustomSegment = () => {
+    setPath([...path, search]);
+    setSearch("");
+  };
+
   return (
     <Popover>
       <div className="flex">
@@ -76,15 +81,17 @@ export const TreePicker: FC<TreePickerProps> = ({
             placeholder={t("direktivPage.blockEditor.smartInput.placeholder")}
             value={search}
             onValueChange={setSearch}
+            onKeyUp={(event) => {
+              if (event.key === "Enter" && allowCustomSegment) {
+                addCustomSegment();
+              }
+            }}
           >
             <Button
               icon
               type="button"
               variant="ghost"
-              onClick={() => {
-                setSearch("");
-                setPath([...path, search]);
-              }}
+              onClick={addCustomSegment}
               className="-mr-2"
               disabled={!allowCustomSegment}
             >
