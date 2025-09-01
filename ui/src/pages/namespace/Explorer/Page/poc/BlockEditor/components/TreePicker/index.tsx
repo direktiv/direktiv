@@ -30,14 +30,13 @@ export const TreePicker: FC<TreePickerProps> = ({
   onSubmit,
 }) => {
   const { t } = useTranslation();
-
   const [path, setPath] = useState<string[]>([]);
-
   const currentTree = useMemo(() => getSublist(tree, path), [tree, path]);
-
   const allowSubmit = useMemo(() => path.length, [path]);
-
-  const formattedPath = useMemo(() => `{{${path.join(".")}}}`, [path]);
+  const formattedPath = useMemo(
+    () => (path.length ? `{{${path.join(".")}}}` : null),
+    [path]
+  );
 
   return (
     <Popover>
@@ -57,8 +56,10 @@ export const TreePicker: FC<TreePickerProps> = ({
             type="button"
             disabled={!allowSubmit}
             onClick={() => {
-              onSubmit(formattedPath);
-              setPath([]);
+              if (formattedPath) {
+                onSubmit(formattedPath);
+                setPath([]);
+              }
             }}
           >
             <Check />
