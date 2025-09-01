@@ -128,11 +128,10 @@ export const SmartInput = ({
               <Button
                 type="button"
                 variant="outline"
-                className="h-8"
                 icon
                 onClick={() => setDialog(false)}
               >
-                <Check size="12" />
+                <Check />
               </Button>
             </div>
           </>
