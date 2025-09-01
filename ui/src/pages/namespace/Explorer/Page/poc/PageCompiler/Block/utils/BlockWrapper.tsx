@@ -101,6 +101,18 @@ const EditorBlockWrapper = ({
 
   const showDragHandle = isHovered || isFocused;
 
+  const emptyColumnsBlock =
+    block.type === "columns" &&
+    block.blocks[0] &&
+    block.blocks[1] &&
+    block.blocks[0].blocks.length === 0 &&
+    block.blocks[1].blocks.length === 0;
+
+  const emptyQueryBlock =
+    block.type === "query-provider" && block.blocks.length === 0;
+
+  const emptyBlock = emptyColumnsBlock || emptyQueryBlock;
+
   return (
     <>
       <SortableItem
@@ -117,6 +129,8 @@ const EditorBlockWrapper = ({
           ref={containerRef}
           className={twMergeClsx(
             "relative isolate my-3 rounded bg-white outline-offset-4 dark:bg-black",
+            emptyBlock &&
+              "border-2 border-dashed border-gray-4 dark:border-gray-dark-4",
             isHovered &&
               !isDragging &&
               "bg-gray-2 outline outline-2 outline-gray-4 dark:bg-gray-dark-2 dark:outline-gray-dark-4",
