@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -23,7 +24,7 @@ type LineageData struct {
 type InstanceData struct {
 	ID           uuid.UUID      `json:"id"`
 	CreatedAt    time.Time      `json:"createdAt"`
-	EndedAt      *time.Time     `json:"endedAt"`
+	EndedAt      time.Time      `json:"endedAt"`
 	Status       string         `json:"status"`
 	WorkflowPath string         `json:"path"`
 	ErrorCode    *string        `json:"errorCode"`
@@ -44,9 +45,35 @@ type InstanceData struct {
 }
 
 type instController struct {
-	db      *database.DB
-	manager any
-	engine  core.Engine
+	db           *database.DB
+	manager      any
+	engine       core.Engine
+	allInstances []uuid.UUID
+}
+
+func marshalForAPI(data []core.EngineMessage) (*InstanceData, error) {
+	insMsg := &core.InstanceMessage{}
+	err := json.Unmarshal(data[0].Data, insMsg)
+	if err != nil {
+		return nil, err
+	}
+	resp := &InstanceData{
+		ID:           insMsg.InstanceID,
+		CreatedAt:    data[0].CreatedAt,
+		EndedAt:      insMsg.EndedAt,
+		Status:       insMsg.StatusString(),
+		WorkflowPath: insMsg.Labels["workflowPath"],
+		ErrorCode:    nil,
+		Invoker:      "api",
+		Definition:   []byte(insMsg.Script),
+		ErrorMessage: nil,
+		Flow:         []string{},
+		TraceID:      "",
+		Lineage:      []*LineageData{},
+		Namespace:    data[0].Namespace,
+	}
+
+	return resp, nil
 }
 
 func (e *instController) mountRouter(r chi.Router) {
@@ -56,10 +83,11 @@ func (e *instController) mountRouter(r chi.Router) {
 	r.Get("/{instanceID}/output", e.dummy)
 	r.Get("/{instanceID}/metadata", e.dummy)
 
-	r.Get("/{instanceID}", e.dummy)
 	r.Patch("/{instanceID}", e.dummy)
 
-	r.Get("/", e.dummy)
+	r.Get("/", e.list)
+	r.Get("/{instanceID}", e.get)
+
 	r.Post("/", e.create)
 }
 
@@ -109,6 +137,9 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	id, err := e.engine.ExecWorkflow(r.Context(), namespace, string(fileData), "start", string(input), map[string]string{
 		"workflowPath": path,
 	})
+	if id != uuid.Nil {
+		e.allInstances = append(e.allInstances, id)
+	}
 	if err != nil {
 		writeError(w, &Error{
 			Code:    err.Error(),
@@ -206,4 +237,57 @@ func (e instController) testTranspile(w http.ResponseWriter, r *http.Request) {
 	// }
 
 	// writeJSON(w, marshalForAPI(data))
+}
+
+func (e *instController) get(w http.ResponseWriter, r *http.Request) {
+	namespace := chi.URLParam(r, "namespace")
+	instanceIDStr := chi.URLParam(r, "instanceID")
+	instanceID, err := uuid.Parse(instanceIDStr)
+	if err != nil {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: fmt.Errorf("unparsable instance UUID: %w", err).Error(),
+		})
+
+		return
+	}
+
+	data, err := e.engine.GetInstanceMessages(r.Context(), namespace, instanceID)
+	if err != nil {
+		writeInternalError(w, err)
+
+		return
+	}
+
+	resp, err := marshalForAPI(data)
+	if err != nil {
+		writeInternalError(w, err)
+	}
+
+	writeJSON(w, resp)
+}
+
+func (e *instController) list(w http.ResponseWriter, r *http.Request) {
+	namespace := chi.URLParam(r, "namespace")
+
+	result := []any{}
+	for _, id := range e.allInstances {
+		i, err := e.engine.GetInstanceMessages(r.Context(), namespace, id)
+		if err != nil {
+			writeInternalError(w, err)
+			return
+		}
+		obj, err := marshalForAPI(i)
+		if err != nil {
+			writeInternalError(w, err)
+			return
+		}
+		result = append(result, obj)
+	}
+
+	metaInfo := map[string]any{
+		"total": len(result),
+	}
+
+	writeJSONWithMeta(w, result, metaInfo)
 }

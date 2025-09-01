@@ -14,6 +14,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 const (
@@ -49,9 +50,10 @@ func Initialize(circuit *core.Circuit, app core.App, db *database.DB) (*http.Ser
 		syncNamespace: app.SyncNamespace,
 	}
 	instCtr := &instController{
-		db:      db,
-		manager: nil,
-		engine:  app.Engine,
+		db:           db,
+		manager:      nil,
+		engine:       app.Engine,
+		allInstances: make([]uuid.UUID, 0),
 	}
 	notificationsCtr := &notificationsController{
 		db: db,
@@ -229,6 +231,20 @@ func writeJSON(w http.ResponseWriter, v any) {
 		Data: v,
 	}
 	_ = json.NewEncoder(w).Encode(payLoad)
+}
+
+func writeJSONWithMeta(w http.ResponseWriter, data any, meta any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	payload := struct {
+		Meta any `json:"meta"`
+		Data any `json:"data"`
+	}{
+		Data: data,
+		Meta: meta,
+	}
+	_ = json.NewEncoder(w).Encode(payload)
 }
 
 func writeOk(w http.ResponseWriter) {

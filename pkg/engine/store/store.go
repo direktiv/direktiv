@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
@@ -59,7 +60,7 @@ func (s *store) PushInstanceMessage(ctx context.Context, namespace string, insta
 	}
 
 	msgID := uuid.New()
-	msg := engine.Message{
+	msg := core.EngineMessage{
 		Namespace: namespace,
 		ID:        msgID.String(),
 		Type:      typ,
@@ -86,7 +87,7 @@ func (s *store) PushInstanceMessage(ctx context.Context, namespace string, insta
 	return msgID, nil
 }
 
-func (s *store) PullInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID, typ string) ([]engine.Message, error) {
+func (s *store) PullInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID, typ string) ([]core.EngineMessage, error) {
 	subj := fmt.Sprintf(instanceMessagesSubject, namespace, instanceID, typ)
 
 	all, err := s.pullFromSubject(ctx, subj)
@@ -97,7 +98,7 @@ func (s *store) PullInstanceMessages(ctx context.Context, namespace string, inst
 	return all, nil
 }
 
-func (s *store) pullFromSubject(ctx context.Context, subj string) ([]engine.Message, error) {
+func (s *store) pullFromSubject(ctx context.Context, subj string) ([]core.EngineMessage, error) {
 	durable := fmt.Sprintf("consumer_%d", time.Now().UnixNano())
 	cfg := &nats.ConsumerConfig{
 		Durable:       durable,
@@ -119,7 +120,7 @@ func (s *store) pullFromSubject(ctx context.Context, subj string) ([]engine.Mess
 
 	batch := 100
 
-	var out []engine.Message
+	var out []core.EngineMessage
 
 	for {
 		msgList, fetchErr := sub.Fetch(batch, nats.MaxWait(10*time.Millisecond))
@@ -130,7 +131,7 @@ func (s *store) pullFromSubject(ctx context.Context, subj string) ([]engine.Mess
 			break
 		}
 		for _, m := range msgList {
-			var msg engine.Message
+			var msg core.EngineMessage
 			if err := json.Unmarshal(m.Data, &msg); err != nil {
 				continue // skip bad payloads
 			}

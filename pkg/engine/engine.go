@@ -16,6 +16,11 @@ type engine struct {
 	store Store
 }
 
+func (e *engine) ListInstances(ctx context.Context, namespace string) ([]uuid.UUID, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func NewEngine(db *database.DB, store Store) (core.Engine, error) {
 	return &engine{
 		db:    db,
@@ -45,7 +50,7 @@ func (e *engine) ExecWorkflow(ctx context.Context, namespace string, script stri
 
 	id := uuid.New()
 
-	_, err := e.store.PushInstanceMessage(ctx, namespace, id, "init", InstanceMessage{
+	_, err := e.store.PushInstanceMessage(ctx, namespace, id, "init", core.InstanceMessage{
 		InstanceID: id,
 		Namespace:  namespace,
 		Script:     script,
@@ -61,7 +66,7 @@ func (e *engine) ExecWorkflow(ctx context.Context, namespace string, script stri
 	}
 
 	ret, err := e.execJSScript([]byte(script), fn, input)
-	endMsg := InstanceMessage{
+	endMsg := core.InstanceMessage{
 		InstanceID: id,
 		Namespace:  namespace,
 		Script:     script,
@@ -94,6 +99,6 @@ func (e *engine) ExecWorkflow(ctx context.Context, namespace string, script stri
 	return id, err
 }
 
-func (e *engine) GetInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID) (any, error) {
+func (e *engine) GetInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID) ([]core.EngineMessage, error) {
 	return e.store.PullInstanceMessages(ctx, namespace, instanceID, "*")
 }
