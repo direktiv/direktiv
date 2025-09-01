@@ -42,26 +42,24 @@ export const TreePicker: FC<TreePickerProps> = ({
   const allowSubmit = useMemo(() => path.length >= minDepth, [path, minDepth]);
   const allowCustomSegment = useMemo(() => search.length > 0, [search]);
   const formattedPath = useMemo(() => `{{${path.join(".")}}}`, [path]);
-  const previewPath = useMemo(
-    () =>
-      placeholders.map((placeholder, index) => (
-        <>
-          {path[index] ? (
-            <span key={index} className="text-gray-12">
-              {path[index]}
-            </span>
-          ) : (
-            <span key={index} className="text-gray-11">
-              {placeholder}
-            </span>
-          )}
-          {index < placeholders.length - 1 && (
-            <span className="text-gray-11">.</span>
-          )}
-        </>
-      )),
-    [path, placeholders]
-  );
+
+  const previewPath = useMemo(() => {
+    const previewLength = Math.max(placeholders.length, path.length);
+    return Array.from({ length: previewLength }).map((_, index) => (
+      <>
+        {path[index] ? (
+          <span key={index} className="text-gray-12">
+            {path[index]}
+          </span>
+        ) : (
+          <span key={index} className="text-gray-11">
+            {placeholders[index]}
+          </span>
+        )}
+        {index < previewLength - 1 && <span className="text-gray-11">.</span>}
+      </>
+    ));
+  }, [path, placeholders]);
 
   return (
     <Popover>
@@ -83,7 +81,10 @@ export const TreePicker: FC<TreePickerProps> = ({
               icon
               type="button"
               variant="ghost"
-              onClick={() => setPath([...path, search])}
+              onClick={() => {
+                setSearch("");
+                setPath([...path, search]);
+              }}
               className="-mr-2"
               disabled={!allowCustomSegment}
             >
@@ -107,7 +108,9 @@ export const TreePicker: FC<TreePickerProps> = ({
             </CommandGroup>
           </CommandList>
           <div className="flex items-center p-2">
-            <FakeInput className="mr-2 w-full">{previewPath}</FakeInput>
+            <FakeInput wrap className="mr-2 w-full">
+              {previewPath}
+            </FakeInput>
             <PopoverClose className="ml-auto">
               <Button
                 variant="outline"
