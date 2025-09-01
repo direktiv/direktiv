@@ -48,7 +48,7 @@ func Start(circuit *core.Circuit) error {
 
 	// Create App struct
 	app := api.InitializeArgs{
-		Version: &core.Version{
+		Version: &api.Version{
 			UnixTime: time.Now().Unix(),
 		},
 		Config: config,

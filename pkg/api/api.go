@@ -22,8 +22,12 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
+type Version struct {
+	UnixTime int64 `json:"unix_time"`
+}
+
 type InitializeArgs struct {
-	Version *core.Version
+	Version *Version
 	Config  *core.Config
 	Cache   core.Cache
 	PubSub  core.PubSub

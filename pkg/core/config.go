@@ -108,7 +108,3 @@ func (conf *Config) checkInvalidEmptyFields() error {
 
 	return fmt.Errorf("following fields are required but got empty strings: %v", invalidEmptyFields)
 }
-
-type Version struct {
-	UnixTime int64 `json:"unix_time"`
-}
