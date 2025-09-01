@@ -17,6 +17,7 @@ import {
 import { Tree, getSublist } from "./utils";
 
 import Button from "~/design/Button";
+import { FakeInput } from "~/design/FakeInput";
 import { useTranslation } from "react-i18next";
 
 type TreePickerProps = {
@@ -68,30 +69,11 @@ export const TreePicker: FC<TreePickerProps> = ({
             {t("direktivPage.blockEditor.smartInput.variableBtn")}
           </Button>
         </PopoverTrigger>
-        <div className="self-center px-3 text-sm text-gray-11">
-          {previewPath}
-        </div>
-        <PopoverClose className="ml-auto">
-          <Button
-            variant="outline"
-            icon
-            type="button"
-            disabled={!allowSubmit}
-            onClick={() => {
-              if (formattedPath) {
-                onSubmit(formattedPath);
-                setPath([]);
-              }
-            }}
-          >
-            <Check />
-          </Button>
-        </PopoverClose>
       </div>
       <PopoverContent align="start" container={container}>
         <Command>
           <CommandInput
-            placeholder="select a value"
+            placeholder={t("direktivPage.blockEditor.smartInput.placeholder")}
             value={search}
             onValueChange={setSearch}
           >
@@ -100,7 +82,7 @@ export const TreePicker: FC<TreePickerProps> = ({
               type="button"
               variant="ghost"
               onClick={() => setPath([...path, search])}
-              className="pr-0"
+              className="-mr-2"
               disabled={!allowCustomSegment}
             >
               <Plus size="xs" />
@@ -118,6 +100,25 @@ export const TreePicker: FC<TreePickerProps> = ({
               ))}
             </CommandGroup>
           </CommandList>
+          <div className="flex items-center p-2">
+            <FakeInput className="mr-2 w-full">{previewPath}</FakeInput>
+            <PopoverClose className="ml-auto">
+              <Button
+                variant="outline"
+                icon
+                type="button"
+                disabled={!allowSubmit}
+                onClick={() => {
+                  if (formattedPath) {
+                    onSubmit(formattedPath);
+                    setPath([]);
+                  }
+                }}
+              >
+                <Check />
+              </Button>
+            </PopoverClose>
+          </div>
         </Command>
       </PopoverContent>
     </Popover>
