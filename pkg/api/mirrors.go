@@ -10,9 +10,8 @@ import (
 )
 
 type mirrorsController struct {
-	db            *database.DB
-	syncNamespace core.SyncNamespace
-	bus           core.PubSub
+	db  *database.DB
+	bus core.PubSub
 }
 
 func (e *mirrorsController) mountRouter(r chi.Router) {
@@ -41,7 +40,6 @@ func (e *mirrorsController) create(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(mirConfig)
 
 	fmt.Println("------")
-	fmt.Println(e.syncNamespace)
 
 	// proc, err := e.syncNamespace(nil, mirConfig)
 	// if err != nil {

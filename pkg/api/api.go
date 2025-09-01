@@ -32,7 +32,6 @@ type InitializeArgs struct {
 
 	RegistryManager core.RegistryManager
 	GatewayManager  core.GatewayManager
-	SyncNamespace   core.SyncNamespace
 	SecretsManager  core.SecretsManager
 
 	Engine *engine.Engine
@@ -63,9 +62,8 @@ func Initialize(circuit *core.Circuit, app InitializeArgs) (*http.Server, error)
 		registryManager: app.RegistryManager,
 	}
 	mirrorsCtr := &mirrorsController{
-		db:            app.DB,
-		bus:           app.PubSub,
-		syncNamespace: app.SyncNamespace,
+		db:  app.DB,
+		bus: app.PubSub,
 	}
 	instCtr := &instController{
 		db:           app.DB,
