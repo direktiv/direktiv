@@ -47,9 +47,6 @@ type FileStore interface {
 
 	// ForFile returns a query object to do further queries on that file.
 	ForFile(file *File) FileQuery
-
-	// GetFileByID queries a file by id.
-	GetFileByID(ctx context.Context, id uuid.UUID) (*File, error)
 }
 
 // Root represents an isolated filesystems. Users of filestore can create and deletes multiple roots. In Direktiv,

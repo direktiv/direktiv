@@ -2,7 +2,6 @@ package filesql
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/filestore"
@@ -129,23 +128,4 @@ func (s *store) GetRootByNamespace(ctx context.Context, namespace string) (*file
 	}
 
 	return &list[0], nil
-}
-
-func (s *store) GetFileByID(ctx context.Context, id uuid.UUID) (*filestore.File, error) {
-	file := &filestore.File{}
-	res := s.db.WithContext(ctx).Raw(`
-					SELECT id, root_id, path, depth, typ, created_at, updated_at, mime_type, length(data) AS size
-					FROM filesystem_files
-					WHERE id=?`, id).
-		First(file)
-
-	if res.Error != nil {
-		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("file '%s': %w", id, filestore.ErrNotFound)
-		}
-
-		return nil, res.Error
-	}
-
-	return file, nil
 }
