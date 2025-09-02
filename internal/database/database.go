@@ -22,28 +22,28 @@ func NewDB(db *gorm.DB) *DB {
 	}
 }
 
-func (tx *DB) Conn() *gorm.DB {
-	return tx.db
+func (d *DB) Conn() *gorm.DB {
+	return d.db
 }
 
-func (tx *DB) FileStore() filestore.FileStore {
-	return filesql.NewStore(tx.db)
+func (d *DB) FileStore() filestore.FileStore {
+	return filesql.NewStore(d.db)
 }
 
-func (tx *DB) DataStore() datastore.Store {
-	return datasql.NewStore(tx.db)
+func (d *DB) DataStore() datastore.Store {
+	return datasql.NewStore(d.db)
 }
 
-func (tx *DB) Commit(ctx context.Context) error {
-	return tx.db.WithContext(ctx).Commit().Error
+func (d *DB) Commit(ctx context.Context) error {
+	return d.db.WithContext(ctx).Commit().Error
 }
 
-func (tx *DB) Rollback() error {
-	return tx.db.Rollback().Error
+func (d *DB) Rollback() error {
+	return d.db.Rollback().Error
 }
 
-func (tx *DB) BeginTx(ctx context.Context, opts ...*sql.TxOptions) (*DB, error) {
-	res := tx.db.WithContext(ctx).Begin(opts...)
+func (d *DB) BeginTx(ctx context.Context, opts ...*sql.TxOptions) (*DB, error) {
+	res := d.db.WithContext(ctx).Begin(opts...)
 	if res.Error != nil {
 		return nil, res.Error
 	}
