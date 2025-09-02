@@ -75,7 +75,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 
 	res := struct {
 		*filestore.File
-		Data []byte `json:"data"`
+		Data []byte `json:"data,omitempty"`
 
 		Children []*filestore.File `json:"children"`
 	}{
@@ -260,7 +260,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 	res := struct {
 		*filestore.File
-		Data []byte `json:"data"`
+		Data []byte `json:"data,omitempty"`
 	}{
 		File: newFile,
 		Data: decodedBytes,
@@ -283,7 +283,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 	req := struct {
 		Path string `json:"path"`
-		Data string `json:"data"`
+		Data string `json:"data,omitempty"`
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -382,7 +382,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 	res := struct {
 		*filestore.File
-		Data []byte `json:"data"`
+		Data []byte `json:"data,omitempty"`
 	}{
 		File: updatedFile,
 		Data: decodedBytes,
