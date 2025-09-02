@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/core"
@@ -9,6 +10,7 @@ import (
 )
 
 func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
+	ctx := context.Background()
 	// TODO: fix nil data params below.
 	return
 
@@ -54,6 +56,7 @@ func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 }
 
 func renderServiceFiles(db *database.DB, serviceManager core.ServiceManager) {
+	ctx := context.Background()
 	// TODO: fix nil data params below.
 	return
 
