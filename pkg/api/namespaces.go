@@ -64,8 +64,14 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Rollback()
 	dStore := db.DataStore()
+	fStore := db.FileStore()
 
 	err = dStore.Namespaces().Delete(r.Context(), name)
+	if err != nil {
+		writeDataStoreError(w, err)
+		return
+	}
+	err = fStore.ForRootID(name).Delete(r.Context())
 	if err != nil {
 		writeDataStoreError(w, err)
 		return
