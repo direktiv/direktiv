@@ -150,9 +150,9 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 
 	res := q.db.WithContext(ctx).Exec(`
 							INSERT INTO 
-								filesystem_files(id, root_id, path, depth, typ, data, checksum, mime_type) 
-								VALUES(?, ?, ?, ?, ?, ?, ?, ?);
-							`, uuid.New(), f.RootID, f.Path, f.Depth, f.Typ, data, f.Checksum, f.MIMEType)
+								filesystem_files(root_id, path, depth, typ, data, checksum, mime_type) 
+								VALUES(?, ?, ?, ?, ?, ?, ?);
+							`, f.RootID, f.Path, f.Depth, f.Typ, data, f.Checksum, f.MIMEType)
 
 	if res.Error != nil && strings.Contains(res.Error.Error(), "duplicate key") {
 		return nil, datastore.ErrDuplicatedNamespaceName

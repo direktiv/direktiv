@@ -28,8 +28,6 @@ CREATE TABLE IF NOT EXISTS  "filesystem_roots" (
 );
 
 CREATE TABLE IF NOT EXISTS "filesystem_files" (
-    -- TODO: remove this id field as its not needed at all.
-    "id" uuid,
     "root_id" uuid NOT NULL,
     "path" text NOT NULL,
     "depth" integer NOT NULL,
@@ -41,8 +39,7 @@ CREATE TABLE IF NOT EXISTS "filesystem_files" (
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "mime_type" text NOT NULL,
-    PRIMARY KEY ("id"),
-    CONSTRAINT "file_path_no_dup_check" UNIQUE ("root_id","path"),
+    PRIMARY KEY ("root_id", "path"),
     CONSTRAINT "fk_filesystem_roots_filesystem_files"
     FOREIGN KEY ("root_id") REFERENCES "filesystem_roots"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
