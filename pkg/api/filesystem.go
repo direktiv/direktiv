@@ -51,7 +51,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 	path = filepath.Clean("/" + path)
 
 	// Fetch file
-	file, err := fStore.ForNamespace(namespace).GetFile(r.Context(), path)
+	file, err := fStore.ForRootID(namespace).GetFile(r.Context(), path)
 	if err != nil {
 		writeFileStoreError(w, err)
 		return
@@ -60,7 +60,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 	var children []*filestore.File
 	var data []byte
 	if file.Typ == filestore.FileTypeDirectory {
-		children, err = fStore.ForNamespace(namespace).ReadDirectory(r.Context(), path)
+		children, err = fStore.ForRootID(namespace).ReadDirectory(r.Context(), path)
 		if err != nil {
 			writeInternalError(w, err)
 			return
@@ -103,7 +103,7 @@ func (e *fsController) readRaw(w http.ResponseWriter, r *http.Request) {
 	path = filepath.Clean("/" + path)
 
 	// fetch file.
-	file, err := fStore.ForNamespace(namespace).GetFile(r.Context(), path)
+	file, err := fStore.ForRootID(namespace).GetFile(r.Context(), path)
 	if errors.Is(err, filestore.ErrNotFound) {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -146,7 +146,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 	path = filepath.Clean("/" + path)
 
 	// Fetch file
-	file, err := fStore.ForNamespace(namespace).GetFile(r.Context(), path)
+	file, err := fStore.ForRootID(namespace).GetFile(r.Context(), path)
 	if err != nil {
 		writeFileStoreError(w, err)
 		return
@@ -232,7 +232,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	path = filepath.Clean("/" + path)
 
 	// Create file.
-	newFile, err := fStore.ForNamespace(namespace).CreateFile(r.Context(),
+	newFile, err := fStore.ForRootID(namespace).CreateFile(r.Context(),
 		"/"+path+"/"+req.Name,
 		req.Typ,
 		req.MIMEType,
@@ -319,7 +319,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch file.
-	oldFile, err := fStore.ForNamespace(namespace).GetFile(r.Context(), path)
+	oldFile, err := fStore.ForRootID(namespace).GetFile(r.Context(), path)
 	if err != nil {
 		writeFileStoreError(w, err)
 		return
@@ -350,7 +350,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		oldFile.Path = req.Path
 	}
 
-	updatedFile, err := fStore.ForNamespace(namespace).GetFile(r.Context(), oldFile.Path)
+	updatedFile, err := fStore.ForRootID(namespace).GetFile(r.Context(), oldFile.Path)
 	if err != nil {
 		writeFileStoreError(w, err)
 		return

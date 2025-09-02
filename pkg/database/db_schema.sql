@@ -15,19 +15,16 @@ CREATE TABLE IF NOT EXISTS  "system_heart_beats" (
 
 
 CREATE TABLE IF NOT EXISTS  "filesystem_roots" (
-    "id" uuid,
-    "namespace" text UNIQUE,
+    "id" text,
 
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    PRIMARY KEY ("id"),
-    CONSTRAINT "fk_namespaces_filesystem_roots"
-    FOREIGN KEY ("namespace") REFERENCES "namespaces"("name") ON DELETE CASCADE ON UPDATE CASCADE
+    PRIMARY KEY ("id")
 );
 
 CREATE TABLE IF NOT EXISTS "filesystem_files" (
-    "root_id" uuid NOT NULL,
+    "root_id" text NOT NULL,
     "path" text NOT NULL,
     "depth" integer NOT NULL,
     "typ" text NOT NULL,

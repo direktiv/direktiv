@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // Package 'filestore' implements a filesystem that is responsible to store user's projects and files. For each
@@ -28,22 +26,14 @@ var (
 
 type FileStore interface {
 	// CreateRoot creates a new root in the filestore. For each direktiv
-	CreateRoot(ctx context.Context, rootID uuid.UUID, namespace string) (*Root, error)
+	CreateRoot(ctx context.Context, id string) (*Root, error)
 
-	CreateTempRoot(ctx context.Context, id uuid.UUID) (*Root, error)
-
-	GetRoot(ctx context.Context, id uuid.UUID) (*Root, error)
+	GetRoot(ctx context.Context, id string) (*Root, error)
 
 	// GetAllRoots list all roots.
 	GetAllRoots(ctx context.Context) ([]*Root, error)
 
-	GetRootByNamespace(ctx context.Context, namespace string) (*Root, error)
-
-	// ForRootID returns a query object to do further queries on root.
-	ForRootID(rootID uuid.UUID) RootQuery
-
-	// ForNamespace returns a query object to do further queries on root.
-	ForNamespace(namespace string) RootQuery
+	ForRootID(rootID string) RootQuery
 
 	// ForFile returns a query object to do further queries on that file.
 	ForFile(file *File) FileQuery
@@ -52,8 +42,7 @@ type FileStore interface {
 // Root represents an isolated filesystems. Users of filestore can create and deletes multiple roots. In Direktiv,
 // we create a dedicated root for every namespace.
 type Root struct {
-	ID        uuid.UUID
-	Namespace string `gorm:"default:NULL"`
+	ID string
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -83,7 +72,7 @@ type RootQuery interface {
 	// It returns list of files with data fields already loaded, so the caller don't have to call GetData().
 	ListDirektivFilesWithData(ctx context.Context) ([]*File, error)
 
-	SetNamespace(ctx context.Context, namespace string) error
+	SetID(ctx context.Context, id string) error
 }
 
 // CalculateChecksumFunc is a function type used to calculate files checksums.

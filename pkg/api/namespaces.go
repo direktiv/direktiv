@@ -12,7 +12,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
 )
 
 type nsController struct {
@@ -275,7 +274,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_, err = db.FileStore().CreateRoot(r.Context(), uuid.New(), ns.Name)
+	_, err = db.FileStore().CreateRoot(r.Context(), ns.Name)
 	if err != nil {
 		writeFileStoreError(w, err)
 		return

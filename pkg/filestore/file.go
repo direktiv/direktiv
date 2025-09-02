@@ -4,8 +4,6 @@ import (
 	"context"
 	"path/filepath"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // FileType represents file types. Filestore files are basically two types, ordinary files and directories.
@@ -52,7 +50,7 @@ type File struct {
 
 	// Root is a filestore instance, users can create multiple filestore roots and RootID tells which root the file
 	// belongs too.
-	RootID uuid.UUID `json:"-"`
+	RootID string `json:"-"`
 
 	MIMEType string `json:"mimeType,omitempty"`
 

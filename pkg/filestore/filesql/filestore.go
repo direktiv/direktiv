@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -13,17 +12,9 @@ type store struct {
 	db *gorm.DB
 }
 
-func (s *store) ForRootID(rootID uuid.UUID) filestore.RootQuery {
+func (s *store) ForRootID(rootID string) filestore.RootQuery {
 	return &RootQuery{
 		rootID:       rootID,
-		db:           s.db,
-		checksumFunc: filestore.DefaultCalculateChecksum,
-	}
-}
-
-func (s *store) ForNamespace(namespace string) filestore.RootQuery {
-	return &RootQuery{
-		namespace:    namespace,
 		db:           s.db,
 		checksumFunc: filestore.DefaultCalculateChecksum,
 	}
@@ -45,23 +36,7 @@ func NewStore(db *gorm.DB) filestore.FileStore {
 	}
 }
 
-func (s *store) CreateRoot(ctx context.Context, rootID uuid.UUID, namespace string) (*filestore.Root, error) {
-	n := &filestore.Root{
-		ID:        rootID,
-		Namespace: namespace,
-	}
-	res := s.db.WithContext(ctx).Table("filesystem_roots").Create(n)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-	if res.RowsAffected != 1 {
-		return nil, fmt.Errorf("unexpected gorm create count, got: %d, want: %d", res.RowsAffected, 1)
-	}
-
-	return n, nil
-}
-
-func (s *store) CreateTempRoot(ctx context.Context, rootID uuid.UUID) (*filestore.Root, error) {
+func (s *store) CreateRoot(ctx context.Context, rootID string) (*filestore.Root, error) {
 	n := &filestore.Root{
 		ID: rootID,
 	}
@@ -76,7 +51,7 @@ func (s *store) CreateTempRoot(ctx context.Context, rootID uuid.UUID) (*filestor
 	return n, nil
 }
 
-func (s *store) GetRoot(ctx context.Context, id uuid.UUID) (*filestore.Root, error) {
+func (s *store) GetRoot(ctx context.Context, id string) (*filestore.Root, error) {
 	var list []filestore.Root
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
@@ -110,22 +85,4 @@ func (s *store) GetAllRoots(ctx context.Context) ([]*filestore.Root, error) {
 	}
 
 	return ns, nil
-}
-
-func (s *store) GetRootByNamespace(ctx context.Context, namespace string) (*filestore.Root, error) {
-	var list []filestore.Root
-	res := s.db.WithContext(ctx).Raw(`
-					SELECT *
-					FROM filesystem_roots
-					WHERE namespace = ?
-					`, namespace).Find(&list)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	if len(list) == 0 {
-		return nil, filestore.ErrNotFound
-	}
-
-	return &list[0], nil
 }

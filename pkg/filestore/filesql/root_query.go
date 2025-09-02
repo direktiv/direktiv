@@ -10,7 +10,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -23,11 +22,9 @@ func addTrailingSlash(path string) string {
 }
 
 type RootQuery struct {
-	rootID       uuid.UUID
+	rootID       string
 	checksumFunc filestore.CalculateChecksumFunc
 	db           *gorm.DB
-	root         *filestore.Root
-	namespace    string
 }
 
 func (q *RootQuery) ListAllFiles(ctx context.Context) ([]*filestore.File, error) {
@@ -187,10 +184,8 @@ func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, 
 	}
 	if path == "/" {
 		return &filestore.File{
-			Path:      "/",
-			Typ:       filestore.FileTypeDirectory,
-			CreatedAt: q.root.CreatedAt,
-			UpdatedAt: q.root.UpdatedAt,
+			Path: "/",
+			Typ:  filestore.FileTypeDirectory,
 		}, nil
 	}
 
@@ -254,26 +249,8 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 }
 
 func (q *RootQuery) checkRootExists(ctx context.Context) error {
-	zeroUUID := (uuid.UUID{}).String()
-
-	if zeroUUID == q.rootID.String() {
-		n := &filestore.Root{}
-		res := q.db.WithContext(ctx).Table("filesystem_roots").Where("namespace", q.namespace).First(n)
-		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("root not found, ns: '%s', err: %w", q.namespace, filestore.ErrNotFound)
-		}
-		if res.Error != nil {
-			return res.Error
-		}
-
-		q.root = n
-		q.rootID = n.ID
-
-		return nil
-	}
-
-	n := &filestore.Root{}
-	res := q.db.WithContext(ctx).Table("filesystem_roots").Where("id", q.rootID).First(n)
+	r := &filestore.Root{}
+	res := q.db.WithContext(ctx).Table("filesystem_roots").Where("id", q.rootID).First(r)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("root not found, id: '%s', err: %w", q.rootID, filestore.ErrNotFound)
 	}
@@ -281,16 +258,14 @@ func (q *RootQuery) checkRootExists(ctx context.Context) error {
 		return res.Error
 	}
 
-	q.root = n
-
 	return nil
 }
 
-func (q *RootQuery) SetNamespace(ctx context.Context, namespace string) error {
+func (q *RootQuery) SetID(ctx context.Context, id string) error {
 	res := q.db.WithContext(ctx).Exec(`UPDATE filesystem_roots
-		SET namespace = ?
+		SET id = ?
 		WHERE id = ?`,
-		namespace,
+		id,
 		q.rootID,
 	)
 	if res.Error != nil {
