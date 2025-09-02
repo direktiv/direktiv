@@ -7,7 +7,7 @@ import {
   CommandItem,
   CommandList,
 } from "~/design/Command";
-import { FC, useMemo, useState } from "react";
+import { FC, Fragment, useMemo, useState } from "react";
 import {
   Popover,
   PopoverClose,
@@ -39,27 +39,22 @@ export const TreePicker: FC<TreePickerProps> = ({
   const [path, setPath] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const currentTree = useMemo(() => getSublist(tree, path), [path, tree]);
-  const allowSubmit = useMemo(() => path.length >= minDepth, [path, minDepth]);
-  const allowCustomSegment = useMemo(() => search.length > 0, [search]);
-  const formattedPath = useMemo(() => `{{${path.join(".")}}}`, [path]);
 
-  const previewPath = useMemo(() => {
-    const previewLength = Math.max(placeholders.length, path.length);
-    return Array.from({ length: previewLength }).map((_, index) => (
-      <>
-        {path[index] ? (
-          <span key={index} className="text-gray-12">
-            {path[index]}
-          </span>
-        ) : (
-          <span key={index} className="text-gray-10">
-            {placeholders[index]}
-          </span>
-        )}
-        {index < previewLength - 1 && <span className="text-gray-10">.</span>}
-      </>
-    ));
-  }, [path, placeholders]);
+  const previewLength = Math.max(placeholders.length, path.length);
+  const previewPath = Array.from({ length: previewLength }, (_, index) => (
+    <Fragment key={index}>
+      {path[index] ? (
+        <span className="text-gray-12">{path[index]}</span>
+      ) : (
+        <span className="text-gray-10">{placeholders[index]}</span>
+      )}
+      {index < previewLength - 1 && <span className="text-gray-10">.</span>}
+    </Fragment>
+  ));
+
+  const allowSubmit = path.length >= minDepth;
+  const allowCustomSegment = search.length > 0;
+  const formattedPath = `{{${path.join(".")}}}`;
 
   const addCustomSegment = () => {
     setPath([...path, search]);

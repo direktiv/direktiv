@@ -1,7 +1,7 @@
 import { Check, SquareArrowOutUpRight } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { EditorContent, useEditor } from "@tiptap/react";
-import { FC, PropsWithChildren, useMemo, useState } from "react";
+import { FC, PropsWithChildren, useState } from "react";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
@@ -37,15 +37,6 @@ export const SmartInput = ({
     null
   );
 
-  const variableSegmentPlaceholders = useMemo(
-    () => [
-      t("direktivPage.blockEditor.smartInput.templatePlaceholders.namespace"),
-      t("direktivPage.blockEditor.smartInput.templatePlaceholders.id"),
-      t("direktivPage.blockEditor.smartInput.templatePlaceholders.pointer"),
-    ],
-    [t]
-  );
-
   const editor = useEditor({
     extensions: [
       Document,
@@ -66,6 +57,12 @@ export const SmartInput = ({
   const insertText = (text: string) => {
     editor.chain().focus().insertContent(text).run();
   };
+
+  const variableSegmentPlaceholders = [
+    t("direktivPage.blockEditor.smartInput.templatePlaceholders.namespace"),
+    t("direktivPage.blockEditor.smartInput.templatePlaceholders.id"),
+    t("direktivPage.blockEditor.smartInput.templatePlaceholders.pointer"),
+  ];
 
   return (
     <Dialog open={dialog} onOpenChange={setDialog}>
