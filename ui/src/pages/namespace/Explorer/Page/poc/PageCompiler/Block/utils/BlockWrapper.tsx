@@ -19,6 +19,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { SortableItem } from "~/design/DragAndDrop/Draggable";
+import { isEmptyContainerBlock } from "./useIsInvisbleBlock";
 import { twMergeClsx } from "~/util/helpers";
 import { useDndContext } from "@dnd-kit/core";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
@@ -101,17 +102,7 @@ const EditorBlockWrapper = ({
 
   const showDragHandle = isHovered || isFocused;
 
-  const emptyColumnsBlock =
-    block.type === "columns" &&
-    block.blocks[0] &&
-    block.blocks[1] &&
-    block.blocks[0].blocks.length === 0 &&
-    block.blocks[1].blocks.length === 0;
-
-  const emptyQueryBlock =
-    block.type === "query-provider" && block.blocks.length === 0;
-
-  const emptyBlock = emptyColumnsBlock || emptyQueryBlock;
+  const emptyContainerBlock = isEmptyContainerBlock(block);
 
   return (
     <>
@@ -129,7 +120,7 @@ const EditorBlockWrapper = ({
           ref={containerRef}
           className={twMergeClsx(
             "relative isolate my-3 rounded bg-white outline-offset-4 dark:bg-black",
-            emptyBlock &&
+            emptyContainerBlock &&
               "border-2 border-dashed border-gray-4 dark:border-gray-dark-4",
             isHovered &&
               !isDragging &&
