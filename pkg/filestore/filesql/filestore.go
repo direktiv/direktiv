@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/direktiv/direktiv/internal/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"gorm.io/gorm"
 )
 

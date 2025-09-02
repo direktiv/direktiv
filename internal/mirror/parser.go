@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/internal/datastore"
-	"github.com/direktiv/direktiv/internal/filestore"
 	"github.com/direktiv/direktiv/internal/telemetry"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/go-git/go-git/v6/plumbing/format/gitignore"
 )
 

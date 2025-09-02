@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/direktiv/direktiv/internal/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"gorm.io/gorm"
 )
 

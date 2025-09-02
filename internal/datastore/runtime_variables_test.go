@@ -7,8 +7,8 @@ import (
 
 	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore"
-	"github.com/direktiv/direktiv/internal/filestore"
 	database2 "github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/filestore"
 
 	"github.com/google/uuid"
 )

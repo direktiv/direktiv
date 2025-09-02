@@ -5,9 +5,8 @@ import (
 	"testing"
 
 	database2 "github.com/direktiv/direktiv/pkg/database"
-
-	"github.com/direktiv/direktiv/internal/database"
-	"github.com/direktiv/direktiv/internal/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 )
 
 func assertFileStoreCorrectRootCreation(t *testing.T, fs filestore.FileStore, namespace string) {
@@ -71,7 +70,7 @@ func Test_sqlFileStore_CreateRoot(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
-	fs := database.NewDB(conn).FileStore()
+	fs := filesql.NewStore(conn)
 
 	tests := []struct {
 		name string
@@ -93,7 +92,7 @@ func Test_sqlFileStore_ListingAfterCreate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
-	fs := database.NewDB(conn).FileStore()
+	fs := filesql.NewStore(conn)
 
 	myNamespace1 := "ns1"
 	myNamespace2 := "ns2"

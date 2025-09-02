@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/internal/datastore"
-	"github.com/direktiv/direktiv/internal/filestore"
 	"github.com/direktiv/direktiv/internal/secrets"
+	"github.com/direktiv/direktiv/pkg/filestore"
 )
 
 type Error struct {

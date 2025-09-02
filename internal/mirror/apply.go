@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/internal/datastore"
-	"github.com/direktiv/direktiv/internal/filestore"
 	"github.com/direktiv/direktiv/internal/telemetry"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 )

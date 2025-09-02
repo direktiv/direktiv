@@ -7,8 +7,8 @@ import (
 
 	"github.com/direktiv/direktiv/internal/datastore"
 
-	"github.com/direktiv/direktiv/internal/filestore"
 	"github.com/direktiv/direktiv/internal/mirror"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/google/uuid"
 )
 

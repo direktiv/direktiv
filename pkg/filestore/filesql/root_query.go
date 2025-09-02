@@ -8,8 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/direktiv/direktiv/internal/datastore"
-	"github.com/direktiv/direktiv/internal/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"gorm.io/gorm"
 )
 
@@ -152,7 +151,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 							`, f.RootID, f.Path, f.Depth, f.Typ, data, f.Checksum, f.MIMEType)
 
 	if res.Error != nil && strings.Contains(res.Error.Error(), "duplicate key") {
-		return nil, datastore.ErrDuplicatedNamespaceName
+		return nil, filestore.ErrDuplicatedNamespaceName
 	}
 	if res.Error != nil {
 		return nil, res.Error

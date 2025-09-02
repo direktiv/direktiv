@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/filestore"
 	"github.com/direktiv/direktiv/internal/gateway"
+	"github.com/direktiv/direktiv/pkg/filestore"
 )
 
 type NamespaceFileServerPlugin struct {

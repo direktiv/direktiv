@@ -14,12 +14,13 @@ import (
 // Via 'filestore.FileStore' the caller manages the roots, and 'filestore.Root' the caller manages files and directories.
 
 var (
-	ErrFileTypeIsDirectory  = errors.New("ErrFileTypeIsDirectory")
-	ErrNotFound             = errors.New("ErrNotFound")
-	ErrPathAlreadyExists    = errors.New("ErrPathAlreadyExists")
-	ErrNoParentDirectory    = errors.New("ErrNoParentDirectory")
-	ErrInvalidPathParameter = errors.New("ErrInvalidPathParameter")
-	ErrInvalidTypeParameter = errors.New("ErrInvalidTypeParameter")
+	ErrFileTypeIsDirectory     = errors.New("ErrFileTypeIsDirectory")
+	ErrNotFound                = errors.New("ErrNotFound")
+	ErrPathAlreadyExists       = errors.New("ErrPathAlreadyExists")
+	ErrNoParentDirectory       = errors.New("ErrNoParentDirectory")
+	ErrInvalidPathParameter    = errors.New("ErrInvalidPathParameter")
+	ErrInvalidTypeParameter    = errors.New("ErrInvalidTypeParameter")
+	ErrDuplicatedNamespaceName = errors.New("ErrDuplicatedNamespaceName")
 )
 
 // FileStore manages different operations on files and roots.

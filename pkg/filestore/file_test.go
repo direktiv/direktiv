@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/direktiv/direktiv/internal/database"
 	database2 "github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 
-	"github.com/direktiv/direktiv/internal/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/google/uuid"
 )
 
@@ -16,7 +16,7 @@ func Test_CorrectSetPath(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
-	fs := database.NewDB(conn).FileStore()
+	fs := filesql.NewStore(conn)
 
 	tests := []struct {
 		name  string
@@ -184,7 +184,7 @@ func Test_UpdateFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	fs := database.NewDB(conn).FileStore()
+	fs := filesql.NewStore(conn)
 
 	root, err := fs.CreateRoot(context.Background(), ns)
 	if err != nil {

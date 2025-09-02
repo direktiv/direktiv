@@ -11,8 +11,8 @@ import (
 
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/database"
-	"github.com/direktiv/direktiv/internal/filestore"
 	"github.com/direktiv/direktiv/internal/transpiler"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/go-chi/chi/v5"
 	"gopkg.in/yaml.v3"
 )

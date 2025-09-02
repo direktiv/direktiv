@@ -6,7 +6,7 @@ import (
 
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/database"
-	"github.com/direktiv/direktiv/internal/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore"
 )
 
 func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
