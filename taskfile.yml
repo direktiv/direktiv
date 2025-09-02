@@ -1,0 +1,39 @@
+version: '3'
+
+includes:
+  zarf:
+    taskfile: taskfile_zarf.yaml
+  cluster: 
+    taskfile: taskfile_cluster.yaml
+  version:  
+    taskfile: taskfile_version.yaml
+  build:  
+    taskfile: taskfile_build.yaml
+  test:  
+    taskfile: taskfile_test.yaml
+    
+tasks:  
+  default:
+    desc: Basic Kind cluster with Direktiv. Run with TELEMETRY=true to enable telemetry with grafana. 
+    deps: [version:check] 
+    cmds:
+    - task: cluster:one-node
+    - task: cluster:docker-proxy-create
+    - task: cluster:database
+    - task: build:build-push
+    - task: cluster:install
+    silent: true
+
+  ee:
+    desc: Basic EE cluster with Direktiv. Run with `IS_ENTERPRISE=true`.
+    deps: [version:check] 
+    vars:
+      IS_ENTERPRISE: "true"
+    cmds:
+    - task: cluster:one-node
+      vars: 
+        TLS: "true"
+    - task: cluster:docker-proxy-create
+    - task: build:build-push
+    - task: zarf:ee-yolo-create
+    - task: zarf:ee-yolo-deploy
