@@ -145,18 +145,20 @@ func (q *FileQuery) GetData(ctx context.Context) ([]byte, error) {
 	if q.file.Typ == filestore.FileTypeDirectory {
 		return nil, filestore.ErrFileTypeIsDirectory
 	}
-	rev := &filestore.File{}
+	data := struct {
+		Data []byte
+	}{}
 
 	res := q.db.WithContext(ctx).Raw(`
-					SELECT *
+					SELECT path, data
 					FROM filesystem_files
 					WHERE root_id = ? AND path = ?`,
-		q.file.RootID, q.file.Path).First(rev)
+		q.file.RootID, q.file.Path).First(&data)
 	if res.Error != nil {
 		return nil, res.Error
 	}
 
-	return rev.Data, nil
+	return data.Data, nil
 }
 
 func (q *FileQuery) SetData(ctx context.Context, data []byte) (string, error) {

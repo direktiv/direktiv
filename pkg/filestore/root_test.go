@@ -72,9 +72,12 @@ func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileSto
 	}
 
 	if typ != "directory" {
-		createdData, _ := fs.ForFile(file).GetData(context.Background())
+		createdData, err := fs.ForFile(file).GetData(context.Background())
+		if err != nil {
+			t.Errorf("unexpected GetData() error: %v", err)
+		}
 		if string(createdData) != string(data) {
-			t.Errorf("unexpected GetPath(), got: >%s<, want: >%s<", createdData, data)
+			t.Errorf("unexpected GetData(), got: >%s<, want: >%s<", createdData, data)
 
 			return
 		}
@@ -255,7 +258,7 @@ func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, rootID uuid.UUI
 	}
 }
 
-func assertFileExistsV2(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, file filestore.File) {
+func assertFileExistsV2(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, file filestore.File, data []byte) {
 	t.Helper()
 
 	f, err := fs.ForRootID(rootID).GetFile(context.Background(), file.Path)
@@ -282,28 +285,28 @@ func assertFileExistsV2(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, 
 	if f.Typ == filestore.FileTypeDirectory {
 		return
 	}
-	data, err := fs.ForFile(f).GetData(context.Background())
+	fData, err := fs.ForFile(f).GetData(context.Background())
 	if err != nil {
 		t.Errorf("unexpected GetData() error: %v", err)
 
 		return
 	}
-	if data == nil {
+	if fData == nil {
 		t.Errorf("unexpected nil data GetData()")
 
 		return
 	}
-	if string(data) != string(file.Data) {
-		t.Errorf("unexpected data, got: >%s<, want: >%s<", string(data), string(file.Data))
+	if string(fData) != string(data) {
+		t.Errorf("unexpected data, got: >%s<, want: >%s<", string(fData), string(data))
 
 		return
 	}
 }
 
-func assertCreateFileV2(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, file filestore.File) {
+func assertCreateFileV2(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, file filestore.File, data []byte) {
 	t.Helper()
 
-	f, err := fs.ForRootID(rootID).CreateFile(context.Background(), file.Path, file.Typ, "text/plain", file.Data)
+	f, err := fs.ForRootID(rootID).CreateFile(context.Background(), file.Path, file.Typ, "text/plain", data)
 	if err != nil {
 		t.Errorf("unexpected CreateFile() error: %v", err)
 

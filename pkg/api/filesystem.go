@@ -58,6 +58,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var children []*filestore.File
+	var data []byte
 	if file.Typ == filestore.FileTypeDirectory {
 		children, err = fStore.ForNamespace(namespace).ReadDirectory(r.Context(), path)
 		if err != nil {
@@ -65,20 +66,21 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		data, err := fStore.ForFile(file).GetData(r.Context())
+		data, err = fStore.ForFile(file).GetData(r.Context())
 		if err != nil {
 			writeInternalError(w, err)
 			return
 		}
-		file.Data = data
 	}
 
 	res := struct {
 		*filestore.File
+		Data []byte `json:"data"`
 
 		Children []*filestore.File `json:"children"`
 	}{
 		File:     file,
+		Data:     data,
 		Children: children,
 	}
 
@@ -239,7 +241,6 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		writeFileStoreError(w, err)
 		return
 	}
-	newFile.Data = decodedBytes
 
 	err = db.Commit(r.Context())
 	if err != nil {
@@ -257,7 +258,15 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	writeJSON(w, newFile)
+	res := struct {
+		*filestore.File
+		Data []byte `json:"data"`
+	}{
+		File: newFile,
+		Data: decodedBytes,
+	}
+
+	writeJSON(w, res)
 }
 
 func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
@@ -346,7 +355,6 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		writeFileStoreError(w, err)
 		return
 	}
-	updatedFile.Data = decodedBytes
 
 	err = db.Commit(r.Context())
 	if err != nil {
@@ -372,5 +380,13 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	writeJSON(w, updatedFile)
+	res := struct {
+		*filestore.File
+		Data []byte `json:"data"`
+	}{
+		File: updatedFile,
+		Data: decodedBytes,
+	}
+
+	writeJSON(w, res)
 }

@@ -144,7 +144,6 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 	}
 
 	if typ != filestore.FileTypeDirectory {
-		f.Data = data
 		f.Checksum = string(q.checksumFunc(data))
 		f.MIMEType = mimeType
 	}
@@ -153,7 +152,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 							INSERT INTO 
 								filesystem_files(id, root_id, path, depth, typ, data, checksum, mime_type) 
 								VALUES(?, ?, ?, ?, ?, ?, ?, ?);
-							`, uuid.New(), f.RootID, f.Path, f.Depth, f.Typ, f.Data, f.Checksum, f.MIMEType)
+							`, uuid.New(), f.RootID, f.Path, f.Depth, f.Typ, data, f.Checksum, f.MIMEType)
 
 	if res.Error != nil && strings.Contains(res.Error.Error(), "duplicate key") {
 		return nil, datastore.ErrDuplicatedNamespaceName

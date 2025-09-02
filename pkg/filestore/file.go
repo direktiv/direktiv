@@ -46,7 +46,6 @@ type File struct {
 	Depth int      `json:"-"`
 	Typ   FileType `json:"type,omitempty"`
 
-	Data     []byte `json:"data,omitempty"`
 	Checksum string `json:"checksum,omitempty"`
 
 	Size int `json:"size,omitempty"`

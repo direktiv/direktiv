@@ -200,13 +200,11 @@ func Test_UpdateFile(t *testing.T) {
 	assertCreateFileV2(t, fs, root.ID, filestore.File{
 		Path: "/example1.text",
 		Typ:  filestore.FileTypeFile,
-		Data: []byte("example1_data"),
-	})
+	}, []byte("example1_data"))
 	assertCreateFileV2(t, fs, root.ID, filestore.File{
 		Path: "/example2.text",
 		Typ:  filestore.FileTypeFile,
-		Data: []byte("example2_data"),
-	})
+	}, []byte("example2_data"))
 
 	// update one file
 	f, _ := fs.ForRootID(root.ID).GetFile(context.Background(), "/example1.text")
@@ -226,11 +224,9 @@ func Test_UpdateFile(t *testing.T) {
 	assertFileExistsV2(t, fs, root.ID, filestore.File{
 		Path: "/example1.text",
 		Typ:  filestore.FileTypeFile,
-		Data: []byte("example1_updated_data"),
-	})
+	}, []byte("example1_updated_data"))
 	assertFileExistsV2(t, fs, root.ID, filestore.File{
 		Path: "/example2.text",
 		Typ:  filestore.FileTypeFile,
-		Data: []byte("example2_data"),
-	})
+	}, []byte("example2_data"))
 }

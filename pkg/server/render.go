@@ -10,6 +10,8 @@ import (
 )
 
 func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
+	//TODO: fix nil data params below.
+	return
 	ctx := context.Background()
 	sLog := slog.With("subscriber", "gateway file watcher")
 
@@ -38,11 +40,11 @@ func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 			//nolint:exhaustive
 			switch file.Typ {
 			case filestore.FileTypeConsumer:
-				consumers = append(consumers, core.ParseConsumerFile(ns.Name, file.Path, file.Data))
+				consumers = append(consumers, core.ParseConsumerFile(ns.Name, file.Path, nil))
 			case filestore.FileTypeEndpoint:
-				endpoints = append(endpoints, core.ParseEndpointFile(ns.Name, file.Path, file.Data))
+				endpoints = append(endpoints, core.ParseEndpointFile(ns.Name, file.Path, nil))
 			case filestore.FileTypeGateway:
-				gateways = append(gateways, core.ParseGatewayFile(ns.Name, file.Path, file.Data))
+				gateways = append(gateways, core.ParseGatewayFile(ns.Name, file.Path, nil))
 			}
 		}
 	}
@@ -53,6 +55,8 @@ func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 }
 
 func renderServiceFiles(db *database.DB, serviceManager core.ServiceManager) {
+	//TODO: fix nil data params below.
+	return
 	ctx := context.Background()
 	slog := slog.With("subscriber", "services file watcher")
 
@@ -77,7 +81,7 @@ func renderServiceFiles(db *database.DB, serviceManager core.ServiceManager) {
 		}
 		for _, file := range files {
 			if file.Typ == filestore.FileTypeService {
-				serviceDef, err := core.ParseServiceFile(file.Data)
+				serviceDef, err := core.ParseServiceFile(nil)
 				if err != nil {
 					slog.Error("parse service file", "error", err)
 
