@@ -1,7 +1,6 @@
 import { Check, SquareArrowOutUpRight } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { EditorContent, useEditor } from "@tiptap/react";
-import { FC, PropsWithChildren, useState } from "react";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
@@ -14,11 +13,8 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Text from "@tiptap/extension-text";
 import { TreePicker } from "../TreePicker";
 import { twMergeClsx } from "~/util/helpers";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-
-const Toolbar: FC<PropsWithChildren> = ({ children }) => (
-  <div className="border-b pb-2">{children}</div>
-);
 
 export const SmartInput = ({
   onChange,
@@ -121,15 +117,16 @@ export const SmartInput = ({
               </ul>
             </Alert>
             <FakeInput wrap className="flex flex-col gap-2 p-2">
-              <Toolbar>
+              <div className="border-b pb-2">
                 <TreePicker
+                  label={t("direktivPage.blockEditor.smartInput.variableBtn")}
                   container={dialogContainer ?? undefined}
                   tree={variables}
                   onSubmit={insertText}
                   placeholders={variableSegmentPlaceholders}
                   minDepth={3}
                 />
-              </Toolbar>
+              </div>
               <EditorContent
                 id={id}
                 editor={editor}

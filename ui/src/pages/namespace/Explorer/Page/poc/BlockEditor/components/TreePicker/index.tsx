@@ -21,6 +21,7 @@ import { FakeInput } from "~/design/FakeInput";
 import { useTranslation } from "react-i18next";
 
 type TreePickerProps = {
+  label: string;
   tree: Tree;
   onSubmit: (value: string) => void;
   minDepth?: number;
@@ -29,6 +30,7 @@ type TreePickerProps = {
 };
 
 export const TreePicker: FC<TreePickerProps> = ({
+  label,
   tree,
   container,
   placeholders = [],
@@ -66,14 +68,14 @@ export const TreePicker: FC<TreePickerProps> = ({
       <div className="flex">
         <PopoverTrigger asChild>
           <Button variant="outline" type="button">
-            {t("direktivPage.blockEditor.smartInput.variableBtn")}
+            {label}
           </Button>
         </PopoverTrigger>
       </div>
       <PopoverContent className="w-96" align="start" container={container}>
         <Command>
           <CommandInput
-            placeholder={t("direktivPage.blockEditor.smartInput.placeholder")}
+            placeholder={t("direktivPage.blockEditor.treePicker.placeholder")}
             value={search}
             onValueChange={setSearch}
             onKeyUp={(event) => {
@@ -96,12 +98,12 @@ export const TreePicker: FC<TreePickerProps> = ({
           <CommandList>
             <CommandEmpty>
               <div className="text-sm text-gray-11">
-                {t("direktivPage.blockEditor.smartInput.listEmpty")}
+                {t("direktivPage.blockEditor.treePicker.listEmpty")}
               </div>
             </CommandEmpty>
             {currentTree && (
               <CommandGroup
-                heading={t("direktivPage.blockEditor.smartInput.valuesHeader")}
+                heading={t("direktivPage.blockEditor.treePicker.valuesHeader")}
               >
                 {currentTree.map((key) => (
                   <CommandItem

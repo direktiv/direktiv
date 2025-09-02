@@ -1879,13 +1879,15 @@
           "id": "id",
           "pointer": "pointer"
         },
-        "variableBtn": "Add variable",
-        "placeholder": "Select or add a segment",
-        "valuesHeader": "Known segments",
-        "listEmpty": "No known values found at current level. You can add a custom segment, or finish editing."
+        "variableBtn": "Add variable"
       },
       "delete": {
         "warning": "This will remove the current block and all content (including blocks nested into it). Are you sure you want to proceed?"
+      },
+      "treePicker": {
+        "placeholder": "Select or add a segment",
+        "valuesHeader": "Known segments",
+        "listEmpty": "No segments found at current level. Add a custom segment or finish editing."
       }
     }
   }
