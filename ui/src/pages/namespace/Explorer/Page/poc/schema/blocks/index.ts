@@ -119,3 +119,17 @@ export type NoFormBlockType = Extract<
 type FormBlockTypeUnion = Exclude<BlockTypeUnion, noFormBlockTypeUnion>;
 
 export type FormBlockType = Extract<BlockType, { type: FormBlockTypeUnion }>;
+
+/**
+ * Container blocks are structural wrappers that hold child elements,
+ * becoming visible or functional only when they contain content.
+ */
+export const containerBlockTypeList = [
+  "columns",
+  "query-provider",
+] as const satisfies BlockTypeUnion[];
+
+export type ContainerBlockType = Extract<
+  BlockType,
+  { type: (typeof containerBlockTypeList)[number] }
+>;
