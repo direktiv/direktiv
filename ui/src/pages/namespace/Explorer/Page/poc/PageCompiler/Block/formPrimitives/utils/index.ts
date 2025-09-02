@@ -36,6 +36,22 @@ const resolveFormValue = (
   }
 };
 
+const isFormFieldMissing = (
+  blockType: Block["type"],
+  value: FormDataEntryValue,
+  optional: boolean
+) => {
+  if (optional) {
+    return false;
+  }
+
+  if (blockType === "form-checkbox") {
+    return value === "false";
+  }
+
+  return !value;
+};
+
 /**
  * Transforms a form submission event into local variables accessible within the page.
  *
@@ -72,11 +88,7 @@ export const createLocalFormVariables = (
     ([serializedKey, value]) => {
       const [blockType, elementId, optional] = decodeBlockKey(serializedKey);
       const resolvedValue = resolveFormValue(blockType, value);
-      if (
-        !optional &&
-        // TODO: make this a helper function similar to resolveFormValue
-        (!value || (blockType === "form-checkbox" && resolvedValue === false))
-      ) {
+      if (isFormFieldMissing(blockType, value, optional)) {
         missingRequiredFields.push(elementId);
       }
       return [elementId, resolvedValue];
