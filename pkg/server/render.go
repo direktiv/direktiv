@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/core"
@@ -10,9 +9,9 @@ import (
 )
 
 func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
-	//TODO: fix nil data params below.
+	// TODO: fix nil data params below.
 	return
-	ctx := context.Background()
+
 	sLog := slog.With("subscriber", "gateway file watcher")
 
 	fStore, dStore := db.FileStore(), db.DataStore()
@@ -55,9 +54,9 @@ func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 }
 
 func renderServiceFiles(db *database.DB, serviceManager core.ServiceManager) {
-	//TODO: fix nil data params below.
+	// TODO: fix nil data params below.
 	return
-	ctx := context.Background()
+
 	slog := slog.With("subscriber", "services file watcher")
 
 	fStore, dStore := db.FileStore(), db.DataStore()

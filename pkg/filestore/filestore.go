@@ -25,7 +25,7 @@ var (
 // FileStore manages different operations on files and roots.
 
 type FileStore interface {
-	// CreateRoot creates a new root in the filestore. For each direktiv
+	// CreateRoot creates a new root in the filestore.
 	CreateRoot(ctx context.Context, id string) (*Root, error)
 
 	GetRoot(ctx context.Context, id string) (*Root, error)

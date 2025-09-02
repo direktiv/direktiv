@@ -75,6 +75,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 
 	res := struct {
 		*filestore.File
+
 		Data []byte `json:"data,omitempty"`
 
 		Children []*filestore.File `json:"children"`
@@ -260,6 +261,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 	res := struct {
 		*filestore.File
+
 		Data []byte `json:"data,omitempty"`
 	}{
 		File: newFile,
@@ -382,6 +384,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 	res := struct {
 		*filestore.File
+
 		Data []byte `json:"data,omitempty"`
 	}{
 		File: updatedFile,
