@@ -9,6 +9,7 @@ COPY go.sum src/go.sum
 RUN cd src/ && go mod download
 
 COPY internal src/internal/
+COPY pkg src/pkg/
 COPY cmd src/cmd/
 COPY direktiv-ee*/internal src/direktiv-ee/internal
 
