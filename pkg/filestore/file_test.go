@@ -134,7 +134,7 @@ func Test_CorrectSetPath(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unepxected CreateNamespace() error = %v", err)
 			}
-			root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
+			root, err := fs.CreateRoot(context.Background(), ns.Name)
 			if err != nil {
 				t.Fatalf("unepxected CreateRoot() error = %v", err)
 			}
@@ -160,7 +160,7 @@ func Test_CorrectSetPath(t *testing.T) {
 	}
 }
 
-func assertAllPathsInRoot(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, wantPaths ...string) {
+func assertAllPathsInRoot(t *testing.T, fs filestore.FileStore, rootID string, wantPaths ...string) {
 	t.Helper()
 
 	gotPaths, err := fs.ForRootID(rootID).ListAllFiles(context.Background())
@@ -191,7 +191,7 @@ func Test_UpdateFile(t *testing.T) {
 	}
 	fs := db.FileStore()
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
+	root, err := fs.CreateRoot(context.Background(), ns.Name)
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}

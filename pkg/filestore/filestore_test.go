@@ -8,7 +8,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/google/uuid"
 )
 
 func assertFileStoreCorrectRootCreation(t *testing.T, db *database.DB, fs filestore.FileStore, namespace string) {
@@ -21,7 +20,7 @@ func assertFileStoreCorrectRootCreation(t *testing.T, db *database.DB, fs filest
 		t.Fatalf("unexpected CreateRoot() error: %v", err)
 	}
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
+	root, err := fs.CreateRoot(context.Background(), ns.Name)
 	if err != nil {
 		t.Errorf("unexpected CreateRoot() error: %v", err)
 
@@ -32,8 +31,8 @@ func assertFileStoreCorrectRootCreation(t *testing.T, db *database.DB, fs filest
 
 		return
 	}
-	if root.Namespace != ns.Name {
-		t.Errorf("unexpected root.Namespace, got: >%s<, want: >%s<", root.Namespace, ns.Name)
+	if root.ID != ns.Name {
+		t.Errorf("unexpected root.Namespace, got: >%s<, want: >%s<", root.ID, ns.Name)
 
 		return
 	}
@@ -55,15 +54,15 @@ func assertFileStoreHasRoot(t *testing.T, fs filestore.FileStore, nsList ...stri
 	}
 
 	for i := range nsList {
-		if all[i].Namespace != nsList[i] {
-			t.Errorf("unexpected all[%d].ID , got: >%s<, want: >%s<", i, all[i].Namespace, nsList[i])
+		if all[i].ID != nsList[i] {
+			t.Errorf("unexpected all[%d].ID , got: >%s<, want: >%s<", i, all[i].ID, nsList[i])
 
 			return
 		}
 	}
 }
 
-func assertFileStoreCorrectRootDeletion(t *testing.T, fs filestore.FileStore, ids ...uuid.UUID) {
+func assertFileStoreCorrectRootDeletion(t *testing.T, fs filestore.FileStore, ids ...string) {
 	t.Helper()
 
 	for i := range ids {
@@ -123,7 +122,7 @@ func Test_sqlFileStore_ListingAfterCreate(t *testing.T) {
 	// assert existence:
 	assertFileStoreHasRoot(t, fs, myNamespace1, myNamespace2, myNamespace3)
 
-	root, err := fs.GetRootByNamespace(context.Background(), myNamespace2)
+	root, err := fs.GetRoot(context.Background(), myNamespace2)
 	if err != nil {
 		panic(err)
 	}

@@ -18,7 +18,7 @@ func TestRoot_CreateFile(t *testing.T) {
 	}
 	fs := db.FileStore()
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
+	root, err := fs.CreateRoot(context.Background(), ns.Name)
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -38,7 +38,7 @@ func TestRoot_CreateFile(t *testing.T) {
 	}
 }
 
-func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, path string) {
+func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, rootID string, path string) {
 	t.Helper()
 
 	var data []byte
@@ -51,7 +51,7 @@ func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, rootID 
 	assertRootCorrectFileCreationWithContent(t, fs, rootID, path, string(typ), data)
 }
 
-func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, path string, typ string, data []byte) {
+func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileStore, rootID string, path string, typ string, data []byte) {
 	t.Helper()
 
 	file, err := fs.ForRootID(rootID).CreateFile(context.Background(), path, filestore.FileType(typ), "application/octet-stream", data)
@@ -101,7 +101,7 @@ func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileSto
 	}
 }
 
-func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, path string, wantErr error) {
+func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, rootID string, path string, wantErr error) {
 	t.Helper()
 
 	typ := filestore.FileTypeDirectory
@@ -129,7 +129,7 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 	}
 	fs := db.FileStore()
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
+	root, err := fs.CreateRoot(context.Background(), ns.Name)
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -192,7 +192,7 @@ func TestRoot_RenamePath(t *testing.T) {
 	}
 	fs := db.FileStore()
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
+	root, err := fs.CreateRoot(context.Background(), ns.Name)
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -234,7 +234,7 @@ func TestRoot_RenamePath(t *testing.T) {
 	)
 }
 
-func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, searchPath string, paths ...string) {
+func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, rootID string, searchPath string, paths ...string) {
 	t.Helper()
 
 	files, err := fs.ForRootID(rootID).ReadDirectory(context.Background(), searchPath)
@@ -258,7 +258,7 @@ func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, rootID uuid.UUI
 	}
 }
 
-func assertFileExistsV2(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, file filestore.File, data []byte) {
+func assertFileExistsV2(t *testing.T, fs filestore.FileStore, rootID string, file filestore.File, data []byte) {
 	t.Helper()
 
 	f, err := fs.ForRootID(rootID).GetFile(context.Background(), file.Path)
@@ -303,7 +303,7 @@ func assertFileExistsV2(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, 
 	}
 }
 
-func assertCreateFileV2(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, file filestore.File, data []byte) {
+func assertCreateFileV2(t *testing.T, fs filestore.FileStore, rootID string, file filestore.File, data []byte) {
 	t.Helper()
 
 	f, err := fs.ForRootID(rootID).CreateFile(context.Background(), file.Path, file.Typ, "text/plain", data)
