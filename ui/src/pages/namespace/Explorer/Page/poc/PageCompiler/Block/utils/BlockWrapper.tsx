@@ -72,9 +72,7 @@ const EditorBlockWrapper = ({
   const isFocused = !!(panel?.action && pathsEqual(panel.path, blockPath));
 
   useEffect(() => {
-    if (isFocused) {
-      setVariables(variables);
-    }
+    setVariables(isFocused ? variables : { loop: {}, query: {} });
   }, [isFocused, setVariables, variables]);
 
   const handleClickBlock = (event: React.MouseEvent<HTMLDivElement>) => {
