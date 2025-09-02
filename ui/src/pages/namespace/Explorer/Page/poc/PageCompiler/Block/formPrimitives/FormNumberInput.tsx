@@ -34,6 +34,7 @@ export const FormNumberInput = ({ blockProps }: FormNumberInputProps) => {
 
   return (
     <Fieldset
+      id={id}
       label={label}
       description={description}
       htmlFor={fieldName}

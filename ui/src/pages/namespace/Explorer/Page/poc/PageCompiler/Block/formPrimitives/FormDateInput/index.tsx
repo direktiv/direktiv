@@ -15,6 +15,7 @@ export const FormDateInput = ({ blockProps }: FormDateInputProps) => {
   const fieldName = encodeBlockKey(type, id, optional);
   return (
     <Fieldset
+      id={id}
       label={label}
       description={description}
       htmlFor={fieldName}

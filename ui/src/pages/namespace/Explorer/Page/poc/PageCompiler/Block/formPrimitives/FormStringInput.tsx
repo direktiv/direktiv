@@ -19,6 +19,7 @@ export const FormStringInput = ({ blockProps }: FormStringInputProps) => {
 
   return (
     <Fieldset
+      id={id}
       label={label}
       description={description}
       htmlFor={fieldName}
