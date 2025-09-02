@@ -1,7 +1,7 @@
 import { Check, SquareArrowOutUpRight } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { EditorContent, useEditor } from "@tiptap/react";
-import { FC, PropsWithChildren, useState } from "react";
+import { FC, PropsWithChildren, useMemo, useState } from "react";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
@@ -20,8 +20,6 @@ const Toolbar: FC<PropsWithChildren> = ({ children }) => (
   <div className="border-b pb-2">{children}</div>
 );
 
-const placeholders = ["namespace", "id", "pointer"];
-
 export const SmartInput = ({
   onChange,
   value,
@@ -37,6 +35,15 @@ export const SmartInput = ({
   const [dialog, setDialog] = useState(false);
   const [dialogContainer, setDialogContainer] = useState<HTMLDivElement | null>(
     null
+  );
+
+  const variableSegmentPlaceholders = useMemo(
+    () => [
+      t("direktivPage.blockEditor.smartInput.templatePlaceholders.namespace"),
+      t("direktivPage.blockEditor.smartInput.templatePlaceholders.id"),
+      t("direktivPage.blockEditor.smartInput.templatePlaceholders.pointer"),
+    ],
+    [t]
   );
 
   const editor = useEditor({
@@ -99,7 +106,22 @@ export const SmartInput = ({
         {dialog && (
           <>
             <Alert variant="info" className="text-sm">
-              {t("direktivPage.blockEditor.smartInput.templateHelp")}
+              {t("direktivPage.blockEditor.smartInput.templateHelp.header")}
+              <ul className="ml-5 list-disc">
+                <li>
+                  {t(
+                    "direktivPage.blockEditor.smartInput.templateHelp.namespace"
+                  )}
+                </li>
+                <li>
+                  {t("direktivPage.blockEditor.smartInput.templateHelp.id")}
+                </li>
+                <li>
+                  {t(
+                    "direktivPage.blockEditor.smartInput.templateHelp.pointer"
+                  )}
+                </li>
+              </ul>
             </Alert>
             <FakeInput wrap className="flex flex-col gap-2 p-2">
               <Toolbar>
@@ -107,7 +129,7 @@ export const SmartInput = ({
                   container={dialogContainer ?? undefined}
                   tree={variables}
                   onSubmit={insertText}
-                  placeholders={placeholders}
+                  placeholders={variableSegmentPlaceholders}
                   minDepth={3}
                 />
               </Toolbar>

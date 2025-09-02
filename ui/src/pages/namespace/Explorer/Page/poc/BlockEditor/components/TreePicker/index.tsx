@@ -104,15 +104,20 @@ export const TreePicker: FC<TreePickerProps> = ({
                 {t("direktivPage.blockEditor.smartInput.listEmpty")}
               </div>
             </CommandEmpty>
-            <CommandGroup
-              heading={t("direktivPage.blockEditor.smartInput.valuesHeader")}
-            >
-              {currentTree?.map((key) => (
-                <CommandItem key={key} onSelect={() => setPath([...path, key])}>
-                  {key}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {currentTree && (
+              <CommandGroup
+                heading={t("direktivPage.blockEditor.smartInput.valuesHeader")}
+              >
+                {currentTree.map((key) => (
+                  <CommandItem
+                    key={key}
+                    onSelect={() => setPath([...path, key])}
+                  >
+                    {key}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
           </CommandList>
           <div className="flex items-center p-2">
             <FakeInput wrap className="mr-2 w-full text-gray-10">

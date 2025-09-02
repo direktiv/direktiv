@@ -1868,7 +1868,17 @@
         }
       },
       "smartInput": {
-        "templateHelp": "Hints on editing a template string ...",
+        "templateHelp": {
+          "header": "This template string may contain variables in the style {{type.id.pointer}}.",
+          "namespace": "type: element providing the data (loop, query)",
+          "id": "id: data provider's given identifier",
+          "pointer": "pointer: key for the value (chain pointers for nested values)"
+        },
+        "templatePlaceholders": {
+          "namespace": "type",
+          "id": "id",
+          "pointer": "pointer"
+        },
         "variableBtn": "Add variable",
         "placeholder": "Select or add a segment",
         "valuesHeader": "Known segments",
