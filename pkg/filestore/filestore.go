@@ -33,7 +33,7 @@ type FileStore interface {
 	// GetAllRoots list all roots.
 	GetAllRoots(ctx context.Context) ([]*Root, error)
 
-	ForRootID(rootID string) RootQuery
+	ForRoot(id string) RootQuery
 
 	// ForFile returns a query object to do further queries on that file.
 	ForFile(file *File) FileQuery

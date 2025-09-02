@@ -28,7 +28,7 @@ func NewCompiler(db *database.DB) (*Compiler, error) {
 }
 
 func (c *Compiler) Compile(ctx context.Context, namespace, path string) (*TypescriptFlow, error) {
-	f, err := c.db.FileStore().ForRootID(namespace).GetFile(ctx, path)
+	f, err := c.db.FileStore().ForRoot(namespace).GetFile(ctx, path)
 	if err != nil {
 		return nil, err
 	}

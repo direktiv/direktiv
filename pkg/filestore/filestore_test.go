@@ -66,7 +66,7 @@ func assertFileStoreCorrectRootDeletion(t *testing.T, fs filestore.FileStore, id
 	t.Helper()
 
 	for i := range ids {
-		err := fs.ForRootID(ids[i]).Delete(context.Background())
+		err := fs.ForRoot(ids[i]).Delete(context.Background())
 		if err != nil {
 			t.Errorf("unexpected Delete() error: %v", err)
 		}

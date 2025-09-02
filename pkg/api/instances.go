@@ -115,7 +115,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	defer db.Rollback()
 	fStore := db.FileStore()
 
-	file, err := fStore.ForRootID(namespace).GetFile(r.Context(), path)
+	file, err := fStore.ForRoot(namespace).GetFile(r.Context(), path)
 	if err != nil {
 		writeError(w, &Error{
 			Code:    err.Error(),

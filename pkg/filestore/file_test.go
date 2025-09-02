@@ -145,7 +145,7 @@ func Test_CorrectSetPath(t *testing.T) {
 
 			assertAllPathsInRoot(t, fs, root.ID, tt.paths...)
 
-			file, err := fs.ForRootID(root.ID).GetFile(context.Background(), tt.getPath)
+			file, err := fs.ForRoot(root.ID).GetFile(context.Background(), tt.getPath)
 			if err != nil {
 				t.Fatalf("unepxected GetFile() error = %v", err)
 			}
@@ -163,7 +163,7 @@ func Test_CorrectSetPath(t *testing.T) {
 func assertAllPathsInRoot(t *testing.T, fs filestore.FileStore, rootID string, wantPaths ...string) {
 	t.Helper()
 
-	gotPaths, err := fs.ForRootID(rootID).ListAllFiles(context.Background())
+	gotPaths, err := fs.ForRoot(rootID).ListAllFiles(context.Background())
 	if err != nil {
 		t.Errorf("unexpected ListAllFiles() error = %v", err)
 
@@ -207,7 +207,7 @@ func Test_UpdateFile(t *testing.T) {
 	}, []byte("example2_data"))
 
 	// update one file
-	f, _ := fs.ForRootID(root.ID).GetFile(context.Background(), "/example1.text")
+	f, _ := fs.ForRoot(root.ID).GetFile(context.Background(), "/example1.text")
 	checksum, err := fs.ForFile(f).SetData(context.Background(), []byte("example1_updated_data"))
 	if err != nil {
 		t.Errorf("unexpected SetData() error: %v", err)

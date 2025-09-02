@@ -12,7 +12,7 @@ type store struct {
 	db *gorm.DB
 }
 
-func (s *store) ForRootID(rootID string) filestore.RootQuery {
+func (s *store) ForRoot(rootID string) filestore.RootQuery {
 	return &RootQuery{
 		rootID:       rootID,
 		db:           s.db,

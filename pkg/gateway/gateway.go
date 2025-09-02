@@ -369,7 +369,7 @@ func loadDoc(data []byte, filePath, ns string, fileStore filestore.FileStore) (*
 	loader := openapi3.NewLoader()
 	loader.IsExternalRefsAllowed = true
 	loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
-		file, err := fileStore.ForRootID(ns).GetFile(context.Background(), url.String())
+		file, err := fileStore.ForRoot(ns).GetFile(context.Background(), url.String())
 		if err != nil {
 			return nil, err
 		}

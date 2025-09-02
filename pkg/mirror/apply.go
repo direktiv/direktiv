@@ -32,7 +32,7 @@ type DirektivApplyer struct {
 	proc      *datastore.MirrorProcess
 	parser    *Parser
 
-	rootID uuid.UUID
+	rootID string
 	notes  map[string]string
 }
 
@@ -42,9 +42,9 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 	o.parser = parser
 	o.notes = notes
 
-	o.rootID = uuid.New()
+	o.rootID = uuid.New().String()
 
-	root, err := callbacks.FileStore().CreateTempRoot(ctx, o.rootID)
+	root, err := callbacks.FileStore().CreateRoot(ctx, o.rootID)
 	if err != nil {
 		return fmt.Errorf("failed to create new filesystem root: %w", err)
 	}
@@ -85,12 +85,12 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 	}
 
 	// TODO: join the next two operations into a single atomic SQL operation?
-	err = callbacks.FileStore().ForNamespace(proc.Namespace).Delete(ctx)
+	err = callbacks.FileStore().ForRoot(proc.Namespace).Delete(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to delete old filesystem root: %w", err)
 	}
 
-	err = callbacks.FileStore().ForRootID(root.ID).SetNamespace(ctx, proc.Namespace)
+	err = callbacks.FileStore().ForRoot(root.ID).SetID(ctx, proc.Namespace)
 	if err != nil {
 		return fmt.Errorf("failed to delete old filesystem root: %w", err)
 	}
@@ -118,7 +118,7 @@ func (o *DirektivApplyer) copyFilesIntoRoot(ctx context.Context) error {
 		}
 
 		if fi.IsDir() {
-			_, err = o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeDirectory, "", nil)
+			_, err = o.callbacks.FileStore().ForRoot(o.rootID).CreateFile(ctx, path, filestore.FileTypeDirectory, "", nil)
 			if err != nil {
 				return err
 			}
@@ -137,7 +137,7 @@ func (o *DirektivApplyer) copyFilesIntoRoot(ctx context.Context) error {
 
 		mt := mimetype.Detect(data)
 
-		_, err = o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeFile, strings.Split(mt.String(), ";")[0], data)
+		_, err = o.callbacks.FileStore().ForRoot(o.rootID).CreateFile(ctx, path, filestore.FileTypeFile, strings.Split(mt.String(), ";")[0], data)
 		if err != nil {
 			return err
 		}
@@ -159,7 +159,7 @@ func (o *DirektivApplyer) copyWorkflowsIntoRoot(ctx context.Context) error {
 
 	for _, path := range paths {
 		data := o.parser.Workflows[path]
-		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeWorkflow, "application/yaml", data)
+		_, err := o.callbacks.FileStore().ForRoot(o.rootID).CreateFile(ctx, path, filestore.FileTypeWorkflow, "application/yaml", data)
 		if err != nil {
 			return err
 		}
@@ -181,7 +181,7 @@ func (o *DirektivApplyer) copyServicesIntoRoot(ctx context.Context) error {
 
 	for _, path := range paths {
 		data := o.parser.Services[path]
-		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeService, "application/yaml", data)
+		_, err := o.callbacks.FileStore().ForRoot(o.rootID).CreateFile(ctx, path, filestore.FileTypeService, "application/yaml", data)
 		if err != nil {
 			return err
 		}
@@ -203,7 +203,7 @@ func (o *DirektivApplyer) copyEndpointsIntoRoot(ctx context.Context) error {
 
 	for _, path := range paths {
 		data := o.parser.Endpoints[path]
-		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeEndpoint, "application/yaml", data)
+		_, err := o.callbacks.FileStore().ForRoot(o.rootID).CreateFile(ctx, path, filestore.FileTypeEndpoint, "application/yaml", data)
 		if err != nil {
 			return err
 		}
@@ -225,7 +225,7 @@ func (o *DirektivApplyer) copyConsumersIntoRoot(ctx context.Context) error {
 
 	for _, path := range paths {
 		data := o.parser.Consumers[path]
-		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeConsumer, "application/yaml", data)
+		_, err := o.callbacks.FileStore().ForRoot(o.rootID).CreateFile(ctx, path, filestore.FileTypeConsumer, "application/yaml", data)
 		if err != nil {
 			return err
 		}
@@ -246,7 +246,7 @@ func (o *DirektivApplyer) configureWorkflows(ctx context.Context) error {
 	sort.Strings(paths)
 
 	for _, path := range paths {
-		file, err := o.callbacks.FileStore().ForRootID(o.rootID).GetFile(ctx, path)
+		file, err := o.callbacks.FileStore().ForRoot(o.rootID).GetFile(ctx, path)
 		if err != nil {
 			return err
 		}
@@ -281,7 +281,7 @@ func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 	}
 
 	for path, m := range o.parser.DeprecatedWorkflowVars {
-		file, err := o.callbacks.FileStore().ForRootID(o.rootID).GetFile(ctx, path)
+		file, err := o.callbacks.FileStore().ForRoot(o.rootID).GetFile(ctx, path)
 		if err != nil {
 			return err
 		}
@@ -317,7 +317,7 @@ func (o *DirektivApplyer) copyGatewayIntoRoot(ctx context.Context) error {
 
 	for _, path := range paths {
 		data := o.parser.Gateways[path]
-		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path,
+		_, err := o.callbacks.FileStore().ForRoot(o.rootID).CreateFile(ctx, path,
 			filestore.FileTypeGateway, "application/yaml", data)
 		if err != nil {
 			return err

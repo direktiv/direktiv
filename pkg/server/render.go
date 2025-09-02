@@ -30,7 +30,7 @@ func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 
 	for _, ns := range nsList {
 		sLog = sLog.With("namespace", ns.Name)
-		files, err := fStore.ForRootID(ns.Name).ListDirektivFilesWithData(ctx)
+		files, err := fStore.ForRoot(ns.Name).ListDirektivFilesWithData(ctx)
 		if err != nil {
 			slog.Error("listing direktiv files", "err", err)
 
@@ -73,7 +73,7 @@ func renderServiceFiles(db *database.DB, serviceManager core.ServiceManager) {
 
 	for _, ns := range nsList {
 		slog = slog.With("namespace", ns.Name)
-		files, err := fStore.ForRootID(ns.Name).ListDirektivFilesWithData(ctx)
+		files, err := fStore.ForRoot(ns.Name).ListDirektivFilesWithData(ctx)
 		if err != nil {
 			slog.Error("listing direktiv files", "error", err)
 

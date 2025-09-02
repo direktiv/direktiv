@@ -54,7 +54,7 @@ func assertProcessSuccess(ctx context.Context, callbacks mirror.Callbacks, t *te
 func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, root *filestore.Root, paths ...string) {
 	t.Helper()
 
-	files, err := fs.ForRootID(root.ID).ListAllFiles(context.Background())
+	files, err := fs.ForRoot(root.ID).ListAllFiles(context.Background())
 	if err != nil {
 		t.Errorf("unexpected ReadDirectory() error = %v", err)
 	}

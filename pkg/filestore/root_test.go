@@ -54,7 +54,7 @@ func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, rootID 
 func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileStore, rootID string, path string, typ string, data []byte) {
 	t.Helper()
 
-	file, err := fs.ForRootID(rootID).CreateFile(context.Background(), path, filestore.FileType(typ), "application/octet-stream", data)
+	file, err := fs.ForRoot(rootID).CreateFile(context.Background(), path, filestore.FileType(typ), "application/octet-stream", data)
 	if err != nil {
 		t.Errorf("unexpected CreateFile() error: %v", err)
 
@@ -83,7 +83,7 @@ func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileSto
 		}
 	}
 
-	file, err = fs.ForRootID(rootID).GetFile(context.Background(), path)
+	file, err = fs.ForRoot(rootID).GetFile(context.Background(), path)
 	if err != nil {
 		t.Errorf("unexpected GetFile() error: %v", err)
 
@@ -109,7 +109,7 @@ func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, rootID st
 		typ = filestore.FileTypeFile
 	}
 
-	file, gotErr := fs.ForRootID(rootID).CreateFile(context.Background(), path, typ, "application/octet-stream", []byte(""))
+	file, gotErr := fs.ForRoot(rootID).CreateFile(context.Background(), path, typ, "application/octet-stream", []byte(""))
 	if file != nil {
 		t.Errorf("unexpected none nil CreateFile().file")
 
@@ -204,7 +204,7 @@ func TestRoot_RenamePath(t *testing.T) {
 		assertRootCorrectFileCreation(t, fs, root.ID, "/dir1/file.text")
 	}
 
-	f, err := fs.ForRootID(root.ID).GetFile(context.Background(), "/dir1/file.text")
+	f, err := fs.ForRoot(root.ID).GetFile(context.Background(), "/dir1/file.text")
 	if err != nil {
 		t.Fatalf("unepxected GetFile() error = %v", err)
 	}
@@ -218,7 +218,7 @@ func TestRoot_RenamePath(t *testing.T) {
 		"/file.text",
 	)
 
-	f, err = fs.ForRootID(root.ID).GetFile(context.Background(), "/dir1/dir2")
+	f, err = fs.ForRoot(root.ID).GetFile(context.Background(), "/dir1/dir2")
 	if err != nil {
 		t.Fatalf("unepxected GetFile() error = %v", err)
 	}
@@ -237,7 +237,7 @@ func TestRoot_RenamePath(t *testing.T) {
 func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, rootID string, searchPath string, paths ...string) {
 	t.Helper()
 
-	files, err := fs.ForRootID(rootID).ReadDirectory(context.Background(), searchPath)
+	files, err := fs.ForRoot(rootID).ReadDirectory(context.Background(), searchPath)
 	if err != nil {
 		t.Errorf("unepxected ReadDirectory() error = %v", err)
 
@@ -261,7 +261,7 @@ func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, rootID string, 
 func assertFileExistsV2(t *testing.T, fs filestore.FileStore, rootID string, file filestore.File, data []byte) {
 	t.Helper()
 
-	f, err := fs.ForRootID(rootID).GetFile(context.Background(), file.Path)
+	f, err := fs.ForRoot(rootID).GetFile(context.Background(), file.Path)
 	if err != nil {
 		t.Errorf("unexpected GetFile() error: %v", err)
 
@@ -306,7 +306,7 @@ func assertFileExistsV2(t *testing.T, fs filestore.FileStore, rootID string, fil
 func assertCreateFileV2(t *testing.T, fs filestore.FileStore, rootID string, file filestore.File, data []byte) {
 	t.Helper()
 
-	f, err := fs.ForRootID(rootID).CreateFile(context.Background(), file.Path, file.Typ, "text/plain", data)
+	f, err := fs.ForRoot(rootID).CreateFile(context.Background(), file.Path, file.Typ, "text/plain", data)
 	if err != nil {
 		t.Errorf("unexpected CreateFile() error: %v", err)
 

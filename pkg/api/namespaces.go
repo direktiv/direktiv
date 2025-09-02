@@ -71,7 +71,7 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 		writeDataStoreError(w, err)
 		return
 	}
-	err = fStore.ForRootID(name).Delete(r.Context())
+	err = fStore.ForRoot(name).Delete(r.Context())
 	if err != nil {
 		writeDataStoreError(w, err)
 		return
