@@ -14,9 +14,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/cmdserver"
-	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/server"
+	"github.com/direktiv/direktiv/internal/cmdserver"
+	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/server"
 	"github.com/spf13/cobra"
 )
 

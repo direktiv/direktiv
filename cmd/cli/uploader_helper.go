@@ -17,7 +17,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/internal/filestore"
 	"github.com/go-git/go-git/v6/plumbing/format/gitignore"
 )
 
