@@ -1870,7 +1870,7 @@
       "smartInput": {
         "templateHelp": "Hints on editing a template string ...",
         "variableBtn": "Add variable",
-        "placeholder": "Select or add a value",
+        "placeholder": "Select or add a segment",
         "valuesHeader": "Known segments",
         "listEmpty": "No known values found at current level. You can add a custom segment, or finish editing."
       },

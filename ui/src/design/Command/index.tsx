@@ -4,7 +4,7 @@ import * as React from "react";
 import { Dialog, DialogContent } from "../Dialog";
 
 import { Command as CommandPrimitive } from "cmdk";
-import { Search } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 import { twMergeClsx } from "~/util/helpers";
 
 const Command = React.forwardRef<
@@ -34,12 +34,18 @@ const CommandDialog = ({ children, ...props }: DialogPrimitive.DialogProps) => (
   </Dialog>
 );
 
+type CommandInputProps = React.ComponentPropsWithoutRef<
+  typeof CommandPrimitive.Input
+> & {
+  icon?: LucideIcon;
+};
+
 const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
->(({ className, children, ...props }, ref) => (
+  CommandInputProps
+>(({ className, children, icon: Icon, ...props }, ref) => (
   <div className="flex items-center border-b border-gray-4 px-3 dark:border-gray-dark-4">
-    <Search className="mr-2 size-4 shrink-0 opacity-50" />
+    {Icon && <Icon className="mr-2 size-4 shrink-0 opacity-50" />}
     <CommandPrimitive.Input
       ref={ref}
       className={twMergeClsx(
