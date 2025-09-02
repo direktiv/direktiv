@@ -46,13 +46,6 @@ export const Text = ({
           id="content"
           variables={variables}
         />
-        {/* <Textarea
-          {...form.register("content")}
-          id="content"
-          placeholder={t(
-            "direktivPage.blockEditor.blockForms.text.contentPlaceholder"
-          )}
-        /> */}
       </Fieldset>
     </FormWrapper>
   );
