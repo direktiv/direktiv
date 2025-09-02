@@ -46,9 +46,9 @@ export const TreePicker: FC<TreePickerProps> = ({
   const previewPath = Array.from({ length: previewLength }, (_, index) => (
     <Fragment key={index}>
       {path[index] ? (
-        <span className="text-gray-12">{path[index]}</span>
+        <span className="text-gray-12 dark:text-gray-8">{path[index]}</span>
       ) : (
-        <span className="text-gray-10">{placeholders[index]}</span>
+        <span className="italic text-gray-10">{placeholders[index]}</span>
       )}
       {index < previewLength - 1 && <span className="text-gray-10">.</span>}
     </Fragment>
