@@ -51,6 +51,7 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
 
   return (
     <Fieldset
+      id={id}
       label={label}
       description={description}
       htmlFor={fieldName}

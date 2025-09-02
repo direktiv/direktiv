@@ -1,4 +1,8 @@
 import { Block, BlockPathType } from "..";
+import {
+  RequiredFieldsContextProvider,
+  useRequiredFieldsContext,
+} from "./RequiredFieldsContext";
 
 import Alert from "~/design/Alert";
 import { BlockList } from "../utils/BlockList";
@@ -7,7 +11,6 @@ import { FormType } from "../../../schema/blocks/form";
 import { StopPropagation } from "~/components/StopPropagation";
 import { createLocalFormVariables } from "../formPrimitives/utils";
 import { usePageMutation } from "../../procedures/mutation";
-import { useState } from "react";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
@@ -16,11 +19,17 @@ type FormProps = {
   blockPath: BlockPathType;
 };
 
-export const Form = ({ blockProps, blockPath }: FormProps) => {
+const FormWithContext = ({ blockProps, blockPath }: FormProps) => {
   const { mutation, trigger } = blockProps;
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [missingFields, setMissingFields] = useState<string[]>([]);
+  const { missingFields, setMissingFields } = useRequiredFieldsContext();
+
+  const missingFieldsNote =
+    missingFields.length > 0 &&
+    t("direktivPage.page.blocks.form.incompleteForm", {
+      fields: missingFields.join(", "),
+    });
 
   const { mutate, isPending, isSuccess } = usePageMutation({
     onError: (error) => {
@@ -54,10 +63,9 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
         </Alert>
       ) : (
         <>
-          {missingFields.length > 0 && (
+          {missingFieldsNote && (
             <Alert variant="error" className="mb-4">
-              {t("direktivPage.page.blocks.form.incompleteForm")}{" "}
-              {missingFields.join(", ")}
+              {missingFieldsNote}
             </Alert>
           )}
           <BlockList path={blockPath}>
@@ -69,7 +77,12 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
               />
             ))}
           </BlockList>
-          <div className="mt-4 flex justify-end">
+          <div className="mt-4 flex items-center justify-end gap-3">
+            {missingFieldsNote && (
+              <span className="text-sm text-danger-11 dark:text-danger-dark-11">
+                {missingFieldsNote}
+              </span>
+            )}
             <StopPropagation>
               <Button
                 disabled={isPending}
@@ -84,3 +97,9 @@ export const Form = ({ blockProps, blockPath }: FormProps) => {
     </form>
   );
 };
+
+export const Form = (props: FormProps) => (
+  <RequiredFieldsContextProvider>
+    <FormWithContext {...props} />
+  </RequiredFieldsContextProvider>
+);

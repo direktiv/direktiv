@@ -1670,7 +1670,7 @@
         "form": {
           "success": "The form has been submitted successfully",
           "error": "Form submission failed",
-          "incompleteForm": "Please fill out all required fields",
+          "incompleteForm": "Some required fields are missing ({{fields}})",
           "optional": "(optional)",
           "selectPlaceholder": "Select an option",
           "datePickerPlaceholder": "Pick a date"

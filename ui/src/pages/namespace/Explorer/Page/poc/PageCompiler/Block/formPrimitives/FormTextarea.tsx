@@ -18,6 +18,7 @@ export const FormTextarea = ({ blockProps }: FormTextareaProps) => {
 
   return (
     <Fieldset
+      id={id}
       label={label}
       description={description}
       htmlFor={fieldName}

@@ -36,6 +36,7 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
 
   return (
     <Fieldset
+      id={id}
       label={label}
       description={description}
       htmlFor={fieldName}
