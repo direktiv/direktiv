@@ -9,7 +9,6 @@ import (
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
-
 	"gorm.io/gorm"
 )
 

@@ -14,8 +14,6 @@ func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 	// TODO: fix nil data params below.
 	return
 
-	sLog := slog.With("subscriber", "gateway file watcher")
-
 	fStore, dStore := db.FileStore(), db.DataStore()
 
 	nsList, err := dStore.Namespaces().GetAll(ctx)
@@ -59,8 +57,6 @@ func renderServiceFiles(db *database.DB, serviceManager core.ServiceManager) {
 	ctx := context.Background()
 	// TODO: fix nil data params below.
 	return
-
-	slog := slog.With("subscriber", "services file watcher")
 
 	fStore, dStore := db.FileStore(), db.DataStore()
 

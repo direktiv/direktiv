@@ -111,9 +111,10 @@ func JqState(l *lexer.L) lexer.StateFunc {
 	isJX := strings.Join(src, "")
 
 	token := NoToken
-	if isJX == "jq(" {
+	switch isJX {
+	case "jq(":
 		token = JqStartToken
-	} else if isJX == "js(" {
+	case "js(":
 		token = JsStartToken
 	}
 
