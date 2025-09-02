@@ -4,23 +4,16 @@ import (
 	"context"
 	"testing"
 
-	"github.com/direktiv/direktiv/internal/datastore"
+	database2 "github.com/direktiv/direktiv/pkg/database"
 
 	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/filestore"
 )
 
-func assertFileStoreCorrectRootCreation(t *testing.T, db *database.DB, fs filestore.FileStore, namespace string) {
+func assertFileStoreCorrectRootCreation(t *testing.T, fs filestore.FileStore, namespace string) {
 	t.Helper()
 
-	ns, err := db.DataStore().Namespaces().Create(context.Background(), &datastore.Namespace{
-		Name: namespace,
-	})
-	if err != nil {
-		t.Fatalf("unexpected CreateRoot() error: %v", err)
-	}
-
-	root, err := fs.CreateRoot(context.Background(), ns.Name)
+	root, err := fs.CreateRoot(context.Background(), namespace)
 	if err != nil {
 		t.Errorf("unexpected CreateRoot() error: %v", err)
 
@@ -31,8 +24,8 @@ func assertFileStoreCorrectRootCreation(t *testing.T, db *database.DB, fs filest
 
 		return
 	}
-	if root.ID != ns.Name {
-		t.Errorf("unexpected root.Namespace, got: >%s<, want: >%s<", root.ID, ns.Name)
+	if root.ID != namespace {
+		t.Errorf("unexpected root.Namespace, got: >%s<, want: >%s<", root.ID, namespace)
 
 		return
 	}
@@ -74,11 +67,11 @@ func assertFileStoreCorrectRootDeletion(t *testing.T, fs filestore.FileStore, id
 }
 
 func Test_sqlFileStore_CreateRoot(t *testing.T) {
-	db, err := database.NewTestDB(t)
+	conn, err := database2.NewTestDB(t)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
-	fs := db.FileStore()
+	fs := database.NewDB(conn).FileStore()
 
 	tests := []struct {
 		name string
@@ -90,17 +83,17 @@ func Test_sqlFileStore_CreateRoot(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assertFileStoreCorrectRootCreation(t, db, fs, tt.id)
+			assertFileStoreCorrectRootCreation(t, fs, tt.id)
 		})
 	}
 }
 
 func Test_sqlFileStore_ListingAfterCreate(t *testing.T) {
-	db, err := database.NewTestDB(t)
+	conn, err := database2.NewTestDB(t)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
-	fs := db.FileStore()
+	fs := database.NewDB(conn).FileStore()
 
 	myNamespace1 := "ns1"
 	myNamespace2 := "ns2"
@@ -110,14 +103,14 @@ func Test_sqlFileStore_ListingAfterCreate(t *testing.T) {
 	assertFileStoreHasRoot(t, fs)
 
 	// create two roots:
-	assertFileStoreCorrectRootCreation(t, db, fs, myNamespace1)
-	assertFileStoreCorrectRootCreation(t, db, fs, myNamespace2)
+	assertFileStoreCorrectRootCreation(t, fs, myNamespace1)
+	assertFileStoreCorrectRootCreation(t, fs, myNamespace2)
 
 	// assert existence.
 	assertFileStoreHasRoot(t, fs, myNamespace1, myNamespace2)
 
 	// add a third one:
-	assertFileStoreCorrectRootCreation(t, db, fs, myNamespace3)
+	assertFileStoreCorrectRootCreation(t, fs, myNamespace3)
 
 	// assert existence:
 	assertFileStoreHasRoot(t, fs, myNamespace1, myNamespace2, myNamespace3)

@@ -6,20 +6,22 @@ import (
 
 	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore"
+	database2 "github.com/direktiv/direktiv/pkg/database"
 
 	"github.com/google/uuid"
 )
 
 func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	ns := uuid.NewString()
+	conn, err := database2.NewTestDBWithNamespace(t, ns)
 	if err != nil {
-		t.Fatalf("unepxected NewTestDB() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	ds := db.DataStore()
+	ds := database.NewDB(conn).DataStore()
 
 	newProcess := &datastore.MirrorProcess{
 		ID:        uuid.New(),
-		Namespace: ns.Name,
+		Namespace: ns,
 		Status:    "new",
 	}
 
@@ -90,16 +92,17 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 }
 
 func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	ns := uuid.NewString()
+	conn, err := database2.NewTestDBWithNamespace(t, ns)
 	if err != nil {
-		t.Fatalf("unepxected NewTestDB() error = %v", err)
+		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	ds := db.DataStore()
+	ds := database.NewDB(conn).DataStore()
 
 	// test create.
 
 	newConfig := &datastore.MirrorConfig{
-		Namespace: ns.Name,
+		Namespace: ns,
 		URL:       "some_url",
 		GitRef:    "123",
 		AuthType:  "public",

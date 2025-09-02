@@ -6,20 +6,22 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/database"
+	database2 "github.com/direktiv/direktiv/pkg/database"
 	"github.com/google/uuid"
 
 	"github.com/direktiv/direktiv/internal/datastore"
 )
 
 func Test_HeartBeats(t *testing.T) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	ns := uuid.NewString()
+	conn, err := database2.NewTestDBWithNamespace(t, ns)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	ds := db.DataStore()
+	ds := database.NewDB(conn).DataStore()
 	err = ds.Secrets().Set(context.Background(), &datastore.Secret{
 		Name:      "test",
-		Namespace: ns.Name,
+		Namespace: ns,
 		Data:      []byte("value"),
 	})
 	if err != nil {

@@ -11,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/pubsub"
 	"github.com/direktiv/direktiv/internal/secrets"
+	database2 "github.com/direktiv/direktiv/pkg/database"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
@@ -20,7 +21,8 @@ import (
 func TestDBSecrets(t *testing.T) {
 
 	// create database
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	ns := uuid.NewString()
+	conn, err := database2.NewTestDBWithNamespace(t, ns)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
@@ -37,11 +39,11 @@ func TestDBSecrets(t *testing.T) {
 	require.NoError(t, err)
 	buss := pubsub.NewPubSub(nc)
 
-	sh1, cache1 := buildSecrets(ctx, db, buss, "host1")
-	sh2, cache2 := buildSecrets(ctx, db, buss, "host2")
+	sh1, cache1 := buildSecrets(ctx, database.NewDB(conn), buss, "host1")
+	sh2, cache2 := buildSecrets(ctx, database.NewDB(conn), buss, "host2")
 
-	sec1, _ := sh1.SecretsForNamespace(ctx, ns.Name)
-	sec2, _ := sh2.SecretsForNamespace(ctx, ns.Name)
+	sec1, _ := sh1.SecretsForNamespace(ctx, ns)
+	sec2, _ := sh2.SecretsForNamespace(ctx, ns)
 
 	// set on one
 	sec1.Set(ctx, &core.Secret{

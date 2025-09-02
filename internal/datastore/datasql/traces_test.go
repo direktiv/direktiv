@@ -7,6 +7,7 @@ import (
 
 	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore"
+	database2 "github.com/direktiv/direktiv/pkg/database"
 	"github.com/google/uuid"
 )
 
@@ -78,11 +79,12 @@ func testGetByParentSpanID(t *testing.T) {
 }
 
 func setupTestTrace(t *testing.T) (datastore.TracesStore, *datastore.Trace) {
-	db, err := database.NewTestDB(t)
+	conn, err := database2.NewTestDB(t)
 	if err != nil {
-		t.Fatalf("unexpected NewTestDBWithNamespace() error = %v", err)
+		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
-	traceStore := db.DataStore().Traces()
+
+	traceStore := database.NewDB(conn).DataStore().Traces()
 
 	trace := createTestTrace()
 

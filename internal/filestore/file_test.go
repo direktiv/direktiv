@@ -5,18 +5,18 @@ import (
 	"testing"
 
 	"github.com/direktiv/direktiv/internal/database"
-	"github.com/direktiv/direktiv/internal/datastore"
+	database2 "github.com/direktiv/direktiv/pkg/database"
 
 	"github.com/direktiv/direktiv/internal/filestore"
 	"github.com/google/uuid"
 )
 
 func Test_CorrectSetPath(t *testing.T) {
-	db, err := database.NewTestDB(t)
+	conn, err := database2.NewTestDB(t)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
-	fs := db.FileStore()
+	fs := database.NewDB(conn).FileStore()
 
 	tests := []struct {
 		name  string
@@ -128,13 +128,7 @@ func Test_CorrectSetPath(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ns, err := db.DataStore().Namespaces().Create(context.Background(), &datastore.Namespace{
-				Name: uuid.NewString(),
-			})
-			if err != nil {
-				t.Fatalf("unepxected CreateNamespace() error = %v", err)
-			}
-			root, err := fs.CreateRoot(context.Background(), ns.Name)
+			root, err := fs.CreateRoot(context.Background(), uuid.NewString())
 			if err != nil {
 				t.Fatalf("unepxected CreateRoot() error = %v", err)
 			}
@@ -185,13 +179,14 @@ func assertAllPathsInRoot(t *testing.T, fs filestore.FileStore, rootID string, w
 }
 
 func Test_UpdateFile(t *testing.T) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	ns := uuid.NewString()
+	conn, err := database2.NewTestDBWithNamespace(t, ns)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	fs := db.FileStore()
+	fs := database.NewDB(conn).FileStore()
 
-	root, err := fs.CreateRoot(context.Background(), ns.Name)
+	root, err := fs.CreateRoot(context.Background(), ns)
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
