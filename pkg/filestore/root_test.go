@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/direktiv/direktiv/internal/database"
 	database2 "github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
@@ -19,7 +18,7 @@ func TestRoot_CreateFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	fs := database.NewDB(conn).FileStore()
+	fs := filesql.NewStore(conn)
 
 	root, err := fs.CreateRoot(context.Background(), ns)
 	if err != nil {
@@ -131,7 +130,7 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	fs := database.NewDB(conn).FileStore()
+	fs := filesql.NewStore(conn)
 
 	root, err := fs.CreateRoot(context.Background(), ns)
 	if err != nil {
