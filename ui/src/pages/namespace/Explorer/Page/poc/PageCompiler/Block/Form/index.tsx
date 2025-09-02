@@ -46,6 +46,7 @@ const FormWithContext = ({ blockProps, blockPath }: FormProps) => {
       id={mutation.id}
       name={mutation.id}
       onSubmit={(formEvent) => {
+        setMissingFields([]);
         formEvent.preventDefault();
         const { formVariables, missingRequiredFields } =
           createLocalFormVariables(formEvent);
