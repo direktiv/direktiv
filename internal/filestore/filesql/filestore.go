@@ -8,19 +8,25 @@ import (
 	"gorm.io/gorm"
 )
 
-type store struct {
+type Store struct {
 	db *gorm.DB
 }
 
-func (s *store) ForRoot(rootID string) filestore.RootQuery {
+func NewStore(db *gorm.DB) *Store {
+	return &Store{
+		db: db,
+	}
+}
+
+func (s *Store) ForRoot(id string) filestore.RootQuery {
 	return &RootQuery{
-		rootID:       rootID,
+		rootID:       id,
 		db:           s.db,
 		checksumFunc: filestore.DefaultCalculateChecksum,
 	}
 }
 
-func (s *store) ForFile(file *filestore.File) filestore.FileQuery {
+func (s *Store) ForFile(file *filestore.File) filestore.FileQuery {
 	return &FileQuery{
 		file:         file,
 		checksumFunc: filestore.DefaultCalculateChecksum,
@@ -28,15 +34,7 @@ func (s *store) ForFile(file *filestore.File) filestore.FileQuery {
 	}
 }
 
-var _ filestore.FileStore = &store{} // Ensures store struct conforms to filestore.FileStore interface.
-
-func NewStore(db *gorm.DB) filestore.FileStore {
-	return &store{
-		db: db,
-	}
-}
-
-func (s *store) CreateRoot(ctx context.Context, rootID string) (*filestore.Root, error) {
+func (s *Store) CreateRoot(ctx context.Context, rootID string) (*filestore.Root, error) {
 	n := &filestore.Root{
 		ID: rootID,
 	}
@@ -51,7 +49,7 @@ func (s *store) CreateRoot(ctx context.Context, rootID string) (*filestore.Root,
 	return n, nil
 }
 
-func (s *store) GetRoot(ctx context.Context, id string) (*filestore.Root, error) {
+func (s *Store) GetRoot(ctx context.Context, id string) (*filestore.Root, error) {
 	var list []filestore.Root
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
@@ -69,7 +67,7 @@ func (s *store) GetRoot(ctx context.Context, id string) (*filestore.Root, error)
 	return &list[0], nil
 }
 
-func (s *store) GetAllRoots(ctx context.Context) ([]*filestore.Root, error) {
+func (s *Store) GetAllRoots(ctx context.Context) ([]*filestore.Root, error) {
 	var list []filestore.Root
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
