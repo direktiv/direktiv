@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/datastore"
-	"github.com/direktiv/direktiv/internal/utils"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )

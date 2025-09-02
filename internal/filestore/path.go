@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/direktiv/direktiv/internal/utils"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 const pathRegexPattern = `^[/](` + utils.NameRegexFragment + `[\/]?)*$`

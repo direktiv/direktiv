@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/direktiv/direktiv/internal/datastore"
-	"github.com/direktiv/direktiv/internal/utils"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"gorm.io/gorm"
 )
 
