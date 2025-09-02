@@ -14,6 +14,7 @@ import (
 type store interface {
 	PushInstanceMessage(ctx context.Context, namespace string, instanceID uuid.UUID, typ string, payload any) (uuid.UUID, error)
 	PullInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID, typ string) ([]core.EngineMessage, error)
+	PullAllInstancesIDs(ctx context.Context, namespace string) ([]uuid.UUID, error)
 }
 
 type Engine struct {
@@ -106,4 +107,8 @@ func (e *Engine) ExecWorkflow(ctx context.Context, namespace string, script stri
 
 func (e *Engine) GetInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID) ([]core.EngineMessage, error) {
 	return e.store.PullInstanceMessages(ctx, namespace, instanceID, "*")
+}
+
+func (e *Engine) GetAllInstanceIDs(ctx context.Context, namespace string) ([]uuid.UUID, error) {
+	return e.store.PullAllInstancesIDs(ctx, namespace)
 }

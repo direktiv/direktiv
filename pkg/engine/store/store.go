@@ -89,12 +89,32 @@ func (s *Store) PushInstanceMessage(ctx context.Context, namespace string, insta
 func (s *Store) PullInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID, typ string) ([]core.EngineMessage, error) {
 	subj := fmt.Sprintf(instanceMessagesSubject, namespace, instanceID, typ)
 
-	all, err := s.pullFromSubject(ctx, subj)
+	list, err := s.pullFromSubject(ctx, subj)
 	if err != nil {
 		return nil, fmt.Errorf("pull from subject: %w", err)
 	}
 
-	return all, nil
+	return list, nil
+}
+
+func (s *Store) PullAllInstancesIDs(ctx context.Context, namespace string) ([]uuid.UUID, error) {
+	subj := fmt.Sprintf(instanceMessagesSubject, namespace, "*", "init")
+
+	list, err := s.pullFromSubject(ctx, subj)
+	if err != nil {
+		return nil, fmt.Errorf("pull from subject: %w", err)
+	}
+
+	out := make([]uuid.UUID, len(list))
+	for i, m := range list {
+		var msg core.InstanceMessage
+		if err := json.Unmarshal(m.Data, &msg); err != nil {
+			return nil, fmt.Errorf("unmarshalling engine message: %w", err)
+		}
+		out[i] = msg.InstanceID
+	}
+
+	return out, nil
 }
 
 func (s *Store) pullFromSubject(ctx context.Context, subj string) ([]core.EngineMessage, error) {

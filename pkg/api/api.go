@@ -15,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/extensions"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
 )
 
 const (
@@ -70,10 +69,9 @@ func Initialize(circuit *core.Circuit, app InitializeArgs) (*http.Server, error)
 		bus: app.PubSub,
 	}
 	instCtr := &instController{
-		db:           app.DB,
-		manager:      nil,
-		engine:       app.Engine,
-		allInstances: make([]uuid.UUID, 0),
+		db:      app.DB,
+		manager: nil,
+		engine:  app.Engine,
 	}
 	notificationsCtr := &notificationsController{
 		db: app.DB,

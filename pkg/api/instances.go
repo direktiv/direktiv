@@ -46,10 +46,9 @@ type InstanceData struct {
 }
 
 type instController struct {
-	db           *database.DB
-	manager      any
-	engine       *engine.Engine
-	allInstances []uuid.UUID
+	db      *database.DB
+	manager any
+	engine  *engine.Engine
 }
 
 func marshalForAPI(data []core.EngineMessage) (*InstanceData, error) {
@@ -138,9 +137,6 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	id, err := e.engine.ExecWorkflow(r.Context(), namespace, string(fileData), "start", string(input), map[string]string{
 		"workflowPath": path,
 	})
-	if id != uuid.Nil {
-		e.allInstances = append(e.allInstances, id)
-	}
 	if err != nil {
 		writeError(w, &Error{
 			Code:    err.Error(),
@@ -271,8 +267,14 @@ func (e *instController) get(w http.ResponseWriter, r *http.Request) {
 func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
+	ids, err := e.engine.GetAllInstanceIDs(r.Context(), namespace)
+	if err != nil {
+		writeInternalError(w, err)
+		return
+	}
+
 	result := []any{}
-	for _, id := range e.allInstances {
+	for _, id := range ids {
 		i, err := e.engine.GetInstanceMessages(r.Context(), namespace, id)
 		if err != nil {
 			writeInternalError(w, err)
