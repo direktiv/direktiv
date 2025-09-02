@@ -28,6 +28,7 @@ import (
 	"github.com/direktiv/direktiv/internal/service"
 	"github.com/direktiv/direktiv/internal/service/registry"
 	"github.com/direktiv/direktiv/internal/telemetry"
+	database2 "github.com/direktiv/direktiv/pkg/database"
 	_ "github.com/lib/pq" //nolint:revive
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -261,7 +262,7 @@ func initDB(config *core.Config) (*database.DB, error) {
 		return nil, err
 	}
 
-	res := db.Exec(database.Schema)
+	res := db.Exec(database2.Schema)
 	if res.Error != nil {
 		return nil, fmt.Errorf("provisioning schema, err: %w", res.Error)
 	}

@@ -14,6 +14,7 @@ import (
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/filestore"
 	"github.com/direktiv/direktiv/internal/filestore/filesql"
+	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	tsPostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -22,9 +23,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
-
-//go:embed db_schema.sql
-var Schema string
 
 type DB struct {
 	db *gorm.DB
@@ -114,7 +112,7 @@ func newTestPostgres(dsn string) (*DB, error) {
 		return nil, fmt.Errorf("connecting to db, err: %w", err)
 	}
 
-	res := db.Exec(Schema)
+	res := db.Exec(database.Schema)
 	if res.Error != nil {
 		return nil, fmt.Errorf("creating schema, err: %w", res.Error)
 	}
