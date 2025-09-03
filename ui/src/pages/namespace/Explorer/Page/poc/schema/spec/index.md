@@ -221,14 +221,44 @@ A query is a API `GET`-request that reads data from the server
 
 ## `Variable`
 
-A Variable is a string that references dynamic data from parent blocks like forms, queries, or loops. Variables are resolved at runtime to access contextual data.
+A Variable is a string that references dynamic data from various sources within the page. Variables follow the structure `namespace.id.pointer` and are resolved at runtime to access contextual data.
+
+### Structure
+
+- **namespace**: The source of the data (e.g., `query`, `loop`, `this`)
+- **id**: The identifier of the specific block or context
+- **pointer**: The path to the specific data within the source (not available in the `this` namespace)
+
+### Available Namespaces
+
+- **`query`**: References data from Query blocks. The `id` is the query's unique identifier, and the `pointer` navigates the JSON response.
+- **`loop`**: References data from Loop blocks. The `id` is the loop's unique identifier, and the `pointer` accesses the current item in the iteration.
+- **`this`**: References local variables within the current context, such as form submission data. The `id` specifies the local context (e.g., `form`), and the `pointer` accesses specific fields.
+
+### Variable Scoping
+
+Variables are scoped based on their namespace:
+
+- **`query`** and **`loop`** variables are available from the block where they are defined and propagate downward through the component tree to child blocks.
+- **`this`** variables are only available within the block itself (e.g., form data is accessible only inside the form block).
 
 **Examples**
 
-- `query.pokemon.data.name`
-  This looks for a parent `query` block, with the name `pokemon` and points to the `data.name` attribute of the JSON response of that request
+- `query.user.data.name`
 
-_\*the exact syntax is still TBD_
+  - `query` (namespace): References data from a query within a QueryProvider block
+  - `user` (id): The specific query with id "user"
+  - `data.name` (pointer): Navigates to the `name` field in the `data` object of the JSON response
+
+- `loop.items.data.title`
+
+  - `loop` (namespace): References data from a Loop block
+  - `items` (id): The specific loop block with id "items"
+  - `title` (pointer): Accesses the `title` field of the current item being iterated over
+
+- `this.username`
+  - `this` (namespace): References local variables within the current context
+  - `username` (id): Searches for the form primitive with the id "username" and uses that value
 
 ## `TemplateString`
 
