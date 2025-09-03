@@ -9,6 +9,7 @@ import {
 } from "~/design/Select";
 
 import { BlockEditFormProps } from "..";
+import { ExtendedKeyValueInput } from "../components/FormElements/ExtendedKeyValueInput";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
 import Input from "~/design/Input";
@@ -133,7 +134,7 @@ export const Form = ({
         control={form.control}
         name="mutation.requestBody"
         render={({ field }) => (
-          <KeyValueInput
+          <ExtendedKeyValueInput
             field={field}
             label={t(
               "direktivPage.blockEditor.blockForms.form.mutation.requestBodyLabel"

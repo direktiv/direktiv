@@ -84,6 +84,17 @@ const form: BlockType[] = [
     },
   },
   {
+    id: "floating-number",
+    label: "number input",
+    description: "",
+    optional: false,
+    type: "form-number-input",
+    defaultValue: {
+      type: "number",
+      value: 4.99,
+    },
+  },
+  {
     id: "date",
     label: "date",
     description: "",
@@ -97,14 +108,14 @@ const form: BlockType[] = [
     description: "",
     optional: false,
     type: "form-select",
-    values: ["free", "pro", "enterprise"],
+    values: { type: "array", value: ["free", "pro", "enterprise"] },
     defaultValue: "pro",
   },
 ];
 
 describe("form request", () => {
   describe("url", () => {
-    test("resolves variables in URL path", async () => {
+    test("interpolates variables in URL path", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -124,7 +135,7 @@ describe("form request", () => {
       await waitFor(() => {
         expect(apiRequestMock).toHaveBeenCalledTimes(1);
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
-        const requestUrl = new URL(formRequest.url);
+        const requestUrl = new URL(formRequest.clone().url);
         expect(requestUrl.pathname).toBe(
           "/blog-post/101/string%20from%20a%20string%20input"
         );
@@ -157,7 +168,7 @@ describe("form request", () => {
   });
 
   describe("query params", () => {
-    test("resolves all variable types in query parameters", async () => {
+    test("interpolates variables in query parameters", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -184,11 +195,11 @@ describe("form request", () => {
                   value: "{{query.user.data.lastLogin}}",
                 },
                 {
-                  key: "form-string",
+                  key: "input-string",
                   value: "{{this.form.string}}",
                 },
                 {
-                  key: "form-textarea",
+                  key: "textarea",
                   value: "{{this.form.textarea}}",
                 },
                 {
@@ -200,11 +211,15 @@ describe("form request", () => {
                   value: "{{this.form.checkbox-unchecked}}",
                 },
                 {
-                  key: "number",
+                  key: "input-number",
                   value: "{{this.form.number}}",
                 },
                 {
-                  key: "date",
+                  key: "input-floating-number",
+                  value: "{{this.form.floating-number}}",
+                },
+                {
+                  key: "input-date",
                   value: "{{this.form.date}}",
                 },
                 {
@@ -223,9 +238,9 @@ describe("form request", () => {
       await waitFor(() => {
         expect(apiRequestMock).toHaveBeenCalledTimes(1);
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
-        const requestUrl = new URL(formRequest.url);
+        const requestUrl = new URL(formRequest.clone().url);
         expect(requestUrl.search).toBe(
-          "?string=ok&boolean=true&number=3&null=null&form-string=string+from+a+string+input&form-textarea=string+from+a+textarea&checkbox-checked=true&checkbox-unchecked=false&date=2025-12-24&select=pro"
+          "?string=ok&boolean=true&number=19.99&null=null&input-string=string+from+a+string+input&textarea=string+from+a+textarea&checkbox-checked=true&checkbox-unchecked=false&input-number=3&input-floating-number=4.99&input-date=2025-12-24&select=pro"
         );
       });
     });
@@ -262,7 +277,7 @@ describe("form request", () => {
   });
 
   describe("request headers", () => {
-    test("resolves all variable types in request headers", async () => {
+    test("interpolates variables in request headers", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -273,47 +288,52 @@ describe("form request", () => {
               url: "/save-user",
               requestHeaders: [
                 {
-                  key: "String-Value",
+                  key: "String",
                   value: "String: {{query.user.data.status}}",
                 },
                 {
-                  key: "Boolean-Value",
+                  key: "Boolean",
                   value: "Boolean: {{query.user.data.emailVerified}}",
                 },
                 {
-                  key: "Number-Value",
+                  key: "Number",
                   value: "Number: {{query.user.data.accountBalance}}",
                 },
                 {
-                  key: "Null-Value",
+                  key: "Null",
                   value: "Null: {{query.user.data.lastLogin}}",
                 },
                 {
-                  key: "Form-String-Value",
-                  value: "String: {{this.form.string}}",
+                  key: "Input-String",
+                  value: "Input String: {{this.form.string}}",
                 },
                 {
-                  key: "Form-Textarea-Value",
+                  key: "Textarea",
                   value: "Textarea: {{this.form.textarea}}",
                 },
                 {
-                  key: "Form-Checkbox-Checked-Value",
-                  value: "Checkbox: {{this.form.checkbox-checked}}",
+                  key: "Checkbox-Checked",
+                  value: "Checkbox (checked): {{this.form.checkbox-checked}}",
                 },
                 {
-                  key: "Form-Checkbox-Unchecked-Value",
-                  value: "Checkbox: {{this.form.checkbox-unchecked}}",
+                  key: "Checkbox-Unchecked",
+                  value:
+                    "Checkbox (unchecked): {{this.form.checkbox-unchecked}}",
                 },
                 {
-                  key: "Form-Number-Value",
-                  value: "Number: {{this.form.number}}",
+                  key: "Input-Number",
+                  value: "Input Number: {{this.form.number}}",
                 },
                 {
-                  key: "Form-Date-Value",
-                  value: "Date: {{this.form.date}}",
+                  key: "Input-Floating-Number",
+                  value: "Input Floating Number: {{this.form.floating-number}}",
                 },
                 {
-                  key: "Form-Select-Value",
+                  key: "Input-Date",
+                  value: "Input Date: {{this.form.date}}",
+                },
+                {
+                  key: "Select",
                   value: "Select: {{this.form.select}}",
                 },
               ],
@@ -328,29 +348,35 @@ describe("form request", () => {
       await waitFor(() => {
         expect(apiRequestMock).toHaveBeenCalledTimes(1);
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
-        expect(formRequest.headers.get("String-Value")).toBe("String: ok");
-        expect(formRequest.headers.get("Boolean-Value")).toBe("Boolean: true");
-        expect(formRequest.headers.get("Number-Value")).toBe("Number: 19.99");
-        expect(formRequest.headers.get("Null-Value")).toBe("Null: null");
-        expect(formRequest.headers.get("Form-String-Value")).toBe(
-          "String: string from a string input"
+        expect(formRequest.clone().headers.get("String")).toBe("String: ok");
+        expect(formRequest.clone().headers.get("Boolean")).toBe(
+          "Boolean: true"
         );
-        expect(formRequest.headers.get("Form-Textarea-Value")).toBe(
+        expect(formRequest.clone().headers.get("Number")).toBe("Number: 19.99");
+        expect(formRequest.clone().headers.get("Null")).toBe("Null: null");
+        expect(formRequest.clone().headers.get("Input-String")).toBe(
+          "Input String: string from a string input"
+        );
+        expect(formRequest.clone().headers.get("Textarea")).toBe(
           "Textarea: string from a textarea"
         );
-        expect(formRequest.headers.get("Form-Checkbox-Checked-Value")).toBe(
-          "Checkbox: true"
+        expect(formRequest.clone().headers.get("Checkbox-Checked")).toBe(
+          "Checkbox (checked): true"
         );
-        expect(formRequest.headers.get("Form-Checkbox-Unchecked-Value")).toBe(
-          "Checkbox: false"
+        expect(formRequest.clone().headers.get("Checkbox-Unchecked")).toBe(
+          "Checkbox (unchecked): false"
         );
-        expect(formRequest.headers.get("Form-Number-Value")).toBe("Number: 3");
-        expect(formRequest.headers.get("Form-Date-Value")).toBe(
-          "Date: 2025-12-24"
+        expect(formRequest.clone().headers.get("Input-Number")).toBe(
+          "Input Number: 3"
         );
-        expect(formRequest.headers.get("Form-Select-Value")).toBe(
-          "Select: pro"
+
+        expect(formRequest.clone().headers.get("Input-Floating-Number")).toBe(
+          "Input Floating Number: 4.99"
         );
+        expect(formRequest.clone().headers.get("Input-Date")).toBe(
+          "Input Date: 2025-12-24"
+        );
+        expect(formRequest.clone().headers.get("Select")).toBe("Select: pro");
       });
     });
 
@@ -386,7 +412,7 @@ describe("form request", () => {
   });
 
   describe("request body", () => {
-    test("resolves all variable types in request body", async () => {
+    test("interpolates variables in request body", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -397,48 +423,90 @@ describe("form request", () => {
               url: "/save-user",
               requestBody: [
                 {
-                  key: "String-Value",
-                  value: "String: {{query.user.data.status}}",
+                  key: "string",
+                  value: {
+                    type: "string",
+                    value: "String: {{query.user.data.status}}",
+                  },
                 },
                 {
-                  key: "Boolean-Value",
-                  value: "Boolean: {{query.user.data.emailVerified}}",
+                  key: "boolean",
+                  value: {
+                    type: "string",
+                    value: "Boolean: {{query.user.data.emailVerified}}",
+                  },
                 },
                 {
-                  key: "Number-Value",
-                  value: "Number: {{query.user.data.accountBalance}}",
+                  key: "number",
+                  value: {
+                    type: "string",
+                    value: "Number: {{query.user.data.accountBalance}}",
+                  },
                 },
                 {
-                  key: "Null-Value",
-                  value: "Null: {{query.user.data.lastLogin}}",
+                  key: "null",
+                  value: {
+                    type: "string",
+                    value: "Null: {{query.user.data.lastLogin}}",
+                  },
                 },
                 {
-                  key: "Form-String-Value",
-                  value: "String: {{this.form.string}}",
+                  key: "input-string",
+                  value: {
+                    type: "string",
+                    value: "Input String: {{this.form.string}}",
+                  },
                 },
                 {
-                  key: "Form-Textarea-Value",
-                  value: "Textarea: {{this.form.textarea}}",
+                  key: "textarea",
+                  value: {
+                    type: "string",
+                    value: "Textarea: {{this.form.textarea}}",
+                  },
                 },
                 {
-                  key: "Form-Checkbox-Checked-Value",
-                  value: "Checkbox: {{this.form.checkbox-checked}}",
+                  key: "checkbox-checked",
+                  value: {
+                    type: "string",
+                    value: "Checkbox (checked): {{this.form.checkbox-checked}}",
+                  },
                 },
                 {
-                  key: "Form-Checkbox-Unchecked-Value",
-                  value: "Checkbox: {{this.form.checkbox-unchecked}}",
+                  key: "checkbox-unchecked",
+                  value: {
+                    type: "string",
+                    value:
+                      "Checkbox (unchecked): {{this.form.checkbox-unchecked}}",
+                  },
                 },
                 {
-                  key: "Form-Number-Value",
-                  value: "Number: {{this.form.number}}",
+                  key: "input-number",
+                  value: {
+                    type: "string",
+                    value: "Input Number: {{this.form.number}}",
+                  },
                 },
                 {
-                  key: "Form-Date-Value",
-                  value: "Date: {{this.form.date}}",
+                  key: "input-floating-number",
+                  value: {
+                    type: "string",
+                    value:
+                      "Input Floating Number: {{this.form.floating-number}}",
+                  },
                 },
                 {
-                  key: "Form-Select-Value",
-                  value: "Select: {{this.form.select}}",
+                  key: "input-date",
+                  value: {
+                    type: "string",
+                    value: "Input Date: {{this.form.date}}",
+                  },
+                },
+                {
+                  key: "select",
+                  value: {
+                    type: "string",
+                    value: "Select: {{this.form.select}}",
+                  },
                 },
               ],
             })}
@@ -452,27 +520,276 @@ describe("form request", () => {
       await waitFor(async () => {
         expect(apiRequestMock).toHaveBeenCalledTimes(1);
         const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
-        const text = JSON.parse(await formRequest.text());
+        const jsonResponse = JSON.parse(await formRequest.clone().text());
 
-        expect(text["String-Value"]).toBe("String: ok");
-        expect(text["Boolean-Value"]).toBe("Boolean: true");
-        expect(text["Number-Value"]).toBe("Number: 19.99");
-        expect(text["Null-Value"]).toBe("Null: null");
-        expect(text["Form-String-Value"]).toBe(
-          "String: string from a string input"
+        expect(jsonResponse["string"]).toBe("String: ok");
+        expect(jsonResponse["boolean"]).toBe("Boolean: true");
+        expect(jsonResponse["number"]).toBe("Number: 19.99");
+        expect(jsonResponse["null"]).toBe("Null: null");
+        expect(jsonResponse["input-string"]).toBe(
+          "Input String: string from a string input"
         );
-        expect(text["Form-Textarea-Value"]).toBe(
+        expect(jsonResponse["textarea"]).toBe(
           "Textarea: string from a textarea"
         );
-        expect(text["Form-Checkbox-Checked-Value"]).toBe("Checkbox: true");
-        expect(text["Form-Checkbox-Unchecked-Value"]).toBe("Checkbox: false");
-        expect(text["Form-Number-Value"]).toBe("Number: 3");
-        expect(text["Form-Date-Value"]).toBe("Date: 2025-12-24");
-        expect(text["Form-Select-Value"]).toBe("Select: pro");
+        expect(jsonResponse["checkbox-checked"]).toBe(
+          "Checkbox (checked): true"
+        );
+        expect(jsonResponse["checkbox-unchecked"]).toBe(
+          "Checkbox (unchecked): false"
+        );
+        expect(jsonResponse["input-number"]).toBe("Input Number: 3");
+        expect(jsonResponse["input-floating-number"]).toBe(
+          "Input Floating Number: 4.99"
+        );
+        expect(jsonResponse["input-date"]).toBe("Input Date: 2025-12-24");
+        expect(jsonResponse["select"]).toBe("Select: pro");
       });
     });
 
-    test("shows error for non-stringifiable variables in body", async () => {
+    test("resolves variable pointer in request body", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm(form, {
+              id: "save-user",
+              method: "POST",
+              url: "/save-user",
+              requestBody: [
+                {
+                  key: "string",
+                  value: {
+                    type: "variable",
+                    value: "query.user.data.status",
+                  },
+                },
+                {
+                  key: "boolean",
+                  value: {
+                    type: "variable",
+                    value: "query.user.data.emailVerified",
+                  },
+                },
+                {
+                  key: "number",
+                  value: {
+                    type: "variable",
+                    value: "query.user.data.accountBalance",
+                  },
+                },
+                {
+                  key: "null",
+                  value: {
+                    type: "variable",
+                    value: "query.user.data.lastLogin",
+                  },
+                },
+                {
+                  key: "input-string",
+                  value: {
+                    type: "variable",
+                    value: "this.form.string",
+                  },
+                },
+                {
+                  key: "textarea",
+                  value: {
+                    type: "variable",
+                    value: "this.form.textarea",
+                  },
+                },
+                {
+                  key: "checkbox-checked",
+                  value: {
+                    type: "variable",
+                    value: "this.form.checkbox-checked",
+                  },
+                },
+                {
+                  key: "checkbox-unchecked",
+                  value: {
+                    type: "variable",
+                    value: "this.form.checkbox-unchecked",
+                  },
+                },
+                {
+                  key: "input-number",
+                  value: {
+                    type: "variable",
+                    value: "this.form.number",
+                  },
+                },
+                {
+                  key: "input-floating-number",
+                  value: {
+                    type: "variable",
+                    value: "this.form.floating-number",
+                  },
+                },
+                {
+                  key: "input-date",
+                  value: {
+                    type: "variable",
+                    value: "this.form.date",
+                  },
+                },
+                {
+                  key: "select",
+                  value: {
+                    type: "variable",
+                    value: "this.form.select",
+                  },
+                },
+                {
+                  key: "array",
+                  value: {
+                    type: "variable",
+                    value: "query.user.meta.subscriptionPlanOptions",
+                  },
+                },
+                {
+                  key: "object",
+                  value: {
+                    type: "variable",
+                    value: "query.user.data",
+                  },
+                },
+              ],
+            })}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button", { name: "save" }).click();
+
+      await waitFor(async () => {
+        expect(apiRequestMock).toHaveBeenCalledTimes(1);
+        const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
+        const jsonResponse = JSON.parse(await formRequest.clone().text());
+
+        expect(jsonResponse["string"]).toBe("ok");
+        expect(jsonResponse["boolean"]).toBe(true);
+        expect(jsonResponse["number"]).toBe(19.99);
+        expect(jsonResponse["null"]).toBe(null);
+        expect(jsonResponse["input-string"]).toBe("string from a string input");
+        expect(jsonResponse["textarea"]).toBe("string from a textarea");
+        expect(jsonResponse["checkbox-checked"]).toBe(true);
+        expect(jsonResponse["checkbox-unchecked"]).toBe(false);
+        expect(jsonResponse["input-number"]).toBe(3);
+        expect(jsonResponse["input-floating-number"]).toBe(4.99);
+        expect(jsonResponse["input-date"]).toBe("2025-12-24");
+        expect(jsonResponse["select"]).toBe("pro");
+        expect(jsonResponse["array"]).toEqual(["free", "pro", "enterprise"]);
+        expect(jsonResponse["object"]).toEqual({
+          accountBalance: 19.99,
+          emailVerified: true,
+          lastLogin: null,
+          membershipStartDate: "2023-06-15T09:30:00Z",
+          profile: { firstName: "Alice" },
+          recentActivity: [
+            "login",
+            1623456789,
+            false,
+            null,
+            { action: "purchase" },
+          ],
+          status: "ok",
+          subscriptionPlan: "pro",
+          twoFactorEnabled: false,
+          userId: 101,
+        });
+      });
+    });
+
+    test("can use booleans in request body", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm(form, {
+              id: "save-user",
+              method: "POST",
+              url: "/save-user",
+              requestBody: [
+                {
+                  key: "boolean-true",
+                  value: {
+                    type: "boolean",
+                    value: true,
+                  },
+                },
+                {
+                  key: "boolean-false",
+                  value: {
+                    type: "boolean",
+                    value: false,
+                  },
+                },
+              ],
+            })}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button", { name: "save" }).click();
+
+      await waitFor(async () => {
+        expect(apiRequestMock).toHaveBeenCalledTimes(1);
+        const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
+        const jsonResponse = JSON.parse(await formRequest.clone().text());
+
+        expect(jsonResponse["boolean-true"]).toBe(true);
+        expect(jsonResponse["boolean-false"]).toBe(false);
+      });
+    });
+
+    test("can use numbers in request body", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm(form, {
+              id: "save-user",
+              method: "POST",
+              url: "/save-user",
+              requestBody: [
+                {
+                  key: "number-integer",
+                  value: {
+                    type: "number",
+                    value: 3,
+                  },
+                },
+                {
+                  key: "number-float",
+                  value: {
+                    type: "number",
+                    value: 4.99,
+                  },
+                },
+              ],
+            })}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button", { name: "save" }).click();
+
+      await waitFor(async () => {
+        expect(apiRequestMock).toHaveBeenCalledTimes(1);
+        const formRequest = apiRequestMock.mock.calls[0][0].request as Request;
+        const jsonResponse = JSON.parse(await formRequest.clone().text());
+
+        expect(jsonResponse["number-integer"]).toBe(3);
+        expect(jsonResponse["number-float"]).toBe(4.99);
+      });
+    });
+
+    test("shows error for non-serializable veriables in request body", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -484,7 +801,10 @@ describe("form request", () => {
               requestBody: [
                 {
                   key: "object",
-                  value: "String: {{query.user.data.profile}}",
+                  value: {
+                    type: "string",
+                    value: "String: {{query.user.data.profile}}",
+                  },
                 },
               ],
             })}

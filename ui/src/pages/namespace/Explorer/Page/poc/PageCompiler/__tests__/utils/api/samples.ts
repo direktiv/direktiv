@@ -648,11 +648,7 @@ export const dataTypesResponse = {
 
 export const getUserDetailsResponse = {
   meta: {
-    subscriptionPlanOptions: [
-      { value: "free", label: "Free Plan" },
-      { value: "pro", label: "Pro Plan" },
-      { value: "enterprise", label: "Enterprise Plan" },
-    ],
+    subscriptionPlanOptions: ["free", "pro", "enterprise"],
   },
   data: {
     status: "ok",
