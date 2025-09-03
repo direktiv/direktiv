@@ -54,7 +54,11 @@ export const EditorPanelLayoutProvider = ({
   const [dialog, setDialog] = useState<EditorDialogState>(null);
   const { mode } = usePageStateContext();
 
-  const createBlock = (type: BlockType["type"], path: BlockPathType) => {
+  const createBlock = (
+    type: BlockType["type"],
+    path: BlockPathType,
+    variables: ContextVariables
+  ) => {
     const blockConfig = getBlockConfig(type);
 
     if (!blockConfig) throw new Error(`No blockConfig found for ${type}`);
@@ -66,14 +70,14 @@ export const EditorPanelLayoutProvider = ({
       action: "create",
       block: blockConfig.defaultValues,
       path,
-      variables: { loop: {}, query: {} },
+      variables,
     });
   };
 
   const onDrop = (payload: DragAndDropPayloadSchemaType) => {
     const { drag, drop } = payload;
     if (drag.type === "add") {
-      createBlock(drag.blockType, [...drop.targetPath]);
+      createBlock(drag.blockType, [...drop.targetPath], drop.variables);
     }
     if (drag.type === "move") {
       moveBlock(drag.originPath, drop.targetPath, drag.block);
@@ -81,7 +85,7 @@ export const EditorPanelLayoutProvider = ({
         action: "edit",
         path: drop.targetPath,
         block: drag.block,
-        variables: { loop: {}, query: {} },
+        variables: drop.variables,
       });
     }
   };
