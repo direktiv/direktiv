@@ -14,6 +14,7 @@ import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
 import Input from "~/design/Input";
 import { KeyValueInput } from "../components/FormElements/KeyValueInput";
+import { SmartInput } from "../components/SmartInput";
 import { mutationMethods } from "../../schema/procedures/mutation";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -49,8 +50,9 @@ export const Form = ({
         )}
         htmlFor="trigger-label"
       >
-        <Input
-          {...form.register("trigger.label")}
+        <SmartInput
+          value={form.watch("trigger.label")}
+          onChange={(content) => form.setValue("trigger.label", content)}
           id="trigger-label"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.form.mutation.triggerLabelPlaceholder"
@@ -98,8 +100,9 @@ export const Form = ({
         label={t("direktivPage.blockEditor.blockForms.form.mutation.urlLabel")}
         htmlFor="mutation-url"
       >
-        <Input
-          {...form.register("mutation.url")}
+        <SmartInput
+          value={form.watch("mutation.url")}
+          onChange={(content) => form.setValue("mutation.url", content)}
           id="mutation-url"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.form.mutation.urlPlaceholder"
