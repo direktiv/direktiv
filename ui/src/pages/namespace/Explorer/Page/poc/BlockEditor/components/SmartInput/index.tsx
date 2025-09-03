@@ -21,11 +21,13 @@ export const SmartInput = ({
   value,
   id,
   variables,
+  placeholder,
 }: {
   onChange: (content: string) => void;
   value: string;
   id: string;
   variables: ContextVariables;
+  placeholder: string;
 }) => {
   const { t } = useTranslation();
   const [dialog, setDialog] = useState(false);
@@ -39,9 +41,7 @@ export const SmartInput = ({
       Text,
       Paragraph,
       Placeholder.configure({
-        placeholder: t(
-          "direktivPage.blockEditor.blockForms.text.contentPlaceholder"
-        ),
+        placeholder,
       }),
     ],
     content: value,

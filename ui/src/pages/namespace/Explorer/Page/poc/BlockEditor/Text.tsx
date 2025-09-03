@@ -47,6 +47,9 @@ export const Text = ({
           onChange={(content) => form.setValue("content", content)}
           id="content"
           variables={panel.variables}
+          placeholder={t(
+            "direktivPage.blockEditor.blockForms.text.contentPlaceholder"
+          )}
         />
       </Fieldset>
     </FormWrapper>
