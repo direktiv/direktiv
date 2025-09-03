@@ -8,7 +8,6 @@ import (
 
 	"github.com/direktiv/direktiv/internal/cache"
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/pubsub"
 	"github.com/direktiv/direktiv/internal/secrets"
 	database2 "github.com/direktiv/direktiv/pkg/database"
@@ -16,6 +15,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
 	natsTestContainer "github.com/testcontainers/testcontainers-go/modules/nats"
+	"gorm.io/gorm"
 )
 
 func TestDBSecrets(t *testing.T) {
@@ -39,8 +39,8 @@ func TestDBSecrets(t *testing.T) {
 	require.NoError(t, err)
 	buss := pubsub.NewPubSub(nc)
 
-	sh1, cache1 := buildSecrets(ctx, database.NewDB(conn), buss, "host1")
-	sh2, cache2 := buildSecrets(ctx, database.NewDB(conn), buss, "host2")
+	sh1, cache1 := buildSecrets(ctx, conn, buss, "host1")
+	sh2, cache2 := buildSecrets(ctx, conn, buss, "host2")
 
 	sec1, _ := sh1.SecretsForNamespace(ctx, ns)
 	sec2, _ := sh2.SecretsForNamespace(ctx, ns)
@@ -97,7 +97,7 @@ func TestDBSecrets(t *testing.T) {
 
 }
 
-func buildSecrets(ctx context.Context, db *database.DB, bus core.PubSub, host string) (core.SecretsManager, core.Cache) {
+func buildSecrets(ctx context.Context, db *gorm.DB, bus core.PubSub, host string) (core.SecretsManager, core.Cache) {
 	circuit := core.NewCircuit(ctx, os.Interrupt)
 	cache, _ := cache.NewCache(bus, host, true)
 	go cache.Run(circuit)

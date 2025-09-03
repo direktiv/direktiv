@@ -14,11 +14,11 @@ import (
 	"unsafe"
 
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
+	"gorm.io/gorm"
 )
 
 // manager struct implements core.GatewayManager by wrapping a pointer to router struct. Whenever endpoint and
@@ -28,7 +28,7 @@ type manager struct {
 	routerPointer unsafe.Pointer
 
 	secretsManager core.SecretsManager
-	db             *database.DB
+	db             *gorm.DB
 }
 
 func (m *manager) atomicLoadRouter() *router {
@@ -66,7 +66,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		ns := chi.URLParam(r, "namespace")
 		if ns != "" {
 			//nolint:contextcheck
-			WriteJSON(w, endpointsForAPI(filterNamespacedEndpoints(inner.endpoints, ns, r.URL.Query().Get("path")), ns, filesql.NewStore(m.db.Conn())))
+			WriteJSON(w, endpointsForAPI(filterNamespacedEndpoints(inner.endpoints, ns, r.URL.Query().Get("path")), ns, filesql.NewStore(m.db)))
 			return
 		}
 	}
@@ -91,7 +91,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			server := r.URL.Query().Get("server")
 
 			//nolint:contextcheck
-			WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns, filesql.NewStore(m.db.Conn()),
+			WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns, filesql.NewStore(m.db),
 				filterNamespacedEndpoints(inner.endpoints, ns, ""), expand, server))
 
 			return

@@ -10,12 +10,12 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/internal/extensions"
 	"github.com/direktiv/direktiv/internal/version"
 	"github.com/go-chi/chi/v5"
+	"gorm.io/gorm"
 )
 
 const (
@@ -39,7 +39,7 @@ type InitializeArgs struct {
 	SecretsManager  core.SecretsManager
 
 	Engine *engine.Engine
-	DB     *database.DB
+	DB     *gorm.DB
 }
 
 func Initialize(circuit *core.Circuit, app InitializeArgs) (*http.Server, error) {
@@ -81,7 +81,7 @@ func Initialize(circuit *core.Circuit, app InitializeArgs) (*http.Server, error)
 		db: app.DB,
 	}
 	eventsCtr := eventsController{
-		store:         datasql.NewStore(app.DB.Conn()),
+		store:         datasql.NewStore(app.DB),
 		wakeInstance:  nil,
 		startWorkflow: nil,
 	}

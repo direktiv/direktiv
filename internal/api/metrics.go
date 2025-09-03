@@ -3,12 +3,12 @@ package api
 import (
 	"net/http"
 
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/go-chi/chi/v5"
+	"gorm.io/gorm"
 )
 
 type metricsController struct {
-	db *database.DB
+	db *gorm.DB
 }
 
 func (e *metricsController) mountRouter(r chi.Router) {

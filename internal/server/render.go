@@ -5,20 +5,20 @@ import (
 	"log/slog"
 
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
+	"gorm.io/gorm"
 )
 
-func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
+func renderGatewayFiles(db *gorm.DB, manager core.GatewayManager) {
 	ctx := context.Background()
 	// TODO: fix nil data params below.
 	return
 
 	sLog := slog.With("subscriber", "gateway file watcher")
 
-	fStore, dStore := filesql.NewStore(db.Conn()), datasql.NewStore(db.Conn())
+	fStore, dStore := filesql.NewStore(db), datasql.NewStore(db)
 
 	nsList, err := dStore.Namespaces().GetAll(ctx)
 	if err != nil {
@@ -57,14 +57,14 @@ func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 	}
 }
 
-func renderServiceFiles(db *database.DB, serviceManager core.ServiceManager) {
+func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager) {
 	ctx := context.Background()
 	// TODO: fix nil data params below.
 	return
 
 	slog := slog.With("subscriber", "services file watcher")
 
-	fStore, dStore := filesql.NewStore(db.Conn()), datasql.NewStore(db.Conn())
+	fStore, dStore := filesql.NewStore(db), datasql.NewStore(db)
 
 	nsList, err := dStore.Namespaces().GetAll(ctx)
 	if err != nil {

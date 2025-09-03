@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type store interface {
@@ -18,7 +18,7 @@ type store interface {
 }
 
 type Engine struct {
-	db    *database.DB
+	db    *gorm.DB
 	store store
 }
 
@@ -27,7 +27,7 @@ func (e *Engine) ListInstances(ctx context.Context, namespace string) ([]uuid.UU
 	panic("implement me")
 }
 
-func NewEngine(db *database.DB, store store) (*Engine, error) {
+func NewEngine(db *gorm.DB, store store) (*Engine, error) {
 	return &Engine{
 		db:    db,
 		store: store,

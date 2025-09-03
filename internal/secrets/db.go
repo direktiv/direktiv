@@ -5,23 +5,23 @@ import (
 	"errors"
 
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
+	"gorm.io/gorm"
 )
 
 type DBSecrets struct {
 	namespace string
-	db        *database.DB
+	db        *gorm.DB
 }
 
 func (dbs *DBSecrets) Get(ctx context.Context, name string) (*core.Secret, error) {
-	db, err := dbs.db.BeginTx(ctx)
-	if err != nil {
-		return nil, err
+	db := dbs.db.WithContext(ctx).Begin()
+	if db.Error != nil {
+		return nil, db.Error
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
 
 	// Fetch one
 	s, err := dStore.Secrets().Get(ctx, dbs.namespace, name)
@@ -42,12 +42,12 @@ func (dbs *DBSecrets) Get(ctx context.Context, name string) (*core.Secret, error
 }
 
 func (dbs *DBSecrets) Set(ctx context.Context, secret *core.Secret) (*core.Secret, error) {
-	db, err := dbs.db.BeginTx(ctx)
-	if err != nil {
-		return nil, err
+	db := dbs.db.WithContext(ctx).Begin()
+	if db.Error != nil {
+		return nil, db.Error
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
 
 	s := &datastore.Secret{
 		Name:      secret.Name,
@@ -55,7 +55,7 @@ func (dbs *DBSecrets) Set(ctx context.Context, secret *core.Secret) (*core.Secre
 		Data:      secret.Data,
 	}
 
-	err = dStore.Secrets().Set(ctx, s)
+	err := dStore.Secrets().Set(ctx, s)
 	if err != nil {
 		return nil, err
 	}
@@ -68,19 +68,18 @@ func (dbs *DBSecrets) Set(ctx context.Context, secret *core.Secret) (*core.Secre
 	secret.CreatedAt = v.CreatedAt
 	secret.UpdatedAt = v.UpdatedAt
 
-	return secret, db.Conn().WithContext(ctx).Commit().Error
+	return secret, db.WithContext(ctx).Commit().Error
 }
 
 func (dbs *DBSecrets) GetAll(ctx context.Context) ([]*core.Secret, error) {
-	db, err := dbs.db.BeginTx(ctx)
-	if err != nil {
-		return nil, err
+	db := dbs.db.WithContext(ctx).Begin()
+	if db.Error != nil {
+		return nil, db.Error
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
 
-	var list []*datastore.Secret
-	list, err = dStore.Secrets().GetAll(ctx, dbs.namespace)
+	list, err := dStore.Secrets().GetAll(ctx, dbs.namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -99,14 +98,14 @@ func (dbs *DBSecrets) GetAll(ctx context.Context) ([]*core.Secret, error) {
 }
 
 func (dbs *DBSecrets) Update(ctx context.Context, secret *core.Secret) (*core.Secret, error) {
-	db, err := dbs.db.BeginTx(ctx)
-	if err != nil {
-		return nil, err
+	db := dbs.db.WithContext(ctx).Begin()
+	if db.Error != nil {
+		return nil, db.Error
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
 
-	_, err = dStore.Secrets().Get(ctx, dbs.namespace, secret.Name)
+	_, err := dStore.Secrets().Get(ctx, dbs.namespace, secret.Name)
 	if err != nil {
 		if errors.Is(err, datastore.ErrNotFound) {
 			return nil, ErrNotFound
@@ -134,7 +133,7 @@ func (dbs *DBSecrets) Update(ctx context.Context, secret *core.Secret) (*core.Se
 		return nil, err
 	}
 
-	err = db.Conn().WithContext(ctx).Commit().Error
+	err = db.WithContext(ctx).Commit().Error
 	if err != nil {
 		return nil, err
 	}
@@ -148,15 +147,15 @@ func (dbs *DBSecrets) Update(ctx context.Context, secret *core.Secret) (*core.Se
 }
 
 func (dbs *DBSecrets) Delete(ctx context.Context, name string) error {
-	db, err := dbs.db.BeginTx(ctx)
-	if err != nil {
-		return err
+	db := dbs.db.WithContext(ctx).Begin()
+	if db.Error != nil {
+		return db.Error
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
 
 	// Fetch one
-	err = dStore.Secrets().Delete(ctx, dbs.namespace, name)
+	err := dStore.Secrets().Delete(ctx, dbs.namespace, name)
 	if err != nil {
 		if errors.Is(err, datastore.ErrNotFound) {
 			return ErrNotFound
@@ -165,5 +164,5 @@ func (dbs *DBSecrets) Delete(ctx context.Context, name string) error {
 		return err
 	}
 
-	return db.Conn().WithContext(ctx).Commit().Error
+	return db.WithContext(ctx).Commit().Error
 }

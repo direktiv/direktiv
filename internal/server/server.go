@@ -18,7 +18,6 @@ import (
 	"github.com/direktiv/direktiv/internal/cache"
 	"github.com/direktiv/direktiv/internal/certificates"
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/engine"
@@ -123,7 +122,7 @@ func Start(circuit *core.Circuit) error {
 	// Create service manager
 	slog.Info("initializing service manager")
 	app.ServiceManager, err = service.NewManager(config, func() ([]string, error) {
-		beats, err := datasql.NewStore(app.DB.Conn()).HeartBeats().Since(context.Background(), "life_services", 100)
+		beats, err := datasql.NewStore(app.DB).HeartBeats().Since(context.Background(), "life_services", 100)
 		if err != nil {
 			return nil, err
 		}
@@ -245,7 +244,7 @@ func Start(circuit *core.Circuit) error {
 	return nil
 }
 
-func initDB(config *core.Config) (*database.DB, error) {
+func initDB(config *core.Config) (*gorm.DB, error) {
 	gormConf := &gorm.Config{
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
@@ -288,7 +287,7 @@ func initDB(config *core.Config) (*database.DB, error) {
 	gdb.SetMaxIdleConns(32)
 	gdb.SetMaxOpenConns(16)
 
-	return database.NewDB(db), nil
+	return db, nil
 }
 
 func initSLog(cfg *core.Config) {

@@ -9,15 +9,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type varController struct {
-	db *database.DB
+	db *gorm.DB
 }
 
 func (e *varController) mountRouter(r chi.Router) {
@@ -46,13 +46,13 @@ func (e *varController) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
 
 	// Fetch one
 	variable, err := dStore.RuntimeVariables().GetByID(r.Context(), id)
@@ -76,13 +76,13 @@ func (e *varController) getRaw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
 
 	// Fetch one
 	variable, err := dStore.RuntimeVariables().GetByID(r.Context(), id)
@@ -118,13 +118,13 @@ func (e *varController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
 
 	// Fetch one
 	err = dStore.RuntimeVariables().Delete(r.Context(), id)
@@ -133,7 +133,7 @@ func (e *varController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.Conn().WithContext(r.Context()).Commit().Error
+	err = db.WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -168,13 +168,14 @@ func (e *varController) deleteMultiple(w http.ResponseWriter, r *http.Request) {
 		uuids = append(uuids, id)
 	}
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
+	var err error
 
 	for _, id := range uuids {
 		err = dStore.RuntimeVariables().Delete(r.Context(), id)
@@ -184,7 +185,7 @@ func (e *varController) deleteMultiple(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = db.Conn().WithContext(r.Context()).Commit().Error
+	err = db.WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -204,13 +205,13 @@ func (e *varController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context())
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
 
 	// Parse request body.
 	req := &datastore.RuntimeVariablePatch{}
@@ -230,7 +231,7 @@ func (e *varController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.Conn().WithContext(r.Context()).Commit().Error
+	err = db.WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -242,13 +243,13 @@ func (e *varController) update(w http.ResponseWriter, r *http.Request) {
 func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
 
 	// Parse request.
 	req := struct {
@@ -291,7 +292,7 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.Conn().WithContext(r.Context()).Commit().Error
+	err = db.WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -308,16 +309,16 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 	}
 	namespace := chi.URLParam(r, "namespace")
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
 
 	forInstanceID := r.URL.Query().Get("instanceId")
-	_, err = uuid.Parse(forInstanceID)
+	_, err := uuid.Parse(forInstanceID)
 	if err != nil && forInstanceID != "" {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
@@ -371,16 +372,16 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 func (e *varController) listRaw(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
+	db := e.db.WithContext(r.Context())
+	if db.Error != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
 
 	forInstanceID := r.URL.Query().Get("instanceId")
-	_, err = uuid.Parse(forInstanceID)
+	_, err := uuid.Parse(forInstanceID)
 	if err != nil && forInstanceID != "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return

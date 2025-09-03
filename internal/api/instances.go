@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/internal/transpiler"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type LineageData struct {
@@ -47,7 +47,7 @@ type InstanceData struct {
 }
 
 type instController struct {
-	db      *database.DB
+	db      *gorm.DB
 	manager any
 	engine  *engine.Engine
 }
@@ -104,17 +104,17 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
 		writeError(w, &Error{
-			Code:    err.Error(),
-			Message: err.Error(),
+			Code:    db.Error.Error(),
+			Message: db.Error.Error(),
 		})
 
 		return
 	}
-	defer db.Conn().Rollback()
-	fStore := filesql.NewStore(db.Conn())
+	defer db.Rollback()
+	fStore := filesql.NewStore(db)
 
 	file, err := fStore.ForRoot(namespace).GetFile(r.Context(), path)
 	if err != nil {

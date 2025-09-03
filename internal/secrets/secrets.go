@@ -6,13 +6,13 @@ import (
 	"fmt"
 
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/database"
+	"gorm.io/gorm"
 )
 
 var ErrNotFound = errors.New("ErrNotFound")
 
 type Manager struct {
-	db    *database.DB
+	db    *gorm.DB
 	cache core.Cache
 }
 
@@ -22,7 +22,7 @@ type Wrapper struct {
 	cache     core.Cache
 }
 
-func NewManager(db *database.DB, cache core.Cache) core.SecretsManager {
+func NewManager(db *gorm.DB, cache core.Cache) core.SecretsManager {
 	return &Manager{
 		db:    db,
 		cache: cache,

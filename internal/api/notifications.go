@@ -6,16 +6,16 @@ import (
 	"net/http"
 	"sort"
 
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/go-chi/chi/v5"
+	"gorm.io/gorm"
 )
 
 // NOTE: We can potentially build a real notifications system if that seems useful.
 // For now, this is just a port of the v1 linting API. The UI guys requested that I rename it to notifications.
 
 type notificationsController struct {
-	db *database.DB
+	db *gorm.DB
 }
 
 func (c *notificationsController) mountRouter(r chi.Router) {
@@ -36,12 +36,12 @@ func (c *notificationsController) list(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	db, err := c.db.BeginTx(ctx)
-	if err != nil {
-		writeInternalError(w, err)
+	db := c.db.WithContext(ctx).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
+	defer db.Rollback()
 
 	secretIssues, err := c.lintSecrets(ctx, db, namespace)
 	if err != nil {
@@ -56,8 +56,8 @@ func (c *notificationsController) list(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, notifications)
 }
 
-func (c *notificationsController) lintSecrets(ctx context.Context, tx *database.DB, ns string) ([]*apiNotification, error) {
-	secrets, err := datasql.NewStore(tx.Conn()).Secrets().GetAll(ctx, ns)
+func (c *notificationsController) lintSecrets(ctx context.Context, tx *gorm.DB, ns string) ([]*apiNotification, error) {
+	secrets, err := datasql.NewStore(tx).Secrets().GetAll(ctx, ns)
 	if err != nil {
 		return nil, err
 	}

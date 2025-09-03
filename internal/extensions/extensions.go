@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/go-chi/chi/v5"
+	"gorm.io/gorm"
 )
 
 // AdditionalSchema for hooking additional sql schema provisioning scripts. This helps build new plugins and
@@ -14,7 +14,7 @@ var AdditionalSchema string
 
 var IsEnterprise = false
 
-var Initialize func(db *database.DB, bus core.PubSub, config *core.Config) error
+var Initialize func(db *gorm.DB, bus core.PubSub, config *core.Config) error
 
 var AdditionalAPIRoutes map[string]func(r chi.Router)
 

@@ -5,13 +5,13 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/go-chi/chi/v5"
+	"gorm.io/gorm"
 )
 
 type mirrorsController struct {
-	db  *database.DB
+	db  *gorm.DB
 	bus core.PubSub
 }
 
@@ -23,14 +23,14 @@ func (e *mirrorsController) mountRouter(r chi.Router) {
 func (e *mirrorsController) create(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
+	defer db.Rollback()
 
-	mirConfig, err := datasql.NewStore(db.Conn()).Mirror().GetConfig(r.Context(), namespace)
+	mirConfig, err := datasql.NewStore(db).Mirror().GetConfig(r.Context(), namespace)
 	if err != nil {
 		writeDataStoreError(w, err)
 		return
@@ -54,14 +54,14 @@ func (e *mirrorsController) create(w http.ResponseWriter, r *http.Request) {
 func (e *mirrorsController) list(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
+	defer db.Rollback()
 
-	processes, err := datasql.NewStore(db.Conn()).Mirror().GetProcessesByNamespace(r.Context(), namespace)
+	processes, err := datasql.NewStore(db).Mirror().GetProcessesByNamespace(r.Context(), namespace)
 	if err != nil {
 		writeDataStoreError(w, err)
 		return

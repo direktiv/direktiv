@@ -9,15 +9,15 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/go-chi/chi/v5"
+	"gorm.io/gorm"
 )
 
 type nsController struct {
-	db              *database.DB
+	db              *gorm.DB
 	registryManager core.RegistryManager
 	bus             core.PubSub
 }
@@ -34,13 +34,13 @@ func (e *nsController) mountRouter(r chi.Router) {
 func (e *nsController) get(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
 
 	ns, err := dStore.Namespaces().GetByName(r.Context(), name)
 	if err != nil {
@@ -59,16 +59,16 @@ func (e *nsController) get(w http.ResponseWriter, r *http.Request) {
 func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
-	fStore := filesql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
+	fStore := filesql.NewStore(db)
 
-	err = dStore.Namespaces().Delete(r.Context(), name)
+	err := dStore.Namespaces().Delete(r.Context(), name)
 	if err != nil {
 		writeDataStoreError(w, err)
 		return
@@ -79,7 +79,7 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.Conn().WithContext(r.Context()).Commit().Error
+	err = db.WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -104,13 +104,13 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
 
 	ns, err := dStore.Namespaces().GetByName(r.Context(), name)
 	if err != nil {
@@ -147,7 +147,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 			writeDataStoreError(w, err)
 			return
 		}
-		err = db.Conn().WithContext(r.Context()).Commit().Error
+		err = db.WithContext(r.Context()).Commit().Error
 		if err != nil {
 			writeInternalError(w, err)
 
@@ -217,7 +217,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 		writeDataStoreError(w, err)
 		return
 	}
-	err = db.Conn().WithContext(r.Context()).Commit().Error
+	err = db.WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -247,14 +247,14 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
+	defer db.Rollback()
 
-	ns, err := datasql.NewStore(db.Conn()).Namespaces().Create(r.Context(), &datastore.Namespace{
+	ns, err := datasql.NewStore(db).Namespaces().Create(r.Context(), &datastore.Namespace{
 		Name: req.Name,
 	})
 	if err != nil {
@@ -275,20 +275,20 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 			PrivateKeyPassphrase: req.Mirror.PrivateKeyPassphrase,
 			Insecure:             req.Mirror.Insecure,
 		}
-		mConfig, err = datasql.NewStore(db.Conn()).Mirror().CreateConfig(r.Context(), mirrorConfig)
+		mConfig, err = datasql.NewStore(db).Mirror().CreateConfig(r.Context(), mirrorConfig)
 		if err != nil {
 			writeDataStoreError(w, err)
 			return
 		}
 	}
 
-	_, err = filesql.NewStore(db.Conn()).CreateRoot(r.Context(), ns.Name)
+	_, err = filesql.NewStore(db).CreateRoot(r.Context(), ns.Name)
 	if err != nil {
 		writeFileStoreError(w, err)
 		return
 	}
 
-	err = db.Conn().WithContext(r.Context()).Commit().Error
+	err = db.WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -303,13 +303,13 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
-	dStore := datasql.NewStore(db.Conn())
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
 
 	namespaces, err := dStore.Namespaces().GetAll(r.Context())
 	if err != nil {

@@ -10,17 +10,17 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/transpiler"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/go-chi/chi/v5"
 	"gopkg.in/yaml.v3"
+	"gorm.io/gorm"
 )
 
 type fsController struct {
-	db  *database.DB
+	db  *gorm.DB
 	bus core.PubSub
 }
 
@@ -40,14 +40,14 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 
 	namespace := chi.URLParam(r, "namespace")
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
+	defer db.Rollback()
 
-	fStore := filesql.NewStore(db.Conn())
+	fStore := filesql.NewStore(db)
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
@@ -93,14 +93,14 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 func (e *fsController) readRaw(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
+	defer db.Rollback()
 
-	fStore := filesql.NewStore(db.Conn())
+	fStore := filesql.NewStore(db)
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
@@ -136,14 +136,14 @@ func (e *fsController) readRaw(w http.ResponseWriter, r *http.Request) {
 func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
+	defer db.Rollback()
 
-	fStore := filesql.NewStore(db.Conn())
+	fStore := filesql.NewStore(db)
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
@@ -161,14 +161,14 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Remove all associated runtime variables.
-	dStore := datasql.NewStore(db.Conn())
+	dStore := datasql.NewStore(db)
 	err = dStore.RuntimeVariables().DeleteForWorkflow(r.Context(), namespace, path)
 	if err != nil {
 		writeInternalError(w, err)
 		return
 	}
 
-	err = db.Conn().WithContext(r.Context()).Commit().Error
+	err = db.WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -189,14 +189,14 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
+	defer db.Rollback()
 
-	fStore := filesql.NewStore(db.Conn())
+	fStore := filesql.NewStore(db)
 
 	req := struct {
 		Name     string             `json:"name"`
@@ -245,7 +245,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.Conn().WithContext(r.Context()).Commit().Error
+	err = db.WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -276,14 +276,14 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
-	db, err := e.db.BeginTx(r.Context())
-	if err != nil {
-		writeInternalError(w, err)
+	db := e.db.WithContext(r.Context()).Begin()
+	if db.Error != nil {
+		writeInternalError(w, db.Error)
 		return
 	}
-	defer db.Conn().Rollback()
+	defer db.Rollback()
 
-	fStore := filesql.NewStore(db.Conn())
+	fStore := filesql.NewStore(db)
 
 	req := struct {
 		Path string `json:"path"`
@@ -337,7 +337,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	dStore := datasql.NewStore(db.Conn())
+	dStore := datasql.NewStore(db)
 
 	if req.Path != "" {
 		err = fStore.ForFile(oldFile).SetPath(r.Context(), req.Path)
@@ -360,7 +360,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.Conn().WithContext(r.Context()).Commit().Error
+	err = db.WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
