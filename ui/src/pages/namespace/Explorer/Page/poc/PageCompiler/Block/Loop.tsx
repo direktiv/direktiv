@@ -23,7 +23,7 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
 
   const variableArray = resolveVariableArray(data);
 
-  if (parentVariables.loop[id]) {
+  if (parentVariables.loop?.[id]) {
     throw new Error(t("direktivPage.error.duplicateId", { id }));
   }
 

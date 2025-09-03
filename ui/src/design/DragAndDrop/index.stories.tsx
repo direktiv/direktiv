@@ -75,7 +75,7 @@ export const Default = () => {
                 <Dropzone
                   payload={{
                     targetPath: [index + 1],
-                    variables: { loop: {}, query: {} },
+                    variables: {},
                   }}
                 />
               </div>

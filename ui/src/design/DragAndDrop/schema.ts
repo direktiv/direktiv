@@ -3,6 +3,7 @@ import {
   Block,
 } from "~/pages/namespace/Explorer/Page/poc/schema/blocks";
 
+import { ContextVariablesSchema } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/primitives/Variable/VariableContext";
 import z from "zod";
 
 const PathSchema = z.array(z.number());
@@ -27,10 +28,7 @@ export type DragPayloadSchemaType = z.infer<typeof DragPayloadSchema>;
 
 export const DropPayloadSchema = z.object({
   targetPath: PathSchema,
-  variables: z.object({
-    loop: z.object({}).passthrough(),
-    query: z.object({}).passthrough(),
-  }),
+  variables: ContextVariablesSchema,
 });
 
 export type DropPayloadSchemaType = z.infer<typeof DropPayloadSchema>;
