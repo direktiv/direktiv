@@ -266,9 +266,7 @@ A template string is a string that can have `Variable` placeholders that will be
 
 **Example**
 
-- `Edit {{query.pokemon.data.name}}`
-
-_\*the exact syntax is still TBD_
+`Edit {{query.user.data.name}}` will be resolved to `Edit John Doe` if the query with id "user" returns `{ data: { name: "John Doe" } }`.
 
 ## `Id`
 
