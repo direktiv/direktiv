@@ -54,8 +54,6 @@ func (m *Manager) Exec(ctx context.Context, db *gorm.DB, cfg *datastore.MirrorCo
 	}
 
 	go func() {
-		fmt.Printf(">>>>> starting mirror process: %v\n", pro)
-
 		job.setProcessStatue(datastore.ProcessStatusExecuting)
 		job.createTempDirectory()
 		job.pullSourceIntoTempDirectory(GitSource{}, cfg)
@@ -175,13 +173,6 @@ func (j *mirrorJob) copyFilesToTempFSRoot() {
 	}
 
 	for _, path := range createDirs {
-		fmt.Printf(">>>>> ddd>%s<\n", path)
-	}
-	for _, path := range createsFiles {
-		fmt.Printf(">>>>> fff>%s<\n", path)
-	}
-
-	for _, path := range createDirs {
 		_, err = filesql.NewStore(j.db).ForRoot(j.tempFSRootName).CreateFile(
 			context.Background(),
 			path,
@@ -204,7 +195,7 @@ func (j *mirrorJob) copyFilesToTempFSRoot() {
 
 		var mimeType string
 		if filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml" {
-			mimeType = "text/plain"
+			mimeType = "application/yaml"
 		} else {
 			mt := mimetype.Detect(data)
 			mimeType = strings.Split(mt.String(), ";")[0]
