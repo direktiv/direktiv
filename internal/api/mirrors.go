@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/mirroring"
 	"github.com/go-chi/chi/v5"
@@ -37,7 +38,7 @@ func (e *mirrorsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	proc, err := e.mirroringManager.Exec(mirConfig)
+	proc, err := e.mirroringManager.Exec(r.Context(), e.db, mirConfig, datastore.ProcessTypeInit)
 	if err != nil {
 		writeDataStoreError(w, err)
 		return

@@ -33,31 +33,26 @@ func (m *GitSource) PullInPath(config *datastore.MirrorConfig, dst string) error
 	prefix := "https://"
 
 	cloneOptions := &git.CloneOptions{
-		InsecureSkipTLS: true, // This has to be a toggle in the UI
+		InsecureSkipTLS: config.Insecure,
 		URL:             uri,
 		Progress:        os.Stdout,
 		ReferenceName:   plumbing.NewBranchReferenceName(config.GitRef),
 	}
 
-	// https with access token case. Put passphrase inside the git url.
-	if strings.HasPrefix(uri, prefix) && len(config.PrivateKeyPassphrase) > 0 {
-		if !strings.Contains(uri, "@") {
-			uri = fmt.Sprintf("%s%s@", prefix, config.PrivateKeyPassphrase) + strings.TrimPrefix(uri, prefix)
-			cloneOptions.URL = uri
-		}
-	}
-
-	// ssh case. Configure cloneOptions.Auth field.
-	if !strings.HasPrefix(uri, prefix) {
+	if config.AuthType == "ssh" {
 		publicKeys, err := gitssh.NewPublicKeys("git", []byte(config.PrivateKey), config.PrivateKeyPassphrase)
 		if err != nil {
 			return err
 		}
 		publicKeys.HostKeyCallbackHelper = gitssh.HostKeyCallbackHelper{
-			//nolint:gosec
 			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		}
 		cloneOptions.Auth = publicKeys
+	}
+
+	if config.AuthType == "token" {
+		uri = fmt.Sprintf("%s%s@", prefix, config.PrivateKeyPassphrase) + strings.TrimPrefix(uri, prefix)
+		cloneOptions.URL = uri
 	}
 
 	_, err := git.PlainClone(dst, cloneOptions)
