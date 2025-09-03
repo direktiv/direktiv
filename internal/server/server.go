@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -22,7 +24,6 @@ import (
 	engineStore "github.com/direktiv/direktiv/internal/engine/store"
 	"github.com/direktiv/direktiv/internal/extensions"
 	"github.com/direktiv/direktiv/internal/gateway"
-	"github.com/direktiv/direktiv/internal/natsclient"
 	"github.com/direktiv/direktiv/internal/pubsub"
 	"github.com/direktiv/direktiv/internal/secrets"
 	"github.com/direktiv/direktiv/internal/service"
@@ -30,6 +31,7 @@ import (
 	"github.com/direktiv/direktiv/internal/telemetry"
 	database2 "github.com/direktiv/direktiv/pkg/database"
 	_ "github.com/lib/pq" //nolint:revive
+	"github.com/nats-io/nats.go"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -86,7 +88,7 @@ func Start(circuit *core.Circuit) error {
 
 	// Create Bus
 	slog.Info("initializing pubsub")
-	nc, err := natsclient.Connect()
+	nc, err := natsConnect()
 	if err != nil {
 		return fmt.Errorf("can not connect to nats")
 	}
@@ -145,7 +147,7 @@ func Start(circuit *core.Circuit) error {
 	})
 
 	// Create js engine
-	nc, err = natsclient.Connect()
+	nc, err = natsConnect()
 	if err != nil {
 		return fmt.Errorf("can not connect to nats")
 	}
@@ -325,7 +327,7 @@ func checkNATSConnectivity() {
 		select {
 		case <-ticker.C:
 			slog.Info("checking nats connection")
-			nc, err := natsclient.Connect()
+			nc, err := natsConnect()
 			if err == nil {
 				nc.Close()
 				slog.Info("nats available")
@@ -338,4 +340,38 @@ func checkNATSConnectivity() {
 			panic("cannot connect to nats")
 		}
 	}
+}
+
+func natsConnect() (*nats.Conn, error) {
+	// set the deployment name in dns names
+	deploymentName := os.Getenv("DIREKTIV_DEPLOYMENT_NAME")
+
+	return nats.Connect(
+		fmt.Sprintf("tls://%s-nats.default.svc:4222", deploymentName),
+		nats.ClientTLSConfig(
+			func() (tls.Certificate, error) {
+				cert, err := tls.LoadX509KeyPair("/etc/direktiv-tls/server.crt",
+					"/etc/direktiv-tls/server.key")
+				if err != nil {
+					slog.Error("cannot create certificate pair", slog.Any("error", err))
+					return tls.Certificate{}, err
+				}
+
+				return cert, nil
+			},
+			func() (*x509.CertPool, error) {
+				caCert, err := os.ReadFile("/etc/direktiv-tls/ca.crt")
+				if err != nil {
+					return nil, err
+				}
+				caPool := x509.NewCertPool()
+				if !caPool.AppendCertsFromPEM(caCert) {
+					slog.Error("cannot create certificate pair", slog.Any("error", err))
+					return nil, err
+				}
+
+				return caPool, nil
+			},
+		),
+	)
 }
