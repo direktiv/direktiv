@@ -220,9 +220,9 @@ A query is a API `GET`-request that reads data from the server
 
 # Primitives
 
-## `Variable<String | Boolean | Array>`
+## `Variable`
 
-A Variable can be sourced from special parent blocks like e.g. a `form` or a `query`.
+A Variable is a string that references dynamic data from parent blocks like forms, queries, or loops. Variables are resolved at runtime to access contextual data.
 
 **Examples**
 
@@ -233,7 +233,7 @@ _\*the exact syntax is still TBD_
 
 ## `TemplateString`
 
-A template string is a string that can have `Variable` placeholders that will be filled with dynamic data. Variables will always be stringified.
+A template string is a string that can have `Variable` placeholders that will be filled with dynamic data. Variables in template strings will always be stringified if possible. If a variable cannot be stringified, it will throw an error.
 
 **Example**
 
@@ -243,7 +243,7 @@ _\*the exact syntax is still TBD_
 
 ## `Id`
 
-An Id is a string that is unique within a page and identifies a resource. IDs are used when one resource needs to reference another resource, like when one block references dynamic data from a query.
+An Id is a string that is unique within a page and identifies a resource. IDs are used when one resource needs to reference another resource, like when one block references dynamic data from a query. IDs cannot contain dots (.) as they are used as separators for variables.
 
 ## `KeyValue`
 
