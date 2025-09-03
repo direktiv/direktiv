@@ -39,7 +39,7 @@ const EditorBlockWrapper = ({
   const { t } = useTranslation();
   const page = usePage();
   const variables = useVariablesContext();
-  const { panel, setPanel, setVariables } = usePageEditorPanel();
+  const { panel, setPanel } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
   const validateDropzone = useValidateDropzone();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -71,10 +71,6 @@ const EditorBlockWrapper = ({
 
   const isFocused = !!(panel?.action && pathsEqual(panel.path, blockPath));
 
-  useEffect(() => {
-    setVariables(isFocused ? variables : { loop: {}, query: {} });
-  }, [isFocused, setVariables, variables]);
-
   const handleClickBlock = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
 
@@ -90,6 +86,7 @@ const EditorBlockWrapper = ({
         action: "edit",
         block: parentDialog.block,
         path: parentDialog.path,
+        variables,
       });
     }
 
@@ -98,10 +95,12 @@ const EditorBlockWrapper = ({
       return setPanel(null);
     }
 
+    // if unfocused block is clicked, focus it
     return setPanel({
       action: "edit",
       block,
       path: blockPath,
+      variables,
     });
   };
 

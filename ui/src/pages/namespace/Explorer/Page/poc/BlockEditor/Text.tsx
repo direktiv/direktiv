@@ -24,7 +24,9 @@ export const Text = ({
     defaultValues: propBlock,
   });
 
-  const { variables } = usePageEditorPanel();
+  const { panel } = usePageEditorPanel();
+
+  if (!panel) return null;
 
   return (
     <FormWrapper
@@ -44,7 +46,7 @@ export const Text = ({
           value={form.watch("content")}
           onChange={(content) => form.setValue("content", content)}
           id="content"
-          variables={variables}
+          variables={panel.variables}
         />
       </Fieldset>
     </FormWrapper>

@@ -20,6 +20,7 @@ export type EditorPanelAction = {
   action: "create" | "edit" | "delete";
   block: BlockType;
   path: BlockPathType;
+  variables: ContextVariables;
 };
 
 type EditorPanelState = null | EditorPanelAction;
@@ -31,8 +32,6 @@ type EditorPanelContextType = {
   setPanel: React.Dispatch<React.SetStateAction<EditorPanelState>>;
   dialog: EditorDialogState;
   setDialog: React.Dispatch<React.SetStateAction<EditorDialogState>>;
-  variables: ContextVariables;
-  setVariables: React.Dispatch<React.SetStateAction<ContextVariables>>;
 };
 
 const EditorPanelContext = createContext<EditorPanelContextType | null>(null);
@@ -53,10 +52,6 @@ export const EditorPanelLayoutProvider = ({
   const { addBlock, deleteBlock, moveBlock } = usePageEditor();
   const [panel, setPanel] = useState<EditorPanelState>(null);
   const [dialog, setDialog] = useState<EditorDialogState>(null);
-  const [variables, setVariables] = useState<ContextVariables>({
-    loop: {},
-    query: {},
-  });
   const { mode } = usePageStateContext();
 
   const createBlock = (type: BlockType["type"], path: BlockPathType) => {
@@ -71,6 +66,7 @@ export const EditorPanelLayoutProvider = ({
       action: "create",
       block: blockConfig.defaultValues,
       path,
+      variables: { loop: {}, query: {} },
     });
   };
 
@@ -85,6 +81,7 @@ export const EditorPanelLayoutProvider = ({
         action: "edit",
         path: drop.targetPath,
         block: drag.block,
+        variables: { loop: {}, query: {} },
       });
     }
   };
@@ -98,8 +95,6 @@ export const EditorPanelLayoutProvider = ({
             setPanel,
             dialog,
             setDialog,
-            variables,
-            setVariables,
           }}
         >
           <div className="grow sm:grid sm:grid-cols-[350px_1fr]">

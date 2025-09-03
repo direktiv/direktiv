@@ -31,11 +31,13 @@ type BlockFormProps = {
 
 export const BlockForm = ({ action, block, path }: BlockFormProps) => {
   const { addBlock, updateBlock } = usePageEditor();
-  const { setPanel, variables } = usePageEditorPanel();
+  const { setPanel, panel } = usePageEditorPanel();
 
   if (isPage(block)) {
     throw Error("Unexpected page object when parsing block");
   }
+
+  if (!panel) return null;
 
   const handleUpdate = (newBlock: BlockType) => {
     switch (action) {
@@ -75,7 +77,7 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
         path={path}
         onSubmit={handleUpdate}
         onCancel={handleClose}
-        variables={variables}
+        variables={panel.variables}
       />
     );
   }
