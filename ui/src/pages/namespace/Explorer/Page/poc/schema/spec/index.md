@@ -195,14 +195,14 @@ Procedures are types that can be used in various blocks that will handle API req
 
 A mutation is an API request that modifies data on the server
 
-| Attribute         | Type             | Description               |
-| ----------------- | ---------------- | ------------------------- |
-| `id`              | `Id`             | Unique identifier         |
-| `method`          | `MutationMethod` | HTTP method               |
-| `url`             | `TemplateString` | url to the API endpoint   |
-| `queryParams?`    | `KeyValue[]`     | Optional query parameters |
-| `requestHeaders?` | `KeyValue[]`     | Optional request headers  |
-| `requestBody?`    | `KeyValue[]`     | Optional request body     |
+| Attribute         | Type                 | Description               |
+| ----------------- | -------------------- | ------------------------- |
+| `id`              | `Id`                 | Unique identifier         |
+| `method`          | `MutationMethod`     | HTTP method               |
+| `url`             | `TemplateString`     | URL to the API endpoint   |
+| `queryParams?`    | `KeyValue[]`         | Optional query parameters |
+| `requestHeaders?` | `KeyValue[]`         | Optional request headers  |
+| `requestBody?`    | `ExtendedKeyValue[]` | Optional request body     |
 
 ### `MutationMethod`
 
