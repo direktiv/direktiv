@@ -1,8 +1,8 @@
 import { Block, BlockPathType } from "..";
 import {
-  RequiredFieldsContextProvider,
-  useRequiredFieldsContext,
-} from "./RequiredFieldsContext";
+  FormValidationContextProvider,
+  useFormValidationContext,
+} from "./FormValidationContext";
 
 import Alert from "~/design/Alert";
 import { BlockList } from "../utils/BlockList";
@@ -23,7 +23,7 @@ const FormWithContext = ({ blockProps, blockPath }: FormProps) => {
   const { mutation, trigger } = blockProps;
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { missingFields, setMissingFields } = useRequiredFieldsContext();
+  const { missingFields, setMissingFields } = useFormValidationContext();
 
   const missingFieldsNote =
     missingFields.length > 0 &&
@@ -100,7 +100,7 @@ const FormWithContext = ({ blockProps, blockPath }: FormProps) => {
 };
 
 export const Form = (props: FormProps) => (
-  <RequiredFieldsContextProvider>
+  <FormValidationContextProvider>
     <FormWithContext {...props} />
-  </RequiredFieldsContextProvider>
+  </FormValidationContextProvider>
 );
