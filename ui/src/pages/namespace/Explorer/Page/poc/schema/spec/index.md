@@ -3,8 +3,7 @@
 ## Principles
 
 - Page documents have no knowledge of the Direktiv Gateway. API requests are defined as generic fetch requests. However the UI can help the user pick a proper endpoint by suggesting routes that are available in the current environment. This principle makes a page document more portable and independent of the gateway's specification. This means if a user updates a gateway's endpoint, they also have to update all potential pages that use these endpoints.
-- To keep the specification simple, we should not introduce any interface to configure the theme of the page yet. In a future version, we might consider having a global theme setting that could then be injected to override CSS variables. This might require an update to Tailwind 4.
-- The specification by design allows for the composition of sections that "don't make sense" and can make the page look or behave strangely, similar to HTML when you combine tags in an invalid way, like a button inside a button or a div inside a p tag. However, we will design the user interface in a way that prevents the user from doing things they should not do, such as placing a modal inside another modal.
+- The specification by design allows for the composition of sections that can result in invalid or unexpected behavior, similar to HTML when you combine tags inappropriately, like a button inside a button or a div inside a p tag. However, the user interface can be more opinionated about what the user should be allowed to do, such as preventing placing a modal inside another modal.
 
 ## Direktiv Page
 
