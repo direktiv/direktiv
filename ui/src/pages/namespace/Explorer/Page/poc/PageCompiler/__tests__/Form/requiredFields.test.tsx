@@ -478,4 +478,150 @@ describe("required fields", () => {
       });
     });
   });
+
+  describe("multiple fields", () => {
+    test("submits the form when all required fields of different types are filled in", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm(
+              [
+                {
+                  id: "string",
+                  label: "string input",
+                  description: "",
+                  optional: false,
+                  type: "form-string-input",
+                  variant: "text",
+                  defaultValue: "test string",
+                },
+                {
+                  id: "number",
+                  label: "number input",
+                  description: "",
+                  optional: false,
+                  type: "form-number-input",
+                  defaultValue: {
+                    type: "number",
+                    value: 42,
+                  },
+                },
+                {
+                  id: "date",
+                  label: "date input",
+                  description: "",
+                  optional: false,
+                  type: "form-date-input",
+                  defaultValue: "2025-12-24T00:00:00.000Z",
+                },
+                {
+                  id: "select",
+                  label: "select",
+                  description: "",
+                  optional: false,
+                  type: "form-select",
+                  values: {
+                    type: "array",
+                    value: ["one", "two", "three"],
+                  },
+                  defaultValue: "one",
+                },
+                {
+                  id: "checkbox",
+                  label: "checkbox",
+                  description: "my checkbox",
+                  optional: false,
+                  type: "form-checkbox",
+                  defaultValue: {
+                    type: "boolean",
+                    value: true,
+                  },
+                },
+                {
+                  id: "textarea",
+                  label: "textarea",
+                  description: "",
+                  optional: false,
+                  type: "form-textarea",
+                  defaultValue: "test textarea",
+                },
+              ],
+              {
+                id: "save-user",
+                method: "POST",
+                url: "/save-user",
+                requestBody: [],
+              }
+            )}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button", { name: "save" }).click();
+
+      await waitFor(() => {
+        expect(screen.getAllByText("The form has been submitted successfully"));
+      });
+    });
+
+    test("shows an error when some required fields are missing and others are filled in", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm(
+              [
+                {
+                  id: "string",
+                  label: "string input",
+                  description: "",
+                  optional: false,
+                  type: "form-string-input",
+                  variant: "text",
+                  defaultValue: "",
+                },
+                {
+                  id: "number",
+                  label: "number input",
+                  description: "",
+                  optional: false,
+                  type: "form-number-input",
+                  defaultValue: {
+                    type: "number",
+                    value: 0,
+                  },
+                },
+                {
+                  id: "select",
+                  label: "select",
+                  description: "",
+                  optional: false,
+                  type: "form-select",
+                  values: {
+                    type: "array",
+                    value: ["one", "two", "three"],
+                  },
+                  defaultValue: "",
+                },
+              ],
+              {
+                id: "save-user",
+                method: "POST",
+                url: "/save-user",
+                requestBody: [],
+              }
+            )}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button", { name: "save" }).click();
+      expect(
+        screen.getAllByText("Some required fields are missing (string, select)")
+      );
+    });
+  });
 });
