@@ -3,7 +3,6 @@ import { Fieldset } from "~/components/Form/Fieldset";
 import { FormBaseType } from "../../schema/blocks/form/utils";
 import Input from "~/design/Input";
 import { SmartInput } from "../components/SmartInput";
-import { Textarea } from "~/design/TextArea";
 import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -35,8 +34,9 @@ export const BaseForm = ({ form: anyForm }: BaseFormProps) => {
         label={t("direktivPage.blockEditor.blockForms.formPrimitives.label")}
         htmlFor="label"
       >
-        <Input
-          {...form.register("label")}
+        <SmartInput
+          value={form.watch("label")}
+          onChange={(content) => form.setValue("label", content)}
           id="label"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.formPrimitives.labelPlaceholder"
