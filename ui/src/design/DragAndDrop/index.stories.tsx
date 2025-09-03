@@ -72,7 +72,12 @@ export const Default = () => {
                     {block.label}
                   </div>
                 </SortableItem>
-                <Dropzone payload={{ targetPath: [index + 1] }} />
+                <Dropzone
+                  payload={{
+                    targetPath: [index + 1],
+                    variables: { loop: {}, query: {} },
+                  }}
+                />
               </div>
             );
           })}

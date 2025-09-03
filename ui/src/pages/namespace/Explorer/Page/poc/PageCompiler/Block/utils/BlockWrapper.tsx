@@ -65,8 +65,9 @@ const EditorBlockWrapper = ({
   const dropzonePayload = useMemo(
     () => ({
       targetPath: incrementPath(blockPath),
+      variables,
     }),
-    [blockPath]
+    [blockPath, variables]
   );
 
   const isFocused = !!(panel?.action && pathsEqual(panel.path, blockPath));

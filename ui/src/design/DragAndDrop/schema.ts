@@ -27,6 +27,10 @@ export type DragPayloadSchemaType = z.infer<typeof DragPayloadSchema>;
 
 export const DropPayloadSchema = z.object({
   targetPath: PathSchema,
+  variables: z.object({
+    loop: z.object({}),
+    query: z.object({}),
+  }),
 });
 
 export type DropPayloadSchemaType = z.infer<typeof DropPayloadSchema>;
