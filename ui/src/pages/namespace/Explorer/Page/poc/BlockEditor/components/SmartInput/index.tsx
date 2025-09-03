@@ -4,7 +4,6 @@ import { EditorContent, useEditor } from "@tiptap/react";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
-import { ContextVariables } from "../../../PageCompiler/primitives/Variable/VariableContext";
 import Document from "@tiptap/extension-document";
 import { FakeInput } from "~/design/FakeInput";
 import { InputWithButton } from "~/design/InputWithButton";
@@ -13,6 +12,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Text from "@tiptap/extension-text";
 import { TreePicker } from "../TreePicker";
 import { twMergeClsx } from "~/util/helpers";
+import { usePageEditorPanel } from "../../EditorPanelProvider";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -20,13 +20,11 @@ export const SmartInput = ({
   onChange,
   value,
   id,
-  variables,
   placeholder,
 }: {
   onChange: (content: string) => void;
   value: string;
   id: string;
-  variables: ContextVariables;
   placeholder: string;
 }) => {
   const { t } = useTranslation();
@@ -34,6 +32,7 @@ export const SmartInput = ({
   const [dialogContainer, setDialogContainer] = useState<HTMLDivElement | null>(
     null
   );
+  const { panel } = usePageEditorPanel();
 
   const editor = useEditor({
     extensions: [
@@ -49,6 +48,10 @@ export const SmartInput = ({
       onChange(editor.getText());
     },
   });
+
+  if (!panel) return null;
+
+  const { variables } = panel;
 
   const insertText = (text: string) => {
     editor.chain().focus().insertContent(text).run();

@@ -2,6 +2,7 @@ import { Checkbox } from "~/design/Checkbox";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormBaseType } from "../../schema/blocks/form/utils";
 import Input from "~/design/Input";
+import { SmartInput } from "../components/SmartInput";
 import { Textarea } from "~/design/TextArea";
 import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -48,8 +49,9 @@ export const BaseForm = ({ form: anyForm }: BaseFormProps) => {
         )}
         htmlFor="description"
       >
-        <Textarea
-          {...form.register("description")}
+        <SmartInput
+          value={form.watch("description")}
+          onChange={(content) => form.setValue("description", content)}
           id="description"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.formPrimitives.descriptionPlaceholder"

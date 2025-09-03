@@ -16,7 +16,6 @@ import { BlockEditFormProps } from ".";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "./components/FormWrapper";
 import { SmartInput } from "./components/SmartInput";
-import { usePageEditorPanel } from "./EditorPanelProvider";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -34,10 +33,6 @@ export const Headline = ({
     resolver: zodResolver(HeadlineSchema),
     defaultValues: propBlock,
   });
-
-  const { panel } = usePageEditorPanel();
-
-  if (!panel) return null;
 
   return (
     <FormWrapper
@@ -59,7 +54,6 @@ export const Headline = ({
           value={form.watch("label")}
           onChange={(content) => form.setValue("label", content)}
           id="label"
-          variables={panel.variables}
           placeholder={t(
             "direktivPage.blockEditor.blockForms.headline.labelPlaceholder"
           )}
