@@ -117,10 +117,10 @@ Form primitives are the basic input elements that collect user data within forms
 
 #### Number Input `Block`
 
-| Attribute      | Type                  | Description                        |
-| -------------- | --------------------- | ---------------------------------- |
-| `type`         | `"form-number-input"` |                                    |
-| `defaultValue` | `DataType`            | Default value (number or variable) |
+| Attribute      | Type                             | Description                                                   |
+| -------------- | -------------------------------- | ------------------------------------------------------------- |
+| `type`         | `"form-number-input"`            |                                                               |
+| `defaultValue` | `Number`, `VariablePath<number>` | Default value. Either a static number or a variable reference |
 
 #### Date Input `Block`
 
@@ -131,11 +131,11 @@ Form primitives are the basic input elements that collect user data within forms
 
 #### Select `Block`
 
-| Attribute      | Type             | Description            |
-| -------------- | ---------------- | ---------------------- |
-| `type`         | `"form-select"`  |                        |
-| `values`       | `ValuesType`     | Available options      |
-| `defaultValue` | `TemplateString` | Default selected value |
+| Attribute      | Type                            | Description                                                      |
+| -------------- | ------------------------------- | ---------------------------------------------------------------- |
+| `type`         | `"form-select"`                 |                                                                  |
+| `values`       | `Array`, `VariablePath<string>` | Available options. Either a static array or a variable reference |
+| `defaultValue` | `TemplateString`                | Default selected value                                           |
 
 #### Textarea `Block`
 
@@ -146,11 +146,12 @@ Form primitives are the basic input elements that collect user data within forms
 
 #### Checkbox `Block`
 
-| Attribute      | Type              | Description               |
-| -------------- | ----------------- | ------------------------- |
-| `type`         | `"form-checkbox"` |                           |
-| `description`  | `TemplateString`  | Required description text |
-| `defaultValue` | `DataType`        | Default boolean value     |
+| Attribute      | Type                               | Description                                                    |
+| -------------- | ---------------------------------- | -------------------------------------------------------------- |
+| `type`         | `"form-checkbox"`                  |                                                                |
+| `description`  | `TemplateString`                   | Required description text                                      |
+| `defaultValue` | `DataType`                         | Default boolean value                                          |
+| `defaultValue` | `Boolean`, `VariablePath<boolean>` | Default value. Either a static boolean or a variable reference |
 
 ### QueryProvider `Block`
 
@@ -250,3 +251,47 @@ An Id is a string that is unique within a page and identifies a resource. IDs ar
 | --------- | ---------------- | ------------ |
 | `key`     | `string`         | Object key   |
 | `value`   | `TemplateString` | Object value |
+
+## `ExtendedKeyValue`
+
+An extended key-value pair that supports multiple data types for the value, including strings, variables, booleans, and numbers.
+
+| Attribute | Type                                          | Description  |
+| --------- | --------------------------------------------- | ------------ |
+| `key`     | `string`                                      | Object key   |
+| `value`   | `Number`, `String`, `Boolean`, `VariablePath` | Object value |
+
+## `Number`
+
+| Attribute | Type       | Description |
+| --------- | ---------- | ----------- |
+| `key`     | `"number"` |             |
+| `value`   | `number`   | a number    |
+
+## `String`
+
+| Attribute | Type             | Description  |
+| --------- | ---------------- | ------------ |
+| `key`     | `"string"`       |              |
+| `value`   | `TemplateString` | Object value |
+
+## `Boolean`
+
+| Attribute | Type        | Description          |
+| --------- | ----------- | -------------------- |
+| `key`     | `"boolean"` |                      |
+| `value`   | `boolean`   | either true or false |
+
+## `Array`
+
+| Attribute | Type      | Description         |
+| --------- | --------- | ------------------- |
+| `key`     | `"array"` |                     |
+| `value`   | `array`   | an array of strings |
+
+## `VariablePath`
+
+| Attribute | Type         | Description          |
+| --------- | ------------ | -------------------- |
+| `key`     | `"variable"` |                      |
+| `value`   | `Variable`   | a path to a variable |
