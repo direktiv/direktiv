@@ -96,6 +96,62 @@ Blocks are the main elements that the user can use to compose a Direktiv page.
 | `mutation` | `Mutation`       | Mutation executed on submission  |
 | `blocks`   | `Block[]`        | Form content                     |
 
+### Form Primitives
+
+Form primitives are the basic input elements that collect user data within forms, such as text inputs, checkboxes, and dropdowns. Form primitives must be placed inside a form block. They can be nested at any depth within other blocks, but one form block must exist somewhere up the tree . All form primitives share these common fields:
+
+| Attribute     | Type             | Description                                           |
+| ------------- | ---------------- | ----------------------------------------------------- |
+| `id`          | `Id`             | Unique identifier for the field                       |
+| `label`       | `TemplateString` | Field label text                                      |
+| `description` | `TemplateString` | Field description. Can be empty except for checkboxes |
+| `optional`    | `boolean`        | Whether the field is optional                         |
+
+#### String Input `Block`
+
+| Attribute      | Type                                       | Description   |
+| -------------- | ------------------------------------------ | ------------- |
+| `type`         | `"form-string-input"`                      |               |
+| `variant`      | `"text"`, `"password"`, `"email"`, `"url"` | Input type    |
+| `defaultValue` | `TemplateString`                           | Default value |
+
+#### Number Input `Block`
+
+| Attribute      | Type                  | Description                        |
+| -------------- | --------------------- | ---------------------------------- |
+| `type`         | `"form-number-input"` |                                    |
+| `defaultValue` | `DataType`            | Default value (number or variable) |
+
+#### Date Input `Block`
+
+| Attribute      | Type                | Description        |
+| -------------- | ------------------- | ------------------ |
+| `type`         | `"form-date-input"` |                    |
+| `defaultValue` | `string`            | Default date value |
+
+#### Select `Block`
+
+| Attribute      | Type             | Description            |
+| -------------- | ---------------- | ---------------------- |
+| `type`         | `"form-select"`  |                        |
+| `values`       | `ValuesType`     | Available options      |
+| `defaultValue` | `TemplateString` | Default selected value |
+
+#### Textarea `Block`
+
+| Attribute      | Type              | Description        |
+| -------------- | ----------------- | ------------------ |
+| `type`         | `"form-textarea"` |                    |
+| `defaultValue` | `TemplateString`  | Default text value |
+
+#### Checkbox `Block`
+
+| Attribute      | Type              | Description               |
+| -------------- | ----------------- | ------------------------- |
+| `type`         | `"form-checkbox"` |                           |
+| `description`  | `TemplateString`  | Required description text |
+| `defaultValue` | `DataType`        | Default boolean value     |
+
 ### QueryProvider `Block`
 
 A QueryProvider is a block that is responsible for fetching data from one or multiple APIs and providing the result to its child blocks. It will display a loading indicator until all data is fetched successfully. Every child block can access the data in fields of type `TemplateString` by using the `id` of the corresponding `Query` inside the `QueryProvider` as a reference.
