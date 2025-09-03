@@ -62,7 +62,6 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (htt
 	err = vm.Set("log", func(txt interface{}) {
 		slog.Info("js log", slog.Any("log", txt))
 	})
-
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "can not set log function")
 		return nil, nil

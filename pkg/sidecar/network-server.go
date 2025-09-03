@@ -39,6 +39,7 @@ func waitForUserContainer() {
 	for {
 		select {
 		case <-ticker.C:
+			//nolint:noctx
 			conn, err := net.DialTimeout("tcp", "localhost:8080", time.Second)
 			if err != nil {
 				slog.Debug("failed to connect to user container", "error", err)
