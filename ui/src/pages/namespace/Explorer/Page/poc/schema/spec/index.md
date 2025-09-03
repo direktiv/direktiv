@@ -67,7 +67,7 @@ Blocks are the main elements that the user can use to compose a Direktiv page.
 | Attribute | Type                   | Description                                               |
 | --------- | ---------------------- | --------------------------------------------------------- |
 | `type`    | `"table"`              |                                                           |
-| `data`    | `Block<Loop>`          | the loop block to interate on                             |
+| `data`    | `Block<Loop>`          | The loop block to iterate on                              |
 | `actions` | `Block<Button>[]`      | List of actions that will be available in the last column |
 | `columns` | `Block<TableColumn>[]` | List of table columns                                     |
 
@@ -85,7 +85,7 @@ Blocks are the main elements that the user can use to compose a Direktiv page.
 | --------- | ---------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `type`    | `"button"`       |                                                                                                                    |
 | `label`   | `TemplateString` | Button label text                                                                                                  |
-| `submit?` | `Mutation`       | mutation that will be executed on click. This is optional as the button can also be used as a trigger for a dialog |
+| `submit?` | `Mutation`       | Mutation that will be executed on click. This is optional as the button can also be used as a trigger for a dialog |
 
 ### Form `Block`
 
@@ -158,7 +158,7 @@ A query is a API request that reads data from the server
 | Attribute      | Type             | Description                            |
 | -------------- | ---------------- | -------------------------------------- |
 | `id`           | `Id`             | Unique ID used to reference query data |
-| `url`          | `TemplateString` | url to the API endpoint                |
+| `url`          | `TemplateString` | URL to the API endpoint                |
 | `queryParams?` | `KeyValue[]`     | Optional query parameters              |
 
 # Primitives
