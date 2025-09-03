@@ -7,8 +7,6 @@ import (
 
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
-	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"gorm.io/gorm"
 )
 
@@ -24,10 +22,6 @@ func NewDB(db *gorm.DB) *DB {
 
 func (d *DB) Conn() *gorm.DB {
 	return d.db
-}
-
-func (d *DB) FileStore() filestore.FileStore {
-	return filesql.NewStore(d.db)
 }
 
 func (d *DB) DataStore() datastore.Store {

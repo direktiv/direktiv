@@ -11,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore"
+	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -64,7 +65,7 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Conn().Rollback()
 	dStore := db.DataStore()
-	fStore := db.FileStore()
+	fStore := filesql.NewStore(db.Conn())
 
 	err = dStore.Namespaces().Delete(r.Context(), name)
 	if err != nil {
@@ -280,7 +281,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_, err = db.FileStore().CreateRoot(r.Context(), ns.Name)
+	_, err = filesql.NewStore(db.Conn()).CreateRoot(r.Context(), ns.Name)
 	if err != nil {
 		writeFileStoreError(w, err)
 		return

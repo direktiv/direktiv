@@ -7,6 +7,7 @@ import (
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 )
 
 func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
@@ -16,7 +17,7 @@ func renderGatewayFiles(db *database.DB, manager core.GatewayManager) {
 
 	sLog := slog.With("subscriber", "gateway file watcher")
 
-	fStore, dStore := db.FileStore(), db.DataStore()
+	fStore, dStore := filesql.NewStore(db.Conn()), db.DataStore()
 
 	nsList, err := dStore.Namespaces().GetAll(ctx)
 	if err != nil {
@@ -62,7 +63,7 @@ func renderServiceFiles(db *database.DB, serviceManager core.ServiceManager) {
 
 	slog := slog.With("subscriber", "services file watcher")
 
-	fStore, dStore := db.FileStore(), db.DataStore()
+	fStore, dStore := filesql.NewStore(db.Conn()), db.DataStore()
 
 	nsList, err := dStore.Namespaces().GetAll(ctx)
 	if err != nil {

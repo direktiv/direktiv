@@ -16,6 +16,7 @@ import (
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
 )
@@ -65,7 +66,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		ns := chi.URLParam(r, "namespace")
 		if ns != "" {
 			//nolint:contextcheck
-			WriteJSON(w, endpointsForAPI(filterNamespacedEndpoints(inner.endpoints, ns, r.URL.Query().Get("path")), ns, m.db.FileStore()))
+			WriteJSON(w, endpointsForAPI(filterNamespacedEndpoints(inner.endpoints, ns, r.URL.Query().Get("path")), ns, filesql.NewStore(m.db.Conn())))
 			return
 		}
 	}
@@ -90,7 +91,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			server := r.URL.Query().Get("server")
 
 			//nolint:contextcheck
-			WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns, m.db.FileStore(),
+			WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns, filesql.NewStore(m.db.Conn()),
 				filterNamespacedEndpoints(inner.endpoints, ns, ""), expand, server))
 
 			return

@@ -13,6 +13,7 @@ import (
 	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/transpiler"
 	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/go-chi/chi/v5"
 	"gopkg.in/yaml.v3"
 )
@@ -45,7 +46,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Conn().Rollback()
 
-	fStore := db.FileStore()
+	fStore := filesql.NewStore(db.Conn())
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
@@ -98,7 +99,7 @@ func (e *fsController) readRaw(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Conn().Rollback()
 
-	fStore := db.FileStore()
+	fStore := filesql.NewStore(db.Conn())
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
@@ -141,7 +142,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Conn().Rollback()
 
-	fStore := db.FileStore()
+	fStore := filesql.NewStore(db.Conn())
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
@@ -194,7 +195,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Conn().Rollback()
 
-	fStore := db.FileStore()
+	fStore := filesql.NewStore(db.Conn())
 
 	req := struct {
 		Name     string             `json:"name"`
@@ -281,7 +282,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Conn().Rollback()
 
-	fStore := db.FileStore()
+	fStore := filesql.NewStore(db.Conn())
 
 	req := struct {
 		Path string `json:"path"`

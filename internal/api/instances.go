@@ -11,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/internal/transpiler"
+	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -113,7 +114,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Conn().Rollback()
-	fStore := db.FileStore()
+	fStore := filesql.NewStore(db.Conn())
 
 	file, err := fStore.ForRoot(namespace).GetFile(r.Context(), path)
 	if err != nil {

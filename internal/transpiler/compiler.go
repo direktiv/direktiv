@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/direktiv/direktiv/internal/database"
+	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 )
 
 type Compiler struct {
@@ -28,12 +29,12 @@ func NewCompiler(db *database.DB) (*Compiler, error) {
 }
 
 func (c *Compiler) Compile(ctx context.Context, namespace, path string) (*TypescriptFlow, error) {
-	f, err := c.db.FileStore().ForRoot(namespace).GetFile(ctx, path)
+	f, err := filesql.NewStore(c.db.Conn()).ForRoot(namespace).GetFile(ctx, path)
 	if err != nil {
 		return nil, err
 	}
 
-	b, err := c.db.FileStore().ForFile(f).GetData(ctx)
+	b, err := filesql.NewStore(c.db.Conn()).ForFile(f).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
