@@ -204,7 +204,7 @@ func (j *mirrorJob) copyFilesToTempFSRoot() {
 
 		var mimeType string
 		if filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml" {
-			mimeType = "application/yaml"
+			mimeType = "text/plain"
 		} else {
 			mt := mimetype.Detect(data)
 			mimeType = strings.Split(mt.String(), ";")[0]
