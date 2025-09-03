@@ -57,6 +57,18 @@ export const Loop = ({
           )}
         />
       </Fieldset>
+      <Fieldset
+        label={t("direktivPage.blockEditor.blockForms.loop.pageSizeLabel")}
+        htmlFor="pageSize"
+      >
+        <Input
+          {...form.register("pageSize", { valueAsNumber: true })}
+          type="number"
+          placeholder={t(
+            "direktivPage.blockEditor.blockForms.loop.pageSizePlaceholder"
+          )}
+        />
+      </Fieldset>
     </FormWrapper>
   );
 };

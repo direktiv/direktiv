@@ -104,6 +104,18 @@ export const Table = ({
           />
         )}
       />
+      <Fieldset
+        label={t("direktivPage.blockEditor.blockForms.loop.pageSizeLabel")}
+        htmlFor="pageSize"
+      >
+        <Input
+          {...form.register("data.pageSize", { valueAsNumber: true })}
+          type="number"
+          placeholder={t(
+            "direktivPage.blockEditor.blockForms.loop.pageSizePlaceholder"
+          )}
+        />
+      </Fieldset>
     </FormWrapper>
   );
 };
