@@ -37,7 +37,7 @@ func (e *nsController) get(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 
 	ns, err := dStore.Namespaces().GetByName(r.Context(), name)
@@ -62,7 +62,7 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 	fStore := db.FileStore()
 
@@ -107,7 +107,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 
 	ns, err := dStore.Namespaces().GetByName(r.Context(), name)
@@ -250,7 +250,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 
 	ns, err := db.DataStore().Namespaces().Create(r.Context(), &datastore.Namespace{
 		Name: req.Name,
@@ -306,7 +306,7 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 
 	namespaces, err := dStore.Namespaces().GetAll(r.Context())

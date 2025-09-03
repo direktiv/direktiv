@@ -40,7 +40,7 @@ func (c *notificationsController) list(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 
 	secretIssues, err := c.lintSecrets(ctx, db, namespace)
 	if err != nil {

@@ -50,7 +50,7 @@ func (e *varController) get(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 
 	// Fetch one
@@ -80,7 +80,7 @@ func (e *varController) getRaw(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 
 	// Fetch one
@@ -122,7 +122,7 @@ func (e *varController) delete(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 
 	// Fetch one
@@ -172,7 +172,7 @@ func (e *varController) deleteMultiple(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 
 	for _, id := range uuids {
@@ -208,7 +208,7 @@ func (e *varController) update(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 
 	// Parse request body.
@@ -246,7 +246,7 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 
 	// Parse request.
@@ -312,7 +312,7 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 
 	forInstanceID := r.URL.Query().Get("instanceId")
@@ -375,7 +375,7 @@ func (e *varController) listRaw(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 
 	forInstanceID := r.URL.Query().Get("instanceId")

@@ -112,7 +112,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	fStore := db.FileStore()
 
 	file, err := fStore.ForRoot(namespace).GetFile(r.Context(), path)

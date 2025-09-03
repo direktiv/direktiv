@@ -27,7 +27,7 @@ func (e *mirrorsController) create(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 
 	mirConfig, err := db.DataStore().Mirror().GetConfig(r.Context(), namespace)
 	if err != nil {
@@ -58,7 +58,7 @@ func (e *mirrorsController) list(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 
 	processes, err := db.DataStore().Mirror().GetProcessesByNamespace(r.Context(), namespace)
 	if err != nil {

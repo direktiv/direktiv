@@ -43,7 +43,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 
 	fStore := db.FileStore()
 
@@ -96,7 +96,7 @@ func (e *fsController) readRaw(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 
 	fStore := db.FileStore()
 
@@ -139,7 +139,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 
 	fStore := db.FileStore()
 
@@ -192,7 +192,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 
 	fStore := db.FileStore()
 
@@ -279,7 +279,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 
 	fStore := db.FileStore()
 

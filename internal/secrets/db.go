@@ -19,7 +19,7 @@ func (dbs *DBSecrets) Get(ctx context.Context, name string) (*core.Secret, error
 	if err != nil {
 		return nil, err
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 
 	// Fetch one
@@ -45,7 +45,7 @@ func (dbs *DBSecrets) Set(ctx context.Context, secret *core.Secret) (*core.Secre
 	if err != nil {
 		return nil, err
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 
 	s := &datastore.Secret{
@@ -75,7 +75,7 @@ func (dbs *DBSecrets) GetAll(ctx context.Context) ([]*core.Secret, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 
 	var list []*datastore.Secret
@@ -102,7 +102,7 @@ func (dbs *DBSecrets) Update(ctx context.Context, secret *core.Secret) (*core.Se
 	if err != nil {
 		return nil, err
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 
 	_, err = dStore.Secrets().Get(ctx, dbs.namespace, secret.Name)
@@ -151,7 +151,7 @@ func (dbs *DBSecrets) Delete(ctx context.Context, name string) error {
 	if err != nil {
 		return err
 	}
-	defer db.Rollback()
+	defer db.Conn().Rollback()
 	dStore := db.DataStore()
 
 	// Fetch one
