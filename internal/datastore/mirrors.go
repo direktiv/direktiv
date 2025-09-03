@@ -81,9 +81,9 @@ func (m *MirrorConfig) Normalize() {
 
 // MirrorProcess different statuses.
 const (
-	ProcessStatusComplete  = "complete"
 	ProcessStatusPending   = "pending"
 	ProcessStatusExecuting = "executing"
+	ProcessStatusComplete  = "complete"
 	ProcessStatusFailed    = "failed"
 )
 
@@ -94,9 +94,6 @@ const (
 
 	// Indicates re-mirroring process.
 	ProcessTypeSync = "sync"
-
-	// Indicates dry run process.
-	ProcessTypeDryRun = "dryrun"
 )
 
 // MirrorProcess represents an instance of mirroring process that happened or is currently happened. For every mirroring

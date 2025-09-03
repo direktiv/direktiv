@@ -1,18 +1,19 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
+	"github.com/direktiv/direktiv/internal/mirroring"
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
 )
 
 type mirrorsController struct {
-	db  *gorm.DB
-	bus core.PubSub
+	db               *gorm.DB
+	bus              core.PubSub
+	mirroringManager *mirroring.Manager
 }
 
 func (e *mirrorsController) mountRouter(r chi.Router) {
@@ -36,19 +37,13 @@ func (e *mirrorsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: sync
-	fmt.Println(namespace)
-	fmt.Println(mirConfig)
+	proc, err := e.mirroringManager.Exec(mirConfig)
+	if err != nil {
+		writeDataStoreError(w, err)
+		return
+	}
 
-	fmt.Println("------")
-
-	// proc, err := e.syncNamespace(nil, mirConfig)
-	// if err != nil {
-	// 	writeDataStoreError(w, err)
-	// 	return
-	// }
-
-	// writeJSON(w, proc)
+	writeJSON(w, proc)
 }
 
 func (e *mirrorsController) list(w http.ResponseWriter, r *http.Request) {
