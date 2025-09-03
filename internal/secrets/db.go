@@ -67,7 +67,7 @@ func (dbs *DBSecrets) Set(ctx context.Context, secret *core.Secret) (*core.Secre
 	secret.CreatedAt = v.CreatedAt
 	secret.UpdatedAt = v.UpdatedAt
 
-	return secret, db.Commit(ctx)
+	return secret, db.Conn().WithContext(ctx).Commit().Error
 }
 
 func (dbs *DBSecrets) GetAll(ctx context.Context) ([]*core.Secret, error) {
@@ -133,7 +133,7 @@ func (dbs *DBSecrets) Update(ctx context.Context, secret *core.Secret) (*core.Se
 		return nil, err
 	}
 
-	err = db.Commit(ctx)
+	err = db.Conn().WithContext(ctx).Commit().Error
 	if err != nil {
 		return nil, err
 	}
@@ -164,5 +164,5 @@ func (dbs *DBSecrets) Delete(ctx context.Context, name string) error {
 		return err
 	}
 
-	return db.Commit(ctx)
+	return db.Conn().WithContext(ctx).Commit().Error
 }

@@ -132,7 +132,7 @@ func (e *varController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.Commit(r.Context())
+	err = db.Conn().WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -183,7 +183,7 @@ func (e *varController) deleteMultiple(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = db.Commit(r.Context())
+	err = db.Conn().WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -229,7 +229,7 @@ func (e *varController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.Commit(r.Context())
+	err = db.Conn().WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -290,7 +290,7 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.Commit(r.Context())
+	err = db.Conn().WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return

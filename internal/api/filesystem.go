@@ -166,7 +166,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.Commit(r.Context())
+	err = db.Conn().WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -243,7 +243,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.Commit(r.Context())
+	err = db.Conn().WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -358,7 +358,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.Commit(r.Context())
+	err = db.Conn().WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return

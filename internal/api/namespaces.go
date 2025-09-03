@@ -77,7 +77,7 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.Commit(r.Context())
+	err = db.Conn().WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -145,7 +145,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 			writeDataStoreError(w, err)
 			return
 		}
-		err = db.Commit(r.Context())
+		err = db.Conn().WithContext(r.Context()).Commit().Error
 		if err != nil {
 			writeInternalError(w, err)
 
@@ -215,7 +215,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 		writeDataStoreError(w, err)
 		return
 	}
-	err = db.Commit(r.Context())
+	err = db.Conn().WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -286,7 +286,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.Commit(r.Context())
+	err = db.Conn().WithContext(r.Context()).Commit().Error
 	if err != nil {
 		writeInternalError(w, err)
 		return

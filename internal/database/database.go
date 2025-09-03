@@ -34,10 +34,6 @@ func (d *DB) DataStore() datastore.Store {
 	return datasql.NewStore(d.db)
 }
 
-func (d *DB) Commit(ctx context.Context) error {
-	return d.db.WithContext(ctx).Commit().Error
-}
-
 func (d *DB) BeginTx(ctx context.Context, opts ...*sql.TxOptions) (*DB, error) {
 	res := d.db.WithContext(ctx).Begin(opts...)
 	if res.Error != nil {
