@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore"
+	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	database2 "github.com/direktiv/direktiv/pkg/database"
 	"github.com/google/uuid"
 )
@@ -84,7 +84,7 @@ func setupTestTrace(t *testing.T) (datastore.TracesStore, *datastore.Trace) {
 		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
 
-	traceStore := database.NewDB(conn).DataStore().Traces()
+	traceStore := datasql.NewStore(conn).Traces()
 
 	trace := createTestTrace()
 

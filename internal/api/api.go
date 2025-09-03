@@ -11,6 +11,7 @@ import (
 
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/database"
+	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/internal/extensions"
 	"github.com/direktiv/direktiv/internal/version"
@@ -80,7 +81,7 @@ func Initialize(circuit *core.Circuit, app InitializeArgs) (*http.Server, error)
 		db: app.DB,
 	}
 	eventsCtr := eventsController{
-		store:         app.DB.DataStore(),
+		store:         datasql.NewStore(app.DB.Conn()),
 		wakeInstance:  nil,
 		startWorkflow: nil,
 	}

@@ -11,6 +11,7 @@ import (
 
 	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore"
+	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -51,7 +52,7 @@ func (e *varController) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	// Fetch one
 	variable, err := dStore.RuntimeVariables().GetByID(r.Context(), id)
@@ -81,7 +82,7 @@ func (e *varController) getRaw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	// Fetch one
 	variable, err := dStore.RuntimeVariables().GetByID(r.Context(), id)
@@ -123,7 +124,7 @@ func (e *varController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	// Fetch one
 	err = dStore.RuntimeVariables().Delete(r.Context(), id)
@@ -173,7 +174,7 @@ func (e *varController) deleteMultiple(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	for _, id := range uuids {
 		err = dStore.RuntimeVariables().Delete(r.Context(), id)
@@ -209,7 +210,7 @@ func (e *varController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	// Parse request body.
 	req := &datastore.RuntimeVariablePatch{}
@@ -247,7 +248,7 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	// Parse request.
 	req := struct {
@@ -313,7 +314,7 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	forInstanceID := r.URL.Query().Get("instanceId")
 	_, err = uuid.Parse(forInstanceID)
@@ -376,7 +377,7 @@ func (e *varController) listRaw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	forInstanceID := r.URL.Query().Get("instanceId")
 	_, err = uuid.Parse(forInstanceID)

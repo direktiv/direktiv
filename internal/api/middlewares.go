@@ -7,6 +7,7 @@ import (
 
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/database"
+	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -55,7 +56,7 @@ func (a *appMiddlewares) fetchNamespacesFromCache() []string {
 }
 
 func (a *appMiddlewares) fetchNamespacesFromDB(ctx context.Context) ([]string, error) {
-	nsList, err := a.db.DataStore().Namespaces().GetAll(ctx)
+	nsList, err := datasql.NewStore(a.db.Conn()).Namespaces().GetAll(ctx)
 	if err != nil {
 		return []string{}, err
 	}

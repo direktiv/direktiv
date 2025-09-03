@@ -7,6 +7,7 @@ import (
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore"
+	"github.com/direktiv/direktiv/internal/datastore/datasql"
 )
 
 type DBSecrets struct {
@@ -20,7 +21,7 @@ func (dbs *DBSecrets) Get(ctx context.Context, name string) (*core.Secret, error
 		return nil, err
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	// Fetch one
 	s, err := dStore.Secrets().Get(ctx, dbs.namespace, name)
@@ -46,7 +47,7 @@ func (dbs *DBSecrets) Set(ctx context.Context, secret *core.Secret) (*core.Secre
 		return nil, err
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	s := &datastore.Secret{
 		Name:      secret.Name,
@@ -76,7 +77,7 @@ func (dbs *DBSecrets) GetAll(ctx context.Context) ([]*core.Secret, error) {
 		return nil, err
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	var list []*datastore.Secret
 	list, err = dStore.Secrets().GetAll(ctx, dbs.namespace)
@@ -103,7 +104,7 @@ func (dbs *DBSecrets) Update(ctx context.Context, secret *core.Secret) (*core.Se
 		return nil, err
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	_, err = dStore.Secrets().Get(ctx, dbs.namespace, secret.Name)
 	if err != nil {
@@ -152,7 +153,7 @@ func (dbs *DBSecrets) Delete(ctx context.Context, name string) error {
 		return err
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	// Fetch one
 	err = dStore.Secrets().Delete(ctx, dbs.namespace, name)

@@ -11,6 +11,7 @@ import (
 
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/database"
+	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/transpiler"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
@@ -160,7 +161,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Remove all associated runtime variables.
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 	err = dStore.RuntimeVariables().DeleteForWorkflow(r.Context(), namespace, path)
 	if err != nil {
 		writeInternalError(w, err)
@@ -336,7 +337,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	if req.Path != "" {
 		err = fStore.ForFile(oldFile).SetPath(r.Context(), req.Path)

@@ -6,6 +6,7 @@ import (
 
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/database"
+	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -29,7 +30,7 @@ func (e *mirrorsController) create(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Conn().Rollback()
 
-	mirConfig, err := db.DataStore().Mirror().GetConfig(r.Context(), namespace)
+	mirConfig, err := datasql.NewStore(db.Conn()).Mirror().GetConfig(r.Context(), namespace)
 	if err != nil {
 		writeDataStoreError(w, err)
 		return
@@ -60,7 +61,7 @@ func (e *mirrorsController) list(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Conn().Rollback()
 
-	processes, err := db.DataStore().Mirror().GetProcessesByNamespace(r.Context(), namespace)
+	processes, err := datasql.NewStore(db.Conn()).Mirror().GetProcessesByNamespace(r.Context(), namespace)
 	if err != nil {
 		writeDataStoreError(w, err)
 		return

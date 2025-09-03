@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	_ "embed"
 
-	"github.com/direktiv/direktiv/internal/datastore"
-	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"gorm.io/gorm"
 )
 
@@ -22,10 +20,6 @@ func NewDB(db *gorm.DB) *DB {
 
 func (d *DB) Conn() *gorm.DB {
 	return d.db
-}
-
-func (d *DB) DataStore() datastore.Store {
-	return datasql.NewStore(d.db)
 }
 
 func (d *DB) BeginTx(ctx context.Context, opts ...*sql.TxOptions) (*DB, error) {

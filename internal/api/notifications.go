@@ -7,6 +7,7 @@ import (
 	"sort"
 
 	"github.com/direktiv/direktiv/internal/database"
+	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -56,7 +57,7 @@ func (c *notificationsController) list(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *notificationsController) lintSecrets(ctx context.Context, tx *database.DB, ns string) ([]*apiNotification, error) {
-	secrets, err := tx.DataStore().Secrets().GetAll(ctx, ns)
+	secrets, err := datasql.NewStore(tx.Conn()).Secrets().GetAll(ctx, ns)
 	if err != nil {
 		return nil, err
 	}

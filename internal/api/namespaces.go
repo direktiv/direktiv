@@ -11,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore"
+	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/go-chi/chi/v5"
 )
@@ -39,7 +40,7 @@ func (e *nsController) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	ns, err := dStore.Namespaces().GetByName(r.Context(), name)
 	if err != nil {
@@ -64,7 +65,7 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 	fStore := filesql.NewStore(db.Conn())
 
 	err = dStore.Namespaces().Delete(r.Context(), name)
@@ -109,7 +110,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	ns, err := dStore.Namespaces().GetByName(r.Context(), name)
 	if err != nil {
@@ -253,7 +254,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Conn().Rollback()
 
-	ns, err := db.DataStore().Namespaces().Create(r.Context(), &datastore.Namespace{
+	ns, err := datasql.NewStore(db.Conn()).Namespaces().Create(r.Context(), &datastore.Namespace{
 		Name: req.Name,
 	})
 	if err != nil {
@@ -274,7 +275,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 			PrivateKeyPassphrase: req.Mirror.PrivateKeyPassphrase,
 			Insecure:             req.Mirror.Insecure,
 		}
-		mConfig, err = db.DataStore().Mirror().CreateConfig(r.Context(), mirrorConfig)
+		mConfig, err = datasql.NewStore(db.Conn()).Mirror().CreateConfig(r.Context(), mirrorConfig)
 		if err != nil {
 			writeDataStoreError(w, err)
 			return
@@ -308,7 +309,7 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Conn().Rollback()
-	dStore := db.DataStore()
+	dStore := datasql.NewStore(db.Conn())
 
 	namespaces, err := dStore.Namespaces().GetAll(r.Context())
 	if err != nil {

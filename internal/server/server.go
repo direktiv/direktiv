@@ -20,6 +20,7 @@ import (
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore"
+	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/engine"
 	engineStore "github.com/direktiv/direktiv/internal/engine/store"
 	"github.com/direktiv/direktiv/internal/extensions"
@@ -122,7 +123,7 @@ func Start(circuit *core.Circuit) error {
 	// Create service manager
 	slog.Info("initializing service manager")
 	app.ServiceManager, err = service.NewManager(config, func() ([]string, error) {
-		beats, err := app.DB.DataStore().HeartBeats().Since(context.Background(), "life_services", 100)
+		beats, err := datasql.NewStore(app.DB.Conn()).HeartBeats().Since(context.Background(), "life_services", 100)
 		if err != nil {
 			return nil, err
 		}

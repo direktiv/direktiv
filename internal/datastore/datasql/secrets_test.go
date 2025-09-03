@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/direktiv/direktiv/internal/database"
+	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	database2 "github.com/direktiv/direktiv/pkg/database"
 	"github.com/google/uuid"
 
@@ -17,7 +17,7 @@ func Test_Secrets(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	ds := database.NewDB(conn).DataStore()
+	ds := datasql.NewStore(conn)
 	err = ds.Secrets().Set(context.Background(), &datastore.Secret{
 		Name:      "test",
 		Namespace: ns,

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/direktiv/direktiv/internal/database"
 	"github.com/direktiv/direktiv/internal/datastore"
+	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	database2 "github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
@@ -21,7 +21,7 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
 	fs := filesql.NewStore(conn)
-	ds := database.NewDB(conn).DataStore()
+	ds := datasql.NewStore(conn)
 	file := createFile(t, fs, ns)
 
 	expect := []byte("some data")
@@ -101,7 +101,7 @@ func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	ds := database.NewDB(conn).DataStore()
+	ds := datasql.NewStore(conn)
 
 	testVar := &datastore.RuntimeVariable{
 		Namespace: ns,
@@ -165,7 +165,7 @@ func Test_sqlRuntimeVariablesStore_InvalidName(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	ds := database.NewDB(conn).DataStore()
+	ds := datasql.NewStore(conn)
 	fs := filesql.NewStore(conn)
 	file := createFile(t, fs, ns)
 
@@ -190,7 +190,7 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	ds := database.NewDB(conn).DataStore()
+	ds := datasql.NewStore(conn)
 	fs := filesql.NewStore(conn)
 	file := createFile(t, fs, ns)
 
@@ -285,7 +285,7 @@ func Test_sqlRuntimeVariablesStore_CreateAndUpdate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	ds := database.NewDB(conn).DataStore()
+	ds := datasql.NewStore(conn)
 	fs := filesql.NewStore(conn)
 	file := createFile(t, fs, ns)
 
