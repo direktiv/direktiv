@@ -8,10 +8,11 @@
 
 ## Direktiv Page
 
-| Attribute      | Type         | Description                      |
-| -------------- | ------------ | -------------------------------- |
-| `direktiv_api` | `"pages/v1"` |                                  |
-| `blocks`       | `Block[]`    | Entry point for all page content |
+| Attribute      | Type        | Description                      |
+| -------------- | ----------- | -------------------------------- |
+| `direktiv_api` | `"page/v1"` |                                  |
+| `type`         | `"page"`    |                                  |
+| `blocks`       | `Block[]`   | Entry point for all page content |
 
 # Blocks
 
