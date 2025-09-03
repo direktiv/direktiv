@@ -1,7 +1,7 @@
 import { Block, BlockPathType } from "..";
 import {
   FormValidationContextProvider,
-  useFormValidationContext,
+  useFormValidation,
 } from "./FormValidationContext";
 
 import Alert from "~/design/Alert";
@@ -23,7 +23,7 @@ const FormWithContext = ({ blockProps, blockPath }: FormProps) => {
   const { mutation, trigger } = blockProps;
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { missingFields, setMissingFields } = useFormValidationContext();
+  const { missingFields, setMissingFields } = useFormValidation();
 
   const missingFieldsNote =
     missingFields.length > 0 &&

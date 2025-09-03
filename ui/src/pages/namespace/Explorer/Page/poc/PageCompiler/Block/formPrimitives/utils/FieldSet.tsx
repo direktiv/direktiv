@@ -2,7 +2,7 @@ import { FC, MouseEvent, PropsWithChildren } from "react";
 
 import { TemplateString } from "../../../primitives/TemplateString";
 import { twMergeClsx } from "~/util/helpers";
-import { useFormValidationContext } from "../../Form/FormValidationContext";
+import { useFormValidation } from "../../Form/FormValidationContext";
 import { useTranslation } from "react-i18next";
 
 type FieldsetProps = PropsWithChildren & {
@@ -26,7 +26,7 @@ export const Fieldset: FC<FieldsetProps> = ({
   onClickLabel,
 }) => {
   const { t } = useTranslation();
-  const { missingFields } = useFormValidationContext();
+  const { missingFields } = useFormValidation();
   const isMissingField = missingFields.includes(id);
 
   return (

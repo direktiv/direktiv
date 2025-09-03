@@ -27,7 +27,7 @@ export const FormValidationContextProvider = ({
   );
 };
 
-export const useFormValidationContext = () => {
+export const useFormValidation = () => {
   const context = useContext(FormValidationContext);
 
   if (!context)
