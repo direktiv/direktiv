@@ -173,6 +173,13 @@ func (j *mirrorJob) copyFilesToTempFSRoot() {
 	}
 
 	for _, path := range createDirs {
+		fmt.Printf(">>>>> ddd>%s<\n", path)
+	}
+	for _, path := range createsFiles {
+		fmt.Printf(">>>>> fff>%s<\n", path)
+	}
+
+	for _, path := range createDirs {
 		_, err = filesql.NewStore(j.db).ForRoot(j.tempFSRootName).CreateFile(
 			context.Background(),
 			path,
