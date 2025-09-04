@@ -106,19 +106,21 @@ func Start(circuit *core.Circuit) error {
 	})
 	app.PubSub = pubSub
 
-	// creates bus with pub sub
-	cache, err := cache.New(pubSub, os.Getenv("POD_NAME"), false, slog.Default())
+	slog.Info("initializing cluster-cache")
+	app.Cache, err = cache.New(pubSub, os.Getenv("POD_NAME"), false, slog.Default())
+	if err != nil {
+		return fmt.Errorf("initializing cluster-cache, err: %w", err)
+	}
 	circuit.Go(func() error {
 		<-circuit.Done()
-		cache.Close()
+		app.Cache.Close()
 
 		return nil
 	})
 
 	slog.Info("initializing secrets handler")
-	app.SecretsManager = secrets.NewManager(app.DB, cache)
+	app.SecretsManager = secrets.NewManager(app.DB, app.Cache)
 
-	// Create service manager
 	slog.Info("initializing service manager")
 	app.ServiceManager, err = service.NewManager(config, func() ([]string, error) {
 		beats, err := datasql.NewStore(app.DB).HeartBeats().Since(context.Background(), "life_services", 100)
