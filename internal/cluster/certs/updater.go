@@ -1,4 +1,4 @@
-package certificates
+package certs
 
 import (
 	"log/slog"

@@ -16,7 +16,7 @@ import (
 	"github.com/caarlos0/env/v10"
 	"github.com/direktiv/direktiv/internal/api"
 	"github.com/direktiv/direktiv/internal/cache"
-	"github.com/direktiv/direktiv/internal/certificates"
+	"github.com/direktiv/direktiv/internal/cluster/certs"
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	natspubsub "github.com/direktiv/direktiv/internal/cluster/pubsub/nats"
 	"github.com/direktiv/direktiv/internal/core"
@@ -60,7 +60,7 @@ func Start(circuit *core.Circuit) error {
 
 	// create certs for communication
 	slog.Info("initializing certificate updater")
-	cm, err := certificates.NewCertificateUpdater(config.DirektivNamespace)
+	cm, err := certs.NewCertificateUpdater(config.DirektivNamespace)
 	if err != nil {
 		return fmt.Errorf("initialize certificate updater, err: %w", err)
 	}
