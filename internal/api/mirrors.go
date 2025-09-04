@@ -13,7 +13,7 @@ import (
 
 type mirrorsController struct {
 	db               *gorm.DB
-	bus              pubsub.Bus
+	bus              pubsub.EventBus
 	mirroringManager *mirroring.Manager
 }
 

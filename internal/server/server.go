@@ -87,7 +87,7 @@ func Start(circuit *core.Circuit) error {
 		return fmt.Errorf("creating raw db driver, err: %w", err)
 	}
 
-	// Create Bus
+	// Create EventBus
 	slog.Info("initializing pubsub")
 	nc, err := natsConnect()
 	if err != nil {
@@ -96,9 +96,10 @@ func Start(circuit *core.Circuit) error {
 
 	pubSub := natspubsub.New(nc)
 	circuit.Go(func() error {
-		err := pubSub.Loop(circuit)
+		<-circuit.Done()
+		err := nc.Drain()
 		if err != nil {
-			return fmt.Errorf("pubsub bus loop, err: %w", err)
+			return fmt.Errorf("nats pubsub drain, err: %w", err)
 		}
 
 		return nil

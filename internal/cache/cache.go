@@ -18,11 +18,11 @@ type cacheMessage struct {
 
 type Cache struct {
 	cache    *ristretto.Cache[string, any]
-	bus      pubsub.Bus
+	bus      pubsub.EventBus
 	hostname string
 }
 
-func NewCache(bus pubsub.Bus, hostname string, enableMetrics bool) (core.Cache, error) {
+func NewCache(bus pubsub.EventBus, hostname string, enableMetrics bool) (core.Cache, error) {
 	cache, err := ristretto.NewCache(&ristretto.Config[string, any]{
 		NumCounters: 10000000,
 		MaxCost:     1073741824,

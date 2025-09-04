@@ -4,7 +4,6 @@ import (
 	"log/slog"
 
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
-	"github.com/direktiv/direktiv/internal/core"
 	"github.com/nats-io/nats.go"
 )
 
@@ -16,11 +15,6 @@ func New(conn *nats.Conn) *PubSub {
 	return &PubSub{
 		nc: conn,
 	}
-}
-
-func (b *PubSub) Loop(circuit *core.Circuit) error {
-	<-circuit.Done()
-	return b.nc.Drain()
 }
 
 func (b *PubSub) Subscribe(channel pubsub.Subject, handler func(data []byte)) {

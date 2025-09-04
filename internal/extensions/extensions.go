@@ -15,7 +15,7 @@ var AdditionalSchema string
 
 var IsEnterprise = false
 
-var Initialize func(db *gorm.DB, bus pubsub.Bus, config *core.Config) error
+var Initialize func(db *gorm.DB, bus pubsub.EventBus, config *core.Config) error
 
 var AdditionalAPIRoutes map[string]func(r chi.Router)
 

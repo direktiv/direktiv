@@ -20,7 +20,7 @@ import (
 type nsController struct {
 	db              *gorm.DB
 	registryManager core.RegistryManager
-	bus             pubsub.Bus
+	bus             pubsub.EventBus
 }
 
 func (e *nsController) mountRouter(r chi.Router) {

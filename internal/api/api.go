@@ -31,7 +31,7 @@ type InitializeArgs struct {
 	Version *Version
 	Config  *core.Config
 	Cache   core.Cache
-	PubSub  pubsub.Bus
+	PubSub  pubsub.EventBus
 
 	ServiceManager core.ServiceManager
 

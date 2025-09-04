@@ -21,7 +21,7 @@ import (
 
 type fsController struct {
 	db  *gorm.DB
-	bus pubsub.Bus
+	bus pubsub.EventBus
 }
 
 func (e *fsController) mountRouter(r chi.Router) {

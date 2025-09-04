@@ -7,7 +7,6 @@ import (
 
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	natspubsub "github.com/direktiv/direktiv/internal/cluster/pubsub/nats"
-	"github.com/direktiv/direktiv/internal/core"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
 	natsTestContainer "github.com/testcontainers/testcontainers-go/modules/nats"
@@ -22,10 +21,9 @@ func TestPubSub(t *testing.T) {
 	cs, _ := natsContainer.ConnectionString(context.Background())
 	nc, err := nats.Connect(cs)
 	require.NoError(t, err)
-	busPublish := natspubsub.New(nc)
+	defer nc.Drain()
 
-	circuit := core.NewCircuit(context.Background())
-	go busPublish.Loop(circuit)
+	busPublish := natspubsub.New(nc)
 
 	nc2, err := nats.Connect(cs)
 	require.NoError(t, err)

@@ -1,6 +1,8 @@
 package pubsub
 
-import "github.com/direktiv/direktiv/internal/core"
+import (
+	"context"
+)
 
 type Subject string
 
@@ -10,8 +12,14 @@ const (
 	SubjCacheDelete      Subject = "cache.delete"
 )
 
-type Bus interface {
+type Message struct {
+	Subject Subject
+	Data    []byte
+}
+
+type Handler func(ctx context.Context, m Message) error
+
+type EventBus interface {
 	Subscribe(channel Subject, handler func(data []byte))
 	Publish(channel Subject, data []byte) error
-	Loop(circuit *core.Circuit) error
 }
