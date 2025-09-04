@@ -107,7 +107,7 @@ func Start(circuit *core.Circuit) error {
 	app.PubSub = pubSub
 
 	// creates bus with pub sub
-	cache, err := cache.NewCache(pubSub, os.Getenv("POD_NAME"), false, slog.Default())
+	cache, err := cache.New(pubSub, os.Getenv("POD_NAME"), false, slog.Default())
 	circuit.Go(func() error {
 		cache.Run(circuit)
 		if err != nil {

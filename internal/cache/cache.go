@@ -25,7 +25,7 @@ type Cache struct {
 	logger   *slog.Logger
 }
 
-func NewCache(bus pubsub.EventBus, hostname string, enableMetrics bool, logger *slog.Logger) (*Cache, error) {
+func New(bus pubsub.EventBus, hostname string, enableMetrics bool, logger *slog.Logger) (*Cache, error) {
 	if logger != nil {
 		logger = logger.With("component", "cluster-cache")
 	} else {
