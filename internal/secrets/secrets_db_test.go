@@ -2,7 +2,6 @@ package secrets_test
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
@@ -40,8 +39,10 @@ func TestDBSecrets(t *testing.T) {
 	require.NoError(t, err)
 	buss := natspubsub.New(nc, nil)
 
-	sh1, cache1 := buildSecrets(ctx, conn, buss, "host1")
-	sh2, cache2 := buildSecrets(ctx, conn, buss, "host2")
+	sh1, cache1 := buildSecrets(conn, buss, "host1")
+	defer cache1.Close()
+	sh2, cache2 := buildSecrets(conn, buss, "host2")
+	defer cache2.Close()
 
 	sec1, _ := sh1.SecretsForNamespace(ctx, ns)
 	sec2, _ := sh2.SecretsForNamespace(ctx, ns)
@@ -98,10 +99,8 @@ func TestDBSecrets(t *testing.T) {
 
 }
 
-func buildSecrets(ctx context.Context, db *gorm.DB, bus pubsub.EventBus, host string) (core.SecretsManager, core.Cache) {
-	circuit := core.NewCircuit(ctx, os.Interrupt)
+func buildSecrets(db *gorm.DB, bus pubsub.EventBus, host string) (core.SecretsManager, core.Cache) {
 	cache, _ := cache.New(bus, host, true, nil)
-	go cache.Run(circuit)
 
 	return secrets.NewManager(db, cache), cache
 }

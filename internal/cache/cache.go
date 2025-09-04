@@ -10,7 +10,6 @@ import (
 
 	"github.com/dgraph-io/ristretto/v2"
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
-	"github.com/direktiv/direktiv/internal/core"
 )
 
 type cacheMessage struct {
@@ -42,12 +41,19 @@ func New(bus pubsub.EventBus, hostname string, enableMetrics bool, logger *slog.
 		return nil, fmt.Errorf("error creating ristretto instance: %v", err)
 	}
 
-	return &Cache{
+	c := &Cache{
 		bus:      bus,
 		cache:    cache,
 		hostname: hostname,
 		logger:   logger,
-	}, nil
+	}
+
+	err = c.subscribe()
+	if err != nil {
+		return nil, fmt.Errorf("error subscribing to cache events: %v", err)
+	}
+
+	return c, nil
 }
 
 func (c *Cache) SetTTL(key string, value any, ttl int) {
@@ -75,15 +81,8 @@ func (c *Cache) Get(key string) (any, bool) {
 	return c.cache.Get(key)
 }
 
-func (c *Cache) Run(circuit *core.Circuit) {
-	c.subscribe()
-	for {
-		<-circuit.Done()
-		slog.Info("closing cache")
-		c.cache.Close()
-
-		return
-	}
+func (c *Cache) Close() {
+	c.cache.Close()
 }
 
 func (c *Cache) Hits() uint64 {
@@ -101,23 +100,23 @@ func (c *Cache) publish(key string) {
 	}
 	b, err := json.Marshal(cm)
 	if err != nil {
-		slog.Error("can not publish cache", slog.Any("error", err))
+		slog.Error("cannot publish cache event", "err", err)
 	}
 
 	err = c.bus.Publish(pubsub.SubjCacheDelete, b)
 	if err != nil {
-		slog.Error("can not publish cache", slog.Any("error", err))
+		slog.Error("cannot publish cache event", "err", err)
 	}
 }
 
-func (c *Cache) subscribe() {
-	c.bus.Subscribe(pubsub.SubjCacheDelete, func(data []byte) {
+func (c *Cache) subscribe() error {
+	return c.bus.Subscribe(pubsub.SubjCacheDelete, func(data []byte) {
 		var cm cacheMessage
 		err := json.Unmarshal(data, &cm)
 		if err != nil {
-			slog.Error("can not unmarshal cache", slog.Any("error", err))
+			c.logger.Error("cannot unmarshal cache event", "error", err, "data", string(data))
+			return
 		}
-
 		if cm.Hostname != c.hostname {
 			c.cache.Del(cm.Key)
 		}

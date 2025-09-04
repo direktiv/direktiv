@@ -109,14 +109,10 @@ func Start(circuit *core.Circuit) error {
 	// creates bus with pub sub
 	cache, err := cache.New(pubSub, os.Getenv("POD_NAME"), false, slog.Default())
 	circuit.Go(func() error {
-		cache.Run(circuit)
-		if err != nil {
-			return fmt.Errorf("pubsub bus loop, err: %w", err)
-		}
-
+		<-circuit.Done()
+		cache.Close()
 		return nil
 	})
-	app.Cache = cache
 
 	slog.Info("initializing secrets handler")
 	app.SecretsManager = secrets.NewManager(app.DB, cache)

@@ -5,7 +5,7 @@ type Cache interface {
 	Set(key string, value any)
 	Delete(key string)
 	Get(key string) (any, bool)
-	Run(circuit *Circuit)
+	Close()
 
 	Hits() uint64
 	Misses() uint64
