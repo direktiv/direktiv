@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/direktiv/direktiv/internal/cache"
 	"github.com/direktiv/direktiv/internal/core"
 	"gorm.io/gorm"
 )
@@ -13,16 +14,16 @@ var ErrNotFound = errors.New("ErrNotFound")
 
 type Manager struct {
 	db    *gorm.DB
-	cache core.Cache
+	cache cache.Cache
 }
 
 type Wrapper struct {
 	namespace string
 	secrets   core.Secrets
-	cache     core.Cache
+	cache     cache.Cache
 }
 
-func NewManager(db *gorm.DB, cache core.Cache) core.SecretsManager {
+func NewManager(db *gorm.DB, cache cache.Cache) core.SecretsManager {
 	return &Manager{
 		db:    db,
 		cache: cache,

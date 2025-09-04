@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/cache"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
@@ -13,7 +13,7 @@ import (
 
 type appMiddlewares struct {
 	db    *gorm.DB
-	cache core.Cache
+	cache cache.Cache
 }
 
 const cacheKey = "api-namespaces"
