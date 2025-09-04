@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"gopkg.in/yaml.v3"
 )
 
@@ -103,7 +104,7 @@ func (c *ServiceFileData) GetValueHash() string {
 }
 
 type ServiceManager interface {
-	Run(circuit *Circuit) error
+	Run(lc *lifecycle.Manager) error
 	SetServices(list []*ServiceFileData)
 	GeAll(namespace string) ([]*ServiceFileData, error)
 	GetPods(namespace string, serviceID string) (any, error)

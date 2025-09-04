@@ -43,7 +43,7 @@ type InitializeArgs struct {
 	DB     *gorm.DB
 }
 
-func Initialize(circuit *core.Circuit, app InitializeArgs) (*http.Server, error) {
+func Initialize(app InitializeArgs) (*http.Server, error) {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}

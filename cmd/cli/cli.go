@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/cmdserver"
-	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/server"
+	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/spf13/cobra"
 )
 
@@ -71,7 +71,7 @@ var startAPICmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("service 'api' starting...")
 
-		circuit := core.NewCircuit(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+		circuit := lifecycle.New(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 		err := server.Start(circuit)
 		if err != nil {

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -38,7 +38,7 @@ func NewCertificateUpdater(ns string) (*CertificateUpdater, error) {
 	}, nil
 }
 
-func (c *CertificateUpdater) Start(circuit *core.Circuit) {
+func (c *CertificateUpdater) Start(lc *lifecycle.Manager) {
 	go func() {
 		slog.Info("run certificate loop")
 		// for concurrent startup we delay it by up to ten seconds
@@ -52,7 +52,7 @@ func (c *CertificateUpdater) Start(circuit *core.Circuit) {
 		time.Sleep(time.Duration(rand.Intn(d)) * time.Second) //nolint:gosec
 
 		for {
-			err := c.checkAndUpdate(circuit.Context())
+			err := c.checkAndUpdate(lc.Context())
 			if err != nil {
 				panic("can not refresh certificates")
 			}

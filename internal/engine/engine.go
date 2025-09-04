@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -34,10 +35,10 @@ func NewEngine(db *gorm.DB, store store) (*Engine, error) {
 	}, nil
 }
 
-func (e *Engine) Start(circuit *core.Circuit) error {
+func (e *Engine) Start(lc *lifecycle.Manager) error {
 	cycleTime := time.Second
 	for {
-		if circuit.IsDone() {
+		if lc.IsDone() {
 			return nil
 		}
 		// TODO: implement async engine exec of workflows and retries.

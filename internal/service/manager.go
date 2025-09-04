@@ -13,6 +13,7 @@ import (
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/service/reconcile"
 	"github.com/direktiv/direktiv/internal/telemetry"
+	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"knative.dev/serving/pkg/client/clientset/versioned"
@@ -152,10 +153,10 @@ func (m *Manager) runCycle() []error {
 	return errs
 }
 
-func (m *Manager) Run(circuit *core.Circuit) error {
+func (m *Manager) Run(lc *lifecycle.Manager) error {
 	cycleTime := m.Cfg.GetFunctionsReconcileInterval()
 	for {
-		if circuit.IsDone() {
+		if lc.IsDone() {
 			return nil
 		}
 		m.lock.Lock()

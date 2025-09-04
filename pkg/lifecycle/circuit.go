@@ -1,4 +1,4 @@
-package core
+package lifecycle
 
 import (
 	"context"
@@ -11,31 +11,31 @@ import (
 )
 
 // nolint: containedctx
-type Circuit struct {
+type Manager struct {
 	ctx  context.Context
 	stop context.CancelFunc
 	wg   sync.WaitGroup
 }
 
-func NewCircuit(parent context.Context, signals ...os.Signal) *Circuit {
+func New(parent context.Context, signals ...os.Signal) *Manager {
 	appCtx, appCancel := signal.NotifyContext(parent, signals...)
 
-	return &Circuit{
+	return &Manager{
 		ctx:  appCtx,
 		stop: appCancel,
 		wg:   sync.WaitGroup{},
 	}
 }
 
-func (c *Circuit) Context() context.Context {
+func (c *Manager) Context() context.Context {
 	return c.ctx
 }
 
-func (c *Circuit) Done() <-chan struct{} {
+func (c *Manager) Done() <-chan struct{} {
 	return c.ctx.Done()
 }
 
-func (c *Circuit) IsDone() bool {
+func (c *Manager) IsDone() bool {
 	select {
 	case <-c.ctx.Done():
 		return true
@@ -46,7 +46,7 @@ func (c *Circuit) IsDone() bool {
 
 // Go lunches a goroutine and tracking it via a sync.WaitGroup. It enables simplified api to lunch graceful go
 // routines.
-func (c *Circuit) Go(job func() error) {
+func (c *Manager) Go(job func() error) {
 	c.wg.Add(1)
 	go func() {
 		defer c.wg.Done()
@@ -58,7 +58,7 @@ func (c *Circuit) Go(job func() error) {
 	}()
 }
 
-func (c *Circuit) Wait(timeout time.Duration) error {
+func (c *Manager) Wait(timeout time.Duration) error {
 	done := make(chan struct{})
 
 	go func() {

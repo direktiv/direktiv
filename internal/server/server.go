@@ -31,6 +31,7 @@ import (
 	"github.com/direktiv/direktiv/internal/service/registry"
 	"github.com/direktiv/direktiv/internal/telemetry"
 	database2 "github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/lifecycle"
 	_ "github.com/lib/pq" //nolint:revive
 	"github.com/nats-io/nats.go"
 	"gorm.io/driver/postgres"
@@ -39,7 +40,7 @@ import (
 )
 
 //nolint:gocognit
-func Start(circuit *core.Circuit) error {
+func Start(lc *lifecycle.Manager) error {
 	var err error
 	config := &core.Config{}
 	if err := env.Parse(config); err != nil {
@@ -64,7 +65,7 @@ func Start(circuit *core.Circuit) error {
 	if err != nil {
 		return fmt.Errorf("initialize certificate updater, err: %w", err)
 	}
-	cm.Start(circuit)
+	cm.Start(lc)
 
 	// wait for nats to be up and running and certs are done
 	checkNATSConnectivity()
@@ -95,8 +96,8 @@ func Start(circuit *core.Circuit) error {
 	}
 
 	pubSub := natspubsub.New(nc, slog.Default())
-	circuit.Go(func() error {
-		<-circuit.Done()
+	lc.Go(func() error {
+		<-lc.Done()
 		err := nc.Drain()
 		if err != nil {
 			return fmt.Errorf("nats pubsub drain, err: %w", err)
@@ -111,8 +112,8 @@ func Start(circuit *core.Circuit) error {
 	if err != nil {
 		return fmt.Errorf("initializing cluster-cache, err: %w", err)
 	}
-	circuit.Go(func() error {
-		<-circuit.Done()
+	lc.Go(func() error {
+		<-lc.Done()
 		app.Cache.Close()
 
 		return nil
@@ -138,8 +139,8 @@ func Start(circuit *core.Circuit) error {
 		return fmt.Errorf("initializing service manager, err: %w", err)
 	}
 
-	circuit.Go(func() error {
-		err := app.ServiceManager.Run(circuit)
+	lc.Go(func() error {
+		err := app.ServiceManager.Run(lc)
 		if err != nil {
 			return fmt.Errorf("service manager, err: %w", err)
 		}
@@ -152,7 +153,7 @@ func Start(circuit *core.Circuit) error {
 	if err != nil {
 		return fmt.Errorf("can not connect to nats")
 	}
-	eStore, err := engineStore.NewStore(circuit.Context(), nc)
+	eStore, err := engineStore.NewStore(lc.Context(), nc)
 	if err != nil {
 		return fmt.Errorf("initializing engine, err: %w", err)
 	}
@@ -160,8 +161,8 @@ func Start(circuit *core.Circuit) error {
 	if err != nil {
 		return fmt.Errorf("initializing engine, err: %w", err)
 	}
-	circuit.Go(func() error {
-		err := app.Engine.Start(circuit)
+	lc.Go(func() error {
+		err := app.Engine.Start(lc)
 		if err != nil {
 			return fmt.Errorf("engine, err: %w", err)
 		}
@@ -214,12 +215,12 @@ func Start(circuit *core.Circuit) error {
 
 	// Start api server
 	slog.Info("initializing api server")
-	srv, err := api.Initialize(circuit, app)
+	srv, err := api.Initialize(app)
 	if err != nil {
 		return fmt.Errorf("initializing api server, err: %w", err)
 	}
 
-	circuit.Go(func() error {
+	lc.Go(func() error {
 		err := srv.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return fmt.Errorf("shutdown api server, err: %w", err)
@@ -228,8 +229,8 @@ func Start(circuit *core.Circuit) error {
 		return nil
 	})
 
-	circuit.Go(func() error {
-		<-circuit.Done()
+	lc.Go(func() error {
+		<-lc.Done()
 
 		slog.Info("shutdown api server...")
 		shutdownCtx, _ := context.WithTimeout(context.Background(), 5*time.Second)
