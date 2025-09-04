@@ -67,7 +67,7 @@ describe("required fields", () => {
       expect(screen.getAllByText("Some required fields are missing (string)"));
     });
 
-    test("submits the form when all required string input fields are filled in", async () => {
+    test("submits the form when the required string input field is filled in", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -146,7 +146,7 @@ describe("required fields", () => {
       expect(screen.getAllByText("Some required fields are missing (number)"));
     });
 
-    test("submits the form when all required number input fields are filled in", async () => {
+    test("submits the form when the required number input field is filled in", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -218,7 +218,7 @@ describe("required fields", () => {
       expect(screen.getAllByText("Some required fields are missing (date)"));
     });
 
-    test("submits the form when all required date input fields are filled in", async () => {
+    test("submits the form when the required date input field is filled in", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -291,7 +291,7 @@ describe("required fields", () => {
       expect(screen.getAllByText("Some required fields are missing (select)"));
     });
 
-    test("submits the form when all required select fields are filled in", async () => {
+    test("submits the form when the required select field is filled in", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -369,7 +369,7 @@ describe("required fields", () => {
       );
     });
 
-    test("submits the form when all required checkbox fields are filled in", async () => {
+    test("submits the form when the required checkbox field is filled in", async () => {
       await act(async () => {
         render(
           <PageCompiler
@@ -443,7 +443,7 @@ describe("required fields", () => {
       );
     });
 
-    test("submits the form when all required textarea fields are filled in", async () => {
+    test("submits the form when the required textarea field is filled in", async () => {
       await act(async () => {
         render(
           <PageCompiler
