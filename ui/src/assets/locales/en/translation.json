@@ -1748,7 +1748,7 @@
           "dataLabel": "data",
           "dataPlaceholder": "Path to an array for the loop (e.g. query.companies.data)",
           "pageSizeLabel": "Page Size",
-          "pageSizePlaceholder": "Number of items to show on a page (e.g.10)"
+          "pageSizePlaceholder": "Number of items to show on a page (e.g. 10)"
         },
         "table": {
           "description": "A Table block displays data in a table format, as one row for each item in an array. It can be used to display data from a Query Provider",
