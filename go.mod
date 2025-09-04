@@ -1,6 +1,6 @@
 module github.com/direktiv/direktiv
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/ChannelMeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61
@@ -24,8 +24,6 @@ require (
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/nats.go v1.42.0
-	github.com/pkg/errors v0.9.1
-	github.com/psanford/memfs v0.0.0-20230130182539-4dbf7e3e865e
 	github.com/r3labs/sse v0.0.0-20210224172625-26fe804710bc
 	github.com/slack-go/slack v0.16.0
 	github.com/spf13/cobra v1.9.1
@@ -139,6 +137,7 @@ require (
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/pjbgf/sha1cd v0.4.0 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
