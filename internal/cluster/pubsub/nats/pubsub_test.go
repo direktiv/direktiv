@@ -19,15 +19,17 @@ func TestPubSub(t *testing.T) {
 	}
 
 	cs, _ := natsContainer.ConnectionString(context.Background())
-	nc, err := nats.Connect(cs)
+	busPublish, err := natspubsub.New(func() (*nats.Conn, error) {
+		return nats.Connect(cs)
+	}, nil)
 	require.NoError(t, err)
-	defer nc.Drain()
+	defer busPublish.Close()
 
-	busPublish := natspubsub.New(nc, nil)
-
-	nc2, err := nats.Connect(cs)
+	busReceive, err := natspubsub.New(func() (*nats.Conn, error) {
+		return nats.Connect(cs)
+	}, nil)
 	require.NoError(t, err)
-	busReceive := natspubsub.New(nc2, nil)
+	defer busReceive.Close()
 
 	dataSend := []byte("test data")
 	var dataReceived []byte

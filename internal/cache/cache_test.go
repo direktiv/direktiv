@@ -19,10 +19,11 @@ func TestCache(t *testing.T) {
 	}
 
 	cs, _ := natsContainer.ConnectionString(context.Background())
-	nc, err := nats.Connect(cs)
-	defer nc.Drain()
+	buss, err := natspubsub.New(func() (*nats.Conn, error) {
+		return nats.Connect(cs)
+	}, nil)
 	require.NoError(t, err)
-	buss := natspubsub.New(nc, nil)
+	defer buss.Close()
 
 	cache1, _ := cache.New(buss, "host1", false, nil)
 	defer cache1.Close()

@@ -35,9 +35,12 @@ func TestDBSecrets(t *testing.T) {
 		t.Fatal(err)
 	}
 	cs, _ := natsContainer.ConnectionString(context.Background())
-	nc, err := nats.Connect(cs)
+
+	buss, err := natspubsub.New(func() (*nats.Conn, error) {
+		return nats.Connect(cs)
+	}, nil)
 	require.NoError(t, err)
-	buss := natspubsub.New(nc, nil)
+	defer buss.Close()
 
 	sh1, cache1 := buildSecrets(conn, buss, "host1")
 	defer cache1.Close()
