@@ -86,7 +86,6 @@ func (j *mirrorJob) setProcessStatue(status string) {
 	var err error
 	j.process.Status = status
 	j.process, err = datasql.NewStore(j.db).Mirror().UpdateProcess(context.Background(), j.process)
-
 	if err != nil {
 		j.err = fmt.Errorf("setProcessStatue: datastore set mirror process status: %w", err)
 		return
@@ -166,7 +165,6 @@ func (j *mirrorJob) copyFilesToTempFSRoot() {
 
 		return nil
 	})
-
 	if err != nil {
 		j.err = fmt.Errorf("copyFilesToTempFSRoot: walk dir err: %w", err)
 		return
@@ -206,7 +204,6 @@ func (j *mirrorJob) copyFilesToTempFSRoot() {
 		} else {
 			mt := mimetype.Detect(data)
 			mimeType = strings.Split(mt.String(), ";")[0]
-
 		}
 		if mimeType == "" {
 			mimeType = "application/octet-stream" // fallback

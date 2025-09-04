@@ -22,7 +22,6 @@ linters:
     - musttag
     - nolintlint
     - prealloc
-    - spancheck # TODO: Alan, enable this one as it helps you fixing some telemetry bugs.
     - tagliatelle
     - varnamelen
     - wrapcheck
