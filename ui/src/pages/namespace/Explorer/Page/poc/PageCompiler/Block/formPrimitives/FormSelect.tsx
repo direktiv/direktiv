@@ -26,11 +26,7 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
     blockProps;
 
   const resolvedDefaultValue = interpolateString(defaultValue);
-  const fieldName = encodeBlockKey(
-    type,
-    id,
-    optional ? "optional" : "required"
-  );
+  const fieldName = encodeBlockKey(type, id, optional);
 
   let resolvedValues: string[];
 

@@ -15,11 +15,7 @@ export const FormStringInput = ({ blockProps }: FormStringInputProps) => {
   const interpolateString = useStringInterpolation();
 
   const value = interpolateString(defaultValue);
-  const fieldName = encodeBlockKey(
-    type,
-    id,
-    optional ? "optional" : "required"
-  );
+  const fieldName = encodeBlockKey(type, id, optional);
 
   return (
     <Fieldset

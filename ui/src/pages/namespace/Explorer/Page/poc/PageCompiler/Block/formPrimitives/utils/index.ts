@@ -4,13 +4,12 @@ import { LocalVariablesContent } from "../../../primitives/Variable/LocalVariabl
 
 const keySeparator = "::";
 
-type FieldRequirement = "required" | "optional";
-
 export const encodeBlockKey = (
   blockType: Block["type"],
   elementId: string,
-  fieldRequirement: FieldRequirement
-) => [blockType, elementId, fieldRequirement].join(keySeparator);
+  optional: boolean
+) =>
+  [blockType, elementId, optional ? "optional" : "required"].join(keySeparator);
 
 const decodeBlockKey = (blockKey: string) => {
   const [blockType, elementId, optional] = blockKey.split(keySeparator, 3);
@@ -19,7 +18,7 @@ const decodeBlockKey = (blockKey: string) => {
   return [
     blockType as Block["type"],
     elementId,
-    optional as FieldRequirement,
+    optional === "optional" ? true : false,
   ] as const;
 };
 
@@ -45,9 +44,9 @@ const resolveFormValue = (
 const isFormFieldMissing = (
   blockType: Block["type"],
   value: FormDataEntryValue,
-  optional: FieldRequirement
+  optional: boolean
 ) => {
-  if (optional === "optional") {
+  if (optional) {
     return false;
   }
 
