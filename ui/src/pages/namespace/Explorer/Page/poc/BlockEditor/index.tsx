@@ -2,9 +2,7 @@ import { ComponentType, Key } from "react";
 
 import { BlockPathType } from "../PageCompiler/Block";
 import { BlockType } from "../schema/blocks";
-import { ContextVariables } from "../PageCompiler/primitives/Variable/VariableContext";
 import { NoFormBlockSidePanel } from "./NoFormBlockSidePanel";
-import { TextType } from "../schema/blocks/text";
 import { getBlockConfig } from "../PageCompiler/context/utils/useBlockTypes";
 import { isPage } from "../PageCompiler/context/utils";
 import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
@@ -19,9 +17,7 @@ export type BlockEditFormProps<T> = {
   path: BlockPathType;
   onSubmit: (newBlock: T) => void;
   onCancel: () => void;
-} & (T extends TextType // Todo: update for all types that use vars
-  ? { variables: ContextVariables }
-  : { variables: never });
+};
 
 type BlockFormProps = {
   action: BlockEditorAction;
@@ -77,7 +73,6 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
         path={path}
         onSubmit={handleUpdate}
         onCancel={handleClose}
-        variables={panel.variables}
       />
     );
   }
