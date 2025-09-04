@@ -1,12 +1,10 @@
 package nats
 
 import (
-	"io"
 	"log/slog"
 
-	"github.com/nats-io/nats.go"
-
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
+	"github.com/nats-io/nats.go"
 )
 
 type Bus struct {
@@ -18,8 +16,9 @@ func New(nc *nats.Conn, logger *slog.Logger) *Bus {
 	if logger != nil {
 		logger = logger.With("component", "cluster-pubsub")
 	} else {
-		logger = slog.New(slog.NewTextHandler(io.Discard, nil))
+		logger = slog.New(slog.DiscardHandler)
 	}
+
 	return &Bus{nc: nc, logger: logger}
 }
 
@@ -49,7 +48,6 @@ func (b *Bus) Subscribe(subject pubsub.Subject, h pubsub.Handler) error {
 	}
 
 	_, err := b.nc.Subscribe(string(subject), wrapper)
-
 	if err != nil {
 		return err
 	}

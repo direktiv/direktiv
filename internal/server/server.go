@@ -111,6 +111,7 @@ func Start(circuit *core.Circuit) error {
 	circuit.Go(func() error {
 		<-circuit.Done()
 		cache.Close()
+
 		return nil
 	})
 

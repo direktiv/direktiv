@@ -3,7 +3,6 @@ package cache
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log/slog"
 	"time"
 	"unsafe"
@@ -28,7 +27,7 @@ func New(bus pubsub.EventBus, hostname string, enableMetrics bool, logger *slog.
 	if logger != nil {
 		logger = logger.With("component", "cluster-cache")
 	} else {
-		logger = slog.New(slog.NewTextHandler(io.Discard, nil))
+		logger = slog.New(slog.DiscardHandler)
 	}
 
 	cache, err := ristretto.NewCache(&ristretto.Config[string, any]{
@@ -38,7 +37,7 @@ func New(bus pubsub.EventBus, hostname string, enableMetrics bool, logger *slog.
 		Metrics:     enableMetrics,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error creating ristretto instance: %v", err)
+		return nil, fmt.Errorf("error creating ristretto instance: %w", err)
 	}
 
 	c := &Cache{
@@ -50,7 +49,7 @@ func New(bus pubsub.EventBus, hostname string, enableMetrics bool, logger *slog.
 
 	err = c.subscribe()
 	if err != nil {
-		return nil, fmt.Errorf("error subscribing to cache events: %v", err)
+		return nil, fmt.Errorf("error subscribing to cache events: %w", err)
 	}
 
 	return c, nil
