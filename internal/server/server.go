@@ -17,6 +17,7 @@ import (
 	"github.com/direktiv/direktiv/internal/api"
 	"github.com/direktiv/direktiv/internal/cache"
 	"github.com/direktiv/direktiv/internal/certificates"
+	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
@@ -24,7 +25,6 @@ import (
 	engineStore "github.com/direktiv/direktiv/internal/engine/store"
 	"github.com/direktiv/direktiv/internal/extensions"
 	"github.com/direktiv/direktiv/internal/gateway"
-	"github.com/direktiv/direktiv/internal/pubsub"
 	"github.com/direktiv/direktiv/internal/secrets"
 	"github.com/direktiv/direktiv/internal/service"
 	"github.com/direktiv/direktiv/internal/service/registry"
@@ -93,7 +93,7 @@ func Start(circuit *core.Circuit) error {
 		return fmt.Errorf("can not connect to nats")
 	}
 
-	pubSub := pubsub.NewPubSub(nc)
+	pubSub := pubsub.NewNatsPubSub(nc)
 	circuit.Go(func() error {
 		err := pubSub.Loop(circuit)
 		if err != nil {

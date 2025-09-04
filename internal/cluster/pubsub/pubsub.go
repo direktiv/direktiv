@@ -7,22 +7,22 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-type PubSub struct {
+type NatsPubSub struct {
 	nc *nats.Conn
 }
 
-func NewPubSub(conn *nats.Conn) core.PubSub {
-	return &PubSub{
+func NewNatsPubSub(conn *nats.Conn) *NatsPubSub {
+	return &NatsPubSub{
 		nc: conn,
 	}
 }
 
-func (b *PubSub) Loop(circuit *core.Circuit) error {
+func (b *NatsPubSub) Loop(circuit *core.Circuit) error {
 	<-circuit.Done()
 	return b.nc.Drain()
 }
 
-func (b *PubSub) Subscribe(channel core.Type, handler func(data []byte)) {
+func (b *NatsPubSub) Subscribe(channel core.Type, handler func(data []byte)) {
 	_, err := b.nc.Subscribe(string(channel), func(msg *nats.Msg) {
 		slog.Debug("received message", slog.String("channel", msg.Subject))
 		handler(msg.Data)
@@ -33,7 +33,7 @@ func (b *PubSub) Subscribe(channel core.Type, handler func(data []byte)) {
 	}
 }
 
-func (b *PubSub) Publish(channel core.Type, data []byte) error {
+func (b *NatsPubSub) Publish(channel core.Type, data []byte) error {
 	if data == nil {
 		data = []byte("")
 	}

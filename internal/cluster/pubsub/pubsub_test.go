@@ -21,14 +21,14 @@ func TestPubSub(t *testing.T) {
 	cs, _ := natsContainer.ConnectionString(context.Background())
 	nc, err := nats.Connect(cs)
 	require.NoError(t, err)
-	busPublish := pubsub.NewPubSub(nc)
+	busPublish := pubsub.NewNatsPubSub(nc)
 
 	circuit := core.NewCircuit(context.Background())
 	go busPublish.Loop(circuit)
 
 	nc2, err := nats.Connect(cs)
 	require.NoError(t, err)
-	busReceive := pubsub.NewPubSub(nc2)
+	busReceive := pubsub.NewNatsPubSub(nc2)
 
 	dataSend := []byte("test data")
 	var dataReceived []byte

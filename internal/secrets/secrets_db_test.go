@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/cache"
+	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/pubsub"
 	"github.com/direktiv/direktiv/internal/secrets"
 	database2 "github.com/direktiv/direktiv/pkg/database"
 	"github.com/google/uuid"
@@ -37,7 +37,7 @@ func TestDBSecrets(t *testing.T) {
 	cs, _ := natsContainer.ConnectionString(context.Background())
 	nc, err := nats.Connect(cs)
 	require.NoError(t, err)
-	buss := pubsub.NewPubSub(nc)
+	buss := pubsub.NewNatsPubSub(nc)
 
 	sh1, cache1 := buildSecrets(ctx, conn, buss, "host1")
 	sh2, cache2 := buildSecrets(ctx, conn, buss, "host2")
