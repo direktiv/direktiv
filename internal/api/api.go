@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/internal/cache"
+	"github.com/direktiv/direktiv/internal/cluster/cache"
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"

@@ -15,7 +15,7 @@ import (
 
 	"github.com/caarlos0/env/v10"
 	"github.com/direktiv/direktiv/internal/api"
-	"github.com/direktiv/direktiv/internal/cache/memcache"
+	"github.com/direktiv/direktiv/internal/cluster/cache/memcache"
 	"github.com/direktiv/direktiv/internal/cluster/certs"
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	natspubsub "github.com/direktiv/direktiv/internal/cluster/pubsub/nats"

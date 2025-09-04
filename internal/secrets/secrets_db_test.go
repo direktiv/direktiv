@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/internal/cache"
-	"github.com/direktiv/direktiv/internal/cache/memcache"
+	"github.com/direktiv/direktiv/internal/cluster/cache"
+	"github.com/direktiv/direktiv/internal/cluster/cache/memcache"
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	natspubsub "github.com/direktiv/direktiv/internal/cluster/pubsub/nats"
 	"github.com/direktiv/direktiv/internal/core"

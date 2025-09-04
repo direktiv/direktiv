@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/direktiv/direktiv/internal/cache"
+	"github.com/direktiv/direktiv/internal/cluster/cache"
 	"github.com/direktiv/direktiv/internal/core"
 	"gorm.io/gorm"
 )

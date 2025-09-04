@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/internal/cache/memcache"
+	"github.com/direktiv/direktiv/internal/cluster/cache/memcache"
 	natspubsub "github.com/direktiv/direktiv/internal/cluster/pubsub/nats"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
