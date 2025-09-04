@@ -269,7 +269,7 @@ A template string is a string that can have `Variable` placeholders that will be
 
 ## `Id`
 
-An Id is a string that identifies a resource and must be unique among all resources of the same type. IDs are part of a variable and cannot contain dots (.) as they are used as separators for variables.
+An Id is a string that identifies a block and must be unique among all blocks of the same type. IDs are part of a variable and cannot contain dots (.) as they are used as separators for variables.
 
 ## `KeyValue`
 
@@ -289,10 +289,10 @@ An extended key-value pair that supports multiple data types for the value, incl
 
 ## `Number`
 
-| Attribute | Type       | Description |
-| --------- | ---------- | ----------- |
-| `key`     | `"number"` |             |
-| `value`   | `number`   | a number    |
+| Attribute | Type       | Description  |
+| --------- | ---------- | ------------ |
+| `key`     | `"number"` |              |
+| `value`   | `number`   | Number value |
 
 ## `String`
 
@@ -306,14 +306,14 @@ An extended key-value pair that supports multiple data types for the value, incl
 | Attribute | Type        | Description          |
 | --------- | ----------- | -------------------- |
 | `key`     | `"boolean"` |                      |
-| `value`   | `boolean`   | either true or false |
+| `value`   | `boolean`   | Either true or false |
 
 ## `Array`
 
 | Attribute | Type      | Description         |
 | --------- | --------- | ------------------- |
 | `key`     | `"array"` |                     |
-| `value`   | `array`   | an array of strings |
+| `value`   | `array`   | An array of strings |
 
 ## `VariablePath`
 
