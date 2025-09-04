@@ -2,16 +2,16 @@ package pubsub
 
 import "github.com/direktiv/direktiv/internal/core"
 
-type Type string
+type Subject string
 
 const (
-	FileSystemChangeEvent Type = "filesystem.change"
-	NamespacesChangeEvent Type = "namespace.change"
-	CacheDeleteEvent      Type = "cache.delete"
+	SubjFileSystemChange Subject = "filesystem.change"
+	SubjNamespacesChange Subject = "namespace.change"
+	SubjCacheDelete      Subject = "cache.delete"
 )
 
 type Bus interface {
-	Subscribe(channel Type, handler func(data []byte))
-	Publish(channel Type, data []byte) error
+	Subscribe(channel Subject, handler func(data []byte))
+	Publish(channel Subject, data []byte) error
 	Loop(circuit *core.Circuit) error
 }

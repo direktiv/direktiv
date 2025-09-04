@@ -177,7 +177,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 	// TODO: yassir, check the logic of sending events on fs change in all actions.
 	// Publish pubsub event.
 	if file.Typ.IsDirektivSpecFile() {
-		err = e.bus.Publish(pubsub.FileSystemChangeEvent, nil)
+		err = e.bus.Publish(pubsub.SubjFileSystemChange, nil)
 		if err != nil {
 			slog.Error("pubsub publish", "err", err)
 		}
@@ -253,7 +253,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event.
 	if newFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.Publish(pubsub.FileSystemChangeEvent, nil)
+		err = e.bus.Publish(pubsub.SubjFileSystemChange, nil)
 		// nolint:staticcheck
 		if err != nil {
 			slog.With("component", "api").
@@ -368,7 +368,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event (rename).
 	if req.Path != "" && updatedFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.Publish(pubsub.FileSystemChangeEvent, nil)
+		err = e.bus.Publish(pubsub.SubjFileSystemChange, nil)
 		if err != nil {
 			slog.Error("pubsub publish", "err", err)
 		}
@@ -376,7 +376,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event (update).
 	if req.Data != "" && updatedFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.Publish(pubsub.FileSystemChangeEvent, nil)
+		err = e.bus.Publish(pubsub.SubjFileSystemChange, nil)
 		// nolint:staticcheck
 		if err != nil {
 			slog.With("component", "api").

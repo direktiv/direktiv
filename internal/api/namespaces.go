@@ -93,7 +93,7 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: yassir, check the logic of sending events on ns change in all actions.
-	err = e.bus.Publish(pubsub.NamespacesChangeEvent, nil)
+	err = e.bus.Publish(pubsub.SubjNamespacesChange, nil)
 	if err != nil {
 		slog.Error("pubsub publish filesystem event", "err", err)
 	}
@@ -295,7 +295,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = e.bus.Publish(pubsub.NamespacesChangeEvent, nil)
+	err = e.bus.Publish(pubsub.SubjNamespacesChange, nil)
 	if err != nil {
 		slog.Error("pubsub publish", "err", err)
 	}

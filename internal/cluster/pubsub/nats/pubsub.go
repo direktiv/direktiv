@@ -23,7 +23,7 @@ func (b *PubSub) Loop(circuit *core.Circuit) error {
 	return b.nc.Drain()
 }
 
-func (b *PubSub) Subscribe(channel pubsub.Type, handler func(data []byte)) {
+func (b *PubSub) Subscribe(channel pubsub.Subject, handler func(data []byte)) {
 	_, err := b.nc.Subscribe(string(channel), func(msg *nats.Msg) {
 		slog.Debug("received message", slog.String("channel", msg.Subject))
 		handler(msg.Data)
@@ -34,7 +34,7 @@ func (b *PubSub) Subscribe(channel pubsub.Type, handler func(data []byte)) {
 	}
 }
 
-func (b *PubSub) Publish(channel pubsub.Type, data []byte) error {
+func (b *PubSub) Publish(channel pubsub.Subject, data []byte) error {
 	if data == nil {
 		data = []byte("")
 	}

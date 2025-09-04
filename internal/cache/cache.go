@@ -94,14 +94,14 @@ func (c *Cache) publish(key string) {
 		slog.Error("can not publish cache", slog.Any("error", err))
 	}
 
-	err = c.bus.Publish(pubsub.CacheDeleteEvent, b)
+	err = c.bus.Publish(pubsub.SubjCacheDelete, b)
 	if err != nil {
 		slog.Error("can not publish cache", slog.Any("error", err))
 	}
 }
 
 func (c *Cache) subscribe() {
-	c.bus.Subscribe(pubsub.CacheDeleteEvent, func(data []byte) {
+	c.bus.Subscribe(pubsub.SubjCacheDelete, func(data []byte) {
 		var cm cacheMessage
 		err := json.Unmarshal(data, &cm)
 		if err != nil {

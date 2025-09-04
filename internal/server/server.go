@@ -185,20 +185,20 @@ func Start(circuit *core.Circuit) error {
 	slog.Info("initializing sync namespace routine")
 	// TODO: fix app.SyncNamespace init.
 
-	pubSub.Subscribe(pubsub.FileSystemChangeEvent, func(_ []byte) {
+	pubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
 		renderServiceFiles(app.DB, app.ServiceManager)
 	})
-	pubSub.Subscribe(pubsub.NamespacesChangeEvent, func(_ []byte) {
+	pubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
 		renderServiceFiles(app.DB, app.ServiceManager)
 	})
 	// Call at least once before booting
 	renderServiceFiles(app.DB, app.ServiceManager)
 
 	// endpoint manager
-	pubSub.Subscribe(pubsub.FileSystemChangeEvent, func(_ []byte) {
+	pubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
 		renderGatewayFiles(app.DB, app.GatewayManager)
 	})
-	pubSub.Subscribe(pubsub.NamespacesChangeEvent, func(_ []byte) {
+	pubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
 		renderGatewayFiles(app.DB, app.GatewayManager)
 	})
 	// initial loading of routes and consumers

@@ -34,12 +34,12 @@ func TestPubSub(t *testing.T) {
 	dataSend := []byte("test data")
 	var dataReceived []byte
 
-	busReceive.Subscribe(pubsub.FileSystemChangeEvent, func(data []byte) {
+	busReceive.Subscribe(pubsub.SubjFileSystemChange, func(data []byte) {
 		dataReceived = data
 	})
 
 	require.Eventually(t, func() bool {
-		busPublish.Publish(pubsub.FileSystemChangeEvent, dataSend)
+		busPublish.Publish(pubsub.SubjFileSystemChange, dataSend)
 		return string(dataReceived) == string(dataSend)
 	}, 3*time.Second, 100*time.Millisecond, "data not received")
 }
