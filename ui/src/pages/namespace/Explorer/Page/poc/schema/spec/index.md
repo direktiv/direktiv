@@ -165,12 +165,13 @@ A QueryProvider is a block that is responsible for fetching data from one or mul
 
 A Block that allows to iterate over an array variable. It renders its blocks for each item.
 
-| Attribute | Type                          | Description                                                                       |
-| --------- | ----------------------------- | --------------------------------------------------------------------------------- |
-| `type`    | `"loop"`                      |                                                                                   |
-| `id`      | `Id`                          | Unique identifier                                                                 |
-| `data`    | `VariablePath<Array<Object>>` | Variable path to an array of objects to loop over                                 |
-| `blocks`  | `Block[]`                     | Child blocks rendered per item. Does not exist when used as a context for a table |
+| Attribute  | Type                          | Description                                                                       |
+| ---------- | ----------------------------- | --------------------------------------------------------------------------------- |
+| `type`     | `"loop"`                      |                                                                                   |
+| `id`       | `Id`                          | Unique identifier                                                                 |
+| `data`     | `VariablePath<Array<Object>>` | Variable path to an array of objects to loop over                                 |
+| `pageSize` | `number`                      | Number of items per page                                                          |
+| `blocks`   | `Block[]`                     | Child blocks rendered per item. Does not exist when used as a context for a table |
 
 ### Image `Block`
 

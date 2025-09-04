@@ -15,7 +15,7 @@ export const FormNumberInput = ({ blockProps }: FormNumberInputProps) => {
   const resolveVariableNumber = useVariableNumberResolver();
   const { id, label, description, defaultValue, optional, type } = blockProps;
 
-  const fieldName = encodeBlockKey(type, id);
+  const fieldName = encodeBlockKey(type, id, optional);
   let value: number;
 
   if (defaultValue.type === "variable") {
@@ -34,6 +34,7 @@ export const FormNumberInput = ({ blockProps }: FormNumberInputProps) => {
 
   return (
     <Fieldset
+      id={id}
       label={label}
       description={description}
       htmlFor={fieldName}

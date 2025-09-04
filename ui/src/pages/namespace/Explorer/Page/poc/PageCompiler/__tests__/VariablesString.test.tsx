@@ -374,6 +374,7 @@ describe("VariableString", () => {
                         type: "loop",
                         id: "company",
                         data: "query.company-list.data",
+                        pageSize: 10,
                         blocks: [
                           {
                             type: "headline",
@@ -443,6 +444,7 @@ describe("VariableString", () => {
                             type: "loop",
                             id: "company",
                             data: "query.company-list.data",
+                            pageSize: 10,
                             blocks: [
                               {
                                 type: "headline",
@@ -453,6 +455,7 @@ describe("VariableString", () => {
                                 type: "loop",
                                 id: "clientAddress",
                                 data: "query.client.data.addresses",
+                                pageSize: 10,
                                 blocks: [
                                   {
                                     type: "headline",
@@ -534,6 +537,7 @@ describe("VariableString", () => {
                         type: "loop",
                         id: "company",
                         data: "query.company-list.total",
+                        pageSize: 10,
                         blocks: [
                           {
                             type: "headline",
@@ -584,11 +588,13 @@ describe("VariableString", () => {
                         type: "loop",
                         id: "company",
                         data: "query.company-list.data",
+                        pageSize: 10,
                         blocks: [
                           {
                             type: "loop",
                             id: "company",
                             data: "query.company-list.data",
+                            pageSize: 10,
                             blocks: [
                               {
                                 type: "headline",
