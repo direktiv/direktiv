@@ -63,6 +63,7 @@ export const Loop = ({
       >
         <Input
           {...form.register("pageSize", { valueAsNumber: true })}
+          id="pageSize"
           type="number"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.loop.pageSizePlaceholder"
