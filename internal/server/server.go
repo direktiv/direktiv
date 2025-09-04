@@ -94,7 +94,7 @@ func Start(circuit *core.Circuit) error {
 		return fmt.Errorf("can not connect to nats")
 	}
 
-	pubSub := natspubsub.New(nc)
+	pubSub := natspubsub.New(nc, slog.Default())
 	circuit.Go(func() error {
 		<-circuit.Done()
 		err := nc.Drain()

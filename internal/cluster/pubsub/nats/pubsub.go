@@ -1,37 +1,58 @@
 package nats
 
 import (
+	"io"
 	"log/slog"
 
-	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	"github.com/nats-io/nats.go"
+
+	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 )
 
-type PubSub struct {
-	nc *nats.Conn
+type Bus struct {
+	nc     *nats.Conn
+	logger *slog.Logger
 }
 
-func New(conn *nats.Conn) *PubSub {
-	return &PubSub{
-		nc: conn,
+func New(nc *nats.Conn, logger *slog.Logger) *Bus {
+	if logger != nil {
+		logger = logger.With("component", "pubsub")
+	} else {
+		logger = slog.New(slog.NewTextHandler(io.Discard, nil))
 	}
+	return &Bus{nc: nc, logger: logger}
 }
 
-func (b *PubSub) Subscribe(channel pubsub.Subject, handler func(data []byte)) {
-	_, err := b.nc.Subscribe(string(channel), func(msg *nats.Msg) {
-		slog.Debug("received message", slog.String("channel", msg.Subject))
-		handler(msg.Data)
-	})
+func (b *Bus) Publish(subject pubsub.Subject, data []byte) error {
+	err := b.nc.Publish(string(subject), data)
 	if err != nil {
-		// we can not recover here
-		panic("can not subscribe to channel")
+		return err
 	}
+
+	return nil
 }
 
-func (b *PubSub) Publish(channel pubsub.Subject, data []byte) error {
-	if data == nil {
-		data = []byte("")
+func (b *Bus) Flush() error {
+	return b.nc.Flush()
+}
+
+func (b *Bus) Subscribe(subject pubsub.Subject, h pubsub.Handler) error {
+	wrapper := func(msg *nats.Msg) {
+		// Protect handlers; never let a panic kill the NATS dispatcher.
+		defer func() {
+			if r := recover(); r != nil {
+				b.logger.Error("panic in pubsub handler", "subject", msg.Subject, "recover", r)
+			}
+		}()
+
+		h(msg.Data)
 	}
 
-	return b.nc.Publish(string(channel), data)
+	_, err := b.nc.Subscribe(string(subject), wrapper)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -105,7 +105,7 @@ func (c *Cache) subscribe() {
 		var cm cacheMessage
 		err := json.Unmarshal(data, &cm)
 		if err != nil {
-			return
+			slog.Error("can not unmarshal cache", slog.Any("error", err))
 		}
 
 		if cm.Hostname != c.hostname {

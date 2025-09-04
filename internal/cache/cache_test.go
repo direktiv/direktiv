@@ -23,7 +23,7 @@ func TestCache(t *testing.T) {
 	cs, _ := natsContainer.ConnectionString(context.Background())
 	nc, err := nats.Connect(cs)
 	require.NoError(t, err)
-	buss := natspubsub.New(nc)
+	buss := natspubsub.New(nc, nil)
 
 	ctx, cancel := context.WithCancel(context.Background())
 

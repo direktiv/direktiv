@@ -38,7 +38,7 @@ func TestDBSecrets(t *testing.T) {
 	cs, _ := natsContainer.ConnectionString(context.Background())
 	nc, err := nats.Connect(cs)
 	require.NoError(t, err)
-	buss := natspubsub.New(nc)
+	buss := natspubsub.New(nc, nil)
 
 	sh1, cache1 := buildSecrets(ctx, conn, buss, "host1")
 	sh2, cache2 := buildSecrets(ctx, conn, buss, "host2")

@@ -23,11 +23,11 @@ func TestPubSub(t *testing.T) {
 	require.NoError(t, err)
 	defer nc.Drain()
 
-	busPublish := natspubsub.New(nc)
+	busPublish := natspubsub.New(nc, nil)
 
 	nc2, err := nats.Connect(cs)
 	require.NoError(t, err)
-	busReceive := natspubsub.New(nc2)
+	busReceive := natspubsub.New(nc2, nil)
 
 	dataSend := []byte("test data")
 	var dataReceived []byte

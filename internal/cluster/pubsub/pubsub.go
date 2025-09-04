@@ -1,9 +1,5 @@
 package pubsub
 
-import (
-	"context"
-)
-
 type Subject string
 
 const (
@@ -12,14 +8,11 @@ const (
 	SubjCacheDelete      Subject = "cache.delete"
 )
 
-type Message struct {
-	Subject Subject
-	Data    []byte
-}
-
-type Handler func(ctx context.Context, m Message) error
+type Handler func(data []byte)
 
 type EventBus interface {
-	Subscribe(channel Subject, handler func(data []byte))
-	Publish(channel Subject, data []byte) error
+	Publish(subject Subject, data []byte) error
+	Subscribe(subject Subject, h Handler) error
+
+	Flush() error
 }
