@@ -114,6 +114,7 @@ export const blockTypes: BlockTypeConfig[] = [
         type: "loop",
         id: "",
         data: "",
+        pageSize: 10,
       },
       actions: [],
       columns: [],
@@ -150,6 +151,7 @@ export const blockTypes: BlockTypeConfig[] = [
       id: "",
       data: "",
       blocks: [],
+      pageSize: 10,
     },
   },
   {
