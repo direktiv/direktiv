@@ -8,6 +8,7 @@ import (
 
 	"github.com/direktiv/direktiv/internal/cache"
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
+	natspubsub "github.com/direktiv/direktiv/internal/cluster/pubsub/nats"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/secrets"
 	database2 "github.com/direktiv/direktiv/pkg/database"
@@ -37,7 +38,7 @@ func TestDBSecrets(t *testing.T) {
 	cs, _ := natsContainer.ConnectionString(context.Background())
 	nc, err := nats.Connect(cs)
 	require.NoError(t, err)
-	buss := pubsub.NewNatsPubSub(nc)
+	buss := natspubsub.New(nc)
 
 	sh1, cache1 := buildSecrets(ctx, conn, buss, "host1")
 	sh2, cache2 := buildSecrets(ctx, conn, buss, "host2")
@@ -97,7 +98,7 @@ func TestDBSecrets(t *testing.T) {
 
 }
 
-func buildSecrets(ctx context.Context, db *gorm.DB, bus core.PubSub, host string) (core.SecretsManager, core.Cache) {
+func buildSecrets(ctx context.Context, db *gorm.DB, bus pubsub.Bus, host string) (core.SecretsManager, core.Cache) {
 	circuit := core.NewCircuit(ctx, os.Interrupt)
 	cache, _ := cache.NewCache(bus, host, true)
 	go cache.Run(circuit)

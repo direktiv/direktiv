@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/engine"
@@ -30,7 +31,7 @@ type InitializeArgs struct {
 	Version *Version
 	Config  *core.Config
 	Cache   core.Cache
-	PubSub  core.PubSub
+	PubSub  pubsub.Bus
 
 	ServiceManager core.ServiceManager
 

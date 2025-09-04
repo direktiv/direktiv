@@ -18,6 +18,7 @@ import (
 	"github.com/direktiv/direktiv/internal/cache"
 	"github.com/direktiv/direktiv/internal/certificates"
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
+	natspubsub "github.com/direktiv/direktiv/internal/cluster/pubsub/nats"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
@@ -93,7 +94,7 @@ func Start(circuit *core.Circuit) error {
 		return fmt.Errorf("can not connect to nats")
 	}
 
-	pubSub := pubsub.NewNatsPubSub(nc)
+	pubSub := natspubsub.New(nc)
 	circuit.Go(func() error {
 		err := pubSub.Loop(circuit)
 		if err != nil {
@@ -184,20 +185,20 @@ func Start(circuit *core.Circuit) error {
 	slog.Info("initializing sync namespace routine")
 	// TODO: fix app.SyncNamespace init.
 
-	pubSub.Subscribe(core.FileSystemChangeEvent, func(_ []byte) {
+	pubSub.Subscribe(pubsub.FileSystemChangeEvent, func(_ []byte) {
 		renderServiceFiles(app.DB, app.ServiceManager)
 	})
-	pubSub.Subscribe(core.NamespacesChangeEvent, func(_ []byte) {
+	pubSub.Subscribe(pubsub.NamespacesChangeEvent, func(_ []byte) {
 		renderServiceFiles(app.DB, app.ServiceManager)
 	})
 	// Call at least once before booting
 	renderServiceFiles(app.DB, app.ServiceManager)
 
 	// endpoint manager
-	pubSub.Subscribe(core.FileSystemChangeEvent, func(_ []byte) {
+	pubSub.Subscribe(pubsub.FileSystemChangeEvent, func(_ []byte) {
 		renderGatewayFiles(app.DB, app.GatewayManager)
 	})
-	pubSub.Subscribe(core.NamespacesChangeEvent, func(_ []byte) {
+	pubSub.Subscribe(pubsub.NamespacesChangeEvent, func(_ []byte) {
 		renderGatewayFiles(app.DB, app.GatewayManager)
 	})
 	// initial loading of routes and consumers

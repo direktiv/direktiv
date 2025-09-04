@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/cache"
-	"github.com/direktiv/direktiv/internal/cluster/pubsub"
+	natspubsub "github.com/direktiv/direktiv/internal/cluster/pubsub/nats"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
@@ -23,7 +23,7 @@ func TestCache(t *testing.T) {
 	cs, _ := natsContainer.ConnectionString(context.Background())
 	nc, err := nats.Connect(cs)
 	require.NoError(t, err)
-	buss := pubsub.NewNatsPubSub(nc)
+	buss := natspubsub.New(nc)
 
 	ctx, cancel := context.WithCancel(context.Background())
 

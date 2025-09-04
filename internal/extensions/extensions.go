@@ -3,6 +3,7 @@ package extensions
 import (
 	"net/http"
 
+	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
@@ -14,7 +15,7 @@ var AdditionalSchema string
 
 var IsEnterprise = false
 
-var Initialize func(db *gorm.DB, bus core.PubSub, config *core.Config) error
+var Initialize func(db *gorm.DB, bus pubsub.Bus, config *core.Config) error
 
 var AdditionalAPIRoutes map[string]func(r chi.Router)
 

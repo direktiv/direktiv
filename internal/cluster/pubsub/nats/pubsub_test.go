@@ -1,4 +1,4 @@
-package pubsub_test
+package nats_test
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
+	natspubsub "github.com/direktiv/direktiv/internal/cluster/pubsub/nats"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
@@ -21,24 +22,24 @@ func TestPubSub(t *testing.T) {
 	cs, _ := natsContainer.ConnectionString(context.Background())
 	nc, err := nats.Connect(cs)
 	require.NoError(t, err)
-	busPublish := pubsub.NewNatsPubSub(nc)
+	busPublish := natspubsub.New(nc)
 
 	circuit := core.NewCircuit(context.Background())
 	go busPublish.Loop(circuit)
 
 	nc2, err := nats.Connect(cs)
 	require.NoError(t, err)
-	busReceive := pubsub.NewNatsPubSub(nc2)
+	busReceive := natspubsub.New(nc2)
 
 	dataSend := []byte("test data")
 	var dataReceived []byte
 
-	busReceive.Subscribe(core.FileSystemChangeEvent, func(data []byte) {
+	busReceive.Subscribe(pubsub.FileSystemChangeEvent, func(data []byte) {
 		dataReceived = data
 	})
 
 	require.Eventually(t, func() bool {
-		busPublish.Publish(core.FileSystemChangeEvent, dataSend)
+		busPublish.Publish(pubsub.FileSystemChangeEvent, dataSend)
 		return string(dataReceived) == string(dataSend)
 	}, 3*time.Second, 100*time.Millisecond, "data not received")
 }

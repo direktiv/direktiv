@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/mirroring"
@@ -13,7 +13,7 @@ import (
 
 type mirrorsController struct {
 	db               *gorm.DB
-	bus              core.PubSub
+	bus              pubsub.Bus
 	mirroringManager *mirroring.Manager
 }
 

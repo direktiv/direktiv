@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
@@ -19,7 +20,7 @@ import (
 type nsController struct {
 	db              *gorm.DB
 	registryManager core.RegistryManager
-	bus             core.PubSub
+	bus             pubsub.Bus
 }
 
 func (e *nsController) mountRouter(r chi.Router) {
@@ -92,7 +93,7 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: yassir, check the logic of sending events on ns change in all actions.
-	err = e.bus.Publish(core.NamespacesChangeEvent, nil)
+	err = e.bus.Publish(pubsub.NamespacesChangeEvent, nil)
 	if err != nil {
 		slog.Error("pubsub publish filesystem event", "err", err)
 	}
@@ -294,7 +295,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = e.bus.Publish(core.NamespacesChangeEvent, nil)
+	err = e.bus.Publish(pubsub.NamespacesChangeEvent, nil)
 	if err != nil {
 		slog.Error("pubsub publish", "err", err)
 	}
