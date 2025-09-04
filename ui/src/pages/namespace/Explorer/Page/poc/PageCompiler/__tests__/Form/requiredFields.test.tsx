@@ -480,6 +480,64 @@ describe("required fields", () => {
   });
 
   describe("multiple fields", () => {
+    test("shows an error when some required fields are missing and others are filled in", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPageWithForm(
+              [
+                {
+                  id: "string",
+                  label: "string input",
+                  description: "",
+                  optional: false,
+                  type: "form-string-input",
+                  variant: "text",
+                  defaultValue: "",
+                },
+                {
+                  id: "number",
+                  label: "number input",
+                  description: "",
+                  optional: false,
+                  type: "form-number-input",
+                  defaultValue: {
+                    type: "number",
+                    value: 0,
+                  },
+                },
+                {
+                  id: "select",
+                  label: "select",
+                  description: "",
+                  optional: false,
+                  type: "form-select",
+                  values: {
+                    type: "array",
+                    value: ["one", "two", "three"],
+                  },
+                  defaultValue: "",
+                },
+              ],
+              {
+                id: "save-user",
+                method: "POST",
+                url: "/save-user",
+                requestBody: [],
+              }
+            )}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button", { name: "save" }).click();
+      expect(
+        screen.getAllByText("Some required fields are missing (string, select)")
+      );
+    });
+
     test("submits the form when all required fields of different types are filled in", async () => {
       await act(async () => {
         render(
@@ -564,64 +622,6 @@ describe("required fields", () => {
       await waitFor(() => {
         expect(screen.getAllByText("The form has been submitted successfully"));
       });
-    });
-
-    test("shows an error when some required fields are missing and others are filled in", async () => {
-      await act(async () => {
-        render(
-          <PageCompiler
-            setPage={setPage}
-            page={createDirektivPageWithForm(
-              [
-                {
-                  id: "string",
-                  label: "string input",
-                  description: "",
-                  optional: false,
-                  type: "form-string-input",
-                  variant: "text",
-                  defaultValue: "",
-                },
-                {
-                  id: "number",
-                  label: "number input",
-                  description: "",
-                  optional: false,
-                  type: "form-number-input",
-                  defaultValue: {
-                    type: "number",
-                    value: 0,
-                  },
-                },
-                {
-                  id: "select",
-                  label: "select",
-                  description: "",
-                  optional: false,
-                  type: "form-select",
-                  values: {
-                    type: "array",
-                    value: ["one", "two", "three"],
-                  },
-                  defaultValue: "",
-                },
-              ],
-              {
-                id: "save-user",
-                method: "POST",
-                url: "/save-user",
-                requestBody: [],
-              }
-            )}
-            mode="live"
-          />
-        );
-      });
-
-      await screen.getByRole("button", { name: "save" }).click();
-      expect(
-        screen.getAllByText("Some required fields are missing (string, select)")
-      );
     });
   });
 });
