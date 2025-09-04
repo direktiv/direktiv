@@ -1,6 +1,7 @@
 package nats
 
 import (
+	"fmt"
 	"log/slog"
 
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
@@ -12,14 +13,25 @@ type Bus struct {
 	logger *slog.Logger
 }
 
-func New(nc *nats.Conn, logger *slog.Logger) *Bus {
+func (b *Bus) Close() error {
+	return b.nc.Drain()
+}
+
+type NatsConnect func() (*nats.Conn, error)
+
+func New(nc NatsConnect, logger *slog.Logger) (*Bus, error) {
 	if logger != nil {
 		logger = logger.With("component", "cluster-pubsub")
 	} else {
 		logger = slog.New(slog.DiscardHandler)
 	}
 
-	return &Bus{nc: nc, logger: logger}
+	conn, err := nc()
+	if err != nil {
+		return nil, fmt.Errorf("nats connect: %w", err)
+	}
+
+	return &Bus{nc: conn, logger: logger}, nil
 }
 
 func (b *Bus) Publish(subject pubsub.Subject, data []byte) error {
@@ -29,10 +41,6 @@ func (b *Bus) Publish(subject pubsub.Subject, data []byte) error {
 	}
 
 	return nil
-}
-
-func (b *Bus) Flush() error {
-	return b.nc.Flush()
 }
 
 func (b *Bus) Subscribe(subject pubsub.Subject, h pubsub.Handler) error {

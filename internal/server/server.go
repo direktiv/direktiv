@@ -88,166 +88,173 @@ func Start(lc *lifecycle.Manager) error {
 		return fmt.Errorf("creating raw db driver, err: %w", err)
 	}
 
-	// Initialize pubsub
-	slog.Info("initializing cluster-pubsub")
-	nc, err := natsConnect()
-	if err != nil {
-		return fmt.Errorf("initializing cluster-pubsub, err: %w", err)
+	// initializing pubsub
+	{
+		slog.Info("initializing pubsub")
+		app.PubSub, err = natspubsub.New(natsConnect, slog.Default())
+		lc.Go(func() error {
+			<-lc.Done()
+			err := app.PubSub.Close()
+			if err != nil {
+				return fmt.Errorf("closing pubsub, err: %w", err)
+			}
+
+			return nil
+		})
 	}
-	lc.Go(func() error {
-		<-lc.Done()
-		err := nc.Drain()
+
+	// initializing cache
+	{
+		slog.Info("initializing cache")
+		app.Cache, err = cache.New(app.PubSub, os.Getenv("POD_NAME"), false, slog.Default())
 		if err != nil {
-			return fmt.Errorf("cleaning cluster-pubsub, err: %w", err)
+			return fmt.Errorf("create cache, err: %w", err)
+		}
+		lc.Go(func() error {
+			<-lc.Done()
+			app.Cache.Close()
+
+			return nil
+		})
+	}
+
+	// initializing secrets-handler
+	{
+		slog.Info("initializing secrets-handler")
+		app.SecretsManager = secrets.NewManager(app.DB, app.Cache)
+	}
+
+	// initializing service-manager
+	{
+		slog.Info("initializing service-manager")
+		fas := func() ([]string, error) {
+			beats, err := datasql.NewStore(app.DB).HeartBeats().Since(context.Background(), "life_services", 100)
+			if err != nil {
+				return nil, err
+			}
+			list := make([]string, len(beats))
+			for i := range beats {
+				list[i] = beats[i].Key
+			}
+
+			return list, nil
 		}
 
-		return nil
-	})
-	app.PubSub = natspubsub.New(nc, slog.Default())
-
-	slog.Info("initializing cluster-cache")
-	app.Cache, err = cache.New(app.PubSub, os.Getenv("POD_NAME"), false, slog.Default())
-	if err != nil {
-		return fmt.Errorf("initializing cluster-cache, err: %w", err)
-	}
-	lc.Go(func() error {
-		<-lc.Done()
-		app.Cache.Close()
-
-		return nil
-	})
-
-	slog.Info("initializing secrets handler")
-	app.SecretsManager = secrets.NewManager(app.DB, app.Cache)
-
-	slog.Info("initializing service manager")
-	app.ServiceManager, err = service.NewManager(config, func() ([]string, error) {
-		beats, err := datasql.NewStore(app.DB).HeartBeats().Since(context.Background(), "life_services", 100)
+		app.ServiceManager, err = service.NewManager(config, fas)
 		if err != nil {
-			return nil, err
+			return fmt.Errorf("create service-manager, err: %w", err)
 		}
-		list := make([]string, len(beats))
-		for i := range beats {
-			list[i] = beats[i].Key
-		}
+		lc.Go(func() error {
+			err := app.ServiceManager.Run(lc)
+			if err != nil {
+				return fmt.Errorf("run service-manager, err: %w", err)
+			}
 
-		return list, nil
-	})
-	if err != nil {
-		return fmt.Errorf("initializing service manager, err: %w", err)
+			return nil
+		})
+
+		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
+			renderServiceFiles(app.DB, app.ServiceManager)
+		})
+		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
+			renderServiceFiles(app.DB, app.ServiceManager)
+		})
+		// call at least once before booting
+		renderServiceFiles(app.DB, app.ServiceManager)
 	}
-	lc.Go(func() error {
-		err := app.ServiceManager.Run(lc)
+
+	// initializing engine
+	{
+		eStore, err := engineStore.NewStore(natsConnect)
 		if err != nil {
-			return fmt.Errorf("service manager, err: %w", err)
+			return fmt.Errorf("initializing engine-store, err: %w", err)
 		}
+		lc.Go(func() error {
+			<-lc.Done()
+			err := eStore.Close()
+			if err != nil {
+				return fmt.Errorf("closing engine-store, err: %w", err)
+			}
 
-		return nil
-	})
+			return nil
+		})
 
-	// Create engine
-	nc, err = natsConnect()
-	if err != nil {
-		return fmt.Errorf("can not connect to nats")
-	}
-	lc.Go(func() error {
-		<-lc.Done()
-		err := nc.Drain()
-		if err != nil {
-			return fmt.Errorf("cleaning engine, err: %w", err)
-		}
-
-		return nil
-	})
-	eStore, err := engineStore.NewStore(lc.Context(), nc)
-	if err != nil {
-		return fmt.Errorf("initializing engine, err: %w", err)
-	}
-	app.Engine, err = engine.NewEngine(app.DB, eStore)
-	if err != nil {
-		return fmt.Errorf("initializing engine, err: %w", err)
-	}
-	lc.Go(func() error {
-		err := app.Engine.Start(lc)
+		app.Engine, err = engine.NewEngine(app.DB, eStore)
 		if err != nil {
 			return fmt.Errorf("initializing engine, err: %w", err)
 		}
+		lc.Go(func() error {
+			err := app.Engine.Run(lc)
+			if err != nil {
+				return fmt.Errorf("run engine, err: %w", err)
+			}
 
-		return nil
-	})
-
-	// Create registry manager
-	slog.Info("initializing registry manager")
-	app.RegistryManager, err = registry.NewManager()
-	if err != nil {
-		slog.Error("registry manager", "error", err)
-		panic(err)
+			return nil
+		})
 	}
 
-	// Create endpoint manager
-	slog.Info("initializing gateway manager")
-	app.GatewayManager = gateway.NewManager(app.SecretsManager)
-
-	// Create syncNamespace function
-	slog.Info("initializing sync namespace routine")
-	// TODO: fix app.SyncNamespace init.
-
-	app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
-		renderServiceFiles(app.DB, app.ServiceManager)
-	})
-	app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
-		renderServiceFiles(app.DB, app.ServiceManager)
-	})
-	// Call at least once before booting
-	renderServiceFiles(app.DB, app.ServiceManager)
-
-	// endpoint manager
-	app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
-		renderGatewayFiles(app.DB, app.GatewayManager)
-	})
-	app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
-		renderGatewayFiles(app.DB, app.GatewayManager)
-	})
-	// initial loading of routes and consumers
-	renderGatewayFiles(app.DB, app.GatewayManager)
-
-	// initialize extensions
-	if extensions.Initialize != nil {
-		slog.Info("initializing extensions")
-		if err = extensions.Initialize(app.DB, app.PubSub, config); err != nil {
-			return fmt.Errorf("initializing extensions, err: %w", err)
-		}
-	}
-
-	// Start api server
-	slog.Info("initializing api server")
-	srv, err := api.Initialize(app)
-	if err != nil {
-		return fmt.Errorf("initializing api server, err: %w", err)
-	}
-
-	lc.Go(func() error {
-		err := srv.ListenAndServe()
-		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			return fmt.Errorf("shutdown api server, err: %w", err)
-		}
-
-		return nil
-	})
-
-	lc.Go(func() error {
-		<-lc.Done()
-
-		slog.Info("shutdown api server...")
-		shutdownCtx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-		err := srv.Shutdown(shutdownCtx)
+	// initializing registry-manager
+	{
+		slog.Info("initializing registry-manager")
+		app.RegistryManager, err = registry.NewManager()
 		if err != nil {
-			slog.Error("shutdown api server", "err", err)
+			return fmt.Errorf("create registry-manager, err: %w", err)
 		}
-		slog.Info("shutdown api server successful")
+	}
 
-		return nil
-	})
+	// initializing gateway-manager
+	{
+		slog.Info("initializing gateway manager")
+		app.GatewayManager = gateway.NewManager(app.SecretsManager)
+
+		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
+			renderGatewayFiles(app.DB, app.GatewayManager)
+		})
+		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
+			renderGatewayFiles(app.DB, app.GatewayManager)
+		})
+		// call at least once before booting
+		renderGatewayFiles(app.DB, app.GatewayManager)
+	}
+
+	// initializing extensions
+	{
+		if extensions.Initialize != nil {
+			slog.Info("initializing extensions")
+			if err = extensions.Initialize(app.DB, app.PubSub, config); err != nil {
+				return fmt.Errorf("initializing extensions, err: %w", err)
+			}
+		}
+	}
+
+	// initializing api-serer
+	{
+		slog.Info("initializing api server")
+		srv, err := api.New(app)
+		if err != nil {
+			return fmt.Errorf("create api-server, err: %w", err)
+		}
+		lc.Go(func() error {
+			err := srv.ListenAndServe()
+			if err != nil && !errors.Is(err, http.ErrServerClosed) {
+				return fmt.Errorf("shutdown api-server, err: %w", err)
+			}
+
+			return nil
+		})
+		lc.Go(func() error {
+			<-lc.Done()
+
+			shutdownCtx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+			err := srv.Shutdown(shutdownCtx)
+			if err != nil {
+				return fmt.Errorf("shutdown api-server, err: %w", err)
+			}
+			slog.Info("shutdown api-server successful")
+
+			return nil
+		})
+	}
 
 	return nil
 }

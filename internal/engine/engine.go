@@ -16,6 +16,7 @@ type store interface {
 	PushInstanceMessage(ctx context.Context, namespace string, instanceID uuid.UUID, typ string, payload any) (uuid.UUID, error)
 	PullInstanceMessages(ctx context.Context, namespace string, instanceID uuid.UUID, typ string) ([]core.EngineMessage, error)
 	PullAllInstancesIDs(ctx context.Context, namespace string) ([]uuid.UUID, error)
+	Close() error
 }
 
 type Engine struct {
@@ -35,7 +36,7 @@ func NewEngine(db *gorm.DB, store store) (*Engine, error) {
 	}, nil
 }
 
-func (e *Engine) Start(lc *lifecycle.Manager) error {
+func (e *Engine) Run(lc *lifecycle.Manager) error {
 	cycleTime := time.Second
 	for {
 		if lc.IsDone() {

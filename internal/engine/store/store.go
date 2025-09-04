@@ -18,15 +18,26 @@ type Store struct {
 	stream string
 }
 
+func (s *Store) Close() error {
+	return s.nc.Drain()
+}
+
 const (
 	natsClientName          = "engine_messages_store"
 	instanceMessagesSubject = "instanceMessages.%s.instanceID.%s.type.%s"
 )
 
-func NewStore(ctx context.Context, nc *nats.Conn) (*Store, error) {
-	js, err := nc.JetStream()
+type NatsConnect func() (*nats.Conn, error)
+
+func NewStore(nc NatsConnect) (*Store, error) {
+	conn, err := nc()
 	if err != nil {
-		_ = nc.Drain()
+		return nil, fmt.Errorf("nats connect: %w", err)
+	}
+
+	js, err := conn.JetStream()
+	if err != nil {
+		_ = conn.Drain()
 		return nil, fmt.Errorf("nats jetstream: %w", err)
 	}
 
@@ -45,11 +56,11 @@ func NewStore(ctx context.Context, nc *nats.Conn) (*Store, error) {
 		AllowDirect: true,           // speeds up direct gets (if you use them)
 	})
 	if err != nil {
-		_ = nc.Drain()
+		_ = conn.Drain()
 		return nil, fmt.Errorf("nats add jetstream: %w", err)
 	}
 
-	return &Store{nc: nc, js: js, stream: natsClientName}, nil
+	return &Store{nc: conn, js: js, stream: natsClientName}, nil
 }
 
 func (s *Store) PushInstanceMessage(ctx context.Context, namespace string, instanceID uuid.UUID, typ string, payload any) (uuid.UUID, error) {

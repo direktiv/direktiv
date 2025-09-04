@@ -14,5 +14,5 @@ type EventBus interface {
 	Publish(subject Subject, data []byte) error
 	Subscribe(subject Subject, h Handler) error
 
-	Flush() error
+	Close() error
 }
