@@ -37,7 +37,11 @@ export const PatchRow: FC<PatchRowProps> = ({
   onMoveUp,
   onMoveDown,
 }) => (
-  <TableRow onClick={onClick} data-testid="patch-row">
+  <TableRow
+    onClick={onClick}
+    data-testid="patch-row"
+    className="cursor-pointer hover:underline"
+  >
     <TableCell>{patch.op}</TableCell>
     <TableCell>{patch.path}</TableCell>
     <TableCell className="text-right">

@@ -1,7 +1,7 @@
 import { IsValidItem, RenderItem } from "./types";
+import { ReactNode, useState } from "react";
 
 import { ArrayItem } from "./ArrayItem";
-import { useState } from "react";
 
 type ArrayFormProps = <T>(props: {
   defaultValue: T[];
@@ -9,6 +9,7 @@ type ArrayFormProps = <T>(props: {
   onChange: (newArray: T[]) => void;
   itemIsValid: IsValidItem<T>;
   renderItem: RenderItem<T>;
+  wrapItem?: (children: ReactNode) => JSX.Element;
 }) => JSX.Element;
 
 export const ArrayForm: ArrayFormProps = ({
@@ -17,6 +18,7 @@ export const ArrayForm: ArrayFormProps = ({
   renderItem,
   onChange,
   itemIsValid = () => true,
+  wrapItem,
 }) => {
   const [items, setItems] = useState(defaultValue);
 
@@ -55,6 +57,7 @@ export const ArrayForm: ArrayFormProps = ({
           renderItem={renderItem}
           onUpdate={(value) => updateAtIndex(index, value)}
           onDelete={() => deleteAtIndex(index)}
+          wrapItem={wrapItem}
         />
       ))}
       <ArrayItem
@@ -62,6 +65,7 @@ export const ArrayForm: ArrayFormProps = ({
         itemIsValid={itemIsValid}
         renderItem={renderItem}
         onAdd={addItem}
+        wrapItem={wrapItem}
       />
     </>
   );

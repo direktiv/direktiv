@@ -125,7 +125,7 @@ test("it is possible to create a service", async ({ page }) => {
   ).toContainText(expectedYaml, { useInnerText: true });
 
   await expect(
-    page.getByTestId("unsaved-note"),
+    page.getByText("unsaved changes"),
     "it renders a hint that there are unsaved changes"
   ).toBeVisible();
   await page.getByRole("button", { name: "Save" }).click();
@@ -412,7 +412,7 @@ test("it is possible to edit environment variables", async ({ page }) => {
   ).toContainText(expectedYaml, { useInnerText: true });
 
   await expect(
-    page.getByTestId("unsaved-note"),
+    page.getByText("unsaved changes"),
     "it renders a hint that there are unsaved changes"
   ).toBeVisible();
   await page.getByRole("button", { name: "Save" }).click();

@@ -1,5 +1,5 @@
 import { IsValidItem, RenderItem } from "./types";
-import { KeyboardEvent, useState } from "react";
+import { KeyboardEvent, ReactNode, useState } from "react";
 import { Plus, X } from "lucide-react";
 
 import Button from "~/design/Button";
@@ -10,6 +10,7 @@ type ArrayItemProps = <T>(
     defaultValue: T;
     renderItem: RenderItem<T>;
     itemIsValid: IsValidItem<T>;
+    wrapItem?: (children: ReactNode) => JSX.Element;
   } & ( // either allow onAdd or onUpdate and onDelete
     | {
         onAdd: (item: T) => void;
@@ -31,6 +32,7 @@ export const ArrayItem: ArrayItemProps = ({
   onAdd,
   onUpdate,
   onDelete,
+  wrapItem = (children) => <ButtonBar>{children}</ButtonBar>,
 }) => {
   type Item = typeof defaultValue;
 
@@ -61,8 +63,8 @@ export const ArrayItem: ArrayItemProps = ({
     onUpdate?.(value);
   };
 
-  return (
-    <ButtonBar>
+  return wrapItem(
+    <>
       {renderItem({
         value,
         setValue: setValueAndTriggerCallback,
@@ -83,6 +85,6 @@ export const ArrayItem: ArrayItemProps = ({
           <X />
         </Button>
       )}
-    </ButtonBar>
+    </>
   );
 };
