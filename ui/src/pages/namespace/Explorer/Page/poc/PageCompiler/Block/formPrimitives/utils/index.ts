@@ -4,13 +4,22 @@ import { LocalVariablesContent } from "../../../primitives/Variable/LocalVariabl
 
 const keySeparator = "::";
 
-export const encodeBlockKey = (blockType: Block["type"], elementId: string) =>
-  [blockType, elementId].join(keySeparator);
+export const encodeBlockKey = (
+  blockType: Block["type"],
+  elementId: string,
+  optional: boolean
+) =>
+  [blockType, elementId, optional ? "optional" : "required"].join(keySeparator);
 
 const decodeBlockKey = (blockKey: string) => {
-  const [blockType, elementId] = blockKey.split(keySeparator, 2);
-  if (!blockType || !elementId) throw new Error("invalid form element name");
-  return [blockType as Block["type"], elementId] as const;
+  const [blockType, elementId, optional] = blockKey.split(keySeparator, 3);
+  if (!blockType || !elementId || !optional)
+    throw new Error("invalid form element name");
+  return [
+    blockType as Block["type"],
+    elementId,
+    optional === "optional" ? true : false,
+  ] as const;
 };
 
 const resolveFormValue = (
@@ -32,6 +41,22 @@ const resolveFormValue = (
   }
 };
 
+const isFormFieldMissing = (
+  blockType: Block["type"],
+  value: FormDataEntryValue,
+  optional: boolean
+) => {
+  if (optional) {
+    return false;
+  }
+
+  if (blockType === "form-checkbox") {
+    return value === "false";
+  }
+
+  return !value;
+};
+
 /**
  * Transforms a form submission event into local variables accessible within the page.
  *
@@ -51,21 +76,33 @@ const resolveFormValue = (
  *
  * To eventually be used as template string: {{this.form.username}}
  */
+
+type createLocalFormVariablesReturnType = {
+  formVariables: LocalVariablesContent;
+  missingRequiredFields: string[];
+};
+
 export const createLocalFormVariables = (
   formEvent: FormEvent<HTMLFormElement>
-): LocalVariablesContent => {
+): createLocalFormVariablesReturnType => {
   const formData = new FormData(formEvent.currentTarget);
   const formValues = Object.fromEntries(formData.entries());
+  const missingRequiredFields: string[] = [];
 
   const transformedEntries = Object.entries(formValues).map(
     ([serializedKey, value]) => {
-      const [blockType, elementId] = decodeBlockKey(serializedKey);
+      const [blockType, elementId, optional] = decodeBlockKey(serializedKey);
       const resolvedValue = resolveFormValue(blockType, value);
+      if (isFormFieldMissing(blockType, value, optional)) {
+        missingRequiredFields.push(elementId);
+      }
       return [elementId, resolvedValue];
     }
   );
 
   const processedFormValues = Object.fromEntries(transformedEntries);
 
-  return { ["form"]: processedFormValues };
+  const formVariables = { ["form"]: processedFormValues };
+
+  return { formVariables, missingRequiredFields };
 };

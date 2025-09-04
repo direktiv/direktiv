@@ -14,6 +14,9 @@ import {
 import Badge from "~/design/Badge";
 import { BlockList } from "./utils/BlockList";
 import { LoopType } from "../../schema/blocks/loop";
+import { Pagination } from "~/components/Pagination";
+import PaginationProvider from "~/components/PaginationProvider";
+import { StopPropagation } from "~/components/StopPropagation";
 import { VariableError } from "../primitives/Variable/Error";
 import { usePageStateContext } from "../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
@@ -25,7 +28,7 @@ type LoopProps = {
 };
 
 export const Loop = ({ blockProps, blockPath }: LoopProps) => {
-  const { blocks, data, id } = blockProps;
+  const { blocks, data, id, pageSize } = blockProps;
   const { t } = useTranslation();
   const { mode } = usePageStateContext();
   const resolveVariableArray = useVariableArrayResolver();
@@ -48,37 +51,63 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
     );
   }
 
-  const loopItems =
-    mode === "edit" ? variableArray.data.slice(0, 1) : variableArray.data;
-  const hiddenItemsCount = variableArray.data.length - 1;
+  const hiddenItemsCount = pageSize - 1;
   const showBadge =
     mode === "edit" && blocks.length > 0 && hiddenItemsCount > 0;
 
   return (
-    <BlockList path={blockPath}>
-      {loopItems.map((item, variableIndex) => (
-        <VariableContextProvider
-          key={variableIndex}
-          variables={{
-            ...parentVariables,
-            loop: {
-              ...parentVariables.loop,
-              [id]: item,
-            },
-          }}
-        >
-          <BlockList path={blockPath}>
-            {blocks.map((block, blockIndex) => {
-              const path = [...blockPath, blockIndex];
-              return (
-                <Block key={path.join(".")} block={block} blockPath={path} />
-              );
-            })}
-          </BlockList>
-          {showBadge && <LoopItemBadge count={hiddenItemsCount} />}
-        </VariableContextProvider>
-      ))}
-    </BlockList>
+    <PaginationProvider items={variableArray.data} pageSize={pageSize}>
+      {({ currentItems, goToPage, goToFirstPage, currentPage, totalPages }) => {
+        currentPage > totalPages && goToFirstPage();
+
+        const itemsToRender =
+          mode === "edit" ? currentItems.slice(0, 1) : currentItems;
+
+        return (
+          <>
+            <BlockList path={blockPath}>
+              {itemsToRender.map((item, variableIndex) => (
+                <VariableContextProvider
+                  key={variableIndex}
+                  variables={{
+                    ...parentVariables,
+                    loop: {
+                      ...parentVariables.loop,
+                      [id]: item,
+                    },
+                  }}
+                >
+                  <BlockList path={blockPath}>
+                    {blocks.map((block, blockIndex) => {
+                      const path = [...blockPath, blockIndex];
+                      return (
+                        <Block
+                          key={path.join(".")}
+                          block={block}
+                          blockPath={path}
+                        />
+                      );
+                    })}
+                  </BlockList>
+                  {showBadge && <LoopItemBadge count={hiddenItemsCount} />}
+                </VariableContextProvider>
+              ))}
+            </BlockList>
+            <div className="flex items-center justify-end gap-2">
+              <StopPropagation>
+                <div className="mt-2 pb-4">
+                  <Pagination
+                    totalPages={totalPages}
+                    value={currentPage}
+                    onChange={goToPage}
+                  />
+                </div>
+              </StopPropagation>
+            </div>
+          </>
+        );
+      }}
+    </PaginationProvider>
   );
 };
 

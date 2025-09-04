@@ -14,6 +14,7 @@ export type LoopType = {
   id: string;
   data: VariableType;
   blocks: BlockType[];
+  pageSize: number;
 };
 
 export const Loop = z.object({
@@ -21,6 +22,7 @@ export const Loop = z.object({
   id: z.string().min(1),
   data: Variable,
   blocks: z.array(z.lazy(() => Block)),
+  pageSize: z.number().min(1),
 }) satisfies z.ZodType<LoopType>;
 
 export const BlocklessLoop = Loop.omit({ blocks: true });

@@ -54,7 +54,7 @@ export const Table = ({
       >
         <Input
           {...form.register("data.data")}
-          id="id"
+          id="data-data"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.table.data.dataPlaceholder"
           )}
@@ -104,6 +104,19 @@ export const Table = ({
           />
         )}
       />
+      <Fieldset
+        label={t("direktivPage.blockEditor.blockForms.loop.pageSizeLabel")}
+        htmlFor="data-pageSize"
+      >
+        <Input
+          {...form.register("data.pageSize", { valueAsNumber: true })}
+          id="data-pageSize"
+          type="number"
+          placeholder={t(
+            "direktivPage.blockEditor.blockForms.loop.pageSizePlaceholder"
+          )}
+        />
+      </Fieldset>
     </FormWrapper>
   );
 };
