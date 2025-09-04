@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/internal/cache"
+	"github.com/direktiv/direktiv/internal/cache/memcache"
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	natspubsub "github.com/direktiv/direktiv/internal/cluster/pubsub/nats"
 	"github.com/direktiv/direktiv/internal/core"
@@ -103,7 +103,7 @@ func TestDBSecrets(t *testing.T) {
 }
 
 func buildSecrets(db *gorm.DB, bus pubsub.EventBus, host string) (core.SecretsManager, core.Cache) {
-	cache, _ := cache.New(bus, host, true, nil)
+	cache, _ := memcache.New(bus, host, true, nil)
 
 	return secrets.NewManager(db, cache), cache
 }

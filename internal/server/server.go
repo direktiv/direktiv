@@ -15,7 +15,7 @@ import (
 
 	"github.com/caarlos0/env/v10"
 	"github.com/direktiv/direktiv/internal/api"
-	"github.com/direktiv/direktiv/internal/cache"
+	"github.com/direktiv/direktiv/internal/cache/memcache"
 	"github.com/direktiv/direktiv/internal/cluster/certs"
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	natspubsub "github.com/direktiv/direktiv/internal/cluster/pubsub/nats"
@@ -103,12 +103,12 @@ func Start(lc *lifecycle.Manager) error {
 		})
 	}
 
-	// initializing cache
+	// initializing memcache
 	{
-		slog.Info("initializing cache")
-		app.Cache, err = cache.New(app.PubSub, os.Getenv("POD_NAME"), false, slog.Default())
+		slog.Info("initializing memcache")
+		app.Cache, err = memcache.New(app.PubSub, os.Getenv("POD_NAME"), false, slog.Default())
 		if err != nil {
-			return fmt.Errorf("create cache, err: %w", err)
+			return fmt.Errorf("create memcache, err: %w", err)
 		}
 		lc.Go(func() error {
 			<-lc.Done()

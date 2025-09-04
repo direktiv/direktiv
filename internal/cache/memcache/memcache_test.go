@@ -1,11 +1,11 @@
-package cache_test
+package memcache_test
 
 import (
 	"context"
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/internal/cache"
+	"github.com/direktiv/direktiv/internal/cache/memcache"
 	natspubsub "github.com/direktiv/direktiv/internal/cluster/pubsub/nats"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
@@ -25,9 +25,9 @@ func TestCache(t *testing.T) {
 	require.NoError(t, err)
 	defer buss.Close()
 
-	cache1, _ := cache.New(buss, "host1", false, nil)
+	cache1, _ := memcache.New(buss, "host1", false, nil)
 	defer cache1.Close()
-	cache2, _ := cache.New(buss, "host2", false, nil)
+	cache2, _ := memcache.New(buss, "host2", false, nil)
 	defer cache2.Close()
 
 	cache1.Set("hello", "world")
@@ -36,7 +36,7 @@ func TestCache(t *testing.T) {
 	cache2.Set("hello", "world")
 	cache2.Set("foo", "bar")
 
-	for _, c := range []*cache.Cache{
+	for _, c := range []*memcache.Cache{
 		cache1, cache2,
 	} {
 		require.Eventually(t, func() bool {
@@ -54,7 +54,7 @@ func TestCache(t *testing.T) {
 	cache1.Delete("hello")
 	cache2.Delete("foo")
 
-	for _, c := range []*cache.Cache{
+	for _, c := range []*memcache.Cache{
 		cache1, cache2,
 	} {
 		require.Eventually(t, func() bool {
