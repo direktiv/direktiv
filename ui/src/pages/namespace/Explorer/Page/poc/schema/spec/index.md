@@ -97,7 +97,7 @@ Blocks are the main elements that the user can use to compose a Direktiv page.
 
 ### Form Primitives
 
-Form primitives are the basic input elements that collect user data within forms, such as text inputs, checkboxes, and dropdowns. Form primitives must be placed inside a form block. They can be nested at any depth within other blocks, but one form block must exist somewhere up the tree . All form primitives share these common fields:
+Form primitives are the basic input elements that collect user data within forms, such as text inputs, checkboxes, and dropdowns. Form primitives must be placed inside a form block. They can be nested at any depth within other blocks, but one form block must exist somewhere up the tree. All form primitives share these common fields:
 
 | Attribute     | Type             | Description                                           |
 | ------------- | ---------------- | ----------------------------------------------------- |
