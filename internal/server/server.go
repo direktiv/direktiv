@@ -78,7 +78,7 @@ func Start(lc *lifecycle.Manager) error {
 	}
 	datastore.SymmetricEncryptionKey = config.SecretKey
 
-	// Create Raw DB connection
+	// Initialize raw DB connection
 	slog.Info("initializing raw db connection")
 	rawDB, err := sql.Open("postgres", config.DB)
 	if err == nil {
@@ -88,27 +88,25 @@ func Start(lc *lifecycle.Manager) error {
 		return fmt.Errorf("creating raw db driver, err: %w", err)
 	}
 
-	// Create EventBus
-	slog.Info("initializing pubsub")
+	// Initialize pubsub
+	slog.Info("initializing cluster-pubsub")
 	nc, err := natsConnect()
 	if err != nil {
-		return fmt.Errorf("can not connect to nats")
+		return fmt.Errorf("initializing cluster-pubsub, err: %w", err)
 	}
-
-	pubSub := natspubsub.New(nc, slog.Default())
 	lc.Go(func() error {
 		<-lc.Done()
 		err := nc.Drain()
 		if err != nil {
-			return fmt.Errorf("nats pubsub drain, err: %w", err)
+			return fmt.Errorf("cleaning cluster-pubsub, err: %w", err)
 		}
 
 		return nil
 	})
-	app.PubSub = pubSub
+	app.PubSub = natspubsub.New(nc, slog.Default())
 
 	slog.Info("initializing cluster-cache")
-	app.Cache, err = cache.New(pubSub, os.Getenv("POD_NAME"), false, slog.Default())
+	app.Cache, err = cache.New(app.PubSub, os.Getenv("POD_NAME"), false, slog.Default())
 	if err != nil {
 		return fmt.Errorf("initializing cluster-cache, err: %w", err)
 	}
@@ -138,7 +136,6 @@ func Start(lc *lifecycle.Manager) error {
 	if err != nil {
 		return fmt.Errorf("initializing service manager, err: %w", err)
 	}
-
 	lc.Go(func() error {
 		err := app.ServiceManager.Run(lc)
 		if err != nil {
@@ -148,11 +145,20 @@ func Start(lc *lifecycle.Manager) error {
 		return nil
 	})
 
-	// Create js engine
+	// Create engine
 	nc, err = natsConnect()
 	if err != nil {
 		return fmt.Errorf("can not connect to nats")
 	}
+	lc.Go(func() error {
+		<-lc.Done()
+		err := nc.Drain()
+		if err != nil {
+			return fmt.Errorf("cleaning engine, err: %w", err)
+		}
+
+		return nil
+	})
 	eStore, err := engineStore.NewStore(lc.Context(), nc)
 	if err != nil {
 		return fmt.Errorf("initializing engine, err: %w", err)
@@ -164,7 +170,7 @@ func Start(lc *lifecycle.Manager) error {
 	lc.Go(func() error {
 		err := app.Engine.Start(lc)
 		if err != nil {
-			return fmt.Errorf("engine, err: %w", err)
+			return fmt.Errorf("initializing engine, err: %w", err)
 		}
 
 		return nil
@@ -186,20 +192,20 @@ func Start(lc *lifecycle.Manager) error {
 	slog.Info("initializing sync namespace routine")
 	// TODO: fix app.SyncNamespace init.
 
-	pubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
+	app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
 		renderServiceFiles(app.DB, app.ServiceManager)
 	})
-	pubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
+	app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
 		renderServiceFiles(app.DB, app.ServiceManager)
 	})
 	// Call at least once before booting
 	renderServiceFiles(app.DB, app.ServiceManager)
 
 	// endpoint manager
-	pubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
+	app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
 		renderGatewayFiles(app.DB, app.GatewayManager)
 	})
-	pubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
+	app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
 		renderGatewayFiles(app.DB, app.GatewayManager)
 	})
 	// initial loading of routes and consumers
@@ -208,7 +214,7 @@ func Start(lc *lifecycle.Manager) error {
 	// initialize extensions
 	if extensions.Initialize != nil {
 		slog.Info("initializing extensions")
-		if err = extensions.Initialize(app.DB, pubSub, config); err != nil {
+		if err = extensions.Initialize(app.DB, app.PubSub, config); err != nil {
 			return fmt.Errorf("initializing extensions, err: %w", err)
 		}
 	}
