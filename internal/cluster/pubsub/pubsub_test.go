@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/pubsub"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
 	natsTestContainer "github.com/testcontainers/testcontainers-go/modules/nats"
