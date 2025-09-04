@@ -16,7 +16,7 @@ type Bus struct {
 
 func New(nc *nats.Conn, logger *slog.Logger) *Bus {
 	if logger != nil {
-		logger = logger.With("component", "pubsub")
+		logger = logger.With("component", "cluster-pubsub")
 	} else {
 		logger = slog.New(slog.NewTextHandler(io.Discard, nil))
 	}

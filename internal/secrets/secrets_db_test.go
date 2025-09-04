@@ -100,7 +100,7 @@ func TestDBSecrets(t *testing.T) {
 
 func buildSecrets(ctx context.Context, db *gorm.DB, bus pubsub.EventBus, host string) (core.SecretsManager, core.Cache) {
 	circuit := core.NewCircuit(ctx, os.Interrupt)
-	cache, _ := cache.NewCache(bus, host, true)
+	cache, _ := cache.NewCache(bus, host, true, nil)
 	go cache.Run(circuit)
 
 	return secrets.NewManager(db, cache), cache

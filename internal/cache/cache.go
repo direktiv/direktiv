@@ -2,6 +2,8 @@ package cache
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"log/slog"
 	"time"
 	"unsafe"
@@ -20,9 +22,16 @@ type Cache struct {
 	cache    *ristretto.Cache[string, any]
 	bus      pubsub.EventBus
 	hostname string
+	logger   *slog.Logger
 }
 
-func NewCache(bus pubsub.EventBus, hostname string, enableMetrics bool) (core.Cache, error) {
+func NewCache(bus pubsub.EventBus, hostname string, enableMetrics bool, logger *slog.Logger) (*Cache, error) {
+	if logger != nil {
+		logger = logger.With("component", "cluster-cache")
+	} else {
+		logger = slog.New(slog.NewTextHandler(io.Discard, nil))
+	}
+
 	cache, err := ristretto.NewCache(&ristretto.Config[string, any]{
 		NumCounters: 10000000,
 		MaxCost:     1073741824,
@@ -30,13 +39,14 @@ func NewCache(bus pubsub.EventBus, hostname string, enableMetrics bool) (core.Ca
 		Metrics:     enableMetrics,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating ristretto instance: %v", err)
 	}
 
 	return &Cache{
 		bus:      bus,
 		cache:    cache,
 		hostname: hostname,
+		logger:   logger,
 	}, nil
 }
 
