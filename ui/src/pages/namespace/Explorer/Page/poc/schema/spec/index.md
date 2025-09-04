@@ -116,25 +116,25 @@ Form primitives are the basic input elements that collect user data within forms
 
 #### Number Input `Block`
 
-| Attribute      | Type                             | Description                                                   |
-| -------------- | -------------------------------- | ------------------------------------------------------------- |
-| `type`         | `"form-number-input"`            |                                                               |
-| `defaultValue` | `Number`, `VariablePath<number>` | Default value. Either a static number or a variable reference |
+| Attribute      | Type                             | Description                                                                                      |
+| -------------- | -------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `type`         | `"form-number-input"`            |                                                                                                  |
+| `defaultValue` | `Number`, `VariablePath<number>` | Default value. Either a static number or a variable path to a variable that resolves to a number |
 
 #### Date Input `Block`
 
-| Attribute      | Type                | Description        |
-| -------------- | ------------------- | ------------------ |
-| `type`         | `"form-date-input"` |                    |
-| `defaultValue` | `string`            | Default date value |
+| Attribute      | Type                | Description                                                                                                                    |
+| -------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `type`         | `"form-date-input"` |                                                                                                                                |
+| `defaultValue` | `string`            | Default date value. Can be every value that JavaScript's `new Date()` accepts. E.g. `2025-12-24T00:00:00.000Z` or `2025-12-24` |
 
 #### Select `Block`
 
-| Attribute      | Type                            | Description                                                      |
-| -------------- | ------------------------------- | ---------------------------------------------------------------- |
-| `type`         | `"form-select"`                 |                                                                  |
-| `values`       | `Array`, `VariablePath<string>` | Available options. Either a static array or a variable reference |
-| `defaultValue` | `TemplateString`                | Default selected value                                           |
+| Attribute      | Type                                   | Description                                                                                      |
+| -------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `type`         | `"form-select"`                        |                                                                                                  |
+| `values`       | `Array`, `VariablePath<Array<string>>` | Available options. Either a static array or a variable path that resolves to an array of strings |
+| `defaultValue` | `TemplateString`                       | Default selected value                                                                           |
 
 #### Textarea `Block`
 
@@ -145,12 +145,11 @@ Form primitives are the basic input elements that collect user data within forms
 
 #### Checkbox `Block`
 
-| Attribute      | Type                               | Description                                                    |
-| -------------- | ---------------------------------- | -------------------------------------------------------------- |
-| `type`         | `"form-checkbox"`                  |                                                                |
-| `description`  | `TemplateString`                   | Required description text                                      |
-| `defaultValue` | `DataType`                         | Default boolean value                                          |
-| `defaultValue` | `Boolean`, `VariablePath<boolean>` | Default value. Either a static boolean or a variable reference |
+| Attribute      | Type                               | Description                                                                          |
+| -------------- | ---------------------------------- | ------------------------------------------------------------------------------------ |
+| `type`         | `"form-checkbox"`                  |                                                                                      |
+| `description`  | `TemplateString`                   | Required description text                                                            |
+| `defaultValue` | `Boolean`, `VariablePath<boolean>` | Default value. Either a static boolean or a variable path that resolves to a boolean |
 
 ### QueryProvider `Block`
 
