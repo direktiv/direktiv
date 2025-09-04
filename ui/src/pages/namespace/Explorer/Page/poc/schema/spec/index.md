@@ -270,7 +270,7 @@ A template string is a string that can have `Variable` placeholders that will be
 
 ## `Id`
 
-An Id is a string that is unique within a page and identifies a resource. IDs are used when one resource needs to reference another resource, like when one block references dynamic data from a query. IDs cannot contain dots (.) as they are used as separators for variables.
+An Id is a string that identifies a resource and must be unique among all resources of the same type. IDs are part of a variable and cannot contain dots (.) as they are used as separators for variables.
 
 ## `KeyValue`
 
