@@ -12,8 +12,10 @@ type BlockFormHeaderProps = {
 };
 
 export const Header = ({ path, action, block }: BlockFormHeaderProps) => {
-  const { setPanel } = usePageEditorPanel();
+  const { panel, setPanel } = usePageEditorPanel();
   const { t } = useTranslation();
+
+  if (!panel) return null;
 
   return (
     <div className="flex flex-row justify-between text-lg font-semibold">
@@ -24,7 +26,7 @@ export const Header = ({ path, action, block }: BlockFormHeaderProps) => {
       })}
       <BlockContextMenu
         path={path}
-        onDelete={() => setPanel({ action: "delete", path, block })}
+        onDelete={() => setPanel({ ...panel, action: "delete" })}
       />
     </div>
   );

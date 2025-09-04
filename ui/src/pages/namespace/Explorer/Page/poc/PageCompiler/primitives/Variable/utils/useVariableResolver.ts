@@ -35,12 +35,12 @@ export const useVariableResolver = (): ResolverFunction<
 
     const { id, pointer, namespace } = validationResult.data;
 
-    if (!variables[namespace][id]) {
+    if (!variables[namespace]?.[id]) {
       return { success: false, error: "NoStateForId" };
     }
 
     const jsonPathResult = getValueFromJsonPath(
-      variables[namespace][id],
+      variables[namespace]?.[id],
       pointer
     );
 
