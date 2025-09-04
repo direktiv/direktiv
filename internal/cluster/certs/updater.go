@@ -1,6 +1,7 @@
 package certs
 
 import (
+	"fmt"
 	"log/slog"
 	"math/rand"
 	"os"
@@ -38,28 +39,30 @@ func NewCertificateUpdater(ns string) (*CertificateUpdater, error) {
 	}, nil
 }
 
-func (c *CertificateUpdater) Start(lc *lifecycle.Manager) {
-	go func() {
-		slog.Info("run certificate loop")
-		// for concurrent startup we delay it by up to ten seconds
-		// if nodes startup we are trying to run them with a random delay
-		delay := os.Getenv("DIREKTIV_NATS_CERT_DELAY")
-		d, err := strconv.Atoi(delay)
+func (c *CertificateUpdater) Run(lc *lifecycle.Manager) error {
+	slog.Info("run certificate loop")
+	// for concurrent startup we delay it by up to ten seconds
+	// if nodes startup we are trying to run them with a random delay
+	delay := os.Getenv("DIREKTIV_NATS_CERT_DELAY")
+	d, err := strconv.Atoi(delay)
+	if err != nil {
+		d = 10
+	}
+
+	time.Sleep(time.Duration(rand.Intn(d)) * time.Second) //nolint:gosec
+
+	for {
+		if lc.IsDone() {
+			return nil
+		}
+
+		err := c.checkAndUpdate(lc.Context())
 		if err != nil {
-			d = 10
+			return fmt.Errorf("certificate checkAndUpdate, err: %w", err)
 		}
 
-		time.Sleep(time.Duration(rand.Intn(d)) * time.Second) //nolint:gosec
-
-		for {
-			err := c.checkAndUpdate(lc.Context())
-			if err != nil {
-				panic("can not refresh certificates")
-			}
-
-			sleepMinutes := rand.Intn(maxWait-minWait) + minWait //nolint:gosec
-			slog.Info("sleeping for certificates", slog.Int("duration", sleepMinutes))
-			time.Sleep(time.Duration(sleepMinutes) * time.Minute)
-		}
-	}()
+		sleepMinutes := rand.Intn(maxWait-minWait) + minWait //nolint:gosec
+		slog.Info("sleeping for certificates", slog.Int("duration", sleepMinutes))
+		time.Sleep(time.Duration(sleepMinutes) * time.Minute)
+	}
 }

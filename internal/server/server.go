@@ -59,13 +59,22 @@ func Start(lc *lifecycle.Manager) error {
 		Config: config,
 	}
 
-	// create certs for communication
-	slog.Info("initializing certificate updater")
-	cm, err := certs.NewCertificateUpdater(config.DirektivNamespace)
-	if err != nil {
-		return fmt.Errorf("initialize certificate updater, err: %w", err)
+	// initializing certificate-updater
+	{
+		slog.Info("initializing certificate-updater")
+		cm, err := certs.NewCertificateUpdater(config.DirektivNamespace)
+		if err != nil {
+			return fmt.Errorf("create certificate-updater, err: %w", err)
+		}
+		lc.Go(func() error {
+			err := cm.Run(lc)
+			if err != nil {
+				return fmt.Errorf("run certificate-updater, err: %w", err)
+			}
+
+			return nil
+		})
 	}
-	cm.Start(lc)
 
 	// wait for nats to be up and running and certs are done
 	checkNATSConnectivity()
