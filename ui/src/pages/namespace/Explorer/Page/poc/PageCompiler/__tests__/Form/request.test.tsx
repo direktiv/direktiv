@@ -65,7 +65,7 @@ const form: BlockType[] = [
     id: "checkbox-unchecked",
     label: "checkbox",
     description: "this is a unchecked checkbox",
-    optional: false,
+    optional: true,
     type: "form-checkbox",
     defaultValue: {
       type: "boolean",

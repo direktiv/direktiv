@@ -26,7 +26,7 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
     blockProps;
 
   const resolvedDefaultValue = interpolateString(defaultValue);
-  const fieldName = encodeBlockKey(type, id);
+  const fieldName = encodeBlockKey(type, id, optional);
 
   let resolvedValues: string[];
 
@@ -51,6 +51,7 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
 
   return (
     <Fieldset
+      id={id}
       label={label}
       description={description}
       htmlFor={fieldName}
