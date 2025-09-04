@@ -17,7 +17,7 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
   const { id, label, description, defaultValue, optional, type } = blockProps;
   const { mode } = usePageStateContext();
 
-  const fieldName = encodeBlockKey(type, id);
+  const fieldName = encodeBlockKey(type, id, optional);
   let value: boolean;
 
   if (defaultValue.type === "variable") {
@@ -36,6 +36,7 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
 
   return (
     <Fieldset
+      id={id}
       label={label}
       description={description}
       htmlFor={fieldName}

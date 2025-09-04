@@ -15,10 +15,11 @@ export const FormStringInput = ({ blockProps }: FormStringInputProps) => {
   const interpolateString = useStringInterpolation();
 
   const value = interpolateString(defaultValue);
-  const fieldName = encodeBlockKey(type, id);
+  const fieldName = encodeBlockKey(type, id, optional);
 
   return (
     <Fieldset
+      id={id}
       label={label}
       description={description}
       htmlFor={fieldName}

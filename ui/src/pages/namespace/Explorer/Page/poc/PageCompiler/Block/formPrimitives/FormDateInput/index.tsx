@@ -12,9 +12,10 @@ export const FormDateInput = ({ blockProps }: FormDateInputProps) => {
   const interpolateString = useStringInterpolation();
   const { id, label, description, defaultValue, optional, type } = blockProps;
   const value = interpolateString(defaultValue);
-  const fieldName = encodeBlockKey(type, id);
+  const fieldName = encodeBlockKey(type, id, optional);
   return (
     <Fieldset
+      id={id}
       label={label}
       description={description}
       htmlFor={fieldName}

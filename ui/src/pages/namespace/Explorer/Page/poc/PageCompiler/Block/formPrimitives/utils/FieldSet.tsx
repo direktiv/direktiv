@@ -2,9 +2,11 @@ import { FC, MouseEvent, PropsWithChildren } from "react";
 
 import { TemplateString } from "../../../primitives/TemplateString";
 import { twMergeClsx } from "~/util/helpers";
+import { useFormValidation } from "../../Form/FormValidationContext";
 import { useTranslation } from "react-i18next";
 
 type FieldsetProps = PropsWithChildren & {
+  id: string;
   label: string;
   description: string;
   htmlFor: string;
@@ -14,6 +16,7 @@ type FieldsetProps = PropsWithChildren & {
 };
 
 export const Fieldset: FC<FieldsetProps> = ({
+  id,
   label,
   description,
   children,
@@ -23,10 +26,22 @@ export const Fieldset: FC<FieldsetProps> = ({
   onClickLabel,
 }) => {
   const { t } = useTranslation();
+  const { missingFields } = useFormValidation();
+  const isMissingField = missingFields.includes(id);
+
   return (
-    <fieldset className="flex flex-col gap-1">
+    <fieldset
+      className={twMergeClsx(
+        "flex flex-col gap-1",
+        isMissingField &&
+          "rounded-sm outline outline-2 outline-offset-8 outline-danger-7 dark:outline-danger-dark-7"
+      )}
+    >
       <label
-        className="flex grow gap-1 text-sm font-bold"
+        className={twMergeClsx(
+          "flex grow gap-1 text-sm font-bold",
+          isMissingField && "text-danger-11"
+        )}
         htmlFor={htmlFor}
         onClick={onClickLabel}
       >
