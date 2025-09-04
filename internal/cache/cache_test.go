@@ -2,7 +2,6 @@ package cache_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -31,6 +30,9 @@ func TestCache(t *testing.T) {
 	defer cache2.Close()
 
 	cache1.Set("hello", "world")
+	cache1.Set("foo", "bar")
+
+	cache2.Set("hello", "world")
 	cache2.Set("foo", "bar")
 
 	for _, c := range []*cache.Cache{
@@ -38,16 +40,30 @@ func TestCache(t *testing.T) {
 	} {
 		require.Eventually(t, func() bool {
 			v, ok := c.Get("hello")
-
-			fmt.Printf("v=%v  v=%T  ok:%v\n", v, v, ok)
-
 			return ok && v.(string) == "world"
 		}, 3*time.Second, 100*time.Millisecond, "test get key 'hello'")
 
-		//require.Eventually(t, func() bool {
-		//	v, ok := c.Get("foo")
-		//	return ok && v.(string) == "bar"
-		//}, 3*time.Second, 100*time.Millisecond, "test get key 'foo'")
+		require.Eventually(t, func() bool {
+			v, ok := c.Get("foo")
+			return ok && v.(string) == "bar"
+		}, 3*time.Second, 100*time.Millisecond, "test get key 'foo'")
+	}
 
+	// test cluster cache invalidation.
+	cache1.Delete("hello")
+	cache2.Delete("foo")
+
+	for _, c := range []*cache.Cache{
+		cache1, cache2,
+	} {
+		require.Eventually(t, func() bool {
+			_, ok := c.Get("hello")
+			return !ok
+		}, 3*time.Second, 100*time.Millisecond, "test delete key 'hello'")
+
+		require.Eventually(t, func() bool {
+			_, ok := c.Get("foo")
+			return !ok
+		}, 3*time.Second, 100*time.Millisecond, "test delete key 'foo'")
 	}
 }
