@@ -2,8 +2,6 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -23,9 +21,11 @@ import (
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/engine"
-	engineStore "github.com/direktiv/direktiv/internal/engine/store"
+	"github.com/direktiv/direktiv/internal/engine/databus"
+	engineProjector "github.com/direktiv/direktiv/internal/engine/projector"
 	"github.com/direktiv/direktiv/internal/extensions"
 	"github.com/direktiv/direktiv/internal/gateway"
+	intNats "github.com/direktiv/direktiv/internal/nats"
 	"github.com/direktiv/direktiv/internal/secrets"
 	"github.com/direktiv/direktiv/internal/service"
 	"github.com/direktiv/direktiv/internal/service/registry"
@@ -33,7 +33,6 @@ import (
 	database2 "github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	_ "github.com/lib/pq" //nolint:revive
-	"github.com/nats-io/nats.go"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -100,7 +99,7 @@ func Start(lc *lifecycle.Manager) error {
 	// initializing pubsub
 	{
 		slog.Info("initializing pubsub")
-		app.PubSub, err = natspubsub.New(natsConnect, slog.Default())
+		app.PubSub, err = natspubsub.New(intNats.Connect, slog.Default())
 		lc.Go(func() error {
 			<-lc.Done()
 			err := app.PubSub.Close()
@@ -174,32 +173,31 @@ func Start(lc *lifecycle.Manager) error {
 
 	// initializing engine
 	{
-		eStore, err := engineStore.NewStore(natsConnect)
+		slog.Info("initializing engine-nats")
+		nc, err := intNats.Connect()
 		if err != nil {
-			return fmt.Errorf("initializing engine-store, err: %w", err)
+			return fmt.Errorf("initializing engine-nats, err: %w", err)
+		}
+		js, err := intNats.SetupJetStream(context.Background(), nc)
+		if err != nil {
+			return fmt.Errorf("initializing engine-nats, err: %w", err)
 		}
 		lc.Go(func() error {
 			<-lc.Done()
-			err := eStore.Close()
-			if err != nil {
-				return fmt.Errorf("closing engine-store, err: %w", err)
-			}
-
-			return nil
+			return nc.Drain()
 		})
-
-		app.Engine, err = engine.NewEngine(app.DB, eStore)
+		app.Engine, err = engine.NewEngine(
+			app.DB,
+			engineProjector.New(js),
+			databus.New(js),
+		)
 		if err != nil {
 			return fmt.Errorf("initializing engine, err: %w", err)
 		}
-		lc.Go(func() error {
-			err := app.Engine.Run(lc)
-			if err != nil {
-				return fmt.Errorf("run engine, err: %w", err)
-			}
-
-			return nil
-		})
+		err = app.Engine.Start(lc)
+		if err != nil {
+			return fmt.Errorf("starting engine, err: %w", err)
+		}
 	}
 
 	// initializing registry-manager
@@ -351,7 +349,7 @@ func checkNATSConnectivity() {
 		select {
 		case <-ticker.C:
 			slog.Info("checking nats connection")
-			nc, err := natsConnect()
+			nc, err := intNats.Connect()
 			if err == nil {
 				nc.Close()
 				slog.Info("nats available")
@@ -364,38 +362,4 @@ func checkNATSConnectivity() {
 			panic("cannot connect to nats")
 		}
 	}
-}
-
-func natsConnect() (*nats.Conn, error) {
-	// set the deployment name in dns names
-	deploymentName := os.Getenv("DIREKTIV_DEPLOYMENT_NAME")
-
-	return nats.Connect(
-		fmt.Sprintf("tls://%s-nats.default.svc:4222", deploymentName),
-		nats.ClientTLSConfig(
-			func() (tls.Certificate, error) {
-				cert, err := tls.LoadX509KeyPair("/etc/direktiv-tls/server.crt",
-					"/etc/direktiv-tls/server.key")
-				if err != nil {
-					slog.Error("cannot create certificate pair", slog.Any("error", err))
-					return tls.Certificate{}, err
-				}
-
-				return cert, nil
-			},
-			func() (*x509.CertPool, error) {
-				caCert, err := os.ReadFile("/etc/direktiv-tls/ca.crt")
-				if err != nil {
-					return nil, err
-				}
-				caPool := x509.NewCertPool()
-				if !caPool.AppendCertsFromPEM(caCert) {
-					slog.Error("cannot create certificate pair", slog.Any("error", err))
-					return nil, err
-				}
-
-				return caPool, nil
-			},
-		),
-	)
 }

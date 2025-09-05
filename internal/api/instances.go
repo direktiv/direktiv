@@ -1,13 +1,11 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"time"
 
-	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/internal/transpiler"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
@@ -52,27 +50,8 @@ type instController struct {
 	engine  *engine.Engine
 }
 
-func marshalForAPI(data []core.EngineMessage) (*InstanceData, error) {
-	insMsg := &core.InstanceMessage{}
-	err := json.Unmarshal(data[0].Data, insMsg)
-	if err != nil {
-		return nil, err
-	}
-	resp := &InstanceData{
-		ID:           insMsg.InstanceID,
-		CreatedAt:    data[0].CreatedAt,
-		EndedAt:      insMsg.EndedAt,
-		Status:       insMsg.StatusString(),
-		WorkflowPath: insMsg.Labels["workflowPath"],
-		ErrorCode:    nil,
-		Invoker:      "api",
-		Definition:   []byte(insMsg.Script),
-		ErrorMessage: nil,
-		Flow:         []string{},
-		TraceID:      "",
-		Lineage:      []*LineageData{},
-		Namespace:    data[0].Namespace,
-	}
+func marshalForAPI(data []engine.InstanceEvent) (*InstanceData, error) {
+	resp := &InstanceData{}
 
 	return resp, nil
 }
@@ -147,17 +126,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := e.engine.GetInstanceMessages(r.Context(), namespace, id)
-	if err != nil {
-		writeError(w, &Error{
-			Code:    err.Error(),
-			Message: err.Error(),
-		})
-
-		return
-	}
-
-	writeJSON(w, data)
+	writeJSON(w, id)
 }
 
 func (e instController) testTranspile(w http.ResponseWriter, r *http.Request) {
@@ -238,60 +207,10 @@ func (e instController) testTranspile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *instController) get(w http.ResponseWriter, r *http.Request) {
-	namespace := chi.URLParam(r, "namespace")
-	instanceIDStr := chi.URLParam(r, "instanceID")
-	instanceID, err := uuid.Parse(instanceIDStr)
-	if err != nil {
-		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: fmt.Errorf("unparsable instance UUID: %w", err).Error(),
-		})
-
-		return
-	}
-
-	data, err := e.engine.GetInstanceMessages(r.Context(), namespace, instanceID)
-	if err != nil {
-		writeInternalError(w, err)
-
-		return
-	}
-
-	resp, err := marshalForAPI(data)
-	if err != nil {
-		writeInternalError(w, err)
-	}
-
-	writeJSON(w, resp)
+	writeJSON(w, nil)
 }
 
 func (e *instController) list(w http.ResponseWriter, r *http.Request) {
-	namespace := chi.URLParam(r, "namespace")
 
-	ids, err := e.engine.GetAllInstanceIDs(r.Context(), namespace)
-	if err != nil {
-		writeInternalError(w, err)
-		return
-	}
-
-	result := []any{}
-	for _, id := range ids {
-		i, err := e.engine.GetInstanceMessages(r.Context(), namespace, id)
-		if err != nil {
-			writeInternalError(w, err)
-			return
-		}
-		obj, err := marshalForAPI(i)
-		if err != nil {
-			writeInternalError(w, err)
-			return
-		}
-		result = append(result, obj)
-	}
-
-	metaInfo := map[string]any{
-		"total": len(result),
-	}
-
-	writeJSONWithMeta(w, result, metaInfo)
+	writeJSONWithMeta(w, nil, nil)
 }

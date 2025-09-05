@@ -48,21 +48,29 @@ func (c *CertificateUpdater) Run(lc *lifecycle.Manager) error {
 	if err != nil {
 		d = 10
 	}
+	sleepMinutes := rand.Intn(maxWait-minWait) + minWait //nolint:gosec
 
-	time.Sleep(time.Duration(rand.Intn(d)) * time.Second) //nolint:gosec
+	initialTicker := time.NewTicker(time.Duration(d) * time.Second)
+	ticker := time.NewTicker(time.Duration(sleepMinutes) * time.Minute)
+
+	slog.Info("ticking time for certificates", slog.Int("minutes", sleepMinutes))
 
 	for {
-		if lc.IsDone() {
+		select {
+		case <-lc.Done():
 			return nil
+		case <-initialTicker.C:
+			// run only once
+			initialTicker.Stop()
+			err := c.checkAndUpdate(lc.Context())
+			if err != nil {
+				return fmt.Errorf("certificate checkAndUpdate, err: %w", err)
+			}
+		case <-ticker.C:
+			err := c.checkAndUpdate(lc.Context())
+			if err != nil {
+				return fmt.Errorf("certificate checkAndUpdate, err: %w", err)
+			}
 		}
-
-		err := c.checkAndUpdate(lc.Context())
-		if err != nil {
-			return fmt.Errorf("certificate checkAndUpdate, err: %w", err)
-		}
-
-		sleepMinutes := rand.Intn(maxWait-minWait) + minWait //nolint:gosec
-		slog.Info("sleeping for certificates", slog.Int("duration", sleepMinutes))
-		time.Sleep(time.Duration(sleepMinutes) * time.Minute)
 	}
 }
