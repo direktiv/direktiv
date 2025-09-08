@@ -11,7 +11,7 @@ import (
 	natspubsub "github.com/direktiv/direktiv/internal/cluster/pubsub/nats"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/secrets"
-	database2 "github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
@@ -23,7 +23,7 @@ func TestDBSecrets(t *testing.T) {
 
 	// create database
 	ns := uuid.NewString()
-	conn, err := database2.NewTestDBWithNamespace(t, ns)
+	conn, err := database.NewTestDBWithNamespace(t, ns)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}

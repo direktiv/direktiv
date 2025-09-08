@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	database2 "github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 
 	"github.com/direktiv/direktiv/pkg/filestore"
@@ -12,7 +12,7 @@ import (
 )
 
 func Test_CorrectSetPath(t *testing.T) {
-	conn, err := database2.NewTestDB(t)
+	conn, err := database.NewTestDB(t)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
@@ -180,7 +180,7 @@ func assertAllPathsInRoot(t *testing.T, fs filestore.FileStore, rootID string, w
 
 func Test_UpdateFile(t *testing.T) {
 	ns := uuid.NewString()
-	conn, err := database2.NewTestDBWithNamespace(t, ns)
+	conn, err := database.NewTestDBWithNamespace(t, ns)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}

@@ -27,7 +27,7 @@ import (
 	"github.com/direktiv/direktiv/internal/service"
 	"github.com/direktiv/direktiv/internal/service/registry"
 	"github.com/direktiv/direktiv/internal/telemetry"
-	database2 "github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	_ "github.com/lib/pq" //nolint:revive
 	"gorm.io/driver/postgres"
@@ -223,7 +223,7 @@ func Start(lc *lifecycle.Manager) error {
 		lc.OnShutdown(func() error {
 			err := srv.Close(context.Background())
 			if err != nil {
-				return fmt.Errorf("close api-server, err: %w", err)
+				return fmt.Errorf("close api-server, err: %s", err)
 			}
 
 			return nil
@@ -253,7 +253,7 @@ func initDB(config *core.Config) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	res := db.Exec(database2.Schema)
+	res := db.Exec(database.Schema)
 	if res.Error != nil {
 		return nil, fmt.Errorf("provisioning schema, err: %w", res.Error)
 	}

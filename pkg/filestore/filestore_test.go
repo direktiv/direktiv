@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	database2 "github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 )
@@ -66,7 +66,7 @@ func assertFileStoreCorrectRootDeletion(t *testing.T, fs filestore.FileStore, id
 }
 
 func Test_sqlFileStore_CreateRoot(t *testing.T) {
-	conn, err := database2.NewTestDB(t)
+	conn, err := database.NewTestDB(t)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
@@ -88,7 +88,7 @@ func Test_sqlFileStore_CreateRoot(t *testing.T) {
 }
 
 func Test_sqlFileStore_ListingAfterCreate(t *testing.T) {
-	conn, err := database2.NewTestDB(t)
+	conn, err := database.NewTestDB(t)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}

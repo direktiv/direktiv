@@ -65,7 +65,7 @@ func (s *Server) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (s *Server) Close(ctx context.Context) interface{} {
+func (s *Server) Close(ctx context.Context) error {
 	return s.srv.Shutdown(ctx)
 }
 
