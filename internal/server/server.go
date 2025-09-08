@@ -152,14 +152,10 @@ func Start(lc *lifecycle.Manager) error {
 		if err != nil {
 			return fmt.Errorf("create service-manager, err: %w", err)
 		}
-		lc.Go(func() error {
-			err := app.ServiceManager.Run(lc)
-			if err != nil {
-				return fmt.Errorf("run service-manager, err: %w", err)
-			}
-
-			return nil
-		})
+		err = app.ServiceManager.Start(lc)
+		if err != nil {
+			return fmt.Errorf("start service-manager, err: %w", err)
+		}
 
 		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
 			renderServiceFiles(app.DB, app.ServiceManager)

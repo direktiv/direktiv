@@ -153,21 +153,26 @@ func (m *Manager) runCycle() []error {
 	return errs
 }
 
-func (m *Manager) Run(lc *lifecycle.Manager) error {
+func (m *Manager) Start(lc *lifecycle.Manager) error {
 	cycleTime := m.Cfg.GetFunctionsReconcileInterval()
-	for {
-		if lc.IsDone() {
-			return nil
-		}
-		m.lock.Lock()
-		errs := m.runCycle()
-		m.lock.Unlock()
-		for _, err := range errs {
-			slog.Error("run cycle", "err", err)
-		}
 
-		time.Sleep(cycleTime)
-	}
+	lc.Go(func() error {
+		for {
+			select {
+			case <-lc.Done():
+				return nil
+			case <-time.Tick(cycleTime):
+				m.lock.Lock()
+				errs := m.runCycle()
+				m.lock.Unlock()
+				for _, err := range errs {
+					slog.Error("run cycle", "err", err)
+				}
+			}
+		}
+	})
+
+	return nil
 }
 
 func (m *Manager) SetServices(list []*core.ServiceFileData) {

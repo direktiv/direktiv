@@ -104,7 +104,6 @@ func (c *ServiceFileData) GetValueHash() string {
 }
 
 type ServiceManager interface {
-	Run(lc *lifecycle.Manager) error
 	SetServices(list []*ServiceFileData)
 	GeAll(namespace string) ([]*ServiceFileData, error)
 	GetPods(namespace string, serviceID string) (any, error)
@@ -112,4 +111,5 @@ type ServiceManager interface {
 	Rebuild(namespace string, serviceID string) error
 	GetServiceURL(namespace string, typ string, file string, name string) string
 	IgniteService(serviceURL string) error
+	Start(lc *lifecycle.Manager) error
 }
