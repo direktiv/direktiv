@@ -1884,7 +1884,7 @@
       },
       "smartInput": {
         "templateHelp": {
-          "header": "This template string may contain variables in the style {{type.id.pointer}}.",
+          "header": "This field may contain variables in the style {{type.id.pointer}}.",
           "namespace": "type: type of block providing the data (loop, query)",
           "id": "id: data provider's given identifier",
           "pointer": "pointer: key for the value (chain pointers for nested values)"
