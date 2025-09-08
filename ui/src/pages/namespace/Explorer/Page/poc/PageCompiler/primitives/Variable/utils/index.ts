@@ -96,10 +96,7 @@ export const validateVariable = (
 
 const AnyObjectSchema = z.object({}).passthrough();
 const AnyArraySchema = z.array(z.unknown());
-export const AnyObjectOrArraySchema = z.union([
-  AnyObjectSchema,
-  AnyArraySchema,
-]);
+const AnyObjectOrArraySchema = z.union([AnyObjectSchema, AnyArraySchema]);
 
 export type JsonValueType = object | string | number | boolean | null;
 
