@@ -38,8 +38,7 @@ export const useVariableResolver = (): ResolverFunction<
       if (localVariables === undefined) {
         return { success: false, error: "ThisNotAvailable" };
       }
-
-      return { success: true, data: localVariables[id] };
+      return { success: true, data: localVariables[id] as JsonValueType };
     } else {
       if (!contextVariables[namespace][id]) {
         return { success: false, error: "NoStateForId" };
