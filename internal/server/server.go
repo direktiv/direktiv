@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -82,16 +81,6 @@ func Start(lc *lifecycle.Manager) error {
 	}
 	datastore.SymmetricEncryptionKey = config.SecretKey
 
-	// Initialize raw DB connection
-	slog.Info("initializing raw db connection")
-	rawDB, err := sql.Open("postgres", config.DB)
-	if err == nil {
-		err = rawDB.PingContext(context.Background())
-	}
-	if err != nil {
-		return fmt.Errorf("creating raw db driver, err: %w", err)
-	}
-
 	// initializing pubsub
 	{
 		slog.Info("initializing pubsub")
@@ -168,11 +157,11 @@ func Start(lc *lifecycle.Manager) error {
 		slog.Info("initializing engine-nats")
 		nc, err := intNats.Connect()
 		if err != nil {
-			return fmt.Errorf("initializing engine-nats, err: %w", err)
+			return fmt.Errorf("create engine-nats, err: %w", err)
 		}
 		js, err := intNats.SetupJetStream(context.Background(), nc)
 		if err != nil {
-			return fmt.Errorf("initializing engine-nats, err: %w", err)
+			return fmt.Errorf("create engine-nats, err: %w", err)
 		}
 		lc.Go(func() error {
 			<-lc.Done()
@@ -184,11 +173,11 @@ func Start(lc *lifecycle.Manager) error {
 			databus.New(js),
 		)
 		if err != nil {
-			return fmt.Errorf("initializing engine, err: %w", err)
+			return fmt.Errorf("create engine, err: %w", err)
 		}
 		err = app.Engine.Start(lc)
 		if err != nil {
-			return fmt.Errorf("starting engine, err: %w", err)
+			return fmt.Errorf("start engine, err: %w", err)
 		}
 	}
 
