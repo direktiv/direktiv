@@ -1,6 +1,9 @@
+import {
+  ContextVariableNamespace,
+  LocalVariableNamespace,
+  localVariableNamespace,
+} from "../../../schema/primitives/variable";
 import { PropsWithChildren, createContext, useContext } from "react";
-
-import { ContextVariableNamespace } from "../../../schema/primitives/variable";
 
 type VariableId = string;
 type DefinedValue = Exclude<unknown, undefined>;
@@ -35,3 +38,9 @@ export const useVariablesContext = () => {
   const variables = context ?? defaultState;
   return variables;
 };
+
+type LocalVariables = Record<LocalVariableNamespace, Variable>;
+type LocalAndContextVariables = ContextVariables & LocalVariables;
+
+export type LocalVariablesContent =
+  LocalAndContextVariables[typeof localVariableNamespace];

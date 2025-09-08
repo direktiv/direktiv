@@ -1,13 +1,14 @@
+import { JsonPathError, ResolveVariableError } from "./errors";
 import {
   JsonValueType,
   getValueFromJsonPath,
   parseVariable,
   validateVariable,
 } from ".";
+import { ResolverFunction, ValidationResult } from "./types";
 
-import { ResolveVariableError } from "./errors";
-import { ResolverFunction } from "./types";
-import { useMergeLocalWithContextVariables } from "../LocalVariables";
+import { localVariableNamespace } from "../../../../schema/primitives/variable";
+import { useVariablesContext } from "../VariableContext";
 
 /**
  * A hook that returns a function to resolve a variable path string to its
@@ -23,26 +24,38 @@ export const useVariableResolver = (): ResolverFunction<
   JsonValueType,
   ResolveVariableError
 > => {
-  const mergeLocalWithContextVariables = useMergeLocalWithContextVariables();
+  const contextVariables = useVariablesContext();
+
   return (value, localVariables) => {
-    const variables = mergeLocalWithContextVariables(localVariables);
     const variableObject = parseVariable(value);
     const validationResult = validateVariable(variableObject);
-
     if (!validationResult.success) {
       return { success: false, error: validationResult.error };
     }
-
     const { id, pointer, namespace } = validationResult.data;
 
-    if (!variables[namespace][id]) {
-      return { success: false, error: "NoStateForId" };
-    }
+    // let variableValue: unknown;
+    let jsonPathResult: ValidationResult<JsonValueType, JsonPathError>;
 
-    const jsonPathResult = getValueFromJsonPath(
-      variables[namespace][id],
-      pointer
-    );
+    if (namespace === localVariableNamespace) {
+      if (localVariables === undefined) {
+        throw new Error(
+          "You can't access variables from the 'this' namespace in this context"
+        );
+      }
+
+      jsonPathResult = localVariables[id];
+
+      return { success: true, data: jsonPathResult };
+    } else {
+      if (!contextVariables[namespace][id]) {
+        return { success: false, error: "NoStateForId" };
+      }
+      jsonPathResult = getValueFromJsonPath(
+        contextVariables[namespace][id],
+        pointer
+      );
+    }
 
     if (!jsonPathResult.success) {
       return { success: false, error: jsonPathResult.error };

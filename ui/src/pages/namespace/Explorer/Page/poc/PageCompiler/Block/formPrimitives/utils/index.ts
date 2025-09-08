@@ -1,6 +1,6 @@
 import { BlockType as Block } from "../../../../schema/blocks";
 import { FormEvent } from "react";
-import { LocalVariablesContent } from "../../../primitives/Variable/LocalVariables";
+import { LocalVariablesContent } from "../../../primitives/Variable/VariableContext";
 
 const keySeparator = "::";
 
@@ -67,11 +67,9 @@ const isFormFieldMissing = (
  * Returns an object structure like:
  *
  * {
- *   "form": {
- *     "username": "john_doe",      // from the "form-string-input::username" element
- *     "age": 25,                   // from the "form-number-input::age" element
- *     "isActive": true             // from thw "form-checkbox::isActive" element
- *   }
+ *   "username": "john_doe",      // from the "form-string-input::username" element
+ *   "age": 25,                   // from the "form-number-input::age" element
+ *   "isActive": true             // from thw "form-checkbox::isActive" element
  * }
  *
  * To eventually be used as template string: {{this.username}}
@@ -100,9 +98,7 @@ export const createLocalFormVariables = (
     }
   );
 
-  const processedFormValues = Object.fromEntries(transformedEntries);
-
-  const formVariables = { ["form"]: processedFormValues };
+  const formVariables = Object.fromEntries(transformedEntries);
 
   return { formVariables, missingRequiredFields };
 };
