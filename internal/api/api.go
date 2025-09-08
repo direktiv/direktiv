@@ -1,7 +1,10 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -16,6 +19,7 @@ import (
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/internal/extensions"
 	"github.com/direktiv/direktiv/internal/version"
+	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
 )
@@ -44,7 +48,28 @@ type InitializeArgs struct {
 	DB     *gorm.DB
 }
 
-func New(app InitializeArgs) (*http.Server, error) {
+type Server struct {
+	srv *http.Server
+}
+
+func (s *Server) Start(lc *lifecycle.Manager) error {
+	lc.Go(func() error {
+		err := s.srv.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return fmt.Errorf("listen and serve, err: %w", err)
+		}
+
+		return nil
+	})
+
+	return nil
+}
+
+func (s *Server) Close(ctx context.Context) interface{} {
+	return s.srv.Shutdown(ctx)
+}
+
+func New(app InitializeArgs) (*Server, error) {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
@@ -239,7 +264,9 @@ func New(app InitializeArgs) (*http.Server, error) {
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
 
-	return apiServer, nil
+	return &Server{
+		srv: apiServer,
+	}, nil
 }
 
 func writeJSON(w http.ResponseWriter, v any) {

@@ -2,11 +2,9 @@ package server
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"log/slog"
-	"net/http"
 	"os"
 	"time"
 
@@ -218,18 +216,14 @@ func Start(lc *lifecycle.Manager) error {
 		if err != nil {
 			return fmt.Errorf("create api-server, err: %w", err)
 		}
-		lc.Go(func() error {
-			err := srv.ListenAndServe()
-			if err != nil && !errors.Is(err, http.ErrServerClosed) {
-				return fmt.Errorf("shutdown api-server, err: %w", err)
-			}
-
-			return nil
-		})
+		err = srv.Start(lc)
+		if err != nil {
+			return fmt.Errorf("start api-server, err: %w", err)
+		}
 		lc.OnShutdown(func() error {
-			err := srv.Shutdown(context.Background())
+			err := srv.Close(context.Background())
 			if err != nil {
-				return fmt.Errorf("shutdown api-server, err: %w", err)
+				return fmt.Errorf("close api-server, err: %w", err)
 			}
 
 			return nil
