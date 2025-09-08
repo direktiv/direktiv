@@ -1,12 +1,12 @@
-import { JsonPathError, ResolveVariableError } from "./errors";
 import {
   JsonValueType,
   getValueFromJsonPath,
   parseVariable,
   validateVariable,
 } from ".";
-import { ResolverFunction, ValidationResult } from "./types";
 
+import { ResolveVariableError } from "./errors";
+import { ResolverFunction } from "./types";
 import { localVariableNamespace } from "../../../../schema/primitives/variable";
 import { useVariablesContext } from "../VariableContext";
 
@@ -34,33 +34,25 @@ export const useVariableResolver = (): ResolverFunction<
     }
     const { id, pointer, namespace } = validationResult.data;
 
-    // let variableValue: unknown;
-    let jsonPathResult: ValidationResult<JsonValueType, JsonPathError>;
-
     if (namespace === localVariableNamespace) {
       if (localVariables === undefined) {
-        throw new Error(
-          "You can't access variables from the 'this' namespace in this context"
-        );
+        return { success: false, error: "ThisNotAvailable" };
       }
 
-      jsonPathResult = localVariables[id];
-
-      return { success: true, data: jsonPathResult };
+      return { success: true, data: localVariables[id] };
     } else {
       if (!contextVariables[namespace][id]) {
         return { success: false, error: "NoStateForId" };
       }
-      jsonPathResult = getValueFromJsonPath(
+      const variableContent = getValueFromJsonPath(
         contextVariables[namespace][id],
         pointer
       );
-    }
+      if (!variableContent.success) {
+        return { success: false, error: variableContent.error };
+      }
 
-    if (!jsonPathResult.success) {
-      return { success: false, error: jsonPathResult.error };
+      return { success: true, data: variableContent.data };
     }
-
-    return { success: true, data: jsonPathResult.data };
   };
 };
