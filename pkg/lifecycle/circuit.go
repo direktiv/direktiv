@@ -58,6 +58,13 @@ func (c *Manager) Go(job func() error) {
 	}()
 }
 
+func (c *Manager) OnShutdown(job func() error) {
+	c.Go(func() error {
+		<-c.Done()
+		return job()
+	})
+}
+
 func (c *Manager) Wait(timeout time.Duration) error {
 	done := make(chan struct{})
 

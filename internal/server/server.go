@@ -85,8 +85,7 @@ func Start(lc *lifecycle.Manager) error {
 	{
 		slog.Info("initializing pubsub")
 		app.PubSub, err = natspubsub.New(intNats.Connect, slog.Default())
-		lc.Go(func() error {
-			<-lc.Done()
+		lc.OnShutdown(func() error {
 			err := app.PubSub.Close()
 			if err != nil {
 				return fmt.Errorf("closing pubsub, err: %w", err)
@@ -103,10 +102,8 @@ func Start(lc *lifecycle.Manager) error {
 		if err != nil {
 			return fmt.Errorf("create memcache, err: %w", err)
 		}
-		lc.Go(func() error {
-			<-lc.Done()
+		lc.OnShutdown(func() error {
 			app.Cache.Close()
-
 			return nil
 		})
 	}
@@ -163,8 +160,7 @@ func Start(lc *lifecycle.Manager) error {
 		if err != nil {
 			return fmt.Errorf("create engine-nats, err: %w", err)
 		}
-		lc.Go(func() error {
-			<-lc.Done()
+		lc.OnShutdown(func() error {
 			return nc.Drain()
 		})
 		app.Engine, err = engine.NewEngine(
@@ -230,15 +226,11 @@ func Start(lc *lifecycle.Manager) error {
 
 			return nil
 		})
-		lc.Go(func() error {
-			<-lc.Done()
-
-			shutdownCtx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-			err := srv.Shutdown(shutdownCtx)
+		lc.OnShutdown(func() error {
+			err := srv.Shutdown(context.Background())
 			if err != nil {
 				return fmt.Errorf("shutdown api-server, err: %w", err)
 			}
-			slog.Info("shutdown api-server successful")
 
 			return nil
 		})
