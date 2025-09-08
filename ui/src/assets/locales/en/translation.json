@@ -1900,7 +1900,7 @@
         "warning": "This will remove the current block and all content (including blocks nested into it). Are you sure you want to proceed?"
       },
       "treePicker": {
-        "placeholder": "Select or add a segment",
+        "placeholder": "Find or add a segment",
         "valuesHeader": "Known segments",
         "listEmpty": "No segments found at current level. Add a custom segment or finish editing."
       }
