@@ -1,9 +1,11 @@
-import { Check, Maximize2 } from "lucide-react";
+import { Check, HelpCircleIcon, Maximize2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { EditorContent, useEditor } from "@tiptap/react";
+import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
-import Alert from "~/design/Alert";
 import Button from "~/design/Button";
+import { ButtonBar } from "~/design/ButtonBar";
+import { Card } from "@tremor/react";
 import Document from "@tiptap/extension-document";
 import { FakeInput } from "~/design/FakeInput";
 import { InputWithButton } from "~/design/InputWithButton";
@@ -101,34 +103,51 @@ export const SmartInput = ({
       >
         {dialog && (
           <>
-            <Alert variant="info" className="text-sm">
-              {t("direktivPage.blockEditor.smartInput.templateHelp.header")}
-              <ul className="ml-5 list-disc">
-                <li>
-                  {t(
-                    "direktivPage.blockEditor.smartInput.templateHelp.namespace"
-                  )}
-                </li>
-                <li>
-                  {t("direktivPage.blockEditor.smartInput.templateHelp.id")}
-                </li>
-                <li>
-                  {t(
-                    "direktivPage.blockEditor.smartInput.templateHelp.pointer"
-                  )}
-                </li>
-              </ul>
-            </Alert>
             <FakeInput wrap className="flex flex-col gap-2 p-2">
               <div className="border-b pb-2">
-                <TreePicker
-                  label={t("direktivPage.blockEditor.smartInput.variableBtn")}
-                  container={dialogContainer ?? undefined}
-                  tree={variables}
-                  onSubmit={insertText}
-                  placeholders={variableSegmentPlaceholders}
-                  minDepth={3}
-                />
+                <ButtonBar>
+                  <TreePicker
+                    label={t("direktivPage.blockEditor.smartInput.variableBtn")}
+                    container={dialogContainer ?? undefined}
+                    tree={variables}
+                    onSubmit={insertText}
+                    placeholders={variableSegmentPlaceholders}
+                    minDepth={3}
+                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline">
+                        <HelpCircleIcon />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      <Card className="text-sm">
+                        <p>
+                          {t(
+                            "direktivPage.blockEditor.smartInput.templateHelp.header"
+                          )}
+                        </p>
+                        <ul className="ml-6 list-disc">
+                          <li className="mt-1">
+                            {t(
+                              "direktivPage.blockEditor.smartInput.templateHelp.namespace"
+                            )}
+                          </li>
+                          <li className="mt-1">
+                            {t(
+                              "direktivPage.blockEditor.smartInput.templateHelp.id"
+                            )}
+                          </li>
+                          <li className="mt-1">
+                            {t(
+                              "direktivPage.blockEditor.smartInput.templateHelp.pointer"
+                            )}
+                          </li>
+                        </ul>
+                      </Card>
+                    </PopoverContent>
+                  </Popover>
+                </ButtonBar>
               </div>
               <EditorContent
                 id={id}
