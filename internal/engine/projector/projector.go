@@ -169,6 +169,29 @@ func decodeHistoryMsg(msg *nats.Msg) (*engine.InstanceEvent, error) {
 }
 
 func applyEventToStatus(st *engine.InstanceStatus, ev *engine.InstanceEvent) {
+	st.Status = ev.Type
+	st.HistorySequence = ev.Sequence //
+
+	switch ev.Type {
+	case "started":
+		st.InstanceID = ev.InstanceID
+		st.Namespace = ev.Namespace
+		st.Metadata = ev.Metadata
+		st.Script = ev.Script
+		st.Input = ev.Input
+		st.CreatedAt = ev.Time
+
+	case "failed":
+		st.EndedAt = ev.Time
+		st.Memory = ev.Memory
+		st.Output = ev.Output
+		st.Error = ev.Error
+	case "succeeded":
+		st.EndedAt = ev.Time
+		st.Memory = ev.Memory
+		st.Output = ev.Output
+		st.Error = ev.Error
+	}
 }
 
 func isConcurrencyConflict(err error) bool {

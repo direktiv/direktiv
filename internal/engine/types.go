@@ -10,29 +10,42 @@ import (
 )
 
 type InstanceStatus struct {
-	InstanceID uuid.UUID `json:"instanceId"`
-	Namespace  string    `json:"namespace"`
-
-	Script string          `json:"script,omitempty"`
-	Input  json.RawMessage `json:"input,omitempty"`
-	Memory json.RawMessage `json:"memory,omitempty"`
-	Output json.RawMessage `json:"output,omitempty"`
-	Error  string          `json:"error,omitempty"`
-
-	CreatedAt time.Time `json:"createdAt"`
-	EndedAt   time.Time `json:"endedAt"`
-
+	InstanceID uuid.UUID         `json:"instanceId"`
+	Namespace  string            `json:"namespace"`
+	Metadata   map[string]string `json:"metadata"`
+	Script     string            `json:"script,omitempty"`
+	Input      json.RawMessage   `json:"input,omitempty"`
+	Memory     json.RawMessage   `json:"memory,omitempty"`
+	Output     json.RawMessage   `json:"output,omitempty"`
+	Error      string            `json:"error,omitempty"`
+	Status     string            `json:"status"`
+	CreatedAt  time.Time         `json:"createdAt"`
+	EndedAt    time.Time         `json:"endedAt"`
 	// history stream sequence this status came from
 	HistorySequence uint64 `json:"historySequence"`
 	Sequence        uint64 `json:"sequence"`
 }
 
+func (i *InstanceStatus) StatusString() string {
+	switch i.Status {
+	case "started":
+		return "pending"
+	case "failed":
+		return "failed"
+	case "succeeded":
+		return "complete"
+	}
+
+	return i.Status
+}
+
 type InstanceEvent struct {
-	EventID    uuid.UUID `json:"eventId"`
-	InstanceID uuid.UUID `json:"instanceId"`
-	Namespace  string    `json:"namespace"`
-	Type       string    `json:"type"`
-	Time       time.Time `json:"time"`
+	EventID    uuid.UUID         `json:"eventId"`
+	InstanceID uuid.UUID         `json:"instanceId"`
+	Namespace  string            `json:"namespace"`
+	Metadata   map[string]string `json:"metadata"`
+	Type       string            `json:"type"`
+	Time       time.Time         `json:"time"`
 
 	Script string          `json:"script,omitempty"`
 	Input  json.RawMessage `json:"input,omitempty"`

@@ -11,6 +11,10 @@ import (
 	"gorm.io/gorm"
 )
 
+var (
+	ErrDataNotFound = fmt.Errorf("data not found")
+)
+
 type Engine struct {
 	db        *gorm.DB
 	projector Projector
@@ -56,7 +60,7 @@ func (e *Engine) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (e *Engine) ExecWorkflow(ctx context.Context, namespace string, script string, fn string, args any, labels map[string]string) (uuid.UUID, error) {
+func (e *Engine) ExecWorkflow(ctx context.Context, namespace string, script string, fn string, args any, metadata map[string]string) (uuid.UUID, error) {
 	input, ok := args.(string)
 	if !ok {
 		return uuid.Nil, fmt.Errorf("invalid input")
@@ -70,8 +74,10 @@ func (e *Engine) ExecWorkflow(ctx context.Context, namespace string, script stri
 	err := e.dataBus.PushInstanceEvent(ctx, &InstanceEvent{
 		EventID:    uuid.New(),
 		InstanceID: instID,
-		Type:       "init",
+		Namespace:  namespace,
+		Type:       "started",
 		Time:       time.Now(),
+		Metadata:   metadata,
 
 		Script: script,
 		Input:  json.RawMessage(input),
@@ -83,11 +89,12 @@ func (e *Engine) ExecWorkflow(ctx context.Context, namespace string, script stri
 	endMsg := &InstanceEvent{
 		EventID:    uuid.New(),
 		InstanceID: instID,
+		Namespace:  namespace,
 		Time:       time.Now(),
 	}
 	ret, err := e.execJSScript([]byte(script), fn, input)
 	if err != nil {
-		endMsg.Type = "fail"
+		endMsg.Type = "failed"
 		endMsg.Error = err.Error()
 
 	} else {
@@ -95,7 +102,7 @@ func (e *Engine) ExecWorkflow(ctx context.Context, namespace string, script stri
 		if err != nil {
 			panic(err)
 		}
-		endMsg.Type = "success"
+		endMsg.Type = "succeeded"
 		endMsg.Output = retBytes
 	}
 
@@ -107,10 +114,24 @@ func (e *Engine) ExecWorkflow(ctx context.Context, namespace string, script stri
 	return instID, nil
 }
 
-func (e *Engine) GetInstances(ctx context.Context, namespace string) []InstanceStatus {
-	return e.dataBus.QueryInstanceStatus(ctx, namespace, uuid.Nil)
+func (e *Engine) GetInstances(ctx context.Context, namespace string) ([]*InstanceStatus, error) {
+	data := e.dataBus.QueryInstanceStatus(ctx, namespace, uuid.Nil)
+	if len(data) == 0 {
+		return nil, ErrDataNotFound
+	}
+
+	out := make([]*InstanceStatus, len(data))
+	for i, d := range data {
+		out[i] = &d
+	}
+
+	return out, nil
 }
 
-func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.UUID) []InstanceStatus {
-	return e.dataBus.QueryInstanceStatus(ctx, namespace, id)
+func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.UUID) (*InstanceStatus, error) {
+	data := e.dataBus.QueryInstanceStatus(ctx, namespace, id)
+	if len(data) == 0 {
+		return nil, ErrDataNotFound
+	}
+	return &data[0], nil
 }

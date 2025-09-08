@@ -4,6 +4,7 @@ import { basename } from 'path'
 import helpers from '../common/helpers'
 import request from "../common/request";
 import common from "../common";
+import {retry10} from "../common/retry";
 
 
 const namespace = basename(__filename.replaceAll('.', '-'));
@@ -35,7 +36,7 @@ function third(state) {
 	return state
 }
 `))
-	it(`should invoke /foo/file1.wf.js workflow`, async () => {
+	retry10(`should invoke /foo/file1.wf.js workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/instances?path=foo/file1.wf.js`).send({ foo: "bar" })
 		console.log(req.text)
 		expect(req.statusCode).toEqual(200)
