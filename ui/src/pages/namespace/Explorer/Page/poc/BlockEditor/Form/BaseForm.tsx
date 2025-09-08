@@ -36,7 +36,7 @@ export const BaseForm = ({ form: anyForm }: BaseFormProps) => {
       >
         <SmartInput
           value={form.watch("label")}
-          onChange={(content) => form.setValue("label", content)}
+          onChange={(event) => form.setValue("label", event.target.value)}
           id="label"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.formPrimitives.labelPlaceholder"
@@ -51,7 +51,7 @@ export const BaseForm = ({ form: anyForm }: BaseFormProps) => {
       >
         <SmartInput
           value={form.watch("description")}
-          onChange={(content) => form.setValue("description", content)}
+          onChange={(event) => form.setValue("description", event.target.value)}
           id="description"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.formPrimitives.descriptionPlaceholder"

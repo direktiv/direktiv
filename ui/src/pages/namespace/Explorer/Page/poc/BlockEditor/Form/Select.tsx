@@ -160,7 +160,9 @@ export const Select = ({
       >
         <SmartInput
           value={form.watch("defaultValue")}
-          onChange={(content) => form.setValue("defaultValue", content)}
+          onChange={(event) =>
+            form.setValue("defaultValue", event.target.value)
+          }
           id="defaultValue"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholderSelect"

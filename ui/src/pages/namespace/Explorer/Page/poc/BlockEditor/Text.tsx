@@ -39,7 +39,9 @@ export const Text = ({
       >
         <SmartInput
           value={form.watch("content")}
-          onChange={(content) => form.setValue("content", content)}
+          onChange={(event) => {
+            form.setValue("content", event.target.value);
+          }}
           id="content"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.text.contentPlaceholder"

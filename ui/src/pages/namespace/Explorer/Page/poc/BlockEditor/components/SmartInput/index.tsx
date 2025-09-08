@@ -1,21 +1,17 @@
+import { ChangeEventHandler, useState } from "react";
 import { Check, HelpCircleIcon, Maximize2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import { EditorContent, useEditor } from "@tiptap/react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { Card } from "@tremor/react";
-import Document from "@tiptap/extension-document";
 import { FakeInput } from "~/design/FakeInput";
+import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
-import Paragraph from "@tiptap/extension-paragraph";
-import Placeholder from "@tiptap/extension-placeholder";
-import Text from "@tiptap/extension-text";
 import { TreePicker } from "../TreePicker";
-import { twMergeClsx } from "~/util/helpers";
+import { useInsertText } from "../../utils";
 import { usePageEditorPanel } from "../../EditorPanelProvider";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export const SmartInput = ({
@@ -24,7 +20,7 @@ export const SmartInput = ({
   id,
   placeholder,
 }: {
-  onChange: (content: string) => void;
+  onChange: ChangeEventHandler<HTMLInputElement>;
   value: string;
   id: string;
   placeholder: string;
@@ -35,29 +31,11 @@ export const SmartInput = ({
     null
   );
   const { panel } = usePageEditorPanel();
-
-  const editor = useEditor({
-    extensions: [
-      Document,
-      Text,
-      Paragraph,
-      Placeholder.configure({
-        placeholder,
-      }),
-    ],
-    content: value,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getText());
-    },
-  });
+  const { ref, insertText } = useInsertText<HTMLInputElement>();
 
   if (!panel) return null;
 
   const { variables } = panel;
-
-  const insertText = (text: string) => {
-    editor.chain().focus().insertContent(text).run();
-  };
 
   const variableSegmentPlaceholders = [
     t("direktivPage.blockEditor.smartInput.templatePlaceholders.namespace"),
@@ -68,22 +46,7 @@ export const SmartInput = ({
   return (
     <Dialog open={dialog} onOpenChange={setDialog}>
       <InputWithButton>
-        <FakeInput narrow>
-          {!dialog && (
-            <EditorContent
-              id={id}
-              editor={editor}
-              className={twMergeClsx(
-                "max-w-full truncate",
-                "min-h-9 text-sm [&>*]:outline-none",
-                "[&_*.is-empty]:before:absolute",
-                "[&_*.is-empty]:before:pointer-events-none",
-                "[&_*.is-empty]:before:content-[attr(data-placeholder)]",
-                "[&_*.is-empty]:before:text-gray-11"
-              )}
-            />
-          )}
-        </FakeInput>
+        <Input value={value} onChange={onChange} placeholder={placeholder} />
         <DialogTrigger asChild>
           <Button icon variant="ghost" type="button">
             <Maximize2
@@ -149,18 +112,12 @@ export const SmartInput = ({
                   </Popover>
                 </ButtonBar>
               </div>
-              <EditorContent
+              <Input
+                ref={ref}
                 id={id}
-                editor={editor}
-                className={twMergeClsx(
-                  "max-w-full",
-                  "min-h-9 text-sm [&>*]:outline-none",
-                  "[&_*.is-empty]:before:absolute",
-                  "[&_*.is-empty]:before:pointer-events-none",
-                  "[&_*.is-empty]:before:content-[attr(data-placeholder)]",
-                  "[&_*.is-empty]:before:text-gray-11",
-                  "dark:[&_*.is-empty]:before:text-gray-dark-11"
-                )}
+                value={value}
+                onChange={onChange}
+                placeholder={placeholder}
               />
             </FakeInput>
             <div className="flex justify-end">

@@ -52,7 +52,7 @@ export const Headline = ({
       >
         <SmartInput
           value={form.watch("label")}
-          onChange={(content) => form.setValue("label", content)}
+          onChange={(event) => form.setValue("label", event.target.value)}
           id="label"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.headline.labelPlaceholder"
