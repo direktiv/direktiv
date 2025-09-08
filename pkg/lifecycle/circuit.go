@@ -35,15 +35,6 @@ func (c *Manager) Done() <-chan struct{} {
 	return c.ctx.Done()
 }
 
-func (c *Manager) IsDone() bool {
-	select {
-	case <-c.ctx.Done():
-		return true
-	default:
-		return false
-	}
-}
-
 // Go lunches a goroutine and tracking it via a sync.WaitGroup. It enables simplified api to lunch graceful go
 // routines.
 func (c *Manager) Go(job func() error) {
