@@ -142,7 +142,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var data *engine.InstanceStatus
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		data, err = e.engine.GetInstanceByID(r.Context(), namespace, id)
 		if err != nil && errors.Is(err, engine.ErrDataNotFound) {
 			time.Sleep(100 * time.Millisecond)

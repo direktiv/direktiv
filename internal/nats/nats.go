@@ -71,7 +71,7 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 	// 1- ensure history stream streamInstancesHistory exists
 	_, err = js.StreamInfo(StreamInstancesHistory)
 	if err != nil && !errors.Is(err, nats.ErrStreamNotFound) {
-		return nil, fmt.Errorf("info info stream %s: %w", StreamInstancesHistory, err)
+		return nil, fmt.Errorf("info stream %s: %w", StreamInstancesHistory, err)
 	}
 	if err != nil {
 		_, err = js.AddStream(&nats.StreamConfig{
@@ -145,11 +145,11 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 }
 
 func generateRandomEntries(ctx context.Context, js nats.JetStreamContext) error {
-	var namespaces = []string{"ns1", "ns2", "ns3", "ns4"}
-	var types = []string{"running", "failed", "succeeded"}
+	namespaces := []string{"ns1", "ns2", "ns3", "ns4"}
+	types := []string{"running", "failed", "succeeded"}
 	instIDs := []uuid.UUID{uuid.New(), uuid.New(), uuid.New(), uuid.New()}
 
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		evID := uuid.New()
 		typ := types[rand.Intn(len(types))]
 		ns := namespaces[rand.Intn(len(namespaces))]

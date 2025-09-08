@@ -39,7 +39,7 @@ func (p *Projector) Start(lc *lifecycle.Manager) error {
 		nats.ManualAck(),
 	)
 	if err != nil {
-		return fmt.Errorf("nats pull subscript to instances.history stream: %v", err)
+		return fmt.Errorf("nats pull subscript to instances.history stream: %w", err)
 	}
 
 	lc.Go(func() error {
@@ -86,7 +86,7 @@ func (p *Projector) handleHistoryMessage(ctx context.Context, msg *nats.Msg) err
 	subj := fmt.Sprintf(intNats.SubjInstanceStatus, ev.Namespace, ev.InstanceID)
 	pubID := "status::" + ev.Namespace + "::" + ev.InstanceID.String() + "::" + strconv.FormatUint(ev.Sequence, 10)
 
-	for attempt := 0; attempt < 10; attempt++ {
+	for attempt := range 10 {
 		// 1) Read the last status for this order (if any).
 		st, err := p.getLastStatusForSubject(ctx, subj)
 		if err != nil {
@@ -199,6 +199,7 @@ func isConcurrencyConflict(err error) bool {
 		return false
 	}
 	msg := err.Error()
+
 	return strings.Contains(msg, "wrong last sequence") ||
 		strings.Contains(msg, "wrong last sequence per subject")
 }
@@ -208,6 +209,7 @@ func isDuplicate(err error) bool {
 		return false
 	}
 	msg := strings.ToLower(err.Error())
+
 	return strings.Contains(msg, "duplicate") ||
 		strings.Contains(msg, "wrong last msg id")
 }

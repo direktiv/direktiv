@@ -11,9 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-	ErrDataNotFound = fmt.Errorf("data not found")
-)
+var ErrDataNotFound = fmt.Errorf("data not found")
 
 type Engine struct {
 	db        *gorm.DB
@@ -52,7 +50,7 @@ func (e *Engine) Start(lc *lifecycle.Manager) error {
 			case <-lc.Done():
 				return nil
 			case <-time.Tick(cycleTime):
-				//TODO: implement me
+				// TODO: implement me
 			}
 		}
 	})
@@ -96,7 +94,6 @@ func (e *Engine) ExecWorkflow(ctx context.Context, namespace string, script stri
 	if err != nil {
 		endMsg.Type = "failed"
 		endMsg.Error = err.Error()
-
 	} else {
 		retBytes, err := json.Marshal(ret)
 		if err != nil {
@@ -133,5 +130,6 @@ func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.
 	if len(data) == 0 {
 		return nil, ErrDataNotFound
 	}
+
 	return &data[0], nil
 }
