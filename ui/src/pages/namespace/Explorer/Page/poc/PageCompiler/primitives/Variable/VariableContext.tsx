@@ -7,7 +7,7 @@ import { PropsWithChildren, createContext, useContext } from "react";
 
 type VariableId = string;
 type DefinedValue = Exclude<unknown, undefined>;
-export type Variable = Record<VariableId, DefinedValue>;
+type Variable = Record<VariableId, DefinedValue>;
 
 export type ContextVariables = {
   [keys in ContextVariableNamespace]: Variable;
