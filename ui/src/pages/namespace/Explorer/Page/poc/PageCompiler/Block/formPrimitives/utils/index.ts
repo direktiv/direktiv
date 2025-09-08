@@ -62,7 +62,7 @@ const isFormFieldMissing = (
  *
  * Extracts form data and converts it into a structured object with proper type resolution
  * based on the form element types. The returned object can be referenced in templates
- * using the `this.form` namespace.
+ * using the `this` namespace.
  *
  * Returns an object structure like:
  *
@@ -74,7 +74,7 @@ const isFormFieldMissing = (
  *   }
  * }
  *
- * To eventually be used as template string: {{this.form.username}}
+ * To eventually be used as template string: {{this.username}}
  */
 
 type createLocalFormVariablesReturnType = {
