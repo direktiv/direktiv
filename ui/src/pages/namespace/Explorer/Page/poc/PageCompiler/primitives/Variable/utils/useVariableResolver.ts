@@ -40,7 +40,7 @@ export const useVariableResolver = (): ResolverFunction<
         return { success: false, error: "ThisNotAvailable" };
       }
       const localVariableContent = localVariables[id];
-      if (!localVariableContent) {
+      if (localVariableContent === undefined) {
         return { success: false, error: "NoStateForId" };
       }
       return { success: true, data: localVariableContent as JsonValueType };
