@@ -39,38 +39,42 @@ func NewCertificateUpdater(ns string) (*CertificateUpdater, error) {
 	}, nil
 }
 
-func (c *CertificateUpdater) Run(lc *lifecycle.Manager) error {
-	slog.Info("run certificate loop")
-	// for concurrent startup we delay it by up to ten seconds
-	// if nodes startup we are trying to run them with a random delay
-	delay := os.Getenv("DIREKTIV_NATS_CERT_DELAY")
-	d, err := strconv.Atoi(delay)
-	if err != nil {
-		d = 10
-	}
-	sleepMinutes := rand.Intn(maxWait-minWait) + minWait //nolint:gosec
+func (c *CertificateUpdater) Start(lc *lifecycle.Manager) error {
+	lc.Go(func() error {
+		slog.Info("run certificate loop")
+		// for concurrent startup we delay it by up to ten seconds
+		// if nodes startup we are trying to run them with a random delay
+		delay := os.Getenv("DIREKTIV_NATS_CERT_DELAY")
+		d, err := strconv.Atoi(delay)
+		if err != nil {
+			d = 10
+		}
+		sleepMinutes := rand.Intn(maxWait-minWait) + minWait //nolint:gosec
 
-	initialTicker := time.NewTicker(time.Duration(d) * time.Second)
-	ticker := time.NewTicker(time.Duration(sleepMinutes) * time.Minute)
+		initialTicker := time.NewTicker(time.Duration(d) * time.Second)
+		ticker := time.NewTicker(time.Duration(sleepMinutes) * time.Minute)
 
-	slog.Info("ticking time for certificates", slog.Int("minutes", sleepMinutes))
+		slog.Info("ticking time for certificates", slog.Int("minutes", sleepMinutes))
 
-	for {
-		select {
-		case <-lc.Done():
-			return nil
-		case <-initialTicker.C:
-			// run only once
-			initialTicker.Stop()
-			err := c.checkAndUpdate(lc.Context())
-			if err != nil {
-				return fmt.Errorf("certificate checkAndUpdate, err: %w", err)
-			}
-		case <-ticker.C:
-			err := c.checkAndUpdate(lc.Context())
-			if err != nil {
-				return fmt.Errorf("certificate checkAndUpdate, err: %w", err)
+		for {
+			select {
+			case <-lc.Done():
+				return nil
+			case <-initialTicker.C:
+				// run only once
+				initialTicker.Stop()
+				err := c.checkAndUpdate(lc.Context())
+				if err != nil {
+					return fmt.Errorf("certificate checkAndUpdate, err: %w", err)
+				}
+			case <-ticker.C:
+				err := c.checkAndUpdate(lc.Context())
+				if err != nil {
+					return fmt.Errorf("certificate checkAndUpdate, err: %w", err)
+				}
 			}
 		}
-	}
+	})
+
+	return nil
 }

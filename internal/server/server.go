@@ -65,14 +65,10 @@ func Start(lc *lifecycle.Manager) error {
 		if err != nil {
 			return fmt.Errorf("create certificate-updater, err: %w", err)
 		}
-		lc.Go(func() error {
-			err := cm.Run(lc)
-			if err != nil {
-				return fmt.Errorf("run certificate-updater, err: %w", err)
-			}
-
-			return nil
-		})
+		err = cm.Start(lc)
+		if err != nil {
+			return fmt.Errorf("start certificate-updater, err: %w", err)
+		}
 	}
 
 	// wait for nats to be up and running and certs are done
