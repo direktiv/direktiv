@@ -223,7 +223,7 @@ func Start(lc *lifecycle.Manager) error {
 		lc.OnShutdown(func() error {
 			err := srv.Close(context.Background())
 			if err != nil {
-				return fmt.Errorf("close api-server, err: %s", err)
+				return fmt.Errorf("close api-server, err: %w", err)
 			}
 
 			return nil
