@@ -68,7 +68,7 @@ func parseJSFunctionName(input string) string {
 	match := re.FindStringSubmatch(input)
 
 	if len(match) > 1 {
-		return (match[1])
+		return match[1]
 	} else {
 		return input
 	}
