@@ -29,6 +29,7 @@ export const useVariableResolver = (): ResolverFunction<
   return (value, localVariables) => {
     const variableObject = parseVariable(value);
     const validationResult = validateVariable(variableObject);
+
     if (!validationResult.success) {
       return { success: false, error: validationResult.error };
     }
@@ -38,15 +39,17 @@ export const useVariableResolver = (): ResolverFunction<
       if (localVariables === undefined) {
         return { success: false, error: "ThisNotAvailable" };
       }
-      return { success: true, data: localVariables[id] as JsonValueType };
-    } else {
-      if (!contextVariables[namespace][id]) {
+      const localVariableContent = localVariables[id];
+      if (!localVariableContent) {
         return { success: false, error: "NoStateForId" };
       }
-      const variableContent = getValueFromJsonPath(
-        contextVariables[namespace][id],
-        pointer
-      );
+      return { success: true, data: localVariableContent as JsonValueType };
+    } else {
+      const contextState = contextVariables[namespace][id];
+      if (!contextState) {
+        return { success: false, error: "NoStateForId" };
+      }
+      const variableContent = getValueFromJsonPath(contextState, pointer);
       if (!variableContent.success) {
         return { success: false, error: variableContent.error };
       }
