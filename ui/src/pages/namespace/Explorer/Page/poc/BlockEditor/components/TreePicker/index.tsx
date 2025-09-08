@@ -129,10 +129,8 @@ export const TreePicker: FC<TreePickerProps> = ({
                 type="button"
                 disabled={!allowSubmit}
                 onClick={() => {
-                  if (formattedPath) {
-                    onSubmit(formattedPath);
-                    setPath([]);
-                  }
+                  onSubmit(formattedPath);
+                  setPath([]);
                 }}
               >
                 <Check />
