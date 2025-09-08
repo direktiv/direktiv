@@ -1,4 +1,4 @@
-import { Check, SquareArrowOutUpRight } from "lucide-react";
+import { Check, Maximize2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { EditorContent, useEditor } from "@tiptap/react";
 
@@ -84,7 +84,7 @@ export const SmartInput = ({
         </FakeInput>
         <DialogTrigger asChild>
           <Button icon variant="ghost" type="button">
-            <SquareArrowOutUpRight
+            <Maximize2
               className="text-gray-11"
               onClick={() => setDialog(true)}
             />
