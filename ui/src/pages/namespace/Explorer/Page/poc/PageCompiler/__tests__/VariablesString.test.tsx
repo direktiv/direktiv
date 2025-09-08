@@ -60,6 +60,29 @@ describe("VariableString", () => {
       );
     });
 
+    test("shows an error when the variable uses the 'this' namespace outside of a form block", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPage([
+              {
+                type: "headline",
+                level: "h1",
+                label:
+                  "using this namespace outside of a form: {{this.fieldName}}",
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+
+      expect(screen.getByRole("alert").textContent).toBe(
+        "this.fieldName (ThisNotAvailable)"
+      );
+    });
+
     test("shows an error when the variable has no id", async () => {
       await act(async () => {
         render(
