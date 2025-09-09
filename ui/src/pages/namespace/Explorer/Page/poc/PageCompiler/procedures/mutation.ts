@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { LocalVariablesContent } from "../primitives/Variable/LocalVariables";
+import { LocalVariablesContent } from "../primitives/Variable/VariableContext";
 import { MutationType } from "../../schema/procedures/mutation";
 import { keyValueArrayToObject } from "../primitives/keyValue/utils";
 import { useExtendedKeyValueArrayResolver } from "../primitives/keyValue/useExtenedKeyValueArrayResolver";

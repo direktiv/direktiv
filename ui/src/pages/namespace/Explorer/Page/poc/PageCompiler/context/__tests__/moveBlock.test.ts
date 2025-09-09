@@ -69,7 +69,6 @@ describe("moveBlockWithinPage", () => {
                     label: "delete",
                   },
                   mutation: {
-                    id: "my-delete",
                     url: "/api/delete/",
                     method: "DELETE",
                   },
@@ -129,7 +128,6 @@ describe("moveBlockWithinPage", () => {
                     label: "delete",
                   },
                   mutation: {
-                    id: "my-delete",
                     url: "/api/delete/",
                     method: "DELETE",
                   },
@@ -232,7 +230,6 @@ describe("moveBlockWithinPage", () => {
                     label: "delete",
                   },
                   mutation: {
-                    id: "my-delete",
                     url: "/api/delete/",
                     method: "DELETE",
                   },
@@ -315,7 +312,6 @@ describe("moveBlockWithinPage", () => {
                     label: "delete",
                   },
                   mutation: {
-                    id: "my-delete",
                     url: "/api/delete/",
                     method: "DELETE",
                   },
@@ -400,7 +396,6 @@ describe("moveBlockWithinPage", () => {
                     label: "delete",
                   },
                   mutation: {
-                    id: "my-delete",
                     url: "/api/delete/",
                     method: "DELETE",
                   },
@@ -476,7 +471,6 @@ describe("moveBlockWithinPage", () => {
                             label: "delete",
                           },
                           mutation: {
-                            id: "my-delete",
                             url: "/api/delete/",
                             method: "DELETE",
                           },
@@ -567,7 +561,6 @@ describe("moveBlockWithinPage", () => {
                     label: "delete",
                   },
                   mutation: {
-                    id: "my-delete",
                     url: "/api/delete/",
                     method: "DELETE",
                   },

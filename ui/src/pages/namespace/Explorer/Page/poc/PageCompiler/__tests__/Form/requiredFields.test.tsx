@@ -52,7 +52,6 @@ describe("required fields", () => {
                 },
               ],
               {
-                id: "save-user",
                 method: "POST",
                 url: "/save-user",
                 requestBody: [],
@@ -85,7 +84,6 @@ describe("required fields", () => {
                 },
               ],
               {
-                id: "save-user",
                 method: "POST",
                 url: "/save-user",
                 requestBody: [],
@@ -125,7 +123,6 @@ describe("required fields", () => {
                 },
               ],
               {
-                id: "save-user",
                 method: "POST",
                 url: "/save-user",
                 requestBody: [],
@@ -166,7 +163,6 @@ describe("required fields", () => {
                 },
               ],
               {
-                id: "save-user",
                 method: "POST",
                 url: "/save-user",
                 requestBody: [],
@@ -203,7 +199,6 @@ describe("required fields", () => {
                 },
               ],
               {
-                id: "save-user",
                 method: "POST",
                 url: "/save-user",
                 requestBody: [],
@@ -235,7 +230,6 @@ describe("required fields", () => {
                 },
               ],
               {
-                id: "save-user",
                 method: "POST",
                 url: "/save-user",
                 requestBody: [],
@@ -276,7 +270,6 @@ describe("required fields", () => {
                 },
               ],
               {
-                id: "save-user",
                 method: "POST",
                 url: "/save-user",
                 requestBody: [],
@@ -312,7 +305,6 @@ describe("required fields", () => {
                 },
               ],
               {
-                id: "save-user",
                 method: "POST",
                 url: "/save-user",
                 requestBody: [],
@@ -352,7 +344,6 @@ describe("required fields", () => {
                 },
               ],
               {
-                id: "save-user",
                 method: "POST",
                 url: "/save-user",
                 requestBody: [],
@@ -389,7 +380,6 @@ describe("required fields", () => {
                 },
               ],
               {
-                id: "save-user",
                 method: "POST",
                 url: "/save-user",
                 requestBody: [],
@@ -426,7 +416,6 @@ describe("required fields", () => {
                 },
               ],
               {
-                id: "save-user",
                 method: "POST",
                 url: "/save-user",
                 requestBody: [],
@@ -460,7 +449,6 @@ describe("required fields", () => {
                 },
               ],
               {
-                id: "save-user",
                 method: "POST",
                 url: "/save-user",
                 requestBody: [],
@@ -521,7 +509,6 @@ describe("required fields", () => {
                 },
               ],
               {
-                id: "save-user",
                 method: "POST",
                 url: "/save-user",
                 requestBody: [],
@@ -606,7 +593,6 @@ describe("required fields", () => {
                 },
               ],
               {
-                id: "save-user",
                 method: "POST",
                 url: "/save-user",
                 requestBody: [],

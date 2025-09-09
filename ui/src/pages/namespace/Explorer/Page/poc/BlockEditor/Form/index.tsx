@@ -58,18 +58,6 @@ export const Form = ({
         />
       </Fieldset>
       <Fieldset
-        label={t("direktivPage.blockEditor.blockForms.form.mutation.idLabel")}
-        htmlFor="mutation-id"
-      >
-        <Input
-          {...form.register("mutation.id")}
-          id="mutation-id"
-          placeholder={t(
-            "direktivPage.blockEditor.blockForms.form.mutation.idPlaceholder"
-          )}
-        />
-      </Fieldset>
-      <Fieldset
         label={t(
           "direktivPage.blockEditor.blockForms.form.mutation.methodLabel"
         )}

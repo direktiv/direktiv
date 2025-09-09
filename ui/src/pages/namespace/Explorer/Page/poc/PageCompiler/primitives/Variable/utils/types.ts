@@ -1,4 +1,4 @@
-import { LocalVariablesContent } from "../LocalVariables";
+import { LocalVariablesContent } from "../VariableContext";
 import { VariableType } from "../../../../schema/primitives/variable";
 
 export type ValidationResult<DataType, E> = Success<DataType> | Failure<E>;

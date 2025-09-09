@@ -70,7 +70,6 @@ export default {
                 label: "delete",
               },
               mutation: {
-                id: "my-delete",
                 url: "/api/delete/",
                 method: "DELETE",
               },

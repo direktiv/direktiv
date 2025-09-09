@@ -8,6 +8,7 @@ import {
   VariableObject,
   VariableObjectValidated,
   VariableType,
+  localVariableNamespace,
 } from "../../../../schema/primitives/variable";
 
 import { ValidationResult } from "./types";
@@ -84,8 +85,12 @@ export const validateVariable = (
 
   if (!namespace) return { success: false, error: "namespaceInvalid" };
   if (!id) return { success: false, error: "idUndefined" };
-  if (!pointer) return { success: false, error: "pointerUndefined" };
 
+  if (namespace === localVariableNamespace) {
+    return { success: true, data: { src, namespace, id } };
+  }
+
+  if (!pointer) return { success: false, error: "pointerUndefined" };
   return { success: true, data: { src, namespace, id, pointer } };
 };
 

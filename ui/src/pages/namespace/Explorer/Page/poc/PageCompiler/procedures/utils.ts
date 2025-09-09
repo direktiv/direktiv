@@ -1,4 +1,4 @@
-import { LocalVariablesContent } from "../primitives/Variable/LocalVariables";
+import { LocalVariablesContent } from "../primitives/Variable/VariableContext";
 import { MutationType } from "../../schema/procedures/mutation";
 import { QueryType } from "../../schema/procedures/query";
 import { keyValueArrayToObject } from "../primitives/keyValue/utils";
