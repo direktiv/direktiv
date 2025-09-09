@@ -22,8 +22,11 @@ const (
 	StreamInstanceHistory      = "STREAM_INSTANCE_HISTORY"
 	StreamInstanceStatus       = "STREAM_INSTANCE_STATUS"
 
-	SubjInstanceStatus  = "instance.status.%s.%s"
-	SubjInstanceHistory = "instance.history.%s.%s"
+	SubjInstanceStatus  = "instance.status.%s.%s"  // instance.status.<namespace>.<instanceID>
+	SubjInstanceHistory = "instance.history.%s.%s" // instance.history.<namespace>.<instanceID>
+
+	StreamSchedConfig = "STREAM_SCHED_CONFIG"
+	SubjSchedConfig   = "sched.config.%s.%s" // shed.config.<namespace>.<shedID>
 )
 
 type Conn = nats.Conn
@@ -68,13 +71,9 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 		return nil, fmt.Errorf("nats jetstream: %w", err)
 	}
 
-	// 1- ensure history stream streamInstancesHistory exists
-	_, err = js.StreamInfo(StreamInstanceHistory)
-	if err != nil && !errors.Is(err, nats.ErrStreamNotFound) {
-		return nil, fmt.Errorf("info stream %s: %w", StreamInstanceHistory, err)
-	}
-	if err != nil {
-		_, err = js.AddStream(&nats.StreamConfig{
+	// 1- ensure streams
+	ensureStreams := []*nats.StreamConfig{
+		{
 			Name: StreamInstanceHistory,
 			Subjects: []string{
 				fmt.Sprintf(SubjInstanceHistory, "*", "*"),
@@ -85,19 +84,8 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 			Discard:   nats.DiscardOld,
 			// set dupe window to protect idempotent publishes
 			Duplicates: 48 * time.Hour,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("nats add stream %s: %w", StreamInstanceHistory, err)
-		}
-	}
-
-	// 2- ensure status stream (streamInstancesStatus) exists
-	_, err = js.StreamInfo(StreamInstanceStatus)
-	if err != nil && !errors.Is(err, nats.ErrStreamNotFound) {
-		return nil, fmt.Errorf("nats info stream %s: %w", StreamInstanceStatus, err)
-	}
-	if err != nil {
-		_, err = js.AddStream(&nats.StreamConfig{
+		},
+		{
 			Name: StreamInstanceStatus,
 			Subjects: []string{
 				fmt.Sprintf(SubjInstanceStatus, "*", "*"),
@@ -109,19 +97,19 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 			Duplicates: 48 * time.Hour,
 			// important: keep only 1 message per subject (latest status)
 			MaxMsgsPerSubject: 1,
-		})
+		},
+	}
+
+	for _, cfg := range ensureStreams {
+		err = ensureStream(ctx, js, cfg)
 		if err != nil {
-			return nil, fmt.Errorf("nats add stream %s: %w", StreamInstanceStatus, err)
+			return nil, fmt.Errorf("nats ensure stream %s: %w", cfg.Name, err)
 		}
 	}
 
-	// 3- Ensure shared durable consumer on streamInstancesHistory
-	_, err = js.ConsumerInfo(StreamInstanceHistory, ConsumerStatusMaterializer)
-	if err != nil && !errors.Is(err, nats.ErrConsumerNotFound) {
-		return nil, fmt.Errorf("nats consumer info %s: %w", ConsumerStatusMaterializer, err)
-	}
-	if err != nil {
-		_, err = js.AddConsumer(StreamInstanceHistory, &nats.ConsumerConfig{
+	// 2- ensure shared durable consumers
+	ensureConsumers := []*nats.ConsumerConfig{
+		{
 			Durable:           ConsumerStatusMaterializer,
 			FilterSubject:     fmt.Sprintf(SubjInstanceHistory, "*", "*"),
 			AckPolicy:         nats.AckExplicitPolicy,
@@ -130,15 +118,17 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 			DeliverPolicy:     nats.DeliverAllPolicy,
 			ReplayPolicy:      nats.ReplayInstantPolicy,
 			InactiveThreshold: 72 * time.Hour,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("nats add consumer %s: %w", ConsumerStatusMaterializer, err)
-		}
+			Metadata: map[string]string{
+				"stream": StreamInstanceHistory,
+			},
+		},
 	}
 
-	err = generateRandomEntries(context.Background(), js)
-	if err != nil {
-		return nil, fmt.Errorf("nats gen entries: %w", err)
+	for _, cfg := range ensureConsumers {
+		err = ensureConsumer(ctx, js, cfg)
+		if err != nil {
+			return nil, fmt.Errorf("nats ensure consumer %s: %w", cfg.Durable, err)
+		}
 	}
 
 	return js, nil
@@ -174,6 +164,38 @@ func generateRandomEntries(ctx context.Context, js nats.JetStreamContext) error 
 			return err
 		}
 		fmt.Printf("published >>>>> %s\n", data)
+	}
+
+	return nil
+}
+
+func ensureStream(ctx context.Context, js nats.JetStreamContext, cfg *nats.StreamConfig) error {
+	_, err := js.StreamInfo(cfg.Name)
+	if err == nil {
+		return nil
+	}
+	if !errors.Is(err, nats.ErrStreamNotFound) {
+		return fmt.Errorf("nats info stream %s: %w", cfg.Name, err)
+	}
+	_, err = js.AddStream(cfg)
+	if err != nil {
+		return fmt.Errorf("nats add stream %s: %w", cfg.Name, err)
+	}
+
+	return nil
+}
+
+func ensureConsumer(ctx context.Context, js nats.JetStreamContext, cfg *nats.ConsumerConfig) error {
+	_, err := js.ConsumerInfo(cfg.Metadata["stream"], cfg.Durable)
+	if err == nil {
+		return nil
+	}
+	if !errors.Is(err, nats.ErrConsumerNotFound) {
+		return fmt.Errorf("nats info consumer %s: %w", cfg.Durable, err)
+	}
+	_, err = js.AddConsumer(cfg.Metadata["stream"], cfg)
+	if err != nil {
+		return fmt.Errorf("nats add consumer %s: %w", cfg.Durable, err)
 	}
 
 	return nil
