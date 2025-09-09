@@ -101,7 +101,7 @@ export const TreePicker: FC<TreePickerProps> = ({
                 {t("direktivPage.blockEditor.treePicker.listEmpty")}
               </div>
             </CommandEmpty>
-            {currentTree?.length && (
+            {currentTree && !!currentTree.length && (
               <CommandGroup
                 heading={t("direktivPage.blockEditor.treePicker.valuesHeader")}
               >
