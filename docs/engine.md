@@ -102,7 +102,8 @@ type InstanceEvent struct {
 }
 ```
 - `Type`: categorizes event (e.g., `started`, `failed`, `succeeded`). 
-- `Sequence`: event ordering within the history stream. This field is filled by **nats** JetStreams. The **projector** uses it to protect against race conditions when updating the status stream.
+- `Sequence`: event ordering within the history stream. This field is filled by **nats** JetStreams.
+  The **projector** uses it to protect against race conditions when updating the status stream.
 
 #### InstanceStatus
 Represents the `projected state` of a workflow instance.
@@ -129,7 +130,8 @@ type InstanceStatus struct {
   - "started" → pending
   - "failed" → failed
   - "succeeded" → complete
-- `HistorySequence` links back to the latest event that produced this status. The **projector** uses this field to protect against race conditions when updating the status stream.
+- `HistorySequence` links back to the latest event that produced this status. 
+  The **projector** uses this field to protect against race conditions when updating the status stream.
 
 ### Message FLows
 #### Execution Lifecycle
