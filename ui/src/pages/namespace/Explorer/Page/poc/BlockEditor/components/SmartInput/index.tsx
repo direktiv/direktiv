@@ -87,7 +87,7 @@ export const SmartInput = ({
         <DialogTrigger asChild>
           <Button icon variant="ghost" type="button">
             <Maximize2
-              className="text-gray-11"
+              className="text-gray-11 dark:text-gray-dark-11"
               onClick={() => setDialog(true)}
             />
           </Button>
@@ -158,7 +158,8 @@ export const SmartInput = ({
                   "[&_*.is-empty]:before:absolute",
                   "[&_*.is-empty]:before:pointer-events-none",
                   "[&_*.is-empty]:before:content-[attr(data-placeholder)]",
-                  "[&_*.is-empty]:before:text-gray-11"
+                  "[&_*.is-empty]:before:text-gray-11",
+                  "dark:[&_*.is-empty]:before:text-gray-dark-11"
                 )}
               />
             </FakeInput>

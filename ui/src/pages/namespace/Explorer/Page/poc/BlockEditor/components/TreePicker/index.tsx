@@ -55,13 +55,19 @@ export const TreePicker: FC<TreePickerProps> = ({
       }
       if (path.length - index === 0 && search.length) {
         return (
-          <span key={index} className="italic text-gray-10">
+          <span
+            key={index}
+            className="italic text-gray-10 dark:text-gray-dark-10"
+          >
             {search}
           </span>
         );
       }
       return (
-        <span key={index} className="italic text-gray-10">
+        <span
+          key={index}
+          className="italic text-gray-10 dark:text-gray-dark-10"
+        >
           {placeholders[index]}
         </span>
       );
@@ -111,7 +117,7 @@ export const TreePicker: FC<TreePickerProps> = ({
           </CommandInput>
           <CommandList>
             <CommandEmpty>
-              <div className="text-sm text-gray-11">
+              <div className="text-sm text-gray-11 dark:text-gray-dark-11">
                 {t("direktivPage.blockEditor.treePicker.listEmpty")}
               </div>
             </CommandEmpty>
@@ -131,13 +137,18 @@ export const TreePicker: FC<TreePickerProps> = ({
             )}
           </CommandList>
           <div className="flex items-center p-2">
-            <FakeInput wrap className="mr-2 w-full text-gray-10">
+            <FakeInput
+              wrap
+              className="mr-2 w-full text-gray-10 dark:text-gray-dark-10"
+            >
               {"{{"}
               {previewSegments.map((Segment, index) => (
                 <Fragment key={index}>
                   {Segment}
                   {index < previewSegments.length - 1 && (
-                    <span className="text-gray-10">.</span>
+                    <span className="text-gray-10 dark:text-gray-dark-10">
+                      .
+                    </span>
                   )}
                 </Fragment>
               ))}
