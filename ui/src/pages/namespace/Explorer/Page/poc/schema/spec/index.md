@@ -196,7 +196,6 @@ A mutation is an API request that modifies data on the server
 
 | Attribute         | Type                 | Description               |
 | ----------------- | -------------------- | ------------------------- |
-| `id`              | `Id`                 | Unique identifier         |
 | `method`          | `MutationMethod`     | HTTP method               |
 | `url`             | `TemplateString`     | URL to the API endpoint   |
 | `queryParams?`    | `KeyValue[]`         | Optional query parameters |
