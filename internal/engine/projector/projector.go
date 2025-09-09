@@ -35,7 +35,7 @@ func (p *Projector) Start(lc *lifecycle.Manager) error {
 	sub, err := p.js.PullSubscribe(
 		fmt.Sprintf(intNats.SubjInstanceHistory, "*", "*"),
 		intNats.ConsumerStatusMaterializer,
-		nats.BindStream(intNats.StreamInstancesHistory),
+		nats.BindStream(intNats.StreamInstanceHistory),
 		nats.ManualAck(),
 	)
 	if err != nil {
@@ -110,7 +110,7 @@ func (p *Projector) handleHistoryMessage(ctx context.Context, msg *nats.Msg) err
 		// 4) Publish with dedupe + optimistic concurrency
 		opts := []nats.PubOpt{
 			nats.MsgId(pubID),
-			nats.ExpectStream(intNats.StreamInstancesStatus),
+			nats.ExpectStream(intNats.StreamInstanceStatus),
 			nats.ExpectLastSequencePerSubject(st.Sequence),
 		}
 		_, err = p.js.PublishMsg(msg, opts...)
@@ -137,7 +137,7 @@ func (p *Projector) handleHistoryMessage(ctx context.Context, msg *nats.Msg) err
 
 func (p *Projector) getLastStatusForSubject(ctx context.Context, subject string) (st *engine.InstanceStatus, err error) {
 	msg, err := p.js.GetLastMsg(
-		intNats.StreamInstancesStatus,
+		intNats.StreamInstanceStatus,
 		subject, nats.Context(ctx))
 	if err != nil && errors.Is(err, nats.ErrMsgNotFound) {
 		return nil, nil

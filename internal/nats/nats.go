@@ -19,11 +19,11 @@ import (
 
 const (
 	ConsumerStatusMaterializer = "CONSUMER_INSTANCES_STATUS_MATERIALIZER"
-	StreamInstancesHistory     = "STREAM_INSTANCES_HISTORY"
-	StreamInstancesStatus      = "STREAM_INSTANCES_STATUS"
+	StreamInstanceHistory      = "STREAM_INSTANCE_HISTORY"
+	StreamInstanceStatus       = "STREAM_INSTANCE_STATUS"
 
-	SubjInstanceStatus  = "instances.status.%s.%s"
-	SubjInstanceHistory = "instances.history.%s.%s"
+	SubjInstanceStatus  = "instance.status.%s.%s"
+	SubjInstanceHistory = "instance.history.%s.%s"
 )
 
 type Conn = nats.Conn
@@ -69,13 +69,13 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 	}
 
 	// 1- ensure history stream streamInstancesHistory exists
-	_, err = js.StreamInfo(StreamInstancesHistory)
+	_, err = js.StreamInfo(StreamInstanceHistory)
 	if err != nil && !errors.Is(err, nats.ErrStreamNotFound) {
-		return nil, fmt.Errorf("info stream %s: %w", StreamInstancesHistory, err)
+		return nil, fmt.Errorf("info stream %s: %w", StreamInstanceHistory, err)
 	}
 	if err != nil {
 		_, err = js.AddStream(&nats.StreamConfig{
-			Name: StreamInstancesHistory,
+			Name: StreamInstanceHistory,
 			Subjects: []string{
 				fmt.Sprintf(SubjInstanceHistory, "*", "*"),
 			},
@@ -87,18 +87,18 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 			Duplicates: 48 * time.Hour,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("nats add stream %s: %w", StreamInstancesHistory, err)
+			return nil, fmt.Errorf("nats add stream %s: %w", StreamInstanceHistory, err)
 		}
 	}
 
 	// 2- ensure status stream (streamInstancesStatus) exists
-	_, err = js.StreamInfo(StreamInstancesStatus)
+	_, err = js.StreamInfo(StreamInstanceStatus)
 	if err != nil && !errors.Is(err, nats.ErrStreamNotFound) {
-		return nil, fmt.Errorf("nats info stream %s: %w", StreamInstancesStatus, err)
+		return nil, fmt.Errorf("nats info stream %s: %w", StreamInstanceStatus, err)
 	}
 	if err != nil {
 		_, err = js.AddStream(&nats.StreamConfig{
-			Name: StreamInstancesStatus,
+			Name: StreamInstanceStatus,
 			Subjects: []string{
 				fmt.Sprintf(SubjInstanceStatus, "*", "*"),
 			},
@@ -111,17 +111,17 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 			MaxMsgsPerSubject: 1,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("nats add stream %s: %w", StreamInstancesStatus, err)
+			return nil, fmt.Errorf("nats add stream %s: %w", StreamInstanceStatus, err)
 		}
 	}
 
 	// 3- Ensure shared durable consumer on streamInstancesHistory
-	_, err = js.ConsumerInfo(StreamInstancesHistory, ConsumerStatusMaterializer)
+	_, err = js.ConsumerInfo(StreamInstanceHistory, ConsumerStatusMaterializer)
 	if err != nil && !errors.Is(err, nats.ErrConsumerNotFound) {
 		return nil, fmt.Errorf("nats consumer info %s: %w", ConsumerStatusMaterializer, err)
 	}
 	if err != nil {
-		_, err = js.AddConsumer(StreamInstancesHistory, &nats.ConsumerConfig{
+		_, err = js.AddConsumer(StreamInstanceHistory, &nats.ConsumerConfig{
 			Durable:           ConsumerStatusMaterializer,
 			FilterSubject:     fmt.Sprintf(SubjInstanceHistory, "*", "*"),
 			AckPolicy:         nats.AckExplicitPolicy,
