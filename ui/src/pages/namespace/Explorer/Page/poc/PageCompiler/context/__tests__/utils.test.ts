@@ -112,7 +112,6 @@ describe("findBlock", () => {
                 label: "delete",
               },
               mutation: {
-                id: "my-delete",
                 url: "/api/delete/",
                 method: "DELETE",
               },
@@ -144,7 +143,6 @@ describe("findBlock", () => {
             label: "delete",
           },
           mutation: {
-            id: "my-delete",
             url: "/api/delete/",
             method: "DELETE",
           },

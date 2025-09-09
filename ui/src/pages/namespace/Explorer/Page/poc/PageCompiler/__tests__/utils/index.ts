@@ -24,7 +24,6 @@ export const createDirektivPage = (blocks: BlockType[]): DirektivPagesType => ({
 export const createDirektivPageWithForm = (
   blocks: BlockType[],
   mutation: MutationType = {
-    id: "form",
     method: "POST",
     url: "/some-endpoint",
   }

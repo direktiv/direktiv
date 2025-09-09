@@ -1795,8 +1795,6 @@
           "mutation": {
             "triggerLabelLabel": "Button Label",
             "triggerLabelPlaceholder": "Submit Form",
-            "idLabel": "form ID",
-            "idPlaceholder": "unique identifier name to reference this form in any child block",
             "methodLabel": "HTTP Method",
             "urlLabel": "URL",
             "urlPlaceholder": "relative or absolute url like /path/to/endpoint or https://...",

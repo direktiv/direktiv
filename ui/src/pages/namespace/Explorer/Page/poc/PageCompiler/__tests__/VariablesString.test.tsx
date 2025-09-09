@@ -96,7 +96,6 @@ describe("VariableString", () => {
                   label: "save",
                 },
                 mutation: {
-                  id: "save-user",
                   method: "POST",
                   url: "/test",
                   queryParams: [

@@ -43,8 +43,6 @@ const FormWithContext = ({ blockProps, blockPath }: FormProps) => {
   });
   return (
     <form
-      id={mutation.id}
-      name={mutation.id}
       onSubmit={(formEvent) => {
         setMissingFields([]);
         formEvent.preventDefault();
