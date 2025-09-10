@@ -300,7 +300,7 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *instController) createSched(w http.ResponseWriter, r *http.Request) {
-	cfg := &sched.Config{}
+	cfg := &sched.Rule{}
 	if err := json.NewDecoder(r.Body).Decode(cfg); err != nil {
 		writeError(w, &Error{
 			Code:    "error",
@@ -309,7 +309,7 @@ func (e *instController) createSched(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cfg, err := e.scheduler.SetConfig(r.Context(), cfg)
+	cfg, err := e.scheduler.SetRule(r.Context(), cfg)
 	if err != nil {
 		writeError(w, &Error{
 			Code:    "error",
@@ -323,7 +323,7 @@ func (e *instController) createSched(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *instController) listSched(w http.ResponseWriter, r *http.Request) {
-	list, err := e.scheduler.ListConfigs(r.Context())
+	list, err := e.scheduler.ListRules(r.Context())
 	if err != nil {
 		writeError(w, &Error{
 			Code:    "error",

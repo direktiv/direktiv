@@ -5,18 +5,18 @@ import (
 	"sync"
 )
 
-type ConfigCache struct {
+type RulesCache struct {
 	mu    sync.RWMutex
-	items map[string]Config // key: orderID
+	items map[string]Rule // key: orderID
 }
 
-func NewConfigCache() *ConfigCache {
-	return &ConfigCache{
-		items: map[string]Config{},
+func NewRulesCache() *RulesCache {
+	return &RulesCache{
+		items: map[string]Rule{},
 	}
 }
 
-func (c *ConfigCache) Upsert(s Config) {
+func (c *RulesCache) Upsert(s Rule) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	// keep only the newest by Sequence (just in case messages race on the read side)
@@ -25,10 +25,10 @@ func (c *ConfigCache) Upsert(s Config) {
 	}
 }
 
-func (c *ConfigCache) Snapshot(filterNamespace string) []Config {
+func (c *RulesCache) Snapshot(filterNamespace string) []Rule {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	out := make([]Config, 0, len(c.items))
+	out := make([]Rule, 0, len(c.items))
 	for _, v := range c.items {
 		if v.Namespace != filterNamespace && filterNamespace != "" {
 			continue

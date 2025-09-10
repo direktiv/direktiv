@@ -25,8 +25,8 @@ const (
 	SubjInstanceStatus  = "instance.status.%s.%s"  // instance.status.<namespace>.<instanceID>
 	SubjInstanceHistory = "instance.history.%s.%s" // instance.history.<namespace>.<instanceID>
 
-	StreamSchedConfig = "STREAM_SCHED_CONFIG"
-	SubjSchedConfig   = "sched.config.%s.%s" // shed.config.<namespace>.<shedID>
+	StreamSchedRule = "STREAM_SCHED_RULE"
+	SubjSchedRule   = "sched.rule.%s.%s" // shed.config.<namespace>.<ruleID>
 )
 
 type Conn = nats.Conn
@@ -104,9 +104,9 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 			MaxMsgsPerSubject: 1,
 		},
 		{
-			Name: StreamSchedConfig,
+			Name: StreamSchedRule,
 			Subjects: []string{
-				fmt.Sprintf(SubjSchedConfig, "*", "*"),
+				fmt.Sprintf(SubjSchedRule, "*", "*"),
 			},
 			Storage:   nats.FileStorage,
 			Retention: nats.LimitsPolicy,
