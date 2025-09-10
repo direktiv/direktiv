@@ -20,19 +20,11 @@ const (
 	KindCron    Kind = "cron"
 )
 
-type Status string
-
-const (
-	StatusActive    Status = "active"
-	StatusCancelled Status = "cancelled"
-)
-
 type Rule struct {
 	ID           string `json:"id"`
 	Namespace    string `json:"namespace"`
 	WorkflowPath string `json:"workflowPath"`
 	Kind         Kind   `json:"kind"`
-	Status       Status `json:"status"`
 	CronExpr     string `json:"cronExpr,omitempty"`
 
 	RunAt     time.Time `json:"runAt"`
@@ -58,12 +50,6 @@ func CalculateRuleID(c Rule) string {
 	sh := sha256.Sum256([]byte(str))
 
 	return fmt.Sprintf("%x", sh[:10])
-}
-
-type UpdateRule struct {
-	Status    *Status
-	RunAt     *time.Time
-	UpdatedAt time.Time
 }
 
 type Store interface {
