@@ -1,17 +1,17 @@
 import { Check, HelpCircleIcon, Maximize2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
-import { useRef, useState } from "react";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { Card } from "@tremor/react";
-import { FakeInput } from "~/design/FakeInput";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
+import { Textarea } from "~/design/TextArea";
 import { TreePicker } from "../TreePicker";
-import { addSnippetToInputValue } from "../../utils";
+import { addSnippetToInputValue } from "./utils";
 import { usePageEditorPanel } from "../../EditorPanelProvider";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export const SmartInput = ({
@@ -31,7 +31,7 @@ export const SmartInput = ({
     null
   );
   const { panel } = usePageEditorPanel();
-  const ref = useRef<HTMLInputElement>(null);
+  const [textarea, setTextarea] = useState<HTMLTextAreaElement | null>();
 
   if (!panel) return null;
 
@@ -47,7 +47,6 @@ export const SmartInput = ({
     <Dialog open={dialog} onOpenChange={setDialog}>
       <InputWithButton>
         <Input
-          ref={ref}
           value={value}
           onChange={(event) => onUpdate(event.target.value)}
           placeholder={placeholder}
@@ -71,17 +70,17 @@ export const SmartInput = ({
       >
         {dialog && (
           <>
-            <FakeInput wrap className="flex flex-col gap-2 p-2">
-              <div className="border-b pb-2">
+            <div>
+              <div className="rounded-t-md border border-b-0 border-gray-4 p-2 dark:border-gray-dark-7">
                 <ButtonBar>
                   <TreePicker
                     label={t("direktivPage.blockEditor.smartInput.variableBtn")}
                     container={dialogContainer ?? undefined}
                     tree={variables}
                     onSubmit={(snippet) =>
-                      ref.current &&
+                      textarea &&
                       addSnippetToInputValue({
-                        element: ref.current,
+                        element: textarea,
                         snippet,
                         value,
                         callback: onUpdate,
@@ -92,7 +91,10 @@ export const SmartInput = ({
                   />
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline">
+                      <Button
+                        variant="outline"
+                        className="dark:border-gray-dark-7"
+                      >
                         <HelpCircleIcon />
                       </Button>
                     </PopoverTrigger>
@@ -124,33 +126,19 @@ export const SmartInput = ({
                     </PopoverContent>
                   </Popover>
                 </ButtonBar>
-                <TreePicker
-                  label={t("direktivPage.blockEditor.smartInput.variableBtn")}
-                  container={dialogContainer ?? undefined}
-                  tree={variables}
-                  onSubmit={(snippet) =>
-                    ref.current &&
-                    addSnippetToInputValue({
-                      element: ref.current,
-                      snippet,
-                      value,
-                      callback: onUpdate,
-                    })
-                  }
-                  placeholders={variableSegmentPlaceholders}
-                  minDepth={3}
-                />
               </div>
-              <Input
-                ref={ref}
+              <Textarea
+                className="h-32 rounded-t-none border-gray-4 dark:border-gray-dark-7"
+                ref={setTextarea}
                 id={id}
                 value={value}
                 onChange={(event) => onUpdate(event.target.value)}
                 placeholder={placeholder}
               />
-            </FakeInput>
+            </div>
             <div className="flex justify-end">
               <Button
+                className="dark:border-gray-dark-7"
                 type="button"
                 variant="outline"
                 icon

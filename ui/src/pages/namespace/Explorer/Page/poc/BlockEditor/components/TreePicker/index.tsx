@@ -87,7 +87,11 @@ export const TreePicker: FC<TreePickerProps> = ({
     <Popover>
       <div className="flex">
         <PopoverTrigger asChild>
-          <Button variant="outline" type="button">
+          <Button
+            variant="outline"
+            type="button"
+            className="dark:border-gray-dark-7"
+          >
             {label}
           </Button>
         </PopoverTrigger>
