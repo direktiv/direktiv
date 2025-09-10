@@ -39,6 +39,32 @@ func (i *InstanceStatus) StatusString() string {
 	return i.Status
 }
 
+func (i *InstanceStatus) Clone() *InstanceStatus {
+	clone := *i
+
+	// deep copy the Metadata map
+	if i.Metadata != nil {
+		clone.Metadata = make(map[string]string, len(i.Metadata))
+		for k, v := range i.Metadata {
+			clone.Metadata[k] = v
+		}
+	}
+	// deep copy the buffers
+	if i.Input != nil {
+		clone.Input = make(json.RawMessage, len(i.Input))
+		copy(clone.Input, i.Input)
+	}
+	if i.Memory != nil {
+		clone.Memory = make(json.RawMessage, len(i.Memory))
+		copy(clone.Memory, i.Memory)
+	}
+	if i.Output != nil {
+		clone.Output = make(json.RawMessage, len(i.Output))
+	}
+
+	return &clone
+}
+
 type InstanceEvent struct {
 	EventID    uuid.UUID         `json:"eventId"`
 	InstanceID uuid.UUID         `json:"instanceId"`
@@ -68,5 +94,5 @@ type WorkflowRunner interface {
 type DataBus interface {
 	Start(lc *lifecycle.Manager) error
 	PushInstanceEvent(ctx context.Context, event *InstanceEvent) error
-	QueryInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID) []InstanceStatus
+	QueryInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID) []*InstanceStatus
 }

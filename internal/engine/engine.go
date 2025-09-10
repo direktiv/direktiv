@@ -117,12 +117,7 @@ func (e *Engine) GetInstances(ctx context.Context, namespace string) ([]*Instanc
 		return nil, ErrDataNotFound
 	}
 
-	out := make([]*InstanceStatus, len(data))
-	for i, d := range data {
-		out[i] = &d
-	}
-
-	return out, nil
+	return data, nil
 }
 
 func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.UUID) (*InstanceStatus, error) {
@@ -131,5 +126,5 @@ func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.
 		return nil, ErrDataNotFound
 	}
 
-	return &data[0], nil
+	return data[0], nil
 }

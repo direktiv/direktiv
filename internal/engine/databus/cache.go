@@ -19,19 +19,20 @@ func NewStatusCache() *StatusCache {
 	}
 }
 
-func (c *StatusCache) Upsert(s engine.InstanceStatus) {
+func (c *StatusCache) Upsert(s *engine.InstanceStatus) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	// keep only the newest by HistorySequence
 	if cur, ok := c.items[s.InstanceID]; !ok || s.HistorySequence >= cur.HistorySequence {
-		c.items[s.InstanceID] = s
+		cp := s.Clone()
+		c.items[s.InstanceID] = *cp
 	}
 }
 
-func (c *StatusCache) Snapshot(filterNamespace string, filterInstanceID uuid.UUID) []engine.InstanceStatus {
+func (c *StatusCache) Snapshot(filterNamespace string, filterInstanceID uuid.UUID) []*engine.InstanceStatus {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	out := make([]engine.InstanceStatus, 0, len(c.items))
+	out := make([]*engine.InstanceStatus, 0, len(c.items))
 	for _, v := range c.items {
 		if v.InstanceID != filterInstanceID && filterInstanceID != uuid.Nil {
 			continue
@@ -39,7 +40,7 @@ func (c *StatusCache) Snapshot(filterNamespace string, filterInstanceID uuid.UUI
 		if v.Namespace != filterNamespace && filterNamespace != "" {
 			continue
 		}
-		out = append(out, v)
+		out = append(out, v.Clone())
 	}
 	sort.Slice(out, func(i, j int) bool {
 		return out[i].CreatedAt.Before(out[j].CreatedAt)

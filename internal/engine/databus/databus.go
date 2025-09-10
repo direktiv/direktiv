@@ -47,7 +47,7 @@ func (d *DataBus) PushInstanceEvent(ctx context.Context, event *engine.InstanceE
 	return err
 }
 
-func (d *DataBus) QueryInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID) []engine.InstanceStatus {
+func (d *DataBus) QueryInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID) []*engine.InstanceStatus {
 	return d.cache.Snapshot(filterNamespace, filterInstanceID)
 }
 
@@ -60,7 +60,7 @@ func (d *DataBus) startStatusCache(ctx context.Context) error {
 			// best-effort; ignore bad payloads
 			return
 		}
-		d.cache.Upsert(st)
+		d.cache.Upsert(&st)
 	}, nats.AckNone())
 	if err != nil {
 		return err

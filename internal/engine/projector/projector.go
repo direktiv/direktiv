@@ -45,7 +45,7 @@ func (p *Projector) Start(lc *lifecycle.Manager) error {
 	lc.Go(func() error {
 		err := p.runLoop(lc, sub)
 		if err != nil {
-			return fmt.Errorf("runLoop, err: %w", err)
+			return fmt.Errorf("projector runLoop, err: %w", err)
 		}
 
 		return nil

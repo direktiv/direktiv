@@ -34,7 +34,7 @@ type Rule struct {
 	Sequence uint64 `json:"-"`
 }
 
-func (c Rule) Fingerprint() string {
+func (c *Rule) Fingerprint() string {
 	// make a shallow copy with volatile fields zeroed
 	cp := c
 	cp.CreatedAt = time.Time{}
@@ -43,6 +43,13 @@ func (c Rule) Fingerprint() string {
 	b, _ := json.Marshal(cp)
 	sum := sha256.Sum256(b)
 	return hex.EncodeToString(sum[:8])
+}
+
+// Clone returns a copy of the rule.
+func (c *Rule) Clone() *Rule {
+	cp := *c
+
+	return &cp
 }
 
 func CalculateRuleID(c Rule) string {
@@ -71,6 +78,30 @@ func (s *Scheduler) Start(lc *lifecycle.Manager) error {
 	if err != nil {
 		return fmt.Errorf("start status cache: %w", err)
 	}
+
+	lc.Go(func() error {
+		t := time.NewTicker(time.Second)
+		defer t.Stop()
+		for {
+			select {
+			case <-lc.Done():
+				return nil
+			case <-t.C:
+				err := s.tick()
+				if err != nil {
+					return fmt.Errorf("scheduler tick, err: %w", err)
+				}
+			}
+		}
+	})
+
+	return nil
+}
+
+func (s *Scheduler) tick() error {
+	// now := time.Now().UTC()
+	// snapshot rules in cache
+	// rules := s.cache.Snapshot("")
 
 	return nil
 }
@@ -106,12 +137,7 @@ func (s *Scheduler) SetRule(ctx context.Context, rule *Rule) (*Rule, error) {
 func (s *Scheduler) ListRules(ctx context.Context) ([]*Rule, error) {
 	data := s.cache.Snapshot("")
 
-	out := make([]*Rule, len(data))
-	for i, d := range data {
-		out[i] = &d
-	}
-
-	return out, nil
+	return data, nil
 }
 
 func (s *Scheduler) startRuleCache(ctx context.Context) error {
@@ -129,7 +155,7 @@ func (s *Scheduler) startRuleCache(ctx context.Context) error {
 			return
 		}
 		rule.Sequence = meta.Sequence.Stream
-		s.cache.Upsert(rule)
+		s.cache.Upsert(&rule)
 	}, nats.AckNone())
 	if err != nil {
 		return err
