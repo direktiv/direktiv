@@ -42,7 +42,7 @@ func (d *DataBus) PushInstanceEvent(ctx context.Context, event *engine.InstanceE
 
 	_, err = d.js.Publish(subject, data,
 		nats.Context(ctx),
-		nats.MsgId(fmt.Sprintf("hist::%s", event.EventID)))
+		nats.MsgId(fmt.Sprintf("instance::history::%s", event.EventID)))
 
 	return err
 }

@@ -84,7 +84,7 @@ func (p *Projector) handleHistoryMessage(ctx context.Context, msg *nats.Msg) err
 	}
 
 	subj := fmt.Sprintf(intNats.SubjInstanceStatus, ev.Namespace, ev.InstanceID)
-	pubID := "status::" + ev.Namespace + "::" + ev.InstanceID.String() + "::" + strconv.FormatUint(ev.Sequence, 10)
+	pubID := "instance::status::" + ev.Namespace + "::" + ev.InstanceID.String() + "::" + strconv.FormatUint(ev.Sequence, 10)
 
 	for attempt := range 10 {
 		// 1) Read the last status for this order (if any).

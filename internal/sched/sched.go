@@ -111,7 +111,7 @@ func (s *Scheduler) SetRule(ctx context.Context, rule *Rule) (*Rule, error) {
 
 	_, err = s.js.Publish(subject, data,
 		nats.Context(ctx),
-		nats.MsgId(fmt.Sprintf("schedRule::%s", rule.Fingerprint())),
+		nats.MsgId(fmt.Sprintf("sched::rule::%s", rule.Fingerprint())),
 	)
 
 	return rule, err

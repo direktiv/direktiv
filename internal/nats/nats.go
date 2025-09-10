@@ -177,7 +177,7 @@ func generateRandomEntries(ctx context.Context, js nats.JetStreamContext) error 
 
 		// Publish with a dedupe Msg-Id
 		_, err := js.Publish(subject, data,
-			nats.MsgId(fmt.Sprintf("hist::%s", evID)))
+			nats.MsgId(fmt.Sprintf("instance::history::%s", evID)))
 		if err != nil {
 			return err
 		}
