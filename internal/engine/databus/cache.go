@@ -22,7 +22,7 @@ func NewStatusCache() *StatusCache {
 func (c *StatusCache) Upsert(s engine.InstanceStatus) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	// keep only the newest by HistorySequence (just in case messages race on the read side)
+	// keep only the newest by HistorySequence
 	if cur, ok := c.items[s.InstanceID]; !ok || s.HistorySequence >= cur.HistorySequence {
 		c.items[s.InstanceID] = s
 	}

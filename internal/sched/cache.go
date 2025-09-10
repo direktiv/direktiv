@@ -19,7 +19,7 @@ func NewRulesCache() *RulesCache {
 func (c *RulesCache) Upsert(s Rule) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	// keep only the newest by Sequence (just in case messages race on the read side)
+	// keep only the newest by Sequence
 	if cur, ok := c.items[s.ID]; !ok || s.Sequence >= cur.Sequence {
 		c.items[s.ID] = s
 	}

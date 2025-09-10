@@ -61,8 +61,7 @@ func (d *DataBus) startStatusCache(ctx context.Context) error {
 			return
 		}
 		d.cache.Upsert(st)
-		_ = msg.Term() // AckNone/Term to be explicit; no re-delivery desired
-	}, nats.ManualAck(), nats.AckNone())
+	}, nats.AckNone())
 	if err != nil {
 		return err
 	}
