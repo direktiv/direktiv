@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/engine"
+	"github.com/direktiv/direktiv/internal/sched"
 	"github.com/direktiv/direktiv/internal/transpiler"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/go-chi/chi/v5"
@@ -46,9 +48,10 @@ type InstanceData struct {
 }
 
 type instController struct {
-	db      *gorm.DB
-	manager any
-	engine  *engine.Engine
+	db        *gorm.DB
+	manager   any
+	engine    *engine.Engine
+	scheduler *sched.Scheduler
 }
 
 func marshalForAPI(data *engine.InstanceStatus) (*InstanceData, error) {
@@ -84,6 +87,9 @@ func (e *instController) mountRouter(r chi.Router) {
 	r.Get("/{instanceID}", e.get)
 
 	r.Post("/", e.create)
+
+	r.Post("/sched", e.createSched)
+	r.Get("/sched", e.listSched)
 }
 
 func (e *instController) dummy(w http.ResponseWriter, r *http.Request) {
@@ -291,4 +297,40 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSONWithMeta(w, out, metaInfo)
+}
+
+func (e *instController) createSched(w http.ResponseWriter, r *http.Request) {
+	cfg := &sched.Config{}
+	if err := json.NewDecoder(r.Body).Decode(cfg); err != nil {
+		writeError(w, &Error{
+			Code:    "error",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	cfg, err := e.scheduler.SetConfig(r.Context(), cfg)
+	if err != nil {
+		writeError(w, &Error{
+			Code:    "error",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	writeJSON(w, cfg)
+
+}
+
+func (e *instController) listSched(w http.ResponseWriter, r *http.Request) {
+	list, err := e.scheduler.ListConfigs(r.Context())
+	if err != nil {
+		writeError(w, &Error{
+			Code:    "error",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	writeJSON(w, list)
 }

@@ -18,6 +18,7 @@ import (
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/internal/extensions"
+	"github.com/direktiv/direktiv/internal/sched"
 	"github.com/direktiv/direktiv/internal/version"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/go-chi/chi/v5"
@@ -44,8 +45,9 @@ type InitializeArgs struct {
 	GatewayManager  core.GatewayManager
 	SecretsManager  core.SecretsManager
 
-	Engine *engine.Engine
-	DB     *gorm.DB
+	Engine    *engine.Engine
+	Scheduler *sched.Scheduler
+	DB        *gorm.DB
 }
 
 type Server struct {
@@ -97,9 +99,10 @@ func New(app InitializeArgs) (*Server, error) {
 		bus: app.PubSub,
 	}
 	instCtr := &instController{
-		db:      app.DB,
-		manager: nil,
-		engine:  app.Engine,
+		db:        app.DB,
+		manager:   nil,
+		engine:    app.Engine,
+		scheduler: app.Scheduler,
 	}
 	notificationsCtr := &notificationsController{
 		db: app.DB,

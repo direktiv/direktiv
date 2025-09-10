@@ -71,6 +71,11 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 		return nil, fmt.Errorf("nats jetstream: %w", err)
 	}
 
+	err = resetStreams(ctx, js)
+	if err != nil {
+		return nil, fmt.Errorf("nats reset streams: %w", err)
+	}
+
 	// 1- ensure streams
 	ensureStreams := []*nats.StreamConfig{
 		{
@@ -96,6 +101,19 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 			Discard:    nats.DiscardOld,
 			Duplicates: 48 * time.Hour,
 			// important: keep only 1 message per subject (latest status)
+			MaxMsgsPerSubject: 1,
+		},
+		{
+			Name: StreamSchedConfig,
+			Subjects: []string{
+				fmt.Sprintf(SubjSchedConfig, "*", "*"),
+			},
+			Storage:   nats.FileStorage,
+			Retention: nats.LimitsPolicy,
+			// MaxAge:     90 * 24 * time.Hour,
+			Discard:    nats.DiscardOld,
+			Duplicates: 48 * time.Hour,
+			// important: keep only 1 message per subject (latest config)
 			MaxMsgsPerSubject: 1,
 		},
 	}
@@ -164,6 +182,19 @@ func generateRandomEntries(ctx context.Context, js nats.JetStreamContext) error 
 			return err
 		}
 		fmt.Printf("published >>>>> %s\n", data)
+	}
+
+	return nil
+}
+
+// TODO: remove this debug code.
+func resetStreams(ctx context.Context, js nats.JetStreamContext) error {
+	// List all streams
+	streams := js.StreamNames()
+	for s := range streams {
+		if err := js.DeleteStream(s); err != nil {
+			return fmt.Errorf("nats delete stream %s: %w", s, err)
+		}
 	}
 
 	return nil

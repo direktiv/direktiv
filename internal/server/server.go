@@ -23,6 +23,7 @@ import (
 	"github.com/direktiv/direktiv/internal/extensions"
 	"github.com/direktiv/direktiv/internal/gateway"
 	intNats "github.com/direktiv/direktiv/internal/nats"
+	"github.com/direktiv/direktiv/internal/sched"
 	"github.com/direktiv/direktiv/internal/secrets"
 	"github.com/direktiv/direktiv/internal/service"
 	"github.com/direktiv/direktiv/internal/service/registry"
@@ -161,6 +162,8 @@ func Start(lc *lifecycle.Manager) error {
 		lc.OnShutdown(func() error {
 			return nc.Drain()
 		})
+
+		slog.Info("initializing engine")
 		app.Engine, err = engine.NewEngine(
 			app.DB,
 			engineProjector.New(js),
@@ -172,6 +175,13 @@ func Start(lc *lifecycle.Manager) error {
 		err = app.Engine.Start(lc)
 		if err != nil {
 			return fmt.Errorf("start engine, err: %w", err)
+		}
+
+		slog.Info("initializing scheduler")
+		app.Scheduler = sched.New(js)
+		err = app.Scheduler.Start(lc)
+		if err != nil {
+			return fmt.Errorf("start scheduler, err: %w", err)
 		}
 	}
 
