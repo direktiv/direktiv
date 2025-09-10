@@ -39,7 +39,7 @@ type Rule struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 
-	Sequence uint64 `json:"sequence"`
+	Sequence uint64 `json:"-"`
 }
 
 func (c Rule) Fingerprint() string {
@@ -137,6 +137,12 @@ func (s *Scheduler) startRuleCache(ctx context.Context) error {
 			// best-effort; ignore bad payloads
 			return
 		}
+		meta, err := msg.Metadata()
+		if err != nil {
+			// best-effort; ignore bad payloads
+			return
+		}
+		rule.Sequence = meta.Sequence.Stream
 		s.cache.Upsert(rule)
 		_ = msg.Term() // AckNone/Term to be explicit; no re-delivery desired
 	}, nats.ManualAck(), nats.AckNone())
