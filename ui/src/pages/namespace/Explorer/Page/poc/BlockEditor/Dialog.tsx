@@ -41,9 +41,7 @@ export const Dialog = ({
       >
         <SmartInput
           value={form.watch("trigger.label")}
-          onChange={(event) =>
-            form.setValue("trigger.label", event.target.value)
-          }
+          onUpdate={(value) => form.setValue("trigger.label", value)}
           id="label"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.dialog.triggerLabelPlaceholder"

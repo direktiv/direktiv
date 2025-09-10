@@ -1,7 +1,7 @@
-import { ChangeEventHandler, useState } from "react";
 import { Check, HelpCircleIcon, Maximize2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
+import { useRef, useState } from "react";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
@@ -10,17 +10,17 @@ import { FakeInput } from "~/design/FakeInput";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
 import { TreePicker } from "../TreePicker";
-import { useInsertText } from "../../utils";
+import { addSnippetToInputValue } from "../../utils";
 import { usePageEditorPanel } from "../../EditorPanelProvider";
 import { useTranslation } from "react-i18next";
 
 export const SmartInput = ({
-  onChange,
+  onUpdate,
   value,
   id,
   placeholder,
 }: {
-  onChange: ChangeEventHandler<HTMLInputElement>;
+  onUpdate: (value: string) => void;
   value: string;
   id: string;
   placeholder: string;
@@ -31,7 +31,7 @@ export const SmartInput = ({
     null
   );
   const { panel } = usePageEditorPanel();
-  const { ref, insertText } = useInsertText<HTMLInputElement>();
+  const ref = useRef<HTMLInputElement>(null);
 
   if (!panel) return null;
 
@@ -46,7 +46,12 @@ export const SmartInput = ({
   return (
     <Dialog open={dialog} onOpenChange={setDialog}>
       <InputWithButton>
-        <Input value={value} onChange={onChange} placeholder={placeholder} />
+        <Input
+          ref={ref}
+          value={value}
+          onChange={(event) => onUpdate(event.target.value)}
+          placeholder={placeholder}
+        />
         <DialogTrigger asChild>
           <Button icon variant="ghost" type="button">
             <Maximize2
@@ -73,7 +78,15 @@ export const SmartInput = ({
                     label={t("direktivPage.blockEditor.smartInput.variableBtn")}
                     container={dialogContainer ?? undefined}
                     tree={variables}
-                    onSubmit={insertText}
+                    onSubmit={(snippet) =>
+                      ref.current &&
+                      addSnippetToInputValue({
+                        element: ref.current,
+                        snippet,
+                        value,
+                        callback: onUpdate,
+                      })
+                    }
                     placeholders={variableSegmentPlaceholders}
                     minDepth={3}
                   />
@@ -111,12 +124,28 @@ export const SmartInput = ({
                     </PopoverContent>
                   </Popover>
                 </ButtonBar>
+                <TreePicker
+                  label={t("direktivPage.blockEditor.smartInput.variableBtn")}
+                  container={dialogContainer ?? undefined}
+                  tree={variables}
+                  onSubmit={(snippet) =>
+                    ref.current &&
+                    addSnippetToInputValue({
+                      element: ref.current,
+                      snippet,
+                      value,
+                      callback: onUpdate,
+                    })
+                  }
+                  placeholders={variableSegmentPlaceholders}
+                  minDepth={3}
+                />
               </div>
               <Input
                 ref={ref}
                 id={id}
                 value={value}
-                onChange={onChange}
+                onChange={(event) => onUpdate(event.target.value)}
                 placeholder={placeholder}
               />
             </FakeInput>

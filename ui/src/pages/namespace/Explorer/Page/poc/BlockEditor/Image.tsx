@@ -40,7 +40,7 @@ export const Image = ({
       >
         <SmartInput
           value={form.watch("src")}
-          onChange={(event) => form.setValue("src", event.target.value)}
+          onUpdate={(value) => form.setValue("src", value)}
           id="src"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.image.srcPlaceholder"
