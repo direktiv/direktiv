@@ -27,6 +27,9 @@ const (
 
 	StreamSchedRule = "STREAM_SCHED_RULE"
 	SubjSchedRule   = "sched.rule.%s.%s" // shed.config.<namespace>.<ruleID>
+
+	StreamSchedTask = "STREAM_SCHED_TASK"
+	SubjSchedTask   = "sched.task.%s.%s" // shed.config.<namespace>.<ruleID>
 )
 
 type Conn = nats.Conn
@@ -113,8 +116,17 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 			// MaxAge:     90 * 24 * time.Hour,
 			Discard:    nats.DiscardOld,
 			Duplicates: 48 * time.Hour,
-			// important: keep only 1 message per subject (latest config)
+			// important: keep only 1 message per subject (latest rule)
 			MaxMsgsPerSubject: 1,
+		},
+		{
+			Name: StreamSchedTask,
+			Subjects: []string{
+				fmt.Sprintf(SubjSchedTask, "*", "*"),
+			},
+			Storage:    nats.FileStorage,
+			Retention:  nats.WorkQueuePolicy,
+			Duplicates: 1 * time.Hour,
 		},
 	}
 

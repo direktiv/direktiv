@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"time"
 
 	intNats "github.com/direktiv/direktiv/internal/nats"
@@ -25,13 +26,21 @@ type Rule struct {
 	Namespace    string `json:"namespace"`
 	WorkflowPath string `json:"workflowPath"`
 	Kind         Kind   `json:"kind"`
-	CronExpr     string `json:"cronExpr,omitempty"`
+	CronExpr     int    `json:"cronExpr,omitempty"`
 
 	RunAt     time.Time `json:"runAt"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 
 	Sequence uint64 `json:"-"`
+}
+
+type Task struct {
+	ID           string    `json:"id"`
+	Namespace    string    `json:"namespace"`
+	WorkflowPath string    `json:"workflowPath"`
+	RunAt        time.Time `json:"runAt"`
+	CreatedAt    time.Time `json:"createdAt"`
 }
 
 func (c *Rule) Fingerprint() string {
@@ -99,9 +108,62 @@ func (s *Scheduler) Start(lc *lifecycle.Manager) error {
 }
 
 func (s *Scheduler) tick() error {
-	// now := time.Now().UTC()
+	now := time.Now().UTC()
 	// snapshot rules in cache
-	// rules := s.cache.Snapshot("")
+	rules := s.cache.Snapshot("")
+	for _, rule := range rules {
+		fmt.Print("\n\n\n\n")
+
+		if rule.RunAt.IsZero() || rule.RunAt.UTC().After(now) {
+			fmt.Printf("skipping rule: %s\n", rule.ID)
+			continue
+		}
+
+		fmt.Printf("triggering rule: %s\n", rule.ID)
+
+		runAt := rule.RunAt.UTC()
+		id := rule.ID + "-" + runAt.UTC().Format(time.RFC3339Nano)
+		data, _ := json.Marshal(Task{
+			ID:           id,
+			Namespace:    rule.Namespace,
+			WorkflowPath: rule.WorkflowPath,
+			RunAt:        runAt,
+			CreatedAt:    time.Now(),
+		})
+		subject := fmt.Sprintf(intNats.SubjSchedTask, rule.Namespace, rule.ID)
+		_, err := s.js.Publish(subject, data,
+			nats.Context(context.Background()),
+			nats.ExpectStream(intNats.StreamSchedTask),
+			// important to ensure dedupe. we don't want to publish the same task twice from two different servers
+			nats.MsgId(fmt.Sprintf("sched::task::%s", id)),
+		)
+		if err != nil {
+			slog.Error("nats publish task", "err", err, "subject", subject, "id", id)
+			continue // try again next tick
+		}
+
+		// compute next run time
+		runAt = runAt.Add(time.Duration(rule.CronExpr) * time.Second)
+		rule.RunAt = runAt
+		rule.UpdatedAt = time.Now()
+		s.cache.Upsert(rule)
+
+		// update rule
+		data, _ = json.Marshal(rule)
+		subject = fmt.Sprintf(intNats.SubjSchedRule, rule.Namespace, rule.ID)
+		_, err = s.js.Publish(subject, data,
+			nats.Context(context.Background()),
+			nats.ExpectStream(intNats.StreamSchedRule),
+			nats.ExpectLastSequence(rule.Sequence),
+			nats.MsgId(fmt.Sprintf("sched::rule::%s", rule.Fingerprint())),
+		)
+		if err != nil {
+			slog.Error("nats publish rule update", "err", err, "subject", subject)
+			continue
+		}
+
+		fmt.Printf("suuccesfully triggered rule: %s\n", rule.ID)
+	}
 
 	return nil
 }
@@ -128,6 +190,7 @@ func (s *Scheduler) SetRule(ctx context.Context, rule *Rule) (*Rule, error) {
 
 	_, err = s.js.Publish(subject, data,
 		nats.Context(ctx),
+		nats.ExpectStream(intNats.StreamSchedRule),
 		nats.MsgId(fmt.Sprintf("sched::rule::%s", rule.Fingerprint())),
 	)
 
