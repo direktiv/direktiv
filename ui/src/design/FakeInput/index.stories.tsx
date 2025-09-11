@@ -20,7 +20,7 @@ export const Comparison = () => (
     <FakeInput className="w-64">
       This <i>looks</i> like an input
     </FakeInput>
-    <Input className="w-64" value="This is an input" />
+    <Input className="w-64" defaultValue="This is an input" />
   </div>
 );
 
