@@ -1,7 +1,8 @@
-import { PropsWithChildren, useState } from "react";
+import { PropsWithChildren, ReactNode, useState } from "react";
 
 import { ArrayItem } from "./ArrayItem";
 import Button from "~/design/Button";
+import { ButtonBar } from "~/design/ButtonBar";
 import { Plus } from "lucide-react";
 import { RenderItem } from "./types";
 
@@ -11,6 +12,7 @@ type ArrayFormProps = <T>(
     emptyItem: T;
     onChange: (newArray: T[]) => void;
     renderItem: RenderItem<T>;
+    wrapItem?: (children: ReactNode) => JSX.Element;
   } & PropsWithChildren
 ) => JSX.Element;
 
@@ -20,6 +22,7 @@ export const ArrayForm: ArrayFormProps = ({
   emptyItem,
   onChange,
   renderItem,
+  wrapItem = (children) => <ButtonBar>{children}</ButtonBar>,
 }) => {
   type Item = (typeof defaultValue)[number];
   const [items, setItems] = useState(defaultValue);
@@ -48,16 +51,19 @@ export const ArrayForm: ArrayFormProps = ({
   };
 
   return (
-    <div className="-mx-1 flex max-h-32 flex-col overflow-y-auto p-1">
-      {items?.map((item, index) => (
-        <ArrayItem
-          key={`${items.length}-${index}`}
-          defaultValue={item}
-          renderItem={renderItem}
-          onUpdate={(value) => updateAtIndex(index, value)}
-          onDelete={() => deleteAtIndex(index)}
-        />
-      ))}
+    <>
+      {items?.map((item, index) =>
+        wrapItem(
+          <ArrayItem
+            key={`${items.length}-${index}`}
+            defaultValue={item}
+            renderItem={renderItem}
+            onUpdate={(value) => updateAtIndex(index, value)}
+            onDelete={() => deleteAtIndex(index)}
+          />
+        )
+      )}
+
       <Button
         type="button"
         variant="outline"
@@ -68,6 +74,6 @@ export const ArrayForm: ArrayFormProps = ({
       >
         <Plus /> {children}
       </Button>
-    </div>
+    </>
   );
 };

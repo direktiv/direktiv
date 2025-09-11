@@ -26,7 +26,7 @@ export const ArrayItem: ArrayItemProps = ({
   };
 
   return (
-    <div className="mb-2 flex gap-2">
+    <>
       {renderItem({
         value,
         setValue: setValueAndTriggerCallback,
@@ -41,6 +41,6 @@ export const ArrayItem: ArrayItemProps = ({
       >
         <X />
       </Button>
-    </div>
+    </>
   );
 };
