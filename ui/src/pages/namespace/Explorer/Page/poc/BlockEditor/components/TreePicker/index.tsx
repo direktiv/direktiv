@@ -84,7 +84,6 @@ export const TreePicker: FC<TreePickerProps> = ({
             onValueChange={setSearch}
             onKeyDown={(event) => {
               if (event.key === "Enter" && allowCustomSegment) {
-                event.preventDefault();
                 addCustomSegment();
               }
             }}
