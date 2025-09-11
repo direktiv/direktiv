@@ -74,8 +74,8 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 		return nil, fmt.Errorf("nats jetstream: %w", err)
 	}
 
-	//err = resetStreams(ctx, js)
-	//if err != nil {
+	// err = resetStreams(ctx, js)
+	// if err != nil {
 	//	return nil, fmt.Errorf("nats reset streams: %w", err)
 	//}
 

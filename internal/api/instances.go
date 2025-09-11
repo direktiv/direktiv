@@ -307,6 +307,7 @@ func (e *instController) createSched(w http.ResponseWriter, r *http.Request) {
 			Code:    "error",
 			Message: err.Error(),
 		})
+
 		return
 	}
 
@@ -316,11 +317,11 @@ func (e *instController) createSched(w http.ResponseWriter, r *http.Request) {
 			Code:    "error",
 			Message: err.Error(),
 		})
+
 		return
 	}
 
 	writeJSON(w, cfg)
-
 }
 
 // TODO: remove this test-code.
@@ -331,6 +332,7 @@ func (e *instController) listSched(w http.ResponseWriter, r *http.Request) {
 			Code:    "error",
 			Message: err.Error(),
 		})
+
 		return
 	}
 

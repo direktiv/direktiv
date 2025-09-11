@@ -2,8 +2,6 @@ package sched
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -13,65 +11,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/nats-io/nats.go"
 )
-
-type Kind string
-
-const (
-	KindOneTime Kind = "oneTime"
-	KindCron    Kind = "cron"
-)
-
-type Rule struct {
-	ID           string `json:"id"`
-	Namespace    string `json:"namespace"`
-	WorkflowPath string `json:"workflowPath"`
-	Kind         Kind   `json:"kind"`
-	CronExpr     int    `json:"cronExpr,omitempty"`
-
-	RunAt     time.Time `json:"runAt"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-
-	Sequence uint64 `json:"-"`
-}
-
-type Task struct {
-	ID           string    `json:"id"`
-	Namespace    string    `json:"namespace"`
-	WorkflowPath string    `json:"workflowPath"`
-	RunAt        time.Time `json:"runAt"`
-	CreatedAt    time.Time `json:"createdAt"`
-}
-
-func (c *Rule) Fingerprint() string {
-	// make a shallow copy with volatile fields zeroed
-	cp := c
-	cp.CreatedAt = time.Time{}
-	cp.UpdatedAt = time.Time{}
-
-	b, _ := json.Marshal(cp)
-	sum := sha256.Sum256(b)
-	return hex.EncodeToString(sum[:8])
-}
-
-// Clone returns a copy of the rule.
-func (c *Rule) Clone() *Rule {
-	cp := *c
-
-	return &cp
-}
-
-func CalculateRuleID(c Rule) string {
-	str := fmt.Sprintf("ns:%s-path:%s", c.Namespace, c.WorkflowPath)
-	sh := sha256.Sum256([]byte(str))
-
-	return fmt.Sprintf("%x", sh[:10])
-}
-
-type Store interface {
-	SetRule(ctx context.Context, rule *Rule) (*Rule, error)
-	ListRules(ctx context.Context) ([]*Rule, error)
-}
 
 type Scheduler struct {
 	js    nats.JetStreamContext
