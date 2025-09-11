@@ -1,28 +1,28 @@
-import { IsValidItem, RenderItem } from "./types";
-import { ReactNode, useState } from "react";
+import { PropsWithChildren, useState } from "react";
 
 import { ArrayItem } from "./ArrayItem";
+import Button from "~/design/Button";
+import { Plus } from "lucide-react";
+import { RenderItem } from "./types";
 
-type ArrayFormProps = <T>(props: {
-  defaultValue: T[];
-  emptyItem: T;
-  onChange: (newArray: T[]) => void;
-  itemIsValid: IsValidItem<T>;
-  renderItem: RenderItem<T>;
-  wrapItem?: (children: ReactNode) => JSX.Element;
-}) => JSX.Element;
+type ArrayFormProps = <T>(
+  props: {
+    defaultValue: T[];
+    emptyItem: T;
+    onChange: (newArray: T[]) => void;
+    renderItem: RenderItem<T>;
+  } & PropsWithChildren
+) => JSX.Element;
 
 export const ArrayForm: ArrayFormProps = ({
+  children,
   defaultValue,
   emptyItem,
-  renderItem,
   onChange,
-  itemIsValid = () => true,
-  wrapItem,
+  renderItem,
 }) => {
+  type Item = (typeof defaultValue)[number];
   const [items, setItems] = useState(defaultValue);
-
-  type Item = (typeof items)[number];
 
   const addItem = (newItem: Item) => {
     const newValue = [...items, newItem];
@@ -48,25 +48,26 @@ export const ArrayForm: ArrayFormProps = ({
   };
 
   return (
-    <>
+    <div className="-mx-1 flex max-h-32 flex-col overflow-y-auto p-1">
       {items?.map((item, index) => (
         <ArrayItem
           key={`${items.length}-${index}`}
           defaultValue={item}
-          itemIsValid={itemIsValid}
           renderItem={renderItem}
           onUpdate={(value) => updateAtIndex(index, value)}
           onDelete={() => deleteAtIndex(index)}
-          wrapItem={wrapItem}
         />
       ))}
-      <ArrayItem
-        defaultValue={emptyItem}
-        itemIsValid={itemIsValid}
-        renderItem={renderItem}
-        onAdd={addItem}
-        wrapItem={wrapItem}
-      />
-    </>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={(e) => {
+          e.preventDefault();
+          addItem(emptyItem);
+        }}
+      >
+        <Plus /> {children}
+      </Button>
+    </div>
   );
 };
