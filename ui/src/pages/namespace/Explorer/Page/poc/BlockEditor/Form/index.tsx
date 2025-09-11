@@ -52,7 +52,7 @@ export const Form = ({
       >
         <SmartInput
           value={form.watch("trigger.label")}
-          onChange={(content) => form.setValue("trigger.label", content)}
+          onUpdate={(value) => form.setValue("trigger.label", value)}
           id="trigger-label"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.form.mutation.triggerLabelPlaceholder"
@@ -102,7 +102,7 @@ export const Form = ({
       >
         <SmartInput
           value={form.watch("mutation.url")}
-          onChange={(content) => form.setValue("mutation.url", content)}
+          onUpdate={(value) => form.setValue("mutation.url", value)}
           id="mutation-url"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.form.mutation.urlPlaceholder"

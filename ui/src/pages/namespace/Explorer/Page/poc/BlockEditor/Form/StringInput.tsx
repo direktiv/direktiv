@@ -81,7 +81,7 @@ export const StringInput = ({
       >
         <SmartInput
           value={form.watch("defaultValue")}
-          onChange={(content) => form.setValue("defaultValue", content)}
+          onUpdate={(value) => form.setValue("defaultValue", value)}
           id="defaultValue"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholder"

@@ -1,30 +1,26 @@
 import { Check, HelpCircleIcon, Maximize2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import { EditorContent, useEditor } from "@tiptap/react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { Card } from "@tremor/react";
-import Document from "@tiptap/extension-document";
-import { FakeInput } from "~/design/FakeInput";
+import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
-import Paragraph from "@tiptap/extension-paragraph";
-import Placeholder from "@tiptap/extension-placeholder";
-import Text from "@tiptap/extension-text";
+import { Textarea } from "~/design/TextArea";
 import { TreePicker } from "../TreePicker";
-import { twMergeClsx } from "~/util/helpers";
+import { addSnippetToInputValue } from "./utils";
 import { usePageEditorPanel } from "../../EditorPanelProvider";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export const SmartInput = ({
-  onChange,
+  onUpdate,
   value,
   id,
   placeholder,
 }: {
-  onChange: (content: string) => void;
+  onUpdate: (value: string) => void;
   value: string;
   id: string;
   placeholder: string;
@@ -35,29 +31,11 @@ export const SmartInput = ({
     null
   );
   const { panel } = usePageEditorPanel();
-
-  const editor = useEditor({
-    extensions: [
-      Document,
-      Text,
-      Paragraph,
-      Placeholder.configure({
-        placeholder,
-      }),
-    ],
-    content: value,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getText());
-    },
-  });
+  const [textarea, setTextarea] = useState<HTMLTextAreaElement | null>();
 
   if (!panel) return null;
 
   const { variables } = panel;
-
-  const insertText = (text: string) => {
-    editor.chain().focus().insertContent(text).run();
-  };
 
   const variableSegmentPlaceholders = [
     t("direktivPage.blockEditor.smartInput.templatePlaceholders.namespace"),
@@ -68,22 +46,11 @@ export const SmartInput = ({
   return (
     <Dialog open={dialog} onOpenChange={setDialog}>
       <InputWithButton>
-        <FakeInput narrow>
-          {!dialog && (
-            <EditorContent
-              id={id}
-              editor={editor}
-              className={twMergeClsx(
-                "max-w-full truncate",
-                "min-h-9 text-sm [&>*]:outline-none",
-                "[&_*.is-empty]:before:absolute",
-                "[&_*.is-empty]:before:pointer-events-none",
-                "[&_*.is-empty]:before:content-[attr(data-placeholder)]",
-                "[&_*.is-empty]:before:text-gray-11"
-              )}
-            />
-          )}
-        </FakeInput>
+        <Input
+          value={value}
+          onChange={(event) => onUpdate(event.target.value)}
+          placeholder={placeholder}
+        />
         <DialogTrigger asChild>
           <Button icon variant="ghost" type="button">
             <Maximize2
@@ -103,20 +70,31 @@ export const SmartInput = ({
       >
         {dialog && (
           <>
-            <FakeInput wrap className="flex flex-col gap-2 p-2">
-              <div className="border-b pb-2">
+            <div>
+              <div className="rounded-t-md border border-b-0 border-gray-4 p-2 dark:border-gray-dark-7">
                 <ButtonBar>
                   <TreePicker
                     label={t("direktivPage.blockEditor.smartInput.variableBtn")}
                     container={dialogContainer ?? undefined}
                     tree={variables}
-                    onSubmit={insertText}
+                    onSubmit={(snippet) =>
+                      textarea &&
+                      addSnippetToInputValue({
+                        element: textarea,
+                        snippet,
+                        value,
+                        callback: onUpdate,
+                      })
+                    }
                     placeholders={variableSegmentPlaceholders}
                     minDepth={3}
                   />
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline">
+                      <Button
+                        variant="outline"
+                        className="dark:border-gray-dark-7"
+                      >
                         <HelpCircleIcon />
                       </Button>
                     </PopoverTrigger>
@@ -149,22 +127,18 @@ export const SmartInput = ({
                   </Popover>
                 </ButtonBar>
               </div>
-              <EditorContent
+              <Textarea
+                className="h-32 rounded-t-none border-gray-4 dark:border-gray-dark-7"
+                ref={setTextarea}
                 id={id}
-                editor={editor}
-                className={twMergeClsx(
-                  "max-w-full",
-                  "min-h-9 text-sm [&>*]:outline-none",
-                  "[&_*.is-empty]:before:absolute",
-                  "[&_*.is-empty]:before:pointer-events-none",
-                  "[&_*.is-empty]:before:content-[attr(data-placeholder)]",
-                  "[&_*.is-empty]:before:text-gray-11",
-                  "dark:[&_*.is-empty]:before:text-gray-dark-11"
-                )}
+                value={value}
+                onChange={(event) => onUpdate(event.target.value)}
+                placeholder={placeholder}
               />
-            </FakeInput>
+            </div>
             <div className="flex justify-end">
               <Button
+                className="dark:border-gray-dark-7"
                 type="button"
                 variant="outline"
                 icon
