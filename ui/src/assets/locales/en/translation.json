@@ -1685,7 +1685,6 @@
         "cancelButton": "Cancel",
         "confirmButton": "Confirm"
       },
-
       "toolbar": {
         "code": "Code View",
         "edit": "Edit",
@@ -1883,8 +1882,27 @@
           "table": "table block"
         }
       },
+      "smartInput": {
+        "templateHelp": {
+          "header": "This field may contain variables in the style {{type.id.pointer}}.",
+          "namespace": "type: type of block providing the data (loop, query)",
+          "id": "id: data provider's given identifier",
+          "pointer": "pointer: key for the value (chain pointers for nested values)"
+        },
+        "templatePlaceholders": {
+          "namespace": "type",
+          "id": "id",
+          "pointer": "pointer"
+        },
+        "variableBtn": "Add variable"
+      },
       "delete": {
         "warning": "This will remove the current block and all content (including blocks nested into it). Are you sure you want to proceed?"
+      },
+      "treePicker": {
+        "placeholder": "Find or add a segment",
+        "valuesHeader": "Known segments",
+        "listEmpty": "No segments found at current level. Add a custom segment or finish editing."
       }
     }
   }

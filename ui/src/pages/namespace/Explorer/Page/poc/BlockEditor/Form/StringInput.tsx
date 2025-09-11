@@ -16,7 +16,7 @@ import { BaseForm } from "./BaseForm";
 import { BlockEditFormProps } from "..";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
-import Input from "~/design/Input";
+import { SmartInput } from "../components/SmartInput";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -79,8 +79,9 @@ export const StringInput = ({
         )}
         htmlFor="defaultValue"
       >
-        <Input
-          {...form.register("defaultValue")}
+        <SmartInput
+          value={form.watch("defaultValue")}
+          onUpdate={(value) => form.setValue("defaultValue", value)}
           id="defaultValue"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholder"

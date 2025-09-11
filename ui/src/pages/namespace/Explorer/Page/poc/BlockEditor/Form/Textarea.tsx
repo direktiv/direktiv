@@ -7,7 +7,7 @@ import { BaseForm } from "./BaseForm";
 import { BlockEditFormProps } from "..";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
-import { Textarea as TextareaComponent } from "~/design/TextArea";
+import { SmartInput } from "../components/SmartInput";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -46,8 +46,9 @@ export const Textarea = ({
         )}
         htmlFor="defaultValue"
       >
-        <TextareaComponent
-          {...form.register("defaultValue")}
+        <SmartInput
+          value={form.watch("defaultValue")}
+          onUpdate={(value) => form.setValue("defaultValue", value)}
           id="defaultValue"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholder"

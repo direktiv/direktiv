@@ -25,7 +25,7 @@ export const QueryProvider = ({
   const data = usePageSuspenseQueries(queries);
 
   const queryWithDuplicateId = queries.find(
-    (query) => !!parentVariables.query[query.id]
+    (query) => !!parentVariables.query?.[query.id]
   );
 
   if (queryWithDuplicateId) {

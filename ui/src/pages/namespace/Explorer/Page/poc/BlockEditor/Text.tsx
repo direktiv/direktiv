@@ -3,7 +3,7 @@ import { Text as TextSchema, TextType } from "../schema/blocks/text";
 import { BlockEditFormProps } from ".";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "./components/FormWrapper";
-import { Textarea } from "~/design/TextArea";
+import { SmartInput } from "./components/SmartInput";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,8 +37,9 @@ export const Text = ({
         label={t("direktivPage.blockEditor.blockForms.text.contentLabel")}
         htmlFor="content"
       >
-        <Textarea
-          {...form.register("content")}
+        <SmartInput
+          value={form.watch("content")}
+          onUpdate={(value) => form.setValue("content", value)}
           id="content"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.text.contentPlaceholder"

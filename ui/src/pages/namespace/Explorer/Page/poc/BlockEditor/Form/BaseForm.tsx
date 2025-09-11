@@ -2,7 +2,7 @@ import { Checkbox } from "~/design/Checkbox";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormBaseType } from "../../schema/blocks/form/utils";
 import Input from "~/design/Input";
-import { Textarea } from "~/design/TextArea";
+import { SmartInput } from "../components/SmartInput";
 import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -34,8 +34,9 @@ export const BaseForm = ({ form: anyForm }: BaseFormProps) => {
         label={t("direktivPage.blockEditor.blockForms.formPrimitives.label")}
         htmlFor="label"
       >
-        <Input
-          {...form.register("label")}
+        <SmartInput
+          value={form.watch("label")}
+          onUpdate={(value) => form.setValue("label", value)}
           id="label"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.formPrimitives.labelPlaceholder"
@@ -48,8 +49,9 @@ export const BaseForm = ({ form: anyForm }: BaseFormProps) => {
         )}
         htmlFor="description"
       >
-        <Textarea
-          {...form.register("description")}
+        <SmartInput
+          value={form.watch("description")}
+          onUpdate={(value) => form.setValue("description", value)}
           id="description"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.formPrimitives.descriptionPlaceholder"
