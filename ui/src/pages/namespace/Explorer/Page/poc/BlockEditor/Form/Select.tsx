@@ -113,16 +113,12 @@ export const Select = ({
                   defaultValue={defaultValue}
                   onChange={field.onChange}
                   emptyItem=""
-                  itemIsValid={(item) =>
-                    typeof item === "string" && item.length > 0
-                  }
-                  renderItem={({ value, setValue, handleKeyDown }) => (
+                  renderItem={({ value, setValue }) => (
                     <Input
                       placeholder={t(
                         "direktivPage.blockEditor.blockForms.formPrimitives.select.valuesPlaceholder"
                       )}
                       value={value}
-                      onKeyDown={handleKeyDown}
                       onChange={(e) => setValue(e.target.value)}
                     />
                   )}

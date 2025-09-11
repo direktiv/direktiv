@@ -1,8 +1,7 @@
-import { KeyValue, KeyValueType } from "../../../schema/primitives/keyValue";
-
 import { ArrayForm } from "~/components/Form/Array";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
+import { KeyValueType } from "../../../schema/primitives/keyValue";
 import { useTranslation } from "react-i18next";
 
 type KeyValueInputProps = {
@@ -21,15 +20,13 @@ export const KeyValueInput = ({ field, label }: KeyValueInputProps) => {
         defaultValue={field.value || []}
         onChange={field.onChange}
         emptyItem={{ key: "", value: "" }}
-        itemIsValid={(item) => KeyValue.safeParse(item).success}
-        renderItem={({ value: itemValue, setValue, handleKeyDown }) => (
+        renderItem={({ value: itemValue, setValue }) => (
           <>
             <Input
               placeholder={t(
                 "direktivPage.blockEditor.blockForms.keyValue.key"
               )}
               value={itemValue.key}
-              onKeyDown={handleKeyDown}
               onChange={(e) => {
                 setValue({
                   ...itemValue,
@@ -42,7 +39,6 @@ export const KeyValueInput = ({ field, label }: KeyValueInputProps) => {
                 "direktivPage.blockEditor.blockForms.keyValue.value"
               )}
               value={itemValue.value}
-              onKeyDown={handleKeyDown}
               onChange={(e) => {
                 setValue({
                   ...itemValue,
