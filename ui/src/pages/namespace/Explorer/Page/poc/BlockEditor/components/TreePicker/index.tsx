@@ -43,36 +43,16 @@ export const TreePicker: FC<TreePickerProps> = ({
   const currentTree = useMemo(() => getSublist(tree, path), [path, tree]);
 
   const previewLength = Math.max(placeholders.length, path.length);
-
-  const previewSegments = Array.from({ length: previewLength }).map(
-    (_, index) => {
-      if (path[index]) {
-        return (
-          <span key={index} className="text-gray-12 dark:text-gray-8">
-            {path[index]}
-          </span>
-        );
-      }
-      if (path.length - index === 0 && search.length) {
-        return (
-          <span
-            key={index}
-            className="italic text-gray-10 dark:text-gray-dark-10"
-          >
-            {search}
-          </span>
-        );
-      }
-      return (
-        <span
-          key={index}
-          className="italic text-gray-10 dark:text-gray-dark-10"
-        >
-          {placeholders[index]}
-        </span>
-      );
-    }
-  );
+  const previewPath = Array.from({ length: previewLength }, (_, index) => (
+    <Fragment key={index}>
+      {path[index] ? (
+        <span className="text-gray-12 dark:text-gray-8">{path[index]}</span>
+      ) : (
+        <span className="italic text-gray-10">{placeholders[index]}</span>
+      )}
+      {index < previewLength - 1 && <span className="text-gray-10">.</span>}
+    </Fragment>
+  ));
 
   const allowSubmit = path.length >= minDepth;
   const allowCustomSegment = search.length > 0;
@@ -146,16 +126,7 @@ export const TreePicker: FC<TreePickerProps> = ({
               className="mr-2 w-full text-gray-10 dark:text-gray-dark-10"
             >
               {"{{"}
-              {previewSegments.map((Segment, index) => (
-                <Fragment key={index}>
-                  {Segment}
-                  {index < previewSegments.length - 1 && (
-                    <span className="text-gray-10 dark:text-gray-dark-10">
-                      .
-                    </span>
-                  )}
-                </Fragment>
-              ))}
+              {previewPath}
               {"}}"}
             </FakeInput>
             <PopoverClose className="ml-auto flex gap-2">
