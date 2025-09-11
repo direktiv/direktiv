@@ -20,6 +20,6 @@ export const addSnippetToInputValue = ({
   callback(newValue);
 
   const cursorPos = start + snippet.length;
-  element.setSelectionRange(cursorPos, cursorPos);
   element.focus();
+  element.setSelectionRange(cursorPos, cursorPos);
 };
