@@ -1,10 +1,6 @@
-import {
-  ExtendedKeyValue,
-  ExtendedKeyValueType,
-} from "../../../../schema/primitives/extendedKeyValue";
-
 import { ArrayForm } from "~/components/Form/Array";
 import { Card } from "~/design/Card";
+import { ExtendedKeyValueType } from "../../../../schema/primitives/extendedKeyValue";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
 import { PropsWithChildren } from "react";
@@ -37,13 +33,12 @@ export const ExtendedKeyValueInput = ({
               value: "",
             },
           }}
-          itemIsValid={(item) => ExtendedKeyValue.safeParse(item).success}
           wrapItem={(children) => (
             <Card className="flex flex-col gap-3 p-3" noShadow>
               {children}
             </Card>
           )}
-          renderItem={({ value: itemValue, setValue, handleKeyDown }) => (
+          renderItem={({ value: itemValue, setValue }) => (
             <>
               <Container>
                 <Label>
@@ -55,7 +50,6 @@ export const ExtendedKeyValueInput = ({
                     "direktivPage.blockEditor.blockForms.keyValue.key"
                   )}
                   value={itemValue.key}
-                  onKeyDown={handleKeyDown}
                   onChange={(e) => {
                     setValue({
                       ...itemValue,
@@ -77,7 +71,6 @@ export const ExtendedKeyValueInput = ({
                         value: newValue,
                       });
                     }}
-                    onKeyDown={handleKeyDown}
                   />
                 </div>
               </Container>

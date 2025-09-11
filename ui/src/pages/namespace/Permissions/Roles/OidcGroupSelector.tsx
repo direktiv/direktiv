@@ -34,19 +34,11 @@ const OidcGroupSelector = ({
           defaultValue={value}
           onChange={handleChange}
           emptyItem=""
-          itemIsValid={(item) => {
-            if (!item) return false;
-            if (item.includes(",")) return false;
-            if (item.includes(" ")) return false;
-            if (value.includes(item)) return false;
-            return true;
-          }}
-          renderItem={({ value, setValue, handleKeyDown }) => (
+          renderItem={({ value, setValue }) => (
             <Input
               placeholder={t("pages.permissions.oidcGroupSelector.placeholder")}
               className="basis-full"
               value={value}
-              onKeyDown={handleKeyDown}
               onChange={(e) => {
                 const newValue = e.target.value;
                 setValue(newValue);
