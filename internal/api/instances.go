@@ -299,6 +299,7 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 	writeJSONWithMeta(w, out, metaInfo)
 }
 
+// TODO: remove this test-code.
 func (e *instController) createSched(w http.ResponseWriter, r *http.Request) {
 	cfg := &sched.Rule{}
 	if err := json.NewDecoder(r.Body).Decode(cfg); err != nil {
@@ -322,6 +323,7 @@ func (e *instController) createSched(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// TODO: remove this test-code.
 func (e *instController) listSched(w http.ResponseWriter, r *http.Request) {
 	list, err := e.scheduler.ListRules(r.Context())
 	if err != nil {
