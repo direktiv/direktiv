@@ -27,81 +27,70 @@ func (s *Scheduler) Start(lc *lifecycle.Manager) error {
 		return fmt.Errorf("start status cache: %w", err)
 	}
 
-	lc.Go(func() error {
-		t := time.NewTicker(time.Second)
-		defer t.Stop()
-		for {
-			select {
-			case <-lc.Done():
-				return nil
-			case <-t.C:
-				err := s.tick()
-				if err != nil {
-					return fmt.Errorf("scheduler tick, err: %w", err)
-				}
-			}
-		}
+	startTicking(lc, time.Second, s.tick)
+
+	return nil
+}
+
+func (s *Scheduler) scheduleRule(rule *Rule) error {
+	now := time.Now().UTC()
+	if rule.RunAt.IsZero() || rule.RunAt.UTC().After(now) {
+		return fmt.Errorf("skipping rule")
+	}
+
+	runAt := rule.RunAt.UTC()
+	id := rule.ID + "-" + runAt.UTC().Format(time.RFC3339Nano)
+	data, _ := json.Marshal(Task{
+		ID:           id,
+		Namespace:    rule.Namespace,
+		WorkflowPath: rule.WorkflowPath,
+		RunAt:        runAt,
+		CreatedAt:    time.Now(),
 	})
+	subject := fmt.Sprintf(intNats.SubjSchedTask, rule.Namespace, rule.ID)
+	_, err := s.js.Publish(subject, data,
+		nats.Context(context.Background()),
+		nats.ExpectStream(intNats.StreamSchedTask),
+		// important to ensure dedupe. we don't want to publish the same task twice from two different servers
+		nats.MsgId(fmt.Sprintf("sched::task::%s", id)),
+	)
+	if err != nil {
+		return fmt.Errorf("nats publish task, subj: %s, err: %w", subject, err)
+	}
+
+	// compute next run time
+	runAt = runAt.Add(time.Duration(rule.CronExpr) * time.Second)
+	rule.RunAt = runAt
+	rule.UpdatedAt = time.Now()
+	s.cache.Upsert(rule)
+
+	// update rule
+	data, _ = json.Marshal(rule)
+	subject = fmt.Sprintf(intNats.SubjSchedRule, rule.Namespace, rule.ID)
+	_, err = s.js.Publish(subject, data,
+		nats.Context(context.Background()),
+		nats.ExpectStream(intNats.StreamSchedRule),
+		nats.ExpectLastSequence(rule.Sequence),
+		nats.MsgId(fmt.Sprintf("sched::rule::%s", rule.Fingerprint())),
+	)
+	if err != nil {
+		return fmt.Errorf("nats publish rule update, subj: %s, err: %w", subject, err)
+	}
 
 	return nil
 }
 
 func (s *Scheduler) tick() error {
-	now := time.Now().UTC()
+
 	// snapshot rules in cache
 	rules := s.cache.Snapshot("")
 	for _, rule := range rules {
-		fmt.Print("\n\n\n\n")
-
-		if rule.RunAt.IsZero() || rule.RunAt.UTC().After(now) {
-			fmt.Printf("skipping rule: %s\n", rule.ID)
-			continue
-		}
-
-		fmt.Printf("triggering rule: %s\n", rule.ID)
-
-		runAt := rule.RunAt.UTC()
-		id := rule.ID + "-" + runAt.UTC().Format(time.RFC3339Nano)
-		data, _ := json.Marshal(Task{
-			ID:           id,
-			Namespace:    rule.Namespace,
-			WorkflowPath: rule.WorkflowPath,
-			RunAt:        runAt,
-			CreatedAt:    time.Now(),
-		})
-		subject := fmt.Sprintf(intNats.SubjSchedTask, rule.Namespace, rule.ID)
-		_, err := s.js.Publish(subject, data,
-			nats.Context(context.Background()),
-			nats.ExpectStream(intNats.StreamSchedTask),
-			// important to ensure dedupe. we don't want to publish the same task twice from two different servers
-			nats.MsgId(fmt.Sprintf("sched::task::%s", id)),
-		)
+		err := s.scheduleRule(rule)
 		if err != nil {
-			slog.Error("nats publish task", "err", err, "subject", subject, "id", id)
-			continue // try again next tick
+			slog.Error("schedule rule", "err", err, "id", rule.ID)
+		} else {
+			slog.Info("schedule rule", "id", rule.ID)
 		}
-
-		// compute next run time
-		runAt = runAt.Add(time.Duration(rule.CronExpr) * time.Second)
-		rule.RunAt = runAt
-		rule.UpdatedAt = time.Now()
-		s.cache.Upsert(rule)
-
-		// update rule
-		data, _ = json.Marshal(rule)
-		subject = fmt.Sprintf(intNats.SubjSchedRule, rule.Namespace, rule.ID)
-		_, err = s.js.Publish(subject, data,
-			nats.Context(context.Background()),
-			nats.ExpectStream(intNats.StreamSchedRule),
-			nats.ExpectLastSequence(rule.Sequence),
-			nats.MsgId(fmt.Sprintf("sched::rule::%s", rule.Fingerprint())),
-		)
-		if err != nil {
-			slog.Error("nats publish rule update", "err", err, "subject", subject)
-			continue
-		}
-
-		fmt.Printf("suuccesfully triggered rule: %s\n", rule.ID)
 	}
 
 	return nil
