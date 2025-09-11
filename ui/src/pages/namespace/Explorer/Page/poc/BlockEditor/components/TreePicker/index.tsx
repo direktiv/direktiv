@@ -82,8 +82,9 @@ export const TreePicker: FC<TreePickerProps> = ({
             placeholder={t("direktivPage.blockEditor.treePicker.placeholder")}
             value={search}
             onValueChange={setSearch}
-            onKeyUp={(event) => {
+            onKeyDown={(event) => {
               if (event.key === "Enter" && allowCustomSegment) {
+                event.preventDefault();
                 addCustomSegment();
               }
             }}
