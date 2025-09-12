@@ -57,46 +57,41 @@ test("it is possible to create a consumer", async ({ page }) => {
   await page.getByLabel("Password").fill("a-v3ry-g00d-pASSw0rd");
   await page.getByLabel("Api key").fill("some-api-key");
 
-  const groupsElement = page.getByPlaceholder("Enter a group");
+  const groupsElement = page
+    .getByRole("group")
+    .filter({ hasText: "Groups (optional)" });
 
   for (let i = 0; i < groups.length; i++) {
+    await groupsElement.getByRole("button").last().click();
     const group = groups?.[i];
     if (!group) {
       throw new Error("group is undefined");
     }
 
     await expect(
-      groupsElement,
-      "it renders one input for every existing group +1 empty one"
+      groupsElement.getByRole("textbox"),
+      "it renders one input for every existing group"
     ).toHaveCount(i + 1);
-    await groupsElement.last().fill(group);
-    await page
-      .locator("fieldset")
-      .filter({ hasText: "Groups (optional)" })
-      .getByRole("button")
-      .last()
-      .click();
+    await groupsElement.getByRole("textbox").last().fill(group);
   }
 
-  const tagsElement = page.getByPlaceholder("Enter a tag");
+  const tagsElement = page
+    .getByRole("group")
+    .filter({ hasText: "Tags (optional)" });
 
   for (let i = 0; i < tags.length; i++) {
+    await tagsElement.getByRole("button").last().click();
+
     const tag = tags?.[i];
     if (!tag) {
       throw new Error("tag is undefined");
     }
 
     await expect(
-      tagsElement,
-      "it renders one input for every existing tag +1 empty one"
+      tagsElement.getByRole("textbox"),
+      "it renders one input for every existing tag"
     ).toHaveCount(i + 1);
-    await tagsElement.last().fill(tag);
-    await page
-      .locator("fieldset")
-      .filter({ hasText: "Tags (optional)" })
-      .getByRole("button")
-      .last()
-      .click();
+    await tagsElement.getByRole("textbox").last().fill(tag);
   }
 
   const editor = page.locator(".lines-content");
