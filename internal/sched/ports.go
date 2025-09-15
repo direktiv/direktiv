@@ -11,11 +11,6 @@ type JetStream interface {
 	Subscribe(subj string, cb nats.MsgHandler, opts ...nats.SubOpt) (*nats.Subscription, error)
 }
 
-type RuleStore interface {
-	Snapshot(ns string) []*Rule
-	Upsert(rule *Rule)
-}
-
 type Clock interface {
 	Now() time.Time
 }

@@ -34,23 +34,25 @@ func (s *Scheduler) Start(lc *lifecycle.Manager) error {
 }
 
 func (s *Scheduler) dispatchIfDue(rule *Rule) error {
+	rule = rule.Clone()
 	now := s.clk.Now().UTC()
-	if rule.RunAt.IsZero() || rule.RunAt.UTC().After(now) {
-		return fmt.Errorf("skipping rule")
+	runAt := rule.RunAt.UTC()
+
+	if rule.RunAt.IsZero() || runAt.After(now) {
+		return fmt.Errorf("not-due")
 	}
 
-	runAt := rule.RunAt.UTC()
-	id := rule.ID + "-" + runAt.UTC().Format(time.RFC3339Nano)
+	// publish task
+	id := rule.ID + "-" + runAt.Format(time.RFC3339Nano)
 	data, _ := json.Marshal(Task{
 		ID:           id,
 		Namespace:    rule.Namespace,
 		WorkflowPath: rule.WorkflowPath,
-		RunAt:        runAt,
+		RunAt:        s.clk.Now(),
 		CreatedAt:    s.clk.Now(),
 	})
 	subject := fmt.Sprintf(intNats.SubjSchedTask, rule.Namespace, rule.ID)
 	_, err := s.js.Publish(subject, data,
-		nats.Context(context.Background()),
 		nats.ExpectStream(intNats.StreamSchedTask),
 		// important to ensure dedupe. we don't want to publish the same task twice from two different servers
 		nats.MsgId(fmt.Sprintf("sched::task::%s", id)),
@@ -59,17 +61,15 @@ func (s *Scheduler) dispatchIfDue(rule *Rule) error {
 		return fmt.Errorf("nats publish task, subj: %s, err: %w", subject, err)
 	}
 
-	// compute next run time
-	runAt = runAt.Add(time.Duration(rule.CronExpr) * time.Second)
-	rule.RunAt = runAt
+	// advance rule, persist
+	next := runAt.Add(time.Duration(rule.CronExpr) * time.Second)
+	rule.RunAt = next
 	rule.UpdatedAt = s.clk.Now()
-	s.cache.Upsert(rule)
 
-	// update rule
+	// optimistic update in rule stream
 	data, _ = json.Marshal(rule)
 	subject = fmt.Sprintf(intNats.SubjSchedRule, rule.Namespace, rule.ID)
 	_, err = s.js.Publish(subject, data,
-		nats.Context(context.Background()),
 		nats.ExpectStream(intNats.StreamSchedRule),
 		nats.ExpectLastSequence(rule.Sequence),
 		nats.MsgId(fmt.Sprintf("sched::rule::%s", rule.Fingerprint())),
@@ -77,6 +77,8 @@ func (s *Scheduler) dispatchIfDue(rule *Rule) error {
 	if err != nil {
 		return fmt.Errorf("nats publish rule update, subj: %s, err: %w", subject, err)
 	}
+
+	s.cache.Upsert(rule)
 
 	return nil
 }
