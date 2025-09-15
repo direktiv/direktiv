@@ -14,7 +14,7 @@ import (
 
 type Scheduler struct {
 	js    nats.JetStreamContext
-	cache *RulesCache
+	cache *RuleCache
 }
 
 func New(js nats.JetStreamContext) *Scheduler {
@@ -22,17 +22,17 @@ func New(js nats.JetStreamContext) *Scheduler {
 }
 
 func (s *Scheduler) Start(lc *lifecycle.Manager) error {
-	err := s.startRuleCache(lc.Context())
+	err := s.startRuleSubscription(lc.Context())
 	if err != nil {
 		return fmt.Errorf("start status cache: %w", err)
 	}
 
-	startTicking(lc, time.Second, s.tick)
+	startTicking(lc, time.Second, s.processDueRules)
 
 	return nil
 }
 
-func (s *Scheduler) scheduleRule(rule *Rule) error {
+func (s *Scheduler) dispatchIfDue(rule *Rule) error {
 	now := time.Now().UTC()
 	if rule.RunAt.IsZero() || rule.RunAt.UTC().After(now) {
 		return fmt.Errorf("skipping rule")
@@ -80,12 +80,12 @@ func (s *Scheduler) scheduleRule(rule *Rule) error {
 	return nil
 }
 
-func (s *Scheduler) tick() error {
+func (s *Scheduler) processDueRules() error {
 
 	// snapshot rules in cache
 	rules := s.cache.Snapshot("")
 	for _, rule := range rules {
-		err := s.scheduleRule(rule)
+		err := s.dispatchIfDue(rule)
 		if err != nil {
 			slog.Error("schedule rule", "err", err, "id", rule.ID)
 		} else {
@@ -131,7 +131,7 @@ func (s *Scheduler) ListRules(ctx context.Context) ([]*Rule, error) {
 	return data, nil
 }
 
-func (s *Scheduler) startRuleCache(ctx context.Context) error {
+func (s *Scheduler) startRuleSubscription(ctx context.Context) error {
 	subj := fmt.Sprintf(intNats.SubjSchedRule, "*", "*")
 	// ephemeral, AckNone (we don't want to disturb the stream/consumers)
 	_, err := s.js.Subscribe(subj, func(msg *nats.Msg) {

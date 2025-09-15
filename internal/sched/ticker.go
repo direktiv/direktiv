@@ -20,7 +20,7 @@ func startTicking(lc *lifecycle.Manager, interval time.Duration, tickFunc TickFu
 			case <-t.C:
 				err := tickFunc()
 				if err != nil {
-					return fmt.Errorf(" tick func, err: %w", err)
+					return fmt.Errorf("err: %w", err)
 				}
 			}
 		}
