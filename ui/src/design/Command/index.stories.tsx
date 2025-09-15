@@ -12,11 +12,15 @@ import {
   HelpCircle,
   MoreHorizontal,
   PlusCircle,
+  Search,
   Settings,
   Smile,
+  Sparkles,
   Tags,
   Trash,
   User,
+  WandSparkles,
+  X,
   XCircle,
 } from "lucide-react";
 
@@ -51,6 +55,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { Popover, PopoverContent, PopoverTrigger } from "../Popover";
 import Badge from "../Badge";
 import Button from "../Button";
+import { ButtonBar } from "../ButtonBar";
 import { Card } from "../Card";
 import { twMergeClsx } from "~/util/helpers";
 
@@ -66,7 +71,7 @@ export const Default: Story = {
   render: () => (
     <div className="flex items-center space-x-2">
       <Command>
-        <CommandInput placeholder="Type a command or search..." />
+        <CommandInput icon={Search} placeholder="Type a command or search..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Suggestions">
@@ -88,7 +93,7 @@ export const Default: Story = {
 
 export const CommandDemo = () => (
   <Command className="rounded-lg border border-gray-4 shadow-md dark:border-gray-dark-4">
-    <CommandInput placeholder="Type a command or search..." />
+    <CommandInput icon={WandSparkles} placeholder="Type to do magic..." />
     <CommandList className="max-h-[200px]">
       <CommandEmpty>No results found.</CommandEmpty>
       <CommandGroup heading="Suggestions">
@@ -129,6 +134,61 @@ export const CommandDemo = () => (
         <span>Static Item</span>
         <CommandShortcut>⌘T</CommandShortcut>
       </CommandStaticItem>
+    </CommandList>
+  </Command>
+);
+
+export const CommandNoIconDemo = () => (
+  <Command className="rounded-lg border border-gray-4 shadow-md dark:border-gray-dark-4">
+    <CommandInput placeholder="Type a command or search..." />
+    <CommandList className="max-h-[200px]">
+      <CommandEmpty>No results found.</CommandEmpty>
+      <CommandGroup heading="Suggestions">
+        <CommandItem value="Calendar">
+          <Calendar className="mr-2 h-auto w-4" />
+          <span>Calendar</span>
+        </CommandItem>
+        <CommandItem value="Search Emoji">
+          <Smile className="mr-2 h-auto w-4" />
+          <span>Search Emoji</span>
+        </CommandItem>
+        <CommandItem value="Calculator">
+          <Calculator className="mr-2 h-auto w-4" />
+          <span>Calculator</span>
+        </CommandItem>
+      </CommandGroup>
+    </CommandList>
+  </Command>
+);
+
+export const CommandInputWithButtons = () => (
+  <Command className="rounded-lg border border-gray-4 shadow-md dark:border-gray-dark-4">
+    <CommandInput icon={Sparkles} placeholder="Type a command or search...">
+      <ButtonBar>
+        <Button icon variant="outline">
+          <Check />
+        </Button>
+        <Button icon variant="destructive">
+          <X />
+        </Button>
+      </ButtonBar>
+    </CommandInput>
+    <CommandList className="max-h-[200px]">
+      <CommandEmpty>No results found.</CommandEmpty>
+      <CommandGroup heading="Suggestions">
+        <CommandItem value="Calendar">
+          <Calendar className="mr-2 h-auto w-4" />
+          <span>Calendar</span>
+        </CommandItem>
+        <CommandItem value="Search Emoji">
+          <Smile className="mr-2 h-auto w-4" />
+          <span>Search Emoji</span>
+        </CommandItem>
+        <CommandItem value="Calculator">
+          <Calculator className="mr-2 h-auto w-4" />
+          <span>Calculator</span>
+        </CommandItem>
+      </CommandGroup>
     </CommandList>
   </Command>
 );
