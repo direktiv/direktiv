@@ -10,11 +10,13 @@ import (
 	"log/slog"
 	"math/rand"
 	"os"
+	"testing"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
+	natsContainer "github.com/testcontainers/testcontainers-go/modules/nats"
 )
 
 const (
@@ -242,4 +244,31 @@ func ensureConsumer(ctx context.Context, js nats.JetStreamContext, cfg *nats.Con
 	}
 
 	return nil
+}
+
+func NewTestNats(t *testing.T) (string, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	ctr, err := natsContainer.Run(
+		ctx,
+		"nats:2.10-alpine",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Cleanup(func() {
+		if err := ctr.Terminate(ctx); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
+	})
+
+	// Get nats://<host>:<port>
+	uri, err := ctr.ConnectionString(ctx)
+	if err != nil {
+		t.Fatalf("failed to get connection string: %v", err)
+	}
+
+	return uri, nil
 }

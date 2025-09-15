@@ -8,7 +8,6 @@ import (
 	"time"
 
 	intNats "github.com/direktiv/direktiv/internal/nats"
-	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
 )
@@ -16,7 +15,7 @@ import (
 func TestScheduler_EndToEnd(t *testing.T) {
 	ctx := context.Background()
 
-	connStr, err := database.NewTestNats(t)
+	connStr, err := intNats.NewTestNats(t)
 	require.NoError(t, err)
 
 	// Connect to NATS + JetStream
