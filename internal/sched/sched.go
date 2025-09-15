@@ -13,12 +13,13 @@ import (
 )
 
 type Scheduler struct {
-	js    nats.JetStreamContext
+	js    JetStream
 	cache *RuleCache
+	clk   Clock
 }
 
 func New(js nats.JetStreamContext) *Scheduler {
-	return &Scheduler{js: js, cache: NewRulesCache()}
+	return &Scheduler{js: js, cache: NewRulesCache(), clk: realClock{}}
 }
 
 func (s *Scheduler) Start(lc *lifecycle.Manager) error {
@@ -33,7 +34,7 @@ func (s *Scheduler) Start(lc *lifecycle.Manager) error {
 }
 
 func (s *Scheduler) dispatchIfDue(rule *Rule) error {
-	now := time.Now().UTC()
+	now := s.clk.Now().UTC()
 	if rule.RunAt.IsZero() || rule.RunAt.UTC().After(now) {
 		return fmt.Errorf("skipping rule")
 	}
@@ -45,7 +46,7 @@ func (s *Scheduler) dispatchIfDue(rule *Rule) error {
 		Namespace:    rule.Namespace,
 		WorkflowPath: rule.WorkflowPath,
 		RunAt:        runAt,
-		CreatedAt:    time.Now(),
+		CreatedAt:    s.clk.Now(),
 	})
 	subject := fmt.Sprintf(intNats.SubjSchedTask, rule.Namespace, rule.ID)
 	_, err := s.js.Publish(subject, data,
@@ -61,7 +62,7 @@ func (s *Scheduler) dispatchIfDue(rule *Rule) error {
 	// compute next run time
 	runAt = runAt.Add(time.Duration(rule.CronExpr) * time.Second)
 	rule.RunAt = runAt
-	rule.UpdatedAt = time.Now()
+	rule.UpdatedAt = s.clk.Now()
 	s.cache.Upsert(rule)
 
 	// update rule
@@ -87,9 +88,9 @@ func (s *Scheduler) processDueRules() error {
 	for _, rule := range rules {
 		err := s.dispatchIfDue(rule)
 		if err != nil {
-			slog.Error("schedule rule", "err", err, "id", rule.ID)
+			slog.Error("dispatchIfDue", "err", err, "id", rule.ID)
 		} else {
-			slog.Info("schedule rule", "id", rule.ID)
+			slog.Info("dispatchIfDue", "id", rule.ID)
 		}
 	}
 
@@ -106,7 +107,7 @@ func (s *Scheduler) SetRule(ctx context.Context, rule *Rule) (*Rule, error) {
 	}
 
 	rule.ID = CalculateRuleID(*rule)
-	rule.CreatedAt = time.Now()
+	rule.CreatedAt = s.clk.Now()
 	rule.UpdatedAt = rule.CreatedAt
 
 	data, err := json.Marshal(rule)
