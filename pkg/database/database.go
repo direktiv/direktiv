@@ -11,6 +11,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
+	natsContainer "github.com/testcontainers/testcontainers-go/modules/nats"
 	tsPostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"gorm.io/driver/postgres"
@@ -20,6 +21,33 @@ import (
 
 //go:embed db_schema.sql
 var Schema string
+
+func NewTestNats(t *testing.T) (string, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	ctr, err := natsContainer.Run(
+		ctx,
+		"nats:2.10-alpine",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Cleanup(func() {
+		if err := ctr.Terminate(ctx); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
+	})
+
+	// Get nats://<host>:<port>
+	uri, err := ctr.ConnectionString(ctx)
+	if err != nil {
+		t.Fatalf("failed to get connection string: %v", err)
+	}
+
+	return uri, nil
+}
 
 // nolint:usetesting
 func NewTestDB(t *testing.T) (*gorm.DB, error) {
