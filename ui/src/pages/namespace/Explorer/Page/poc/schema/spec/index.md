@@ -226,7 +226,7 @@ A variable is a string that references dynamic data from a data source in the pa
 
 - **namespace**: The source of the data (e.g., `query`, `loop`, `this`)
 - **id**: The identifier of the specific block or context
-- **pointer**: The path to the specific data within the source (not available in the `this` namespace)
+- **pointer**: The path to the specific data within the source (not available in the `this` namespace). Can consist of multiple segments if the targeted data is nested.
 
 ### Available Namespaces
 
