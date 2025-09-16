@@ -25,6 +25,7 @@ import { useDndContext } from "@dnd-kit/core";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 import { useTranslation } from "react-i18next";
 import { useValidateDropzone } from "./useValidateDropzone";
+import { useVariablesContext } from "../../primitives/Variable/VariableContext";
 
 type BlockWrapperProps = PropsWithChildren<{
   blockPath: BlockPathType;
@@ -38,6 +39,7 @@ const EditorBlockWrapper = ({
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
   const page = usePage();
+  const variables = useVariablesContext();
   const { panel, setPanel } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
   const validateDropzone = useValidateDropzone();
@@ -64,8 +66,9 @@ const EditorBlockWrapper = ({
   const dropzonePayload = useMemo(
     () => ({
       targetPath: incrementPath(blockPath),
+      variables,
     }),
-    [blockPath]
+    [blockPath, variables]
   );
 
   const isFocused = !!(panel?.action && pathsEqual(panel.path, blockPath));
@@ -85,6 +88,7 @@ const EditorBlockWrapper = ({
         action: "edit",
         block: parentDialog.block,
         path: parentDialog.path,
+        variables,
       });
     }
 
@@ -93,10 +97,12 @@ const EditorBlockWrapper = ({
       return setPanel(null);
     }
 
+    // if unfocused block is clicked, focus it
     return setPanel({
       action: "edit",
       block,
       path: blockPath,
+      variables,
     });
   };
 

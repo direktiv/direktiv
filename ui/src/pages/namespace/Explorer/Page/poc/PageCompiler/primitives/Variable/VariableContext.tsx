@@ -1,19 +1,21 @@
 import { PropsWithChildren, createContext, useContext } from "react";
+import {
+  Variable,
+  contextVariableNamespaces,
+} from "../../../schema/primitives/variable";
 
-import { ContextVariableNamespace } from "../../../schema/primitives/variable";
+import z from "zod";
 
 type VariableId = string;
 type DefinedValue = Exclude<unknown, undefined>;
 export type Variable = Record<VariableId, DefinedValue>;
 
-export type ContextVariables = {
-  [keys in ContextVariableNamespace]: Variable;
-};
+export const ContextVariablesSchema = z.record(
+  z.enum(contextVariableNamespaces),
+  z.record(z.string(), z.unknown())
+);
 
-const defaultState: ContextVariables = {
-  loop: {},
-  query: {},
-};
+export type ContextVariables = z.infer<typeof ContextVariablesSchema>;
 
 const VariableContext = createContext<ContextVariables | null>(null);
 
@@ -32,6 +34,6 @@ export const VariableContextProvider = ({
 
 export const useVariablesContext = () => {
   const context = useContext(VariableContext);
-  const variables = context ?? defaultState;
+  const variables = context ?? {};
   return variables;
 };

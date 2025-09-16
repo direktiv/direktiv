@@ -13,6 +13,7 @@ import {
   triggerValues,
 } from "~/api/instances/query/utils";
 
+import { Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const optionMenus = {
@@ -38,6 +39,7 @@ const Options = ({ value, field, setFilter }: OptionsProps) => {
   return (
     <Command value={value}>
       <CommandInput
+        icon={Search}
         autoFocus
         placeholder={t("pages.instances.list.filter.placeholder.STATUS")}
       />
