@@ -176,7 +176,7 @@ const EditorBlockWrapper = ({
                 </ParsingError>
               )}
             >
-              {isFocused && block.type === "form"
+              {block.type === "form"
                 ? cloneElement(children, {
                     register,
                   })
