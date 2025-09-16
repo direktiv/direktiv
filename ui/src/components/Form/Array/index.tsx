@@ -1,28 +1,31 @@
-import { IsValidItem, RenderItem } from "./types";
-import { ReactNode, useState } from "react";
+import { PropsWithChildren, ReactNode, useState } from "react";
 
 import { ArrayItem } from "./ArrayItem";
+import Button from "~/design/Button";
+import { ButtonBar } from "~/design/ButtonBar";
+import { Plus } from "lucide-react";
+import { RenderItem } from "./types";
 
-type ArrayFormProps = <T>(props: {
-  defaultValue: T[];
-  emptyItem: T;
-  onChange: (newArray: T[]) => void;
-  itemIsValid: IsValidItem<T>;
-  renderItem: RenderItem<T>;
-  wrapItem?: (children: ReactNode) => JSX.Element;
-}) => JSX.Element;
+type ArrayFormProps = <T>(
+  props: {
+    defaultValue: T[];
+    emptyItem: T;
+    onChange: (newArray: T[]) => void;
+    renderItem: RenderItem<T>;
+    wrapItem?: (children: ReactNode) => JSX.Element;
+  } & PropsWithChildren
+) => JSX.Element;
 
 export const ArrayForm: ArrayFormProps = ({
+  children,
   defaultValue,
   emptyItem,
-  renderItem,
   onChange,
-  itemIsValid = () => true,
-  wrapItem,
+  renderItem,
+  wrapItem = (children) => <ButtonBar>{children}</ButtonBar>,
 }) => {
+  type Item = (typeof defaultValue)[number];
   const [items, setItems] = useState(defaultValue);
-
-  type Item = (typeof items)[number];
 
   const addItem = (newItem: Item) => {
     const newValue = [...items, newItem];
@@ -49,24 +52,28 @@ export const ArrayForm: ArrayFormProps = ({
 
   return (
     <>
-      {items?.map((item, index) => (
-        <ArrayItem
-          key={`${items.length}-${index}`}
-          defaultValue={item}
-          itemIsValid={itemIsValid}
-          renderItem={renderItem}
-          onUpdate={(value) => updateAtIndex(index, value)}
-          onDelete={() => deleteAtIndex(index)}
-          wrapItem={wrapItem}
-        />
-      ))}
-      <ArrayItem
-        defaultValue={emptyItem}
-        itemIsValid={itemIsValid}
-        renderItem={renderItem}
-        onAdd={addItem}
-        wrapItem={wrapItem}
-      />
+      {items?.map((item, index) =>
+        wrapItem(
+          <ArrayItem
+            key={`${items.length}-${index}`}
+            defaultValue={item}
+            renderItem={renderItem}
+            onUpdate={(value) => updateAtIndex(index, value)}
+            onDelete={() => deleteAtIndex(index)}
+          />
+        )
+      )}
+
+      <Button
+        type="button"
+        variant="outline"
+        onClick={(e) => {
+          e.preventDefault();
+          addItem(emptyItem);
+        }}
+      >
+        <Plus /> {children}
+      </Button>
     </>
   );
 };
