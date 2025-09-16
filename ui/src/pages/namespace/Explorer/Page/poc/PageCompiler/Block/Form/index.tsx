@@ -55,7 +55,10 @@ const FormWithContext = ({ blockProps, blockPath, register }: FormProps) => {
         ): element is
           | HTMLInputElement
           | HTMLSelectElement
-          | HTMLTextAreaElement => "name" in element && !!element.name
+          | HTMLTextAreaElement =>
+          element instanceof HTMLInputElement ||
+          element instanceof HTMLSelectElement ||
+          element instanceof HTMLTextAreaElement
       )
       .map((element) => element.name);
     register(fields);

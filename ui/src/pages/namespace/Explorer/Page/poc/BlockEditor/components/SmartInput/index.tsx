@@ -11,6 +11,7 @@ import { InputWithButton } from "~/design/InputWithButton";
 import { Textarea } from "~/design/TextArea";
 import { TreePicker } from "../TreePicker";
 import { addSnippetToInputValue } from "./utils";
+import { localVariableNamespace } from "../../../schema/primitives/variable";
 import { usePageEditorPanel } from "../../EditorPanelProvider";
 import { useTranslation } from "react-i18next";
 
@@ -34,7 +35,7 @@ export const SmartInput = ({
   const [textarea, setTextarea] = useState<HTMLTextAreaElement | null>();
 
   const preventSubmit = useCallback((path: string[]) => {
-    if (path[0] === "this" && path.length > 1) return false;
+    if (path[0] === localVariableNamespace && path.length > 1) return false;
     if (path.length > 2) return false;
     return true;
   }, []);
