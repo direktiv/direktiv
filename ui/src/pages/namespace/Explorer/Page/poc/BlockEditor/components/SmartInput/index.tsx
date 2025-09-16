@@ -1,6 +1,7 @@
 import { Check, HelpCircleIcon, Maximize2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
+import { useCallback, useState } from "react";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
@@ -11,7 +12,6 @@ import { Textarea } from "~/design/TextArea";
 import { TreePicker } from "../TreePicker";
 import { addSnippetToInputValue } from "./utils";
 import { usePageEditorPanel } from "../../EditorPanelProvider";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export const SmartInput = ({
@@ -32,6 +32,12 @@ export const SmartInput = ({
   );
   const { panel } = usePageEditorPanel();
   const [textarea, setTextarea] = useState<HTMLTextAreaElement | null>();
+
+  const preventSubmit = useCallback((path: string[]) => {
+    if (path[0] === "this" && path.length > 1) return false;
+    if (path.length > 2) return false;
+    return true;
+  }, []);
 
   if (!panel) return null;
 
@@ -87,7 +93,7 @@ export const SmartInput = ({
                       })
                     }
                     placeholders={variableSegmentPlaceholders}
-                    minDepth={3}
+                    preventSubmit={preventSubmit}
                   />
                   <Popover>
                     <PopoverTrigger asChild>

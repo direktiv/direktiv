@@ -24,7 +24,7 @@ type TreePickerProps = {
   label: string;
   tree: Tree;
   onSubmit: (value: string) => void;
-  minDepth?: number;
+  preventSubmit: (path: string[]) => boolean;
   container?: HTMLDivElement;
   placeholders?: string[];
 };
@@ -34,13 +34,14 @@ export const TreePicker: FC<TreePickerProps> = ({
   tree,
   container,
   placeholders = [],
-  minDepth = 0,
+  preventSubmit = () => false,
   onSubmit,
 }) => {
   const { t } = useTranslation();
   const [path, setPath] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const currentTree = useMemo(() => getSublist(tree, path), [path, tree]);
+  const disabled = useMemo(() => preventSubmit(path), [preventSubmit, path]);
 
   const previewLength = Math.max(placeholders.length, path.length);
   const previewPath = Array.from({ length: previewLength }, (_, index) => (
@@ -54,7 +55,6 @@ export const TreePicker: FC<TreePickerProps> = ({
     </Fragment>
   ));
 
-  const allowSubmit = path.length >= minDepth;
   const allowCustomSegment = search.length > 0;
   const formattedPath = `{{${path.join(".")}}}`;
 
@@ -134,7 +134,7 @@ export const TreePicker: FC<TreePickerProps> = ({
                 variant="outline"
                 icon
                 type="button"
-                disabled={!allowSubmit}
+                disabled={disabled}
                 onClick={() => {
                   onSubmit(formattedPath);
                   setPath([]);
