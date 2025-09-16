@@ -25,9 +25,10 @@ export type BlockPathType = number[];
 type BlockProps = {
   block: BlockType;
   blockPath: BlockPathType;
+  register?: (fields: string[]) => void;
 };
 
-export const Block = ({ block, blockPath }: BlockProps) => {
+export const Block = ({ block, blockPath, register }: BlockProps) => {
   const { t } = useTranslation();
   const renderContent = () => {
     switch (block.type) {
@@ -52,7 +53,9 @@ export const Block = ({ block, blockPath }: BlockProps) => {
       case "table":
         return <Table blockProps={block} />;
       case "form":
-        return <Form blockProps={block} blockPath={blockPath} />;
+        return (
+          <Form blockProps={block} blockPath={blockPath} register={register} />
+        );
       case "form-string-input":
         return <FormStringInput blockProps={block} />;
       case "form-number-input":

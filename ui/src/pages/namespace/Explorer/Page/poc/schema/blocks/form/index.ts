@@ -14,6 +14,7 @@ export type FormType = {
   trigger: TriggerBlockType;
   mutation: MutationType;
   blocks: BlockType[];
+  register?: (fields: string[]) => void;
 };
 
 export const Form = z.object({

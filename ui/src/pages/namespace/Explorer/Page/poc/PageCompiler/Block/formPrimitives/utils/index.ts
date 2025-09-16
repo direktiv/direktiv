@@ -11,7 +11,7 @@ export const encodeBlockKey = (
 ) =>
   [blockType, elementId, optional ? "optional" : "required"].join(keySeparator);
 
-const decodeBlockKey = (blockKey: string) => {
+export const decodeBlockKey = (blockKey: string) => {
   const [blockType, elementId, optional] = blockKey.split(keySeparator, 3);
   if (!blockType || !elementId || !optional)
     throw new Error("invalid form element name");

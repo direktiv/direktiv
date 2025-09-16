@@ -1,6 +1,12 @@
 import {
-  PropsWithChildren,
+  LocalVariables,
+  useVariablesContext,
+} from "../../primitives/Variable/VariableContext";
+import {
+  ReactElement,
   Suspense,
+  cloneElement,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -19,18 +25,19 @@ import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { SortableItem } from "~/design/DragAndDrop/Draggable";
+import { decodeBlockKey } from "../formPrimitives/utils";
 import { isEmptyContainerBlock } from "./useIsInvisbleBlock";
 import { twMergeClsx } from "~/util/helpers";
 import { useDndContext } from "@dnd-kit/core";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 import { useTranslation } from "react-i18next";
 import { useValidateDropzone } from "./useValidateDropzone";
-import { useVariablesContext } from "../../primitives/Variable/VariableContext";
 
-type BlockWrapperProps = PropsWithChildren<{
+type BlockWrapperProps = {
   blockPath: BlockPathType;
   block: BlockType;
-}>;
+  children: ReactElement;
+};
 
 const EditorBlockWrapper = ({
   block,
@@ -39,13 +46,36 @@ const EditorBlockWrapper = ({
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
   const page = usePage();
-  const variables = useVariablesContext();
   const { panel, setPanel } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
+  const contextVariables = useVariablesContext();
+  const [localVariables, setLocalVariables] = useState<LocalVariables>({
+    this: {},
+  });
   const validateDropzone = useValidateDropzone();
   const containerRef = useRef<HTMLDivElement>(null);
   const dndContext = useDndContext();
   const isDragging = !!dndContext.active;
+
+  const register = useCallback((fields: string[]) => {
+    const localVariables = fields.reduce(
+      (acc, field) => {
+        const [, elementId] = decodeBlockKey(field);
+        acc[elementId] = "";
+        return acc;
+      },
+      {} as Record<string, unknown>
+    );
+    return setLocalVariables({ this: localVariables });
+  }, []);
+
+  const variables = useMemo(
+    () =>
+      block.type === "form"
+        ? { ...contextVariables, ...localVariables }
+        : contextVariables,
+    [block, contextVariables, localVariables]
+  );
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -146,7 +176,11 @@ const EditorBlockWrapper = ({
                 </ParsingError>
               )}
             >
-              {children}
+              {isFocused && block.type === "form"
+                ? cloneElement(children, {
+                    register,
+                  })
+                : children}
             </ErrorBoundary>
           </Suspense>
         </div>

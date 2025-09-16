@@ -3,6 +3,7 @@ import {
   FormValidationContextProvider,
   useFormValidation,
 } from "./FormValidationContext";
+import { useEffect, useRef } from "react";
 
 import Alert from "~/design/Alert";
 import { BlockList } from "../utils/BlockList";
@@ -17,13 +18,15 @@ import { useTranslation } from "react-i18next";
 type FormProps = {
   blockProps: FormType;
   blockPath: BlockPathType;
+  register?: (fields: string[]) => void;
 };
 
-const FormWithContext = ({ blockProps, blockPath }: FormProps) => {
+const FormWithContext = ({ blockProps, blockPath, register }: FormProps) => {
   const { mutation, trigger } = blockProps;
   const { t } = useTranslation();
   const { toast } = useToast();
   const { missingFields, setMissingFields } = useFormValidation();
+  const ref = useRef<HTMLFormElement>(null);
 
   const missingFieldsNote =
     missingFields.length > 0 &&
@@ -41,8 +44,26 @@ const FormWithContext = ({ blockProps, blockPath }: FormProps) => {
       });
     },
   });
+
+  useEffect(() => {
+    if (!register || !ref.current) return;
+
+    const fields = Array.from(ref.current.elements)
+      .filter(
+        (
+          element
+        ): element is
+          | HTMLInputElement
+          | HTMLSelectElement
+          | HTMLTextAreaElement => "name" in element && !!element.name
+      )
+      .map((element) => element.name);
+    register(fields);
+  }, [register]);
+
   return (
     <form
+      ref={ref}
       onSubmit={(formEvent) => {
         setMissingFields([]);
         formEvent.preventDefault();
