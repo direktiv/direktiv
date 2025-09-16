@@ -220,7 +220,7 @@ A query is an API `GET`-request that reads data from the server
 
 ## `Variable`
 
-A Variable is a string that references dynamic data from various sources within the page. Variables follow the structure `namespace.id.pointer` and are resolved at runtime to access contextual data.
+A variable is a string that references dynamic data from a data source in the page. Variables follow the structure `namespace.id.pointer` and are resolved at runtime.
 
 ### Structure
 
