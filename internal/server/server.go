@@ -34,6 +34,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"k8s.io/utils/clock"
 )
 
 //nolint:gocognit
@@ -178,7 +179,7 @@ func Start(lc *lifecycle.Manager) error {
 		}
 
 		slog.Info("initializing scheduler")
-		app.Scheduler = sched.New(js)
+		app.Scheduler = sched.New(js, clock.RealClock{}, slog.With("component", "scheduler"))
 		err = app.Scheduler.Start(lc)
 		if err != nil {
 			return fmt.Errorf("start scheduler, err: %w", err)

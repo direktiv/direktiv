@@ -44,6 +44,7 @@ require (
 	k8s.io/api v0.34.0
 	k8s.io/apimachinery v0.34.0
 	k8s.io/client-go v0.34.0
+	k8s.io/utils v0.0.0-20250820121507-0af2bda4dd1d
 	knative.dev/serving v0.46.4
 )
 
@@ -151,6 +152,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
@@ -183,7 +185,6 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250902184714-7fc278399c7f // indirect
-	k8s.io/utils v0.0.0-20250820121507-0af2bda4dd1d // indirect
 	knative.dev/networking v0.0.0-20250903015244-1dd9be99b5c9 // indirect
 	knative.dev/pkg v0.0.0-20250903014743-528bde37b646 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect

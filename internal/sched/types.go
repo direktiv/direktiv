@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/nats-io/nats.go"
 )
 
 type Kind string
@@ -20,7 +22,7 @@ type Rule struct {
 	Namespace    string `json:"namespace"`
 	WorkflowPath string `json:"workflowPath"`
 	Kind         Kind   `json:"kind"`
-	CronExpr     int    `json:"cronExpr,omitempty"`
+	CronExpr     string `json:"cronExpr,omitempty"`
 
 	RunAt     time.Time `json:"runAt"`
 	CreatedAt time.Time `json:"createdAt"`
@@ -61,4 +63,9 @@ type Task struct {
 	WorkflowPath string    `json:"workflowPath"`
 	RunAt        time.Time `json:"runAt"`
 	CreatedAt    time.Time `json:"createdAt"`
+}
+
+type JetStream interface {
+	Publish(subj string, data []byte, opts ...nats.PubOpt) (*nats.PubAck, error)
+	Subscribe(subj string, cb nats.MsgHandler, opts ...nats.SubOpt) (*nats.Subscription, error)
 }
