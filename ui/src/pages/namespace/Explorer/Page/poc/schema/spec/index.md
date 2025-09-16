@@ -245,7 +245,7 @@ Variables are scoped based on their namespace:
 
 - `query.user.data.name`
 
-  - `query` (namespace): References data from a query within a QueryProvider block
+  - `query` (namespace): References data provided by a QueryProvider block.
   - `user` (id): The specific query with id "user"
   - `data.name` (pointer): Navigates to the `name` field in the `data` object of the JSON response
 
