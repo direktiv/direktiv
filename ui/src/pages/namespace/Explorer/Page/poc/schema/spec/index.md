@@ -231,7 +231,7 @@ A variable is a string that references dynamic data from a data source in the pa
 ### Available Namespaces
 
 - **`query`**: References data from Query blocks. The `id` is the query's unique identifier, and the `pointer` navigates the JSON response.
-- **`loop`**: References data from Loop blocks. The `id` is the loop's unique identifier, and the `pointer` accesses the current item in the iteration.
+- **`loop`**: References data provided by a loop block. The `id` is the loop block's unique identifier. The `pointer` is evaluated in each iteration, specifying a property of the current item.
 - **`this`**: References local variables within the current context, such as form submission data in a form block. Currently, `form` is the only block type that supports the `this` namespace. In this namespace, the `id` specifies the form primitive and `pointer` is not supported as the primitive already holds the value and no further pointer is needed.
 
 ### Variable Scoping
