@@ -261,7 +261,7 @@ Variables are scoped based on their namespace:
 
 ## `TemplateString`
 
-A template string is a string that can have `Variable` placeholders that will be filled with dynamic data. Variables in template strings will always be stringified if possible. If a variable cannot be stringified, it will throw an error.
+A template string may contain `Variable` placeholders that will be filled with dynamic data. Variables in template strings will always be stringified if possible. If a variable cannot be stringified, it will throw an error.
 
 **Example**
 
