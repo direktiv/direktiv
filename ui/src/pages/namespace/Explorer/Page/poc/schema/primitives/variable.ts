@@ -4,12 +4,13 @@ export const Variable = z.string().min(1);
 
 export type VariableType = z.infer<typeof Variable>;
 
-const contextVariableNamespaces = ["query", "loop"] as const;
-const localVariableNamespace = "this" as const;
+export const contextVariableNamespaces = ["query", "loop"] as const;
+export const localVariableNamespace = "this" as const;
 
-export type ContextVariableNamespace =
-  (typeof contextVariableNamespaces)[number];
+type ContextVariableNamespace = (typeof contextVariableNamespaces)[number];
+
 export type LocalVariableNamespace = typeof localVariableNamespace;
+
 type VariableNamespace = ContextVariableNamespace | LocalVariableNamespace;
 
 export const VariableNamespaceSchema = z.enum([
@@ -35,9 +36,16 @@ export type VariableObject = {
   pointer: string | undefined;
 };
 
-export type VariableObjectValidated = {
-  src: string;
-  namespace: VariableNamespace;
-  id: string;
-  pointer: string;
-};
+export type VariableObjectValidated =
+  | {
+      src: string;
+      namespace: ContextVariableNamespace;
+      id: string;
+      pointer: string;
+    }
+  | {
+      src: string;
+      namespace: LocalVariableNamespace;
+      id: string;
+      pointer?: never;
+    };

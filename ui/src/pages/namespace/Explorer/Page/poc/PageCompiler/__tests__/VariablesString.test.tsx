@@ -1,5 +1,5 @@
 import { HttpResponse, http } from "msw";
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import {
   afterAll,
   afterEach,
@@ -58,6 +58,70 @@ describe("VariableString", () => {
       expect(screen.getByRole("alert").textContent).toBe(
         "thisDoesNotExist (namespaceInvalid)"
       );
+    });
+
+    test("shows an error when the variable uses the 'this' namespace outside of a form block", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPage([
+              {
+                type: "headline",
+                level: "h1",
+                label:
+                  "using this namespace outside of a form: {{this.fieldName}}",
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+
+      expect(screen.getByRole("alert").textContent).toBe(
+        "this.fieldName (ThisNotAvailable)"
+      );
+    });
+
+    test("shows an error when the variable uses 'this' references a non-existent field", async () => {
+      await act(async () => {
+        render(
+          <PageCompiler
+            setPage={setPage}
+            page={createDirektivPage([
+              {
+                type: "form",
+                trigger: {
+                  type: "button",
+                  label: "save",
+                },
+                mutation: {
+                  method: "POST",
+                  url: "/test",
+                  queryParams: [
+                    {
+                      key: "string",
+                      value: "{{this.this-field-does-not-exist}}",
+                    },
+                  ],
+                },
+                blocks: [],
+              },
+            ])}
+            mode="live"
+          />
+        );
+      });
+
+      await screen.getByRole("button", { name: "save" }).click();
+
+      await waitFor(() => {
+        expect(
+          screen.getAllByText(
+            "Variable error (this.this-field-does-not-exist): Could not find any state for the id."
+          )
+        );
+      });
     });
 
     test("shows an error when the variable has no id", async () => {

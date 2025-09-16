@@ -15,7 +15,7 @@ import {
 import { BlockEditFormProps } from ".";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "./components/FormWrapper";
-import Input from "~/design/Input";
+import { SmartInput } from "./components/SmartInput";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -50,8 +50,9 @@ export const Headline = ({
         label={t("direktivPage.blockEditor.blockForms.headline.labelLabel")}
         htmlFor="label"
       >
-        <Input
-          {...form.register("label")}
+        <SmartInput
+          value={form.watch("label")}
+          onUpdate={(value) => form.setValue("label", value)}
           id="label"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.headline.labelPlaceholder"

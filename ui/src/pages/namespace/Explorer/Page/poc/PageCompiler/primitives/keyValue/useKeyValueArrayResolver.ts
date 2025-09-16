@@ -8,7 +8,7 @@ import { useStringInterpolation } from "../Variable/utils/useStringInterpolation
  *
  * keyValueArray:
  * [
- *   { key: "name", value: "{{this.form.firstName}} {{this.form.lastName}}" },
+ *   { key: "name", value: "{{this.firstName}} {{this.lastName}}" },
  *   { key: "created-at", value: "{{query.user.data.createdAt}}" }
  * ]
  *

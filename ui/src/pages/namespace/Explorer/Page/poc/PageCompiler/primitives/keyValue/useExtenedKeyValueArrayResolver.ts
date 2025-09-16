@@ -15,7 +15,7 @@ import { useVariableResolver } from "../Variable/utils/useVariableResolver";
  *     key: "name",
  *     value: {
  *       type: "string",
- *       value: "{{this.form.firstName}} {{this.form.lastName}}",
+ *       value: "{{this.firstName}} {{this.lastName}}",
  *     },
  *   },
  *   {

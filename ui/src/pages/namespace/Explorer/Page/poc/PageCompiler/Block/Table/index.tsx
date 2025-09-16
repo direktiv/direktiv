@@ -36,7 +36,7 @@ export const Table = ({ blockProps }: TableProps) => {
 
   const variableArray = resolveVariableArray(loop.data);
 
-  if (parentVariables.loop[loop.id]) {
+  if (parentVariables.loop?.[loop.id]) {
     throw new Error(t("direktivPage.error.duplicateId", { id: loop.id }));
   }
 

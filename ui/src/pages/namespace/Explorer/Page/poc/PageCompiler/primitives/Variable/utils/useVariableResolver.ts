@@ -7,7 +7,8 @@ import {
 
 import { ResolveVariableError } from "./errors";
 import { ResolverFunction } from "./types";
-import { useMergeLocalWithContextVariables } from "../LocalVariables";
+import { localVariableNamespace } from "../../../../schema/primitives/variable";
+import { useVariablesContext } from "../VariableContext";
 
 /**
  * A hook that returns a function to resolve a variable path string to its
@@ -23,31 +24,37 @@ export const useVariableResolver = (): ResolverFunction<
   JsonValueType,
   ResolveVariableError
 > => {
-  const mergeLocalWithContextVariables = useMergeLocalWithContextVariables();
+  const contextVariables = useVariablesContext();
+
   return (value, localVariables) => {
-    const variables = mergeLocalWithContextVariables(localVariables);
     const variableObject = parseVariable(value);
     const validationResult = validateVariable(variableObject);
 
     if (!validationResult.success) {
       return { success: false, error: validationResult.error };
     }
-
     const { id, pointer, namespace } = validationResult.data;
 
-    if (!variables[namespace][id]) {
-      return { success: false, error: "NoStateForId" };
+    if (namespace === localVariableNamespace) {
+      if (localVariables === undefined) {
+        return { success: false, error: "ThisNotAvailable" };
+      }
+      const localVariableContent = localVariables[id];
+      if (localVariableContent === undefined) {
+        return { success: false, error: "NoStateForId" };
+      }
+      return { success: true, data: localVariableContent as JsonValueType };
+    } else {
+      const contextState = contextVariables[namespace]?.[id];
+      if (!contextState) {
+        return { success: false, error: "NoStateForId" };
+      }
+      const variableContent = getValueFromJsonPath(contextState, pointer);
+      if (!variableContent.success) {
+        return { success: false, error: variableContent.error };
+      }
+
+      return { success: true, data: variableContent.data };
     }
-
-    const jsonPathResult = getValueFromJsonPath(
-      variables[namespace][id],
-      pointer
-    );
-
-    if (!jsonPathResult.success) {
-      return { success: false, error: jsonPathResult.error };
-    }
-
-    return { success: true, data: jsonPathResult.data };
   };
 };
