@@ -208,7 +208,7 @@ A mutation is an API request that modifies data on the server
 
 ## `Query`
 
-A query is a API `GET`-request that reads data from the server
+A query is an API `GET`-request that reads data from the server
 
 | Attribute      | Type             | Description                            |
 | -------------- | ---------------- | -------------------------------------- |
