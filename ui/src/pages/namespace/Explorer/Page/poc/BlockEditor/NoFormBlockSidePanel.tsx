@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 type NoFormBlockProps = Omit<
   BlockEditFormProps<NoFormBlockType>,
-  "onSubmit" | "onCancel"
+  "onSubmit" | "onCancel" | "variables"
 >;
 
 export const NoFormBlockSidePanel = ({

@@ -6,6 +6,7 @@ import { Loading } from "./Loading";
 import { twMergeClsx } from "~/util/helpers";
 import { usePageStateContext } from "../../context/pageCompilerContext";
 import { useValidateDropzone } from "./useValidateDropzone";
+import { useVariablesContext } from "../../primitives/Variable/VariableContext";
 
 type BlockListProps = {
   horizontal?: boolean;
@@ -39,8 +40,12 @@ const EditorBlockList = ({
   path,
 }: BlockListComponentProps) => {
   const validateDropzone = useValidateDropzone();
+  const variables = useVariablesContext();
 
-  const dropzonePayload = useMemo(() => ({ targetPath: [...path, 0] }), [path]);
+  const dropzonePayload = useMemo(
+    () => ({ targetPath: [...path, 0], variables }),
+    [path, variables]
+  );
 
   return (
     <BlockListWrapper horizontal={horizontal}>

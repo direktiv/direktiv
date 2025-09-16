@@ -9,6 +9,7 @@ import { ActionPanel } from "./components/EditorPanel/ActionPanel";
 import { BlockDeleteForm } from "./components/Delete";
 import { BlockPathType } from "../PageCompiler/Block";
 import { BlockType } from "../schema/blocks";
+import { ContextVariables } from "../PageCompiler/primitives/Variable/VariableContext";
 import { DefaultPanel } from "./components/EditorPanel/DefaultPanel";
 import { DndContext } from "~/design/DragAndDrop";
 import { DragAndDropPayloadSchemaType } from "~/design/DragAndDrop/schema";
@@ -19,6 +20,7 @@ export type EditorPanelAction = {
   action: "create" | "edit" | "delete";
   block: BlockType;
   path: BlockPathType;
+  variables: ContextVariables;
 };
 
 type EditorPanelState = null | EditorPanelAction;
@@ -52,7 +54,11 @@ export const EditorPanelLayoutProvider = ({
   const [dialog, setDialog] = useState<EditorDialogState>(null);
   const { mode } = usePageStateContext();
 
-  const createBlock = (type: BlockType["type"], path: BlockPathType) => {
+  const createBlock = (
+    type: BlockType["type"],
+    path: BlockPathType,
+    variables: ContextVariables
+  ) => {
     const blockConfig = getBlockConfig(type);
 
     if (!blockConfig) throw new Error(`No blockConfig found for ${type}`);
@@ -64,13 +70,14 @@ export const EditorPanelLayoutProvider = ({
       action: "create",
       block: blockConfig.defaultValues,
       path,
+      variables,
     });
   };
 
   const onDrop = (payload: DragAndDropPayloadSchemaType) => {
     const { drag, drop } = payload;
     if (drag.type === "add") {
-      createBlock(drag.blockType, [...drop.targetPath]);
+      createBlock(drag.blockType, [...drop.targetPath], drop.variables);
     }
     if (drag.type === "move") {
       moveBlock(drag.originPath, drop.targetPath, drag.block);
@@ -78,6 +85,7 @@ export const EditorPanelLayoutProvider = ({
         action: "edit",
         path: drop.targetPath,
         block: drag.block,
+        variables: drop.variables,
       });
     }
   };
@@ -86,7 +94,12 @@ export const EditorPanelLayoutProvider = ({
     return (
       <DndContext onDrop={onDrop} onDrag={() => setPanel(null)}>
         <EditorPanelContext.Provider
-          value={{ panel, setPanel, dialog, setDialog }}
+          value={{
+            panel,
+            setPanel,
+            dialog,
+            setDialog,
+          }}
         >
           <div className="grow sm:grid sm:grid-cols-[350px_1fr]">
             {panel?.action ? <ActionPanel panel={panel} /> : <DefaultPanel />}

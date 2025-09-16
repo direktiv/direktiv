@@ -45,7 +45,7 @@ export const useVariableResolver = (): ResolverFunction<
       }
       return { success: true, data: localVariableContent as JsonValueType };
     } else {
-      const contextState = contextVariables[namespace][id];
+      const contextState = contextVariables[namespace]?.[id];
       if (!contextState) {
         return { success: false, error: "NoStateForId" };
       }
