@@ -257,7 +257,7 @@ Variables are scoped based on their namespace:
 
 - `this.username`
   - `this` (namespace): References local variables within the current context
-  - `username` (id): Searches for the form primitive with the id "username" and uses that value
+  - `username` (id): References the value of the form primitive with the id "username"
 
 ## `TemplateString`
 
