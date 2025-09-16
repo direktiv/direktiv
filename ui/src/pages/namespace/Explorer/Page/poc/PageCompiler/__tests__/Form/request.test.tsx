@@ -121,9 +121,8 @@ describe("form request", () => {
           <PageCompiler
             setPage={setPage}
             page={createDirektivPageWithForm(form, {
-              id: "delete-blog-post",
               method: "DELETE",
-              url: "/blog-post/{{query.user.data.userId}}/{{this.form.string}}",
+              url: "/blog-post/{{query.user.data.userId}}/{{this.string}}",
             })}
             mode="live"
           />
@@ -148,7 +147,6 @@ describe("form request", () => {
           <PageCompiler
             setPage={setPage}
             page={createDirektivPageWithForm(form, {
-              id: "save-user",
               method: "POST",
               url: "/save-user/{{query.user.data.profile}}",
             })}
@@ -174,7 +172,6 @@ describe("form request", () => {
           <PageCompiler
             setPage={setPage}
             page={createDirektivPageWithForm(form, {
-              id: "save-user",
               method: "POST",
               url: "/save-user",
               queryParams: [
@@ -196,35 +193,35 @@ describe("form request", () => {
                 },
                 {
                   key: "input-string",
-                  value: "{{this.form.string}}",
+                  value: "{{this.string}}",
                 },
                 {
                   key: "textarea",
-                  value: "{{this.form.textarea}}",
+                  value: "{{this.textarea}}",
                 },
                 {
                   key: "checkbox-checked",
-                  value: "{{this.form.checkbox-checked}}",
+                  value: "{{this.checkbox-checked}}",
                 },
                 {
                   key: "checkbox-unchecked",
-                  value: "{{this.form.checkbox-unchecked}}",
+                  value: "{{this.checkbox-unchecked}}",
                 },
                 {
                   key: "input-number",
-                  value: "{{this.form.number}}",
+                  value: "{{this.number}}",
                 },
                 {
                   key: "input-floating-number",
-                  value: "{{this.form.floating-number}}",
+                  value: "{{this.floating-number}}",
                 },
                 {
                   key: "input-date",
-                  value: "{{this.form.date}}",
+                  value: "{{this.date}}",
                 },
                 {
                   key: "select",
-                  value: "{{this.form.select}}",
+                  value: "{{this.select}}",
                 },
               ],
             })}
@@ -251,7 +248,6 @@ describe("form request", () => {
           <PageCompiler
             setPage={setPage}
             page={createDirektivPageWithForm(form, {
-              id: "save-user",
               method: "POST",
               url: "/save-user",
               queryParams: [
@@ -283,7 +279,6 @@ describe("form request", () => {
           <PageCompiler
             setPage={setPage}
             page={createDirektivPageWithForm(form, {
-              id: "save-user",
               method: "POST",
               url: "/save-user",
               requestHeaders: [
@@ -305,36 +300,35 @@ describe("form request", () => {
                 },
                 {
                   key: "Input-String",
-                  value: "Input String: {{this.form.string}}",
+                  value: "Input String: {{this.string}}",
                 },
                 {
                   key: "Textarea",
-                  value: "Textarea: {{this.form.textarea}}",
+                  value: "Textarea: {{this.textarea}}",
                 },
                 {
                   key: "Checkbox-Checked",
-                  value: "Checkbox (checked): {{this.form.checkbox-checked}}",
+                  value: "Checkbox (checked): {{this.checkbox-checked}}",
                 },
                 {
                   key: "Checkbox-Unchecked",
-                  value:
-                    "Checkbox (unchecked): {{this.form.checkbox-unchecked}}",
+                  value: "Checkbox (unchecked): {{this.checkbox-unchecked}}",
                 },
                 {
                   key: "Input-Number",
-                  value: "Input Number: {{this.form.number}}",
+                  value: "Input Number: {{this.number}}",
                 },
                 {
                   key: "Input-Floating-Number",
-                  value: "Input Floating Number: {{this.form.floating-number}}",
+                  value: "Input Floating Number: {{this.floating-number}}",
                 },
                 {
                   key: "Input-Date",
-                  value: "Input Date: {{this.form.date}}",
+                  value: "Input Date: {{this.date}}",
                 },
                 {
                   key: "Select",
-                  value: "Select: {{this.form.select}}",
+                  value: "Select: {{this.select}}",
                 },
               ],
             })}
@@ -386,7 +380,6 @@ describe("form request", () => {
           <PageCompiler
             setPage={setPage}
             page={createDirektivPageWithForm(form, {
-              id: "save-user",
               method: "POST",
               url: "/save-user",
               requestHeaders: [
@@ -418,7 +411,6 @@ describe("form request", () => {
           <PageCompiler
             setPage={setPage}
             page={createDirektivPageWithForm(form, {
-              id: "save-user",
               method: "POST",
               url: "/save-user",
               requestBody: [
@@ -454,58 +446,56 @@ describe("form request", () => {
                   key: "input-string",
                   value: {
                     type: "string",
-                    value: "Input String: {{this.form.string}}",
+                    value: "Input String: {{this.string}}",
                   },
                 },
                 {
                   key: "textarea",
                   value: {
                     type: "string",
-                    value: "Textarea: {{this.form.textarea}}",
+                    value: "Textarea: {{this.textarea}}",
                   },
                 },
                 {
                   key: "checkbox-checked",
                   value: {
                     type: "string",
-                    value: "Checkbox (checked): {{this.form.checkbox-checked}}",
+                    value: "Checkbox (checked): {{this.checkbox-checked}}",
                   },
                 },
                 {
                   key: "checkbox-unchecked",
                   value: {
                     type: "string",
-                    value:
-                      "Checkbox (unchecked): {{this.form.checkbox-unchecked}}",
+                    value: "Checkbox (unchecked): {{this.checkbox-unchecked}}",
                   },
                 },
                 {
                   key: "input-number",
                   value: {
                     type: "string",
-                    value: "Input Number: {{this.form.number}}",
+                    value: "Input Number: {{this.number}}",
                   },
                 },
                 {
                   key: "input-floating-number",
                   value: {
                     type: "string",
-                    value:
-                      "Input Floating Number: {{this.form.floating-number}}",
+                    value: "Input Floating Number: {{this.floating-number}}",
                   },
                 },
                 {
                   key: "input-date",
                   value: {
                     type: "string",
-                    value: "Input Date: {{this.form.date}}",
+                    value: "Input Date: {{this.date}}",
                   },
                 },
                 {
                   key: "select",
                   value: {
                     type: "string",
-                    value: "Select: {{this.form.select}}",
+                    value: "Select: {{this.select}}",
                   },
                 },
               ],
@@ -553,7 +543,6 @@ describe("form request", () => {
           <PageCompiler
             setPage={setPage}
             page={createDirektivPageWithForm(form, {
-              id: "save-user",
               method: "POST",
               url: "/save-user",
               requestBody: [
@@ -589,56 +578,56 @@ describe("form request", () => {
                   key: "input-string",
                   value: {
                     type: "variable",
-                    value: "this.form.string",
+                    value: "this.string",
                   },
                 },
                 {
                   key: "textarea",
                   value: {
                     type: "variable",
-                    value: "this.form.textarea",
+                    value: "this.textarea",
                   },
                 },
                 {
                   key: "checkbox-checked",
                   value: {
                     type: "variable",
-                    value: "this.form.checkbox-checked",
+                    value: "this.checkbox-checked",
                   },
                 },
                 {
                   key: "checkbox-unchecked",
                   value: {
                     type: "variable",
-                    value: "this.form.checkbox-unchecked",
+                    value: "this.checkbox-unchecked",
                   },
                 },
                 {
                   key: "input-number",
                   value: {
                     type: "variable",
-                    value: "this.form.number",
+                    value: "this.number",
                   },
                 },
                 {
                   key: "input-floating-number",
                   value: {
                     type: "variable",
-                    value: "this.form.floating-number",
+                    value: "this.floating-number",
                   },
                 },
                 {
                   key: "input-date",
                   value: {
                     type: "variable",
-                    value: "this.form.date",
+                    value: "this.date",
                   },
                 },
                 {
                   key: "select",
                   value: {
                     type: "variable",
-                    value: "this.form.select",
+                    value: "this.select",
                   },
                 },
                 {
@@ -709,7 +698,6 @@ describe("form request", () => {
           <PageCompiler
             setPage={setPage}
             page={createDirektivPageWithForm(form, {
-              id: "save-user",
               method: "POST",
               url: "/save-user",
               requestBody: [
@@ -752,7 +740,6 @@ describe("form request", () => {
           <PageCompiler
             setPage={setPage}
             page={createDirektivPageWithForm(form, {
-              id: "save-user",
               method: "POST",
               url: "/save-user",
               requestBody: [
@@ -795,7 +782,6 @@ describe("form request", () => {
           <PageCompiler
             setPage={setPage}
             page={createDirektivPageWithForm(form, {
-              id: "save-user",
               method: "POST",
               url: "/save-user",
               requestBody: [

@@ -1,5 +1,5 @@
 import { JsonValueType } from "../Variable/utils";
-import { LocalVariablesContent } from "../Variable/LocalVariables";
+import { LocalVariablesContent } from "../Variable/VariableContext";
 
 export type KeyValueResolverFunction<InputType> = (
   value: InputType,

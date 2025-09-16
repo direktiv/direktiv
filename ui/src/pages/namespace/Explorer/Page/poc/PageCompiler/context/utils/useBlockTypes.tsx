@@ -176,7 +176,6 @@ export const blockTypes: BlockTypeConfig[] = [
     defaultValues: {
       type: "form",
       mutation: {
-        id: "",
         url: "",
         method: "POST",
       },
