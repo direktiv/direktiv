@@ -43,7 +43,7 @@ func (s *Scheduler) dispatchIfDue(rule *Rule) error {
 	}
 
 	// publish task
-	id := rule.ID + "-" + runAt.Format(time.RFC3339Nano)
+	id := fmt.Sprintf("%s-%d", rule.ID, runAt.UTC().Unix())
 	data, _ := json.Marshal(Task{
 		ID:           id,
 		Namespace:    rule.Namespace,
@@ -84,7 +84,6 @@ func (s *Scheduler) dispatchIfDue(rule *Rule) error {
 }
 
 func (s *Scheduler) processDueRules() error {
-
 	// snapshot rules in cache
 	rules := s.cache.Snapshot("")
 	for _, rule := range rules {
