@@ -249,7 +249,7 @@ Variables are scoped based on their namespace:
   - `user` (id): The specific query with id "user"
   - `data.name` (pointer): Navigates to the `name` field in the `data` object of the JSON response
 
-- `loop.items.data.title`
+- `loop.users.data.title`
 
   - `loop` (namespace): References data from a Loop block
   - `items` (id): The specific loop block with id "items"
