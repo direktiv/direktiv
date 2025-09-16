@@ -3,7 +3,7 @@
 ## Principles
 
 - Page documents have no knowledge of the Direktiv Gateway. API requests are defined as generic fetch requests. However the UI can help the user pick a proper endpoint by suggesting routes that are available in the current environment. This principle makes a page document more portable and independent of the gateway's specification. This means if a user updates a gateway's endpoint, they also have to update all potential pages that use these endpoints.
-- The specification by design allows for the composition of sections that can result in invalid or unexpected behavior, similar to HTML when you combine tags inappropriately, like a button inside a button or a div inside a p tag. However, the user interface can be more opinionated about what the user should be allowed to do, such as preventing placing a modal inside another modal.
+- The specification does not restrict composition of elements that can result in invalid or unexpected behavior, similar to HTML when you combine tags inappropriately, like a button inside a button or a div inside a p tag. The user interface is more opinionated about what the user should be allowed to do. For example, it will not allow placing a modal inside another modal.
 
 ## Direktiv Page
 
