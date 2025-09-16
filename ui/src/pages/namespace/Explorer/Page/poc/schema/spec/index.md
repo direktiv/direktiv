@@ -238,7 +238,7 @@ A variable is a string that references dynamic data from a data source in the pa
 
 Variables are scoped based on their namespace:
 
-- **`query`** and **`loop`** variables are available from the block where they are defined and propagate downward through the component tree to child blocks.
+- **`query`** and **`loop`** variables are available in the block where they are first defined, as well as their child blocks.
 - **`this`** variables are only available within the block itself (e.g., form data is accessible only inside the form block).
 
 **Examples**
