@@ -7,6 +7,8 @@ export type JsonPathError = "invalidJson" | "invalidPath";
 
 type VariableError = "NoStateForId";
 
+type ThisNamespaceError = "ThisNotAvailable";
+
 type ArrayError = "notAnArray";
 
 type StringArrayError = "notAnArrayOfStrings";
@@ -20,7 +22,8 @@ type StringifyError = "couldNotStringify";
 export type ResolveVariableError =
   | ValidateVariableError
   | JsonPathError
-  | VariableError;
+  | VariableError
+  | ThisNamespaceError;
 
 export type ResolveVariableArrayError = ResolveVariableError | ArrayError;
 

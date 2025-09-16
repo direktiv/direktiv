@@ -12,7 +12,6 @@ import { BlockEditFormProps } from "..";
 import { ExtendedKeyValueInput } from "../components/FormElements/ExtendedKeyValueInput";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
-import Input from "~/design/Input";
 import { KeyValueInput } from "../components/FormElements/KeyValueInput";
 import { SmartInput } from "../components/SmartInput";
 import { mutationMethods } from "../../schema/procedures/mutation";
@@ -56,18 +55,6 @@ export const Form = ({
           id="trigger-label"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.form.mutation.triggerLabelPlaceholder"
-          )}
-        />
-      </Fieldset>
-      <Fieldset
-        label={t("direktivPage.blockEditor.blockForms.form.mutation.idLabel")}
-        htmlFor="mutation-id"
-      >
-        <Input
-          {...form.register("mutation.id")}
-          id="mutation-id"
-          placeholder={t(
-            "direktivPage.blockEditor.blockForms.form.mutation.idPlaceholder"
           )}
         />
       </Fieldset>
