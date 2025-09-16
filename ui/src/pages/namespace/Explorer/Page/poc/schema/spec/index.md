@@ -251,9 +251,9 @@ Variables are scoped based on their namespace:
 
 - `loop.users.data.title`
 
-  - `loop` (namespace): References data from a Loop block
-  - `items` (id): The specific loop block with id "items"
-  - `title` (pointer): Accesses the `title` field of the current item being iterated over
+  - `loop` (namespace): References data from a loop block
+  - `users` (id): Identifies a specific loop block with id "users"
+  - `email` (pointer): References the "email" field in the current iteration across "users"
 
 - `this.username`
   - `this` (namespace): References local variables within the current context
