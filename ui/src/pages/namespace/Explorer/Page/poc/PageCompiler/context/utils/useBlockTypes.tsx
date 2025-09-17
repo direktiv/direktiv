@@ -123,7 +123,7 @@ export const blockTypes: BlockTypeConfig[] = [
           blocks: [],
         },
         {
-          type: "table-actions",
+          type: "row-actions",
           blocks: [],
         },
       ],

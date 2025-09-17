@@ -20,16 +20,26 @@ export const TableActions = z.object({
   blocks: z.array(z.lazy(() => Block)),
 }) satisfies z.ZodType<TableActionsType>;
 
+export type RowActionsType = {
+  type: "row-actions";
+  blocks: BlockType[];
+};
+
+export const RowActions = z.object({
+  type: z.literal("row-actions"),
+  blocks: z.array(z.lazy(() => Block)),
+}) satisfies z.ZodType<RowActionsType>;
+
 export const Table = z.object({
   type: z.literal("table"),
   data: BlocklessLoop,
-  blocks: z.tuple([TableActions, TableActions]),
+  blocks: z.tuple([TableActions, RowActions]),
   columns: z.array(TableColumn),
 }) satisfies z.ZodType<TableType>;
 
 export type TableType = {
   type: "table";
   data: BlocklessLoopType;
-  blocks: [TableActionsType, TableActionsType];
+  blocks: [TableActionsType, RowActionsType];
   columns: TableColumnType[];
 };
