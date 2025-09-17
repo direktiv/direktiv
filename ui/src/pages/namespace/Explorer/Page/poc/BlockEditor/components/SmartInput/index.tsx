@@ -7,6 +7,10 @@ import {
   DialogTrigger,
 } from "~/design/Dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
+import {
+  VariableNamespace,
+  localVariableNamespace,
+} from "../../../schema/primitives/variable";
 import { useCallback, useState } from "react";
 
 import Button from "~/design/Button";
@@ -17,7 +21,6 @@ import { InputWithButton } from "~/design/InputWithButton";
 import { Textarea } from "~/design/TextArea";
 import { TreePicker } from "../TreePicker";
 import { addSnippetToInputValue } from "./utils";
-import { localVariableNamespace } from "../../../schema/primitives/variable";
 import { usePageEditorPanel } from "../../EditorPanelProvider";
 import { useTranslation } from "react-i18next";
 
@@ -26,11 +29,13 @@ export const SmartInput = ({
   value,
   id,
   placeholder,
+  blacklist,
 }: {
   onUpdate: (value: string) => void;
   value: string;
   id: string;
   placeholder: string;
+  blacklist?: VariableNamespace[];
 }) => {
   const { t } = useTranslation();
   const [dialog, setDialog] = useState(false);
@@ -48,7 +53,13 @@ export const SmartInput = ({
 
   if (!panel) return null;
 
-  const { variables } = panel;
+  const { variables: allVariables } = panel;
+
+  const variables = Object.fromEntries(
+    Object.entries(allVariables).filter(
+      ([key]) => !(blacklist as string[])?.includes(key)
+    )
+  );
 
   const variableSegmentPlaceholders = [
     t("direktivPage.blockEditor.smartInput.templatePlaceholders.namespace"),
