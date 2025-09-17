@@ -1876,7 +1876,9 @@
           "column": "column block",
           "columns": "set of columns",
           "image": "image block",
-          "table": "table block"
+          "table": "table block",
+          "table-actions": "table actions block",
+          "row-actions": "row actions block"
         }
       },
       "smartInput": {

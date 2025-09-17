@@ -111,6 +111,8 @@ export const AvailableBlockTypeAttributes = z.union([
   z.literal("form-select"),
   z.literal("form-textarea"),
   z.literal("form-checkbox"),
+  z.literal("table-actions"),
+  z.literal("row-actions"),
 ]);
 
 export const TriggerBlock = z.discriminatedUnion("type", [Button]);
