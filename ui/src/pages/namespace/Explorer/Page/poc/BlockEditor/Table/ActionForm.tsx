@@ -16,6 +16,7 @@ type ActionFormProps = {
 // TODO:
 // - may use the Fieldset from the dialog
 // - rename this component
+// - problem: this one uses a SmartInput
 export const ActionForm = ({
   defaultValues,
   formId,
