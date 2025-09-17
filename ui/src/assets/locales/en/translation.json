@@ -1760,8 +1760,6 @@
             "dataPlaceholder": "Path to an array for the table (e.g. query.companies.data)"
           },
           "action": {
-            "labelLabel": "Label",
-            "labelPlaceholder": "The label of the Action (e.g. Edit, Delete)",
             "itemLabel": "Action",
             "tableLabel": "{{count}} Actions",
             "tableLabel_one": "{{count}} Action"
