@@ -1,12 +1,22 @@
 import { Fragment } from "react/jsx-runtime";
+import { localVariableNamespace } from "../../../schema/primitives/variable";
+import { useTranslation } from "react-i18next";
 
-export const Preview = ({
-  path,
-  placeholders,
-}: {
-  path: string[];
-  placeholders: string[];
-}) => {
+export const Preview = ({ path }: { path: string[] }) => {
+  const { t } = useTranslation();
+
+  const isLocalVarNamespace = path[0] === localVariableNamespace;
+
+  const placeholders = [
+    t("direktivPage.blockEditor.smartInput.templatePlaceholders.namespace"),
+    t("direktivPage.blockEditor.smartInput.templatePlaceholders.id"),
+    ...(isLocalVarNamespace
+      ? []
+      : [
+          t("direktivPage.blockEditor.smartInput.templatePlaceholders.pointer"),
+        ]),
+  ];
+
   const previewLength = Math.max(placeholders.length, path.length);
 
   return (

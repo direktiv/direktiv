@@ -62,12 +62,6 @@ export const SmartInput = ({
     )
   );
 
-  const variableSegmentPlaceholders = [
-    t("direktivPage.blockEditor.smartInput.templatePlaceholders.namespace"),
-    t("direktivPage.blockEditor.smartInput.templatePlaceholders.id"),
-    t("direktivPage.blockEditor.smartInput.templatePlaceholders.pointer"),
-  ];
-
   return (
     <Dialog open={dialog} onOpenChange={setDialog}>
       <InputWithButton>
@@ -116,12 +110,7 @@ export const SmartInput = ({
                         callback: onUpdate,
                       })
                     }
-                    preview={(path) => (
-                      <Preview
-                        path={path}
-                        placeholders={variableSegmentPlaceholders}
-                      />
-                    )}
+                    preview={(path) => <Preview path={path} />}
                     preventSubmit={preventSubmit}
                   />
                   <Popover>
