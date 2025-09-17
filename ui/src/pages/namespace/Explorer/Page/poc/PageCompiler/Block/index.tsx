@@ -50,7 +50,7 @@ export const Block = ({ block, blockPath }: BlockProps) => {
       case "dialog":
         return <Dialog blockProps={block} blockPath={blockPath} />;
       case "table":
-        return <Table blockProps={block} />;
+        return <Table blockProps={block} blockPath={blockPath} />;
       case "form":
         return <Form blockProps={block} blockPath={blockPath} />;
       case "form-string-input":

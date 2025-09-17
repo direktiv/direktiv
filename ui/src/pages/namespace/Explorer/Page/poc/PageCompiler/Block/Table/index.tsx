@@ -13,6 +13,7 @@ import {
 } from "../../primitives/Variable/VariableContext";
 
 import { ActionsCell } from "./ActionsCell";
+import { BlockPathType } from "..";
 import { Card } from "~/design/Card";
 import { PackageOpen } from "lucide-react";
 import { Pagination } from "~/components/Pagination";
@@ -26,6 +27,7 @@ import { useVariableArrayResolver } from "../../primitives/Variable/utils/useVar
 
 type TableProps = {
   blockProps: TableType;
+  blockPath: BlockPathType;
 };
 
 export const Table = ({ blockProps }: TableProps) => {
