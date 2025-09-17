@@ -30,7 +30,7 @@ type TableProps = {
   blockPath: BlockPathType;
 };
 
-export const Table = ({ blockProps }: TableProps) => {
+export const Table = ({ blockProps, blockPath }: TableProps) => {
   const { columns, blocks, data: loop } = blockProps;
   const { t } = useTranslation();
   const resolveVariableArray = useVariableArrayResolver();
@@ -103,7 +103,10 @@ export const Table = ({ blockProps }: TableProps) => {
                               />
                             ))}
                             {hasActionsColumn && (
-                              <ActionsCell actions={blocks[1]} />
+                              <ActionsCell
+                                actions={blocks[1]}
+                                blockPath={blockPath}
+                              />
                             )}
                           </TableRow>
                         </VariableContextProvider>

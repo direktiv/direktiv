@@ -5,17 +5,19 @@ import {
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
 
+import { BlockPathType } from "..";
 import { Button } from "../Button";
 import ButtonDesignComponent from "~/design/Button";
 import { MoreVertical } from "lucide-react";
-import { TableActionsType } from "../../../schema/blocks/table";
+import { RowActionsType } from "../../../schema/blocks/table";
 import { TableCell as TableCellDesignComponent } from "~/design/Table";
 
 type ActionsCellProps = {
-  actions: TableActionsType;
+  actions: RowActionsType;
+  blockPath: BlockPathType;
 };
 
-export const ActionsCell = ({ actions }: ActionsCellProps) => {
+export const ActionsCell = ({ actions, blockPath }: ActionsCellProps) => {
   const dialogs = actions.blocks.filter((x) => x.type === "dialog");
 
   return (
