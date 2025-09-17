@@ -26,12 +26,11 @@ export type BlockPathType = number[];
 type BlockProps = {
   block: BlockType;
   blockPath: BlockPathType;
-  register?: (vars: LocalVariables) => void;
 };
 
-export const Block = ({ block, blockPath, register }: BlockProps) => {
+export const Block = ({ block, blockPath }: BlockProps) => {
   const { t } = useTranslation();
-  const renderContent = () => {
+  const renderContent = (register?: (vars: LocalVariables) => void) => {
     switch (block.type) {
       case "headline":
         return <Headline blockProps={block} />;
@@ -82,7 +81,7 @@ export const Block = ({ block, blockPath, register }: BlockProps) => {
 
   return (
     <BlockWrapper blockPath={blockPath} block={block}>
-      {renderContent()}
+      {(register) => renderContent(register)}
     </BlockWrapper>
   );
 };

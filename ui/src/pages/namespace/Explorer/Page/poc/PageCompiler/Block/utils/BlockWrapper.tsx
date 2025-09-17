@@ -5,7 +5,6 @@ import {
 import {
   ReactElement,
   Suspense,
-  cloneElement,
   useEffect,
   useMemo,
   useRef,
@@ -34,7 +33,7 @@ import { useValidateDropzone } from "./useValidateDropzone";
 type BlockWrapperProps = {
   blockPath: BlockPathType;
   block: BlockType;
-  children: ReactElement;
+  children: (register?: (vars: LocalVariables) => void) => ReactElement;
 };
 
 const EditorBlockWrapper = ({
@@ -162,11 +161,7 @@ const EditorBlockWrapper = ({
                 </ParsingError>
               )}
             >
-              {block.type === "form"
-                ? cloneElement(children, {
-                    register: setLocalVariables,
-                  })
-                : children}
+              {block.type === "form" ? children(setLocalVariables) : children()}
             </ErrorBoundary>
           </Suspense>
         </div>
@@ -188,7 +183,7 @@ const VisitorBlockWrapper = ({ children }: BlockWrapperProps) => {
           </ParsingError>
         )}
       >
-        <div className="my-3">{children}</div>
+        <div className="my-3">{children()}</div>
       </ErrorBoundary>
     </Suspense>
   );
