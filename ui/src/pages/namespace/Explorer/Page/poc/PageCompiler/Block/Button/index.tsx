@@ -4,6 +4,7 @@ import { TextButton, TextButtonProps } from "./TextButton";
 
 type ButtonCompoundProps =
   | ({ as?: "button"; disabled?: boolean } & DefaultButtonProps)
+  // TODO: is this still needed?
   | ({ as: "text" } & TextButtonProps);
 
 export const Button = forwardRef<
