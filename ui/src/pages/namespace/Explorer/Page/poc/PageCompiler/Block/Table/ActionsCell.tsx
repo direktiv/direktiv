@@ -4,15 +4,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
+import { TableActionsType, TableType } from "../../../schema/blocks/table";
 
 import { Button } from "../Button";
 import ButtonDesignComponent from "~/design/Button";
 import { MoreVertical } from "lucide-react";
 import { TableCell as TableCellDesignComponent } from "~/design/Table";
-import { TableType } from "../../../schema/blocks/table";
 
 type ActionsCellProps = {
-  actions: TableType["actions"];
+  actions: TableActionsType;
 };
 
 export const ActionsCell = ({ actions }: ActionsCellProps) => (
@@ -24,11 +24,12 @@ export const ActionsCell = ({ actions }: ActionsCellProps) => (
         </ButtonDesignComponent>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-40" align="end">
-        {actions.map((action, index) => (
+        TODO:
+        {/* {actions.map((action, index) => (
           <DropdownMenuItem key={index}>
             <Button blockProps={action} as="text" />
           </DropdownMenuItem>
-        ))}
+        ))} */}
       </DropdownMenuContent>
     </DropdownMenu>
   </TableCellDesignComponent>

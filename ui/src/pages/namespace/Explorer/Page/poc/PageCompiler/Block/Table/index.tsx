@@ -29,7 +29,7 @@ type TableProps = {
 };
 
 export const Table = ({ blockProps }: TableProps) => {
-  const { columns, actions, data: loop } = blockProps;
+  const { columns, blocks, data: loop } = blockProps;
   const { t } = useTranslation();
   const resolveVariableArray = useVariableArrayResolver();
   const parentVariables = useVariablesContext();
@@ -51,7 +51,7 @@ export const Table = ({ blockProps }: TableProps) => {
     );
   }
 
-  const hasActionsColumn = actions.length > 0;
+  const hasActionsColumn = blocks[1].blocks.length > 0;
   const numberOfColumns = columns.length + (hasActionsColumn ? 1 : 0);
   const hasRows = variableArray.data.length > 0;
 
@@ -101,7 +101,7 @@ export const Table = ({ blockProps }: TableProps) => {
                               />
                             ))}
                             {hasActionsColumn && (
-                              <ActionsCell actions={actions} />
+                              <ActionsCell actions={blocks[1]} />
                             )}
                           </TableRow>
                         </VariableContextProvider>
