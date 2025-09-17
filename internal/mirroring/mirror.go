@@ -1,39 +1,103 @@
 package mirroring
 
 import (
+	"bufio"
 	"context"
+	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
+	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/gabriel-vasile/mimetype"
+	"github.com/go-git/go-git/v6/plumbing/format/gitignore"
 	"github.com/google/uuid"
+	"gopkg.in/yaml.v3"
 	"gorm.io/gorm"
 )
 
-type Manager struct{}
+const (
+	direktivIgnoreFile = ".direktivignore"
+)
 
-func NewManager() *Manager {
-	return &Manager{}
-}
+const (
+	keepHours  = 48
+	maxRunTime = 2 * time.Minute
+)
 
 type mirrorJob struct {
-	manager *Manager
-	db      *gorm.DB
+	db *gorm.DB
 
 	process        *datastore.MirrorProcess
 	tempDirectory  string
 	tempFSRootName string
+	matcher        gitignore.Matcher
 
 	err error
 }
 
-func (m *Manager) Exec(ctx context.Context, db *gorm.DB, cfg *datastore.MirrorConfig, typ string) (*datastore.MirrorProcess, error) {
+func RunCleanMirrorProcesses(ctx context.Context, db *gorm.DB) {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
+	maxRecordTime := time.Hour * time.Duration(keepHours)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			// clean old mirror processes
+			err := datasql.NewStore(db).Mirror().DeleteOldProcesses(ctx, time.Now().Add(-1*maxRecordTime))
+			if err != nil {
+				slog.Error("could not get mirror processes", slog.Any("error", err))
+
+				continue
+			}
+
+			// force unfinished processes
+			procs, err := datasql.NewStore(db).Mirror().GetUnfinishedProcesses(ctx)
+			if err != nil {
+				slog.Error("failed to query unfinished mirror processes", slog.Any("error", err))
+
+				continue
+			}
+
+			for _, proc := range procs {
+				if time.Since(proc.CreatedAt) > maxRunTime {
+					p, err := datasql.NewStore(db).Mirror().GetProcess(ctx, proc.ID)
+					if err != nil {
+						slog.Error("failed to fetch unfinished mirror process", slog.Any("error", err))
+
+						continue
+					}
+
+					if p.Status != datastore.ProcessStatusFailed && p.Status != datastore.ProcessStatusComplete {
+						p.Status = datastore.ProcessStatusFailed
+						telemetry.LogActivityError(p.Namespace, p.ID.String(), "mirror processing timed out", fmt.Errorf("timed out"))
+						_, err = datasql.NewStore(db).Mirror().UpdateProcess(context.Background(), p)
+						if err != nil {
+							slog.Error("failed to updates status of mirror process", slog.Any("error", err))
+
+							continue
+						}
+						telemetry.LogNamespaceError(p.Namespace, "mirror processing timed out", fmt.Errorf("timed out"))
+					}
+				}
+			}
+
+		}
+	}
+}
+
+func MirrorExec(ctx context.Context, db *gorm.DB, cfg *datastore.MirrorConfig, typ string) (*datastore.MirrorProcess, error) {
 	pro := &datastore.MirrorProcess{
 		ID:        uuid.New(),
 		Namespace: cfg.Namespace,
@@ -48,46 +112,45 @@ func (m *Manager) Exec(ctx context.Context, db *gorm.DB, cfg *datastore.MirrorCo
 	}
 
 	job := &mirrorJob{
-		manager: m,
 		db:      db,
 		process: pro,
 	}
 
 	go func() {
-		job.setProcessStatue(datastore.ProcessStatusExecuting)
+		job.setProcessStatus(datastore.ProcessStatusExecuting)
 		job.createTempDirectory()
 		job.pullSourceIntoTempDirectory(GitSource{}, cfg)
+		job.loadGitIgnore()
 		job.createTempFSRoot()
 		job.copyFilesToTempFSRoot()
 		job.deleteTempDirectory()
 		job.swapFSRoots()
-		job.setProcessStatue(datastore.ProcessStatusComplete)
 
+		job.process.EndedAt = time.Now()
 		if job.err == nil {
+			job.setProcessStatus(datastore.ProcessStatusComplete)
 			return
 		}
 
-		job.setProcessStatue(datastore.ProcessStatusFailed)
-
-		err = job.err
-		if err != nil {
-			fmt.Printf(">>>>> error creating mirror process: %v\n", err)
-		}
+		telemetry.LogActivity(telemetry.LogLevelError, job.process.Namespace,
+			job.process.ID.String(), fmt.Sprintf("mirroring failed '%v'", job.err))
+		job.setProcessStatus(datastore.ProcessStatusFailed)
 	}()
 
 	return pro, nil
 }
 
-func (j *mirrorJob) setProcessStatue(status string) {
-	if j.err != nil {
-		return
-	}
+func (j *mirrorJob) setProcessStatus(status string) {
+	telemetry.LogActivity(telemetry.LogLevelInfo, j.process.Namespace,
+		j.process.ID.String(), fmt.Sprintf("mirroring status set to '%s'", status))
+	telemetry.LogNamespace(telemetry.LogLevelInfo, j.process.Namespace,
+		fmt.Sprintf("mirroring status set to '%s' for %v", status, j.process.ID))
 
 	var err error
 	j.process.Status = status
 	j.process, err = datasql.NewStore(j.db).Mirror().UpdateProcess(context.Background(), j.process)
 	if err != nil {
-		j.err = fmt.Errorf("setProcessStatue: datastore set mirror process status: %w", err)
+		j.err = fmt.Errorf("setProcessStatus: datastore set mirror process status: %w", err)
 		return
 	}
 }
@@ -96,6 +159,9 @@ func (j *mirrorJob) createTempDirectory() {
 	if j.err != nil {
 		return
 	}
+
+	telemetry.LogActivity(telemetry.LogLevelInfo, j.process.Namespace,
+		j.process.ID.String(), "creating temporary directory")
 
 	var err error
 	j.tempDirectory, err = os.MkdirTemp("", "direktiv_mirrors")
@@ -117,10 +183,48 @@ func (j *mirrorJob) deleteTempDirectory() {
 	}
 }
 
+func (j *mirrorJob) loadGitIgnore() {
+	if j.err != nil {
+		return
+	}
+
+	j.matcher = gitignore.NewMatcher([]gitignore.Pattern{})
+
+	telemetry.LogActivity(telemetry.LogLevelInfo, j.process.Namespace,
+		j.process.ID.String(), "detecting .direktivignore")
+
+	f, err := os.Open(filepath.Join(j.tempDirectory, direktivIgnoreFile))
+	if errors.Is(err, os.ErrNotExist) {
+		telemetry.LogActivity(telemetry.LogLevelInfo, j.process.Namespace, j.process.ID.String(),
+			"no .direktivignore file detected")
+		return
+	}
+
+	if err != nil {
+		j.err = err
+		return
+	}
+	defer f.Close()
+
+	var ps []gitignore.Pattern
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		s := scanner.Text()
+		if !strings.HasPrefix(s, "#") && len(strings.TrimSpace(s)) > 0 {
+			ps = append(ps, gitignore.ParsePattern(s, nil))
+		}
+	}
+
+	j.matcher = gitignore.NewMatcher(ps)
+}
+
 func (j *mirrorJob) pullSourceIntoTempDirectory(source GitSource, cfg *datastore.MirrorConfig) {
 	if j.err != nil {
 		return
 	}
+
+	telemetry.LogActivity(telemetry.LogLevelInfo, j.process.Namespace,
+		j.process.ID.String(), fmt.Sprintf("cloning repository with %s", cfg.AuthType))
 
 	err := source.PullInPath(cfg, j.tempDirectory)
 	if err != nil {
@@ -133,6 +237,9 @@ func (j *mirrorJob) createTempFSRoot() {
 	if j.err != nil {
 		return
 	}
+
+	telemetry.LogActivity(telemetry.LogLevelInfo, j.process.Namespace,
+		j.process.ID.String(), "creating temporary fs root")
 
 	j.tempFSRootName = uuid.New().String()
 	_, err := filesql.NewStore(j.db).CreateRoot(context.Background(), j.tempFSRootName)
@@ -171,13 +278,13 @@ func (j *mirrorJob) copyFilesToTempFSRoot() {
 	}
 
 	for _, path := range createDirs {
-		fmt.Printf(">>>>> ddd>%s<\n", path)
-	}
-	for _, path := range createsFiles {
-		fmt.Printf(">>>>> fff>%s<\n", path)
-	}
+		// skip if in directivignore
+		if j.matcher.Match(strings.Split(path, "/"), true) {
+			telemetry.LogActivity(telemetry.LogLevelInfo, j.process.Namespace,
+				j.process.ID.String(), fmt.Sprintf("direktivignore: skipping path '%s'", path))
+			continue
+		}
 
-	for _, path := range createDirs {
 		_, err = filesql.NewStore(j.db).ForRoot(j.tempFSRootName).CreateFile(
 			context.Background(),
 			path,
@@ -191,6 +298,17 @@ func (j *mirrorJob) copyFilesToTempFSRoot() {
 	}
 
 	for _, path := range createsFiles {
+		// ignore the ignore file
+		if path == "/.direktivignore" {
+			continue
+		}
+
+		if j.matcher.Match(strings.Split(path, "/"), false) {
+			telemetry.LogActivity(telemetry.LogLevelInfo, j.process.Namespace,
+				j.process.ID.String(), fmt.Sprintf("direktivignore: skipping path '%s'", path))
+			continue
+		}
+
 		var data []byte
 		data, err = os.ReadFile(j.tempDirectory + "/" + path)
 		if err != nil {
@@ -198,13 +316,28 @@ func (j *mirrorJob) copyFilesToTempFSRoot() {
 			return
 		}
 
+		// default file type
+		ft := filestore.FileTypeFile
+
 		var mimeType string
-		if filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml" {
+		if strings.HasSuffix(path, "wf.ts") {
+			mimeType = "application/x-typescript"
+			ft = filestore.FileTypeWorkflow
+		} else if filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml" {
 			mimeType = "application/yaml"
+
+			// detect direktiv mimetypes
+			ft, err = j.detectDirektivYAML(path, data)
+			if err != nil {
+				telemetry.LogActivity(telemetry.LogLevelWarn, j.process.Namespace,
+					j.process.ID.String(), fmt.Sprintf("detecing yaml failed: %v", err))
+			}
+
 		} else {
 			mt := mimetype.Detect(data)
 			mimeType = strings.Split(mt.String(), ";")[0]
 		}
+
 		if mimeType == "" {
 			mimeType = "application/octet-stream" // fallback
 		}
@@ -212,7 +345,7 @@ func (j *mirrorJob) copyFilesToTempFSRoot() {
 		_, err = filesql.NewStore(j.db).ForRoot(j.tempFSRootName).CreateFile(
 			context.Background(),
 			path,
-			filestore.FileTypeFile,
+			ft,
 			mimeType,
 			data)
 		if err != nil {
@@ -252,4 +385,81 @@ func (j *mirrorJob) swapFSRoots() {
 		j.err = fmt.Errorf("swapFSRoots: commit dbtx: %w", err)
 		return
 	}
+}
+
+const (
+	GatewayAPIV1  = "gateway/v1"
+	EndpointAPIV2 = "endpoint/v2"
+
+	ServiceAPIV1  = "service/v1"
+	ConsumerAPIV1 = "consumer/v1"
+)
+
+func (j *mirrorJob) detectDirektivYAML(path string, data []byte) (filestore.FileType, error) {
+
+	// detector struct
+	type detect struct {
+		DirektivAPI  string `yaml:"direktiv_api"`
+		XDirektivAPI string `yaml:"x-direktiv-api"`
+
+		// attributes for guessing
+		Image string `yaml:"image"`
+
+		// gateway file / gateway/v1
+		OpenAPI string `yaml:"openapi"`
+
+		// endpoint
+		Methods []string `yaml:"methods"`
+
+		// consumer file
+		Username string `yaml:"username"`
+		APIKey   string `yaml:"api_key"`
+	}
+
+	var a detect
+	err := yaml.Unmarshal(data, &a)
+	if err != nil {
+		return filestore.FileTypeFile, err
+	}
+
+	switch a.DirektivAPI {
+	case ConsumerAPIV1:
+		return filestore.FileTypeConsumer, nil
+	case ServiceAPIV1:
+		return filestore.FileTypeService, nil
+	}
+
+	switch a.XDirektivAPI {
+	case GatewayAPIV1:
+		return filestore.FileTypeGateway, nil
+	case EndpointAPIV2:
+		return filestore.FileTypeEndpoint, nil
+	}
+
+	// guess file type
+	if a.Image != "" {
+		telemetry.LogActivity(telemetry.LogLevelWarn, j.process.Namespace,
+			j.process.ID.String(), fmt.Sprintf("guessing yaml as direktiv service for file %s", path))
+		return filestore.FileTypeService, nil
+	}
+
+	if a.Username != "" || a.APIKey != "" {
+		telemetry.LogActivity(telemetry.LogLevelWarn, j.process.Namespace,
+			j.process.ID.String(), fmt.Sprintf("guessing yaml as direktiv consumer for file %s", path))
+		return filestore.FileTypeConsumer, nil
+	}
+
+	if len(a.Methods) > 0 {
+		telemetry.LogActivity(telemetry.LogLevelWarn, j.process.Namespace,
+			j.process.ID.String(), fmt.Sprintf("guessing yaml as direktiv endpoint for file %s", path))
+		return filestore.FileTypeEndpoint, nil
+	}
+
+	if a.OpenAPI != "" {
+		telemetry.LogActivity(telemetry.LogLevelWarn, j.process.Namespace,
+			j.process.ID.String(), fmt.Sprintf("guessing yaml as direktiv gateway for file %s", path))
+		return filestore.FileTypeGateway, nil
+	}
+
+	return filestore.FileTypeFile, nil
 }

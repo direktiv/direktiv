@@ -222,7 +222,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	}
 	// Validate if data is valid typescript with direktiv files.
 	isDirektivFile := req.Typ != filestore.FileTypeDirectory && req.Typ != filestore.FileTypeFile
-	if err = transpiler.TestCompile(string(decodedBytes)); err != nil && isDirektivFile {
+	if err = transpiler.ValidateScript(string(decodedBytes)); err != nil && isDirektivFile {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
 			Message: "file data has invalid typescript",

@@ -2,6 +2,7 @@ package transpiler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"gorm.io/gorm"
@@ -50,13 +51,32 @@ func (c *Compiler) Compile(ctx context.Context, namespace, path string) (*Typesc
 	}, nil
 }
 
-func TestCompile(script string) error {
+func ValidateScript(script string) error {
 	t, err := NewTranspiler()
 	if err != nil {
 		return err
 	}
 
-	_, _, err = t.Transpile(script, "dummy")
+	script, _, err = t.Transpile(script, "dummy")
+
+	errors, err := ValidateTransitions(script)
+	if err != nil {
+		return err
+	}
+
+	if len(errors) > 0 {
+		return fmt.Errorf("errors in script: %v", errors)
+	}
+
+	err = ValidateBody(script)
+	if err != nil {
+		return err
+	}
+
+	_, err = ValidateConfig(script)
+	if err != nil {
+		return err
+	}
 
 	return err
 }

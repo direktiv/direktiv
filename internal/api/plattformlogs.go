@@ -142,7 +142,6 @@ func (m *logController) mountRouter(r chi.Router) {
 
 func (m *logController) get(ctx context.Context, query string) ([]logEntry, error) {
 	var err error
-
 	logs, err := m.fetchFromBackend(ctx, query)
 	if err != nil {
 		return []logEntry{}, err

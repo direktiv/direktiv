@@ -22,6 +22,7 @@ import (
 	engineProjector "github.com/direktiv/direktiv/internal/engine/projector"
 	"github.com/direktiv/direktiv/internal/extensions"
 	"github.com/direktiv/direktiv/internal/gateway"
+	"github.com/direktiv/direktiv/internal/mirroring"
 	intNats "github.com/direktiv/direktiv/internal/nats"
 	"github.com/direktiv/direktiv/internal/sched"
 	"github.com/direktiv/direktiv/internal/secrets"
@@ -218,6 +219,9 @@ func Start(lc *lifecycle.Manager) error {
 			}
 		}
 	}
+
+	// start mirror process cleanup
+	go mirroring.RunCleanMirrorProcesses(lc.Context(), app.DB)
 
 	// initializing api-serer
 	{

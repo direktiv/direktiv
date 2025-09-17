@@ -12,9 +12,8 @@ import (
 )
 
 type mirrorsController struct {
-	db               *gorm.DB
-	bus              pubsub.EventBus
-	mirroringManager *mirroring.Manager
+	db  *gorm.DB
+	bus pubsub.EventBus
 }
 
 func (e *mirrorsController) mountRouter(r chi.Router) {
@@ -38,7 +37,7 @@ func (e *mirrorsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	proc, err := e.mirroringManager.Exec(r.Context(), e.db, mirConfig, datastore.ProcessTypeInit)
+	proc, err := mirroring.MirrorExec(r.Context(), e.db, mirConfig, datastore.ProcessTypeInit)
 	if err != nil {
 		writeDataStoreError(w, err)
 		return
