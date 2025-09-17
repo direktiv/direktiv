@@ -2,6 +2,7 @@ import { ArrayForm } from "~/components/Form/Array";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
 import { KeyValueType } from "../../../schema/primitives/keyValue";
+import { SmartInput } from "../SmartInput";
 import { useTranslation } from "react-i18next";
 
 type KeyValueInputProps = {
@@ -10,9 +11,14 @@ type KeyValueInputProps = {
     value: KeyValueType[] | undefined;
     onChange: (value: KeyValueType[]) => void;
   };
+  smart?: boolean;
 };
 
-export const KeyValueInput = ({ field, label }: KeyValueInputProps) => {
+export const KeyValueInput = ({
+  field,
+  label,
+  smart = false,
+}: KeyValueInputProps) => {
   const { t } = useTranslation();
   return (
     <Fieldset label={label}>
@@ -34,18 +40,33 @@ export const KeyValueInput = ({ field, label }: KeyValueInputProps) => {
                 });
               }}
             />
-            <Input
-              placeholder={t(
-                "direktivPage.blockEditor.blockForms.keyValue.value"
-              )}
-              value={itemValue.value}
-              onChange={(e) => {
-                setValue({
-                  ...itemValue,
-                  value: e.target.value,
-                });
-              }}
-            />
+            {smart ? (
+              <SmartInput
+                placeholder={t(
+                  "direktivPage.blockEditor.blockForms.keyValue.value"
+                )}
+                value={itemValue.value}
+                onUpdate={(content) => {
+                  setValue({
+                    ...itemValue,
+                    value: content,
+                  });
+                }}
+              />
+            ) : (
+              <Input
+                placeholder={t(
+                  "direktivPage.blockEditor.blockForms.keyValue.value"
+                )}
+                value={itemValue.value}
+                onChange={(e) => {
+                  setValue({
+                    ...itemValue,
+                    value: e.target.value,
+                  });
+                }}
+              />
+            )}
           </>
         )}
       />

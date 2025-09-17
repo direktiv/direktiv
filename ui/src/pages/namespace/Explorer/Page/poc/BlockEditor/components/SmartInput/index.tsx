@@ -33,7 +33,7 @@ export const SmartInput = ({
 }: {
   onUpdate: (value: string) => void;
   value: string;
-  id: string;
+  id?: string;
   placeholder: string;
   blacklist?: VariableNamespace[];
 }) => {

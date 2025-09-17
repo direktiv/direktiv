@@ -103,6 +103,7 @@ export const Form = ({
         name="mutation.queryParams"
         render={({ field }) => (
           <KeyValueInput
+            smart
             field={field}
             label={t(
               "direktivPage.blockEditor.blockForms.form.mutation.queryParamsLabel"
@@ -115,6 +116,7 @@ export const Form = ({
         name="mutation.requestHeaders"
         render={({ field }) => (
           <KeyValueInput
+            smart
             field={field}
             label={t(
               "direktivPage.blockEditor.blockForms.form.mutation.requestHeadersLabel"
