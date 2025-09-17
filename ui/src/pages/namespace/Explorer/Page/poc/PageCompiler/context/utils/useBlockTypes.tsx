@@ -116,8 +116,17 @@ export const blockTypes: BlockTypeConfig[] = [
         data: "",
         pageSize: 10,
       },
-      actions: [],
       columns: [],
+      blocks: [
+        {
+          type: "table-actions",
+          blocks: [],
+        },
+        {
+          type: "table-actions",
+          blocks: [],
+        },
+      ],
     },
   },
   {
