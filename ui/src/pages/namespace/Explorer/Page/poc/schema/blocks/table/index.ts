@@ -17,7 +17,7 @@ export type TableActionsType = {
 
 export const TableActions = z.object({
   type: z.literal("table-actions"),
-  blocks: z.array(Block),
+  blocks: z.array(z.lazy(() => Block)),
 }) satisfies z.ZodType<TableActionsType>;
 
 export const Table = z.object({
