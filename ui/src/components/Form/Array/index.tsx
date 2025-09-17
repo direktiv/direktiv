@@ -12,7 +12,7 @@ type ArrayFormProps = <T>(
     emptyItem: T;
     onChange: (newArray: T[]) => void;
     renderItem: RenderItem<T>;
-    wrapItem?: (children: ReactNode) => JSX.Element;
+    wrapItem?: (children: ReactNode, key: string) => JSX.Element;
   } & PropsWithChildren
 ) => JSX.Element;
 
@@ -22,7 +22,9 @@ export const ArrayForm: ArrayFormProps = ({
   emptyItem,
   onChange,
   renderItem,
-  wrapItem = (children) => <ButtonBar>{children}</ButtonBar>,
+  wrapItem = (children, key: string) => (
+    <ButtonBar key={key}>{children}</ButtonBar>
+  ),
 }) => {
   type Item = (typeof defaultValue)[number];
   const [items, setItems] = useState(defaultValue);
@@ -55,12 +57,12 @@ export const ArrayForm: ArrayFormProps = ({
       {items?.map((item, index) =>
         wrapItem(
           <ArrayItem
-            key={`${items.length}-${index}`}
             defaultValue={item}
             renderItem={renderItem}
             onUpdate={(value) => updateAtIndex(index, value)}
             onDelete={() => deleteAtIndex(index)}
-          />
+          />,
+          `${items.length}-${index}`
         )
       )}
 
