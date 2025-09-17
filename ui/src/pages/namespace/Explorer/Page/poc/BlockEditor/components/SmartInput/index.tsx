@@ -1,5 +1,11 @@
 import { Check, HelpCircleIcon, Maximize2 } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/design/Dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import { useCallback, useState } from "react";
 
@@ -77,6 +83,11 @@ export const SmartInput = ({
       >
         {dialog && (
           <>
+            <DialogHeader>
+              <DialogTitle>
+                {t("direktivPage.blockEditor.smartInput.dialogTitle")}
+              </DialogTitle>
+            </DialogHeader>
             <div>
               <div className="rounded-t-md border border-b-0 border-gray-4 p-2 dark:border-gray-dark-7">
                 <ButtonBar>
