@@ -6,7 +6,6 @@ import { ColumnForm } from "./ColumnForm";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
 import Input from "~/design/Input";
-import { SmartInput } from "../components/SmartInput";
 import { Table as TableForm } from "../components/FormElements/Table";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
