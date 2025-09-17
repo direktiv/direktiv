@@ -5,7 +5,7 @@ import {
 } from "./FormValidationContext";
 import {
   createLocalFormVariables,
-  decodeBlockKey,
+  extractFormKeys,
 } from "../formPrimitives/utils";
 import { useEffect, useRef } from "react";
 
@@ -52,29 +52,7 @@ const FormWithContext = ({ blockProps, blockPath, register }: FormProps) => {
   useEffect(() => {
     if (!register || !ref.current) return;
 
-    const formElements = Array.from(ref.current.elements)
-      .filter(
-        (
-          element
-        ): element is
-          | HTMLInputElement
-          | HTMLSelectElement
-          | HTMLTextAreaElement =>
-          element instanceof HTMLInputElement ||
-          element instanceof HTMLSelectElement ||
-          element instanceof HTMLTextAreaElement
-      )
-      .filter((element) => !!element.name)
-      .map((element) => element.name);
-
-    const localVariables = formElements.reduce(
-      (acc, field) => {
-        const [, elementId] = decodeBlockKey(field);
-        acc[elementId] = "";
-        return acc;
-      },
-      {} as Record<string, unknown>
-    );
+    const localVariables = extractFormKeys(ref.current.elements);
 
     register({ this: localVariables });
   }, [register]);

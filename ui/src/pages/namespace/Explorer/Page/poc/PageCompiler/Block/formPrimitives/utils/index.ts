@@ -11,7 +11,7 @@ export const encodeBlockKey = (
 ) =>
   [blockType, elementId, optional ? "optional" : "required"].join(keySeparator);
 
-export const decodeBlockKey = (blockKey: string) => {
+const decodeBlockKey = (blockKey: string) => {
   const [blockType, elementId, optional] = blockKey.split(keySeparator, 3);
   if (!blockType || !elementId || !optional)
     throw new Error(`cannot decode block key: ${blockKey || "empty"}`);
@@ -101,4 +101,32 @@ export const createLocalFormVariables = (
   const formVariables = Object.fromEntries(transformedEntries);
 
   return { formVariables, missingRequiredFields };
+};
+
+export const extractFormKeys = (elements: HTMLFormControlsCollection) => {
+  const formElements = Array.from(elements)
+    .filter(
+      (
+        element
+      ): element is
+        | HTMLInputElement
+        | HTMLSelectElement
+        | HTMLTextAreaElement =>
+        element instanceof HTMLInputElement ||
+        element instanceof HTMLSelectElement ||
+        element instanceof HTMLTextAreaElement
+    )
+    .filter((element) => !!element.name)
+    .map((element) => element.name);
+
+  const formKeys = formElements.reduce(
+    (acc, field) => {
+      const [, elementId] = decodeBlockKey(field);
+      acc[elementId] = "";
+      return acc;
+    },
+    {} as Record<string, unknown>
+  );
+
+  return formKeys;
 };
