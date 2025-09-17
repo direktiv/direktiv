@@ -6,18 +6,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/design/Dialog";
+import { Fragment, useCallback, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import {
   VariableNamespace,
   localVariableNamespace,
 } from "../../../schema/primitives/variable";
-import { useCallback, useState } from "react";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { Card } from "@tremor/react";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
+import { Preview } from "./Preview";
 import { Textarea } from "~/design/TextArea";
 import { TreePicker } from "../TreePicker";
 import { addSnippetToInputValue } from "./utils";
@@ -115,7 +116,12 @@ export const SmartInput = ({
                         callback: onUpdate,
                       })
                     }
-                    placeholders={variableSegmentPlaceholders}
+                    preview={(path) => (
+                      <Preview
+                        path={path}
+                        placeholders={variableSegmentPlaceholders}
+                      />
+                    )}
                     preventSubmit={preventSubmit}
                   />
                   <Popover>

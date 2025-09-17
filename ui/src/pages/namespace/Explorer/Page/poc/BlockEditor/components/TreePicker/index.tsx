@@ -7,7 +7,7 @@ import {
   CommandItem,
   CommandList,
 } from "~/design/Command";
-import { FC, Fragment, useMemo, useState } from "react";
+import { FC, ReactNode, useMemo, useState } from "react";
 import {
   Popover,
   PopoverClose,
@@ -26,34 +26,22 @@ type TreePickerProps = {
   onSubmit: (value: string) => void;
   preventSubmit: (path: string[]) => boolean;
   container?: HTMLDivElement;
-  placeholders?: string[];
+  preview: (path: string[]) => ReactNode;
 };
 
 export const TreePicker: FC<TreePickerProps> = ({
   label,
   tree,
   container,
-  placeholders = [],
   preventSubmit = () => false,
   onSubmit,
+  preview,
 }) => {
   const { t } = useTranslation();
   const [path, setPath] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const currentTree = useMemo(() => getSublist(tree, path), [path, tree]);
   const disabled = useMemo(() => preventSubmit(path), [preventSubmit, path]);
-
-  const previewLength = Math.max(placeholders.length, path.length);
-  const previewPath = Array.from({ length: previewLength }, (_, index) => (
-    <Fragment key={index}>
-      {path[index] ? (
-        <span className="text-gray-12 dark:text-gray-8">{path[index]}</span>
-      ) : (
-        <span className="italic text-gray-10">{placeholders[index]}</span>
-      )}
-      {index < previewLength - 1 && <span className="text-gray-10">.</span>}
-    </Fragment>
-  ));
 
   const allowCustomSegment = search.length > 0;
   const formattedPath = `{{${path.join(".")}}}`;
@@ -125,9 +113,7 @@ export const TreePicker: FC<TreePickerProps> = ({
               wrap
               className="mr-2 w-full text-gray-10 dark:text-gray-dark-10"
             >
-              {"{{"}
-              {previewPath}
-              {"}}"}
+              {preview(path)}
             </FakeInput>
             <div className="ml-auto flex gap-2">
               <PopoverClose asChild>
