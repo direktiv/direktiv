@@ -1,18 +1,21 @@
+import { Dialog, DialogType } from "../../schema/blocks/dialog";
 import FormErrors, { errorsType } from "~/components/FormErrors";
-import { TriggerBlock, TriggerBlockType } from "../../schema/blocks";
 
 import { Fieldset } from "~/components/Form/Fieldset";
-import Input from "~/design/Input";
+import { SmartInput } from "../components/SmartInput";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type ActionFormProps = {
-  defaultValues?: TriggerBlockType;
+  defaultValues?: DialogType;
   formId: string;
-  onSubmit: (data: TriggerBlockType) => void;
+  onSubmit: (data: DialogType) => void;
 };
 
+// TODO:
+// - may use the Fieldset from the dialog
+// - rename this component
 export const ActionForm = ({
   defaultValues,
   formId,
@@ -20,14 +23,19 @@ export const ActionForm = ({
 }: ActionFormProps) => {
   const { t } = useTranslation();
   const {
+    watch,
     handleSubmit,
-    register,
+    setValue,
     formState: { errors },
-  } = useForm<TriggerBlockType>({
-    resolver: zodResolver(TriggerBlock),
+  } = useForm<DialogType>({
+    resolver: zodResolver(Dialog),
     defaultValues: {
-      type: "button",
-      label: "",
+      type: "dialog",
+      trigger: {
+        type: "button",
+        label: "",
+      },
+      blocks: [],
       ...defaultValues,
     },
   });
@@ -41,14 +49,17 @@ export const ActionForm = ({
     <form onSubmit={onFormSubmit} id={formId}>
       {errors && <FormErrors errors={errors as errorsType} className="mb-5" />}
       <Fieldset
-        label={t("direktivPage.blockEditor.blockForms.table.action.labelLabel")}
+        label={t(
+          "direktivPage.blockEditor.blockForms.dialog.triggerLabelLabel"
+        )}
         htmlFor="label"
       >
-        <Input
-          {...register("label")}
+        <SmartInput
+          value={watch("trigger.label")}
+          onUpdate={(value) => setValue("trigger.label", value)}
           id="label"
           placeholder={t(
-            "direktivPage.blockEditor.blockForms.table.action.labelPlaceholder"
+            "direktivPage.blockEditor.blockForms.dialog.triggerLabelPlaceholder"
           )}
         />
       </Fieldset>

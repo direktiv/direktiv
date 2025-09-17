@@ -6,6 +6,7 @@ import { ColumnForm } from "./ColumnForm";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
 import Input from "~/design/Input";
+import { SmartInput } from "../components/SmartInput";
 import { Table as TableForm } from "../components/FormElements/Table";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -61,9 +62,9 @@ export const Table = ({
         />
       </Fieldset>
       <TableForm
-        data={form.getValues("actions")}
+        data={form.getValues("blocks.1.blocks")}
         onChange={(newValue) => {
-          form.setValue("actions", newValue);
+          form.setValue("blocks.1.blocks", newValue);
         }}
         itemLabel={t(
           "direktivPage.blockEditor.blockForms.table.action.itemLabel"
@@ -73,14 +74,21 @@ export const Table = ({
             count,
           })
         }
-        renderRow={(query) => [query.label]}
-        renderForm={(formId, onSubmit, defaultValues) => (
-          <ActionForm
-            formId={formId}
-            onSubmit={onSubmit}
-            defaultValues={defaultValues}
-          />
-        )}
+        renderRow={(dialog) => {
+          // TODO: can we only allow dialogs via the schema to avoid this checks?
+          if (dialog.type !== "dialog") return [];
+          return [dialog.trigger.label];
+        }}
+        renderForm={(formId, onSubmit, defaultValues) => {
+          if (defaultValues && defaultValues.type !== "dialog") return null;
+          return (
+            <ActionForm
+              formId={formId}
+              onSubmit={onSubmit}
+              defaultValues={defaultValues}
+            />
+          );
+        }}
       />
       <TableForm
         data={form.getValues("columns")}
