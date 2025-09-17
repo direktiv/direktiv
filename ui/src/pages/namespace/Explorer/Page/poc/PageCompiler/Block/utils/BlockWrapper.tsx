@@ -6,7 +6,6 @@ import {
   ReactElement,
   Suspense,
   cloneElement,
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -25,7 +24,6 @@ import { ErrorBoundary } from "react-error-boundary";
 import { Loading } from "./Loading";
 import { ParsingError } from "./ParsingError";
 import { SortableItem } from "~/design/DragAndDrop/Draggable";
-import { decodeBlockKey } from "../formPrimitives/utils";
 import { isEmptyContainerBlock } from "./useIsInvisbleBlock";
 import { twMergeClsx } from "~/util/helpers";
 import { useDndContext } from "@dnd-kit/core";
@@ -56,18 +54,6 @@ const EditorBlockWrapper = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const dndContext = useDndContext();
   const isDragging = !!dndContext.active;
-
-  const register = useCallback((fields: string[]) => {
-    const localVariables = fields.reduce(
-      (acc, field) => {
-        const [, elementId] = decodeBlockKey(field);
-        acc[elementId] = "";
-        return acc;
-      },
-      {} as Record<string, unknown>
-    );
-    return setLocalVariables({ this: localVariables });
-  }, []);
 
   const variables = useMemo(
     () =>
@@ -178,7 +164,7 @@ const EditorBlockWrapper = ({
             >
               {block.type === "form"
                 ? cloneElement(children, {
-                    register,
+                    register: setLocalVariables,
                   })
                 : children}
             </ErrorBoundary>

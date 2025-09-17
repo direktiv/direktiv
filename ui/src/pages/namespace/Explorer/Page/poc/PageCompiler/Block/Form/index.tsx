@@ -3,14 +3,18 @@ import {
   FormValidationContextProvider,
   useFormValidation,
 } from "./FormValidationContext";
+import {
+  createLocalFormVariables,
+  decodeBlockKey,
+} from "../formPrimitives/utils";
 import { useEffect, useRef } from "react";
 
 import Alert from "~/design/Alert";
 import { BlockList } from "../utils/BlockList";
 import { Button } from "../Button";
 import { FormType } from "../../../schema/blocks/form";
+import { LocalVariables } from "../../primitives/Variable/VariableContext";
 import { StopPropagation } from "~/components/StopPropagation";
-import { createLocalFormVariables } from "../formPrimitives/utils";
 import { usePageMutation } from "../../procedures/mutation";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
@@ -18,7 +22,7 @@ import { useTranslation } from "react-i18next";
 type FormProps = {
   blockProps: FormType;
   blockPath: BlockPathType;
-  register?: (fields: string[]) => void;
+  register?: (localVariables: LocalVariables) => void;
 };
 
 const FormWithContext = ({ blockProps, blockPath, register }: FormProps) => {
@@ -48,7 +52,7 @@ const FormWithContext = ({ blockProps, blockPath, register }: FormProps) => {
   useEffect(() => {
     if (!register || !ref.current) return;
 
-    const fields = Array.from(ref.current.elements)
+    const formElements = Array.from(ref.current.elements)
       .filter(
         (
           element
@@ -62,7 +66,17 @@ const FormWithContext = ({ blockProps, blockPath, register }: FormProps) => {
       )
       .filter((element) => !!element.name)
       .map((element) => element.name);
-    register(fields);
+
+    const localVariables = formElements.reduce(
+      (acc, field) => {
+        const [, elementId] = decodeBlockKey(field);
+        acc[elementId] = "";
+        return acc;
+      },
+      {} as Record<string, unknown>
+    );
+
+    register({ this: localVariables });
   }, [register]);
 
   return (
