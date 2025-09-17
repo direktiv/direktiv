@@ -96,7 +96,7 @@ export const TreePicker: FC<TreePickerProps> = ({
               className="-mr-2"
               disabled={!allowCustomSegment}
             >
-              <Plus size="xs" />
+              <Plus className="text-xs" />
             </Button>
           </CommandInput>
           <CommandList>
@@ -129,28 +129,32 @@ export const TreePicker: FC<TreePickerProps> = ({
               {previewPath}
               {"}}"}
             </FakeInput>
-            <PopoverClose className="ml-auto flex gap-2">
-              <Button
-                variant="outline"
-                icon
-                type="button"
-                disabled={disabled}
-                onClick={() => {
-                  onSubmit(formattedPath);
-                  setPath([]);
-                }}
-              >
-                <Check />
-              </Button>
-              <Button
-                variant="outline"
-                icon
-                type="button"
-                onClick={() => setPath([])}
-              >
-                <X />
-              </Button>
-            </PopoverClose>
+            <div className="ml-auto flex gap-2">
+              <PopoverClose asChild>
+                <Button
+                  variant="outline"
+                  icon
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => {
+                    onSubmit(formattedPath);
+                    setPath([]);
+                  }}
+                >
+                  <Check />
+                </Button>
+              </PopoverClose>
+              <PopoverClose asChild>
+                <Button
+                  variant="outline"
+                  icon
+                  type="button"
+                  onClick={() => setPath([])}
+                >
+                  <X />
+                </Button>
+              </PopoverClose>
+            </div>
           </div>
         </Command>
       </PopoverContent>
