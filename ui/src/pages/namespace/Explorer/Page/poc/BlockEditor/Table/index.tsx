@@ -95,7 +95,7 @@ export const Table = ({
             count,
           })
         }
-        renderRow={(query) => [query.label, query.content]}
+        renderRow={(column) => [column.label, column.content]}
         renderForm={(formId, onSubmit, defaultValues) => (
           <ColumnForm
             formId={formId}
