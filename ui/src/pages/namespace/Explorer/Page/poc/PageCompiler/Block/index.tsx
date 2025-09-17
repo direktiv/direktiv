@@ -13,6 +13,7 @@ import { FormStringInput } from "./formPrimitives/FormStringInput";
 import { FormTextarea } from "./formPrimitives/FormTextarea";
 import { Headline } from "./Headline";
 import { Image } from "./Image";
+import { LocalVariables } from "../primitives/Variable/VariableContext";
 import { Loop } from "./Loop";
 import { ParsingError } from "./utils/ParsingError";
 import { QueryProvider } from "./QueryProvider";
@@ -25,7 +26,7 @@ export type BlockPathType = number[];
 type BlockProps = {
   block: BlockType;
   blockPath: BlockPathType;
-  register?: (fields: string[]) => void;
+  register?: (vars: LocalVariables) => void;
 };
 
 export const Block = ({ block, blockPath, register }: BlockProps) => {
