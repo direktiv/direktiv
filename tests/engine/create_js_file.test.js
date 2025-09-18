@@ -17,8 +17,13 @@ describe('Test js engine', () => {
 		btoa(`
 function stateOne(payload) {
 	print("RUN STATE FIRST")
-    return "hello"
+    return transition("stateTwo", payload)
 }
+function stateTwo(payload) {
+	print("RUN STATE FIRST")
+	return finish("hello")
+}
+
 `))
 	retry10(`should invoke /foo/file1.wf.js workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/instances?path=foo/file1.wf.js`).send({ foo: "bar" })
