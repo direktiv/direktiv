@@ -14,6 +14,7 @@ import (
 	"github.com/direktiv/direktiv/internal/cluster/certs"
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	natspubsub "github.com/direktiv/direktiv/internal/cluster/pubsub/nats"
+	"github.com/direktiv/direktiv/internal/compiler"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
@@ -22,6 +23,7 @@ import (
 	engineProjector "github.com/direktiv/direktiv/internal/engine/projector"
 	"github.com/direktiv/direktiv/internal/extensions"
 	"github.com/direktiv/direktiv/internal/gateway"
+	"github.com/direktiv/direktiv/internal/mirroring"
 	intNats "github.com/direktiv/direktiv/internal/nats"
 	"github.com/direktiv/direktiv/internal/sched"
 	"github.com/direktiv/direktiv/internal/secrets"
@@ -151,6 +153,12 @@ func Start(lc *lifecycle.Manager) error {
 
 	// initializing engine
 	{
+		// prepare compiler
+		comp, err := compiler.NewCompiler(app.DB)
+		if err != nil {
+			return fmt.Errorf("creating compiler, err: %w", err)
+		}
+
 		slog.Info("initializing engine-nats")
 		nc, err := intNats.Connect()
 		if err != nil {
@@ -169,6 +177,7 @@ func Start(lc *lifecycle.Manager) error {
 			app.DB,
 			engineProjector.New(js),
 			databus.New(js),
+			comp,
 		)
 		if err != nil {
 			return fmt.Errorf("create engine, err: %w", err)
@@ -219,6 +228,9 @@ func Start(lc *lifecycle.Manager) error {
 			}
 		}
 	}
+
+	// start mirror process cleanup
+	go mirroring.RunCleanMirrorProcesses(lc.Context(), app.DB)
 
 	// initializing api-serer
 	{
