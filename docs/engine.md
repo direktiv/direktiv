@@ -10,7 +10,7 @@ Consumers can query both the **full history** of workflow executions and their *
 ## Core Concepts
 
 ### Workflow Execution
-- Workflows are **JavaScript scripts** executed inside a [goja](https://github.com/dop251/goja) runtime.
+- Workflows are **JavaScript scripts** executed inside a [sobek](https://github.com/grafana/sobek) runtime.
 - Each execution is uniquely identified by a **UUID** (the *Instance ID*), generated at the beginning of every execution.
 - Execution is tracked step by step through **events**, which are pushed to **nats**, stored persistently and used to build/materialize the workflow’s current status.
 

@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/bbuck/go-lexer"
-	"github.com/dop251/goja"
+	"github.com/grafana/sobek"
 	"github.com/itchyny/gojq"
 )
 
@@ -204,7 +204,7 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 
 		case JsStartToken:
 
-			vm := goja.New()
+			vm := sobek.New()
 
 			fn := fmt.Sprintf("function fn(data) {\n %s \n}", tok.Value)
 			_, err := vm.RunString(fn)
@@ -212,7 +212,7 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 				return nil, fmt.Errorf("error loading js query %s: %w", tok.Value, err)
 			}
 
-			fnExe, ok := goja.AssertFunction(vm.Get("fn"))
+			fnExe, ok := sobek.AssertFunction(vm.Get("fn"))
 			if !ok {
 				return nil, fmt.Errorf("error getting js query %s: %w", tok.Value, err)
 			}
@@ -221,7 +221,7 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 			defer cancel()
 			done := make(chan bool, 1)
 
-			go func(ctx context.Context, rt *goja.Runtime, b chan bool) {
+			go func(ctx context.Context, rt *sobek.Runtime, b chan bool) {
 				select {
 				case <-b:
 					return
@@ -252,7 +252,7 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 			})
 
 			// execute and get results
-			v, err := fnExe(goja.Undefined(), vm.ToValue(data))
+			v, err := fnExe(sobek.Undefined(), vm.ToValue(data))
 			if err != nil {
 				return nil, fmt.Errorf("error running js query %s: %w", tok.Value, err)
 			}

@@ -11,7 +11,7 @@ import (
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/gateway"
 	"github.com/direktiv/direktiv/internal/gateway/plugins"
-	"github.com/dop251/goja"
+	"github.com/grafana/sobek"
 )
 
 // JSInboundPlugin allows to modify headers, contents and query params of the request.
@@ -89,7 +89,7 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (http
 		defer r.Body.Close()
 	}
 
-	vm := goja.New()
+	vm := sobek.New()
 
 	c := gateway.ExtractContextActiveConsumer(r)
 
@@ -132,7 +132,7 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (http
 		return nil, nil
 	}
 
-	if val != nil && !val.Equals(goja.Undefined()) {
+	if val != nil && !val.Equals(sobek.Undefined()) {
 		r.Header = http.Header{}
 
 		o := val.ToObject(vm)

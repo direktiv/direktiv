@@ -92,7 +92,6 @@ func RunCleanMirrorProcesses(ctx context.Context, db *gorm.DB) {
 					}
 				}
 			}
-
 		}
 	}
 }
@@ -197,6 +196,7 @@ func (j *mirrorJob) loadGitIgnore() {
 	if errors.Is(err, os.ErrNotExist) {
 		telemetry.LogActivity(telemetry.LogLevelInfo, j.process.Namespace, j.process.ID.String(),
 			"no .direktivignore file detected")
+
 		return
 	}
 
@@ -282,6 +282,7 @@ func (j *mirrorJob) copyFilesToTempFSRoot() {
 		if j.matcher.Match(strings.Split(path, "/"), true) {
 			telemetry.LogActivity(telemetry.LogLevelInfo, j.process.Namespace,
 				j.process.ID.String(), fmt.Sprintf("direktivignore: skipping path '%s'", path))
+
 			continue
 		}
 
@@ -306,6 +307,7 @@ func (j *mirrorJob) copyFilesToTempFSRoot() {
 		if j.matcher.Match(strings.Split(path, "/"), false) {
 			telemetry.LogActivity(telemetry.LogLevelInfo, j.process.Namespace,
 				j.process.ID.String(), fmt.Sprintf("direktivignore: skipping path '%s'", path))
+
 			continue
 		}
 
@@ -332,7 +334,6 @@ func (j *mirrorJob) copyFilesToTempFSRoot() {
 				telemetry.LogActivity(telemetry.LogLevelWarn, j.process.Namespace,
 					j.process.ID.String(), fmt.Sprintf("detecing yaml failed: %v", err))
 			}
-
 		} else {
 			mt := mimetype.Detect(data)
 			mimeType = strings.Split(mt.String(), ";")[0]
@@ -396,7 +397,6 @@ const (
 )
 
 func (j *mirrorJob) detectDirektivYAML(path string, data []byte) (filestore.FileType, error) {
-
 	// detector struct
 	type detect struct {
 		DirektivAPI  string `yaml:"direktiv_api"`
@@ -440,24 +440,28 @@ func (j *mirrorJob) detectDirektivYAML(path string, data []byte) (filestore.File
 	if a.Image != "" {
 		telemetry.LogActivity(telemetry.LogLevelWarn, j.process.Namespace,
 			j.process.ID.String(), fmt.Sprintf("guessing yaml as direktiv service for file %s", path))
+
 		return filestore.FileTypeService, nil
 	}
 
 	if a.Username != "" || a.APIKey != "" {
 		telemetry.LogActivity(telemetry.LogLevelWarn, j.process.Namespace,
 			j.process.ID.String(), fmt.Sprintf("guessing yaml as direktiv consumer for file %s", path))
+
 		return filestore.FileTypeConsumer, nil
 	}
 
 	if len(a.Methods) > 0 {
 		telemetry.LogActivity(telemetry.LogLevelWarn, j.process.Namespace,
 			j.process.ID.String(), fmt.Sprintf("guessing yaml as direktiv endpoint for file %s", path))
+
 		return filestore.FileTypeEndpoint, nil
 	}
 
 	if a.OpenAPI != "" {
 		telemetry.LogActivity(telemetry.LogLevelWarn, j.process.Namespace,
 			j.process.ID.String(), fmt.Sprintf("guessing yaml as direktiv gateway for file %s", path))
+
 		return filestore.FileTypeGateway, nil
 	}
 
