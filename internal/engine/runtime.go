@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/grafana/sobek"
+	"github.com/grafana/sobek/parser"
 )
 
 const jsHiddenCode = `
@@ -16,10 +17,15 @@ function transition(funcName, state) {
 
 `
 
-func (e *Engine) execJSScript(script []byte, fn string, input string) (any, error) {
+func (e *Engine) execJSScript(script []byte, mappings []byte, fn string, input string) (any, error) {
 	vm := sobek.New()
 	vm.Set("print", jsPrint)
 	vm.Set("commitState", jsCommitState)
+	if mappings != nil {
+		vm.SetParserOptions(parser.WithSourceMapLoader(func(path string) ([]byte, error) {
+			return mappings, nil
+		}))
+	}
 
 	_, err := vm.RunString(jsHiddenCode + string(script))
 	if err != nil {

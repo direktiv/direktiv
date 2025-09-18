@@ -93,7 +93,7 @@ func (e *Engine) ExecWorkflow(ctx context.Context, namespace string, script stri
 		Namespace:  namespace,
 		Time:       time.Now(),
 	}
-	ret, err := e.execJSScript([]byte(script), fn, input)
+	ret, err := e.execJSScript([]byte(script), nil, fn, input)
 	if err != nil {
 		endMsg.Type = "failed"
 		endMsg.Error = err.Error()
