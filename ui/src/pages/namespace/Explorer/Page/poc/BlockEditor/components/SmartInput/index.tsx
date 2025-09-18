@@ -1,17 +1,28 @@
 import { Check, HelpCircleIcon, Maximize2 } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/design/Dialog";
+import { Fragment, useCallback, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
+import {
+  VariableNamespace,
+  localVariableNamespace,
+} from "../../../schema/primitives/variable";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { Card } from "@tremor/react";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
+import { Preview } from "./Preview";
 import { Textarea } from "~/design/TextArea";
 import { TreePicker } from "../TreePicker";
 import { addSnippetToInputValue } from "./utils";
 import { usePageEditorPanel } from "../../EditorPanelProvider";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export const SmartInput = ({
@@ -19,11 +30,13 @@ export const SmartInput = ({
   value,
   id,
   placeholder,
+  blacklist,
 }: {
   onUpdate: (value: string) => void;
   value: string;
-  id: string;
+  id?: string;
   placeholder: string;
+  blacklist?: VariableNamespace[];
 }) => {
   const { t } = useTranslation();
   const [dialog, setDialog] = useState(false);
@@ -33,20 +46,27 @@ export const SmartInput = ({
   const { panel } = usePageEditorPanel();
   const [textarea, setTextarea] = useState<HTMLTextAreaElement | null>();
 
+  const preventSubmit = useCallback((path: string[]) => {
+    if (path[0] === localVariableNamespace && path.length > 1) return false;
+    if (path.length > 2) return false;
+    return true;
+  }, []);
+
   if (!panel) return null;
 
-  const { variables } = panel;
+  const { variables: allVariables } = panel;
 
-  const variableSegmentPlaceholders = [
-    t("direktivPage.blockEditor.smartInput.templatePlaceholders.namespace"),
-    t("direktivPage.blockEditor.smartInput.templatePlaceholders.id"),
-    t("direktivPage.blockEditor.smartInput.templatePlaceholders.pointer"),
-  ];
+  const variables = Object.fromEntries(
+    Object.entries(allVariables).filter(
+      ([key]) => !(blacklist as string[])?.includes(key)
+    )
+  );
 
   return (
     <Dialog open={dialog} onOpenChange={setDialog}>
       <InputWithButton>
         <Input
+          className="rounded-none"
           value={value}
           onChange={(event) => onUpdate(event.target.value)}
           placeholder={placeholder}
@@ -70,6 +90,11 @@ export const SmartInput = ({
       >
         {dialog && (
           <>
+            <DialogHeader>
+              <DialogTitle>
+                {t("direktivPage.blockEditor.smartInput.dialogTitle")}
+              </DialogTitle>
+            </DialogHeader>
             <div>
               <div className="rounded-t-md border border-b-0 border-gray-4 p-2 dark:border-gray-dark-7">
                 <ButtonBar>
@@ -86,8 +111,8 @@ export const SmartInput = ({
                         callback: onUpdate,
                       })
                     }
-                    placeholders={variableSegmentPlaceholders}
-                    minDepth={3}
+                    preview={(path) => <Preview path={path} />}
+                    preventSubmit={preventSubmit}
                   />
                   <Popover>
                     <PopoverTrigger asChild>

@@ -31,7 +31,7 @@ const OidcGroupSelector = ({
         noShadow
       >
         <ArrayForm
-          defaultValue={value}
+          value={value}
           onChange={handleChange}
           emptyItem=""
           renderItem={({ value, setValue }) => (

@@ -18,12 +18,16 @@ import { VariableValueInput } from "./VariableValueInput";
 type ValueInputProps = {
   value: ExtendedKeyValueType["value"];
   onChange: (value: ExtendedKeyValueType["value"]) => void;
-  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  smart?: boolean;
 };
 
 const values: ValueType[] = ["string", "variable", "boolean", "number"];
 
-export const ValueInput = ({ value, onChange, onKeyDown }: ValueInputProps) => (
+export const ValueInput = ({
+  value,
+  onChange,
+  smart = false,
+}: ValueInputProps) => (
   <>
     <Select
       value={value.type}
@@ -60,9 +64,9 @@ export const ValueInput = ({ value, onChange, onKeyDown }: ValueInputProps) => (
 
     {value.type === "string" && (
       <StringValueInput
+        smart={smart}
         value={value.value}
         onChange={(newValue) => onChange({ type: "string", value: newValue })}
-        onKeyDown={onKeyDown}
       />
     )}
 
@@ -70,7 +74,6 @@ export const ValueInput = ({ value, onChange, onKeyDown }: ValueInputProps) => (
       <VariableValueInput
         value={value.value}
         onChange={(newValue) => onChange({ type: "variable", value: newValue })}
-        onKeyDown={onKeyDown}
       />
     )}
 
@@ -85,7 +88,6 @@ export const ValueInput = ({ value, onChange, onKeyDown }: ValueInputProps) => (
       <NumberValueInput
         value={value.value}
         onChange={(newValue) => onChange({ type: "number", value: newValue })}
-        onKeyDown={onKeyDown}
       />
     )}
   </>

@@ -1,4 +1,4 @@
-import { PropsWithChildren, ReactNode, useState } from "react";
+import { Fragment, PropsWithChildren, ReactNode } from "react";
 
 import { ArrayItem } from "./ArrayItem";
 import Button from "~/design/Button";
@@ -8,7 +8,7 @@ import { RenderItem } from "./types";
 
 type ArrayFormProps = <T>(
   props: {
-    defaultValue: T[];
+    value: T[];
     emptyItem: T;
     onChange: (newArray: T[]) => void;
     renderItem: RenderItem<T>;
@@ -18,51 +18,48 @@ type ArrayFormProps = <T>(
 
 export const ArrayForm: ArrayFormProps = ({
   children,
-  defaultValue,
+  value,
   emptyItem,
   onChange,
   renderItem,
   wrapItem = (children) => <ButtonBar>{children}</ButtonBar>,
 }) => {
-  type Item = (typeof defaultValue)[number];
-  const [items, setItems] = useState(defaultValue);
+  type Item = (typeof value)[number];
 
   const addItem = (newItem: Item) => {
-    const newValue = [...items, newItem];
-    setItems(newValue);
+    const newValue = [...value, newItem];
     onChange(newValue);
   };
 
-  const updateAtIndex = (index: number, value: Item) => {
-    const newItems = items.map((oldValue, oldIndex) => {
+  const updateAtIndex = (index: number, newValue: Item) => {
+    const newItems = value.map((oldValue, oldIndex) => {
       if (oldIndex === index) {
-        return value;
+        return newValue;
       }
       return oldValue;
     });
-    setItems(newItems);
     onChange(newItems);
   };
 
   const deleteAtIndex = (index: number) => {
-    const newItems = items.filter((_, oldIndex) => oldIndex !== index);
-    setItems(newItems);
+    const newItems = value.filter((_, oldIndex) => oldIndex !== index);
     onChange(newItems);
   };
 
   return (
     <>
-      {items?.map((item, index) =>
-        wrapItem(
-          <ArrayItem
-            key={`${items.length}-${index}`}
-            defaultValue={item}
-            renderItem={renderItem}
-            onUpdate={(value) => updateAtIndex(index, value)}
-            onDelete={() => deleteAtIndex(index)}
-          />
-        )
-      )}
+      {value?.map((item, index) => (
+        <Fragment key={`${value.length}-${index}`}>
+          {wrapItem(
+            <ArrayItem
+              value={item}
+              renderItem={renderItem}
+              onUpdate={(value) => updateAtIndex(index, value)}
+              onDelete={() => deleteAtIndex(index)}
+            />
+          )}
+        </Fragment>
+      ))}
 
       <Button
         type="button"

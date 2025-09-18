@@ -76,6 +76,7 @@ export const QueryForm = ({
         name="queryParams"
         render={({ field }) => (
           <KeyValueInput
+            smart
             field={field}
             label={t(
               "direktivPage.blockEditor.blockForms.queryProvider.query.queryParamsLabel"
