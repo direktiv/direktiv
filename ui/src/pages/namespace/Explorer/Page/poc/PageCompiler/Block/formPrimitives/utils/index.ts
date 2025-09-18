@@ -119,19 +119,14 @@ export const createLocalFormVariables = (
 export const extractFormKeys = (elements: HTMLFormControlsCollection) => {
   const formElementNames = Array.from(elements)
     .filter(
-      (
-        element
-      ): element is
-        | HTMLInputElement
-        | HTMLSelectElement
-        | HTMLTextAreaElement =>
+      (element) =>
         element instanceof HTMLInputElement ||
         element instanceof HTMLSelectElement ||
         element instanceof HTMLTextAreaElement
     )
     .map((element) => element.name);
 
-  const formKeys = formElementNames.reduce(
+  const formKeys = formElementNames.reduce<Record<string, unknown>>(
     (acc, field) => {
       const decodedKey = decodeBlockKey(field);
       if (decodedKey) {
@@ -141,7 +136,7 @@ export const extractFormKeys = (elements: HTMLFormControlsCollection) => {
 
       return acc;
     },
-    {} as Record<string, unknown>
+    {}
   );
 
   return formKeys;
