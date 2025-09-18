@@ -134,7 +134,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := e.engine.ExecWorkflow(r.Context(), namespace, string(fileData), "start", string(input), map[string]string{
+	id, err := e.engine.ExecScript(r.Context(), namespace, string(fileData), "", "start", string(input), map[string]string{
 		"workflowPath": path,
 	})
 	if err != nil {

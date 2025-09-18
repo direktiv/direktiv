@@ -17,17 +17,17 @@ function transition(funcName, state) {
 
 `
 
-func (e *Engine) execJSScript(script []byte, mappings []byte, fn string, input string) (any, error) {
+func (e *Engine) execJSScript(script string, mappings string, fn string, input string) (any, error) {
 	vm := sobek.New()
 	vm.Set("print", jsPrint)
 	vm.Set("commitState", jsCommitState)
-	if mappings != nil {
+	if mappings != "" {
 		vm.SetParserOptions(parser.WithSourceMapLoader(func(path string) ([]byte, error) {
-			return mappings, nil
+			return []byte(mappings), nil
 		}))
 	}
 
-	_, err := vm.RunString(jsHiddenCode + string(script))
+	_, err := vm.RunString(jsHiddenCode + script)
 	if err != nil {
 		return nil, fmt.Errorf("run script: %w", err)
 	}

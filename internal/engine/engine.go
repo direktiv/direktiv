@@ -18,9 +18,8 @@ type Engine struct {
 	db        *gorm.DB
 	projector Projector
 	dataBus   DataBus
+	compiler  core.Compiler
 }
-
-type fetchScript func(ctx context.Context, namespace, path string)
 
 func (e *Engine) ListInstances(ctx context.Context, namespace string) ([]uuid.UUID, error) {
 	// TODO implement me
@@ -32,6 +31,7 @@ func NewEngine(db *gorm.DB, proj Projector, bus DataBus, compiler core.Compiler)
 		db:        db,
 		projector: proj,
 		dataBus:   bus,
+		compiler:  compiler,
 	}, nil
 }
 
@@ -61,7 +61,16 @@ func (e *Engine) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (e *Engine) ExecWorkflow(ctx context.Context, namespace string, script string, fn string, args any, metadata map[string]string) (uuid.UUID, error) {
+func (e *Engine) ExecWorkflow(ctx context.Context, namespace string, workflowPath string, args any, metadata map[string]string) (uuid.UUID, error) {
+	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("fetch script: %w", err)
+	}
+
+	return e.ExecScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, args, metadata)
+}
+
+func (e *Engine) ExecScript(ctx context.Context, namespace string, script string, mappings string, fn string, args any, metadata map[string]string) (uuid.UUID, error) {
 	input, ok := args.(string)
 	if !ok {
 		return uuid.Nil, fmt.Errorf("invalid input")
@@ -80,7 +89,7 @@ func (e *Engine) ExecWorkflow(ctx context.Context, namespace string, script stri
 		Time:       time.Now(),
 		Metadata:   metadata,
 
-		Script: script,
+		Script: string(script),
 		Input:  json.RawMessage(input),
 	})
 	if err != nil {
@@ -93,7 +102,7 @@ func (e *Engine) ExecWorkflow(ctx context.Context, namespace string, script stri
 		Namespace:  namespace,
 		Time:       time.Now(),
 	}
-	ret, err := e.execJSScript([]byte(script), nil, fn, input)
+	ret, err := e.execJSScript(script, mappings, fn, input)
 	if err != nil {
 		endMsg.Type = "failed"
 		endMsg.Error = err.Error()
