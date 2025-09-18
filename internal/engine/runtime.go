@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/dop251/goja"
+	"github.com/grafana/sobek"
 )
 
 const jsHiddenCode = `
@@ -17,7 +17,7 @@ function transition(funcName, state) {
 `
 
 func (e *Engine) execJSScript(script []byte, fn string, input string) (any, error) {
-	vm := goja.New()
+	vm := sobek.New()
 	vm.Set("print", jsPrint)
 	vm.Set("commitState", jsCommitState)
 
@@ -25,7 +25,7 @@ func (e *Engine) execJSScript(script []byte, fn string, input string) (any, erro
 	if err != nil {
 		return nil, fmt.Errorf("run script: %w", err)
 	}
-	start, ok := goja.AssertFunction(vm.Get(fn))
+	start, ok := sobek.AssertFunction(vm.Get(fn))
 	if !ok {
 		return nil, fmt.Errorf("start function '%s' does not exist", fn)
 	}
@@ -36,7 +36,7 @@ func (e *Engine) execJSScript(script []byte, fn string, input string) (any, erro
 		return nil, fmt.Errorf("unmarshal input: %w", err)
 	}
 
-	res, err := start(goja.Undefined(), vm.ToValue(inputMap))
+	res, err := start(sobek.Undefined(), vm.ToValue(inputMap))
 	if err != nil {
 		return nil, fmt.Errorf("invoke start: %w", err)
 	}

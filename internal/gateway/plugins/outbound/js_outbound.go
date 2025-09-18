@@ -10,7 +10,7 @@ import (
 
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/gateway"
-	"github.com/dop251/goja"
+	"github.com/grafana/sobek"
 )
 
 type JSOutboundPlugin struct {
@@ -52,7 +52,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (htt
 	}
 
 	// extract all response headers and body
-	vm := goja.New()
+	vm := sobek.New()
 	err = vm.Set("input", resp)
 	if err != nil {
 		gateway.WriteInternalError(r, w, err, "can not set input object")
@@ -87,7 +87,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (htt
 		return nil, nil
 	}
 
-	if val != nil && !val.Equals(goja.Undefined()) {
+	if val != nil && !val.Equals(sobek.Undefined()) {
 		o := val.ToObject(vm)
 		// make sure the input object got returned
 		if o.ExportType() == reflect.TypeOf(resp) {

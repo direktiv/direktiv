@@ -10,7 +10,6 @@ require (
 	github.com/coreos/go-oidc/v3 v3.15.0
 	github.com/dgraph-io/ristretto/v2 v2.3.0
 	github.com/docker/docker v28.4.0+incompatible
-	github.com/dop251/goja v0.0.0-20250630131328-58d95d85e994
 	github.com/gabriel-vasile/mimetype v1.4.10
 	github.com/getkin/kin-openapi v0.133.0
 	github.com/go-chi/chi/v5 v5.2.3
@@ -25,7 +24,9 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/nats.go v1.45.0
 	github.com/r3labs/sse v0.0.0-20210224172625-26fe804710bc
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/slack-go/slack v0.17.3
+	github.com/sosodev/duration v1.3.1
 	github.com/spf13/cobra v1.10.1
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.38.0
@@ -152,10 +153,8 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
-	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/tklauser/go-sysconf v0.3.15 // indirect
 	github.com/tklauser/numcpus v0.10.0 // indirect
