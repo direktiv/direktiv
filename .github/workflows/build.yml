@@ -265,11 +265,11 @@ jobs:
       - name: Wait for Direktiv pods to be ready
         run: |
           sleep 1
-          kubectl wait --namespace postgres --for=condition=Ready pod --selector=app=postgresql --timeout=120s
+          kubectl wait --for=condition=Ready pod --selector=app=postgres --timeout=120s
 
       - name: Generate dev.yaml file with database credentials
         run: |
-          DB_HOST=postgres.postgres.svc
+          DB_HOST=postgres.default.svc
           DB_PORT=5432
           DB_USER=admin
           DB_PASSWORD=password
