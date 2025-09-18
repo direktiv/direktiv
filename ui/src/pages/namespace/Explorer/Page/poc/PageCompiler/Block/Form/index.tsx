@@ -7,7 +7,6 @@ import {
   createLocalFormVariables,
   extractFormKeys,
 } from "../formPrimitives/utils";
-import { useEffect, useRef } from "react";
 
 import Alert from "~/design/Alert";
 import { BlockList } from "../utils/BlockList";
@@ -15,6 +14,7 @@ import { Button } from "../Button";
 import { FormType } from "../../../schema/blocks/form";
 import { LocalVariables } from "../../primitives/Variable/VariableContext";
 import { StopPropagation } from "~/components/StopPropagation";
+import { useCallback } from "react";
 import { usePageMutation } from "../../procedures/mutation";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
@@ -30,7 +30,6 @@ const FormWithContext = ({ blockProps, blockPath, register }: FormProps) => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { missingFields, setMissingFields } = useFormValidation();
-  const ref = useRef<HTMLFormElement>(null);
 
   const missingFieldsNote =
     missingFields.length > 0 &&
@@ -49,17 +48,18 @@ const FormWithContext = ({ blockProps, blockPath, register }: FormProps) => {
     },
   });
 
-  useEffect(() => {
-    if (!register || !ref.current) return;
-
-    const localVariables = extractFormKeys(ref.current.elements);
-
-    register({ this: localVariables });
-  }, [register]);
+  const registerForm = useCallback(
+    (form: HTMLFormElement | null) => {
+      if (!register || !form) return;
+      const localVariables = extractFormKeys(form.elements);
+      register({ this: localVariables });
+    },
+    [register]
+  );
 
   return (
     <form
-      ref={ref}
+      ref={registerForm}
       onSubmit={(formEvent) => {
         setMissingFields([]);
         formEvent.preventDefault();

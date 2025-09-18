@@ -129,6 +129,7 @@ export const Form = ({
         name="mutation.requestBody"
         render={({ field }) => (
           <ExtendedKeyValueInput
+            smart
             field={field}
             label={t(
               "direktivPage.blockEditor.blockForms.form.mutation.requestBodyLabel"

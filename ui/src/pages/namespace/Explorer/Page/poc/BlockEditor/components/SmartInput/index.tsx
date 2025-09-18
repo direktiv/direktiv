@@ -66,6 +66,7 @@ export const SmartInput = ({
     <Dialog open={dialog} onOpenChange={setDialog}>
       <InputWithButton>
         <Input
+          className="rounded-none"
           value={value}
           onChange={(event) => onUpdate(event.target.value)}
           placeholder={placeholder}

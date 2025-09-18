@@ -27,7 +27,7 @@ export const HeaderArrayForm = ({ field }: HeaderArrayFormProps) => {
   return (
     <div className="grid gap-5">
       <ArrayForm
-        defaultValue={field.value || []}
+        value={field.value || []}
         onChange={field.onChange}
         emptyItem={emptyItem}
         renderItem={({ value: objectValue, setValue }) => (

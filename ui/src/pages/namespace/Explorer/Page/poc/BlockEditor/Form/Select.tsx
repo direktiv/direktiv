@@ -111,7 +111,7 @@ export const Select = ({
               const defaultValue = parsedValue.success ? parsedValue.data : [];
               return (
                 <ArrayForm
-                  defaultValue={defaultValue}
+                  value={defaultValue}
                   onChange={field.onChange}
                   emptyItem=""
                   renderItem={({ value, setValue }) => (

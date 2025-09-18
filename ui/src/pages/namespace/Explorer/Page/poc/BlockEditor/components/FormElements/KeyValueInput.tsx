@@ -23,7 +23,7 @@ export const KeyValueInput = ({
   return (
     <Fieldset label={label}>
       <ArrayForm
-        defaultValue={field.value || []}
+        value={field.value || []}
         onChange={field.onChange}
         emptyItem={{ key: "", value: "" }}
         renderItem={({ value: itemValue, setValue }) => (
