@@ -44,7 +44,7 @@ export const TreePicker: FC<TreePickerProps> = ({
   const disabled = useMemo(() => preventSubmit(path), [preventSubmit, path]);
 
   const allowCustomSegment = search.length > 0;
-  const formattedPath = `{{${path.join(".")}}}`;
+  const formattedPath = path.join(".");
 
   const addCustomSegment = () => {
     setPath([...path, search]);

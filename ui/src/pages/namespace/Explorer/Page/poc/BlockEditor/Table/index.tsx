@@ -7,6 +7,7 @@ import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
 import Input from "~/design/Input";
 import { Table as TableForm } from "../components/FormElements/Table";
+import { VariablePicker } from "../components/VariablePicker";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -52,8 +53,9 @@ export const Table = ({
         label={t("direktivPage.blockEditor.blockForms.table.data.dataLabel")}
         htmlFor="data-data"
       >
-        <Input
-          {...form.register("data.data")}
+        <VariablePicker
+          value={form.watch("data.data")}
+          onUpdate={(value) => form.setValue("data.data", value)}
           id="data-data"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.table.data.dataPlaceholder"
