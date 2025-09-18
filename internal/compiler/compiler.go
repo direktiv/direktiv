@@ -55,38 +55,36 @@ func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (*co
 		return nil, err
 	}
 
+	config, err := ValidateConfig(script)
+
 	return &core.TypescriptFlow{
 		Script:  script,
 		Mapping: mapping,
+		Config:  config,
 	}, nil
 }
 
-func ValidateScript(script string) error {
+func ValidateScript(script string) (*core.FlowConfig, error) {
 	t, err := NewTranspiler()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	script, _, err = t.Transpile(script, "dummy")
 
 	errors, err := ValidateTransitions(script)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if len(errors) > 0 {
-		return fmt.Errorf("errors in script: %v", errors)
+		return nil, fmt.Errorf("errors in script: %v", errors)
 	}
 
 	err = ValidateBody(script)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = ValidateConfig(script)
-	if err != nil {
-		return err
-	}
-
-	return err
+	return ValidateConfig(script)
 }
