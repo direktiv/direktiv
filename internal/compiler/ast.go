@@ -17,8 +17,12 @@ type Validator struct {
 	errors []string
 }
 
-func ValidateTransitions(src string) ([]string, error) {
-	program, err := parser.ParseFile(nil, "", strings.NewReader(src), 0)
+func ValidateTransitions(src, mapping string) ([]string, error) {
+	option := parser.WithSourceMapLoader(func(path string) ([]byte, error) {
+		return []byte(mapping), nil
+	})
+
+	program, err := parser.ParseFile(nil, "", strings.NewReader(src), 0, option)
 	if err != nil {
 		return nil, err
 	}
@@ -151,8 +155,12 @@ func (v *Validator) checkIfHasReturn(node ast.Node) bool {
 	return false
 }
 
-func ValidateBody(src string) error {
-	prog, err := parser.ParseFile(nil, "", src, 0)
+func ValidateBody(src, mapping string) error {
+	option := parser.WithSourceMapLoader(func(path string) ([]byte, error) {
+		return []byte(mapping), nil
+	})
+
+	prog, err := parser.ParseFile(nil, "", src, 0, option)
 	if err != nil {
 		return err
 	}
@@ -193,14 +201,18 @@ func ValidateBody(src string) error {
 	return nil
 }
 
-func ValidateConfig(src string) (*core.FlowConfig, error) {
+func ValidateConfig(src, mapping string) (*core.FlowConfig, error) {
 	flow := &core.FlowConfig{
 		Type:    "default",
 		Timeout: "PT15M",
 		Events:  make([]*core.EventConfig, 0),
 	}
 
-	prog, err := parser.ParseFile(nil, "", src, 0)
+	option := parser.WithSourceMapLoader(func(path string) ([]byte, error) {
+		return []byte(mapping), nil
+	})
+
+	prog, err := parser.ParseFile(nil, "", src, 0, option)
 	if err != nil {
 		return flow, err
 	}

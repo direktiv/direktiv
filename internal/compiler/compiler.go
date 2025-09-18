@@ -4,24 +4,19 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/direktiv/direktiv/internal/cluster/cache"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"gorm.io/gorm"
 )
 
-const transitionCode = `
-function transition(funcName, state) {
-	commitState(funcName, state)
-	return funcName(state)
-}
-`
-
 type Compiler struct {
 	db         *gorm.DB
 	transpiler *Transpiler
+	cache      cache.Cache
 }
 
-func NewCompiler(db *gorm.DB) (*Compiler, error) {
+func NewCompiler(db *gorm.DB, cache cache.Cache) (*Compiler, error) {
 	transpiler, err := NewTranspiler()
 	if err != nil {
 		return nil, err
@@ -30,12 +25,18 @@ func NewCompiler(db *gorm.DB) (*Compiler, error) {
 	return &Compiler{
 		db:         db,
 		transpiler: transpiler,
+		cache:      cache,
 	}, nil
 }
 
 func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (*core.TypescriptFlow, error) {
+	cacheKey := fmt.Sprintf("%s-%s-%s", namespace, "script", path)
 
 	// TODO CACHING
+	flow, found := c.cache.Get(cacheKey)
+	if found {
+		return flow.(*core.TypescriptFlow), nil
+	}
 
 	f, err := filesql.NewStore(c.db).ForRoot(namespace).GetFile(ctx, path)
 	if err != nil {
@@ -47,21 +48,25 @@ func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (*co
 		return nil, err
 	}
 
-	// add transition function
-	appendScript := string(b) + transitionCode
-
-	script, mapping, err := c.transpiler.Transpile(appendScript, path)
+	script, mapping, err := c.transpiler.Transpile(string(b), path)
 	if err != nil {
 		return nil, err
 	}
 
-	config, err := ValidateConfig(script)
+	config, err := ValidateConfig(script, mapping)
+	if err != nil {
+		return nil, err
+	}
 
-	return &core.TypescriptFlow{
+	obj := &core.TypescriptFlow{
 		Script:  script,
 		Mapping: mapping,
 		Config:  config,
-	}, nil
+	}
+
+	c.cache.Set(cacheKey, obj)
+
+	return obj, nil
 }
 
 func ValidateScript(script string) (*core.FlowConfig, error) {
@@ -70,10 +75,14 @@ func ValidateScript(script string) (*core.FlowConfig, error) {
 		return nil, err
 	}
 
-	script, _, err = t.Transpile(script, "dummy")
-
-	errors, err := ValidateTransitions(script)
+	script, mapping, err := t.Transpile(script, "dummy")
 	if err != nil {
+		return nil, err
+	}
+
+	errors, err := ValidateTransitions(script, mapping)
+	if err != nil {
+		fmt.Println("HIER1")
 		return nil, err
 	}
 
@@ -81,10 +90,11 @@ func ValidateScript(script string) (*core.FlowConfig, error) {
 		return nil, fmt.Errorf("errors in script: %v", errors)
 	}
 
-	err = ValidateBody(script)
+	err = ValidateBody(script, mapping)
 	if err != nil {
+		fmt.Println("HIER2")
 		return nil, err
 	}
 
-	return ValidateConfig(script)
+	return ValidateConfig(script, mapping)
 }
