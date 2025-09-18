@@ -49,7 +49,7 @@ export const ArrayForm: ArrayFormProps = ({
   return (
     <>
       {value?.map((item, index) => (
-        <Fragment key={index}>
+        <Fragment key={`${value.length}-${index}`}>
           {wrapItem(
             <ArrayItem
               value={item}
