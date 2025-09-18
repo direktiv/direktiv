@@ -1,4 +1,4 @@
-import { Fragment, PropsWithChildren, ReactNode, useState } from "react";
+import { Fragment, PropsWithChildren, ReactNode } from "react";
 
 import { ArrayItem } from "./ArrayItem";
 import Button from "~/design/Button";
@@ -25,11 +25,10 @@ export const ArrayForm: ArrayFormProps = ({
   wrapItem = (children) => <ButtonBar>{children}</ButtonBar>,
 }) => {
   type Item = (typeof defaultValue)[number];
-  const [items, setItems] = useState(defaultValue);
+  const items = defaultValue;
 
   const addItem = (newItem: Item) => {
     const newValue = [...items, newItem];
-    setItems(newValue);
     onChange(newValue);
   };
 
@@ -40,13 +39,11 @@ export const ArrayForm: ArrayFormProps = ({
       }
       return oldValue;
     });
-    setItems(newItems);
     onChange(newItems);
   };
 
   const deleteAtIndex = (index: number) => {
     const newItems = items.filter((_, oldIndex) => oldIndex !== index);
-    setItems(newItems);
     onChange(newItems);
   };
 
@@ -56,7 +53,7 @@ export const ArrayForm: ArrayFormProps = ({
         <Fragment key={index}>
           {wrapItem(
             <ArrayItem
-              defaultValue={item}
+              value={item}
               renderItem={renderItem}
               onUpdate={(value) => updateAtIndex(index, value)}
               onDelete={() => deleteAtIndex(index)}
