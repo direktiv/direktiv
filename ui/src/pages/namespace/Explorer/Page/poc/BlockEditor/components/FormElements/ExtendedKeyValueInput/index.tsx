@@ -13,11 +13,13 @@ type ExtendedKeyValueInputProps = {
     value: ExtendedKeyValueType[] | undefined;
     onChange: (value: ExtendedKeyValueType[]) => void;
   };
+  smart?: boolean;
 };
 
 export const ExtendedKeyValueInput = ({
   field,
   label,
+  smart = false,
 }: ExtendedKeyValueInputProps) => {
   const { t } = useTranslation();
   return (
@@ -64,6 +66,7 @@ export const ExtendedKeyValueInput = ({
                 </Label>
                 <div className="flex w-full items-center gap-2">
                   <ValueInput
+                    smart={smart}
                     value={itemValue.value}
                     onChange={(newValue) => {
                       setValue({

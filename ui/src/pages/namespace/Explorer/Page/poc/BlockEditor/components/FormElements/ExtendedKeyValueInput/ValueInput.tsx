@@ -18,11 +18,16 @@ import { VariableValueInput } from "./VariableValueInput";
 type ValueInputProps = {
   value: ExtendedKeyValueType["value"];
   onChange: (value: ExtendedKeyValueType["value"]) => void;
+  smart?: boolean;
 };
 
 const values: ValueType[] = ["string", "variable", "boolean", "number"];
 
-export const ValueInput = ({ value, onChange }: ValueInputProps) => (
+export const ValueInput = ({
+  value,
+  onChange,
+  smart = false,
+}: ValueInputProps) => (
   <>
     <Select
       value={value.type}
@@ -59,6 +64,7 @@ export const ValueInput = ({ value, onChange }: ValueInputProps) => (
 
     {value.type === "string" && (
       <StringValueInput
+        smart={smart}
         value={value.value}
         onChange={(newValue) => onChange({ type: "string", value: newValue })}
       />
