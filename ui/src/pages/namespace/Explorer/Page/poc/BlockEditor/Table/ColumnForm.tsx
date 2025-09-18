@@ -6,6 +6,7 @@ import {
 
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
+import { SmartInput } from "../components/SmartInput";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,9 +24,11 @@ export const ColumnForm = ({
 }: ColumnFormProps) => {
   const { t } = useTranslation();
   const {
+    formState: { errors },
     handleSubmit,
     register,
-    formState: { errors },
+    setValue,
+    watch,
   } = useForm<TableColumnType>({
     resolver: zodResolver(TableColumn),
     defaultValues: {
@@ -62,8 +65,9 @@ export const ColumnForm = ({
         )}
         htmlFor="content"
       >
-        <Input
-          {...register("content")}
+        <SmartInput
+          value={watch("content")}
+          onUpdate={(value) => setValue("content", value)}
           id="content"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.table.column.contentPlaceholder"

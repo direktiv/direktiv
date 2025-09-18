@@ -1,4 +1,4 @@
-import Input from "~/design/Input";
+import { VariableInput } from "../../VariableInput";
 import { useTranslation } from "react-i18next";
 
 type VariableValueInputProps = {
@@ -12,10 +12,10 @@ export const VariableValueInput = ({
 }: VariableValueInputProps) => {
   const { t } = useTranslation();
   return (
-    <Input
+    <VariableInput
       placeholder={t("direktivPage.blockEditor.blockForms.keyValue.variable")}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onUpdate={(value) => onChange(value)}
     />
   );
 };
