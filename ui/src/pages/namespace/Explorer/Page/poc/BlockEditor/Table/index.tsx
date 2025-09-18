@@ -66,10 +66,10 @@ export const Table = ({
           form.setValue("blocks.1.blocks", newValue);
         }}
         itemLabel={t(
-          "direktivPage.blockEditor.blockForms.table.action.itemLabel"
+          "direktivPage.blockEditor.blockForms.table.rowAction.itemLabel"
         )}
         label={(count) =>
-          t("direktivPage.blockEditor.blockForms.table.action.tableLabel", {
+          t("direktivPage.blockEditor.blockForms.table.rowAction.tableLabel", {
             count,
           })
         }

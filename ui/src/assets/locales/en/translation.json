@@ -1759,10 +1759,10 @@
             "dataLabel": "data",
             "dataPlaceholder": "Path to an array for the table (e.g. query.companies.data)"
           },
-          "action": {
-            "itemLabel": "Action",
-            "tableLabel": "{{count}} Actions",
-            "tableLabel_one": "{{count}} Action"
+          "rowAction": {
+            "itemLabel": "Row actions",
+            "tableLabel": "{{count}} Row actions",
+            "tableLabel_one": "{{count}} Row action"
           },
           "column": {
             "labelLabel": "Label",
