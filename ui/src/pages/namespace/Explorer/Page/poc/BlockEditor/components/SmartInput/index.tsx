@@ -105,7 +105,7 @@ export const SmartInput = ({
                       textarea &&
                       addSnippetToInputValue({
                         element: textarea,
-                        snippet,
+                        snippet: `{{${snippet}}}`,
                         value,
                         callback: onUpdate,
                       })
