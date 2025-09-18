@@ -5,17 +5,17 @@ import { TriggerLabelFieldset } from "../components/TriggerLabelFieldset";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type ActionFormProps = {
+type DialogTriggerFormProps = {
   defaultValues?: DialogType;
   formId: string;
   onSubmit: (data: DialogType) => void;
 };
 
-export const ActionForm = ({
+export const DialogTriggerForm = ({
   defaultValues,
   formId,
   onSubmit,
-}: ActionFormProps) => {
+}: DialogTriggerFormProps) => {
   const form = useForm<DialogType>({
     resolver: zodResolver(Dialog),
     defaultValues: {

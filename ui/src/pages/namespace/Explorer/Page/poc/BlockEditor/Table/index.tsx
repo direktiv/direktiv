@@ -1,8 +1,8 @@
 import { Table as TableSchema, TableType } from "../../schema/blocks/table";
 
-import { ActionForm } from "./ActionForm";
 import { BlockEditFormProps } from "..";
 import { ColumnForm } from "./ColumnForm";
+import { DialogTriggerForm } from "./DialogTriggerForm";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
 import Input from "~/design/Input";
@@ -75,7 +75,7 @@ export const Table = ({
         }
         renderRow={(dialog) => [dialog.trigger.label]}
         renderForm={(formId, onSubmit, defaultValues) => (
-          <ActionForm
+          <DialogTriggerForm
             formId={formId}
             onSubmit={onSubmit}
             defaultValues={defaultValues}
