@@ -2,14 +2,16 @@ import {
   VariableNamespace,
   localVariableNamespace,
 } from "../../../schema/primitives/variable";
-import { useCallback, useState } from "react";
 
+import Input from "~/design/Input";
+import { InputWithButton } from "~/design/InputWithButton";
 import { Preview } from "../SmartInput/Preview";
 import { TreePicker } from "../TreePicker";
+import { useCallback } from "react";
 import { usePageEditorPanel } from "../../EditorPanelProvider";
-import { useTranslation } from "react-i18next";
 
-export const VariablePicker = ({
+export const VariableInput = ({
+  value,
   onUpdate,
   blacklist,
   id,
@@ -21,7 +23,6 @@ export const VariablePicker = ({
   placeholder: string;
   blacklist?: VariableNamespace[];
 }) => {
-  const { t } = useTranslation();
   const { panel } = usePageEditorPanel();
 
   const preventSubmit = useCallback((path: string[]) => {
@@ -41,12 +42,14 @@ export const VariablePicker = ({
   );
 
   return (
-    <TreePicker
-      label={t("direktivPage.blockEditor.smartInput.variableBtn")}
-      tree={variables}
-      onSubmit={(variable) => onUpdate(variable)}
-      preview={(path) => <Preview path={path} />}
-      preventSubmit={preventSubmit}
-    />
+    <InputWithButton>
+      <Input id={id} value={value} placeholder={placeholder} />
+      <TreePicker
+        tree={variables}
+        onSubmit={(variable) => onUpdate(variable)}
+        preview={(path) => <Preview path={path} />}
+        preventSubmit={preventSubmit}
+      />
+    </InputWithButton>
   );
 };

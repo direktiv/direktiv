@@ -1,4 +1,4 @@
-import { Check, Plus, X } from "lucide-react";
+import { Check, Locate, Plus, X } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -21,7 +21,7 @@ import { FakeInput } from "~/design/FakeInput";
 import { useTranslation } from "react-i18next";
 
 type TreePickerProps = {
-  label: string;
+  label?: string;
   tree: Tree;
   onSubmit: (value: string) => void;
   preventSubmit: (path: string[]) => boolean;
@@ -55,13 +55,24 @@ export const TreePicker: FC<TreePickerProps> = ({
     <Popover>
       <div className="flex">
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            type="button"
-            className="dark:border-gray-dark-7"
-          >
-            {label}
-          </Button>
+          {label ? (
+            <Button
+              variant="outline"
+              type="button"
+              className="dark:border-gray-dark-7"
+            >
+              {label}
+            </Button>
+          ) : (
+            <Button
+              icon
+              variant="ghost"
+              type="button"
+              className="dark:border-gray-dark-7"
+            >
+              <Locate />
+            </Button>
+          )}
         </PopoverTrigger>
       </div>
       <PopoverContent className="w-96" align="start" container={container}>
