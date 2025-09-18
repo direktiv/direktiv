@@ -108,6 +108,11 @@ export const createLocalFormVariables = (
   return { formVariables, missingRequiredFields };
 };
 
+const isFormElement = (element: Element) =>
+  element instanceof HTMLInputElement ||
+  element instanceof HTMLSelectElement ||
+  element instanceof HTMLTextAreaElement;
+
 /**
  * Extracts formKeys from a collection of HTML form control elements.
  *
@@ -118,12 +123,7 @@ export const createLocalFormVariables = (
 
 export const extractFormKeys = (elements: HTMLFormControlsCollection) => {
   const formElementNames = Array.from(elements)
-    .filter(
-      (element) =>
-        element instanceof HTMLInputElement ||
-        element instanceof HTMLSelectElement ||
-        element instanceof HTMLTextAreaElement
-    )
+    .filter((element) => isFormElement(element))
     .map((element) => element.name);
 
   const formKeys = formElementNames.reduce<Record<string, unknown>>(
