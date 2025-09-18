@@ -74,16 +74,13 @@ export const Table = ({
           })
         }
         renderRow={(dialog) => [dialog.trigger.label]}
-        renderForm={(formId, onSubmit, defaultValues) => {
-          if (defaultValues && defaultValues.type !== "dialog") return null;
-          return (
-            <ActionForm
-              formId={formId}
-              onSubmit={onSubmit}
-              defaultValues={defaultValues}
-            />
-          );
-        }}
+        renderForm={(formId, onSubmit, defaultValues) => (
+          <ActionForm
+            formId={formId}
+            onSubmit={onSubmit}
+            defaultValues={defaultValues}
+          />
+        )}
       />
       <TableForm
         data={form.getValues("columns")}
