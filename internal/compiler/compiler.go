@@ -34,7 +34,6 @@ func NewCompiler(db *gorm.DB) (*Compiler, error) {
 }
 
 func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (*core.TypescriptFlow, error) {
-
 	// TODO CACHING
 
 	f, err := filesql.NewStore(c.db).ForRoot(namespace).GetFile(ctx, path)

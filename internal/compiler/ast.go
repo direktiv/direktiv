@@ -148,6 +148,7 @@ func (v *Validator) checkIfHasReturn(node ast.Node) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -259,7 +260,6 @@ func ValidateConfig(src string) (*core.FlowConfig, error) {
 									e := value.Value[i]
 									event, err := processEvent(e)
 									if err != nil {
-
 									}
 									flow.Events = append(flow.Events, event)
 								}
@@ -296,9 +296,7 @@ const (
 	eventsAndFlowType = "eventsAnd"
 )
 
-var (
-	flowTypes = []string{defaultFlowType, cronFlowType, eventFlowType, eventsOrFlowType, eventsAndFlowType}
-)
+var flowTypes = []string{defaultFlowType, cronFlowType, eventFlowType, eventsOrFlowType, eventsAndFlowType}
 
 func processEvent(l ast.Expression) (*core.EventConfig, error) {
 	event := &core.EventConfig{
@@ -358,6 +356,7 @@ func processEvent(l ast.Expression) (*core.EventConfig, error) {
 					}
 
 					err = json.Unmarshal(g, &v)
+
 					return v.Value, err
 				}
 
@@ -371,7 +370,6 @@ func processEvent(l ast.Expression) (*core.EventConfig, error) {
 				}
 
 				event.Context[fmt.Sprintf("%v", key)] = value
-
 			}
 		default:
 			return event, fmt.Errorf("wrong attribute for events")
