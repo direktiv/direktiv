@@ -13,43 +13,46 @@ import (
 )
 
 type Scheduler struct {
-	js    nats.JetStreamContext
-	cache *RulesCache
+	js    JetStream
+	cache *RuleCache
+	clk   Clock
 }
 
 func New(js nats.JetStreamContext) *Scheduler {
-	return &Scheduler{js: js, cache: NewRulesCache()}
+	return &Scheduler{js: js, cache: NewRulesCache(), clk: realClock{}}
 }
 
 func (s *Scheduler) Start(lc *lifecycle.Manager) error {
-	err := s.startRuleCache(lc.Context())
+	err := s.startRuleSubscription(lc.Context())
 	if err != nil {
 		return fmt.Errorf("start status cache: %w", err)
 	}
 
-	startTicking(lc, time.Second, s.tick)
+	startTicking(lc, time.Second, s.processDueRules)
 
 	return nil
 }
 
-func (s *Scheduler) scheduleRule(rule *Rule) error {
-	now := time.Now().UTC()
-	if rule.RunAt.IsZero() || rule.RunAt.UTC().After(now) {
-		return fmt.Errorf("skipping rule")
+func (s *Scheduler) dispatchIfDue(rule *Rule) error {
+	rule = rule.Clone()
+	now := s.clk.Now().UTC()
+	runAt := rule.RunAt.UTC()
+
+	if rule.RunAt.IsZero() || runAt.After(now) {
+		return fmt.Errorf("not-due")
 	}
 
-	runAt := rule.RunAt.UTC()
-	id := rule.ID + "-" + runAt.UTC().Format(time.RFC3339Nano)
+	// publish task
+	id := fmt.Sprintf("%s-%d", rule.ID, runAt.UTC().Unix())
 	data, _ := json.Marshal(Task{
 		ID:           id,
 		Namespace:    rule.Namespace,
 		WorkflowPath: rule.WorkflowPath,
-		RunAt:        runAt,
-		CreatedAt:    time.Now(),
+		RunAt:        s.clk.Now(),
+		CreatedAt:    s.clk.Now(),
 	})
 	subject := fmt.Sprintf(intNats.SubjSchedTask, rule.Namespace, rule.ID)
 	_, err := s.js.Publish(subject, data,
-		nats.Context(context.Background()),
 		nats.ExpectStream(intNats.StreamSchedTask),
 		// important to ensure dedupe. we don't want to publish the same task twice from two different servers
 		nats.MsgId(fmt.Sprintf("sched::task::%s", id)),
@@ -58,17 +61,15 @@ func (s *Scheduler) scheduleRule(rule *Rule) error {
 		return fmt.Errorf("nats publish task, subj: %s, err: %w", subject, err)
 	}
 
-	// compute next run time
-	runAt = runAt.Add(time.Duration(rule.CronExpr) * time.Second)
-	rule.RunAt = runAt
-	rule.UpdatedAt = time.Now()
-	s.cache.Upsert(rule)
+	// advance rule, persist
+	next := runAt.Add(time.Duration(rule.CronExpr) * time.Second)
+	rule.RunAt = next
+	rule.UpdatedAt = s.clk.Now()
 
-	// update rule
+	// optimistic update in rule stream
 	data, _ = json.Marshal(rule)
 	subject = fmt.Sprintf(intNats.SubjSchedRule, rule.Namespace, rule.ID)
 	_, err = s.js.Publish(subject, data,
-		nats.Context(context.Background()),
 		nats.ExpectStream(intNats.StreamSchedRule),
 		nats.ExpectLastSequence(rule.Sequence),
 		nats.MsgId(fmt.Sprintf("sched::rule::%s", rule.Fingerprint())),
@@ -77,19 +78,20 @@ func (s *Scheduler) scheduleRule(rule *Rule) error {
 		return fmt.Errorf("nats publish rule update, subj: %s, err: %w", subject, err)
 	}
 
+	s.cache.Upsert(rule)
+
 	return nil
 }
 
-func (s *Scheduler) tick() error {
-
+func (s *Scheduler) processDueRules() error {
 	// snapshot rules in cache
 	rules := s.cache.Snapshot("")
 	for _, rule := range rules {
-		err := s.scheduleRule(rule)
+		err := s.dispatchIfDue(rule)
 		if err != nil {
-			slog.Error("schedule rule", "err", err, "id", rule.ID)
+			slog.Error("dispatchIfDue", "err", err, "id", rule.ID)
 		} else {
-			slog.Info("schedule rule", "id", rule.ID)
+			slog.Info("dispatchIfDue", "id", rule.ID)
 		}
 	}
 
@@ -106,7 +108,7 @@ func (s *Scheduler) SetRule(ctx context.Context, rule *Rule) (*Rule, error) {
 	}
 
 	rule.ID = CalculateRuleID(*rule)
-	rule.CreatedAt = time.Now()
+	rule.CreatedAt = s.clk.Now()
 	rule.UpdatedAt = rule.CreatedAt
 
 	data, err := json.Marshal(rule)
@@ -131,7 +133,7 @@ func (s *Scheduler) ListRules(ctx context.Context) ([]*Rule, error) {
 	return data, nil
 }
 
-func (s *Scheduler) startRuleCache(ctx context.Context) error {
+func (s *Scheduler) startRuleSubscription(ctx context.Context) error {
 	subj := fmt.Sprintf(intNats.SubjSchedRule, "*", "*")
 	// ephemeral, AckNone (we don't want to disturb the stream/consumers)
 	_, err := s.js.Subscribe(subj, func(msg *nats.Msg) {

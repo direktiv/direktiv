@@ -9,7 +9,7 @@ import (
 
 type TickFunc func() error
 
-func startTicking(lc *lifecycle.Manager, interval time.Duration, tickFunc TickFunc) {
+func startTicking(lc *lifecycle.Manager, interval time.Duration, tick TickFunc) {
 	lc.Go(func() error {
 		t := time.NewTicker(interval)
 		defer t.Stop()
@@ -18,9 +18,9 @@ func startTicking(lc *lifecycle.Manager, interval time.Duration, tickFunc TickFu
 			case <-lc.Done():
 				return nil
 			case <-t.C:
-				err := tickFunc()
-				if err != nil {
-					return fmt.Errorf(" tick func, err: %w", err)
+				if err := tick(); err != nil {
+					// log and continue
+					fmt.Printf("sched tick error: %v\n", err)
 				}
 			}
 		}

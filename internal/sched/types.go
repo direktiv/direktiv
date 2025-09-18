@@ -31,11 +31,11 @@ type Rule struct {
 
 func (c *Rule) Fingerprint() string {
 	// make a shallow copy with volatile fields zeroed
-	cp := c
+	cp := *c
 	cp.CreatedAt = time.Time{}
 	cp.UpdatedAt = time.Time{}
 
-	b, _ := json.Marshal(cp)
+	b, _ := json.Marshal(&cp)
 	sum := sha256.Sum256(b)
 
 	return hex.EncodeToString(sum[:8])

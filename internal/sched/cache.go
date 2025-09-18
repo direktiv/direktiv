@@ -5,18 +5,18 @@ import (
 	"sync"
 )
 
-type RulesCache struct {
+type RuleCache struct {
 	mu    sync.RWMutex
 	items map[string]Rule // key: orderID
 }
 
-func NewRulesCache() *RulesCache {
-	return &RulesCache{
+func NewRulesCache() *RuleCache {
+	return &RuleCache{
 		items: map[string]Rule{},
 	}
 }
 
-func (c *RulesCache) Upsert(r *Rule) {
+func (c *RuleCache) Upsert(r *Rule) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	// keep only the newest by Sequence
@@ -26,7 +26,7 @@ func (c *RulesCache) Upsert(r *Rule) {
 	}
 }
 
-func (c *RulesCache) Snapshot(filterNamespace string) []*Rule {
+func (c *RuleCache) Snapshot(filterNamespace string) []*Rule {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	out := make([]*Rule, 0, len(c.items))
