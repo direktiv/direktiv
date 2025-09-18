@@ -1,9 +1,8 @@
 import { Dialog as DialogSchema, DialogType } from "../schema/blocks/dialog";
 
 import { BlockEditFormProps } from ".";
-import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "./components/FormWrapper";
-import { SmartInput } from "./components/SmartInput";
+import { TriggerLabelFieldset } from "./components/TriggerLabelFieldset";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,21 +32,7 @@ export const Dialog = ({
       onSubmit={onSubmit}
       onCancel={onCancel}
     >
-      <Fieldset
-        label={t(
-          "direktivPage.blockEditor.blockForms.dialog.triggerLabelLabel"
-        )}
-        htmlFor="label"
-      >
-        <SmartInput
-          value={form.watch("trigger.label")}
-          onUpdate={(value) => form.setValue("trigger.label", value)}
-          id="label"
-          placeholder={t(
-            "direktivPage.blockEditor.blockForms.dialog.triggerLabelPlaceholder"
-          )}
-        />
-      </Fieldset>
+      <TriggerLabelFieldset form={form} />
     </FormWrapper>
   );
 };
