@@ -13,7 +13,7 @@ export const EnvsArrayForm = ({ field }: EnvsArrayFormProps) => {
   return (
     <div className="grid gap-5" data-testid="env-item-form">
       <ArrayForm
-        defaultValue={field.value || []}
+        value={field.value || []}
         onChange={field.onChange}
         emptyItem={{ name: "", value: "" }}
         renderItem={({ value: objectValue, setValue }) => (

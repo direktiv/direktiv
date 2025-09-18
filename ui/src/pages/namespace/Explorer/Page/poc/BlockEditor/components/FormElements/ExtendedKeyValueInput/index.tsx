@@ -24,7 +24,7 @@ export const ExtendedKeyValueInput = ({
     <Fieldset label={label}>
       <div className="flex flex-col gap-y-5">
         <ArrayForm
-          defaultValue={field.value || []}
+          value={field.value || []}
           onChange={field.onChange}
           emptyItem={{
             key: "",

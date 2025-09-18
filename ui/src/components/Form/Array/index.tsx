@@ -8,7 +8,7 @@ import { RenderItem } from "./types";
 
 type ArrayFormProps = <T>(
   props: {
-    defaultValue: T[];
+    value: T[];
     emptyItem: T;
     onChange: (newArray: T[]) => void;
     renderItem: RenderItem<T>;
@@ -18,24 +18,23 @@ type ArrayFormProps = <T>(
 
 export const ArrayForm: ArrayFormProps = ({
   children,
-  defaultValue,
+  value,
   emptyItem,
   onChange,
   renderItem,
   wrapItem = (children) => <ButtonBar>{children}</ButtonBar>,
 }) => {
-  type Item = (typeof defaultValue)[number];
-  const items = defaultValue;
+  type Item = (typeof value)[number];
 
   const addItem = (newItem: Item) => {
-    const newValue = [...items, newItem];
+    const newValue = [...value, newItem];
     onChange(newValue);
   };
 
-  const updateAtIndex = (index: number, value: Item) => {
-    const newItems = items.map((oldValue, oldIndex) => {
+  const updateAtIndex = (index: number, newValue: Item) => {
+    const newItems = value.map((oldValue, oldIndex) => {
       if (oldIndex === index) {
-        return value;
+        return newValue;
       }
       return oldValue;
     });
@@ -43,13 +42,13 @@ export const ArrayForm: ArrayFormProps = ({
   };
 
   const deleteAtIndex = (index: number) => {
-    const newItems = items.filter((_, oldIndex) => oldIndex !== index);
+    const newItems = value.filter((_, oldIndex) => oldIndex !== index);
     onChange(newItems);
   };
 
   return (
     <>
-      {items?.map((item, index) => (
+      {value?.map((item, index) => (
         <Fragment key={index}>
           {wrapItem(
             <ArrayItem
