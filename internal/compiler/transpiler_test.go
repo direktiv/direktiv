@@ -1,15 +1,15 @@
-package transpiler_test
+package compiler_test
 
 import (
 	"testing"
 
-	"github.com/direktiv/direktiv/internal/transpiler"
+	"github.com/direktiv/direktiv/internal/compiler"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTranspiler(t *testing.T) {
 
-	tt, err := transpiler.NewTranspiler()
+	tt, err := compiler.NewTranspiler()
 	assert.NoError(t, err)
 
 	_, _, err = tt.Transpile("const hallo = \"world\"", "dummy")

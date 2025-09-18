@@ -1,4 +1,4 @@
-package transpiler
+package compiler
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/direktiv/direktiv/internal/core"
 	"github.com/grafana/sobek/ast"
 	"github.com/grafana/sobek/parser"
 	"github.com/robfig/cron/v3"
@@ -192,25 +193,11 @@ func ValidateBody(src string) error {
 	return nil
 }
 
-type Event struct {
-	Type    string
-	Context map[string]any
-}
-
-// Flow holds the top-level JS object
-type Flow struct {
-	Type    string
-	Events  []*Event
-	Cron    string
-	Timeout string
-	State   string
-}
-
-func ValidateConfig(src string) (*Flow, error) {
-	flow := &Flow{
+func ValidateConfig(src string) (*core.FlowConfig, error) {
+	flow := &core.FlowConfig{
 		Type:    "default",
 		Timeout: "PT15M",
-		Events:  make([]*Event, 0),
+		Events:  make([]*core.EventConfig, 0),
 	}
 
 	prog, err := parser.ParseFile(nil, "", src, 0)
@@ -313,8 +300,8 @@ var (
 	flowTypes = []string{defaultFlowType, cronFlowType, eventFlowType, eventsOrFlowType, eventsAndFlowType}
 )
 
-func processEvent(l ast.Expression) (*Event, error) {
-	event := &Event{
+func processEvent(l ast.Expression) (*core.EventConfig, error) {
+	event := &core.EventConfig{
 		Context: make(map[string]any),
 	}
 
@@ -394,7 +381,7 @@ func processEvent(l ast.Expression) (*Event, error) {
 	return event, nil
 }
 
-func setAndvalidate(flow *Flow, fns []string, key, value string) error {
+func setAndvalidate(flow *core.FlowConfig, fns []string, key, value string) error {
 	switch key {
 	case "type":
 		if !slices.Contains(flowTypes, value) {

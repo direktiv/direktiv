@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -19,12 +20,14 @@ type Engine struct {
 	dataBus   DataBus
 }
 
+type fetchScript func(ctx context.Context, namespace, path string)
+
 func (e *Engine) ListInstances(ctx context.Context, namespace string) ([]uuid.UUID, error) {
 	// TODO implement me
 	panic("implement me")
 }
 
-func NewEngine(db *gorm.DB, proj Projector, bus DataBus) (*Engine, error) {
+func NewEngine(db *gorm.DB, proj Projector, bus DataBus, compiler core.Compiler) (*Engine, error) {
 	return &Engine{
 		db:        db,
 		projector: proj,

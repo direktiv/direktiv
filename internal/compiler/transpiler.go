@@ -1,4 +1,4 @@
-package transpiler
+package compiler
 
 import (
 	_ "embed"

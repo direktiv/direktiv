@@ -10,7 +10,6 @@ import (
 
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/internal/sched"
-	"github.com/direktiv/direktiv/internal/transpiler"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -168,31 +167,31 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e instController) testTranspile(w http.ResponseWriter, r *http.Request) {
-	namespace := chi.URLParam(r, "namespace")
-	path := r.URL.Query().Get("path")
+	// namespace := chi.URLParam(r, "namespace")
+	// path := r.URL.Query().Get("path")
 
-	if path == "" {
-		writeError(w, &Error{
-			Code:    "resource_not_found",
-			Message: "path not provided",
-		})
+	// if path == "" {
+	// 	writeError(w, &Error{
+	// 		Code:    "resource_not_found",
+	// 		Message: "path not provided",
+	// 	})
 
-		return
-	}
+	// 	return
+	// }
 
-	compiler, err := transpiler.NewCompiler(e.db)
-	if err != nil {
-		writeInternalError(w, err)
-		return
-	}
+	// compiler, err := compiler.NewCompiler(e.db)
+	// if err != nil {
+	// 	writeInternalError(w, err)
+	// 	return
+	// }
 
-	flow, err := compiler.Compile(r.Context(), namespace, path)
-	if err != nil {
-		writeInternalError(w, err)
-		return
-	}
+	// flow, err := compiler.Compile(r.Context(), namespace, path)
+	// if err != nil {
+	// 	writeInternalError(w, err)
+	// 	return
+	// }
 
-	fmt.Printf("%+v\n", flow)
+	// fmt.Printf("%+v\n", flow)
 
 	// wait := r.URL.Query().Get("wait") == "true"
 	// output := r.URL.Query().Get("output") == "true"

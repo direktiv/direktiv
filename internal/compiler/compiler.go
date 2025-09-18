@@ -1,20 +1,24 @@
-package transpiler
+package compiler
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"gorm.io/gorm"
 )
 
+const transitionCode = `
+function transition(funcName, state) {
+	commitState(funcName, state)
+	return funcName(state)
+}
+`
+
 type Compiler struct {
 	db         *gorm.DB
 	transpiler *Transpiler
-}
-
-type TypescriptFlow struct {
-	Script, Mapping string
 }
 
 func NewCompiler(db *gorm.DB) (*Compiler, error) {
@@ -29,7 +33,10 @@ func NewCompiler(db *gorm.DB) (*Compiler, error) {
 	}, nil
 }
 
-func (c *Compiler) Compile(ctx context.Context, namespace, path string) (*TypescriptFlow, error) {
+func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (*core.TypescriptFlow, error) {
+
+	// TODO CACHING
+
 	f, err := filesql.NewStore(c.db).ForRoot(namespace).GetFile(ctx, path)
 	if err != nil {
 		return nil, err
@@ -40,12 +47,15 @@ func (c *Compiler) Compile(ctx context.Context, namespace, path string) (*Typesc
 		return nil, err
 	}
 
-	script, mapping, err := c.transpiler.Transpile(string(b), path)
+	// add transition function
+	appendScript := string(b) + transitionCode
+
+	script, mapping, err := c.transpiler.Transpile(appendScript, path)
 	if err != nil {
 		return nil, err
 	}
 
-	return &TypescriptFlow{
+	return &core.TypescriptFlow{
 		Script:  script,
 		Mapping: mapping,
 	}, nil

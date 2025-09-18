@@ -11,7 +11,6 @@ import (
 
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
-	"github.com/direktiv/direktiv/internal/transpiler"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/go-chi/chi/v5"
@@ -221,15 +220,15 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Validate if data is valid typescript with direktiv files.
-	isDirektivFile := req.Typ != filestore.FileTypeDirectory && req.Typ != filestore.FileTypeFile
-	if err = transpiler.ValidateScript(string(decodedBytes)); err != nil && isDirektivFile {
-		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: "file data has invalid typescript",
-		})
+	// isDirektivFile := req.Typ != filestore.FileTypeDirectory && req.Typ != filestore.FileTypeFile
+	// if err = compiler.ValidateScript(string(decodedBytes)); err != nil && isDirektivFile {
+	// 	writeError(w, &Error{
+	// 		Code:    "request_data_invalid",
+	// 		Message: "file data has invalid typescript",
+	// 	})
 
-		return
-	}
+	// 	return
+	// }
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
