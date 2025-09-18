@@ -10,7 +10,6 @@ import (
 
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/internal/sched"
-	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -103,38 +102,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db := e.db.WithContext(r.Context()).Begin()
-	if db.Error != nil {
-		writeError(w, &Error{
-			Code:    db.Error.Error(),
-			Message: db.Error.Error(),
-		})
-
-		return
-	}
-	defer db.Rollback()
-	fStore := filesql.NewStore(db)
-
-	file, err := fStore.ForRoot(namespace).GetFile(r.Context(), path)
-	if err != nil {
-		writeError(w, &Error{
-			Code:    err.Error(),
-			Message: err.Error(),
-		})
-
-		return
-	}
-	fileData, err := fStore.ForFile(file).GetData(r.Context())
-	if err != nil {
-		writeError(w, &Error{
-			Code:    err.Error(),
-			Message: err.Error(),
-		})
-
-		return
-	}
-
-	id, err := e.engine.ExecScript(r.Context(), namespace, string(fileData), "", "start", string(input), map[string]string{
+	id, err := e.engine.ExecWorkflow(r.Context(), namespace, path, string(input), map[string]string{
 		"workflowPath": path,
 	})
 	if err != nil {

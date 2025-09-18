@@ -15,25 +15,9 @@ describe('Test js engine', () => {
 
 	helpers.itShouldCreateFile(it, expect, namespace, '/foo', 'file1.wf.js', 'file', 'text/plain',
 		btoa(`
-function start(input) {
+function stateOne(payload) {
 	print("RUN STATE FIRST")
-	state = input
-	state.step1 = "data1"
-	
-	return transition(second, state)
-}
-function second(state) {
-    print("RUN STATE SECOND")
-    state.step2 = "data2"
-
-    return transition(third, state)
-}
-function third(state) {
-    print("RUN STATE LAST")
-    state.step3 = "data3"
-    
-    print(state)
-	return state
+    return "hello"
 }
 `))
 	retry10(`should invoke /foo/file1.wf.js workflow`, async () => {

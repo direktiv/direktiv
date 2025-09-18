@@ -9,14 +9,6 @@ import (
 	"github.com/grafana/sobek/parser"
 )
 
-const jsHiddenCode = `
-function transition(funcName, state) {
-	commitState(funcName, state)
-	return funcName(state)
-}
-
-`
-
 func (e *Engine) execJSScript(script string, mappings string, fn string, input string) (any, error) {
 	vm := sobek.New()
 	vm.Set("print", jsPrint)
@@ -27,7 +19,7 @@ func (e *Engine) execJSScript(script string, mappings string, fn string, input s
 		}))
 	}
 
-	_, err := vm.RunString(jsHiddenCode + script)
+	_, err := vm.RunString(script)
 	if err != nil {
 		return nil, fmt.Errorf("run script: %w", err)
 	}
