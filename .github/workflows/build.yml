@@ -264,8 +264,9 @@ jobs:
 
       - name: Wait for Direktiv pods to be ready
         run: |
-          sleep 1
-          kubectl wait --for=condition=Ready pod --selector=app=postgres --timeout=120s
+          sleep 5;
+          kubectl get pods -A;
+          kubectl get pods -A --show-labels;
 
       - name: Generate dev.yaml file with database credentials
         run: |
