@@ -17,7 +17,7 @@ type EventConfig struct {
 
 type TypescriptFlow struct {
 	Script, Mapping string
-	Config          FlowConfig
+	Config          *FlowConfig
 }
 
 type Compiler interface {
