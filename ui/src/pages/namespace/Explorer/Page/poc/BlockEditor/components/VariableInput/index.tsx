@@ -3,8 +3,10 @@ import {
   localVariableNamespace,
 } from "../../../schema/primitives/variable";
 
+import Button from "~/design/Button";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
+import { Locate } from "lucide-react";
 import { Preview } from "../SmartInput/Preview";
 import { TreePicker } from "../TreePicker";
 import { useCallback } from "react";
@@ -54,7 +56,16 @@ export const VariableInput = ({
         onSubmit={(variable) => onUpdate(variable)}
         preview={(path) => <Preview path={path} />}
         preventSubmit={preventSubmit}
-      />
+      >
+        <Button
+          icon
+          variant="ghost"
+          type="button"
+          className="dark:border-gray-dark-7"
+        >
+          <Locate />
+        </Button>
+      </TreePicker>
     </InputWithButton>
   );
 };

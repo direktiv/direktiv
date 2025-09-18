@@ -1,4 +1,4 @@
-import { Check, Locate, Plus, X } from "lucide-react";
+import { Check, Plus, X } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -7,7 +7,7 @@ import {
   CommandItem,
   CommandList,
 } from "~/design/Command";
-import { FC, ReactNode, useMemo, useState } from "react";
+import { FC, ReactElement, ReactNode, useMemo, useState } from "react";
 import {
   Popover,
   PopoverClose,
@@ -21,17 +21,17 @@ import { FakeInput } from "~/design/FakeInput";
 import { useTranslation } from "react-i18next";
 
 type TreePickerProps = {
-  label?: string;
   tree: Tree;
   onSubmit: (value: string) => void;
   preventSubmit: (path: string[]) => boolean;
   container?: HTMLDivElement;
   preview: (path: string[]) => ReactNode;
+  children: ReactElement<HTMLButtonElement>;
 };
 
 export const TreePicker: FC<TreePickerProps> = ({
-  label,
   tree,
+  children,
   container,
   preventSubmit = () => false,
   onSubmit,
@@ -54,26 +54,7 @@ export const TreePicker: FC<TreePickerProps> = ({
   return (
     <Popover>
       <div className="flex">
-        <PopoverTrigger asChild>
-          {label ? (
-            <Button
-              variant="outline"
-              type="button"
-              className="dark:border-gray-dark-7"
-            >
-              {label}
-            </Button>
-          ) : (
-            <Button
-              icon
-              variant="ghost"
-              type="button"
-              className="dark:border-gray-dark-7"
-            >
-              <Locate />
-            </Button>
-          )}
-        </PopoverTrigger>
+        <PopoverTrigger asChild>{children}</PopoverTrigger>
       </div>
       <PopoverContent className="w-96" align="start" container={container}>
         <Command>
