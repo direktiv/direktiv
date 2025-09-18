@@ -33,8 +33,8 @@ export const ExtendedKeyValueInput = ({
               value: "",
             },
           }}
-          wrapItem={(children, key) => (
-            <Card key={key} className="flex flex-col gap-3 p-3" noShadow>
+          wrapItem={(children) => (
+            <Card className="flex flex-col gap-3 p-3" noShadow>
               {children}
             </Card>
           )}

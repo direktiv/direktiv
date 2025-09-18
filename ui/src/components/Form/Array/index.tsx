@@ -1,4 +1,4 @@
-import { PropsWithChildren, ReactNode, useState } from "react";
+import { Fragment, PropsWithChildren, ReactNode, useState } from "react";
 
 import { ArrayItem } from "./ArrayItem";
 import Button from "~/design/Button";
@@ -12,7 +12,7 @@ type ArrayFormProps = <T>(
     emptyItem: T;
     onChange: (newArray: T[]) => void;
     renderItem: RenderItem<T>;
-    wrapItem?: (children: ReactNode, key: string) => JSX.Element;
+    wrapItem?: (children: ReactNode) => JSX.Element;
   } & PropsWithChildren
 ) => JSX.Element;
 
@@ -22,9 +22,7 @@ export const ArrayForm: ArrayFormProps = ({
   emptyItem,
   onChange,
   renderItem,
-  wrapItem = (children, key: string) => (
-    <ButtonBar key={key}>{children}</ButtonBar>
-  ),
+  wrapItem = (children) => <ButtonBar>{children}</ButtonBar>,
 }) => {
   type Item = (typeof defaultValue)[number];
   const [items, setItems] = useState(defaultValue);
@@ -54,17 +52,18 @@ export const ArrayForm: ArrayFormProps = ({
 
   return (
     <>
-      {items?.map((item, index) =>
-        wrapItem(
-          <ArrayItem
-            defaultValue={item}
-            renderItem={renderItem}
-            onUpdate={(value) => updateAtIndex(index, value)}
-            onDelete={() => deleteAtIndex(index)}
-          />,
-          `${items.length}-${index}`
-        )
-      )}
+      {items?.map((item, index) => (
+        <Fragment key={index}>
+          {wrapItem(
+            <ArrayItem
+              defaultValue={item}
+              renderItem={renderItem}
+              onUpdate={(value) => updateAtIndex(index, value)}
+              onDelete={() => deleteAtIndex(index)}
+            />
+          )}
+        </Fragment>
+      ))}
 
       <Button
         type="button"
