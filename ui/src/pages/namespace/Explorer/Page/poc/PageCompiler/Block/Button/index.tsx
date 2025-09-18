@@ -1,20 +1,22 @@
-import { DefaultButton, DefaultButtonProps } from "./DefaultButton";
-import { Ref, forwardRef } from "react";
-import { TextButton, TextButtonProps } from "./TextButton";
+import ButtonDesignComponent, {
+  ButtonProps as ButtonDesignComponentProps,
+} from "~/design/Button";
 
-type ButtonCompoundProps =
-  | ({ as?: "button"; disabled?: boolean } & DefaultButtonProps)
-  // TODO: is this still needed?
-  | ({ as: "text" } & TextButtonProps);
+import { ButtonType } from "../../../schema/blocks/button";
+import { TemplateString } from "../../primitives/TemplateString";
+import { forwardRef } from "react";
 
-export const Button = forwardRef<
-  HTMLButtonElement | HTMLSpanElement,
-  ButtonCompoundProps
->(({ as, ...props }, ref) => {
-  if (as === "text") {
-    return <TextButton {...props} ref={ref as Ref<HTMLSpanElement>} />;
-  }
-  return <DefaultButton {...props} ref={ref as Ref<HTMLButtonElement>} />;
-});
+export type DefaultButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
+  ButtonDesignComponentProps & {
+    blockProps: ButtonType;
+  };
+
+export const Button = forwardRef<HTMLButtonElement, DefaultButtonProps>(
+  ({ blockProps, ...props }, ref) => (
+    <ButtonDesignComponent ref={ref} {...props}>
+      <TemplateString value={blockProps.label} />
+    </ButtonDesignComponent>
+  )
+);
 
 Button.displayName = "Button";

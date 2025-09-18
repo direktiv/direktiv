@@ -87,7 +87,6 @@ const FormWithContext = ({ blockProps, blockPath }: FormProps) => {
                 disabled={isPending}
                 loading={isPending}
                 blockProps={trigger}
-                as="button"
               />
             </StopPropagation>
           </div>
