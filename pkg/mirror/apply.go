@@ -59,6 +59,11 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 		return fmt.Errorf("failed to copy services into new filesystem root: %w", err)
 	}
 
+	err = o.copyPagesIntoRoot(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to copy pages into new filesystem root: %w", err)
+	}
+
 	err = o.copyWorkflowsIntoRoot(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to copy workflows into new filesystem root: %w", err)
@@ -188,6 +193,28 @@ func (o *DirektivApplyer) copyServicesIntoRoot(ctx context.Context) error {
 		//nolint: contextcheck
 		telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
 			fmt.Sprintf("created service in database: %s", path))
+	}
+
+	return nil
+}
+
+func (o *DirektivApplyer) copyPagesIntoRoot(ctx context.Context) error {
+	paths := []string{}
+	for k := range o.parser.Pages {
+		paths = append(paths, k)
+	}
+
+	sort.Strings(paths)
+
+	for _, path := range paths {
+		data := o.parser.Pages[path]
+		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypePage, "application/yaml", data)
+		if err != nil {
+			return err
+		}
+		//nolint: contextcheck
+		telemetry.LogActivity(telemetry.LogLevelDebug, o.proc.Namespace, o.proc.ID.String(),
+			fmt.Sprintf("created page in database: %s", path))
 	}
 
 	return nil
