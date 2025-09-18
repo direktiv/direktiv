@@ -43,7 +43,12 @@ export const VariableInput = ({
 
   return (
     <InputWithButton>
-      <Input id={id} value={value} placeholder={placeholder} />
+      <Input
+        id={id}
+        value={value}
+        placeholder={placeholder}
+        onChange={(event) => onUpdate(event.target.value)}
+      />
       <TreePicker
         tree={variables}
         onSubmit={(variable) => onUpdate(variable)}
