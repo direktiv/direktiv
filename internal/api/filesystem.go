@@ -4,12 +4,15 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"path/filepath"
 	"strings"
 
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
+	"github.com/direktiv/direktiv/internal/compiler"
+	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
@@ -219,16 +222,6 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	// Validate if data is valid typescript with direktiv files.
-	// isDirektivFile := req.Typ != filestore.FileTypeDirectory && req.Typ != filestore.FileTypeFile
-	// if err = compiler.ValidateScript(string(decodedBytes)); err != nil && isDirektivFile {
-	// 	writeError(w, &Error{
-	// 		Code:    "request_data_invalid",
-	// 		Message: "file data has invalid typescript",
-	// 	})
-
-	// 	return
-	// }
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
@@ -250,13 +243,26 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Publish pubsub event.
+	// publish pubsub event for gateway, consumer, services
 	if newFile.Typ.IsDirektivSpecFile() {
 		err = e.bus.Publish(pubsub.SubjFileSystemChange, nil)
 		// nolint:staticcheck
 		if err != nil {
 			slog.With("component", "api").
 				Error("publish filesystem event", "err", err)
+		}
+	}
+
+	// validate flow file. it is stored but we report errors
+	if strings.HasSuffix(req.Name, core.FlowFileExtension) {
+		_, err := compiler.ValidateScript(string(decodedBytes))
+		if err != nil {
+			writeError(w, &Error{
+				Code:    "request_data_invalid",
+				Message: fmt.Sprintf("flow script has errors: %s", err.Error()),
+			})
+
+			return
 		}
 	}
 

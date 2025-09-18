@@ -154,7 +154,7 @@ func Start(lc *lifecycle.Manager) error {
 	// initializing engine
 	{
 		// prepare compiler
-		comp, err := compiler.NewCompiler(app.DB)
+		comp, err := compiler.NewCompiler(app.DB, app.Cache)
 		if err != nil {
 			return fmt.Errorf("creating compiler, err: %w", err)
 		}

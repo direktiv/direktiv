@@ -19,6 +19,13 @@ type Transpiler struct {
 	fn  string
 }
 
+const transitionCode = `
+function transition(funcName, state) {
+	commitState(funcName, state)
+	return funcName(state)
+}
+`
+
 func NewTranspiler() (*Transpiler, error) {
 	fn := randstr.String(8, "abcdefghijklmnopqrstuvwABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	vm := sobek.New()
@@ -49,6 +56,8 @@ func NewTranspiler() (*Transpiler, error) {
 }
 
 func (t *Transpiler) Transpile(script, name string) (string, string, error) {
+	script = script + transitionCode
+
 	s := fmt.Sprintf("ts.transpileModule(%s('%s'), { compilerOptions: { sourceMap: true }, fileName: \"%s\", moduleName: \"default\", reportDiagnostics: false })",
 		t.fn, base64.StdEncoding.EncodeToString([]byte(script)), filepath.Base(name))
 
@@ -69,19 +78,6 @@ func (t *Transpiler) Transpile(script, name string) (string, string, error) {
 	if !ok {
 		return "", "", fmt.Errorf("can not generate mapping file")
 	}
-
-	// vm := sobek.New()
-
-	// vm.SetParserOptions(parser.WithSourceMapLoader(func(path string) ([]byte, error) {
-	// 	return []byte(mappingOut), nil
-	// }))
-
-	// _, err = vm.RunScript("", scriptOut)
-	// fmt.Println(err)
-	// if jserr, ok := err.(*sobek.Exception); ok {
-	// 	fmt.Printf("POSITION %+v\n", jserr.Stack()[0].Position().Line)
-	// 	fmt.Printf("%+v\n", jserr.Value())
-	// }
 
 	return scriptOut, mappingOut, nil
 }

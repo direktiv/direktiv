@@ -2,6 +2,8 @@ package core
 
 import "context"
 
+const FlowFileExtension = ".wf.ts"
+
 type FlowConfig struct {
 	Type    string
 	Events  []*EventConfig

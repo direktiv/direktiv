@@ -81,7 +81,7 @@ func TestBody(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.script, func(t *testing.T) {
-			err := compiler.ValidateBody(tt.script)
+			err := compiler.ValidateBody(tt.script, "")
 			t.Logf("error %v\n", err)
 			if tt.expectErr {
 				if err == nil {
@@ -146,7 +146,7 @@ func TestReturnValues(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.script, func(t *testing.T) {
-			errs, _ := compiler.ValidateTransitions(tt.script)
+			errs, _ := compiler.ValidateTransitions(tt.script, "")
 			if len(errs) != tt.expected {
 				t.Errorf("validate js got errors %d, expected %d (%v)", len(errs), tt.expected, errs)
 			}
@@ -233,7 +233,7 @@ func TestConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.script, func(t *testing.T) {
-			flow, err := compiler.ValidateConfig(tt.script)
+			flow, err := compiler.ValidateConfig(tt.script, "")
 			if tt.expectedErr {
 				if err == nil {
 					t.Errorf("validate config got no error, but expected one (%v)", err)
