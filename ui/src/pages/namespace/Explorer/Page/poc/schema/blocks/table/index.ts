@@ -1,5 +1,5 @@
-import { Block, BlockType } from "..";
 import { BlocklessLoop, BlocklessLoopType } from "../loop";
+import { Dialog, DialogType } from "../dialog";
 import { TableColumn, TableColumnType } from "./tableColumn";
 
 import { z } from "zod";
@@ -12,22 +12,22 @@ import { z } from "zod";
  */
 export type TableActionsType = {
   type: "table-actions";
-  blocks: BlockType[];
+  blocks: DialogType[];
 };
 
 export const TableActions = z.object({
   type: z.literal("table-actions"),
-  blocks: z.array(z.lazy(() => Block)),
+  blocks: z.array(z.lazy(() => Dialog)),
 }) satisfies z.ZodType<TableActionsType>;
 
 export type RowActionsType = {
   type: "row-actions";
-  blocks: BlockType[];
+  blocks: DialogType[];
 };
 
 export const RowActions = z.object({
   type: z.literal("row-actions"),
-  blocks: z.array(z.lazy(() => Block)),
+  blocks: z.array(z.lazy(() => Dialog)),
 }) satisfies z.ZodType<RowActionsType>;
 
 export const Table = z.object({

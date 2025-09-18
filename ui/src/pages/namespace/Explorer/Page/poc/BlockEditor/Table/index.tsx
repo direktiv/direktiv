@@ -73,11 +73,7 @@ export const Table = ({
             count,
           })
         }
-        renderRow={(dialog) => {
-          // TODO: can we only allow dialogs via the schema to avoid this checks?
-          if (dialog.type !== "dialog") return [];
-          return [dialog.trigger.label];
-        }}
+        renderRow={(dialog) => [dialog.trigger.label]}
         renderForm={(formId, onSubmit, defaultValues) => {
           if (defaultValues && defaultValues.type !== "dialog") return null;
           return (

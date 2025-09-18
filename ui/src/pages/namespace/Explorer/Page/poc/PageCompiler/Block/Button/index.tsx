@@ -6,7 +6,7 @@ import { ButtonType } from "../../../schema/blocks/button";
 import { TemplateString } from "../../primitives/TemplateString";
 import { forwardRef } from "react";
 
-export type DefaultButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
+type DefaultButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
   ButtonDesignComponentProps & {
     blockProps: ButtonType;
   };
