@@ -2,11 +2,13 @@ package sched
 
 import (
 	"encoding/json"
+	"log/slog"
 	"testing"
 	"time"
 
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
+	tclock "k8s.io/utils/clock/testing"
 )
 
 type fakeClock struct{ t time.Time }
@@ -38,10 +40,6 @@ func (f *fakeJS) Subscribe(subj string, cb nats.MsgHandler, opts ...nats.SubOpt)
 	return &nats.Subscription{}, nil
 }
 
-func newTestScheduler(js *fakeJS, cache *RuleCache, clk Clock) *Scheduler {
-	return &Scheduler{js: js, cache: cache, clk: clk}
-}
-
 func TestFingerprintDoesNotMutateRule(t *testing.T) {
 	r := &Rule{Namespace: "ns", WorkflowPath: "/wf", CreatedAt: time.Unix(10, 0), UpdatedAt: time.Unix(20, 0)}
 	jason1, _ := json.Marshal(r)
@@ -53,21 +51,21 @@ func TestFingerprintDoesNotMutateRule(t *testing.T) {
 
 func TestDispatchIfDue_PublishesTaskAndAdvancesRule(t *testing.T) {
 	js := &fakeJS{}
-	cache := NewRulesCache()
-	clk := fakeClock{t: time.Date(2025, 9, 1, 12, 0, 0, 0, time.UTC)}
-	s := newTestScheduler(js, cache, clk)
+	start := time.Date(2025, 1, 1, 1, 0, 0, 0, time.UTC)
+	clk := tclock.NewFakeClock(start)
+	s := New(js, clk, slog.New(slog.DiscardHandler))
 
-	runAt := clk.t.Add(-time.Second)
+	runAt := clk.Now()
 
 	rule := &Rule{
 		ID:           "rid",
 		Namespace:    "ns",
 		WorkflowPath: "/a",
-		RunAt:        runAt, // due
-		CronExpr:     30,    // seconds
+		RunAt:        runAt,            // due
+		CronExpr:     "*/30 * * * * *", // seconds
 		Sequence:     5,
-		CreatedAt:    clk.t.Add(-time.Minute),
-		UpdatedAt:    clk.t.Add(-time.Minute),
+		CreatedAt:    clk.Now().Add(-time.Minute),
+		UpdatedAt:    clk.Now().Add(-time.Minute),
 	}
 
 	err := s.dispatchIfDue(rule)
@@ -94,16 +92,16 @@ func TestDispatchIfDue_PublishesTaskAndAdvancesRule(t *testing.T) {
 
 func TestDispatchIfDue_SkipsWhenNotDue(t *testing.T) {
 	js := &fakeJS{}
-	cache := NewRulesCache()
-	clk := fakeClock{t: time.Unix(1000, 0).UTC()}
-	s := newTestScheduler(js, cache, clk)
+	start := time.Date(2025, 1, 1, 1, 0, 0, 0, time.UTC)
+	clk := tclock.NewFakeClock(start)
+	s := New(js, clk, slog.New(slog.DiscardHandler))
 
 	rule := &Rule{
 		ID:           "rid",
 		Namespace:    "ns",
 		WorkflowPath: "/a",
-		RunAt:        clk.t.Add(+5 * time.Second), // future => not due
-		CronExpr:     10,
+		RunAt:        clk.Now().Add(+5 * time.Second), // future => not due
+		CronExpr:     "*/10 * * * * *",
 	}
 
 	err := s.dispatchIfDue(rule)

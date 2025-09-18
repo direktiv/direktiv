@@ -10,16 +10,18 @@ import (
 	intNats "github.com/direktiv/direktiv/internal/nats"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/nats-io/nats.go"
+	"k8s.io/utils/clock"
 )
 
 type Scheduler struct {
 	js    JetStream
 	cache *RuleCache
-	clk   Clock
+	clk   clock.WithTicker
+	lg    *slog.Logger
 }
 
-func New(js nats.JetStreamContext) *Scheduler {
-	return &Scheduler{js: js, cache: NewRulesCache(), clk: realClock{}}
+func New(js JetStream, clk clock.WithTicker, lg *slog.Logger) *Scheduler {
+	return &Scheduler{js: js, cache: NewRulesCache(), clk: clk, lg: lg}
 }
 
 func (s *Scheduler) Start(lc *lifecycle.Manager) error {
@@ -27,8 +29,7 @@ func (s *Scheduler) Start(lc *lifecycle.Manager) error {
 	if err != nil {
 		return fmt.Errorf("start status cache: %w", err)
 	}
-
-	startTicking(lc, time.Second, s.processDueRules)
+	startTicking(lc, s.clk, 100*time.Millisecond, s.processDueRules)
 
 	return nil
 }
@@ -43,7 +44,7 @@ func (s *Scheduler) dispatchIfDue(rule *Rule) error {
 	}
 
 	// publish task
-	id := fmt.Sprintf("%s-%d", rule.ID, runAt.UTC().Unix())
+	id := rule.ID + "-" + runAt.Format("20060102150405")
 	data, _ := json.Marshal(Task{
 		ID:           id,
 		Namespace:    rule.Namespace,
@@ -60,9 +61,13 @@ func (s *Scheduler) dispatchIfDue(rule *Rule) error {
 	if err != nil {
 		return fmt.Errorf("nats publish task, subj: %s, err: %w", subject, err)
 	}
+	s.lg.Debug("published task", "msgID", id)
 
 	// advance rule, persist
-	next := runAt.Add(time.Duration(rule.CronExpr) * time.Second)
+	next, err := calculateCronExpr(rule.CronExpr, runAt)
+	if err != nil {
+		return fmt.Errorf("calculate next run: %w", err)
+	}
 	rule.RunAt = next
 	rule.UpdatedAt = s.clk.Now()
 
@@ -71,14 +76,12 @@ func (s *Scheduler) dispatchIfDue(rule *Rule) error {
 	subject = fmt.Sprintf(intNats.SubjSchedRule, rule.Namespace, rule.ID)
 	_, err = s.js.Publish(subject, data,
 		nats.ExpectStream(intNats.StreamSchedRule),
-		nats.ExpectLastSequence(rule.Sequence),
+		nats.ExpectLastSequencePerSubject(rule.Sequence),
 		nats.MsgId(fmt.Sprintf("sched::rule::%s", rule.Fingerprint())),
 	)
 	if err != nil {
-		return fmt.Errorf("nats publish rule update, subj: %s, err: %w", subject, err)
+		return fmt.Errorf("nats publish rule update, err: %w", err)
 	}
-
-	s.cache.Upsert(rule)
 
 	return nil
 }
@@ -88,10 +91,13 @@ func (s *Scheduler) processDueRules() error {
 	rules := s.cache.Snapshot("")
 	for _, rule := range rules {
 		err := s.dispatchIfDue(rule)
+		if err != nil && err.Error() == "not-due" {
+			continue
+		}
 		if err != nil {
-			slog.Error("dispatchIfDue", "err", err, "id", rule.ID)
+			s.lg.Error("dispatchIfDue", "err", err, "id", rule.ID)
 		} else {
-			slog.Info("dispatchIfDue", "id", rule.ID)
+			s.lg.Debug("dispatchIfDue", "id", rule.ID)
 		}
 	}
 
@@ -148,6 +154,7 @@ func (s *Scheduler) startRuleSubscription(ctx context.Context) error {
 			return
 		}
 		rule.Sequence = meta.Sequence.Stream
+		s.lg.Debug("rule upsert from steam", "id", rule.ID)
 		s.cache.Upsert(&rule)
 	}, nats.AckNone())
 	if err != nil {
