@@ -22,7 +22,7 @@ const DialogBaseComponent = ({
   const { blocks, trigger } = blockProps;
 
   return (
-    <div onClick={(event) => event.preventDefault}>
+    <div onClick={(event) => event.preventDefault()}>
       <LocalDialog onOpenChange={onOpenChange}>
         <DialogTrigger asChild onClick={(event) => event.stopPropagation()}>
           <Button blockProps={trigger} />

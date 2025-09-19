@@ -1,35 +1,82 @@
+import { Block, BlockPathType } from "..";
+import { DialogTrigger, DialogXClose } from "~/design/Dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
+import { LocalDialog, LocalDialogContent } from "~/design/LocalDialog";
 
-import { Button } from "../Button";
+import { BlockList } from "../utils/BlockList";
 import ButtonDesignComponent from "~/design/Button";
 import { MoreVertical } from "lucide-react";
+import { RowActionsType } from "../../../schema/blocks/table";
+import { StopPropagation } from "~/components/StopPropagation";
 import { TableCell as TableCellDesignComponent } from "~/design/Table";
-import { TableType } from "../../../schema/blocks/table";
+import { useState } from "react";
 
 type ActionsCellProps = {
-  actions: TableType["actions"];
+  actions: RowActionsType;
+  blockPath: BlockPathType;
 };
 
-export const ActionsCell = ({ actions }: ActionsCellProps) => (
-  <TableCellDesignComponent className="w-0">
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <ButtonDesignComponent variant="ghost" size="sm" icon>
-          <MoreVertical />
-        </ButtonDesignComponent>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-40" align="end">
-        {actions.map((action, index) => (
-          <DropdownMenuItem key={index}>
-            <Button blockProps={action} as="text" />
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  </TableCellDesignComponent>
-);
+export const ActionsCell = ({ actions, blockPath }: ActionsCellProps) => {
+  const [openedDialogIndex, setOpenedDialogIndex] = useState<number | null>(
+    null
+  );
+  return (
+    <TableCellDesignComponent className="w-0">
+      <LocalDialog open={openedDialogIndex !== null}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <ButtonDesignComponent variant="ghost" size="sm" icon>
+              <MoreVertical />
+            </ButtonDesignComponent>
+          </DropdownMenuTrigger>
+          <StopPropagation>
+            <DropdownMenuContent align="end">
+              {actions.blocks.map((dialog, index) => (
+                <DropdownMenuItem key={index}>
+                  <DialogTrigger
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setOpenedDialogIndex(index);
+                    }}
+                    className="w-full text-left"
+                  >
+                    {dialog.trigger.label}
+                  </DialogTrigger>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </StopPropagation>
+        </DropdownMenu>
+        <div onClick={(event) => event.preventDefault()}>
+          <LocalDialogContent>
+            <DialogXClose
+              onClick={() => {
+                setOpenedDialogIndex(null);
+              }}
+            />
+            <div className="max-h-[55vh] overflow-y-auto p-2 pt-4">
+              {openedDialogIndex !== null && (
+                <BlockList path={[...blockPath, 1, openedDialogIndex]}>
+                  {(actions.blocks[openedDialogIndex]?.blocks ?? []).map(
+                    (block, index) => (
+                      <Block
+                        key={index}
+                        block={block}
+                        blockPath={[...blockPath, 1, openedDialogIndex, index]}
+                      />
+                    )
+                  )}
+                </BlockList>
+              )}
+            </div>
+          </LocalDialogContent>
+        </div>
+      </LocalDialog>
+    </TableCellDesignComponent>
+  );
+};

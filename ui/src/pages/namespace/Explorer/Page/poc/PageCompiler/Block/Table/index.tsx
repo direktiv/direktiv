@@ -13,6 +13,7 @@ import {
 } from "../../primitives/Variable/VariableContext";
 
 import { ActionsCell } from "./ActionsCell";
+import { BlockPathType } from "..";
 import { Card } from "~/design/Card";
 import { PackageOpen } from "lucide-react";
 import { Pagination } from "~/components/Pagination";
@@ -26,10 +27,11 @@ import { useVariableArrayResolver } from "../../primitives/Variable/utils/useVar
 
 type TableProps = {
   blockProps: TableType;
+  blockPath: BlockPathType;
 };
 
-export const Table = ({ blockProps }: TableProps) => {
-  const { columns, actions, data: loop } = blockProps;
+export const Table = ({ blockProps, blockPath }: TableProps) => {
+  const { columns, blocks, data: loop } = blockProps;
   const { t } = useTranslation();
   const resolveVariableArray = useVariableArrayResolver();
   const parentVariables = useVariablesContext();
@@ -51,7 +53,7 @@ export const Table = ({ blockProps }: TableProps) => {
     );
   }
 
-  const hasActionsColumn = actions.length > 0;
+  const hasActionsColumn = blocks[1].blocks.length > 0;
   const numberOfColumns = columns.length + (hasActionsColumn ? 1 : 0);
   const hasRows = variableArray.data.length > 0;
 
@@ -101,7 +103,10 @@ export const Table = ({ blockProps }: TableProps) => {
                               />
                             ))}
                             {hasActionsColumn && (
-                              <ActionsCell actions={actions} />
+                              <ActionsCell
+                                actions={blocks[1]}
+                                blockPath={blockPath}
+                              />
                             )}
                           </TableRow>
                         </VariableContextProvider>

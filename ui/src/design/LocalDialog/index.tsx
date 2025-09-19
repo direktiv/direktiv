@@ -7,9 +7,10 @@ import { useLocalDialogContainer } from "./container";
 
 export const LocalDialog = ({
   children,
+  open,
   onOpenChange,
-}: PropsWithChildren & Pick<DialogProps, "onOpenChange">) => (
-  <DialogPrimitive.Root modal={false} onOpenChange={onOpenChange}>
+}: PropsWithChildren & Pick<DialogProps, "onOpenChange" | "open">) => (
+  <DialogPrimitive.Root modal={false} onOpenChange={onOpenChange} open={open}>
     {children}
   </DialogPrimitive.Root>
 );

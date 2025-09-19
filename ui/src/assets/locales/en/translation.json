@@ -1759,12 +1759,10 @@
             "dataLabel": "data",
             "dataPlaceholder": "Path to an array for the table (e.g. query.companies.data)"
           },
-          "action": {
-            "labelLabel": "Label",
-            "labelPlaceholder": "The label of the Action (e.g. Edit, Delete)",
-            "itemLabel": "Action",
-            "tableLabel": "{{count}} Actions",
-            "tableLabel_one": "{{count}} Action"
+          "rowAction": {
+            "itemLabel": "Row actions",
+            "tableLabel": "{{count}} Row actions",
+            "tableLabel_one": "{{count}} Row action"
           },
           "column": {
             "labelLabel": "Label",
@@ -1878,7 +1876,9 @@
           "column": "column block",
           "columns": "set of columns",
           "image": "image block",
-          "table": "table block"
+          "table": "table block",
+          "table-actions": "table actions block",
+          "row-actions": "row actions block"
         }
       },
       "smartInput": {
