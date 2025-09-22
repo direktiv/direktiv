@@ -5,6 +5,7 @@ import { Query, QueryType } from "../../schema/procedures/query";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
 import { KeyValueInput } from "../components/FormElements/KeyValueInput";
+import { SmartInput } from "../components/SmartInput";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -21,6 +22,8 @@ export const QueryForm = ({
 }: QueryFormProps) => {
   const { t } = useTranslation();
   const {
+    watch,
+    setValue,
     handleSubmit,
     register,
     control,
@@ -63,8 +66,9 @@ export const QueryForm = ({
         )}
         htmlFor="url"
       >
-        <Input
-          {...register("url")}
+        <SmartInput
+          value={watch("url")}
+          onUpdate={(value) => setValue("url", value)}
           id="url"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.queryProvider.query.urlPlaceholder"

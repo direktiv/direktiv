@@ -99,21 +99,28 @@ export const SmartInput = ({
               <div className="rounded-t-md border border-b-0 border-gray-4 p-2 dark:border-gray-dark-7">
                 <ButtonBar>
                   <TreePicker
-                    label={t("direktivPage.blockEditor.smartInput.variableBtn")}
                     container={dialogContainer ?? undefined}
                     tree={variables}
                     onSubmit={(snippet) =>
                       textarea &&
                       addSnippetToInputValue({
                         element: textarea,
-                        snippet,
+                        snippet: `{{${snippet}}}`,
                         value,
                         callback: onUpdate,
                       })
                     }
                     preview={(path) => <Preview path={path} />}
                     preventSubmit={preventSubmit}
-                  />
+                  >
+                    <Button
+                      variant="outline"
+                      type="button"
+                      className="dark:border-gray-dark-7"
+                    >
+                      {t("direktivPage.blockEditor.smartInput.variableBtn")}
+                    </Button>
+                  </TreePicker>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
