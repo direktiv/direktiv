@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"path/filepath"
@@ -253,27 +252,27 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// TODO: why this block? fs should accept everything! no validation
-	// validate flow file. it is stored but we report errors
-	if strings.HasSuffix(req.Name, core.FlowFileExtension) {
-		_, err := compiler.ValidateScript(string(decodedBytes))
-		if err != nil {
-			writeError(w, &Error{
-				Code:    "request_data_invalid",
-				Message: fmt.Sprintf("flow script has errors: %s", err.Error()),
-			})
-
-			return
-		}
-	}
-
 	res := struct {
 		*filestore.File
 
-		Data []byte `json:"data,omitempty"`
+		Data   []byte   `json:"data,omitempty"`
+		Errors []string `json:"errors"`
 	}{
-		File: newFile,
-		Data: decodedBytes,
+		File:   newFile,
+		Data:   decodedBytes,
+		Errors: make([]string, 0),
+	}
+
+	// validate flow file. it is stored but we report errors
+	if strings.HasSuffix(req.Name, core.FlowFileExtension) {
+		_, errs, err := compiler.ValidateScript(string(decodedBytes))
+		if err != nil {
+			res.Errors = append(res.Errors, err.Error())
+		}
+
+		for i := range errs {
+			res.Errors = append(res.Errors, errs[i].Error())
+		}
 	}
 
 	writeJSON(w, res)
@@ -393,10 +392,23 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	res := struct {
 		*filestore.File
 
-		Data []byte `json:"data,omitempty"`
+		Data   []byte   `json:"data,omitempty"`
+		Errors []string `json:"errors"`
 	}{
-		File: updatedFile,
-		Data: decodedBytes,
+		File:   updatedFile,
+		Data:   decodedBytes,
+		Errors: make([]string, 0),
+	}
+
+	if strings.HasSuffix(r.URL.Path, core.FlowFileExtension) {
+		_, errs, err := compiler.ValidateScript(string(decodedBytes))
+		if err != nil {
+			res.Errors = append(res.Errors, err.Error())
+		}
+
+		for i := range errs {
+			res.Errors = append(res.Errors, errs[i].Error())
+		}
 	}
 
 	writeJSON(w, res)

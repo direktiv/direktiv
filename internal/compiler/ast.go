@@ -15,28 +15,64 @@ import (
 	"github.com/sosodev/duration"
 )
 
+type ValidationError struct {
+	Message string
+	Line    int
+	Column  int
+}
+
+func (ve *ValidationError) Error() string {
+	return fmt.Sprintf("%s (line: %d, column: %d)", ve.Message, ve.Line, ve.Column)
+}
+
+type ASTParser struct {
+	Script, mapping string
+
+	program *ast.Program
+	file    *file.File
+
+	Errors []*ValidationError
+}
+
 type Validator struct {
 	errors []string
 }
 
-func ValidateTransitions(src, mapping string) ([]string, error) {
+func NewASTParser(script, mapping string) (*ASTParser, error) {
+	p := &ASTParser{
+		file:    file.NewFile("", script, 0),
+		Errors:  make([]*ValidationError, 0),
+		Script:  script,
+		mapping: mapping,
+	}
+
+	if mapping != "" {
+		sm, err := sourcemap.Parse("", []byte(mapping))
+		if err != nil {
+			return nil, err
+		}
+		p.file.SetSourceMap(sm)
+	}
+
 	option := parser.WithSourceMapLoader(func(path string) ([]byte, error) {
 		return []byte(mapping), nil
 	})
 
-	program, err := parser.ParseFile(nil, "", strings.NewReader(src), 0, option)
+	program, err := parser.ParseFile(nil, "", script, 0, option)
 	if err != nil {
 		return nil, err
 	}
+	p.program = program
 
-	validator := &Validator{}
-	validator.walk(program, false)
+	return p, nil
+}
 
-	return validator.errors, nil
+func (ap *ASTParser) ValidateTransitions() {
+	ap.walk(ap.program, false)
 }
 
 // walk recursively traverses the AST, applying validation rules based on the current context.
-func (v *Validator) walk(node ast.Node, isStateFunc bool) {
+func (ap *ASTParser) walk(node ast.Node, isStateFunc bool) {
 	if node == nil {
 		return
 	}
@@ -44,7 +80,7 @@ func (v *Validator) walk(node ast.Node, isStateFunc bool) {
 	switch n := node.(type) {
 	case *ast.Program:
 		for _, stmt := range n.Body {
-			v.walk(stmt, false)
+			ap.walk(stmt, false)
 		}
 
 	case *ast.FunctionDeclaration:
@@ -59,65 +95,85 @@ func (v *Validator) walk(node ast.Node, isStateFunc bool) {
 
 		// For state functions, we must ensure at least one return exists.
 		if isNewStateFunc {
-			hasReturn := v.checkIfHasReturn(n.Function.Body)
+			hasReturn := ap.checkIfHasReturn(n.Function.Body)
 			if !hasReturn {
-				v.errors = append(v.errors, fmt.Sprintf("state function '%s' must contain at least one return statement", funcName))
+				pos := ap.file.Position(int(n.Idx0()))
+				ap.Errors = append(ap.Errors, &ValidationError{
+					Message: fmt.Sprintf("state function '%s' must contain at least one return statement 'transition' or 'finish'", funcName),
+					Line:    pos.Line,
+					Column:  pos.Column,
+				})
 			}
 		}
 
 		// Continue the main traversal with the new context.
 		if n.Function != nil {
-			v.walk(n.Function.Body, isNewStateFunc)
+			ap.walk(n.Function.Body, isNewStateFunc)
 		}
 
 	case *ast.BlockStatement:
 		if n.List != nil {
 			for _, stmt := range n.List {
-				v.walk(stmt, isStateFunc)
+				ap.walk(stmt, isStateFunc)
 			}
 		}
 
 	case *ast.IfStatement:
-		v.walk(n.Consequent, isStateFunc)
+		ap.walk(n.Consequent, isStateFunc)
 		if n.Alternate != nil {
-			v.walk(n.Alternate, isStateFunc)
+			ap.walk(n.Alternate, isStateFunc)
 		}
 
 	case *ast.ReturnStatement:
 		// Rule 1: A state function must return a transition call.
 		if isStateFunc {
-			if !v.isTransitionCall(n.Argument) {
-				v.errors = append(v.errors, "state function has a return statement that is not a call to 'transition'")
+			if !ap.isTransitionCall(n.Argument) {
+				pos := ap.file.Position(int(n.Idx0()))
+				ap.Errors = append(ap.Errors, &ValidationError{
+					Message: "state function has a return statement that is not a call to 'transition' or 'finish'",
+					Line:    pos.Line,
+					Column:  pos.Column,
+				})
 			}
 		} else {
 			// Rule 2: A non-state function cannot return a transition call.
-			if v.isTransitionCall(n.Argument) {
-				v.errors = append(v.errors, "non-state function calls 'transition' or 'finish' in its return statement")
+			if ap.isTransitionCall(n.Argument) {
+				pos := ap.file.Position(int(n.Idx0()))
+				ap.Errors = append(ap.Errors, &ValidationError{
+					Message: "non-state function calls 'transition' or 'finish' in its return statement",
+					Line:    pos.Line,
+					Column:  pos.Column,
+				})
 			}
 		}
 
 	case *ast.CallExpression:
 		// Rule 2 (cont.): A non-state function cannot call transition at all.
 		if !isStateFunc {
-			if v.isTransitionCall(n) {
-				v.errors = append(v.errors, "non-state function calls 'transition' or 'finish'.")
+			if ap.isTransitionCall(n) {
+				pos := ap.file.Position(int(n.Idx0()))
+				ap.Errors = append(ap.Errors, &ValidationError{
+					Message: "non-state function calls 'transition' or 'finish'.",
+					Line:    pos.Line,
+					Column:  pos.Column,
+				})
 			}
 		}
 
 		// Continue walking the arguments in case of nested calls
 		if n.ArgumentList != nil {
 			for _, arg := range n.ArgumentList {
-				v.walk(arg, isStateFunc)
+				ap.walk(arg, isStateFunc)
 			}
 		}
 
 	case *ast.ExpressionStatement:
-		v.walk(n.Expression, isStateFunc)
+		ap.walk(n.Expression, isStateFunc)
 	}
 }
 
 // isTransitionCall checks if a node represents a function call to "transition".
-func (v *Validator) isTransitionCall(node ast.Node) bool {
+func (ap *ASTParser) isTransitionCall(node ast.Node) bool {
 	callExpr, ok := node.(*ast.CallExpression)
 	if !ok || callExpr.Callee == nil {
 		return false
@@ -132,7 +188,7 @@ func (v *Validator) isTransitionCall(node ast.Node) bool {
 }
 
 // checkIfHasReturn recursively checks for the existence of a return statement.
-func (v *Validator) checkIfHasReturn(node ast.Node) bool {
+func (ap *ASTParser) checkIfHasReturn(node ast.Node) bool {
 	if node == nil {
 		return false
 	}
@@ -142,15 +198,15 @@ func (v *Validator) checkIfHasReturn(node ast.Node) bool {
 		return true
 	case *ast.BlockStatement:
 		for _, stmt := range n.List {
-			if v.checkIfHasReturn(stmt) {
+			if ap.checkIfHasReturn(stmt) {
 				return true
 			}
 		}
 	case *ast.IfStatement:
-		if v.checkIfHasReturn(n.Consequent) {
+		if ap.checkIfHasReturn(n.Consequent) {
 			return true
 		}
-		if n.Alternate != nil && v.checkIfHasReturn(n.Alternate) {
+		if n.Alternate != nil && ap.checkIfHasReturn(n.Alternate) {
 			return true
 		}
 	}
@@ -158,95 +214,16 @@ func (v *Validator) checkIfHasReturn(node ast.Node) bool {
 	return false
 }
 
-// func ValidateBody(src, mapping string) error {
-// 	option := parser.WithSourceMapLoader(func(path string) ([]byte, error) {
-// 		return []byte(mapping), nil
-// 	})
-
-// 	prog, err := parser.ParseFile(nil, "", src, 0, option)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	// seenFlow := false
-// 	fns := false
-
-// 	for _, stmt := range prog.Body {
-// 		switch s := stmt.(type) {
-// 		case *ast.FunctionDeclaration:
-// 			// allowed but set first function
-// 			fns = true
-// 		case *ast.ExpressionStatement:
-// 			// Check if this is an allowed function call
-// 			if callExpr, ok := s.Expression.(*ast.CallExpression); ok {
-// 				if ident, ok := callExpr.Callee.(*ast.Identifier); ok {
-// 					if ident.Name == "secret" || ident.Name == "action" {
-// 						return nil
-// 					}
-
-// 					fmt.Println("NOT ALLOWED!!!")
-// 					// return ValidationError{
-// 					// 	Message: fmt.Sprintf("function call '%s' is not allowed at top level (only 'secret' and 'action' are allowed)", ident.Name),
-// 					// 	Line:    line,
-// 					// 	Column:  0,
-// 					// }
-// 				}
-// 				fmt.Println("COMPLEX ERROR")
-// 				// If it's not a simple identifier call, it's not allowed
-// 				// return ValidationError{
-// 				// 	Message: "complex function calls are not allowed at top level",
-// 				// 	Line:    line,
-// 				// 	Column:  0,
-// 				// }
-// 			}
-// 		case *ast.VariableStatement:
-// 			fmt.Println("VAR STATMENT")
-// 			// for _, b := range s.List { // here b is *ast.Binding
-// 			// 	_, ok := b.Target.(*ast.Identifier)
-// 			// 	if !ok {
-// 			// 		return fmt.Errorf("unexpected binding target: %T", b.Target)
-// 			// 	}
-// 			// 	// if ident.Name == "flow" {
-// 			// 	// 	return fmt.Errorf("only 'flow' allowed at top-level, got %q", ident.Name)
-// 			// 	// }
-// 			// 	if seenFlow {
-// 			// 		return fmt.Errorf("duplicate 'flow' declaration")
-// 			// 	}
-// 			// 	seenFlow = true
-// 			// }
-// 		case *ast.EmptyStatement:
-// 			// ignore stray semicolons
-// 		default:
-// 			return fmt.Errorf("top-level %T not allowed", s)
-// 		}
-// 	}
-
-// 	if !fns {
-// 		return fmt.Errorf("no functions defined")
-// 	}
-
-// 	return nil
-// }
-
-func ValidateConfig(src, mapping string) (*core.FlowConfig, error) {
+func (ap *ASTParser) ValidateConfig() (*core.FlowConfig, error) {
 	flow := &core.FlowConfig{
 		Type:    "default",
 		Timeout: "PT15M",
 		Events:  make([]*core.EventConfig, 0),
 	}
 
-	option := parser.WithSourceMapLoader(func(path string) ([]byte, error) {
-		return []byte(mapping), nil
-	})
-
-	prog, err := parser.ParseFile(nil, "", src, 0, option)
-	if err != nil {
-		return flow, err
-	}
-
 	// get all functions for the first function
 	functions := []string{}
-	for _, stmt := range prog.Body {
+	for _, stmt := range ap.program.Body {
 		switch s := stmt.(type) {
 		case *ast.FunctionDeclaration:
 			// set  starting state to the first function
@@ -258,7 +235,7 @@ func ValidateConfig(src, mapping string) (*core.FlowConfig, error) {
 		}
 	}
 
-	for _, stmt := range prog.Body {
+	for _, stmt := range ap.program.Body {
 		switch s := stmt.(type) {
 		case *ast.VariableStatement:
 			for _, b := range s.List {
@@ -288,7 +265,7 @@ func ValidateConfig(src, mapping string) (*core.FlowConfig, error) {
 
 						switch value := literal.Value.(type) {
 						case *ast.StringLiteral:
-							err = setAndvalidate(flow, functions, key.Value.String(), value.Value.String())
+							err := setAndvalidate(flow, functions, key.Value.String(), value.Value.String())
 							if err != nil {
 								return flow, err
 							}
@@ -449,54 +426,10 @@ func setAndvalidate(flow *core.FlowConfig, fns []string, key, value string) erro
 	return nil
 }
 
-type ValidationError struct {
-	Message string
-	Line    int
-	Column  int
-}
-
-type ASTParser struct {
-	Script, mapping string
-	file            *file.File
-
-	Errors []*ValidationError
-}
-
-func NewASTParser(script, mapping string) (*ASTParser, error) {
-	p := &ASTParser{
-		file:    file.NewFile("", script, 0),
-		Errors:  make([]*ValidationError, 0),
-		Script:  script,
-		mapping: mapping,
+func (ap *ASTParser) ValidateFunctionCalls() {
+	for i := range ap.program.Body {
+		ap.inspectStatement(ap.program.Body[i])
 	}
-
-	if mapping != "" {
-		sm, err := sourcemap.Parse("", []byte(mapping))
-		if err != nil {
-			return nil, err
-		}
-		p.file.SetSourceMap(sm)
-	}
-
-	return p, nil
-}
-
-func (ap *ASTParser) InspectAST() error {
-	option := parser.WithSourceMapLoader(func(path string) ([]byte, error) {
-		return []byte(ap.mapping), nil
-	})
-
-	program, err := parser.ParseFile(nil, "", ap.Script, 0, option)
-	if err != nil {
-		fmt.Println("MAPPINGS!!!")
-		return err
-	}
-
-	for i := range program.Body {
-		ap.inspectStatement(program.Body[i])
-	}
-
-	return nil
 }
 
 func (ap *ASTParser) inspectStatement(stmt ast.Statement) {

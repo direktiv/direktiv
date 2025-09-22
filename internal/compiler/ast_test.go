@@ -58,9 +58,12 @@ func TestReturnValues(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.script, func(t *testing.T) {
-			errs, _ := compiler.ValidateTransitions(tt.script, "")
-			if len(errs) != tt.expected {
-				t.Errorf("validate js got errors %d, expected %d (%v)", len(errs), tt.expected, errs)
+			parser, err := compiler.NewASTParser(tt.script, "")
+			require.NoError(t, err)
+
+			parser.ValidateTransitions()
+			if len(parser.Errors) != tt.expected {
+				t.Errorf("validate js got errors %d, expected %d (%v)", len(parser.Errors), tt.expected, parser.Errors)
 			}
 		})
 	}
@@ -68,6 +71,8 @@ func TestReturnValues(t *testing.T) {
 }
 
 func TestConfig(t *testing.T) {
+	transpiler, _ := compiler.NewTranspiler()
+
 	tests := []struct {
 		script                                     string
 		wantType, wantTimeout, wantCron, wantState string
@@ -145,7 +150,13 @@ func TestConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.script, func(t *testing.T) {
-			flow, err := compiler.ValidateConfig(tt.script, "")
+			script, mapping, err := transpiler.Transpile(tt.script, "dummy")
+			require.NoError(t, err)
+
+			parser, err := compiler.NewASTParser(script, mapping)
+			require.NoError(t, err)
+
+			flow, err := parser.ValidateConfig()
 			if tt.expectedErr {
 				if err == nil {
 					t.Errorf("validate config got no error, but expected one (%v)", err)
@@ -389,8 +400,7 @@ func TestVariables(t *testing.T) {
 
 			parser, err := compiler.NewASTParser(script, mapping)
 			require.NoError(t, err)
-			err = parser.InspectAST()
-			require.NoError(t, err)
+			parser.ValidateFunctionCalls()
 
 			if len(parser.Errors) != tt.errCount {
 				t.Errorf("script '%s' = errors %d, want %d", tt.name, len(parser.Errors), tt.errCount)

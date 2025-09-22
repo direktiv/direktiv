@@ -3,6 +3,7 @@ package compiler
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/direktiv/direktiv/internal/cluster/cache"
 	"github.com/direktiv/direktiv/internal/core"
@@ -52,7 +53,7 @@ func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (*co
 		return nil, err
 	}
 
-	config, err := ValidateConfig(script, mapping)
+	config, errs, err := ValidateScript(script)
 	if err != nil {
 		return nil, err
 	}
@@ -63,37 +64,51 @@ func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (*co
 		Config:  config,
 	}
 
-	c.cache.Set(cacheKey, obj)
+	if len(errs) > 0 {
+		errList := make([]string, len(errs))
+		for i := range errs {
+			errList[i] = errs[i].Error()
+		}
+		return nil, fmt.Errorf(strings.Join(errList, ", "))
+	}
+	// c.cache.Set(cacheKey, obj)
 
 	return obj, nil
 }
 
-func ValidateScript(script string) (*core.FlowConfig, error) {
+func ValidateScript(script string) (*core.FlowConfig, []error, error) {
+
+	errors := make([]error, 0)
+
 	t, err := NewTranspiler()
 	if err != nil {
-		return nil, err
+		return nil, errors, err
 	}
 
 	script, mapping, err := t.Transpile(script, "dummy")
 	if err != nil {
-		return nil, err
+		return nil, errors, err
 	}
 
-	errors, err := ValidateTransitions(script, mapping)
+	pr, err := NewASTParser(script, mapping)
 	if err != nil {
-		fmt.Println("HIER1")
-		return nil, err
+		return nil, errors, err
 	}
 
-	if len(errors) > 0 {
-		return nil, fmt.Errorf("errors in script: %v", errors)
+	pr.ValidateTransitions()
+	pr.ValidateFunctionCalls()
+	config, err := pr.ValidateConfig()
+	if err != nil {
+		pr.Errors = append(pr.Errors, &ValidationError{
+			Message: err.Error(),
+			Line:    0,
+			Column:  0,
+		})
 	}
 
-	// err = ValidateBody(script, mapping)
-	// if err != nil {
-	// 	fmt.Println("HIER2")
-	// 	return nil, err
-	// }
+	for i := range pr.Errors {
+		errors = append(errors, pr.Errors[i])
+	}
 
-	return ValidateConfig(script, mapping)
+	return config, errors, nil
 }
