@@ -89,7 +89,7 @@ func (e *Engine) ExecScript(ctx context.Context, namespace string, script string
 		Time:       time.Now(),
 		Metadata:   metadata,
 
-		Script: string(script),
+		Script: script,
 		Input:  json.RawMessage(input),
 	})
 	if err != nil {

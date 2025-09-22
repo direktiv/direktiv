@@ -253,6 +253,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// TODO: why this block? fs should accept everything! no validation
 	// validate flow file. it is stored but we report errors
 	if strings.HasSuffix(req.Name, core.FlowFileExtension) {
 		_, err := compiler.ValidateScript(string(decodedBytes))
