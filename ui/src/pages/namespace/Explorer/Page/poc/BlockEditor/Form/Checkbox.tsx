@@ -19,6 +19,7 @@ import { Checkbox as CheckboxDesignComponent } from "~/design/Checkbox";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
 import Input from "~/design/Input";
+import { VariableInput } from "../components/VariableInput";
 import { useTranslation } from "react-i18next";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -134,9 +135,11 @@ export const Checkbox = ({
                   : "";
 
                 return (
-                  <Input
-                    {...field}
+                  <VariableInput
                     value={defaultValue}
+                    onUpdate={(value) =>
+                      form.setValue("defaultValue.value", value)
+                    }
                     placeholder={t(
                       "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholderVariable"
                     )}

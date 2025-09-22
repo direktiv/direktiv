@@ -4,6 +4,7 @@ import { BlockEditFormProps } from ".";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "./components/FormWrapper";
 import Input from "~/design/Input";
+import { VariableInput } from "./components/VariableInput";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -49,9 +50,10 @@ export const Loop = ({
         label={t("direktivPage.blockEditor.blockForms.loop.dataLabel")}
         htmlFor="data"
       >
-        <Input
-          {...form.register("data")}
-          id="data"
+        <VariableInput
+          value={form.watch("data")}
+          onUpdate={(value) => form.setValue("data", value)}
+          id="data-data"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.loop.dataPlaceholder"
           )}
