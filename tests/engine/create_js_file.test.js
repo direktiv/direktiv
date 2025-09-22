@@ -6,8 +6,9 @@ import request from "../common/request";
 import common from "../common";
 import {retry10} from "../common/retry";
 
-const fName = "file12.wf.js"
 const namespace = basename(__filename.replaceAll('.', '-'));
+const fName = "file" + Math.random().toString(10).slice(2, 12) + ".wf.js"
+
 describe('Test js engine', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
@@ -17,11 +18,11 @@ describe('Test js engine', () => {
 		btoa(`
 function stateOne(payload) {
 	print("RUN STATE FIRST");
-    return transition("stateTwo", payload);
+    return transition(stateTwo, payload);
 }
 function stateTwo(payload) {
 	print("RUN STATE SECOND");
-    return finish("hello");
+    return payload;
 }
 `))
 	retry10(`should invoke /foo/${fName} workflow`, async () => {
