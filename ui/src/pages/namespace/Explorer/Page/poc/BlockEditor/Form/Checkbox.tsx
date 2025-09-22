@@ -18,7 +18,6 @@ import { BlockEditFormProps } from "..";
 import { Checkbox as CheckboxDesignComponent } from "~/design/Checkbox";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
-import Input from "~/design/Input";
 import { VariableInput } from "../components/VariableInput";
 import { useTranslation } from "react-i18next";
 import z from "zod";
