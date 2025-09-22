@@ -229,6 +229,7 @@ func Start(lc *lifecycle.Manager) error {
 		}
 	}
 
+	// TODO: backend jobs should be created by lc.Go()
 	// start mirror process cleanup
 	go mirroring.RunCleanMirrorProcesses(lc.Context(), app.DB)
 
