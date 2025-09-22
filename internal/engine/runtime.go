@@ -11,13 +11,14 @@ import (
 
 func (e *Engine) execJSScript(script string, mappings string, fn string, input string) (any, error) {
 	vm := sobek.New()
-	vm.Set("print", jsPrint)
-	vm.Set("commitState", jsCommitState)
 	if mappings != "" {
 		vm.SetParserOptions(parser.WithSourceMapLoader(func(path string) ([]byte, error) {
 			return []byte(mappings), nil
 		}))
 	}
+
+	// add commands
+	InjectCommands(vm)
 
 	_, err := vm.RunString(script)
 	if err != nil {
