@@ -281,7 +281,10 @@ func writeJSON(w http.ResponseWriter, v any) {
 	}{
 		Data: v,
 	}
-	_ = json.NewEncoder(w).Encode(payLoad)
+	err := json.NewEncoder(w).Encode(payLoad)
+	if err != nil {
+		panic(fmt.Errorf("write json: %w", err))
+	}
 }
 
 func writeJSONWithMeta(w http.ResponseWriter, data any, meta any) {
