@@ -7,7 +7,9 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/internal/core"
+	"github.com/go-sourcemap/sourcemap"
 	"github.com/grafana/sobek/ast"
+	"github.com/grafana/sobek/file"
 	"github.com/grafana/sobek/parser"
 	"github.com/robfig/cron/v3"
 	"github.com/sosodev/duration"
@@ -101,8 +103,8 @@ func (v *Validator) walk(node ast.Node, isStateFunc bool) {
 				v.errors = append(v.errors, "non-state function calls 'transition' or 'finish'.")
 			}
 		}
-		// Continue walking the arguments in case of nested calls
 
+		// Continue walking the arguments in case of nested calls
 		if n.ArgumentList != nil {
 			for _, arg := range n.ArgumentList {
 				v.walk(arg, isStateFunc)
@@ -156,51 +158,75 @@ func (v *Validator) checkIfHasReturn(node ast.Node) bool {
 	return false
 }
 
-func ValidateBody(src, mapping string) error {
-	option := parser.WithSourceMapLoader(func(path string) ([]byte, error) {
-		return []byte(mapping), nil
-	})
+// func ValidateBody(src, mapping string) error {
+// 	option := parser.WithSourceMapLoader(func(path string) ([]byte, error) {
+// 		return []byte(mapping), nil
+// 	})
 
-	prog, err := parser.ParseFile(nil, "", src, 0, option)
-	if err != nil {
-		return err
-	}
+// 	prog, err := parser.ParseFile(nil, "", src, 0, option)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	seenFlow := false
-	fns := false
+// 	// seenFlow := false
+// 	fns := false
 
-	for _, stmt := range prog.Body {
-		switch s := stmt.(type) {
-		case *ast.FunctionDeclaration:
-			// allowed but set first function
-			fns = true
-		case *ast.VariableStatement:
-			for _, b := range s.List { // here b is *ast.Binding
-				ident, ok := b.Target.(*ast.Identifier)
-				if !ok {
-					return fmt.Errorf("unexpected binding target: %T", b.Target)
-				}
-				if ident.Name != "flow" {
-					return fmt.Errorf("only 'flow' allowed at top-level, got %q", ident.Name)
-				}
-				if seenFlow {
-					return fmt.Errorf("duplicate 'flow' declaration")
-				}
-				seenFlow = true
-			}
-		case *ast.EmptyStatement:
-			// ignore stray semicolons
-		default:
-			return fmt.Errorf("top-level %T not allowed", s)
-		}
-	}
+// 	for _, stmt := range prog.Body {
+// 		switch s := stmt.(type) {
+// 		case *ast.FunctionDeclaration:
+// 			// allowed but set first function
+// 			fns = true
+// 		case *ast.ExpressionStatement:
+// 			// Check if this is an allowed function call
+// 			if callExpr, ok := s.Expression.(*ast.CallExpression); ok {
+// 				if ident, ok := callExpr.Callee.(*ast.Identifier); ok {
+// 					if ident.Name == "secret" || ident.Name == "action" {
+// 						return nil
+// 					}
 
-	if !fns {
-		return fmt.Errorf("no functions defined")
-	}
+// 					fmt.Println("NOT ALLOWED!!!")
+// 					// return ValidationError{
+// 					// 	Message: fmt.Sprintf("function call '%s' is not allowed at top level (only 'secret' and 'action' are allowed)", ident.Name),
+// 					// 	Line:    line,
+// 					// 	Column:  0,
+// 					// }
+// 				}
+// 				fmt.Println("COMPLEX ERROR")
+// 				// If it's not a simple identifier call, it's not allowed
+// 				// return ValidationError{
+// 				// 	Message: "complex function calls are not allowed at top level",
+// 				// 	Line:    line,
+// 				// 	Column:  0,
+// 				// }
+// 			}
+// 		case *ast.VariableStatement:
+// 			fmt.Println("VAR STATMENT")
+// 			// for _, b := range s.List { // here b is *ast.Binding
+// 			// 	_, ok := b.Target.(*ast.Identifier)
+// 			// 	if !ok {
+// 			// 		return fmt.Errorf("unexpected binding target: %T", b.Target)
+// 			// 	}
+// 			// 	// if ident.Name == "flow" {
+// 			// 	// 	return fmt.Errorf("only 'flow' allowed at top-level, got %q", ident.Name)
+// 			// 	// }
+// 			// 	if seenFlow {
+// 			// 		return fmt.Errorf("duplicate 'flow' declaration")
+// 			// 	}
+// 			// 	seenFlow = true
+// 			// }
+// 		case *ast.EmptyStatement:
+// 			// ignore stray semicolons
+// 		default:
+// 			return fmt.Errorf("top-level %T not allowed", s)
+// 		}
+// 	}
 
-	return nil
-}
+// 	if !fns {
+// 		return fmt.Errorf("no functions defined")
+// 	}
+
+// 	return nil
+// }
 
 func ValidateConfig(src, mapping string) (*core.FlowConfig, error) {
 	flow := &core.FlowConfig{
@@ -421,4 +447,146 @@ func setAndvalidate(flow *core.FlowConfig, fns []string, key, value string) erro
 	}
 
 	return nil
+}
+
+type ValidationError struct {
+	Message string
+	Line    int
+	Column  int
+}
+
+type ASTParser struct {
+	Script, mapping string
+	file            *file.File
+
+	Errors []*ValidationError
+}
+
+func NewASTParser(script, mapping string) (*ASTParser, error) {
+	p := &ASTParser{
+		file:    file.NewFile("", script, 0),
+		Errors:  make([]*ValidationError, 0),
+		Script:  script,
+		mapping: mapping,
+	}
+
+	if mapping != "" {
+		sm, err := sourcemap.Parse("", []byte(mapping))
+		if err != nil {
+			return nil, err
+		}
+		p.file.SetSourceMap(sm)
+	}
+
+	return p, nil
+}
+
+func (ap *ASTParser) InspectAST() error {
+	option := parser.WithSourceMapLoader(func(path string) ([]byte, error) {
+		return []byte(ap.mapping), nil
+	})
+
+	program, err := parser.ParseFile(nil, "", ap.Script, 0, option)
+	if err != nil {
+		fmt.Println("MAPPINGS!!!")
+		return err
+	}
+
+	for i := range program.Body {
+		ap.inspectStatement(program.Body[i])
+	}
+
+	return nil
+}
+
+func (ap *ASTParser) inspectStatement(stmt ast.Statement) {
+	switch s := stmt.(type) {
+	case *ast.VariableStatement:
+		for _, decl := range s.List {
+			if decl.Initializer != nil {
+				ap.inspectExpression(decl.Initializer)
+			}
+		}
+	case *ast.ExpressionStatement:
+		ap.inspectExpression(s.Expression)
+	case *ast.FunctionDeclaration:
+		// allowed
+	case *ast.LexicalDeclaration:
+		for _, decl := range s.List {
+			if decl.Initializer != nil {
+				ap.inspectExpression(decl.Initializer)
+			}
+		}
+	default:
+		// we let it through
+	}
+}
+
+func (ap *ASTParser) inspectExpression(expr ast.Expression) {
+	if expr == nil {
+		return
+	}
+
+	switch e := expr.(type) {
+	case *ast.CallExpression:
+		msg := "function calls not allowed outside of functions"
+		identifier, ok := e.Callee.(*ast.Identifier)
+		if ok {
+			msg = fmt.Sprintf("function call '%s' is not allowed outside of functions", identifier.Name)
+
+			// 'secrets' is allowed but we need to check the params
+			if identifier.Name == "secrets" {
+				for a := range e.ArgumentList {
+					ap.inspectExpression(e.ArgumentList[a])
+				}
+				return
+			}
+		}
+
+		pos := ap.file.Position(int(e.Idx0()))
+		ap.Errors = append(ap.Errors, &ValidationError{
+			Message: msg,
+			Line:    pos.Line,
+			Column:  pos.Column,
+		})
+	case *ast.Identifier:
+		// allowed
+	case *ast.StringLiteral:
+		// allowed
+	case *ast.NumberLiteral:
+		// allowed
+	case *ast.SpreadElement:
+		ap.inspectExpression(e.Expression)
+	case *ast.PropertyKeyed:
+		ap.inspectExpression(e.Key)
+		ap.inspectExpression(e.Value)
+	case *ast.ArrayLiteral:
+		for _, elem := range e.Value {
+			ap.inspectExpression(elem)
+		}
+	case *ast.BracketExpression:
+		ap.inspectExpression(e.Left)
+		ap.inspectExpression(e.Member)
+	case *ast.ObjectLiteral:
+		for _, prop := range e.Value {
+			ap.inspectExpression(prop)
+		}
+	case *ast.BinaryExpression:
+		ap.inspectExpression(e.Left)
+		ap.inspectExpression(e.Right)
+	case *ast.UnaryExpression:
+		ap.inspectExpression(e.Operand)
+	case *ast.ConditionalExpression:
+		ap.inspectExpression(e.Alternate)
+		ap.inspectExpression(e.Consequent)
+		ap.inspectExpression(e.Test)
+	case *ast.DotExpression:
+		ap.inspectExpression(e.Left)
+	case *ast.NewExpression:
+		for i := range e.ArgumentList {
+			ap.inspectExpression(e.ArgumentList[i])
+		}
+	default:
+		// we allowed it by default
+	}
 }

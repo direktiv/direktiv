@@ -19,12 +19,12 @@ type Transpiler struct {
 	fn  string
 }
 
-const transitionCode = `
-function transition(funcName, state) {
-	commitState(funcName, state)
-	return funcName(state)
-}
-`
+// const transitionCode = `
+// function transition(funcName, state) {
+// 	commitState(funcName, state)
+// 	return funcName(state)
+// }
+// `
 
 func NewTranspiler() (*Transpiler, error) {
 	fn := randstr.String(8, "abcdefghijklmnopqrstuvwABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -56,7 +56,7 @@ func NewTranspiler() (*Transpiler, error) {
 }
 
 func (t *Transpiler) Transpile(script, name string) (string, string, error) {
-	script = script + transitionCode
+	// script = script + transitionCode
 
 	s := fmt.Sprintf("ts.transpileModule(%s('%s'), { compilerOptions: { sourceMap: true }, fileName: \"%s\", moduleName: \"default\", reportDiagnostics: false })",
 		t.fn, base64.StdEncoding.EncodeToString([]byte(script)), filepath.Base(name))

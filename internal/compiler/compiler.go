@@ -32,7 +32,6 @@ func NewCompiler(db *gorm.DB, cache cache.Cache) (*Compiler, error) {
 func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (*core.TypescriptFlow, error) {
 	cacheKey := fmt.Sprintf("%s-%s-%s", namespace, "script", path)
 
-	// TODO CACHING
 	flow, found := c.cache.Get(cacheKey)
 	if found {
 		return flow.(*core.TypescriptFlow), nil
@@ -90,11 +89,11 @@ func ValidateScript(script string) (*core.FlowConfig, error) {
 		return nil, fmt.Errorf("errors in script: %v", errors)
 	}
 
-	err = ValidateBody(script, mapping)
-	if err != nil {
-		fmt.Println("HIER2")
-		return nil, err
-	}
+	// err = ValidateBody(script, mapping)
+	// if err != nil {
+	// 	fmt.Println("HIER2")
+	// 	return nil, err
+	// }
 
 	return ValidateConfig(script, mapping)
 }

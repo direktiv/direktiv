@@ -6,96 +6,8 @@ import (
 	"testing"
 
 	"github.com/direktiv/direktiv/internal/compiler"
+	"github.com/stretchr/testify/require"
 )
-
-func TestBody(t *testing.T) {
-	tests := []struct {
-		script    string
-		expectErr bool
-	}{
-		{
-			`
-			var flow = { start: "stateOne" };
-			function stateOne() {}
-			`,
-			false,
-		},
-		{
-			`
-			var flow1 = { start: "stateOne" };
-			function stateOne() {}
-			`,
-			true,
-		},
-		{
-			`
-			var flow = { start: "stateOne" };
-			`,
-			true,
-		},
-		{
-			`
-			function stateOne() {}
-			`,
-			false,
-		},
-		{
-			`
-			function stateThree() {}
-			function stateOne() {}
-			var flow = { start: "stateOne" };
-			function stateOne() {}
-			`,
-			false,
-		},
-		{
-			`
-			var flow = { start: "stateOne" };
-			`,
-			true,
-		},
-		{
-			`
-			function stateOne() {}
-
-			stateOne()
-			`,
-			true,
-		},
-		{
-			`
-			function stateOne() {}
-
-			var g = 1
-			`,
-			true,
-		},
-		{
-			`
-			var flow = { start: "stateOne" };
-			var flow = { start: "stateOne" };
-			`,
-			true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.script, func(t *testing.T) {
-			err := compiler.ValidateBody(tt.script, "")
-			t.Logf("error %v\n", err)
-			if tt.expectErr {
-				if err == nil {
-					t.Errorf("expected error but got none")
-				}
-			} else {
-				if err != nil {
-					t.Errorf("unexpected error: %v", err)
-				}
-			}
-		})
-	}
-
-}
 
 func TestReturnValues(t *testing.T) {
 	tests := []struct {
@@ -262,4 +174,232 @@ func TestConfig(t *testing.T) {
 		})
 	}
 
+}
+
+func TestVariables(t *testing.T) {
+	transpiler, _ := compiler.NewTranspiler()
+
+	tests := []struct {
+		name     string
+		ts       string
+		errCount int
+	}{
+		{
+			"allowed secrets call but not with function call",
+			`
+			secrets("my-secret-key");
+			secrets(getValues());
+			`,
+			1,
+		},
+		{
+			"functions direct not allowed",
+			`
+			console.log("this should fail");
+			alert("this should fail");
+			setTimeout(function() {}, 1000);
+			Math.random();
+			`,
+			4,
+		},
+		{
+			"normal vars allowed",
+			`
+			var x = 5;
+			var y = "hello";
+			var z = x + y;
+			var arr = [1, 2, 3];
+			var obj = {a: 1, b: "test"};
+			var bool = true;
+			var nullVar = null;
+			`,
+			0,
+		},
+		{
+			"function calls in variable assignments not allowed",
+			`
+			var badVar1 = console.log("fail");
+			var badVar2 = Math.random();
+			var badVar3 = setTimeout(function() {}, 1000);
+			var badVar5 = JSON.parse("{}");
+			var badVar6 = parseInt("123");
+			var badVar7 = parseFloat("123.45");
+			`,
+			6,
+		},
+		{
+			"new is allowed but no function",
+			`
+			let good1 = new MyThing();
+			let good2 = new MyThing({
+			a: 1, b: 100});
+			let bad1 = new MyThing({
+			a: 1, b: getValue()});
+			const bad2 = new MyThing(doSomething());
+			`,
+			2,
+		},
+		{
+			"method calls on objects not allowed",
+			`
+			var badVar8 = someObject.method();
+			var badVar9 = arr.push(4);
+			var badVar10 = str.toLowerCase();
+			var badVar11 = obj.toString();
+			`,
+			4,
+		},
+		{
+			"chained method calls not allowed",
+			`
+			var badVar12 = someObject.method().anotherMethod();
+			var badVar13 = arr.filter(x => x > 0).map(x => x * 2);
+			`,
+			2,
+		},
+		{
+			"function calls with property access not allowed",
+			`
+			var badVar14 = window.alert("fail");
+			var badVar15 = document.getElementById("test");
+			var badVar16 = global.require("module");
+			`,
+			3,
+		},
+		{
+			"function calls in complex expressions not allowed",
+			`
+			var badVar21 = getValue() + 5;
+			var badVar22 = 10 + Math.random();
+			var badVar23 = someFunction() || "default";
+			var badVar24 = condition ? getValue() : "default";
+			var badVar25 = !isEmpty();
+			`,
+			5,
+		},
+		{
+			"function calls in array literals not allowed",
+			`
+			var badVar26 = [getValue(), 1, 2];
+			var badVar27 = [Math.random(), Math.random()]; // two errors
+			`,
+			3,
+		},
+		{
+			"function calls in object literals not allowed",
+			`
+			var badVar28 = {a: getValue(), b: 2};
+			var badVar29 = {timestamp: Date.now(), value: 1};
+			var badVar30 = {id: generateId(), name: "test"};
+			`,
+			3,
+		},
+		{
+			"nested function calls not allowed",
+			`
+			var badVar31 = outerFunction(innerFunction());
+			var badVar32 = Math.max(getValue(), getOtherValue());
+			`,
+			2,
+		},
+		{
+			"function calls with computed property access not allowed",
+			`
+			var badVar33 = obj[getKey()];
+			var badVar34 = arr[getIndex()];
+			`,
+			2,
+		},
+		{
+			"callback functions that call other functions not allowed",
+			`
+			var badVar35 = [1,2,3].map(function(x) { return transform(x); });
+			`,
+			1,
+		},
+		{
+			"immediately invoked function expression not allowed",
+			`
+			var badVar36 = (function() { return getValue(); })();
+			`,
+			1,
+		},
+		{
+			"spread operator with function calls not allowed",
+			`
+			var badVar38 = [...getArray()];
+			var badVar39 = {...getObject()};
+			`,
+			2,
+		},
+		{
+			"destructuring with function calls not allowed",
+			`
+			var {a, b} = getObject();
+			var [first, second] = getArray();
+			`,
+			2,
+		},
+		{
+			"function calls in binary expressions not allowed",
+			`
+			var badVar40 = getValue() === expected;
+			var badVar41 = getCount() > 0;
+			var badVar42 = getName() + " suffix";
+			`,
+			3,
+		},
+		{
+			"function calls in unary expressions not allowed",
+			`
+			var badVar43 = +getString();
+			var badVar44 = typeof getValue();
+			var badVar45 = delete obj[getKey()];
+			`,
+			3,
+		},
+		{
+			"function calls with this context not allowed",
+			`
+			var badVar46 = this.method();
+			var badVar47 = self.getValue();
+			`,
+			2,
+		},
+		{
+			"generator function calls not allowed",
+			`
+			var badVar49 = getGenerator().next();
+			`,
+			1,
+		},
+		{
+			"function calls in switch statements not allowed",
+			`
+			var badVar50 = getValue() ? 1 : 2;
+			`,
+			1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			script, mapping, err := transpiler.Transpile(tt.ts, "dummy")
+			require.NoError(t, err)
+
+			parser, err := compiler.NewASTParser(script, mapping)
+			require.NoError(t, err)
+			err = parser.InspectAST()
+			require.NoError(t, err)
+
+			if len(parser.Errors) != tt.errCount {
+				t.Errorf("script '%s' = errors %d, want %d", tt.name, len(parser.Errors), tt.errCount)
+			}
+
+			for i := range parser.Errors {
+				ee := parser.Errors[i]
+				t.Logf("error '%s' (line: %d, column: %d)", ee.Message, ee.Line, ee.Column)
+			}
+		})
+	}
 }

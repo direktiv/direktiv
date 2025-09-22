@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -114,24 +113,24 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var data *engine.InstanceStatus
-	for range 10 {
-		data, err = e.engine.GetInstanceByID(r.Context(), namespace, id)
-		if err != nil && errors.Is(err, engine.ErrDataNotFound) {
-			time.Sleep(100 * time.Millisecond)
-			continue
-		}
-		if err != nil {
-			writeError(w, &Error{
-				Code:    err.Error(),
-				Message: err.Error(),
-			})
+	// var data *engine.InstanceStatus
+	// for range 10 {
+	// 	data, err = e.engine.GetInstanceByID(r.Context(), namespace, id)
+	// 	if err != nil && errors.Is(err, engine.ErrDataNotFound) {
+	// 		time.Sleep(5 * time.Millisecond)
+	// 		continue
+	// 	}
+	// 	if err != nil {
+	// 		writeError(w, &Error{
+	// 			Code:    err.Error(),
+	// 			Message: err.Error(),
+	// 		})
 
-			return
-		}
-	}
+	// 		return
+	// 	}
+	// }
 
-	writeJSON(w, data)
+	writeJSON(w, id)
 }
 
 func (e instController) testTranspile(w http.ResponseWriter, r *http.Request) {
