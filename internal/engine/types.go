@@ -60,6 +60,7 @@ func (i *InstanceStatus) Clone() *InstanceStatus {
 	}
 	if i.Output != nil {
 		clone.Output = make(json.RawMessage, len(i.Output))
+		copy(clone.Output, i.Output)
 	}
 
 	return &clone
