@@ -13,6 +13,7 @@ import { FormStringInput } from "./formPrimitives/FormStringInput";
 import { FormTextarea } from "./formPrimitives/FormTextarea";
 import { Headline } from "./Headline";
 import { Image } from "./Image";
+import { LocalVariables } from "../primitives/Variable/VariableContext";
 import { Loop } from "./Loop";
 import { ParsingError } from "./utils/ParsingError";
 import { QueryProvider } from "./QueryProvider";
@@ -29,7 +30,7 @@ type BlockProps = {
 
 export const Block = ({ block, blockPath }: BlockProps) => {
   const { t } = useTranslation();
-  const renderContent = () => {
+  const renderContent = (register?: (vars: LocalVariables) => void) => {
     switch (block.type) {
       case "headline":
         return <Headline blockProps={block} />;
@@ -52,7 +53,9 @@ export const Block = ({ block, blockPath }: BlockProps) => {
       case "table":
         return <Table blockProps={block} blockPath={blockPath} />;
       case "form":
-        return <Form blockProps={block} blockPath={blockPath} />;
+        return (
+          <Form blockProps={block} blockPath={blockPath} register={register} />
+        );
       case "form-string-input":
         return <FormStringInput blockProps={block} />;
       case "form-number-input":
@@ -78,7 +81,7 @@ export const Block = ({ block, blockPath }: BlockProps) => {
 
   return (
     <BlockWrapper blockPath={blockPath} block={block}>
-      {renderContent()}
+      {(register) => renderContent(register)}
     </BlockWrapper>
   );
 };

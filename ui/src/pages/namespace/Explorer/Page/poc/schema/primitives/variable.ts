@@ -11,7 +11,9 @@ type ContextVariableNamespace = (typeof contextVariableNamespaces)[number];
 
 export type LocalVariableNamespace = typeof localVariableNamespace;
 
-type VariableNamespace = ContextVariableNamespace | LocalVariableNamespace;
+export type VariableNamespace =
+  | ContextVariableNamespace
+  | LocalVariableNamespace;
 
 export const VariableNamespaceSchema = z.enum([
   ...contextVariableNamespaces,

@@ -7,7 +7,7 @@ import {
   CommandItem,
   CommandList,
 } from "~/design/Command";
-import { FC, Fragment, useMemo, useState } from "react";
+import { FC, ReactElement, ReactNode, useMemo, useState } from "react";
 import {
   Popover,
   PopoverClose,
@@ -21,42 +21,30 @@ import { FakeInput } from "~/design/FakeInput";
 import { useTranslation } from "react-i18next";
 
 type TreePickerProps = {
-  label: string;
   tree: Tree;
   onSubmit: (value: string) => void;
-  minDepth?: number;
+  preventSubmit: (path: string[]) => boolean;
   container?: HTMLDivElement;
-  placeholders?: string[];
+  preview: (path: string[]) => ReactNode;
+  children: ReactElement<HTMLButtonElement>;
 };
 
 export const TreePicker: FC<TreePickerProps> = ({
-  label,
   tree,
+  children,
   container,
-  placeholders = [],
-  minDepth = 0,
+  preventSubmit = () => false,
   onSubmit,
+  preview,
 }) => {
   const { t } = useTranslation();
   const [path, setPath] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const currentTree = useMemo(() => getSublist(tree, path), [path, tree]);
+  const disabled = useMemo(() => preventSubmit(path), [preventSubmit, path]);
 
-  const previewLength = Math.max(placeholders.length, path.length);
-  const previewPath = Array.from({ length: previewLength }, (_, index) => (
-    <Fragment key={index}>
-      {path[index] ? (
-        <span className="text-gray-12 dark:text-gray-8">{path[index]}</span>
-      ) : (
-        <span className="italic text-gray-10">{placeholders[index]}</span>
-      )}
-      {index < previewLength - 1 && <span className="text-gray-10">.</span>}
-    </Fragment>
-  ));
-
-  const allowSubmit = path.length >= minDepth;
   const allowCustomSegment = search.length > 0;
-  const formattedPath = `{{${path.join(".")}}}`;
+  const formattedPath = path.join(".");
 
   const addCustomSegment = () => {
     setPath([...path, search]);
@@ -66,15 +54,7 @@ export const TreePicker: FC<TreePickerProps> = ({
   return (
     <Popover>
       <div className="flex">
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            type="button"
-            className="dark:border-gray-dark-7"
-          >
-            {label}
-          </Button>
-        </PopoverTrigger>
+        <PopoverTrigger asChild>{children}</PopoverTrigger>
       </div>
       <PopoverContent className="w-96" align="start" container={container}>
         <Command>
@@ -96,7 +76,7 @@ export const TreePicker: FC<TreePickerProps> = ({
               className="-mr-2"
               disabled={!allowCustomSegment}
             >
-              <Plus size="xs" />
+              <Plus className="text-xs" />
             </Button>
           </CommandInput>
           <CommandList>
@@ -125,32 +105,34 @@ export const TreePicker: FC<TreePickerProps> = ({
               wrap
               className="mr-2 w-full text-gray-10 dark:text-gray-dark-10"
             >
-              {"{{"}
-              {previewPath}
-              {"}}"}
+              {preview(path)}
             </FakeInput>
-            <PopoverClose className="ml-auto flex gap-2">
-              <Button
-                variant="outline"
-                icon
-                type="button"
-                disabled={!allowSubmit}
-                onClick={() => {
-                  onSubmit(formattedPath);
-                  setPath([]);
-                }}
-              >
-                <Check />
-              </Button>
-              <Button
-                variant="outline"
-                icon
-                type="button"
-                onClick={() => setPath([])}
-              >
-                <X />
-              </Button>
-            </PopoverClose>
+            <div className="ml-auto flex gap-2">
+              <PopoverClose asChild>
+                <Button
+                  variant="outline"
+                  icon
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => {
+                    onSubmit(formattedPath);
+                    setPath([]);
+                  }}
+                >
+                  <Check />
+                </Button>
+              </PopoverClose>
+              <PopoverClose asChild>
+                <Button
+                  variant="outline"
+                  icon
+                  type="button"
+                  onClick={() => setPath([])}
+                >
+                  <X />
+                </Button>
+              </PopoverClose>
+            </div>
           </div>
         </Command>
       </PopoverContent>

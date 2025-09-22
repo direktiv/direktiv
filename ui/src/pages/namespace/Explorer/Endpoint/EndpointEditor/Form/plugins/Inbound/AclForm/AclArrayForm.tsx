@@ -34,7 +34,7 @@ export const AclArrayForm = ({ field }: AclArrayFormProps) => {
   return (
     <div className="grid gap-5 sm:grid-cols-2">
       <ArrayForm
-        defaultValue={field.value || []}
+        value={field.value || []}
         onChange={field.onChange}
         emptyItem=""
         renderItem={({ value, setValue }) => (

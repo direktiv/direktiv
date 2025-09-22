@@ -14,6 +14,7 @@ import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
 import { KeyValueInput } from "../components/FormElements/KeyValueInput";
 import { SmartInput } from "../components/SmartInput";
+import { localVariableNamespace } from "../../schema/primitives/variable";
 import { mutationMethods } from "../../schema/procedures/mutation";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -50,6 +51,7 @@ export const Form = ({
         htmlFor="trigger-label"
       >
         <SmartInput
+          blacklist={[localVariableNamespace]}
           value={form.watch("trigger.label")}
           onUpdate={(value) => form.setValue("trigger.label", value)}
           id="trigger-label"
@@ -101,6 +103,7 @@ export const Form = ({
         name="mutation.queryParams"
         render={({ field }) => (
           <KeyValueInput
+            smart
             field={field}
             label={t(
               "direktivPage.blockEditor.blockForms.form.mutation.queryParamsLabel"
@@ -113,6 +116,7 @@ export const Form = ({
         name="mutation.requestHeaders"
         render={({ field }) => (
           <KeyValueInput
+            smart
             field={field}
             label={t(
               "direktivPage.blockEditor.blockForms.form.mutation.requestHeadersLabel"
@@ -125,6 +129,7 @@ export const Form = ({
         name="mutation.requestBody"
         render={({ field }) => (
           <ExtendedKeyValueInput
+            smart
             field={field}
             label={t(
               "direktivPage.blockEditor.blockForms.form.mutation.requestBodyLabel"

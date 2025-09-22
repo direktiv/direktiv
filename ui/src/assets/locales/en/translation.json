@@ -1882,6 +1882,7 @@
         }
       },
       "smartInput": {
+        "dialogTitle": "Edit template string",
         "templateHelp": {
           "header": "This field may contain variables in the style {{type.id.pointer}}.",
           "namespace": "type: type of block providing the data (loop, query)",

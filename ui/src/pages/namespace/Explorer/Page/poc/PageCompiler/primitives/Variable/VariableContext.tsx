@@ -39,7 +39,7 @@ export const useVariablesContext = () => {
   return variables;
 };
 
-type LocalVariables = Record<LocalVariableNamespace, Variable>;
+export type LocalVariables = Record<LocalVariableNamespace, Variable>;
 type LocalAndContextVariables = ContextVariables & LocalVariables;
 
 export type LocalVariablesContent =

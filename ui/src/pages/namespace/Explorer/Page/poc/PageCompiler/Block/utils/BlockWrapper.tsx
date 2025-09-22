@@ -1,5 +1,9 @@
 import {
-  PropsWithChildren,
+  LocalVariables,
+  useVariablesContext,
+} from "../../primitives/Variable/VariableContext";
+import {
+  ReactElement,
   Suspense,
   useEffect,
   useMemo,
@@ -25,12 +29,12 @@ import { useDndContext } from "@dnd-kit/core";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 import { useTranslation } from "react-i18next";
 import { useValidateDropzone } from "./useValidateDropzone";
-import { useVariablesContext } from "../../primitives/Variable/VariableContext";
 
-type BlockWrapperProps = PropsWithChildren<{
+type BlockWrapperProps = {
   blockPath: BlockPathType;
   block: BlockType;
-}>;
+  children: (register?: (vars: LocalVariables) => void) => ReactElement;
+};
 
 const EditorBlockWrapper = ({
   block,
@@ -39,13 +43,24 @@ const EditorBlockWrapper = ({
 }: BlockWrapperProps) => {
   const { t } = useTranslation();
   const page = usePage();
-  const variables = useVariablesContext();
   const { panel, setPanel } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
+  const contextVariables = useVariablesContext();
+  const [localVariables, setLocalVariables] = useState<LocalVariables>({
+    this: {},
+  });
   const validateDropzone = useValidateDropzone();
   const containerRef = useRef<HTMLDivElement>(null);
   const dndContext = useDndContext();
   const isDragging = !!dndContext.active;
+
+  const variables = useMemo(
+    () =>
+      block.type === "form"
+        ? { ...contextVariables, ...localVariables }
+        : contextVariables,
+    [block, contextVariables, localVariables]
+  );
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -146,7 +161,7 @@ const EditorBlockWrapper = ({
                 </ParsingError>
               )}
             >
-              {children}
+              {block.type === "form" ? children(setLocalVariables) : children()}
             </ErrorBoundary>
           </Suspense>
         </div>
@@ -168,7 +183,7 @@ const VisitorBlockWrapper = ({ children }: BlockWrapperProps) => {
           </ParsingError>
         )}
       >
-        <div className="my-3">{children}</div>
+        <div className="my-3">{children()}</div>
       </ErrorBoundary>
     </Suspense>
   );
