@@ -3,25 +3,65 @@ package engine
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/direktiv/direktiv/internal/telemetry"
+
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
 )
 
 type Commands struct {
-	vm *sobek.Runtime
-	id uuid.UUID
+	vm     *sobek.Runtime
+	instID uuid.UUID
 }
 
-func InjectCommands(vm *sobek.Runtime) {
+func InjectCommands(vm *sobek.Runtime, instID uuid.UUID) {
 	cmds := &Commands{
-		vm: vm,
+		vm:     vm,
+		instID: instID,
 	}
 
 	vm.Set("finish", cmds.finish)
 	vm.Set("transition", cmds.transition)
 	vm.Set("log", cmds.log)
+	vm.Set("id", cmds.id)
+	vm.Set("now", cmds.now)
+}
+
+func (cmds *Commands) now(_ sobek.FunctionCall) *sobek.Object {
+	t := time.Now()
+
+	obj := cmds.vm.NewObject()
+	obj.Set("Unix", func(call sobek.FunctionCall) sobek.Value {
+		fmt.Println("ssss")
+		return cmds.vm.ToValue(t.Unix())
+	})
+	obj.Set("Add", func(call sobek.FunctionCall) sobek.Value {
+		fmt.Println("ssss")
+		return cmds.vm.ToValue(t.Unix())
+	})
+	obj.Set("Format", func(call sobek.FunctionCall) sobek.Value {
+		if len(call.Arguments) < 1 {
+			panic(cmds.vm.ToValue("time format required"))
+		}
+		layout := call.Arguments[0].String()
+		return cmds.vm.ToValue(t.Format(layout))
+	})
+	obj.Set("After", func(call sobek.FunctionCall) sobek.Value {
+		fmt.Println("ssss")
+		return cmds.vm.ToValue(t.Unix())
+	})
+	obj.Set("Before", func(call sobek.FunctionCall) sobek.Value {
+		fmt.Println("ssss")
+		return cmds.vm.ToValue(t.Unix())
+	})
+
+	return obj
+}
+
+func (cmds *Commands) id(_ sobek.FunctionCall) sobek.Value {
+	return cmds.vm.ToValue(cmds.instID)
 }
 
 func (cmds *Commands) log(call sobek.FunctionCall) sobek.Value {
@@ -31,30 +71,32 @@ func (cmds *Commands) log(call sobek.FunctionCall) sobek.Value {
 }
 
 // transition needs to throw uncatchable errors
-// not: panic(cmds.vm.NewTypeError("transition requires a function and a payload"))
-// or go errors: panic(cmds.vm.NewGoError(fmt.Errorf("finish requires one argument, but got %d", len(call.Arguments))))
+// panic(cmds.vm.NewGoError(fmt.Errorf("finish requires one argument, but got %d", len(call.Arguments))))
 func (cmds *Commands) transition(call sobek.FunctionCall) sobek.Value {
 	if len(call.Arguments) != 2 {
-		panic(fmt.Errorf("transition requires a function and a payload"))
+		panic(cmds.vm.ToValue("transition requires a function and a payload"))
 	}
 
 	fn, ok := sobek.AssertFunction(call.Arguments[0])
 	if !ok {
-		panic(fmt.Errorf("first parameter of transition is not a function"))
+		panic(cmds.vm.ToValue("first parameter of transition is not a function"))
 	}
 
 	value, err := fn(sobek.Undefined(), call.Arguments[1])
 	if err != nil {
-		panic(fmt.Errorf("error executing the transition: %s", err.Error()))
+		if _, ok := err.(*sobek.Exception); ok {
+			panic(err)
+		} else {
+			panic(cmds.vm.ToValue(fmt.Sprintf("error executing transition: %s", err.Error())))
+		}
 	}
 
 	return value
 }
 
 func (cmds *Commands) finish(call sobek.FunctionCall) sobek.Value {
-
 	if len(call.Arguments) != 1 {
-		panic(fmt.Errorf("finish requires one argument, but got %d", len(call.Arguments)))
+		panic(cmds.vm.ToValue(fmt.Sprintf("finish requires one argument, but got %d", len(call.Arguments))))
 	}
 
 	return call.Arguments[0]
