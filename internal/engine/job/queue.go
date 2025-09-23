@@ -3,13 +3,11 @@ package job
 import (
 	"context"
 	"errors"
-	"io"
+	"fmt"
 	"log/slog"
 	"runtime"
 	"sync"
 	"time"
-
-	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -73,7 +71,7 @@ var ErrQueueFull = errors.New("job queue full")
 // ErrManagerClosed is returned when Enqueue is called after Stop.
 var ErrManagerClosed = errors.New("job manager closed")
 
-// ErrManagerNotStarted is returned when manager is not started
+// ErrManagerNotStarted is returned when manager is not started.
 var ErrManagerNotStarted = errors.New("job manager not started")
 
 type job struct {
@@ -117,8 +115,9 @@ func NewManager(runner Runner, opts Options) *Manager {
 		opts.QueueSize = opts.Workers * 2
 	}
 	if opts.Logger == nil {
-		opts.Logger = slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{Level: slog.LevelInfo}))
+		opts.Logger = slog.New(slog.DiscardHandler)
 	}
+
 	return &Manager{
 		runner: runner,
 		opts:   opts,
@@ -135,7 +134,7 @@ func (m *Manager) Start() {
 		return
 	}
 	m.rootCtx, m.cancel = context.WithCancel(context.Background())
-	for i := 0; i < m.opts.Workers; i++ {
+	for i := range m.opts.Workers {
 		m.wg.Add(1)
 		go m.worker(i)
 	}
@@ -190,6 +189,7 @@ func (m *Manager) Enqueue(ctx context.Context, p Payload) (ID, error) {
 		if m.opts.Hooks.OnEnqueue != nil {
 			m.opts.Hooks.OnEnqueue(j.id, j.payload)
 		}
+
 		return j.id, nil
 	default:
 		// full
@@ -197,6 +197,7 @@ func (m *Manager) Enqueue(ctx context.Context, p Payload) (ID, error) {
 			if m.opts.Hooks.OnDrop != nil {
 				m.opts.Hooks.OnDrop(j.id, j.payload)
 			}
+
 			return uuid.Nil, ErrQueueFull
 		}
 		// block until space, or ctx canceled, or manager closed
@@ -205,6 +206,7 @@ func (m *Manager) Enqueue(ctx context.Context, p Payload) (ID, error) {
 			if m.opts.Hooks.OnEnqueue != nil {
 				m.opts.Hooks.OnEnqueue(j.id, j.payload)
 			}
+
 			return j.id, nil
 		case <-ctx.Done():
 			return uuid.Nil, ctx.Err()
@@ -261,6 +263,7 @@ func (m *Manager) worker(idx int) {
 func (m *Manager) isQueueClosed() bool {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
+
 	return m.closed
 }
 

@@ -2,11 +2,11 @@ package engine
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/telemetry"
-
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
 )
@@ -46,6 +46,7 @@ func (cmds *Commands) now(_ sobek.FunctionCall) *sobek.Object {
 			panic(cmds.vm.ToValue("time format required"))
 		}
 		layout := call.Arguments[0].String()
+
 		return cmds.vm.ToValue(t.Format(layout))
 	})
 	obj.Set("After", func(call sobek.FunctionCall) sobek.Value {
@@ -71,7 +72,7 @@ func (cmds *Commands) log(call sobek.FunctionCall) sobek.Value {
 }
 
 // transition needs to throw uncatchable errors
-// panic(cmds.vm.NewGoError(fmt.Errorf("finish requires one argument, but got %d", len(call.Arguments))))
+// panic(cmds.vm.NewGoError(fmt.Errorf("finish requires one argument, but got %d", len(call.Arguments)))).
 func (cmds *Commands) transition(call sobek.FunctionCall) sobek.Value {
 	if len(call.Arguments) != 2 {
 		panic(cmds.vm.ToValue("transition requires a function and a payload"))
@@ -84,7 +85,8 @@ func (cmds *Commands) transition(call sobek.FunctionCall) sobek.Value {
 
 	value, err := fn(sobek.Undefined(), call.Arguments[1])
 	if err != nil {
-		if _, ok := err.(*sobek.Exception); ok {
+		exception := &sobek.Exception{}
+		if errors.As(err, &exception) {
 			panic(err)
 		} else {
 			panic(cmds.vm.ToValue(fmt.Sprintf("error executing transition: %s", err.Error())))

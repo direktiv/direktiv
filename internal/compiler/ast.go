@@ -472,6 +472,7 @@ func (ap *ASTParser) inspectExpression(expr ast.Expression) {
 				for a := range e.ArgumentList {
 					ap.inspectExpression(e.ArgumentList[a])
 				}
+
 				return
 			}
 		}
