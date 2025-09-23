@@ -28,6 +28,11 @@ func (d *DataBus) Start(lc *lifecycle.Manager) error {
 	if err != nil {
 		return fmt.Errorf("start status cache: %w", err)
 	}
+	p := &projector{d.js}
+	err = p.start(lc)
+	if err != nil {
+		return fmt.Errorf("start projector: %w", err)
+	}
 
 	return nil
 }

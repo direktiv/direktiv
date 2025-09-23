@@ -1,4 +1,4 @@
-package projector
+package databus
 
 import (
 	"context"
@@ -20,17 +20,11 @@ const (
 	fetchBatch = 200
 )
 
-type Projector struct {
+type projector struct {
 	js nats.JetStreamContext
 }
 
-var _ engine.Projector = &Projector{}
-
-func New(js nats.JetStreamContext) *Projector {
-	return &Projector{js: js}
-}
-
-func (p *Projector) Start(lc *lifecycle.Manager) error {
+func (p *projector) start(lc *lifecycle.Manager) error {
 	// Bind to the existing durable consumer
 	sub, err := p.js.PullSubscribe(
 		fmt.Sprintf(intNats.SubjInstanceHistory, "*", "*"),
@@ -54,7 +48,7 @@ func (p *Projector) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (p *Projector) runLoop(lc *lifecycle.Manager, sub *nats.Subscription) error {
+func (p *projector) runLoop(lc *lifecycle.Manager, sub *nats.Subscription) error {
 	for {
 		select {
 		case <-lc.Done():
@@ -77,7 +71,7 @@ func (p *Projector) runLoop(lc *lifecycle.Manager, sub *nats.Subscription) error
 	}
 }
 
-func (p *Projector) handleHistoryMessage(ctx context.Context, msg *nats.Msg) error {
+func (p *projector) handleHistoryMessage(ctx context.Context, msg *nats.Msg) error {
 	ev, err := decodeHistoryMsg(msg)
 	if err != nil {
 		return fmt.Errorf("decode history msg: %w", err)
@@ -135,7 +129,7 @@ func (p *Projector) handleHistoryMessage(ctx context.Context, msg *nats.Msg) err
 	return errors.New("failed to upsert status after retries")
 }
 
-func (p *Projector) getLastStatusForSubject(ctx context.Context, subject string) (st *engine.InstanceStatus, err error) {
+func (p *projector) getLastStatusForSubject(ctx context.Context, subject string) (st *engine.InstanceStatus, err error) {
 	msg, err := p.js.GetLastMsg(
 		intNats.StreamInstanceStatus,
 		subject, nats.Context(ctx))
