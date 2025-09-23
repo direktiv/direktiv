@@ -25,6 +25,7 @@ func InjectCommands(vm *sobek.Runtime, instID uuid.UUID) {
 	vm.Set("finish", cmds.finish)
 	vm.Set("transition", cmds.transition)
 	vm.Set("log", cmds.log)
+	vm.Set("print", cmds.print)
 	vm.Set("id", cmds.id)
 	vm.Set("now", cmds.now)
 }
@@ -102,4 +103,15 @@ func (cmds *Commands) finish(call sobek.FunctionCall) sobek.Value {
 	}
 
 	return call.Arguments[0]
+}
+
+func (cmds *Commands) print(args ...any) {
+	fmt.Print(args[0])
+	if len(args) > 1 {
+		for _, arg := range args[1:] {
+			fmt.Print(" ")
+			fmt.Print(arg)
+		}
+	}
+	fmt.Println()
 }
