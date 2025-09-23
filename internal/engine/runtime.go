@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/google/uuid"
 	"github.com/grafana/sobek"
 	"github.com/grafana/sobek/parser"
 )
 
-func (e *Engine) execJSScript(script string, mappings string, fn string, input string) (any, error) {
+func (e *Engine) execJSScript(instID uuid.UUID, script string, mappings string, fn string, input string) (any, error) {
 	vm := sobek.New()
+	vm.SetMaxCallStackSize(256)
+
 	if mappings != "" {
 		vm.SetParserOptions(parser.WithSourceMapLoader(func(path string) ([]byte, error) {
 			return []byte(mappings), nil
@@ -18,7 +21,7 @@ func (e *Engine) execJSScript(script string, mappings string, fn string, input s
 	}
 
 	// add commands
-	InjectCommands(vm)
+	InjectCommands(vm, instID)
 
 	_, err := vm.RunString(script)
 	if err != nil {

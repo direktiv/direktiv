@@ -102,7 +102,7 @@ func (e *Engine) ExecScript(ctx context.Context, namespace string, script string
 		Namespace:  namespace,
 		Time:       time.Now(),
 	}
-	ret, err := e.execJSScript(script, mappings, fn, input)
+	ret, err := e.execJSScript(instID, script, mappings, fn, input)
 	if err != nil {
 		endMsg.Type = "failed"
 		endMsg.Error = err.Error()

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/direktiv/direktiv/internal/engine"
+	"github.com/google/uuid"
 	"github.com/grafana/sobek"
 	"github.com/stretchr/testify/require"
 )
@@ -11,7 +12,7 @@ import (
 func TestTransition(t *testing.T) {
 	vm := sobek.New()
 
-	engine.InjectCommands(vm)
+	engine.InjectCommands(vm, uuid.New())
 
 	vm.RunScript("", `
 		function start() {
@@ -101,18 +102,54 @@ func TestTransitionErrors(t *testing.T) {
 			}
 			`,
 		},
+		{
+			"finish too many parameters",
+			`function start() {
+				return transition(second, "whatever");
+			}
+			function second() {
+				return finish(1, 2, 3);
+			}
+			`,
+		},
+		{
+			"finish error middle stack",
+			`function start() {
+				return transition(second, "whatever");
+			}
+			function second() {
+				return transition(second);
+			}
+			function third() {
+				return finish(1, 2, 3);
+			}
+			`,
+		},
+		{
+			"finish error finish stack",
+			`function start() {
+				return transition(second, "whatever");
+			}
+			function second() {
+				return transition(third, "");
+			}
+			function third() {
+				return finish(1, 2, 3);
+			}
+			`,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			vm := sobek.New()
-			engine.InjectCommands(vm)
+			engine.InjectCommands(vm, uuid.New())
 			vm.RunScript("", tt.js)
 			start, ok := sobek.AssertFunction(vm.Get("start"))
 			require.True(t, ok)
 			_, err := start(sobek.Undefined())
 			require.Error(t, err)
-			t.Logf("err %s", err.Error())
+			t.Logf(">>>>err %+v", err)
 		})
 	}
 

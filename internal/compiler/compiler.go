@@ -69,7 +69,7 @@ func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (*co
 		for i := range errs {
 			errList[i] = errs[i].Error()
 		}
-		return nil, fmt.Errorf(strings.Join(errList, ", "))
+		return nil, fmt.Errorf("%s", strings.Join(errList, ", "))
 	}
 	// c.cache.Set(cacheKey, obj)
 
