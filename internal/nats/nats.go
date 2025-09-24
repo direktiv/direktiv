@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	StreamInstanceHistory = newStreamDescriptor("instance.history",
+	StreamInstanceHistory = newDescriptor("instance.history",
 		&nats.StreamConfig{
 			Storage:   nats.FileStorage,
 			Retention: nats.LimitsPolicy,
@@ -33,7 +33,7 @@ var (
 			InactiveThreshold: 72 * time.Hour,
 		})
 
-	StreamInstanceStatus = newStreamDescriptor("instance.status",
+	StreamInstanceStatus = newDescriptor("instance.status",
 		&nats.StreamConfig{
 			Storage:    nats.FileStorage,
 			Retention:  nats.LimitsPolicy,
@@ -44,7 +44,7 @@ var (
 			MaxMsgsPerSubject: 1,
 		}, nil)
 
-	StreamSchedRule = newStreamDescriptor("sched.rule",
+	StreamSchedRule = newDescriptor("sched.rule",
 		&nats.StreamConfig{
 			Storage:   nats.FileStorage,
 			Retention: nats.LimitsPolicy,
@@ -55,14 +55,14 @@ var (
 			MaxMsgsPerSubject: 1,
 		}, nil)
 
-	StreamSchedTask = newStreamDescriptor("sched.task",
+	StreamSchedTask = newDescriptor("sched.task",
 		&nats.StreamConfig{
 			Storage:    nats.FileStorage,
 			Retention:  nats.WorkQueuePolicy,
 			Duplicates: 1 * time.Hour,
 		}, nil)
 
-	StreamEngineQueue = newStreamDescriptor("engine.queue",
+	StreamEngineQueue = newDescriptor("engine.queue",
 		&nats.StreamConfig{
 			Storage:    nats.FileStorage,
 			Retention:  nats.WorkQueuePolicy,
@@ -77,7 +77,7 @@ var (
 		})
 )
 
-var allStreams = []*StreamDescriptor{
+var allDescriptors = []*descriptor{
 	StreamInstanceHistory,
 	StreamInstanceStatus,
 	StreamSchedRule,
@@ -133,21 +133,21 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 	}
 
 	// 1- ensure streams
-	for _, stm := range allStreams {
-		err = ensureStream(ctx, js, stm.streamConfig)
+	for _, desc := range allDescriptors {
+		err = ensureStream(ctx, js, desc.streamConfig)
 		if err != nil {
-			return nil, fmt.Errorf("nats ensure stream %s: %w", stm, err)
+			return nil, fmt.Errorf("nats ensure stream %s: %w", desc, err)
 		}
 	}
 
 	// 2- ensure shared durable consumers
-	for _, stm := range allStreams {
-		if stm.consumerConfig == nil {
+	for _, desc := range allDescriptors {
+		if desc.consumerConfig == nil {
 			continue
 		}
-		err = ensureConsumer(ctx, js, stm.consumerConfig)
+		err = ensureConsumer(ctx, js, desc.consumerConfig)
 		if err != nil {
-			return nil, fmt.Errorf("nats ensure consumer %s: %w", stm, err)
+			return nil, fmt.Errorf("nats ensure consumer %s: %w", desc, err)
 		}
 	}
 

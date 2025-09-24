@@ -7,14 +7,14 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-type StreamDescriptor struct {
+type descriptor struct {
 	name           string
 	streamConfig   *nats.StreamConfig
 	consumerConfig *nats.ConsumerConfig
 }
 
-func newStreamDescriptor(name string, streamConfig *nats.StreamConfig, consumerConfig *nats.ConsumerConfig) *StreamDescriptor {
-	desc := &StreamDescriptor{
+func newDescriptor(name string, streamConfig *nats.StreamConfig, consumerConfig *nats.ConsumerConfig) *descriptor {
+	desc := &descriptor{
 		name: name,
 	}
 
@@ -34,15 +34,15 @@ func newStreamDescriptor(name string, streamConfig *nats.StreamConfig, consumerC
 	return desc
 }
 
-func (n StreamDescriptor) Subject(namespace string, id string) string {
+func (n descriptor) Subject(namespace string, id string) string {
 	return n.name + fmt.Sprintf(".%s.%s", namespace, id)
 }
 
-func (n StreamDescriptor) String() string {
+func (n descriptor) String() string {
 	return strings.ReplaceAll(n.name, ".", "-")
 }
 
-func (n StreamDescriptor) PullSubscribe(js nats.JetStreamContext, opts ...nats.SubOpt) (*nats.Subscription, error) {
+func (n descriptor) PullSubscribe(js nats.JetStreamContext, opts ...nats.SubOpt) (*nats.Subscription, error) {
 	opts = append(opts, nats.BindStream(n.String()))
 	sub, err := js.PullSubscribe(n.Subject("*", "*"), n.String(), opts...)
 	if err != nil {
