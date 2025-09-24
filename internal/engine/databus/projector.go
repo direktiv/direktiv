@@ -26,12 +26,7 @@ type projector struct {
 
 func (p *projector) start(lc *lifecycle.Manager) error {
 	// Bind to the existing durable consumer
-	sub, err := p.js.PullSubscribe(
-		intNats.StreamInstanceHistory.Subject("*", "*"),
-		intNats.StreamInstanceHistory.String(),
-		nats.BindStream(intNats.StreamInstanceHistory.String()),
-		nats.ManualAck(),
-	)
+	sub, err := intNats.StreamInstanceHistory.PullSubscribe(p.js, nats.ManualAck())
 	if err != nil {
 		return fmt.Errorf("nats pull subscript to instances.history stream: %w", err)
 	}

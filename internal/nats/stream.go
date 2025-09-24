@@ -1,6 +1,11 @@
 package nats
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/nats-io/nats.go"
+)
 
 type StreamDescriptor string
 
@@ -9,5 +14,15 @@ func (n StreamDescriptor) Subject(namespace string, id string) string {
 }
 
 func (n StreamDescriptor) String() string {
-	return string(n)
+	return strings.ReplaceAll(string(n), ".", "-")
+}
+
+func (n StreamDescriptor) PullSubscribe(js nats.JetStreamContext, opts ...nats.SubOpt) (*nats.Subscription, error) {
+	opts = append(opts, nats.BindStream(n.String()))
+	sub, err := js.PullSubscribe(n.Subject("*", "*"), n.String(), opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return sub, nil
 }

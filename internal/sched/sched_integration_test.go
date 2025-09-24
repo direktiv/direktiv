@@ -52,7 +52,7 @@ func TestScheduler_TestProcessDueRules(t *testing.T) {
 		UpdatedAt:    now.Add(-time.Minute),
 	}
 	b, _ := json.Marshal(rule)
-	_, err = js.Publish(fmt.Sprintf(intNats.SubjSchedRule, rule.Namespace, rule.ID), b)
+	_, err = js.Publish(intNats.StreamSchedRule.Subject(rule.Namespace, rule.ID), b)
 	require.NoError(t, err)
 
 	// Allow the async subscription to land the rule in the in-memory cache.
@@ -61,9 +61,8 @@ func TestScheduler_TestProcessDueRules(t *testing.T) {
 	require.NoError(t, s.processDueRules())
 
 	// Read from task stream to verify a task was produced
-	sub, err := js.PullSubscribe(fmt.Sprintf(intNats.SubjSchedTask, rule.Namespace, rule.ID), "g1",
-		nats.PullMaxWaiting(1),
-	)
+	sub, err := intNats.StreamSchedTask.PullSubscribe(js, nats.PullMaxWaiting(1))
+
 	require.NoError(t, err)
 
 	msgs, err := sub.Fetch(10, nats.MaxWait(1*time.Second))
@@ -76,9 +75,8 @@ func TestScheduler_TestProcessDueRules(t *testing.T) {
 	require.Equal(t, "/wf", task.WorkflowPath)
 
 	// Optionally verify the rule update was republished with advanced RunAt.
-	subRule, err := js.PullSubscribe(fmt.Sprintf(intNats.SubjSchedRule, rule.Namespace, rule.ID), "g2",
-		nats.PullMaxWaiting(1),
-	)
+	subRule, err := intNats.StreamSchedRule.PullSubscribe(js, nats.PullMaxWaiting(1))
+
 	require.NoError(t, err)
 	defer subRule.Drain()
 
@@ -168,9 +166,7 @@ func TestScheduler_EndToEnd(t *testing.T) {
 	js, err := intNats.SetupJetStream(context.Background(), nc)
 	require.NoError(t, err)
 	// Read from task stream to verify a task was produced
-	sub, err := js.PullSubscribe(fmt.Sprintf(intNats.SubjSchedTask, "*", "*"), "g1",
-		nats.PullMaxWaiting(1),
-	)
+	sub, err := intNats.StreamSchedTask.PullSubscribe(js, nats.PullMaxWaiting(1))
 	require.NoError(t, err)
 
 	msgs, err := sub.Fetch(100, nats.MaxWait(1*time.Second))

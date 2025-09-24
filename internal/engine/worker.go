@@ -17,12 +17,11 @@ const workersCount = 5
 
 func (e *Engine) startQueueWorkers(lc *lifecycle.Manager) error {
 	// Bind to the existing durable consumer
-	sub, err := e.js.PullSubscribe(
-		intNats.StreamEngineQueue.Subject("*", "*"),
-		intNats.StreamEngineQueue.String(),
-		nats.BindStream(intNats.StreamEngineQueue.String()),
-		nats.ManualAck(),
-	)
+	sub, err := intNats.StreamEngineQueue.PullSubscribe(e.js, nats.ManualAck())
+	if err != nil {
+		return fmt.Errorf("nats pull subscript to instances.history stream: %w", err)
+	}
+
 	if err != nil {
 		return fmt.Errorf("nats pull subscribe %s: %w", intNats.StreamEngineQueue, err)
 	}
