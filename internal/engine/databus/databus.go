@@ -43,7 +43,7 @@ func (d *DataBus) PushHistoryStream(ctx context.Context, event *engine.InstanceE
 		return fmt.Errorf("marshal event: %w", err)
 	}
 
-	subject := fmt.Sprintf(intNats.SubjInstanceHistory, event.Namespace, event.InstanceID)
+	subject := intNats.StreamInstanceHistory.Subject(event.Namespace, event.InstanceID.String())
 
 	_, err = d.js.Publish(subject, data,
 		nats.Context(ctx),
@@ -58,7 +58,7 @@ func (d *DataBus) PushQueueStream(ctx context.Context, event *engine.InstanceEve
 		return fmt.Errorf("marshal event: %w", err)
 	}
 
-	subject := fmt.Sprintf(intNats.SubjEngineQueue, event.Namespace, event.InstanceID)
+	subject := intNats.StreamEngineQueue.Subject(event.Namespace, event.InstanceID.String())
 
 	_, err = d.js.Publish(subject, data,
 		nats.Context(ctx),
@@ -72,7 +72,7 @@ func (d *DataBus) FetchInstanceStatus(ctx context.Context, filterNamespace strin
 }
 
 func (d *DataBus) startStatusCache(ctx context.Context) error {
-	subj := fmt.Sprintf(intNats.SubjInstanceStatus, "*", "*")
+	subj := intNats.StreamInstanceStatus.Subject("*", "*")
 	// ephemeral, AckNone (we don't want to disturb the stream/consumers)
 	_, err := d.js.Subscribe(subj, func(msg *nats.Msg) {
 		var st engine.InstanceStatus

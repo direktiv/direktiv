@@ -18,9 +18,9 @@ const workersCount = 5
 func (e *Engine) startQueueWorkers(lc *lifecycle.Manager) error {
 	// Bind to the existing durable consumer
 	sub, err := e.js.PullSubscribe(
-		fmt.Sprintf(intNats.SubjEngineQueue, "*", "*"),
-		intNats.StreamEngineQueue,
-		nats.BindStream(intNats.StreamEngineQueue),
+		intNats.StreamEngineQueue.Subject("*", "*"),
+		intNats.StreamEngineQueue.String(),
+		nats.BindStream(intNats.StreamEngineQueue.String()),
 		nats.ManualAck(),
 	)
 	if err != nil {

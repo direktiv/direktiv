@@ -15,22 +15,11 @@ import (
 	natsContainer "github.com/testcontainers/testcontainers-go/modules/nats"
 )
 
-const (
-	StreamInstanceStatus = "instance.status"
-	SubjInstanceStatus   = "instance.status.%s.%s" // instance.status.<namespace>.<instanceID>
-
-	StreamInstanceHistory = "instance.history"
-	SubjInstanceHistory   = "instance.history.%s.%s" // instance.history.<namespace>.<instanceID>
-
-	StreamSchedRule = "sched.rule"
-	SubjSchedRule   = "sched.rule.%s.%s" // shed.config.<namespace>.<ruleID>
-
-	StreamSchedTask = "sched.task"
-	SubjSchedTask   = "sched.task.%s.%s" // shed.config.<namespace>.<ruleID>
-
-	StreamEngineQueue = "engine.queue"
-	SubjEngineQueue   = "engine.queue.%s.%s" // engine.queue.<namespace>.<ruleID
-)
+var StreamInstanceStatus = StreamDescriptor("instance.status")
+var StreamInstanceHistory = StreamDescriptor("instance.history")
+var StreamSchedRule = StreamDescriptor("sched.rule")
+var StreamSchedTask = StreamDescriptor("sched.task")
+var StreamEngineQueue = StreamDescriptor("engine.queue")
 
 type Conn = nats.Conn
 
@@ -82,9 +71,9 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 	// 1- ensure streams
 	ensureStreams := []*nats.StreamConfig{
 		{
-			Name: StreamInstanceHistory,
+			Name: StreamInstanceHistory.String(),
 			Subjects: []string{
-				fmt.Sprintf(SubjInstanceHistory, "*", "*"),
+				StreamInstanceHistory.Subject("*", "*"),
 			},
 			Storage:   nats.FileStorage,
 			Retention: nats.LimitsPolicy,
@@ -94,9 +83,9 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 			Duplicates: 48 * time.Hour,
 		},
 		{
-			Name: StreamInstanceStatus,
+			Name: StreamInstanceStatus.String(),
 			Subjects: []string{
-				fmt.Sprintf(SubjInstanceStatus, "*", "*"),
+				StreamInstanceStatus.Subject("*", "*"),
 			},
 			Storage:    nats.FileStorage,
 			Retention:  nats.LimitsPolicy,
@@ -107,9 +96,9 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 			MaxMsgsPerSubject: 1,
 		},
 		{
-			Name: StreamSchedRule,
+			Name: StreamSchedRule.String(),
 			Subjects: []string{
-				fmt.Sprintf(SubjSchedRule, "*", "*"),
+				StreamSchedRule.Subject("*", "*"),
 			},
 			Storage:   nats.FileStorage,
 			Retention: nats.LimitsPolicy,
@@ -120,18 +109,18 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 			MaxMsgsPerSubject: 1,
 		},
 		{
-			Name: StreamSchedTask,
+			Name: StreamSchedTask.String(),
 			Subjects: []string{
-				fmt.Sprintf(SubjSchedTask, "*", "*"),
+				StreamSchedTask.Subject("*", "*"),
 			},
 			Storage:    nats.FileStorage,
 			Retention:  nats.WorkQueuePolicy,
 			Duplicates: 1 * time.Hour,
 		},
 		{
-			Name: StreamEngineQueue,
+			Name: StreamEngineQueue.String(),
 			Subjects: []string{
-				fmt.Sprintf(SubjEngineQueue, "*", "*"),
+				StreamEngineQueue.Subject("*", "*"),
 			},
 			Storage:    nats.FileStorage,
 			Retention:  nats.WorkQueuePolicy,
@@ -149,30 +138,24 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 	// 2- ensure shared durable consumers
 	ensureConsumers := []*nats.ConsumerConfig{
 		{
-			Durable:           StreamInstanceHistory,
-			FilterSubject:     fmt.Sprintf(SubjInstanceHistory, "*", "*"),
+			Durable:           StreamInstanceHistory.String(),
+			FilterSubject:     StreamInstanceHistory.Subject("*", "*"),
 			AckPolicy:         nats.AckExplicitPolicy,
 			AckWait:           30 * time.Second,
 			MaxDeliver:        10,
 			DeliverPolicy:     nats.DeliverAllPolicy,
 			ReplayPolicy:      nats.ReplayInstantPolicy,
 			InactiveThreshold: 72 * time.Hour,
-			Metadata: map[string]string{
-				"stream": StreamInstanceHistory,
-			},
 		},
 		{
-			Durable:           StreamEngineQueue,
-			FilterSubject:     fmt.Sprintf(SubjEngineQueue, "*", "*"),
+			Durable:           StreamEngineQueue.String(),
+			FilterSubject:     StreamEngineQueue.Subject("*", "*"),
 			AckPolicy:         nats.AckExplicitPolicy,
 			AckWait:           5 * time.Minute,
 			MaxDeliver:        10,
 			DeliverPolicy:     nats.DeliverAllPolicy,
 			ReplayPolicy:      nats.ReplayInstantPolicy,
 			InactiveThreshold: 0, // means never auto-delete
-			Metadata: map[string]string{
-				"stream": StreamEngineQueue,
-			},
 		},
 	}
 
@@ -216,14 +199,14 @@ func ensureStream(ctx context.Context, js nats.JetStreamContext, cfg *nats.Strea
 }
 
 func ensureConsumer(ctx context.Context, js nats.JetStreamContext, cfg *nats.ConsumerConfig) error {
-	_, err := js.ConsumerInfo(cfg.Metadata["stream"], cfg.Durable)
+	_, err := js.ConsumerInfo(cfg.Durable, cfg.Durable)
 	if err == nil {
 		return nil
 	}
 	if !errors.Is(err, nats.ErrConsumerNotFound) {
 		return fmt.Errorf("nats info consumer %s: %w", cfg.Durable, err)
 	}
-	_, err = js.AddConsumer(cfg.Metadata["stream"], cfg)
+	_, err = js.AddConsumer(cfg.Durable, cfg)
 	if err != nil {
 		return fmt.Errorf("nats add consumer %s: %w", cfg.Durable, err)
 	}

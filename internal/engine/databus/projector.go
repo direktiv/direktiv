@@ -27,9 +27,9 @@ type projector struct {
 func (p *projector) start(lc *lifecycle.Manager) error {
 	// Bind to the existing durable consumer
 	sub, err := p.js.PullSubscribe(
-		fmt.Sprintf(intNats.SubjInstanceHistory, "*", "*"),
-		intNats.StreamInstanceHistory,
-		nats.BindStream(intNats.StreamInstanceHistory),
+		intNats.StreamInstanceHistory.Subject("*", "*"),
+		intNats.StreamInstanceHistory.String(),
+		nats.BindStream(intNats.StreamInstanceHistory.String()),
 		nats.ManualAck(),
 	)
 	if err != nil {
@@ -77,7 +77,7 @@ func (p *projector) handleHistoryMessage(ctx context.Context, msg *nats.Msg) err
 		return fmt.Errorf("decode history msg: %w", err)
 	}
 
-	subj := fmt.Sprintf(intNats.SubjInstanceStatus, ev.Namespace, ev.InstanceID)
+	subj := intNats.StreamInstanceStatus.Subject(ev.Namespace, ev.InstanceID.String())
 	pubID := "instance::status::" + ev.Namespace + "::" + ev.InstanceID.String() + "::" + strconv.FormatUint(ev.Sequence, 10)
 
 	for attempt := range 10 {
@@ -104,7 +104,7 @@ func (p *projector) handleHistoryMessage(ctx context.Context, msg *nats.Msg) err
 		// 4) Publish with dedupe + optimistic concurrency
 		opts := []nats.PubOpt{
 			nats.MsgId(pubID),
-			nats.ExpectStream(intNats.StreamInstanceStatus),
+			nats.ExpectStream(intNats.StreamInstanceStatus.String()),
 			nats.ExpectLastSequencePerSubject(st.Sequence),
 		}
 		_, err = p.js.PublishMsg(msg, opts...)
@@ -131,7 +131,7 @@ func (p *projector) handleHistoryMessage(ctx context.Context, msg *nats.Msg) err
 
 func (p *projector) getLastStatusForSubject(ctx context.Context, subject string) (st *engine.InstanceStatus, err error) {
 	msg, err := p.js.GetLastMsg(
-		intNats.StreamInstanceStatus,
+		intNats.StreamInstanceStatus.String(),
 		subject, nats.Context(ctx))
 	if err != nil && errors.Is(err, nats.ErrMsgNotFound) {
 		return nil, nil

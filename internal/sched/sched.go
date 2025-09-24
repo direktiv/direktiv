@@ -52,9 +52,9 @@ func (s *Scheduler) dispatchIfDue(rule *Rule) error {
 		RunAt:        s.clk.Now(),
 		CreatedAt:    s.clk.Now(),
 	})
-	subject := fmt.Sprintf(intNats.SubjSchedTask, rule.Namespace, rule.ID)
+	subject := intNats.StreamSchedTask.Subject(rule.Namespace, rule.ID)
 	_, err := s.js.Publish(subject, data,
-		nats.ExpectStream(intNats.StreamSchedTask),
+		nats.ExpectStream(intNats.StreamSchedTask.String()),
 		// important to ensure dedupe. we don't want to publish the same task twice from two different servers
 		nats.MsgId(fmt.Sprintf("sched::task::%s", id)),
 	)
@@ -73,9 +73,9 @@ func (s *Scheduler) dispatchIfDue(rule *Rule) error {
 
 	// optimistic update in rule stream
 	data, _ = json.Marshal(rule)
-	subject = fmt.Sprintf(intNats.SubjSchedRule, rule.Namespace, rule.ID)
+	subject = intNats.StreamSchedRule.Subject(rule.Namespace, rule.ID)
 	_, err = s.js.Publish(subject, data,
-		nats.ExpectStream(intNats.StreamSchedRule),
+		nats.ExpectStream(intNats.StreamSchedRule.String()),
 		nats.ExpectLastSequencePerSubject(rule.Sequence),
 		nats.MsgId(fmt.Sprintf("sched::rule::%s", rule.Fingerprint())),
 	)
@@ -122,11 +122,11 @@ func (s *Scheduler) SetRule(ctx context.Context, rule *Rule) (*Rule, error) {
 		return nil, fmt.Errorf("marshal rule: %w", err)
 	}
 
-	subject := fmt.Sprintf(intNats.SubjSchedRule, rule.Namespace, rule.ID)
+	subject := intNats.StreamSchedRule.Subject(rule.Namespace, rule.ID)
 
 	_, err = s.js.Publish(subject, data,
 		nats.Context(ctx),
-		nats.ExpectStream(intNats.StreamSchedRule),
+		nats.ExpectStream(intNats.StreamSchedRule.String()),
 		nats.MsgId(fmt.Sprintf("sched::rule::%s", rule.Fingerprint())),
 	)
 
@@ -140,7 +140,7 @@ func (s *Scheduler) ListRules(ctx context.Context) ([]*Rule, error) {
 }
 
 func (s *Scheduler) startRuleSubscription(ctx context.Context) error {
-	subj := fmt.Sprintf(intNats.SubjSchedRule, "*", "*")
+	subj := intNats.StreamSchedRule.Subject("*", "*")
 	// ephemeral, AckNone (we don't want to disturb the stream/consumers)
 	_, err := s.js.Subscribe(subj, func(msg *nats.Msg) {
 		var rule Rule
