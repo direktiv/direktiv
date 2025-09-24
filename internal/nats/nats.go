@@ -29,9 +29,9 @@ const (
 	StreamSchedTask = "STREAM_SCHED_TASK"
 	SubjSchedTask   = "sched.task.%s.%s" // shed.config.<namespace>.<ruleID>
 
-	StreamEngineFoo   = "STREAM_ENGINE_FOO"
-	SubjEngineFoo     = "engine.foo.%s.%s" // shed.config.<namespace>.<ruleID>
-	ConsumerEngineFoo = "CONSUMER_ENGINE_FOO"
+	StreamEngineQueue   = "STREAM_ENGINE_QUEUE"
+	ConsumerEngineQueue = "CONSUMER_ENGINE_QUEUE"
+	SubjEngineQueue     = "engine.queue.%s.%s" // engine.queue.<namespace>.<ruleID
 )
 
 type Conn = nats.Conn
@@ -131,9 +131,9 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 			Duplicates: 1 * time.Hour,
 		},
 		{
-			Name: StreamEngineFoo,
+			Name: StreamEngineQueue,
 			Subjects: []string{
-				fmt.Sprintf(SubjEngineFoo, "*", "*"),
+				fmt.Sprintf(SubjEngineQueue, "*", "*"),
 			},
 			Storage:    nats.FileStorage,
 			Retention:  nats.WorkQueuePolicy,
@@ -164,8 +164,8 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 			},
 		},
 		{
-			Durable:           ConsumerEngineFoo,
-			FilterSubject:     fmt.Sprintf(SubjEngineFoo, "*", "*"),
+			Durable:           ConsumerEngineQueue,
+			FilterSubject:     fmt.Sprintf(SubjEngineQueue, "*", "*"),
 			AckPolicy:         nats.AckExplicitPolicy,
 			AckWait:           5 * time.Minute,
 			MaxDeliver:        10,
@@ -173,7 +173,7 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 			ReplayPolicy:      nats.ReplayInstantPolicy,
 			InactiveThreshold: 0, // means never auto-delete
 			Metadata: map[string]string{
-				"stream": StreamEngineFoo,
+				"stream": StreamEngineQueue,
 			},
 		},
 	}

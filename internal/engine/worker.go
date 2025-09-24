@@ -18,13 +18,13 @@ const workersCount = 5
 func (e *Engine) startWorkers(lc *lifecycle.Manager) error {
 	// Bind to the existing durable consumer
 	sub, err := e.js.PullSubscribe(
-		fmt.Sprintf(intNats.SubjEngineFoo, "*", "*"),
-		intNats.ConsumerEngineFoo,
-		nats.BindStream(intNats.StreamEngineFoo),
+		fmt.Sprintf(intNats.SubjEngineQueue, "*", "*"),
+		intNats.ConsumerEngineQueue,
+		nats.BindStream(intNats.StreamEngineQueue),
 		nats.ManualAck(),
 	)
 	if err != nil {
-		return fmt.Errorf("nats pull subscribe %s: %w", intNats.ConsumerEngineFoo, err)
+		return fmt.Errorf("nats pull subscribe %s: %w", intNats.ConsumerEngineQueue, err)
 	}
 
 	for i := 0; i < workersCount; i++ {

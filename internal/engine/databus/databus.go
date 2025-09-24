@@ -58,7 +58,7 @@ func (d *DataBus) PushInstanceFoo(ctx context.Context, event *engine.InstanceEve
 		return fmt.Errorf("marshal event: %w", err)
 	}
 
-	subject := fmt.Sprintf(intNats.SubjEngineFoo, event.Namespace, event.InstanceID)
+	subject := fmt.Sprintf(intNats.SubjEngineQueue, event.Namespace, event.InstanceID)
 
 	_, err = d.js.Publish(subject, data,
 		nats.Context(ctx),
