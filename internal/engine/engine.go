@@ -15,10 +15,9 @@ import (
 var ErrDataNotFound = fmt.Errorf("data not found")
 
 type Engine struct {
-	db        *gorm.DB
-	projector Projector
-	dataBus   DataBus
-	compiler  core.Compiler
+	db       *gorm.DB
+	dataBus  DataBus
+	compiler core.Compiler
 }
 
 func (e *Engine) ListInstances(ctx context.Context, namespace string) ([]uuid.UUID, error) {
@@ -26,21 +25,16 @@ func (e *Engine) ListInstances(ctx context.Context, namespace string) ([]uuid.UU
 	panic("implement me")
 }
 
-func NewEngine(db *gorm.DB, proj Projector, bus DataBus, compiler core.Compiler) (*Engine, error) {
+func NewEngine(db *gorm.DB, bus DataBus, compiler core.Compiler) (*Engine, error) {
 	return &Engine{
-		db:        db,
-		projector: proj,
-		dataBus:   bus,
-		compiler:  compiler,
+		db:       db,
+		dataBus:  bus,
+		compiler: compiler,
 	}, nil
 }
 
 func (e *Engine) Start(lc *lifecycle.Manager) error {
-	err := e.projector.Start(lc)
-	if err != nil {
-		return fmt.Errorf("start projector: %w", err)
-	}
-	err = e.dataBus.Start(lc)
+	err := e.dataBus.Start(lc)
 	if err != nil {
 		return fmt.Errorf("start databus: %w", err)
 	}

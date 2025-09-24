@@ -63,6 +63,7 @@ async function itShouldCreateDir (it, expect, ns, path, name) {
 		expect(res.body.data).toEqual({
 			path: `${ path }/${ name }`,
 			type: 'directory',
+			errors: [],
 			createdAt: expect.stringMatching(regex.timestampRegex),
 			updatedAt: expect.stringMatching(regex.timestampRegex),
 		})

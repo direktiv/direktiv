@@ -2,12 +2,12 @@ package engine
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/telemetry"
-
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
 )
@@ -26,6 +26,7 @@ func InjectCommands(vm *sobek.Runtime, instID uuid.UUID) {
 	vm.Set("finish", cmds.finish)
 	vm.Set("transition", cmds.transition)
 	vm.Set("log", cmds.log)
+	vm.Set("print", cmds.print)
 	vm.Set("id", cmds.id)
 	vm.Set("now", cmds.now)
 	vm.Set("fetch", cmds.fetch)
@@ -64,7 +65,7 @@ func (cmds *Commands) log(logs ...string) sobek.Value {
 }
 
 // transition needs to throw uncatchable errors
-// panic(cmds.vm.NewGoError(fmt.Errorf("finish requires one argument, but got %d", len(call.Arguments))))
+// panic(cmds.vm.NewGoError(fmt.Errorf("finish requires one argument, but got %d", len(call.Arguments)))).
 func (cmds *Commands) transition(call sobek.FunctionCall) sobek.Value {
 	if len(call.Arguments) != 2 {
 		panic(cmds.vm.ToValue("transition requires a function and a payload"))
@@ -77,7 +78,8 @@ func (cmds *Commands) transition(call sobek.FunctionCall) sobek.Value {
 
 	value, err := fn(sobek.Undefined(), call.Arguments[1])
 	if err != nil {
-		if _, ok := err.(*sobek.Exception); ok {
+		exception := &sobek.Exception{}
+		if errors.As(err, &exception) {
 			panic(err)
 		} else {
 			panic(cmds.vm.ToValue(fmt.Sprintf("error executing transition: %s", err.Error())))
@@ -89,4 +91,15 @@ func (cmds *Commands) transition(call sobek.FunctionCall) sobek.Value {
 
 func (cmds *Commands) finish(data any) sobek.Value {
 	return cmds.vm.ToValue(data)
+}
+
+func (cmds *Commands) print(args ...any) {
+	fmt.Print(args[0])
+	if len(args) > 1 {
+		for _, arg := range args[1:] {
+			fmt.Print(" ")
+			fmt.Print(arg)
+		}
+	}
+	fmt.Println()
 }

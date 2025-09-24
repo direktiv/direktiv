@@ -50,21 +50,6 @@ func (e *Engine) execJSScript(instID uuid.UUID, script string, mappings string, 
 	return result, nil
 }
 
-func jsPrint(args ...any) {
-	fmt.Print(args[0])
-	if len(args) > 1 {
-		for _, arg := range args[1:] {
-			fmt.Print(" ")
-			fmt.Print(arg)
-		}
-	}
-	fmt.Println()
-}
-
-func jsCommitState(fn string, state any) {
-	fmt.Printf("go: state committed fn:>%s< state:>%v<\n", parseJSFunctionName(fn), state)
-}
-
 func parseJSFunctionName(input string) string {
 	re := regexp.MustCompile(`function\s+([a-zA-Z0-9_]+)\s*\(`)
 	match := re.FindStringSubmatch(input)

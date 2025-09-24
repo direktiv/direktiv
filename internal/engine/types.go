@@ -84,10 +84,6 @@ type InstanceEvent struct {
 	Sequence uint64 `json:"sequence"`
 }
 
-type Projector interface {
-	Start(lc *lifecycle.Manager) error
-}
-
 type WorkflowRunner interface {
 	Execute(ctx context.Context, namespace string, scrip string, fn string, args any, labels map[string]string) (uuid.UUID, error)
 }

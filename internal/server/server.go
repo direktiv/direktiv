@@ -20,7 +20,6 @@ import (
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/internal/engine/databus"
-	engineProjector "github.com/direktiv/direktiv/internal/engine/projector"
 	"github.com/direktiv/direktiv/internal/extensions"
 	"github.com/direktiv/direktiv/internal/gateway"
 	"github.com/direktiv/direktiv/internal/mirroring"
@@ -175,7 +174,6 @@ func Start(lc *lifecycle.Manager) error {
 		slog.Info("initializing engine")
 		app.Engine, err = engine.NewEngine(
 			app.DB,
-			engineProjector.New(js),
 			databus.New(js),
 			comp,
 		)

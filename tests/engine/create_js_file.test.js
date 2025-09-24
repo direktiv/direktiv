@@ -22,7 +22,7 @@ function stateOne(payload) {
 }
 function stateTwo(payload) {
 	print("RUN STATE SECOND");
-    return payload;
+    return finish(payload);
 }
 `))
 	retry10(`should invoke /foo/${fName} workflow`, async () => {

@@ -69,6 +69,7 @@ func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (*co
 		for i := range errs {
 			errList[i] = errs[i].Error()
 		}
+
 		return nil, fmt.Errorf("%s", strings.Join(errList, ", "))
 	}
 	// c.cache.Set(cacheKey, obj)
@@ -77,7 +78,6 @@ func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (*co
 }
 
 func ValidateScript(script string) (*core.FlowConfig, []error, error) {
-
 	errors := make([]error, 0)
 
 	t, err := NewTranspiler()
