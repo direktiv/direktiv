@@ -50,16 +50,16 @@ func (e *Engine) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (e *Engine) ExecWorkflow(ctx context.Context, namespace string, workflowPath string, args any, metadata map[string]string) (uuid.UUID, error) {
+func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPath string, args any, metadata map[string]string) (uuid.UUID, error) {
 	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("fetch script: %w", err)
 	}
 
-	return e.ExecScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, args, metadata)
+	return e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, args, metadata)
 }
 
-func (e *Engine) ExecScript(ctx context.Context, namespace string, script string, mappings string, fn string, args any, metadata map[string]string) (uuid.UUID, error) {
+func (e *Engine) startScript(ctx context.Context, namespace string, script string, mappings string, fn string, args any, metadata map[string]string) (uuid.UUID, error) {
 	input, ok := args.(string)
 	if !ok {
 		return uuid.Nil, fmt.Errorf("invalid input")
@@ -85,50 +85,52 @@ func (e *Engine) ExecScript(ctx context.Context, namespace string, script string
 	}
 	err := e.dataBus.PushHistoryStream(ctx, ev)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("create workflow instance: %w", err)
+		return uuid.Nil, fmt.Errorf("push history stream: %w", err)
 	}
 	err = e.dataBus.PushQueueStream(ctx, ev)
 	if err != nil {
-		return instID, fmt.Errorf("create workflow instance: %w", err)
+		return instID, fmt.Errorf("push queue stream: %w", err)
 	}
 
 	return instID, nil
 }
 
-func (e *Engine) ExecInstance(ctx context.Context, inst *InstanceEvent) error {
-	err := e.dataBus.PushHistoryStream(ctx, &InstanceEvent{
+func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
+	startEv := &InstanceEvent{
 		EventID:    uuid.New(),
 		InstanceID: inst.InstanceID,
 		Namespace:  inst.Namespace,
 		Type:       "started",
 		Time:       time.Now(),
-	})
-	if err != nil {
-		return fmt.Errorf("put started instance event: %w", err)
 	}
 
-	endMsg := &InstanceEvent{
+	err := e.dataBus.PushHistoryStream(ctx, startEv)
+	if err != nil {
+		return fmt.Errorf("push history start envent, inst: %s: %w", inst.InstanceID, err)
+	}
+
+	endEv := &InstanceEvent{
 		EventID:    uuid.New(),
 		InstanceID: inst.InstanceID,
 		Namespace:  inst.Namespace,
-		Time:       time.Now(),
 	}
 	ret, err := e.execJSScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input))
 	if err != nil {
-		endMsg.Type = "failed"
-		endMsg.Error = err.Error()
+		endEv.Type = "failed"
+		endEv.Error = err.Error()
 	} else {
 		retBytes, err := json.Marshal(ret)
 		if err != nil {
 			panic(err)
 		}
-		endMsg.Type = "succeeded"
-		endMsg.Output = retBytes
+		endEv.Type = "succeeded"
+		endEv.Output = retBytes
 	}
 
-	err = e.dataBus.PushHistoryStream(ctx, endMsg)
+	endEv.Time = time.Now()
+	err = e.dataBus.PushHistoryStream(ctx, endEv)
 	if err != nil {
-		return fmt.Errorf("put end instance event: %w", err)
+		return fmt.Errorf("push history end event, inst: %s: %w", inst.InstanceID, err)
 	}
 
 	return nil

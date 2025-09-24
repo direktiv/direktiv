@@ -103,7 +103,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := e.engine.ExecWorkflow(r.Context(), namespace, path, string(input), map[string]string{
+	id, err := e.engine.StartWorkflow(r.Context(), namespace, path, string(input), map[string]string{
 		"workflowPath": path,
 	})
 	if err != nil {

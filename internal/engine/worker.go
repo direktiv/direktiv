@@ -79,7 +79,7 @@ func (e *Engine) handleQueueMessage(ctx context.Context, msg *nats.Msg) error {
 		return fmt.Errorf("decode queue msg: %w", err)
 	}
 
-	err = e.ExecInstance(ctx, ev)
+	err = e.execInstance(ctx, ev)
 	if err != nil {
 		return fmt.Errorf("exec instance: %w", err)
 	}
