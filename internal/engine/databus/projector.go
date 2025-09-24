@@ -167,14 +167,15 @@ func applyEventToStatus(st *engine.InstanceStatus, ev *engine.InstanceEvent) {
 	st.HistorySequence = ev.Sequence //
 
 	switch ev.Type {
-	case "started":
+	case "pending":
 		st.InstanceID = ev.InstanceID
 		st.Namespace = ev.Namespace
 		st.Metadata = ev.Metadata
 		st.Script = ev.Script
 		st.Input = ev.Input
 		st.CreatedAt = ev.Time
-
+	case "started":
+		st.StartedAt = ev.Time
 	case "failed":
 		st.EndedAt = ev.Time
 		st.Memory = ev.Memory

@@ -20,6 +20,7 @@ type InstanceStatus struct {
 	Error      string            `json:"error,omitempty"`
 	Status     string            `json:"status"`
 	CreatedAt  time.Time         `json:"createdAt"`
+	StartedAt  time.Time         `json:"StartedAt"`
 	EndedAt    time.Time         `json:"endedAt"`
 	// history stream sequence this status came from
 	HistorySequence uint64 `json:"historySequence"`

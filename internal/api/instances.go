@@ -24,6 +24,7 @@ type LineageData struct {
 type InstanceData struct {
 	ID           uuid.UUID      `json:"id"`
 	CreatedAt    time.Time      `json:"createdAt"`
+	Started      time.Time      `json:"startedAt"`
 	EndedAt      time.Time      `json:"endedAt"`
 	Status       string         `json:"status"`
 	WorkflowPath string         `json:"path"`
@@ -55,6 +56,7 @@ func marshalForAPI(data *engine.InstanceStatus) (*InstanceData, error) {
 	resp := &InstanceData{
 		ID:           data.InstanceID,
 		CreatedAt:    data.CreatedAt,
+		Started:      data.StartedAt,
 		EndedAt:      data.EndedAt,
 		Status:       data.StatusString(),
 		WorkflowPath: data.Metadata["workflowPath"],

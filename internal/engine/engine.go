@@ -79,7 +79,7 @@ func (e *Engine) ExecScript(ctx context.Context, namespace string, script string
 		EventID:    uuid.New(),
 		InstanceID: instID,
 		Namespace:  namespace,
-		Type:       "started",
+		Type:       "pending",
 		Time:       time.Now(),
 		Metadata:   metadata,
 
@@ -88,6 +88,19 @@ func (e *Engine) ExecScript(ctx context.Context, namespace string, script string
 	})
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("create workflow instance: %w", err)
+	}
+
+	time.Sleep(10 * time.Millisecond)
+
+	err = e.dataBus.PushInstanceEvent(ctx, &InstanceEvent{
+		EventID:    uuid.New(),
+		InstanceID: instID,
+		Namespace:  namespace,
+		Type:       "started",
+		Time:       time.Now(),
+	})
+	if err != nil {
+		return instID, fmt.Errorf("put started instance event: %w", err)
 	}
 
 	endMsg := &InstanceEvent{
@@ -111,7 +124,7 @@ func (e *Engine) ExecScript(ctx context.Context, namespace string, script string
 
 	err = e.dataBus.PushInstanceEvent(ctx, endMsg)
 	if err != nil {
-		return instID, fmt.Errorf("put end instance message: %w", err)
+		return instID, fmt.Errorf("put end instance event: %w", err)
 	}
 
 	return instID, nil
