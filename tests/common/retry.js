@@ -13,7 +13,7 @@ function runTest (handler) {
 	})
 }
 
-async function _retry (description, retries, handler, delay) {
+export async function retry (description, retries, handler, delay) {
 	if (!description || typeof description !== 'string')
 		throw new Error('Invalid argument, description must be a string')
 
@@ -41,13 +41,13 @@ async function _retry (description, retries, handler, delay) {
 }
 
 export function retry10 (description, handler) {
-	return _retry(description, 10, handler, 500)
+	return retry(description, 10, handler, 500)
 }
 
 export function retry50 (description, handler) {
-	return _retry(description, 50, handler, 500)
+	return retry(description, 50, handler, 500)
 }
 
 export function retry70 (description, handler) {
-	return _retry(description, 70, handler, 500)
+	return retry(description, 70, handler, 500)
 }

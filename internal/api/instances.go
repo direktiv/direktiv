@@ -86,6 +86,7 @@ func (e *instController) mountRouter(r chi.Router) {
 	r.Get("/{instanceID}", e.get)
 
 	r.Post("/", e.create)
+	r.Get("/stats", e.stats)
 
 	r.Post("/sched", e.createSched)
 	r.Get("/sched", e.listSched)
@@ -133,6 +134,28 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	// }
 
 	writeJSON(w, id)
+}
+
+func (e *instController) stats(w http.ResponseWriter, r *http.Request) {
+	namespace := chi.URLParam(r, "namespace")
+
+	list, err := e.engine.GetInstances(r.Context(), namespace)
+	if err != nil {
+		writeError(w, &Error{
+			Code:    err.Error(),
+			Message: err.Error(),
+		})
+	}
+	stats := make(map[string]int)
+	for i := range list {
+		n, ok := stats[list[i].Status]
+		if !ok {
+			stats[list[i].Status] = 0
+		}
+		stats[list[i].Status] = n + 1
+	}
+
+	writeJSON(w, stats)
 }
 
 func (e instController) testTranspile(w http.ResponseWriter, r *http.Request) {

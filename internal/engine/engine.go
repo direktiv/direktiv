@@ -128,7 +128,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	}
 
 	// simulate a job that takes some long time
-	// time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
+	// time.Sleep(time.Duration(rand.Intn(300)) * time.Millisecond)
 	endEv.Time = time.Now()
 	err = e.dataBus.PushHistoryStream(ctx, endEv)
 	if err != nil {
