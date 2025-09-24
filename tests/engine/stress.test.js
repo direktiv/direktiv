@@ -4,7 +4,7 @@ import { basename } from 'path'
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
-import {retry, retry10} from '../common/retry'
+import { retry, retry10 } from '../common/retry'
 
 function quantile (arr, q) {
 	if (!arr.length) return NaN
@@ -15,7 +15,8 @@ function quantile (arr, q) {
 	return a[base] + (a[base + 1] - a[base]) * (rest || 0)
 }
 
-const randomStr = Math.random().toString(10).slice(2, 12)
+const randomStr = Math.random().toString(10)
+	.slice(2, 12)
 const namespace = basename(__filename.replaceAll('.', '-')) + randomStr
 const fName = 'file' + randomStr + '.wf.js'
 
@@ -128,10 +129,10 @@ function stateTwo(payload) {
 		}, 60000) // extend timeout for big tests
 	}
 
-	retry(`should have all success instances`, 100,async () => {
+	retry(`should have all success instances`, 100, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/instances/stats`)
 		console.log(req.body.data)
 		expect(req.statusCode).toEqual(200)
-		expect(req.body.data).toEqual({succeeded: 1161})
+		expect(req.body.data).toEqual({ succeeded: 1161 })
 	}, 1000)
 })
