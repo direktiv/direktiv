@@ -16,12 +16,74 @@ import (
 )
 
 var (
-	StreamInstanceStatus  = StreamDescriptor("instance.status")
-	StreamInstanceHistory = StreamDescriptor("instance.history")
-	StreamSchedRule       = StreamDescriptor("sched.rule")
-	StreamSchedTask       = StreamDescriptor("sched.task")
-	StreamEngineQueue     = StreamDescriptor("engine.queue")
+	StreamInstanceHistory = newStreamDescriptor("instance.history",
+		&nats.StreamConfig{
+			Storage:   nats.FileStorage,
+			Retention: nats.LimitsPolicy,
+			MaxAge:    90 * 24 * time.Hour,
+			Discard:   nats.DiscardOld,
+			// set dupe window to protect idempotent publishes
+			Duplicates: 48 * time.Hour,
+		}, &nats.ConsumerConfig{
+			AckPolicy:         nats.AckExplicitPolicy,
+			AckWait:           30 * time.Second,
+			MaxDeliver:        10,
+			DeliverPolicy:     nats.DeliverAllPolicy,
+			ReplayPolicy:      nats.ReplayInstantPolicy,
+			InactiveThreshold: 72 * time.Hour,
+		})
+
+	StreamInstanceStatus = newStreamDescriptor("instance.status",
+		&nats.StreamConfig{
+			Storage:    nats.FileStorage,
+			Retention:  nats.LimitsPolicy,
+			MaxAge:     90 * 24 * time.Hour,
+			Discard:    nats.DiscardOld,
+			Duplicates: 48 * time.Hour,
+			// important: keep only 1 message per subject (latest status)
+			MaxMsgsPerSubject: 1,
+		}, nil)
+
+	StreamSchedRule = newStreamDescriptor("sched.rule",
+		&nats.StreamConfig{
+			Storage:   nats.FileStorage,
+			Retention: nats.LimitsPolicy,
+			// MaxAge:     90 * 24 * time.Hour,
+			Discard:    nats.DiscardOld,
+			Duplicates: 48 * time.Hour,
+			// important: keep only 1 message per subject (latest rule)
+			MaxMsgsPerSubject: 1,
+		}, nil)
+
+	StreamSchedTask = newStreamDescriptor("sched.task",
+		&nats.StreamConfig{
+			Storage:    nats.FileStorage,
+			Retention:  nats.WorkQueuePolicy,
+			Duplicates: 1 * time.Hour,
+		}, nil)
+
+	StreamEngineQueue = newStreamDescriptor("engine.queue",
+		&nats.StreamConfig{
+			Storage:    nats.FileStorage,
+			Retention:  nats.WorkQueuePolicy,
+			Duplicates: 1 * time.Hour,
+		}, &nats.ConsumerConfig{
+			AckPolicy:         nats.AckExplicitPolicy,
+			AckWait:           5 * time.Minute,
+			MaxDeliver:        10,
+			DeliverPolicy:     nats.DeliverAllPolicy,
+			ReplayPolicy:      nats.ReplayInstantPolicy,
+			InactiveThreshold: 0, // means never auto-delete
+		})
 )
+
+var allStreams = []*StreamDescriptor{
+	StreamInstanceHistory,
+	StreamInstanceStatus,
+	StreamSchedRule,
+	StreamSchedTask,
+	StreamEngineQueue,
+}
 
 type Conn = nats.Conn
 
@@ -71,100 +133,21 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 	}
 
 	// 1- ensure streams
-	ensureStreams := []*nats.StreamConfig{
-		{
-			Name: StreamInstanceHistory.String(),
-			Subjects: []string{
-				StreamInstanceHistory.Subject("*", "*"),
-			},
-			Storage:   nats.FileStorage,
-			Retention: nats.LimitsPolicy,
-			MaxAge:    90 * 24 * time.Hour,
-			Discard:   nats.DiscardOld,
-			// set dupe window to protect idempotent publishes
-			Duplicates: 48 * time.Hour,
-		},
-		{
-			Name: StreamInstanceStatus.String(),
-			Subjects: []string{
-				StreamInstanceStatus.Subject("*", "*"),
-			},
-			Storage:    nats.FileStorage,
-			Retention:  nats.LimitsPolicy,
-			MaxAge:     90 * 24 * time.Hour,
-			Discard:    nats.DiscardOld,
-			Duplicates: 48 * time.Hour,
-			// important: keep only 1 message per subject (latest status)
-			MaxMsgsPerSubject: 1,
-		},
-		{
-			Name: StreamSchedRule.String(),
-			Subjects: []string{
-				StreamSchedRule.Subject("*", "*"),
-			},
-			Storage:   nats.FileStorage,
-			Retention: nats.LimitsPolicy,
-			// MaxAge:     90 * 24 * time.Hour,
-			Discard:    nats.DiscardOld,
-			Duplicates: 48 * time.Hour,
-			// important: keep only 1 message per subject (latest rule)
-			MaxMsgsPerSubject: 1,
-		},
-		{
-			Name: StreamSchedTask.String(),
-			Subjects: []string{
-				StreamSchedTask.Subject("*", "*"),
-			},
-			Storage:    nats.FileStorage,
-			Retention:  nats.WorkQueuePolicy,
-			Duplicates: 1 * time.Hour,
-		},
-		{
-			Name: StreamEngineQueue.String(),
-			Subjects: []string{
-				StreamEngineQueue.Subject("*", "*"),
-			},
-			Storage:    nats.FileStorage,
-			Retention:  nats.WorkQueuePolicy,
-			Duplicates: 1 * time.Hour,
-		},
-	}
-
-	for _, cfg := range ensureStreams {
-		err = ensureStream(ctx, js, cfg)
+	for _, stm := range allStreams {
+		err = ensureStream(ctx, js, stm.streamConfig)
 		if err != nil {
-			return nil, fmt.Errorf("nats ensure stream %s: %w", cfg.Name, err)
+			return nil, fmt.Errorf("nats ensure stream %s: %w", stm, err)
 		}
 	}
 
 	// 2- ensure shared durable consumers
-	ensureConsumers := []*nats.ConsumerConfig{
-		{
-			Durable:           StreamInstanceHistory.String(),
-			FilterSubject:     StreamInstanceHistory.Subject("*", "*"),
-			AckPolicy:         nats.AckExplicitPolicy,
-			AckWait:           30 * time.Second,
-			MaxDeliver:        10,
-			DeliverPolicy:     nats.DeliverAllPolicy,
-			ReplayPolicy:      nats.ReplayInstantPolicy,
-			InactiveThreshold: 72 * time.Hour,
-		},
-		{
-			Durable:           StreamEngineQueue.String(),
-			FilterSubject:     StreamEngineQueue.Subject("*", "*"),
-			AckPolicy:         nats.AckExplicitPolicy,
-			AckWait:           5 * time.Minute,
-			MaxDeliver:        10,
-			DeliverPolicy:     nats.DeliverAllPolicy,
-			ReplayPolicy:      nats.ReplayInstantPolicy,
-			InactiveThreshold: 0, // means never auto-delete
-		},
-	}
-
-	for _, cfg := range ensureConsumers {
-		err = ensureConsumer(ctx, js, cfg)
+	for _, stm := range allStreams {
+		if stm.consumerConfig == nil {
+			continue
+		}
+		err = ensureConsumer(ctx, js, stm.consumerConfig)
 		if err != nil {
-			return nil, fmt.Errorf("nats ensure consumer %s: %w", cfg.Durable, err)
+			return nil, fmt.Errorf("nats ensure consumer %s: %w", stm, err)
 		}
 	}
 
@@ -173,11 +156,16 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 
 // TODO: remove this debug code.
 func resetStreams(ctx context.Context, js nats.JetStreamContext) error {
-	// List all streams
 	streams := js.StreamNames()
 	for s := range streams {
 		if err := js.DeleteStream(s); err != nil {
 			return fmt.Errorf("nats delete stream %s: %w", s, err)
+		}
+		consumers := js.ConsumerNames(s)
+		for c := range consumers {
+			if err := js.DeleteConsumer(s, c); err != nil {
+				return fmt.Errorf("nats delete consumer %s: %w", c, err)
+			}
 		}
 	}
 
