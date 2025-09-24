@@ -26,9 +26,9 @@ type projector struct {
 
 func (p *projector) start(lc *lifecycle.Manager) error {
 	// Bind to the existing durable consumer
-	sub, err := intNats.StreamInstanceHistory.PullSubscribe(p.js, nats.ManualAck())
+	sub, err := intNats.StreamEngineHistory.PullSubscribe(p.js, nats.ManualAck())
 	if err != nil {
-		return fmt.Errorf("nats pull subscript to instances.history stream: %w", err)
+		return fmt.Errorf("nats pull subscribe %s: %w", intNats.StreamEngineHistory, err)
 	}
 
 	lc.Go(func() error {
@@ -52,12 +52,12 @@ func (p *projector) runLoop(lc *lifecycle.Manager, sub *nats.Subscription) error
 		}
 		msgList, err := sub.Fetch(fetchBatch, nats.MaxWait(2*time.Second))
 		if err != nil && !errors.Is(err, nats.ErrTimeout) {
-			slog.Error("fetch instances.history stream messages", "error", err)
+			slog.Error("subscriber fetch", "subj", sub.Subject, "error", err)
 			continue
 		}
 		for _, msg := range msgList {
 			if err := p.handleHistoryMessage(lc.Context(), msg); err != nil {
-				slog.Error("handle instances.history stream messages", "error", err)
+				slog.Error("handle history message", "error", err, "msg", string(msg.Data))
 				_ = msg.Nak()
 			} else {
 				_ = msg.Ack()
@@ -72,7 +72,7 @@ func (p *projector) handleHistoryMessage(ctx context.Context, msg *nats.Msg) err
 		return fmt.Errorf("decode history msg: %w", err)
 	}
 
-	subj := intNats.StreamInstanceStatus.Subject(ev.Namespace, ev.InstanceID.String())
+	subj := intNats.StreamEngineStatus.Subject(ev.Namespace, ev.InstanceID.String())
 	pubID := "instance::status::" + ev.Namespace + "::" + ev.InstanceID.String() + "::" + strconv.FormatUint(ev.Sequence, 10)
 
 	for attempt := range 10 {
@@ -99,7 +99,7 @@ func (p *projector) handleHistoryMessage(ctx context.Context, msg *nats.Msg) err
 		// 4) Publish with dedupe + optimistic concurrency
 		opts := []nats.PubOpt{
 			nats.MsgId(pubID),
-			nats.ExpectStream(intNats.StreamInstanceStatus.String()),
+			nats.ExpectStream(intNats.StreamEngineStatus.String()),
 			nats.ExpectLastSequencePerSubject(st.Sequence),
 		}
 		_, err = p.js.PublishMsg(msg, opts...)
@@ -126,7 +126,7 @@ func (p *projector) handleHistoryMessage(ctx context.Context, msg *nats.Msg) err
 
 func (p *projector) getLastStatusForSubject(ctx context.Context, subject string) (st *engine.InstanceStatus, err error) {
 	msg, err := p.js.GetLastMsg(
-		intNats.StreamInstanceStatus.String(),
+		intNats.StreamEngineStatus.String(),
 		subject, nats.Context(ctx))
 	if err != nil && errors.Is(err, nats.ErrMsgNotFound) {
 		return nil, nil

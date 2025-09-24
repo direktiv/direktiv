@@ -16,34 +16,6 @@ import (
 )
 
 var (
-	StreamInstanceHistory = newDescriptor("instance.history",
-		&nats.StreamConfig{
-			Storage:   nats.FileStorage,
-			Retention: nats.LimitsPolicy,
-			MaxAge:    90 * 24 * time.Hour,
-			Discard:   nats.DiscardOld,
-			// set dupe window to protect idempotent publishes
-			Duplicates: 48 * time.Hour,
-		}, &nats.ConsumerConfig{
-			AckPolicy:         nats.AckExplicitPolicy,
-			AckWait:           30 * time.Second,
-			MaxDeliver:        10,
-			DeliverPolicy:     nats.DeliverAllPolicy,
-			ReplayPolicy:      nats.ReplayInstantPolicy,
-			InactiveThreshold: 72 * time.Hour,
-		})
-
-	StreamInstanceStatus = newDescriptor("instance.status",
-		&nats.StreamConfig{
-			Storage:    nats.FileStorage,
-			Retention:  nats.LimitsPolicy,
-			MaxAge:     90 * 24 * time.Hour,
-			Discard:    nats.DiscardOld,
-			Duplicates: 48 * time.Hour,
-			// important: keep only 1 message per subject (latest status)
-			MaxMsgsPerSubject: 1,
-		}, nil)
-
 	StreamSchedRule = newDescriptor("sched.rule",
 		&nats.StreamConfig{
 			Storage:   nats.FileStorage,
@@ -62,6 +34,34 @@ var (
 			Duplicates: 1 * time.Hour,
 		}, nil)
 
+	StreamEngineHistory = newDescriptor("engine.history",
+		&nats.StreamConfig{
+			Storage:   nats.FileStorage,
+			Retention: nats.LimitsPolicy,
+			MaxAge:    90 * 24 * time.Hour,
+			Discard:   nats.DiscardOld,
+			// set dupe window to protect idempotent publishes
+			Duplicates: 48 * time.Hour,
+		}, &nats.ConsumerConfig{
+			AckPolicy:         nats.AckExplicitPolicy,
+			AckWait:           30 * time.Second,
+			MaxDeliver:        10,
+			DeliverPolicy:     nats.DeliverAllPolicy,
+			ReplayPolicy:      nats.ReplayInstantPolicy,
+			InactiveThreshold: 72 * time.Hour,
+		})
+
+	StreamEngineStatus = newDescriptor("instance.status",
+		&nats.StreamConfig{
+			Storage:    nats.FileStorage,
+			Retention:  nats.LimitsPolicy,
+			MaxAge:     90 * 24 * time.Hour,
+			Discard:    nats.DiscardOld,
+			Duplicates: 48 * time.Hour,
+			// important: keep only 1 message per subject (latest status)
+			MaxMsgsPerSubject: 1,
+		}, nil)
+
 	StreamEngineQueue = newDescriptor("engine.queue",
 		&nats.StreamConfig{
 			Storage:    nats.FileStorage,
@@ -78,8 +78,8 @@ var (
 )
 
 var allDescriptors = []*descriptor{
-	StreamInstanceHistory,
-	StreamInstanceStatus,
+	StreamEngineHistory,
+	StreamEngineStatus,
 	StreamSchedRule,
 	StreamSchedTask,
 	StreamEngineQueue,
