@@ -19,12 +19,12 @@ func (e *Engine) startQueueWorkers(lc *lifecycle.Manager) error {
 	// Bind to the existing durable consumer
 	sub, err := e.js.PullSubscribe(
 		fmt.Sprintf(intNats.SubjEngineQueue, "*", "*"),
-		intNats.ConsumerEngineQueue,
+		intNats.StreamEngineQueue,
 		nats.BindStream(intNats.StreamEngineQueue),
 		nats.ManualAck(),
 	)
 	if err != nil {
-		return fmt.Errorf("nats pull subscribe %s: %w", intNats.ConsumerEngineQueue, err)
+		return fmt.Errorf("nats pull subscribe %s: %w", intNats.StreamEngineQueue, err)
 	}
 
 	for i := range workersCount {

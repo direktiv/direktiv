@@ -28,7 +28,7 @@ func (p *projector) start(lc *lifecycle.Manager) error {
 	// Bind to the existing durable consumer
 	sub, err := p.js.PullSubscribe(
 		fmt.Sprintf(intNats.SubjInstanceHistory, "*", "*"),
-		intNats.ConsumerStatusMaterializer,
+		intNats.StreamInstanceHistory,
 		nats.BindStream(intNats.StreamInstanceHistory),
 		nats.ManualAck(),
 	)

@@ -16,22 +16,20 @@ import (
 )
 
 const (
-	ConsumerStatusMaterializer = "CONSUMER_INSTANCES_STATUS_MATERIALIZER"
-	StreamInstanceHistory      = "STREAM_INSTANCE_HISTORY"
-	StreamInstanceStatus       = "STREAM_INSTANCE_STATUS"
+	StreamInstanceStatus = "instance.status"
+	SubjInstanceStatus   = "instance.status.%s.%s" // instance.status.<namespace>.<instanceID>
 
-	SubjInstanceStatus  = "instance.status.%s.%s"  // instance.status.<namespace>.<instanceID>
-	SubjInstanceHistory = "instance.history.%s.%s" // instance.history.<namespace>.<instanceID>
+	StreamInstanceHistory = "instance.history"
+	SubjInstanceHistory   = "instance.history.%s.%s" // instance.history.<namespace>.<instanceID>
 
-	StreamSchedRule = "STREAM_SCHED_RULE"
+	StreamSchedRule = "sched.rule"
 	SubjSchedRule   = "sched.rule.%s.%s" // shed.config.<namespace>.<ruleID>
 
-	StreamSchedTask = "STREAM_SCHED_TASK"
+	StreamSchedTask = "sched.task"
 	SubjSchedTask   = "sched.task.%s.%s" // shed.config.<namespace>.<ruleID>
 
-	StreamEngineQueue   = "STREAM_ENGINE_QUEUE"
-	ConsumerEngineQueue = "CONSUMER_ENGINE_QUEUE"
-	SubjEngineQueue     = "engine.queue.%s.%s" // engine.queue.<namespace>.<ruleID
+	StreamEngineQueue = "engine.queue"
+	SubjEngineQueue   = "engine.queue.%s.%s" // engine.queue.<namespace>.<ruleID
 )
 
 type Conn = nats.Conn
@@ -151,7 +149,7 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 	// 2- ensure shared durable consumers
 	ensureConsumers := []*nats.ConsumerConfig{
 		{
-			Durable:           ConsumerStatusMaterializer,
+			Durable:           StreamInstanceHistory,
 			FilterSubject:     fmt.Sprintf(SubjInstanceHistory, "*", "*"),
 			AckPolicy:         nats.AckExplicitPolicy,
 			AckWait:           30 * time.Second,
@@ -164,7 +162,7 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 			},
 		},
 		{
-			Durable:           ConsumerEngineQueue,
+			Durable:           StreamEngineQueue,
 			FilterSubject:     fmt.Sprintf(SubjEngineQueue, "*", "*"),
 			AckPolicy:         nats.AckExplicitPolicy,
 			AckWait:           5 * time.Minute,
