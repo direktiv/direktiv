@@ -15,11 +15,13 @@ import (
 	natsContainer "github.com/testcontainers/testcontainers-go/modules/nats"
 )
 
-var StreamInstanceStatus = StreamDescriptor("instance.status")
-var StreamInstanceHistory = StreamDescriptor("instance.history")
-var StreamSchedRule = StreamDescriptor("sched.rule")
-var StreamSchedTask = StreamDescriptor("sched.task")
-var StreamEngineQueue = StreamDescriptor("engine.queue")
+var (
+	StreamInstanceStatus  = StreamDescriptor("instance.status")
+	StreamInstanceHistory = StreamDescriptor("instance.history")
+	StreamSchedRule       = StreamDescriptor("sched.rule")
+	StreamSchedTask       = StreamDescriptor("sched.task")
+	StreamEngineQueue     = StreamDescriptor("engine.queue")
+)
 
 type Conn = nats.Conn
 

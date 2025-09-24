@@ -150,7 +150,7 @@ func doHttpRequest(addr string, config any) (*httpResponseObject, error) {
 	}
 	obj.body = body
 
-	isOK := !(resp.StatusCode < 200 && resp.StatusCode > 299)
+	isOK := resp.StatusCode >= 200 || resp.StatusCode <= 299
 
 	obj.ok = isOK
 
