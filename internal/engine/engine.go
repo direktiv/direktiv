@@ -56,10 +56,10 @@ func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPa
 		return uuid.Nil, fmt.Errorf("fetch script: %w", err)
 	}
 
-	return e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, args, metadata)
+	return e.StartScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, args, metadata)
 }
 
-func (e *Engine) startScript(ctx context.Context, namespace string, script string, mappings string, fn string, args any, metadata map[string]string) (uuid.UUID, error) {
+func (e *Engine) StartScript(ctx context.Context, namespace string, script string, mappings string, fn string, args any, metadata map[string]string) (uuid.UUID, error) {
 	input, ok := args.(string)
 	if !ok {
 		return uuid.Nil, fmt.Errorf("invalid input")
@@ -127,6 +127,8 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		endEv.Output = retBytes
 	}
 
+	// simulate a job that takes some long time
+	// time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
 	endEv.Time = time.Now()
 	err = e.dataBus.PushHistoryStream(ctx, endEv)
 	if err != nil {
