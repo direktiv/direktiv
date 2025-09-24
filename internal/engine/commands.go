@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/telemetry"
@@ -28,47 +29,38 @@ func InjectCommands(vm *sobek.Runtime, instID uuid.UUID) {
 	vm.Set("print", cmds.print)
 	vm.Set("id", cmds.id)
 	vm.Set("now", cmds.now)
+	vm.Set("fetch", cmds.fetch)
+	vm.Set("fetchSync", cmds.fetchSync)
+	vm.Set("sleep", cmds.sleep)
 }
 
-func (cmds *Commands) now(_ sobek.FunctionCall) *sobek.Object {
+func (cmds *Commands) sleep(seconds int) sobek.Value {
+	time.Sleep(time.Duration(seconds) * time.Second)
+	return sobek.Undefined()
+}
+
+func (cmds *Commands) now() *sobek.Object {
 	t := time.Now()
 
 	obj := cmds.vm.NewObject()
-	obj.Set("Unix", func(call sobek.FunctionCall) sobek.Value {
-		fmt.Println("ssss")
-		return cmds.vm.ToValue(t.Unix())
-	})
-	obj.Set("Add", func(call sobek.FunctionCall) sobek.Value {
-		fmt.Println("ssss")
-		return cmds.vm.ToValue(t.Unix())
-	})
-	obj.Set("Format", func(call sobek.FunctionCall) sobek.Value {
-		if len(call.Arguments) < 1 {
-			panic(cmds.vm.ToValue("time format required"))
-		}
-		layout := call.Arguments[0].String()
 
-		return cmds.vm.ToValue(t.Format(layout))
-	})
-	obj.Set("After", func(call sobek.FunctionCall) sobek.Value {
-		fmt.Println("ssss")
+	obj.Set("unix", func() sobek.Value {
 		return cmds.vm.ToValue(t.Unix())
 	})
-	obj.Set("Before", func(call sobek.FunctionCall) sobek.Value {
-		fmt.Println("ssss")
-		return cmds.vm.ToValue(t.Unix())
+
+	obj.Set("format", func(format string) sobek.Value {
+		return cmds.vm.ToValue(t.Format(format))
 	})
 
 	return obj
 }
 
-func (cmds *Commands) id(_ sobek.FunctionCall) sobek.Value {
+func (cmds *Commands) id() sobek.Value {
 	return cmds.vm.ToValue(cmds.instID)
 }
 
-func (cmds *Commands) log(call sobek.FunctionCall) sobek.Value {
-	telemetry.LogInstance(context.Background(), telemetry.LogLevelInfo, fmt.Sprintf("%v", call.Arguments[0].Export()))
-
+func (cmds *Commands) log(logs ...string) sobek.Value {
+	telemetry.LogInstance(context.Background(), telemetry.LogLevelInfo, strings.Join(logs, " "))
 	return sobek.Undefined()
 }
 
@@ -97,12 +89,8 @@ func (cmds *Commands) transition(call sobek.FunctionCall) sobek.Value {
 	return value
 }
 
-func (cmds *Commands) finish(call sobek.FunctionCall) sobek.Value {
-	if len(call.Arguments) != 1 {
-		panic(cmds.vm.ToValue(fmt.Sprintf("finish requires one argument, but got %d", len(call.Arguments))))
-	}
-
-	return call.Arguments[0]
+func (cmds *Commands) finish(data any) sobek.Value {
+	return cmds.vm.ToValue(data)
 }
 
 func (cmds *Commands) print(args ...any) {
