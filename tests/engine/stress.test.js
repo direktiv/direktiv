@@ -42,7 +42,6 @@ function stateTwo(payload) {
 		expect(req.statusCode).toEqual(200)
 	})
 
-
 	const cases = [
 		{
 			total: 10,
