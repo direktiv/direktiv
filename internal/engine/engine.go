@@ -42,9 +42,9 @@ func (e *Engine) Start(lc *lifecycle.Manager) error {
 		return fmt.Errorf("start databus: %w", err)
 	}
 
-	err = e.startWorkers(lc)
+	err = e.startQueueWorkers(lc)
 	if err != nil {
-		return fmt.Errorf("start workers: %w", err)
+		return fmt.Errorf("start queue workers: %w", err)
 	}
 
 	return nil
@@ -83,11 +83,11 @@ func (e *Engine) ExecScript(ctx context.Context, namespace string, script string
 		Fn:       fn,
 		Input:    json.RawMessage(input),
 	}
-	err := e.dataBus.PushInstanceEvent(ctx, ev)
+	err := e.dataBus.PushHistoryStream(ctx, ev)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("create workflow instance: %w", err)
 	}
-	err = e.dataBus.PushInstanceFoo(ctx, ev)
+	err = e.dataBus.PushQueueStream(ctx, ev)
 	if err != nil {
 		return instID, fmt.Errorf("create workflow instance: %w", err)
 	}
@@ -96,7 +96,7 @@ func (e *Engine) ExecScript(ctx context.Context, namespace string, script string
 }
 
 func (e *Engine) ExecInstance(ctx context.Context, inst *InstanceEvent) error {
-	err := e.dataBus.PushInstanceEvent(ctx, &InstanceEvent{
+	err := e.dataBus.PushHistoryStream(ctx, &InstanceEvent{
 		EventID:    uuid.New(),
 		InstanceID: inst.InstanceID,
 		Namespace:  inst.Namespace,
@@ -126,7 +126,7 @@ func (e *Engine) ExecInstance(ctx context.Context, inst *InstanceEvent) error {
 		endMsg.Output = retBytes
 	}
 
-	err = e.dataBus.PushInstanceEvent(ctx, endMsg)
+	err = e.dataBus.PushHistoryStream(ctx, endMsg)
 	if err != nil {
 		return fmt.Errorf("put end instance event: %w", err)
 	}
@@ -135,7 +135,7 @@ func (e *Engine) ExecInstance(ctx context.Context, inst *InstanceEvent) error {
 }
 
 func (e *Engine) GetInstances(ctx context.Context, namespace string) ([]*InstanceStatus, error) {
-	data := e.dataBus.QueryInstanceStatus(ctx, namespace, uuid.Nil)
+	data := e.dataBus.FetchInstanceStatus(ctx, namespace, uuid.Nil)
 	if len(data) == 0 {
 		return nil, ErrDataNotFound
 	}
@@ -144,7 +144,7 @@ func (e *Engine) GetInstances(ctx context.Context, namespace string) ([]*Instanc
 }
 
 func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.UUID) (*InstanceStatus, error) {
-	data := e.dataBus.QueryInstanceStatus(ctx, namespace, id)
+	data := e.dataBus.FetchInstanceStatus(ctx, namespace, id)
 	if len(data) == 0 {
 		return nil, ErrDataNotFound
 	}

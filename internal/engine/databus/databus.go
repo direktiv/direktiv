@@ -37,7 +37,7 @@ func (d *DataBus) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (d *DataBus) PushInstanceEvent(ctx context.Context, event *engine.InstanceEvent) error {
+func (d *DataBus) PushHistoryStream(ctx context.Context, event *engine.InstanceEvent) error {
 	data, err := json.Marshal(event)
 	if err != nil {
 		return fmt.Errorf("marshal event: %w", err)
@@ -52,7 +52,7 @@ func (d *DataBus) PushInstanceEvent(ctx context.Context, event *engine.InstanceE
 	return err
 }
 
-func (d *DataBus) PushInstanceFoo(ctx context.Context, event *engine.InstanceEvent) error {
+func (d *DataBus) PushQueueStream(ctx context.Context, event *engine.InstanceEvent) error {
 	data, err := json.Marshal(event)
 	if err != nil {
 		return fmt.Errorf("marshal event: %w", err)
@@ -67,7 +67,7 @@ func (d *DataBus) PushInstanceFoo(ctx context.Context, event *engine.InstanceEve
 	return err
 }
 
-func (d *DataBus) QueryInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID) []*engine.InstanceStatus {
+func (d *DataBus) FetchInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID) []*engine.InstanceStatus {
 	return d.cache.Snapshot(filterNamespace, filterInstanceID)
 }
 

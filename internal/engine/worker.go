@@ -15,7 +15,7 @@ import (
 
 const workersCount = 5
 
-func (e *Engine) startWorkers(lc *lifecycle.Manager) error {
+func (e *Engine) startQueueWorkers(lc *lifecycle.Manager) error {
 	// Bind to the existing durable consumer
 	sub, err := e.js.PullSubscribe(
 		fmt.Sprintf(intNats.SubjEngineQueue, "*", "*"),
@@ -54,8 +54,8 @@ func (e *Engine) runLoop(lc *lifecycle.Manager, sub *nats.Subscription) error {
 			continue
 		}
 		for _, msg := range msgList {
-			if err := e.handleFooMessage(lc.Context(), msg); err != nil {
-				slog.Error("handle foo message", "error", err, "msg", string(msg.Data))
+			if err := e.handleQueueMessage(lc.Context(), msg); err != nil {
+				slog.Error("handle queue message", "error", err, "msg", string(msg.Data))
 				_ = msg.Nak()
 			} else {
 				_ = msg.Ack()
@@ -64,7 +64,7 @@ func (e *Engine) runLoop(lc *lifecycle.Manager, sub *nats.Subscription) error {
 	}
 }
 
-func decodeFooMsg(msg *nats.Msg) (*InstanceEvent, error) {
+func decodeQueueMessage(msg *nats.Msg) (*InstanceEvent, error) {
 	var ev InstanceEvent
 	if err := json.Unmarshal(msg.Data, &ev); err != nil {
 		return nil, err
@@ -77,10 +77,10 @@ func decodeFooMsg(msg *nats.Msg) (*InstanceEvent, error) {
 
 	return &ev, nil
 }
-func (e *Engine) handleFooMessage(ctx context.Context, msg *nats.Msg) interface{} {
-	ev, err := decodeFooMsg(msg)
+func (e *Engine) handleQueueMessage(ctx context.Context, msg *nats.Msg) error {
+	ev, err := decodeQueueMessage(msg)
 	if err != nil {
-		return fmt.Errorf("decode foo msg: %w", err)
+		return fmt.Errorf("decode queue msg: %w", err)
 	}
 
 	err = e.ExecInstance(ctx, ev)
