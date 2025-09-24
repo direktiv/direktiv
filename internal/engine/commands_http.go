@@ -150,10 +150,8 @@ func doHttpRequest(addr string, config any) (*httpResponseObject, error) {
 	}
 	obj.body = body
 
-	isOK := true
-	if resp.StatusCode < 200 && resp.StatusCode > 299 {
-		isOK = false
-	}
+	isOK := !(resp.StatusCode < 200 && resp.StatusCode > 299)
+
 	obj.ok = isOK
 
 	obj.headers = resp.Header
@@ -193,6 +191,7 @@ func (cmds *Commands) populateResponseObject(response *httpResponseObject) *sobe
 		if err != nil {
 			panic(cmds.vm.ToValue(err.Error()))
 		}
+
 		return cmds.vm.ToValue(r)
 	})
 

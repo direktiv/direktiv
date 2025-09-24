@@ -27,7 +27,7 @@ func (e *Engine) startQueueWorkers(lc *lifecycle.Manager) error {
 		return fmt.Errorf("nats pull subscribe %s: %w", intNats.ConsumerEngineQueue, err)
 	}
 
-	for i := 0; i < workersCount; i++ {
+	for i := range workersCount {
 		lc.Go(func() error {
 			err := e.runLoop(lc, sub)
 			if err != nil {
@@ -77,6 +77,7 @@ func decodeQueueMessage(msg *nats.Msg) (*InstanceEvent, error) {
 
 	return &ev, nil
 }
+
 func (e *Engine) handleQueueMessage(ctx context.Context, msg *nats.Msg) error {
 	ev, err := decodeQueueMessage(msg)
 	if err != nil {
