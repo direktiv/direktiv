@@ -9,6 +9,7 @@ import (
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/google/uuid"
+	"github.com/nats-io/nats.go"
 	"gorm.io/gorm"
 )
 
@@ -18,6 +19,7 @@ type Engine struct {
 	db       *gorm.DB
 	dataBus  DataBus
 	compiler core.Compiler
+	js       nats.JetStreamContext
 }
 
 func (e *Engine) ListInstances(ctx context.Context, namespace string) ([]uuid.UUID, error) {
@@ -25,11 +27,12 @@ func (e *Engine) ListInstances(ctx context.Context, namespace string) ([]uuid.UU
 	panic("implement me")
 }
 
-func NewEngine(db *gorm.DB, bus DataBus, compiler core.Compiler) (*Engine, error) {
+func NewEngine(db *gorm.DB, bus DataBus, compiler core.Compiler, js nats.JetStreamContext) (*Engine, error) {
 	return &Engine{
 		db:       db,
 		dataBus:  bus,
 		compiler: compiler,
+		js:       js,
 	}, nil
 }
 
@@ -39,18 +42,10 @@ func (e *Engine) Start(lc *lifecycle.Manager) error {
 		return fmt.Errorf("start databus: %w", err)
 	}
 
-	cycleTime := time.Second
-
-	lc.Go(func() error {
-		for {
-			select {
-			case <-lc.Done():
-				return nil
-			case <-time.Tick(cycleTime):
-				// TODO: implement me
-			}
-		}
-	})
+	err = e.startWorkers(lc)
+	if err != nil {
+		return fmt.Errorf("start workers: %w", err)
+	}
 
 	return nil
 }
@@ -75,7 +70,7 @@ func (e *Engine) ExecScript(ctx context.Context, namespace string, script string
 
 	instID := uuid.New()
 
-	err := e.dataBus.PushInstanceEvent(ctx, &InstanceEvent{
+	ev := &InstanceEvent{
 		EventID:    uuid.New(),
 		InstanceID: instID,
 		Namespace:  namespace,
@@ -83,33 +78,42 @@ func (e *Engine) ExecScript(ctx context.Context, namespace string, script string
 		Time:       time.Now(),
 		Metadata:   metadata,
 
-		Script: script,
-		Input:  json.RawMessage(input),
-	})
+		Script:   script,
+		Mappings: mappings,
+		Fn:       fn,
+		Input:    json.RawMessage(input),
+	}
+	err := e.dataBus.PushInstanceEvent(ctx, ev)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("create workflow instance: %w", err)
 	}
+	err = e.dataBus.PushInstanceFoo(ctx, ev)
+	if err != nil {
+		return instID, fmt.Errorf("create workflow instance: %w", err)
+	}
 
-	time.Sleep(10 * time.Millisecond)
+	return instID, nil
+}
 
-	err = e.dataBus.PushInstanceEvent(ctx, &InstanceEvent{
+func (e *Engine) ExecInstance(ctx context.Context, inst *InstanceEvent) error {
+	err := e.dataBus.PushInstanceEvent(ctx, &InstanceEvent{
 		EventID:    uuid.New(),
-		InstanceID: instID,
-		Namespace:  namespace,
+		InstanceID: inst.InstanceID,
+		Namespace:  inst.Namespace,
 		Type:       "started",
 		Time:       time.Now(),
 	})
 	if err != nil {
-		return instID, fmt.Errorf("put started instance event: %w", err)
+		return fmt.Errorf("put started instance event: %w", err)
 	}
 
 	endMsg := &InstanceEvent{
 		EventID:    uuid.New(),
-		InstanceID: instID,
-		Namespace:  namespace,
+		InstanceID: inst.InstanceID,
+		Namespace:  inst.Namespace,
 		Time:       time.Now(),
 	}
-	ret, err := e.execJSScript(instID, script, mappings, fn, input)
+	ret, err := e.execJSScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input))
 	if err != nil {
 		endMsg.Type = "failed"
 		endMsg.Error = err.Error()
@@ -124,10 +128,10 @@ func (e *Engine) ExecScript(ctx context.Context, namespace string, script string
 
 	err = e.dataBus.PushInstanceEvent(ctx, endMsg)
 	if err != nil {
-		return instID, fmt.Errorf("put end instance event: %w", err)
+		return fmt.Errorf("put end instance event: %w", err)
 	}
 
-	return instID, nil
+	return nil
 }
 
 func (e *Engine) GetInstances(ctx context.Context, namespace string) ([]*InstanceStatus, error) {

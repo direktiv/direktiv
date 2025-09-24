@@ -52,6 +52,21 @@ func (d *DataBus) PushInstanceEvent(ctx context.Context, event *engine.InstanceE
 	return err
 }
 
+func (d *DataBus) PushInstanceFoo(ctx context.Context, event *engine.InstanceEvent) error {
+	data, err := json.Marshal(event)
+	if err != nil {
+		return fmt.Errorf("marshal event: %w", err)
+	}
+
+	subject := fmt.Sprintf(intNats.SubjEngineFoo, event.Namespace, event.InstanceID)
+
+	_, err = d.js.Publish(subject, data,
+		nats.Context(ctx),
+		nats.MsgId(fmt.Sprintf("engine::foo::%s", event.EventID)))
+
+	return err
+}
+
 func (d *DataBus) QueryInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID) []*engine.InstanceStatus {
 	return d.cache.Snapshot(filterNamespace, filterInstanceID)
 }

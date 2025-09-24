@@ -4,17 +4,13 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
-	"math/rand"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/internal/engine"
-	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 	natsContainer "github.com/testcontainers/testcontainers-go/modules/nats"
 )
@@ -32,6 +28,10 @@ const (
 
 	StreamSchedTask = "STREAM_SCHED_TASK"
 	SubjSchedTask   = "sched.task.%s.%s" // shed.config.<namespace>.<ruleID>
+
+	StreamEngineFoo   = "STREAM_ENGINE_FOO"
+	SubjEngineFoo     = "engine.foo.%s.%s" // shed.config.<namespace>.<ruleID>
+	ConsumerEngineFoo = "CONSUMER_ENGINE_FOO"
 )
 
 type Conn = nats.Conn
@@ -76,10 +76,10 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 		return nil, fmt.Errorf("nats jetstream: %w", err)
 	}
 
-	// err = resetStreams(ctx, js)
-	// if err != nil {
-	//	return nil, fmt.Errorf("nats reset streams: %w", err)
-	//}
+	err = resetStreams(ctx, js)
+	if err != nil {
+		return nil, fmt.Errorf("nats reset streams: %w", err)
+	}
 
 	// 1- ensure streams
 	ensureStreams := []*nats.StreamConfig{
@@ -130,6 +130,15 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 			Retention:  nats.WorkQueuePolicy,
 			Duplicates: 1 * time.Hour,
 		},
+		{
+			Name: StreamEngineFoo,
+			Subjects: []string{
+				fmt.Sprintf(SubjEngineFoo, "*", "*"),
+			},
+			Storage:    nats.FileStorage,
+			Retention:  nats.WorkQueuePolicy,
+			Duplicates: 1 * time.Hour,
+		},
 	}
 
 	for _, cfg := range ensureStreams {
@@ -154,6 +163,19 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 				"stream": StreamInstanceHistory,
 			},
 		},
+		{
+			Durable:           ConsumerEngineFoo,
+			FilterSubject:     fmt.Sprintf(SubjEngineFoo, "*", "*"),
+			AckPolicy:         nats.AckExplicitPolicy,
+			AckWait:           5 * time.Minute,
+			MaxDeliver:        10,
+			DeliverPolicy:     nats.DeliverAllPolicy,
+			ReplayPolicy:      nats.ReplayInstantPolicy,
+			InactiveThreshold: 0, // means never auto-delete
+			Metadata: map[string]string{
+				"stream": StreamEngineFoo,
+			},
+		},
 	}
 
 	for _, cfg := range ensureConsumers {
@@ -164,41 +186,6 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 	}
 
 	return js, nil
-}
-
-func generateRandomEntries(ctx context.Context, js nats.JetStreamContext) error {
-	namespaces := []string{"ns1", "ns2", "ns3", "ns4"}
-	types := []string{"running", "failed", "succeeded"}
-	instIDs := []uuid.UUID{uuid.New(), uuid.New(), uuid.New(), uuid.New()}
-
-	for range 100 {
-		evID := uuid.New()
-		typ := types[rand.Intn(len(types))]
-		ns := namespaces[rand.Intn(len(namespaces))]
-		instID := instIDs[rand.Intn(len(instIDs))]
-
-		subject := fmt.Sprintf(SubjInstanceHistory, ns, instID)
-
-		ev := engine.InstanceEvent{
-			EventID:    evID,
-			InstanceID: instID,
-			Namespace:  ns,
-			Type:       typ,
-			Time:       time.Now(),
-			Script:     "",
-		}
-		data, _ := json.Marshal(ev)
-
-		// Publish with a dedupe Msg-Id
-		_, err := js.Publish(subject, data,
-			nats.MsgId(fmt.Sprintf("instance::history::%s", evID)))
-		if err != nil {
-			return err
-		}
-		fmt.Printf("published >>>>> %s\n", data)
-	}
-
-	return nil
 }
 
 // TODO: remove this debug code.

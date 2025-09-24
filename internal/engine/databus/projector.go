@@ -172,6 +172,8 @@ func applyEventToStatus(st *engine.InstanceStatus, ev *engine.InstanceEvent) {
 		st.Namespace = ev.Namespace
 		st.Metadata = ev.Metadata
 		st.Script = ev.Script
+		st.Mappings = ev.Mappings
+		st.Fn = ev.Fn
 		st.Input = ev.Input
 		st.CreatedAt = ev.Time
 	case "started":

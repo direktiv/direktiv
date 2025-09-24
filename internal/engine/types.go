@@ -14,6 +14,8 @@ type InstanceStatus struct {
 	Namespace  string            `json:"namespace"`
 	Metadata   map[string]string `json:"metadata"`
 	Script     string            `json:"script,omitempty"`
+	Mappings   string            `json:"mappings,omitempty"`
+	Fn         string            `json:"fn,omitempty"`
 	Input      json.RawMessage   `json:"input,omitempty"`
 	Memory     json.RawMessage   `json:"memory,omitempty"`
 	Output     json.RawMessage   `json:"output,omitempty"`
@@ -75,11 +77,13 @@ type InstanceEvent struct {
 	Type       string            `json:"type"`
 	Time       time.Time         `json:"time"`
 
-	Script string          `json:"script,omitempty"`
-	Input  json.RawMessage `json:"input,omitempty"`
-	Memory json.RawMessage `json:"memory,omitempty"`
-	Output json.RawMessage `json:"output,omitempty"`
-	Error  string          `json:"error,omitempty"`
+	Script   string          `json:"script,omitempty"`
+	Mappings string          `json:"mappings,omitempty"`
+	Fn       string          `json:"fn,omitempty"`
+	Input    json.RawMessage `json:"input,omitempty"`
+	Memory   json.RawMessage `json:"memory,omitempty"`
+	Output   json.RawMessage `json:"output,omitempty"`
+	Error    string          `json:"error,omitempty"`
 
 	// history stream sequence
 	Sequence uint64 `json:"sequence"`
@@ -92,5 +96,7 @@ type WorkflowRunner interface {
 type DataBus interface {
 	Start(lc *lifecycle.Manager) error
 	PushInstanceEvent(ctx context.Context, event *InstanceEvent) error
+	PushInstanceFoo(ctx context.Context, event *InstanceEvent) error
+
 	QueryInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID) []*InstanceStatus
 }
