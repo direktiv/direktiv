@@ -145,6 +145,7 @@ func (e *instController) stats(w http.ResponseWriter, r *http.Request) {
 			Code:    err.Error(),
 			Message: err.Error(),
 		})
+		return
 	}
 	stats := make(map[string]int)
 	for i := range list {

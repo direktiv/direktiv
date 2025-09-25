@@ -9,9 +9,8 @@ import (
 )
 
 type StatusCache struct {
-	mu                sync.RWMutex
-	items             map[uuid.UUID]engine.InstanceStatus // key: orderID
-	deletedNamespaces []string
+	mu    sync.RWMutex
+	items map[uuid.UUID]engine.InstanceStatus // key: orderID
 }
 
 func NewStatusCache() *StatusCache {
@@ -35,15 +34,6 @@ func (c *StatusCache) Snapshot(filterNamespace string, filterInstanceID uuid.UUI
 	defer c.mu.RUnlock()
 	out := make([]*engine.InstanceStatus, 0, len(c.items))
 
-	for _, n := range c.deletedNamespaces {
-		for k, v := range c.items {
-			if n == v.Namespace {
-				delete(c.items, k)
-			}
-		}
-	}
-	c.deletedNamespaces = c.deletedNamespaces[:0]
-
 	for _, v := range c.items {
 		if v.InstanceID != filterInstanceID && filterInstanceID != uuid.Nil {
 			continue
@@ -63,5 +53,9 @@ func (c *StatusCache) Snapshot(filterNamespace string, filterInstanceID uuid.UUI
 func (c *StatusCache) DeleteNamespace(name string) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	c.deletedNamespaces = append(c.deletedNamespaces, name)
+	for k, v := range c.items {
+		if name == v.Namespace {
+			delete(c.items, k)
+		}
+	}
 }

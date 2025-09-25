@@ -17,7 +17,7 @@ function quantile (arr, q) {
 
 const randomStr = Math.random().toString(10)
 	.slice(2, 12)
-const namespace = basename(__filename.replaceAll('.', '-')) + randomStr
+const namespace = basename(__filename.replaceAll('.', '-'))
 const fName = 'file' + randomStr + '.wf.js'
 
 describe('Stress test js engine', () => {
@@ -131,7 +131,7 @@ function stateTwo(payload) {
 
 	retry(`should have all success instances`, 100, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/instances/stats`)
-		console.log(req.body.data)
+		console.log(req.body)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body.data).toEqual({ succeeded: 1161 })
 	}, 1000)
