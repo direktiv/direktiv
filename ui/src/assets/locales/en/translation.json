@@ -1759,6 +1759,11 @@
             "dataLabel": "data",
             "dataPlaceholder": "Path to an array for the table (e.g. query.companies.data)"
           },
+          "tableAction": {
+            "itemLabel": "Table actions",
+            "tableLabel": "{{count}} Table actions",
+            "tableLabel_one": "{{count}} Table action"
+          },
           "rowAction": {
             "itemLabel": "Row actions",
             "tableLabel": "{{count}} Row actions",
