@@ -18,9 +18,7 @@ import { useState } from "react";
 type ActionsDialogProps = {
   actions: RowActionsType | TableActionsType;
   blockPath: BlockPathType;
-  renderTrigger: (
-    setOpenedDialogIndex: (index: number | null) => void
-  ) => React.ReactNode;
+  renderTrigger: () => React.ReactNode;
 };
 
 export const ActionsDialog = ({
@@ -35,7 +33,7 @@ export const ActionsDialog = ({
   return (
     <LocalDialog open={openedDialogIndex !== null}>
       <DropdownMenu>
-        {renderTrigger(setOpenedDialogIndex)}
+        {renderTrigger()}
         <StopPropagation>
           <DropdownMenuContent align="end">
             {actions.blocks.map((dialog, index) => (
