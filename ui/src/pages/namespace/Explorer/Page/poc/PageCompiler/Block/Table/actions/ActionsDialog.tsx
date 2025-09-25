@@ -36,11 +36,10 @@ export const ActionsDialog = ({
     <LocalDialog open={openedDialogIndex !== null}>
       <DropdownMenu>
         {renderTrigger(setOpenedDialogIndex)}
-
         <StopPropagation>
           <DropdownMenuContent align="end">
             {actions.blocks.map((dialog, index) => (
-              <DropdownMenuItem key={index}>
+              <DropdownMenuItem key={index} asChild>
                 <DialogTrigger
                   onClick={(event) => {
                     event.stopPropagation();
