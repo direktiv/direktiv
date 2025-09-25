@@ -1,4 +1,10 @@
 import { Block, BlockPathType } from "../..";
+import { DialogTrigger, DialogXClose } from "~/design/Dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "~/design/Dropdown";
 import { LocalDialog, LocalDialogContent } from "~/design/LocalDialog";
 import {
   RowActionsType,
@@ -6,13 +12,12 @@ import {
 } from "../../../../schema/blocks/table";
 
 import { BlockList } from "../../utils/BlockList";
-import { DialogXClose } from "~/design/Dialog";
+import { StopPropagation } from "~/components/StopPropagation";
 import { useState } from "react";
 
 type ActionsDialogProps = {
   actions: RowActionsType | TableActionsType;
   blockPath: BlockPathType;
-
   renderTrigger: (
     setOpenedDialogIndex: (index: number | null) => void
   ) => React.ReactNode;
@@ -21,7 +26,6 @@ type ActionsDialogProps = {
 export const ActionsDialog = ({
   actions,
   blockPath,
-
   renderTrigger,
 }: ActionsDialogProps) => {
   const [openedDialogIndex, setOpenedDialogIndex] = useState<number | null>(
@@ -30,7 +34,27 @@ export const ActionsDialog = ({
 
   return (
     <LocalDialog open={openedDialogIndex !== null}>
-      {renderTrigger(setOpenedDialogIndex)}
+      <DropdownMenu>
+        {renderTrigger(setOpenedDialogIndex)}
+
+        <StopPropagation>
+          <DropdownMenuContent align="end">
+            {actions.blocks.map((dialog, index) => (
+              <DropdownMenuItem key={index}>
+                <DialogTrigger
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setOpenedDialogIndex(index);
+                  }}
+                  className="w-full text-left"
+                >
+                  {dialog.trigger.label}
+                </DialogTrigger>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </StopPropagation>
+      </DropdownMenu>
       <div onClick={(event) => event.preventDefault()}>
         <LocalDialogContent>
           <DialogXClose onClick={() => setOpenedDialogIndex(null)} />
