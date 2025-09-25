@@ -16,12 +16,12 @@ import { StopPropagation } from "~/components/StopPropagation";
 import { TableCell as TableCellDesignComponent } from "~/design/Table";
 import { useState } from "react";
 
-type ActionsCellProps = {
+type RowActionsProps = {
   actions: RowActionsType;
   blockPath: BlockPathType;
 };
 
-export const ActionsCell = ({ actions, blockPath }: ActionsCellProps) => {
+export const RowActions = ({ actions, blockPath }: RowActionsProps) => {
   const [openedDialogIndex, setOpenedDialogIndex] = useState<number | null>(
     null
   );
