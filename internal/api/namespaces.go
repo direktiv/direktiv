@@ -12,6 +12,7 @@ import (
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
+	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
@@ -21,6 +22,7 @@ type nsController struct {
 	db              *gorm.DB
 	registryManager core.RegistryManager
 	bus             pubsub.EventBus
+	engine          *engine.Engine
 }
 
 func (e *nsController) mountRouter(r chi.Router) {
@@ -75,6 +77,11 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = fStore.ForRoot(name).Delete(r.Context())
+	if err != nil {
+		writeDataStoreError(w, err)
+		return
+	}
+	err = e.engine.DeleteNamespace(r.Context(), name)
 	if err != nil {
 		writeDataStoreError(w, err)
 		return

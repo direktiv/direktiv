@@ -71,6 +71,28 @@ func (d *DataBus) FetchInstanceStatus(ctx context.Context, filterNamespace strin
 	return d.cache.Snapshot(filterNamespace, filterInstanceID)
 }
 
+func (d *DataBus) DeleteNamespace(ctx context.Context, name string) error {
+	descList := []*intNats.Descriptor{
+		intNats.StreamEngineHistory,
+		intNats.StreamEngineStatus,
+		intNats.StreamEngineQueue,
+	}
+
+	for _, desc := range descList {
+		err := d.js.PurgeStream(
+			desc.String(),
+			&nats.StreamPurgeRequest{Subject: desc.Subject(name, "*")},
+			nats.Context(ctx),
+		)
+		if err != nil {
+			return fmt.Errorf("nats purge stream %s: %w", desc, err)
+		}
+	}
+	d.cache.DeleteNamespace(name)
+
+	return nil
+}
+
 func (d *DataBus) startStatusCache(ctx context.Context) error {
 	subj := intNats.StreamEngineStatus.Subject("*", "*")
 	// ephemeral, AckNone (we don't want to disturb the stream/consumers)

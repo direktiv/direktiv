@@ -99,4 +99,6 @@ type DataBus interface {
 	PushQueueStream(ctx context.Context, event *InstanceEvent) error
 
 	FetchInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID) []*InstanceStatus
+
+	DeleteNamespace(ctx context.Context, name string) error
 }

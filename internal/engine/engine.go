@@ -155,3 +155,7 @@ func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.
 
 	return data[0], nil
 }
+
+func (e *Engine) DeleteNamespace(ctx context.Context, name string) error {
+	return e.dataBus.DeleteNamespace(ctx, name)
+}

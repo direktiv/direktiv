@@ -77,7 +77,7 @@ var (
 		})
 )
 
-var allDescriptors = []*descriptor{
+var allDescriptors = []*Descriptor{
 	StreamEngineHistory,
 	StreamEngineStatus,
 	StreamSchedRule,

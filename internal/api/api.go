@@ -92,6 +92,7 @@ func New(app InitializeArgs) (*Server, error) {
 	nsCtr := &nsController{
 		db:              app.DB,
 		bus:             app.PubSub,
+		engine:          app.Engine,
 		registryManager: app.RegistryManager,
 	}
 	mirrorsCtr := &mirrorsController{
