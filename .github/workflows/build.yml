@@ -260,24 +260,21 @@ jobs:
 
       - name: Install Postgres
         run: |
-          helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm install postgres bitnami/postgresql \
-            --namespace postgres \
-            --set primary.persistence.enabled=false
-
+          kubectl apply -f kind/postgres.yaml
 
       - name: Wait for Direktiv pods to be ready
         run: |
-          sleep 1
-          kubectl wait --namespace postgres --for=condition=Ready pod --selector=app.kubernetes.io/name=postgresql --timeout=120s
+          sleep 5;
+          kubectl get pods -A;
+          kubectl get pods -A --show-labels;
 
       - name: Generate dev.yaml file with database credentials
         run: |
-          DB_HOST=postgres-postgresql.postgres.svc
+          DB_HOST=postgres.default.svc
           DB_PORT=5432
-          DB_USER=postgres
-          DB_PASSWORD=$(kubectl get secret --namespace postgres postgres-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
-          DB_NAME=postgres
+          DB_USER=admin
+          DB_PASSWORD=password
+          DB_NAME=direktiv
 
           cat <<EOF > dev.yaml
           pullPolicy: IfNotPresent
