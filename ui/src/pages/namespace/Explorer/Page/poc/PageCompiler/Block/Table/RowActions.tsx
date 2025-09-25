@@ -37,7 +37,7 @@ export const RowActions = ({ actions, blockPath }: RowActionsProps) => {
           <StopPropagation>
             <DropdownMenuContent align="end">
               {actions.blocks.map((dialog, index) => (
-                <DropdownMenuItem key={index}>
+                <DropdownMenuItem key={index} asChild>
                   <DialogTrigger
                     onClick={(event) => {
                       event.stopPropagation();
