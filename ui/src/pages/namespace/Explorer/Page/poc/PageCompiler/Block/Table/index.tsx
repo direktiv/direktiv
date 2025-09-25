@@ -1,3 +1,5 @@
+import { BlockPathType } from "..";
+import { Card } from "~/design/Card";
 import {
   NoResult,
   TableBody,
@@ -7,23 +9,21 @@ import {
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
+import { Pagination } from "~/components/Pagination";
+import { RowActions } from "./RowActions";
+import { StopPropagation } from "~/components/StopPropagation";
+import { TableActions } from "./TableActions";
+import { TableCell } from "./TableCell";
+import { TableType } from "../../../schema/blocks/table";
+import { useVariableArrayResolver } from "../../primitives/Variable/utils/useVariableArrayResolver";
+import { VariableError } from "../../primitives/Variable/Error";
 import {
   VariableContextProvider,
   useVariablesContext,
 } from "../../primitives/Variable/VariableContext";
-
-import { BlockPathType } from "..";
-import { Card } from "~/design/Card";
 import { PackageOpen } from "lucide-react";
-import { Pagination } from "~/components/Pagination";
 import PaginationProvider from "~/components/PaginationProvider";
-import { RowActions } from "./RowActions";
-import { StopPropagation } from "~/components/StopPropagation";
-import { TableCell } from "./TableCell";
-import { TableType } from "../../../schema/blocks/table";
-import { VariableError } from "../../primitives/Variable/Error";
 import { useTranslation } from "react-i18next";
-import { useVariableArrayResolver } from "../../primitives/Variable/utils/useVariableArrayResolver";
 
 type TableProps = {
   blockProps: TableType;
@@ -54,7 +54,9 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
   }
 
   const hasRowActions = blocks[1].blocks.length > 0;
-  const numberOfColumns = columns.length + (hasRowActions ? 1 : 0);
+  const hasTableActions = blocks[0].blocks.length > 0;
+  const numberOfColumns =
+    columns.length + (hasRowActions ? 1 : 0) + (hasTableActions ? 1 : 0);
   const hasRows = variableArray.data.length > 0;
 
   return (
@@ -79,6 +81,14 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
                           {column.label}
                         </TableHeaderCell>
                       ))}
+                      {hasTableActions && (
+                        <TableHeaderCell>
+                          <TableActions
+                            actions={blocks[0]}
+                            blockPath={blockPath}
+                          />
+                        </TableHeaderCell>
+                      )}
                       {hasRowActions && <TableHeaderCell />}
                     </TableRow>
                   </TableHead>
