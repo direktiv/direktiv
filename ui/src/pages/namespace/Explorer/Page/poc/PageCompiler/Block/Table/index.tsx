@@ -1,5 +1,3 @@
-import { BlockPathType } from "..";
-import { Card } from "~/design/Card";
 import {
   NoResult,
   TableBody,
@@ -9,21 +7,24 @@ import {
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
-import { Pagination } from "~/components/Pagination";
-import { RowActions } from "./RowActions";
-import { StopPropagation } from "~/components/StopPropagation";
-import { TableActions } from "./TableActions";
-import { TableCell } from "./TableCell";
-import { TableType } from "../../../schema/blocks/table";
-import { useVariableArrayResolver } from "../../primitives/Variable/utils/useVariableArrayResolver";
-import { VariableError } from "../../primitives/Variable/Error";
 import {
   VariableContextProvider,
   useVariablesContext,
 } from "../../primitives/Variable/VariableContext";
+
+import { BlockPathType } from "..";
+import { Card } from "~/design/Card";
 import { PackageOpen } from "lucide-react";
+import { Pagination } from "~/components/Pagination";
 import PaginationProvider from "~/components/PaginationProvider";
+import { RowActions } from "./actions/RowActions";
+import { StopPropagation } from "~/components/StopPropagation";
+import { TableActions } from "./actions/TableActions";
+import { TableCell } from "./TableCell";
+import { TableType } from "../../../schema/blocks/table";
+import { VariableError } from "../../primitives/Variable/Error";
 import { useTranslation } from "react-i18next";
+import { useVariableArrayResolver } from "../../primitives/Variable/utils/useVariableArrayResolver";
 
 type TableProps = {
   blockProps: TableType;

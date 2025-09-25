@@ -1,8 +1,11 @@
-import { Block, BlockPathType } from "..";
+import { Block, BlockPathType } from "../..";
 import { LocalDialog, LocalDialogContent } from "~/design/LocalDialog";
-import { RowActionsType, TableActionsType } from "../../../schema/blocks/table";
+import {
+  RowActionsType,
+  TableActionsType,
+} from "../../../../schema/blocks/table";
 
-import { BlockList } from "../utils/BlockList";
+import { BlockList } from "../../utils/BlockList";
 import { DialogXClose } from "~/design/Dialog";
 import { useState } from "react";
 

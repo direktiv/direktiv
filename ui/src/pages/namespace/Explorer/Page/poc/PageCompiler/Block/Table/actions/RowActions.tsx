@@ -6,11 +6,11 @@ import {
 } from "~/design/Dropdown";
 
 import { ActionsDialog } from "./ActionsDialog";
-import { BlockPathType } from "..";
+import { BlockPathType } from "../..";
 import ButtonDesignComponent from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
 import { MoreVertical } from "lucide-react";
-import { RowActionsType } from "../../../schema/blocks/table";
+import { RowActionsType } from "../../../../schema/blocks/table";
 import { StopPropagation } from "~/components/StopPropagation";
 import { TableCell as TableCellDesignComponent } from "~/design/Table";
 

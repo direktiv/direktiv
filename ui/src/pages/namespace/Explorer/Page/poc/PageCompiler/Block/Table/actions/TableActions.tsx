@@ -1,7 +1,7 @@
 import { ActionsDialog } from "./ActionsDialog";
-import { BlockPathType } from "..";
+import { BlockPathType } from "../..";
 import ButtonDesignComponent from "~/design/Button";
-import { TableActionsType } from "../../../schema/blocks/table";
+import { TableActionsType } from "../../../../schema/blocks/table";
 
 type TableActionsProps = {
   actions: TableActionsType;
