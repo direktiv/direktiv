@@ -12,12 +12,12 @@ import {
   useVariablesContext,
 } from "../../primitives/Variable/VariableContext";
 
-import { ActionsCell } from "./ActionsCell";
 import { BlockPathType } from "..";
 import { Card } from "~/design/Card";
 import { PackageOpen } from "lucide-react";
 import { Pagination } from "~/components/Pagination";
 import PaginationProvider from "~/components/PaginationProvider";
+import { RowActions } from "./RowActions";
 import { StopPropagation } from "~/components/StopPropagation";
 import { TableCell } from "./TableCell";
 import { TableType } from "../../../schema/blocks/table";
@@ -53,8 +53,8 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
     );
   }
 
-  const hasActionsColumn = blocks[1].blocks.length > 0;
-  const numberOfColumns = columns.length + (hasActionsColumn ? 1 : 0);
+  const hasRowActions = blocks[1].blocks.length > 0;
+  const numberOfColumns = columns.length + (hasRowActions ? 1 : 0);
   const hasRows = variableArray.data.length > 0;
 
   return (
@@ -79,7 +79,7 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
                           {column.label}
                         </TableHeaderCell>
                       ))}
-                      {hasActionsColumn && <TableHeaderCell />}
+                      {hasRowActions && <TableHeaderCell />}
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -102,8 +102,8 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
                                 blockProps={column}
                               />
                             ))}
-                            {hasActionsColumn && (
-                              <ActionsCell
+                            {hasRowActions && (
+                              <RowActions
                                 actions={blocks[1]}
                                 blockPath={blockPath}
                               />
