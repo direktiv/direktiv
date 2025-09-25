@@ -90,7 +90,6 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
                           />
                         </TableHeaderCell>
                       )}
-                      {hasRowActions && <TableHeaderCell />}
                     </TableRow>
                   </TableHead>
                   <TableBody>

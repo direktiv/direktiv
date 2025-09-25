@@ -13,7 +13,7 @@ export const TableActions = ({ actions, blockPath }: TableActionsProps) => (
     actions={actions}
     blockPath={[...blockPath, 0]}
     renderTrigger={(setOpenedDialogIndex) => (
-      <div className="flex gap-2">
+      <div className="flex justify-end gap-2">
         {actions.blocks.map((dialog, index) => (
           <ButtonDesignComponent
             key={index}
