@@ -44,11 +44,9 @@ export const RowActions = ({ actions, blockPath }: RowActionsProps) => {
                       event.stopPropagation();
                       setOpenedDialogIndex(index);
                     }}
-                    className="text-left"
+                    className="w-full text-left"
                   >
-                    <div>
-                      <TemplateString value={dialog.trigger.label} />
-                    </div>
+                    <TemplateString value={dialog.trigger.label} />
                   </DialogTrigger>
                 </DropdownMenuItem>
               ))}
