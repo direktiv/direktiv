@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	"github.com/direktiv/direktiv/internal/engine"
 	intNats "github.com/direktiv/direktiv/internal/nats"
@@ -15,10 +16,13 @@ import (
 type DataBus struct {
 	js    nats.JetStreamContext
 	cache *StatusCache
+
+	notifyMap map[string]chan<- *engine.InstanceStatus
+	lock      sync.RWMutex
 }
 
 func New(js nats.JetStreamContext) *DataBus {
-	return &DataBus{js: js, cache: NewStatusCache()}
+	return &DataBus{js: js, cache: NewStatusCache(), notifyMap: make(map[string]chan<- *engine.InstanceStatus), lock: sync.RWMutex{}}
 }
 
 var _ engine.DataBus = &DataBus{}
@@ -93,6 +97,12 @@ func (d *DataBus) DeleteNamespace(ctx context.Context, name string) error {
 	return nil
 }
 
+func (d *DataBus) NotifyInstanceStatus(ctx context.Context, instanceID uuid.UUID, done chan<- *engine.InstanceStatus) {
+	d.lock.Lock()
+	defer d.lock.Unlock()
+	d.notifyMap[instanceID.String()] = done
+}
+
 func (d *DataBus) startStatusCache(ctx context.Context) error {
 	subj := intNats.StreamEngineStatus.Subject("*", "*")
 	// ephemeral, AckNone (we don't want to disturb the stream/consumers)
@@ -101,6 +111,15 @@ func (d *DataBus) startStatusCache(ctx context.Context) error {
 		if err := json.Unmarshal(msg.Data, &st); err != nil {
 			// best-effort; ignore bad payloads
 			return
+		}
+		if st.Status == "succeeded" || st.Status == "failed" {
+			d.lock.RLock()
+			ch, ok := d.notifyMap[st.InstanceID.String()]
+			d.lock.RUnlock()
+			if ok && ch != nil {
+				ch <- &st
+				close(ch)
+			}
 		}
 		d.cache.Upsert(&st)
 	}, nats.AckNone())

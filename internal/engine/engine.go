@@ -56,10 +56,10 @@ func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPa
 		return uuid.Nil, fmt.Errorf("fetch script: %w", err)
 	}
 
-	return e.StartScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, args, metadata)
+	return e.StartScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, args, nil, metadata)
 }
 
-func (e *Engine) StartScript(ctx context.Context, namespace string, script string, mappings string, fn string, args any, metadata map[string]string) (uuid.UUID, error) {
+func (e *Engine) StartScript(ctx context.Context, namespace string, script string, mappings string, fn string, args any, done chan<- *InstanceStatus, metadata map[string]string) (uuid.UUID, error) {
 	input, ok := args.(string)
 	if !ok {
 		return uuid.Nil, fmt.Errorf("invalid input")
@@ -87,6 +87,11 @@ func (e *Engine) StartScript(ctx context.Context, namespace string, script strin
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("push history stream: %w", err)
 	}
+
+	if done != nil {
+		e.dataBus.NotifyInstanceStatus(ctx, instID, done)
+	}
+
 	err = e.dataBus.PushQueueStream(ctx, ev)
 	if err != nil {
 		return instID, fmt.Errorf("push queue stream: %w", err)
