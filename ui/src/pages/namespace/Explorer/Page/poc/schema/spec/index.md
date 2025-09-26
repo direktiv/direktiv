@@ -97,7 +97,7 @@ Blocks are the main elements that the user can use to compose a Direktiv page.
 | Attribute | Type             | Description                                                                                                        |
 | --------- | ---------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `type`    | `"button"`       |                                                                                                                    |
-| `label`   | `TemplateString` | Button label text                                                                                                  |
+| `label`   | `TemplateString` | Button label text (when used in a table action, the label is only a `string`)                                      |
 | `submit?` | `Mutation`       | Mutation that will be executed on click. This is optional as the button can also be used as a trigger for a dialog |
 
 ### Form `Block`
