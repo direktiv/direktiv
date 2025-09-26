@@ -13,7 +13,7 @@ type TableActionsProps = {
 export const TableActions = ({ actions, blockPath }: TableActionsProps) => (
   <ActionsDialog
     actions={actions}
-    blockPath={blockPath}
+    blockPath={[...blockPath, 0]}
     renderTrigger={() => (
       <DropdownMenuTrigger asChild>
         <Button size="sm" icon>
