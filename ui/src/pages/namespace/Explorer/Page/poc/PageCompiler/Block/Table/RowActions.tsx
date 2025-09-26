@@ -14,6 +14,7 @@ import { MoreVertical } from "lucide-react";
 import { RowActionsType } from "../../../schema/blocks/table";
 import { StopPropagation } from "~/components/StopPropagation";
 import { TableCell as TableCellDesignComponent } from "~/design/Table";
+import { TemplateString } from "../../primitives/TemplateString";
 import { useState } from "react";
 
 type RowActionsProps = {
@@ -45,7 +46,7 @@ export const RowActions = ({ actions, blockPath }: RowActionsProps) => {
                     }}
                     className="w-full text-left"
                   >
-                    {dialog.trigger.label}
+                    <TemplateString value={dialog.trigger.label} />
                   </DialogTrigger>
                 </DropdownMenuItem>
               ))}
