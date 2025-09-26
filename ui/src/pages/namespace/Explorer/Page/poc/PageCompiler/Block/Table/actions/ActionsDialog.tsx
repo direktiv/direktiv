@@ -13,6 +13,7 @@ import {
 
 import { BlockList } from "../../utils/BlockList";
 import { StopPropagation } from "~/components/StopPropagation";
+import { TemplateString } from "../../../primitives/TemplateString";
 import { useState } from "react";
 
 type ActionsDialogProps = {
@@ -43,9 +44,11 @@ export const ActionsDialog = ({
                     event.stopPropagation();
                     setOpenedDialogIndex(index);
                   }}
-                  className="w-full text-left"
+                  className="text-left"
                 >
-                  {dialog.trigger.label}
+                  <div>
+                    <TemplateString value={dialog.trigger.label} />
+                  </div>
                 </DialogTrigger>
               </DropdownMenuItem>
             ))}
