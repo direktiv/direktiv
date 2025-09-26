@@ -69,6 +69,10 @@ func (i *InstanceStatus) Clone() *InstanceStatus {
 	return &clone
 }
 
+func (i *InstanceStatus) IsEndStatus() bool {
+	return i.Status == "succeeded" || i.Status == "failed"
+}
+
 type InstanceEvent struct {
 	EventID    uuid.UUID         `json:"eventId"`
 	InstanceID uuid.UUID         `json:"instanceId"`

@@ -15,6 +15,9 @@ import (
 
 var ErrDataNotFound = fmt.Errorf("data not found")
 
+// LabelWithNotify used to mark an instance as called with a notify-chanel
+const LabelWithNotify = "WithNotify"
+
 type Engine struct {
 	db       *gorm.DB
 	dataBus  DataBus
@@ -56,10 +59,21 @@ func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPa
 		return uuid.Nil, fmt.Errorf("fetch script: %w", err)
 	}
 
-	return e.StartScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, args, nil, metadata)
+	return e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, args, nil, metadata)
 }
 
-func (e *Engine) StartScript(ctx context.Context, namespace string, script string, mappings string, fn string, args any, done chan<- *InstanceStatus, metadata map[string]string) (uuid.UUID, error) {
+func (e *Engine) RunWorkflow(ctx context.Context, namespace string, workflowPath string, args any, metadata map[string]string) (uuid.UUID, chan<- *InstanceStatus, error) {
+	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
+	if err != nil {
+		return uuid.Nil, nil, fmt.Errorf("fetch script: %w", err)
+	}
+	notify := make(chan *InstanceStatus, 1)
+	id, err := e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, args, notify, metadata)
+
+	return id, notify, err
+}
+
+func (e *Engine) startScript(ctx context.Context, namespace string, script string, mappings string, fn string, args any, notify chan<- *InstanceStatus, metadata map[string]string) (uuid.UUID, error) {
 	input, ok := args.(string)
 	if !ok {
 		return uuid.Nil, fmt.Errorf("invalid input")
@@ -88,8 +102,10 @@ func (e *Engine) StartScript(ctx context.Context, namespace string, script strin
 		return uuid.Nil, fmt.Errorf("push history stream: %w", err)
 	}
 
-	if done != nil {
-		e.dataBus.NotifyInstanceStatus(ctx, instID, done)
+	metadata[LabelWithNotify] = "no"
+	if notify != nil {
+		metadata[LabelWithNotify] = "yes"
+		e.dataBus.NotifyInstanceStatus(ctx, instID, notify)
 	}
 
 	err = e.dataBus.PushQueueStream(ctx, ev)

@@ -112,7 +112,8 @@ func (d *DataBus) startStatusCache(ctx context.Context) error {
 			// best-effort; ignore bad payloads
 			return
 		}
-		if st.Status == "succeeded" || st.Status == "failed" {
+
+		if st.IsEndStatus() && st.Metadata[engine.LabelWithNotify] == "yes" {
 			d.lock.RLock()
 			ch, ok := d.notifyMap[st.InstanceID.String()]
 			d.lock.RUnlock()
@@ -121,6 +122,7 @@ func (d *DataBus) startStatusCache(ctx context.Context) error {
 				close(ch)
 			}
 		}
+
 		d.cache.Upsert(&st)
 	}, nats.AckNone())
 	if err != nil {
