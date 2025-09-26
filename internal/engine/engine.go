@@ -84,6 +84,11 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 
 	instID := uuid.New()
 
+	metadata[LabelWithNotify] = "no"
+	if notify != nil {
+		metadata[LabelWithNotify] = "yes"
+	}
+
 	ev := &InstanceEvent{
 		EventID:    uuid.New(),
 		InstanceID: instID,
@@ -102,9 +107,7 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 		return uuid.Nil, fmt.Errorf("push history stream: %w", err)
 	}
 
-	metadata[LabelWithNotify] = "no"
 	if notify != nil {
-		metadata[LabelWithNotify] = "yes"
 		e.dataBus.NotifyInstanceStatus(ctx, instID, notify)
 	}
 
@@ -179,4 +182,16 @@ func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.
 
 func (e *Engine) DeleteNamespace(ctx context.Context, name string) error {
 	return e.dataBus.DeleteNamespace(ctx, name)
+}
+
+// TODO: debug code
+func (e *Engine) DebugRunWorkflow(ctx context.Context, namespace string, workflowPath string, args any, metadata map[string]string) (uuid.UUID, <-chan *InstanceStatus, error) {
+	//flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
+	//if err != nil {
+	//	return uuid.Nil, nil, fmt.Errorf("fetch script: %w", err)
+	//}
+	notify := make(chan *InstanceStatus, 1)
+	id, err := e.startScript(ctx, namespace, workflowPath, "", "stateOne", args, notify, metadata)
+
+	return id, notify, err
 }
