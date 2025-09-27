@@ -51,8 +51,8 @@ func (c *StatusCache) Snapshot(filterNamespace string, filterInstanceID uuid.UUI
 }
 
 func (c *StatusCache) DeleteNamespace(name string) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	for k, v := range c.items {
 		if name == v.Namespace {
 			delete(c.items, k)

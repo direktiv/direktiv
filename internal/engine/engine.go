@@ -84,6 +84,9 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 
 	instID := uuid.New()
 
+	if metadata == nil {
+		metadata = make(map[string]string)
+	}
 	metadata[LabelWithNotify] = "no"
 	if notify != nil {
 		metadata[LabelWithNotify] = "yes"
@@ -130,7 +133,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 	err := e.dataBus.PushHistoryStream(ctx, startEv)
 	if err != nil {
-		return fmt.Errorf("push history start envent, inst: %s: %w", inst.InstanceID, err)
+		return fmt.Errorf("push history start event, inst: %s: %w", inst.InstanceID, err)
 	}
 
 	endEv := &InstanceEvent{
@@ -143,12 +146,14 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		endEv.Type = "failed"
 		endEv.Error = err.Error()
 	} else {
-		retBytes, err := json.Marshal(ret)
-		if err != nil {
-			panic(err)
+		retBytes, mErr := json.Marshal(ret)
+		if mErr != nil {
+			endEv.Type = "failed"
+			endEv.Error = fmt.Errorf("marshal result: %w", mErr).Error()
+		} else {
+			endEv.Type = "succeeded"
+			endEv.Output = retBytes
 		}
-		endEv.Type = "succeeded"
-		endEv.Output = retBytes
 	}
 
 	// simulate a job that takes some long time
