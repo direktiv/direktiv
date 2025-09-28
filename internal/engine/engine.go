@@ -192,7 +192,7 @@ func (e *Engine) DeleteNamespace(ctx context.Context, name string) error {
 // TODO: debug code.
 func (e *Engine) DebugRunWorkflow(ctx context.Context, namespace string, workflowPath string, args any, metadata map[string]string) (uuid.UUID, <-chan *InstanceStatus, error) {
 	// flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
-	//if err != nil {
+	// if err != nil {
 	//	return uuid.Nil, nil, fmt.Errorf("fetch script: %w", err)
 	//}
 	notify := make(chan *InstanceStatus, 1)

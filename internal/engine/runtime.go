@@ -3,7 +3,6 @@ package engine
 import (
 	"encoding/json"
 	"fmt"
-	"regexp"
 
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
@@ -48,15 +47,4 @@ func (e *Engine) execJSScript(instID uuid.UUID, script string, mappings string, 
 	}
 
 	return result, nil
-}
-
-func parseJSFunctionName(input string) string {
-	re := regexp.MustCompile(`function\s+([a-zA-Z0-9_]+)\s*\(`)
-	match := re.FindStringSubmatch(input)
-
-	if len(match) > 1 {
-		return match[1]
-	} else {
-		return input
-	}
 }

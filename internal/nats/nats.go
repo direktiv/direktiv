@@ -173,14 +173,14 @@ func resetStreams(ctx context.Context, js nats.JetStreamContext) error {
 }
 
 func ensureStream(ctx context.Context, js nats.JetStreamContext, cfg *nats.StreamConfig) error {
-	_, err := js.StreamInfo(cfg.Name)
+	_, err := js.StreamInfo(cfg.Name, nats.Context(ctx))
 	if err == nil {
 		return nil
 	}
 	if !errors.Is(err, nats.ErrStreamNotFound) {
 		return fmt.Errorf("nats info stream %s: %w", cfg.Name, err)
 	}
-	_, err = js.AddStream(cfg)
+	_, err = js.AddStream(cfg, nats.Context(ctx))
 	if err != nil {
 		return fmt.Errorf("nats add stream %s: %w", cfg.Name, err)
 	}
@@ -189,14 +189,14 @@ func ensureStream(ctx context.Context, js nats.JetStreamContext, cfg *nats.Strea
 }
 
 func ensureConsumer(ctx context.Context, js nats.JetStreamContext, cfg *nats.ConsumerConfig) error {
-	_, err := js.ConsumerInfo(cfg.Durable, cfg.Durable)
+	_, err := js.ConsumerInfo(cfg.Durable, cfg.Durable, nats.Context(ctx))
 	if err == nil {
 		return nil
 	}
 	if !errors.Is(err, nats.ErrConsumerNotFound) {
 		return fmt.Errorf("nats info consumer %s: %w", cfg.Durable, err)
 	}
-	_, err = js.AddConsumer(cfg.Durable, cfg)
+	_, err = js.AddConsumer(cfg.Durable, cfg, nats.Context(ctx))
 	if err != nil {
 		return fmt.Errorf("nats add consumer %s: %w", cfg.Durable, err)
 	}
