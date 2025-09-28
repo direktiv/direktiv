@@ -15,7 +15,7 @@ import (
 
 var ErrDataNotFound = fmt.Errorf("data not found")
 
-// LabelWithNotify used to mark an instance as called with a notify-chanel
+// LabelWithNotify used to mark an instance as called with a notify-chanel.
 const LabelWithNotify = "WithNotify"
 
 type Engine struct {
@@ -189,9 +189,9 @@ func (e *Engine) DeleteNamespace(ctx context.Context, name string) error {
 	return e.dataBus.DeleteNamespace(ctx, name)
 }
 
-// TODO: debug code
+// TODO: debug code.
 func (e *Engine) DebugRunWorkflow(ctx context.Context, namespace string, workflowPath string, args any, metadata map[string]string) (uuid.UUID, <-chan *InstanceStatus, error) {
-	//flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
+	// flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
 	//if err != nil {
 	//	return uuid.Nil, nil, fmt.Errorf("fetch script: %w", err)
 	//}
