@@ -129,6 +129,7 @@ func (p *projector) getLastStatusForSubject(ctx context.Context, subject string)
 		intNats.StreamEngineStatus.String(),
 		subject, nats.Context(ctx))
 	if err != nil && errors.Is(err, nats.ErrMsgNotFound) {
+		// nolint: nilnil
 		return nil, nil
 	}
 	if err != nil {

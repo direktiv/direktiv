@@ -46,14 +46,17 @@ const (
 	LogLevelWarn
 	LogLevelInfo
 	LogLevelError
+)
 
+const (
 	LogScopeInstance  LogScope = "instance"
 	LogScopeNamespace LogScope = "namespace"
 	LogScopeActivity  LogScope = "activity"
 	LogScopeRoute     LogScope = "route"
+)
 
-	errorKey = "error"
-
+const (
+	errorKey     = "error"
 	logObjectCtx = "log-ctx"
 )
 

@@ -336,6 +336,7 @@ func recurseIntoArray(data interface{}, q []interface{}) ([]interface{}, error) 
 		}
 		array = append(array, x[0])
 	}
+	// nolint: asasalint
 	out = append(out, array)
 
 	return out, nil

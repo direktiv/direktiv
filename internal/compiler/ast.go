@@ -249,6 +249,7 @@ func (ap *ASTParser) ValidateConfig() (*core.FlowConfig, error) {
 					continue
 				}
 
+				// nolint:nestif
 				if ident.Name == "flow" {
 					for i := range literal.Value {
 						p := literal.Value[i]

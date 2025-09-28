@@ -38,7 +38,7 @@ import (
 	"k8s.io/utils/clock"
 )
 
-//nolint:gocognit
+//nolint:gocognit, maintidx
 func Start(lc *lifecycle.Manager) error {
 	var err error
 	config := &core.Config{}
@@ -86,6 +86,9 @@ func Start(lc *lifecycle.Manager) error {
 	{
 		slog.Info("initializing pubsub")
 		app.PubSub, err = natspubsub.New(intNats.Connect, slog.Default())
+		if err != nil {
+			return fmt.Errorf("initialize pubsub, err: %w", err)
+		}
 		lc.OnShutdown(func() error {
 			err := app.PubSub.Close()
 			if err != nil {
