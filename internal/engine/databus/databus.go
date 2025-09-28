@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
 
 	"github.com/direktiv/direktiv/internal/engine"
 	intNats "github.com/direktiv/direktiv/internal/nats"
@@ -17,12 +16,15 @@ type DataBus struct {
 	js    nats.JetStreamContext
 	cache *StatusCache
 
-	notifyMap map[string]chan<- *engine.InstanceStatus
-	lock      sync.RWMutex
+	notifier *instanceNotifier
 }
 
 func New(js nats.JetStreamContext) *DataBus {
-	return &DataBus{js: js, cache: NewStatusCache(), notifyMap: make(map[string]chan<- *engine.InstanceStatus), lock: sync.RWMutex{}}
+	return &DataBus{
+		js:       js,
+		cache:    NewStatusCache(),
+		notifier: newInstanceNotifier(),
+	}
 }
 
 var _ engine.DataBus = &DataBus{}
@@ -98,9 +100,7 @@ func (d *DataBus) DeleteNamespace(ctx context.Context, name string) error {
 }
 
 func (d *DataBus) NotifyInstanceStatus(ctx context.Context, instanceID uuid.UUID, done chan<- *engine.InstanceStatus) {
-	d.lock.Lock()
-	defer d.lock.Unlock()
-	d.notifyMap[instanceID.String()] = done
+	d.notifier.Add(instanceID, done)
 }
 
 func (d *DataBus) startStatusCache(ctx context.Context) error {
@@ -114,13 +114,7 @@ func (d *DataBus) startStatusCache(ctx context.Context) error {
 		}
 
 		if st.IsEndStatus() && st.Metadata[engine.LabelWithNotify] == "yes" {
-			d.lock.RLock()
-			ch, ok := d.notifyMap[st.InstanceID.String()]
-			d.lock.RUnlock()
-			if ok && ch != nil {
-				ch <- &st
-				close(ch)
-			}
+			d.notifier.Notify(st.InstanceID, &st)
 		}
 
 		d.cache.Upsert(&st)
