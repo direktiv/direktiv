@@ -163,12 +163,11 @@ jobs:
         with:
           version: v3.17.3
 
-      - name: Create namespace for the DB
-        run: kubectl create ns postgres
+      - name: Install Task
+        uses: go-task/setup-task@v1
 
-      - name: Install Postgres
-        run: |
-          kubectl apply -f kind/postgres.yaml
+      - name: Task default
+        run: task default
 
       - name: Wait for Direktiv pods to be ready
         run: |
@@ -176,35 +175,8 @@ jobs:
           kubectl get pods -A;
           kubectl get pods -A --show-labels;
 
-      - name: Generate dev.yaml file with database credentials
-        run: |
-          DB_HOST=postgres.default.svc
-          DB_PORT=5432
-          DB_USER=admin
-          DB_PASSWORD=password
-          DB_NAME=direktiv
-
-          cat <<EOF > dev.yaml
-          pullPolicy: IfNotPresent
-          registry: ghcr.io
-          image: direktiv/direktiv
-          tag: ${GITHUB_SHA::10}
-          flow:
-            logging: json
-          database:
-            host: "$DB_HOST"
-            port: $DB_PORT
-            user: "$DB_USER"
-            password: "$DB_PASSWORD"
-            name: "$DB_NAME"
-            sslmode: disable
-          EOF
-          cat dev.yaml
-      - name: Install Direktiv chart
-        run: helm install direktiv -f dev.yaml ./charts/direktiv/
-
       - name: Set Environment Variables
-        run: echo "DIREKTIV_HOST=127.0.0.1:80" >> $GITHUB_ENV
+        run: echo "DIREKTIV_HOST=127.0.0.1:9090" >> $GITHUB_ENV
 
       - name: Wait until flow is healthy
         run: |
