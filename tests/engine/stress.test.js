@@ -15,6 +15,24 @@ function quantile (arr, q) {
 	return a[base] + (a[base + 1] - a[base]) * (rest || 0)
 }
 
+async function fireCreateRequest (url, input, durations) {
+	const t0 = performance.now()
+	try {
+		const res = await fetch(url, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(input),
+		})
+		const t1 = performance.now()
+		durations.push(t1 - t0)
+		return { status: res.status, ok: res.ok ? 1 : 0, fail: res.ok ? 0 : 1 }
+	} catch {
+		const t1 = performance.now()
+		durations.push(t1 - t0)
+		return { status: 0, ok: 0, fail: 1 } // failed
+	}
+}
+
 const randomStr = Math.random().toString(10)
 	.slice(2, 12)
 const namespace = basename(__filename.replaceAll('.', '-'))
@@ -73,33 +91,22 @@ function stateTwo(payload) {
 				fail = 0
 
 			for (let start = 0; start < total; start += batchSize) {
-				const batch = Array.from({ length: batchSize }, (_, i) => {
-					const url = common.config.getDirektivHost() + `/api/v2/namespaces/${ namespace }/instances?path=foo/${ fName }`
+				const url = common.config.getDirektivHost()
+					+ `/api/v2/namespaces/${ namespace }/instances?path=foo/${ fName }`
 
-					const t0 = performance.now()
-					return fetch(url, {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ foo: 'bar' }),
-					}).then(res => {
-						const t1 = performance.now()
-						durations.push(t1 - t0)
-						if (res.ok) ok++; else fail++
-						return res.status
-					})
-						.catch(err => {
-							const t1 = performance.now()
-							durations.push(t1 - t0)
-							fail++
-							return 0 // mark as failed
-						})
-				})
+				const batch = []
+				for (let j = 0; j < batchSize; j++)
+					batch.push(fireCreateRequest(url, { foo: 'bar' }, durations))
 
-				// run batch concurrently
-				const statuses = await Promise.all(batch)
-				results.push(...statuses)
+				const outcome = await Promise.all(batch)
 
-				console.log(`Batch done: ${ start + batchSize }/${ total }`)
+				for (const { status, ok: oks, fail: fails } of outcome) {
+					results.push(status)
+					ok += oks
+					fail += fails
+				}
+
+				console.log(`Batch done: ${ Math.min(start + batchSize, total) }/${ total }`)
 			}
 
 			const sum = durations.reduce((a, b) => a + b, 0)
@@ -119,7 +126,7 @@ function stateTwo(payload) {
 					p99: +p99.toFixed(2), max: +max.toFixed(2), ok, fail })
 
 			// Assertions: all requests should be 200
-			results.forEach((status, i) => {
+			results.forEach(status => {
 				expect(status).toBe(200) // or 201 depending on your API
 			})
 

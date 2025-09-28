@@ -277,7 +277,7 @@ describe('Test workflow events', () => {
 		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
 			.send()
 		expect(getEventListenerResponse.body.meta.total).toEqual(2)
-
+		// eslint-disable-next-line no-prototype-builtins
 		const result = getEventListenerResponse.body.data.find(item => item.hasOwnProperty('triggerInstance'))
 		expect(result).toMatchObject({
 			triggerType: 'WaitSimple',
