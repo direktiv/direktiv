@@ -6,12 +6,12 @@ on:
       - '*'
     branches:
       - main
+      - main-ts
   pull_request:
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   IS_GITHUB_ACTIONS: true
 
 concurrency:
@@ -204,7 +204,7 @@ jobs:
             IS_ENTERPRISE=true
 
   e2e:
-    needs: [build, backend-license, backend-lint, backend-test]
+    needs: [build, backend-license, backend-test]
     runs-on: ubuntu-latest
 
     timeout-minutes: 18
@@ -247,8 +247,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Setup k3s
-        run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
+      - name: Set up KinD
+        uses: helm/kind-action@v1
+        with:
+          version: v0.29.0
+
+      - name: Verify cluster
+        run: kubectl cluster-info
+
+      - name: Get nodes
+        run: kubectl get nodes -o wide
 
       - name: Install Helm v3.17.3
         uses: azure/setup-helm@v4
