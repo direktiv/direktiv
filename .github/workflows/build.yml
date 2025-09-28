@@ -204,7 +204,7 @@ jobs:
             IS_ENTERPRISE=true
 
   e2e:
-    needs: [build, backend-license, backend-test]
+    needs: [build, backend-test]
     runs-on: ubuntu-latest
 
     timeout-minutes: 18
