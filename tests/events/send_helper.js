@@ -10,13 +10,13 @@ async function listInstancesAndFilter (ns, wf, status) {
 	if (wf)
 		append = '&filter.field=AS&filter.type=CONTAINS&filter.val=' + wf
 
-	let instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ ns }/instances?limit=100&offset=0` + append)
+	let instancesResponse = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ ns }/instances?limit=100&offset=0` + append)
 		.send()
 
 	// if filter, then try to wait
 	if (wf || status)
 		for (let i = 0; i < 20; i++) {
-			instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ ns }/instances?limit=100&offset=0` + append)
+			instancesResponse = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ ns }/instances?limit=100&offset=0` + append)
 			if (status) {
 				const idFind = instancesResponse.body.data.find(item => item.status === status)
 				if (idFind)
@@ -42,13 +42,13 @@ async function sendEventAndList (ns, event) {
 	expect(eventObject.id).not.toBeFalsy()
 
 	// post event
-	const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ ns }/events/broadcast`)
+	const workflowEventResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ ns }/events/broadcast`)
 		.set('Content-Type', 'application/json')
 		.send(event)
 	expect(workflowEventResponse.statusCode).toEqual(200)
 
 	// wait for it to be registered
-	const eventsResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ ns }/events/history?limit=100&offset=0`)
+	const eventsResponse = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ ns }/events/history?limit=100&offset=0`)
 		.send()
 
 	for (let i = 0; i < eventsResponse.body.data.length; i++)

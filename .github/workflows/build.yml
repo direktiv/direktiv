@@ -12,7 +12,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  IS_GITHUB_ACTIONS: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -280,11 +279,11 @@ jobs:
           kubectl get pods -A --show-labels;
 
       - name: Set Environment Variables
-        run: echo "DIREKTIV_HOST=127.0.0.1:9090" >> $GITHUB_ENV
+        run: echo "DIREKTIV_BASE_URL=http://127.0.0.1:9090" >> $GITHUB_ENV
 
       - name: Wait until flow is healthy
         run: |
-          endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/status";
+          endpoint="${{ env.DIREKTIV_BASE_URL }}/api/v2/status";
           for attempt in {1..120}
           do
             status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint || true);
@@ -307,14 +306,15 @@ jobs:
         run: |
           npm -prefix tests run jest -- ${{ matrix.sections.suit }}/ --runInBand
         env:
-          DIREKTIV_HOST: ${{ env.DIREKTIV_HOST }}
-          GITHUB_ACTIONS: true
+          DIREKTIV_BASE_URL: ${{ env.DIREKTIV_BASE_URL }}
 
       - name: Run Playwright E2E tests
         id: playwrightRun
         if: matrix.sections.type == 'playwright'
         run: |
           PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} task test:playwright
+        env:
+          DIREKTIV_BASE_URL: ${{ env.DIREKTIV_BASE_URL }}
 
 
       - name: Upload Playwright Artifacts

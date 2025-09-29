@@ -15,7 +15,7 @@ describe('Test variable update calls', () => {
 
 	let createRes
 	it(`should create a variable case`, async () => {
-		createRes = await request(config.getDirektivHost())
+		createRes = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/variables`)
 			.send({
 				name: 'foo',
@@ -103,7 +103,7 @@ describe('Test variable update calls', () => {
 		// eslint-disable-next-line no-loop-func
 		it(`should update variable case ${ i }`, async () => {
 			const varId = createRes.body.data.id
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.patch(`/api/v2/namespaces/${ namespace }/variables/${ varId }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
@@ -125,7 +125,7 @@ describe('Test invalid variable update calls', () => {
 
 	let createRes
 	it(`should create a variable case`, async () => {
-		createRes = await request(config.getDirektivHost())
+		createRes = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/variables`)
 			.send({
 				name: 'foo',
@@ -171,7 +171,7 @@ describe('Test invalid variable update calls', () => {
 		// eslint-disable-next-line no-loop-func
 		it(`should fail updating a variable case ${ i }`, async () => {
 			const varId = createRes.body.data.id
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.patch(`/api/v2/namespaces/${ namespace }/variables/${ varId }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)

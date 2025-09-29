@@ -62,14 +62,14 @@ get:
 	)
 
 	retry10(`should show two routes`, async () => {
-		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway/routes`)
+		const res = await request(config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/gateway/routes`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toHaveLength(2)
 	})
 
 	retry10(`should show one route`, async () => {
-		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway/info`)
+		const res = await request(config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/gateway/info`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.spec.paths['/ep1']).not.toBeUndefined()

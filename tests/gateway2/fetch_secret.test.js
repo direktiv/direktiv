@@ -13,7 +13,7 @@ describe('Test gateway reconciling', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	it(`should create a new foo secret`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/secrets`)
 			.send({
 				name: 'foo',
@@ -64,7 +64,7 @@ groups:
 	)
 
 	retry10(`should get access denied ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
+		const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
 			.send({})
 			.auth('user1', 'falsePassword')
 		expect(res.statusCode).toEqual(403)
@@ -77,7 +77,7 @@ groups:
 	})
 
 	retry10(`should execute protected ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
+		const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
 			.send({})
 			.auth('user1', 'bar')
 		expect(res.statusCode).toEqual(200)

@@ -26,14 +26,14 @@ states:
     result: x`))
 
 	it(`should invoke the '/cancel.yaml' workflow`, async () => {
-		const xreq = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=cancel.yaml`)
+		const xreq = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=cancel.yaml`)
 		expect(xreq.statusCode).toEqual(200)
 
 		const instanceID = xreq.body.data.id
 
 		await helpers.sleep(50)
 
-		const creq = await request(common.config.getDirektivHost()).patch(`/api/v2/namespaces/${ namespaceName }/instances/${ instanceID }`)
+		const creq = await request(common.config.getDirektivBaseUrl()).patch(`/api/v2/namespaces/${ namespaceName }/instances/${ instanceID }`)
 			.set('Content-Type', 'application/json')
 			.send({
 				status: 'cancelled',
@@ -43,7 +43,7 @@ states:
 
 		await helpers.sleep(50)
 
-		const ireq = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instanceID }`)
+		const ireq = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instanceID }`)
 		expect(ireq.statusCode).toEqual(200)
 		expect(ireq.body.data.status).toEqual('cancelled')
 		expect(ireq.body.data.errorCode).toEqual('direktiv.cancels.api')
@@ -65,14 +65,14 @@ states:
     result: x`))
 
 	it(`should invoke the '/handle-cancel.yaml' workflow`, async () => {
-		const xreq = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=handle-cancel.yaml`)
+		const xreq = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=handle-cancel.yaml`)
 		expect(xreq.statusCode).toEqual(200)
 
 		const instanceID = xreq.body.data.id
 
 		await helpers.sleep(50)
 
-		const creq = await request(common.config.getDirektivHost()).patch(`/api/v2/namespaces/${ namespaceName }/instances/${ instanceID }`)
+		const creq = await request(common.config.getDirektivBaseUrl()).patch(`/api/v2/namespaces/${ namespaceName }/instances/${ instanceID }`)
 			.set('Content-Type', 'application/json')
 			.send({
 				status: 'cancelled',
@@ -82,7 +82,7 @@ states:
 
 		await helpers.sleep(50)
 
-		const ireq = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instanceID }`)
+		const ireq = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instanceID }`)
 		expect(ireq.statusCode).toEqual(200)
 		expect(ireq.body.data.status).toEqual('cancelled')
 		expect(ireq.body.data.errorCode).toEqual('direktiv.cancels.api')

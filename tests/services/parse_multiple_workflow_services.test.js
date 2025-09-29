@@ -41,7 +41,7 @@ states:
 `)
 
 	retry10(`should list all services`, async () => {
-		const listRes = await request(common.config.getDirektivHost())
+		const listRes = await request(common.config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body).toMatchObject({

@@ -10,7 +10,7 @@ describe('Test services crud operations', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	it(`should create a new git mirrored namespace`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces`)
 			.send({
 				name: testNamespace,
@@ -24,14 +24,14 @@ describe('Test services crud operations', () => {
 	})
 
 	it(`should trigger a new sync`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ testNamespace }/syncs`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 	})
 
 	retry50(`should list all services`, async () => {
-		const listRes = await request(common.config.getDirektivHost())
+		const listRes = await request(common.config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 		expect(listRes.statusCode).toEqual(200)
 

@@ -56,7 +56,7 @@ states:
 `))
 
 	it(`should walk through the execution of a workflow called /simple-listener.yaml`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=simple-listener.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=simple-listener.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 'x',
@@ -96,7 +96,7 @@ states:
 `))
 
 	it(`should walk through the execution of a workflow called /or-listener.yaml`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=or-listener.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=or-listener.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 'x',

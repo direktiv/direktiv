@@ -17,7 +17,7 @@ describe('Test filesystem tree read operations', () => {
 	helpers.itShouldCreateDir(it, expect, namespace, '/', 'dir2')
 
 	it(`should read root dir with two paths`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/files`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
@@ -53,7 +53,7 @@ describe('Test filesystem tree read operations', () => {
 		btoa(helpers.dummyWorkflow('foo1')))
 
 	it(`should read root /dir1 with one path`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/files/dir1`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({

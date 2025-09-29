@@ -131,7 +131,7 @@ describe('Test special command with files and permission', () => {
 	)
 
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf1.yaml&wait=true`)
+		const res = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf1.yaml&wait=true`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('HELLO')
 		expect(res.body.return[1].Output).toEqual(444)
@@ -152,7 +152,7 @@ describe('Test special command with env', () => {
 	)
 
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf2.yaml&wait=true`)
+		const res = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf2.yaml&wait=true`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('HELLO=WORLD\n')
 	})
@@ -173,17 +173,17 @@ describe('Test special command with supress', () => {
 
 	// this prints both but doesn't show on logs
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf3.yaml&wait=true`)
+		const res = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf3.yaml&wait=true`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('hello1\n')
 		expect(res.body.return[1].Output).toEqual('hello2\n')
 	})
 
 	retry10(`should not contain instance log entries`, async () => {
-		const instRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ testNamespace }/instances?filter.field=AS&filter.type=CONTAINS&filter.val=wf3`)
+		const instRes = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ testNamespace }/instances?filter.field=AS&filter.type=CONTAINS&filter.val=wf3`)
 		expect(instRes.statusCode).toEqual(200)
 
-		const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ testNamespace }/logs?instance=${ instRes.body.data[0].id }`)
+		const logRes = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ testNamespace }/logs?instance=${ instRes.body.data[0].id }`)
 		expect(logRes.statusCode).toEqual(200)
 
 		expect(logRes.body.data).toEqual(
@@ -232,12 +232,12 @@ describe('Test special command with stop', () => {
 	})
 
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf5.yaml&wait=true`)
+		const res = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf5.yaml&wait=true`)
 		expect(res.statusCode).toEqual(500)
 	})
 
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf6.yaml&wait=true`)
+		const res = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf6.yaml&wait=true`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return.length).toBe(2)
 	})
