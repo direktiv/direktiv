@@ -6,7 +6,7 @@ on:
       - '*'
     branches:
       - main
-      - yassir/main-remove-makefiles
+      - main-ts
   pull_request:
 
 env:
