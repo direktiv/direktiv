@@ -3,7 +3,9 @@ version: '3'
 vars: 
   TELEMETRY: '{{.TELEMETRY | default "false"}}'
   TLS: '{{.TLS | default "false"}}'
-  NAME: '{{.REPLICAS | default 1 }}'
+  DIREKTIV_IMAGE: '{{.DIREKTIV_IMAGE | default "direktiv" }}'
+  DIREKTIV_IMAGE_TAG: '{{.DIREKTIV_IMAGE_TAG | default "dev" }}'
+  DIREKTIV_IMAGE_REGISTRY: '{{.DIREKTIV_IMAGE_REGISTRY | default "localhost:5001" }}'
 
 tasks:
   clean:
@@ -73,10 +75,10 @@ tasks:
         --set flow.replicas={{ .REPLICAS }} \
         --set pullPolicy=Always \
         --set ingress-nginx.controller.hostPort.enabled=true \
-        --set image=direktiv \
+        --set image={{ .DIREKTIV_IMAGE }} \
         --set nats.delay=0 \
-        --set registry=localhost:5001 \
-        --set tag=dev \
+        --set registry={{ .DIREKTIV_IMAGE_REGISTRY }} \
+        --set tag={{ .DIREKTIV_IMAGE_TAG }} \
         {{- if eq .TELEMETRY "true" }}
         --set otel.install=true -f scripts/telemetry/telemetry.yaml \
         {{- end }}
