@@ -56,7 +56,6 @@ func (t *Transpiler) Transpile(script, name string) (string, string, error) {
 
 	value, err := t.vm.RunString(s)
 	if err != nil {
-		fmt.Println("HERE!")
 		return "", "", err
 	}
 
