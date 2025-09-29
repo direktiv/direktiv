@@ -82,13 +82,6 @@ tasks:
         go install github.com/google/go-licenses@latest
         go-licenses check --ignore=github.com/bbuck/go-lexer,github.com/xi2/xz,modernc.org/mathutil ./... --disallowed_types forbidden,unknown,restricted
 
-  licenses:
-    desc: Scans dependencies looking for blacklisted licenses.
-    cmds:
-      - |
-        go install github.com/google/go-licenses@latest
-        go-licenses check --ignore=github.com/bbuck/go-lexer,github.com/xi2/xz,modernc.org/mathutil ./... --disallowed_types forbidden,unknown,restricted
-
   playwright:
     desc: sjsjs
     cmds: 
