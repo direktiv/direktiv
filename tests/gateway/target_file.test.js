@@ -98,7 +98,7 @@ describe('Test target file wrong config', () => {
 	)
 
 	retry10(`should fail with wrong config`, async () => {
-		const listRes = await request(common.config.getDirektivHost()).get(
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
 		)
 		expect(listRes.statusCode).toEqual(200)
@@ -126,7 +126,7 @@ describe('Test mimetype for file target', () => {
 	)
 
 	retry10(`should return a configured mimetype`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint-mimetype`,
 		)
 		expect(req.headers['content-type']).toEqual('application/whatever')
@@ -141,7 +141,7 @@ describe('Test mimetype for file target', () => {
 	)
 
 	retry10(`should return a guess mimetype (yaml)`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint-no-mimetype`,
 		)
 		expect(req.headers['content-type']).toEqual('application/yaml')
@@ -187,7 +187,7 @@ describe('Test target namespace file plugin', () => {
 	)
 
 	retry10(`should return a file from magic namespace`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(200)
@@ -195,7 +195,7 @@ describe('Test target namespace file plugin', () => {
 	})
 
 	retry10(`should return a file from magic namespace without namespace set`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint2`,
 		)
 		expect(req.statusCode).toEqual(200)
@@ -203,7 +203,7 @@ describe('Test target namespace file plugin', () => {
 	})
 
 	retry10(`should return a file from non-magic namespace`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/` + limitedNamespace + `/endpoint2`,
 		)
 		expect(req.statusCode).toEqual(200)
@@ -211,7 +211,7 @@ describe('Test target namespace file plugin', () => {
 	})
 
 	retry10(`should not return a file across namespaces`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/` + limitedNamespace + `/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(403)

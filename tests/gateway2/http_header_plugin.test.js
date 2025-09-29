@@ -69,7 +69,7 @@ states:
     result: jq(.)`)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(
+		const req = await request(common.config.getDirektivBaseUrl()).post(
 			`/api/v2/namespaces/${ namespace }/gateway/target?Query1=value1&Query2=value2`,
 		)
 			.set('Header', 'Value1')

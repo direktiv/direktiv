@@ -16,7 +16,7 @@ describe('Test services crud operations', () => {
 	itShouldCreateSecret(it, expect, 'test_namespace_b', 'b_domain_2.io', 'b_name_2', 'b_password2')
 
 	it(`should list all registries in namespace test_namespace_a`, async () => {
-		const listRes = await request(common.config.getDirektivHost())
+		const listRes = await request(common.config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/test_namespace_a/registries`)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data).toEqual(
@@ -42,7 +42,7 @@ describe('Test services crud operations', () => {
 	})
 
 	it(`should list all registries in namespace test_namespace_b`, async () => {
-		const listRes = await request(common.config.getDirektivHost())
+		const listRes = await request(common.config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/test_namespace_b/registries`)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data).toEqual(
@@ -68,7 +68,7 @@ describe('Test services crud operations', () => {
 
 function itShouldCreateSecret (it, expect, namespace, url, user, password) {
 	it(`should create a registry ${ url } ${ user } ${ password }`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/registries`)
 			.send({
 				url,

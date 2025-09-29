@@ -16,7 +16,7 @@ describe('Test filesystem read single file', () => {
 	helpers.itShouldCreateFile(it, expect, namespace, '/', 'foo.yaml', 'file', 'text/plain', btoa('some foo data'))
 
 	it(`should read file`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/files/foo.yaml`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
@@ -31,7 +31,7 @@ describe('Test filesystem read single file', () => {
 	})
 
 	it(`should read raw file`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/files/foo.yaml?raw=true`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.headers['content-type']).toEqual('text/plain')
@@ -40,13 +40,13 @@ describe('Test filesystem read single file', () => {
 	})
 
 	it(`should read raw file not found`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/files/something.yaml?raw=true`)
 		expect(res.statusCode).toEqual(404)
 	})
 
 	it(`should read raw file not found`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/files/something.yaml`)
 		expect(res.statusCode).toEqual(404)
 		expect(res.body).toMatchObject({

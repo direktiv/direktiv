@@ -24,17 +24,17 @@ states:
     result: jq(.test)`))
 
 	it(`generate namespace logs`, async () => {
-		await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/instances?path=noop.yaml&wait=true`)
+		await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/instances?path=noop.yaml&wait=true`)
 			.set('Content-Type', 'application/json')
 			.send('{ "test":"me" }')
 	})
 
 	it(`generate namespace logs error`, async () => {
-		await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/instances?path=noop.yaml&wait=true`)
+		await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/instances?path=noop.yaml&wait=true`)
 	})
 
 	retry50(`has one error message and at least on started message`, async () => {
-		const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs`)
+		const logRes = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/logs`)
 		expect(logRes.statusCode).toEqual(200)
 
 		expect(logRes.body.data).toEqual(

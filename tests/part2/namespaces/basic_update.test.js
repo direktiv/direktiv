@@ -66,7 +66,7 @@ describe('Test namespace simple update calls', () => {
 
 		// eslint-disable-next-line no-loop-func
 		it(`should update namespace case ${ i }`, async () => {
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.patch(`/api/v2/namespaces/foo`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
@@ -177,7 +177,7 @@ describe('Test namespace mirror update calls', () => {
 
 		// eslint-disable-next-line no-loop-func
 		it(`should update namespace case ${ i }`, async () => {
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.patch(`/api/v2/namespaces/foo`)
 				.send({ mirror: testCase.input })
 			expect(res.statusCode).toEqual(200)
@@ -199,7 +199,7 @@ describe('Test invalid namespace update calls', () => {
 
 	let createRes
 	it(`should create a namespace case`, async () => {
-		createRes = await request(config.getDirektivHost())
+		createRes = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces`)
 			.send({
 				name: 'foo',
@@ -229,7 +229,7 @@ describe('Test invalid namespace update calls', () => {
 		const testCase = testCases[i]
 		// eslint-disable-next-line no-loop-func
 		it(`should fail updating a namespace case ${ i }`, async () => {
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.patch(`/api/v2/namespaces/${ createRes.body.data.name }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)

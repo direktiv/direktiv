@@ -128,7 +128,7 @@ describe('Test wrong endpoint config', () => {
 	)
 
 	retry10(`should list all endpoints`, async () => {
-		const listRes = await request(common.config.getDirektivHost()).get(
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
 		)
 		expect(listRes.statusCode).toEqual(200)
@@ -151,7 +151,7 @@ describe('Test gateway endpoints on create', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
 	retry10(`should list all endpoints`, async () => {
-		const listRes = await request(common.config.getDirektivHost()).get(
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
 		)
 		expect(listRes.statusCode).toEqual(200)
@@ -202,7 +202,7 @@ describe('Test gateway get single endpoint', () => {
 	)
 
 	retry10(`should list simple endpoint`, async () => {
-		const listRes = await request(common.config.getDirektivHost()).get(
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes?path=/endpoint1`,
 		)
 		expect(listRes.statusCode).toEqual(200)
@@ -240,7 +240,7 @@ describe('Test gateway get single endpoint', () => {
 	})
 
 	retry10(`should list long path endpoint`, async () => {
-		const listRes = await request(common.config.getDirektivHost()).get(
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes?path=/endpoint3/longer/path`,
 		)
 		expect(listRes.statusCode).toEqual(200)
@@ -249,7 +249,7 @@ describe('Test gateway get single endpoint', () => {
 	})
 
 	retry10(`should list long path endpoint with var`, async () => {
-		const listRes = await request(common.config.getDirektivHost()).get(
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes?path=/endpoint4/longer/path/{id}`,
 		)
 		expect(listRes.statusCode).toEqual(200)
@@ -296,7 +296,7 @@ describe('Test gateway endpoints crud operations', () => {
 	)
 
 	retry10(`should list all endpoints`, async () => {
-		const listRes = await request(common.config.getDirektivHost()).get(
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
 		)
 		expect(listRes.statusCode).toEqual(200)
@@ -321,7 +321,7 @@ describe('Test gateway endpoints crud operations', () => {
 	})
 
 	retry10(`should list all consumers`, async () => {
-		const listRes = await request(common.config.getDirektivHost()).get(
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/consumers`,
 		)
 		expect(listRes.statusCode).toEqual(200)
@@ -355,7 +355,7 @@ describe('Test gateway endpoints crud operations', () => {
 	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/consumer1.yaml')
 
 	retry10(`should list one route after delete`, async () => {
-		const listRes = await request(common.config.getDirektivHost()).get(
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
 		)
 		expect(listRes.statusCode).toEqual(200)
@@ -363,7 +363,7 @@ describe('Test gateway endpoints crud operations', () => {
 	})
 
 	retry10(`should list one consumer after delete`, async () => {
-		const listRes = await request(common.config.getDirektivHost()).get(
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/consumers`,
 		)
 		expect(listRes.statusCode).toEqual(200)
@@ -409,21 +409,21 @@ describe('Test availability of gateway endpoints', () => {
 	)
 
 	retry10(`should not run endpoint without authentication`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(403)
 	})
 
 	retry10(`should run endpoint without authentication but allow anonymous`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint2`,
 		)
 		expect(req.statusCode).toEqual(202)
 	})
 
 	retry10(`should run endpoint with key authentication`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint1`,
 		)
 			.set('secret', 'key2')
@@ -431,7 +431,7 @@ describe('Test availability of gateway endpoints', () => {
 	})
 
 	retry10(`should run endpoint with basic authentication`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint2`,
 		)
 			.auth('consumer1', 'pwd')
