@@ -6,12 +6,12 @@ on:
       - '*'
     branches:
       - main
+      - yassir/main-remove-makefiles
   pull_request:
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   IS_GITHUB_ACTIONS: true
 
 concurrency:
@@ -247,20 +247,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Setup k3s
-        run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
+      - name: Set up KinD
+        uses: helm/kind-action@v1
+        with:
+          version: v0.29.0
+
+      - name: Verify cluster
+        run: kubectl cluster-info
+
+      - name: Get nodes
+        run: kubectl get nodes -o wide
 
       - name: Install Helm v3.17.3
         uses: azure/setup-helm@v4
         with:
           version: v3.17.3
 
-      - name: Create namespace for the DB
-        run: kubectl create ns postgres
+      - name: Install Task
+        uses: go-task/setup-task@v1
 
-      - name: Install Postgres
-        run: |
-          kubectl apply -f kind/postgres.yaml
+      - name: Task default
+        run: DIREKTIV_IMAGE_REGISTRY=ghcr.io DIREKTIV_IMAGE=direktiv/direktiv DIREKTIV_IMAGE_TAG=${GITHUB_SHA::10} task github-ci
 
       - name: Wait for Direktiv pods to be ready
         run: |
@@ -268,40 +275,13 @@ jobs:
           kubectl get pods -A;
           kubectl get pods -A --show-labels;
 
-      - name: Generate dev.yaml file with database credentials
-        run: |
-          DB_HOST=postgres.default.svc
-          DB_PORT=5432
-          DB_USER=admin
-          DB_PASSWORD=password
-          DB_NAME=direktiv
-
-          cat <<EOF > dev.yaml
-          pullPolicy: IfNotPresent
-          registry: ghcr.io
-          image: direktiv/direktiv
-          tag: ${GITHUB_SHA::10}
-          flow:
-            logging: json
-          database:
-            host: "$DB_HOST"
-            port: $DB_PORT
-            user: "$DB_USER"
-            password: "$DB_PASSWORD"
-            name: "$DB_NAME"
-            sslmode: disable
-          EOF
-          cat dev.yaml
-      - name: Install Direktiv chart
-        run: helm install direktiv -f dev.yaml ./charts/direktiv/
-
       - name: Set Environment Variables
-        run: echo "DIREKTIV_HOST=127.0.0.1:80" >> $GITHUB_ENV
+        run: echo "DIREKTIV_HOST=127.0.0.1:9090" >> $GITHUB_ENV
 
       - name: Wait until flow is healthy
         run: |
           endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/status";
-          for attempt in {1..40}
+          for attempt in {1..120}
           do
             status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint || true);
             echo "API status code: $status_code";
