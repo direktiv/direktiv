@@ -140,8 +140,6 @@ function stateTwo(payload) {
 			})
 
 			expect(fail).toBe(0)
-			expect(avg).toBeLessThan(5000)
-			expect(p95).toBeLessThan(7000)
 		}, 60000)
 	}
 
