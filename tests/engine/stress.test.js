@@ -27,7 +27,7 @@ async function fireCreateRequest (url, input, durations) {
 		const t1 = performance.now()
 		durations.push(t1 - t0)
 		return { status: res.status, ok: res.ok ? 1 : 0, fail: res.ok ? 0 : 1 }
-	} catch(err) {
+	} catch (err) {
 		const t1 = performance.now()
 		durations.push(t1 - t0)
 		return { status: 0, ok: 0, fail: 1 } // failed
@@ -79,10 +79,10 @@ function stateTwo(payload) {
 			total: 100,
 			batchSize: 10,
 		},
-		//{
+		// {
 		//	total: 1000,
 		//	batchSize: 100,
-		//},
+		// },
 	]
 	for (let i = 0; i < cases.length; i++) {
 		const total = cases[i].total
@@ -139,7 +139,7 @@ function stateTwo(payload) {
 		}, 60000)
 	}
 
-	const total = cases.reduce((acc, obj) => acc + obj.total, 0) + 1;
+	const total = cases.reduce((acc, obj) => acc + obj.total, 0) + 1
 	retry(`should have all success instances`, 2, async () => {
 		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/instances/stats`)
 		console.log(req.body)
