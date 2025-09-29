@@ -17,8 +17,9 @@ function quantile (arr, q) {
 
 async function fireCreateRequest (url, input, durations) {
 	const t0 = performance.now()
+	let res = null
 	try {
-		const res = await fetch(url, {
+		res = await fetch(url, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(input),
@@ -30,6 +31,9 @@ async function fireCreateRequest (url, input, durations) {
 		const t1 = performance.now()
 		durations.push(t1 - t0)
 		return { status: 0, ok: 0, fail: 1 } // failed
+	} finally {
+		let text = await res.text()
+		console.log(">>>>>>", res.status, text)
 	}
 }
 
