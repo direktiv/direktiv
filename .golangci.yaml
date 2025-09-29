@@ -12,6 +12,10 @@ linters:
     - cyclop
     - depguard
     - err113 # TODO: This ensures no dynamic errors.
+    - spancheck
+    - unqueryvet
+    - iotamixing
+    - godoclint
     - exhaustruct
     - funlen
     - gochecknoglobals
