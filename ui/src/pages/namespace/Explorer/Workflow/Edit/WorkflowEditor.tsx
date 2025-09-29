@@ -10,7 +10,6 @@ import {
 import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
 import { Diagram } from "./Diagram";
-import { EditorLayoutSwitcher } from "~/components/EditorLayoutSwitcher";
 import { FileSchemaType } from "~/api/files/schema";
 import RunWorkflow from "../components/RunWorkflow";
 import { WorkspaceLayout } from "~/components/WorkspaceLayout";

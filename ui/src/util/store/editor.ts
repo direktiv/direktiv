@@ -1,23 +1,13 @@
-import { Code, Columns, LucideIcon, Rows, Workflow } from "lucide-react";
-
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export const availableLayouts = [
+const availableLayouts = [
   "code",
-  "diagram",
   "splitVertically",
   "splitHorizontally",
 ] as const;
 
 export type LayoutsType = (typeof availableLayouts)[number];
-
-export const layoutIcons: Record<LayoutsType, LucideIcon> = {
-  code: Code,
-  diagram: Workflow,
-  splitVertically: Columns,
-  splitHorizontally: Rows,
-};
 
 interface EditorState {
   layout: LayoutsType;
@@ -44,5 +34,3 @@ const useEditorState = create<EditorState>()(
 );
 
 export const useEditorLayout = () => useEditorState((state) => state.layout);
-
-export const useEditorActions = () => useEditorState((state) => state.actions);

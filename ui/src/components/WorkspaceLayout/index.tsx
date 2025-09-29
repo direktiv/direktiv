@@ -15,8 +15,6 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({
   switch (layout) {
     case "code":
       return editorComponent;
-    case "diagram":
-      return diagramComponent;
     case "splitVertically":
       return (
         <div className="grid grow grid-cols-2 gap-x-5">
