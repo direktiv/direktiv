@@ -1760,7 +1760,7 @@
             "dataPlaceholder": "Path to an array for the table (e.g. query.companies.data)"
           },
           "rowAction": {
-            "itemLabel": "Row actions",
+            "modalTitle": "Create new Row action",
             "tableLabel": "{{count}} Row actions",
             "tableLabel_one": "{{count}} Row action"
           },
@@ -1769,7 +1769,7 @@
             "labelPlaceholder": "Column label",
             "contentLabel": "Content",
             "contentPlaceholder": "The content of the column (e.g. E-Mail: {{loop.company-table.email}})",
-            "itemLabel": "Column",
+            "modalTitle": "Create new Column",
             "tableLabel": "{{count}} Columns",
             "tableLabel_one": "{{count}} Column"
           }
@@ -1781,7 +1781,7 @@
             "idPlaceholder": "unique identifier name to reference this query in any child block",
             "urlLabel": "URL",
             "urlPlaceholder": "relative or absolute url like /path/to/endpoint or https://...",
-            "itemLabel": "Query",
+            "modalTitle": "Create new Query",
             "tableLabel": "{{count}} Queries",
             "tableLabel_one": "{{count}} Query",
             "queryParamsLabel": "Query Parameters"
