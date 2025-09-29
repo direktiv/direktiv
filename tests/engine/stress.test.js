@@ -25,7 +25,7 @@ async function fireCreateRequest (url, input, durations) {
 		})
 		const t1 = performance.now()
 		durations.push(t1 - t0)
-		if (!res.ok) {
+		if (res.status !== 200) {
 			console.log(">>>>>>>>>", res.status, res.statusText)
 		}
 		return { status: res.status, ok: res.ok ? 1 : 0, fail: res.ok ? 0 : 1 }
