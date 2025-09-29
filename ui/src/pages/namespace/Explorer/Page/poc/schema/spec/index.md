@@ -63,12 +63,12 @@ Blocks are the main elements that the user can use to compose a Direktiv page.
 
 ### Table `Block`
 
-| Attribute | Type                         | Description                  |
-| --------- | ---------------------------- | ---------------------------- |
-| `type`    | `"table"`                    |                              |
-| `data`    | `Block<Loop>`                | The loop block to iterate on |
-| `blocks`  | `[TableActions, RowActions]` | Table and row actions        |
-| `columns` | `Block<TableColumn>[]`       | List of table columns        |
+| Attribute | Type                         | Description                                                    |
+| --------- | ---------------------------- | -------------------------------------------------------------- |
+| `type`    | `"table"`                    |                                                                |
+| `data`    | `Block<Loop>`                | The loop block to iterate on                                   |
+| `blocks`  | `[TableActions, RowActions]` | Required tuple of table and row actions. Must be in that order |
+| `columns` | `Block<TableColumn>[]`       | List of table columns                                          |
 
 ### TableColumn `Block`
 
