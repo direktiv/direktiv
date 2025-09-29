@@ -265,13 +265,14 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 	// validate flow file. it is stored but we report errors
 	if strings.HasSuffix(req.Name, core.FlowFileExtension) {
-		_, errs, err := compiler.ValidateScript(string(decodedBytes))
+		ci := compiler.NewCompileItem(decodedBytes, req.Name)
+		err = ci.TranspileAndValidate()
 		if err != nil {
 			res.Errors = append(res.Errors, err.Error())
 		}
 
-		for i := range errs {
-			res.Errors = append(res.Errors, errs[i].Error())
+		for i := range ci.ValidationErrors {
+			res.Errors = append(res.Errors, ci.ValidationErrors[i].Error())
 		}
 	}
 
@@ -401,13 +402,14 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if strings.HasSuffix(r.URL.Path, core.FlowFileExtension) {
-		_, errs, err := compiler.ValidateScript(string(decodedBytes))
+		ci := compiler.NewCompileItem(decodedBytes, r.URL.Path)
+		err = ci.TranspileAndValidate()
 		if err != nil {
 			res.Errors = append(res.Errors, err.Error())
 		}
 
-		for i := range errs {
-			res.Errors = append(res.Errors, errs[i].Error())
+		for i := range ci.ValidationErrors {
+			res.Errors = append(res.Errors, ci.ValidationErrors[i].Error())
 		}
 	}
 
