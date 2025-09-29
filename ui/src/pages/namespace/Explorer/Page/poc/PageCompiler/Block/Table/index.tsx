@@ -83,7 +83,7 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
                         </TableHeaderCell>
                       ))}
                       {hasTableActions && (
-                        <TableHeaderCell>
+                        <TableHeaderCell className="w-0">
                           <TableActions
                             actions={blocks[0]}
                             blockPath={blockPath}
