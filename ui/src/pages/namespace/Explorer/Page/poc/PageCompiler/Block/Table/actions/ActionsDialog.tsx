@@ -44,9 +44,9 @@ export const ActionsDialog = ({
                     event.stopPropagation();
                     setOpenedDialogIndex(index);
                   }}
-                  className="text-left"
+                  className="w-full text-left"
                 >
-                  <div>
+                  <div className="w-full">
                     <TemplateString value={dialog.trigger.label} />
                   </div>
                 </DialogTrigger>
