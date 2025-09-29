@@ -100,7 +100,7 @@ function stateTwo(payload) {
 				fail = 0
 
 			for (let start = 0; start < total; start += batchSize) {
-				const url = common.config.getDirektivHost()
+				const url = "http://" + common.config.getDirektivHost()
 					+ `/api/v2/namespaces/${ namespace }/instances?path=foo/${ fName }`
 
 				const batch = []
