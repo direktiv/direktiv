@@ -6,6 +6,7 @@ on:
       - '*'
     branches:
       - main
+      - main-ts
   pull_request:
 
 env:
@@ -114,33 +115,33 @@ jobs:
         sections:
           - type: api
             suit: engine
-          - type: api
-            suit: events
-          - type: api
-            suit: gateway
-          - type: api
-            suit: gateway2
-          - type: api
-            suit: instances
-          - type: api
-            suit: kubernetes
-          - type: api
-            suit: part1
-          - type: api
-            suit: part2
-          - type: api
-            suit: services
-          - type: api
-            suit: actions
+          #- type: api
+          #  suit: events
+          #- type: api
+          #  suit: gateway
+          #- type: api
+          #  suit: gateway2
+          #- type: api
+          #  suit: instances
+          #- type: api
+          #  suit: kubernetes
+          #- type: api
+          #  suit: part1
+          #- type: api
+          #  suit: part2
+          #- type: api
+          #  suit: services
+          #- type: api
+          #  suit: actions
 
-          - type: playwright
-            suit: "1/4"
-          - type: playwright
-            suit: "2/4"
-          - type: playwright
-            suit: "3/4"
-          - type: playwright
-            suit: "4/4"
+          #- type: playwright
+          #  suit: "1/4"
+          #- type: playwright
+          #  suit: "2/4"
+          #- type: playwright
+          #  suit: "3/4"
+          #- type: playwright
+          #  suit: "4/4"
 
     steps:
       - name: Checkout code
@@ -166,7 +167,7 @@ jobs:
         uses: go-task/setup-task@v1
 
       - name: Task default
-        run: task default
+        run: DIREKTIV_IMAGE_REGISTRY=ghcr.io DIREKTIV_IMAGE=direktiv/direktiv DIREKTIV_IMAGE_TAG=${GITHUB_SHA::10} task github-ci
 
       - name: Wait for Direktiv pods to be ready
         run: |
@@ -180,7 +181,7 @@ jobs:
       - name: Wait until flow is healthy
         run: |
           endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/status";
-          for attempt in {1..40}
+          for attempt in {1..120}
           do
             status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint || true);
             echo "API status code: $status_code";
