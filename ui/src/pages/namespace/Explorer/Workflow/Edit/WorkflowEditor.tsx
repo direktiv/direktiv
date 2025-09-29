@@ -89,7 +89,6 @@ const WorkflowEditor: FC<{
       />
 
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        <EditorLayoutSwitcher />
         <Dialog>
           <DialogTrigger asChild>
             <Button

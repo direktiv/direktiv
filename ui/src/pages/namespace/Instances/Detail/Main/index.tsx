@@ -63,7 +63,6 @@ const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({
           >
             {logComponent}
           </Card>
-          <Card className="flex">{diagramComponent}</Card>
           <Card className="flex p-5">{inputOutputComponent}</Card>
         </div>
       );
