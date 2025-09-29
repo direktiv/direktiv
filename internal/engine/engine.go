@@ -62,7 +62,7 @@ func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPa
 	return e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, args, nil, metadata)
 }
 
-func (e *Engine) RunWorkflow(ctx context.Context, namespace string, workflowPath string, args any, metadata map[string]string) (uuid.UUID, chan<- *InstanceStatus, error) {
+func (e *Engine) RunWorkflow(ctx context.Context, namespace string, workflowPath string, args any, metadata map[string]string) (uuid.UUID, <-chan *InstanceStatus, error) {
 	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
 	if err != nil {
 		return uuid.Nil, nil, fmt.Errorf("fetch script: %w", err)

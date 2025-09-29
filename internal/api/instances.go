@@ -104,17 +104,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	script := `
-function stateOne(payload) {
-	print("RUN STATE FIRST");
-    return transition(stateTwo, payload);
-}
-function stateTwo(payload) {
-	print("RUN STATE SECOND");
-    return finish(payload);
-}
-`
-	id, notify, err := e.engine.DebugRunWorkflow(r.Context(), namespace, script, string(input), map[string]string{
+	id, notify, err := e.engine.RunWorkflow(r.Context(), namespace, path, string(input), map[string]string{
 		"workflowPath": path,
 	})
 	if err != nil {
