@@ -24,6 +24,16 @@ tasks:
     - task: cluster:install
     silent: true
 
+  github-ci:
+    desc: Basic Kind cluster with Direktiv to run in github CI
+    deps: [version:check]
+    cmds:
+      - task: cluster:one-node
+      - task: cluster:docker-proxy-create
+      - task: cluster:database
+      - task: cluster:install
+    silent: true
+
   ee:
     desc: Basic EE cluster with Direktiv. Run with `IS_ENTERPRISE=true`.
     deps: [version:check] 
