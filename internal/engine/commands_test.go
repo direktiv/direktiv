@@ -10,8 +10,6 @@ import (
 )
 
 func TestTransition(t *testing.T) {
-	// TODO: Jens, fix this test
-	return
 	vm := sobek.New()
 
 	engine.InjectCommands(vm, uuid.New())
@@ -37,9 +35,6 @@ func TestTransition(t *testing.T) {
 }
 
 func TestTransitionErrors(t *testing.T) {
-	// TODO: Jens, fix this test
-	return
-
 	tests := []struct {
 		name string
 		js   string
@@ -86,62 +81,63 @@ func TestTransitionErrors(t *testing.T) {
 			}
 			`,
 		},
-		{
-			"finish no parameters",
-			`function start() {
-				transition(second, "whatever");
-			}
-			function second() {
-				finish();
-			}
-			`,
-		},
-		{
-			"finish too many parameters",
-			`function start() {
-				transition(second, "whatever");
-			}
-			function second() {
-				finish(1, 2, 3);
-			}
-			`,
-		},
-		{
-			"finish too many parameters",
-			`function start() {
-				return transition(second, "whatever");
-			}
-			function second() {
-				return finish(1, 2, 3);
-			}
-			`,
-		},
-		{
-			"finish error middle stack",
-			`function start() {
-				return transition(second, "whatever");
-			}
-			function second() {
-				return transition(second);
-			}
-			function third() {
-				return finish(1, 2, 3);
-			}
-			`,
-		},
-		{
-			"finish error finish stack",
-			`function start() {
-				return transition(second, "whatever");
-			}
-			function second() {
-				return transition(third, "");
-			}
-			function third() {
-				return finish(1, 2, 3);
-			}
-			`,
-		},
+		// TODO: Jens, fix this test
+		//{
+		//	"finish no parameters",
+		//	`function start() {
+		//		transition(second, "whatever");
+		//	}
+		//	function second() {
+		//		finish();
+		//	}
+		//	`,
+		//},
+		//{
+		//	"finish too many parameters",
+		//	`function start() {
+		//		transition(second, "whatever");
+		//	}
+		//	function second() {
+		//		finish(1, 2, 3);
+		//	}
+		//	`,
+		//},
+		//{
+		//	"finish too many parameters",
+		//	`function start() {
+		//		return transition(second, "whatever");
+		//	}
+		//	function second() {
+		//		return finish(1, 2, 3);
+		//	}
+		//	`,
+		//},
+		//{
+		//	"finish error middle stack",
+		//	`function start() {
+		//		return transition(second, "whatever");
+		//	}
+		//	function second() {
+		//		return transition(second);
+		//	}
+		//	function third() {
+		//		return finish(1, 2, 3);
+		//	}
+		//	`,
+		//},
+		//{
+		//	"finish error finish stack",
+		//	`function start() {
+		//		return transition(second, "whatever");
+		//	}
+		//	function second() {
+		//		return transition(third, "");
+		//	}
+		//	function third() {
+		//		return finish(1, 2, 3);
+		//	}
+		//	`,
+		//},
 	}
 
 	for _, tt := range tests {
@@ -153,7 +149,6 @@ func TestTransitionErrors(t *testing.T) {
 			require.True(t, ok)
 			_, err := start(sobek.Undefined())
 			require.Error(t, err)
-			t.Logf(">>>>err %+v", err)
 		})
 	}
 
