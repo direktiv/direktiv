@@ -14,7 +14,7 @@ describe('Test secret update calls', () => {
 
 	let createRes
 	it(`should create a secret case`, async () => {
-		createRes = await request(config.getDirektivHost())
+		createRes = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/secrets`)
 			.send({
 				name: 'foo',
@@ -42,7 +42,7 @@ describe('Test secret update calls', () => {
 		// eslint-disable-next-line no-loop-func
 		it(`should update secret case ${ i }`, async () => {
 			const secretName = createRes.body.data.name
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.patch(`/api/v2/namespaces/${ namespace }/secrets/${ secretName }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
@@ -62,7 +62,7 @@ describe('Test invalid secret update calls', () => {
 
 	let createRes
 	it(`should create a secret case`, async () => {
-		createRes = await request(config.getDirektivHost())
+		createRes = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/secrets`)
 			.send({
 				name: 'foo',
@@ -94,7 +94,7 @@ describe('Test invalid secret update calls', () => {
 		// eslint-disable-next-line no-loop-func
 		it(`should fail updating a secret case ${ i }`, async () => {
 			const secretName = createRes.body.data.name
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.patch(`/api/v2/namespaces/${ namespace }/secrets/${ secretName }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)

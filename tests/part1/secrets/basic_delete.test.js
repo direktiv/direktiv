@@ -13,7 +13,7 @@ describe('Test secret delete calls', () => {
 
 	let createRes
 	it(`should create a new secret`, async () => {
-		createRes = await request(config.getDirektivHost())
+		createRes = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/secrets`)
 			.send({
 				name: 'foo',
@@ -24,7 +24,7 @@ describe('Test secret delete calls', () => {
 
 	it(`should delete a secret`, async () => {
 		const secretName = createRes.body.data.name
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.delete(`/api/v2/namespaces/${ namespace }/secrets/${ secretName }`)
 		expect(res.statusCode).toEqual(200)
 	})
@@ -52,7 +52,7 @@ describe('Test invalid secret delete calls', () => {
 		const testCase = testCases[i]
 
 		it(`should fail delete a secret case ${ i }`, async () => {
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.delete(`/api/v2/namespaces/${ namespace }/secrets/${ testCase.name }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)

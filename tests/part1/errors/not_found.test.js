@@ -23,7 +23,7 @@ describe('Test path not found', () => {
 	paths.forEach(path => {
 		methods.forEach(method => {
 			it(`should return not_found for path:${ path } with method:${ method }`, async () => {
-				const res = await request(common.config.getDirektivHost())[method](path)
+				const res = await request(common.config.getDirektivBaseUrl())[method](path)
 				expect(res.statusCode).toEqual(404)
 				expect(res.body).toMatchObject({
 					error: {

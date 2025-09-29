@@ -18,14 +18,14 @@ describe('Test no namespace variable name duplicated', () => {
 	}
 
 	it(`should create a new namespace variable foo`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/variables`)
 			.send(foo)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should not duplicate a namespace variable foo`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/variables`)
 			.send(foo)
 		expect(res.statusCode).toEqual(400)
@@ -50,14 +50,14 @@ describe('Test no namespace variable name duplicated', () => {
 	}
 
 	it(`should allow create workflow variable foo`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/variables`)
 			.send(foo2)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should not duplicate workflow variable foo`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/variables`)
 			.send(foo2)
 		expect(res.statusCode).toEqual(400)

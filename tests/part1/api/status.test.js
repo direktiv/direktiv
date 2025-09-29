@@ -5,7 +5,7 @@ import request from '../../common/request'
 
 describe('Test the status information API', () => {
 	it(`should request status information`, async () => {
-		const r = await request(config.getDirektivHost()).get(`/api/v2/status`)
+		const r = await request(config.getDirektivBaseUrl()).get(`/api/v2/status`)
 		expect(r.statusCode).toEqual(200)
 
 		expect(r.body.data).toEqual({

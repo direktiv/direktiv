@@ -1,9 +1,9 @@
 export default {
-	getDirektivHost () {
-		if (process.env.DIREKTIV_HOST)
-			return process.env.DIREKTIV_HOST
+	getDirektivBaseUrl () {
+		if (process.env.DIREKTIV_BASE_URL)
+			return process.env.DIREKTIV_BASE_URL
 
-		return 'http://localhost:80'
+		return 'http://127.0.0.1:8080'
 	},
 	getAuthHeader: (authToken, isEnterprice = false) => {
 		if (!authToken)

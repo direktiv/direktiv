@@ -212,7 +212,7 @@ describe('Test target workflow wrong config', () => {
 	)
 
 	retry10(`should list all services`, async () => {
-		const listRes = await request(common.config.getDirektivHost()).get(
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
 		)
 		expect(listRes.statusCode).toEqual(200)
@@ -249,7 +249,7 @@ describe('Test target workflow with errors', () => {
 	)
 
 	retry50(`should return a workflow run from magic namespace`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint3`,
 		)
 		expect(req.statusCode).toEqual(500)
@@ -315,7 +315,7 @@ describe('Test target workflow plugin', () => {
 	)
 
 	retry50(`should return a workflow run from magic namespace`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(200)
@@ -323,7 +323,7 @@ describe('Test target workflow plugin', () => {
 	})
 
 	retry10(`should return a flow run from magic namespace with namespace set`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint2`,
 		)
 		expect(req.statusCode).toEqual(200)
@@ -332,7 +332,7 @@ describe('Test target workflow plugin', () => {
 	})
 
 	retry10(`should return a workflow var from non-magic namespace`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/` + limitedNamespace + `/endpoint2`,
 		)
 		expect(req.statusCode).toEqual(200)
@@ -340,7 +340,7 @@ describe('Test target workflow plugin', () => {
 	})
 
 	retry10(`should not return a workflow in non-magic namespace`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/` + limitedNamespace + `/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(403)
@@ -370,7 +370,7 @@ describe('Test POST method for target workflow plugin', () => {
 	)
 
 	retry50(`should return a workflow run from magic namespace`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(
+		const req = await request(common.config.getDirektivBaseUrl()).post(
 			`/ns/system/endpoint1`,
 		)
 			.send({ message: 'Hi' })
@@ -402,7 +402,7 @@ describe('Test Complex POST method for target workflow plugin', () => {
 	)
 
 	retry50(`should return a workflow run from magic namespace`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(
+		const req = await request(common.config.getDirektivBaseUrl()).post(
 			`/ns/system/endpoint1`,
 		)
 			.send({ message: 'Hi' })
@@ -442,7 +442,7 @@ describe('Test scope for target workflow plugin', () => {
 	)
 
 	retry10(`should return a workflow run from limited namespace`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(200)
@@ -480,7 +480,7 @@ describe('Test target workflow default contenttype', () => {
 	)
 
 	retry10(`should return a json content type`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpointct`,
 		)
 
@@ -489,7 +489,7 @@ describe('Test target workflow default contenttype', () => {
 	})
 
 	retry10(`should return a configured content type`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpointcttest`,
 		)
 

@@ -62,7 +62,7 @@ describe('Test js outbound plugin', () => {
 	)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(
+		const req = await request(common.config.getDirektivBaseUrl()).post(
 			`/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`,
 		)
 			.set('Header1', 'Value1')

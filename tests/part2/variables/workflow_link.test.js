@@ -29,7 +29,7 @@ states:
 
 	let fooId
 	it(`should create a new workflow variable foo`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/variables`)
 			.send(foo)
 		expect(res.statusCode).toEqual(200)
@@ -39,7 +39,7 @@ states:
 	helpers.itShouldUpdateFilePath(it, expect, namespace, '/wf1.yaml', '/wf2.yaml')
 
 	it(`should read new path in variable foo`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/variables/${ fooId }`)
 			.send(foo)
 		expect(res.body.data.reference).toEqual('/wf2.yaml')
@@ -48,7 +48,7 @@ states:
 	helpers.itShouldDeleteFile(it, expect, namespace, '/wf2.yaml')
 
 	it(`should read 404 variable foo`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/variables/${ fooId }`)
 			.send(foo)
 		expect(res.statusCode).toEqual(404)

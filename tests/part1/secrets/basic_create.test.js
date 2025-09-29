@@ -39,7 +39,7 @@ describe('Test secret create calls', () => {
 		const testCase = testCases[i]
 
 		it(`should create a new secret case ${ i }`, async () => {
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.post(`/api/v2/namespaces/${ namespace }/secrets`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
@@ -79,7 +79,7 @@ describe('Test invalid secret create calls', () => {
 		const testCase = testCases[i]
 
 		it(`should fail create a new secret case ${ i }`, async () => {
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.post(`/api/v2/namespaces/${ namespace }/secrets`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
