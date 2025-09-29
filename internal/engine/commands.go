@@ -36,7 +36,6 @@ func InjectCommands(vm *sobek.Runtime, instID uuid.UUID) {
 }
 
 func (cmds *Commands) action(call sobek.FunctionCall) sobek.Value {
-
 	// imgObject := call.Argument(0).ToObject(cmds.vm)
 
 	actionFunc := func(call sobek.FunctionCall) sobek.Value {
