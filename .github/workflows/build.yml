@@ -30,7 +30,7 @@ jobs:
           go-version-file: go.mod
 
       - name: Run check
-        run: make tests-license-check
+        run: task test:licenses
 
   backend-lint:
     runs-on: ubuntu-latest

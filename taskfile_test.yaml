@@ -75,6 +75,13 @@ tasks:
       -e GOMODCACHE=/root/.cache/go/pkg/mod  \
       golangci/golangci-lint:v2.4.0 golangci-lint run --verbose --config /app/.golangci.yaml
 
+  licenses:
+    desc: Scans dependencies looking for blacklisted licenses.
+    cmds:
+      - |
+        go install github.com/google/go-licenses@latest
+        go-licenses check --ignore=github.com/bbuck/go-lexer,github.com/xi2/xz,modernc.org/mathutil ./... --disallowed_types forbidden,unknown,restricted
+
   playwright:
     desc: sjsjs
     cmds: 
