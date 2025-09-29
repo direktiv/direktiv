@@ -67,8 +67,8 @@ export const Table = ({
         onChange={(newValue) => {
           form.setValue("blocks.0.blocks", newValue);
         }}
-        itemLabel={t(
-          "direktivPage.blockEditor.blockForms.table.tableAction.itemLabel"
+        modalTitle={t(
+          "direktivPage.blockEditor.blockForms.table.tableAction.modalTitle"
         )}
         label={(count) =>
           t(

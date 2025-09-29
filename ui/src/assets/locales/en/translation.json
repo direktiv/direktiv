@@ -1760,7 +1760,7 @@
             "dataPlaceholder": "Path to an array for the table (e.g. query.companies.data)"
           },
           "tableAction": {
-            "itemLabel": "Table actions",
+            "modalTitle": "Create new Table action",
             "tableLabel": "{{count}} Table actions",
             "tableLabel_one": "{{count}} Table action"
           },
