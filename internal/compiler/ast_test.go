@@ -193,8 +193,8 @@ func TestVariables(t *testing.T) {
 		{
 			"allowed secrets call but not with function call",
 			`
-			secrets("my-secret-key");
-			secrets(getValues());
+			getSecrets("my-secret-key");
+			getSecrets(getValues());
 			`,
 			1,
 		},
