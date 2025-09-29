@@ -57,7 +57,7 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
   const hasRowActions = blocks[1].blocks.length > 0;
   const hasTableActions = blocks[0].blocks.length > 0;
   const numberOfColumns =
-    columns.length + (hasRowActions ? 1 : 0) + (hasTableActions ? 1 : 0);
+    columns.length + (hasRowActions || hasTableActions ? 1 : 0);
   const hasRows = variableArray.data.length > 0;
 
   return (
