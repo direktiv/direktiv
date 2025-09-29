@@ -12,7 +12,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  IS_GITHUB_ACTIONS: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -308,13 +307,14 @@ jobs:
           npm -prefix tests run jest -- ${{ matrix.sections.suit }}/ --runInBand
         env:
           DIREKTIV_BASE_URL: ${{ env.DIREKTIV_BASE_URL }}
-          GITHUB_ACTIONS: true
 
       - name: Run Playwright E2E tests
         id: playwrightRun
         if: matrix.sections.type == 'playwright'
         run: |
           PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} task test:playwright
+        env:
+          DIREKTIV_BASE_URL: ${{ env.DIREKTIV_BASE_URL }}
 
 
       - name: Upload Playwright Artifacts
