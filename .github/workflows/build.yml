@@ -29,6 +29,9 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Install Task
+        uses: go-task/setup-task@v1
+
       - name: Run check
         run: task test:licenses
 
