@@ -35,7 +35,6 @@ func TestTransition(t *testing.T) {
 }
 
 func TestTransitionErrors(t *testing.T) {
-
 	tests := []struct {
 		name string
 		js   string
@@ -93,7 +92,6 @@ func TestTransitionErrors(t *testing.T) {
 			require.True(t, ok)
 			_, err := start(sobek.Undefined())
 			require.Error(t, err)
-			t.Logf(">>>>err %+v", err)
 		})
 	}
 
