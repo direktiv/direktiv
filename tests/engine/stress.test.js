@@ -57,7 +57,7 @@ function stateTwo(payload) {
 `))
 
 	retry10(`should invoke /foo/${ fName } workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/instances?path=foo/${ fName }`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/instances?path=foo/${ fName }`)
 			.send({ foo: 'bar' })
 		expect(req.statusCode).toEqual(200)
 	})
@@ -96,11 +96,8 @@ function stateTwo(payload) {
 				fail = 0
 
 			for (let start = 0; start < total; start += batchSize) {
-				let url = common.config.getDirektivHost()
+				const url = common.config.getDirektivBaseUrl()
 					+ `/api/v2/namespaces/${ namespace }/instances?path=foo/${ fName }`
-				if(!url.startsWith("http")) {
-					url = "http://" + url
-				}
 
 				const batch = []
 				for (let j = 0; j < batchSize; j++)
@@ -144,7 +141,7 @@ function stateTwo(payload) {
 
 	const total = cases.reduce((acc, obj) => acc + obj.total, 0) + 1;
 	retry(`should have all success instances`, 2, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/instances/stats`)
+		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/instances/stats`)
 		console.log(req.body)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body.data).toEqual({ succeeded: total })
