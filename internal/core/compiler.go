@@ -2,7 +2,19 @@ package core
 
 import "context"
 
-const FlowFileExtension = ".wf.ts"
+const (
+	FlowFileExtension        = ".wf.ts"
+	FlowActionScopeLocal     = "local"
+	FlowActionScopeNamespace = "namespace"
+	FlowActionScopeSystem    = "system"
+)
+
+type ActionConfig struct {
+	Type  string
+	Size  string
+	Image string
+	Envs  map[string]string
+}
 
 type FlowConfig struct {
 	Type    string
@@ -10,6 +22,7 @@ type FlowConfig struct {
 	Cron    string
 	Timeout string
 	State   string
+	Actions []ActionConfig
 }
 
 type EventConfig struct {

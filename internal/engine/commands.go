@@ -32,6 +32,22 @@ func InjectCommands(vm *sobek.Runtime, instID uuid.UUID) {
 	vm.Set("fetch", cmds.fetch)
 	vm.Set("fetchSync", cmds.fetchSync)
 	vm.Set("sleep", cmds.sleep)
+	vm.Set("generateAction", cmds.action)
+}
+
+func (cmds *Commands) action(call sobek.FunctionCall) sobek.Value {
+
+	// imgObject := call.Argument(0).ToObject(cmds.vm)
+
+	actionFunc := func(call sobek.FunctionCall) sobek.Value {
+		fmt.Println("action call")
+
+		fmt.Printf("Arguments: %v\n", call.Arguments)
+
+		return cmds.vm.ToValue("return value")
+	}
+
+	return cmds.vm.ToValue(actionFunc)
 }
 
 func (cmds *Commands) sleep(seconds int) sobek.Value {
@@ -64,8 +80,6 @@ func (cmds *Commands) log(logs ...string) sobek.Value {
 	return sobek.Undefined()
 }
 
-// transition needs to throw uncatchable errors
-// panic(cmds.vm.NewGoError(fmt.Errorf("finish requires one argument, but got %d", len(call.Arguments)))).
 func (cmds *Commands) transition(call sobek.FunctionCall) sobek.Value {
 	if len(call.Arguments) != 2 {
 		panic(cmds.vm.ToValue("transition requires a function and a payload"))

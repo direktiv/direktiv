@@ -1,8 +1,6 @@
 package compiler_test
 
 import (
-	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/direktiv/direktiv/internal/compiler"
@@ -178,9 +176,6 @@ func TestConfig(t *testing.T) {
 				if flow.Timeout != tt.wantTimeout {
 					t.Errorf("timeout = %q, want %q", flow.Timeout, tt.wantTimeout)
 				}
-
-				b, _ := json.MarshalIndent(flow, "", "   ")
-				fmt.Println(string(b))
 			}
 		})
 	}
