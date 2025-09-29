@@ -146,5 +146,5 @@ tasks:
 
   kill-pod:
     desc: Kill all direktiv pods
-    cmds: 
+    cmds:
     - kubectl delete pods -l app=direktiv-flow

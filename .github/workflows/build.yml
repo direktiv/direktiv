@@ -19,6 +19,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  backend-license:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Install Task
+        uses: go-task/setup-task@v1
+
+      - name: Run check
+        run: task test:licenses
+
   backend-test:
     runs-on: ubuntu-latest
     steps:
@@ -104,7 +120,7 @@ jobs:
 
 
   e2e:
-    needs: [build, backend-test]
+    needs: [build, backend-license, backend-test]
     runs-on: ubuntu-latest
 
     timeout-minutes: 18
