@@ -16,7 +16,7 @@ import { Rows } from "./Rows";
 
 type TableProps<T> = {
   data: T[];
-  itemLabel: string;
+  modalTitle: string;
   label: (count: number) => string;
   onChange: (newData: T[]) => void;
   renderRow: (item: T) => string[];
@@ -41,7 +41,7 @@ type DialogState =
 
 export const Table = <T,>({
   data,
-  itemLabel,
+  modalTitle,
   label,
   onChange,
   renderForm,
@@ -100,7 +100,6 @@ export const Table = <T,>({
                       onClick={() => setDialog({ action: "create" })}
                     >
                       <Plus />
-                      {itemLabel}
                     </Button>
                   </DialogTrigger>
                 </div>
@@ -123,7 +122,7 @@ export const Table = <T,>({
       </Card>
       <ModalWrapper
         formId={formId}
-        title={itemLabel}
+        title={modalTitle}
         onCancel={() => {
           setDialog(null);
         }}

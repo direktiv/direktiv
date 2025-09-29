@@ -44,8 +44,8 @@ export const QueryProvider = ({
         onChange={(newValue) => {
           form.setValue("queries", newValue);
         }}
-        itemLabel={t(
-          "direktivPage.blockEditor.blockForms.queryProvider.query.itemLabel"
+        modalTitle={t(
+          "direktivPage.blockEditor.blockForms.queryProvider.query.modalTitle"
         )}
         label={(count) =>
           t(

@@ -92,8 +92,8 @@ export const Table = ({
         onChange={(newValue) => {
           form.setValue("blocks.1.blocks", newValue);
         }}
-        itemLabel={t(
-          "direktivPage.blockEditor.blockForms.table.rowAction.itemLabel"
+        modalTitle={t(
+          "direktivPage.blockEditor.blockForms.table.rowAction.modalTitle"
         )}
         label={(count) =>
           t("direktivPage.blockEditor.blockForms.table.rowAction.tableLabel", {
@@ -114,8 +114,8 @@ export const Table = ({
         onChange={(newValue) => {
           form.setValue("columns", newValue);
         }}
-        itemLabel={t(
-          "direktivPage.blockEditor.blockForms.table.column.itemLabel"
+        modalTitle={t(
+          "direktivPage.blockEditor.blockForms.table.column.modalTitle"
         )}
         label={(count) =>
           t("direktivPage.blockEditor.blockForms.table.column.tableLabel", {
