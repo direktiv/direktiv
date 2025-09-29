@@ -27,7 +27,8 @@ async function fireCreateRequest (url, input, durations) {
 		const t1 = performance.now()
 		durations.push(t1 - t0)
 		return { status: res.status, ok: res.ok ? 1 : 0, fail: res.ok ? 0 : 1 }
-	} catch {
+	} catch(err) {
+		console.log(">>>>>>err", err, err?.name, err?.message)
 		const t1 = performance.now()
 		durations.push(t1 - t0)
 		return { status: 0, ok: 0, fail: 1 } // failed
