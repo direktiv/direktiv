@@ -217,7 +217,7 @@ jobs:
       - name: Run API E2E tests
         if: matrix.sections.type == 'api'
         run: |
-          npm -prefix tests run jest -- ${{ matrix.sections.suit }}/ --runInBand
+          npm -prefix tests run jest -- ${{ matrix.sections.suit }}/ --runInBand || kubectl get pods || kubectl describe pod -l app=direktiv-flow || kubectl logs deployments/direktiv-flow;
         env:
           DIREKTIV_HOST: ${{ env.DIREKTIV_HOST }}
           GITHUB_ACTIONS: true
