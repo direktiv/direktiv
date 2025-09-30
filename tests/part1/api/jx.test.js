@@ -11,7 +11,7 @@ describe('Test the jx API.', () => {
 			data: encode('{}'),
 		}
 
-		const r = await request(config.getDirektivHost()).post(`/api/v2/jx`)
+		const r = await request(config.getDirektivBaseUrl()).post(`/api/v2/jx`)
 			.send(pl)
 
 		expect(r.statusCode).toEqual(200)
@@ -29,7 +29,7 @@ describe('Test the jx API.', () => {
 			data: encode('{}'),
 		}
 
-		const r = await request(config.getDirektivHost()).post(`/api/v2/jx`)
+		const r = await request(config.getDirektivBaseUrl()).post(`/api/v2/jx`)
 			.send(pl)
 
 		expect(r.statusCode).toEqual(200)
@@ -47,7 +47,7 @@ describe('Test the jx API.', () => {
 			data: encode('{}'),
 		}
 
-		const r = await request(config.getDirektivHost()).post(`/api/v2/jx`)
+		const r = await request(config.getDirektivBaseUrl()).post(`/api/v2/jx`)
 			.send(pl)
 
 		expect(r.statusCode).toEqual(200)
@@ -65,7 +65,7 @@ describe('Test the jx API.', () => {
 			data: encode('{}'),
 		}
 
-		const r = await request(config.getDirektivHost()).post(`/api/v2/jx`)
+		const r = await request(config.getDirektivBaseUrl()).post(`/api/v2/jx`)
 			.send(pl)
 
 		expect(r.statusCode).toEqual(200)
@@ -83,7 +83,7 @@ describe('Test the jx API.', () => {
 			data: encode('{}'),
 		}
 
-		const r = await request(config.getDirektivHost()).post(`/api/v2/jx`)
+		const r = await request(config.getDirektivBaseUrl()).post(`/api/v2/jx`)
 			.send(pl)
 
 		expect(r.statusCode).toEqual(200)
@@ -107,7 +107,7 @@ z:
 			data: encode('{}'),
 		}
 
-		const r = await request(config.getDirektivHost()).post(`/api/v2/jx`)
+		const r = await request(config.getDirektivBaseUrl()).post(`/api/v2/jx`)
 			.send(pl)
 
 		expect(r.statusCode).toEqual(200)
@@ -132,7 +132,7 @@ z:
 			data: encode('{}'),
 		}
 
-		const r = await request(config.getDirektivHost()).post(`/api/v2/jx?assert=object&assert=success`)
+		const r = await request(config.getDirektivBaseUrl()).post(`/api/v2/jx?assert=object&assert=success`)
 			.send(pl)
 
 		expect(r.statusCode).toEqual(200)
@@ -152,7 +152,7 @@ z:
 			data: encode('{}'),
 		}
 
-		const r = await request(config.getDirektivHost()).post(`/api/v2/jx?assert=object`)
+		const r = await request(config.getDirektivBaseUrl()).post(`/api/v2/jx?assert=object`)
 			.send(pl)
 
 		expect(r.statusCode).toEqual(400)

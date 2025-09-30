@@ -34,7 +34,7 @@ scale: 2
 
 	let listRes
 	retry10(`should list all services`, async () => {
-		listRes = await request(common.config.getDirektivHost())
+		listRes = await request(common.config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body).toMatchObject({

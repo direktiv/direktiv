@@ -13,7 +13,7 @@ describe('Test filesystem tree read operations', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	it(`should fail creating file with invalid base64 data`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/files`)
 			.set('Content-Type', 'application/json')
 			.send({
@@ -32,7 +32,7 @@ describe('Test filesystem tree read operations', () => {
 	})
 
 	it(`should fail creating file with invalid yaml data`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/files`)
 			.set('Content-Type', 'application/json')
 			.send({

@@ -85,7 +85,7 @@ describe('Test variable create calls', () => {
 		const testCase = testCases[i]
 
 		it(`should create a new variable case ${ i }`, async () => {
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.post(`/api/v2/namespaces/${ namespace }/variables`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
@@ -142,7 +142,7 @@ describe('Test invalid variable create calls', () => {
 		const testCase = testCases[i]
 
 		it(`should fail create a new variable case ${ i }`, async () => {
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.post(`/api/v2/namespaces/${ namespace }/variables`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)

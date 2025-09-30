@@ -34,7 +34,7 @@ describe('Test target-namespace-file plugin', () => {
 	)
 
 	retry10(`should fetch some.text file`, async () => {
-		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway/ep1`)
+		const res = await request(config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/gateway/ep1`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.text).toEqual('some content')
 		expect(res.headers['content-type']).toEqual('text/plain')
@@ -64,7 +64,7 @@ describe('Test target-namespace-file plugin', () => {
 	)
 
 	retry10(`should fetch some.text file from system namespace`, async () => {
-		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/system/gateway/ep2`)
+		const res = await request(config.getDirektivBaseUrl()).get(`/api/v2/namespaces/system/gateway/ep2`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.text).toEqual('some content')
 		expect(res.headers['content-type']).toEqual('text/plain')
@@ -95,7 +95,7 @@ describe('Test target-namespace-file plugin', () => {
 	)
 
 	retry10(`should deny access fetching some.text file from different namespace`, async () => {
-		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ otherNamespace }/gateway/ep3`)
+		const res = await request(config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ otherNamespace }/gateway/ep3`)
 		expect(res.statusCode).toEqual(403)
 	})
 })

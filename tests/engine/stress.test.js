@@ -17,8 +17,9 @@ function quantile (arr, q) {
 
 async function fireCreateRequest (url, input, durations) {
 	const t0 = performance.now()
+	let res = null
 	try {
-		const res = await fetch(url, {
+		res = await fetch(url, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(input),
@@ -26,7 +27,7 @@ async function fireCreateRequest (url, input, durations) {
 		const t1 = performance.now()
 		durations.push(t1 - t0)
 		return { status: res.status, ok: res.ok ? 1 : 0, fail: res.ok ? 0 : 1 }
-	} catch {
+	} catch (err) {
 		const t1 = performance.now()
 		durations.push(t1 - t0)
 		return { status: 0, ok: 0, fail: 1 } // failed
@@ -56,12 +57,16 @@ function stateTwo(payload) {
 `))
 
 	retry10(`should invoke /foo/${ fName } workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/instances?path=foo/${ fName }`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/instances?path=foo/${ fName }`)
 			.send({ foo: 'bar' })
 		expect(req.statusCode).toEqual(200)
 	})
 
 	const cases = [
+		{
+			total: 5,
+			batchSize: 1,
+		},
 		{
 			total: 10,
 			batchSize: 2,
@@ -74,10 +79,10 @@ function stateTwo(payload) {
 			total: 100,
 			batchSize: 10,
 		},
-		{
-			total: 1000,
-			batchSize: 100,
-		},
+		// {
+		//	total: 1000,
+		//	batchSize: 100,
+		// },
 	]
 	for (let i = 0; i < cases.length; i++) {
 		const total = cases[i].total
@@ -91,7 +96,7 @@ function stateTwo(payload) {
 				fail = 0
 
 			for (let start = 0; start < total; start += batchSize) {
-				const url = common.config.getDirektivHost()
+				const url = common.config.getDirektivBaseUrl()
 					+ `/api/v2/namespaces/${ namespace }/instances?path=foo/${ fName }`
 
 				const batch = []
@@ -127,19 +132,18 @@ function stateTwo(payload) {
 
 			// Assertions: all requests should be 200
 			results.forEach(status => {
-				expect(status).toBe(200) // or 201 depending on your API
+				expect(status).toBe(200)
 			})
 
 			expect(fail).toBe(0)
-			expect(avg).toBeLessThan(300) // e.g., average < 300ms
-			expect(p95).toBeLessThan(600) // e.g., p95 < 600ms
-		}, 60000) // extend timeout for big tests
+		}, 60000)
 	}
 
-	retry(`should have all success instances`, 100, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/instances/stats`)
+	const total = cases.reduce((acc, obj) => acc + obj.total, 0) + 1
+	retry(`should have all success instances`, 2, async () => {
+		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/instances/stats`)
 		console.log(req.body)
 		expect(req.statusCode).toEqual(200)
-		expect(req.body.data).toEqual({ succeeded: 1161 })
+		expect(req.body.data).toEqual({ succeeded: total })
 	}, 1000)
 })

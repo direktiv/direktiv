@@ -5,8 +5,8 @@ includes:
     taskfile: taskfile_build.yaml
     internal: true  
 
-vars: 
-  DIREKTIV_HOST: '{{.DIREKTIV_HOST | default "localhost:9090"}}'
+vars:
+  DIREKTIV_BASE_URL: '{{.DIREKTIV_BASE_URL | default "http://127.0.0.1:9090"}}'
   
 tasks:
   scan-ui:
@@ -38,24 +38,24 @@ tasks:
     - go test ./...
   
   api-ee:
-    desc: Runs EE API tests against server set with `DIREKTIV_HOST`.
+    desc: Runs EE API tests against server set with `DIREKTIV_BASE_URL`.
     cmds: 
     - kubectl wait --for=condition=ready pod -l "app=direktiv-flow"
     - docker run -it --rm \
       -v `pwd`/direktiv-ee/tests:/tests \
-      -e 'DIREKTIV_HOST=http://{{ .DIREKTIV_HOST }}' \
+      -e 'DIREKTIV_BASE_URL={{ .DIREKTIV_BASE_URL }}' \
       -e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
       --network=host \
       node:lts-alpine3.18 npm --prefix "/tests" run jest -- ${JEST_PREFIX} --runInBand
 
   api:
-    desc: Runs API tests against server set with `DIREKTIV_HOST`.
+    desc: Runs API tests against server set with `DIREKTIV_BASE_URL`.
     cmds:
     - kubectl wait --for=condition=ready pod -l "app=direktiv-flow"
     - |
       docker run -it --rm \
       -v `pwd`/tests:/tests \
-      -e 'DIREKTIV_HOST=http://{{ .DIREKTIV_HOST }}' \
+      -e 'DIREKTIV_BASE_URL={{ .DIREKTIV_BASE_URL }}' \
       -e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
       --network=host \
       node:lts-alpine3.18 npm --prefix "/tests" run jest -- {{ .JEST_PREFIX }} --runInBand
@@ -73,7 +73,14 @@ tasks:
       -e GOCACHE=/root/.cache/  \
       -e GOLANGCI_LINT_CACHE=/root/.cache/ \
       -e GOMODCACHE=/root/.cache/go/pkg/mod  \
-      golangci/golangci-lint:v2.4.0 golangci-lint run --verbose --config /app/.golangci.yaml
+      golangci/golangci-lint:v2.5.0 golangci-lint run --verbose --config /app/.golangci.yaml
+
+  licenses:
+    desc: Scans dependencies looking for blacklisted licenses.
+    cmds:
+      - |
+        go install github.com/google/go-licenses@latest
+        go-licenses check --ignore=github.com/bbuck/go-lexer,github.com/xi2/xz,modernc.org/mathutil ./... --disallowed_types forbidden,unknown,restricted
 
   playwright:
     desc: sjsjs
@@ -83,7 +90,7 @@ tasks:
       -v {{ .PWD }}/ui:/app/ui \
       -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
         -e PLAYWRIGHT_USE_VITE=FALSE \
-        -e PLAYWRIGHT_UI_BASE_URL=http://{{ .DIREKTIV_HOST }} \
+        -e PLAYWRIGHT_UI_BASE_URL={{ .DIREKTIV_BASE_URL }} \
         -e PLAYWRIGHT_SHARD=1/1 \
         -e PLAYWRIGHT_CI=TRUE \
       -w /app/ui \

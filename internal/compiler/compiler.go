@@ -122,6 +122,8 @@ func (ci *CompileItem) validate() error {
 		})
 	}
 
+	config.Actions = pr.Actions
+
 	for i := range pr.Errors {
 		ci.ValidationErrors = append(ci.ValidationErrors, pr.Errors[i])
 	}

@@ -67,6 +67,9 @@ func (e *Engine) RunWorkflow(ctx context.Context, namespace string, workflowPath
 	if err != nil {
 		return uuid.Nil, nil, fmt.Errorf("fetch script: %w", err)
 	}
+
+	fmt.Printf("ACTIONS IN FLOW: %v\n", flowDetails.Config.Actions)
+
 	notify := make(chan *InstanceStatus, 1)
 	id, err := e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, args, notify, metadata)
 
@@ -187,16 +190,4 @@ func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.
 
 func (e *Engine) DeleteNamespace(ctx context.Context, name string) error {
 	return e.dataBus.DeleteNamespace(ctx, name)
-}
-
-// TODO: debug code.
-func (e *Engine) DebugRunWorkflow(ctx context.Context, namespace string, workflowPath string, args any, metadata map[string]string) (uuid.UUID, <-chan *InstanceStatus, error) {
-	// flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
-	// if err != nil {
-	//	return uuid.Nil, nil, fmt.Errorf("fetch script: %w", err)
-	//}
-	notify := make(chan *InstanceStatus, 1)
-	id, err := e.startScript(ctx, namespace, workflowPath, "", "stateOne", args, notify, metadata)
-
-	return id, notify, err
 }

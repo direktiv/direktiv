@@ -13,11 +13,9 @@ import (
 )
 
 func TestHttpRequest(t *testing.T) {
-	// TODO: Jens, fix this test
-	return
 	// Create container request
 	req := testcontainers.ContainerRequest{
-		Image:        "ghcr.io/mendhak/http-https-echo:37",
+		Image:        "mendhak/http-https-echo:latest",
 		ExposedPorts: []string{"8080/tcp", "8443/tcp"},
 		WaitingFor:   wait.ForListeningPort("8080/tcp"), // wait until port is ready
 	}
@@ -27,9 +25,7 @@ func TestHttpRequest(t *testing.T) {
 		ContainerRequest: req,
 		Started:          true,
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	defer container.Terminate(t.Context())
 
 	mappedPort, err := container.MappedPort(t.Context(), "8080")
@@ -41,10 +37,7 @@ func TestHttpRequest(t *testing.T) {
 	InjectCommands(vm, uuid.New())
 
 	script := `
-	function jjj() {
-	}
 		function start() {
-		transition(jjj)
 			log(now().format("2006-01-02"))
 			var r = fetchSync("` + fmt.Sprintf("http://localhost:%s", mappedPort.Port()) + `", {
 				 method: "GET",

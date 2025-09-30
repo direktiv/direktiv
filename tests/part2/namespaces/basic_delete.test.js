@@ -9,7 +9,7 @@ describe('Test namespace delete calls', () => {
 
 	let createRes
 	it(`should create a new namespace`, async () => {
-		createRes = await request(config.getDirektivHost())
+		createRes = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces`)
 			.send({
 				name: 'foo',
@@ -19,7 +19,7 @@ describe('Test namespace delete calls', () => {
 
 	it(`should delete a namespace`, async () => {
 		const namespaceName = createRes.body.data.name
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.delete(`/api/v2/namespaces/${ namespaceName }`)
 		expect(res.statusCode).toEqual(200)
 	})
@@ -46,7 +46,7 @@ describe('Test invalid namespace delete calls', () => {
 		const testCase = testCases[i]
 
 		it(`should fail delete a namespace case ${ i }`, async () => {
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.delete(`/api/v2/namespaces/${ testCase.name }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)

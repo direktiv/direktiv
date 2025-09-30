@@ -13,21 +13,21 @@ describe('Test secrets get delete list calls', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	it(`should create a new secret foo1`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/secrets`)
 			.send(makeDummySecret('foo1'))
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should create a new secret foo2`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/secrets`)
 			.send(makeDummySecret('foo2'))
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should get the new secret foo1`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/secrets/foo1`)
 		expect(res.statusCode).toEqual(200)
 
@@ -35,14 +35,14 @@ describe('Test secrets get delete list calls', () => {
 	})
 
 	it(`should get the new secret foo2`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/secrets/foo2`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual(expectDummySecret('foo2'))
 	})
 
 	it(`should list foo1 and foo2`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/secrets`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
@@ -51,13 +51,13 @@ describe('Test secrets get delete list calls', () => {
 	})
 
 	it(`should delete foo1`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.delete(`/api/v2/namespaces/${ namespace }/secrets/foo1`)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should list foo1 and foo2`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/secrets`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
