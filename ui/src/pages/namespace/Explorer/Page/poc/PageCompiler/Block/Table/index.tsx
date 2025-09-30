@@ -56,8 +56,7 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
 
   const hasRowActions = blocks[1].blocks.length > 0;
   const hasTableActions = blocks[0].blocks.length > 0;
-  const numberOfColumns =
-    columns.length + (hasRowActions || hasTableActions ? 1 : 0);
+  const numberOfHeaderColumns = columns.length + (hasTableActions ? 1 : 0);
   const hasRows = variableArray.data.length > 0;
 
   return (
@@ -123,7 +122,9 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCellDesignComponent colSpan={numberOfColumns}>
+                        <TableCellDesignComponent
+                          colSpan={numberOfHeaderColumns}
+                        >
                           <NoResult icon={PackageOpen}>
                             {t("direktivPage.page.blocks.table.noResult")}
                           </NoResult>
