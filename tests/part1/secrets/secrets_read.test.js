@@ -13,7 +13,7 @@ describe('Test secret read operations', () => {
 	helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
 	it(`should create a new secret`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ testNamespace }/secrets`)
 			.send({
 				name: 'key1',
@@ -56,7 +56,7 @@ states:
 `))
 
 	it(`should invoke the '/${ testWorkflow }-parent.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=${ testWorkflow }-parent.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=${ testWorkflow }-parent.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 'value1',

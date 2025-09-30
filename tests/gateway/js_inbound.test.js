@@ -145,7 +145,7 @@ describe('Test js inbound plugin', () => {
 	)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(
+		const req = await request(common.config.getDirektivBaseUrl()).post(
 			`/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`,
 		)
 			.set('Header1', 'Value1')
@@ -189,7 +189,7 @@ describe('Test js inbound plugin consumer', () => {
 	)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(
+		const req = await request(common.config.getDirektivBaseUrl()).post(
 			`/ns/` + testNamespace + `/target`,
 		)
 			.set('API-Token', 'apikey')
@@ -222,7 +222,7 @@ describe('Test js inbound plugin url params', () => {
 	)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(
+		const req = await request(common.config.getDirektivBaseUrl()).post(
 			`/ns/` + testNamespace + `/target/myid`,
 		)
 			.send({ hello: 'world' })
@@ -254,7 +254,7 @@ describe('Test js inbound plugin errors', () => {
 	)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(
+		const req = await request(common.config.getDirektivBaseUrl()).post(
 			`/ns/` + testNamespace + `/target`,
 		)
 			.send({ hello: 'world' })

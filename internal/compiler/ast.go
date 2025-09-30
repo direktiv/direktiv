@@ -526,7 +526,6 @@ func (ap *ASTParser) parseAction(expr ast.Expression) (core.ActionConfig, error)
 									Column:  pos.Column,
 								})
 							}
-
 						}
 					}
 				}
@@ -574,6 +573,7 @@ func (ap *ASTParser) inspectExpression(expr ast.Expression) {
 						Line:    pos.Line,
 						Column:  pos.Column,
 					})
+
 					return
 				}
 
@@ -584,6 +584,7 @@ func (ap *ASTParser) inspectExpression(expr ast.Expression) {
 						Line:    pos.Line,
 						Column:  pos.Column,
 					})
+
 					return
 				}
 
@@ -591,6 +592,7 @@ func (ap *ASTParser) inspectExpression(expr ast.Expression) {
 				if action.Type == core.FlowActionScopeLocal {
 					ap.Actions = append(ap.Actions, action)
 				}
+
 				return
 			}
 

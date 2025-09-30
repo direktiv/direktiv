@@ -24,7 +24,7 @@ describe('Test variable list calls', () => {
 	})
 
 	it(`should list variable all`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/variables`)
 		expect(res.statusCode).toEqual(200)
 
@@ -33,7 +33,7 @@ describe('Test variable list calls', () => {
 	})
 
 	it(`should list variable foo2`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/variables?name=foo2`)
 		expect(res.statusCode).toEqual(200)
 
@@ -42,7 +42,7 @@ describe('Test variable list calls', () => {
 	})
 
 	it(`should list empty`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/variables?name=foo3`)
 		expect(res.statusCode).toEqual(200)
 

@@ -27,7 +27,7 @@ function stateTwo(payload) {
 }
 `))
 	retry10(`should invoke /foo/${ fName } workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/instances?path=foo/${ fName }`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/instances?path=foo/${ fName }`)
 			.send({ foo: 'bar' })
 		console.log(req.statusCode, req.text)
 		expect(req.statusCode).toEqual(200)

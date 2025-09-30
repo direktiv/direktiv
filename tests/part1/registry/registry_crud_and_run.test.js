@@ -12,7 +12,7 @@ describe('Test services crud operations', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
 	it(`should create a registry`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ testNamespace }/registries`)
 			.send({
 				url: 'docker.io',
@@ -32,7 +32,7 @@ describe('Test services crud operations', () => {
 	})
 
 	it(`should create a registry`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ testNamespace }/registries`)
 			.send({
 				url: 'docker2.io',
@@ -52,7 +52,7 @@ describe('Test services crud operations', () => {
 	})
 
 	it(`should list all registries`, async () => {
-		const listRes = await request(common.config.getDirektivHost())
+		const listRes = await request(common.config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ testNamespace }/registries`)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(2)
@@ -79,13 +79,13 @@ describe('Test services crud operations', () => {
 	})
 
 	it(`should delete a registry`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.delete(`/api/v2/namespaces/${ testNamespace }/registries/secret-c163796084d652e67cb0`)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should list all registries after delete`, async () => {
-		const listRes = await request(common.config.getDirektivHost())
+		const listRes = await request(common.config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ testNamespace }/registries`)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)

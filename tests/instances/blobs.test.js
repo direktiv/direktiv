@@ -27,7 +27,7 @@ states:
     result: x`))
 
 	it(`should invoke the 'noop.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=noop.yaml`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=noop.yaml`)
 			.send({ a: 2 })
 		expect(req.statusCode).toEqual(200)
 
@@ -37,7 +37,7 @@ states:
 	})
 
 	it(`should get the instance's input data`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ id }/input`)
+		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ id }/input`)
 
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
@@ -59,7 +59,7 @@ states:
 	})
 
 	it(`should get the instance's output data`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ id }/output`)
+		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ id }/output`)
 
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({

@@ -14,14 +14,14 @@ describe('Test namespace get list calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
 	it(`should list empty`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual([])
 	})
 
 	it(`should create a new namespace foo`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces`)
 			.send({
 				name: 'foo',
@@ -30,7 +30,7 @@ describe('Test namespace get list calls', () => {
 	})
 
 	it(`should get the new namespace foo`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/foo`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual({
@@ -42,7 +42,7 @@ describe('Test namespace get list calls', () => {
 	})
 
 	it(`should list the new namespace foo`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.length).toEqual(1)

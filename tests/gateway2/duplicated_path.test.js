@@ -44,14 +44,14 @@ post:
 `)
 
 	retry10(`should execute gateway ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
+		const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.text).toEqual('from debug plugin')
 	})
 
 	retry10(`should have error set in the second endpoint`, async () => {
-		const listRes = await request(common.config.getDirektivHost()).get(
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
 			`/api/v2/namespaces/${ namespace }/gateway/routes`,
 		)
 		expect(listRes.statusCode).toEqual(200)

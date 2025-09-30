@@ -12,7 +12,7 @@ describe('Test variable delete calls', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	it(`should create and delete one var`, async () => {
-		const createRes = await request(config.getDirektivHost())
+		const createRes = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/variables`)
 			.send({
 				name: 'foo',
@@ -22,13 +22,13 @@ describe('Test variable delete calls', () => {
 		expect(createRes.statusCode).toEqual(200)
 
 		const varId = createRes.body.data.id
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.delete(`/api/v2/namespaces/${ namespace }/variables/${ varId }`)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should create two vars and delete them with multiple delete endpoint`, async () => {
-		const createRes1 = await request(config.getDirektivHost())
+		const createRes1 = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/variables`)
 			.send({
 				name: 'foo',
@@ -37,7 +37,7 @@ describe('Test variable delete calls', () => {
 			})
 		expect(createRes1.statusCode).toEqual(200)
 
-		const createRes2 = await request(config.getDirektivHost())
+		const createRes2 = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/variables`)
 			.send({
 				name: 'foo1',
@@ -49,7 +49,7 @@ describe('Test variable delete calls', () => {
 		const varId1 = createRes1.body.data.id
 		const varId2 = createRes2.body.data.id
 
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.delete(`/api/v2/namespaces/${ namespace }/variables?ids=${ varId1 },${ varId2 }`)
 		expect(res.statusCode).toEqual(200)
 	})
@@ -88,7 +88,7 @@ describe('Test invalid variable delete calls', () => {
 		const testCase = testCases[i]
 
 		it(`should fail delete a variable case ${ i }`, async () => {
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.delete(`/api/v2/namespaces/${ namespace }/variables/${ testCase.id }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
