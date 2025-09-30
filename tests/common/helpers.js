@@ -4,12 +4,12 @@ import regex from './regex'
 import request from './request'
 
 async function deleteAllNamespaces () {
-	const listResponse = await request(config.getDirektivHost()).get(`/api/v2/namespaces`)
+	const listResponse = await request(config.getDirektivBaseUrl()).get(`/api/v2/namespaces`)
 	if (listResponse.statusCode !== 200)
 		throw Error(`none ok namespaces list statusCode(${ listResponse.statusCode })`)
 
 	for (const namespace of listResponse.body.data) {
-		const response = await request(config.getDirektivHost()).delete(`/api/v2/namespaces/${ namespace.name }`)
+		const response = await request(config.getDirektivBaseUrl()).delete(`/api/v2/namespaces/${ namespace.name }`)
 
 		if (response.statusCode !== 200)
 			throw Error(`none ok namespace(${ namespace.name }) delete statusCode(${ response.statusCode })`)
@@ -18,7 +18,7 @@ async function deleteAllNamespaces () {
 
 async function itShouldCreateNamespace (it, expect, ns) {
 	it(`should create a new namespace ${ ns }`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces`)
 			.send({ name: ns })
 		expect(res.statusCode).toEqual(200)
@@ -30,7 +30,7 @@ async function itShouldCreateFile (it, expect, ns, path, name, type, mimeType, d
 		if (path === '/')
 			path = ''
 
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
 			.send({
@@ -49,7 +49,7 @@ function itShouldCreateYamlFile (it, expect, ns, path, name, type, data) {
 
 async function itShouldCreateDir (it, expect, ns, path, name) {
 	it(`should create a new dir ${ path }`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
 			.send({
@@ -63,6 +63,7 @@ async function itShouldCreateDir (it, expect, ns, path, name) {
 		expect(res.body.data).toEqual({
 			path: `${ path }/${ name }`,
 			type: 'directory',
+			errors: [],
 			createdAt: expect.stringMatching(regex.timestampRegex),
 			updatedAt: expect.stringMatching(regex.timestampRegex),
 		})
@@ -79,7 +80,7 @@ async function itShouldUpdateFile (it, expect, ns, path, newPatch) {
 		title = `should update file path ${ path } to ${ newPatch.path }`
 
 	it(title, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.patch(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
 			.send(newPatch)
@@ -101,7 +102,7 @@ async function itShouldUpdateFile (it, expect, ns, path, newPatch) {
 
 async function itShouldCheckPathExists (it, expect, ns, path, assertExits) {
 	it(`should check if path(${ path }) exists(${ assertExits })`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ ns }/files${ path }`)
 
 		if (assertExits)
@@ -127,7 +128,7 @@ function itShouldUpdateYamlFile (it, expect, ns, path, data) {
 
 async function itShouldDeleteFile (it, expect, ns, path) {
 	it(`should delete a file ${ path }`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.delete(`/api/v2/namespaces/${ ns }/files${ path }`)
 
 		expect(res.statusCode).toEqual(200)
@@ -137,7 +138,7 @@ async function itShouldDeleteFile (it, expect, ns, path) {
 
 async function itShouldCreateVariable (it, expect, ns, variable) {
 	it(`should create a variable ${ variable.name }`, async () => {
-		const createRes = await request(config.getDirektivHost())
+		const createRes = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ ns }/variables`)
 			.send(variable)
 		expect(createRes.statusCode).toEqual(200)

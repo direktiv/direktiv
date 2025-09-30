@@ -54,7 +54,7 @@ states:
 		await helpers.sleep(1000)
 	})
 	it(`should fail to invoke the '/listener.yml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=listener.yml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=listener.yml&wait=true`)
 
 		expect(req.statusCode).toEqual(500)
 		expect(req.body).toMatchObject({
@@ -243,7 +243,7 @@ describe('Test workflow events', () => {
 	it(`should have one event listeners`, async () => {
 		await helpers.sleep(1000)
 
-		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
+		const getEventListenerResponse = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
 			.send()
 		expect(getEventListenerResponse.body.data[0]).toMatchObject({
 			triggerWorkflow: '/start.yaml',
@@ -268,16 +268,16 @@ describe('Test workflow events', () => {
 		await helpers.sleep(1000)
 
 		// start workflow
-		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowName }`)
+		const runWorkflowResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowName }`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
 		await new Promise(r => setTimeout(r, 250))
 
-		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
+		const getEventListenerResponse = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
 			.send()
 		expect(getEventListenerResponse.body.meta.total).toEqual(2)
-
+		// eslint-disable-next-line no-prototype-builtins
 		const result = getEventListenerResponse.body.data.find(item => item.hasOwnProperty('triggerInstance'))
 		expect(result).toMatchObject({
 			triggerType: 'WaitSimple',
@@ -303,7 +303,7 @@ describe('Test workflow events', () => {
 		instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, 'complete')
 		expect(instancesResponse).not.toBeFalsy()
 
-		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instancesResponse.id }/output`)
+		const instanceOutput = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instancesResponse.id }/output`)
 		const output = Buffer.from(instanceOutput.body.data.output, 'base64')
 		const outputJSON = JSON.parse(output.toString())
 
@@ -316,7 +316,7 @@ describe('Test workflow events', () => {
 		const instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName, 'complete')
 		expect(instance).not.toBeFalsy()
 
-		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instance.id }/output`)
+		const instanceOutput = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instance.id }/output`)
 		const output = Buffer.from(instanceOutput.body.data.output, 'base64')
 		const outputJSON = JSON.parse(output.toString())
 
@@ -353,7 +353,7 @@ describe('Test workflow events', () => {
 		await helpers.sleep(1000)
 
 		// start workflow
-		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowNameContext }`)
+		const runWorkflowResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowNameContext }`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
@@ -402,14 +402,14 @@ describe('Test workflow events', () => {
 
 	it(`should not start by event due to context filter`, async () => {
 		await helpers.sleep(2000)
-		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ workflowContextMultipleName }`)
+		const runWorkflowResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ workflowContextMultipleName }`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
 		await events.sendEventAndList(namespaceName, basevent('waitformulti', 'wait-ctx65', 'world1'))
 		let instancesResponse = await events.listInstancesAndFilter(namespaceName, workflowContextMultipleName, 'pending')
 		expect(instancesResponse).not.toBeFalsy()
-		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
+		const workflowEventResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(baseventMultipleContext('waitformulti', 'wait-c3432tx7'))
 		expect(workflowEventResponse.statusCode).toEqual(200)

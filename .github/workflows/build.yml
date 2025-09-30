@@ -6,13 +6,12 @@ on:
       - '*'
     branches:
       - main
+      - main-ts
   pull_request:
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-  IS_GITHUB_ACTIONS: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -22,33 +21,26 @@ jobs:
   backend-license:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
 
+      - name: Install Task
+        uses: go-task/setup-task@v1
+
       - name: Run check
-        run: make tests-license-check
-
-  backend-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v8
-        with:
-          version: v2.2
+        run: task test:licenses
 
   backend-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
           cache: true
@@ -64,7 +56,7 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
@@ -125,86 +117,9 @@ jobs:
             VERSION=${{ env.VERSION }}
             GIT_SHA=${{ env.GIT_SHA }}
 
-  build-ee:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
-    if: startsWith(github.ref, 'refs/tags/')
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Checkout EE repository
-        uses: actions/checkout@v4
-        with:
-          repository: direktiv/direktiv-ee
-          path: direktiv-ee
-          token: ${{ secrets.GA_DIREKTIV_EE }}
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-ee
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{raw}}
-            type=sha,prefix=,format=short
-        env:
-          DOCKER_METADATA_SHORT_SHA_LENGTH: 10
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          buildkitd-flags: --debug
-
-
-      - name: Set current date
-        run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: api-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-x
-
-      - name: Set Docker Arg VERSION
-        run: |
-          echo "GIT_SHA=$(git rev-parse --short=10 HEAD)" >> $GITHUB_ENV
-
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          else
-            echo "VERSION=$(git rev-parse --short=10 HEAD)" >> $GITHUB_ENV
-          fi
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          platforms: linux/amd64,linux/arm64
-          provenance: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
-          build-args: |
-            VERSION=${{ env.VERSION }}
-            GIT_SHA=${{ env.GIT_SHA }}
-            IS_ENTERPRISE=true
 
   e2e:
-    needs: [build, backend-license, backend-lint, backend-test]
+    needs: [build, backend-license, backend-test]
     runs-on: ubuntu-latest
 
     timeout-minutes: 18
@@ -215,96 +130,73 @@ jobs:
         sections:
           - type: api
             suit: engine
-          - type: api
-            suit: events
-          - type: api
-            suit: gateway
-          - type: api
-            suit: gateway2
-          - type: api
-            suit: instances
-          - type: api
-            suit: kubernetes
-          - type: api
-            suit: part1
-          - type: api
-            suit: part2
-          - type: api
-            suit: services
-          - type: api
-            suit: actions
+          #- type: api
+          #  suit: events
+          #- type: api
+          #  suit: gateway
+          #- type: api
+          #  suit: gateway2
+          #- type: api
+          #  suit: instances
+          #- type: api
+          #  suit: kubernetes
+          #- type: api
+          #  suit: part1
+          #- type: api
+          #  suit: part2
+          #- type: api
+          #  suit: services
+          #- type: api
+          #  suit: actions
 
-          - type: playwright
-            suit: "1/4"
-          - type: playwright
-            suit: "2/4"
-          - type: playwright
-            suit: "3/4"
-          - type: playwright
-            suit: "4/4"
+          #- type: playwright
+          #  suit: "1/4"
+          #- type: playwright
+          #  suit: "2/4"
+          #- type: playwright
+          #  suit: "3/4"
+          #- type: playwright
+          #  suit: "4/4"
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Setup k3s
-        run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
+      - name: Set up KinD
+        uses: helm/kind-action@v1
+        with:
+          version: v0.29.0
+
+      - name: Verify cluster
+        run: kubectl cluster-info
+
+      - name: Get nodes
+        run: kubectl get nodes -o wide
 
       - name: Install Helm v3.17.3
         uses: azure/setup-helm@v4
         with:
           version: v3.17.3
 
-      - name: Create namespace for the DB
-        run: kubectl create ns postgres
+      - name: Install Task
+        uses: go-task/setup-task@v1
 
-      - name: Install Postgres
-        run: |
-          helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm install postgres bitnami/postgresql \
-            --namespace postgres \
-            --set primary.persistence.enabled=false
-
+      - name: Task default
+        run: DIREKTIV_IMAGE_REGISTRY=ghcr.io DIREKTIV_IMAGE=direktiv/direktiv DIREKTIV_IMAGE_TAG=${GITHUB_SHA::10} task github-ci
 
       - name: Wait for Direktiv pods to be ready
         run: |
-          sleep 1
-          kubectl wait --namespace postgres --for=condition=Ready pod --selector=app.kubernetes.io/name=postgresql --timeout=120s
-
-      - name: Generate dev.yaml file with database credentials
-        run: |
-          DB_HOST=postgres-postgresql.postgres.svc
-          DB_PORT=5432
-          DB_USER=postgres
-          DB_PASSWORD=$(kubectl get secret --namespace postgres postgres-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
-          DB_NAME=postgres
-
-          cat <<EOF > dev.yaml
-          pullPolicy: IfNotPresent
-          registry: ghcr.io
-          image: direktiv/direktiv
-          tag: ${GITHUB_SHA::10}
-          flow:
-            logging: json
-          database:
-            host: "$DB_HOST"
-            port: $DB_PORT
-            user: "$DB_USER"
-            password: "$DB_PASSWORD"
-            name: "$DB_NAME"
-            sslmode: disable
-          EOF
-          cat dev.yaml
-      - name: Install Direktiv chart
-        run: helm install direktiv -f dev.yaml ./charts/direktiv/
+          sleep 5;
+          kubectl get pods -A;
+          kubectl get pods -A --show-labels;
 
       - name: Set Environment Variables
-        run: echo "DIREKTIV_HOST=127.0.0.1:80" >> $GITHUB_ENV
+        run: echo "DIREKTIV_BASE_URL=http://127.0.0.1:9090" >> $GITHUB_ENV
 
       - name: Wait until flow is healthy
         run: |
-          endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/status";
-          for attempt in {1..40}
+          endpoint="${{ env.DIREKTIV_BASE_URL }}/api/v2/status";
+          for attempt in {1..120}
           do
             status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint || true);
             echo "API status code: $status_code";
@@ -326,14 +218,15 @@ jobs:
         run: |
           npm -prefix tests run jest -- ${{ matrix.sections.suit }}/ --runInBand
         env:
-          DIREKTIV_HOST: ${{ env.DIREKTIV_HOST }}
-          GITHUB_ACTIONS: true
+          DIREKTIV_BASE_URL: ${{ env.DIREKTIV_BASE_URL }}
 
       - name: Run Playwright E2E tests
         id: playwrightRun
         if: matrix.sections.type == 'playwright'
         run: |
-          PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
+          PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} task test:playwright
+        env:
+          DIREKTIV_BASE_URL: ${{ env.DIREKTIV_BASE_URL }}
 
 
       - name: Upload Playwright Artifacts

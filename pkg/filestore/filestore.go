@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // Package 'filestore' implements a filesystem that is responsible to store user's projects and files. For each
@@ -16,47 +14,36 @@ import (
 // Via 'filestore.FileStore' the caller manages the roots, and 'filestore.Root' the caller manages files and directories.
 
 var (
-	ErrFileTypeIsDirectory  = errors.New("ErrFileTypeIsDirectory")
-	ErrNotFound             = errors.New("ErrNotFound")
-	ErrPathAlreadyExists    = errors.New("ErrPathAlreadyExists")
-	ErrNoParentDirectory    = errors.New("ErrNoParentDirectory")
-	ErrInvalidPathParameter = errors.New("ErrInvalidPathParameter")
-	ErrInvalidTypeParameter = errors.New("ErrInvalidTypeParameter")
+	ErrFileTypeIsDirectory     = errors.New("ErrFileTypeIsDirectory")
+	ErrNotFound                = errors.New("ErrNotFound")
+	ErrPathAlreadyExists       = errors.New("ErrPathAlreadyExists")
+	ErrNoParentDirectory       = errors.New("ErrNoParentDirectory")
+	ErrInvalidPathParameter    = errors.New("ErrInvalidPathParameter")
+	ErrInvalidTypeParameter    = errors.New("ErrInvalidTypeParameter")
+	ErrDuplicatedNamespaceName = errors.New("ErrDuplicatedNamespaceName")
 )
 
 // FileStore manages different operations on files and roots.
 
 type FileStore interface {
-	// CreateRoot creates a new root in the filestore. For each direktiv
-	CreateRoot(ctx context.Context, rootID uuid.UUID, namespace string) (*Root, error)
+	// CreateRoot creates a new root in the filestore.
+	CreateRoot(ctx context.Context, id string) (*Root, error)
 
-	CreateTempRoot(ctx context.Context, id uuid.UUID) (*Root, error)
-
-	GetRoot(ctx context.Context, id uuid.UUID) (*Root, error)
+	GetRoot(ctx context.Context, id string) (*Root, error)
 
 	// GetAllRoots list all roots.
 	GetAllRoots(ctx context.Context) ([]*Root, error)
 
-	GetRootByNamespace(ctx context.Context, namespace string) (*Root, error)
-
-	// ForRootID returns a query object to do further queries on root.
-	ForRootID(rootID uuid.UUID) RootQuery
-
-	// ForNamespace returns a query object to do further queries on root.
-	ForNamespace(namespace string) RootQuery
+	ForRoot(id string) RootQuery
 
 	// ForFile returns a query object to do further queries on that file.
 	ForFile(file *File) FileQuery
-
-	// GetFileByID queries a file by id.
-	GetFileByID(ctx context.Context, id uuid.UUID) (*File, error)
 }
 
 // Root represents an isolated filesystems. Users of filestore can create and deletes multiple roots. In Direktiv,
 // we create a dedicated root for every namespace.
 type Root struct {
-	ID        uuid.UUID
-	Namespace string `gorm:"default:NULL"`
+	ID string
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -86,7 +73,7 @@ type RootQuery interface {
 	// It returns list of files with data fields already loaded, so the caller don't have to call GetData().
 	ListDirektivFilesWithData(ctx context.Context) ([]*File, error)
 
-	SetNamespace(ctx context.Context, namespace string) error
+	SetID(ctx context.Context, id string) error
 }
 
 // CalculateChecksumFunc is a function type used to calculate files checksums.

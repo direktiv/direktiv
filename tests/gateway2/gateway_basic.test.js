@@ -16,7 +16,7 @@ describe('Test gateway no basic file', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	retry10(`should  get virtual config file`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
+		const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.file_path).toEqual('virtual')
@@ -39,7 +39,7 @@ info:
 `)
 
 	retry10(`should  get virtual config file`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
+		const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.file_path).toEqual('/gw.yaml')
@@ -66,7 +66,7 @@ additional:
 `)
 
 	// retry10(`should  get virtual config file`, async () => {
-	// 	const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
+	// 	const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
 	// 		.send({})
 	// 	expect(res.statusCode).toEqual(200)
 	// 	expect(res.body.data.errors.length).toEqual(1)
@@ -98,7 +98,7 @@ info:
 `)
 
 	// retry10(`should  get virtual config file`, async () => {
-	// 	const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
+	// 	const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
 	// 		.send({})
 	// 	expect(res.statusCode).toEqual(200)
 	// 	expect(res.body.data.errors.length).toEqual(1)

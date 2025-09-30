@@ -10,6 +10,7 @@
 .vscode
 
 cmd/ee
+internal/ee
 pkg/ee
 direktiv-ee
 ee

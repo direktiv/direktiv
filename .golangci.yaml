@@ -1,6 +1,6 @@
 version: "2"
 run:
-  go: 1.24.0
+  go: 1.25.0
   issues-exit-code: 1
   tests: false
 
@@ -22,7 +22,6 @@ linters:
     - musttag
     - nolintlint
     - prealloc
-    - spancheck # TODO: Alan, enable this one as it helps you fixing some telemetry bugs.
     - tagliatelle
     - varnamelen
     - wrapcheck
@@ -49,40 +48,6 @@ linters:
       - legacy
       - std-error-handling
     rules:
-      - linters:
-          - funcorder
-          - asasalint
-          - contextcheck
-          - dogsled
-          - dupl
-          - exhaustive
-          - forbidigo
-          - forcetypeassert
-          - gochecknoinits
-          - gocognit
-          - gocritic
-          - gocyclo
-          - gosec
-          - interfacebloat
-          - maintidx
-          - makezero
-          - nakedret
-          - nestif
-          - nlreturn
-          - nonamedreturns
-          - paralleltest
-          - perfsprint
-          - prealloc
-          - predeclared
-          - promlinter
-          - protogetter
-          - rowserrcheck
-          - staticcheck
-          - tagliatelle
-          - testpackage
-          - unparam
-          - wastedassign
-        path: (pkg)\/(model|sidecar|jqer|flow)\/.*
       - linters:
           - err113
         text: 'do not define dynamic errors, use wrapped static errors instead:'
@@ -133,7 +98,7 @@ linters:
         text: string `false`
       - linters:
           - gochecknoinits
-        path: pkg/gateway/plugins/.*
+        path: internal/gateway/plugins/.*
 
     paths:
       - third_party$

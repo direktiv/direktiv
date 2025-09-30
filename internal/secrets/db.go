@@ -1,0 +1,168 @@
+package secrets
+
+import (
+	"context"
+	"errors"
+
+	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/datastore"
+	"github.com/direktiv/direktiv/internal/datastore/datasql"
+	"gorm.io/gorm"
+)
+
+type DBSecrets struct {
+	namespace string
+	db        *gorm.DB
+}
+
+func (dbs *DBSecrets) Get(ctx context.Context, name string) (*core.Secret, error) {
+	db := dbs.db.WithContext(ctx).Begin()
+	if db.Error != nil {
+		return nil, db.Error
+	}
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
+
+	// Fetch one
+	s, err := dStore.Secrets().Get(ctx, dbs.namespace, name)
+	if err != nil {
+		if errors.Is(err, datastore.ErrNotFound) {
+			return nil, ErrNotFound
+		}
+
+		return nil, err
+	}
+
+	return &core.Secret{
+		Name:      name,
+		Data:      s.Data,
+		CreatedAt: s.CreatedAt,
+		UpdatedAt: s.UpdatedAt,
+	}, nil
+}
+
+func (dbs *DBSecrets) Set(ctx context.Context, secret *core.Secret) (*core.Secret, error) {
+	db := dbs.db.WithContext(ctx).Begin()
+	if db.Error != nil {
+		return nil, db.Error
+	}
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
+
+	s := &datastore.Secret{
+		Name:      secret.Name,
+		Namespace: dbs.namespace,
+		Data:      secret.Data,
+	}
+
+	err := dStore.Secrets().Set(ctx, s)
+	if err != nil {
+		return nil, err
+	}
+
+	v, err := dStore.Secrets().Get(ctx, dbs.namespace, secret.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	secret.CreatedAt = v.CreatedAt
+	secret.UpdatedAt = v.UpdatedAt
+
+	return secret, db.WithContext(ctx).Commit().Error
+}
+
+func (dbs *DBSecrets) GetAll(ctx context.Context) ([]*core.Secret, error) {
+	db := dbs.db.WithContext(ctx).Begin()
+	if db.Error != nil {
+		return nil, db.Error
+	}
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
+
+	list, err := dStore.Secrets().GetAll(ctx, dbs.namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]*core.Secret, len(list))
+	for i := range list {
+		res[i] = &core.Secret{
+			Name:      list[i].Name,
+			Data:      list[i].Data,
+			CreatedAt: list[i].CreatedAt,
+			UpdatedAt: list[i].UpdatedAt,
+		}
+	}
+
+	return res, nil
+}
+
+func (dbs *DBSecrets) Update(ctx context.Context, secret *core.Secret) (*core.Secret, error) {
+	db := dbs.db.WithContext(ctx).Begin()
+	if db.Error != nil {
+		return nil, db.Error
+	}
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
+
+	_, err := dStore.Secrets().Get(ctx, dbs.namespace, secret.Name)
+	if err != nil {
+		if errors.Is(err, datastore.ErrNotFound) {
+			return nil, ErrNotFound
+		}
+
+		return nil, err
+	}
+
+	err = dStore.Secrets().Update(ctx, &datastore.Secret{
+		Namespace: dbs.namespace,
+		Name:      secret.Name,
+		Data:      secret.Data,
+	})
+	if err != nil {
+		if errors.Is(err, datastore.ErrNotFound) {
+			return nil, ErrNotFound
+		}
+
+		return nil, err
+	}
+
+	// Fetch the updated one
+	s, err := dStore.Secrets().Get(ctx, dbs.namespace, secret.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.WithContext(ctx).Commit().Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &core.Secret{
+		Name:      s.Name,
+		Data:      s.Data,
+		CreatedAt: s.CreatedAt,
+		UpdatedAt: s.UpdatedAt,
+	}, nil
+}
+
+func (dbs *DBSecrets) Delete(ctx context.Context, name string) error {
+	db := dbs.db.WithContext(ctx).Begin()
+	if db.Error != nil {
+		return db.Error
+	}
+	defer db.Rollback()
+	dStore := datasql.NewStore(db)
+
+	// Fetch one
+	err := dStore.Secrets().Delete(ctx, dbs.namespace, name)
+	if err != nil {
+		if errors.Is(err, datastore.ErrNotFound) {
+			return ErrNotFound
+		}
+
+		return err
+	}
+
+	return db.WithContext(ctx).Commit().Error
+}

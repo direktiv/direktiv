@@ -81,19 +81,19 @@ get:
 	)
 
 	retry10(`should execute gateway ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).get(`/ns/${ namespace }/ep1`)
+		const res = await request(config.getDirektivBaseUrl()).get(`/ns/${ namespace }/ep1`)
 			.send({})
 		expect(res.statusCode).toEqual(503)
 	})
 
 	retry10(`should execute gateway ep2.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).get(`/ns/${ namespace }/ep2`)
+		const res = await request(config.getDirektivBaseUrl()).get(`/ns/${ namespace }/ep2`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 	})
 
 	retry10(`should execute gateway ep3.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).get(`/ns/${ namespace }/ep3`)
+		const res = await request(config.getDirektivBaseUrl()).get(`/ns/${ namespace }/ep3`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 	})

@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/api"
-	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/internal/api"
+	"github.com/direktiv/direktiv/internal/core"
 	"github.com/r3labs/sse"
 	"github.com/spf13/cobra"
 )

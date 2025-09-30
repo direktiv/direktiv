@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"database/sql"
 	_ "embed"
 	"fmt"
 	"log"
@@ -10,10 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/datastore/datasql"
-	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	tsPostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -26,49 +21,8 @@ import (
 //go:embed db_schema.sql
 var Schema string
 
-type DB struct {
-	db *gorm.DB
-}
-
-func NewDB(db *gorm.DB) *DB {
-	return &DB{
-		db: db,
-	}
-}
-
-func (tx *DB) Conn() *gorm.DB {
-	return tx.db
-}
-
-func (tx *DB) FileStore() filestore.FileStore {
-	return filesql.NewStore(tx.db)
-}
-
-func (tx *DB) DataStore() datastore.Store {
-	return datasql.NewStore(tx.db)
-}
-
-func (tx *DB) Commit(ctx context.Context) error {
-	return tx.db.WithContext(ctx).Commit().Error
-}
-
-func (tx *DB) Rollback() error {
-	return tx.db.Rollback().Error
-}
-
-func (tx *DB) BeginTx(ctx context.Context, opts ...*sql.TxOptions) (*DB, error) {
-	res := tx.db.WithContext(ctx).Begin(opts...)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	return &DB{
-		db: res,
-	}, nil
-}
-
 // nolint:usetesting
-func NewTestDB(t *testing.T) (*DB, error) {
+func NewTestDB(t *testing.T) (*gorm.DB, error) {
 	t.Helper()
 	ctx := context.Background()
 
@@ -95,7 +49,7 @@ func NewTestDB(t *testing.T) (*DB, error) {
 	return newTestPostgres(connStr)
 }
 
-func newTestPostgres(dsn string) (*DB, error) {
+func newTestPostgres(dsn string) (*gorm.DB, error) {
 	gormConf := &gorm.Config{
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
@@ -123,23 +77,21 @@ func newTestPostgres(dsn string) (*DB, error) {
 		return nil, fmt.Errorf("delete namespaces, err: %w", res.Error)
 	}
 
-	return NewDB(db), nil
+	return db, nil
 }
 
 //nolint:usetesting
-func NewTestDBWithNamespace(t *testing.T, namespace string) (*DB, *datastore.Namespace, error) {
+func NewTestDBWithNamespace(t *testing.T, namespace string) (*gorm.DB, error) {
 	t.Helper()
 
 	db, err := NewTestDB(t)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	ns, err := db.DataStore().Namespaces().Create(context.Background(), &datastore.Namespace{
-		Name: namespace,
-	})
-	if err != nil {
-		return nil, nil, err
+	res := db.Exec("INSERT INTO namespaces(name) VALUES ($1)", namespace)
+	if res.Error != nil {
+		return nil, fmt.Errorf("create namespaces, err: %w", res.Error)
 	}
 
-	return db, ns, nil
+	return db, nil
 }

@@ -4,8 +4,6 @@ import (
 	"context"
 	"path/filepath"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // FileType represents file types. Filestore files are basically two types, ordinary files and directories.
@@ -38,7 +36,6 @@ func (t FileType) IsDirektivSpecFile() bool {
 
 // File represents a file in the filestore, File can be either ordinary file or directory.
 type File struct {
-	ID uuid.UUID `json:"-"`
 	// Path is the full path of the file, files and directories are only different when they have different paths. As
 	// in typical filesystems, paths are unique within the filesystem.
 	Path string `json:"path,omitempty"`
@@ -47,14 +44,13 @@ type File struct {
 	Depth int      `json:"-"`
 	Typ   FileType `json:"type,omitempty"`
 
-	Data     []byte `json:"data,omitempty"`
 	Checksum string `json:"checksum,omitempty"`
 
 	Size int `json:"size,omitempty"`
 
 	// Root is a filestore instance, users can create multiple filestore roots and RootID tells which root the file
 	// belongs too.
-	RootID uuid.UUID `json:"-"`
+	RootID string `json:"-"`
 
 	MIMEType string `json:"mimeType,omitempty"`
 

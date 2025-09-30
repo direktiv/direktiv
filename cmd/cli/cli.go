@@ -14,9 +14,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/cmdserver"
-	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/server"
+	"github.com/direktiv/direktiv/internal/cmdserver"
+	"github.com/direktiv/direktiv/internal/server"
+	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/spf13/cobra"
 )
 
@@ -71,9 +71,9 @@ var startAPICmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("service 'api' starting...")
 
-		circuit := core.NewCircuit(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+		lc := lifecycle.New(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-		err := server.Start(circuit)
+		err := server.Start(lc)
 		if err != nil {
 			slog.Error("booting api server", "err", err)
 			os.Exit(1)
@@ -81,10 +81,10 @@ var startAPICmd = &cobra.Command{
 		slog.Info("service 'api' started successfully")
 
 		// wait until server is done.
-		<-circuit.Done()
+		<-lc.Done()
 		slog.Info("terminating api server")
 
-		err = circuit.Wait(time.Second * 10)
+		err = lc.Wait(time.Second * 10)
 		if err != nil {
 			slog.Info("harsh api server termination")
 		} else {
