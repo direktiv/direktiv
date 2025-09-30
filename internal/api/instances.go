@@ -98,6 +98,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 			Code:    "request_data_invalid",
 			Message: "invalid request body",
 		})
+
 		return
 	}
 
@@ -114,7 +115,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, id)
 }
 
-// calculates the stats Status->Count of all instances in the namespace
+// calculates the stats Status->Count of all instances in the namespace.
 func (e *instController) stats(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
@@ -145,6 +146,7 @@ func (e *instController) get(w http.ResponseWriter, r *http.Request) {
 			Code:    "request_id_invalid",
 			Message: "invalid instance uuid",
 		})
+
 		return
 	}
 

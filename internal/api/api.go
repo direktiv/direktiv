@@ -327,6 +327,7 @@ func ParseQueryParam[T string | int](r *http.Request, name string, def T) T {
 		if err != nil {
 			return def
 		}
+
 		return any(v).(T)
 	}
 
