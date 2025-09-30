@@ -1,7 +1,6 @@
 package databus
 
 import (
-	"sort"
 	"sync"
 
 	"github.com/direktiv/direktiv/internal/engine"
@@ -72,9 +71,6 @@ func (c *StatusCache) SnapshotPage(filterNamespace string, filterInstanceID uuid
 		}
 		out = append(out, v.Clone())
 	}
-	sort.Slice(out, func(i, j int) bool {
-		return out[i].CreatedAt.Before(out[j].CreatedAt)
-	})
 
 	return out, total
 }
