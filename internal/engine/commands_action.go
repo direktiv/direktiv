@@ -141,7 +141,7 @@ func (cmds *Commands) callLocal(config *core.ActionConfig, payload *core.ActionP
 	return nil
 }
 
-// TODO: delete me
+// TODO: delete me.
 var cmdsSm core.ServiceManager
 
 func (cmds *Commands) deletemeStartServiceManager() error {

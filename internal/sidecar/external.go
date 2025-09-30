@@ -15,7 +15,6 @@ type externalServer struct {
 }
 
 func newExternalServer() *externalServer {
-
 	// we can ignore the error here
 	addr, _ := url.Parse("http://localhost:8080")
 	proxy := httputil.NewSingleHostReverseProxy(addr)
@@ -44,7 +43,6 @@ func newExternalServer() *externalServer {
 	}
 
 	proxy.ModifyResponse = func(resp *http.Response) error {
-
 		return nil
 	}
 
