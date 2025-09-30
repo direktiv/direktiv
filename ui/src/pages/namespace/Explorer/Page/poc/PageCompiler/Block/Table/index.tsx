@@ -105,12 +105,23 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
                           }}
                         >
                           <TableRow>
-                            {columns.map((column, columnIndex) => (
-                              <TableCell
-                                key={columnIndex}
-                                blockProps={column}
-                              />
-                            ))}
+                            {columns.map((column, columnIndex) => {
+                              const isLastColumn =
+                                columnIndex === columns.length - 1;
+                              return (
+                                <TableCell
+                                  key={columnIndex}
+                                  blockProps={column}
+                                  colSpan={
+                                    isLastColumn &&
+                                    hasTableActions &&
+                                    !hasRowActions
+                                      ? 2
+                                      : 1
+                                  }
+                                />
+                              );
+                            })}
                             {hasRowActions && (
                               <RowActions
                                 actions={blocks[1]}
