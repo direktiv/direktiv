@@ -45,11 +45,6 @@ func (c *StatusCache) Snapshot(filterNamespace string, filterInstanceID uuid.UUI
 func (c *StatusCache) SnapshotPage(filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*engine.InstanceStatus, int) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	//line := ""
-	//for k, _ := range c.items {
-	//	line += fmt.Sprintf(" ---> %s", c.items[k].InstanceID.String()[0:3])
-	//}
-	//fmt.Printf("CACHE: %s\n", line)
 
 	out := make([]*engine.InstanceStatus, 0, len(c.items))
 
