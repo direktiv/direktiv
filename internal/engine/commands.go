@@ -35,21 +35,6 @@ func InjectCommands(vm *sobek.Runtime, instID uuid.UUID) {
 	vm.Set("generateAction", cmds.action)
 }
 
-func (cmds *Commands) action(call sobek.FunctionCall) sobek.Value {
-
-	// imgObject := call.Argument(0).ToObject(cmds.vm)
-
-	actionFunc := func(call sobek.FunctionCall) sobek.Value {
-		fmt.Println("action call")
-
-		fmt.Printf("Arguments: %v\n", call.Arguments)
-
-		return cmds.vm.ToValue("return value")
-	}
-
-	return cmds.vm.ToValue(actionFunc)
-}
-
 func (cmds *Commands) sleep(seconds int) sobek.Value {
 	time.Sleep(time.Duration(seconds) * time.Second)
 	return sobek.Undefined()

@@ -14,22 +14,25 @@ import (
 func TestActionParsing(t *testing.T) {
 
 	script := `
-	var myAction = generateAction({
-	type: "local",
-	size: "medium",
-	image: "my/image",
-	envs: {
-			my: "value",
-			hello: "world",
-			eins: "zwei",
-			"200": "kjjj"
-		}
-	});
+		var myAction = generateAction({
+		type: "local",
+		size: "medium",
+		image: "my/image",
+		envs: {
+				my: "value",
+				hello: "world",
+				eins: "zwei",
+				"200": "kjjj"
+			}
+		});
 
-	function stateOne(payload) {
-		myAction();
-		return finish("done");
-	}
+		function stateOne(payload) {
+			myAction({ 
+				data: "mydata",
+				files: ["/myscript"]
+			});
+			return finish("done");
+		}
 	`
 
 	ci := compiler.NewCompileItem([]byte(script), "")

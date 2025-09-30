@@ -104,6 +104,8 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: check that the input is valid json. map[string]any is not good enough because "hello" or
+	// true is valid json as well. if not we need to base64 encode it, which is valid json.
 	id, notify, err := e.engine.RunWorkflow(r.Context(), namespace, path, string(input), map[string]string{
 		"workflowPath": path,
 	})

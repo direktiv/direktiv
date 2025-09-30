@@ -44,7 +44,7 @@ func TestHttpRequest(t *testing.T) {
 	function jjj() {
 	}
 		function start() {
-		transition(jjj)
+			transition(jjj)
 			log(now().format("2006-01-02"))
 			var r = fetchSync("` + fmt.Sprintf("http://localhost:%s", mappedPort.Port()) + `", {
 				 method: "GET",

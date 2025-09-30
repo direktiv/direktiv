@@ -494,6 +494,10 @@ func (ap *ASTParser) parseAction(expr ast.Expression) (core.ActionConfig, error)
 					action.Size = strLit.Value.String()
 				}
 
+			case "inject":
+				if strLit, ok := ident.Value.(*ast.BooleanLiteral); ok {
+					action.Inject = strLit.Value
+				}
 			case "image":
 				if strLit, ok := ident.Value.(*ast.StringLiteral); ok {
 					action.Image = strLit.Value.String()
@@ -527,7 +531,6 @@ func (ap *ASTParser) parseAction(expr ast.Expression) (core.ActionConfig, error)
 					}
 				}
 				if arrLit, ok := ident.Value.(*ast.ArrayLiteral); ok {
-					fmt.Println("kssj")
 					// Parse array elements as key-value pairs
 					for i := 0; i < len(arrLit.Value); i += 2 {
 						if i+1 < len(arrLit.Value) {
