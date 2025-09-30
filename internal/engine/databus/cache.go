@@ -11,31 +11,36 @@ import (
 type StatusCache struct {
 	mu    sync.RWMutex
 	items []engine.InstanceStatus // key: orderID
+	index map[uuid.UUID]int
 }
 
 func NewStatusCache() *StatusCache {
 	return &StatusCache{
 		items: make([]engine.InstanceStatus, 0),
+		index: make(map[uuid.UUID]int),
 	}
 }
 
 func (c *StatusCache) Upsert(s *engine.InstanceStatus) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	// keep only the newest by HistorySequence
-	for i, v := range c.items {
-		if v.InstanceID != s.InstanceID {
-			continue
-		}
-		if v.HistorySequence < s.HistorySequence {
-			cp := s.Clone()
-			c.items[i] = *cp
+	i, ok := c.index[s.InstanceID]
 
-			return
-		}
+	// if not found, add it
+	if !ok {
+		cp := s.Clone()
+		c.items = append(c.items, *cp)
+		c.index[s.InstanceID] = len(c.items) - 1
+
+		return
 	}
-	cp := s.Clone()
-	c.items = append(c.items, *cp)
+
+	// here we need to update only if HistorySequence is newer
+	v := &c.items[i]
+	if v.HistorySequence < s.HistorySequence {
+		cp := s.Clone()
+		c.items[i] = *cp
+	}
 }
 
 func (c *StatusCache) Snapshot(filterNamespace string, filterInstanceID uuid.UUID) []*engine.InstanceStatus {
@@ -78,10 +83,13 @@ func (c *StatusCache) DeleteNamespace(name string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	cp := make([]engine.InstanceStatus, 0, len(c.items))
+	index := make(map[uuid.UUID]int)
 	for _, v := range c.items {
 		if name != v.Namespace {
 			cp = append(cp, v)
+			index[v.InstanceID] = len(cp) - 1
 		}
 	}
 	c.items = cp
+	c.index = index
 }
