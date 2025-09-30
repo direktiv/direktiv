@@ -35,11 +35,11 @@ type InstanceData struct {
 	Lineage      []*LineageData `json:"lineage"`
 	Namespace    string         `json:"namespace"`
 
-	InputLength    *int   `json:"inputLength,omitempty"`
+	InputLength    int    `json:"inputLength,omitempty"`
 	Input          []byte `json:"input,omitempty"`
-	OutputLength   *int   `json:"outputLength,omitempty"`
+	OutputLength   int    `json:"outputLength,omitempty"`
 	Output         []byte `json:"output,omitempty"`
-	MetadataLength *int   `json:"metadataLength,omitempty"`
+	MetadataLength int    `json:"metadataLength,omitempty"`
 	Metadata       []byte `json:"metadata,omitempty"`
 }
 
@@ -52,20 +52,23 @@ type instController struct {
 
 func marshalForAPI(data *engine.InstanceStatus) (*InstanceData, error) {
 	resp := &InstanceData{
-		ID:           data.InstanceID,
-		CreatedAt:    data.CreatedAt,
-		Started:      data.StartedAt,
-		EndedAt:      data.EndedAt,
-		Status:       data.StatusString(),
-		WorkflowPath: data.Metadata["workflowPath"],
-		ErrorCode:    nil,
-		Invoker:      "api",
-		Definition:   []byte(data.Script),
-		ErrorMessage: nil,
-		Flow:         []string{},
-		TraceID:      "",
-		Lineage:      []*LineageData{},
-		Namespace:    data.Namespace,
+		ID:             data.InstanceID,
+		CreatedAt:      data.CreatedAt,
+		Started:        data.StartedAt,
+		EndedAt:        data.EndedAt,
+		Status:         data.StatusString(),
+		WorkflowPath:   data.Metadata["workflowPath"],
+		ErrorCode:      nil,
+		Invoker:        "api",
+		Definition:     []byte(data.Script),
+		ErrorMessage:   nil,
+		Flow:           []string{},
+		TraceID:        "",
+		Lineage:        []*LineageData{},
+		Namespace:      data.Namespace,
+		InputLength:    len(data.Input),
+		OutputLength:   len(data.Output),
+		MetadataLength: len(data.Metadata),
 	}
 
 	return resp, nil
