@@ -95,6 +95,13 @@ const CreateYamlFileSchema = z.object({
   data: z.string(), // base64 encoded file body
 });
 
+const CreateTSFileSchema = z.object({
+  type: z.enum([ "workflow"]),
+  name: z.string().nonempty(),
+  mimeType: z.literal("application/x-typescript"),
+  data: z.string(), // base64 encoded file body
+});
+
 const CreateConsumerSchema = CreateYamlFileSchema.extend({
   type: z.literal("consumer"),
 });
@@ -107,7 +114,7 @@ const CreateServiceSchema = CreateYamlFileSchema.extend({
   type: z.literal("service"),
 });
 
-const CreateWorkflowSchema = CreateYamlFileSchema.extend({
+const CreateWorkflowSchema = CreateTSFileSchema.extend({
   type: z.literal("workflow"),
 });
 
