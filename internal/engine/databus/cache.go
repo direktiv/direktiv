@@ -30,14 +30,16 @@ func (c *StatusCache) Upsert(s *engine.InstanceStatus) {
 }
 
 func (c *StatusCache) Snapshot(filterNamespace string, filterInstanceID uuid.UUID) []*engine.InstanceStatus {
-	return c.SnapshotPage(filterNamespace, filterInstanceID, 0, 0)
+	res, _ := c.SnapshotPage(filterNamespace, filterInstanceID, 0, 0)
+	return res
 }
 
-func (c *StatusCache) SnapshotPage(filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) []*engine.InstanceStatus {
+func (c *StatusCache) SnapshotPage(filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*engine.InstanceStatus, int) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	out := make([]*engine.InstanceStatus, 0, len(c.items))
 
+	total := 0
 	for _, v := range c.items {
 		if v.InstanceID != filterInstanceID && filterInstanceID != uuid.Nil {
 			continue
@@ -45,20 +47,21 @@ func (c *StatusCache) SnapshotPage(filterNamespace string, filterInstanceID uuid
 		if v.Namespace != filterNamespace && filterNamespace != "" {
 			continue
 		}
+		total++
 		if offset > 0 {
 			offset--
 			continue
 		}
-		out = append(out, v.Clone())
 		if limit > 0 && len(out) >= limit {
-			break
+			continue
 		}
+		out = append(out, v.Clone())
 	}
 	sort.Slice(out, func(i, j int) bool {
 		return out[i].CreatedAt.Before(out[j].CreatedAt)
 	})
 
-	return out
+	return out, total
 }
 
 func (c *StatusCache) DeleteNamespace(name string) {

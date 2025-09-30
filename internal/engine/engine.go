@@ -170,17 +170,17 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	return nil
 }
 
-func (e *Engine) GetInstances(ctx context.Context, namespace string, limit int, offset int) ([]*InstanceStatus, error) {
-	data := e.dataBus.FetchInstanceStatus(ctx, namespace, uuid.Nil, limit, offset)
+func (e *Engine) GetInstances(ctx context.Context, namespace string, limit int, offset int) ([]*InstanceStatus, int, error) {
+	data, total := e.dataBus.FetchInstanceStatus(ctx, namespace, uuid.Nil, limit, offset)
 	if len(data) == 0 {
-		return nil, ErrDataNotFound
+		return nil, 0, ErrDataNotFound
 	}
 
-	return data, nil
+	return data, total, nil
 }
 
 func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.UUID) (*InstanceStatus, error) {
-	data := e.dataBus.FetchInstanceStatus(ctx, namespace, id, 0, 0)
+	data, _ := e.dataBus.FetchInstanceStatus(ctx, namespace, id, 0, 0)
 	if len(data) == 0 {
 		return nil, ErrDataNotFound
 	}

@@ -73,7 +73,7 @@ func (d *DataBus) PushQueueStream(ctx context.Context, event *engine.InstanceEve
 	return err
 }
 
-func (d *DataBus) FetchInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) []*engine.InstanceStatus {
+func (d *DataBus) FetchInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*engine.InstanceStatus, int) {
 	return d.cache.SnapshotPage(filterNamespace, filterInstanceID, limit, offset)
 }
 

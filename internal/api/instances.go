@@ -141,7 +141,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 func (e *instController) stats(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
-	list, err := e.engine.GetInstances(r.Context(), namespace, 0, 0)
+	list, _, err := e.engine.GetInstances(r.Context(), namespace, 0, 0)
 	if err != nil {
 		writeError(w, &Error{
 			Code:    err.Error(),
@@ -274,7 +274,7 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 	limit := parseNumberQueryParam(r, "limit")
 	offset := parseNumberQueryParam(r, "offset")
 
-	list, err := e.engine.GetInstances(r.Context(), namespace, limit, offset)
+	list, total, err := e.engine.GetInstances(r.Context(), namespace, limit, offset)
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -291,7 +291,7 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metaInfo := map[string]any{
-		"total": len(out),
+		"total": total,
 	}
 
 	writeJSONWithMeta(w, out, metaInfo)
