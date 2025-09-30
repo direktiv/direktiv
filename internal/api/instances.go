@@ -1,11 +1,8 @@
 package api
 
 import (
-	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/engine"
@@ -76,11 +73,9 @@ func marshalForAPI(data *engine.InstanceStatus) (*InstanceData, error) {
 
 func (e *instController) mountRouter(r chi.Router) {
 	r.Get("/{instanceID}/subscribe", e.dummy)
-
 	r.Get("/{instanceID}/input", e.dummy)
 	r.Get("/{instanceID}/output", e.dummy)
 	r.Get("/{instanceID}/metadata", e.dummy)
-
 	r.Patch("/{instanceID}", e.dummy)
 
 	r.Get("/", e.list)
@@ -88,9 +83,6 @@ func (e *instController) mountRouter(r chi.Router) {
 
 	r.Post("/", e.create)
 	r.Get("/stats", e.stats)
-
-	r.Post("/sched", e.createSched)
-	r.Get("/sched", e.listSched)
 }
 
 func (e *instController) dummy(w http.ResponseWriter, r *http.Request) {
@@ -102,6 +94,10 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 
 	input, err := io.ReadAll(r.Body)
 	if err != nil {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "invalid request body",
+		})
 		return
 	}
 
@@ -109,44 +105,22 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		"workflowPath": path,
 	})
 	if err != nil {
-		writeError(w, &Error{
-			Code:    err.Error(),
-			Message: err.Error(),
-		})
+		writeEngineError(w, err)
 
 		return
 	}
-
-	// var data *engine.InstanceStatus
-	// for range 10 {
-	// 	data, err = e.engine.GetInstanceByID(r.Context(), namespace, id)
-	// 	if err != nil && errors.Is(err, engine.ErrDataNotFound) {
-	// 		time.Sleep(5 * time.Millisecond)
-	// 		continue
-	// 	}
-	// 	if err != nil {
-	// 		writeError(w, &Error{
-	// 			Code:    err.Error(),
-	// 			Message: err.Error(),
-	// 		})
-
-	// 		return
-	// 	}
-	// }
 
 	<-notify
 	writeJSON(w, id)
 }
 
+// calculates the stats Status->Count of all instances in the namespace
 func (e *instController) stats(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
 	list, _, err := e.engine.GetInstances(r.Context(), namespace, 0, 0)
 	if err != nil {
-		writeError(w, &Error{
-			Code:    err.Error(),
-			Message: err.Error(),
-		})
+		writeEngineError(w, err)
 
 		return
 	}
@@ -162,100 +136,21 @@ func (e *instController) stats(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, stats)
 }
 
-func (e instController) testTranspile(w http.ResponseWriter, r *http.Request) {
-	// namespace := chi.URLParam(r, "namespace")
-	// path := r.URL.Query().Get("path")
-
-	// if path == "" {
-	// 	writeError(w, &Error{
-	// 		Code:    "resource_not_found",
-	// 		Message: "path not provided",
-	// 	})
-
-	// 	return
-	// }
-
-	// compiler, err := compiler.NewCompiler(e.db)
-	// if err != nil {
-	// 	writeInternalError(w, err)
-	// 	return
-	// }
-
-	// flow, err := compiler.Compile(r.Context(), namespace, path)
-	// if err != nil {
-	// 	writeInternalError(w, err)
-	// 	return
-	// }
-
-	// fmt.Printf("%+v\n", flow)
-
-	// wait := r.URL.Query().Get("wait") == "true"
-	// output := r.URL.Query().Get("output") == "true"
-
-	// ctx := telemetry.GetContextFromRequest(r.Context(), r)
-	// ctx, span := telemetry.Tracer.Start(ctx, "api-request")
-	// span.SetAttributes(
-	// 	attribute.KeyValue{
-	// 		Key:   "namespace",
-	// 		Value: attribute.StringValue(ns.Name),
-	// 	},
-	// 	attribute.KeyValue{
-	// 		Key:   "path",
-	// 		Value: attribute.StringValue(path),
-	// 	},
-	// 	attribute.KeyValue{
-	// 		Key:   "wait",
-	// 		Value: attribute.BoolValue(wait),
-	// 	},
-	// )
-	// defer span.End()
-
-	// input, err := io.ReadAll(r.Body)
-	// if err != nil {
-	// 	return
-	// }
-
-	// if wait && len(input) == 0 {
-	// 	input = []byte(`{}`)
-	// }
-
-	// data, err := e.manager.Start(ctx, ns.Name, path, input)
-	// if err != nil {
-	// 	// telemetry.ReportError(span, err)
-	// 	writeError(w, &Error{
-	// 		Code:    err.Error(),
-	// 		Message: err.Error(),
-	// 	})
-
-	// 	return
-	// }
-
-	// if wait {
-	// 	e.handleWait(ctx, w, r, data, output)
-
-	// 	return
-	// }
-
-	// writeJSON(w, marshalForAPI(data))
-}
-
 func (e *instController) get(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 	instanceIDStr := chi.URLParam(r, "instanceID")
 	instanceID, err := uuid.Parse(instanceIDStr)
 	if err != nil {
 		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: fmt.Errorf("unparsable instance UUID: %w", err).Error(),
+			Code:    "request_id_invalid",
+			Message: "invalid instance uuid",
 		})
-
 		return
 	}
 
 	data, err := e.engine.GetInstanceByID(r.Context(), namespace, instanceID)
 	if err != nil {
-		writeInternalError(w, err)
-
+		writeEngineError(w, err)
 		return
 	}
 
@@ -271,12 +166,12 @@ func (e *instController) get(w http.ResponseWriter, r *http.Request) {
 func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
-	limit := parseNumberQueryParam(r, "limit")
-	offset := parseNumberQueryParam(r, "offset")
+	limit := ParseQueryParam[int](r, "limit", 0)
+	offset := ParseQueryParam[int](r, "offset", 0)
 
 	list, total, err := e.engine.GetInstances(r.Context(), namespace, limit, offset)
 	if err != nil {
-		writeInternalError(w, err)
+		writeEngineError(w, err)
 		return
 	}
 
@@ -295,57 +190,4 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSONWithMeta(w, out, metaInfo)
-}
-
-// TODO: remove this test-code.
-func (e *instController) createSched(w http.ResponseWriter, r *http.Request) {
-	cfg := &sched.Rule{}
-	if err := json.NewDecoder(r.Body).Decode(cfg); err != nil {
-		writeError(w, &Error{
-			Code:    "error",
-			Message: err.Error(),
-		})
-
-		return
-	}
-
-	cfg, err := e.scheduler.SetRule(r.Context(), cfg)
-	if err != nil {
-		writeError(w, &Error{
-			Code:    "error",
-			Message: err.Error(),
-		})
-
-		return
-	}
-
-	writeJSON(w, cfg)
-}
-
-// TODO: remove this test-code.
-func (e *instController) listSched(w http.ResponseWriter, r *http.Request) {
-	list, err := e.scheduler.ListRules(r.Context())
-	if err != nil {
-		writeError(w, &Error{
-			Code:    "error",
-			Message: err.Error(),
-		})
-
-		return
-	}
-
-	writeJSON(w, list)
-}
-
-func parseNumberQueryParam(r *http.Request, name string) int {
-	x := r.URL.Query().Get(name)
-	if x == "" {
-		return 0
-	}
-	k, err := strconv.ParseInt(x, 10, 64)
-	if err != nil {
-		return 0
-	}
-
-	return int(k)
 }
