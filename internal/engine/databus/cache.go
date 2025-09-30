@@ -30,6 +30,7 @@ func (c *StatusCache) Upsert(s *engine.InstanceStatus) {
 		if v.HistorySequence < s.HistorySequence {
 			cp := s.Clone()
 			c.items[i] = *cp
+
 			return
 		}
 	}
