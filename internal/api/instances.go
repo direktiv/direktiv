@@ -35,11 +35,11 @@ type InstanceData struct {
 	Lineage      []*LineageData `json:"lineage"`
 	Namespace    string         `json:"namespace"`
 
-	InputLength    int    `json:"inputLength,omitempty"`
+	InputLength    int    `json:"inputLength"`
 	Input          []byte `json:"input,omitempty"`
-	OutputLength   int    `json:"outputLength,omitempty"`
+	OutputLength   int    `json:"outputLength"`
 	Output         []byte `json:"output,omitempty"`
-	MetadataLength int    `json:"metadataLength,omitempty"`
+	MetadataLength int    `json:"metadataLength"`
 	Metadata       []byte `json:"metadata,omitempty"`
 }
 
@@ -69,6 +69,8 @@ func marshalForAPI(data *engine.InstanceStatus) (*InstanceData, error) {
 		InputLength:    len(data.Input),
 		OutputLength:   len(data.Output),
 		MetadataLength: len(data.Metadata),
+		Input:          data.Input,
+		Output:         data.Output,
 	}
 
 	return resp, nil
@@ -114,7 +116,10 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	<-notify
+	if r.URL.Query().Get("wait") == "true" {
+		<-notify
+	}
+
 	writeJSON(w, id)
 }
 

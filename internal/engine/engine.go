@@ -145,6 +145,11 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		Namespace:  inst.Namespace,
 	}
 	ret, err := e.execJSScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input))
+	// TODO: remove this debug code.
+	// simulate failing job
+	//if rand.Intn(2) == 0 {
+	//	err = fmt.Errorf("simulated error")
+	//}
 	if err != nil {
 		endEv.Type = "failed"
 		endEv.Error = err.Error()
@@ -159,8 +164,11 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		}
 	}
 
+	// TODO: remove this debug code.
 	// simulate a job that takes some long time
-	// time.Sleep(time.Duration(rand.Intn(300)) * time.Millisecond)
+	// if rand.Intn(2) == 0 {
+	// 	time.Sleep(10 * time.Second)
+	// }
 	endEv.Time = time.Now()
 	err = e.dataBus.PushHistoryStream(ctx, endEv)
 	if err != nil {
