@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/internal/sched"
 	"github.com/go-chi/chi/v5"
@@ -107,7 +108,8 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	// TODO: check that the input is valid json. map[string]any is not good enough because "hello" or
 	// true is valid json as well. if not we need to base64 encode it, which is valid json.
 	id, notify, err := e.engine.RunWorkflow(r.Context(), namespace, path, string(input), map[string]string{
-		"workflowPath": path,
+		core.EngineMappingPath:      path,
+		core.EngineMappingNamespace: namespace,
 	})
 	if err != nil {
 		writeError(w, &Error{

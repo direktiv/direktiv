@@ -2,10 +2,6 @@ package core
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
-	"fmt"
 )
 
 const (
@@ -24,28 +20,6 @@ type ActionConfig struct {
 	Envs   map[string]string
 }
 
-func (ac *ActionConfig) ID(svcType, namespace, path string) (string, error) {
-	type genID struct {
-		ac              ActionConfig
-		namespace, path string
-	}
-
-	a := genID{
-		ac:        *ac,
-		namespace: namespace,
-		path:      path,
-	}
-
-	j, err := json.Marshal(a)
-	if err != nil {
-		return "", err
-	}
-
-	hash := sha256.Sum256(j)
-
-	return fmt.Sprintf("%s-%s", svcType, hex.EncodeToString(hash[:32])), nil
-}
-
 type FlowConfig struct {
 	Type    string
 	Events  []*EventConfig
@@ -61,7 +35,6 @@ type EventConfig struct {
 }
 
 type TypescriptFlow struct {
-	Namespace, Path string
 	Script, Mapping string
 	Config          *FlowConfig
 }

@@ -17,7 +17,7 @@ func TestActionParsing(t *testing.T) {
 		var myAction = generateAction({
 		type: "local",
 		size: "medium",
-		image: "my/image",
+		image: "python",
 		envs: {
 				my: "value",
 				hello: "world",
@@ -29,7 +29,7 @@ func TestActionParsing(t *testing.T) {
 		function stateOne(payload) {
 			myAction({ 
 				data: "mydata",
-				files: ["/myscript"]
+				files: "dsds"
 			});
 			return finish("done");
 		}
@@ -42,7 +42,7 @@ func TestActionParsing(t *testing.T) {
 	fmt.Println(ci.ValidationErrors)
 
 	vm := sobek.New()
-	engine.InjectCommands(vm, uuid.New())
+	engine.InjectCommands(vm, uuid.New(), map[string]string{})
 	_, err = vm.RunScript("", script)
 	require.NoError(t, err)
 

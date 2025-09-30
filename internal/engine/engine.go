@@ -144,7 +144,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		InstanceID: inst.InstanceID,
 		Namespace:  inst.Namespace,
 	}
-	ret, err := e.execJSScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input))
+	ret, err := e.execJSScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input), inst.Metadata)
 	if err != nil {
 		endEv.Type = "failed"
 		endEv.Error = err.Error()

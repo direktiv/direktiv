@@ -36,7 +36,6 @@ type knativeClient struct {
 
 func (c *knativeClient) cleanIdleServices(activeList []string) []error {
 	var errs []error
-
 	deps, err := c.k8sCli.AppsV1().Deployments(c.config.KnativeNamespace).List(context.TODO(), metaV1.ListOptions{})
 	if err != nil {
 		return []error{err}
@@ -209,6 +208,11 @@ func (c *knativeClient) deleteService(id string) error {
 }
 
 func (c *knativeClient) scaleService(id string, scale int32) error {
+	// TODO: remove
+	if scale == 0 {
+		return nil
+	}
+
 	s := &v1.Scale{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      id,

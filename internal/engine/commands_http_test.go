@@ -34,7 +34,7 @@ func TestHttpRequest(t *testing.T) {
 	}
 
 	vm := sobek.New()
-	InjectCommands(vm, uuid.New())
+	InjectCommands(vm, uuid.New(), map[string]string{})
 
 	script := `
 		function start() {

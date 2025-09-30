@@ -16,6 +16,7 @@ import (
 
 	"github.com/direktiv/direktiv/internal/cmdserver"
 	"github.com/direktiv/direktiv/internal/server"
+	"github.com/direktiv/direktiv/internal/sidecar"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/spf13/cobra"
 )
@@ -47,7 +48,7 @@ You need to specify the SERVICE_NAME as an argument.`,
 	instancesCmd.AddCommand(instancesExecCmd)
 	instancesExecCmd.PersistentFlags().Bool("push", true, "Push before execute.")
 
-	startCmd.AddCommand(startAPICmd, startDinitCmd, startCommandServerCmd)
+	startCmd.AddCommand(startAPICmd, startDinitCmd, startCommandServerCmd, startSidecarCmd)
 
 	rootCmd := &cobra.Command{
 		Use:   "direktiv",
@@ -163,6 +164,16 @@ var startCommandServerCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("starting 'cmdserver' service...")
 		cmdserver.Start()
+	},
+}
+
+var startSidecarCmd = &cobra.Command{
+	Use:   "sidecar",
+	Short: "direktiv sidecar service, this service manage action request to user containers",
+	Args:  cobra.ExactArgs(0),
+	Run: func(cmd *cobra.Command, args []string) {
+		slog.Info("starting 'sidecar' service...")
+		sidecar.RunApplication(context.Background())
 	},
 }
 
