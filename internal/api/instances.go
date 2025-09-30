@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/engine"
@@ -140,7 +141,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 func (e *instController) stats(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
-	list, err := e.engine.GetInstances(r.Context(), namespace)
+	list, err := e.engine.GetInstances(r.Context(), namespace, 0, 0)
 	if err != nil {
 		writeError(w, &Error{
 			Code:    err.Error(),
@@ -270,7 +271,10 @@ func (e *instController) get(w http.ResponseWriter, r *http.Request) {
 func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
-	list, err := e.engine.GetInstances(r.Context(), namespace)
+	limit := parseNumberQueryParam(r, "limit")
+	offset := parseNumberQueryParam(r, "offset")
+
+	list, err := e.engine.GetInstances(r.Context(), namespace, limit, offset)
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -331,4 +335,17 @@ func (e *instController) listSched(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, list)
+}
+
+func parseNumberQueryParam(r *http.Request, name string) int {
+	x := r.URL.Query().Get(name)
+	if x == "" {
+		return 0
+	}
+	k, err := strconv.ParseInt(x, 10, 64)
+	if err != nil {
+		return 0
+	}
+
+	return int(k)
 }

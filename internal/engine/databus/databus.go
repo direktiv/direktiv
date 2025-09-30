@@ -73,8 +73,8 @@ func (d *DataBus) PushQueueStream(ctx context.Context, event *engine.InstanceEve
 	return err
 }
 
-func (d *DataBus) FetchInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID) []*engine.InstanceStatus {
-	return d.cache.Snapshot(filterNamespace, filterInstanceID)
+func (d *DataBus) FetchInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) []*engine.InstanceStatus {
+	return d.cache.SnapshotPage(filterNamespace, filterInstanceID, limit, offset)
 }
 
 func (d *DataBus) DeleteNamespace(ctx context.Context, name string) error {
