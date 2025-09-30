@@ -110,7 +110,7 @@ const NewWorkflow = ({
         name,
         data: encode(fileContent),
         type: "workflow",
-        mimeType: "application/yaml",
+        mimeType: "application/x-typescript",
       },
     });
   };
