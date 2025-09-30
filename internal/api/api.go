@@ -307,3 +307,30 @@ func writeOk(w http.ResponseWriter) {
 
 	w.WriteHeader(http.StatusOK)
 }
+
+// ParseQueryParam retrieves a query parameter as either string or int.
+// T can be string or int.
+func ParseQueryParam[T string | int](r *http.Request, name string, def T) T {
+	s := r.URL.Query().Get(name)
+	if s == "" {
+		return def
+	}
+
+	switch any(def).(type) {
+	case string:
+		// If caller expects a string, just return it
+		return any(s).(T)
+
+	case int:
+		// If caller expects an int, try parsing
+		v, err := strconv.Atoi(s)
+		if err != nil {
+			return def
+		}
+
+		return any(v).(T)
+	}
+
+	// Should never reach here if used with correct type parameter
+	return def
+}

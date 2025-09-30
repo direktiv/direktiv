@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/internal/datastore"
+	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/internal/secrets"
 	"github.com/direktiv/direktiv/pkg/filestore"
 )
@@ -26,10 +27,10 @@ func writeError(w http.ResponseWriter, err *Error) {
 	// request_path_not_found
 	// request_method_not_allowed
 	// request_body_not_json
+
 	// resource_not_found
 	// resource_already_exists
 	// resource_id_invalid
-
 	// request_data_invalid
 
 	httpStatus := http.StatusInternalServerError
@@ -45,9 +46,6 @@ func writeError(w http.ResponseWriter, err *Error) {
 	}
 	if strings.Contains(err.Code, "not_found") {
 		httpStatus = http.StatusNotFound
-	}
-	if strings.Contains(err.Code, "method_not_allowed") {
-		httpStatus = http.StatusMethodNotAllowed
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -92,6 +90,19 @@ func writeSecretsError(w http.ResponseWriter, err error) {
 		writeError(w, &Error{
 			Code:    "secret_not_found",
 			Message: "requested secret is not found",
+		})
+
+		return
+	}
+
+	writeInternalError(w, err)
+}
+
+func writeEngineError(w http.ResponseWriter, err error) {
+	if errors.Is(err, engine.ErrDataNotFound) {
+		writeError(w, &Error{
+			Code:    "not_found",
+			Message: "requested resource is not found",
 		})
 
 		return
