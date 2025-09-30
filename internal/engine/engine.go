@@ -147,7 +147,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	ret, err := e.execJSScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input))
 	// TODO: remove this debug code.
 	// simulate failing job
-	//if rand.Intn(2) == 0 {
+	// if rand.Intn(2) == 0 {
 	//	err = fmt.Errorf("simulated error")
 	//}
 	if err != nil {
