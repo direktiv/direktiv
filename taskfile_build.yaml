@@ -35,7 +35,7 @@ tasks:
       - task: build
       - docker push {{ .DOCKER_REPO }}/{{ .IMAGE_NAME }}:{{ .VERSION }}
 
-  build-push-dev:
+  dev:
     desc: Builds and pushed the image for local architecture and replaces the container for local development
     cmds:
       - task: build-push
