@@ -20,6 +20,7 @@ import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
 import Input from "~/design/Input";
 import { SmartInput } from "../components/SmartInput";
+import { VariableInput } from "../components/VariableInput";
 import { useTranslation } from "react-i18next";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -101,7 +102,6 @@ export const Select = ({
             </SelectDesignComponent>
           )}
         />
-
         {form.watch("values.type") === "array" && (
           <Controller
             control={form.control}
@@ -136,9 +136,9 @@ export const Select = ({
               const parsedValue = z.string().safeParse(field.value);
               const value = parsedValue.success ? parsedValue.data : "";
               return (
-                <Input
-                  {...field}
+                <VariableInput
                   value={value}
+                  onUpdate={(value) => field.onChange(value)}
                   placeholder={t(
                     "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholderVariable"
                   )}

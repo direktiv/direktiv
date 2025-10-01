@@ -17,8 +17,9 @@ import { Card } from "~/design/Card";
 import { PackageOpen } from "lucide-react";
 import { Pagination } from "~/components/Pagination";
 import PaginationProvider from "~/components/PaginationProvider";
-import { RowActions } from "./RowActions";
+import { RowActions } from "./actions/RowActions";
 import { StopPropagation } from "~/components/StopPropagation";
+import { TableActions } from "./actions/TableActions";
 import { TableCell } from "./TableCell";
 import { TableType } from "../../../schema/blocks/table";
 import { VariableError } from "../../primitives/Variable/Error";
@@ -54,7 +55,8 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
   }
 
   const hasRowActions = blocks[1].blocks.length > 0;
-  const numberOfColumns = columns.length + (hasRowActions ? 1 : 0);
+  const hasTableActions = blocks[0].blocks.length > 0;
+  const numberOfHeaderColumns = columns.length + (hasTableActions ? 1 : 0);
   const hasRows = variableArray.data.length > 0;
 
   return (
@@ -79,7 +81,14 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
                           {column.label}
                         </TableHeaderCell>
                       ))}
-                      {hasRowActions && <TableHeaderCell />}
+                      {hasTableActions && (
+                        <TableHeaderCell className="w-0">
+                          <TableActions
+                            actions={blocks[0]}
+                            blockPath={blockPath}
+                          />
+                        </TableHeaderCell>
+                      )}
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -96,12 +105,23 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
                           }}
                         >
                           <TableRow>
-                            {columns.map((column, columnIndex) => (
-                              <TableCell
-                                key={columnIndex}
-                                blockProps={column}
-                              />
-                            ))}
+                            {columns.map((column, columnIndex) => {
+                              const isLastColumn =
+                                columnIndex === columns.length - 1;
+                              return (
+                                <TableCell
+                                  key={columnIndex}
+                                  blockProps={column}
+                                  colSpan={
+                                    isLastColumn &&
+                                    hasTableActions &&
+                                    !hasRowActions
+                                      ? 2
+                                      : 1
+                                  }
+                                />
+                              );
+                            })}
                             {hasRowActions && (
                               <RowActions
                                 actions={blocks[1]}
@@ -113,7 +133,9 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCellDesignComponent colSpan={numberOfColumns}>
+                        <TableCellDesignComponent
+                          colSpan={numberOfHeaderColumns}
+                        >
                           <NoResult icon={PackageOpen}>
                             {t("direktivPage.page.blocks.table.noResult")}
                           </NoResult>

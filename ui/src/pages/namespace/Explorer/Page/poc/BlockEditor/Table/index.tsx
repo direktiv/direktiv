@@ -63,6 +63,31 @@ export const Table = ({
         />
       </Fieldset>
       <TableForm
+        data={form.getValues("blocks.0.blocks")}
+        onChange={(newValue) => {
+          form.setValue("blocks.0.blocks", newValue);
+        }}
+        modalTitle={t(
+          "direktivPage.blockEditor.blockForms.table.tableAction.modalTitle"
+        )}
+        label={(count) =>
+          t(
+            "direktivPage.blockEditor.blockForms.table.tableAction.tableLabel",
+            {
+              count,
+            }
+          )
+        }
+        renderRow={(dialog) => [dialog.trigger.label]}
+        renderForm={(formId, onSubmit, defaultValues) => (
+          <DialogTriggerForm
+            formId={formId}
+            onSubmit={onSubmit}
+            defaultValues={defaultValues}
+          />
+        )}
+      />
+      <TableForm
         data={form.getValues("blocks.1.blocks")}
         onChange={(newValue) => {
           form.setValue("blocks.1.blocks", newValue);
