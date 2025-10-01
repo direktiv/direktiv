@@ -109,7 +109,8 @@ func New(app InitializeArgs) (*Server, error) {
 		db: app.DB,
 	}
 	metricsCtr := &metricsController{
-		db: app.DB,
+		db:     app.DB,
+		engine: app.Engine,
 	}
 	eventsCtr := eventsController{
 		store:         datasql.NewStore(app.DB),

@@ -31,7 +31,7 @@ type InstanceStatus struct {
 
 func (i *InstanceStatus) StatusString() string {
 	switch i.Status {
-	case "started":
+	case "running":
 		return "pending"
 	case "failed":
 		return "failed"

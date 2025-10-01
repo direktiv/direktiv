@@ -51,7 +51,7 @@ type instController struct {
 	scheduler *sched.Scheduler
 }
 
-func marshalForAPI(data *engine.InstanceStatus) (*InstanceData, error) {
+func convertInstanceData(data *engine.InstanceStatus) *InstanceData {
 	resp := &InstanceData{
 		ID:             data.InstanceID,
 		CreatedAt:      data.CreatedAt,
@@ -74,7 +74,7 @@ func marshalForAPI(data *engine.InstanceStatus) (*InstanceData, error) {
 		Output:         data.Output,
 	}
 
-	return resp, nil
+	return resp
 }
 
 func (e *instController) mountRouter(r chi.Router) {
@@ -88,7 +88,6 @@ func (e *instController) mountRouter(r chi.Router) {
 	r.Get("/{instanceID}", e.get)
 
 	r.Post("/", e.create)
-	r.Get("/stats", e.stats)
 }
 
 func (e *instController) dummy(w http.ResponseWriter, r *http.Request) {
@@ -110,7 +109,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: check that the input is valid json. map[string]any is not good enough because "hello" or
 	// true is valid json as well. if not we need to base64 encode it, which is valid json.
-	id, notify, err := e.engine.RunWorkflow(r.Context(), namespace, path, string(input), map[string]string{
+	_, notify, err := e.engine.RunWorkflow(r.Context(), namespace, path, string(input), map[string]string{
 		core.EngineMappingPath:      path,
 		core.EngineMappingNamespace: namespace,
 	})
@@ -120,33 +119,8 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.URL.Query().Get("wait") == "true" {
-		<-notify
-	}
-
-	writeJSON(w, id)
-}
-
-// calculates the stats Status->Count of all instances in the namespace.
-func (e *instController) stats(w http.ResponseWriter, r *http.Request) {
-	namespace := chi.URLParam(r, "namespace")
-
-	list, _, err := e.engine.GetInstances(r.Context(), namespace, 0, 0)
-	if err != nil {
-		writeEngineError(w, err)
-
-		return
-	}
-	stats := make(map[string]int)
-	for i := range list {
-		n, ok := stats[list[i].Status]
-		if !ok {
-			stats[list[i].Status] = 0
-		}
-		stats[list[i].Status] = n + 1
-	}
-
-	writeJSON(w, stats)
+	status := <-notify
+	writeJSON(w, convertInstanceData(status))
 }
 
 func (e *instController) get(w http.ResponseWriter, r *http.Request) {
@@ -168,13 +142,7 @@ func (e *instController) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := marshalForAPI(data)
-	if err != nil {
-		writeInternalError(w, err)
-		return
-	}
-
-	writeJSON(w, resp)
+	writeJSON(w, convertInstanceData(data))
 }
 
 func (e *instController) list(w http.ResponseWriter, r *http.Request) {
@@ -191,12 +159,7 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 
 	out := make([]any, len(list))
 	for i := range list {
-		obj, err := marshalForAPI(list[i])
-		if err != nil {
-			writeInternalError(w, err)
-			return
-		}
-		out[i] = obj
+		out[i] = convertInstanceData(list[i])
 	}
 
 	metaInfo := map[string]any{
