@@ -25,7 +25,7 @@ test("the diagram panel on the instance page responds to user interaction", asyn
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflow,
+    content: simpleWorkflow,
   });
   const instanceId = (
     await createInstance({
@@ -94,7 +94,7 @@ test("the diagram on the instance page changes appearance dynamically", async ({
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: workflowWithDelay,
+    content: workflowWithDelay,
   });
 
   const instanceId = (

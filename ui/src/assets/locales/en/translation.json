@@ -157,7 +157,7 @@
             "jsonInput": "JSON Input",
             "invalidYaml": "Cannot run the workflow as it is not a valid YAML file.",
             "formInput": "Form Input",
-            "formInputHint": "The first state of this Workflow must be of type 'validate' to generate a form.",
+            "formInputHint": "JSON form generation is not yet supported for typescript workflows.",
             "learnMoreBtn": "Learn more",
             "cancelBtn": "Cancel",
             "runBtn": "Run",
