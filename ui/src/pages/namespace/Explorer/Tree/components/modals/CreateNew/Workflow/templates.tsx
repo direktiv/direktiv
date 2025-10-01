@@ -1,3 +1,28 @@
+const tsdemo = {
+  name: "tsdemo",
+  data: `const flow : FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateFirst",
+};
+
+function stateFirst(payload) {
+  return transition(stateTwo, "hello");
+}
+
+function stateTwo(payload) {
+  helper();
+  return finish("data for done");
+}
+
+function helper() {
+  return "value";
+}`,
+};
+
+// Todo: examples below (in yaml) are no longer valid,
+// but some are used in tests and need to be replaced by ts versions.
+
 export const noop = {
   name: "noop",
   data: `direktiv_api: workflow/v1
@@ -346,6 +371,7 @@ states:
 };
 
 const templates = [
+  tsdemo,
   noop,
   action,
   consumeEvent,
