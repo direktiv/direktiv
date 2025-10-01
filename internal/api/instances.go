@@ -72,6 +72,9 @@ func convertInstanceData(data *engine.InstanceStatus) *InstanceData {
 		Input:          data.Input,
 		Output:         data.Output,
 	}
+	if data.Error != "" {
+		resp.ErrorMessage = []byte(data.Error)
+	}
 
 	return resp
 }
