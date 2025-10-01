@@ -50,7 +50,7 @@ type instController struct {
 	scheduler *sched.Scheduler
 }
 
-func marshalForAPI(data *engine.InstanceStatus) (*InstanceData, error) {
+func convertInstanceData(data *engine.InstanceStatus) *InstanceData {
 	resp := &InstanceData{
 		ID:             data.InstanceID,
 		CreatedAt:      data.CreatedAt,
@@ -73,7 +73,7 @@ func marshalForAPI(data *engine.InstanceStatus) (*InstanceData, error) {
 		Output:         data.Output,
 	}
 
-	return resp, nil
+	return resp
 }
 
 func (e *instController) mountRouter(r chi.Router) {
@@ -106,7 +106,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, notify, err := e.engine.RunWorkflow(r.Context(), namespace, path, string(input), map[string]string{
+	_, notify, err := e.engine.RunWorkflow(r.Context(), namespace, path, string(input), map[string]string{
 		"workflowPath": path,
 	})
 	if err != nil {
@@ -115,11 +115,8 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.URL.Query().Get("wait") == "true" {
-		<-notify
-	}
-
-	writeJSON(w, id)
+	status := <-notify
+	writeJSON(w, convertInstanceData(status))
 }
 
 func (e *instController) get(w http.ResponseWriter, r *http.Request) {
@@ -141,13 +138,7 @@ func (e *instController) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := marshalForAPI(data)
-	if err != nil {
-		writeInternalError(w, err)
-		return
-	}
-
-	writeJSON(w, resp)
+	writeJSON(w, convertInstanceData(data))
 }
 
 func (e *instController) list(w http.ResponseWriter, r *http.Request) {
@@ -164,12 +155,7 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 
 	out := make([]any, len(list))
 	for i := range list {
-		obj, err := marshalForAPI(list[i])
-		if err != nil {
-			writeInternalError(w, err)
-			return
-		}
-		out[i] = obj
+		out[i] = convertInstanceData(list[i])
 	}
 
 	metaInfo := map[string]any{
