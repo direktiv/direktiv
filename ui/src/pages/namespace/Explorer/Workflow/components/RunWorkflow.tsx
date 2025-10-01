@@ -63,7 +63,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
 
   const {
     setValue,
-    formState: { isValid },
+    // formState: { isValid },
   } = useForm<FormInput>({
     defaultValues: {
       payload: defaultEmptyJson,
@@ -131,7 +131,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
     }
   };
 
-  const disableSubmit = !isValid || !!error;
+  // const disableSubmit = !isValid || !!error;
 
   return (
     <>
@@ -243,7 +243,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
         </DialogClose>
         <Button
           type="submit"
-          disabled={disableSubmit}
+          // disabled={disableSubmit}
           loading={isPending}
           onClick={runButtonOnClick}
           data-testid="run-workflow-submit-btn"

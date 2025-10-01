@@ -9,6 +9,7 @@ export const supportedLanguages = [
   "plaintext",
   "javascript",
   "yaml",
+  "typescript",
 ] as const;
 
 export const mimeTypeToEditorSyntax = (
