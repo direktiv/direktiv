@@ -9,7 +9,6 @@ import {
 
 import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
-import { Diagram } from "./Diagram";
 import { FileSchemaType } from "~/api/files/schema";
 import RunWorkflow from "../components/RunWorkflow";
 import { WorkspaceLayout } from "~/components/WorkspaceLayout";
@@ -72,9 +71,6 @@ const WorkflowEditor: FC<{
     <div className="relative flex grow flex-col space-y-4 p-5">
       <WorkspaceLayout
         layout={currentLayout}
-        diagramComponent={
-          <Diagram workflowData={editorContent} layout={currentLayout} />
-        }
         editorComponent={
           <CodeEditor
             value={editorContent}
