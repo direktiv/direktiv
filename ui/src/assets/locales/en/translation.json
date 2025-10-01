@@ -1781,9 +1781,9 @@
             "idPlaceholder": "unique identifier name to reference this query in any child block",
             "urlLabel": "URL",
             "urlPlaceholder": "relative or absolute url like /path/to/endpoint or https://...",
-            "modalTitle": "Create new Query",
-            "tableLabel": "{{count}} Queries",
-            "tableLabel_one": "{{count}} Query",
+            "modalTitle": "Create new query",
+            "tableLabel": "{{count}} queries",
+            "tableLabel_one": "{{count}} query",
             "queryParamsLabel": "Query Parameters"
           }
         },
