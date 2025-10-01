@@ -8,13 +8,13 @@ type FlowDefinition = {
  * Will transition to the next workflow state.
  * @param params
  */
-declare function transition(fn: WorkflowState, data: string);
+declare function transition(fn: WorkflowState, data: unknown);
 
 /**
  * Will transition to the next workflow state.
  * @param params
  */
-declare function finish(data: string);
+declare function finish(data: unknown);
 
 /**
  * Example method (outdated, just here for demo)

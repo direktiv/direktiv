@@ -7,17 +7,18 @@ const tsdemo = {
 };
 
 function stateFirst(payload) {
-  return transition(stateTwo, "hello");
+  return transition(stateTwo, payload);
 }
 
 function stateTwo(payload) {
   helper();
-  return finish("data for done");
+  return finish({ result: payload });
 }
 
 function helper() {
   return "value";
-}`,
+};
+`,
 };
 
 // Todo: examples below (in yaml) are no longer valid,
