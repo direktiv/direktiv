@@ -1,9 +1,11 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"log/slog"
@@ -31,12 +33,12 @@ type File struct {
 	Permission uint   `json:"permission"`
 }
 
-type Payload[DATA any] struct {
-	Files []File `json:"files"`
-	Data  DATA   `json:"data"`
+type Payload struct {
+	Files    []File    `json:"files"`
+	Commands []Command `json:"commands"`
 }
 
-type Server[IN any] struct {
+type Server struct {
 	httpServer *http.Server
 	stopChan   chan os.Signal
 }
@@ -47,16 +49,16 @@ type ExecutionInfo struct {
 }
 
 // nolint
-func NewServer[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, error)) *Server[IN] {
+func NewServer(fn func(context.Context, []Command, *ExecutionInfo) (interface{}, error)) *Server {
 	server := &http.Server{
 		Addr:         "0.0.0.0:8080",
-		Handler:      Handler[IN](fn),
+		Handler:      Handler(fn),
 		ReadTimeout:  1 * time.Minute,
 		WriteTimeout: 4 * time.Hour,
 		IdleTimeout:  15 * time.Second,
 	}
 
-	return &Server[IN]{
+	return &Server{
 		httpServer: server,
 		stopChan:   make(chan os.Signal, 2),
 	}
@@ -76,14 +78,14 @@ func errWriter(w http.ResponseWriter, status int, errMsg string) {
 }
 
 // nolint
-func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, error)) http.Handler {
+func Handler(fn func(context.Context, []Command, *ExecutionInfo) (interface{}, error)) http.Handler {
 	r := chi.NewRouter()
 
 	r.Get("/healthz", readinessHandler)
 	r.Get("/readiness", readinessHandler)
 
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
-		var in Payload[IN]
+		var in Payload
 		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			errWriter(w, http.StatusBadRequest, "failed to read request body")
@@ -91,12 +93,18 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 		}
 		defer r.Body.Close()
 
+		decoder := json.NewDecoder(bytes.NewReader(b))
+		decoder.DisallowUnknownFields()
+
 		if len(b) > 0 {
-			if err := json.Unmarshal(b, &in); err != nil {
+			err := decoder.Decode(&in)
+			if err != nil {
 				errWriter(w, http.StatusBadRequest, "failed to unmarshal request payload")
 				return
 			}
 		}
+
+		fmt.Printf("%+v\n", in)
 
 		tmpDir := r.Header.Get(DirektivTempDir)
 		if tmpDir == "" {
@@ -128,7 +136,7 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 			}
 		}
 
-		out, err := fn(r.Context(), in.Data, ei)
+		out, err := fn(r.Context(), in.Commands, ei)
 		if err != nil {
 			errWriter(w, http.StatusInternalServerError, "handler function error: "+err.Error())
 			return
@@ -170,7 +178,7 @@ func prepareFile(path, content string, perm uint) error {
 	return nil
 }
 
-func (s *Server[IN]) Start() {
+func (s *Server) Start() {
 	slog.Info("starting server")
 
 	signal.Notify(s.stopChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -187,7 +195,7 @@ func (s *Server[IN]) Start() {
 }
 
 // nolint
-func (s *Server[IN]) Stop() {
+func (s *Server) Stop() {
 	slog.Info("stopping server")
 	s.httpServer.SetKeepAlivesEnabled(false)
 

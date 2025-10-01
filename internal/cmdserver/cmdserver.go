@@ -3,7 +3,6 @@ package cmdserver
 import (
 	"log/slog"
 
-	"github.com/direktiv/direktiv/internal/cmdserver/pkg/commands"
 	"github.com/direktiv/direktiv/internal/cmdserver/pkg/server"
 )
 
@@ -11,7 +10,7 @@ func Start() {
 	slog.Info("starting cmd-exec server")
 
 	// Create a new server with the RunCommands handler
-	s := server.NewServer[commands.Commands](commands.RunCommands)
+	s := server.NewServer(server.RunCommands)
 
 	slog.Debug("initialized cmd-exec server")
 

@@ -23,7 +23,7 @@ func newInternalServer() *internalServer {
 			Handler: mux,
 		},
 	}
-	s.mux.HandleFunc("/logs", s.handleLogs)
+	s.mux.HandleFunc("/log", s.handleLogs)
 
 	return s
 }

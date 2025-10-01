@@ -1,11 +1,11 @@
-package engine_test
+package commands_test
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/direktiv/direktiv/internal/compiler"
-	"github.com/direktiv/direktiv/internal/engine"
+	"github.com/direktiv/direktiv/internal/engine/commands"
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
 	"github.com/stretchr/testify/require"
@@ -42,7 +42,7 @@ func TestActionParsing(t *testing.T) {
 	fmt.Println(ci.ValidationErrors)
 
 	vm := sobek.New()
-	engine.InjectCommands(vm, uuid.New(), map[string]string{})
+	commands.InjectCommands(vm, uuid.New(), map[string]string{})
 	_, err = vm.RunScript("", script)
 	require.NoError(t, err)
 

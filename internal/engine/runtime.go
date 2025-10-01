@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/direktiv/direktiv/internal/engine/commands"
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
 	"github.com/grafana/sobek/parser"
@@ -21,7 +22,7 @@ func (e *Engine) execJSScript(instID uuid.UUID, script string, mappings string, 
 	}
 
 	// add commands
-	InjectCommands(vm, instID, metadata)
+	commands.InjectCommands(vm, instID, metadata)
 
 	_, err := vm.RunString(script)
 	if err != nil {

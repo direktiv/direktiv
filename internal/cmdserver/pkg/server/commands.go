@@ -1,4 +1,4 @@
-package commands
+package server
 
 import (
 	"context"
@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/direktiv/direktiv/internal/cmdserver/pkg/server"
 	"github.com/mattn/go-shellwords"
 )
 
@@ -42,14 +41,14 @@ type CommandsResponse struct {
 }
 
 // nolint
-func RunCommands(ctx context.Context, in Commands, info *server.ExecutionInfo) (interface{}, error) {
+func RunCommands(ctx context.Context, in []Command, info *ExecutionInfo) (interface{}, error) {
 	commandOutput := make([]CommandsResponse, 0)
 
-	info.Log.Logf("running %d commands", len(in.Commands))
-	slog.Info("starting to run commands", "total", len(in.Commands))
+	info.Log.Logf("running %d commands", len(in))
+	slog.Info("starting to run commands", "total", len(in))
 
-	for a := range in.Commands {
-		command := in.Commands[a]
+	for a := range in {
+		command := in[a]
 
 		if !command.SuppressCommand {
 			info.Log.Logf("running command '%s'", command.Command)
@@ -105,11 +104,11 @@ func RunCommands(ctx context.Context, in Commands, info *server.ExecutionInfo) (
 		commandOutput = append(commandOutput, cr)
 	}
 
-	slog.Info("finished running commands", "total", len(in.Commands))
+	slog.Info("finished running commands", "total", len(in))
 	return commandOutput, nil
 }
 
-func runCmd(command Command, ei *server.ExecutionInfo) error {
+func runCmd(command Command, ei *ExecutionInfo) error {
 	slog.Debug("parsing command", "command", command.Command)
 
 	p := shellwords.NewParser()
