@@ -1760,9 +1760,9 @@
             "dataPlaceholder": "Path to an array for the table (e.g. query.companies.data)"
           },
           "rowAction": {
-            "modalTitle": "Create new Row action",
-            "tableLabel": "{{count}} Row actions",
-            "tableLabel_one": "{{count}} Row action"
+            "modalTitle": "Create new row action",
+            "tableLabel": "{{count}} row actions",
+            "tableLabel_one": "{{count}} row action"
           },
           "column": {
             "labelLabel": "Label",
