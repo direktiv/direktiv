@@ -29,6 +29,7 @@ import { useNotifications } from "~/api/notifications/query/get";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
+import useTsWorkflowLibs from "~/hooks/useTsWorkflowLibs";
 import workflowTemplates from "./templates";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -102,6 +103,8 @@ const NewWorkflow = ({
       close();
     },
   });
+
+  const tsLibs = useTsWorkflowLibs(true);
 
   const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
     createFile({
@@ -191,6 +194,8 @@ const NewWorkflow = ({
                   }
                 }}
                 theme={theme ?? undefined}
+                language="typescript"
+                tsLibs={tsLibs}
               />
             </Card>
           </fieldset>
