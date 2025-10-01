@@ -9,8 +9,6 @@ import {
 
 import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
-import { Diagram } from "./Diagram";
-import { EditorLayoutSwitcher } from "~/components/EditorLayoutSwitcher";
 import { FileSchemaType } from "~/api/files/schema";
 import RunWorkflow from "../components/RunWorkflow";
 import { WorkspaceLayout } from "~/components/WorkspaceLayout";
@@ -73,9 +71,6 @@ const WorkflowEditor: FC<{
     <div className="relative flex grow flex-col space-y-4 p-5">
       <WorkspaceLayout
         layout={currentLayout}
-        diagramComponent={
-          <Diagram workflowData={editorContent} layout={currentLayout} />
-        }
         editorComponent={
           <CodeEditor
             value={editorContent}
@@ -89,7 +84,6 @@ const WorkflowEditor: FC<{
       />
 
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        <EditorLayoutSwitcher />
         <Dialog>
           <DialogTrigger asChild>
             <Button
