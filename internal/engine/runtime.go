@@ -41,7 +41,7 @@ func (e *Engine) execJSScript(instID uuid.UUID, script string, mappings string, 
 	if err != nil {
 		return nil, fmt.Errorf("invoke start: %w", err)
 	}
-	var result map[string]any
+	var result any
 	if err := vm.ExportTo(res, &result); err != nil {
 		return nil, fmt.Errorf("export output: %w", err)
 	}
