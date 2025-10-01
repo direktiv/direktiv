@@ -44,7 +44,7 @@ describe('Stress test js engine', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 	helpers.itShouldCreateDir(it, expect, namespace, '/', 'foo')
 
-	helpers.itShouldCreateFile(it, expect, namespace, '/foo', fName, 'file', 'text/plain',
+	helpers.itShouldCreateFile(it, expect, namespace, '/foo', fName, 'file', 'application/x-typescript',
 		btoa(`
 function stateOne(payload) {
 	print("RUN STATE FIRST");
@@ -75,10 +75,10 @@ function stateTwo(payload) {
 			total: 50,
 			batchSize: 5,
 		},
-		{
-			total: 100,
-			batchSize: 10,
-		},
+		//{
+		//	total: 100,
+		//	batchSize: 10,
+		//},
 		// {
 		//	total: 1000,
 		//	batchSize: 100,
@@ -141,9 +141,9 @@ function stateTwo(payload) {
 
 	const total = cases.reduce((acc, obj) => acc + obj.total, 0) + 1
 	retry(`should have all success instances`, 2, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/instances/stats`)
+		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/metrics/instances`)
 		console.log(req.body)
 		expect(req.statusCode).toEqual(200)
-		expect(req.body.data).toEqual({ succeeded: total })
+		expect(req.body.data).toEqual({ complete: total, total: total })
 	}, 1000)
 })

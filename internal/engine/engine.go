@@ -130,7 +130,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		EventID:    uuid.New(),
 		InstanceID: inst.InstanceID,
 		Namespace:  inst.Namespace,
-		Type:       "started",
+		Type:       "running",
 		Time:       time.Now(),
 	}
 
@@ -145,6 +145,11 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		Namespace:  inst.Namespace,
 	}
 	ret, err := e.execJSScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input))
+	// TODO: remove this debug code.
+	// simulate failing job
+	// if rand.Intn(2) == 0 {
+	//	err = fmt.Errorf("simulated error")
+	//}
 	if err != nil {
 		endEv.Type = "failed"
 		endEv.Error = err.Error()
@@ -159,8 +164,11 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		}
 	}
 
+	// TODO: remove this debug code.
 	// simulate a job that takes some long time
-	// time.Sleep(time.Duration(rand.Intn(300)) * time.Millisecond)
+	// if rand.Intn(2) == 0 {
+	// 	time.Sleep(10 * time.Second)
+	// }
 	endEv.Time = time.Now()
 	err = e.dataBus.PushHistoryStream(ctx, endEv)
 	if err != nil {
@@ -170,17 +178,17 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	return nil
 }
 
-func (e *Engine) GetInstances(ctx context.Context, namespace string) ([]*InstanceStatus, error) {
-	data := e.dataBus.FetchInstanceStatus(ctx, namespace, uuid.Nil)
+func (e *Engine) GetInstances(ctx context.Context, namespace string, limit int, offset int) ([]*InstanceStatus, int, error) {
+	data, total := e.dataBus.FetchInstanceStatus(ctx, namespace, uuid.Nil, limit, offset)
 	if len(data) == 0 {
-		return nil, ErrDataNotFound
+		return nil, 0, ErrDataNotFound
 	}
 
-	return data, nil
+	return data, total, nil
 }
 
 func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.UUID) (*InstanceStatus, error) {
-	data := e.dataBus.FetchInstanceStatus(ctx, namespace, id)
+	data, _ := e.dataBus.FetchInstanceStatus(ctx, namespace, id, 0, 0)
 	if len(data) == 0 {
 		return nil, ErrDataNotFound
 	}
