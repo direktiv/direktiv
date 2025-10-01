@@ -1765,18 +1765,18 @@
             "tableLabel_one": "{{count}} table action"
           },
           "rowAction": {
-            "modalTitle": "Create new Row action",
-            "tableLabel": "{{count}} Row actions",
-            "tableLabel_one": "{{count}} Row action"
+            "modalTitle": "Create new row action",
+            "tableLabel": "{{count}} row actions",
+            "tableLabel_one": "{{count}} row action"
           },
           "column": {
             "labelLabel": "Label",
             "labelPlaceholder": "Column label",
             "contentLabel": "Content",
             "contentPlaceholder": "The content of the column (e.g. E-Mail: {{loop.company-table.email}})",
-            "modalTitle": "Create new Column",
-            "tableLabel": "{{count}} Columns",
-            "tableLabel_one": "{{count}} Column"
+            "modalTitle": "Create new column",
+            "tableLabel": "{{count}} columns",
+            "tableLabel_one": "{{count}} column"
           }
         },
         "queryProvider": {
@@ -1786,9 +1786,9 @@
             "idPlaceholder": "unique identifier name to reference this query in any child block",
             "urlLabel": "URL",
             "urlPlaceholder": "relative or absolute url like /path/to/endpoint or https://...",
-            "modalTitle": "Create new Query",
-            "tableLabel": "{{count}} Queries",
-            "tableLabel_one": "{{count}} Query",
+            "modalTitle": "Create new query",
+            "tableLabel": "{{count}} queries",
+            "tableLabel_one": "{{count}} query",
             "queryParamsLabel": "Query Parameters"
           }
         },
