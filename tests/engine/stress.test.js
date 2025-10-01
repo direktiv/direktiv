@@ -144,6 +144,6 @@ function stateTwo(payload) {
 		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/metrics/instances`)
 		console.log(req.body)
 		expect(req.statusCode).toEqual(200)
-		expect(req.body.data).toEqual({ succeeded: total, total: total })
+		expect(req.body.data).toEqual({ complete: total, total: total })
 	}, 1000)
 })

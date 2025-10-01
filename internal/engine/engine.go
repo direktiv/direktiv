@@ -130,7 +130,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		EventID:    uuid.New(),
 		InstanceID: inst.InstanceID,
 		Namespace:  inst.Namespace,
-		Type:       "started",
+		Type:       "running",
 		Time:       time.Now(),
 	}
 

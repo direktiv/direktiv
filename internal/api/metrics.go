@@ -44,11 +44,11 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 		if forWorkflowPath != "" && v.Metadata["workflowPath"] != forWorkflowPath {
 			continue
 		}
-		n, ok := stats[v.Status]
+		n, ok := stats[v.StatusString()]
 		if !ok {
-			stats[v.Status] = 0
+			stats[v.StatusString()] = 0
 		}
-		stats[v.Status] = n + 1
+		stats[v.StatusString()] = n + 1
 		stats["total"]++
 	}
 
