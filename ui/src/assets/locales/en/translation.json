@@ -1759,21 +1759,19 @@
             "dataLabel": "data",
             "dataPlaceholder": "Path to an array for the table (e.g. query.companies.data)"
           },
-          "action": {
-            "labelLabel": "Label",
-            "labelPlaceholder": "The label of the Action (e.g. Edit, Delete)",
-            "itemLabel": "Action",
-            "tableLabel": "{{count}} Actions",
-            "tableLabel_one": "{{count}} Action"
+          "rowAction": {
+            "modalTitle": "Create new row action",
+            "tableLabel": "{{count}} row actions",
+            "tableLabel_one": "{{count}} row action"
           },
           "column": {
             "labelLabel": "Label",
             "labelPlaceholder": "Column label",
             "contentLabel": "Content",
             "contentPlaceholder": "The content of the column (e.g. E-Mail: {{loop.company-table.email}})",
-            "itemLabel": "Column",
-            "tableLabel": "{{count}} Columns",
-            "tableLabel_one": "{{count}} Column"
+            "modalTitle": "Create new column",
+            "tableLabel": "{{count}} columns",
+            "tableLabel_one": "{{count}} column"
           }
         },
         "queryProvider": {
@@ -1783,9 +1781,9 @@
             "idPlaceholder": "unique identifier name to reference this query in any child block",
             "urlLabel": "URL",
             "urlPlaceholder": "relative or absolute url like /path/to/endpoint or https://...",
-            "itemLabel": "Query",
-            "tableLabel": "{{count}} Queries",
-            "tableLabel_one": "{{count}} Query",
+            "modalTitle": "Create new query",
+            "tableLabel": "{{count}} queries",
+            "tableLabel_one": "{{count}} query",
             "queryParamsLabel": "Query Parameters"
           }
         },
@@ -1878,7 +1876,9 @@
           "column": "column block",
           "columns": "set of columns",
           "image": "image block",
-          "table": "table block"
+          "table": "table block",
+          "table-actions": "table actions block",
+          "row-actions": "row actions block"
         }
       },
       "smartInput": {

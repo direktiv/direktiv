@@ -1,8 +1,8 @@
 import { Table as TableSchema, TableType } from "../../schema/blocks/table";
 
-import { ActionForm } from "./ActionForm";
 import { BlockEditFormProps } from "..";
 import { ColumnForm } from "./ColumnForm";
+import { DialogTriggerForm } from "./DialogTriggerForm";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { FormWrapper } from "../components/FormWrapper";
 import Input from "~/design/Input";
@@ -63,21 +63,21 @@ export const Table = ({
         />
       </Fieldset>
       <TableForm
-        data={form.getValues("actions")}
+        data={form.getValues("blocks.1.blocks")}
         onChange={(newValue) => {
-          form.setValue("actions", newValue);
+          form.setValue("blocks.1.blocks", newValue);
         }}
-        itemLabel={t(
-          "direktivPage.blockEditor.blockForms.table.action.itemLabel"
+        modalTitle={t(
+          "direktivPage.blockEditor.blockForms.table.rowAction.modalTitle"
         )}
         label={(count) =>
-          t("direktivPage.blockEditor.blockForms.table.action.tableLabel", {
+          t("direktivPage.blockEditor.blockForms.table.rowAction.tableLabel", {
             count,
           })
         }
-        renderRow={(query) => [query.label]}
+        renderRow={(dialog) => [dialog.trigger.label]}
         renderForm={(formId, onSubmit, defaultValues) => (
-          <ActionForm
+          <DialogTriggerForm
             formId={formId}
             onSubmit={onSubmit}
             defaultValues={defaultValues}
@@ -89,15 +89,15 @@ export const Table = ({
         onChange={(newValue) => {
           form.setValue("columns", newValue);
         }}
-        itemLabel={t(
-          "direktivPage.blockEditor.blockForms.table.column.itemLabel"
+        modalTitle={t(
+          "direktivPage.blockEditor.blockForms.table.column.modalTitle"
         )}
         label={(count) =>
           t("direktivPage.blockEditor.blockForms.table.column.tableLabel", {
             count,
           })
         }
-        renderRow={(query) => [query.label, query.content]}
+        renderRow={(column) => [column.label, column.content]}
         renderForm={(formId, onSubmit, defaultValues) => (
           <ColumnForm
             formId={formId}

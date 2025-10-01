@@ -13,7 +13,14 @@ import { Headline, HeadlineType } from "./headline";
 import { Image, ImageType } from "./image";
 import { Loop, LoopType } from "./loop";
 import { QueryProvider, QueryProviderType } from "./queryProvider";
-import { Table, TableType } from "./table";
+import {
+  RowActions,
+  RowActionsType,
+  Table,
+  TableActions,
+  TableActionsType,
+  TableType,
+} from "./table";
 import { Text, TextType } from "./text";
 
 import { ExtractUnionFromSet } from "./utils";
@@ -48,6 +55,9 @@ export const ParentBlockUnion = z.discriminatedUnion("type", [
   QueryProvider,
   Column,
   Columns,
+  Table,
+  TableActions,
+  RowActions,
 ]);
 
 export type SimpleBlockType =
@@ -70,7 +80,10 @@ export type ParentBlockType =
   | LoopType
   | QueryProviderType
   | ColumnType
-  | ColumnsType;
+  | ColumnsType
+  | TableType
+  | TableActionsType
+  | RowActionsType;
 
 export type BlockType = SimpleBlockType | ParentBlockType;
 type BlockTypeUnion = BlockType["type"];
@@ -98,6 +111,8 @@ export const AvailableBlockTypeAttributes = z.union([
   z.literal("form-select"),
   z.literal("form-textarea"),
   z.literal("form-checkbox"),
+  z.literal("table-actions"),
+  z.literal("row-actions"),
 ]);
 
 export const TriggerBlock = z.discriminatedUnion("type", [Button]);

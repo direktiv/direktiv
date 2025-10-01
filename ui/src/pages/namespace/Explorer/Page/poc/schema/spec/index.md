@@ -63,12 +63,12 @@ Blocks are the main elements that the user can use to compose a Direktiv page.
 
 ### Table `Block`
 
-| Attribute | Type                   | Description                                               |
-| --------- | ---------------------- | --------------------------------------------------------- |
-| `type`    | `"table"`              |                                                           |
-| `data`    | `Block<Loop>`          | The loop block to iterate on                              |
-| `actions` | `Block<Button>[]`      | List of actions that will be available in the last column |
-| `columns` | `Block<TableColumn>[]` | List of table columns                                     |
+| Attribute | Type                         | Description                                                    |
+| --------- | ---------------------------- | -------------------------------------------------------------- |
+| `type`    | `"table"`                    |                                                                |
+| `data`    | `Block<Loop>`                | The loop block to iterate on                                   |
+| `blocks`  | `[TableActions, RowActions]` | Required tuple of table and row actions. Must be in that order |
+| `columns` | `Block<TableColumn>[]`       | List of table columns                                          |
 
 ### TableColumn `Block`
 
@@ -77,6 +77,20 @@ Blocks are the main elements that the user can use to compose a Direktiv page.
 | `type`    | `"table-column"` |                        |
 | `label`   | `TemplateString` | Headline of the column |
 | `content` | `TemplateString` | Cell content           |
+
+### TableActions `Block`
+
+| Attribute | Type              | Description                                                                           |
+| --------- | ----------------- | ------------------------------------------------------------------------------------- |
+| `type`    | `"table-actions"` |                                                                                       |
+| `blocks`  | `Dialog[]`        | A list of dialogs where the dialog trigger will be displayed at the top of the table. |
+
+### RowActions `Block`
+
+| Attribute | Type            | Description                                                                                                     |
+| --------- | --------------- | --------------------------------------------------------------------------------------------------------------- |
+| `type`    | `"row-actions"` |                                                                                                                 |
+| `blocks`  | `Dialog[]`      | A list of dialogs where the dialog trigger will be displayed as a context menu item in the last column of a row |
 
 ### Button `Block<trigger>`
 

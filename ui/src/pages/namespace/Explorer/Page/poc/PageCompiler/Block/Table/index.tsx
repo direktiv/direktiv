@@ -12,11 +12,12 @@ import {
   useVariablesContext,
 } from "../../primitives/Variable/VariableContext";
 
-import { ActionsCell } from "./ActionsCell";
+import { BlockPathType } from "..";
 import { Card } from "~/design/Card";
 import { PackageOpen } from "lucide-react";
 import { Pagination } from "~/components/Pagination";
 import PaginationProvider from "~/components/PaginationProvider";
+import { RowActions } from "./RowActions";
 import { StopPropagation } from "~/components/StopPropagation";
 import { TableCell } from "./TableCell";
 import { TableType } from "../../../schema/blocks/table";
@@ -26,10 +27,11 @@ import { useVariableArrayResolver } from "../../primitives/Variable/utils/useVar
 
 type TableProps = {
   blockProps: TableType;
+  blockPath: BlockPathType;
 };
 
-export const Table = ({ blockProps }: TableProps) => {
-  const { columns, actions, data: loop } = blockProps;
+export const Table = ({ blockProps, blockPath }: TableProps) => {
+  const { columns, blocks, data: loop } = blockProps;
   const { t } = useTranslation();
   const resolveVariableArray = useVariableArrayResolver();
   const parentVariables = useVariablesContext();
@@ -51,8 +53,8 @@ export const Table = ({ blockProps }: TableProps) => {
     );
   }
 
-  const hasActionsColumn = actions.length > 0;
-  const numberOfColumns = columns.length + (hasActionsColumn ? 1 : 0);
+  const hasRowActions = blocks[1].blocks.length > 0;
+  const numberOfColumns = columns.length + (hasRowActions ? 1 : 0);
   const hasRows = variableArray.data.length > 0;
 
   return (
@@ -77,7 +79,7 @@ export const Table = ({ blockProps }: TableProps) => {
                           {column.label}
                         </TableHeaderCell>
                       ))}
-                      {hasActionsColumn && <TableHeaderCell />}
+                      {hasRowActions && <TableHeaderCell />}
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -100,8 +102,11 @@ export const Table = ({ blockProps }: TableProps) => {
                                 blockProps={column}
                               />
                             ))}
-                            {hasActionsColumn && (
-                              <ActionsCell actions={actions} />
+                            {hasRowActions && (
+                              <RowActions
+                                actions={blocks[1]}
+                                blockPath={blockPath}
+                              />
                             )}
                           </TableRow>
                         </VariableContextProvider>
