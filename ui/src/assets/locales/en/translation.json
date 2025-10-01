@@ -1769,9 +1769,9 @@
             "labelPlaceholder": "Column label",
             "contentLabel": "Content",
             "contentPlaceholder": "The content of the column (e.g. E-Mail: {{loop.company-table.email}})",
-            "modalTitle": "Create new Column",
-            "tableLabel": "{{count}} Columns",
-            "tableLabel_one": "{{count}} Column"
+            "modalTitle": "Create new column",
+            "tableLabel": "{{count}} columns",
+            "tableLabel_one": "{{count}} column"
           }
         },
         "queryProvider": {
