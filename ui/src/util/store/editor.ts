@@ -1,11 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-const availableLayouts = [
-  "code",
-  "splitVertically",
-  "splitHorizontally",
-] as const;
+const availableLayouts = ["code"] as const;
 
 export type LayoutsType = (typeof availableLayouts)[number];
 
