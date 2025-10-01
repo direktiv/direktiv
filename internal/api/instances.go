@@ -87,7 +87,6 @@ func (e *instController) mountRouter(r chi.Router) {
 	r.Get("/{instanceID}", e.get)
 
 	r.Post("/", e.create)
-	r.Get("/stats", e.stats)
 }
 
 func (e *instController) dummy(w http.ResponseWriter, r *http.Request) {
@@ -121,28 +120,6 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, id)
-}
-
-// calculates the stats Status->Count of all instances in the namespace.
-func (e *instController) stats(w http.ResponseWriter, r *http.Request) {
-	namespace := chi.URLParam(r, "namespace")
-
-	list, _, err := e.engine.GetInstances(r.Context(), namespace, 0, 0)
-	if err != nil {
-		writeEngineError(w, err)
-
-		return
-	}
-	stats := make(map[string]int)
-	for i := range list {
-		n, ok := stats[list[i].Status]
-		if !ok {
-			stats[list[i].Status] = 0
-		}
-		stats[list[i].Status] = n + 1
-	}
-
-	writeJSON(w, stats)
 }
 
 func (e *instController) get(w http.ResponseWriter, r *http.Request) {
