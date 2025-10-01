@@ -70,7 +70,7 @@ describe('Test target workflow var wrong config', () => {
 	)
 
 	retry10(`should list all services`, async () => {
-		const listRes = await request(common.config.getDirektivHost()).get(
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
 		)
 		expect(listRes.statusCode).toEqual(200)
@@ -92,7 +92,7 @@ describe('Test target namespace variable plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
 	it(`should set plain text variable`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/variables`)
+		const workflowVarResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/variables`)
 			.send({
 				name: 'plain',
 				data: btoa('Hello World'),
@@ -102,7 +102,7 @@ describe('Test target namespace variable plugin', () => {
 	})
 
 	it(`should set plain text variable`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ limitedNamespace }/variables`)
+		const workflowVarResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ limitedNamespace }/variables`)
 			.send({
 				name: 'plain',
 				data: btoa('Hello World 2'),
@@ -144,7 +144,7 @@ describe('Test target namespace variable plugin', () => {
 	)
 
 	retry10(`should return a ns var from magic namespace`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(200)
@@ -153,7 +153,7 @@ describe('Test target namespace variable plugin', () => {
 	})
 
 	retry10(`should return a var from magic namespace with namespace set`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint2`,
 		)
 		expect(req.statusCode).toEqual(200)
@@ -162,7 +162,7 @@ describe('Test target namespace variable plugin', () => {
 	})
 
 	retry10(`should return a var from non-magic namespace`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/` + limitedNamespace + `/endpoint2`,
 		)
 		expect(req.statusCode).toEqual(200)
@@ -170,7 +170,7 @@ describe('Test target namespace variable plugin', () => {
 	})
 
 	retry10(`should not return a var`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(
+		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/` + limitedNamespace + `/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(403)

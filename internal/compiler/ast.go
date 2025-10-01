@@ -31,7 +31,8 @@ type ASTParser struct {
 	program *ast.Program
 	file    *file.File
 
-	Errors []*ValidationError
+	Errors  []*ValidationError
+	Actions []core.ActionConfig
 }
 
 type Validator struct {
@@ -42,6 +43,7 @@ func NewASTParser(script, mapping string) (*ASTParser, error) {
 	p := &ASTParser{
 		file:    file.NewFile("", script, 0),
 		Errors:  make([]*ValidationError, 0),
+		Actions: make([]core.ActionConfig, 0),
 		Script:  script,
 		mapping: mapping,
 	}
@@ -456,6 +458,93 @@ func (ap *ASTParser) inspectStatement(stmt ast.Statement) {
 	}
 }
 
+func (ap *ASTParser) parseAction(expr ast.Expression) (core.ActionConfig, error) {
+	action := core.ActionConfig{
+		Envs: make(map[string]string),
+	}
+
+	// Cast to ObjectLiteral
+	objLit, ok := expr.(*ast.ObjectLiteral)
+	if !ok {
+		return core.ActionConfig{}, fmt.Errorf("expected ObjectLiteral, got %T", expr)
+	}
+
+	// Iterate through properties
+	for _, prop := range objLit.Value {
+		// Get the key name from the property
+		var keyName string
+		if ident, ok := prop.(*ast.PropertyKeyed); ok {
+			switch k := ident.Key.(type) {
+			case *ast.Identifier:
+				keyName = k.Name.String()
+			case *ast.StringLiteral:
+				keyName = k.Value.String()
+			default:
+				continue
+			}
+
+			switch keyName {
+			case "type":
+				if strLit, ok := ident.Value.(*ast.StringLiteral); ok {
+					action.Type = strLit.Value.String()
+				}
+
+			case "size":
+				if strLit, ok := ident.Value.(*ast.StringLiteral); ok {
+					action.Size = strLit.Value.String()
+				}
+
+			case "image":
+				if strLit, ok := ident.Value.(*ast.StringLiteral); ok {
+					action.Image = strLit.Value.String()
+				}
+
+			case "envs":
+				if objLit, ok := ident.Value.(*ast.ObjectLiteral); ok {
+					for a := range objLit.Value {
+						if ident, ok := objLit.Value[a].(*ast.PropertyKeyed); ok {
+							var mapKey, mapValue string
+							if key, ok := ident.Key.(*ast.StringLiteral); ok {
+								mapKey = key.Value.String()
+							}
+
+							if value, ok := ident.Value.(*ast.StringLiteral); ok {
+								mapValue = value.Value.String()
+							}
+
+							if mapKey != "" && mapValue != "" {
+								action.Envs[mapKey] = mapValue
+							} else {
+								pos := ap.file.Position(int(expr.Idx0()))
+								ap.Errors = append(ap.Errors, &ValidationError{
+									Message: "generateAction environment varariables have non-string keys or values",
+									Line:    pos.Line,
+									Column:  pos.Column,
+								})
+							}
+						}
+					}
+				}
+				if arrLit, ok := ident.Value.(*ast.ArrayLiteral); ok {
+					fmt.Println("kssj")
+					// Parse array elements as key-value pairs
+					for i := 0; i < len(arrLit.Value); i += 2 {
+						if i+1 < len(arrLit.Value) {
+							if keyIdent, ok := arrLit.Value[i].(*ast.Identifier); ok {
+								if valIdent, ok := arrLit.Value[i+1].(*ast.Identifier); ok {
+									action.Envs[keyIdent.Name.String()] = valIdent.Name.String()
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return action, nil
+}
+
 func (ap *ASTParser) inspectExpression(expr ast.Expression) {
 	if expr == nil {
 		return
@@ -467,9 +556,45 @@ func (ap *ASTParser) inspectExpression(expr ast.Expression) {
 		identifier, ok := e.Callee.(*ast.Identifier)
 		if ok {
 			msg = fmt.Sprintf("function call '%s' is not allowed outside of functions", identifier.Name)
+			pos := ap.file.Position(int(e.Idx0()))
+
+			if identifier.Name == "generateAction" {
+				// still check for functions
+				for a := range e.ArgumentList {
+					ap.inspectExpression(e.ArgumentList[a])
+				}
+
+				if len(e.ArgumentList) != 1 {
+					ap.Errors = append(ap.Errors, &ValidationError{
+						Message: "generateAction has no or more than one configuration",
+						Line:    pos.Line,
+						Column:  pos.Column,
+					})
+
+					return
+				}
+
+				action, err := ap.parseAction(e.ArgumentList[0])
+				if err != nil {
+					ap.Errors = append(ap.Errors, &ValidationError{
+						Message: "generateAction has no or more than one configuration",
+						Line:    pos.Line,
+						Column:  pos.Column,
+					})
+
+					return
+				}
+
+				// add them to an action list
+				if action.Type == core.FlowActionScopeLocal {
+					ap.Actions = append(ap.Actions, action)
+				}
+
+				return
+			}
 
 			// 'secrets' is allowed but we need to check the params
-			if identifier.Name == "secrets" {
+			if identifier.Name == "getSecrets" {
 				for a := range e.ArgumentList {
 					ap.inspectExpression(e.ArgumentList[a])
 				}

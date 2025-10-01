@@ -12,91 +12,107 @@ import (
 )
 
 type Compiler struct {
-	db         *gorm.DB
-	transpiler *Transpiler
-	cache      cache.Cache
+	db    *gorm.DB
+	cache cache.Cache
+}
+
+type CompileItem struct {
+	tsScript         []byte
+	path             string
+	ValidationErrors []error
+
+	script, mapping string
+	config          *core.FlowConfig
 }
 
 func NewCompiler(db *gorm.DB, cache cache.Cache) (*Compiler, error) {
-	transpiler, err := NewTranspiler()
-	if err != nil {
-		return nil, err
-	}
-
 	return &Compiler{
-		db:         db,
-		transpiler: transpiler,
-		cache:      cache,
+		db:    db,
+		cache: cache,
 	}, nil
 }
 
-func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (*core.TypescriptFlow, error) {
-	cacheKey := fmt.Sprintf("%s-%s-%s", namespace, "script", path)
-
-	flow, found := c.cache.Get(cacheKey)
-	if found {
-		return flow.(*core.TypescriptFlow), nil
-	}
-
+func (c *Compiler) getFile(ctx context.Context, namespace, path string) ([]byte, error) {
 	f, err := filesql.NewStore(c.db).ForRoot(namespace).GetFile(ctx, path)
 	if err != nil {
 		return nil, err
 	}
 
-	b, err := filesql.NewStore(c.db).ForFile(f).GetData(ctx)
+	return filesql.NewStore(c.db).ForFile(f).GetData(ctx)
+}
+
+func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (*core.TypescriptFlow, error) {
+	// cacheKey := fmt.Sprintf("%s-%s-%s", namespace, "script", path)
+	// flow, found := c.cache.Get(cacheKey)
+	// if found {
+	// 	return flow.(*core.TypescriptFlow), nil
+	// }
+
+	b, err := c.getFile(ctx, namespace, path)
 	if err != nil {
 		return nil, err
 	}
 
-	script, mapping, err := c.transpiler.Transpile(string(b), path)
+	ci := &CompileItem{
+		tsScript: b,
+		path:     path,
+	}
+
+	err = ci.TranspileAndValidate()
 	if err != nil {
 		return nil, err
 	}
 
-	config, errs, err := ValidateScript(script)
-	if err != nil {
-		return nil, err
-	}
-
-	obj := &core.TypescriptFlow{
-		Script:  script,
-		Mapping: mapping,
-		Config:  config,
-	}
-
-	if len(errs) > 0 {
-		errList := make([]string, len(errs))
-		for i := range errs {
-			errList[i] = errs[i].Error()
+	if len(ci.ValidationErrors) > 0 {
+		errList := make([]string, len(ci.ValidationErrors))
+		for i := range ci.ValidationErrors {
+			errList[i] = ci.ValidationErrors[i].Error()
 		}
 
 		return nil, fmt.Errorf("%s", strings.Join(errList, ", "))
 	}
+
 	// c.cache.Set(cacheKey, obj)
 
-	return obj, nil
+	return ci.Config(), nil
 }
 
-func ValidateScript(script string) (*core.FlowConfig, []error, error) {
-	errors := make([]error, 0)
+func NewCompileItem(script []byte, path string) *CompileItem {
+	return &CompileItem{
+		tsScript:         script,
+		path:             path,
+		ValidationErrors: make([]error, 0),
+	}
+}
 
-	t, err := NewTranspiler()
+func (ci *CompileItem) Config() *core.TypescriptFlow {
+	return &core.TypescriptFlow{
+		Script:  ci.script,
+		Mapping: ci.mapping,
+		Config:  ci.config,
+	}
+}
+
+func (ci *CompileItem) TranspileAndValidate() error {
+	transpiler, err := NewTranspiler()
 	if err != nil {
-		return nil, errors, err
+		return err
 	}
 
-	script, mapping, err := t.Transpile(script, "dummy")
-	if err != nil {
-		return nil, errors, err
-	}
+	ci.script, ci.mapping, err = transpiler.Transpile(string(ci.tsScript), ci.path)
 
-	pr, err := NewASTParser(script, mapping)
+	return ci.validate()
+}
+
+func (ci *CompileItem) validate() error {
+	pr, err := NewASTParser(ci.script, ci.mapping)
 	if err != nil {
-		return nil, errors, err
+		return err
 	}
 
 	pr.ValidateTransitions()
 	pr.ValidateFunctionCalls()
+
 	config, err := pr.ValidateConfig()
 	if err != nil {
 		pr.Errors = append(pr.Errors, &ValidationError{
@@ -106,9 +122,13 @@ func ValidateScript(script string) (*core.FlowConfig, []error, error) {
 		})
 	}
 
+	config.Actions = pr.Actions
+
 	for i := range pr.Errors {
-		errors = append(errors, pr.Errors[i])
+		ci.ValidationErrors = append(ci.ValidationErrors, pr.Errors[i])
 	}
 
-	return config, errors, nil
+	ci.config = config
+
+	return nil
 }

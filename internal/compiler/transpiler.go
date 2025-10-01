@@ -19,13 +19,6 @@ type Transpiler struct {
 	fn  string
 }
 
-// const transitionCode = `
-// function transition(funcName, state) {
-// 	commitState(funcName, state)
-// 	return funcName(state)
-// }
-// `
-
 func NewTranspiler() (*Transpiler, error) {
 	fn := randstr.String(8, "abcdefghijklmnopqrstuvwABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	vm := sobek.New()

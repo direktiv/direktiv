@@ -14,21 +14,21 @@ describe('Test namespaces get delete list calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
 	it(`should create a new namespace foo1`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces`)
 			.send(makeDummyNamespace('foo1'))
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should create a new namespace foo2`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces`)
 			.send(makeDummyNamespace('foo2'))
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should get the new namespace foo1`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/foo1`)
 		expect(res.statusCode).toEqual(200)
 
@@ -36,14 +36,14 @@ describe('Test namespaces get delete list calls', () => {
 	})
 
 	it(`should get the new namespace foo2`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/foo2`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual(expectDummyNamespace('foo2'))
 	})
 
 	it(`should list foo1 and foo2`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
@@ -52,13 +52,13 @@ describe('Test namespaces get delete list calls', () => {
 	})
 
 	it(`should delete foo1`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.delete(`/api/v2/namespaces/foo1`)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should list foo1 and foo2`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({

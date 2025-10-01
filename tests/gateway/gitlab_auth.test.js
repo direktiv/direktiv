@@ -56,7 +56,7 @@ describe('Test gitlab auth plugin', () => {
 	)
 
 	retry10(`should execute`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(
+		const req = await request(common.config.getDirektivBaseUrl()).post(
 			`/ns/` + testNamespace + `/target`,
 		)
 			.set('X-Gitlab-Token', 'secret')
@@ -66,7 +66,7 @@ describe('Test gitlab auth plugin', () => {
 	})
 
 	retry10(`should fail`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(
+		const req = await request(common.config.getDirektivBaseUrl()).post(
 			`/ns/` + testNamespace + `/target`,
 		)
 			.set('X-Gitlab-Token', 'wrongsecret')

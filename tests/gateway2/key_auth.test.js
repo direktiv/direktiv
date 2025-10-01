@@ -47,7 +47,7 @@ post:
 	)
 
 	retry10(`should denied ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
+		const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
 			.set('API-Token', 'wrong_key')
 			.send({})
 		expect(res.statusCode).toEqual(403)
@@ -60,7 +60,7 @@ post:
 	})
 
 	retry10(`should access ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
+		const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
 			.set('API-Token', 'key1')
 			.send({ foo: 'bar' })
 		expect(res.statusCode).toEqual(200)
