@@ -8,14 +8,14 @@ import { retry10 } from '../common/retry'
 
 const namespace = basename(__filename.replaceAll('.', '-'))
 const fName = 'file' + Math.random().toString(10)
-	.slice(2, 12) + '.wf.js'
+	.slice(2, 12) + '.wf.ts'
 
 describe('Test js engine', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 	helpers.itShouldCreateDir(it, expect, namespace, '/', 'foo')
 
-	helpers.itShouldCreateFile(it, expect, namespace, '/foo', fName, 'file', 'application/x-typescript',
+	helpers.itShouldCreateFile(it, expect, namespace, '/foo', fName, 'workflow', 'application/x-typescript',
 		btoa(`
 function stateOne(payload) {
 	print("RUN STATE FIRST");

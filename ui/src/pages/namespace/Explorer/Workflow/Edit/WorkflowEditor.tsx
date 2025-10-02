@@ -9,8 +9,6 @@ import {
 
 import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
-import { Diagram } from "./Diagram";
-import { EditorLayoutSwitcher } from "~/components/EditorLayoutSwitcher";
 import { FileSchemaType } from "~/api/files/schema";
 import RunWorkflow from "../components/RunWorkflow";
 import { WorkspaceLayout } from "~/components/WorkspaceLayout";
@@ -18,6 +16,7 @@ import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
+import useTsWorkflowLibs from "~/hooks/useTsWorkflowLibs";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
 const WorkflowEditor: FC<{
@@ -32,8 +31,9 @@ const WorkflowEditor: FC<{
   const hasUnsavedChanges = useUnsavedChanges();
   const setHasUnsavedChanges = useSetUnsavedChanges();
 
-  const workflowDataFromServer = decode(data?.data ?? "");
+  const tsLibs = useTsWorkflowLibs(true);
 
+  const workflowDataFromServer = decode(data?.data ?? "");
   const [editorContent, setEditorContent] = useState(workflowDataFromServer);
 
   const onEditorContentUpdate = (newData: string) => {
@@ -73,9 +73,6 @@ const WorkflowEditor: FC<{
     <div className="relative flex grow flex-col space-y-4 p-5">
       <WorkspaceLayout
         layout={currentLayout}
-        diagramComponent={
-          <Diagram workflowData={editorContent} layout={currentLayout} />
-        }
         editorComponent={
           <CodeEditor
             value={editorContent}
@@ -84,12 +81,13 @@ const WorkflowEditor: FC<{
             error={error}
             hasUnsavedChanges={hasUnsavedChanges}
             onSave={onSave}
+            language="typescript"
+            tsLibs={tsLibs}
           />
         }
       />
 
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        <EditorLayoutSwitcher />
         <Dialog>
           <DialogTrigger asChild>
             <Button

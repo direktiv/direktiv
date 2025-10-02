@@ -95,6 +95,12 @@ const CreateYamlFileSchema = z.object({
   data: z.string(), // base64 encoded file body
 });
 
+const CreateTSFileSchema = z.object({
+  name: z.string().nonempty(),
+  mimeType: z.literal("application/x-typescript"),
+  data: z.string(), // base64 encoded file body
+});
+
 const CreateConsumerSchema = CreateYamlFileSchema.extend({
   type: z.literal("consumer"),
 });
@@ -107,7 +113,7 @@ const CreateServiceSchema = CreateYamlFileSchema.extend({
   type: z.literal("service"),
 });
 
-const CreateWorkflowSchema = CreateYamlFileSchema.extend({
+const CreateWorkflowSchema = CreateTSFileSchema.extend({
   type: z.literal("workflow"),
 });
 
@@ -115,7 +121,7 @@ const CreateGatewaySchema = CreateYamlFileSchema.extend({
   type: z.literal("gateway"),
 });
 
-const CreateFileSchema = z.discriminatedUnion("type", [
+export const CreateFileSchema = z.discriminatedUnion("type", [
   CreateDirectorySchema,
   CreateConsumerSchema,
   CreateEndpointSchema,
@@ -166,4 +172,3 @@ export type FileSchemaType = z.infer<typeof FileSchema>;
 export type UpdateFileSchemaType = z.infer<typeof UpdateFileSchema>;
 export type RenameFileSchemaType = z.infer<typeof RenameFileSchema>;
 export type CreateFileSchemaType = z.infer<typeof CreateFileSchema>;
-export type FileListSchemaType = z.infer<typeof FileListSchema>;

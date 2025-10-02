@@ -40,7 +40,7 @@ func TestTranspiler(t *testing.T) {
 	_, _, err = tt.Transpile("const hallo = \"world\"", "dummy")
 	assert.NoError(t, err)
 
-	script := `const flow : FlowDefintion = {
+	script := `const flow : FlowDefinition = {
 		json: false
 	}
 

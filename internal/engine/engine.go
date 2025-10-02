@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
@@ -17,6 +18,9 @@ var ErrDataNotFound = fmt.Errorf("data not found")
 
 // LabelWithNotify used to mark an instance as called with a notify-chanel.
 const LabelWithNotify = "WithNotify"
+
+// TODO: remove this debug code.
+const simulateErrors = false
 
 type Engine struct {
 	db       *gorm.DB
@@ -147,9 +151,9 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	ret, err := e.execJSScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input), inst.Metadata)
 	// TODO: remove this debug code.
 	// simulate failing job
-	// if rand.Intn(2) == 0 {
-	//	err = fmt.Errorf("simulated error")
-	//}
+	if simulateErrors && rand.Intn(2) == 0 {
+		err = fmt.Errorf("simulated error")
+	}
 	if err != nil {
 		endEv.Type = "failed"
 		endEv.Error = err.Error()
@@ -166,9 +170,9 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 	// TODO: remove this debug code.
 	// simulate a job that takes some long time
-	// if rand.Intn(2) == 0 {
-	// 	time.Sleep(10 * time.Second)
-	// }
+	if simulateErrors && rand.Intn(2) == 0 {
+		time.Sleep(10 * time.Second)
+	}
 	endEv.Time = time.Now()
 	err = e.dataBus.PushHistoryStream(ctx, endEv)
 	if err != nil {

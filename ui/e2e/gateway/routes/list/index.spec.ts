@@ -47,7 +47,7 @@ test("Route list shows all available routes", async ({ page }) => {
     name: "my-route.yaml",
     namespace,
     type: "endpoint",
-    yaml: createRouteFile({
+    content: createRouteFile({
       path,
       targetType: "instant-response",
       targetConfigurationStatus: "202",
@@ -134,7 +134,7 @@ test("Route list shows an error on no target plugin", async ({ page }) => {
     name: "my-route.yaml",
     namespace,
     type: "endpoint",
-    yaml: routeWithAWarning,
+    content: routeWithAWarning,
   });
 
   await expect
@@ -175,7 +175,7 @@ test("Route list shows an error", async ({ page }) => {
     name: "my-route.yaml",
     namespace,
     type: "endpoint",
-    yaml: routeWithAnError,
+    content: routeWithAnError,
   });
 
   await expect
@@ -220,7 +220,7 @@ test("Route list links the file name to the route file", async ({ page }) => {
     name: "my-route.yaml",
     namespace,
     type: "endpoint",
-    yaml: createRouteFile(),
+    content: createRouteFile(),
   });
 
   await page.goto(`/n/${namespace}/gateway/routes`, {

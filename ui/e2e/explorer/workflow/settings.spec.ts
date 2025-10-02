@@ -23,7 +23,7 @@ test.beforeEach(async () => {
     name: workflow,
     namespace,
     type: "workflow",
-    yaml: basicWorkflow.data,
+    content: basicWorkflow.data,
   });
 });
 
@@ -257,7 +257,7 @@ test("it is possible to rename a variable that doesn't have a mimeType", async (
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: workflowThatCreatesVariable,
+    content: workflowThatCreatesVariable,
   });
 
   await createInstance({

@@ -37,14 +37,14 @@ async function fireCreateRequest (url, input, durations) {
 const randomStr = Math.random().toString(10)
 	.slice(2, 12)
 const namespace = basename(__filename.replaceAll('.', '-'))
-const fName = 'file' + randomStr + '.wf.js'
+const fName = 'file' + randomStr + '.wf.ts'
 
 describe('Stress test js engine', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 	helpers.itShouldCreateDir(it, expect, namespace, '/', 'foo')
 
-	helpers.itShouldCreateFile(it, expect, namespace, '/foo', fName, 'file', 'application/x-typescript',
+	helpers.itShouldCreateFile(it, expect, namespace, '/foo', fName, 'workflow', 'application/x-typescript',
 		btoa(`
 function stateOne(payload) {
 	print("RUN STATE FIRST");

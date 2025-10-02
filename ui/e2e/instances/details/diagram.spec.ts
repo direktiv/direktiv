@@ -17,7 +17,7 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("the diagram panel on the instance page responds to user interaction", async ({
+test.skip("the diagram panel on the instance page responds to user interaction", async ({
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
@@ -25,7 +25,7 @@ test("the diagram panel on the instance page responds to user interaction", asyn
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflow,
+    content: simpleWorkflow,
   });
   const instanceId = (
     await createInstance({
@@ -86,7 +86,7 @@ test("the diagram panel on the instance page responds to user interaction", asyn
   );
 });
 
-test("the diagram on the instance page changes appearance dynamically", async ({
+test.skip("the diagram on the instance page changes appearance dynamically", async ({
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
@@ -94,7 +94,7 @@ test("the diagram on the instance page changes appearance dynamically", async ({
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: workflowWithDelay,
+    content: workflowWithDelay,
   });
 
   const instanceId = (

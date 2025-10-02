@@ -21,14 +21,14 @@ test.beforeEach(async () => {
     name: simpleWorkflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflowContent,
+    content: simpleWorkflowContent,
   });
 
   await createFile({
     name: failingWorkflowName,
     namespace,
     type: "workflow",
-    yaml: workflowThatFailsContent,
+    content: workflowThatFailsContent,
   });
 });
 
@@ -54,7 +54,7 @@ const createTriggerFilterInstances = async () => {
     name: parentWorkflowName,
     namespace,
     type: "workflow",
-    yaml: parentWorkflowContent({
+    content: parentWorkflowContent({
       childPath: `/${simpleWorkflowName}`,
       children: 2,
     }),
@@ -262,7 +262,7 @@ test("it is possible to filter by AS (name)", async ({ page }) => {
   await Promise.all(
     workflowNames.map((name) =>
       createFile({
-        yaml: simpleWorkflowContent,
+        content: simpleWorkflowContent,
         namespace,
         name,
         type: "workflow",
@@ -332,7 +332,7 @@ test("it is possible to apply multiple filters", async ({ page }) => {
   await Promise.all(
     workflowNames.map((name) =>
       createFile({
-        yaml: simpleWorkflowContent,
+        content: simpleWorkflowContent,
         name,
         namespace,
         type: "workflow",
