@@ -44,6 +44,14 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 	stats := make(map[string]int)
 	stats["total"] = 0
 	foundMatching := false
+
+	allStatuses := []string{
+		"pending", "failed", "complete", "cancelled", "crashed",
+	}
+	for _, s := range allStatuses {
+		stats[s] = 0
+	}
+
 	for _, v := range list {
 		if workflowPath != "" && v.Metadata["workflowPath"] == workflowPath {
 			foundMatching = true
@@ -51,11 +59,7 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 		if workflowPath != "" && v.Metadata["workflowPath"] != workflowPath {
 			continue
 		}
-		n, ok := stats[v.StatusString()]
-		if !ok {
-			stats[v.StatusString()] = 0
-		}
-		stats[v.StatusString()] = n + 1
+		stats[v.StatusString()]++
 		stats["total"]++
 	}
 	if !foundMatching && workflowPath != "" {
