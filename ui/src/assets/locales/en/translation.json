@@ -154,10 +154,7 @@
         "workflow": {
           "runWorkflow": {
             "title": "Run Workflow",
-            "jsonInput": "JSON Input",
-            "invalidYaml": "Cannot run the workflow as it is not a valid YAML file.",
             "formInput": "Form Input",
-            "formInputHint": "JSON form generation is not yet supported for typescript workflows.",
             "learnMoreBtn": "Learn more",
             "cancelBtn": "Cancel",
             "runBtn": "Run",
