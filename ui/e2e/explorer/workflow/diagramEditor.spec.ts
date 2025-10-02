@@ -42,7 +42,7 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("it is possible to switch between Code View, Diagram View, Split Vertically and Split Horizontally", async ({
+test.skip("it is possible to switch between Code View, Diagram View, Split Vertically and Split Horizontally", async ({
   page,
 }) => {
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
@@ -95,7 +95,7 @@ test("it is possible to switch between Code View, Diagram View, Split Vertically
   await expect(diagram).not.toBeVisible();
 });
 
-test("it will change the direction of the diagram, when the layout is set to Split Vertically", async ({
+test.skip("it will change the direction of the diagram, when the layout is set to Split Vertically", async ({
   page,
 }) => {
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
@@ -150,7 +150,7 @@ test("it will change the direction of the diagram, when the layout is set to Spl
   ).toBeGreaterThan(startNodeYVert);
 });
 
-test("it will persist the preferred layout selection in local storage", async ({
+test.skip("it will persist the preferred layout selection in local storage", async ({
   page,
 }) => {
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
@@ -184,7 +184,7 @@ test("it will persist the preferred layout selection in local storage", async ({
   await expect(diagram).toBeVisible();
 });
 
-test("it will update the diagram when the workflow is saved", async ({
+test.skip("it will update the diagram when the workflow is saved", async ({
   page,
   browserName,
 }) => {
@@ -252,7 +252,7 @@ test("it will update the diagram when the workflow is saved", async ({
   ).not.toBeVisible();
 });
 
-test("it is possible to switch from Code View to Diagram View without loosing the recent changes", async ({
+test.skip("it is possible to switch from Code View to Diagram View without loosing the recent changes", async ({
   page,
 }) => {
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);

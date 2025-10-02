@@ -16,9 +16,7 @@ export const getInstanceInput = apiFactory({
     namespace: string;
     instanceId: string;
   }) =>
-    `${
-      baseUrl ?? ""
-    }/api/v2/namespaces/${namespace}/instances/${instanceId}/input`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/instances/${instanceId}`,
   method: "GET",
   schema: InstanceInputResponseSchema,
 });
