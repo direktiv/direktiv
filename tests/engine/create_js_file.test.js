@@ -8,7 +8,7 @@ import { retry10 } from '../common/retry'
 
 const namespace = basename(__filename.replaceAll('.', '-'))
 const fName = 'file' + Math.random().toString(10)
-	.slice(2, 12) + '.wf.js'
+	.slice(2, 12) + '.wf.ts'
 
 describe('Test js engine', () => {
 	beforeAll(helpers.deleteAllNamespaces)
