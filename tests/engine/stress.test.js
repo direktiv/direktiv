@@ -75,10 +75,10 @@ function stateTwo(payload) {
 			total: 50,
 			batchSize: 5,
 		},
-		//{
+		// {
 		//	total: 100,
 		//	batchSize: 10,
-		//},
+		// },
 		// {
 		//	total: 1000,
 		//	batchSize: 100,
@@ -144,6 +144,6 @@ function stateTwo(payload) {
 		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/metrics/instances`)
 		console.log(req.body)
 		expect(req.statusCode).toEqual(200)
-		expect(req.body.data).toEqual({ total: total, complete: total, cancelled: 0, crashed: 0, failed: 0, pending: 0 })
+		expect(req.body.data).toEqual({ total, complete: total, cancelled: 0, crashed: 0, failed: 0, pending: 0 })
 	}, 1000)
 })
