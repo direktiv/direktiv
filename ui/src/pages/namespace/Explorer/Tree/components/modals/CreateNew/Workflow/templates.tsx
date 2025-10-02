@@ -31,8 +31,8 @@ function formatMessage(data: string | number, type: string) {
 `,
 };
 
-// Todo: examples below (in yaml) are no longer valid,
-// but some are used in tests and need to be replaced by ts versions.
+// Todo: examples below (in yaml) are no longer valid. Replace them with
+// ts versions (or delete if not needed)
 
 export const noop = {
   name: "noop",
@@ -46,6 +46,7 @@ states:
 `,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const action = {
   name: "action",
   data: `direktiv_api: workflow/v1
@@ -90,6 +91,7 @@ states:
 `,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const delay = {
   name: "delay",
   data: `direktiv_api: workflow/v1
@@ -135,6 +137,7 @@ states:
 `,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const foreach = {
   name: "foreach",
   data: `direktiv_api: workflow/v1
@@ -161,6 +164,7 @@ states:
 `,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const generateEvent = {
   name: "generateEvent",
   data: `direktiv_api: workflow/v1
@@ -176,6 +180,7 @@ states:
 `,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const generateSolveEvent = {
   name: "generateSolveEvent",
   data: `direktiv_api: workflow/v1
@@ -191,6 +196,7 @@ states:
 `,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getAndSet = {
   name: "getAndSet",
   data: `direktiv_api: workflow/v1
@@ -212,6 +218,7 @@ states:
 `,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const parallel = {
   name: "parallel",
   data: `direktiv_api: workflow/v1
@@ -242,6 +249,7 @@ states:
 `,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const validate = {
   name: "validate",
   data: `direktiv_api: workflow/v1
@@ -276,6 +284,7 @@ states:
 `,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const switchState = {
   name: "switch",
   data: `direktiv_api: workflow/v1
@@ -303,6 +312,7 @@ states:
 `,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const eventXor = {
   name: "eventXor",
   data: `direktiv_api: workflow/v1
@@ -342,6 +352,7 @@ states:
 `,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const eventAnd = {
   name: "eventAnd",
   data: `direktiv_api: workflow/v1
@@ -381,22 +392,6 @@ states:
 `,
 };
 
-const templates = [
-  tsdemo,
-  noop,
-  action,
-  consumeEvent,
-  delay,
-  error,
-  foreach,
-  generateEvent,
-  generateSolveEvent,
-  getAndSet,
-  parallel,
-  validate,
-  switchState,
-  eventXor,
-  eventAnd,
-] as const;
+const templates = [tsdemo] as const;
 
 export default templates;

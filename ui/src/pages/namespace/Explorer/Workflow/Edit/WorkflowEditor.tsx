@@ -31,12 +31,9 @@ const WorkflowEditor: FC<{
   const hasUnsavedChanges = useUnsavedChanges();
   const setHasUnsavedChanges = useSetUnsavedChanges();
 
-  const isTsWorkflow = data.mimeType === "application/x-typescript";
-  const tsLibs = useTsWorkflowLibs(isTsWorkflow);
-  const language = isTsWorkflow ? "typescript" : "yaml";
+  const tsLibs = useTsWorkflowLibs(true);
 
   const workflowDataFromServer = decode(data?.data ?? "");
-
   const [editorContent, setEditorContent] = useState(workflowDataFromServer);
 
   const onEditorContentUpdate = (newData: string) => {
@@ -84,7 +81,7 @@ const WorkflowEditor: FC<{
             error={error}
             hasUnsavedChanges={hasUnsavedChanges}
             onSave={onSave}
-            language={language}
+            language="typescript"
             tsLibs={tsLibs}
           />
         }
