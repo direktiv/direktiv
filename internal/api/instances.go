@@ -3,6 +3,7 @@ package api
 import (
 	"io"
 	"net/http"
+	"path/filepath"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/engine"
@@ -98,12 +99,20 @@ func (e *instController) dummy(w http.ResponseWriter, r *http.Request) {
 func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 	path := r.URL.Query().Get("path")
+	if path != filepath.Clean(path) {
+		writeError(w, &Error{
+			Code:    "request_invalid_param",
+			Message: "invalid request `path` param",
+		})
+	}
+	path = filepath.Clean(path)
+	path = filepath.Join("/", path)
 
 	input, err := io.ReadAll(r.Body)
 	if err != nil {
 		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: "invalid request body",
+			Code:    "request_invalid_data",
+			Message: "could not read request body",
 		})
 
 		return

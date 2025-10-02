@@ -22,15 +22,18 @@ func (e *metricsController) mountRouter(r chi.Router) {
 func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 	ns := chi.URLParam(r, "namespace")
 
-	forWorkflowPath := r.URL.Query().Get("workflowPath")
-	if forWorkflowPath != "" && forWorkflowPath != filepath.Clean(forWorkflowPath) {
+	workflowPath := r.URL.Query().Get("workflowPath")
+	if workflowPath != filepath.Clean(workflowPath) {
 		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: "query param workflowPath invalid file path",
+			Code:    "request_invalid_parm",
+			Message: "invalid request `workflowPath` param",
 		})
 
 		return
 	}
+	workflowPath = filepath.Clean(workflowPath)
+	workflowPath = filepath.Join("/", workflowPath)
+
 	list, _, err := e.engine.GetInstances(r.Context(), ns, 0, 0)
 	if err != nil {
 		writeEngineError(w, err)
@@ -42,10 +45,10 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 	stats["total"] = 0
 	foundMatching := false
 	for _, v := range list {
-		if forWorkflowPath != "" && v.Metadata["workflowPath"] == forWorkflowPath {
+		if workflowPath != "" && v.Metadata["workflowPath"] == workflowPath {
 			foundMatching = true
 		}
-		if forWorkflowPath != "" && v.Metadata["workflowPath"] != forWorkflowPath {
+		if workflowPath != "" && v.Metadata["workflowPath"] != workflowPath {
 			continue
 		}
 		n, ok := stats[v.StatusString()]
@@ -55,11 +58,13 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 		stats[v.StatusString()] = n + 1
 		stats["total"]++
 	}
-	if !foundMatching && forWorkflowPath != "" {
+	if !foundMatching && workflowPath != "" {
 		writeError(w, &Error{
 			Code:    "resource_not_found",
 			Message: "requested workflow is not found",
 		})
+
+		return
 	}
 
 	writeJSON(w, stats)
