@@ -25,7 +25,7 @@ test.skip("the diagram panel on the instance page responds to user interaction",
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflow,
+    content: simpleWorkflow,
   });
   const instanceId = (
     await createInstance({
@@ -94,7 +94,7 @@ test.skip("the diagram on the instance page changes appearance dynamically", asy
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: workflowWithDelay,
+    content: workflowWithDelay,
   });
 
   const instanceId = (

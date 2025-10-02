@@ -25,7 +25,7 @@ test("the header of the instance page shows the relevant data for the workflow",
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflow,
+    content: simpleWorkflow,
   });
   const instanceId = (
     await createInstance({

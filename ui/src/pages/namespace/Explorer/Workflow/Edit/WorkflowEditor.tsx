@@ -16,6 +16,7 @@ import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
+import useTsWorkflowLibs from "~/hooks/useTsWorkflowLibs";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
 const WorkflowEditor: FC<{
@@ -30,8 +31,9 @@ const WorkflowEditor: FC<{
   const hasUnsavedChanges = useUnsavedChanges();
   const setHasUnsavedChanges = useSetUnsavedChanges();
 
-  const workflowDataFromServer = decode(data?.data ?? "");
+  const tsLibs = useTsWorkflowLibs(true);
 
+  const workflowDataFromServer = decode(data?.data ?? "");
   const [editorContent, setEditorContent] = useState(workflowDataFromServer);
 
   const onEditorContentUpdate = (newData: string) => {
@@ -79,6 +81,8 @@ const WorkflowEditor: FC<{
             error={error}
             hasUnsavedChanges={hasUnsavedChanges}
             onSave={onSave}
+            language="typescript"
+            tsLibs={tsLibs}
           />
         }
       />

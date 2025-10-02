@@ -103,7 +103,7 @@
         "newWorkflow": {
           "title": "Create a new workflow",
           "nameLabel": "Name",
-          "namePlaceholder": "workflow-name.yaml",
+          "namePlaceholder": "workflow-name.wf.ts",
           "templateLabel": "Template",
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
@@ -154,10 +154,7 @@
         "workflow": {
           "runWorkflow": {
             "title": "Run Workflow",
-            "jsonInput": "JSON Input",
-            "invalidYaml": "Cannot run the workflow as it is not a valid YAML file.",
             "formInput": "Form Input",
-            "formInputHint": "The first state of this Workflow must be of type 'validate' to generate a form.",
             "learnMoreBtn": "Learn more",
             "cancelBtn": "Cancel",
             "runBtn": "Run",

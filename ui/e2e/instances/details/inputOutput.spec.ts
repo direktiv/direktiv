@@ -27,7 +27,7 @@ test("the input/output panel responds to user interaction", async ({
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflow,
+    content: simpleWorkflow,
   });
 
   const instanceId = (
@@ -130,7 +130,7 @@ test("the output is shown when the workflow finished running", async ({
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: workflowWithDelay,
+    content: workflowWithDelay,
   });
   const instanceId = (
     await createInstance({
@@ -181,7 +181,7 @@ test("after a running instance finishes, the output tab is automatically selecte
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: workflowWithDelay,
+    content: workflowWithDelay,
   });
   const instanceId = (
     await createInstance({
