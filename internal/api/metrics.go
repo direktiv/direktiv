@@ -23,16 +23,18 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 	ns := chi.URLParam(r, "namespace")
 
 	workflowPath := r.URL.Query().Get("workflowPath")
-	if workflowPath != filepath.Clean(workflowPath) {
-		writeError(w, &Error{
-			Code:    "request_invalid_parm",
-			Message: "invalid request `workflowPath` param",
-		})
+	if workflowPath != "" {
+		if workflowPath != filepath.Clean(workflowPath) {
+			writeError(w, &Error{
+				Code:    "request_invalid_parm",
+				Message: "invalid request `workflowPath` param",
+			})
 
-		return
+			return
+		}
+		workflowPath = filepath.Clean(workflowPath)
+		workflowPath = filepath.Join("/", workflowPath)
 	}
-	workflowPath = filepath.Clean(workflowPath)
-	workflowPath = filepath.Join("/", workflowPath)
 
 	list, _, err := e.engine.GetInstances(r.Context(), ns, 0, 0)
 	if err != nil {
@@ -41,23 +43,25 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stats := make(map[string]int)
-	stats["total"] = 0
-	foundMatching := false
-
 	allStatuses := []string{
 		"pending", "failed", "complete", "cancelled", "crashed",
 	}
+	stats := make(map[string]int)
+	stats["total"] = 0
+
 	for _, s := range allStatuses {
 		stats[s] = 0
 	}
 
+	foundMatching := false
 	for _, v := range list {
-		if workflowPath != "" && v.Metadata["workflowPath"] == workflowPath {
-			foundMatching = true
-		}
-		if workflowPath != "" && v.Metadata["workflowPath"] != workflowPath {
-			continue
+		if workflowPath != "" {
+			if v.Metadata["workflowPath"] == workflowPath {
+				foundMatching = true
+			}
+			if v.Metadata["workflowPath"] != workflowPath {
+				continue
+			}
 		}
 		stats[v.StatusString()]++
 		stats["total"]++
