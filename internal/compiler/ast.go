@@ -130,7 +130,6 @@ func (ap *ASTParser) walk(node ast.Node, isStateFunc bool) {
 		// Rule 1: A state function must return a transition call.
 		if isStateFunc {
 			if !ap.isTransitionCall(n.Argument) {
-
 				b, _ := json.MarshalIndent(n.Argument, "", "   ")
 				fmt.Println(string(b))
 

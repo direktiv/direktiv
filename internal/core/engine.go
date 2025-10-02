@@ -4,7 +4,7 @@ const (
 	EngineMappingPath      = "path"
 	EngineMappingNamespace = "namespace"
 
-	// do not change the values. it is used by all old containers
+	// do not change the values. it is used by all old containers.
 	EngineHeaderActionID     = "Direktiv-ActionID"
 	EngineHeaderFile         = "Direktiv-File"
 	EngineHeaderTempDir      = "Direktiv-TempDir"

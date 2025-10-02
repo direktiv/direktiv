@@ -59,6 +59,7 @@ func newExternalServer() *externalServer {
 		if resp.StatusCode != http.StatusOK {
 			resp.StatusCode = 502
 		}
+
 		return nil
 	}
 

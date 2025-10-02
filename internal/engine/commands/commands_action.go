@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -98,7 +99,8 @@ func (cmds *Commands) action(call sobek.FunctionCall) sobek.Value {
 		case core.FlowActionScopeLocal:
 			data, err := cmds.callLocal(actionConfig, payload)
 			if err != nil {
-				if actionError, ok := err.(*actionError); ok {
+				actionError := &actionError{}
+				if errors.As(err, &actionError) {
 					panic(actionError.PanicObject(cmds.vm))
 				} else {
 					panic(cmds.vm.ToValue(err))
@@ -249,7 +251,7 @@ func (cmds *Commands) callLocal(config *core.ActionConfig, payload *core.ActionP
 	return actionCaller.call(context.Background())
 }
 
-// TODO: delete me
+// TODO: delete me.
 var cmdsSm core.ServiceManager
 
 func (cmds *Commands) deletemeStartServiceManager() error {
