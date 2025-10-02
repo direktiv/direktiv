@@ -14,7 +14,6 @@ import (
 func RunApplication(ctx context.Context) {
 	err := waitForUserContainer()
 	if err != nil {
-
 	}
 
 	sidecar := newSidecar()

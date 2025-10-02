@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -9,7 +8,6 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
 )
@@ -64,17 +62,22 @@ func (cmds *Commands) id() sobek.Value {
 	return cmds.vm.ToValue(cmds.instID)
 }
 
-func (cmds *Commands) log(logs ...string) sobek.Value {
+func (cmds *Commands) log(logs ...any) sobek.Value {
+	var b strings.Builder
+	for a := range logs {
+		b.WriteString(fmt.Sprintf("%v", logs[a]))
+	}
 
-	ctx := context.WithValue(context.Background(), "scope", "instance")
-	ctx = context.WithValue(ctx, "namespace", cmds.metadata[core.FlowActionScopeNamespace])
-	ctx = context.WithValue(ctx, "callpath", fmt.Sprintf("/%s/", cmds.instID.String()))
+	slog.Info(b.String(),
+		slog.String("status", "dummy"),
+		slog.String("state", "dummy"),
+		slog.String("path", cmds.metadata[core.EngineMappingPath]),
+		slog.String("scope", "instance"),
+		slog.String("namespace", "test"),
+		slog.String("id", cmds.instID.String()),
+		slog.String("callpath",
+			fmt.Sprintf("/%s/", cmds.instID.String())))
 
-	slog.Info(strings.Join(logs, " "), slog.String("scope", "instance"), slog.String("namespace", "test"), slog.String("callpath", fmt.Sprintf("/%s/", cmds.instID.String())))
-
-	// query=scope:=instance namespace:=test callpath:/d460f882-46a9-47ff-8ccf-e431e9b5f128/* _time:>2025-10-01T11:48:02.462000000Z
-
-	telemetry.LogInstance(context.Background(), telemetry.LogLevelInfo, strings.Join(logs, " "))
 	return sobek.Undefined()
 }
 

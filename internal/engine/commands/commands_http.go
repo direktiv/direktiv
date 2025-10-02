@@ -139,9 +139,6 @@ func doHttpRequest(addr string, config any) (*httpResponseObject, error) {
 		return obj, nil
 	}
 
-	// fg, _ := httputil.DumpResponse(resp, true)
-	// fmt.Println(string(fg))
-
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

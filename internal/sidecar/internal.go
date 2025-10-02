@@ -31,7 +31,7 @@ func newInternalServer() *internalServer {
 func (s *internalServer) handleLogs(w http.ResponseWriter, r *http.Request) {
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 	defer r.Body.Close()
 

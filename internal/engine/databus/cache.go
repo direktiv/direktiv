@@ -1,7 +1,6 @@
 package databus
 
 import (
-	"sort"
 	"sync"
 
 	"github.com/direktiv/direktiv/internal/engine"
@@ -10,30 +9,51 @@ import (
 
 type StatusCache struct {
 	mu    sync.RWMutex
-	items map[uuid.UUID]engine.InstanceStatus // key: orderID
+	items []engine.InstanceStatus // key: orderID
+	index map[uuid.UUID]int
 }
 
 func NewStatusCache() *StatusCache {
 	return &StatusCache{
-		items: map[uuid.UUID]engine.InstanceStatus{},
+		items: make([]engine.InstanceStatus, 0),
+		index: make(map[uuid.UUID]int),
 	}
 }
 
 func (c *StatusCache) Upsert(s *engine.InstanceStatus) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	// keep only the newest by HistorySequence
-	if cur, ok := c.items[s.InstanceID]; !ok || s.HistorySequence >= cur.HistorySequence {
+	i, ok := c.index[s.InstanceID]
+
+	// if not found, add it
+	if !ok {
 		cp := s.Clone()
-		c.items[s.InstanceID] = *cp
+		c.items = append(c.items, *cp)
+		c.index[s.InstanceID] = len(c.items) - 1
+
+		return
+	}
+
+	// here we need to update only if HistorySequence is newer
+	v := &c.items[i]
+	if v.HistorySequence < s.HistorySequence {
+		cp := s.Clone()
+		c.items[i] = *cp
 	}
 }
 
 func (c *StatusCache) Snapshot(filterNamespace string, filterInstanceID uuid.UUID) []*engine.InstanceStatus {
+	res, _ := c.SnapshotPage(filterNamespace, filterInstanceID, 0, 0)
+	return res
+}
+
+func (c *StatusCache) SnapshotPage(filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*engine.InstanceStatus, int) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
+
 	out := make([]*engine.InstanceStatus, 0, len(c.items))
 
+	total := 0
 	for _, v := range c.items {
 		if v.InstanceID != filterInstanceID && filterInstanceID != uuid.Nil {
 			continue
@@ -41,21 +61,31 @@ func (c *StatusCache) Snapshot(filterNamespace string, filterInstanceID uuid.UUI
 		if v.Namespace != filterNamespace && filterNamespace != "" {
 			continue
 		}
+		total++
+		if offset > 0 {
+			offset--
+			continue
+		}
+		if limit > 0 && len(out) >= limit {
+			continue
+		}
 		out = append(out, v.Clone())
 	}
-	sort.Slice(out, func(i, j int) bool {
-		return out[i].CreatedAt.Before(out[j].CreatedAt)
-	})
 
-	return out
+	return out, total
 }
 
 func (c *StatusCache) DeleteNamespace(name string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	for k, v := range c.items {
-		if name == v.Namespace {
-			delete(c.items, k)
+	cp := make([]engine.InstanceStatus, 0, len(c.items))
+	index := make(map[uuid.UUID]int)
+	for _, v := range c.items {
+		if name != v.Namespace {
+			cp = append(cp, v)
+			index[v.InstanceID] = len(cp) - 1
 		}
 	}
+	c.items = cp
+	c.index = index
 }

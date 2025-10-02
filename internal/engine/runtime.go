@@ -11,7 +11,8 @@ import (
 )
 
 func (e *Engine) execJSScript(instID uuid.UUID, script string, mappings string, fn string,
-	input string, metadata map[string]string) (any, error) {
+	input string, metadata map[string]string,
+) (any, error) {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
 

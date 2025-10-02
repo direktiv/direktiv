@@ -1,7 +1,6 @@
 package sidecar
 
 import (
-	"fmt"
 	"log/slog"
 	"net/http"
 	"net/http/httputil"
@@ -15,7 +14,6 @@ type externalServer struct {
 }
 
 func newExternalServer() *externalServer {
-
 	// we can ignore the error here
 	addr, _ := url.Parse("http://localhost:8080")
 	proxy := httputil.NewSingleHostReverseProxy(addr)
@@ -53,7 +51,6 @@ func newExternalServer() *externalServer {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
-		fmt.Println("ERROR HANDLING!!!")
 		http.Error(w, "Bad Gateway", http.StatusBadGateway)
 	}
 

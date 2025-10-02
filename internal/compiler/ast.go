@@ -130,6 +130,12 @@ func (ap *ASTParser) walk(node ast.Node, isStateFunc bool) {
 		// Rule 1: A state function must return a transition call.
 		if isStateFunc {
 			if !ap.isTransitionCall(n.Argument) {
+
+				b, _ := json.MarshalIndent(n.Argument, "", "   ")
+				fmt.Println(string(b))
+
+				// check fro promise here
+
 				pos := ap.file.Position(int(n.Idx0()))
 				ap.Errors = append(ap.Errors, &ValidationError{
 					Message: "state function has a return statement that is not a call to 'transition' or 'finish'",

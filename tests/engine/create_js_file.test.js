@@ -15,7 +15,7 @@ describe('Test js engine', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 	helpers.itShouldCreateDir(it, expect, namespace, '/', 'foo')
 
-	helpers.itShouldCreateFile(it, expect, namespace, '/foo', fName, 'file', 'text/plain',
+	helpers.itShouldCreateFile(it, expect, namespace, '/foo', fName, 'file', 'application/x-typescript',
 		btoa(`
 function stateOne(payload) {
 	print("RUN STATE FIRST");
