@@ -40,7 +40,11 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 
 	stats := make(map[string]int)
 	stats["total"] = 0
+	foundMatching := false
 	for _, v := range list {
+		if forWorkflowPath != "" && v.Metadata["workflowPath"] == forWorkflowPath {
+			foundMatching = true
+		}
 		if forWorkflowPath != "" && v.Metadata["workflowPath"] != forWorkflowPath {
 			continue
 		}
@@ -50,6 +54,12 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 		}
 		stats[v.StatusString()] = n + 1
 		stats["total"]++
+	}
+	if !foundMatching && forWorkflowPath != "" {
+		writeError(w, &Error{
+			Code:    "resource_not_found",
+			Message: "requested workflow is not found",
+		})
 	}
 
 	writeJSON(w, stats)
