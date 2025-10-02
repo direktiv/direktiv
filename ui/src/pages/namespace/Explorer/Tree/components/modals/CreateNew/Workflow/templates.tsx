@@ -1,22 +1,32 @@
 const tsdemo = {
   name: "tsdemo",
-  data: `const flow : FlowDefinition = {
+  data: `const flow: FlowDefinition = {
   type: "default",
   timeout: "PT30S",
   state: "stateFirst",
 };
 
-function stateFirst(payload) {
-  return transition(stateTwo, payload);
+const error = 'input must contain { "data": "string" or number }'
+
+function stateFirst(input): StateFunction<unknown> {
+  const { data } = input;
+  if (!data) {
+    return finish({ error });
+  }
+  return transition(stateSecond, data);
 }
 
-function stateTwo(payload) {
-  helper();
-  return finish({ result: payload });
+function stateSecond(data): StateFunction<unknown> {
+  const type = typeof data;
+  if (type === "string" || type === "number") {
+    const message = formatMessage(data, type);
+    return finish(message)
+  }
+  return finish({ error })
 }
 
-function helper() {
-  return "value";
+function formatMessage(data: string | number, type: string) {
+  return { message: \`\${data} is a \${type}\` }
 };
 `,
 };

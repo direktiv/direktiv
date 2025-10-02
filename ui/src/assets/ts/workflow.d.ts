@@ -4,33 +4,17 @@ type FlowDefinition = {
   state: string;
 };
 
-/**
- * Will transition to the next workflow state.
- * @param params
- */
-declare function transition(fn: WorkflowState, data: unknown);
+type StateFunction<T> = (params: T) => void;
 
 /**
  * Will transition to the next workflow state.
- * @param params
+ * @param stateFn state function to run next, e.g., stateSecond.
+ * @param stateFnParams params passed into the next state function.
  */
-declare function finish(data: unknown);
+declare function transition<T>(stateFn: StateFunction<T>, stateFnParams: T);
 
 /**
- * Example method (outdated, just here for demo)
- * @param params
+ * Will complete the workflow, returning the result.
+ * @param data end result output by the workflow, usually a JSON object.
  */
-declare function getFile(params: {
-  /**
-   * File name
-   */
-  name: string;
-  /**
-   * Permission
-   */
-  permission: number;
-  /**
-   * What is this for exaclty? What are the possible values?
-   */
-  scope: "shared" | "other";
-}): void;
+declare function finish<T>(data: T);
