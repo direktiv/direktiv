@@ -3,6 +3,9 @@ version: '3'
 vars: 
   TELEMETRY: '{{.TELEMETRY | default "false"}}'
   TLS: '{{.TLS | default "false"}}'
+  DIREKTIV_IMAGE: '{{.DIREKTIV_IMAGE | default "direktiv" }}'
+  DIREKTIV_IMAGE_TAG: '{{.DIREKTIV_IMAGE_TAG | default "dev" }}'
+  DIREKTIV_IMAGE_REGISTRY: '{{.DIREKTIV_IMAGE_REGISTRY | default "localhost:5001" }}'
 
 tasks:
   clean:
@@ -23,7 +26,7 @@ tasks:
     cmds:
     - task: clean
     - |
-      {{- if eq .TLS "true" -}} sed "s/80/443/" kind-config-cluster.yaml {{- else }} cat kind-config-cluster.yaml {{- end -}} kind create cluster --config -
+      {{- if eq .TLS "true" -}} sed "s/80/443/" kind-config-cluster.yaml {{- else }} cat kind-config-cluster.yaml {{- end -}} | kind create cluster --config -
     - task: metrics-server
 
   metrics-server:
@@ -71,9 +74,9 @@ tasks:
         --set database.sslmode=disable \
         --set pullPolicy=Always \
         --set ingress-nginx.controller.hostPort.enabled=true \
-        --set image=direktiv \
-        --set registry=localhost:5001 \
-        --set tag=dev \
+        --set image={{ .DIREKTIV_IMAGE }} \
+        --set registry={{ .DIREKTIV_IMAGE_REGISTRY }} \
+        --set tag={{ .DIREKTIV_IMAGE_TAG }} \
         {{- if eq .TELEMETRY "true" }}
         --set otel.install=true -f scripts/telemetry/telemetry.yaml \
         {{- end }}
@@ -138,3 +141,8 @@ tasks:
     cmds:
     - 'kubectl get namespace "direktiv-services-direktiv" -o json   | tr -d "\n" | sed "s/\"finalizers\": \[[^]]\+\]/\"finalizers\": []/"   | kubectl replace --raw /api/v1/namespaces/direktiv-services-direktiv/finalize -f - || true'
     - helm uninstall direktiv
+
+  kill-pod:
+    desc: Kill all direktiv pods
+    cmds:
+    - kubectl delete pods -l app=direktiv-flow

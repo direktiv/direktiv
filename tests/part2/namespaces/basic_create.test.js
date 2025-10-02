@@ -181,7 +181,7 @@ describe('Test namespace create calls', () => {
 		const testCase = testCases[i]
 
 		it(`should create a new namespace case ${ i }`, async () => {
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.post(`/api/v2/namespaces`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
@@ -216,7 +216,7 @@ describe('Test invalid namespace create calls', () => {
 		const testCase = testCases[i]
 
 		it(`should fail create a new namespace case ${ i }`, async () => {
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.post(`/api/v2/namespaces`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
@@ -249,7 +249,7 @@ describe('Test invalid namespace name', () => {
 		const testCase = testCases[i]
 
 		it(`should fail create a new namespace case ${ i }`, async () => {
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.post(`/api/v2/namespaces`)
 				.send({
 					name: testCase,
@@ -277,7 +277,7 @@ describe('Test valid namespace name', () => {
 		const testCase = testCases[i]
 
 		it(`should fail create a new namespace case ${ i }`, async () => {
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.post(`/api/v2/namespaces`)
 				.send({
 					name: testCase,
@@ -291,7 +291,7 @@ describe('Test error cases', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
 	it(`should create foo namespace`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces`)
 			.send({
 				name: 'foo',
@@ -300,7 +300,7 @@ describe('Test error cases', () => {
 	})
 
 	it(`should fail create foo namespace`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces`)
 			.send({
 				name: 'foo',
@@ -340,7 +340,7 @@ describe('Test missing fields create calls', () => {
 		const testCase = testCases[i]
 
 		it(`should fail create a new namespace case ${ i }`, async () => {
-			const res = await request(config.getDirektivHost())
+			const res = await request(config.getDirektivBaseUrl())
 				.post(`/api/v2/namespaces`)
 				.send(testCase)
 			// expect(res.statusCode).toEqual(400)

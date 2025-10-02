@@ -28,7 +28,7 @@ scale: 2
 
 	let listRes
 	retry10(`should list all services`, async () => {
-		listRes = await request(common.config.getDirektivHost())
+		listRes = await request(common.config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body).toMatchObject({
@@ -60,7 +60,7 @@ scale: 2
 	retry50(`should list all service pods`, async () => {
 		await helpers.sleep(1000)
 		let sID = listRes.body.data[0].id
-		let res = await request(common.config.getDirektivHost())
+		let res = await request(common.config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ testNamespace }/services/${ sID }/pods`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
@@ -70,7 +70,7 @@ scale: 2
 		})
 
 		sID = listRes.body.data[1].id
-		res = await request(common.config.getDirektivHost())
+		res = await request(common.config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ testNamespace }/services/${ sID }/pods`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
@@ -82,7 +82,7 @@ scale: 2
 	})
 
 	retry10(`should list all services`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
@@ -115,14 +115,14 @@ scale: 2
 
 	it(`should rebuild all services`, async () => {
 		let sID = listRes.body.data[0].id
-		let res = await request(common.config.getDirektivHost())
+		let res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ testNamespace }/services/${ sID }/actions/rebuild`)
 			.send()
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual('')
 
 		sID = listRes.body.data[1].id
-		res = await request(common.config.getDirektivHost())
+		res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ testNamespace }/services/${ sID }/actions/rebuild`)
 			.send()
 		expect(res.statusCode).toEqual(200)

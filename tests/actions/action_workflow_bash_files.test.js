@@ -32,7 +32,7 @@ states:
 
 	it(`should echo input via bash action from ${ testWorkflow } workflow`, async () => {
 		await helpers.sleep(500)
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/instances?path=${ testWorkflow }&wait=true`)
 			.send({
 				commands: [
@@ -47,7 +47,7 @@ states:
 			[ { result: { hello: 'world' }, success: true } ])
 	})
 	it(`should upload not exec file via bash action from ${ testWorkflow } workflow due to bad permissions`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/instances?path=${ testWorkflow }&wait=true`)
 			.send({
 				files: [
@@ -66,7 +66,7 @@ states:
 		})
 	})
 	it(`should upload and exec file via bash action from ${ testWorkflow } workflow`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/instances?path=${ testWorkflow }&wait=true`)
 			.send({
 				files: [
@@ -83,7 +83,7 @@ states:
 			[ { result: 'Hello World', success: true } ])
 	})
 	it(`should return exported env via bash action from ${ testWorkflow } workflow`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/instances?path=${ testWorkflow }&wait=true`)
 			.send({
 				commands: [
@@ -97,7 +97,7 @@ states:
 			[ { result: '', success: true } ])
 	})
 	it(`files from prior action should not exists`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/instances?path=${ testWorkflow }&wait=true`)
 			.send({
 				commands: [
@@ -112,7 +112,7 @@ states:
 			{ code: 'io.direktiv.command.error', message: 'cat: executed: No such file or directory' })
 	})
 	it(`should execute both commands it via bash action from ${ testWorkflow } workflow`, async () => {
-		const res = await request(common.config.getDirektivHost())
+		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/instances?path=${ testWorkflow }&wait=true`)
 			.send({
 				commands: [

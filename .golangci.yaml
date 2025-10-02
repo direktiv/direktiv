@@ -1,6 +1,5 @@
 version: "2"
 run:
-  go: 1.24.0
   issues-exit-code: 1
   tests: false
 
@@ -12,6 +11,10 @@ linters:
     - cyclop
     - depguard
     - err113 # TODO: This ensures no dynamic errors.
+    - spancheck
+    - unqueryvet
+    - iotamixing
+    - godoclint
     - exhaustruct
     - funlen
     - gochecknoglobals
@@ -22,7 +25,6 @@ linters:
     - musttag
     - nolintlint
     - prealloc
-    - spancheck # TODO: Alan, enable this one as it helps you fixing some telemetry bugs.
     - tagliatelle
     - varnamelen
     - wrapcheck

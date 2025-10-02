@@ -47,7 +47,7 @@ states:
 `))
 
 	it(`should invoke the '/a/parent1.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=a%2Fparent1.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=a%2Fparent1.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 2,

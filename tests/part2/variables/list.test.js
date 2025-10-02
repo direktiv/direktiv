@@ -30,7 +30,7 @@ describe('Test variable list calls', () => {
 	})
 
 	it(`should list variable foo1`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/variables`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.length).toEqual(1)
@@ -49,7 +49,7 @@ describe('Test variable list calls', () => {
 	})
 
 	it(`should list variable foo2`, async () => {
-		const res = await request(config.getDirektivHost())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ namespace }/variables?workflowPath=/wf.yaml`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.length).toEqual(1)

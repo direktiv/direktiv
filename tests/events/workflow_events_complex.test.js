@@ -56,14 +56,14 @@ describe('Test complex workflow events orchistration', () => {
 		const eventStream3Stage2 = basevent('hellowait', 'wait-ctx-run43', 'condition3')
 
 		await events.sendEventAndList(namespaceName, eventStream1)
-		let instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0`)
+		let instancesResponse = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0`)
 		await helpers.sleep(500)
 		expect(instancesResponse.body.data.length).toBe(1)
 		const stream1InstanceId = instancesResponse.body.data[0].id
 
 		await events.sendEventAndList(namespaceName, eventStream2)
 		await helpers.sleep(500)
-		instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0`)
+		instancesResponse = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0`)
 		const stream2InstanceId = instancesResponse.body.data[0].id // assuming they are sorted
 		expect(instancesResponse.body.data.length).toBe(2)
 		expect(stream1InstanceId).not.toBe(stream2InstanceId)
@@ -71,7 +71,7 @@ describe('Test complex workflow events orchistration', () => {
 		await events.sendEventAndList(namespaceName, eventStream3)
 		await helpers.sleep(500)
 
-		instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0`)
+		instancesResponse = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0`)
 		const stream3InstanceId = instancesResponse.body.data[0].id // assuming they are sorted
 		expect(instancesResponse.body.data.length).toBe(3)
 		expect(stream3InstanceId).not.toBe(stream2InstanceId)
@@ -79,18 +79,18 @@ describe('Test complex workflow events orchistration', () => {
 		await events.sendEventAndList(namespaceName, eventStream1Stage2)
 		await helpers.sleep(500)
 
-		const statusStream1 = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream1InstanceId }`)
+		const statusStream1 = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream1InstanceId }`)
 		expect(statusStream1.body.data.status).toBe('complete')
 
-		let statusStream2 = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream2InstanceId }`)
+		let statusStream2 = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream2InstanceId }`)
 			.send()
 		expect(statusStream2.body.data.status).toBe('pending')
 
-		let statusStream3 = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream3InstanceId }`)
+		let statusStream3 = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream3InstanceId }`)
 			.send()
 		expect(statusStream3.body.data.status).toBe('pending')
 
-		const resultsStream1 = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream1InstanceId }/output`)
+		const resultsStream1 = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream1InstanceId }/output`)
 			.send()
 
 		const outputData1 = JSON.parse(atob(resultsStream1.body.data.output))
@@ -99,13 +99,13 @@ describe('Test complex workflow events orchistration', () => {
 		await events.sendEventAndList(namespaceName, eventStream2Stage2)
 		await helpers.sleep(500)
 
-		const resultsStream2 = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream2InstanceId }/output`)
+		const resultsStream2 = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream2InstanceId }/output`)
 			.send()
-		statusStream2 = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream2InstanceId }`)
+		statusStream2 = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream2InstanceId }`)
 			.send()
 		expect(statusStream2.body.data.status).toBe('complete')
 
-		statusStream3 = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream3InstanceId }`)
+		statusStream3 = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream3InstanceId }`)
 			.send()
 		expect(statusStream3.body.data.status).toBe('pending')
 
@@ -115,16 +115,16 @@ describe('Test complex workflow events orchistration', () => {
 		await events.sendEventAndList(namespaceName, eventStream3Stage2)
 		await helpers.sleep(500)
 
-		const resultsStream3 = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream3InstanceId }/output`)
+		const resultsStream3 = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream3InstanceId }/output`)
 			.send()
 
-		statusStream3 = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream3InstanceId }`)
+		statusStream3 = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ stream3InstanceId }`)
 			.send()
 		expect(statusStream3.body.data.status).toBe('complete')
 		const outputData3 = JSON.parse(atob(resultsStream3.body.data.output))
 		expect(outputData3.hello.hello).toBe('condition3')
 
-		instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0`)
+		instancesResponse = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0`)
 			.send()
 		expect(instancesResponse.body.data.length).toBe(3)
 	})

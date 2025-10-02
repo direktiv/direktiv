@@ -82,7 +82,7 @@ describe('Test workflow events and', () => {
 		startEventWorkflow)
 
 	retry10(`should have one event listeners`, async () => {
-		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
+		const getEventListenerResponse = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
 			.send()
 
 		expect(getEventListenerResponse.body.data[0]).toMatchObject({
@@ -111,13 +111,13 @@ describe('Test workflow events and', () => {
 
 	it(`should have two event listeners`, async () => {
 		// start workflow
-		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowName }`)
+		const runWorkflowResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowName }`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
 		await new Promise(r => setTimeout(r, 250))
 
-		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
+		const getEventListenerResponse = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
 			.send()
 
 		expect(getEventListenerResponse.body.data.length).toEqual(2)
@@ -148,7 +148,7 @@ describe('Test workflow events and', () => {
 		let instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, 'complete')
 		expect(instancesResponse).not.toBeFalsy()
 
-		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instancesResponse.id }/output`)
+		const instanceOutput = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instancesResponse.id }/output`)
 		const output = Buffer.from(instanceOutput.body.data.output, 'base64')
 		const outputJSON = JSON.parse(output.toString())
 
@@ -156,7 +156,7 @@ describe('Test workflow events and', () => {
 		expect(outputJSON.eventtype1.hello).toEqual('world1')
 
 		// restart workflow
-		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowName }`)
+		const runWorkflowResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowName }`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 		await new Promise(r => setTimeout(r, 250))
@@ -164,7 +164,7 @@ describe('Test workflow events and', () => {
 		await events.sendEventAndList(namespaceName, basevent('eventtype2', 'eventtype2a', 'world2'))
 
 		// there are two workflows now
-		instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0&filter.field=AS&filter.type=CONTAINS&filter.val=` + waitWorkflowName)
+		instancesResponse = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0&filter.field=AS&filter.type=CONTAINS&filter.val=` + waitWorkflowName)
 			.send()
 		expect(instancesResponse.body.meta.total).toEqual(2)
 	})
@@ -175,7 +175,7 @@ describe('Test workflow events and', () => {
 
 		expect(instance).not.toBeFalsy()
 
-		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instance.id }/output`)
+		const instanceOutput = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instance.id }/output`)
 		const output = Buffer.from(instanceOutput.body.data.output, 'base64')
 		const outputJSON = JSON.parse(output.toString())
 
@@ -186,7 +186,7 @@ describe('Test workflow events and', () => {
 	})
 
 	retry10(`should kick off start event workflow stage 2`, async () => {
-		const instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0&filter.field=AS&filter.type=CONTAINS&filter.val=` + startWorkflowName)
+		const instancesResponse = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0&filter.field=AS&filter.type=CONTAINS&filter.val=` + startWorkflowName)
 			.send()
 		expect(instancesResponse.body.meta.total).toEqual(2)
 	})
@@ -200,7 +200,7 @@ describe('Test workflow events and', () => {
 		await helpers.sleep(1000)
 
 		// start workflow
-		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowTimeoutName }`)
+		const runWorkflowResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowTimeoutName }`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 		await new Promise(r => setTimeout(r, 7000))
