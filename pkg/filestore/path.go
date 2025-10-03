@@ -6,22 +6,31 @@ import (
 	"strings"
 )
 
-// SanitizePath standardizes and sanitizes the path, and validates it against naming requirements.
-func SanitizePath(path string) (string, error) {
+func ValidatePath(path string) (string, error) {
 	cleanedPath := filepath.Join("/", path)
+	cleanedPath = filepath.Clean(cleanedPath)
 	cleanedPath = strings.TrimSuffix(cleanedPath, "/")
 	if cleanedPath == "" {
-		return "/", nil
+		cleanedPath = "/"
 	}
-	if cleanedPath != filepath.Clean(cleanedPath) {
-		return "", fmt.Errorf("invalid path string; orig: %v sanitized: %v", path, cleanedPath)
+	if cleanedPath != path {
+		return "", fmt.Errorf("invalid path string")
+	}
+	for _, s := range []string{"/./", "/../"} {
+		if strings.Contains(cleanedPath, s) {
+			return "", fmt.Errorf("invalid path string; contains '%v'", s)
+		}
+	}
+	for _, s := range []string{".", "./", "/.", ""} {
+		if cleanedPath == s {
+			return "", fmt.Errorf("invalid path string")
+		}
 	}
 
 	return cleanedPath, nil
 }
 
-// GetPathDepth reads the path and returns the depth value. Use SanitizePath first, because if an error
-// happens here the function may produce invalid results.
+// GetPathDepth reads the path and returns the depth value.
 func GetPathDepth(path string) int {
 	depth := strings.Count(path, "/")
 	if path == "/" {
