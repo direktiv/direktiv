@@ -52,7 +52,8 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 	fStore := filesql.NewStore(db)
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
-	path = filepath.Clean("/" + path)
+	path = filepath.Join("/", path)
+	path = filepath.Clean(path)
 
 	// Fetch file
 	file, err := fStore.ForRoot(namespace).GetFile(r.Context(), path)
@@ -105,7 +106,8 @@ func (e *fsController) readRaw(w http.ResponseWriter, r *http.Request) {
 	fStore := filesql.NewStore(db)
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
-	path = filepath.Clean("/" + path)
+	path = filepath.Join("/", path)
+	path = filepath.Clean(path)
 
 	// fetch file.
 	file, err := fStore.ForRoot(namespace).GetFile(r.Context(), path)
@@ -148,7 +150,8 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 	fStore := filesql.NewStore(db)
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
-	path = filepath.Clean("/" + path)
+	path = filepath.Join("/", path)
+	path = filepath.Clean(path)
 
 	// Fetch file
 	file, err := fStore.ForRoot(namespace).GetFile(r.Context(), path)
@@ -224,7 +227,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
-	path = filepath.Join("/"+path, req.Name)
+	path = filepath.Join("/", path, req.Name)
 	path = filepath.Clean(path)
 
 	// Create file.
@@ -315,7 +318,8 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
-	path = filepath.Clean("/" + path)
+	path = filepath.Join("/", path)
+	path = filepath.Clean(path)
 
 	if strings.HasSuffix(path, ".yaml") || strings.HasSuffix(path, ".yml") {
 		// Validate if data is valid yaml with direktiv files.
