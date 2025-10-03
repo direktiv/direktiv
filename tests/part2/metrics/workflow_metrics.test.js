@@ -19,8 +19,8 @@ describe('Test workflow metrics', () => {
 
 		expect(res.statusCode).toEqual(404)
 		expect(res.body.error).toEqual({
-			     "code": "not_found",
-			     "message": "requested resource is not found",
+			     code: 'not_found',
+			     message: 'requested resource is not found',
 		})
 	})
 
@@ -40,7 +40,7 @@ function stateOne(payload) {
 	it(`should invoke the '/foo1.wf.ts' workflow`, async () => {
 		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ namespace }/instances?path=foo1.wf.ts&wait=true`)
-			.send({foo: "bar"})
+			.send({ foo: 'bar' })
 		expect(res.statusCode).toEqual(200)
 	})
 
