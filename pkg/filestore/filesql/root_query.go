@@ -89,7 +89,7 @@ func (q *RootQuery) Delete(ctx context.Context) error {
 }
 
 func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, mimeType string, data []byte) (*filestore.File, error) {
-	path, err := filestore.SanitizePath(path)
+	path, err := filestore.ValidatePath(path)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
 	}
@@ -173,7 +173,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 }
 
 func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, error) {
-	path, err := filestore.SanitizePath(path)
+	path, err := filestore.ValidatePath(path)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
 	}
@@ -210,7 +210,7 @@ func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, 
 
 func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestore.File, error) {
 	var list []*filestore.File
-	path, err := filestore.SanitizePath(path)
+	path, err := filestore.ValidatePath(path)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
 	}

@@ -27,7 +27,7 @@ func (tnf *NamespaceFileServerPlugin) NewInstance(config core.PluginConfig) (cor
 		return nil, err
 	}
 	for _, path := range pl.AllowPaths {
-		_, err = filestore.SanitizePath(path)
+		_, err = filestore.ValidatePath(path)
 		if err != nil {
 			return nil, err
 		}
@@ -36,7 +36,7 @@ func (tnf *NamespaceFileServerPlugin) NewInstance(config core.PluginConfig) (cor
 		}
 	}
 	for _, path := range pl.DenyPaths {
-		_, err = filestore.SanitizePath(path)
+		_, err = filestore.ValidatePath(path)
 		if err != nil {
 			return nil, err
 		}

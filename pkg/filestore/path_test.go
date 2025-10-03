@@ -6,38 +6,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 )
 
-func TestSanitizePath(t *testing.T) {
-	tests := []struct {
-		name    string
-		path    string
-		want    string
-		wantErr bool
-	}{
-		{name: "valid", path: "", want: "/"},
-		{name: "valid", path: "/", want: "/"},
-		{name: "valid", path: ".", want: "/"},
-		{name: "valid", path: "///", want: "/"},
-		{name: "valid", path: "/a", want: "/a"},
-		{name: "valid", path: "/a/", want: "/a"},
-		{name: "valid", path: "/a/b/c/", want: "/a/b/c"},
-		{name: "valid", path: "/a//b/c//", want: "/a/b/c"},
-		{name: "valid", path: "//a//b/c//", want: "/a/b/c"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := filestore.SanitizePath(tt.path)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("SanitizePath() error = %v, wantErr %v", err, tt.wantErr)
-
-				return
-			}
-			if got != tt.want {
-				t.Errorf("SanitizePath() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestGetPathDepth(t *testing.T) {
 	tests := []struct {
 		name string
