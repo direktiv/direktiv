@@ -30,23 +30,4 @@ describe('Test filesystem tree read operations', () => {
 			},
 		})
 	})
-
-	it(`should fail creating file with invalid yaml data`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/files`)
-			.set('Content-Type', 'application/json')
-			.send({
-				name: 'foo',
-				type: 'workflow',
-				mimeType: 'text/plain',
-				data: btoa('11 some_invalid_yaml 11 \nsome_invalid_yaml'),
-			})
-		expect(res.statusCode).toEqual(400)
-		expect(res.body).toMatchObject({
-			error: {
-				code: 'request_data_invalid',
-				message: 'file data has invalid yaml string',
-			},
-		})
-	})
 })

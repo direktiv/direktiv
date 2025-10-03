@@ -142,8 +142,8 @@ jobs:
           #  suit: kubernetes
           #- type: api
           #  suit: part1
-          #- type: api
-          #  suit: part2
+          - type: api
+            suit: part2
           #- type: api
           #  suit: services
           #- type: api
