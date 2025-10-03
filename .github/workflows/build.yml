@@ -140,8 +140,8 @@ jobs:
           #  suit: instances
           #- type: api
           #  suit: kubernetes
-          #- type: api
-          #  suit: part1
+          - type: api
+            suit: part1
           #- type: api
           #  suit: part2
           #- type: api
