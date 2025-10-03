@@ -27,9 +27,6 @@ async function itShouldCreateNamespace (it, expect, ns) {
 
 async function itShouldCreateFile (it, expect, ns, path, name, type, mimeType, data) {
 	it(`should create a new file ${ path }`, async () => {
-		if (path === '/')
-			path = ''
-
 		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
