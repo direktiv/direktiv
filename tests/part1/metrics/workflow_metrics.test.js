@@ -6,7 +6,7 @@ import config from '../../common/config'
 import helpers from '../../common/helpers'
 import request from '../../common/request'
 
-const namespace = basename(__filename)
+const namespace = basename(__filename.replaceAll('.', '-'))
 
 describe('Test workflow metrics', () => {
 	beforeAll(helpers.deleteAllNamespaces)
@@ -15,42 +15,38 @@ describe('Test workflow metrics', () => {
 
 	it(`should read no results`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/metrics/instances?workflowPath=%2Ffoo1.yaml`)
+			.get(`/api/v2/namespaces/${ namespace }/metrics/instances?workflowPath=/foo1.wf.ts`)
 
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toEqual({
-			data: {
-				cancelled: 0,
-				crashed: 0,
-				failed: 0,
-				pending: 0,
-				complete: 0,
-				total: 0,
-			},
+		expect(res.statusCode).toEqual(404)
+		expect(res.body.error).toEqual({
+			     "code": "not_found",
+			     "message": "requested resource is not found",
 		})
 	})
 
 	helpers.itShouldCreateFile(it, expect, namespace,
 		'/',
-		'foo1.yaml',
+		'foo1.wf.ts',
 		'workflow',
-		'text/plain',
+		'application/x-typescript',
 		btoa(`
-direktiv_api: workflow/v1
-states:
-- id: a
-  type: noop
+function stateOne(payload) {
+	print("RUN STATE FIRST");
+	payload.bar = "foo";
+	return finish(payload);
+}
 `))
 
-	it(`should invoke the 'foo1.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/instances?path=foo1.yaml&wait=true`)
-
-		expect(req.statusCode).toEqual(200)
+	it(`should invoke the '/foo1.wf.ts' workflow`, async () => {
+		const res = await request(common.config.getDirektivBaseUrl())
+			.post(`/api/v2/namespaces/${ namespace }/instances?path=foo1.wf.ts&wait=true`)
+			.send({foo: "bar"})
+		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should read one result`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/metrics/instances?workflowPath=%2Ffoo1.yaml`)
+			.get(`/api/v2/namespaces/${ namespace }/metrics/instances?workflowPath=/foo1.wf.ts`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
 			data: {

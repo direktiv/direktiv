@@ -114,6 +114,7 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 	}
 	err := e.dataBus.PushHistoryStream(ctx, ev)
 	if err != nil {
+		fmt.Printf(">>>ERROR PUSHING HISTORY STREAM: %v\n", ev)
 		return uuid.Nil, fmt.Errorf("push history stream: %w", err)
 	}
 
