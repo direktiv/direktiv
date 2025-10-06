@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
@@ -56,10 +57,10 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 	foundMatching := false
 	for _, v := range list {
 		if workflowPath != "" {
-			if v.Metadata["workflowPath"] == workflowPath {
+			if v.Metadata[core.EngineMappingPath] == workflowPath {
 				foundMatching = true
 			}
-			if v.Metadata["workflowPath"] != workflowPath {
+			if v.Metadata[core.EngineMappingPath] != workflowPath {
 				continue
 			}
 		}
