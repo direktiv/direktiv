@@ -37,7 +37,7 @@ type InstanceData struct {
 	Namespace    string         `json:"namespace"`
 
 	InputLength    int     `json:"inputLength"`
-	Input          []byte  `json:"input"`
+	Input          string  `json:"input"`
 	OutputLength   int     `json:"outputLength"`
 	Output         *string `json:"output"`
 	MetadataLength int     `json:"metadataLength"`
@@ -67,9 +67,9 @@ func convertInstanceData(data *engine.InstanceStatus) *InstanceData {
 		Lineage:        []*LineageData{},
 		Namespace:      data.Namespace,
 		InputLength:    len(data.Input),
+		Input:          string(data.Input),
 		OutputLength:   len(data.Output),
 		MetadataLength: len(data.Metadata),
-		Input:          data.Input,
 	}
 	if !data.EndedAt.IsZero() {
 		resp.EndedAt = &data.EndedAt
