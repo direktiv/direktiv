@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/internal/sched"
 	"github.com/go-chi/chi/v5"
@@ -57,7 +58,7 @@ func convertInstanceData(data *engine.InstanceStatus) *InstanceData {
 		CreatedAt:      data.CreatedAt,
 		Started:        data.StartedAt,
 		Status:         data.StatusString(),
-		WorkflowPath:   data.Metadata["workflowPath"],
+		WorkflowPath:   data.Metadata[core.EngineMappingPath],
 		ErrorCode:      nil,
 		Invoker:        "api",
 		Definition:     []byte(data.Script),
@@ -121,7 +122,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, notify, err := e.engine.RunWorkflow(r.Context(), namespace, path, string(input), map[string]string{
-		"workflowPath": path,
+		core.EngineMappingPath: path,
 	})
 	if err != nil {
 		writeEngineError(w, err)
