@@ -12,7 +12,6 @@ import { CodeEditor } from "./CodeEditor";
 import { FileSchemaType } from "~/api/files/schema";
 import RunWorkflow from "../components/RunWorkflow";
 import { WorkspaceLayout } from "~/components/WorkspaceLayout";
-import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
@@ -22,7 +21,6 @@ import { useUpdateFile } from "~/api/files/mutate/updateFile";
 const WorkflowEditor: FC<{
   data: NonNullable<FileSchemaType>;
 }> = ({ data }) => {
-  const currentLayout = useEditorLayout();
   const { t } = useTranslation();
   const namespace = useNamespace();
   const [error, setError] = useState<string | undefined>();
@@ -72,7 +70,7 @@ const WorkflowEditor: FC<{
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
       <WorkspaceLayout
-        layout={currentLayout}
+        layout="code"
         editorComponent={
           <CodeEditor
             value={editorContent}
