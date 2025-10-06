@@ -37,11 +37,11 @@ type InstanceData struct {
 	Namespace    string         `json:"namespace"`
 
 	InputLength    int    `json:"inputLength"`
-	Input          []byte `json:"input,omitempty"`
+	Input          []byte `json:"input"`
 	OutputLength   int    `json:"outputLength"`
-	Output         []byte `json:"output,omitempty"`
+	Output         []byte `json:"output"`
 	MetadataLength int    `json:"metadataLength"`
-	Metadata       []byte `json:"metadata,omitempty"`
+	Metadata       []byte `json:"metadata"`
 }
 
 type instController struct {
