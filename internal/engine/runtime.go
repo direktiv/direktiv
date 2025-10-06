@@ -31,7 +31,7 @@ func (e *Engine) execJSScript(instID uuid.UUID, script string, mappings string, 
 		return nil, fmt.Errorf("start function '%s' does not exist", fn)
 	}
 
-	var inputMap map[string]any
+	var inputMap any
 	err = json.Unmarshal([]byte(input), &inputMap)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal input: %w", err)

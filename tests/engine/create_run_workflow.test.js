@@ -22,7 +22,7 @@ function stateOne(payload) {
 	return finish("done");
 }`		},
 		{ name: 'twoSteps.wf.ts',
-			input: { foo: 'bar' },
+			input: JSON.stringify({ foo: 'bar' }),
 			wantOutput: { foo: 'bar', bar: 'foo' },
 			wantErrorMessage: null,
 			file: `
@@ -34,6 +34,22 @@ function stateOne(payload) {
 function stateTwo(payload) {
 	print("RUN STATE SECOND");
     return finish(payload);
+}`		},
+		{ name: 'stringInput.wf.ts',
+			input: JSON.stringify("hello"),
+			wantOutput: 'helloWorld',
+			wantErrorMessage: null,
+			file: `
+function stateOne(payload) {
+	return finish(payload + "World");
+}`		},
+		{ name: 'numberInput.wf.ts',
+			input: JSON.stringify(146),
+			wantOutput: 147,
+			wantErrorMessage: null,
+			file: `
+function stateOne(payload) {
+	return finish(payload + 1);
 }`		},
 	]
 
