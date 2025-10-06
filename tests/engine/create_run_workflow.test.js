@@ -15,7 +15,7 @@ describe('Test js engine', () => {
 	const testCases = [
 		{ name: 'singleStep.wf.ts',
 			input: { foo: 'bar' },
-			wantOutput: btoa(JSON.stringify('done')),
+			wantOutput: JSON.stringify('done'),
 			wantErrorMessage: null,
 			wantStatus: 'complete',
 			file: `
@@ -24,7 +24,7 @@ function stateOne(payload) {
 }`		},
 		{ name: 'twoSteps.wf.ts',
 			input: JSON.stringify({ foo: 'bar' }),
-			wantOutput: btoa(JSON.stringify({ bar: 'foo', foo: 'bar' })),
+			wantOutput: JSON.stringify({ bar: 'foo', foo: 'bar' }),
 			wantErrorMessage: null,
 			wantStatus: 'complete',
 			file: `
@@ -39,7 +39,7 @@ function stateTwo(payload) {
 }`		},
 		{ name: 'stringInput.wf.ts',
 			input: JSON.stringify("hello"),
-			wantOutput: btoa(JSON.stringify('helloWorld')),
+			wantOutput: JSON.stringify('helloWorld'),
 			wantErrorMessage: null,
 			wantStatus: 'complete',
 			file: `
@@ -48,7 +48,7 @@ function stateOne(payload) {
 }`		},
 		{ name: 'numberInput.wf.ts',
 			input: JSON.stringify(146),
-			wantOutput: btoa(JSON.stringify(147)),
+			wantOutput: JSON.stringify(147),
 			wantErrorMessage: null,
 			wantStatus: 'complete',
 			file: `

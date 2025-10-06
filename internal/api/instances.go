@@ -36,12 +36,12 @@ type InstanceData struct {
 	Lineage      []*LineageData `json:"lineage"`
 	Namespace    string         `json:"namespace"`
 
-	InputLength    int    `json:"inputLength"`
-	Input          []byte `json:"input"`
-	OutputLength   int    `json:"outputLength"`
-	Output         []byte `json:"output"`
-	MetadataLength int    `json:"metadataLength"`
-	Metadata       []byte `json:"metadata"`
+	InputLength    int     `json:"inputLength"`
+	Input          []byte  `json:"input"`
+	OutputLength   int     `json:"outputLength"`
+	Output         *string `json:"output"`
+	MetadataLength int     `json:"metadataLength"`
+	Metadata       []byte  `json:"metadata"`
 }
 
 type instController struct {
@@ -70,10 +70,13 @@ func convertInstanceData(data *engine.InstanceStatus) *InstanceData {
 		OutputLength:   len(data.Output),
 		MetadataLength: len(data.Metadata),
 		Input:          data.Input,
-		Output:         data.Output,
 	}
 	if !data.EndedAt.IsZero() {
 		resp.EndedAt = &data.EndedAt
+	}
+	if data.Output != nil {
+		s := string(data.Output)
+		resp.Output = &s
 	}
 	if data.Error != "" {
 		resp.ErrorMessage = []byte(data.Error)
