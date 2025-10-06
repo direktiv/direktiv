@@ -24,7 +24,7 @@ type InstanceData struct {
 	ID           uuid.UUID      `json:"id"`
 	CreatedAt    time.Time      `json:"createdAt"`
 	Started      time.Time      `json:"startedAt"`
-	EndedAt      time.Time      `json:"endedAt"`
+	EndedAt      *time.Time     `json:"endedAt"`
 	Status       string         `json:"status"`
 	WorkflowPath string         `json:"path"`
 	ErrorCode    *string        `json:"errorCode"`
@@ -56,7 +56,6 @@ func convertInstanceData(data *engine.InstanceStatus) *InstanceData {
 		ID:             data.InstanceID,
 		CreatedAt:      data.CreatedAt,
 		Started:        data.StartedAt,
-		EndedAt:        data.EndedAt,
 		Status:         data.StatusString(),
 		WorkflowPath:   data.Metadata["workflowPath"],
 		ErrorCode:      nil,
@@ -72,6 +71,9 @@ func convertInstanceData(data *engine.InstanceStatus) *InstanceData {
 		MetadataLength: len(data.Metadata),
 		Input:          data.Input,
 		Output:         data.Output,
+	}
+	if !data.EndedAt.IsZero() {
+		resp.EndedAt = &data.EndedAt
 	}
 	if data.Error != "" {
 		resp.ErrorMessage = []byte(data.Error)

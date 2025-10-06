@@ -20,7 +20,7 @@ var ErrDataNotFound = fmt.Errorf("data not found")
 const LabelWithNotify = "WithNotify"
 
 // TODO: remove this debug code.
-const simulateErrors = false
+const simulateErrors = true
 
 type Engine struct {
 	db       *gorm.DB
