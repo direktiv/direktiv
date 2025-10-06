@@ -54,7 +54,8 @@ func (c *StatusCache) SnapshotPage(filterNamespace string, filterInstanceID uuid
 	out := make([]*engine.InstanceStatus, 0, len(c.items))
 
 	total := 0
-	for _, v := range c.items {
+	for i := len(c.items) - 1; i >= 0; i-- {
+		v := &c.items[i]
 		if v.InstanceID != filterInstanceID && filterInstanceID != uuid.Nil {
 			continue
 		}
