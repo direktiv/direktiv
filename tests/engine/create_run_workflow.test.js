@@ -4,7 +4,7 @@ import { basename } from 'path'
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
-import { retry10 } from '../common/retry'
+import {btoa} from "js-base64";
 
 const namespace = basename(__filename.replaceAll('.', '-'))
 
@@ -15,16 +15,18 @@ describe('Test js engine', () => {
 	const testCases = [
 		{ name: 'singleStep.wf.ts',
 			input: { foo: 'bar' },
-			wantOutput: 'done',
+			wantOutput: btoa(JSON.stringify('done')),
 			wantErrorMessage: null,
+			wantStatus: 'complete',
 			file: `
 function stateOne(payload) {
 	return finish("done");
 }`		},
 		{ name: 'twoSteps.wf.ts',
-			input: { foo: 'bar' },
-			wantOutput: { foo: 'bar', bar: 'foo' },
+			input: JSON.stringify({ foo: 'bar' }),
+			wantOutput: btoa(JSON.stringify({ bar: 'foo', foo: 'bar' })),
 			wantErrorMessage: null,
+			wantStatus: 'complete',
 			file: `
 function stateOne(payload) {
 	print("RUN STATE FIRST");
@@ -34,6 +36,34 @@ function stateOne(payload) {
 function stateTwo(payload) {
 	print("RUN STATE SECOND");
     return finish(payload);
+}`		},
+		{ name: 'stringInput.wf.ts',
+			input: JSON.stringify("hello"),
+			wantOutput: btoa(JSON.stringify('helloWorld')),
+			wantErrorMessage: null,
+			wantStatus: 'complete',
+			file: `
+function stateOne(payload) {
+	return finish(payload + "World");
+}`		},
+		{ name: 'numberInput.wf.ts',
+			input: JSON.stringify(146),
+			wantOutput: btoa(JSON.stringify(147)),
+			wantErrorMessage: null,
+			wantStatus: 'complete',
+			file: `
+function stateOne(payload) {
+	return finish(payload + 1);
+}`		},
+		{ name: 'throwError.wf.ts',
+			input: JSON.stringify("anything"),
+			wantOutput: null,
+			wantErrorMessage: btoa("invoke start: simply failed at stateOne (throwError.wf.ts:3:1(2))"),
+			wantStatus: 'failed',
+			file: `
+function stateOne(payload) {
+	throw "simply failed";
+	return finish("was ok");
 }`		},
 	]
 
@@ -45,10 +75,9 @@ function stateTwo(payload) {
 			const res = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/instances?path=/${ testCase.name }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
+			expect(res.body.data.status).toEqual(testCase.wantStatus)
 			expect(res.body.data.errorMessage).toEqual(testCase.wantErrorMessage)
-			let gotOutput = atob(res.body.data.output)
-			gotOutput = JSON.parse(gotOutput)
-			expect(gotOutput).toEqual(testCase.wantOutput)
+			expect(res.body.data.output).toEqual(testCase.wantOutput)
 		})
 	}
 })

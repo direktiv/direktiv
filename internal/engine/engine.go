@@ -57,16 +57,16 @@ func (e *Engine) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPath string, args any, metadata map[string]string) (uuid.UUID, error) {
+func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (uuid.UUID, error) {
 	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("fetch script: %w", err)
 	}
 
-	return e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, args, nil, metadata)
+	return e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, nil, metadata)
 }
 
-func (e *Engine) RunWorkflow(ctx context.Context, namespace string, workflowPath string, args any, metadata map[string]string) (uuid.UUID, <-chan *InstanceStatus, error) {
+func (e *Engine) RunWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (uuid.UUID, <-chan *InstanceStatus, error) {
 	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
 	if err != nil {
 		return uuid.Nil, nil, fmt.Errorf("fetch script: %w", err)
@@ -75,20 +75,17 @@ func (e *Engine) RunWorkflow(ctx context.Context, namespace string, workflowPath
 	fmt.Printf("ACTIONS IN FLOW: %v\n", flowDetails.Config.Actions)
 
 	notify := make(chan *InstanceStatus, 1)
-	id, err := e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, args, notify, metadata)
+	id, err := e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)
 
 	return id, notify, err
 }
 
-func (e *Engine) startScript(ctx context.Context, namespace string, script string, mappings string, fn string, args any, notify chan<- *InstanceStatus, metadata map[string]string) (uuid.UUID, error) {
-	input, ok := args.(string)
-	if !ok {
-		return uuid.Nil, fmt.Errorf("invalid input")
-	}
-	if input == "" {
-		input = "{}"
+func (e *Engine) startScript(ctx context.Context, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceStatus, metadata map[string]string) (uuid.UUID, error) {
+	if !json.Valid([]byte(input)) {
+		return uuid.Nil, fmt.Errorf("input is not a valid json string: %s", input)
 	}
 
+	fmt.Printf("STARTING SCRIPT: >%s<\n", input)
 	instID := uuid.New()
 
 	if metadata == nil {
@@ -114,7 +111,6 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 	}
 	err := e.dataBus.PushHistoryStream(ctx, ev)
 	if err != nil {
-		fmt.Printf(">>>ERROR PUSHING HISTORY STREAM: %v\n", ev)
 		return uuid.Nil, fmt.Errorf("push history stream: %w", err)
 	}
 

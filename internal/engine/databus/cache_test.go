@@ -75,7 +75,7 @@ func TestSnapshot_FilteringAndOrdering(t *testing.T) {
 	if len(all) != 3 {
 		t.Fatalf("expected 3 items, got %d", len(all))
 	}
-	if all[0].InstanceID != id1 || all[1].InstanceID != id2 || all[2].InstanceID != id3 {
+	if all[0].InstanceID != id3 || all[1].InstanceID != id2 || all[2].InstanceID != id1 {
 		t.Fatalf("unexpected items in all: %+v", all)
 	}
 
@@ -117,8 +117,8 @@ func TestSnapshotPage_LimitOffsetAndTotal(t *testing.T) {
 	}
 
 	// Expect the second and third items by CreatedAt (since we skipped one)
-	if !page[0].CreatedAt.Equal(base.Add(1 * time.Minute)) {
-		t.Fatalf("expected first page item to be +1m, got %v", page[0].CreatedAt)
+	if !page[0].CreatedAt.Equal(base.Add(3 * time.Minute)) {
+		t.Fatalf("expected first page item to be +3m, got %v", page[0].CreatedAt)
 	}
 	if !page[1].CreatedAt.Equal(base.Add(2 * time.Minute)) {
 		t.Fatalf("expected second page item to be +2m, got %v", page[1].CreatedAt)

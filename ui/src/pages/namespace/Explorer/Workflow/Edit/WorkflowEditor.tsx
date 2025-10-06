@@ -11,8 +11,6 @@ import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
 import { FileSchemaType } from "~/api/files/schema";
 import RunWorkflow from "../components/RunWorkflow";
-import { WorkspaceLayout } from "~/components/WorkspaceLayout";
-import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
@@ -22,7 +20,6 @@ import { useUpdateFile } from "~/api/files/mutate/updateFile";
 const WorkflowEditor: FC<{
   data: NonNullable<FileSchemaType>;
 }> = ({ data }) => {
-  const currentLayout = useEditorLayout();
   const { t } = useTranslation();
   const namespace = useNamespace();
   const [error, setError] = useState<string | undefined>();
@@ -71,22 +68,16 @@ const WorkflowEditor: FC<{
 
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
-      <WorkspaceLayout
-        layout={currentLayout}
-        editorComponent={
-          <CodeEditor
-            value={editorContent}
-            onValueChange={onEditorContentUpdate}
-            updatedAt={data.updatedAt}
-            error={error}
-            hasUnsavedChanges={hasUnsavedChanges}
-            onSave={onSave}
-            language="typescript"
-            tsLibs={tsLibs}
-          />
-        }
+      <CodeEditor
+        value={editorContent}
+        onValueChange={onEditorContentUpdate}
+        updatedAt={data.updatedAt}
+        error={error}
+        hasUnsavedChanges={hasUnsavedChanges}
+        onSave={onSave}
+        language="typescript"
+        tsLibs={tsLibs}
       />
-
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
         <Dialog>
           <DialogTrigger asChild>
