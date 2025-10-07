@@ -132,7 +132,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 
 	if r.URL.Query().Get("wait") == "true" {
 		notify, err := e.engine.RunWorkflow(r.Context(), namespace, path, string(input), map[string]string{
-			core.EngineMappingPath: path,
+			core.EngineMappingPath:      path,
 			core.EngineMappingNamespace: namespace,
 		})
 		if err != nil {
@@ -143,7 +143,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		st = <-notify
 	} else {
 		st, err = e.engine.StartWorkflow(r.Context(), namespace, path, string(input), map[string]string{
-			core.EngineMappingPath: path,
+			core.EngineMappingPath:      path,
 			core.EngineMappingNamespace: namespace,
 		})
 		if err != nil {
