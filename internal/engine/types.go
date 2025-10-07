@@ -93,6 +93,35 @@ type InstanceEvent struct {
 	Sequence uint64 `json:"sequence"`
 }
 
+func ApplyInstanceEvent(st *InstanceStatus, ev *InstanceEvent) {
+	st.Status = ev.Type
+	st.HistorySequence = ev.Sequence //
+
+	switch ev.Type {
+	case "pending":
+		st.InstanceID = ev.InstanceID
+		st.Namespace = ev.Namespace
+		st.Metadata = ev.Metadata
+		st.Script = ev.Script
+		st.Mappings = ev.Mappings
+		st.Fn = ev.Fn
+		st.Input = ev.Input
+		st.CreatedAt = ev.Time
+	case "started":
+		st.StartedAt = ev.Time
+	case "failed":
+		st.EndedAt = ev.Time
+		st.Memory = ev.Memory
+		st.Output = ev.Output
+		st.Error = ev.Error
+	case "succeeded":
+		st.EndedAt = ev.Time
+		st.Memory = ev.Memory
+		st.Output = ev.Output
+		st.Error = ev.Error
+	}
+}
+
 type WorkflowRunner interface {
 	Execute(ctx context.Context, namespace string, scrip string, fn string, args any, labels map[string]string) (uuid.UUID, error)
 }

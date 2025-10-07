@@ -57,30 +57,33 @@ func (e *Engine) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (uuid.UUID, error) {
+func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (*InstanceStatus, error) {
 	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("fetch script: %w", err)
+		return nil, fmt.Errorf("fetch script: %w", err)
 	}
 
 	return e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, nil, metadata)
 }
 
-func (e *Engine) RunWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (uuid.UUID, <-chan *InstanceStatus, error) {
+func (e *Engine) RunWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (<-chan *InstanceStatus, error) {
 	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
 	if err != nil {
-		return uuid.Nil, nil, fmt.Errorf("fetch script: %w", err)
+		return nil, fmt.Errorf("fetch script: %w", err)
 	}
 
 	notify := make(chan *InstanceStatus, 1)
-	id, err := e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)
+	_, err = e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)
+	if err != nil {
+		return nil, err
+	}
 
-	return id, notify, err
+	return notify, nil
 }
 
-func (e *Engine) startScript(ctx context.Context, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceStatus, metadata map[string]string) (uuid.UUID, error) {
+func (e *Engine) startScript(ctx context.Context, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceStatus, metadata map[string]string) (*InstanceStatus, error) {
 	if !json.Valid([]byte(input)) {
-		return uuid.Nil, fmt.Errorf("input is not a valid json string: %s", input)
+		return nil, fmt.Errorf("input is not a valid json string: %s", input)
 	}
 	instID := uuid.New()
 
@@ -92,7 +95,7 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 		metadata[LabelWithNotify] = "yes"
 	}
 
-	ev := &InstanceEvent{
+	pEv := &InstanceEvent{
 		EventID:    uuid.New(),
 		InstanceID: instID,
 		Namespace:  namespace,
@@ -105,21 +108,24 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 		Fn:       fn,
 		Input:    json.RawMessage(input),
 	}
-	err := e.dataBus.PushHistoryStream(ctx, ev)
+	err := e.dataBus.PushHistoryStream(ctx, pEv)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("push history stream: %w", err)
+		return nil, fmt.Errorf("push history stream: %w", err)
 	}
 
 	if notify != nil {
 		e.dataBus.NotifyInstanceStatus(ctx, instID, notify)
 	}
 
-	err = e.dataBus.PushQueueStream(ctx, ev)
+	err = e.dataBus.PushQueueStream(ctx, pEv)
 	if err != nil {
-		return instID, fmt.Errorf("push queue stream: %w", err)
+		return nil, fmt.Errorf("push queue stream: %w", err)
 	}
 
-	return instID, nil
+	st := &InstanceStatus{}
+	ApplyInstanceEvent(st, pEv)
+
+	return st, nil
 }
 
 func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {

@@ -72,7 +72,7 @@ function stateOne(payload) {
 		helpers.itShouldCreateFile(it, expect, namespace, '/', testCase.name, 'workflow', 'application/x-typescript',
 			btoa(testCase.file))
 		it(`should invoke /${ testCase.name } workflow`, async () => {
-			const res = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/instances?path=/${ testCase.name }`)
+			const res = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/instances?path=/${ testCase.name }&wait=true`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data.status).toEqual(testCase.wantStatus)

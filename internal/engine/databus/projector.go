@@ -89,7 +89,7 @@ func (p *projector) handleHistoryMessage(ctx context.Context, msg *nats.Msg) err
 			return nil
 		}
 		// 3) Build payload
-		applyEventToStatus(st, ev)
+		engine.ApplyInstanceEvent(st, ev)
 		body, _ := json.Marshal(st)
 		msg := &nats.Msg{
 			Subject: subj,
@@ -156,35 +156,6 @@ func decodeHistoryMsg(msg *nats.Msg) (*engine.InstanceEvent, error) {
 	ev.Sequence = meta.Sequence.Stream
 
 	return &ev, nil
-}
-
-func applyEventToStatus(st *engine.InstanceStatus, ev *engine.InstanceEvent) {
-	st.Status = ev.Type
-	st.HistorySequence = ev.Sequence //
-
-	switch ev.Type {
-	case "pending":
-		st.InstanceID = ev.InstanceID
-		st.Namespace = ev.Namespace
-		st.Metadata = ev.Metadata
-		st.Script = ev.Script
-		st.Mappings = ev.Mappings
-		st.Fn = ev.Fn
-		st.Input = ev.Input
-		st.CreatedAt = ev.Time
-	case "started":
-		st.StartedAt = ev.Time
-	case "failed":
-		st.EndedAt = ev.Time
-		st.Memory = ev.Memory
-		st.Output = ev.Output
-		st.Error = ev.Error
-	case "succeeded":
-		st.EndedAt = ev.Time
-		st.Memory = ev.Memory
-		st.Output = ev.Output
-		st.Error = ev.Error
-	}
 }
 
 func isConcurrencyConflict(err error) bool {
