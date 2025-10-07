@@ -51,6 +51,7 @@ func (q *RootQuery) ListAllFiles(ctx context.Context) ([]*filestore.File, error)
 func (q *RootQuery) ListDirektivFilesWithData(ctx context.Context) ([]*filestore.File, [][]byte, error) {
 	type fileData struct {
 		filestore.File
+
 		Data []byte
 	}
 
