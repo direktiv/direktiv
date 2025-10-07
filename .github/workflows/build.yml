@@ -132,10 +132,14 @@ jobs:
             suit: engine
           #- type: api
           #  suit: events
+          - type: api
+            suit: gateway1
+          - type: api
+            suit: gateway2
           #- type: api
-          #  suit: gateway
+          #  suit: gateway3
           #- type: api
-          #  suit: gateway2
+          #  suit: gateway4
           #- type: api
           #  suit: instances
           #- type: api
