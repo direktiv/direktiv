@@ -75,6 +75,13 @@ export const reindexTargetPath = (
   return newTargetPath;
 };
 
+export const isFirstChild = (path: BlockPathType) => {
+  const ancestor = path.slice(0, -1);
+  const firstChildPath = [...ancestor, 0];
+
+  return pathsEqual(path, firstChildPath);
+};
+
 export const incrementPath = (path: BlockPathType): BlockPathType => {
   const pathLength = path.length;
   let lastIndex = path[pathLength - 1];
