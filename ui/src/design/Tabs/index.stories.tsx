@@ -1,5 +1,5 @@
 import { Code2, Layers, PieChart, Settings } from "lucide-react";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./index";
 import { Card } from "../Card";
 

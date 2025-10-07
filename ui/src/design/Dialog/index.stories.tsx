@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./index";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import Button from "../Button";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Settings } from "lucide-react";
