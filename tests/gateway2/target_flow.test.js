@@ -6,7 +6,7 @@ import helpers from '../common/helpers'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
-const namespace = basename(__filename).replaceAll('.', '-')
+const namespace = basename(__filename)
 
 describe('Test target-flow plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)

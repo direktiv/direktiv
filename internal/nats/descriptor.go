@@ -35,6 +35,8 @@ func newDescriptor(name string, streamConfig *nats.StreamConfig, consumerConfig 
 }
 
 func (n Descriptor) Subject(namespace string, id string) string {
+	// replace dots with dashes as NATS does not allow dots in subjects.
+	namespace = strings.ReplaceAll(namespace, ".", "-")
 	return n.name + fmt.Sprintf(".%s.%s", namespace, id)
 }
 
