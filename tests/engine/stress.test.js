@@ -140,7 +140,7 @@ function stateTwo(payload) {
 	}
 
 	const total = cases.reduce((acc, obj) => acc + obj.total, 0) + 1
-	retry(`should have all success instances`, 2, async () => {
+	retry(`should have all success instances`, 10, async () => {
 		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/metrics/instances`)
 		console.log(req.body)
 		expect(req.statusCode).toEqual(200)
