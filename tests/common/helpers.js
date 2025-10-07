@@ -44,6 +44,10 @@ function itShouldCreateYamlFile (it, expect, ns, path, name, type, data) {
 	return itShouldCreateFile(it, expect, ns, path, name, type, 'application/yaml', btoa(data))
 }
 
+function itShouldTSWorkflow (it, expect, ns, path, name, data) {
+	return itShouldCreateFile(it, expect, ns, path, name, 'workflow', 'application/x-typescript', btoa(data))
+}
+
 async function itShouldCreateDir (it, expect, ns, path, name) {
 	it(`should create a new dir ${ path }`, async () => {
 		const res = await request(common.config.getDirektivBaseUrl())
@@ -149,6 +153,7 @@ function sleep (ms) {
 export default {
 	deleteAllNamespaces,
 	itShouldCreateNamespace,
+	itShouldTSWorkflow,
 
 	itShouldUpdateYamlFile,
 	itShouldDeleteFile,

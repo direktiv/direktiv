@@ -12,14 +12,10 @@ describe('Test target-flow plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace, '/', 'wf1.yaml', 'workflow', `
-direktiv_api: workflow/v1
-description: A simple 'no-op' state that returns 'Hello world!'
-states:
-- id: helloworld
-  type: noop
-  transform:
-    result: Hello world!
+	helpers.itShouldTSWorkflow(it, expect, namespace, '/', 'wf1.wf.ts', `
+function stateFirst(input) {
+	return finish("Hello world!")
+}
 `)
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
@@ -33,7 +29,7 @@ x-direktiv-config:
             type: target-flow
             configuration:
                 namespace: ${ namespace }
-                flow: /wf1.yaml
+                flow: /wf1.wf.ts
 get:
     responses:
         "200":

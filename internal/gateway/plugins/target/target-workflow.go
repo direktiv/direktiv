@@ -10,7 +10,6 @@ import (
 
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/gateway"
-	"github.com/direktiv/direktiv/internal/telemetry"
 )
 
 // FlowPlugin executes a flow in a configured namespace.
@@ -54,10 +53,6 @@ func (tf *FlowPlugin) Type() string {
 }
 
 func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
-	ctx := telemetry.GetContextFromRequest(r.Context(), r)
-	ctx, span := telemetry.Tracer.Start(ctx, "gateway-request")
-	defer span.End()
-
 	currentNS := gateway.ExtractContextEndpoint(r).Namespace
 	if tf.Namespace == "" {
 		tf.Namespace = currentNS
@@ -72,7 +67,7 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.Resp
 		tf.Namespace, url.QueryEscape(tf.Flow),
 		fmt.Sprintf("%v", tf.internalAsync == "wait"))
 
-	resp, err := doRequest(r.WithContext(ctx), http.MethodPost, url, r.Body)
+	resp, err := doRequest(r.WithContext(r.Context()), http.MethodPost, url, r.Body)
 	if err != nil {
 		gateway.WriteForbiddenError(r, w, err, "couldn't execute downstream request")
 		return nil, nil

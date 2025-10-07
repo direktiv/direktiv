@@ -36,7 +36,7 @@ async function fireCreateRequest (url, input, durations) {
 
 const randomStr = Math.random().toString(10)
 	.slice(2, 12)
-const namespace = basename(__filename.replaceAll('.', '-'))
+const namespace = basename(__filename)
 const fName = 'file' + randomStr + '.wf.ts'
 
 describe('Stress test js engine', () => {

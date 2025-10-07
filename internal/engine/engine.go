@@ -72,8 +72,6 @@ func (e *Engine) RunWorkflow(ctx context.Context, namespace string, workflowPath
 		return uuid.Nil, nil, fmt.Errorf("fetch script: %w", err)
 	}
 
-	fmt.Printf("ACTIONS IN FLOW: %v\n", flowDetails.Config.Actions)
-
 	notify := make(chan *InstanceStatus, 1)
 	id, err := e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)
 
@@ -84,8 +82,6 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 	if !json.Valid([]byte(input)) {
 		return uuid.Nil, fmt.Errorf("input is not a valid json string: %s", input)
 	}
-
-	fmt.Printf("STARTING SCRIPT: >%s<\n", input)
 	instID := uuid.New()
 
 	if metadata == nil {
