@@ -101,9 +101,6 @@ module.exports = {
 
     // we will use TypeScript's types for component props instead)
     "react/prop-types": "off",
-
-    // disabled due to stricter rules in @typescript-eslint v8 upgrade
-    "@typescript-eslint/no-unused-expressions": "off",
   },
   overrides: [
     {

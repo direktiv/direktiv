@@ -122,7 +122,9 @@ export const apiFactory =
         });
         return result;
       } catch (error) {
-        process.env.NODE_ENV !== "test" && console.error(error);
+        if (process.env.NODE_ENV !== "test") {
+          console.error(error);
+        }
         return Promise.reject(
           `could not format response for ${method} ${url(urlParams)}`
         );
