@@ -75,14 +75,14 @@ function stateTwo(payload) {
 			total: 50,
 			batchSize: 5,
 		},
-		// {
-		//	total: 100,
-		//	batchSize: 10,
-		// },
-		// {
+		{
+			total: 100,
+			batchSize: 10,
+		},
+		//{
 		//	total: 1000,
 		//	batchSize: 100,
-		// },
+		//},
 	]
 	for (let i = 0; i < cases.length; i++) {
 		const total = cases[i].total
