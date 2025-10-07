@@ -1,10 +1,10 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
+import { btoa } from 'js-base64'
 import { basename } from 'path'
 
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
-import {btoa} from "js-base64";
 
 const namespace = basename(__filename).replaceAll('.', '-')
 
@@ -38,7 +38,7 @@ function stateTwo(payload) {
     return finish(payload);
 }`		},
 		{ name: 'stringInput.wf.ts',
-			input: JSON.stringify("hello"),
+			input: JSON.stringify('hello'),
 			wantOutput: JSON.stringify('helloWorld'),
 			wantErrorMessage: null,
 			wantStatus: 'complete',
@@ -56,9 +56,9 @@ function stateOne(payload) {
 	return finish(payload + 1);
 }`		},
 		{ name: 'throwError.wf.ts',
-			input: JSON.stringify("anything"),
+			input: JSON.stringify('anything'),
 			wantOutput: null,
-			wantErrorMessage: "invoke start: simply failed at stateOne (throwError.wf.ts:3:1(2))",
+			wantErrorMessage: 'invoke start: simply failed at stateOne (throwError.wf.ts:3:1(2))',
 			wantStatus: 'failed',
 			file: `
 function stateOne(payload) {
