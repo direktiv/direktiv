@@ -124,6 +124,10 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(input) == 0 {
+		input = []byte("null")
+	}
+
 	_, notify, err := e.engine.RunWorkflow(r.Context(), namespace, path, string(input), map[string]string{
 		core.EngineMappingPath: path,
 	})

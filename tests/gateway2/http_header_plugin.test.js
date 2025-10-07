@@ -36,7 +36,7 @@ x-direktiv-config:
         target:
             type: target-flow
             configuration:
-                flow: /target.yaml
+                flow: /target.wf.ts
                 content_type: application/json
         inbound:
         - type: header-manipulation
@@ -56,17 +56,15 @@ post:
         description: works
 `)
 
-	helpers.itShouldCreateYamlFile(
+	helpers.itShouldTSWorkflow(
 		it,
 		expect,
 		namespace,
-		'/', 'target.yaml', 'workflow', `
-direktiv_api: workflow/v1
-states:
-- id: helloworld
-  type: noop
-  transform:
-    result: jq(.)`)
+		'/', 'target.wf.ts', `
+function stepFirst(input) {
+	return finish(input)
+}
+`)
 
 	retry10(`should have expected body after js`, async () => {
 		const req = await request(common.config.getDirektivBaseUrl()).post(

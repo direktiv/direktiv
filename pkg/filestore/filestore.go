@@ -71,7 +71,7 @@ type RootQuery interface {
 
 	// ListDirektivFilesWithData lists all direktiv files(workflows and services, etc...) in the root.
 	// It returns list of files with data fields already loaded, so the caller don't have to call GetData().
-	ListDirektivFilesWithData(ctx context.Context) ([]*File, error)
+	ListDirektivFilesWithData(ctx context.Context) ([]*File, [][]byte, error)
 
 	SetID(ctx context.Context, id string) error
 }

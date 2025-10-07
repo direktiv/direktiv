@@ -48,12 +48,17 @@ func (q *RootQuery) ListAllFiles(ctx context.Context) ([]*filestore.File, error)
 	return list, nil
 }
 
-func (q *RootQuery) ListDirektivFilesWithData(ctx context.Context) ([]*filestore.File, error) {
-	var list []*filestore.File
+func (q *RootQuery) ListDirektivFilesWithData(ctx context.Context) ([]*filestore.File, [][]byte, error) {
+	type fileData struct {
+		filestore.File
+		Data []byte
+	}
+
+	var list []*fileData
 
 	// check if root exists.
 	if err := q.checkRootExists(ctx); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	res := q.db.WithContext(ctx).Raw(`
@@ -63,10 +68,18 @@ func (q *RootQuery) ListDirektivFilesWithData(ctx context.Context) ([]*filestore
 						ORDER BY path ASC
 						`, q.rootID).Find(&list)
 	if res.Error != nil {
-		return nil, res.Error
+		return nil, nil, res.Error
 	}
 
-	return list, nil
+	dataList := make([][]byte, len(list))
+	out := make([]*filestore.File, len(list))
+
+	for i := range list {
+		out[i] = &list[i].File
+		dataList[i] = list[i].Data
+	}
+
+	return out, dataList, nil
 }
 
 var _ filestore.RootQuery = &RootQuery{} // Ensures RootQuery struct conforms to filestore.RootQuery interface.

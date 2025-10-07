@@ -6,7 +6,7 @@ import helpers from '../common/helpers'
 import request from '../common/request'
 import {btoa} from "js-base64";
 
-const namespace = basename(__filename.replaceAll('.', '-'))
+const namespace = basename(__filename).replaceAll('.', '-')
 
 describe('Test js engine', () => {
 	beforeAll(helpers.deleteAllNamespaces)
