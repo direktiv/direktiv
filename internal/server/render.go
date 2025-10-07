@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	"github.com/direktiv/direktiv/internal/core"
@@ -14,9 +13,7 @@ import (
 
 func renderGatewayFiles(db *gorm.DB, manager core.GatewayManager) {
 	ctx := context.Background()
-
 	sLog := slog.With("subscriber", "gateway file watcher")
-
 	fStore, dStore := filesql.NewStore(db), datasql.NewStore(db)
 
 	nsList, err := dStore.Namespaces().GetAll(ctx)
@@ -40,7 +37,6 @@ func renderGatewayFiles(db *gorm.DB, manager core.GatewayManager) {
 		}
 		for i, file := range files {
 			data := dataList[i]
-			fmt.Printf("file: %s >%s<\n", file.Path, data)
 			//nolint:exhaustive
 			switch file.Typ {
 			case filestore.FileTypeConsumer:

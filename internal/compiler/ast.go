@@ -526,7 +526,6 @@ func (ap *ASTParser) parseAction(expr ast.Expression) (core.ActionConfig, error)
 					}
 				}
 				if arrLit, ok := ident.Value.(*ast.ArrayLiteral); ok {
-					fmt.Println("kssj")
 					// Parse array elements as key-value pairs
 					for i := 0; i < len(arrLit.Value); i += 2 {
 						if i+1 < len(arrLit.Value) {
