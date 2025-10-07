@@ -13,7 +13,7 @@ import {
 import {
   findAncestor,
   incrementPath,
-  isFirstChild,
+  isFirstChildPath,
   pathsEqual,
 } from "../../context/utils";
 import {
@@ -132,7 +132,7 @@ const EditorBlockWrapper = ({
 
   return (
     <>
-      {isFirstChild(blockPath) && (
+      {isFirstChildPath(blockPath) && (
         <Dropzone
           payload={{ ...dropzonePayload, targetPath: blockPath }}
           validate={validateDropzone}

@@ -75,7 +75,7 @@ export const reindexTargetPath = (
   return newTargetPath;
 };
 
-export const isFirstChild = (path: BlockPathType) => {
+export const isFirstChildPath = (path: BlockPathType) => {
   const ancestor = path.slice(0, -1);
   const firstChildPath = [...ancestor, 0];
 
