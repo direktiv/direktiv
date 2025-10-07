@@ -12,7 +12,7 @@ describe('Test target-flow plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldTSWorkflow(it, expect, namespace, '/', 'wf1.wf.ts', `
+	helpers.itShouldTSWorkflow(it, expect, namespace, '/', 'foo.wf.ts', `
 function stateFirst(input) {
 	return finish("Hello world!")
 }
@@ -29,7 +29,7 @@ x-direktiv-config:
             type: target-flow
             configuration:
                 namespace: ${ namespace }
-                flow: /wf1.wf.ts
+                flow: /foo.wf.ts
 get:
     responses:
         "200":
@@ -37,7 +37,7 @@ get:
 `,
 	)
 
-	retry10(`should execute wf1.yaml file`, async () => {
+	retry10(`should execute foo.wf.ts file`, async () => {
 		const res = await request(config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/gateway/ep1`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
