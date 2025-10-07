@@ -58,7 +58,7 @@ function stateOne(payload) {
 		{ name: 'throwError.wf.ts',
 			input: JSON.stringify("anything"),
 			wantOutput: null,
-			wantErrorMessage: btoa("invoke start: simply failed at stateOne (throwError.wf.ts:3:1(2))"),
+			wantErrorMessage: "invoke start: simply failed at stateOne (throwError.wf.ts:3:1(2))",
 			wantStatus: 'failed',
 			file: `
 function stateOne(payload) {

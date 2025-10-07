@@ -31,7 +31,7 @@ type InstanceData struct {
 	ErrorCode    *string        `json:"errorCode"`
 	Invoker      string         `json:"invoker"`
 	Definition   []byte         `json:"definition,omitempty"`
-	ErrorMessage []byte         `json:"errorMessage"`
+	ErrorMessage *string        `json:"errorMessage"`
 	Flow         []string       `json:"flow"`
 	TraceID      string         `json:"traceId"`
 	Lineage      []*LineageData `json:"lineage"`
@@ -80,7 +80,7 @@ func convertInstanceData(data *engine.InstanceStatus) *InstanceData {
 		resp.Output = &s
 	}
 	if data.Error != "" {
-		resp.ErrorMessage = []byte(data.Error)
+		resp.ErrorMessage = &data.Error
 	}
 
 	return resp
