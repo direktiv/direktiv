@@ -117,8 +117,8 @@ func (ci *CompileItem) validate() error {
 	if err != nil {
 		pr.Errors = append(pr.Errors, &ValidationError{
 			Message: err.Error(),
-			Line:    0,
-			Column:  0,
+			StartLine:    0,
+			StartColumn:  0,
 		})
 	}
 
