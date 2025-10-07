@@ -164,7 +164,7 @@ test("it is possible to create a workflow", async ({ page }) => {
     "a testing namespace is loaded in the explorer"
   ).toHaveText(namespace);
 
-  const filename = "awesomeworkflow.yaml";
+  const filename = "awesomeworkflow.wf.ts";
 
   // create workflow
   await page.getByText("New").first().click();
@@ -202,9 +202,7 @@ test("it is possible to create a workflow", async ({ page }) => {
 
   // TODO: test editor functions in separate test once editor is implemented
   await expect(
-    page.getByText(
-      "description: A simple 'no-op' state that returns 'Hello world!'"
-    )
+    page.getByText("// Simple example workflow that validates type of input")
   ).toBeVisible();
 
   // navigate back by clicking on the namespace breadcrumb"
