@@ -99,7 +99,7 @@ func (ci *CompileItem) TranspileAndValidate() error {
 		return err
 	}
 
-	ci.script, ci.mapping, err = transpiler.Transpile(string(ci.tsScript), ci.path)
+	ci.script, ci.mapping, _ = transpiler.Transpile(string(ci.tsScript), ci.path)
 
 	return ci.validate()
 }

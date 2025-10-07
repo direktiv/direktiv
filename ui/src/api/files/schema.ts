@@ -61,6 +61,17 @@ const fileTypes = [
 
 const FileTypeSchema = z.enum(fileTypes);
 
+const TSWorkflowErrorsSchema = z.array(
+  z.object({
+    message: z.string().min(1),
+    startLine: z.number(),
+    startColumn: z.number(),
+    endLine: z.number(),
+    endColumn: z.number(),
+    severity: z.enum(["hint", "info", "warning", "error"]),
+  })
+);
+
 /* All filesystem records (including "directories") have these properties. */
 const BaseFileSchema = z.object({
   type: FileTypeSchema,
@@ -130,17 +141,6 @@ export const CreateFileSchema = z.discriminatedUnion("type", [
   CreateGatewaySchema,
 ]);
 
-export const TSWorkflowErrorsSchema = z.array(
-  z.object({
-    message: z.string().min(1),
-    startLineNumber: z.number(),
-    startColumn: z.number(),
-    endLineNumner: z.number(),
-    endColumn: z.number(),
-    severity: z.number(), // todo: update to enum
-  })
-);
-
 const RenameFileSchema = z.object({
   path: z.string(),
 });
@@ -163,14 +163,18 @@ export const FileDeletedSchema = z.null();
  * it, we do not bother defining it here.
  */
 export const FileCreatedSchema = z.object({
-  data: BaseFileSchema,
-  errors: TSWorkflowErrorsSchema,
+  data: BaseFileSchema.extend({
+    data: z.string().optional(),
+    errors: TSWorkflowErrorsSchema,
+  }),
 });
 
 /* data is only present in the response when it has changed. */
 export const FilePatchedSchema = z.object({
-  data: BaseFileSchema.extend({ data: z.string().optional() }),
-  errors: TSWorkflowErrorsSchema,
+  data: BaseFileSchema.extend({
+    data: z.string().optional(),
+    errors: TSWorkflowErrorsSchema,
+  }),
 });
 
 export const FileNameSchema = z

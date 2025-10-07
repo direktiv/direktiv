@@ -15,22 +15,22 @@ import (
 	"github.com/sosodev/duration"
 )
 
-type MarkerSeverity int
+type Severity string
 
 const (
-	Hint    MarkerSeverity = 1
-	Info    MarkerSeverity = 2
-	Warning MarkerSeverity = 4
-	Error   MarkerSeverity = 8
+	SeverityHint    Severity = "hint"
+	SeverityInfo    Severity = "info"
+	SeverityWarning Severity = "warning"
+	SeverityError   Severity = "error"
 )
 
 type ValidationError struct {
 	Message        string `json:"message"`
-	StartLine      int    `json:"startLineNumber"`
+	StartLine      int    `json:"startLine"`
 	StartColumn    int    `json:"startColumn"`
-	EndLine        int    `json:"endLineNumber"`
+	EndLine        int    `json:"endLine"`
 	EndColumn      int    `json:"endColumn"`
-	Severity    	 MarkerSeverity `json:"severity"`
+	Severity    	 Severity `json:"severity"`
 }
 
 func (ve *ValidationError) Error() string {
@@ -124,7 +124,7 @@ func (ap *ASTParser) walk(node ast.Node, isStateFunc bool) {
 					StartColumn:  start.Column,
 					EndLine: end.Line,
 					EndColumn: end.Column,
-					Severity: Error,
+					Severity: SeverityError,
 				})
 			}
 		}
@@ -160,7 +160,7 @@ func (ap *ASTParser) walk(node ast.Node, isStateFunc bool) {
 					StartColumn:  start.Column,
 					EndLine: end.Line,
 					EndColumn: end.Column,
-					Severity: Error,
+					Severity: SeverityError,
 				})
 			}
 		} else {
@@ -175,7 +175,7 @@ func (ap *ASTParser) walk(node ast.Node, isStateFunc bool) {
 					StartColumn:  start.Column,
 					EndLine: end.Line,
 					EndColumn: end.Column,
-					Severity: Error,
+					Severity: SeverityError,
 				})
 			}
 		}
@@ -192,7 +192,7 @@ func (ap *ASTParser) walk(node ast.Node, isStateFunc bool) {
 					StartColumn:  start.Column,
 					EndLine: end.Line,
 					EndColumn: end.Column,
-					Severity: Error,
+					Severity: SeverityError,
 				})
 			}
 		}
@@ -558,7 +558,7 @@ func (ap *ASTParser) parseAction(expr ast.Expression) (core.ActionConfig, error)
 									StartColumn:  start.Column,
 									EndLine: end.Line,
 									EndColumn: end.Column,
-									Severity: Error,
+									Severity: SeverityError,
 								})
 							}
 						}
@@ -611,7 +611,7 @@ func (ap *ASTParser) inspectExpression(expr ast.Expression) {
 						StartColumn:  start.Column,
 						EndLine: end.Line,
 						EndColumn: end.Column,
-						Severity: Error,
+						Severity: SeverityError,
 					})
 
 					return
@@ -625,7 +625,7 @@ func (ap *ASTParser) inspectExpression(expr ast.Expression) {
 						StartColumn:  start.Column,
 						EndLine: end.Line,
 						EndColumn: end.Column,
-						Severity: Error,
+						Severity: SeverityError,
 					})
 
 					return
@@ -657,7 +657,7 @@ func (ap *ASTParser) inspectExpression(expr ast.Expression) {
 			StartColumn:  start.Column,
 			EndLine: end.Line,
 			EndColumn: end.Column,
-			Severity: Error,
+			Severity: SeverityError,
 		})
 	case *ast.Identifier:
 		// allowed
