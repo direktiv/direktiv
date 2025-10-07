@@ -130,6 +130,17 @@ export const CreateFileSchema = z.discriminatedUnion("type", [
   CreateGatewaySchema,
 ]);
 
+export const TSWorkflowErrorsSchema = z.array(
+  z.object({
+    message: z.string().min(1),
+    startLineNumber: z.number(),
+    startColumn: z.number(),
+    endLineNumner: z.number(),
+    endColumn: z.number(),
+    severity: z.number(), // todo: update to enum
+  })
+);
+
 const RenameFileSchema = z.object({
   path: z.string(),
 });
@@ -153,11 +164,13 @@ export const FileDeletedSchema = z.null();
  */
 export const FileCreatedSchema = z.object({
   data: BaseFileSchema,
+  errors: TSWorkflowErrorsSchema,
 });
 
 /* data is only present in the response when it has changed. */
 export const FilePatchedSchema = z.object({
   data: BaseFileSchema.extend({ data: z.string().optional() }),
+  errors: TSWorkflowErrorsSchema,
 });
 
 export const FileNameSchema = z
