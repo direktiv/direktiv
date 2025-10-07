@@ -4,6 +4,7 @@ import {
   findAncestor,
   findBlock,
   incrementPath,
+  isFirstChildPath,
   isPage,
   isParentBlock,
   pathIsDescendant,
@@ -52,6 +53,36 @@ describe("isParentBlock", () => {
   test("it should return true for a parent block", () => {
     const result = isParentBlock(parentBlock);
     expect(result).toEqual(true);
+  });
+});
+
+describe("isFirstChildPath", () => {
+  test("it should return true for the first element on the page", () => {
+    const rootBlockPath = [0];
+
+    const result = isFirstChildPath(rootBlockPath);
+    expect(result).toEqual(true);
+  });
+
+  test("it should return true for the first child of the first element", () => {
+    const rootChildBlockPath = [0, 0, 0];
+
+    const result = isFirstChildPath(rootChildBlockPath);
+    expect(result).toEqual(true);
+  });
+
+  test("it should return true for the first element in a column", () => {
+    const firstColumnBlockPath = [2, 0, 0];
+
+    const result = isFirstChildPath(firstColumnBlockPath);
+    expect(result).toEqual(true);
+  });
+
+  test("it should return false for the second element in a column", () => {
+    const secondColumnBlockPath = [2, 0, 1];
+
+    const result = isFirstChildPath(secondColumnBlockPath);
+    expect(result).toEqual(false);
   });
 });
 
