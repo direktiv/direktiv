@@ -150,7 +150,7 @@ func handleOutput(profile profile, uploader *uploader, id string) error {
 			continue
 		}
 
-		fmt.Printf("Output:\n%s\n", string(instance.Data.Output))
+		fmt.Printf("Output:\n%v\n", instance.Data.Output)
 
 		break
 	}

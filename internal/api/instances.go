@@ -31,18 +31,18 @@ type InstanceData struct {
 	ErrorCode    *string        `json:"errorCode"`
 	Invoker      string         `json:"invoker"`
 	Definition   []byte         `json:"definition,omitempty"`
-	ErrorMessage []byte         `json:"errorMessage"`
+	ErrorMessage *string        `json:"errorMessage"`
 	Flow         []string       `json:"flow"`
 	TraceID      string         `json:"traceId"`
 	Lineage      []*LineageData `json:"lineage"`
 	Namespace    string         `json:"namespace"`
 
-	InputLength    int    `json:"inputLength"`
-	Input          []byte `json:"input"`
-	OutputLength   int    `json:"outputLength"`
-	Output         []byte `json:"output"`
-	MetadataLength int    `json:"metadataLength"`
-	Metadata       []byte `json:"metadata"`
+	InputLength    int     `json:"inputLength"`
+	Input          string  `json:"input"`
+	OutputLength   int     `json:"outputLength"`
+	Output         *string `json:"output"`
+	MetadataLength int     `json:"metadataLength"`
+	Metadata       []byte  `json:"metadata"`
 }
 
 type instController struct {
@@ -68,16 +68,19 @@ func convertInstanceData(data *engine.InstanceStatus) *InstanceData {
 		Lineage:        []*LineageData{},
 		Namespace:      data.Namespace,
 		InputLength:    len(data.Input),
+		Input:          string(data.Input),
 		OutputLength:   len(data.Output),
 		MetadataLength: len(data.Metadata),
-		Input:          data.Input,
-		Output:         data.Output,
 	}
 	if !data.EndedAt.IsZero() {
 		resp.EndedAt = &data.EndedAt
 	}
+	if data.Output != nil {
+		s := string(data.Output)
+		resp.Output = &s
+	}
 	if data.Error != "" {
-		resp.ErrorMessage = []byte(data.Error)
+		resp.ErrorMessage = &data.Error
 	}
 
 	return resp
