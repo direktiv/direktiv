@@ -1,6 +1,7 @@
 const tsdemo = {
   name: "tsdemo",
-  data: `const flow: FlowDefinition = {
+  data: `// Simple example workflow that validates type of input
+  const flow: FlowDefinition = {
   type: "default",
   timeout: "PT30S",
   state: "stateFirst",
