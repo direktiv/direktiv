@@ -73,51 +73,51 @@ func (n *actionLogger) Warn(msg string, keysAndValues ...interface{}) {
 	fmt.Println(msg)
 }
 
-func (cmds *Runtime) action(call sobek.FunctionCall) sobek.Value {
+func (rt *Runtime) action(call sobek.FunctionCall) sobek.Value {
 	if len(call.Arguments) != 1 {
-		panic(cmds.vm.ToValue("action definition needs configuration"))
+		panic(rt.vm.ToValue("action definition needs configuration"))
 	}
 
-	actionConfig, err := doubleMarshal[core.ActionConfig](call.Argument(0).ToObject(cmds.vm).Export())
+	actionConfig, err := doubleMarshal[core.ActionConfig](call.Argument(0).ToObject(rt.vm).Export())
 	if err != nil {
 		panic(err)
 	}
 
 	actionFunc := func(call sobek.FunctionCall) sobek.Value {
 		if len(call.Arguments) == 0 {
-			panic(cmds.vm.ToValue("data element is missing in action payload"))
+			panic(rt.vm.ToValue("data element is missing in action payload"))
 		}
 		var retValue any
 
-		payload, err := doubleMarshal[core.ActionPayload](call.Argument(0).ToObject(cmds.vm).Export())
+		payload, err := doubleMarshal[core.ActionPayload](call.Argument(0).ToObject(rt.vm).Export())
 		if err != nil {
-			panic(cmds.vm.ToValue(err))
+			panic(rt.vm.ToValue(err))
 		}
 
 		// TODO: add namespace services, system services
 		switch actionConfig.Type {
 		case core.FlowActionScopeLocal:
-			data, err := cmds.callLocal(actionConfig, payload)
+			data, err := rt.callLocal(actionConfig, payload)
 			if err != nil {
 				actionError := &actionError{}
 				if errors.As(err, &actionError) {
-					panic(actionError.PanicObject(cmds.vm))
+					panic(actionError.PanicObject(rt.vm))
 				} else {
-					panic(cmds.vm.ToValue(err))
+					panic(rt.vm.ToValue(err))
 				}
 			}
 
-			return cmds.vm.ToValue(data)
+			return rt.vm.ToValue(data)
 		case core.FlowActionScopeSubflow:
 		default:
-			panic(cmds.vm.ToValue(fmt.Sprintf("unknown action type '%s'", actionConfig.Type)))
+			panic(rt.vm.ToValue(fmt.Sprintf("unknown action type '%s'", actionConfig.Type)))
 		}
 
-		return cmds.vm.ToValue(retValue)
+		return rt.vm.ToValue(retValue)
 	}
 
 	// returns the action to be called in the script later
-	return cmds.vm.ToValue(actionFunc)
+	return rt.vm.ToValue(actionFunc)
 }
 
 type ActionCaller struct {
@@ -223,27 +223,27 @@ func (ac *ActionCaller) doRequest(ctx context.Context, req *retryablehttp.Reques
 	return data, err
 }
 
-func (cmds *Runtime) callLocal(config *core.ActionConfig, payload *core.ActionPayload) (any, error) {
+func (rt *Runtime) callLocal(config *core.ActionConfig, payload *core.ActionPayload) (any, error) {
 	// TODO: remove this
 	{
-		err := cmds.deletemeStartServiceManager()
+		err := rt.deletemeStartServiceManager()
 		if err != nil {
 			return "", err
 		}
-		err = cmds.deleteme(config, payload)
+		err = rt.deleteme(config, payload)
 		if err != nil {
 			return "", err
 		}
 	}
 
 	// TODO: name needs to be hashed image, cmd, envs etc.
-	svcURL := cmdsSm.GetServiceURL(cmds.metadata[core.EngineMappingNamespace],
-		core.FlowActionScopeLocal, cmds.metadata[core.EngineMappingPath], "dummy")
+	svcURL := cmdsSm.GetServiceURL(rt.metadata[core.EngineMappingNamespace],
+		core.FlowActionScopeLocal, rt.metadata[core.EngineMappingPath], "dummy")
 
 	slog.Debug("requesting action", slog.String("url", svcURL))
 
 	actionCaller := &ActionCaller{
-		instID:  cmds.instID,
+		instID:  rt.instID,
 		addr:    svcURL,
 		payload: payload,
 	}
@@ -254,7 +254,7 @@ func (cmds *Runtime) callLocal(config *core.ActionConfig, payload *core.ActionPa
 // TODO: delete me.
 var cmdsSm core.ServiceManager
 
-func (cmds *Runtime) deletemeStartServiceManager() error {
+func (rt *Runtime) deletemeStartServiceManager() error {
 	if cmdsSm != nil {
 		return nil
 	}
@@ -284,11 +284,11 @@ func (cmds *Runtime) deletemeStartServiceManager() error {
 	return nil
 }
 
-func (cmds *Runtime) deleteme(config *core.ActionConfig, payload any) error {
+func (rt *Runtime) deleteme(config *core.ActionConfig, payload any) error {
 	svd := &core.ServiceFileData{
 		Typ:       core.FlowActionScopeLocal,
-		Namespace: cmds.metadata[core.EngineMappingNamespace],
-		FilePath:  cmds.metadata[core.EngineMappingPath],
+		Namespace: rt.metadata[core.EngineMappingNamespace],
+		FilePath:  rt.metadata[core.EngineMappingPath],
 		Name:      "dummy",
 	}
 
@@ -312,7 +312,7 @@ func (cmds *Runtime) deleteme(config *core.ActionConfig, payload any) error {
 	})
 
 	// GetServiceURL(namespace string, typ string, file string, name string) string
-	surl := cmdsSm.GetServiceURL(cmds.metadata[core.EngineMappingNamespace], core.FlowActionScopeLocal, cmds.metadata[core.EngineMappingPath], "dummy")
+	surl := cmdsSm.GetServiceURL(rt.metadata[core.EngineMappingNamespace], core.FlowActionScopeLocal, rt.metadata[core.EngineMappingPath], "dummy")
 
 	for range make([]int, 20) {
 		err := cmdsSm.IgniteService(surl)
