@@ -147,7 +147,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		Metadata: inst.Metadata,
 	}
 
-	commitOutputFunc := func(output []byte) error {
+	onFinish := func(output []byte) error {
 		endEv := &InstanceEvent{
 			EventID:    uuid.New(),
 			InstanceID: inst.InstanceID,
@@ -159,8 +159,21 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 		return e.dataBus.PushToHistoryStream(ctx, endEv)
 	}
+	onTransition := func(memory []byte, fn string) error {
+		endEv := &InstanceEvent{
+			EventID:    uuid.New(),
+			InstanceID: inst.InstanceID,
+			Namespace:  inst.Namespace,
+			Type:       "running",
+			Fn:         fn,
+			Memory:     memory,
+			Time:       time.Now(),
+		}
 
-	err = runtime.ExecScript(sc, commitOutputFunc, nil)
+		return e.dataBus.PushToHistoryStream(ctx, endEv)
+	}
+
+	err = runtime.ExecScript(sc, onFinish, onTransition)
 	if err == nil {
 		return nil
 	}

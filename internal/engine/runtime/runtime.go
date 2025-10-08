@@ -24,7 +24,7 @@ type Runtime struct {
 
 type (
 	OnFinishFunc     func(output []byte) error
-	OnTransitionFunc func(output []byte) error
+	OnTransitionFunc func(output []byte, fn string) error
 )
 
 func New(instID uuid.UUID, metadata map[string]string, mappings string, onFinish OnFinishFunc, onTransition OnTransitionFunc) *Runtime {
@@ -147,7 +147,7 @@ func (rt *Runtime) finish(data sobek.Value) sobek.Value {
 
 	err = rt.onFinish(b)
 	if err != nil {
-		panic(rt.vm.ToValue(fmt.Sprintf("error calling commit finish: %s", err.Error())))
+		panic(rt.vm.ToValue(fmt.Sprintf("error calling on finish: %s", err.Error())))
 	}
 
 	return sobek.Null()
