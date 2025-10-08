@@ -160,7 +160,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		return e.dataBus.PushToHistoryStream(ctx, endEv)
 	}
 
-	err = runtime.ExecScript(sc, commitOutputFunc)
+	err = runtime.ExecScript(sc, commitOutputFunc, nil)
 	if err == nil {
 		return nil
 	}

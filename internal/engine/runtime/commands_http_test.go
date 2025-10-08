@@ -34,7 +34,7 @@ func TestHttpRequest(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	rt := runtime.New(uuid.New(), map[string]string{}, "", nil)
+	rt := runtime.New(uuid.New(), map[string]string{}, "", nil, nil)
 
 	script := `
 		function start() {

@@ -15,15 +15,19 @@ import (
 )
 
 type Runtime struct {
-	vm       *sobek.Runtime
-	instID   uuid.UUID
-	metadata map[string]string
-	onFinish OnFinishFunc
+	vm           *sobek.Runtime
+	instID       uuid.UUID
+	metadata     map[string]string
+	onFinish     OnFinishFunc
+	onTransition OnTransitionFunc
 }
 
-type OnFinishFunc func(output []byte) error
+type (
+	OnFinishFunc     func(output []byte) error
+	OnTransitionFunc func(output []byte) error
+)
 
-func New(instID uuid.UUID, metadata map[string]string, mappings string, onFinish OnFinishFunc) *Runtime {
+func New(instID uuid.UUID, metadata map[string]string, mappings string, onFinish OnFinishFunc, onTransition OnTransitionFunc) *Runtime {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
 
@@ -34,10 +38,11 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string, onFinish
 	}
 
 	rt := &Runtime{
-		vm:       vm,
-		instID:   instID,
-		metadata: metadata,
-		onFinish: onFinish,
+		vm:           vm,
+		instID:       instID,
+		metadata:     metadata,
+		onFinish:     onFinish,
+		onTransition: onTransition,
 	}
 
 	type setFunc struct {
@@ -183,11 +188,8 @@ type Script struct {
 	Metadata map[string]string
 }
 
-func ExecScript(script *Script, onFinish OnFinishFunc,
-) error {
-	// add commands
-
-	rt := New(script.InstID, script.Metadata, script.Mappings, onFinish)
+func ExecScript(script *Script, onFinish OnFinishFunc, onTransition OnTransitionFunc) error {
+	rt := New(script.InstID, script.Metadata, script.Mappings, onFinish, onTransition)
 
 	_, err := rt.vm.RunString(script.Text)
 	if err != nil {

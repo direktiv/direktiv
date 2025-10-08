@@ -43,7 +43,7 @@ func TestActionParsing(t *testing.T) {
 		return nil
 	}
 
-	rt := runtime.New(uuid.New(), map[string]string{}, "", recordOutput)
+	rt := runtime.New(uuid.New(), map[string]string{}, "", recordOutput, nil)
 	_, err = rt.RunScript("", script)
 	require.NoError(t, err)
 
