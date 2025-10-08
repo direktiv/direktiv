@@ -1,8 +1,9 @@
-package runtime
+package runtime_test
 
 import (
 	"testing"
 
+	"github.com/direktiv/direktiv/internal/engine/runtime"
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
 	"github.com/stretchr/testify/require"
@@ -15,7 +16,7 @@ func TestTransition(t *testing.T) {
 		return nil
 	}
 
-	rt := New(uuid.New(), map[string]string{}, "", recordOutput)
+	rt := runtime.New(uuid.New(), map[string]string{}, "", recordOutput)
 
 	_, err := rt.RunScript("", `
 		function start() {
@@ -29,7 +30,7 @@ func TestTransition(t *testing.T) {
 	`)
 	require.NoError(t, err)
 
-	start, ok := sobek.AssertFunction(rt.vm.Get("start"))
+	start, ok := sobek.AssertFunction(rt.GetVar("start"))
 	require.True(t, ok)
 	_, err = start(sobek.Undefined())
 	require.NoError(t, err)
@@ -88,9 +89,9 @@ func TestTransitionErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rt := New(uuid.New(), map[string]string{}, "", nil)
+			rt := runtime.New(uuid.New(), map[string]string{}, "", nil)
 			rt.RunScript("", tt.js)
-			start, ok := sobek.AssertFunction(rt.vm.Get("start"))
+			start, ok := sobek.AssertFunction(rt.GetVar("start"))
 			require.True(t, ok)
 			_, err := start(sobek.Undefined())
 			require.Error(t, err)
