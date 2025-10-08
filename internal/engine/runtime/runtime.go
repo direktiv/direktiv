@@ -18,12 +18,12 @@ type Runtime struct {
 	vm       *sobek.Runtime
 	instID   uuid.UUID
 	metadata map[string]string
-	cFinish  CommitFinishStateFunc
+	onFinish CommitFinishStateFunc
 }
 
 type CommitFinishStateFunc func(output []byte) error
 
-func New(instID uuid.UUID, metadata map[string]string, mappings string, cFinish CommitFinishStateFunc) *Runtime {
+func New(instID uuid.UUID, metadata map[string]string, mappings string, onFinish CommitFinishStateFunc) *Runtime {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
 
@@ -37,7 +37,7 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string, cFinish 
 		vm:       vm,
 		instID:   instID,
 		metadata: metadata,
-		cFinish:  cFinish,
+		onFinish: onFinish,
 	}
 
 	type setFunc struct {
@@ -144,7 +144,7 @@ func (rt *Runtime) finish(data sobek.Value) sobek.Value {
 		panic(rt.vm.ToValue(fmt.Sprintf("error marshaling output: %s", err.Error())))
 	}
 
-	err = rt.cFinish(b)
+	err = rt.onFinish(b)
 	if err != nil {
 		panic(rt.vm.ToValue(fmt.Sprintf("error calling commit finish: %s", err.Error())))
 	}
@@ -187,23 +187,23 @@ type Script struct {
 	Metadata map[string]string
 }
 
-func ExecScript(sc *Script, cFinish CommitFinishStateFunc,
+func ExecScript(script *Script, onFinish CommitFinishStateFunc,
 ) error {
 	// add commands
 
-	rt := New(sc.InstID, sc.Metadata, sc.Mappings, cFinish)
+	rt := New(script.InstID, script.Metadata, script.Mappings, onFinish)
 
-	_, err := rt.vm.RunString(sc.Text)
+	_, err := rt.vm.RunString(script.Text)
 	if err != nil {
 		return fmt.Errorf("run script: %w", err)
 	}
-	start, ok := sobek.AssertFunction(rt.vm.Get(sc.Fn))
+	start, ok := sobek.AssertFunction(rt.vm.Get(script.Fn))
 	if !ok {
-		return fmt.Errorf("start function '%s' does not exist", sc.Fn)
+		return fmt.Errorf("start function '%s' does not exist", script.Fn)
 	}
 
 	var inputMap any
-	err = json.Unmarshal([]byte(sc.Input), &inputMap)
+	err = json.Unmarshal([]byte(script.Input), &inputMap)
 	if err != nil {
 		return fmt.Errorf("unmarshal input: %w", err)
 	}
