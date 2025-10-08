@@ -39,7 +39,7 @@ func TestActionParsing(t *testing.T) {
 	fmt.Println(ci.ValidationErrors)
 
 	vm := sobek.New()
-	runtime.InjectCommands(vm, uuid.New())
+	runtime.InjectCommands(vm, uuid.New(), map[string]string{})
 	_, err = vm.RunScript("", script)
 	require.NoError(t, err)
 
