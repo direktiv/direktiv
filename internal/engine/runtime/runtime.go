@@ -18,12 +18,12 @@ type Runtime struct {
 	vm       *sobek.Runtime
 	instID   uuid.UUID
 	metadata map[string]string
-	onFinish CommitFinishStateFunc
+	onFinish OnFinishFunc
 }
 
-type CommitFinishStateFunc func(output []byte) error
+type OnFinishFunc func(output []byte) error
 
-func New(instID uuid.UUID, metadata map[string]string, mappings string, onFinish CommitFinishStateFunc) *Runtime {
+func New(instID uuid.UUID, metadata map[string]string, mappings string, onFinish OnFinishFunc) *Runtime {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
 
@@ -187,7 +187,7 @@ type Script struct {
 	Metadata map[string]string
 }
 
-func ExecScript(script *Script, onFinish CommitFinishStateFunc,
+func ExecScript(script *Script, onFinish OnFinishFunc,
 ) error {
 	// add commands
 
