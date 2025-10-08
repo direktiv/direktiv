@@ -1,4 +1,4 @@
-package runtime_test
+package runtime
 
 import (
 	"testing"
@@ -12,11 +12,9 @@ import (
 )
 
 func TestTransition(t *testing.T) {
-	vm := sobek.New()
+	rt := New(uuid.New(), map[string]string{}, "")
 
-	runtime.InjectCommands(vm, uuid.New(), map[string]string{})
-
-	vm.RunScript("", `
+	_, err := rt.RunScript("", `
 		function start() {
 			return transition(end, "returnValue")
 		}	
@@ -26,8 +24,9 @@ func TestTransition(t *testing.T) {
 			return finish(payload)
 		}	
 	`)
+	require.NoError(t, err)
 
-	start, ok := sobek.AssertFunction(vm.Get("start"))
+	start, ok := sobek.AssertFunction(rt.vm.Get("start"))
 	require.True(t, ok)
 
 	g, err := start(sobek.Undefined())
@@ -87,10 +86,9 @@ func TestTransitionErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			vm := sobek.New()
-			runtime.InjectCommands(vm, uuid.New(), map[string]string{})
-			vm.RunScript("", tt.js)
-			start, ok := sobek.AssertFunction(vm.Get("start"))
+			rt := New(uuid.New(), map[string]string{}, "")
+			rt.RunScript("", tt.js)
+			start, ok := sobek.AssertFunction(rt.vm.Get("start"))
 			require.True(t, ok)
 			_, err := start(sobek.Undefined())
 			require.Error(t, err)

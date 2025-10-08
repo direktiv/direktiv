@@ -6,29 +6,20 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
-	"github.com/grafana/sobek/parser"
 )
 
 func ExecScript(instID uuid.UUID, script string, mappings string, fn string,
 	input string, metadata map[string]string,
 ) ([]byte, error) {
-	vm := sobek.New()
-	vm.SetMaxCallStackSize(256)
-
-	if mappings != "" {
-		vm.SetParserOptions(parser.WithSourceMapLoader(func(path string) ([]byte, error) {
-			return []byte(mappings), nil
-		}))
-	}
-
 	// add commands
-	InjectCommands(vm, instID, metadata)
 
-	_, err := vm.RunString(script)
+	rt := New(instID, metadata, mappings)
+
+	_, err := rt.vm.RunString(script)
 	if err != nil {
 		return nil, fmt.Errorf("run script: %w", err)
 	}
-	start, ok := sobek.AssertFunction(vm.Get(fn))
+	start, ok := sobek.AssertFunction(rt.vm.Get(fn))
 	if !ok {
 		return nil, fmt.Errorf("start function '%s' does not exist", fn)
 	}
@@ -39,12 +30,12 @@ func ExecScript(instID uuid.UUID, script string, mappings string, fn string,
 		return nil, fmt.Errorf("unmarshal input: %w", err)
 	}
 
-	ret, err := start(sobek.Undefined(), vm.ToValue(inputMap))
+	ret, err := start(sobek.Undefined(), rt.vm.ToValue(inputMap))
 	if err != nil {
 		return nil, fmt.Errorf("invoke start: %w", err)
 	}
 	var output any
-	if err := vm.ExportTo(ret, &output); err != nil {
+	if err := rt.vm.ExportTo(ret, &output); err != nil {
 		return nil, fmt.Errorf("export output: %w", err)
 	}
 	b, err := json.Marshal(output)
