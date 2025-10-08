@@ -176,7 +176,6 @@ func Start(lc *lifecycle.Manager) error {
 
 		slog.Info("initializing engine")
 		app.Engine, err = engine.NewEngine(
-			app.DB,
 			databus.New(js),
 			comp,
 			js,

@@ -35,9 +35,8 @@ func (e *Engine) ListInstances(ctx context.Context, namespace string) ([]uuid.UU
 	panic("implement me")
 }
 
-func NewEngine(db *gorm.DB, bus DataBus, compiler core.Compiler, js nats.JetStreamContext) (*Engine, error) {
+func NewEngine(bus DataBus, compiler core.Compiler, js nats.JetStreamContext) (*Engine, error) {
 	return &Engine{
-		db:       db,
 		dataBus:  bus,
 		compiler: compiler,
 		js:       js,
