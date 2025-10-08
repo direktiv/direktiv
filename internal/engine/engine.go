@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/engine/runtime"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
@@ -147,7 +148,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		InstanceID: inst.InstanceID,
 		Namespace:  inst.Namespace,
 	}
-	ret, err := e.execJSScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input))
+	ret, err := runtime.ExecJSScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input))
 	// TODO: remove this debug code.
 	// simulate failing job
 	if simulateErrors && rand.Intn(2) == 0 {

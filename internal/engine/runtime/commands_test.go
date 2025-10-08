@@ -1,9 +1,9 @@
-package engine_test
+package runtime_test
 
 import (
 	"testing"
 
-	"github.com/direktiv/direktiv/internal/engine"
+	"github.com/direktiv/direktiv/internal/engine/runtime"
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
 	"github.com/stretchr/testify/require"
@@ -12,7 +12,7 @@ import (
 func TestTransition(t *testing.T) {
 	vm := sobek.New()
 
-	engine.InjectCommands(vm, uuid.New())
+	runtime.InjectCommands(vm, uuid.New())
 
 	vm.RunScript("", `
 		function start() {
@@ -86,7 +86,7 @@ func TestTransitionErrors(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			vm := sobek.New()
-			engine.InjectCommands(vm, uuid.New())
+			runtime.InjectCommands(vm, uuid.New())
 			vm.RunScript("", tt.js)
 			start, ok := sobek.AssertFunction(vm.Get("start"))
 			require.True(t, ok)
