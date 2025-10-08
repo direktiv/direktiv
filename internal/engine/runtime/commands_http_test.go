@@ -1,11 +1,11 @@
-package commands_test
+package runtime_test
 
 import (
 	"fmt"
 	"log"
 	"testing"
 
-	"github.com/direktiv/direktiv/internal/engine/commands"
+	"github.com/direktiv/direktiv/internal/engine/runtime"
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
 	"github.com/stretchr/testify/require"
@@ -35,7 +35,7 @@ func TestHttpRequest(t *testing.T) {
 	}
 
 	vm := sobek.New()
-	commands.InjectCommands(vm, uuid.New(), map[string]string{})
+	runtime.InjectCommands(vm, uuid.New(), map[string]string{})
 
 	script := `
 		function start() {
