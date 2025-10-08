@@ -211,6 +211,15 @@ func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.
 	return data[0], nil
 }
 
+func (e *Engine) GetInstanceHistoryByID(ctx context.Context, namespace string, id uuid.UUID) ([]*InstanceEvent, error) {
+	list := e.dataBus.FetchInstanceHistoryByID(ctx, namespace, id)
+	if len(list) == 0 {
+		return nil, ErrDataNotFound
+	}
+
+	return list, nil
+}
+
 func (e *Engine) DeleteNamespace(ctx context.Context, name string) error {
 	return e.dataBus.DeleteNamespace(ctx, name)
 }

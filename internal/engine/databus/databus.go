@@ -13,17 +13,19 @@ import (
 )
 
 type DataBus struct {
-	js    nats.JetStreamContext
-	cache *StatusCache
+	js           nats.JetStreamContext
+	cache        *StatusCache
+	historyCache *HistoryCache
 
 	notifier *instanceNotifier
 }
 
 func New(js nats.JetStreamContext) *DataBus {
 	return &DataBus{
-		js:       js,
-		cache:    NewStatusCache(),
-		notifier: newInstanceNotifier(),
+		js:           js,
+		cache:        NewStatusCache(),
+		historyCache: NewHistoryCache(),
+		notifier:     newInstanceNotifier(),
 	}
 }
 
@@ -95,6 +97,7 @@ func (d *DataBus) DeleteNamespace(ctx context.Context, name string) error {
 		}
 	}
 	d.cache.DeleteNamespace(name)
+	d.historyCache.DeleteNamespace(name)
 
 	return nil
 }
@@ -123,5 +126,24 @@ func (d *DataBus) startStatusCache(ctx context.Context) error {
 		return err
 	}
 
+	subj = intNats.StreamEngineHistory.Subject("*", "*")
+
+	_, err = d.js.Subscribe(subj, func(msg *nats.Msg) {
+		var ev engine.InstanceEvent
+		if err := json.Unmarshal(msg.Data, &ev); err != nil {
+			// best-effort; ignore bad payloads
+			return
+		}
+
+		d.historyCache.Insert(&ev)
+	}, nats.AckNone())
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func (d *DataBus) FetchInstanceHistoryByID(ctx context.Context, namespace string, instanceID uuid.UUID) []*engine.InstanceEvent {
+	return d.historyCache.Snapshot(namespace, instanceID)
 }

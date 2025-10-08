@@ -132,6 +132,8 @@ type DataBus interface {
 	PushToQueueStream(ctx context.Context, event *InstanceEvent) error
 
 	FetchInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*InstanceStatus, int)
+	FetchInstanceHistoryByID(ctx context.Context, namespace string, instanceID uuid.UUID) []*InstanceEvent
+
 	NotifyInstanceStatus(ctx context.Context, instanceID uuid.UUID, done chan<- *InstanceStatus)
 
 	DeleteNamespace(ctx context.Context, name string) error

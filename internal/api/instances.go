@@ -89,7 +89,7 @@ func convertInstanceData(data *engine.InstanceStatus) *InstanceData {
 func (e *instController) mountRouter(r chi.Router) {
 	r.Get("/{instanceID}/subscribe", e.dummy)
 	r.Get("/{instanceID}/input", e.dummy)
-	r.Get("/{instanceID}/output", e.dummy)
+	r.Get("/{instanceID}/history", e.history)
 	r.Get("/{instanceID}/metadata", e.dummy)
 	r.Patch("/{instanceID}", e.dummy)
 
@@ -198,4 +198,26 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSONWithMeta(w, out, metaInfo)
+}
+
+func (e *instController) history(w http.ResponseWriter, r *http.Request) {
+	namespace := chi.URLParam(r, "namespace")
+	instanceIDStr := chi.URLParam(r, "instanceID")
+	instanceID, err := uuid.Parse(instanceIDStr)
+	if err != nil {
+		writeError(w, &Error{
+			Code:    "request_id_invalid",
+			Message: "invalid instance uuid",
+		})
+
+		return
+	}
+
+	list, err := e.engine.GetInstanceHistoryByID(r.Context(), namespace, instanceID)
+	if err != nil {
+		writeEngineError(w, err)
+		return
+	}
+
+	writeJSON(w, list)
 }
