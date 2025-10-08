@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
@@ -19,9 +18,6 @@ var ErrDataNotFound = fmt.Errorf("data not found")
 
 // LabelWithNotify used to mark an instance as called with a notify-chanel.
 const LabelWithNotify = "WithNotify"
-
-// TODO: remove this debug code.
-const simulateErrors = false
 
 type Engine struct {
 	db       *gorm.DB
@@ -147,31 +143,15 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		InstanceID: inst.InstanceID,
 		Namespace:  inst.Namespace,
 	}
-	ret, err := runtime.ExecScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input), inst.Metadata)
-	// TODO: remove this debug code.
-	// simulate failing job
-	if simulateErrors && rand.Intn(2) == 0 {
-		err = fmt.Errorf("simulated error")
-	}
+	output, err := runtime.ExecScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input), inst.Metadata)
 	if err != nil {
 		endEv.Type = "failed"
 		endEv.Error = err.Error()
 	} else {
-		retBytes, mErr := json.Marshal(ret)
-		if mErr != nil {
-			endEv.Type = "failed"
-			endEv.Error = fmt.Errorf("marshal result: %w", mErr).Error()
-		} else {
-			endEv.Type = "succeeded"
-			endEv.Output = retBytes
-		}
+		endEv.Type = "succeeded"
+		endEv.Output = output
 	}
 
-	// TODO: remove this debug code.
-	// simulate a job that takes some long time
-	if simulateErrors && rand.Intn(2) == 0 {
-		time.Sleep(10 * time.Second)
-	}
 	endEv.Time = time.Now()
 	err = e.dataBus.PushToHistoryStream(ctx, endEv)
 	if err != nil {
