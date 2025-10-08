@@ -1,3 +1,4 @@
+import { WorkflowValidationSchema } from "../validate/schema";
 import { z } from "zod";
 
 /**
@@ -154,6 +155,7 @@ export const FileDeletedSchema = z.null();
 export const FileCreatedSchema = z.object({
   data: BaseFileSchema.extend({
     data: z.string().optional(),
+    errors: WorkflowValidationSchema,
   }),
 });
 
@@ -161,6 +163,7 @@ export const FileCreatedSchema = z.object({
 export const FilePatchedSchema = z.object({
   data: BaseFileSchema.extend({
     data: z.string().optional(),
+    errors: WorkflowValidationSchema,
   }),
 });
 

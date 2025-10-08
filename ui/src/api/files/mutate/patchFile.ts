@@ -25,3 +25,5 @@ export const patchFile = apiFactory<
   method: "PATCH",
   schema: FilePatchedSchema,
 });
+
+export type ResolvedPatchFile = Awaited<ReturnType<typeof patchFile>>;

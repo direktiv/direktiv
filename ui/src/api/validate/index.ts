@@ -1,5 +1,5 @@
-export const validationsKeys = {
-  validationsList: ({ hash }: { hash: string }) =>
+export const validationKeys = {
+  messagesList: ({ hash }: { hash: string }) =>
     [
       {
         hash,

@@ -1,8 +1,8 @@
-import { WorkflowValidationMessagesType } from "./schema";
+import { WorkflowValidationSchemaType } from "./schema";
 import { useQuery } from "@tanstack/react-query";
-import { validationsKeys } from ".";
+import { validationKeys } from ".";
 
-const sh1 = async (data: string) => {
+export const sha1 = async (data: string) => {
   const encoder = new TextEncoder();
   const hashBuffer = await crypto.subtle.digest("SHA-1", encoder.encode(data));
   const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -13,9 +13,9 @@ const sh1 = async (data: string) => {
 };
 
 export const useValidate = async ({ data }: { data: string }) => {
-  const hash = await sh1(data);
-  return useQuery<WorkflowValidationMessagesType>({
-    queryKey: validationsKeys.validationsList({
+  const hash = await sha1(data);
+  return useQuery<WorkflowValidationSchemaType>({
+    queryKey: validationKeys.messagesList({
       hash,
     }),
     /**
