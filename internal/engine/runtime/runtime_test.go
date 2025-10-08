@@ -3,8 +3,6 @@ package runtime_test
 import (
 	"testing"
 
-	// "github.com/direktiv/direktiv/internal/engine"
-
 	"github.com/direktiv/direktiv/internal/engine/runtime"
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
@@ -12,7 +10,13 @@ import (
 )
 
 func TestTransition(t *testing.T) {
-	rt := runtime.New(uuid.New(), map[string]string{}, "")
+	var gotOutput []byte
+	recordOutput := func(output []byte) error {
+		gotOutput = output
+		return nil
+	}
+
+	rt := runtime.New(uuid.New(), map[string]string{}, "", recordOutput)
 
 	_, err := rt.RunScript("", `
 		function start() {
@@ -28,11 +32,10 @@ func TestTransition(t *testing.T) {
 
 	start, ok := sobek.AssertFunction(rt.GetVar("start"))
 	require.True(t, ok)
-
-	g, err := start(sobek.Undefined())
+	_, err = start(sobek.Undefined())
 	require.NoError(t, err)
 
-	require.Equal(t, "returnValue", g.Export())
+	require.Equal(t, "\"returnValue\"", string(gotOutput))
 }
 
 func TestTransitionErrors(t *testing.T) {
@@ -86,7 +89,7 @@ func TestTransitionErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rt := runtime.New(uuid.New(), map[string]string{}, "")
+			rt := runtime.New(uuid.New(), map[string]string{}, "", nil)
 			rt.RunScript("", tt.js)
 			start, ok := sobek.AssertFunction(rt.GetVar("start"))
 			require.True(t, ok)

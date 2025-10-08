@@ -12,7 +12,6 @@ import (
 )
 
 func TestActionParsing(t *testing.T) {
-
 	script := `
 		var myAction = generateAction({
 		type: "local",
@@ -41,16 +40,20 @@ func TestActionParsing(t *testing.T) {
 	require.NoError(t, err)
 	fmt.Println(ci.ValidationErrors)
 
-	rt := runtime.New(uuid.New(), map[string]string{}, "")
+	var gotOutput []byte
+	recordOutput := func(output []byte) error {
+		gotOutput = output
+		return nil
+	}
+
+	rt := runtime.New(uuid.New(), map[string]string{}, "", recordOutput)
 	_, err = rt.RunScript("", script)
 	require.NoError(t, err)
 
 	start, ok := sobek.AssertFunction(rt.GetVar("stateOne"))
 	require.True(t, ok)
 
-	v, err := start(sobek.Undefined())
+	_, err = start(sobek.Undefined())
 	require.NoError(t, err)
-
-	fmt.Println(v)
-
+	require.Equal(t, "\"done\"", string(gotOutput))
 }

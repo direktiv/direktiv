@@ -138,21 +138,29 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		return fmt.Errorf("push history start event, inst: %s: %w", inst.InstanceID, err)
 	}
 
+	err = runtime.ExecScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input), inst.Metadata, func(output []byte) error {
+		endEv := &InstanceEvent{
+			EventID:    uuid.New(),
+			InstanceID: inst.InstanceID,
+			Namespace:  inst.Namespace,
+			Type:       "succeeded",
+			Output:     output,
+			Time:       time.Now(),
+		}
+
+		return e.dataBus.PushToHistoryStream(ctx, endEv)
+	})
+	if err == nil {
+		return nil
+	}
 	endEv := &InstanceEvent{
 		EventID:    uuid.New(),
 		InstanceID: inst.InstanceID,
 		Namespace:  inst.Namespace,
+		Type:       "failed",
+		Error:      err.Error(),
+		Time:       time.Now(),
 	}
-	output, err := runtime.ExecScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input), inst.Metadata)
-	if err != nil {
-		endEv.Type = "failed"
-		endEv.Error = err.Error()
-	} else {
-		endEv.Type = "succeeded"
-		endEv.Output = output
-	}
-
-	endEv.Time = time.Now()
 	err = e.dataBus.PushToHistoryStream(ctx, endEv)
 	if err != nil {
 		return fmt.Errorf("push history end event, inst: %s: %w", inst.InstanceID, err)
