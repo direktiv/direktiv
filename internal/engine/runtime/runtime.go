@@ -1,16 +1,15 @@
-package engine
+package runtime
 
 import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/direktiv/direktiv/internal/engine/runtime"
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
 	"github.com/grafana/sobek/parser"
 )
 
-func (e *Engine) execJSScript(instID uuid.UUID, script string, mappings string, fn string,
+func ExecJSScript(instID uuid.UUID, script string, mappings string, fn string,
 	input string, metadata map[string]string,
 ) (any, error) {
 	vm := sobek.New()
@@ -23,7 +22,7 @@ func (e *Engine) execJSScript(instID uuid.UUID, script string, mappings string, 
 	}
 
 	// add commands
-	runtime.InjectCommands(vm, instID, metadata)
+	InjectCommands(vm, instID)
 
 	_, err := vm.RunString(script)
 	if err != nil {
