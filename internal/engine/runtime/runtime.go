@@ -140,15 +140,17 @@ func (rt *Runtime) print(args ...any) {
 	fmt.Println()
 }
 
+// TODO: this need to be removed.
 func (rt *Runtime) RunScript(name, src string) (sobek.Value, error) {
 	return rt.vm.RunScript(name, src)
 }
 
+// TODO: this need to be removed.
 func (rt *Runtime) RunString(str string) (sobek.Value, error) {
 	return rt.vm.RunScript("", str)
 }
 
-// GetVar the specified variable in the global context.
+// TODO: this need to be removed.
 func (rt *Runtime) GetVar(name string) sobek.Value {
 	return rt.vm.Get(name)
 }
