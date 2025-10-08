@@ -43,7 +43,7 @@ func (d *DataBus) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (d *DataBus) PushHistoryStream(ctx context.Context, event *engine.InstanceEvent) error {
+func (d *DataBus) PushToHistoryStream(ctx context.Context, event *engine.InstanceEvent) error {
 	data, err := json.Marshal(event)
 	if err != nil {
 		return fmt.Errorf("marshal event: %w", err)
@@ -58,7 +58,7 @@ func (d *DataBus) PushHistoryStream(ctx context.Context, event *engine.InstanceE
 	return err
 }
 
-func (d *DataBus) PushQueueStream(ctx context.Context, event *engine.InstanceEvent) error {
+func (d *DataBus) PushToQueueStream(ctx context.Context, event *engine.InstanceEvent) error {
 	data, err := json.Marshal(event)
 	if err != nil {
 		return fmt.Errorf("marshal event: %w", err)

@@ -128,8 +128,8 @@ type WorkflowRunner interface {
 
 type DataBus interface {
 	Start(lc *lifecycle.Manager) error
-	PushHistoryStream(ctx context.Context, event *InstanceEvent) error
-	PushQueueStream(ctx context.Context, event *InstanceEvent) error
+	PushToHistoryStream(ctx context.Context, event *InstanceEvent) error
+	PushToQueueStream(ctx context.Context, event *InstanceEvent) error
 
 	FetchInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*InstanceStatus, int)
 	NotifyInstanceStatus(ctx context.Context, instanceID uuid.UUID, done chan<- *InstanceStatus)
