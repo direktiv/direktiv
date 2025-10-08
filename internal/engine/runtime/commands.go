@@ -7,9 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/internal/telemetry"
+	"github.com/direktiv/direktiv/internal/core"
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
+	"github.com/grafana/sobek/parser"
 )
 
 type Runtime struct {
@@ -48,7 +49,7 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string) *Runtime
 	return rt
 }
 
-func (cmds *Commands) sleep(seconds int) sobek.Value {
+func (cmds *Runtime) sleep(seconds int) sobek.Value {
 	time.Sleep(time.Duration(seconds) * time.Second)
 	return sobek.Undefined()
 }
@@ -73,7 +74,7 @@ func (cmds *Runtime) id() sobek.Value {
 	return cmds.vm.ToValue(cmds.instID)
 }
 
-func (cmds *Commands) log(logs ...any) sobek.Value {
+func (cmds *Runtime) log(logs ...any) sobek.Value {
 	var b strings.Builder
 	for a := range logs {
 		b.WriteString(fmt.Sprintf("%v", logs[a]))
@@ -92,7 +93,7 @@ func (cmds *Commands) log(logs ...any) sobek.Value {
 	return sobek.Undefined()
 }
 
-func (cmds *Commands) transition(call sobek.FunctionCall) sobek.Value {
+func (cmds *Runtime) transition(call sobek.FunctionCall) sobek.Value {
 	if len(call.Arguments) != 2 {
 		panic(cmds.vm.ToValue("transition requires a function and a payload"))
 	}

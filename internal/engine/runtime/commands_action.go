@@ -73,7 +73,7 @@ func (n *actionLogger) Warn(msg string, keysAndValues ...interface{}) {
 	fmt.Println(msg)
 }
 
-func (cmds *Commands) action(call sobek.FunctionCall) sobek.Value {
+func (cmds *Runtime) action(call sobek.FunctionCall) sobek.Value {
 	if len(call.Arguments) != 1 {
 		panic(cmds.vm.ToValue("action definition needs configuration"))
 	}
@@ -223,7 +223,7 @@ func (ac *ActionCaller) doRequest(ctx context.Context, req *retryablehttp.Reques
 	return data, err
 }
 
-func (cmds *Commands) callLocal(config *core.ActionConfig, payload *core.ActionPayload) (any, error) {
+func (cmds *Runtime) callLocal(config *core.ActionConfig, payload *core.ActionPayload) (any, error) {
 	// TODO: remove this
 	{
 		err := cmds.deletemeStartServiceManager()
@@ -254,7 +254,7 @@ func (cmds *Commands) callLocal(config *core.ActionConfig, payload *core.ActionP
 // TODO: delete me.
 var cmdsSm core.ServiceManager
 
-func (cmds *Commands) deletemeStartServiceManager() error {
+func (cmds *Runtime) deletemeStartServiceManager() error {
 	if cmdsSm != nil {
 		return nil
 	}
@@ -284,7 +284,7 @@ func (cmds *Commands) deletemeStartServiceManager() error {
 	return nil
 }
 
-func (cmds *Commands) deleteme(config *core.ActionConfig, payload any) error {
+func (cmds *Runtime) deleteme(config *core.ActionConfig, payload any) error {
 	svd := &core.ServiceFileData{
 		Typ:       core.FlowActionScopeLocal,
 		Namespace: cmds.metadata[core.EngineMappingNamespace],
