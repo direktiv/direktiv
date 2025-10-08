@@ -162,7 +162,7 @@ func doHttpRequest(addr string, config any) (*httpResponseObject, error) {
 	return obj, nil
 }
 
-func (cmds *Commands) populateResponseObject(response *httpResponseObject) *sobek.Object {
+func (cmds *Runtime) populateResponseObject(response *httpResponseObject) *sobek.Object {
 	responseObject := cmds.vm.NewObject()
 	responseObject.Set("responseType", response.responseType)
 	responseObject.Set("error", response.err)
@@ -198,7 +198,7 @@ func (cmds *Commands) populateResponseObject(response *httpResponseObject) *sobe
 	return responseObject
 }
 
-func (cmds *Commands) fetchSync(addr string, config any) *sobek.Object {
+func (cmds *Runtime) fetchSync(addr string, config any) *sobek.Object {
 	response, err := doHttpRequest(addr, config)
 	if err != nil {
 		panic(cmds.vm.ToValue(err.Error()))
@@ -207,7 +207,7 @@ func (cmds *Commands) fetchSync(addr string, config any) *sobek.Object {
 	return cmds.populateResponseObject(response)
 }
 
-func (cmds *Commands) fetch(addr string, config any) *sobek.Promise {
+func (cmds *Runtime) fetch(addr string, config any) *sobek.Promise {
 	p, resolve, reject := cmds.vm.NewPromise()
 	go func() {
 		response, err := doHttpRequest(addr, config)

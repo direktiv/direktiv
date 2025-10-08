@@ -10,34 +10,46 @@ import (
 	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
+	"github.com/grafana/sobek/parser"
 )
 
-type Commands struct {
+type Runtime struct {
 	vm       *sobek.Runtime
 	instID   uuid.UUID
 	metadata map[string]string
 }
 
-func InjectCommands(vm *sobek.Runtime, instID uuid.UUID, metadata map[string]string) {
-	cmds := &Commands{
+func New(instID uuid.UUID, metadata map[string]string, mappings string) *Runtime {
+	vm := sobek.New()
+	vm.SetMaxCallStackSize(256)
+
+	if mappings != "" {
+		vm.SetParserOptions(parser.WithSourceMapLoader(func(path string) ([]byte, error) {
+			return []byte(mappings), nil
+		}))
+	}
+
+	rt := &Runtime{
 		vm:       vm,
 		instID:   instID,
 		metadata: metadata,
 	}
 
-	vm.Set("finish", cmds.finish)
-	vm.Set("transition", cmds.transition)
-	vm.Set("log", cmds.log)
-	vm.Set("print", cmds.print)
-	vm.Set("id", cmds.id)
-	vm.Set("now", cmds.now)
-	vm.Set("fetch", cmds.fetch)
-	vm.Set("fetchSync", cmds.fetchSync)
-	vm.Set("sleep", cmds.sleep)
-	vm.Set("generateAction", cmds.action)
+	vm.Set("finish", rt.finish)
+	vm.Set("transition", rt.transition)
+	vm.Set("log", rt.log)
+	vm.Set("print", rt.print)
+	vm.Set("id", rt.id)
+	vm.Set("now", rt.now)
+	vm.Set("fetch", rt.fetch)
+	vm.Set("fetchSync", rt.fetchSync)
+	vm.Set("sleep", rt.sleep)
+	vm.Set("generateAction", rt.action)
+
+	return rt
 }
 
-func (cmds *Commands) action(call sobek.FunctionCall) sobek.Value {
+func (cmds *Runtime) action(call sobek.FunctionCall) sobek.Value {
 	// imgObject := call.Argument(0).ToObject(cmds.vm)
 
 	actionFunc := func(call sobek.FunctionCall) sobek.Value {
@@ -47,12 +59,12 @@ func (cmds *Commands) action(call sobek.FunctionCall) sobek.Value {
 	return cmds.vm.ToValue(actionFunc)
 }
 
-func (cmds *Commands) sleep(seconds int) sobek.Value {
+func (cmds *Runtime) sleep(seconds int) sobek.Value {
 	time.Sleep(time.Duration(seconds) * time.Second)
 	return sobek.Undefined()
 }
 
-func (cmds *Commands) now() *sobek.Object {
+func (cmds *Runtime) now() *sobek.Object {
 	t := time.Now()
 
 	obj := cmds.vm.NewObject()
@@ -68,16 +80,16 @@ func (cmds *Commands) now() *sobek.Object {
 	return obj
 }
 
-func (cmds *Commands) id() sobek.Value {
+func (cmds *Runtime) id() sobek.Value {
 	return cmds.vm.ToValue(cmds.instID)
 }
 
-func (cmds *Commands) log(logs ...string) sobek.Value {
+func (cmds *Runtime) log(logs ...string) sobek.Value {
 	telemetry.LogInstance(context.Background(), telemetry.LogLevelInfo, strings.Join(logs, " "))
 	return sobek.Undefined()
 }
 
-func (cmds *Commands) transition(call sobek.FunctionCall) sobek.Value {
+func (cmds *Runtime) transition(call sobek.FunctionCall) sobek.Value {
 	if len(call.Arguments) != 2 {
 		panic(cmds.vm.ToValue("transition requires a function and a payload"))
 	}
@@ -100,11 +112,11 @@ func (cmds *Commands) transition(call sobek.FunctionCall) sobek.Value {
 	return value
 }
 
-func (cmds *Commands) finish(data any) sobek.Value {
+func (cmds *Runtime) finish(data any) sobek.Value {
 	return cmds.vm.ToValue(data)
 }
 
-func (cmds *Commands) print(args ...any) {
+func (cmds *Runtime) print(args ...any) {
 	fmt.Print(args[0])
 	if len(args) > 1 {
 		for _, arg := range args[1:] {
@@ -113,4 +125,12 @@ func (cmds *Commands) print(args ...any) {
 		}
 	}
 	fmt.Println()
+}
+
+func (cmds *Runtime) RunScript(name, src string) (sobek.Value, error) {
+	return cmds.vm.RunScript(name, src)
+}
+
+func (cmds *Runtime) RunString(str string) (sobek.Value, error) {
+	return cmds.vm.RunScript("", str)
 }
