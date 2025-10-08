@@ -1,10 +1,11 @@
-package runtime
+package runtime_test
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/direktiv/direktiv/internal/compiler"
+	"github.com/direktiv/direktiv/internal/engine/runtime"
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
 	"github.com/stretchr/testify/require"
@@ -37,11 +38,11 @@ func TestActionParsing(t *testing.T) {
 	require.NoError(t, err)
 	fmt.Println(ci.ValidationErrors)
 
-	rt := New(uuid.New(), map[string]string{}, "")
+	rt := runtime.New(uuid.New(), map[string]string{}, "")
 	_, err = rt.RunScript("", script)
 	require.NoError(t, err)
 
-	start, ok := sobek.AssertFunction(rt.vm.Get("stateOne"))
+	start, ok := sobek.AssertFunction(rt.GetVar("stateOne"))
 	require.True(t, ok)
 
 	v, err := start(sobek.Undefined())

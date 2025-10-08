@@ -134,3 +134,8 @@ func (cmds *Runtime) RunScript(name, src string) (sobek.Value, error) {
 func (cmds *Runtime) RunString(str string) (sobek.Value, error) {
 	return cmds.vm.RunScript("", str)
 }
+
+// GetVar the specified variable in the global context.
+func (r *Runtime) GetVar(name string) sobek.Value {
+	return r.vm.Get(name)
+}
