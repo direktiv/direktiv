@@ -18,9 +18,12 @@ type Runtime struct {
 	vm       *sobek.Runtime
 	instID   uuid.UUID
 	metadata map[string]string
+	cFinish  CommitFinishStateFunc
 }
 
-func New(instID uuid.UUID, metadata map[string]string, mappings string) *Runtime {
+type CommitFinishStateFunc func(output []byte) error
+
+func New(instID uuid.UUID, metadata map[string]string, mappings string, cFinish CommitFinishStateFunc) *Runtime {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
 
@@ -34,6 +37,7 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string) *Runtime
 		vm:       vm,
 		instID:   instID,
 		metadata: metadata,
+		cFinish:  cFinish,
 	}
 
 	type setFunc struct {
@@ -125,8 +129,23 @@ func (rt *Runtime) transition(call sobek.FunctionCall) sobek.Value {
 	return value
 }
 
-func (rt *Runtime) finish(data any) sobek.Value {
-	return rt.vm.ToValue(data)
+// TODO: remove return from finish() as it should be the last statement.
+func (rt *Runtime) finish(data sobek.Value) sobek.Value {
+	var output any
+	if err := rt.vm.ExportTo(data, &output); err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error exporting output: %s", err.Error())))
+	}
+	b, err := json.Marshal(output)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error marshaling output: %s", err.Error())))
+	}
+
+	err = rt.cFinish(b)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error calling commit finish: %s", err.Error())))
+	}
+
+	return sobek.Null()
 }
 
 func (rt *Runtime) print(args ...any) {
@@ -157,38 +176,31 @@ func (rt *Runtime) GetVar(name string) sobek.Value {
 
 func ExecScript(instID uuid.UUID, script string, mappings string, fn string,
 	input string, metadata map[string]string,
-) ([]byte, error) {
+	cFinish CommitFinishStateFunc,
+) error {
 	// add commands
 
-	rt := New(instID, metadata, mappings)
+	rt := New(instID, metadata, mappings, cFinish)
 
 	_, err := rt.vm.RunString(script)
 	if err != nil {
-		return nil, fmt.Errorf("run script: %w", err)
+		return fmt.Errorf("run script: %w", err)
 	}
 	start, ok := sobek.AssertFunction(rt.vm.Get(fn))
 	if !ok {
-		return nil, fmt.Errorf("start function '%s' does not exist", fn)
+		return fmt.Errorf("start function '%s' does not exist", fn)
 	}
 
 	var inputMap any
 	err = json.Unmarshal([]byte(input), &inputMap)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal input: %w", err)
+		return fmt.Errorf("unmarshal input: %w", err)
 	}
 
-	ret, err := start(sobek.Undefined(), rt.vm.ToValue(inputMap))
+	_, err = start(sobek.Undefined(), rt.vm.ToValue(inputMap))
 	if err != nil {
-		return nil, fmt.Errorf("invoke start: %w", err)
-	}
-	var output any
-	if err := rt.vm.ExportTo(ret, &output); err != nil {
-		return nil, fmt.Errorf("export output: %w", err)
-	}
-	b, err := json.Marshal(output)
-	if err != nil {
-		return nil, fmt.Errorf("marshal output: %w", err)
+		return fmt.Errorf("invoke start: %w", err)
 	}
 
-	return b, nil
+	return nil
 }
