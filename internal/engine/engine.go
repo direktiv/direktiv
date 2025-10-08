@@ -138,7 +138,16 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		return fmt.Errorf("push history start event, inst: %s: %w", inst.InstanceID, err)
 	}
 
-	err = runtime.ExecScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input), inst.Metadata, func(output []byte) error {
+	sc := &runtime.Script{
+		InstID:   inst.InstanceID,
+		Text:     inst.Script,
+		Mappings: inst.Mappings,
+		Fn:       inst.Fn,
+		Input:    string(inst.Input),
+		Metadata: inst.Metadata,
+	}
+
+	commitOutputFunc := func(output []byte) error {
 		endEv := &InstanceEvent{
 			EventID:    uuid.New(),
 			InstanceID: inst.InstanceID,
@@ -149,7 +158,9 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		}
 
 		return e.dataBus.PushToHistoryStream(ctx, endEv)
-	})
+	}
+
+	err = runtime.ExecScript(sc, commitOutputFunc)
 	if err == nil {
 		return nil
 	}

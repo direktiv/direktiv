@@ -173,34 +173,3 @@ func (rt *Runtime) RunString(str string) (sobek.Value, error) {
 func (rt *Runtime) GetVar(name string) sobek.Value {
 	return rt.vm.Get(name)
 }
-
-func ExecScript(instID uuid.UUID, script string, mappings string, fn string,
-	input string, metadata map[string]string,
-	cFinish CommitFinishStateFunc,
-) error {
-	// add commands
-
-	rt := New(instID, metadata, mappings, cFinish)
-
-	_, err := rt.vm.RunString(script)
-	if err != nil {
-		return fmt.Errorf("run script: %w", err)
-	}
-	start, ok := sobek.AssertFunction(rt.vm.Get(fn))
-	if !ok {
-		return fmt.Errorf("start function '%s' does not exist", fn)
-	}
-
-	var inputMap any
-	err = json.Unmarshal([]byte(input), &inputMap)
-	if err != nil {
-		return fmt.Errorf("unmarshal input: %w", err)
-	}
-
-	_, err = start(sobek.Undefined(), rt.vm.ToValue(inputMap))
-	if err != nil {
-		return fmt.Errorf("invoke start: %w", err)
-	}
-
-	return nil
-}
