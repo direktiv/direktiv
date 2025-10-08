@@ -22,7 +22,7 @@ func ExecJSScript(instID uuid.UUID, script string, mappings string, fn string,
 	}
 
 	// add commands
-	InjectCommands(vm, instID)
+	InjectCommands(vm, instID, metadata)
 
 	_, err := vm.RunString(script)
 	if err != nil {
