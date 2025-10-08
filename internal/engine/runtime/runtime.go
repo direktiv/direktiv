@@ -9,7 +9,9 @@ import (
 	"github.com/grafana/sobek/parser"
 )
 
-func ExecJSScript(instID uuid.UUID, script string, mappings string, fn string, input string) (any, error) {
+func ExecJSScript(instID uuid.UUID, script string, mappings string, fn string,
+	input string, metadata map[string]string,
+) (any, error) {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
 
@@ -20,7 +22,7 @@ func ExecJSScript(instID uuid.UUID, script string, mappings string, fn string, i
 	}
 
 	// add commands
-	InjectCommands(vm, instID)
+	InjectCommands(vm, instID, metadata)
 
 	_, err := vm.RunString(script)
 	if err != nil {

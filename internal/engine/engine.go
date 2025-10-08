@@ -148,7 +148,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		InstanceID: inst.InstanceID,
 		Namespace:  inst.Namespace,
 	}
-	ret, err := runtime.ExecJSScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input))
+	ret, err := runtime.ExecJSScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input), inst.Metadata)
 	// TODO: remove this debug code.
 	// simulate failing job
 	if simulateErrors && rand.Intn(2) == 0 {

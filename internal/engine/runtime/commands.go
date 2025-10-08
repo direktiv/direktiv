@@ -13,14 +13,16 @@ import (
 )
 
 type Commands struct {
-	vm     *sobek.Runtime
-	instID uuid.UUID
+	vm       *sobek.Runtime
+	instID   uuid.UUID
+	metadata map[string]string
 }
 
-func InjectCommands(vm *sobek.Runtime, instID uuid.UUID) {
+func InjectCommands(vm *sobek.Runtime, instID uuid.UUID, metadata map[string]string) {
 	cmds := &Commands{
-		vm:     vm,
-		instID: instID,
+		vm:       vm,
+		instID:   instID,
+		metadata: metadata,
 	}
 
 	vm.Set("finish", cmds.finish)
