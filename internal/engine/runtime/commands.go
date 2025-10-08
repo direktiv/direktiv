@@ -35,16 +35,28 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string) *Runtime
 		metadata: metadata,
 	}
 
-	vm.Set("finish", rt.finish)
-	vm.Set("transition", rt.transition)
-	vm.Set("log", rt.log)
-	vm.Set("print", rt.print)
-	vm.Set("id", rt.id)
-	vm.Set("now", rt.now)
-	vm.Set("fetch", rt.fetch)
-	vm.Set("fetchSync", rt.fetchSync)
-	vm.Set("sleep", rt.sleep)
-	vm.Set("generateAction", rt.action)
+	type setFunc struct {
+		name string
+		fn   any
+	}
+	setList := []setFunc{
+		{"finish", rt.finish},
+		{"transition", rt.transition},
+		{"log", rt.log},
+		{"print", rt.print},
+		{"id", rt.id},
+		{"now", rt.now},
+		{"fetch", rt.fetch},
+		{"fetchSync", rt.fetchSync},
+		{"sleep", rt.sleep},
+		{"generateAction", rt.action},
+	}
+
+	for _, v := range setList {
+		if err := vm.Set(v.name, v.fn); err != nil {
+			panic(fmt.Sprintf("error setting runtime function '%s': %s", v.name, err.Error()))
+		}
+	}
 
 	return rt
 }
