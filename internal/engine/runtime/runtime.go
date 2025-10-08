@@ -11,7 +11,7 @@ import (
 
 func ExecScript(instID uuid.UUID, script string, mappings string, fn string,
 	input string, metadata map[string]string,
-) (any, error) {
+) ([]byte, error) {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
 
@@ -39,14 +39,18 @@ func ExecScript(instID uuid.UUID, script string, mappings string, fn string,
 		return nil, fmt.Errorf("unmarshal input: %w", err)
 	}
 
-	res, err := start(sobek.Undefined(), vm.ToValue(inputMap))
+	ret, err := start(sobek.Undefined(), vm.ToValue(inputMap))
 	if err != nil {
 		return nil, fmt.Errorf("invoke start: %w", err)
 	}
-	var result any
-	if err := vm.ExportTo(res, &result); err != nil {
+	var output any
+	if err := vm.ExportTo(ret, &output); err != nil {
 		return nil, fmt.Errorf("export output: %w", err)
 	}
+	b, err := json.Marshal(output)
+	if err != nil {
+		return nil, fmt.Errorf("marshal output: %w", err)
+	}
 
-	return result, nil
+	return b, nil
 }
