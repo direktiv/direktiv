@@ -1,6 +1,8 @@
 package runtime
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -35,16 +37,28 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string) *Runtime
 		metadata: metadata,
 	}
 
-	vm.Set("finish", rt.finish)
-	vm.Set("transition", rt.transition)
-	vm.Set("log", rt.log)
-	vm.Set("print", rt.print)
-	vm.Set("id", rt.id)
-	vm.Set("now", rt.now)
-	vm.Set("fetch", rt.fetch)
-	vm.Set("fetchSync", rt.fetchSync)
-	vm.Set("sleep", rt.sleep)
-	vm.Set("generateAction", rt.action)
+	type setFunc struct {
+		name string
+		fn   any
+	}
+	setList := []setFunc{
+		{"finish", rt.finish},
+		{"transition", rt.transition},
+		{"log", rt.log},
+		{"print", rt.print},
+		{"id", rt.id},
+		{"now", rt.now},
+		{"fetch", rt.fetch},
+		{"fetchSync", rt.fetchSync},
+		{"sleep", rt.sleep},
+		{"generateAction", rt.action},
+	}
+
+	for _, v := range setList {
+		if err := vm.Set(v.name, v.fn); err != nil {
+			panic(fmt.Sprintf("error setting runtime function '%s': %s", v.name, err.Error()))
+		}
+	}
 
 	return rt
 }
@@ -142,4 +156,42 @@ func (rt *Runtime) RunString(str string) (sobek.Value, error) {
 // GetVar the specified variable in the global context.
 func (rt *Runtime) GetVar(name string) sobek.Value {
 	return rt.vm.Get(name)
+}
+
+func ExecScript(instID uuid.UUID, script string, mappings string, fn string,
+	input string, metadata map[string]string,
+) ([]byte, error) {
+	// add commands
+
+	rt := New(instID, metadata, mappings)
+
+	_, err := rt.vm.RunString(script)
+	if err != nil {
+		return nil, fmt.Errorf("run script: %w", err)
+	}
+	start, ok := sobek.AssertFunction(rt.vm.Get(fn))
+	if !ok {
+		return nil, fmt.Errorf("start function '%s' does not exist", fn)
+	}
+
+	var inputMap any
+	err = json.Unmarshal([]byte(input), &inputMap)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal input: %w", err)
+	}
+
+	ret, err := start(sobek.Undefined(), rt.vm.ToValue(inputMap))
+	if err != nil {
+		return nil, fmt.Errorf("invoke start: %w", err)
+	}
+	var output any
+	if err := rt.vm.ExportTo(ret, &output); err != nil {
+		return nil, fmt.Errorf("export output: %w", err)
+	}
+	b, err := json.Marshal(output)
+	if err != nil {
+		return nil, fmt.Errorf("marshal output: %w", err)
+	}
+
+	return b, nil
 }
