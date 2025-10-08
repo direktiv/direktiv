@@ -49,54 +49,54 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string) *Runtime
 	return rt
 }
 
-func (cmds *Runtime) action(call sobek.FunctionCall) sobek.Value {
-	// imgObject := call.Argument(0).ToObject(cmds.vm)
+func (rt *Runtime) action(call sobek.FunctionCall) sobek.Value {
+	// imgObject := call.Argument(0).ToObject(rt.vm)
 
 	actionFunc := func(call sobek.FunctionCall) sobek.Value {
-		return cmds.vm.ToValue("return value")
+		return rt.vm.ToValue("return value")
 	}
 
-	return cmds.vm.ToValue(actionFunc)
+	return rt.vm.ToValue(actionFunc)
 }
 
-func (cmds *Runtime) sleep(seconds int) sobek.Value {
+func (rt *Runtime) sleep(seconds int) sobek.Value {
 	time.Sleep(time.Duration(seconds) * time.Second)
 	return sobek.Undefined()
 }
 
-func (cmds *Runtime) now() *sobek.Object {
+func (rt *Runtime) now() *sobek.Object {
 	t := time.Now()
 
-	obj := cmds.vm.NewObject()
+	obj := rt.vm.NewObject()
 
 	obj.Set("unix", func() sobek.Value {
-		return cmds.vm.ToValue(t.Unix())
+		return rt.vm.ToValue(t.Unix())
 	})
 
 	obj.Set("format", func(format string) sobek.Value {
-		return cmds.vm.ToValue(t.Format(format))
+		return rt.vm.ToValue(t.Format(format))
 	})
 
 	return obj
 }
 
-func (cmds *Runtime) id() sobek.Value {
-	return cmds.vm.ToValue(cmds.instID)
+func (rt *Runtime) id() sobek.Value {
+	return rt.vm.ToValue(rt.instID)
 }
 
-func (cmds *Runtime) log(logs ...string) sobek.Value {
+func (rt *Runtime) log(logs ...string) sobek.Value {
 	telemetry.LogInstance(context.Background(), telemetry.LogLevelInfo, strings.Join(logs, " "))
 	return sobek.Undefined()
 }
 
-func (cmds *Runtime) transition(call sobek.FunctionCall) sobek.Value {
+func (rt *Runtime) transition(call sobek.FunctionCall) sobek.Value {
 	if len(call.Arguments) != 2 {
-		panic(cmds.vm.ToValue("transition requires a function and a payload"))
+		panic(rt.vm.ToValue("transition requires a function and a payload"))
 	}
 
 	fn, ok := sobek.AssertFunction(call.Arguments[0])
 	if !ok {
-		panic(cmds.vm.ToValue("first parameter of transition is not a function"))
+		panic(rt.vm.ToValue("first parameter of transition is not a function"))
 	}
 
 	value, err := fn(sobek.Undefined(), call.Arguments[1])
@@ -105,18 +105,18 @@ func (cmds *Runtime) transition(call sobek.FunctionCall) sobek.Value {
 		if errors.As(err, &exception) {
 			panic(err)
 		} else {
-			panic(cmds.vm.ToValue(fmt.Sprintf("error executing transition: %s", err.Error())))
+			panic(rt.vm.ToValue(fmt.Sprintf("error executing transition: %s", err.Error())))
 		}
 	}
 
 	return value
 }
 
-func (cmds *Runtime) finish(data any) sobek.Value {
-	return cmds.vm.ToValue(data)
+func (rt *Runtime) finish(data any) sobek.Value {
+	return rt.vm.ToValue(data)
 }
 
-func (cmds *Runtime) print(args ...any) {
+func (rt *Runtime) print(args ...any) {
 	fmt.Print(args[0])
 	if len(args) > 1 {
 		for _, arg := range args[1:] {
@@ -127,15 +127,15 @@ func (cmds *Runtime) print(args ...any) {
 	fmt.Println()
 }
 
-func (cmds *Runtime) RunScript(name, src string) (sobek.Value, error) {
-	return cmds.vm.RunScript(name, src)
+func (rt *Runtime) RunScript(name, src string) (sobek.Value, error) {
+	return rt.vm.RunScript(name, src)
 }
 
-func (cmds *Runtime) RunString(str string) (sobek.Value, error) {
-	return cmds.vm.RunScript("", str)
+func (rt *Runtime) RunString(str string) (sobek.Value, error) {
+	return rt.vm.RunScript("", str)
 }
 
 // GetVar the specified variable in the global context.
-func (r *Runtime) GetVar(name string) sobek.Value {
-	return r.vm.Get(name)
+func (rt *Runtime) GetVar(name string) sobek.Value {
+	return rt.vm.Get(name)
 }

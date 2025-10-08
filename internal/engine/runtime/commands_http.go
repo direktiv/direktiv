@@ -162,8 +162,8 @@ func doHttpRequest(addr string, config any) (*httpResponseObject, error) {
 	return obj, nil
 }
 
-func (cmds *Runtime) populateResponseObject(response *httpResponseObject) *sobek.Object {
-	responseObject := cmds.vm.NewObject()
+func (rt *Runtime) populateResponseObject(response *httpResponseObject) *sobek.Object {
+	responseObject := rt.vm.NewObject()
 	responseObject.Set("responseType", response.responseType)
 	responseObject.Set("error", response.err)
 	responseObject.Set("ok", response.ok)
@@ -172,9 +172,9 @@ func (cmds *Runtime) populateResponseObject(response *httpResponseObject) *sobek
 	responseObject.Set("statusText", response.statusText)
 	responseObject.Set("url", response.url)
 
-	m := cmds.vm.NewObject()
+	m := rt.vm.NewObject()
 	for k, vs := range response.headers {
-		arr := cmds.vm.NewArray()
+		arr := rt.vm.NewArray()
 		for i, v := range vs {
 			arr.Set(strconv.Itoa(i), v)
 		}
@@ -183,39 +183,39 @@ func (cmds *Runtime) populateResponseObject(response *httpResponseObject) *sobek
 	responseObject.Set("headers", m)
 
 	responseObject.Set("text", func(call sobek.FunctionCall) sobek.Value {
-		return cmds.vm.ToValue(string(response.body))
+		return rt.vm.ToValue(string(response.body))
 	})
 	responseObject.Set("json", func(call sobek.FunctionCall) sobek.Value {
 		var r any
 		err := json.Unmarshal(response.body, &r)
 		if err != nil {
-			panic(cmds.vm.ToValue(err.Error()))
+			panic(rt.vm.ToValue(err.Error()))
 		}
 
-		return cmds.vm.ToValue(r)
+		return rt.vm.ToValue(r)
 	})
 
 	return responseObject
 }
 
-func (cmds *Runtime) fetchSync(addr string, config any) *sobek.Object {
+func (rt *Runtime) fetchSync(addr string, config any) *sobek.Object {
 	response, err := doHttpRequest(addr, config)
 	if err != nil {
-		panic(cmds.vm.ToValue(err.Error()))
+		panic(rt.vm.ToValue(err.Error()))
 	}
 
-	return cmds.populateResponseObject(response)
+	return rt.populateResponseObject(response)
 }
 
-func (cmds *Runtime) fetch(addr string, config any) *sobek.Promise {
-	p, resolve, reject := cmds.vm.NewPromise()
+func (rt *Runtime) fetch(addr string, config any) *sobek.Promise {
+	p, resolve, reject := rt.vm.NewPromise()
 	go func() {
 		response, err := doHttpRequest(addr, config)
 		if err != nil {
-			reject(cmds.vm.ToValue(err.Error()))
+			reject(rt.vm.ToValue(err.Error()))
 			return
 		}
-		resolve(cmds.populateResponseObject(response))
+		resolve(rt.populateResponseObject(response))
 	}()
 
 	return p
