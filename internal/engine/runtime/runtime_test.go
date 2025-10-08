@@ -99,3 +99,28 @@ func TestTransitionErrors(t *testing.T) {
 	}
 
 }
+
+func TestParseFuncName(t *testing.T) {
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{"function stateTwo(payload)", "stateTwo"},
+		{"function   myFunc()", "myFunc"},
+		{"  function  spaced  (x, y)", "spaced"},
+		{"function _private(arg)", "_private"},
+		{"function name_with_digits123(a)", "name_with_digits123"},
+		{"function unicodeŁódź(x)", "unicodeŁódź"}, // allowed by our simple splitter
+		{"notAFunction something()", ""},
+		{"function noParen", ""},
+		{"", ""},
+		{"function (x)", ""}, // empty name before '('
+	}
+
+	for _, tc := range tests {
+		got := runtime.ParseFuncNameFromText(tc.in)
+		if got != tc.want {
+			t.Fatalf("ParseFuncName(%q) = %q; want %q", tc.in, got, tc.want)
+		}
+	}
+}

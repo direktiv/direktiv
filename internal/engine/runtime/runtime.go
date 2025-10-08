@@ -116,6 +116,28 @@ func (rt *Runtime) transition(call sobek.FunctionCall) sobek.Value {
 		panic(rt.vm.ToValue("transition requires a function and a payload"))
 	}
 
+	var memory any
+	if err := rt.vm.ExportTo(call.Arguments[1], &memory); err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error exporting transition data: %s", err.Error())))
+	}
+	b, err := json.Marshal(memory)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error marshaling transition data: %s", err.Error())))
+	}
+	var f string
+	if err := rt.vm.ExportTo(call.Arguments[0], &f); err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error exporting transition fn: %s", err.Error())))
+	}
+	fName := ParseFuncNameFromText(f)
+	if fName == "" {
+		panic(rt.vm.ToValue(fmt.Sprintf("error parsing transition fn: %s", f)))
+	}
+
+	err = rt.onTransition(b, fName)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error calling on transition: %s", err.Error())))
+	}
+
 	fn, ok := sobek.AssertFunction(call.Arguments[0])
 	if !ok {
 		panic(rt.vm.ToValue("first parameter of transition is not a function"))
@@ -212,4 +234,21 @@ func ExecScript(script *Script, onFinish OnFinishFunc, onTransition OnTransition
 	}
 
 	return nil
+}
+
+func ParseFuncNameFromText(s string) string {
+	s = strings.TrimSpace(s)
+
+	const prefix = "function "
+	if !strings.HasPrefix(s, prefix) {
+		return ""
+	}
+	s = s[len(prefix):]
+
+	// find the first '(' to isolate the name
+	if idx := strings.Index(s, "("); idx != -1 {
+		return strings.TrimSpace(s[:idx])
+	}
+
+	return ""
 }

@@ -18,13 +18,22 @@ describe('List workflow history', () => {
 			file: `
 function stateOne(payload) {
 	print("RUN STATE FIRST");
-	payload.bar = "foo";
+	payload.one = 1;
 	return transition(stateTwo, payload);
 }
+
 function stateTwo(payload) {
 	print("RUN STATE SECOND");
+	payload.two = 2;
+    return transition(stateThree, payload);
+}
+
+function stateThree(payload) {
+	print("RUN STATE THIRD");
+	payload.three = 3;
     return finish(payload);
-}`		},
+}`
+		},
 	]
 
 	for (let i = 0; i < testCases.length; i++) {
@@ -45,7 +54,47 @@ function stateTwo(payload) {
 			console.log(instanceId)
 			const res = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/instances/${ instanceId }/history`)
 			expect(res.statusCode).toEqual(200)
-			console.log(res.body.data)
+			let history = res.body.data.map(function (item) {
+				return {type: item.type, fn: item.fn, input: item.input, memory: item.memory, output: item.output}
+			})
+
+			expect(history).toEqual(    [
+				{
+					type: 'pending',
+					fn: 'stateOne',
+					input: { foo: 'bar' },
+					memory: undefined,
+					output: undefined
+				},
+				{
+					type: 'running',
+					fn: 'stateOne',
+					input: { foo: 'bar' },
+					memory: undefined,
+					output: undefined
+				},
+				{
+					type: 'running',
+					fn: 'stateTwo',
+					input: undefined,
+					memory: { foo: 'bar', one: 1 },
+					output: undefined
+				},
+				{
+					type: 'running',
+					fn: 'stateThree',
+					input: undefined,
+					memory: { foo: 'bar', one: 1, two: 2 },
+					output: undefined
+				},
+				{
+					type: 'succeeded',
+					fn: undefined,
+					input: undefined,
+					memory: undefined,
+					output: { foo: 'bar', one: 1, three: 3, two: 2 }
+				}
+			])
 		})
 	}
 })

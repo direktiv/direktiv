@@ -107,8 +107,10 @@ func ApplyInstanceEvent(st *InstanceStatus, ev *InstanceEvent) {
 		st.Fn = ev.Fn
 		st.Input = ev.Input
 		st.CreatedAt = ev.Time
-	case "started":
+	case "running":
 		st.StartedAt = ev.Time
+		st.Memory = ev.Memory
+		st.Fn = ev.Fn
 	case "failed":
 		st.EndedAt = ev.Time
 		st.Memory = ev.Memory
