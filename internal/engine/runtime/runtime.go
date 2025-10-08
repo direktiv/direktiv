@@ -9,7 +9,7 @@ import (
 	"github.com/grafana/sobek/parser"
 )
 
-func ExecJSScript(instID uuid.UUID, script string, mappings string, fn string,
+func ExecScript(instID uuid.UUID, script string, mappings string, fn string,
 	input string, metadata map[string]string,
 ) (any, error) {
 	vm := sobek.New()

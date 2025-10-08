@@ -109,7 +109,7 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 		Fn:       fn,
 		Input:    json.RawMessage(input),
 	}
-	err := e.dataBus.PushHistoryStream(ctx, pEv)
+	err := e.dataBus.PushToHistoryStream(ctx, pEv)
 	if err != nil {
 		return nil, fmt.Errorf("push history stream: %w", err)
 	}
@@ -118,7 +118,7 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 		e.dataBus.NotifyInstanceStatus(ctx, instID, notify)
 	}
 
-	err = e.dataBus.PushQueueStream(ctx, pEv)
+	err = e.dataBus.PushToQueueStream(ctx, pEv)
 	if err != nil {
 		return nil, fmt.Errorf("push queue stream: %w", err)
 	}
@@ -138,7 +138,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		Time:       time.Now(),
 	}
 
-	err := e.dataBus.PushHistoryStream(ctx, startEv)
+	err := e.dataBus.PushToHistoryStream(ctx, startEv)
 	if err != nil {
 		return fmt.Errorf("push history start event, inst: %s: %w", inst.InstanceID, err)
 	}
@@ -148,7 +148,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		InstanceID: inst.InstanceID,
 		Namespace:  inst.Namespace,
 	}
-	ret, err := runtime.ExecJSScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input), inst.Metadata)
+	ret, err := runtime.ExecScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input), inst.Metadata)
 	// TODO: remove this debug code.
 	// simulate failing job
 	if simulateErrors && rand.Intn(2) == 0 {
@@ -174,7 +174,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		time.Sleep(10 * time.Second)
 	}
 	endEv.Time = time.Now()
-	err = e.dataBus.PushHistoryStream(ctx, endEv)
+	err = e.dataBus.PushToHistoryStream(ctx, endEv)
 	if err != nil {
 		return fmt.Errorf("push history end event, inst: %s: %w", inst.InstanceID, err)
 	}
