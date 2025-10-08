@@ -61,17 +61,6 @@ const fileTypes = [
 
 const FileTypeSchema = z.enum(fileTypes);
 
-const TSWorkflowErrorsSchema = z.array(
-  z.object({
-    message: z.string().min(1),
-    startLine: z.number(),
-    startColumn: z.number(),
-    endLine: z.number(),
-    endColumn: z.number(),
-    severity: z.enum(["hint", "info", "warning", "error"]),
-  })
-);
-
 /* All filesystem records (including "directories") have these properties. */
 const BaseFileSchema = z.object({
   type: FileTypeSchema,
@@ -165,7 +154,6 @@ export const FileDeletedSchema = z.null();
 export const FileCreatedSchema = z.object({
   data: BaseFileSchema.extend({
     data: z.string().optional(),
-    errors: TSWorkflowErrorsSchema,
   }),
 });
 
@@ -173,7 +161,6 @@ export const FileCreatedSchema = z.object({
 export const FilePatchedSchema = z.object({
   data: BaseFileSchema.extend({
     data: z.string().optional(),
-    errors: TSWorkflowErrorsSchema,
   }),
 });
 
