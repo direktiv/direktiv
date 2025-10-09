@@ -27,6 +27,9 @@ type (
 	OnTransitionFunc func(output []byte, fn string) error
 )
 
+var NoOnFinish = func(output []byte) error { return nil }
+var NoOnTransition = func(output []byte, fn string) error { return nil }
+
 func New(instID uuid.UUID, metadata map[string]string, mappings string, onFinish OnFinishFunc, onTransition OnTransitionFunc) *Runtime {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)

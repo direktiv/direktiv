@@ -38,12 +38,17 @@ func TestActionParsing(t *testing.T) {
 	fmt.Println(ci.ValidationErrors)
 
 	var gotOutput []byte
-	recordOutput := func(output []byte) error {
+	onFinish := func(output []byte) error {
 		gotOutput = output
 		return nil
 	}
+	var gotMemory []string
+	onTransition := func(memory []byte, fn string) error {
+		gotMemory = append(gotMemory, fmt.Sprintf("%s -> %s", fn, memory))
+		return nil
+	}
 
-	rt := runtime.New(uuid.New(), map[string]string{}, "", recordOutput, nil)
+	rt := runtime.New(uuid.New(), map[string]string{}, "", onFinish, onTransition)
 	_, err = rt.RunScript("", script)
 	require.NoError(t, err)
 
