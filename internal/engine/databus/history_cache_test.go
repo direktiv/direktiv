@@ -13,9 +13,7 @@ import (
 // helper to build a rich InstanceEvent for testing.
 func makeEvent(ns string, instID uuid.UUID, seq uint64) engine.InstanceEvent {
 	meta := map[string]string{"k": "v", "x": "y"}
-	in := json.RawMessage(`{"in":1}`)
-	mem := json.RawMessage(`{"mem":true}`)
-	out := json.RawMessage(`{"out":"ok"}`)
+	mem := json.RawMessage(`{"mem":1}`)
 	now := time.Now().UTC()
 
 	return engine.InstanceEvent{
@@ -29,9 +27,7 @@ func makeEvent(ns string, instID uuid.UUID, seq uint64) engine.InstanceEvent {
 		Script:   "script",
 		Mappings: "maps",
 		Fn:       "fn",
-		Input:    in,
 		Memory:   mem,
-		Output:   out,
 		Error:    "",
 
 		Sequence: seq,
@@ -52,7 +48,6 @@ func TestInsertAndSnapshot_FilteringAndDeepCopyOnInsert(t *testing.T) {
 	// Insert a pointer to e1, then mutate the original to ensure the cache cloned it.
 	c.Insert(&e1)
 	e1.Metadata["k"] = "mutated"
-	e1.Input = json.RawMessage(`{"in":999}`)
 	e1.Script = "mutated-script"
 
 	// Insert others normally
@@ -83,8 +78,8 @@ func TestInsertAndSnapshot_FilteringAndDeepCopyOnInsert(t *testing.T) {
 	if snapE1.Metadata["k"] != "v" {
 		t.Fatalf("expected cached metadata['k'] to be 'v', got %q", snapE1.Metadata["k"])
 	}
-	if string(snapE1.Input) != `{"in":1}` {
-		t.Fatalf("expected cached Input to be %s, got %s", `{"in":1}`, string(snapE1.Input))
+	if string(snapE1.Memory) != `{"mem":1}` {
+		t.Fatalf("expected cached Memory to be %s, got %s", `{"mem":1}`, string(snapE1.Memory))
 	}
 	if snapE1.Script != "script" {
 		t.Fatalf("expected cached Script to be 'script', got %q", snapE1.Script)
@@ -113,8 +108,8 @@ func TestSnapshot_ReturnsClones_NotBackedByCache(t *testing.T) {
 
 	// Mutate clone's map and raw messages
 	clone.Metadata["new"] = "field"
-	if len(clone.Input) > 0 {
-		clone.Input[0] = '{' // destructive in-place change
+	if len(clone.Memory) > 0 {
+		clone.Memory[0] = '{' // destructive in-place change
 	}
 	clone.Script = "changed"
 
@@ -130,8 +125,8 @@ func TestSnapshot_ReturnsClones_NotBackedByCache(t *testing.T) {
 		t.Fatalf("cache was mutated via snapshot clone (map)")
 	}
 	// The bytes should be unchanged
-	if string(again.Input) != `{"in":1}` {
-		t.Fatalf("cache was mutated via snapshot clone (raw message). got %s", string(again.Input))
+	if string(again.Memory) != `{"mem":1}` {
+		t.Fatalf("cache was mutated via snapshot clone (raw message). got %s", string(again.Memory))
 	}
 	// String fields (value-copied) should remain original
 	if again.Script != "script" {

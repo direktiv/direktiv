@@ -36,7 +36,6 @@ type InstanceStatus struct {
 	Mappings   string
 	Fn         string
 	Input      json.RawMessage `json:",omitempty"`
-	Memory     json.RawMessage `json:",omitempty"`
 	Output     json.RawMessage `json:",omitempty"`
 	Error      string
 	State      StateCode
@@ -73,10 +72,6 @@ func (i *InstanceStatus) Clone() *InstanceStatus {
 		clone.Input = make(json.RawMessage, len(i.Input))
 		copy(clone.Input, i.Input)
 	}
-	if i.Memory != nil {
-		clone.Memory = make(json.RawMessage, len(i.Memory))
-		copy(clone.Memory, i.Memory)
-	}
 	if i.Output != nil {
 		clone.Output = make(json.RawMessage, len(i.Output))
 		copy(clone.Output, i.Output)
@@ -100,9 +95,7 @@ type InstanceEvent struct {
 	Script   string
 	Mappings string
 	Fn       string
-	Input    json.RawMessage `json:",omitempty"`
 	Memory   json.RawMessage `json:",omitempty"`
-	Output   json.RawMessage `json:",omitempty"`
 	Error    string
 
 	// history stream sequence
@@ -132,9 +125,7 @@ func (e *InstanceEvent) Clone() *InstanceEvent {
 		return dst
 	}
 
-	clone.Input = copyRaw(e.Input)
 	clone.Memory = copyRaw(e.Memory)
-	clone.Output = copyRaw(e.Output)
 
 	return &clone
 }
@@ -151,21 +142,17 @@ func ApplyInstanceEvent(st *InstanceStatus, ev *InstanceEvent) {
 		st.Script = ev.Script
 		st.Mappings = ev.Mappings
 		st.Fn = ev.Fn
-		st.Input = ev.Input
+		st.Input = ev.Memory
 		st.CreatedAt = ev.Time
 	case StateCodeRunning:
 		st.StartedAt = ev.Time
-		st.Memory = ev.Memory
 		st.Fn = ev.Fn
 	case StateCodeFailed:
 		st.EndedAt = ev.Time
-		st.Memory = ev.Memory
-		st.Output = ev.Output
 		st.Error = ev.Error
 	case StateCodeComplete:
 		st.EndedAt = ev.Time
-		st.Memory = ev.Memory
-		st.Output = ev.Output
+		st.Output = ev.Memory
 		st.Error = ev.Error
 	}
 }
