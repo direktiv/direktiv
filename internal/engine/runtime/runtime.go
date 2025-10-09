@@ -195,11 +195,6 @@ func (rt *Runtime) print(args ...any) {
 	fmt.Println()
 }
 
-// TODO: this need to be removed.
-func (rt *Runtime) RunScript(name, src string) (sobek.Value, error) {
-	return rt.vm.RunScript(name, src)
-}
-
 type Script struct {
 	InstID   uuid.UUID
 	Text     string
