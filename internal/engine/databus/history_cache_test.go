@@ -175,12 +175,13 @@ func TestDeleteNamespace_RemovesOnlyMatchingNamespace(t *testing.T) {
 	}
 }
 
-func TestInsert_NilPointerDoesNotPanic(t *testing.T) {
+func TestInsert_NilPointerDoesPanic(t *testing.T) {
 	c := NewHistoryCache()
 	defer func() {
 		if r := recover(); r != nil {
-			t.Fatalf("Insert(nil) panicked: %v", r)
+			return
 		}
+		t.Fatalf("Insert(nil) didn't panic")
 	}()
 	c.Insert(nil)
 
