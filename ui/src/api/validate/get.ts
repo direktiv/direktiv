@@ -34,15 +34,15 @@ export const useSha1Hash = (data: string) => {
 };
 
 export const useValidate = ({ hash }: { hash: string | null }) =>
-  useQuery<MonacoMarkerSchemaType>({
+  useQuery<MonacoMarkerSchemaType | undefined>({
     queryKey: validationKeys.messagesList({
       hash: hash ?? "",
     }),
     queryFn: async () => {
       if (!hash) {
-        return [] as MonacoMarkerSchemaType;
+        return [];
       }
-      return undefined as unknown as MonacoMarkerSchemaType;
+      return undefined;
     },
     enabled: false,
     /**
