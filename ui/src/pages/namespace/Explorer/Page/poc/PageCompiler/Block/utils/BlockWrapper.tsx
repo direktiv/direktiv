@@ -10,7 +10,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { findAncestor, incrementPath, pathsEqual } from "../../context/utils";
+import {
+  findAncestor,
+  incrementPath,
+  isFirstChildPath,
+  pathsEqual,
+} from "../../context/utils";
 import {
   usePage,
   usePageStateContext,
@@ -127,6 +132,12 @@ const EditorBlockWrapper = ({
 
   return (
     <>
+      {isFirstChildPath(blockPath) && (
+        <Dropzone
+          payload={{ ...dropzonePayload, targetPath: blockPath }}
+          validate={validateDropzone}
+        />
+      )}
       <SortableItem
         payload={{
           type: "move",
