@@ -29,23 +29,23 @@ var AllStateCodes = []StateCode{
 }
 
 type InstanceStatus struct {
-	InstanceID uuid.UUID         `json:"instanceId"`
-	Namespace  string            `json:"namespace"`
-	Metadata   map[string]string `json:"metadata"`
-	Script     string            `json:"script,omitempty"`
-	Mappings   string            `json:"mappings,omitempty"`
-	Fn         string            `json:"fn,omitempty"`
-	Input      json.RawMessage   `json:"input,omitempty"`
-	Memory     json.RawMessage   `json:"memory,omitempty"`
-	Output     json.RawMessage   `json:"output,omitempty"`
-	Error      string            `json:"error,omitempty"`
-	State      StateCode         `json:"status"`
-	CreatedAt  time.Time         `json:"createdAt"`
-	StartedAt  time.Time         `json:"StartedAt"`
-	EndedAt    time.Time         `json:"endedAt"`
+	InstanceID uuid.UUID
+	Namespace  string
+	Metadata   map[string]string
+	Script     string
+	Mappings   string
+	Fn         string
+	Input      json.RawMessage
+	Memory     json.RawMessage
+	Output     json.RawMessage
+	Error      string
+	State      StateCode
+	CreatedAt  time.Time
+	StartedAt  time.Time
+	EndedAt    time.Time
 	// history stream sequence this status came from
-	HistorySequence uint64 `json:"historySequence"`
-	Sequence        uint64 `json:"sequence"`
+	HistorySequence uint64
+	Sequence        uint64
 }
 
 func (i *InstanceStatus) StatusString() string {
@@ -90,23 +90,23 @@ func (i *InstanceStatus) IsEndStatus() bool {
 }
 
 type InstanceEvent struct {
-	EventID    uuid.UUID         `json:"eventId"`
-	InstanceID uuid.UUID         `json:"instanceId"`
-	Namespace  string            `json:"namespace"`
-	Metadata   map[string]string `json:"metadata"`
-	Type       StateCode         `json:"type"`
-	Time       time.Time         `json:"time"`
+	EventID    uuid.UUID
+	InstanceID uuid.UUID
+	Namespace  string
+	Metadata   map[string]string
+	Type       StateCode
+	Time       time.Time
 
-	Script   string          `json:"script,omitempty"`
-	Mappings string          `json:"mappings,omitempty"`
-	Fn       string          `json:"fn,omitempty"`
-	Input    json.RawMessage `json:"input,omitempty"`
-	Memory   json.RawMessage `json:"memory,omitempty"`
-	Output   json.RawMessage `json:"output,omitempty"`
-	Error    string          `json:"error,omitempty"`
+	Script   string
+	Mappings string
+	Fn       string
+	Input    json.RawMessage
+	Memory   json.RawMessage
+	Output   json.RawMessage
+	Error    string
 
 	// history stream sequence
-	Sequence uint64 `json:"sequence"`
+	Sequence uint64
 }
 
 func (e *InstanceEvent) Clone() *InstanceEvent {
