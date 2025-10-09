@@ -118,6 +118,7 @@ func (e *InstanceEvent) Clone() *InstanceEvent {
 		}
 		dst := make(json.RawMessage, len(src))
 		copy(dst, src)
+
 		return dst
 	}
 
