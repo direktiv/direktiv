@@ -93,7 +93,7 @@ function stateThree(payload) {
 					sequence: firstSequence++,
 				},
 				{
-					type: 'succeeded',
+					type: 'complete',
 					fn: undefined,
 					input: undefined,
 					memory: undefined,
