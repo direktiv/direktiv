@@ -104,8 +104,8 @@ func (p *projector) handleHistoryMessage(ctx context.Context, msg *nats.Msg) err
 		}
 		_, err = p.js.PublishMsg(msg, opts...)
 		if err == nil {
-			// Update cache immediately to keep endpoint fresh.
-			// p.cache.Upsert(*st)
+			// Update statusCache immediately to keep endpoint fresh.
+			// p.statusCache.Upsert(*st)
 			return nil
 		}
 		// If conflict, loop to re-read and retry.

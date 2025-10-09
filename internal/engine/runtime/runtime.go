@@ -15,15 +15,24 @@ import (
 )
 
 type Runtime struct {
-	vm       *sobek.Runtime
-	instID   uuid.UUID
-	metadata map[string]string
-	onFinish OnFinishFunc
+	vm           *sobek.Runtime
+	instID       uuid.UUID
+	metadata     map[string]string
+	onFinish     OnFinishFunc
+	onTransition OnTransitionFunc
 }
 
-type OnFinishFunc func(output []byte) error
+type (
+	OnFinishFunc     func(output []byte) error
+	OnTransitionFunc func(output []byte, fn string) error
+)
 
-func New(instID uuid.UUID, metadata map[string]string, mappings string, onFinish OnFinishFunc) *Runtime {
+var (
+	NoOnFinish     = func(output []byte) error { return nil }
+	NoOnTransition = func(output []byte, fn string) error { return nil }
+)
+
+func New(instID uuid.UUID, metadata map[string]string, mappings string, onFinish OnFinishFunc, onTransition OnTransitionFunc) *Runtime {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
 
@@ -34,10 +43,11 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string, onFinish
 	}
 
 	rt := &Runtime{
-		vm:       vm,
-		instID:   instID,
-		metadata: metadata,
-		onFinish: onFinish,
+		vm:           vm,
+		instID:       instID,
+		metadata:     metadata,
+		onFinish:     onFinish,
+		onTransition: onTransition,
 	}
 
 	type setFunc struct {
@@ -115,6 +125,28 @@ func (rt *Runtime) transition(call sobek.FunctionCall) sobek.Value {
 		panic(rt.vm.ToValue("transition requires a function and a payload"))
 	}
 
+	var memory any
+	if err := rt.vm.ExportTo(call.Arguments[1], &memory); err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error exporting transition data: %s", err.Error())))
+	}
+	b, err := json.Marshal(memory)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error marshaling transition data: %s", err.Error())))
+	}
+	var f string
+	if err := rt.vm.ExportTo(call.Arguments[0], &f); err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error exporting transition fn: %s", err.Error())))
+	}
+	fName := ParseFuncNameFromText(f)
+	if fName == "" {
+		panic(rt.vm.ToValue(fmt.Sprintf("error parsing transition fn: %s", f)))
+	}
+
+	err = rt.onTransition(b, fName)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error calling on transition: %s", err.Error())))
+	}
+
 	fn, ok := sobek.AssertFunction(call.Arguments[0])
 	if !ok {
 		panic(rt.vm.ToValue("first parameter of transition is not a function"))
@@ -146,7 +178,7 @@ func (rt *Runtime) finish(data sobek.Value) sobek.Value {
 
 	err = rt.onFinish(b)
 	if err != nil {
-		panic(rt.vm.ToValue(fmt.Sprintf("error calling commit finish: %s", err.Error())))
+		panic(rt.vm.ToValue(fmt.Sprintf("error calling on finish: %s", err.Error())))
 	}
 
 	return sobek.Null()
@@ -187,11 +219,8 @@ type Script struct {
 	Metadata map[string]string
 }
 
-func ExecScript(script *Script, onFinish OnFinishFunc,
-) error {
-	// add commands
-
-	rt := New(script.InstID, script.Metadata, script.Mappings, onFinish)
+func ExecScript(script *Script, onFinish OnFinishFunc, onTransition OnTransitionFunc) error {
+	rt := New(script.InstID, script.Metadata, script.Mappings, onFinish, onTransition)
 
 	_, err := rt.vm.RunString(script.Text)
 	if err != nil {
@@ -214,4 +243,21 @@ func ExecScript(script *Script, onFinish OnFinishFunc,
 	}
 
 	return nil
+}
+
+func ParseFuncNameFromText(s string) string {
+	s = strings.TrimSpace(s)
+
+	const prefix = "function "
+	if !strings.HasPrefix(s, prefix) {
+		return ""
+	}
+	s = s[len(prefix):]
+
+	// find the first '(' to isolate the name
+	if idx := strings.Index(s, "("); idx != -1 {
+		return strings.TrimSpace(s[:idx])
+	}
+
+	return ""
 }

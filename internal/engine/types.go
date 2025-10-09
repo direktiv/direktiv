@@ -43,6 +43,7 @@ func (i *InstanceStatus) StatusString() string {
 }
 
 func (i *InstanceStatus) Clone() *InstanceStatus {
+	// start with a shallow copy
 	clone := *i
 
 	// deep copy the Metadata map
@@ -93,6 +94,36 @@ type InstanceEvent struct {
 	Sequence uint64 `json:"sequence"`
 }
 
+func (e *InstanceEvent) Clone() *InstanceEvent {
+	// start with a shallow copy
+	clone := *e
+
+	// deep copy Metadata
+	if e.Metadata != nil {
+		clone.Metadata = make(map[string]string, len(e.Metadata))
+		for k, v := range e.Metadata {
+			clone.Metadata[k] = v
+		}
+	}
+
+	// deep copy json.RawMessage fields
+	copyRaw := func(src json.RawMessage) json.RawMessage {
+		if src == nil {
+			return nil
+		}
+		dst := make(json.RawMessage, len(src))
+		copy(dst, src)
+
+		return dst
+	}
+
+	clone.Input = copyRaw(e.Input)
+	clone.Memory = copyRaw(e.Memory)
+	clone.Output = copyRaw(e.Output)
+
+	return &clone
+}
+
 func ApplyInstanceEvent(st *InstanceStatus, ev *InstanceEvent) {
 	st.Status = ev.Type
 	st.HistorySequence = ev.Sequence //
@@ -107,8 +138,10 @@ func ApplyInstanceEvent(st *InstanceStatus, ev *InstanceEvent) {
 		st.Fn = ev.Fn
 		st.Input = ev.Input
 		st.CreatedAt = ev.Time
-	case "started":
+	case "running":
 		st.StartedAt = ev.Time
+		st.Memory = ev.Memory
+		st.Fn = ev.Fn
 	case "failed":
 		st.EndedAt = ev.Time
 		st.Memory = ev.Memory
@@ -128,11 +161,14 @@ type WorkflowRunner interface {
 
 type DataBus interface {
 	Start(lc *lifecycle.Manager) error
-	PushToHistoryStream(ctx context.Context, event *InstanceEvent) error
-	PushToQueueStream(ctx context.Context, event *InstanceEvent) error
 
-	FetchInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*InstanceStatus, int)
+	PublishInstanceHistoryEvent(ctx context.Context, event *InstanceEvent) error
+	PublishInstanceQueueEvent(ctx context.Context, event *InstanceEvent) error
+
+	ListInstanceStatuses(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*InstanceStatus, int)
+	GetInstanceHistory(ctx context.Context, namespace string, instanceID uuid.UUID) []*InstanceEvent
+
 	NotifyInstanceStatus(ctx context.Context, instanceID uuid.UUID, done chan<- *InstanceStatus)
 
-	DeleteNamespace(ctx context.Context, name string) error
+	DeleteNamespace(ctx context.Context, namespace string) error
 }
