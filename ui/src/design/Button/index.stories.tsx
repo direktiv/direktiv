@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { MoreHorizontal, MoreVertical, ZoomIn } from "lucide-react";
 import { useEffect, useState } from "react";
 import Button from "./index";

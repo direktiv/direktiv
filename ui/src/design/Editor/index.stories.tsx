@@ -8,7 +8,7 @@ import {
 } from "./languageSamples";
 import { Card } from "../Card";
 import Editor from "./index";
-import type { Meta } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 
 export default {
   title: "Components/Editor",

@@ -48,11 +48,13 @@ export const Authdialog = () => {
 
   const { mutate: authenticate, isPending } = useAuthenticate({
     onSuccess: (isKeyCorrect, apiKey) => {
-      isKeyCorrect
-        ? storeApiKey(apiKey)
-        : setError("apiKey", {
-            message: t("pages.authenticate.wrongKey"),
-          });
+      if (isKeyCorrect) {
+        storeApiKey(apiKey);
+      } else {
+        setError("apiKey", {
+          message: t("pages.authenticate.wrongKey"),
+        });
+      }
     },
   });
 

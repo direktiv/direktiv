@@ -59,7 +59,7 @@ const MirrorKeepSshPatchSchema = z.object({
   insecure: z.boolean(),
 });
 
-const MirrorPostPatchSchema = z.union([
+const _MirrorPostPatchSchema = z.union([
   MirrorPublicPostSchema,
   MirrorTokenPostSchema,
   MirrorSshPostSchema,
@@ -68,4 +68,4 @@ const MirrorPostPatchSchema = z.union([
 ]);
 
 export type MirrorSchemaType = z.infer<typeof MirrorSchema>;
-export type MirrorPostPatchSchemaType = z.infer<typeof MirrorPostPatchSchema>;
+export type MirrorPostPatchSchemaType = z.infer<typeof _MirrorPostPatchSchema>;

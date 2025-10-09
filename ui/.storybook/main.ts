@@ -11,11 +11,7 @@ export default {
   },
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
 
-  addons: [
-    "@storybook/addon-essentials",
-    "@storybook/addon-interactions",
-    "@chromatic-com/storybook",
-  ],
+  addons: ["@chromatic-com/storybook", "@storybook/addon-docs"],
   framework: {
     name: "@storybook/react-vite",
     options: {},

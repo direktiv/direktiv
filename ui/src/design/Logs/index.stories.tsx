@@ -1,5 +1,5 @@
 import { LogEntry, Logs } from "./index";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import Button from "../Button";
 import { Card } from "../Card";
 import Editor from "../Editor";

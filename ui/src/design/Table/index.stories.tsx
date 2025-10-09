@@ -1,5 +1,5 @@
 import { Contact, File, MoreVertical } from "lucide-react";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
   NoPermissions as NoPermissionsComponent,
   NoResult,

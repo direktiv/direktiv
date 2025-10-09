@@ -27,7 +27,7 @@ const ScrollContainer = ({ logs }: { logs: string[] }) => {
 
   useEffect(() => {
     if (logs.length && scrolledToBottom) {
-      rowVirtualizer.scrollToIndex(logs.length - 1), { align: "end" };
+      rowVirtualizer.scrollToIndex(logs.length - 1, { align: "end" });
     }
   }, [logs.length, rowVirtualizer, scrolledToBottom]);
 

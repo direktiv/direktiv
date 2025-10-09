@@ -45,7 +45,9 @@ export const createApiErrorFromResponse = async (
   try {
     body = await getErrorJson(res);
   } catch (error) {
-    process.env.NODE_ENV !== "test" && console.error(error);
+    if (process.env.NODE_ENV !== "test") {
+      console.error(error);
+    }
   }
 
   return {
