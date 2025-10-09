@@ -95,7 +95,7 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
                     {hasRows ? (
                       currentItems.map((item, index) => (
                         <VariableContextProvider
-                          key={`${totalPages}-${index}`}
+                          key={`${currentItems.length}-${index}`}
                           variables={{
                             ...parentVariables,
                             loop: {
