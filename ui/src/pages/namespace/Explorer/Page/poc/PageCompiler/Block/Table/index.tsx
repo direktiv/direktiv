@@ -69,7 +69,9 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
           currentPage,
           totalPages,
         }) => {
-          currentPage > totalPages && goToFirstPage();
+          if (currentPage > totalPages) {
+            goToFirstPage();
+          }
           return (
             <>
               <Card>
