@@ -51,14 +51,12 @@ function stateThree(payload) {
 		it(`should list /${ testCase.name } workflow history`, async () => {
 			const res = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/instances/${ instanceId }/history`)
 			expect(res.statusCode).toEqual(200)
-			console.log(res.body.data)
-			const history = res.body.data.map(item => ({ type: item.Type,
-				fn: item.Fn,
-				input: item.Input,
-				memory: item.Memory,
-				output: item.Output,
-				sequence: item.Sequence }))
-			console.log(history)
+			const history = res.body.data.map(item => ({ type: item.type,
+				fn: item.fn,
+				input: item.input,
+				memory: item.memory,
+				output: item.output,
+				sequence: item.sequence }))
 
 			let firstSequence = history[0].sequence
 			expect(history).toEqual([
@@ -66,39 +64,39 @@ function stateThree(payload) {
 					type: 'pending',
 					fn: 'stateOne',
 					input: { foo: 'bar' },
-					memory: null,
-					output: null,
+					memory: undefined,
+					output: undefined,
 					sequence: firstSequence++,
 				},
 				{
 					type: 'running',
 					fn: 'stateOne',
 					input: { foo: 'bar' },
-					memory: null,
-					output: null,
+					memory: undefined,
+					output: undefined,
 					sequence: firstSequence++,
 				},
 				{
 					type: 'running',
 					fn: 'stateTwo',
-					input: null,
+					input: undefined,
 					memory: { foo: 'bar', one: 1 },
-					output: null,
+					output: undefined,
 					sequence: firstSequence++,
 				},
 				{
 					type: 'running',
 					fn: 'stateThree',
-					input: null,
+					input: undefined,
 					memory: { foo: 'bar', one: 1, two: 2 },
-					output: null,
+					output: undefined,
 					sequence: firstSequence++,
 				},
 				{
 					type: 'complete',
-					fn: "",
-					input: null,
-					memory: null,
+					fn: undefined,
+					input: undefined,
+					memory: undefined,
 					output: { foo: 'bar', one: 1, three: 3, two: 2 },
 					sequence: firstSequence++,
 				},

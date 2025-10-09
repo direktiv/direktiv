@@ -35,9 +35,9 @@ type InstanceStatus struct {
 	Script     string
 	Mappings   string
 	Fn         string
-	Input      json.RawMessage
-	Memory     json.RawMessage
-	Output     json.RawMessage
+	Input      json.RawMessage `json:",omitempty"`
+	Memory     json.RawMessage `json:",omitempty"`
+	Output     json.RawMessage `json:",omitempty"`
 	Error      string
 	State      StateCode
 	CreatedAt  time.Time
@@ -100,9 +100,9 @@ type InstanceEvent struct {
 	Script   string
 	Mappings string
 	Fn       string
-	Input    json.RawMessage
-	Memory   json.RawMessage
-	Output   json.RawMessage
+	Input    json.RawMessage `json:",omitempty"`
+	Memory   json.RawMessage `json:",omitempty"`
+	Output   json.RawMessage `json:",omitempty"`
 	Error    string
 
 	// history stream sequence

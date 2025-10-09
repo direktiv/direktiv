@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -45,11 +46,40 @@ type InstanceData struct {
 	Metadata       []byte  `json:"metadata"`
 }
 
-type instController struct {
-	db        *gorm.DB
-	manager   any
-	engine    *engine.Engine
-	scheduler *sched.Scheduler
+type InstanceEvent struct {
+	EventID    uuid.UUID         `json:"eventId"`
+	InstanceID uuid.UUID         `json:"instanceId"`
+	Namespace  string            `json:"namespace"`
+	Metadata   map[string]string `json:"metadata"`
+	Type       string            `json:"type"`
+	Time       time.Time         `json:"time"`
+	Script     string            `json:"script,omitempty"`
+	Mappings   string            `json:"mappings,omitempty"`
+	Fn         string            `json:"fn,omitempty"`
+	Input      json.RawMessage   `json:"input,omitempty"`
+	Memory     json.RawMessage   `json:"memory,omitempty"`
+	Output     json.RawMessage   `json:"output,omitempty"`
+	Error      string            `json:"error,omitempty"`
+	Sequence   uint64            `json:"sequence"`
+}
+
+func convertToInstanceEvent(data *engine.InstanceEvent) *InstanceEvent {
+	return &InstanceEvent{
+		EventID:    data.EventID,
+		InstanceID: data.InstanceID,
+		Namespace:  data.Namespace,
+		Metadata:   data.Metadata,
+		Type:       string(data.Type),
+		Time:       data.Time,
+		Script:     data.Script,
+		Mappings:   data.Mappings,
+		Fn:         data.Fn,
+		Input:      data.Input,
+		Memory:     data.Memory,
+		Output:     data.Output,
+		Error:      data.Error,
+		Sequence:   data.Sequence,
+	}
 }
 
 func convertInstanceData(data *engine.InstanceStatus) *InstanceData {
@@ -84,6 +114,13 @@ func convertInstanceData(data *engine.InstanceStatus) *InstanceData {
 	}
 
 	return resp
+}
+
+type instController struct {
+	db        *gorm.DB
+	manager   any
+	engine    *engine.Engine
+	scheduler *sched.Scheduler
 }
 
 func (e *instController) mountRouter(r chi.Router) {
@@ -218,6 +255,10 @@ func (e *instController) history(w http.ResponseWriter, r *http.Request) {
 		writeEngineError(w, err)
 		return
 	}
+	out := make([]any, len(list))
+	for i := range list {
+		out[i] = convertToInstanceEvent(list[i])
+	}
 
-	writeJSON(w, list)
+	writeJSON(w, out)
 }
