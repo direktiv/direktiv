@@ -7,7 +7,6 @@ import (
 	"github.com/direktiv/direktiv/internal/compiler"
 	"github.com/direktiv/direktiv/internal/engine/runtime"
 	"github.com/google/uuid"
-	"github.com/grafana/sobek"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,8 +32,8 @@ func TestActionParsing(t *testing.T) {
 
 	ci := compiler.NewCompileItem([]byte(script), "")
 	err := ci.TranspileAndValidate()
-
 	require.NoError(t, err)
+
 	fmt.Println(ci.ValidationErrors)
 
 	var gotOutput []byte
@@ -48,14 +47,17 @@ func TestActionParsing(t *testing.T) {
 		return nil
 	}
 
-	rt := runtime.New(uuid.New(), map[string]string{}, "", onFinish, onTransition)
-	_, err = rt.RunScript("", script)
+	err = runtime.ExecScript(&runtime.Script{
+		InstID:   uuid.New(),
+		Text:     script,
+		Mappings: "",
+		Fn:       ci.Config().Config.State,
+		Input:    "{}",
+		Metadata: map[string]string{
+			"namespace": "test",
+		},
+	}, onFinish, onTransition)
 	require.NoError(t, err)
 
-	start, ok := sobek.AssertFunction(rt.GetVar("stateOne"))
-	require.True(t, ok)
-
-	_, err = start(sobek.Undefined())
-	require.NoError(t, err)
 	require.Equal(t, "\"done\"", string(gotOutput))
 }
