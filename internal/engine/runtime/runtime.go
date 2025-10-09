@@ -197,11 +197,6 @@ func (rt *Runtime) RunScript(name, src string) (sobek.Value, error) {
 }
 
 // TODO: this need to be removed.
-func (rt *Runtime) RunString(str string) (sobek.Value, error) {
-	return rt.vm.RunScript("", str)
-}
-
-// TODO: this need to be removed.
 func (rt *Runtime) GetVar(name string) sobek.Value {
 	return rt.vm.Get(name)
 }
