@@ -20,10 +20,9 @@ export const useSha1Hash = (data: string) => {
   useEffect(() => {
     let canceled = false;
 
-    (async () => {
-      const result = await sha1(data);
+    sha1(data).then((result) => {
       if (!canceled) setHash(result);
-    })();
+    });
 
     return () => {
       canceled = true;
