@@ -56,9 +56,7 @@ type InstanceEvent struct {
 	Script     string            `json:"script,omitempty"`
 	Mappings   string            `json:"mappings,omitempty"`
 	Fn         string            `json:"fn,omitempty"`
-	Input      json.RawMessage   `json:"input,omitempty"`
 	Memory     json.RawMessage   `json:"memory,omitempty"`
-	Output     json.RawMessage   `json:"output,omitempty"`
 	Error      string            `json:"error,omitempty"`
 	Sequence   uint64            `json:"sequence"`
 }
@@ -74,9 +72,7 @@ func convertToInstanceEvent(data *engine.InstanceEvent) *InstanceEvent {
 		Script:     data.Script,
 		Mappings:   data.Mappings,
 		Fn:         data.Fn,
-		Input:      data.Input,
 		Memory:     data.Memory,
-		Output:     data.Output,
 		Error:      data.Error,
 		Sequence:   data.Sequence,
 	}

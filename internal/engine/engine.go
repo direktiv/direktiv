@@ -102,7 +102,7 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 		Script:   script,
 		Mappings: mappings,
 		Fn:       fn,
-		Input:    json.RawMessage(input),
+		Memory:   json.RawMessage(input),
 	}
 	err := e.dataBus.PublishInstanceHistoryEvent(ctx, pEv)
 	if err != nil {
@@ -131,7 +131,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		Namespace:  inst.Namespace,
 		Type:       StateCodeRunning,
 		Fn:         inst.Fn,
-		Input:      inst.Input,
+		Memory:     inst.Memory,
 		Time:       time.Now(),
 	}
 
@@ -145,7 +145,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		Text:     inst.Script,
 		Mappings: inst.Mappings,
 		Fn:       inst.Fn,
-		Input:    string(inst.Input),
+		Input:    string(inst.Memory),
 		Metadata: inst.Metadata,
 	}
 
@@ -155,7 +155,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 			InstanceID: inst.InstanceID,
 			Namespace:  inst.Namespace,
 			Type:       StateCodeComplete,
-			Output:     output,
+			Memory:     output,
 			Time:       time.Now(),
 		}
 
