@@ -9,7 +9,7 @@ import (
 
 type HistoryCache struct {
 	mu    sync.RWMutex
-	items []engine.InstanceEvent // key: orderID
+	items []engine.InstanceEvent
 }
 
 func NewHistoryCache() *HistoryCache {
@@ -21,6 +21,10 @@ func NewHistoryCache() *HistoryCache {
 func (c *HistoryCache) Insert(s *engine.InstanceEvent) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	// if the sequence is less than the last one, we don't need to add it as it could be a duplicate
+	if len(c.items) > 0 && s.Sequence <= c.items[len(c.items)-1].Sequence {
+		return
+	}
 	cp := s.Clone()
 	c.items = append(c.items, *cp)
 }
@@ -42,12 +46,12 @@ func (c *HistoryCache) Snapshot(namespace string, instanceID uuid.UUID) []*engin
 func (c *HistoryCache) DeleteNamespace(name string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	cp := make([]engine.InstanceEvent, 0, len(c.items))
+	newItems := make([]engine.InstanceEvent, 0, len(c.items))
 	for i := range c.items {
-		v := &c.items[i]
+		v := c.items[i]
 		if v.Namespace != name {
-			cp[i] = *v
+			newItems = append(newItems, v)
 		}
 	}
-	c.items = cp
+	c.items = newItems
 }

@@ -46,53 +46,57 @@ function stateThree(payload) {
 			const res = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/instances?path=/${ testCase.name }&wait=true`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
-			console.log(res.body.data.id)
 			instanceId = res.body.data.id
 		})
 
 		it(`should list /${ testCase.name } workflow history`, async () => {
-			console.log(instanceId)
 			const res = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/instances/${ instanceId }/history`)
 			expect(res.statusCode).toEqual(200)
 			let history = res.body.data.map(function (item) {
-				return {type: item.type, fn: item.fn, input: item.input, memory: item.memory, output: item.output}
+				return {type: item.type, fn: item.fn, input: item.input, memory: item.memory, output: item.output, sequence: item.sequence}
 			})
 
+			let firstSequence = history[0].sequence
 			expect(history).toEqual(    [
 				{
 					type: 'pending',
 					fn: 'stateOne',
 					input: { foo: 'bar' },
 					memory: undefined,
-					output: undefined
+					output: undefined,
+					sequence: firstSequence++,
 				},
 				{
 					type: 'running',
 					fn: 'stateOne',
 					input: { foo: 'bar' },
 					memory: undefined,
-					output: undefined
+					output: undefined,
+					sequence: firstSequence++,
 				},
 				{
 					type: 'running',
 					fn: 'stateTwo',
 					input: undefined,
 					memory: { foo: 'bar', one: 1 },
-					output: undefined
+					output: undefined,
+					sequence: firstSequence++,
 				},
 				{
 					type: 'running',
 					fn: 'stateThree',
 					input: undefined,
 					memory: { foo: 'bar', one: 1, two: 2 },
-					output: undefined
+					output: undefined,
+					sequence: firstSequence++,
 				},
 				{
 					type: 'succeeded',
 					fn: undefined,
 					input: undefined,
 					memory: undefined,
-					output: { foo: 'bar', one: 1, three: 3, two: 2 }
+					output: { foo: 'bar', one: 1, three: 3, two: 2 },
+					sequence: firstSequence++,
 				}
 			])
 		})

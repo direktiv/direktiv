@@ -134,7 +134,11 @@ func (d *DataBus) startStatusCache(ctx context.Context) error {
 			// best-effort; ignore bad payloads
 			return
 		}
-
+		metadata, err := msg.Metadata()
+		if err != nil {
+			return
+		}
+		ev.Sequence = metadata.Sequence.Stream
 		d.historyCache.Insert(&ev)
 	}, nats.AckNone())
 	if err != nil {
