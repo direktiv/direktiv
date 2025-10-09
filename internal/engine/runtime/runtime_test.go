@@ -6,7 +6,6 @@ import (
 
 	"github.com/direktiv/direktiv/internal/engine/runtime"
 	"github.com/google/uuid"
-	"github.com/grafana/sobek"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,9 +21,7 @@ func TestTransition(t *testing.T) {
 		return nil
 	}
 
-	rt := runtime.New(uuid.New(), map[string]string{}, "", onFinish, onTransition)
-
-	_, err := rt.RunScript("", `
+	script := `
 		function start() {
 			return transition(end, "returnValue")
 		}	
@@ -33,14 +30,16 @@ func TestTransition(t *testing.T) {
 			log(payload)
 			return finish(payload)
 		}	
-	`)
-	require.NoError(t, err)
+	`
 
-	start, ok := sobek.AssertFunction(rt.GetVar("start"))
-	require.True(t, ok)
-	_, err = start(sobek.Undefined())
+	err := runtime.ExecScript(&runtime.Script{
+		InstID:   uuid.New(),
+		Text:     script,
+		Mappings: "",
+		Fn:       "start",
+		Input:    "{}",
+	}, onFinish, onTransition)
 	require.NoError(t, err)
-
 	require.Equal(t, "\"returnValue\"", string(gotOutput))
 }
 
@@ -95,11 +94,13 @@ func TestTransitionErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rt := runtime.New(uuid.New(), map[string]string{}, "", runtime.NoOnFinish, runtime.NoOnTransition)
-			rt.RunScript("", tt.js)
-			start, ok := sobek.AssertFunction(rt.GetVar("start"))
-			require.True(t, ok)
-			_, err := start(sobek.Undefined())
+			err := runtime.ExecScript(&runtime.Script{
+				InstID:   uuid.New(),
+				Text:     tt.js,
+				Mappings: "",
+				Fn:       "start",
+				Input:    "{}",
+			}, runtime.NoOnFinish, runtime.NoOnTransition)
 			require.Error(t, err)
 		})
 	}

@@ -196,11 +196,6 @@ func (rt *Runtime) RunScript(name, src string) (sobek.Value, error) {
 	return rt.vm.RunScript(name, src)
 }
 
-// TODO: this need to be removed.
-func (rt *Runtime) GetVar(name string) sobek.Value {
-	return rt.vm.Get(name)
-}
-
 type Script struct {
 	InstID   uuid.UUID
 	Text     string
