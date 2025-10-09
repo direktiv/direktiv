@@ -43,9 +43,7 @@ func (i *InstanceStatus) StatusString() string {
 }
 
 func (i *InstanceStatus) Clone() *InstanceStatus {
-	if i == nil {
-		return nil
-	}
+	// start with a shallow copy
 	clone := *i
 
 	// deep copy the Metadata map
@@ -97,9 +95,6 @@ type InstanceEvent struct {
 }
 
 func (e *InstanceEvent) Clone() *InstanceEvent {
-	if e == nil {
-		return nil
-	}
 	// start with a shallow copy
 	clone := *e
 
