@@ -32,8 +32,7 @@ function stateThree(payload) {
 	print("RUN STATE THIRD");
 	payload.three = 3;
     return finish(payload);
-}`
-		},
+}` },
 	]
 
 	for (let i = 0; i < testCases.length; i++) {
@@ -52,12 +51,15 @@ function stateThree(payload) {
 		it(`should list /${ testCase.name } workflow history`, async () => {
 			const res = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/instances/${ instanceId }/history`)
 			expect(res.statusCode).toEqual(200)
-			let history = res.body.data.map(function (item) {
-				return {type: item.type, fn: item.fn, input: item.input, memory: item.memory, output: item.output, sequence: item.sequence}
-			})
+			const history = res.body.data.map(item => ({ type: item.type,
+				fn: item.fn,
+				input: item.input,
+				memory: item.memory,
+				output: item.output,
+				sequence: item.sequence }))
 
 			let firstSequence = history[0].sequence
-			expect(history).toEqual(    [
+			expect(history).toEqual([
 				{
 					type: 'pending',
 					fn: 'stateOne',
@@ -97,7 +99,7 @@ function stateThree(payload) {
 					memory: undefined,
 					output: { foo: 'bar', one: 1, three: 3, two: 2 },
 					sequence: firstSequence++,
-				}
+				},
 			])
 		})
 	}
