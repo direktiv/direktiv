@@ -34,7 +34,6 @@ type InstanceStatus struct {
 	Metadata   map[string]string
 	Script     string
 	Mappings   string
-	Fn         string
 	Input      json.RawMessage `json:",omitempty"`
 	Output     json.RawMessage `json:",omitempty"`
 	Error      string
@@ -141,12 +140,10 @@ func ApplyInstanceEvent(st *InstanceStatus, ev *InstanceEvent) {
 		st.Metadata = ev.Metadata
 		st.Script = ev.Script
 		st.Mappings = ev.Mappings
-		st.Fn = ev.Fn
 		st.Input = ev.Memory
 		st.CreatedAt = ev.Time
 	case StateCodeRunning:
 		st.StartedAt = ev.Time
-		st.Fn = ev.Fn
 	case StateCodeFailed:
 		st.EndedAt = ev.Time
 		st.Error = ev.Error
