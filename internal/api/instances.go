@@ -167,7 +167,7 @@ func (e *instController) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := e.engine.GetInstanceByID(r.Context(), namespace, instanceID)
+	data, err := e.engine.GetInstanceStatus(r.Context(), namespace, instanceID)
 	if err != nil {
 		writeEngineError(w, err)
 		return
@@ -182,7 +182,7 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 	limit := ParseQueryParam[int](r, "limit", 0)
 	offset := ParseQueryParam[int](r, "offset", 0)
 
-	list, total, err := e.engine.GetInstances(r.Context(), namespace, limit, offset)
+	list, total, err := e.engine.ListInstanceStatuses(r.Context(), namespace, limit, offset)
 	if err != nil {
 		writeEngineError(w, err)
 		return
@@ -213,7 +213,7 @@ func (e *instController) history(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	list, err := e.engine.GetInstanceHistoryByID(r.Context(), namespace, instanceID)
+	list, err := e.engine.GetInstanceHistory(r.Context(), namespace, instanceID)
 	if err != nil {
 		writeEngineError(w, err)
 		return

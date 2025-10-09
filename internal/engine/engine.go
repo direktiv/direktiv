@@ -195,7 +195,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	return nil
 }
 
-func (e *Engine) GetInstances(ctx context.Context, namespace string, limit int, offset int) ([]*InstanceStatus, int, error) {
+func (e *Engine) ListInstanceStatuses(ctx context.Context, namespace string, limit int, offset int) ([]*InstanceStatus, int, error) {
 	data, total := e.dataBus.ListInstanceStatuses(ctx, namespace, uuid.Nil, limit, offset)
 	if len(data) == 0 {
 		return nil, 0, ErrDataNotFound
@@ -204,7 +204,7 @@ func (e *Engine) GetInstances(ctx context.Context, namespace string, limit int, 
 	return data, total, nil
 }
 
-func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.UUID) (*InstanceStatus, error) {
+func (e *Engine) GetInstanceStatus(ctx context.Context, namespace string, id uuid.UUID) (*InstanceStatus, error) {
 	data, _ := e.dataBus.ListInstanceStatuses(ctx, namespace, id, 0, 0)
 	if len(data) == 0 {
 		return nil, ErrDataNotFound
@@ -213,7 +213,7 @@ func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.
 	return data[0], nil
 }
 
-func (e *Engine) GetInstanceHistoryByID(ctx context.Context, namespace string, id uuid.UUID) ([]*InstanceEvent, error) {
+func (e *Engine) GetInstanceHistory(ctx context.Context, namespace string, id uuid.UUID) ([]*InstanceEvent, error) {
 	list := e.dataBus.GetInstanceHistory(ctx, namespace, id)
 	if len(list) == 0 {
 		return nil, ErrDataNotFound
