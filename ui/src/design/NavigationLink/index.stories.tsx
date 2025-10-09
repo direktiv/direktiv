@@ -8,7 +8,7 @@ import {
   Settings,
   Users,
 } from "lucide-react";
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 
 import { Card } from "../Card";
 import { NavigationLink } from "./index";

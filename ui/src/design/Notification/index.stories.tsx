@@ -9,7 +9,7 @@ import {
 } from "./";
 
 // eslint-disable-next-line sort-imports
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { NavigationLink } from "../NavigationLink";
 
 const meta = {

@@ -8,7 +8,7 @@ import { ButtonBar } from "~/design/ButtonBar";
 import { Datepicker } from "../Datepicker";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
-import type { Meta } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { format } from "date-fns";
 import { useState } from "react";
 
