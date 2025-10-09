@@ -1,6 +1,7 @@
 import { MarkerSeverity } from "monaco-editor";
 import { WorkflowValidationSchema } from ".";
 import type { editor } from "monaco-editor";
+import z from "zod";
 
 const severityMap: Record<string, MarkerSeverity> = {
   error: MarkerSeverity.Error,
@@ -20,3 +21,5 @@ export const MonacoMarkerSchema = WorkflowValidationSchema.transform(
       severity: severityMap[item.severity] || MarkerSeverity.Error,
     }))
 );
+
+export type MonacoMarkerSchemaType = z.infer<typeof MonacoMarkerSchema>;

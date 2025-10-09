@@ -1,4 +1,6 @@
-import { WorkflowValidationSchemaType } from "./schema";
+import { useEffect, useState } from "react";
+
+import { MonacoMarkerSchemaType } from "./schema/markers";
 import { useQuery } from "@tanstack/react-query";
 import { validationKeys } from ".";
 
@@ -12,17 +14,40 @@ export const sha1 = async (data: string) => {
   return hashHex;
 };
 
-export const useValidate = async ({ data }: { data: string }) => {
-  const hash = await sha1(data);
-  return useQuery<WorkflowValidationSchemaType>({
+export const useSha1Hash = (data: string) => {
+  const [hash, setHash] = useState<string | null>(null);
+
+  useEffect(() => {
+    let canceled = false;
+
+    (async () => {
+      const result = await sha1(data);
+      if (!canceled) setHash(result);
+    })();
+
+    return () => {
+      canceled = true;
+    };
+  }, [data]);
+
+  return hash;
+};
+
+export const useValidate = ({ hash }: { hash: string | null }) =>
+  useQuery<MonacoMarkerSchemaType>({
     queryKey: validationKeys.messagesList({
-      hash,
+      hash: hash ?? "",
     }),
+    queryFn: async () => {
+      if (!hash) {
+        return [] as MonacoMarkerSchemaType;
+      }
+      return undefined as unknown as MonacoMarkerSchemaType;
+    },
+    enabled: false,
     /**
      * This hook is only used to subscribe to the correct cache key. Data for this key
      * is currently added through mutations (subject to change when we get a dedicated
      * endpoint for ts-workflow validation).
      */
-    enabled: false,
   });
-};

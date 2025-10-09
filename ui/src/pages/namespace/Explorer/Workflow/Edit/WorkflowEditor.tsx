@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
 import { Play, Save } from "lucide-react";
 import { decode, encode } from "js-base64";
+import { sha1, useSha1Hash, useValidate } from "~/api/validate/get";
 import {
   useSetUnsavedChanges,
   useUnsavedChanges,
@@ -12,12 +13,15 @@ import { CodeEditor } from "./CodeEditor";
 import { FileSchemaType } from "~/api/files/schema";
 import { MonacoMarkerSchema } from "~/api/validate/schema/markers";
 import RunWorkflow from "../components/RunWorkflow";
+import { WorkflowValidationSchemaType } from "~/api/validate/schema";
 import { editor } from "monaco-editor";
+import queryClient from "~/util/queryClient";
 import { useNamespace } from "~/util/store/namespace";
 import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
 import useTsWorkflowLibs from "~/hooks/useTsWorkflowLibs";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
+import { validationKeys } from "~/api/validate";
 
 const WorkflowEditor: FC<{
   data: NonNullable<FileSchemaType>;
@@ -25,7 +29,6 @@ const WorkflowEditor: FC<{
   const { t } = useTranslation();
   const namespace = useNamespace();
   const [error, setError] = useState<string | undefined>();
-  const [markers, setMarkers] = useState<editor.IMarkerData[]>([]);
   const { refetch: updateNotificationBell } = useNotifications();
 
   const hasUnsavedChanges = useUnsavedChanges();
@@ -35,6 +38,8 @@ const WorkflowEditor: FC<{
 
   const workflowDataFromServer = decode(data?.data ?? "");
   const [editorContent, setEditorContent] = useState(workflowDataFromServer);
+  const hash = useSha1Hash(workflowDataFromServer);
+  const { data: markers } = useValidate({ hash });
 
   const onEditorContentUpdate = (newData: string) => {
     setHasUnsavedChanges(workflowDataFromServer !== newData);
@@ -46,18 +51,20 @@ const WorkflowEditor: FC<{
       error && setError(error);
     },
     onSuccess: async (data) => {
-      const markers = MonacoMarkerSchema.parse(data.data.errors);
-      setMarkers(markers);
       // write validation errors from response to validation cache
-      // const content = decode(data.data.data);
-      // const { errors }: { errors: WorkflowValidationSchemaType } = data.data;
-      // const hash = await sha1(content);
-      // queryClient.setQueryData<WorkflowValidationSchemaType>(
-      //   validationKeys.messagesList({
-      //     hash,
-      //   }),
-      //   () => errors
-      // );
+      const content = decode(data.data.data);
+      const { errors }: { errors: WorkflowValidationSchemaType } = data.data;
+      const hash = await sha1(content);
+      const markers = MonacoMarkerSchema.parse(errors);
+      if (markers) {
+        queryClient.setQueryData<editor.IMarkerData[]>(
+          validationKeys.messagesList({
+            hash,
+          }),
+          () => markers
+        );
+      }
+
       /**
        * updating a workflow might introduce an uninitialized secret. We need
        * to update the notification bell, to see potential new messages.

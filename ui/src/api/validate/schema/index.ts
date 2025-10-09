@@ -10,3 +10,7 @@ export const WorkflowValidationSchema = z.array(
     severity: z.enum(["hint", "info", "warning", "error", ""]),
   })
 );
+
+export type WorkflowValidationSchemaType = z.infer<
+  typeof WorkflowValidationSchema
+>;
