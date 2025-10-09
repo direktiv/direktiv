@@ -10,16 +10,14 @@ import {
 import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
 import { FileSchemaType } from "~/api/files/schema";
+import { MonacoMarkerSchema } from "~/api/validate/schema";
 import RunWorkflow from "../components/RunWorkflow";
-import { WorkflowValidationSchemaType } from "~/api/validate/schema";
-import queryClient from "~/util/queryClient";
-import { sha1 } from "~/api/validate/get";
+import { editor } from "monaco-editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
 import useTsWorkflowLibs from "~/hooks/useTsWorkflowLibs";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
-import { validationKeys } from "~/api/validate";
 
 const WorkflowEditor: FC<{
   data: NonNullable<FileSchemaType>;
@@ -27,6 +25,7 @@ const WorkflowEditor: FC<{
   const { t } = useTranslation();
   const namespace = useNamespace();
   const [error, setError] = useState<string | undefined>();
+  const [markers, setMarkers] = useState<editor.IMarkerData[]>([]);
   const { refetch: updateNotificationBell } = useNotifications();
 
   const hasUnsavedChanges = useUnsavedChanges();
@@ -47,16 +46,18 @@ const WorkflowEditor: FC<{
       error && setError(error);
     },
     onSuccess: async (data) => {
+      const markers = MonacoMarkerSchema.parse(data.data.errors);
+      setMarkers(markers);
       // write validation errors from response to validation cache
-      const content = decode(data.data.data);
-      const { errors }: { errors: WorkflowValidationSchemaType } = data.data;
-      const hash = await sha1(content);
-      queryClient.setQueryData<WorkflowValidationSchemaType>(
-        validationKeys.messagesList({
-          hash,
-        }),
-        () => errors
-      );
+      // const content = decode(data.data.data);
+      // const { errors }: { errors: WorkflowValidationSchemaType } = data.data;
+      // const hash = await sha1(content);
+      // queryClient.setQueryData<WorkflowValidationSchemaType>(
+      //   validationKeys.messagesList({
+      //     hash,
+      //   }),
+      //   () => errors
+      // );
       /**
        * updating a workflow might introduce an uninitialized secret. We need
        * to update the notification bell, to see potential new messages.
@@ -91,6 +92,7 @@ const WorkflowEditor: FC<{
         onSave={onSave}
         language="typescript"
         tsLibs={tsLibs}
+        markers={markers}
       />
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
         <Dialog>
