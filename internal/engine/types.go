@@ -43,6 +43,9 @@ func (i *InstanceStatus) StatusString() string {
 }
 
 func (i *InstanceStatus) Clone() *InstanceStatus {
+	if i == nil {
+		return nil
+	}
 	clone := *i
 
 	// deep copy the Metadata map
@@ -91,6 +94,38 @@ type InstanceEvent struct {
 
 	// history stream sequence
 	Sequence uint64 `json:"sequence"`
+}
+
+func (e *InstanceEvent) Clone() *InstanceEvent {
+	if e == nil {
+		return nil
+	}
+	// start with a shallow copy
+	clone := *e
+
+	// deep copy Metadata
+	if e.Metadata != nil {
+		clone.Metadata = make(map[string]string, len(e.Metadata))
+		for k, v := range e.Metadata {
+			clone.Metadata[k] = v
+		}
+	}
+
+	// deep copy json.RawMessage fields
+	copyRaw := func(src json.RawMessage) json.RawMessage {
+		if src == nil {
+			return nil
+		}
+		dst := make(json.RawMessage, len(src))
+		copy(dst, src)
+		return dst
+	}
+
+	clone.Input = copyRaw(e.Input)
+	clone.Memory = copyRaw(e.Memory)
+	clone.Output = copyRaw(e.Output)
+
+	return &clone
 }
 
 func ApplyInstanceEvent(st *InstanceStatus, ev *InstanceEvent) {

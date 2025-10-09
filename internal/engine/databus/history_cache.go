@@ -18,13 +18,11 @@ func NewHistoryCache() *HistoryCache {
 	}
 }
 
-// TODO: fix immutablility
 func (c *HistoryCache) Insert(s *engine.InstanceEvent) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
-	c.items = append(c.items, *s)
-
+	cp := s.Clone()
+	c.items = append(c.items, *cp)
 }
 
 func (c *HistoryCache) Snapshot(namespace string, instanceID uuid.UUID) []*engine.InstanceEvent {
@@ -34,7 +32,7 @@ func (c *HistoryCache) Snapshot(namespace string, instanceID uuid.UUID) []*engin
 	for i := range c.items {
 		v := &c.items[i]
 		if v.InstanceID == instanceID && v.Namespace == namespace {
-			out = append(out, v)
+			out = append(out, v.Clone())
 		}
 	}
 
