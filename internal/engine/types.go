@@ -167,8 +167,8 @@ type WorkflowRunner interface {
 type DataBus interface {
 	Start(lc *lifecycle.Manager) error
 
-	PublishHistoryEvent(ctx context.Context, event *InstanceEvent) error
-	PublishQueueEvent(ctx context.Context, event *InstanceEvent) error
+	PublishInstanceHistoryEvent(ctx context.Context, event *InstanceEvent) error
+	PublishInstanceQueueEvent(ctx context.Context, event *InstanceEvent) error
 
 	ListInstanceStatuses(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*InstanceStatus, int)
 	GetInstanceHistory(ctx context.Context, namespace string, instanceID uuid.UUID) []*InstanceEvent

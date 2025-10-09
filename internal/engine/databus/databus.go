@@ -45,7 +45,7 @@ func (d *DataBus) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (d *DataBus) PublishHistoryEvent(ctx context.Context, event *engine.InstanceEvent) error {
+func (d *DataBus) PublishInstanceHistoryEvent(ctx context.Context, event *engine.InstanceEvent) error {
 	data, err := json.Marshal(event)
 	if err != nil {
 		return fmt.Errorf("marshal event: %w", err)
@@ -60,7 +60,7 @@ func (d *DataBus) PublishHistoryEvent(ctx context.Context, event *engine.Instanc
 	return err
 }
 
-func (d *DataBus) PublishQueueEvent(ctx context.Context, event *engine.InstanceEvent) error {
+func (d *DataBus) PublishInstanceQueueEvent(ctx context.Context, event *engine.InstanceEvent) error {
 	data, err := json.Marshal(event)
 	if err != nil {
 		return fmt.Errorf("marshal event: %w", err)

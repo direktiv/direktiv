@@ -104,7 +104,7 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 		Fn:       fn,
 		Input:    json.RawMessage(input),
 	}
-	err := e.dataBus.PublishHistoryEvent(ctx, pEv)
+	err := e.dataBus.PublishInstanceHistoryEvent(ctx, pEv)
 	if err != nil {
 		return nil, fmt.Errorf("push history stream: %w", err)
 	}
@@ -113,7 +113,7 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 		e.dataBus.NotifyInstanceStatus(ctx, instID, notify)
 	}
 
-	err = e.dataBus.PublishQueueEvent(ctx, pEv)
+	err = e.dataBus.PublishInstanceQueueEvent(ctx, pEv)
 	if err != nil {
 		return nil, fmt.Errorf("push queue stream: %w", err)
 	}
@@ -135,7 +135,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		Time:       time.Now(),
 	}
 
-	err := e.dataBus.PublishHistoryEvent(ctx, startEv)
+	err := e.dataBus.PublishInstanceHistoryEvent(ctx, startEv)
 	if err != nil {
 		return fmt.Errorf("push history start event, inst: %s: %w", inst.InstanceID, err)
 	}
@@ -159,7 +159,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 			Time:       time.Now(),
 		}
 
-		return e.dataBus.PublishHistoryEvent(ctx, endEv)
+		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
 	onTransition := func(memory []byte, fn string) error {
 		endEv := &InstanceEvent{
@@ -172,7 +172,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 			Time:       time.Now(),
 		}
 
-		return e.dataBus.PublishHistoryEvent(ctx, endEv)
+		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
 
 	err = runtime.ExecScript(sc, onFinish, onTransition)
@@ -187,7 +187,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		Error:      err.Error(),
 		Time:       time.Now(),
 	}
-	err = e.dataBus.PublishHistoryEvent(ctx, endEv)
+	err = e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	if err != nil {
 		return fmt.Errorf("push history end event, inst: %s: %w", inst.InstanceID, err)
 	}
