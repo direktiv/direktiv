@@ -104,7 +104,7 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 		Fn:       fn,
 		Input:    json.RawMessage(input),
 	}
-	err := e.dataBus.PushToHistoryStream(ctx, pEv)
+	err := e.dataBus.PublishHistoryEvent(ctx, pEv)
 	if err != nil {
 		return nil, fmt.Errorf("push history stream: %w", err)
 	}
@@ -113,7 +113,7 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 		e.dataBus.NotifyInstanceStatus(ctx, instID, notify)
 	}
 
-	err = e.dataBus.PushToQueueStream(ctx, pEv)
+	err = e.dataBus.PublishQueueEvent(ctx, pEv)
 	if err != nil {
 		return nil, fmt.Errorf("push queue stream: %w", err)
 	}
@@ -135,7 +135,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		Time:       time.Now(),
 	}
 
-	err := e.dataBus.PushToHistoryStream(ctx, startEv)
+	err := e.dataBus.PublishHistoryEvent(ctx, startEv)
 	if err != nil {
 		return fmt.Errorf("push history start event, inst: %s: %w", inst.InstanceID, err)
 	}
@@ -159,7 +159,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 			Time:       time.Now(),
 		}
 
-		return e.dataBus.PushToHistoryStream(ctx, endEv)
+		return e.dataBus.PublishHistoryEvent(ctx, endEv)
 	}
 	onTransition := func(memory []byte, fn string) error {
 		endEv := &InstanceEvent{
@@ -172,7 +172,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 			Time:       time.Now(),
 		}
 
-		return e.dataBus.PushToHistoryStream(ctx, endEv)
+		return e.dataBus.PublishHistoryEvent(ctx, endEv)
 	}
 
 	err = runtime.ExecScript(sc, onFinish, onTransition)
@@ -187,7 +187,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		Error:      err.Error(),
 		Time:       time.Now(),
 	}
-	err = e.dataBus.PushToHistoryStream(ctx, endEv)
+	err = e.dataBus.PublishHistoryEvent(ctx, endEv)
 	if err != nil {
 		return fmt.Errorf("push history end event, inst: %s: %w", inst.InstanceID, err)
 	}
@@ -196,7 +196,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 }
 
 func (e *Engine) GetInstances(ctx context.Context, namespace string, limit int, offset int) ([]*InstanceStatus, int, error) {
-	data, total := e.dataBus.FetchInstanceStatus(ctx, namespace, uuid.Nil, limit, offset)
+	data, total := e.dataBus.ListInstanceStatuses(ctx, namespace, uuid.Nil, limit, offset)
 	if len(data) == 0 {
 		return nil, 0, ErrDataNotFound
 	}
@@ -205,7 +205,7 @@ func (e *Engine) GetInstances(ctx context.Context, namespace string, limit int, 
 }
 
 func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.UUID) (*InstanceStatus, error) {
-	data, _ := e.dataBus.FetchInstanceStatus(ctx, namespace, id, 0, 0)
+	data, _ := e.dataBus.ListInstanceStatuses(ctx, namespace, id, 0, 0)
 	if len(data) == 0 {
 		return nil, ErrDataNotFound
 	}
@@ -214,7 +214,7 @@ func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.
 }
 
 func (e *Engine) GetInstanceHistoryByID(ctx context.Context, namespace string, id uuid.UUID) ([]*InstanceEvent, error) {
-	list := e.dataBus.FetchInstanceHistoryByID(ctx, namespace, id)
+	list := e.dataBus.GetInstanceHistory(ctx, namespace, id)
 	if len(list) == 0 {
 		return nil, ErrDataNotFound
 	}

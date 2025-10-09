@@ -45,7 +45,7 @@ func (d *DataBus) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (d *DataBus) PushToHistoryStream(ctx context.Context, event *engine.InstanceEvent) error {
+func (d *DataBus) PublishHistoryEvent(ctx context.Context, event *engine.InstanceEvent) error {
 	data, err := json.Marshal(event)
 	if err != nil {
 		return fmt.Errorf("marshal event: %w", err)
@@ -60,7 +60,7 @@ func (d *DataBus) PushToHistoryStream(ctx context.Context, event *engine.Instanc
 	return err
 }
 
-func (d *DataBus) PushToQueueStream(ctx context.Context, event *engine.InstanceEvent) error {
+func (d *DataBus) PublishQueueEvent(ctx context.Context, event *engine.InstanceEvent) error {
 	data, err := json.Marshal(event)
 	if err != nil {
 		return fmt.Errorf("marshal event: %w", err)
@@ -75,7 +75,7 @@ func (d *DataBus) PushToQueueStream(ctx context.Context, event *engine.InstanceE
 	return err
 }
 
-func (d *DataBus) FetchInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*engine.InstanceStatus, int) {
+func (d *DataBus) ListInstanceStatuses(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*engine.InstanceStatus, int) {
 	return d.cache.SnapshotPage(filterNamespace, filterInstanceID, limit, offset)
 }
 
@@ -148,6 +148,6 @@ func (d *DataBus) startStatusCache(ctx context.Context) error {
 	return nil
 }
 
-func (d *DataBus) FetchInstanceHistoryByID(ctx context.Context, namespace string, instanceID uuid.UUID) []*engine.InstanceEvent {
+func (d *DataBus) GetInstanceHistory(ctx context.Context, namespace string, instanceID uuid.UUID) []*engine.InstanceEvent {
 	return d.historyCache.Snapshot(namespace, instanceID)
 }

@@ -166,13 +166,14 @@ type WorkflowRunner interface {
 
 type DataBus interface {
 	Start(lc *lifecycle.Manager) error
-	PushToHistoryStream(ctx context.Context, event *InstanceEvent) error
-	PushToQueueStream(ctx context.Context, event *InstanceEvent) error
 
-	FetchInstanceStatus(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*InstanceStatus, int)
-	FetchInstanceHistoryByID(ctx context.Context, namespace string, instanceID uuid.UUID) []*InstanceEvent
+	PublishHistoryEvent(ctx context.Context, event *InstanceEvent) error
+	PublishQueueEvent(ctx context.Context, event *InstanceEvent) error
+
+	ListInstanceStatuses(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*InstanceStatus, int)
+	GetInstanceHistory(ctx context.Context, namespace string, instanceID uuid.UUID) []*InstanceEvent
 
 	NotifyInstanceStatus(ctx context.Context, instanceID uuid.UUID, done chan<- *InstanceStatus)
 
-	DeleteNamespace(ctx context.Context, name string) error
+	DeleteNamespace(ctx context.Context, namespace string) error
 }
