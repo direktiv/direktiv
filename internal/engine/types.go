@@ -9,6 +9,25 @@ import (
 	"github.com/google/uuid"
 )
 
+type StateCode string
+
+const (
+	StateCodePending   StateCode = "pending"
+	StateCodeRunning   StateCode = "running"
+	StateCodeComplete  StateCode = "complete"
+	StateCodeFailed    StateCode = "failed"
+	StateCodeCancelled StateCode = "cancelled"
+	StateCodeCrashed   StateCode = "crashed"
+)
+
+var AllStateCodes = []StateCode{
+	StateCodePending,
+	StateCodeFailed,
+	StateCodeComplete,
+	StateCodeCancelled,
+	StateCodeCrashed,
+}
+
 type InstanceStatus struct {
 	InstanceID uuid.UUID         `json:"instanceId"`
 	Namespace  string            `json:"namespace"`
@@ -20,7 +39,7 @@ type InstanceStatus struct {
 	Memory     json.RawMessage   `json:"memory,omitempty"`
 	Output     json.RawMessage   `json:"output,omitempty"`
 	Error      string            `json:"error,omitempty"`
-	Status     string            `json:"status"`
+	State      StateCode         `json:"status"`
 	CreatedAt  time.Time         `json:"createdAt"`
 	StartedAt  time.Time         `json:"StartedAt"`
 	EndedAt    time.Time         `json:"endedAt"`
@@ -30,16 +49,12 @@ type InstanceStatus struct {
 }
 
 func (i *InstanceStatus) StatusString() string {
-	switch i.Status {
-	case "running":
-		return "pending"
-	case "failed":
-		return "failed"
-	case "succeeded":
-		return "complete"
+	switch i.State {
+	case StateCodeRunning:
+		return string(StateCodePending)
 	}
 
-	return i.Status
+	return string(i.State)
 }
 
 func (i *InstanceStatus) Clone() *InstanceStatus {
@@ -71,7 +86,7 @@ func (i *InstanceStatus) Clone() *InstanceStatus {
 }
 
 func (i *InstanceStatus) IsEndStatus() bool {
-	return i.Status == "succeeded" || i.Status == "failed"
+	return i.State == StateCodeComplete || i.State == StateCodeFailed || i.State == StateCodeCancelled
 }
 
 type InstanceEvent struct {
@@ -79,7 +94,7 @@ type InstanceEvent struct {
 	InstanceID uuid.UUID         `json:"instanceId"`
 	Namespace  string            `json:"namespace"`
 	Metadata   map[string]string `json:"metadata"`
-	Type       string            `json:"type"`
+	Type       StateCode         `json:"type"`
 	Time       time.Time         `json:"time"`
 
 	Script   string          `json:"script,omitempty"`
@@ -125,11 +140,11 @@ func (e *InstanceEvent) Clone() *InstanceEvent {
 }
 
 func ApplyInstanceEvent(st *InstanceStatus, ev *InstanceEvent) {
-	st.Status = ev.Type
+	st.State = ev.Type
 	st.HistorySequence = ev.Sequence //
 
 	switch ev.Type {
-	case "pending":
+	case StateCodePending:
 		st.InstanceID = ev.InstanceID
 		st.Namespace = ev.Namespace
 		st.Metadata = ev.Metadata
@@ -138,16 +153,16 @@ func ApplyInstanceEvent(st *InstanceStatus, ev *InstanceEvent) {
 		st.Fn = ev.Fn
 		st.Input = ev.Input
 		st.CreatedAt = ev.Time
-	case "running":
+	case StateCodeRunning:
 		st.StartedAt = ev.Time
 		st.Memory = ev.Memory
 		st.Fn = ev.Fn
-	case "failed":
+	case StateCodeFailed:
 		st.EndedAt = ev.Time
 		st.Memory = ev.Memory
 		st.Output = ev.Output
 		st.Error = ev.Error
-	case "succeeded":
+	case StateCodeComplete:
 		st.EndedAt = ev.Time
 		st.Memory = ev.Memory
 		st.Output = ev.Output

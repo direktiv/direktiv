@@ -44,14 +44,11 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	allStatuses := []string{
-		"pending", "failed", "complete", "cancelled", "crashed",
-	}
 	stats := make(map[string]int)
 	stats["total"] = 0
 
-	for _, s := range allStatuses {
-		stats[s] = 0
+	for _, s := range engine.AllStateCodes {
+		stats[string(s)] = 0
 	}
 
 	foundMatching := false
