@@ -10,7 +10,7 @@ import {
 import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
 import { FileSchemaType } from "~/api/files/schema";
-import { MonacoMarkerSchema } from "~/api/validate/schema";
+import { MonacoMarkerSchema } from "~/api/validate/schema/markers";
 import RunWorkflow from "../components/RunWorkflow";
 import { editor } from "monaco-editor";
 import { useNamespace } from "~/util/store/namespace";
