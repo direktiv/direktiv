@@ -84,6 +84,13 @@ describe("isFirstChildPath", () => {
     const result = isFirstChildPath(secondColumnBlockPath);
     expect(result).toEqual(false);
   });
+
+  test("it should return false for the empty page", () => {
+    const emptyPageBlockPath: BlockPathType = [];
+
+    const result = isFirstChildPath(emptyPageBlockPath);
+    expect(result).toEqual(false);
+  });
 });
 
 describe("isPage", () => {
