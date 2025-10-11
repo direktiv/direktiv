@@ -14,7 +14,7 @@ import (
 func makeEvent(ns string, instID uuid.UUID, seq uint64) engine.InstanceEvent {
 	meta := map[string]string{"k": "v", "x": "y"}
 	mem := json.RawMessage(`{"mem":1}`)
-	now := time.Now().UTC()
+	now := time.Now()
 
 	return engine.InstanceEvent{
 		EventID:    uuid.New(),

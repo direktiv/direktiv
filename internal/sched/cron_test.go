@@ -6,7 +6,7 @@ import (
 )
 
 func mustTime(y int, m time.Month, d, hh, mm, ss int) time.Time {
-	return time.Date(y, m, d, hh, mm, ss, 0, time.UTC)
+	return time.Date(y, m, d, hh, mm, ss, 0, time.Local)
 }
 
 func TestCalculateCronExpr(t *testing.T) {
