@@ -9,7 +9,7 @@ import (
 
 type StatusCache struct {
 	mu    sync.RWMutex
-	items []engine.InstanceStatus // key: orderID
+	items []engine.InstanceStatus
 	index map[uuid.UUID]int
 }
 
@@ -26,7 +26,7 @@ func (c *StatusCache) Upsert(s *engine.InstanceStatus) {
 	i, ok := c.index[s.InstanceID]
 
 	// if not found, add it
-	if !ok {
+	if !ok || i < 0 || i >= len(c.items) {
 		cp := s.Clone()
 		c.items = append(c.items, *cp)
 		c.index[s.InstanceID] = len(c.items) - 1
@@ -56,10 +56,9 @@ func (c *StatusCache) SnapshotPage(filterNamespace string, filterInstanceID uuid
 	total := 0
 	for i := len(c.items) - 1; i >= 0; i-- {
 		v := &c.items[i]
-		if v.InstanceID != filterInstanceID && filterInstanceID != uuid.Nil {
-			continue
-		}
-		if v.Namespace != filterNamespace && filterNamespace != "" {
+		matchID := filterInstanceID == uuid.Nil || v.InstanceID == filterInstanceID
+		matchNS := filterNamespace == "" || v.Namespace == filterNamespace
+		if !matchID || !matchNS {
 			continue
 		}
 		total++
