@@ -127,11 +127,6 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 		return nil, fmt.Errorf("nats jetstream: %w", err)
 	}
 
-	err = resetStreams(ctx, js)
-	if err != nil {
-		return nil, fmt.Errorf("nats reset streams: %w", err)
-	}
-
 	// 1- ensure streams
 	for _, desc := range allDescriptors {
 		err = ensureStream(ctx, js, desc.streamConfig)
@@ -155,7 +150,7 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 }
 
 // TODO: remove this debug code.
-func resetStreams(ctx context.Context, js nats.JetStreamContext) error {
+func ResetStreams(ctx context.Context, js nats.JetStreamContext) error {
 	streams := js.StreamNames()
 	for s := range streams {
 		if err := js.DeleteStream(s); err != nil {

@@ -90,7 +90,6 @@ func TestScheduler_TestProcessDueRules(t *testing.T) {
 }
 
 func TestScheduler_EndToEnd(t *testing.T) {
-	return
 	connStr, err := intNats.NewTestNats(t)
 	require.NoError(t, err)
 
