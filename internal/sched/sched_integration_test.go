@@ -31,7 +31,7 @@ func TestScheduler_TestProcessDueRules(t *testing.T) {
 	js, err := intNats.SetupJetStream(context.Background(), nc)
 	require.NoError(t, err)
 
-	start := time.Date(2025, 1, 1, 1, 0, 0, 0, time.UTC)
+	start := time.Date(2025, 1, 1, 1, 0, 0, 0, time.Local)
 	clk := tclock.NewFakeClock(start)
 
 	// Build scheduler (real JS, real cache)
@@ -41,7 +41,7 @@ func TestScheduler_TestProcessDueRules(t *testing.T) {
 	require.NoError(t, s.startRuleSubscription(ctx))
 
 	// Seed one rule message in the rule stream as if SetRule had been called.
-	now := clk.Now().UTC()
+	now := clk.Now()
 	rule := &Rule{
 		ID:           "r1",
 		Namespace:    "ns",
@@ -90,8 +90,6 @@ func TestScheduler_TestProcessDueRules(t *testing.T) {
 }
 
 func TestScheduler_EndToEnd(t *testing.T) {
-	// TODO: yassir, fix this test
-	return
 	connStr, err := intNats.NewTestNats(t)
 	require.NoError(t, err)
 
@@ -102,7 +100,7 @@ func TestScheduler_EndToEnd(t *testing.T) {
 	var scheds []schedConn
 
 	lc := lifecycle.New(context.Background(), syscall.SIGQUIT)
-	start := time.Date(2025, 1, 1, 1, 0, 0, 0, time.UTC)
+	start := time.Date(2025, 1, 1, 1, 0, 0, 0, time.Local)
 	clk := tclock.NewFakeClock(start)
 	go func() {
 		for i := 0; i < 100; i++ {
