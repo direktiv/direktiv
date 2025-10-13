@@ -11,7 +11,7 @@ export const createFile = async ({
   content,
   namespace,
   type,
-  mimeType = "application/yaml",
+  mimeType = "application/x-typescript",
   path = "/",
 }: {
   name: string;
