@@ -47,7 +47,7 @@ const WorkflowEditor: FC<{
       error && setError(error);
     },
     onSuccess: async (data: SaveFileResponseSchemaType) => {
-      await updateValidationCache({ response: data });
+      await updateValidationCache(data);
       /**
        * updating a workflow might introduce an uninitialized secret. We need
        * to update the notification bell, to see potential new messages.

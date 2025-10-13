@@ -35,11 +35,9 @@ export const useSha1Hash = (data: string) => {
   return hash;
 };
 
-export const updateValidationCache = async ({
-  response,
-}: {
-  response: SaveFileResponseSchemaType;
-}): Promise<void> => {
+export const updateValidationCache = async (
+  response: SaveFileResponseSchemaType
+): Promise<void> => {
   const { errors, data } = response.data;
   if (data === undefined) {
     return;
