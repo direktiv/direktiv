@@ -240,7 +240,7 @@ test("it is possible to create a workflow without providing the .yaml file exten
     page,
     "it creates the workflow and loads the edit page"
   ).toHaveURL(
-    `/n/${namespace}/explorer/workflow/edit/${filenameWithoutExtension}.yaml`
+    `/n/${namespace}/explorer/workflow/edit/${filenameWithoutExtension}.wf.ts`
   );
 
   await expect(
@@ -251,16 +251,16 @@ test("it is possible to create a workflow without providing the .yaml file exten
   await expect(
     page.getByTestId("breadcrumb-segment"),
     "breadcrumbs reflect the file name"
-  ).toHaveText(`${filenameWithoutExtension}.yaml`);
+  ).toHaveText(`${filenameWithoutExtension}.wf.ts`);
 
   await expect(
     page.getByTestId("workflow-header"),
     "the page heading contains the file name"
-  ).toHaveText(`${filenameWithoutExtension}.yaml`);
+  ).toHaveText(`${filenameWithoutExtension}.wf.ts`);
 
   const nodeCreated = checkIfFileExists({
     namespace,
-    path: `/${filenameWithoutExtension}.yaml`,
+    path: `/${filenameWithoutExtension}.wf.ts`,
   });
   await expect(nodeCreated).toBeTruthy();
 });
@@ -284,16 +284,16 @@ test("when creating a workflow, the name (before extension) may be the same as a
   await expect(
     page,
     "it creates the workflow and loads the edit page"
-  ).toHaveURL(`/n/${namespace}/explorer/workflow/edit/${directoryName}.yaml`);
+  ).toHaveURL(`/n/${namespace}/explorer/workflow/edit/${directoryName}.wf.ts`);
 
   await expect(
     page.getByTestId("workflow-header"),
     "the page heading contains the file name"
-  ).toHaveText(`${directoryName}.yaml`);
+  ).toHaveText(`${directoryName}.wf.ts`);
 
   const nodeCreated = await checkIfFileExists({
     namespace,
-    path: `/${directoryName}.yaml`,
+    path: `/${directoryName}.wf.ts`,
   });
   await expect(nodeCreated).toBeTruthy();
 });
@@ -301,7 +301,7 @@ test("when creating a workflow, the name (before extension) may be the same as a
 test("it is not possible to create a workflow when the name already exists", async ({
   page,
 }) => {
-  const alreadyExists = "workflow.yaml";
+  const alreadyExists = "workflow.wf.ts";
   await createWorkflow(namespace, alreadyExists);
 
   // go to tree root
@@ -321,7 +321,7 @@ test("it is not possible to create a workflow when the name already exists", asy
 test("it is not possible to create a workflow when the name already exists and the file extension is added automatically", async ({
   page,
 }) => {
-  const alreadyExists = "workflow.yaml";
+  const alreadyExists = "workflow.wf.ts";
   const typedInName = "workflow";
   await createWorkflow(namespace, alreadyExists);
 
@@ -340,8 +340,8 @@ test("it is not possible to create a workflow when the name already exists and t
 });
 
 test(`it is possible to rename a workflow`, async ({ page }) => {
-  const oldName = "old-name.yaml";
-  const newName = "new-name.yaml";
+  const oldName = "old-name.wf.ts";
+  const newName = "new-name.wf.ts";
   await createWorkflow(namespace, oldName);
 
   await page.goto(`/n/${namespace}/explorer/tree/`);
@@ -386,9 +386,9 @@ test(`it is possible to rename a workflow`, async ({ page }) => {
 test(`when renaming a workflow, the name (before extension) may be the same as a directory name at the same level`, async ({
   page,
 }) => {
-  const oldName = "old-name.yaml";
+  const oldName = "old-name.wf.ts";
   const directoryName = "directory";
-  const newName = `${directoryName}.yaml`;
+  const newName = `${directoryName}.ft.ts`;
   await createDirectory({ namespace, name: directoryName });
   await createWorkflow(namespace, oldName);
 
@@ -434,9 +434,9 @@ test(`when renaming a workflow, the name (before extension) may be the same as a
 test(`it will automatically add a yaml extension when renaming a workflow`, async ({
   page,
 }) => {
-  const oldName = "old-name.yaml";
+  const oldName = "old-name.ft.ts";
   const newNameWithoutYamlExtension = "new-name";
-  const newNameWithYamlExtension = `${newNameWithoutYamlExtension}.yaml`;
+  const newNameWithYamlExtension = `${newNameWithoutYamlExtension}.ft.ts`;
   await createWorkflow(namespace, oldName);
 
   await page.goto(`/n/${namespace}/explorer/tree/`);
@@ -484,8 +484,8 @@ test(`it will automatically add a yaml extension when renaming a workflow`, asyn
 test(`it is not possible to rename a workflow when the name already exists`, async ({
   page,
 }) => {
-  const tobeRenamed = "workflow-a.yaml";
-  const alreadyExists = "workflow-b.yaml";
+  const tobeRenamed = "workflow-a.ft.ts";
+  const alreadyExists = "workflow-b.ft.ts";
   await createWorkflow(namespace, tobeRenamed);
   await createWorkflow(namespace, alreadyExists);
 
@@ -507,8 +507,8 @@ test(`it is not possible to rename a workflow when the name already exists`, asy
 test(`it is not possible to rename a workflow when the name already exists and extension is added automatically`, async ({
   page,
 }) => {
-  const tobeRenamed = "workflow-a.yaml";
-  const alreadyExists = "workflow-b.yaml";
+  const tobeRenamed = "workflow-a.ft.ts";
+  const alreadyExists = "workflow-b.ft.ts";
   const alreadyExistsWithoutExtension = "workflow-b";
   await createWorkflow(namespace, tobeRenamed);
   await createWorkflow(namespace, alreadyExists);
@@ -695,7 +695,7 @@ test("it is not possible to navigate to a workflow that does not exist", async (
   page,
 }) => {
   await page.goto(
-    `/n/${namespace}/explorer/workflow/edit/this-file-does-not-exists.yaml`
+    `/n/${namespace}/explorer/workflow/edit/this-file-does-not-exist.yaml`
   );
 
   await expect(page.getByTestId("error-title")).toContainText("404");
