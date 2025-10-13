@@ -1,8 +1,9 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
+import { FileSchemaType, SaveFileResponseSchemaType } from "~/api/files/schema";
 import { Play, Save } from "lucide-react";
 import { decode, encode } from "js-base64";
-import { sha1, useSha1Hash, useValidate } from "~/api/validate/get";
+import { updateValidationCache, useSha1Hash } from "~/api/validate/utils";
 import {
   useSetUnsavedChanges,
   useUnsavedChanges,
@@ -10,18 +11,13 @@ import {
 
 import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
-import { FileSchemaType } from "~/api/files/schema";
-import { MonacoMarkerSchema } from "~/api/validate/schema/markers";
 import RunWorkflow from "../components/RunWorkflow";
-import { WorkflowValidationSchemaType } from "~/api/validate/schema";
-import { editor } from "monaco-editor";
-import queryClient from "~/util/queryClient";
 import { useNamespace } from "~/util/store/namespace";
 import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
 import useTsWorkflowLibs from "~/hooks/useTsWorkflowLibs";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
-import { validationKeys } from "~/api/validate";
+import { useValidate } from "~/api/validate/get";
 
 const WorkflowEditor: FC<{
   data: NonNullable<FileSchemaType>;
@@ -50,21 +46,8 @@ const WorkflowEditor: FC<{
     onError: (error) => {
       error && setError(error);
     },
-    onSuccess: async (data) => {
-      // write validation errors from response to validation cache
-      const content = decode(data.data.data);
-      const { errors }: { errors: WorkflowValidationSchemaType } = data.data;
-      const hash = await sha1(content);
-      const markers = MonacoMarkerSchema.parse(errors);
-      if (markers) {
-        queryClient.setQueryData<editor.IMarkerData[]>(
-          validationKeys.messagesList({
-            hash,
-          }),
-          () => markers
-        );
-      }
-
+    onSuccess: async (data: SaveFileResponseSchemaType) => {
+      await updateValidationCache({ response: data });
       /**
        * updating a workflow might introduce an uninitialized secret. We need
        * to update the notification bell, to see potential new messages.

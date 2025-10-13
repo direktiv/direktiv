@@ -151,16 +151,9 @@ export const FileDeletedSchema = z.null();
  *
  * The actual response contains more data, but since we do not use
  * it, we do not bother defining it here.
+ * data is only present in the response when it has changed.
  */
-export const FileCreatedSchema = z.object({
-  data: BaseFileSchema.extend({
-    data: z.string().optional(),
-    errors: WorkflowValidationSchema,
-  }),
-});
-
-/* data is only present in the response when it has changed. */
-export const FilePatchedSchema = z.object({
+export const SaveFileResponseSchema = z.object({
   data: BaseFileSchema.extend({
     data: z.string().optional(),
     errors: WorkflowValidationSchema,
@@ -179,3 +172,4 @@ export type FileSchemaType = z.infer<typeof FileSchema>;
 export type UpdateFileSchemaType = z.infer<typeof UpdateFileSchema>;
 export type RenameFileSchemaType = z.infer<typeof RenameFileSchema>;
 export type CreateFileSchemaType = z.infer<typeof CreateFileSchema>;
+export type SaveFileResponseSchemaType = z.infer<typeof SaveFileResponseSchema>;

@@ -1,6 +1,6 @@
 import {
-  FilePatchedSchema,
   RenameFileSchemaType,
+  SaveFileResponseSchema,
   UpdateFileSchemaType,
 } from "../schema";
 
@@ -23,7 +23,7 @@ export const patchFile = apiFactory<
       path
     )}`,
   method: "PATCH",
-  schema: FilePatchedSchema,
+  schema: SaveFileResponseSchema,
 });
 
 export type ResolvedPatchFile = Awaited<ReturnType<typeof patchFile>>;
