@@ -1,68 +1,76 @@
-import { IsValidItem, RenderItem } from "./types";
+import { Fragment, PropsWithChildren, ReactNode } from "react";
 
 import { ArrayItem } from "./ArrayItem";
-import { useState } from "react";
+import Button from "~/design/Button";
+import { ButtonBar } from "~/design/ButtonBar";
+import { Plus } from "lucide-react";
+import { RenderItem } from "./types";
 
-type ArrayFormProps = <T>(props: {
-  defaultValue: T[];
-  emptyItem: T;
-  onChange: (newArray: T[]) => void;
-  itemIsValid: IsValidItem<T>;
-  renderItem: RenderItem<T>;
-}) => JSX.Element;
+type ArrayFormProps = <T>(
+  props: {
+    value: T[];
+    emptyItem: T;
+    onChange: (newArray: T[]) => void;
+    renderItem: RenderItem<T>;
+    wrapItem?: (children: ReactNode) => JSX.Element;
+  } & PropsWithChildren
+) => JSX.Element;
 
 export const ArrayForm: ArrayFormProps = ({
-  defaultValue,
+  children,
+  value,
   emptyItem,
-  renderItem,
   onChange,
-  itemIsValid = () => true,
+  renderItem,
+  wrapItem = (children) => <ButtonBar>{children}</ButtonBar>,
 }) => {
-  const [items, setItems] = useState(defaultValue);
-
-  type Item = (typeof items)[number];
+  type Item = (typeof value)[number];
 
   const addItem = (newItem: Item) => {
-    const newValue = [...items, newItem];
-    setItems(newValue);
+    const newValue = [...value, newItem];
     onChange(newValue);
   };
 
-  const updateAtIndex = (index: number, value: Item) => {
-    const newItems = items.map((oldValue, oldIndex) => {
+  const updateAtIndex = (index: number, newValue: Item) => {
+    const newItems = value.map((oldValue, oldIndex) => {
       if (oldIndex === index) {
-        return value;
+        return newValue;
       }
       return oldValue;
     });
-    setItems(newItems);
     onChange(newItems);
   };
 
   const deleteAtIndex = (index: number) => {
-    const newItems = items.filter((_, oldIndex) => oldIndex !== index);
-    setItems(newItems);
+    const newItems = value.filter((_, oldIndex) => oldIndex !== index);
     onChange(newItems);
   };
 
   return (
     <>
-      {items?.map((item, index) => (
-        <ArrayItem
-          key={`${items.length}-${index}`}
-          defaultValue={item}
-          itemIsValid={itemIsValid}
-          renderItem={renderItem}
-          onUpdate={(value) => updateAtIndex(index, value)}
-          onDelete={() => deleteAtIndex(index)}
-        />
+      {value?.map((item, index) => (
+        <Fragment key={`${value.length}-${index}`}>
+          {wrapItem(
+            <ArrayItem
+              value={item}
+              renderItem={renderItem}
+              onUpdate={(value) => updateAtIndex(index, value)}
+              onDelete={() => deleteAtIndex(index)}
+            />
+          )}
+        </Fragment>
       ))}
-      <ArrayItem
-        defaultValue={emptyItem}
-        itemIsValid={itemIsValid}
-        renderItem={renderItem}
-        onAdd={addItem}
-      />
+
+      <Button
+        type="button"
+        variant="outline"
+        onClick={(e) => {
+          e.preventDefault();
+          addItem(emptyItem);
+        }}
+      >
+        <Plus /> {children}
+      </Button>
     </>
   );
 };

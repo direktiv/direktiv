@@ -101,6 +101,7 @@ test("it is possible to create a service", async ({ page }) => {
     .filter({ hasText: "Environment variables" });
 
   for (let i = 0; i < envs.length; i++) {
+    await envsElement.getByRole("button").last().click();
     const item = envs[i] as EnvVarSchemaType;
     await expect(
       envsElement.getByPlaceholder("NAME"),
@@ -109,7 +110,6 @@ test("it is possible to create a service", async ({ page }) => {
 
     await envsElement.getByPlaceholder("NAME").last().fill(item.name);
     await envsElement.getByPlaceholder("VALUE").last().fill(item.value);
-    await envsElement.getByRole("button").last().click();
   }
 
   /**
@@ -125,7 +125,7 @@ test("it is possible to create a service", async ({ page }) => {
   ).toContainText(expectedYaml, { useInnerText: true });
 
   await expect(
-    page.getByTestId("unsaved-note"),
+    page.getByText("unsaved changes"),
     "it renders a hint that there are unsaved changes"
   ).toBeVisible();
   await page.getByRole("button", { name: "Save" }).click();
@@ -412,7 +412,7 @@ test("it is possible to edit environment variables", async ({ page }) => {
   ).toContainText(expectedYaml, { useInnerText: true });
 
   await expect(
-    page.getByTestId("unsaved-note"),
+    page.getByText("unsaved changes"),
     "it renders a hint that there are unsaved changes"
   ).toBeVisible();
   await page.getByRole("button", { name: "Save" }).click();
@@ -509,6 +509,7 @@ test("empty fields are omitted from the service file", async ({ page }) => {
     .filter({ hasText: "Environment variables" });
 
   for (let i = 0; i < envs.length; i++) {
+    await envsElement.getByRole("button").last().click();
     const item = envs[i] as EnvVarSchemaType;
     await expect(
       envsElement.getByPlaceholder("NAME"),
@@ -517,7 +518,6 @@ test("empty fields are omitted from the service file", async ({ page }) => {
 
     await envsElement.getByPlaceholder("NAME").last().fill(item.name);
     await envsElement.getByPlaceholder("VALUE").last().fill(item.value);
-    await envsElement.getByRole("button").last().click();
   }
 
   await expect(
