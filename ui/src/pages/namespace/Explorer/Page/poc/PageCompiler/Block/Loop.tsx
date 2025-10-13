@@ -58,7 +58,9 @@ export const Loop = ({ blockProps, blockPath }: LoopProps) => {
   return (
     <PaginationProvider items={variableArray.data} pageSize={pageSize}>
       {({ currentItems, goToPage, goToFirstPage, currentPage, totalPages }) => {
-        currentPage > totalPages && goToFirstPage();
+        if (currentPage > totalPages) {
+          goToFirstPage();
+        }
 
         const itemsToRender =
           mode === "edit" ? currentItems.slice(0, 1) : currentItems;

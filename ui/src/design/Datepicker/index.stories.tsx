@@ -12,7 +12,7 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { Card } from "../Card";
 import type { DateRange } from "react-day-picker";
 import { Datepicker } from "./index";
-import type { Meta } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import React from "react";
 import { twMergeClsx } from "~/util/helpers";
 

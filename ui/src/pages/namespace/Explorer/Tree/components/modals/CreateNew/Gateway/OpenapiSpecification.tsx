@@ -82,13 +82,14 @@ const NewOpenapiSpecification = ({
 
   const { mutate: createFile, isPending } = useCreateFile({
     onSuccess: (data) => {
-      namespace &&
+      if (namespace) {
         navigate({
           to: "/n/$namespace/explorer/openapiSpecification/$",
           from: "/n/$namespace",
 
           params: { _splat: data.data.path },
         });
+      }
       close();
     },
   });

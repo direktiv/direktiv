@@ -9,7 +9,7 @@ import { LocalDialog, LocalDialogContent } from ".";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { LocalDialogContainer } from "./container";
-import type { Meta } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 
 const meta = {
   title: "Components/LocalDialog",

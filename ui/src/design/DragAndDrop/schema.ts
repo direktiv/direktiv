@@ -33,11 +33,11 @@ export const DropPayloadSchema = z.object({
 
 export type DropPayloadSchemaType = z.infer<typeof DropPayloadSchema>;
 
-const DragAndDropPayloadSchema = z.object({
+const _DragAndDropPayloadSchema = z.object({
   drag: DragPayloadSchema,
   drop: DropPayloadSchema,
 });
 
 export type DragAndDropPayloadSchemaType = z.infer<
-  typeof DragAndDropPayloadSchema
+  typeof _DragAndDropPayloadSchema
 >;

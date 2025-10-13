@@ -6,11 +6,8 @@ import { MutationType } from "../../../schema/procedures/mutation";
 // https://github.com/radix-ui/primitives/blob/main/packages/react/checkbox/src/checkbox.test.tsx#L11
 export const setupResizeObserverMock = () => {
   global.ResizeObserver = class ResizeObserver {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     observe() {}
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     unobserve() {}
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     disconnect() {}
   };
 };
