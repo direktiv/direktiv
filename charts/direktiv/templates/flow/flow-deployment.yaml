@@ -181,7 +181,7 @@ spec:
           - name: DIREKTIV_NATS_PORT
             value: "{{ .Values.nats.config.port }}"
           - name: DIREKTIV_NATS_TLS
-            value: "{{ .Values.nats.config.tls.enabled }}"
+            value: "{{ .Values.nats.config.nats.tls.enabled }}"
           - name: DIREKTIV_NATS_USERNAME
             value: "{{ .Values.nats.config.routeURLs.user }}"
           - name: DIREKTIV_NATS_PASSWORD
