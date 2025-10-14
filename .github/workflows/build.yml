@@ -185,37 +185,11 @@ jobs:
       - name: Install Task
         uses: go-task/setup-task@v1
 
-      - name: Task default
-        run: DIREKTIV_IMAGE_REGISTRY=ghcr.io DIREKTIV_IMAGE=direktiv/direktiv DIREKTIV_IMAGE_TAG=${GITHUB_SHA::10} task github-ci
-
-      - name: Wait for Direktiv pods to be ready
-        run: |
-          sleep 5;
-          kubectl get pods -A;
-          kubectl get pods -A --show-labels;
-
       - name: Set Environment Variables
         run: echo "DIREKTIV_BASE_URL=http://127.0.0.1:9090" >> $GITHUB_ENV
 
-      - name: Wait until flow is healthy
-        run: |
-          endpoint="${{ env.DIREKTIV_BASE_URL }}/api/v2/status";
-          for attempt in {1..120}
-          do
-            status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint || true);
-            echo "API status code: $status_code";
-            if [ $status_code -eq 200 ]
-            then
-              echo "API ready" && exit 0;  
-            fi
-            sleep 1;
-          done
-
-          echo "API failed to be healthy";
-          kubectl get pods;
-          kubectl describe pod -l app=direktiv-flow;
-          kubectl logs deployments/direktiv-flow;
-          exit 1;
+      - name: Task default
+        run: DIREKTIV_IMAGE_REGISTRY=ghcr.io DIREKTIV_IMAGE=direktiv/direktiv DIREKTIV_IMAGE_TAG=${GITHUB_SHA::10} DIREKTIV_BASE_URL=http://127.0.0.1:9090 task github-ci
 
       - name: Run API E2E tests
         if: matrix.sections.type == 'api'
