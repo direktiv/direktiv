@@ -51,7 +51,7 @@ func TestFingerprintDoesNotMutateRule(t *testing.T) {
 
 func TestDispatchIfDue_PublishesTaskAndAdvancesRule(t *testing.T) {
 	js := &fakeJS{}
-	start := time.Date(2025, 1, 1, 1, 0, 0, 0, time.UTC)
+	start := time.Date(2025, 1, 1, 1, 0, 0, 0, time.Local)
 	clk := tclock.NewFakeClock(start)
 	s := New(js, clk, slog.New(slog.DiscardHandler))
 
@@ -92,7 +92,7 @@ func TestDispatchIfDue_PublishesTaskAndAdvancesRule(t *testing.T) {
 
 func TestDispatchIfDue_SkipsWhenNotDue(t *testing.T) {
 	js := &fakeJS{}
-	start := time.Date(2025, 1, 1, 1, 0, 0, 0, time.UTC)
+	start := time.Date(2025, 1, 1, 1, 0, 0, 0, time.Local)
 	clk := tclock.NewFakeClock(start)
 	s := New(js, clk, slog.New(slog.DiscardHandler))
 

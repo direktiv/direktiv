@@ -167,6 +167,10 @@ func Start(lc *lifecycle.Manager) error {
 			return fmt.Errorf("create engine-nats, err: %w", err)
 		}
 		js, err := intNats.SetupJetStream(context.Background(), nc)
+		// TODO: remove this dev code.
+		if err != nil {
+			err = fmt.Errorf("reset streams, err: %w", err)
+		}
 		if err != nil {
 			return fmt.Errorf("create engine-nats, err: %w", err)
 		}
@@ -176,7 +180,6 @@ func Start(lc *lifecycle.Manager) error {
 
 		slog.Info("initializing engine")
 		app.Engine, err = engine.NewEngine(
-			app.DB,
 			databus.New(js),
 			comp,
 			js,

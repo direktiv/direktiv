@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/engine/runtime"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
@@ -18,9 +18,6 @@ var ErrDataNotFound = fmt.Errorf("data not found")
 
 // LabelWithNotify used to mark an instance as called with a notify-chanel.
 const LabelWithNotify = "WithNotify"
-
-// TODO: remove this debug code.
-const simulateErrors = false
 
 type Engine struct {
 	db       *gorm.DB
@@ -34,9 +31,8 @@ func (e *Engine) ListInstances(ctx context.Context, namespace string) ([]uuid.UU
 	panic("implement me")
 }
 
-func NewEngine(db *gorm.DB, bus DataBus, compiler core.Compiler, js nats.JetStreamContext) (*Engine, error) {
+func NewEngine(bus DataBus, compiler core.Compiler, js nats.JetStreamContext) (*Engine, error) {
 	return &Engine{
-		db:       db,
 		dataBus:  bus,
 		compiler: compiler,
 		js:       js,
@@ -57,35 +53,34 @@ func (e *Engine) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (uuid.UUID, error) {
+func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (*InstanceStatus, error) {
 	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("fetch script: %w", err)
+		return nil, fmt.Errorf("fetch script: %w", err)
 	}
 
 	return e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, nil, metadata)
 }
 
-func (e *Engine) RunWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (uuid.UUID, <-chan *InstanceStatus, error) {
+func (e *Engine) RunWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (<-chan *InstanceStatus, error) {
 	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
 	if err != nil {
-		return uuid.Nil, nil, fmt.Errorf("fetch script: %w", err)
+		return nil, fmt.Errorf("fetch script: %w", err)
 	}
-
-	fmt.Printf("ACTIONS IN FLOW: %v\n", flowDetails.Config.Actions)
 
 	notify := make(chan *InstanceStatus, 1)
-	id, err := e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)
-
-	return id, notify, err
-}
-
-func (e *Engine) startScript(ctx context.Context, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceStatus, metadata map[string]string) (uuid.UUID, error) {
-	if !json.Valid([]byte(input)) {
-		return uuid.Nil, fmt.Errorf("input is not a valid json string: %s", input)
+	_, err = e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)
+	if err != nil {
+		return nil, err
 	}
 
-	fmt.Printf("STARTING SCRIPT: >%s<\n", input)
+	return notify, nil
+}
+
+func (e *Engine) startScript(ctx context.Context, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceStatus, metadata map[string]string) (*InstanceStatus, error) {
+	if !json.Valid([]byte(input)) {
+		return nil, fmt.Errorf("input is not a valid json string: %s", input)
+	}
 	instID := uuid.New()
 
 	if metadata == nil {
@@ -96,34 +91,37 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 		metadata[LabelWithNotify] = "yes"
 	}
 
-	ev := &InstanceEvent{
+	pEv := &InstanceEvent{
 		EventID:    uuid.New(),
 		InstanceID: instID,
 		Namespace:  namespace,
-		Type:       "pending",
+		Type:       StateCodePending,
 		Time:       time.Now(),
 		Metadata:   metadata,
 
 		Script:   script,
 		Mappings: mappings,
 		Fn:       fn,
-		Input:    json.RawMessage(input),
+		Memory:   json.RawMessage(input),
 	}
-	err := e.dataBus.PushHistoryStream(ctx, ev)
+	err := e.dataBus.PublishInstanceHistoryEvent(ctx, pEv)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("push history stream: %w", err)
+		return nil, fmt.Errorf("push history stream: %w", err)
 	}
 
 	if notify != nil {
 		e.dataBus.NotifyInstanceStatus(ctx, instID, notify)
 	}
 
-	err = e.dataBus.PushQueueStream(ctx, ev)
+	err = e.dataBus.PublishInstanceQueueEvent(ctx, pEv)
 	if err != nil {
-		return instID, fmt.Errorf("push queue stream: %w", err)
+		return nil, fmt.Errorf("push queue stream: %w", err)
 	}
 
-	return instID, nil
+	st := &InstanceStatus{}
+	ApplyInstanceEvent(st, pEv)
+
+	return st, nil
 }
 
 func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
@@ -131,47 +129,65 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		EventID:    uuid.New(),
 		InstanceID: inst.InstanceID,
 		Namespace:  inst.Namespace,
-		Type:       "running",
+		Type:       StateCodeRunning,
+		Fn:         inst.Fn,
+		Memory:     inst.Memory,
 		Time:       time.Now(),
 	}
 
-	err := e.dataBus.PushHistoryStream(ctx, startEv)
+	err := e.dataBus.PublishInstanceHistoryEvent(ctx, startEv)
 	if err != nil {
 		return fmt.Errorf("push history start event, inst: %s: %w", inst.InstanceID, err)
 	}
 
+	sc := &runtime.Script{
+		InstID:   inst.InstanceID,
+		Text:     inst.Script,
+		Mappings: inst.Mappings,
+		Fn:       inst.Fn,
+		Input:    string(inst.Memory),
+		Metadata: inst.Metadata,
+	}
+
+	onFinish := func(output []byte) error {
+		endEv := &InstanceEvent{
+			EventID:    uuid.New(),
+			InstanceID: inst.InstanceID,
+			Namespace:  inst.Namespace,
+			Type:       StateCodeComplete,
+			Memory:     output,
+			Time:       time.Now(),
+		}
+
+		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
+	}
+	onTransition := func(memory []byte, fn string) error {
+		endEv := &InstanceEvent{
+			EventID:    uuid.New(),
+			InstanceID: inst.InstanceID,
+			Namespace:  inst.Namespace,
+			Type:       StateCodeRunning,
+			Fn:         fn,
+			Memory:     memory,
+			Time:       time.Now(),
+		}
+
+		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
+	}
+
+	err = runtime.ExecScript(sc, onFinish, onTransition)
+	if err == nil {
+		return nil
+	}
 	endEv := &InstanceEvent{
 		EventID:    uuid.New(),
 		InstanceID: inst.InstanceID,
 		Namespace:  inst.Namespace,
+		Type:       StateCodeFailed,
+		Error:      err.Error(),
+		Time:       time.Now(),
 	}
-	ret, err := e.execJSScript(inst.InstanceID, inst.Script, inst.Mappings, inst.Fn, string(inst.Input))
-	// TODO: remove this debug code.
-	// simulate failing job
-	if simulateErrors && rand.Intn(2) == 0 {
-		err = fmt.Errorf("simulated error")
-	}
-	if err != nil {
-		endEv.Type = "failed"
-		endEv.Error = err.Error()
-	} else {
-		retBytes, mErr := json.Marshal(ret)
-		if mErr != nil {
-			endEv.Type = "failed"
-			endEv.Error = fmt.Errorf("marshal result: %w", mErr).Error()
-		} else {
-			endEv.Type = "succeeded"
-			endEv.Output = retBytes
-		}
-	}
-
-	// TODO: remove this debug code.
-	// simulate a job that takes some long time
-	if simulateErrors && rand.Intn(2) == 0 {
-		time.Sleep(10 * time.Second)
-	}
-	endEv.Time = time.Now()
-	err = e.dataBus.PushHistoryStream(ctx, endEv)
+	err = e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	if err != nil {
 		return fmt.Errorf("push history end event, inst: %s: %w", inst.InstanceID, err)
 	}
@@ -179,8 +195,8 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	return nil
 }
 
-func (e *Engine) GetInstances(ctx context.Context, namespace string, limit int, offset int) ([]*InstanceStatus, int, error) {
-	data, total := e.dataBus.FetchInstanceStatus(ctx, namespace, uuid.Nil, limit, offset)
+func (e *Engine) ListInstanceStatuses(ctx context.Context, namespace string, limit int, offset int) ([]*InstanceStatus, int, error) {
+	data, total := e.dataBus.ListInstanceStatuses(ctx, namespace, uuid.Nil, limit, offset)
 	if len(data) == 0 {
 		return nil, 0, ErrDataNotFound
 	}
@@ -188,13 +204,22 @@ func (e *Engine) GetInstances(ctx context.Context, namespace string, limit int, 
 	return data, total, nil
 }
 
-func (e *Engine) GetInstanceByID(ctx context.Context, namespace string, id uuid.UUID) (*InstanceStatus, error) {
-	data, _ := e.dataBus.FetchInstanceStatus(ctx, namespace, id, 0, 0)
+func (e *Engine) GetInstanceStatus(ctx context.Context, namespace string, id uuid.UUID) (*InstanceStatus, error) {
+	data, _ := e.dataBus.ListInstanceStatuses(ctx, namespace, id, 0, 0)
 	if len(data) == 0 {
 		return nil, ErrDataNotFound
 	}
 
 	return data[0], nil
+}
+
+func (e *Engine) GetInstanceHistory(ctx context.Context, namespace string, id uuid.UUID) ([]*InstanceEvent, error) {
+	list := e.dataBus.GetInstanceHistory(ctx, namespace, id)
+	if len(list) == 0 {
+		return nil, ErrDataNotFound
+	}
+
+	return list, nil
 }
 
 func (e *Engine) DeleteNamespace(ctx context.Context, name string) error {

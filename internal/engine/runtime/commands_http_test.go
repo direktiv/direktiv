@@ -1,12 +1,12 @@
-package engine
+package runtime_test
 
 import (
 	"fmt"
 	"log"
 	"testing"
 
+	"github.com/direktiv/direktiv/internal/engine/runtime"
 	"github.com/google/uuid"
-	"github.com/grafana/sobek"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -32,9 +32,6 @@ func TestHttpRequest(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	vm := sobek.New()
-	InjectCommands(vm, uuid.New())
 
 	script := `
 		function start() {
@@ -75,15 +72,12 @@ func TestHttpRequest(t *testing.T) {
 		}
 	`
 
-	_, err = vm.RunScript("", script)
+	err = runtime.ExecScript(&runtime.Script{
+		InstID:   uuid.New(),
+		Text:     script,
+		Mappings: "",
+		Input:    "{}",
+		Fn:       "start",
+	}, runtime.NoOnFinish, runtime.NoOnTransition)
 	require.NoError(t, err)
-
-	start, ok := sobek.AssertFunction(vm.Get("start"))
-	require.True(t, ok)
-
-	v, err := start(sobek.Undefined())
-	require.NoError(t, err)
-
-	fmt.Printf("RESULT %v\n", v)
-
 }

@@ -36,7 +36,7 @@ async function fireCreateRequest (url, input, durations) {
 
 const randomStr = Math.random().toString(10)
 	.slice(2, 12)
-const namespace = basename(__filename.replaceAll('.', '-'))
+const namespace = basename(__filename)
 const fName = 'file' + randomStr + '.wf.ts'
 
 describe('Stress test js engine', () => {
@@ -75,10 +75,10 @@ function stateTwo(payload) {
 			total: 50,
 			batchSize: 5,
 		},
-		// {
-		//	total: 100,
-		//	batchSize: 10,
-		// },
+		{
+			total: 100,
+			batchSize: 10,
+		},
 		// {
 		//	total: 1000,
 		//	batchSize: 100,
@@ -140,7 +140,7 @@ function stateTwo(payload) {
 	}
 
 	const total = cases.reduce((acc, obj) => acc + obj.total, 0) + 1
-	retry(`should have all success instances`, 2, async () => {
+	retry(`should have all success instances`, 10, async () => {
 		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/metrics/instances`)
 		console.log(req.body)
 		expect(req.statusCode).toEqual(200)
