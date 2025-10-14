@@ -163,7 +163,7 @@ tasks:
          # echo -n "code($status_code)";
          if [ $status_code -eq 200 ]
          then
-           echo "\nAPI ready" && exit 0;  
+           echo "" && echo "API ready" && exit 0;  
          fi
          sleep 1;
        done
