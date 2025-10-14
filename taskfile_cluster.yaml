@@ -156,7 +156,7 @@ tasks:
     - |
        endpoint="{{ .DIREKTIV_BASE_URL }}/api/v2/status";
        echo -n "Wait for direktiv API to be ready";
-       for attempt in {1..60}
+       for attempt in {1..100}
        do
          status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint || true);
          echo -n ".";
