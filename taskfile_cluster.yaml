@@ -150,6 +150,7 @@ tasks:
     desc: Kill all direktiv pods
     cmds:
     - kubectl delete pods -l app=direktiv-flow
+
   wait-api:
     desc: Wait for direktiv API to be ready
     cmds:
