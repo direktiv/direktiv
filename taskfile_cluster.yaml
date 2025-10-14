@@ -154,17 +154,18 @@ tasks:
     desc: Wait for direktiv API to be ready
     cmds:
     - |
-       endpoint={{ .DIREKTIV_BASE_URL }}/api/v2/status";
+       endpoint="{{ .DIREKTIV_BASE_URL }}/api/v2/status";
        echo -n "Wait for direktiv API to be ready";
        for attempt in {1..60}
        do
          status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint || true);
          echo -n ".";
-         # echo "code($status_code) ";
+         # echo -n "code($status_code)";
          if [ $status_code -eq 200 ]
          then
            echo "\nAPI ready" && exit 0;  
          fi
          sleep 1;
        done
+       echo ""
        exit 1;
