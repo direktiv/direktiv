@@ -93,7 +93,8 @@ func Connect() (*nats.Conn, error) {
 
 	dirs := []string{
 		"/etc/direktiv-tls",
-		os.TempDir() + "/generated-direktiv-tls"}
+		os.TempDir() + "/generated-direktiv-tls",
+	}
 
 	var dir string
 	for _, d := range dirs {

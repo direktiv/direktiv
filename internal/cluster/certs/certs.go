@@ -150,11 +150,11 @@ func (c *CertificateUpdater) rotateCerts(ctx context.Context) error {
 		secret.Data[certs[i].name] = h
 
 		tempDir := os.TempDir() + "/generated-direktiv-tls"
-		err = os.MkdirAll(tempDir, 0755)
+		err = os.MkdirAll(tempDir, 0o755)
 		if err != nil {
 			return fmt.Errorf("create temp dir: %w", err)
 		}
-		if err := os.WriteFile(tempDir+"/"+certs[i].name, h, 0755); err != nil {
+		if err := os.WriteFile(tempDir+"/"+certs[i].name, h, 0o755); err != nil {
 			return fmt.Errorf("write temp file: %w", err)
 		}
 	}
