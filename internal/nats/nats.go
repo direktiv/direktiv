@@ -91,10 +91,20 @@ func Connect() (*nats.Conn, error) {
 	// set the deployment name in dns names
 	deploymentName := os.Getenv("DIREKTIV_DEPLOYMENT_NAME")
 
-	dir := "/etc/direktiv-tls"
-	tempDir := os.TempDir() + "/generated-direktiv-tls"
-	if _, err := os.Stat(tempDir); err == nil {
-		dir = tempDir
+	dirs := []string{
+		"/etc/direktiv-tls",
+		os.TempDir() + "/generated-direktiv-tls"}
+
+	var dir string
+	for _, d := range dirs {
+		slog.Info("looking for tls files", "dir", d)
+		if _, err := os.Stat(d + "/server.crt"); err == nil {
+			dir = d
+			break
+		}
+	}
+	if dir == "" {
+		return nil, errors.New("tls files don't exist")
 	}
 
 	return nats.Connect(
