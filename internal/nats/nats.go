@@ -91,12 +91,18 @@ func Connect() (*nats.Conn, error) {
 	// set the deployment name in dns names
 	deploymentName := os.Getenv("DIREKTIV_DEPLOYMENT_NAME")
 
+	dir := "/etc/direktiv-tls"
+	tempDir := os.TempDir() + "/generated-direktiv-tls"
+	if _, err := os.Stat(tempDir); err == nil {
+		dir = tempDir
+	}
+
 	return nats.Connect(
 		fmt.Sprintf("tls://%s-nats.default.svc:4222", deploymentName),
 		nats.ClientTLSConfig(
 			func() (tls.Certificate, error) {
-				cert, err := tls.LoadX509KeyPair("/etc/direktiv-tls/server.crt",
-					"/etc/direktiv-tls/server.key")
+				cert, err := tls.LoadX509KeyPair(dir+"/server.crt",
+					dir+"/server.key")
 				if err != nil {
 					slog.Error("cannot create certificate pair", slog.Any("error", err))
 					return tls.Certificate{}, err
@@ -105,7 +111,7 @@ func Connect() (*nats.Conn, error) {
 				return cert, nil
 			},
 			func() (*x509.CertPool, error) {
-				caCert, err := os.ReadFile("/etc/direktiv-tls/ca.crt")
+				caCert, err := os.ReadFile(dir + "/ca.crt")
 				if err != nil {
 					return nil, err
 				}

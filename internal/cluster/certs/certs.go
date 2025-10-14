@@ -148,6 +148,15 @@ func (c *CertificateUpdater) rotateCerts(ctx context.Context) error {
 			return err
 		}
 		secret.Data[certs[i].name] = h
+
+		tempDir := os.TempDir() + "/generated-direktiv-tls"
+		err = os.MkdirAll(tempDir, 0755)
+		if err != nil {
+			return fmt.Errorf("create temp dir: %w", err)
+		}
+		if err := os.WriteFile(tempDir+"/"+certs[i].name, h, 0755); err != nil {
+			return fmt.Errorf("write temp file: %w", err)
+		}
 	}
 
 	slog.Info("storing new certificates")
@@ -207,6 +216,9 @@ func generateCerts(id int64, ns string, caTemplate x509.Certificate, caPriv *rsa
 	}
 
 	crtBytes, err := x509.CreateCertificate(rand.Reader, &serverTemplate, &caTemplate, &serverPriv.PublicKey, caPriv)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	return crtBytes, x509.MarshalPKCS1PrivateKey(serverPriv), err
 }
