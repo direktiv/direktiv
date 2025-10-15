@@ -19,8 +19,8 @@ describe('Test workflow metrics', () => {
 
 		expect(res.statusCode).toEqual(404)
 		expect(res.body.error).toEqual({
-			     code: 'not_found',
-			     message: 'requested resource is not found',
+			code: 'not_found',
+			message: 'requested resource is not found',
 		})
 	})
 
