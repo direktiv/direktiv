@@ -1,9 +1,8 @@
 {
+  "name": "direktiv-tests",
+  "type": "module",
   "dependencies": {
-    "@babel/core": "^7.21.0",
-    "@babel/preset-env": "^7.20.2",
     "@jest/globals": "^30.2.0",
-    "babel-jest": "^30.2.0",
     "eslint-config-recommended": "^4.1.0",
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "eventsource": "^2.0.2",
@@ -14,6 +13,6 @@
     "supertest": "^6.3.3"
   },
   "scripts": {
-    "jest": "npm install && npx jest"
+    "jest": "npm install && node --experimental-vm-modules node_modules/jest/bin/jest.js"
   }
 }

@@ -6,8 +6,9 @@ import config from '../../common/config'
 import helpers from '../../common/helpers'
 import regex from '../../common/regex'
 import request from '../../common/request'
+import {fileURLToPath} from "url";
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test variable list calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)

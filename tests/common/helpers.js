@@ -1,5 +1,4 @@
 import config from './config'
-import common from './index'
 import regex from './regex'
 import request from './request'
 
@@ -18,7 +17,7 @@ async function deleteAllNamespaces () {
 
 async function itShouldCreateNamespace (it, expect, ns) {
 	it(`should create a new namespace ${ ns }`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces`)
 			.send({ name: ns })
 		expect(res.statusCode).toEqual(200)
@@ -27,7 +26,7 @@ async function itShouldCreateNamespace (it, expect, ns) {
 
 async function itShouldCreateFile (it, expect, ns, path, name, type, mimeType, data) {
 	it(`should create a new file ${ path }`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
 			.send({
@@ -50,7 +49,7 @@ function itShouldTSWorkflow (it, expect, ns, path, name, data) {
 
 async function itShouldCreateDir (it, expect, ns, path, name) {
 	it(`should create a new dir ${ path }`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl())
+		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
 			.send({
@@ -81,7 +80,7 @@ async function itShouldUpdateFile (it, expect, ns, path, newPatch) {
 		title = `should update file path ${ path } to ${ newPatch.path }`
 
 	it(title, async () => {
-		const res = await request(common.config.getDirektivBaseUrl())
+		const res = await request(config.getDirektivBaseUrl())
 			.patch(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
 			.send(newPatch)
@@ -103,7 +102,7 @@ async function itShouldUpdateFile (it, expect, ns, path, newPatch) {
 
 async function itShouldCheckPathExists (it, expect, ns, path, assertExits) {
 	it(`should check if path(${ path }) exists(${ assertExits })`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl())
+		const res = await request(config.getDirektivBaseUrl())
 			.get(`/api/v2/namespaces/${ ns }/files${ path }`)
 
 		if (assertExits)
@@ -129,7 +128,7 @@ function itShouldUpdateYamlFile (it, expect, ns, path, data) {
 
 async function itShouldDeleteFile (it, expect, ns, path) {
 	it(`should delete a file ${ path }`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl())
+		const res = await request(config.getDirektivBaseUrl())
 			.delete(`/api/v2/namespaces/${ ns }/files${ path }`)
 
 		expect(res.statusCode).toEqual(200)

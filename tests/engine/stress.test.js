@@ -5,6 +5,7 @@ import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
 import { retry, retry10 } from '../common/retry'
+import {fileURLToPath} from "url";
 
 function quantile (arr, q) {
 	if (!arr.length) return NaN
@@ -36,7 +37,7 @@ async function fireCreateRequest (url, input, durations) {
 
 const randomStr = Math.random().toString(10)
 	.slice(2, 12)
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 const fName = 'file' + randomStr + '.wf.ts'
 
 describe('Stress test js engine', () => {

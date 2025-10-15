@@ -4,8 +4,9 @@ import { basename } from 'path'
 import config from '../common/config'
 import helpers from '../common/helpers'
 import request from '../common/request'
+import {fileURLToPath} from "url";
 
-const testNamespace = basename(__filename)
+const testNamespace = basename(fileURLToPath(import.meta.url))
 
 const genericContainerWorkflow = `
 direktiv_api: workflow/v1

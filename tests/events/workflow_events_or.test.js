@@ -6,8 +6,9 @@ import helpers from '../common/helpers'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 import events from './send_helper'
+import {fileURLToPath} from "url";
 
-const namespaceName = basename(__filename)
+const namespaceName = basename(fileURLToPath(import.meta.url))
 
 const waitWorkflowName = 'waitor.yaml'
 const waitEventWorkflow = `

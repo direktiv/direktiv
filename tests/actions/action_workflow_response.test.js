@@ -4,8 +4,9 @@ import { basename } from 'path'
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
+import {fileURLToPath} from "url";
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 const testWorkflow = 'test-workflow.yaml'
 
 describe('Test workflow echo json action', () => {

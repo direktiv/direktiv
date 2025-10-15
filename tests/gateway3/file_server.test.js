@@ -5,8 +5,9 @@ import config from '../common/config'
 import helpers from '../common/helpers'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
+import {fileURLToPath} from "url";
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test file_server plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)
