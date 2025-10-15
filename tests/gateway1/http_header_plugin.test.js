@@ -61,13 +61,13 @@ post:
 		expect,
 		namespace,
 		'/', 'target.wf.ts', `
-function stepFirst(input) {
+function stateFirst(input) {
 	return finish(input)
 }
 `)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(
+		const res = await request(common.config.getDirektivBaseUrl()).post(
 			`/api/v2/namespaces/${ namespace }/gateway/target?Query1=value1&Query2=value2`,
 		)
 			.set('Header', 'Value1')
@@ -75,9 +75,9 @@ function stepFirst(input) {
 			.send({ hello: 'world' })
 			.auth('user1', 'pwd1')
 
-		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
-			result: {
+		expect(res.statusCode).toEqual(200)
+		const got = JSON.parse(res.body.data.output)
+		const want = {
 				body: {
 					hello: 'world',
 				},
@@ -119,8 +119,7 @@ function stepFirst(input) {
 					],
 				},
 				url_params: {},
-			},
-		},
-		)
+		}
+		expect(got).toMatchObject(want)
 	})
 })

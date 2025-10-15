@@ -39,9 +39,10 @@ get:
 
 	retry10(`should execute foo.wf.ts file`, async () => {
 		const res = await request(config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/gateway/ep1`)
+
 		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			result: 'Hello world!',
-		})
+		const got = JSON.parse(res.body.data.output)
+		const want = 'Hello world!'
+		expect(got).toBe(want)
 	})
 })
