@@ -266,11 +266,17 @@ func (ap *ASTParser) ValidateConfig() (*core.FlowConfig, error) {
 							return flow, fmt.Errorf("wrong type in flow config")
 						}
 
+						pos := ap.file.Position(int(ident.Idx0()))
+
 						switch value := literal.Value.(type) {
 						case *ast.StringLiteral:
 							err := setAndvalidate(flow, functions, key.Value.String(), value.Value.String())
 							if err != nil {
-								return flow, err
+								return flow, &ValidationError{
+									Message: err.Error(),
+									Line:    pos.Line,
+									Column:  pos.Column,
+								}
 							}
 						case *ast.ArrayLiteral:
 							if key.Value.String() == "events" {
