@@ -1,12 +1,13 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import common from '../../common'
 import helpers from '../../common/helpers'
 import request from '../../common/request'
 import { retry50 } from '../../common/retry'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test instance log api calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)

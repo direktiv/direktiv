@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import common from '../common'
 import config from '../common/config'
@@ -7,7 +8,7 @@ import helpers from '../common/helpers'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test gateway duplicated endpoint path', () => {
 	beforeAll(helpers.deleteAllNamespaces)

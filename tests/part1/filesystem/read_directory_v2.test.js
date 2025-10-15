@@ -6,7 +6,7 @@ import helpers from '../../common/helpers'
 import regex from '../../common/regex'
 import request from '../../common/request'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test filesystem tree read operations', () => {
 	beforeAll(helpers.deleteAllNamespaces)

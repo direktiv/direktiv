@@ -1,9 +1,10 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import helpers from '../../common/helpers'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test filesystem tree update paths', () => {
 	beforeAll(helpers.deleteAllNamespaces)

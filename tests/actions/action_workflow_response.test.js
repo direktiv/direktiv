@@ -1,11 +1,12 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 const testWorkflow = 'test-workflow.yaml'
 
 describe('Test workflow echo json action', () => {

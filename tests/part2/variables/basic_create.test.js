@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import common from '../../common'
 import config from '../../common/config'
@@ -7,7 +8,7 @@ import helpers from '../../common/helpers'
 import regex from '../../common/regex'
 import request from '../../common/request'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test variable create calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)

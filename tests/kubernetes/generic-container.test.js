@@ -1,11 +1,12 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import config from '../common/config'
 import helpers from '../common/helpers'
 import request from '../common/request'
 
-const testNamespace = basename(__filename)
+const testNamespace = basename(fileURLToPath(import.meta.url))
 
 const genericContainerWorkflow = `
 direktiv_api: workflow/v1
