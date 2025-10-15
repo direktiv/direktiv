@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
 import request from '../common/request'
-import { retry10, retry50 } from '../common/retry'
+import { retry10 } from '../common/retry'
 
 const testNamespace = 'system'
 const limitedNamespace = 'limited_namespace'
@@ -239,7 +239,7 @@ describe('Test target workflow with errors', () => {
 			`/ns/system/endpoint3`,
 		)
 		expect(req.statusCode).toEqual(200)
-		expect(req.body.data.errorMessage).toEqual("invoke start: Missing or invalid value for required input. at stateFirst (err.wf.ts:3:1(2))")
+		expect(req.body.data.errorMessage).toEqual('invoke start: Missing or invalid value for required input. at stateFirst (err.wf.ts:3:1(2))')
 	})
 })
 
@@ -304,7 +304,7 @@ describe('Test target workflow plugin', () => {
 		expect(req.statusCode).toEqual(200)
 		const got = JSON.parse(req.body.data.output)
 
-		expect(got).toEqual("Hello world!")
+		expect(got).toEqual('Hello world!')
 	})
 
 	retry10(`should return a flow run from magic namespace with namespace set`, async () => {
@@ -313,7 +313,7 @@ describe('Test target workflow plugin', () => {
 		)
 		expect(req.statusCode).toEqual(200)
 		const got = JSON.parse(req.body.data.output)
-		expect(got).toEqual("Hello world!")
+		expect(got).toEqual('Hello world!')
 		expect(req.header['content-type']).toEqual('application/json')
 	})
 
@@ -323,7 +323,7 @@ describe('Test target workflow plugin', () => {
 		)
 		expect(req.statusCode).toEqual(200)
 		const got = JSON.parse(req.body.data.output)
-		expect(got).toEqual("Hello world!")
+		expect(got).toEqual('Hello world!')
 	})
 
 	retry10(`should not return a workflow in non-magic namespace`, async () => {
@@ -363,7 +363,7 @@ describe('Test POST method for target workflow plugin', () => {
 			.send({ message: 'Hi' })
 		expect(req.statusCode).toEqual(200)
 		const got = JSON.parse(req.body.data.output)
-		expect(got).toEqual({"message":"Hi"})
+		expect(got).toEqual({ message: 'Hi' })
 	})
 })
 
@@ -397,7 +397,7 @@ describe('Test Complex POST method for target workflow plugin', () => {
 		expect(req.statusCode).toEqual(200)
 		const got = JSON.parse(req.body.data.output)
 
-		expect(got).toEqual({"message":"Changed"})
+		expect(got).toEqual({ message: 'Changed' })
 	})
 })
 
@@ -437,7 +437,7 @@ describe('Test scope for target workflow plugin', () => {
 		)
 		expect(req.statusCode).toEqual(200)
 		const got = JSON.parse(req.body.data.output)
-		expect(got).toEqual("Hello world!")
+		expect(got).toEqual('Hello world!')
 	})
 })
 

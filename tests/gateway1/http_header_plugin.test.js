@@ -78,47 +78,47 @@ function stateFirst(input) {
 		expect(res.statusCode).toEqual(200)
 		const got = JSON.parse(res.body.data.output)
 		const want = {
-				body: {
-					hello: 'world',
-				},
-				consumer: {
-					groups: [
-						'group1',
-					],
-					tags: [
-						'tag1',
-					],
-					username: 'user1',
-				},
-				headers: {
-					'Accept-Encoding': [
-						'gzip, deflate',
-					],
-					Authorization: [
-						'Basic dXNlcjE6cHdkMQ==',
-					],
-					'Content-Length': [
-						'17',
-					],
-					'Content-Type': [
-						'application/json',
-					],
-					Header1: [
-						'newvalue',
-					],
-					Hello: [
-						'world',
-					],
-				},
-				query_params: {
-					Query1: [
-						'value1',
-					],
-					Query2: [
-						'value2',
-					],
-				},
-				url_params: {},
+			body: {
+				hello: 'world',
+			},
+			consumer: {
+				groups: [
+					'group1',
+				],
+				tags: [
+					'tag1',
+				],
+				username: 'user1',
+			},
+			headers: {
+				'Accept-Encoding': [
+					'gzip, deflate',
+				],
+				Authorization: [
+					'Basic dXNlcjE6cHdkMQ==',
+				],
+				'Content-Length': [
+					'17',
+				],
+				'Content-Type': [
+					'application/json',
+				],
+				Header1: [
+					'newvalue',
+				],
+				Hello: [
+					'world',
+				],
+			},
+			query_params: {
+				Query1: [
+					'value1',
+				],
+				Query2: [
+					'value2',
+				],
+			},
+			url_params: {},
 		}
 		expect(got).toMatchObject(want)
 	})
