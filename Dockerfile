@@ -25,7 +25,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build cd src &&  \
     -o $(cat ../BUILD_PATH.txt);
 
 #########################################################################################
-FROM --platform=$BUILDPLATFORM node:20.18.1-slim as ui-builder
+FROM --platform=$BUILDPLATFORM node:20-slim as ui-builder
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
