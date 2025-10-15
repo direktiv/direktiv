@@ -161,27 +161,17 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		input = []byte("null")
 	}
 
-	var st *engine.InstanceStatus
+	st, notify, err := e.engine.StartWorkflow(r.Context(), namespace, path, string(input), map[string]string{
+		core.EngineMappingPath: path,
+	})
+	if err != nil {
+		writeEngineError(w, err)
 
+		return
+	}
 	if r.URL.Query().Get("wait") == "true" {
-		notify, err := e.engine.RunWorkflow(r.Context(), namespace, path, string(input), map[string]string{
-			core.EngineMappingPath: path,
-		})
-		if err != nil {
-			writeEngineError(w, err)
-
-			return
-		}
 		st = <-notify
-	} else {
-		st, err = e.engine.StartWorkflow(r.Context(), namespace, path, string(input), map[string]string{
-			core.EngineMappingPath: path,
-		})
-		if err != nil {
-			writeEngineError(w, err)
 
-			return
-		}
 	}
 
 	writeJSON(w, convertInstanceData(st))
