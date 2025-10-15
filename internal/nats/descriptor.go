@@ -14,24 +14,24 @@ type Descriptor struct {
 }
 
 func newDescriptor(name string, streamConfig *nats.StreamConfig, consumerConfig *nats.ConsumerConfig) *Descriptor {
-	desc := &Descriptor{
+	dp := &Descriptor{
 		name: name,
 	}
 
-	streamConfig.Name = desc.String()
+	streamConfig.Name = dp.String()
 	streamConfig.Subjects = []string{
-		desc.Subject("*", "*"),
+		dp.Subject("*", "*"),
 	}
 
 	if consumerConfig != nil {
-		consumerConfig.Durable = desc.String()
-		consumerConfig.FilterSubject = desc.Subject("*", "*")
+		consumerConfig.Durable = dp.String()
+		consumerConfig.FilterSubject = dp.Subject("*", "*")
 	}
 
-	desc.streamConfig = streamConfig
-	desc.consumerConfig = consumerConfig
+	dp.streamConfig = streamConfig
+	dp.consumerConfig = consumerConfig
 
-	return desc
+	return dp
 }
 
 func (n Descriptor) Subject(namespace string, id string) string {
