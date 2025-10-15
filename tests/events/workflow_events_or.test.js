@@ -1,12 +1,12 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 import events from './send_helper'
-import {fileURLToPath} from "url";
 
 const namespaceName = basename(fileURLToPath(import.meta.url))
 

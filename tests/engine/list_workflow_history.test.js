@@ -1,11 +1,11 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { btoa } from 'js-base64'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
-import {fileURLToPath} from "url";
 
 const namespace = basename(fileURLToPath(import.meta.url))
 

@@ -1,11 +1,11 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
 import { retry, retry10 } from '../common/retry'
-import {fileURLToPath} from "url";
 
 function quantile (arr, q) {
 	if (!arr.length) return NaN
