@@ -80,20 +80,20 @@ func (d *DataBus) ListInstanceStatuses(ctx context.Context, filterNamespace stri
 }
 
 func (d *DataBus) DeleteNamespace(ctx context.Context, name string) error {
-	descList := []*intNats.Descriptor{
+	dpList := []*intNats.Descriptor{
 		intNats.StreamEngineHistory,
 		intNats.StreamEngineStatus,
 		intNats.StreamEngineQueue,
 	}
 
-	for _, desc := range descList {
+	for _, dp := range dpList {
 		err := d.js.PurgeStream(
-			desc.String(),
-			&nats.StreamPurgeRequest{Subject: desc.Subject(name, "*")},
+			dp.String(),
+			&nats.StreamPurgeRequest{Subject: dp.Subject(name, "*")},
 			nats.Context(ctx),
 		)
 		if err != nil {
-			return fmt.Errorf("nats purge stream %s: %w", desc, err)
+			return fmt.Errorf("nats purge stream %s: %w", dp, err)
 		}
 	}
 	d.statusCache.DeleteNamespace(name)

@@ -145,21 +145,21 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 	}
 
 	// 1- ensure streams
-	for _, desc := range allDescriptors {
-		err = ensureStream(ctx, js, desc.streamConfig)
+	for _, dp := range allDescriptors {
+		err = ensureStream(ctx, js, dp.streamConfig)
 		if err != nil {
-			return nil, fmt.Errorf("nats ensure stream %s: %w", desc, err)
+			return nil, fmt.Errorf("nats ensure stream %s: %w", dp, err)
 		}
 	}
 
 	// 2- ensure shared durable consumers
-	for _, desc := range allDescriptors {
-		if desc.consumerConfig == nil {
+	for _, dp := range allDescriptors {
+		if dp.consumerConfig == nil {
 			continue
 		}
-		err = ensureConsumer(ctx, js, desc.consumerConfig)
+		err = ensureConsumer(ctx, js, dp.consumerConfig)
 		if err != nil {
-			return nil, fmt.Errorf("nats ensure consumer %s: %w", desc, err)
+			return nil, fmt.Errorf("nats ensure consumer %s: %w", dp, err)
 		}
 	}
 
