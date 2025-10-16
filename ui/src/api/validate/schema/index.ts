@@ -7,7 +7,7 @@ export const WorkflowValidationSchema = z.array(
     startColumn: z.number(),
     endLine: z.number(),
     endColumn: z.number(),
-    severity: z.enum(["hint", "info", "warning", "error", ""]),
+    severity: z.enum(["hint", "info", "warning", "error"]),
   })
 );
 

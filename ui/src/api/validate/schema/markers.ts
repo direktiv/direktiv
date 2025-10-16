@@ -19,10 +19,7 @@ const severityMap: Record<SeverityMapKey, MarkerSeverity> = {
 export const MonacoMarkerSchema = WorkflowValidationSchema.transform(
   (messages): editor.IMarkerData[] =>
     messages.map((item) => {
-      const severity =
-        item.severity === ""
-          ? MarkerSeverity.Error
-          : severityMap[item.severity];
+      const severity = severityMap[item.severity];
       return {
         startLineNumber: item.startLine,
         startColumn: item.startColumn,
