@@ -43,7 +43,9 @@ describe('Test gitlab auth plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'target.yaml', 'workflow',
+		'/',
+		'target.yaml',
+		'workflow',
 		wf,
 	)
 
@@ -51,14 +53,15 @@ describe('Test gitlab auth plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint.yaml', 'endpoint',
+		'/',
+		'endpoint.yaml',
+		'endpoint',
 		endpointFile,
 	)
 
 	retry10(`should execute`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(
-			`/ns/` + testNamespace + `/target`,
-		)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(`/ns/` + testNamespace + `/target`)
 			.set('X-Gitlab-Token', 'secret')
 			.send({ hello: 'world' })
 
@@ -66,9 +69,8 @@ describe('Test gitlab auth plugin', () => {
 	})
 
 	retry10(`should fail`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(
-			`/ns/` + testNamespace + `/target`,
-		)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(`/ns/` + testNamespace + `/target`)
 			.set('X-Gitlab-Token', 'wrongsecret')
 			.send({ hello: 'world' })
 

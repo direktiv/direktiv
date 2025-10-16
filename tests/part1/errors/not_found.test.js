@@ -4,12 +4,7 @@ import common from '../../common'
 import request from '../../common/request'
 
 describe('Test path not found', () => {
-	const methods = [
-		'get',
-		'post',
-		'put',
-		'delete',
-	]
+	const methods = ['get', 'post', 'put', 'delete']
 
 	const paths = [
 		'/api/something',
@@ -20,18 +15,19 @@ describe('Test path not found', () => {
 		'/api/v2/something/not/found/',
 	]
 
-	paths.forEach(path => {
-		methods.forEach(method => {
-			it(`should return not_found for path:${ path } with method:${ method }`, async () => {
-				const res = await request(common.config.getDirektivBaseUrl())[method](path)
+	paths.forEach((path) => {
+		methods.forEach((method) => {
+			it(`should return not_found for path:${path} with method:${method}`, async () => {
+				const res = await request(common.config.getDirektivBaseUrl())[method](
+					path,
+				)
 				expect(res.statusCode).toEqual(404)
 				expect(res.body).toMatchObject({
 					error: {
 						code: 'request_path_not_found',
 						message: 'request http path is not found',
 					},
-				},
-				)
+				})
 			})
 		})
 	})

@@ -18,7 +18,8 @@ const workflow = `
       result: Hello world!
 `
 
-const endpointWorkflowVar = `
+const endpointWorkflowVar =
+	`
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: "/endpoint1"
@@ -27,7 +28,9 @@ x-direktiv-config:
       target:
         type: target-flow-var
         configuration:
-          namespace: ` + testNamespace + `
+          namespace: ` +
+	testNamespace +
+	`
           flow: /workflow.yaml
           variable: test
 get:
@@ -50,7 +53,8 @@ get:
 //     - GET
 //   path: /endpoint1`
 
-const endpointWorkflowVarAllowed = `
+const endpointWorkflowVarAllowed =
+	`
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: "/endpoint2"
@@ -59,7 +63,9 @@ x-direktiv-config:
       target:
         type: target-flow-var
         configuration:
-          namespace: ` + limitedNamespace + `
+          namespace: ` +
+	limitedNamespace +
+	`
           flow: /workflow.yaml
           variable: test
           content_type: text/test
@@ -117,13 +123,15 @@ describe('Test target workflow var wrong config', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'ep3.yaml', 'endpoint',
+		'/',
+		'ep3.yaml',
+		'endpoint',
 		endpointWorkflkowVarBroken,
 	)
 
 	retry10(`should list all services`, async () => {
 		const listRes = await request(common.config.getDirektivBaseUrl()).get(
-			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
+			`/api/v2/namespaces/${testNamespace}/gateway/routes`,
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
@@ -131,7 +139,7 @@ describe('Test target workflow var wrong config', () => {
 			spec: expect.anything(),
 			file_path: '/ep3.yaml',
 			server_path: '/ns/system/ep3',
-			errors: [ "plugin 'target-flow-var' err: variable required" ],
+			errors: ["plugin 'target-flow-var' err: variable required"],
 			warnings: [],
 		})
 	})
@@ -147,7 +155,9 @@ describe('Test target workflow variable plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'workflow.yaml', 'workflow',
+		'/',
+		'workflow.yaml',
+		'workflow',
 		workflow,
 	)
 
@@ -155,7 +165,9 @@ describe('Test target workflow variable plugin', () => {
 		it,
 		expect,
 		limitedNamespace,
-		'/', 'workflow.yaml', 'workflow',
+		'/',
+		'workflow.yaml',
+		'workflow',
 		workflow,
 	)
 
@@ -163,7 +175,9 @@ describe('Test target workflow variable plugin', () => {
 		it,
 		expect,
 		limitedNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpointWorkflowVar,
 	)
 
@@ -171,7 +185,9 @@ describe('Test target workflow variable plugin', () => {
 		it,
 		expect,
 		limitedNamespace,
-		'/', 'endpoint2.yaml', 'endpoint',
+		'/',
+		'endpoint2.yaml',
+		'endpoint',
 		endpointWorkflowVarAllowed,
 	)
 
@@ -179,7 +195,9 @@ describe('Test target workflow variable plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpointWorkflowVar,
 	)
 
@@ -187,12 +205,17 @@ describe('Test target workflow variable plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint2.yaml', 'endpoint',
+		'/',
+		'endpoint2.yaml',
+		'endpoint',
 		endpointWorkflowVarAllowed,
 	)
 
 	it(`should set plain text variable`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/variables`)
+		const workflowVarResponse = await request(
+			common.config.getDirektivBaseUrl(),
+		)
+			.post(`/api/v2/namespaces/${testNamespace}/variables`)
 			.send({
 				name: 'test',
 				workflowPath: '/workflow.yaml',
@@ -203,7 +226,10 @@ describe('Test target workflow variable plugin', () => {
 	})
 
 	it(`should set plain text variable for worklfow in limited namespace`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ limitedNamespace }/variables`)
+		const workflowVarResponse = await request(
+			common.config.getDirektivBaseUrl(),
+		)
+			.post(`/api/v2/namespaces/${limitedNamespace}/variables`)
 			.send({
 				name: 'test',
 				workflowPath: '/workflow.yaml',
@@ -222,14 +248,17 @@ describe('Test target workflow variable plugin', () => {
 		expect(req.header['content-type']).toEqual('text/plain')
 	})
 
-	retry10(`should return a var from magic namespace with namespace set`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).get(
-			`/ns/system/endpoint2`,
-		)
-		expect(req.statusCode).toEqual(200)
-		expect(req.text).toEqual('Hello World 2')
-		expect(req.header['content-type']).toEqual('text/test')
-	})
+	retry10(
+		`should return a var from magic namespace with namespace set`,
+		async () => {
+			const req = await request(common.config.getDirektivBaseUrl()).get(
+				`/ns/system/endpoint2`,
+			)
+			expect(req.statusCode).toEqual(200)
+			expect(req.text).toEqual('Hello World 2')
+			expect(req.header['content-type']).toEqual('text/test')
+		},
+	)
 
 	retry10(`should return a workflow var from non-magic namespace`, async () => {
 		const req = await request(common.config.getDirektivBaseUrl()).get(

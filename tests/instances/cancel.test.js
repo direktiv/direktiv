@@ -13,7 +13,10 @@ describe('Test wait success API behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'delay.yaml',
 		'workflow',
@@ -24,10 +27,12 @@ states:
   type: delay
   duration: 'PT10S'
   transform:
-    result: x`))
+    result: x`),
+	)
 
 	it(`should invoke the 'delay.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=delay.yaml`)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(`/api/v2/namespaces/${namespaceName}/instances?path=delay.yaml`)
 			.send({
 				name: 'foo',
 				data: btoa('bar'),
@@ -50,7 +55,9 @@ states:
 	})
 
 	it(`should fail to cancel the instance`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).patch(`/api/v2/namespaces/${ namespaceName }/instances/${ id }`)
+		const req = await request(common.config.getDirektivBaseUrl()).patch(
+			`/api/v2/namespaces/${namespaceName}/instances/${id}`,
+		)
 		expect(req.statusCode).toEqual(400)
 		expect(req.body).toMatchObject({})
 
@@ -58,7 +65,8 @@ states:
 	})
 
 	it(`should cancel the instance`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).patch(`/api/v2/namespaces/${ namespaceName }/instances/${ id }`)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.patch(`/api/v2/namespaces/${namespaceName}/instances/${id}`)
 			.set('Content-Type', 'application/json')
 			.send({
 				status: 'cancelled',
@@ -70,7 +78,9 @@ states:
 	})
 
 	it(`should verify that the instance has been cancelled`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ id }`)
+		const req = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespaceName}/instances/${id}`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			data: {
@@ -90,6 +100,6 @@ states:
 	})
 })
 
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
+function sleep(ms) {
+	return new Promise((resolve) => setTimeout(resolve, ms))
 }

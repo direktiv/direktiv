@@ -14,7 +14,7 @@ describe('Test secret read operations', () => {
 
 	it(`should create a new secret`, async () => {
 		const res = await request(common.config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ testNamespace }/secrets`)
+			.post(`/api/v2/namespaces/${testNamespace}/secrets`)
 			.send({
 				name: 'key1',
 				data: btoa('value1'),
@@ -22,15 +22,18 @@ describe('Test secret read operations', () => {
 		expect(res.statusCode).toEqual(200)
 	})
 
-	helpers.itShouldCreateFile(it, expect, testNamespace,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
 		'',
-		`${ testWorkflow }-parent.yaml`,
+		`${testWorkflow}-parent.yaml`,
 		'workflow',
 		'text/plain',
 		btoa(`
 functions:
 - id: echo
-  workflow: ${ testWorkflow }-child.yaml
+  workflow: ${testWorkflow}-child.yaml
   type: subflow
 states:
 - id: echo
@@ -42,21 +45,28 @@ states:
       secret: 'jq(.secrets.key1)'
   transform: 
     result: 'jq(.return.secret)'
-`))
+`),
+	)
 
-	helpers.itShouldCreateFile(it, expect, testNamespace,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
 		'',
-		`${ testWorkflow }-child.yaml`,
+		`${testWorkflow}-child.yaml`,
 		'workflow',
 		'text/plain',
 		btoa(`
 states:
 - id: helloworld
   type: noop
-`))
+`),
+	)
 
-	it(`should invoke the '/${ testWorkflow }-parent.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=${ testWorkflow }-parent.yaml&wait=true`)
+	it(`should invoke the '/${testWorkflow}-parent.yaml' workflow`, async () => {
+		const req = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${testNamespace}/instances?path=${testWorkflow}-parent.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 'value1',

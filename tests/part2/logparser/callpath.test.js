@@ -13,7 +13,10 @@ describe('Test subflow behaviour', () => {
 
 	helpers.itShouldCreateDir(it, expect, namespaceName, '/', 'a')
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'/a',
 		`child.yaml`,
 		'workflow',
@@ -23,9 +26,13 @@ states:
 - id: a
   type: noop
   transform:
-    result: 'jq(.input + 1)'`))
+    result: 'jq(.input + 1)'`),
+	)
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'/a',
 		`parent1.yaml`,
 		'workflow',
@@ -44,10 +51,13 @@ states:
       input: 1
   transform:
     result: 'jq(.return.result)'
-`))
+`),
+	)
 
 	it(`should invoke the '/a/parent1.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=a%2Fparent1.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=a%2Fparent1.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 2,

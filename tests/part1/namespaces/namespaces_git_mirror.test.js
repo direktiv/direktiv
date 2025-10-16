@@ -1,12 +1,13 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import common from '../../common'
 import regex from '../../common/regex'
 import request from '../../common/request'
 import { retry50 } from '../../common/retry'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test namespace git mirroring', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -27,7 +28,7 @@ describe('Test namespace git mirroring', () => {
 
 	it(`should trigger a new sync`, async () => {
 		const res = await request(common.config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/syncs`)
+			.post(`/api/v2/namespaces/${namespace}/syncs`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
@@ -42,8 +43,9 @@ describe('Test namespace git mirroring', () => {
 	})
 
 	retry50(`should succeed to sync`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/syncs`)
+		const res = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/syncs`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual([
 			{
@@ -57,17 +59,23 @@ describe('Test namespace git mirroring', () => {
 	})
 
 	it(`should get the new git namespace`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/files/listener.yml`)
+		const res = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files/listener.yml`,
+		)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should delete the new git namespace`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl()).delete(`/api/v2/namespaces/${ namespace }`)
+		const res = await request(common.config.getDirektivBaseUrl()).delete(
+			`/api/v2/namespaces/${namespace}`,
+		)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should get 404 after the new git namespace deletion`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/files/listener.yml`)
+		const res = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files/listener.yml`,
+		)
 		expect(res.statusCode).toEqual(404)
 	})
 })

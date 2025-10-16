@@ -8,7 +8,8 @@ const testNamespace = 'system'
 
 const limitedNamespace = 'limited_namespace'
 
-const endpointNSVar = `
+const endpointNSVar =
+	`
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: "/endpoint1"
@@ -17,7 +18,9 @@ x-direktiv-config:
       target:
         type: target-namespace-var
         configuration:
-          namespace: ` + testNamespace + `
+          namespace: ` +
+	testNamespace +
+	`
           variable: plain
 get:
    responses:
@@ -25,7 +28,8 @@ get:
         description: works
 `
 
-const endpointNSVarAllowed = `
+const endpointNSVarAllowed =
+	`
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: "/endpoint2"
@@ -34,7 +38,9 @@ x-direktiv-config:
       target:
         type: target-namespace-var
         configuration:
-          namespace: ` + limitedNamespace + `
+          namespace: ` +
+	limitedNamespace +
+	`
           variable: plain
           content_type: text/test
 get:
@@ -65,13 +71,15 @@ describe('Test target workflow var wrong config', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'ep3.yaml', 'endpoint',
+		'/',
+		'ep3.yaml',
+		'endpoint',
 		endpointNSVarBroken,
 	)
 
 	retry10(`should list all services`, async () => {
 		const listRes = await request(common.config.getDirektivBaseUrl()).get(
-			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
+			`/api/v2/namespaces/${testNamespace}/gateway/routes`,
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
@@ -79,7 +87,7 @@ describe('Test target workflow var wrong config', () => {
 			spec: expect.anything(),
 			file_path: '/ep3.yaml',
 			server_path: '/ns/system/ep3',
-			errors: [ "plugin 'target-namespace-var' err: variable required" ],
+			errors: ["plugin 'target-namespace-var' err: variable required"],
 			warnings: [],
 		})
 	})
@@ -92,7 +100,10 @@ describe('Test target namespace variable plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
 	it(`should set plain text variable`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/variables`)
+		const workflowVarResponse = await request(
+			common.config.getDirektivBaseUrl(),
+		)
+			.post(`/api/v2/namespaces/${testNamespace}/variables`)
 			.send({
 				name: 'plain',
 				data: btoa('Hello World'),
@@ -102,7 +113,10 @@ describe('Test target namespace variable plugin', () => {
 	})
 
 	it(`should set plain text variable`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ limitedNamespace }/variables`)
+		const workflowVarResponse = await request(
+			common.config.getDirektivBaseUrl(),
+		)
+			.post(`/api/v2/namespaces/${limitedNamespace}/variables`)
 			.send({
 				name: 'plain',
 				data: btoa('Hello World 2'),
@@ -115,7 +129,9 @@ describe('Test target namespace variable plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpointNSVar,
 	)
 
@@ -123,7 +139,9 @@ describe('Test target namespace variable plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint2.yaml', 'endpoint',
+		'/',
+		'endpoint2.yaml',
+		'endpoint',
 		endpointNSVarAllowed,
 	)
 
@@ -131,7 +149,9 @@ describe('Test target namespace variable plugin', () => {
 		it,
 		expect,
 		limitedNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpointNSVar,
 	)
 
@@ -139,7 +159,9 @@ describe('Test target namespace variable plugin', () => {
 		it,
 		expect,
 		limitedNamespace,
-		'/', 'endpoint2.yaml', 'endpoint',
+		'/',
+		'endpoint2.yaml',
+		'endpoint',
 		endpointNSVarAllowed,
 	)
 
@@ -152,14 +174,17 @@ describe('Test target namespace variable plugin', () => {
 		expect(req.header['content-type']).toEqual('text/plain')
 	})
 
-	retry10(`should return a var from magic namespace with namespace set`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).get(
-			`/ns/system/endpoint2`,
-		)
-		expect(req.statusCode).toEqual(200)
-		expect(req.text).toEqual('Hello World 2')
-		expect(req.header['content-type']).toEqual('text/test')
-	})
+	retry10(
+		`should return a var from magic namespace with namespace set`,
+		async () => {
+			const req = await request(common.config.getDirektivBaseUrl()).get(
+				`/ns/system/endpoint2`,
+			)
+			expect(req.statusCode).toEqual(200)
+			expect(req.text).toEqual('Hello World 2')
+			expect(req.header['content-type']).toEqual('text/test')
+		},
+	)
 
 	retry10(`should return a var from non-magic namespace`, async () => {
 		const req = await request(common.config.getDirektivBaseUrl()).get(

@@ -14,8 +14,9 @@ describe('Test namespace get list calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
 	it(`should list empty`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual([])
 	})
@@ -30,8 +31,9 @@ describe('Test namespace get list calls', () => {
 	})
 
 	it(`should get the new namespace foo`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/foo`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/foo`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual({
 			name: 'foo',
@@ -42,8 +44,9 @@ describe('Test namespace get list calls', () => {
 	})
 
 	it(`should list the new namespace foo`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.length).toEqual(1)
 		expect(res.body.data[0]).toEqual({

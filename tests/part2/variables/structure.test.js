@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import common from '../../common'
 import config from '../../common/config'
@@ -7,7 +8,7 @@ import helpers from '../../common/helpers'
 import regex from '../../common/regex'
 import request from '../../common/request'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test variable get delete list calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
@@ -16,7 +17,7 @@ describe('Test variable get delete list calls', () => {
 	let createRes
 	it(`should create a new variable foo`, async () => {
 		createRes = await request(config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/variables`)
+			.post(`/api/v2/namespaces/${namespace}/variables`)
 			.send({
 				name: 'foo',
 				data: btoa('foo'),
@@ -26,8 +27,9 @@ describe('Test variable get delete list calls', () => {
 	})
 
 	it(`should get the new variable foo`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/variables/${ createRes.body.data.id }`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/variables/${createRes.body.data.id}`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual({
 			id: expect.stringMatching(common.regex.uuidRegex),
@@ -45,8 +47,9 @@ describe('Test variable get delete list calls', () => {
 	})
 
 	it(`should list the new variable foo`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/variables`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/variables`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.length).toEqual(1)
 		expect(res.body.data[0]).toEqual({

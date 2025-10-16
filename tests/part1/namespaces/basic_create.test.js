@@ -180,7 +180,7 @@ describe('Test namespace create calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		it(`should create a new namespace case ${ i }`, async () => {
+		it(`should create a new namespace case ${i}`, async () => {
 			const res = await request(config.getDirektivBaseUrl())
 				.post(`/api/v2/namespaces`)
 				.send(testCase.input)
@@ -215,14 +215,12 @@ describe('Test invalid namespace create calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		it(`should fail create a new namespace case ${ i }`, async () => {
+		it(`should fail create a new namespace case ${i}`, async () => {
 			const res = await request(config.getDirektivBaseUrl())
 				.post(`/api/v2/namespaces`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
-			expect(res.body.error).toEqual(
-				testCase.wantError.error,
-			)
+			expect(res.body.error).toEqual(testCase.wantError.error)
 		})
 	}
 })
@@ -248,7 +246,7 @@ describe('Test invalid namespace name', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		it(`should fail create a new namespace case ${ i }`, async () => {
+		it(`should fail create a new namespace case ${i}`, async () => {
 			const res = await request(config.getDirektivBaseUrl())
 				.post(`/api/v2/namespaces`)
 				.send({
@@ -276,7 +274,7 @@ describe('Test valid namespace name', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		it(`should fail create a new namespace case ${ i }`, async () => {
+		it(`should fail create a new namespace case ${i}`, async () => {
 			const res = await request(config.getDirektivBaseUrl())
 				.post(`/api/v2/namespaces`)
 				.send({
@@ -334,12 +332,13 @@ describe('Test missing fields create calls', () => {
 			mirror: {
 				url: 'my_url',
 			},
-		} ]
+		},
+	]
 
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		it(`should fail create a new namespace case ${ i }`, async () => {
+		it(`should fail create a new namespace case ${i}`, async () => {
 			const res = await request(config.getDirektivBaseUrl())
 				.post(`/api/v2/namespaces`)
 				.send(testCase)

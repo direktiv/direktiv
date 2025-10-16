@@ -49,7 +49,9 @@ describe('Test js outbound plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpointJSFile,
 	)
 
@@ -57,14 +59,15 @@ describe('Test js outbound plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'target.yaml', 'workflow',
+		'/',
+		'target.yaml',
+		'workflow',
 		wf,
 	)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(
-			`/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`,
-		)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(`/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`)
 			.set('Header1', 'Value1')
 			.send({ hello: 'world' })
 		expect(req.statusCode).toEqual(201)
