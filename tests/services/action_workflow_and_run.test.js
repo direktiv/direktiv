@@ -12,7 +12,10 @@ describe('Test workflow function invoke', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	helpers.itShouldCreateFile(it, expect, testNamespace,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
 		'',
 		testWorkflow,
 		'workflow',
@@ -31,11 +34,14 @@ states:
     input: 
       method: "GET"
       url: "https://jsonplaceholder.typicode.com/todos/1"
-`))
+`),
+	)
 
-	it(`should invoke the ${ testWorkflow } workflow`, async () => {
+	it(`should invoke the ${testWorkflow} workflow`, async () => {
 		await helpers.sleep(500)
-		const res = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=${ testWorkflow }&wait=true`)
+		const res = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${testNamespace}/instances?path=${testWorkflow}&wait=true`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return.status).toBe('200 OK')
 	})

@@ -123,25 +123,27 @@ describe('Test wrong endpoint config', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpointbroken.yaml', 'endpoint',
+		'/',
+		'endpointbroken.yaml',
+		'endpoint',
 		endpointBroken,
 	)
 
 	retry10(`should list all endpoints`, async () => {
 		const listRes = await request(common.config.getDirektivBaseUrl()).get(
-			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
+			`/api/v2/namespaces/${testNamespace}/gateway/routes`,
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
-		expect(listRes.body.data[0]).toEqual(
-			{
-				spec: expect.anything(),
-				file_path: '/endpointbroken.yaml',
-				errors: [ 'yaml: unmarshal errors:\n  line 5: cannot unmarshal !!map into []core.PluginConfig' ],
-				warnings: [],
-				server_path: '',
-			},
-		)
+		expect(listRes.body.data[0]).toEqual({
+			spec: expect.anything(),
+			file_path: '/endpointbroken.yaml',
+			errors: [
+				'yaml: unmarshal errors:\n  line 5: cannot unmarshal !!map into []core.PluginConfig',
+			],
+			warnings: [],
+			server_path: '',
+		})
 	})
 })
 
@@ -152,15 +154,11 @@ describe('Test gateway endpoints on create', () => {
 
 	retry10(`should list all endpoints`, async () => {
 		const listRes = await request(common.config.getDirektivBaseUrl()).get(
-			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
+			`/api/v2/namespaces/${testNamespace}/gateway/routes`,
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(0)
-		expect(listRes.body.data).toEqual(
-			expect.arrayContaining(
-				[],
-			),
-		)
+		expect(listRes.body.data).toEqual(expect.arrayContaining([]))
 	})
 })
 
@@ -173,7 +171,9 @@ describe('Test gateway get single endpoint', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpoint1,
 	)
 
@@ -181,7 +181,9 @@ describe('Test gateway get single endpoint', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint2.yaml', 'endpoint',
+		'/',
+		'endpoint2.yaml',
+		'endpoint',
 		endpoint2,
 	)
 
@@ -189,7 +191,9 @@ describe('Test gateway get single endpoint', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint3.yaml', 'endpoint',
+		'/',
+		'endpoint3.yaml',
+		'endpoint',
 		endpoint3,
 	)
 
@@ -197,64 +201,72 @@ describe('Test gateway get single endpoint', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint4.yaml', 'endpoint',
+		'/',
+		'endpoint4.yaml',
+		'endpoint',
 		endpoint4,
 	)
 
 	retry10(`should list simple endpoint`, async () => {
 		const listRes = await request(common.config.getDirektivBaseUrl()).get(
-			`/api/v2/namespaces/${ testNamespace }/gateway/routes?path=/endpoint1`,
+			`/api/v2/namespaces/${testNamespace}/gateway/routes?path=/endpoint1`,
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
-		expect(listRes.body.data[0]).toEqual(expect.objectContaining({
-			spec: expect.objectContaining({
-				get: expect.anything(),
-				'x-direktiv-config': {
-					allow_anonymous: false,
-					path: '/endpoint1',
-					plugins: {
-						auth: [
-							{
-								configuration: {
-									key_name: 'secret',
+		expect(listRes.body.data[0]).toEqual(
+			expect.objectContaining({
+				spec: expect.objectContaining({
+					get: expect.anything(),
+					'x-direktiv-config': {
+						allow_anonymous: false,
+						path: '/endpoint1',
+						plugins: {
+							auth: [
+								{
+									configuration: {
+										key_name: 'secret',
+									},
+									type: 'key-auth',
 								},
-								type: 'key-auth',
+							],
+							target: {
+								configuration: {
+									status_code: 201,
+									status_message: 'TEST1',
+								},
+								type: 'instant-response',
 							},
-						],
-						target: {
-							configuration: {
-								status_code: 201,
-								status_message: 'TEST1',
-							},
-							type: 'instant-response',
 						},
 					},
-				},
+				}),
+				errors: [],
+				warnings: [],
+				server_path: '/ns/system/endpoint1',
+				file_path: '/endpoint1.yaml',
 			}),
-			errors: [],
-			warnings: [],
-			server_path: '/ns/system/endpoint1',
-			file_path: '/endpoint1.yaml',
-		}))
+		)
 	})
 
 	retry10(`should list long path endpoint`, async () => {
 		const listRes = await request(common.config.getDirektivBaseUrl()).get(
-			`/api/v2/namespaces/${ testNamespace }/gateway/routes?path=/endpoint3/longer/path`,
+			`/api/v2/namespaces/${testNamespace}/gateway/routes?path=/endpoint3/longer/path`,
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
-		expect(listRes.body.data[0].spec['x-direktiv-config'].path).toEqual('/endpoint3/longer/path')
+		expect(listRes.body.data[0].spec['x-direktiv-config'].path).toEqual(
+			'/endpoint3/longer/path',
+		)
 	})
 
 	retry10(`should list long path endpoint with var`, async () => {
 		const listRes = await request(common.config.getDirektivBaseUrl()).get(
-			`/api/v2/namespaces/${ testNamespace }/gateway/routes?path=/endpoint4/longer/path/{id}`,
+			`/api/v2/namespaces/${testNamespace}/gateway/routes?path=/endpoint4/longer/path/{id}`,
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
-		expect(listRes.body.data[0].spec['x-direktiv-config'].path).toEqual('/endpoint4/longer/path/{id}')
+		expect(listRes.body.data[0].spec['x-direktiv-config'].path).toEqual(
+			'/endpoint4/longer/path/{id}',
+		)
 	})
 })
 
@@ -267,7 +279,9 @@ describe('Test gateway endpoints crud operations', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpoint1,
 	)
 
@@ -275,7 +289,9 @@ describe('Test gateway endpoints crud operations', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint2.yaml', 'endpoint',
+		'/',
+		'endpoint2.yaml',
+		'endpoint',
 		endpoint2,
 	)
 
@@ -283,7 +299,9 @@ describe('Test gateway endpoints crud operations', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'consumer1.yaml', 'consumer',
+		'/',
+		'consumer1.yaml',
+		'consumer',
 		consumer1,
 	)
 
@@ -291,72 +309,85 @@ describe('Test gateway endpoints crud operations', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'consumer2.yaml', 'consumer',
+		'/',
+		'consumer2.yaml',
+		'consumer',
 		consumer2,
 	)
 
 	retry10(`should list all endpoints`, async () => {
 		const listRes = await request(common.config.getDirektivBaseUrl()).get(
-			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
+			`/api/v2/namespaces/${testNamespace}/gateway/routes`,
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(2)
-		expect(listRes.body.data).toEqual(
-			[
-				{
-					spec: expect.anything(),
-					errors: [],
-					warnings: [],
-					server_path: '/ns/system/endpoint1',
-					file_path: '/endpoint1.yaml',
-				}, {
-					spec: expect.anything(),
-					errors: [],
-					warnings: [],
-					server_path: '/ns/system/endpoint2',
-					file_path: '/endpoint2.yaml',
-				},
-			],
-		)
+		expect(listRes.body.data).toEqual([
+			{
+				spec: expect.anything(),
+				errors: [],
+				warnings: [],
+				server_path: '/ns/system/endpoint1',
+				file_path: '/endpoint1.yaml',
+			},
+			{
+				spec: expect.anything(),
+				errors: [],
+				warnings: [],
+				server_path: '/ns/system/endpoint2',
+				file_path: '/endpoint2.yaml',
+			},
+		])
 	})
 
 	retry10(`should list all consumers`, async () => {
 		const listRes = await request(common.config.getDirektivBaseUrl()).get(
-			`/api/v2/namespaces/${ testNamespace }/gateway/consumers`,
+			`/api/v2/namespaces/${testNamespace}/gateway/consumers`,
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(2)
 
-		const comp = (a, b) => a.file_path < b.file_path ? -1 : 1
-		expect(listRes.body.data.sort(comp)).toEqual([
-			{
-				file_path: '/consumer2.yaml',
-				errors: [],
-				api_key: 'key2',
-				groups: [ 'group2' ],
-				password: 'pwd',
-				tags: [ 'tag2' ],
-				username: 'consumer2',
-			},
+		const comp = (a, b) => (a.file_path < b.file_path ? -1 : 1)
+		expect(listRes.body.data.sort(comp)).toEqual(
+			[
+				{
+					file_path: '/consumer2.yaml',
+					errors: [],
+					api_key: 'key2',
+					groups: ['group2'],
+					password: 'pwd',
+					tags: ['tag2'],
+					username: 'consumer2',
+				},
 
-			{
-				file_path: '/consumer1.yaml',
-				errors: [],
-				api_key: 'key1',
-				groups: [ 'group1' ],
-				password: 'pwd',
-				tags: [ 'tag1' ],
-				username: 'consumer1',
-			},
-		].sort(comp))
+				{
+					file_path: '/consumer1.yaml',
+					errors: [],
+					api_key: 'key1',
+					groups: ['group1'],
+					password: 'pwd',
+					tags: ['tag1'],
+					username: 'consumer1',
+				},
+			].sort(comp),
+		)
 	})
 
-	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/endpoint1.yaml')
-	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/consumer1.yaml')
+	common.helpers.itShouldDeleteFile(
+		it,
+		expect,
+		testNamespace,
+		'/endpoint1.yaml',
+	)
+	common.helpers.itShouldDeleteFile(
+		it,
+		expect,
+		testNamespace,
+		'/consumer1.yaml',
+	)
 
 	retry10(`should list one route after delete`, async () => {
 		const listRes = await request(common.config.getDirektivBaseUrl()).get(
-			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
+			`/api/v2/namespaces/${testNamespace}/gateway/routes`,
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
@@ -364,7 +395,7 @@ describe('Test gateway endpoints crud operations', () => {
 
 	retry10(`should list one consumer after delete`, async () => {
 		const listRes = await request(common.config.getDirektivBaseUrl()).get(
-			`/api/v2/namespaces/${ testNamespace }/gateway/consumers`,
+			`/api/v2/namespaces/${testNamespace}/gateway/consumers`,
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
@@ -380,7 +411,9 @@ describe('Test availability of gateway endpoints', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpoint1,
 	)
 
@@ -388,7 +421,9 @@ describe('Test availability of gateway endpoints', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint2.yaml', 'endpoint',
+		'/',
+		'endpoint2.yaml',
+		'endpoint',
 		endpoint2,
 	)
 
@@ -396,7 +431,9 @@ describe('Test availability of gateway endpoints', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'consumer1.yaml', 'consumer',
+		'/',
+		'consumer1.yaml',
+		'consumer',
 		consumer1,
 	)
 
@@ -404,7 +441,9 @@ describe('Test availability of gateway endpoints', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'consumer2.yaml', 'consumer',
+		'/',
+		'consumer2.yaml',
+		'consumer',
 		consumer2,
 	)
 
@@ -415,25 +454,26 @@ describe('Test availability of gateway endpoints', () => {
 		expect(req.statusCode).toEqual(403)
 	})
 
-	retry10(`should run endpoint without authentication but allow anonymous`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).get(
-			`/ns/system/endpoint2`,
-		)
-		expect(req.statusCode).toEqual(202)
-	})
+	retry10(
+		`should run endpoint without authentication but allow anonymous`,
+		async () => {
+			const req = await request(common.config.getDirektivBaseUrl()).get(
+				`/ns/system/endpoint2`,
+			)
+			expect(req.statusCode).toEqual(202)
+		},
+	)
 
 	retry10(`should run endpoint with key authentication`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).get(
-			`/ns/system/endpoint1`,
-		)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.get(`/ns/system/endpoint1`)
 			.set('secret', 'key2')
 		expect(req.statusCode).toEqual(201)
 	})
 
 	retry10(`should run endpoint with basic authentication`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).get(
-			`/ns/system/endpoint2`,
-		)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.get(`/ns/system/endpoint2`)
 			.auth('consumer1', 'pwd')
 		expect(req.statusCode).toEqual(202)
 	})

@@ -25,38 +25,41 @@ describe('Test services crud operations', () => {
 
 	it(`should trigger a new sync`, async () => {
 		const res = await request(common.config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ testNamespace }/syncs`)
+			.post(`/api/v2/namespaces/${testNamespace}/syncs`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 	})
 
 	retry50(`should list all services`, async () => {
-		const listRes = await request(common.config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ testNamespace }/services`)
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${testNamespace}/services`,
+		)
 		expect(listRes.statusCode).toEqual(200)
 
-		const reduced = listRes.body.data.map(item => ({
+		const reduced = listRes.body.data.map((item) => ({
 			id: item.id,
 			error: item.error,
 		}))
 
-		expect(reduced).toEqual(expect.arrayContaining([
-			{
-				error: null,
-				id: 'git-test-services-hello-world-greeting-event-liste-6acf6e6da3',
-			},
-			{
-				error: null,
-				id: 'git-test-services-greeter-greeting-greeting-yaml-a09fc061bb',
-			},
-			{
-				error: null,
-				id: 'git-test-services-csvkit-input-convert-workflow-ya-6c50acea98',
-			},
-			{
-				error: null,
-				id: 'git-test-services-patch-patching-wf-yaml-f1cd98cbce',
-			},
-		]))
+		expect(reduced).toEqual(
+			expect.arrayContaining([
+				{
+					error: null,
+					id: 'git-test-services-hello-world-greeting-event-liste-6acf6e6da3',
+				},
+				{
+					error: null,
+					id: 'git-test-services-greeter-greeting-greeting-yaml-a09fc061bb',
+				},
+				{
+					error: null,
+					id: 'git-test-services-csvkit-input-convert-workflow-ya-6c50acea98',
+				},
+				{
+					error: null,
+					id: 'git-test-services-patch-patching-wf-yaml-f1cd98cbce',
+				},
+			]),
+		)
 	})
 })

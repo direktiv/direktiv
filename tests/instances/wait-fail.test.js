@@ -11,7 +11,10 @@ describe('Test wait fail API behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'error.yaml',
 		'workflow',
@@ -23,10 +26,13 @@ states:
   error: errA
   message: "error A"
   transform:
-    result: x`))
+    result: x`),
+	)
 
 	it(`should invoke the 'error.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=error.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=error.yaml&wait=true`,
+		)
 
 		expect(req.statusCode).toEqual(500)
 		expect(req.header['direktiv-instance-error-code']).toEqual('errA')
@@ -40,7 +46,9 @@ states:
 	})
 
 	it(`should invoke the '/error.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=%2Ferror.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=%2Ferror.yaml&wait=true`,
+		)
 
 		expect(req.statusCode).toEqual(500)
 		expect(req.header['direktiv-instance-error-code']).toEqual('errA')

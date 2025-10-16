@@ -28,7 +28,7 @@ x-direktiv-config:
       target:
         type: target-flow
         configuration:
-          flow: /target.yaml
+          flow: /foo.wf.ts
           content_type: application/json
 post:
    responses:
@@ -36,12 +36,9 @@ post:
         description: works`
 
 const wf = `
-direktiv_api: workflow/v1
-states:
-- id: helloworld
-  type: noop
-  transform:
-    result: jq(.)
+function stateFirst(input) {
+	return finish(input)
+}
 `
 
 const consumer = `
@@ -69,7 +66,7 @@ x-direktiv-config:
       target:
         type: target-flow
         configuration:
-          flow: /target.yaml
+          flow: /foo.wf.ts
           content_type: application/json
 post:
    responses:
@@ -91,7 +88,7 @@ x-direktiv-config:
       target:
         type: target-flow
         configuration:
-          flow: /target.yaml
+          flow: /foo.wf.ts
           content_type: application/json
 post:
    responses:
@@ -115,7 +112,7 @@ x-direktiv-config:
       target:
         type: target-flow
         configuration:
-          flow: /target.yaml
+          flow: /foo.wf.ts
           content_type: application/json
 post:
    responses:
@@ -132,30 +129,34 @@ describe('Test js inbound plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpointJSFile,
 	)
 
-	common.helpers.itShouldCreateYamlFile(
+	common.helpers.itShouldTSWorkflow(
 		it,
 		expect,
 		testNamespace,
-		'/', 'target.yaml', 'workflow',
+		'/',
+		'foo.wf.ts',
 		wf,
 	)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(
-			`/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`,
-		)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(`/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`)
 			.set('Header1', 'Value1')
 			.send({ hello: 'world' })
 
+		const got = JSON.parse(req.body.data.output)
+
 		expect(req.statusCode).toEqual(200)
-		expect(req.body.result.addheader).toEqual('value3')
-		expect(req.body.result.addheaderdel).toEqual('')
-		expect(req.body.result.addquery).toEqual('value1')
-		expect(req.body.result.addquerydel).toEqual('')
+		expect(got.addheader).toEqual('value3')
+		expect(got.addheaderdel).toEqual('')
+		expect(got.addquery).toEqual('value1')
+		expect(got.addquerydel).toEqual('')
 	})
 })
 
@@ -168,7 +169,9 @@ describe('Test js inbound plugin consumer', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'consumer.yaml', 'consumer',
+		'/',
+		'consumer.yaml',
+		'consumer',
 		consumer,
 	)
 
@@ -176,27 +179,31 @@ describe('Test js inbound plugin consumer', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpointConsumerFile,
 	)
 
-	common.helpers.itShouldCreateYamlFile(
+	common.helpers.itShouldTSWorkflow(
 		it,
 		expect,
 		testNamespace,
-		'/', 'target.yaml', 'workflow',
+		'/',
+		'foo.wf.ts',
 		wf,
 	)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(
-			`/ns/` + testNamespace + `/target`,
-		)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(`/ns/` + testNamespace + `/target`)
 			.set('API-Token', 'apikey')
 			.send({ hello: 'world' })
 
+		const got = JSON.parse(req.body.data.output)
+
 		expect(req.statusCode).toEqual(200)
-		expect(req.body.result.user).toEqual('demo')
+		expect(got.user).toEqual('demo')
 	})
 })
 
@@ -209,26 +216,30 @@ describe('Test js inbound plugin url params', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpointParamFile,
 	)
 
-	common.helpers.itShouldCreateYamlFile(
+	common.helpers.itShouldTSWorkflow(
 		it,
 		expect,
 		testNamespace,
-		'/', 'target.yaml', 'workflow',
+		'/',
+		'foo.wf.ts',
 		wf,
 	)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(
-			`/ns/` + testNamespace + `/target/myid`,
-		)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(`/ns/` + testNamespace + `/target/myid`)
 			.send({ hello: 'world' })
 
+		const got = JSON.parse(req.body.data.output)
+
 		expect(req.statusCode).toEqual(200)
-		expect(req.body.result.params).toEqual('myid')
+		expect(got.params).toEqual('myid')
 	})
 })
 
@@ -241,22 +252,24 @@ describe('Test js inbound plugin errors', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpointErrorFile,
 	)
 
-	common.helpers.itShouldCreateYamlFile(
+	common.helpers.itShouldTSWorkflow(
 		it,
 		expect,
 		testNamespace,
-		'/', 'target.yaml', 'workflow',
+		'/',
+		'foo.wf.ts',
 		wf,
 	)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(
-			`/ns/` + testNamespace + `/target`,
-		)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(`/ns/` + testNamespace + `/target`)
 			.send({ hello: 'world' })
 
 		expect(req.statusCode).toEqual(403)

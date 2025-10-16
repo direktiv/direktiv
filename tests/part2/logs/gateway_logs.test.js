@@ -1,17 +1,21 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import common from '../../common'
 import helpers from '../../common/helpers'
 import request from '../../common/request'
 import { retry50 } from '../../common/retry'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test namespace log api calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
-	helpers.itShouldCreateFile(it, expect, namespace,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespace,
 		'',
 		'gw.yaml',
 		'endpoint',
@@ -37,12 +41,17 @@ get:
   responses:
     "200":
       description: ""
-`))
+`),
+	)
 
 	retry50(`call gateway`, async () => {
-		await request(common.config.getDirektivBaseUrl()).get(`/ns/${ namespace }/demo`)
+		await request(common.config.getDirektivBaseUrl()).get(
+			`/ns/${namespace}/demo`,
+		)
 
-		const logRes = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/logs?route=%2Fdemo`)
+		const logRes = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/logs?route=%2Fdemo`,
+		)
 		expect(logRes.statusCode).toEqual(200)
 		expect(logRes.body.data).toEqual(
 			expect.arrayContaining([

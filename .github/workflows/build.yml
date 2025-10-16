@@ -136,10 +136,8 @@ jobs:
             suit: gateway1
           - type: api
             suit: gateway2
-          #- type: api
-          #  suit: gateway3
-          #- type: api
-          #  suit: gateway4
+          - type: api
+            suit: gateway3
           #- type: api
           #  suit: instances
           #- type: api

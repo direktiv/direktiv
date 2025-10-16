@@ -26,11 +26,6 @@ type Engine struct {
 	js       nats.JetStreamContext
 }
 
-func (e *Engine) ListInstances(ctx context.Context, namespace string) ([]uuid.UUID, error) {
-	// TODO implement me
-	panic("implement me")
-}
-
 func NewEngine(bus DataBus, compiler core.Compiler, js nats.JetStreamContext) (*Engine, error) {
 	return &Engine{
 		dataBus:  bus,
@@ -53,28 +48,19 @@ func (e *Engine) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (*InstanceStatus, error) {
+func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (*InstanceStatus, <-chan *InstanceStatus, error) {
 	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
 	if err != nil {
-		return nil, fmt.Errorf("fetch script: %w", err)
-	}
-
-	return e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, nil, metadata)
-}
-
-func (e *Engine) RunWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (<-chan *InstanceStatus, error) {
-	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
-	if err != nil {
-		return nil, fmt.Errorf("fetch script: %w", err)
+		return nil, nil, fmt.Errorf("fetch script: %w", err)
 	}
 
 	notify := make(chan *InstanceStatus, 1)
-	_, err = e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)
+	st, err := e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return notify, nil
+	return st, notify, nil
 }
 
 func (e *Engine) startScript(ctx context.Context, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceStatus, metadata map[string]string) (*InstanceStatus, error) {

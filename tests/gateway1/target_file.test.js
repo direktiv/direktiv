@@ -8,7 +8,8 @@ const testNamespace = 'system'
 
 const limitedNamespace = 'limited_namespace'
 
-const endpointNSFile = `
+const endpointNSFile =
+	`
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: "/endpoint1"
@@ -17,7 +18,9 @@ x-direktiv-config:
       target:
         type: target-namespace-file
         configuration:
-          namespace: ` + testNamespace + `
+          namespace: ` +
+	testNamespace +
+	`
           file: /endpoint1.yaml
 get:
    responses:
@@ -93,13 +96,15 @@ describe('Test target file wrong config', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'ep3.yaml', 'endpoint',
+		'/',
+		'ep3.yaml',
+		'endpoint',
 		endpointBroken,
 	)
 
 	retry10(`should fail with wrong config`, async () => {
 		const listRes = await request(common.config.getDirektivBaseUrl()).get(
-			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
+			`/api/v2/namespaces/${testNamespace}/gateway/routes`,
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
@@ -107,7 +112,7 @@ describe('Test target file wrong config', () => {
 			spec: expect.anything(),
 			file_path: '/ep3.yaml',
 			server_path: '/ns/system/endpoint3',
-			errors: [ "plugin 'something-wrong' err: doesn't exist" ],
+			errors: ["plugin 'something-wrong' err: doesn't exist"],
 			warnings: [],
 		})
 	})
@@ -121,7 +126,9 @@ describe('Test mimetype for file target', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'mimetype.yaml', 'endpoint',
+		'/',
+		'mimetype.yaml',
+		'endpoint',
 		mimetypeSet,
 	)
 
@@ -136,7 +143,9 @@ describe('Test mimetype for file target', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'no-mimetype.yaml', 'endpoint',
+		'/',
+		'no-mimetype.yaml',
+		'endpoint',
 		mimetypeNotSet,
 	)
 
@@ -158,7 +167,9 @@ describe('Test target namespace file plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpointNSFile,
 	)
 
@@ -166,7 +177,9 @@ describe('Test target namespace file plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint2.yaml', 'endpoint',
+		'/',
+		'endpoint2.yaml',
+		'endpoint',
 		endpointNSFileAllowed,
 	)
 
@@ -174,7 +187,9 @@ describe('Test target namespace file plugin', () => {
 		it,
 		expect,
 		limitedNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpointNSFile,
 	)
 
@@ -182,7 +197,9 @@ describe('Test target namespace file plugin', () => {
 		it,
 		expect,
 		limitedNamespace,
-		'/', 'endpoint2.yaml', 'endpoint',
+		'/',
+		'endpoint2.yaml',
+		'endpoint',
 		endpointNSFileAllowed,
 	)
 
@@ -194,13 +211,16 @@ describe('Test target namespace file plugin', () => {
 		expect(req.text).toEqual(endpointNSFile)
 	})
 
-	retry10(`should return a file from magic namespace without namespace set`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).get(
-			`/ns/system/endpoint2`,
-		)
-		expect(req.statusCode).toEqual(200)
-		expect(req.text).toEqual(endpointNSFile)
-	})
+	retry10(
+		`should return a file from magic namespace without namespace set`,
+		async () => {
+			const req = await request(common.config.getDirektivBaseUrl()).get(
+				`/ns/system/endpoint2`,
+			)
+			expect(req.statusCode).toEqual(200)
+			expect(req.text).toEqual(endpointNSFile)
+		},
+	)
 
 	retry10(`should return a file from non-magic namespace`, async () => {
 		const req = await request(common.config.getDirektivBaseUrl()).get(
