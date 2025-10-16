@@ -171,7 +171,6 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.URL.Query().Get("wait") == "true" {
 		st = <-notify
-
 	}
 
 	writeJSON(w, convertInstanceData(st))
