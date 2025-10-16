@@ -60,9 +60,9 @@ function stateOne(payload) {
 		expect(res.body).toEqual({
 			data: {
 				cancelled: 0,
-				crashed: 0,
 				failed: 0,
 				pending: 0,
+				running: 0,
 				complete: 1,
 				total: 1,
 			},
