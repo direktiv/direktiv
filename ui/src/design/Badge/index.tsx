@@ -38,9 +38,7 @@ const Badge: FC<BadgeProps> = ({
     {icon === "pending" && <Timer className="h-3" />}
     {icon === "running" && <Loader2 className="h-3 animate-spin" />}
     {icon === "complete" && <Check className="h-3" />}
-    {(icon === "failed" || icon === "cancelled") && (
-      <X className="h-3" />
-    )}
+    {(icon === "failed" || icon === "cancelled") && <X className="h-3" />}
   </div>
 );
 

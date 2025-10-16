@@ -16,7 +16,7 @@ export const instanceStatusToDiagramStatus = (
       return "failed";
     case "pending":
     case "running":
-      return "pending"
+      return "pending";
     default:
       return undefined;
   }
