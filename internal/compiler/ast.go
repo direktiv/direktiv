@@ -305,7 +305,6 @@ func (ap *ASTParser) ValidateConfig() (*core.FlowConfig, error) {
 						case *ast.StringLiteral:
 							err := setAndvalidate(flow, functions, key.Value.String(), value.Value.String())
 
-
 							if err != nil {
 								start := ap.file.Position(int(literal.Key.Idx0()))
 								end := ap.file.Position(int(literal.Value.Idx1()))
