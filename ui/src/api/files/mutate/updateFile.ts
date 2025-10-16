@@ -1,8 +1,9 @@
+import { ResolvedPatchFile, patchFile } from "./patchFile";
+
 import { UpdateFileSchemaType } from "../schema";
 import { fileKeys } from "..";
 import { forceLeadingSlash } from "~/api/files/utils";
 import { getMessageFromApiError } from "~/api/errorHandling";
-import { patchFile } from "./patchFile";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
@@ -12,7 +13,7 @@ export const useUpdateFile = ({
   onSuccess,
   onError,
 }: {
-  onSuccess?: () => void;
+  onSuccess?: (data: ResolvedPatchFile) => void;
   onError?: (e: string | undefined) => void;
 } = {}) => {
   const apiKey = useApiKey();
@@ -46,7 +47,7 @@ export const useUpdateFile = ({
           path: forceLeadingSlash(data.data.path),
         }),
       });
-      onSuccess?.();
+      onSuccess?.(data);
     },
     onError: (e) => {
       onError?.(getMessageFromApiError(e));
