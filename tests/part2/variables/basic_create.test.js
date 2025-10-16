@@ -14,8 +14,16 @@ describe('Test variable create calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateFile(it, expect, namespace, '/', 'wf1.yaml', 'workflow', 'text',
-		btoa(helpers.dummyWorkflow('wf1.yaml')))
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'wf1.yaml',
+		'workflow',
+		'text',
+		btoa(helpers.dummyWorkflow('wf1.yaml')),
+	)
 
 	const testCases = [
 		{
@@ -85,9 +93,9 @@ describe('Test variable create calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		it(`should create a new variable case ${ i }`, async () => {
+		it(`should create a new variable case ${i}`, async () => {
 			const res = await request(config.getDirektivBaseUrl())
-				.post(`/api/v2/namespaces/${ namespace }/variables`)
+				.post(`/api/v2/namespaces/${namespace}/variables`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data).toEqual({
@@ -142,14 +150,12 @@ describe('Test invalid variable create calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		it(`should fail create a new variable case ${ i }`, async () => {
+		it(`should fail create a new variable case ${i}`, async () => {
 			const res = await request(config.getDirektivBaseUrl())
-				.post(`/api/v2/namespaces/${ namespace }/variables`)
+				.post(`/api/v2/namespaces/${namespace}/variables`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
-			expect(res.body.error).toEqual(
-				testCase.wantError.error,
-			)
+			expect(res.body.error).toEqual(testCase.wantError.error)
 		})
 	}
 })

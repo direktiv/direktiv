@@ -35,14 +35,18 @@ describe('Test generic container', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'wf1.yaml', 'workflow',
+		'/',
+		'wf1.yaml',
+		'workflow',
 		genericContainerWorkflow,
 	)
 
 	helpers.sleep(100)
 
 	it(`should invoke workflow`, async () => {
-		const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf1.yaml&wait=true`)
+		const res = await request(config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${testNamespace}/instances?path=wf1.yaml&wait=true`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('data')
 	})

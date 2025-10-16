@@ -15,7 +15,9 @@ describe('Test header plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		`
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
@@ -54,7 +56,9 @@ post:
 		it,
 		expect,
 		testNamespace,
-		'/', 'foo.wf.ts', 'workflow',
+		'/',
+		'foo.wf.ts',
+		'workflow',
 		`
 function stateFirst(input) {
 	return finish(input)
@@ -63,9 +67,8 @@ function stateFirst(input) {
 	)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(
-			`/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`,
-		)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(`/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`)
 			.set('Header', 'Value1')
 			.set('Header1', 'oldvalue')
 			.send({ hello: 'world' })

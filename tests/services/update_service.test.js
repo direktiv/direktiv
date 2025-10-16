@@ -11,17 +11,25 @@ describe('Test services operations with envs', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFile(it, expect, testNamespace,
-		'/', 's1.yaml', 'service', `
+	common.helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		testNamespace,
+		'/',
+		's1.yaml',
+		'service',
+		`
 direktiv_api: service/v1
 image: direktiv/request
 scale: 1
-`)
+`,
+	)
 
 	let listRes
 	retry10(`should list all services`, async () => {
-		listRes = await request(common.config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ testNamespace }/services`)
+		listRes = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${testNamespace}/services`,
+		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body).toMatchObject({
 			data: [
@@ -38,19 +46,25 @@ scale: 1
 		})
 	})
 
-	common.helpers.itShouldUpdateYamlFile(it, expect, testNamespace,
-		'/s1.yaml', `
+	common.helpers.itShouldUpdateYamlFile(
+		it,
+		expect,
+		testNamespace,
+		'/s1.yaml',
+		`
     direktiv_api: service/v1
     image: direktiv/request
     scale: 1
     envs:
     - name: hello
       value: world
-    `)
+    `,
+	)
 
 	retry10(`should list all services`, async () => {
-		listRes = await request(common.config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ testNamespace }/services`)
+		listRes = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${testNamespace}/services`,
+		)
 
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body).toMatchObject({
@@ -74,8 +88,12 @@ scale: 1
 		})
 	})
 
-	common.helpers.itShouldUpdateYamlFile(it, expect, testNamespace,
-		'/s1.yaml', `
+	common.helpers.itShouldUpdateYamlFile(
+		it,
+		expect,
+		testNamespace,
+		'/s1.yaml',
+		`
     direktiv_api: service/v1
     image: direktiv/request:v4
     scale: 1
@@ -84,11 +102,13 @@ scale: 1
       value: world
     - name: hello1
       value: world1
-    `)
+    `,
+	)
 
 	retry10(`should list all services`, async () => {
-		listRes = await request(common.config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ testNamespace }/services`)
+		listRes = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${testNamespace}/services`,
+		)
 
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body).toMatchObject({
@@ -122,8 +142,14 @@ describe('Test workflow operations with envs', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFile(it, expect, testNamespace,
-		'/', 'w2.yaml', 'workflow', `
+	common.helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		testNamespace,
+		'/',
+		'w2.yaml',
+		'workflow',
+		`
 description: something
 functions:
 - id: get
@@ -132,12 +158,14 @@ functions:
 states:
 - id: foo
   type: noop
-`)
+`,
+	)
 
 	let listRes
 	retry10(`should list all services`, async () => {
-		listRes = await request(common.config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ testNamespace }/services`)
+		listRes = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${testNamespace}/services`,
+		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body).toMatchObject({
 			data: [
@@ -154,8 +182,12 @@ states:
 		})
 	})
 
-	common.helpers.itShouldUpdateYamlFile(it, expect, testNamespace,
-		'/w2.yaml', `
+	common.helpers.itShouldUpdateYamlFile(
+		it,
+		expect,
+		testNamespace,
+		'/w2.yaml',
+		`
 description: something
 functions:
 - id: get
@@ -167,11 +199,13 @@ functions:
 states:
 - id: foo
   type: noop
-`)
+`,
+	)
 
 	retry50(`should list all services`, async () => {
-		listRes = await request(common.config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ testNamespace }/services`)
+		listRes = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${testNamespace}/services`,
+		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body).toMatchObject({
 			data: [
@@ -194,8 +228,12 @@ states:
 		})
 	})
 
-	common.helpers.itShouldUpdateYamlFile(it, expect, testNamespace,
-		'/w2.yaml', `
+	common.helpers.itShouldUpdateYamlFile(
+		it,
+		expect,
+		testNamespace,
+		'/w2.yaml',
+		`
 description: something
 functions:
 - id: get123
@@ -207,11 +245,13 @@ functions:
 states:
 - id: foo
   type: noop
-`)
+`,
+	)
 
 	retry50(`should list all services`, async () => {
-		listRes = await request(common.config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ testNamespace }/services`)
+		listRes = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${testNamespace}/services`,
+		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body).toMatchObject({
 			data: [

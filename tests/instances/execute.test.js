@@ -10,11 +10,15 @@ describe('test execute workflow', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'flow.wf.ts',
 		'workflow',
 		'text/typescript',
 		btoa(`
-jens`))
+jens`),
+	)
 })

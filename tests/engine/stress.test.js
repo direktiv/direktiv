@@ -7,16 +7,16 @@ import helpers from '../common/helpers'
 import request from '../common/request'
 import { retry, retry10 } from '../common/retry'
 
-function quantile (arr, q) {
+function quantile(arr, q) {
 	if (!arr.length) return NaN
-	const a = [ ...arr ].sort((x, y) => x - y)
+	const a = [...arr].sort((x, y) => x - y)
 	const pos = (a.length - 1) * q
 	const base = Math.floor(pos)
 	const rest = pos - base
 	return a[base] + (a[base + 1] - a[base]) * (rest || 0)
 }
 
-async function fireCreateRequest (url, input, durations) {
+async function fireCreateRequest(url, input, durations) {
 	const t0 = performance.now()
 	let res = null
 	try {
@@ -28,15 +28,14 @@ async function fireCreateRequest (url, input, durations) {
 		const t1 = performance.now()
 		durations.push(t1 - t0)
 		return { status: res.status, ok: res.ok ? 1 : 0, fail: res.ok ? 0 : 1 }
-	} catch (err) {
+	} catch {
 		const t1 = performance.now()
 		durations.push(t1 - t0)
 		return { status: 0, ok: 0, fail: 1 } // failed
 	}
 }
 
-const randomStr = Math.random().toString(10)
-	.slice(2, 12)
+const randomStr = Math.random().toString(10).slice(2, 12)
 const namespace = basename(fileURLToPath(import.meta.url))
 const fName = 'file' + randomStr + '.wf.ts'
 
@@ -45,7 +44,14 @@ describe('Stress test js engine', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 	helpers.itShouldCreateDir(it, expect, namespace, '/', 'foo')
 
-	helpers.itShouldCreateFile(it, expect, namespace, '/foo', fName, 'workflow', 'application/x-typescript',
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespace,
+		'/foo',
+		fName,
+		'workflow',
+		'application/x-typescript',
 		btoa(`
 function stateOne(payload) {
 	print("RUN STATE FIRST");
@@ -55,10 +61,12 @@ function stateTwo(payload) {
 	print("RUN STATE SECOND");
     return finish(payload);
 }
-`))
+`),
+	)
 
-	retry10(`should invoke /foo/${ fName } workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/instances?path=foo/${ fName }`)
+	retry10(`should invoke /foo/${fName} workflow`, async () => {
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(`/api/v2/namespaces/${namespace}/instances?path=foo/${fName}`)
 			.send({ foo: 'bar' })
 		expect(req.statusCode).toEqual(200)
 	})
@@ -89,7 +97,7 @@ function stateTwo(payload) {
 		const total = cases[i].total
 		const batchSize = cases[i].batchSize
 
-		it(`fires ${ total } requests in ${ batchSize } batches`, async () => {
+		it(`fires ${total} requests in ${batchSize} batches`, async () => {
 			const results = []
 
 			const durations = [] // ms
@@ -97,8 +105,9 @@ function stateTwo(payload) {
 				fail = 0
 
 			for (let start = 0; start < total; start += batchSize) {
-				const url = common.config.getDirektivBaseUrl()
-					+ `/api/v2/namespaces/${ namespace }/instances?path=foo/${ fName }`
+				const url =
+					common.config.getDirektivBaseUrl() +
+					`/api/v2/namespaces/${namespace}/instances?path=foo/${fName}`
 
 				const batch = []
 				for (let j = 0; j < batchSize; j++)
@@ -112,27 +121,37 @@ function stateTwo(payload) {
 					fail += fails
 				}
 
-				console.log(`Batch done: ${ Math.min(start + batchSize, total) }/${ total }`)
+				console.log(
+					`Batch done: ${Math.min(start + batchSize, total)}/${total}`,
+				)
 			}
 
 			const sum = durations.reduce((a, b) => a + b, 0)
 			const avg = sum / durations.length // average response time (ms)
 			const min = Math.min(...durations)
 			const max = Math.max(...durations)
-			const p50 = quantile(durations, 0.50)
-			const p90 = quantile(durations, 0.90)
+			const p50 = quantile(durations, 0.5)
+			const p90 = quantile(durations, 0.9)
 			const p95 = quantile(durations, 0.95)
 			const p99 = quantile(durations, 0.99)
 
 			console.log(JSON.stringify(results))
 
-			console.log('\nLatency (ms):',
-				{ count: durations.length, avg: +avg.toFixed(2), min: +min.toFixed(2),
-					p50: +p50.toFixed(2), p90: +p90.toFixed(2), p95: +p95.toFixed(2),
-					p99: +p99.toFixed(2), max: +max.toFixed(2), ok, fail })
+			console.log('\nLatency (ms):', {
+				count: durations.length,
+				avg: +avg.toFixed(2),
+				min: +min.toFixed(2),
+				p50: +p50.toFixed(2),
+				p90: +p90.toFixed(2),
+				p95: +p95.toFixed(2),
+				p99: +p99.toFixed(2),
+				max: +max.toFixed(2),
+				ok,
+				fail,
+			})
 
 			// Assertions: all requests should be 200
-			results.forEach(status => {
+			results.forEach((status) => {
 				expect(status).toBe(200)
 			})
 
@@ -141,10 +160,24 @@ function stateTwo(payload) {
 	}
 
 	const total = cases.reduce((acc, obj) => acc + obj.total, 0) + 1
-	retry(`should have all success instances`, 10, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/metrics/instances`)
-		console.log(req.body)
-		expect(req.statusCode).toEqual(200)
-		expect(req.body.data).toEqual({ total, complete: total, cancelled: 0, crashed: 0, failed: 0, pending: 0 })
-	}, 1000)
+	retry(
+		`should have all success instances`,
+		10,
+		async () => {
+			const req = await request(common.config.getDirektivBaseUrl()).get(
+				`/api/v2/namespaces/${namespace}/metrics/instances`,
+			)
+			console.log(req.body)
+			expect(req.statusCode).toEqual(200)
+			expect(req.body.data).toEqual({
+				total,
+				complete: total,
+				cancelled: 0,
+				crashed: 0,
+				failed: 0,
+				pending: 0,
+			})
+		},
+		1000,
+	)
 })

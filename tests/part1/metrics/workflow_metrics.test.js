@@ -15,8 +15,9 @@ describe('Test workflow metrics', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	it(`should read no results`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/metrics/instances?workflowPath=/foo1.wf.ts`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/metrics/instances?workflowPath=/foo1.wf.ts`,
+		)
 
 		expect(res.statusCode).toEqual(404)
 		expect(res.body.error).toEqual({
@@ -25,7 +26,10 @@ describe('Test workflow metrics', () => {
 		})
 	})
 
-	helpers.itShouldCreateFile(it, expect, namespace,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespace,
 		'/',
 		'foo1.wf.ts',
 		'workflow',
@@ -36,18 +40,22 @@ function stateOne(payload) {
 	payload.bar = "foo";
 	return finish(payload);
 }
-`))
+`),
+	)
 
 	it(`should invoke the '/foo1.wf.ts' workflow`, async () => {
 		const res = await request(common.config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/instances?path=foo1.wf.ts&wait=true`)
+			.post(
+				`/api/v2/namespaces/${namespace}/instances?path=foo1.wf.ts&wait=true`,
+			)
 			.send({ foo: 'bar' })
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should read one result`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/metrics/instances?workflowPath=/foo1.wf.ts`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/metrics/instances?workflowPath=/foo1.wf.ts`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
 			data: {

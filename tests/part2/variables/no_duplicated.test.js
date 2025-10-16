@@ -20,28 +20,34 @@ describe('Test no namespace variable name duplicated', () => {
 
 	it(`should create a new namespace variable foo`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/variables`)
+			.post(`/api/v2/namespaces/${namespace}/variables`)
 			.send(foo)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should not duplicate a namespace variable foo`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/variables`)
+			.post(`/api/v2/namespaces/${namespace}/variables`)
 			.send(foo)
 		expect(res.statusCode).toEqual(400)
-		expect(res.body).toEqual(
-			{
-				error: {
-					code: 'resource_already_exists',
-					message: 'resource already exists',
-				},
+		expect(res.body).toEqual({
+			error: {
+				code: 'resource_already_exists',
+				message: 'resource already exists',
 			},
-		)
+		})
 	})
 
-	helpers.itShouldCreateFile(it, expect, namespace, '/', 'wf1.yaml', 'workflow', 'text',
-		btoa(helpers.dummyWorkflow('wf1.yaml')))
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'wf1.yaml',
+		'workflow',
+		'text',
+		btoa(helpers.dummyWorkflow('wf1.yaml')),
+	)
 
 	const foo2 = {
 		name: 'foo',
@@ -52,23 +58,21 @@ describe('Test no namespace variable name duplicated', () => {
 
 	it(`should allow create workflow variable foo`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/variables`)
+			.post(`/api/v2/namespaces/${namespace}/variables`)
 			.send(foo2)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should not duplicate workflow variable foo`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/variables`)
+			.post(`/api/v2/namespaces/${namespace}/variables`)
 			.send(foo2)
 		expect(res.statusCode).toEqual(400)
-		expect(res.body).toEqual(
-			{
-				error: {
-					code: 'resource_already_exists',
-					message: 'resource already exists',
-				},
+		expect(res.body).toEqual({
+			error: {
+				code: 'resource_already_exists',
+				message: 'resource already exists',
 			},
-		)
+		})
 	})
 })

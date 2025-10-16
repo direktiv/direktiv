@@ -15,7 +15,7 @@ describe('Test secret get delete list calls', () => {
 
 	it(`should create a new secret foo`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/secrets`)
+			.post(`/api/v2/namespaces/${namespace}/secrets`)
 			.send({
 				name: 'foo',
 				data: btoa('foo'),
@@ -25,8 +25,9 @@ describe('Test secret get delete list calls', () => {
 	})
 
 	it(`should get the new secret foo`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/secrets/foo`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/secrets/foo`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual({
 			name: 'foo',
@@ -37,8 +38,9 @@ describe('Test secret get delete list calls', () => {
 	})
 
 	it(`should list the new secret foo`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/secrets`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/secrets`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.length).toEqual(1)
 		expect(res.body.data[0]).toEqual({

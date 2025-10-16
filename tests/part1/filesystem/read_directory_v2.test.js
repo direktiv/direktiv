@@ -15,8 +15,9 @@ describe('Test filesystem tree read operations', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	it(`should read empty root dir`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/files`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -31,13 +32,38 @@ describe('Test filesystem tree read operations', () => {
 
 	helpers.itShouldCreateDir(it, expect, namespace, '', 'dir1')
 	helpers.itShouldCreateDir(it, expect, namespace, '', 'dir2')
-	helpers.itShouldCreateYamlFile(it, expect, namespace, '/', 'foo.yaml', 'workflow', helpers.dummyWorkflow('foo'))
-	helpers.itShouldCreateYamlFile(it, expect, namespace, '/dir1', 'foo11.yaml', 'workflow', helpers.dummyWorkflow('foo11'))
-	helpers.itShouldCreateYamlFile(it, expect, namespace, '/dir1', 'foo12.yaml', 'workflow', helpers.dummyWorkflow('foo12'))
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'foo.yaml',
+		'workflow',
+		helpers.dummyWorkflow('foo'),
+	)
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/dir1',
+		'foo11.yaml',
+		'workflow',
+		helpers.dummyWorkflow('foo11'),
+	)
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/dir1',
+		'foo12.yaml',
+		'workflow',
+		helpers.dummyWorkflow('foo12'),
+	)
 
 	it(`should read root dir with three paths`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/files`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -51,14 +77,12 @@ describe('Test filesystem tree read operations', () => {
 						type: 'directory',
 						createdAt: expect.stringMatching(regex.timestampRegex),
 						updatedAt: expect.stringMatching(regex.timestampRegex),
-
 					},
 					{
 						path: '/dir2',
 						type: 'directory',
 						createdAt: expect.stringMatching(regex.timestampRegex),
 						updatedAt: expect.stringMatching(regex.timestampRegex),
-
 					},
 					{
 						path: '/foo.yaml',
@@ -66,7 +90,6 @@ describe('Test filesystem tree read operations', () => {
 						mimeType: 'application/yaml',
 						createdAt: expect.stringMatching(regex.timestampRegex),
 						updatedAt: expect.stringMatching(regex.timestampRegex),
-
 					},
 				],
 			},
@@ -74,8 +97,9 @@ describe('Test filesystem tree read operations', () => {
 	})
 
 	it(`should read dir1 with two files`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/files/dir1`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files/dir1`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -90,7 +114,6 @@ describe('Test filesystem tree read operations', () => {
 						type: 'workflow',
 						createdAt: expect.stringMatching(regex.timestampRegex),
 						updatedAt: expect.stringMatching(regex.timestampRegex),
-
 					},
 					{
 						mimeType: 'application/yaml',
@@ -98,7 +121,6 @@ describe('Test filesystem tree read operations', () => {
 						type: 'workflow',
 						createdAt: expect.stringMatching(regex.timestampRegex),
 						updatedAt: expect.stringMatching(regex.timestampRegex),
-
 					},
 				],
 			},
@@ -106,8 +128,9 @@ describe('Test filesystem tree read operations', () => {
 	})
 
 	it(`should read dir2 with zero files`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/files/dir2`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files/dir2`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -123,8 +146,9 @@ describe('Test filesystem tree read operations', () => {
 	helpers.itShouldDeleteFile(it, expect, namespace, '/foo.yaml')
 
 	it(`should read root dir two dirs`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/files`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -138,14 +162,12 @@ describe('Test filesystem tree read operations', () => {
 						type: 'directory',
 						createdAt: expect.stringMatching(regex.timestampRegex),
 						updatedAt: expect.stringMatching(regex.timestampRegex),
-
 					},
 					{
 						path: '/dir2',
 						type: 'directory',
 						createdAt: expect.stringMatching(regex.timestampRegex),
 						updatedAt: expect.stringMatching(regex.timestampRegex),
-
 					},
 				],
 			},
@@ -155,8 +177,9 @@ describe('Test filesystem tree read operations', () => {
 	helpers.itShouldDeleteFile(it, expect, namespace, '/dir2')
 
 	it(`should read root dir one path`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/files`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -170,7 +193,6 @@ describe('Test filesystem tree read operations', () => {
 						type: 'directory',
 						createdAt: expect.stringMatching(regex.timestampRegex),
 						updatedAt: expect.stringMatching(regex.timestampRegex),
-
 					},
 				],
 			},
@@ -178,8 +200,9 @@ describe('Test filesystem tree read operations', () => {
 	})
 
 	it(`should read root not found`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/files/dir2`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files/dir2`,
+		)
 		expect(res.statusCode).toEqual(404)
 	})
 })
