@@ -15,66 +15,71 @@ describe('Test secrets get delete list calls', () => {
 
 	it(`should create a new secret foo1`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/secrets`)
+			.post(`/api/v2/namespaces/${namespace}/secrets`)
 			.send(makeDummySecret('foo1'))
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should create a new secret foo2`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/secrets`)
+			.post(`/api/v2/namespaces/${namespace}/secrets`)
 			.send(makeDummySecret('foo2'))
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should get the new secret foo1`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/secrets/foo1`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/secrets/foo1`,
+		)
 		expect(res.statusCode).toEqual(200)
 
 		expect(res.body.data).toEqual(expectDummySecret('foo1'))
 	})
 
 	it(`should get the new secret foo2`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/secrets/foo2`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/secrets/foo2`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual(expectDummySecret('foo2'))
 	})
 
 	it(`should list foo1 and foo2`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/secrets`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/secrets`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
-			data: [ expectDummySecret('foo1'), expectDummySecret('foo2') ],
+			data: [expectDummySecret('foo1'), expectDummySecret('foo2')],
 		})
 	})
 
 	it(`should delete foo1`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.delete(`/api/v2/namespaces/${ namespace }/secrets/foo1`)
+		const res = await request(config.getDirektivBaseUrl()).delete(
+			`/api/v2/namespaces/${namespace}/secrets/foo1`,
+		)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should list foo1 and foo2`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/secrets`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/secrets`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
-			data: [ expectDummySecret('foo2') ],
+			data: [expectDummySecret('foo2')],
 		})
 	})
 })
 
-function makeDummySecret (name) {
+function makeDummySecret(name) {
 	return {
 		name,
 		data: btoa('value of' + name),
 	}
 }
 
-function expectDummySecret (name) {
+function expectDummySecret(name) {
 	return {
 		name,
 		initialized: true,

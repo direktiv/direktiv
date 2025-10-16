@@ -35,12 +35,17 @@ describe('Test js base64 feature', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'wf.yaml', 'workflow',
+		'/',
+		'wf.yaml',
+		'workflow',
 		file,
 	)
 
 	it(`should invoke the workflow and encode and decode base64`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(
+				`/api/v2/namespaces/${testNamespace}/instances?path=wf.yaml&wait=true`,
+			)
 			.send(`{"x": 5}`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({

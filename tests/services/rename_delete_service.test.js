@@ -11,24 +11,44 @@ describe('Test renaming services operations', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFile(it, expect, testNamespace,
-		'/', 's1.yaml', 'service', `
+	common.helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		testNamespace,
+		'/',
+		's1.yaml',
+		'service',
+		`
 direktiv_api: service/v1
 image: redis
 cmd: redis-server
 scale: 1
-`)
+`,
+	)
 
-	common.helpers.itShouldCreateYamlFile(it, expect, testNamespace,
-		'/', 's2.yaml', 'service', `
+	common.helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		testNamespace,
+		'/',
+		's2.yaml',
+		'service',
+		`
 direktiv_api: service/v1
 image: redis
 cmd: redis-server
 scale: 2
-`)
+`,
+	)
 
-	common.helpers.itShouldCreateYamlFile(it, expect, testNamespace,
-		'/', 'w1.yaml', 'workflow', `
+	common.helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		testNamespace,
+		'/',
+		'w1.yaml',
+		'workflow',
+		`
 description: something
 functions:
 - id: get
@@ -37,10 +57,17 @@ functions:
 states:
 - id: foo
   type: noop
-`)
+`,
+	)
 
-	common.helpers.itShouldCreateYamlFile(it, expect, testNamespace,
-		'/', 'w2.yaml', 'workflow', `
+	common.helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		testNamespace,
+		'/',
+		'w2.yaml',
+		'workflow',
+		`
 description: something
 functions:
 - id: get
@@ -49,12 +76,14 @@ functions:
 states:
 - id: foo
   type: noop
-`)
+`,
+	)
 
 	let listRes
 	retry10(`should list all services`, async () => {
-		listRes = await request(common.config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ testNamespace }/services`)
+		listRes = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${testNamespace}/services`,
+		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body).toMatchObject({
 			data: [
@@ -94,17 +123,29 @@ states:
 					error: null,
 					id: 'test-services-get-w2-yaml-9cca18d982',
 				},
-
 			],
 		})
 	})
 
-	common.helpers.itShouldUpdateFilePath(it, expect, testNamespace, '/s2.yaml', '/s3.yaml')
-	common.helpers.itShouldUpdateFilePath(it, expect, testNamespace, '/w2.yaml', '/w3.yaml')
+	common.helpers.itShouldUpdateFilePath(
+		it,
+		expect,
+		testNamespace,
+		'/s2.yaml',
+		'/s3.yaml',
+	)
+	common.helpers.itShouldUpdateFilePath(
+		it,
+		expect,
+		testNamespace,
+		'/w2.yaml',
+		'/w3.yaml',
+	)
 
 	retry10(`should list all services`, async () => {
-		listRes = await request(common.config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ testNamespace }/services`)
+		listRes = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${testNamespace}/services`,
+		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body).toMatchObject({
 			data: [
@@ -144,7 +185,6 @@ states:
 					error: null,
 					id: 'test-services-get-w3-yaml-aa1f397b0a',
 				},
-
 			],
 		})
 	})
@@ -153,8 +193,9 @@ states:
 	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/w1.yaml')
 
 	retry10(`should list all services`, async () => {
-		listRes = await request(common.config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ testNamespace }/services`)
+		listRes = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${testNamespace}/services`,
+		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body).toMatchObject({
 			data: [
@@ -176,7 +217,6 @@ states:
 					error: null,
 					id: 'test-services-get-w3-yaml-aa1f397b0a',
 				},
-
 			],
 		})
 	})

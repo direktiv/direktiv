@@ -11,7 +11,10 @@ describe('Test noop state behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'noop.yaml',
 		'workflow',
@@ -21,10 +24,13 @@ states:
 - id: a
   type: noop
   transform:
-    result: x`))
+    result: x`),
+	)
 
 	it(`should invoke the '/noop.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=noop.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=noop.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 'x',

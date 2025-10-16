@@ -13,16 +13,29 @@ describe('Test gateway basic-auth plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'wf2.yaml', 'workflow', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'wf2.yaml',
+		'workflow',
+		`
 direktiv_api: workflow/v1
 states:
 - id: a
   type: noop
-`)
+`,
+	)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'ep1.yaml', 'endpoint', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'ep1.yaml',
+		'endpoint',
+		`
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: /ep1
@@ -32,7 +45,7 @@ x-direktiv-config:
         target:
             type: target-flow
             configuration:
-                namespace: ${ namespace }
+                namespace: ${namespace}
                 flow: /wf2.yaml
 get:
     responses:
@@ -41,8 +54,14 @@ get:
 `,
 	)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'ep2.yaml', 'endpoint', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'ep2.yaml',
+		'endpoint',
+		`
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: /ep3
@@ -53,7 +72,7 @@ x-direktiv-config:
         target:
             type: target-flow
             configuration:
-                namespace: ${ namespace }
+                namespace: ${namespace}
                 flow: /wf2.yaml
 get:
     responses:
@@ -63,14 +82,16 @@ get:
 	)
 
 	retry10(`should show two routes`, async () => {
-		const res = await request(config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/gateway/routes`)
+		const res = await request(config.getDirektivBaseUrl())
+			.get(`/api/v2/namespaces/${namespace}/gateway/routes`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toHaveLength(2)
 	})
 
 	retry10(`should show one route`, async () => {
-		const res = await request(config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/gateway/info`)
+		const res = await request(config.getDirektivBaseUrl())
+			.get(`/api/v2/namespaces/${namespace}/gateway/info`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.spec.paths['/ep1']).not.toBeUndefined()

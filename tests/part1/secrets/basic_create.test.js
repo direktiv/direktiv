@@ -39,9 +39,9 @@ describe('Test secret create calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		it(`should create a new secret case ${ i }`, async () => {
+		it(`should create a new secret case ${i}`, async () => {
 			const res = await request(config.getDirektivBaseUrl())
-				.post(`/api/v2/namespaces/${ namespace }/secrets`)
+				.post(`/api/v2/namespaces/${namespace}/secrets`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data).toEqual({
@@ -64,7 +64,6 @@ describe('Test invalid secret create calls', () => {
 				// invalid data
 				name: 'foo1',
 				data: 'invalid-base-64',
-
 			},
 			wantError: {
 				statusCode: 400,
@@ -79,14 +78,12 @@ describe('Test invalid secret create calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		it(`should fail create a new secret case ${ i }`, async () => {
+		it(`should fail create a new secret case ${i}`, async () => {
 			const res = await request(config.getDirektivBaseUrl())
-				.post(`/api/v2/namespaces/${ namespace }/secrets`)
+				.post(`/api/v2/namespaces/${namespace}/secrets`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
-			expect(res.body.error).toEqual(
-				testCase.wantError.error,
-			)
+			expect(res.body.error).toEqual(testCase.wantError.error)
 		})
 	}
 })

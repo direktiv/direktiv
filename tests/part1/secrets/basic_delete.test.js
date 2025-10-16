@@ -15,7 +15,7 @@ describe('Test secret delete calls', () => {
 	let createRes
 	it(`should create a new secret`, async () => {
 		createRes = await request(config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/secrets`)
+			.post(`/api/v2/namespaces/${namespace}/secrets`)
 			.send({
 				name: 'foo',
 				data: btoa('bar'),
@@ -25,8 +25,9 @@ describe('Test secret delete calls', () => {
 
 	it(`should delete a secret`, async () => {
 		const secretName = createRes.body.data.name
-		const res = await request(config.getDirektivBaseUrl())
-			.delete(`/api/v2/namespaces/${ namespace }/secrets/${ secretName }`)
+		const res = await request(config.getDirektivBaseUrl()).delete(
+			`/api/v2/namespaces/${namespace}/secrets/${secretName}`,
+		)
 		expect(res.statusCode).toEqual(200)
 	})
 })
@@ -52,14 +53,12 @@ describe('Test invalid secret delete calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		it(`should fail delete a secret case ${ i }`, async () => {
+		it(`should fail delete a secret case ${i}`, async () => {
 			const res = await request(config.getDirektivBaseUrl())
-				.delete(`/api/v2/namespaces/${ namespace }/secrets/${ testCase.name }`)
+				.delete(`/api/v2/namespaces/${namespace}/secrets/${testCase.name}`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
-			expect(res.body.error).toEqual(
-				testCase.wantError.error,
-			)
+			expect(res.body.error).toEqual(testCase.wantError.error)
 		})
 	}
 })

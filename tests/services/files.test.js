@@ -11,16 +11,26 @@ describe('Test function files behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
-		'/', 'bash.yaml', 'service', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespaceName,
+		'/',
+		'bash.yaml',
+		'service',
+		`
 direktiv_api: service/v1
 name: bash
 image: direktiv/bash:dev
 cmd: ""
 scale: 1
-`)
+`,
+	)
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		`a.yaml`,
 		'workflow',
@@ -83,11 +93,14 @@ states:
   - key: '/e.yaml'
     as: e
     scope: file
-`))
+`),
+	)
 
 	it(`should invoke the '/a.yaml' workflow on a fresh namespace`, async () => {
 		helpers.sleep(10)
-		const req = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=a.yaml&wait=true`)
+		const req = await request(config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=a.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			var: {
@@ -118,7 +131,10 @@ states:
 		expect(req.body.return.bash[8].result).toBe('')
 	})
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		`e.yaml`,
 		'workflow',
@@ -128,10 +144,13 @@ states:
 - id: a
   type: noop
   transform:
-    result: x`))
+    result: x`),
+	)
 
 	it(`should invoke the '/a.yaml' workflow on a non-fresh namespace`, async () => {
-		const req = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=a.yaml&wait=true`)
+		const req = await request(config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=a.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			var: {

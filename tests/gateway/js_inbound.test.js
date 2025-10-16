@@ -132,7 +132,9 @@ describe('Test js inbound plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpointJSFile,
 	)
 
@@ -140,14 +142,15 @@ describe('Test js inbound plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'target.yaml', 'workflow',
+		'/',
+		'target.yaml',
+		'workflow',
 		wf,
 	)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(
-			`/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`,
-		)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(`/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`)
 			.set('Header1', 'Value1')
 			.send({ hello: 'world' })
 
@@ -168,7 +171,9 @@ describe('Test js inbound plugin consumer', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'consumer.yaml', 'consumer',
+		'/',
+		'consumer.yaml',
+		'consumer',
 		consumer,
 	)
 
@@ -176,7 +181,9 @@ describe('Test js inbound plugin consumer', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpointConsumerFile,
 	)
 
@@ -184,14 +191,15 @@ describe('Test js inbound plugin consumer', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'target.yaml', 'workflow',
+		'/',
+		'target.yaml',
+		'workflow',
 		wf,
 	)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(
-			`/ns/` + testNamespace + `/target`,
-		)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(`/ns/` + testNamespace + `/target`)
 			.set('API-Token', 'apikey')
 			.send({ hello: 'world' })
 
@@ -209,7 +217,9 @@ describe('Test js inbound plugin url params', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpointParamFile,
 	)
 
@@ -217,14 +227,15 @@ describe('Test js inbound plugin url params', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'target.yaml', 'workflow',
+		'/',
+		'target.yaml',
+		'workflow',
 		wf,
 	)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(
-			`/ns/` + testNamespace + `/target/myid`,
-		)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(`/ns/` + testNamespace + `/target/myid`)
 			.send({ hello: 'world' })
 
 		expect(req.statusCode).toEqual(200)
@@ -241,7 +252,9 @@ describe('Test js inbound plugin errors', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
 		endpointErrorFile,
 	)
 
@@ -249,14 +262,15 @@ describe('Test js inbound plugin errors', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'target.yaml', 'workflow',
+		'/',
+		'target.yaml',
+		'workflow',
 		wf,
 	)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(
-			`/ns/` + testNamespace + `/target`,
-		)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(`/ns/` + testNamespace + `/target`)
 			.send({ hello: 'world' })
 
 		expect(req.statusCode).toEqual(403)

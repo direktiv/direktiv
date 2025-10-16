@@ -11,7 +11,10 @@ describe('Test catch state behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'error.yaml',
 		'workflow',
@@ -23,8 +26,12 @@ describe('Test catch state behaviour', () => {
   message: 'this is a test error'
   transform: 
     result: x
-`))
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+`),
+	)
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'catch.yaml',
 		'workflow',
@@ -41,10 +48,13 @@ states:
     function: child
   catch:
   - error: 'testcode'
-`))
+`),
+	)
 
 	it(`should invoke the '/catch.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=catch.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=catch.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			error: {

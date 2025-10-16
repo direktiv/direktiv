@@ -11,7 +11,10 @@ describe('Test events states behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'generate-event.yaml',
 		'workflow',
@@ -27,9 +30,13 @@ states:
   event:
     type: test.simple
     source: "generate-event"
-`))
+`),
+	)
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'simple-listener.yaml',
 		'workflow',
@@ -53,17 +60,23 @@ states:
     type: test.simple
   transform:
     result: x
-`))
+`),
+	)
 
 	it(`should walk through the execution of a workflow called /simple-listener.yaml`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=simple-listener.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=simple-listener.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 'x',
 		})
 	})
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'or-listener.yaml',
 		'workflow',
@@ -93,10 +106,13 @@ states:
 - id: b
   type: noop
   transform: 'jq(.transitioned = "b")'
-`))
+`),
+	)
 
 	it(`should walk through the execution of a workflow called /or-listener.yaml`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=or-listener.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=or-listener.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 'x',

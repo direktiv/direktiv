@@ -17,7 +17,8 @@ describe('Test gateway no basic file', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	retry10(`should  get virtual config file`, async () => {
-		const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
+		const res = await request(config.getDirektivBaseUrl())
+			.post(`/api/v2/namespaces/${namespace}/gateway/info`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.file_path).toEqual('virtual')
@@ -29,18 +30,26 @@ describe('Test gateway basic file', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'gw.yaml', 'gateway', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'gw.yaml',
+		'gateway',
+		`
 openapi: 3.0.0
 x-direktiv-api: gateway/v1
 
 info:
    title: mytitle
    version: myversion
-`)
+`,
+	)
 
 	retry10(`should  get virtual config file`, async () => {
-		const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
+		const res = await request(config.getDirektivBaseUrl())
+			.post(`/api/v2/namespaces/${namespace}/gateway/info`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.file_path).toEqual('/gw.yaml')
@@ -53,8 +62,14 @@ describe('Test gateway broken basic file', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'gw.yaml', 'gateway', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'gw.yaml',
+		'gateway',
+		`
 openapi: 3.0.0
 x-direktiv-api: gateway/v1
 
@@ -64,7 +79,8 @@ info:
 
 additional:
    key: value
-`)
+`,
+	)
 
 	// retry10(`should  get virtual config file`, async () => {
 	// 	const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)
@@ -78,25 +94,39 @@ describe('Test gateway with multiple basic files', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'gw.yaml', 'gateway', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'gw.yaml',
+		'gateway',
+		`
 openapi: 3.0.0
 x-direktiv-api: gateway/v1
 
 info:
    title: mytitle
    version: myversion
-`)
+`,
+	)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'gw2.yaml', 'gateway', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'gw2.yaml',
+		'gateway',
+		`
 openapi: 3.0.0
 x-direktiv-api: gateway/v1
 
 info:
    title: mytitle
    version: myversion
-`)
+`,
+	)
 
 	// retry10(`should  get virtual config file`, async () => {
 	// 	const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/info`)

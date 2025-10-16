@@ -13,7 +13,14 @@ describe('Test target-flow plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace, '/', 'wf1.yaml', 'workflow', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'wf1.yaml',
+		'workflow',
+		`
 direktiv_api: workflow/v1
 description: A simple 'no-op' state that returns 'Hello world!'
 states:
@@ -21,10 +28,17 @@ states:
   type: noop
   transform:
     result: Hello world!
-`)
+`,
+	)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'ep1.yaml', 'endpoint', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'ep1.yaml',
+		'endpoint',
+		`
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: /ep1
@@ -33,7 +47,7 @@ x-direktiv-config:
         target:
             type: target-flow
             configuration:
-                namespace: ${ namespace }
+                namespace: ${namespace}
                 flow: /wf1.yaml
 get:
     responses:
@@ -43,7 +57,9 @@ get:
 	)
 
 	retry10(`should execute wf1.yaml file`, async () => {
-		const res = await request(config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/gateway/ep1`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/gateway/ep1`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			result: 'Hello world!',

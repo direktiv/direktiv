@@ -15,8 +15,9 @@ describe('Test workflow metrics', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	it(`should read no results`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/metrics/instances?workflowPath=%2Ffoo1.yaml`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/metrics/instances?workflowPath=%2Ffoo1.yaml`,
+		)
 
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
@@ -31,7 +32,10 @@ describe('Test workflow metrics', () => {
 		})
 	})
 
-	helpers.itShouldCreateFile(it, expect, namespace,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespace,
 		'/',
 		'foo1.yaml',
 		'workflow',
@@ -41,17 +45,21 @@ direktiv_api: workflow/v1
 states:
 - id: a
   type: noop
-`))
+`),
+	)
 
 	it(`should invoke the 'foo1.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/instances?path=foo1.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespace}/instances?path=foo1.yaml&wait=true`,
+		)
 
 		expect(req.statusCode).toEqual(200)
 	})
 
 	it(`should read one result`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/metrics/instances?workflowPath=%2Ffoo1.yaml`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/metrics/instances?workflowPath=%2Ffoo1.yaml`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
 			data: {

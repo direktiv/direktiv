@@ -13,8 +13,14 @@ describe('Test gateway key-auth plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'c1.yaml', 'consumer', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'c1.yaml',
+		'consumer',
+		`
 direktiv_api: "consumer/v1"
 username: user1
 password: pwd1
@@ -23,10 +29,17 @@ tags:
 - tag1
 groups:
 - group1
-`)
+`,
+	)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'ep1.yaml', 'endpoint', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'ep1.yaml',
+		'endpoint',
+		`
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: "/foo"
@@ -48,7 +61,8 @@ post:
 	)
 
 	retry10(`should denied ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
+		const res = await request(config.getDirektivBaseUrl())
+			.post(`/api/v2/namespaces/${namespace}/gateway/foo`)
 			.set('API-Token', 'wrong_key')
 			.send({})
 		expect(res.statusCode).toEqual(403)
@@ -61,18 +75,19 @@ post:
 	})
 
 	retry10(`should access ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
+		const res = await request(config.getDirektivBaseUrl())
+			.post(`/api/v2/namespaces/${namespace}/gateway/foo`)
 			.set('API-Token', 'key1')
 			.send({ foo: 'bar' })
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.headers).toMatchObject({
-			'Direktiv-Consumer-Groups': [ 'group1' ],
-			'Direktiv-Consumer-Tags': [ 'tag1' ],
-			'Direktiv-Consumer-User': [ 'user1' ],
-			'Accept-Encoding': [ 'gzip, deflate' ],
-			'Api-Token': [ 'key1' ],
-			'Content-Length': [ '13' ],
-			'Content-Type': [ 'application/json' ],
+			'Direktiv-Consumer-Groups': ['group1'],
+			'Direktiv-Consumer-Tags': ['tag1'],
+			'Direktiv-Consumer-User': ['user1'],
+			'Accept-Encoding': ['gzip, deflate'],
+			'Api-Token': ['key1'],
+			'Content-Length': ['13'],
+			'Content-Type': ['application/json'],
 		})
 		expect(res.body.data.text).toEqual('from debug plugin')
 		expect(res.body.data.body).toEqual('{"foo":"bar"}')

@@ -11,7 +11,10 @@ describe('Test a simple loop', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'simple-loop.yaml',
 		'workflow',
@@ -30,14 +33,17 @@ states:
   - condition: 'jq(.i)'
     transform: 'jq(.result += [.i] | .i -= 1)'
     transition: check
-`))
+`),
+	)
 
 	it(`should invoke the '/simple-loop.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=simple-loop.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=simple-loop.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			i: 0,
-			result: [ 5, 4, 3, 2, 1 ],
+			result: [5, 4, 3, 2, 1],
 		})
 	})
 })

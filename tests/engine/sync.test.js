@@ -11,7 +11,10 @@ describe('Test synchronous behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'noop.yaml',
 		'workflow',
@@ -20,9 +23,13 @@ describe('Test synchronous behaviour', () => {
 states:
 - id: a
   type: noop
-`))
+`),
+	)
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'parallel.yaml',
 		'workflow',
@@ -76,10 +83,13 @@ states:
   - function: sub
     input:
       x: 11
-`))
+`),
+	)
 
 	it(`should invoke the '/parallel.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=parallel.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=parallel.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			return: [

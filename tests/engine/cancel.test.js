@@ -12,7 +12,10 @@ describe('Test cancel state behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'cancel.yaml',
 		'workflow',
@@ -23,17 +26,21 @@ states:
   type: delay
   duration: PT5S
   transform:
-    result: x`))
+    result: x`),
+	)
 
 	it(`should invoke the '/cancel.yaml' workflow`, async () => {
-		const xreq = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=cancel.yaml`)
+		const xreq = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=cancel.yaml`,
+		)
 		expect(xreq.statusCode).toEqual(200)
 
 		const instanceID = xreq.body.data.id
 
 		await helpers.sleep(50)
 
-		const creq = await request(common.config.getDirektivBaseUrl()).patch(`/api/v2/namespaces/${ namespaceName }/instances/${ instanceID }`)
+		const creq = await request(common.config.getDirektivBaseUrl())
+			.patch(`/api/v2/namespaces/${namespaceName}/instances/${instanceID}`)
 			.set('Content-Type', 'application/json')
 			.send({
 				status: 'cancelled',
@@ -43,14 +50,21 @@ states:
 
 		await helpers.sleep(50)
 
-		const ireq = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instanceID }`)
+		const ireq = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespaceName}/instances/${instanceID}`,
+		)
 		expect(ireq.statusCode).toEqual(200)
 		expect(ireq.body.data.status).toEqual('cancelled')
 		expect(ireq.body.data.errorCode).toEqual('direktiv.cancels.api')
-		expect(ireq.body.data.errorMessage).toEqual(encode('cancelled by api request'))
+		expect(ireq.body.data.errorMessage).toEqual(
+			encode('cancelled by api request'),
+		)
 	})
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'handle-cancel.yaml',
 		'workflow',
@@ -62,17 +76,21 @@ states:
   catch:
   - error: 'direktiv.cancels.api'
   transform:
-    result: x`))
+    result: x`),
+	)
 
 	it(`should invoke the '/handle-cancel.yaml' workflow`, async () => {
-		const xreq = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=handle-cancel.yaml`)
+		const xreq = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=handle-cancel.yaml`,
+		)
 		expect(xreq.statusCode).toEqual(200)
 
 		const instanceID = xreq.body.data.id
 
 		await helpers.sleep(50)
 
-		const creq = await request(common.config.getDirektivBaseUrl()).patch(`/api/v2/namespaces/${ namespaceName }/instances/${ instanceID }`)
+		const creq = await request(common.config.getDirektivBaseUrl())
+			.patch(`/api/v2/namespaces/${namespaceName}/instances/${instanceID}`)
 			.set('Content-Type', 'application/json')
 			.send({
 				status: 'cancelled',
@@ -82,11 +100,15 @@ states:
 
 		await helpers.sleep(50)
 
-		const ireq = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instanceID }`)
+		const ireq = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespaceName}/instances/${instanceID}`,
+		)
 		expect(ireq.statusCode).toEqual(200)
 		expect(ireq.body.data.status).toEqual('cancelled')
 		expect(ireq.body.data.errorCode).toEqual('direktiv.cancels.api')
-		expect(ireq.body.data.errorMessage).toEqual(encode('cancelled by api request'))
+		expect(ireq.body.data.errorMessage).toEqual(
+			encode('cancelled by api request'),
+		)
 	})
 
 	// TODO: test that a parent can catch a child that was cancelled

@@ -19,8 +19,9 @@ describe('Test namespace delete calls', () => {
 
 	it(`should delete a namespace`, async () => {
 		const namespaceName = createRes.body.data.name
-		const res = await request(config.getDirektivBaseUrl())
-			.delete(`/api/v2/namespaces/${ namespaceName }`)
+		const res = await request(config.getDirektivBaseUrl()).delete(
+			`/api/v2/namespaces/${namespaceName}`,
+		)
 		expect(res.statusCode).toEqual(200)
 	})
 })
@@ -45,14 +46,12 @@ describe('Test invalid namespace delete calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		it(`should fail delete a namespace case ${ i }`, async () => {
+		it(`should fail delete a namespace case ${i}`, async () => {
 			const res = await request(config.getDirektivBaseUrl())
-				.delete(`/api/v2/namespaces/${ testCase.name }`)
+				.delete(`/api/v2/namespaces/${testCase.name}`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
-			expect(res.body.error).toEqual(
-				testCase.wantError.error,
-			)
+			expect(res.body.error).toEqual(testCase.wantError.error)
 		})
 	}
 })

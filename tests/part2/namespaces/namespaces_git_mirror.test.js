@@ -28,7 +28,7 @@ describe('Test namespace git mirroring', () => {
 
 	it(`should trigger a new sync`, async () => {
 		const res = await request(common.config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/syncs`)
+			.post(`/api/v2/namespaces/${namespace}/syncs`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
@@ -43,8 +43,9 @@ describe('Test namespace git mirroring', () => {
 	})
 
 	retry50(`should succeed to sync`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/syncs`)
+		const res = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/syncs`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual([
 			{
@@ -58,64 +59,82 @@ describe('Test namespace git mirroring', () => {
 	})
 
 	it(`should get the new git namespace`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/files/listener.yml`)
+		const res = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files/listener.yml`,
+		)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should read the workflow variables of '/banana/page-1.yaml'`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/variables?workflowPath=/banana/page-1.yaml`)
+		const req = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/variables?workflowPath=/banana/page-1.yaml`,
+		)
 		expect(req.statusCode).toEqual(200)
-		expect(req.body.data).toEqual([ {
-			id: expect.stringMatching(common.regex.uuidRegex),
-			type: 'workflow-variable',
-			reference: '/banana/page-1.yaml',
-			name: 'page.html',
-			size: 221,
-			mimeType: 'text/html',
-			createdAt: expect.stringMatching(regex.timestampRegex),
-			updatedAt: expect.stringMatching(regex.timestampRegex),
-		} ])
+		expect(req.body.data).toEqual([
+			{
+				id: expect.stringMatching(common.regex.uuidRegex),
+				type: 'workflow-variable',
+				reference: '/banana/page-1.yaml',
+				name: 'page.html',
+				size: 221,
+				mimeType: 'text/html',
+				createdAt: expect.stringMatching(regex.timestampRegex),
+				updatedAt: expect.stringMatching(regex.timestampRegex),
+			},
+		])
 	})
 
 	it(`should read the workflow variables of '/banana/page-2.yaml'`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/variables?workflowPath=/banana/page-2.yaml`)
+		const req = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/variables?workflowPath=/banana/page-2.yaml`,
+		)
 		expect(req.statusCode).toEqual(200)
-		expect(req.body.data).toEqual([ {
-			id: expect.stringMatching(common.regex.uuidRegex),
-			type: 'workflow-variable',
-			reference: '/banana/page-2.yaml',
-			name: 'Page.HTML',
-			size: 233,
-			mimeType: 'text/html',
-			createdAt: expect.stringMatching(regex.timestampRegex),
-			updatedAt: expect.stringMatching(regex.timestampRegex),
-		} ])
+		expect(req.body.data).toEqual([
+			{
+				id: expect.stringMatching(common.regex.uuidRegex),
+				type: 'workflow-variable',
+				reference: '/banana/page-2.yaml',
+				name: 'Page.HTML',
+				size: 233,
+				mimeType: 'text/html',
+				createdAt: expect.stringMatching(regex.timestampRegex),
+				updatedAt: expect.stringMatching(regex.timestampRegex),
+			},
+		])
 	})
 
 	it(`should check for the expected list of namespace variables`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/variables`)
+		const req = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/variables`,
+		)
 		expect(req.statusCode).toEqual(200)
-		const reduced = req.body.data.map(i => i.name)
-		expect(reduced.sort()).toEqual([
-			'beta.json',
-			'ALPHA.json',
-			'alp_ha.json',
-			'data.json',
-			'alpha.json',
-			'alp-ha.json',
-			'alpha.csv',
-			'alpha_.json',
-			'gamma.css',
-		].sort())
+		const reduced = req.body.data.map((i) => i.name)
+		expect(reduced.sort()).toEqual(
+			[
+				'beta.json',
+				'ALPHA.json',
+				'alp_ha.json',
+				'data.json',
+				'alpha.json',
+				'alp-ha.json',
+				'alpha.csv',
+				'alpha_.json',
+				'gamma.css',
+			].sort(),
+		)
 	})
 
 	it(`should delete the new git namespace`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl()).delete(`/api/v2/namespaces/${ namespace }`)
+		const res = await request(common.config.getDirektivBaseUrl()).delete(
+			`/api/v2/namespaces/${namespace}`,
+		)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should get 404 after the new git namespace deletion`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/files/listener.yml`)
+		const res = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files/listener.yml`,
+		)
 		expect(res.statusCode).toEqual(404)
 	})
 })

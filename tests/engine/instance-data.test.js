@@ -11,7 +11,10 @@ describe('Test instance data behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'data.yaml',
 		'workflow',
@@ -20,16 +23,22 @@ describe('Test instance data behaviour', () => {
 states:
 - id: a
   type: noop
-`))
+`),
+	)
 
 	it(`should invoke the '/data.yaml' workflow with no input`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=data.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=data.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({})
 	})
 
 	it(`should invoke the '/data.yaml' workflow with a simple object input`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=data.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(
+				`/api/v2/namespaces/${namespaceName}/instances?path=data.yaml&wait=true`,
+			)
 			.send(`{"x": 5}`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
@@ -38,16 +47,22 @@ states:
 	})
 
 	it(`should invoke the '/data.yaml' workflow with a json non-object input`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=data.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(
+				`/api/v2/namespaces/${namespaceName}/instances?path=data.yaml&wait=true`,
+			)
 			.send(`[1, 2, 3]`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
-			input: [ 1, 2, 3 ],
+			input: [1, 2, 3],
 		})
 	})
 
 	it(`should invoke the '/data.yaml' workflow with a non-json input`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=data.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(
+				`/api/v2/namespaces/${namespaceName}/instances?path=data.yaml&wait=true`,
+			)
 			.send(`Hello, world!`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({

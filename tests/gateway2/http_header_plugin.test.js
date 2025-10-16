@@ -13,8 +13,14 @@ describe('Test header plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'c1.yaml', 'consumer', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'c1.yaml',
+		'consumer',
+		`
 direktiv_api: "consumer/v1"
 username: user1
 password: pwd1
@@ -23,10 +29,17 @@ tags:
 - tag1
 groups:
 - group1
-`)
+`,
+	)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'ep1.yaml', 'endpoint', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'ep1.yaml',
+		'endpoint',
+		`
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: "/target"
@@ -55,24 +68,30 @@ post:
     responses:
         "200":
         description: works
-`)
+`,
+	)
 
 	helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		namespace,
-		'/', 'target.yaml', 'workflow', `
+		'/',
+		'target.yaml',
+		'workflow',
+		`
 direktiv_api: workflow/v1
 states:
 - id: helloworld
   type: noop
   transform:
-    result: jq(.)`)
+    result: jq(.)`,
+	)
 
 	retry10(`should have expected body after js`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(
-			`/api/v2/namespaces/${ namespace }/gateway/target?Query1=value1&Query2=value2`,
-		)
+		const req = await request(common.config.getDirektivBaseUrl())
+			.post(
+				`/api/v2/namespaces/${namespace}/gateway/target?Query1=value1&Query2=value2`,
+			)
 			.set('Header', 'Value1')
 			.set('Header1', 'oldvalue')
 			.send({ hello: 'world' })
@@ -85,45 +104,24 @@ states:
 					hello: 'world',
 				},
 				consumer: {
-					groups: [
-						'group1',
-					],
-					tags: [
-						'tag1',
-					],
+					groups: ['group1'],
+					tags: ['tag1'],
 					username: 'user1',
 				},
 				headers: {
-					'Accept-Encoding': [
-						'gzip, deflate',
-					],
-					Authorization: [
-						'Basic dXNlcjE6cHdkMQ==',
-					],
-					'Content-Length': [
-						'17',
-					],
-					'Content-Type': [
-						'application/json',
-					],
-					Header1: [
-						'newvalue',
-					],
-					Hello: [
-						'world',
-					],
+					'Accept-Encoding': ['gzip, deflate'],
+					Authorization: ['Basic dXNlcjE6cHdkMQ=='],
+					'Content-Length': ['17'],
+					'Content-Type': ['application/json'],
+					Header1: ['newvalue'],
+					Hello: ['world'],
 				},
 				query_params: {
-					Query1: [
-						'value1',
-					],
-					Query2: [
-						'value2',
-					],
+					Query1: ['value1'],
+					Query2: ['value2'],
 				},
 				url_params: {},
 			},
-		},
-		)
+		})
 	})
 })

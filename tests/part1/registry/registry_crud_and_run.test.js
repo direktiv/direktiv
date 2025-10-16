@@ -13,7 +13,7 @@ describe('Test services crud operations', () => {
 
 	it(`should create a registry`, async () => {
 		const res = await request(common.config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ testNamespace }/registries`)
+			.post(`/api/v2/namespaces/${testNamespace}/registries`)
 			.send({
 				url: 'docker.io',
 				user: 'me',
@@ -33,7 +33,7 @@ describe('Test services crud operations', () => {
 
 	it(`should create a registry`, async () => {
 		const res = await request(common.config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ testNamespace }/registries`)
+			.post(`/api/v2/namespaces/${testNamespace}/registries`)
 			.send({
 				url: 'docker2.io',
 				user: 'me2',
@@ -52,11 +52,14 @@ describe('Test services crud operations', () => {
 	})
 
 	it(`should list all registries`, async () => {
-		const listRes = await request(common.config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ testNamespace }/registries`)
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${testNamespace}/registries`,
+		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(2)
-		const sortedResponseData = listRes.body.data.sort((a, b) => a.id.localeCompare(b.id))
+		const sortedResponseData = listRes.body.data.sort((a, b) =>
+			a.id.localeCompare(b.id),
+		)
 
 		const expectedData = [
 			{
@@ -79,14 +82,16 @@ describe('Test services crud operations', () => {
 	})
 
 	it(`should delete a registry`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl())
-			.delete(`/api/v2/namespaces/${ testNamespace }/registries/secret-c163796084d652e67cb0`)
+		const res = await request(common.config.getDirektivBaseUrl()).delete(
+			`/api/v2/namespaces/${testNamespace}/registries/secret-c163796084d652e67cb0`,
+		)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should list all registries after delete`, async () => {
-		const listRes = await request(common.config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ testNamespace }/registries`)
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${testNamespace}/registries`,
+		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
 	})

@@ -12,7 +12,14 @@ describe('Test variable workflow links', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace, '/', 'wf1.yaml', 'workflow', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'wf1.yaml',
+		'workflow',
+		`
 direktiv_api: workflow/v1
 description: A simple 'no-op' state that returns 'Hello world!'
 states:
@@ -20,7 +27,8 @@ states:
   type: noop
   transform:
     result: Hello world!
-`)
+`,
+	)
 	const foo = {
 		name: 'foo',
 		data: btoa('bar'),
@@ -31,17 +39,23 @@ states:
 	let fooId
 	it(`should create a new workflow variable foo`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/variables`)
+			.post(`/api/v2/namespaces/${namespace}/variables`)
 			.send(foo)
 		expect(res.statusCode).toEqual(200)
 		fooId = res.body.data.id
 	})
 
-	helpers.itShouldUpdateFilePath(it, expect, namespace, '/wf1.yaml', '/wf2.yaml')
+	helpers.itShouldUpdateFilePath(
+		it,
+		expect,
+		namespace,
+		'/wf1.yaml',
+		'/wf2.yaml',
+	)
 
 	it(`should read new path in variable foo`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/variables/${ fooId }`)
+			.get(`/api/v2/namespaces/${namespace}/variables/${fooId}`)
 			.send(foo)
 		expect(res.body.data.reference).toEqual('/wf2.yaml')
 	})
@@ -50,7 +64,7 @@ states:
 
 	it(`should read 404 variable foo`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/variables/${ fooId }`)
+			.get(`/api/v2/namespaces/${namespace}/variables/${fooId}`)
 			.send(foo)
 		expect(res.statusCode).toEqual(404)
 	})

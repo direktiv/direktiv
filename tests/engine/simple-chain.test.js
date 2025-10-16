@@ -11,7 +11,10 @@ describe('Test a simple chain of noop states', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'simple-chain.yaml',
 		'workflow',
@@ -30,10 +33,13 @@ states:
 - id: c
   type: noop
   transform: 'jq(.c = "z")'
-`))
+`),
+	)
 
 	it(`should invoke the '/simple-chain.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=simple-chain.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=simple-chain.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			a: 'x',

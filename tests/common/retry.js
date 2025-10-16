@@ -2,18 +2,16 @@ import { test } from '@jest/globals'
 
 import helpers from './helpers'
 
-function runTest (handler) {
+function runTest(handler) {
 	return new Promise((resolve, reject) => {
-		const result = handler(err => err ? reject(err) : resolve())
+		const result = handler((err) => (err ? reject(err) : resolve()))
 
-		if (result && result.then)
-			result.catch(reject).then(resolve)
-		else
-			resolve()
+		if (result && result.then) result.catch(reject).then(resolve)
+		else resolve()
 	})
 }
 
-async function _retry (description, retries, handler, delay) {
+async function _retry(description, retries, handler, delay) {
 	if (!description || typeof description !== 'string')
 		throw new Error('Invalid argument, description must be a string')
 
@@ -40,14 +38,14 @@ async function _retry (description, retries, handler, delay) {
 	})
 }
 
-export function retry10 (description, handler) {
+export function retry10(description, handler) {
 	return _retry(description, 10, handler, 500)
 }
 
-export function retry50 (description, handler) {
+export function retry50(description, handler) {
 	return _retry(description, 50, handler, 500)
 }
 
-export function retry70 (description, handler) {
+export function retry70(description, handler) {
 	return _retry(description, 70, handler, 500)
 }

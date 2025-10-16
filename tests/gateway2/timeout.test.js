@@ -13,17 +13,30 @@ describe('Test gateway basic-auth plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'wf2.yaml', 'workflow', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'wf2.yaml',
+		'workflow',
+		`
 direktiv_api: workflow/v1
 states:
 - id: a
   type: delay
   duration: PT5S
-`)
+`,
+	)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'ep1.yaml', 'endpoint', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'ep1.yaml',
+		'endpoint',
+		`
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: /ep1
@@ -33,7 +46,7 @@ x-direktiv-config:
         target:
             type: target-flow
             configuration:
-                namespace: ${ namespace }
+                namespace: ${namespace}
                 flow: /wf2.yaml
 get:
     responses:
@@ -42,8 +55,14 @@ get:
 `,
 	)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'ep3.yaml', 'endpoint', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'ep3.yaml',
+		'endpoint',
+		`
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: /ep3
@@ -53,7 +72,7 @@ x-direktiv-config:
         target:
             type: target-flow
             configuration:
-                namespace: ${ namespace }
+                namespace: ${namespace}
                 flow: /wf2.yaml
 get:
     responses:
@@ -62,8 +81,14 @@ get:
 `,
 	)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'ep2.yaml', 'endpoint', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'ep2.yaml',
+		'endpoint',
+		`
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: /ep2
@@ -72,7 +97,7 @@ x-direktiv-config:
         target:
             type: target-flow
             configuration:
-                namespace: ${ namespace }
+                namespace: ${namespace}
                 flow: /wf2.yaml
 get:
     responses:
@@ -82,19 +107,22 @@ get:
 	)
 
 	retry10(`should execute gateway ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivBaseUrl()).get(`/ns/${ namespace }/ep1`)
+		const res = await request(config.getDirektivBaseUrl())
+			.get(`/ns/${namespace}/ep1`)
 			.send({})
 		expect(res.statusCode).toEqual(503)
 	})
 
 	retry10(`should execute gateway ep2.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivBaseUrl()).get(`/ns/${ namespace }/ep2`)
+		const res = await request(config.getDirektivBaseUrl())
+			.get(`/ns/${namespace}/ep2`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 	})
 
 	retry10(`should execute gateway ep3.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivBaseUrl()).get(`/ns/${ namespace }/ep3`)
+		const res = await request(config.getDirektivBaseUrl())
+			.get(`/ns/${namespace}/ep3`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 	})
