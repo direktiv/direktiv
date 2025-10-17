@@ -10,7 +10,7 @@ export const getDonutConfig = (
   const items: DonutConfigType["items"] = [
     { label: "complete", count: data.complete },
     { label: "failed", count: data.failed },
-    { label: "crashed", count: data.crashed },
+    { label: "cancelled", count: data.cancelled },
   ];
 
   const colors: DonutConfigType["colors"] = ["emerald", "red", "pink"];
