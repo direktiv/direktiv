@@ -15,14 +15,31 @@ import (
 	"github.com/sosodev/duration"
 )
 
+type Severity string
+
+const (
+	SeverityHint    Severity = "hint"
+	SeverityInfo    Severity = "info"
+	SeverityWarning Severity = "warning"
+	SeverityError   Severity = "error"
+)
+
 type ValidationError struct {
-	Message string
-	Line    int
-	Column  int
+	Message     string   `json:"message"`
+	StartLine   int      `json:"startLine"`
+	StartColumn int      `json:"startColumn"`
+	EndLine     int      `json:"endLine"`
+	EndColumn   int      `json:"endColumn"`
+	Severity    Severity `json:"severity"`
 }
 
 func (ve *ValidationError) Error() string {
-	return fmt.Sprintf("%s (line: %d, column: %d)", ve.Message, ve.Line, ve.Column)
+	b, err := json.Marshal(ve)
+	if err != nil {
+		return fmt.Sprintf("%s (line: %d, column: %d)", ve.Message, ve.StartLine, ve.StartColumn)
+	}
+
+	return string(b)
 }
 
 type ASTParser struct {
@@ -99,11 +116,16 @@ func (ap *ASTParser) walk(node ast.Node, isStateFunc bool) {
 		if isNewStateFunc {
 			hasReturn := ap.checkIfHasReturn(n.Function.Body)
 			if !hasReturn {
-				pos := ap.file.Position(int(n.Idx0()))
+				start := ap.file.Position(int(n.Idx0()))
+				end := ap.file.Position(int(n.Idx1()))
+
 				ap.Errors = append(ap.Errors, &ValidationError{
-					Message: fmt.Sprintf("state function '%s' must contain at least one return statement 'transition' or 'finish'", funcName),
-					Line:    pos.Line,
-					Column:  pos.Column,
+					Message:     fmt.Sprintf("state function '%s' must contain at least one return statement 'transition' or 'finish'", funcName),
+					StartLine:   start.Line,
+					StartColumn: start.Column,
+					EndLine:     end.Line,
+					EndColumn:   end.Column,
+					Severity:    SeverityError,
 				})
 			}
 		}
@@ -130,26 +152,31 @@ func (ap *ASTParser) walk(node ast.Node, isStateFunc bool) {
 		// Rule 1: A state function must return a transition call.
 		if isStateFunc {
 			if !ap.isTransitionCall(n.Argument) {
-				b, _ := json.MarshalIndent(n.Argument, "", "   ")
-				fmt.Println(string(b))
+				start := ap.file.Position(int(n.Idx0()))
+				end := ap.file.Position(int(n.Idx1()))
 
-				// check fro promise here
-
-				pos := ap.file.Position(int(n.Idx0()))
 				ap.Errors = append(ap.Errors, &ValidationError{
-					Message: "state function has a return statement that is not a call to 'transition' or 'finish'",
-					Line:    pos.Line,
-					Column:  pos.Column,
+					Message:     "state function has a return statement that is not a call to 'transition' or 'finish'",
+					StartLine:   start.Line,
+					StartColumn: start.Column,
+					EndLine:     end.Line,
+					EndColumn:   end.Column,
+					Severity:    SeverityError,
 				})
 			}
 		} else {
 			// Rule 2: A non-state function cannot return a transition call.
 			if ap.isTransitionCall(n.Argument) {
-				pos := ap.file.Position(int(n.Idx0()))
+				start := ap.file.Position(int(n.Idx0()))
+				end := ap.file.Position(int(n.Idx1()))
+
 				ap.Errors = append(ap.Errors, &ValidationError{
-					Message: "non-state function calls 'transition' or 'finish' in its return statement",
-					Line:    pos.Line,
-					Column:  pos.Column,
+					Message:     "non-state function calls 'transition' or 'finish' in its return statement",
+					StartLine:   start.Line,
+					StartColumn: start.Column,
+					EndLine:     end.Line,
+					EndColumn:   end.Column,
+					Severity:    SeverityError,
 				})
 			}
 		}
@@ -158,11 +185,15 @@ func (ap *ASTParser) walk(node ast.Node, isStateFunc bool) {
 		// Rule 2 (cont.): A non-state function cannot call transition at all.
 		if !isStateFunc {
 			if ap.isTransitionCall(n) {
-				pos := ap.file.Position(int(n.Idx0()))
+				start := ap.file.Position(int(n.Idx0()))
+				end := ap.file.Position(int(n.Idx1()))
 				ap.Errors = append(ap.Errors, &ValidationError{
-					Message: "non-state function calls 'transition' or 'finish'.",
-					Line:    pos.Line,
-					Column:  pos.Column,
+					Message:     "non-state function calls 'transition' or 'finish'.",
+					StartLine:   start.Line,
+					StartColumn: start.Column,
+					EndLine:     end.Line,
+					EndColumn:   end.Column,
+					Severity:    SeverityError,
 				})
 			}
 		}
@@ -524,11 +555,15 @@ func (ap *ASTParser) parseAction(expr ast.Expression) (core.ActionConfig, error)
 							if mapKey != "" && mapValue != "" {
 								action.Envs[mapKey] = mapValue
 							} else {
-								pos := ap.file.Position(int(expr.Idx0()))
+								start := ap.file.Position(int(expr.Idx0()))
+								end := ap.file.Position(int(expr.Idx1()))
 								ap.Errors = append(ap.Errors, &ValidationError{
-									Message: "generateAction environment varariables have non-string keys or values",
-									Line:    pos.Line,
-									Column:  pos.Column,
+									Message:     "generateAction environment varariables have non-string keys or values",
+									StartLine:   start.Line,
+									StartColumn: start.Column,
+									EndLine:     end.Line,
+									EndColumn:   end.Column,
+									Severity:    SeverityError,
 								})
 							}
 						}
@@ -564,7 +599,8 @@ func (ap *ASTParser) inspectExpression(expr ast.Expression) {
 		identifier, ok := e.Callee.(*ast.Identifier)
 		if ok {
 			msg = fmt.Sprintf("function call '%s' is not allowed outside of functions", identifier.Name)
-			pos := ap.file.Position(int(e.Idx0()))
+			start := ap.file.Position(int(e.Idx0()))
+			end := ap.file.Position(int(e.Idx0()))
 
 			if identifier.Name == "generateAction" {
 				// still check for functions
@@ -574,9 +610,12 @@ func (ap *ASTParser) inspectExpression(expr ast.Expression) {
 
 				if len(e.ArgumentList) != 1 {
 					ap.Errors = append(ap.Errors, &ValidationError{
-						Message: "generateAction has no or more than one configuration",
-						Line:    pos.Line,
-						Column:  pos.Column,
+						Message:     "generateAction has no or more than one configuration",
+						StartLine:   start.Line,
+						StartColumn: start.Column,
+						EndLine:     end.Line,
+						EndColumn:   end.Column,
+						Severity:    SeverityError,
 					})
 
 					return
@@ -585,9 +624,12 @@ func (ap *ASTParser) inspectExpression(expr ast.Expression) {
 				action, err := ap.parseAction(e.ArgumentList[0])
 				if err != nil {
 					ap.Errors = append(ap.Errors, &ValidationError{
-						Message: "generateAction has no or more than one configuration",
-						Line:    pos.Line,
-						Column:  pos.Column,
+						Message:     "generateAction has no or more than one configuration",
+						StartLine:   start.Line,
+						StartColumn: start.Column,
+						EndLine:     end.Line,
+						EndColumn:   end.Column,
+						Severity:    SeverityError,
 					})
 
 					return
@@ -611,11 +653,15 @@ func (ap *ASTParser) inspectExpression(expr ast.Expression) {
 			}
 		}
 
-		pos := ap.file.Position(int(e.Idx0()))
+		start := ap.file.Position(int(e.Idx0()))
+		end := ap.file.Position(int(e.Idx1()))
 		ap.Errors = append(ap.Errors, &ValidationError{
-			Message: msg,
-			Line:    pos.Line,
-			Column:  pos.Column,
+			Message:     msg,
+			StartLine:   start.Line,
+			StartColumn: start.Column,
+			EndLine:     end.Line,
+			EndColumn:   end.Column,
+			Severity:    SeverityError,
 		})
 	case *ast.Identifier:
 		// allowed

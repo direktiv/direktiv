@@ -100,6 +100,9 @@ func (ci *CompileItem) TranspileAndValidate() error {
 	}
 
 	ci.script, ci.mapping, err = transpiler.Transpile(string(ci.tsScript), ci.path)
+	if err != nil {
+		return err
+	}
 
 	return ci.validate()
 }
@@ -116,9 +119,9 @@ func (ci *CompileItem) validate() error {
 	config, err := pr.ValidateConfig()
 	if err != nil {
 		pr.Errors = append(pr.Errors, &ValidationError{
-			Message: err.Error(),
-			Line:    0,
-			Column:  0,
+			Message:     err.Error(),
+			StartLine:   0,
+			StartColumn: 0,
 		})
 	}
 

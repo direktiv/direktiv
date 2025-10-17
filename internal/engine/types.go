@@ -17,15 +17,14 @@ const (
 	StateCodeComplete  StateCode = "complete"
 	StateCodeFailed    StateCode = "failed"
 	StateCodeCancelled StateCode = "cancelled"
-	StateCodeCrashed   StateCode = "crashed"
 )
 
 var AllStateCodes = []StateCode{
 	StateCodePending,
-	StateCodeFailed,
+	StateCodeRunning,
 	StateCodeComplete,
+	StateCodeFailed,
 	StateCodeCancelled,
-	StateCodeCrashed,
 }
 
 type InstanceStatus struct {
@@ -47,11 +46,6 @@ type InstanceStatus struct {
 }
 
 func (i *InstanceStatus) StatusString() string {
-	switch i.State {
-	case StateCodeRunning:
-		return string(StateCodePending)
-	}
-
 	return string(i.State)
 }
 

@@ -23,6 +23,7 @@ import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
 import { addTypescriptFileExtension } from "../../../../utils";
 import { encode } from "js-base64";
+import { updateValidationCache } from "~/api/validate/utils";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNavigate } from "@tanstack/react-router";
 import { useNotifications } from "~/api/notifications/query/get";
@@ -94,6 +95,7 @@ const NewWorkflow = ({
        * creating a new workflow might introduce an uninitialized secret.
        * We need to update the notification bell, to see potential new messages.
        */
+      updateValidationCache(data);
       updateNotificationBell();
       navigate({
         to: "/n/$namespace/explorer/workflow/edit/$",

@@ -173,9 +173,9 @@ function stateTwo(payload) {
 				total,
 				complete: total,
 				cancelled: 0,
-				crashed: 0,
 				failed: 0,
 				pending: 0,
+				running: 0,
 			})
 		},
 		1000,
