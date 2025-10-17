@@ -260,7 +260,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	res := struct {
 		*filestore.File
 
-		Data   []byte   `json:"data,omitempty"`
+		Data   []byte            `json:"data,omitempty"`
 		Errors []json.RawMessage `json:"errors"`
 	}{
 		File:   newFile,
@@ -281,7 +281,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 			jErr, err := json.Marshal(ci.ValidationErrors[i])
 			if err != nil {
 				writeInternalError(w, err)
-				return 
+				return
 			}
 			res.Errors = append(res.Errors, jErr)
 		}
@@ -405,7 +405,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	res := struct {
 		*filestore.File
 
-		Data   []byte   `json:"data,omitempty"`
+		Data   []byte            `json:"data,omitempty"`
 		Errors []json.RawMessage `json:"errors"`
 	}{
 		File:   updatedFile,
@@ -425,7 +425,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			jErr, err := json.Marshal(ci.ValidationErrors[i])
 			if err != nil {
 				writeInternalError(w, err)
-				return 
+				return
 			}
 			res.Errors = append(res.Errors, jErr)
 		}

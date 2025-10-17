@@ -38,6 +38,7 @@ func (ve *ValidationError) Error() string {
 	if err != nil {
 		return fmt.Sprintf("%s (line: %d, column: %d)", ve.Message, ve.StartLine, ve.StartColumn)
 	}
+
 	return string(b)
 }
 
@@ -304,7 +305,6 @@ func (ap *ASTParser) ValidateConfig() (*core.FlowConfig, error) {
 						switch value := literal.Value.(type) {
 						case *ast.StringLiteral:
 							err := setAndvalidate(flow, functions, key.Value.String(), value.Value.String())
-
 							if err != nil {
 								return flow, err
 							}
