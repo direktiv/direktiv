@@ -33,7 +33,6 @@ tasks:
 
   go-unit:
     desc: Run go unit tests
-    dir: pkg
     cmds:
     - go test ./...
   
