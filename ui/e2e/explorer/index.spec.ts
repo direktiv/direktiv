@@ -206,11 +206,11 @@ test("it is possible to create a workflow", async ({ page }) => {
   ).toBeVisible();
 
   // navigate back by clicking on the namespace breadcrumb"
-  await page.getByTestId("breadcrumb-namespace").getByText(namespace).click(),
-    await expect(
-      page,
-      "when clicking the namespace breadcrumb it navigates to tree root"
-    ).toHaveURL(`/n/${namespace}/explorer/tree`);
+  await page.getByTestId("breadcrumb-namespace").getByText(namespace).click();
+  await expect(
+    page,
+    "when clicking the namespace breadcrumb it navigates to tree root"
+  ).toHaveURL(`/n/${namespace}/explorer/tree`);
 
   await expect(
     page.getByTestId(`explorer-item-${filename}`),

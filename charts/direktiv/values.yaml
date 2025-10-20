@@ -202,23 +202,21 @@ functions:
     #       memory: "2Gi"
     #       cpu:    "1"
 
+
+natsTLS: &natsTLS
+  enabled: true
+  secretName: direktiv-tls-secret
+  cert: server.crt
+  key: server.key
+
 nats:
   delay: 15
   tlsCA:
     enabled: true
     secretName: direktiv-tls-secret
   config:
-    tls:
-        enabled: true
-        secretName: direktiv-tls-secret
-        cert: server.crt
-        key: server.key
     nats:
-      tls:
-        enabled: true
-        secretName: direktiv-tls-secret
-        cert: server.crt
-        key: server.key
+      tls: *natsTLS
     jetstream:
       enabled: true
       fileStore:
@@ -228,11 +226,7 @@ nats:
           size: 10Gi
     cluster:
       enabled: true
-      tls:
-        enabled: true
-        secretName: direktiv-tls-secret
-        cert: server.crt
-        key: server.key
+      tls: *natsTLS
 
     routeURLs:
       user: direktiv

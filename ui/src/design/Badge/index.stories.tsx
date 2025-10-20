@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import Badge from "./index";
 
 const meta = {
@@ -79,18 +79,18 @@ export const BadgeWithIcon = () => (
       </Badge>
     </div>{" "}
     <div className="flex space-x-2">
-      <Badge icon="crashed">default crashed icon</Badge>
-      <Badge icon="crashed" variant="secondary">
-        secondary crashed icon
+      <Badge icon="running">default running icon</Badge>
+      <Badge icon="running" variant="secondary">
+        secondary running icon
       </Badge>
-      <Badge icon="crashed" variant="outline">
-        outline crashed icon
+      <Badge icon="running" variant="outline">
+        outline running icon
       </Badge>
-      <Badge icon="crashed" variant="destructive">
-        destructive crashed icon
+      <Badge icon="running" variant="destructive">
+        destructive running icon
       </Badge>
-      <Badge icon="crashed" variant="success">
-        success crashed icon
+      <Badge icon="running" variant="success">
+        success running icon
       </Badge>
     </div>
   </div>

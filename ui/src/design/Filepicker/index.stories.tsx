@@ -20,7 +20,7 @@ import {
 } from "./";
 import { Fragment, useState } from "react";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import Button from "../Button";
 import { ButtonBar } from "../ButtonBar";

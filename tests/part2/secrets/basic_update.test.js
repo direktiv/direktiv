@@ -1,12 +1,13 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import config from '../../common/config'
 import helpers from '../../common/helpers'
 import regex from '../../common/regex'
 import request from '../../common/request'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test secret update calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
@@ -15,7 +16,7 @@ describe('Test secret update calls', () => {
 	let createRes
 	it(`should create a secret case`, async () => {
 		createRes = await request(config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/secrets`)
+			.post(`/api/v2/namespaces/${namespace}/secrets`)
 			.send({
 				name: 'foo',
 				data: btoa('bar'),
@@ -39,11 +40,10 @@ describe('Test secret update calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		// eslint-disable-next-line no-loop-func
-		it(`should update secret case ${ i }`, async () => {
+		it(`should update secret case ${i}`, async () => {
 			const secretName = createRes.body.data.name
 			const res = await request(config.getDirektivBaseUrl())
-				.patch(`/api/v2/namespaces/${ namespace }/secrets/${ secretName }`)
+				.patch(`/api/v2/namespaces/${namespace}/secrets/${secretName}`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data).toEqual({
@@ -63,11 +63,10 @@ describe('Test invalid secret update calls', () => {
 	let createRes
 	it(`should create a secret case`, async () => {
 		createRes = await request(config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/secrets`)
+			.post(`/api/v2/namespaces/${namespace}/secrets`)
 			.send({
 				name: 'foo',
 				data: btoa('bar'),
-
 			})
 
 		expect(createRes.statusCode).toEqual(200)
@@ -91,16 +90,14 @@ describe('Test invalid secret update calls', () => {
 
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
-		// eslint-disable-next-line no-loop-func
-		it(`should fail updating a secret case ${ i }`, async () => {
+
+		it(`should fail updating a secret case ${i}`, async () => {
 			const secretName = createRes.body.data.name
 			const res = await request(config.getDirektivBaseUrl())
-				.patch(`/api/v2/namespaces/${ namespace }/secrets/${ secretName }`)
+				.patch(`/api/v2/namespaces/${namespace}/secrets/${secretName}`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
-			expect(res.body.error).toEqual(
-				testCase.wantError.error,
-			)
+			expect(res.body.error).toEqual(testCase.wantError.error)
 		})
 	}
 })

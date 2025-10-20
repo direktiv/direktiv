@@ -260,12 +260,12 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	res := struct {
 		*filestore.File
 
-		Data   []byte   `json:"data,omitempty"`
-		Errors []string `json:"errors"`
+		Data   []byte            `json:"data,omitempty"`
+		Errors []json.RawMessage `json:"errors"`
 	}{
 		File:   newFile,
 		Data:   decodedBytes,
-		Errors: make([]string, 0),
+		Errors: make([]json.RawMessage, 0),
 	}
 
 	// validate flow file. it is stored but we report errors
@@ -273,11 +273,17 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		ci := compiler.NewCompileItem(decodedBytes, req.Name)
 		err = ci.TranspileAndValidate()
 		if err != nil {
-			res.Errors = append(res.Errors, err.Error())
+			jErr, _ := json.Marshal(err)
+			res.Errors = append(res.Errors, jErr)
 		}
 
 		for i := range ci.ValidationErrors {
-			res.Errors = append(res.Errors, ci.ValidationErrors[i].Error())
+			jErr, err := json.Marshal(ci.ValidationErrors[i])
+			if err != nil {
+				writeInternalError(w, err)
+				return
+			}
+			res.Errors = append(res.Errors, jErr)
 		}
 	}
 
@@ -399,25 +405,30 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	res := struct {
 		*filestore.File
 
-		Data   []byte   `json:"data,omitempty"`
-		Errors []string `json:"errors"`
+		Data   []byte            `json:"data,omitempty"`
+		Errors []json.RawMessage `json:"errors"`
 	}{
 		File:   updatedFile,
 		Data:   decodedBytes,
-		Errors: make([]string, 0),
+		Errors: make([]json.RawMessage, 0),
 	}
 
 	if strings.HasSuffix(r.URL.Path, core.FlowFileExtension) {
 		ci := compiler.NewCompileItem(decodedBytes, r.URL.Path)
 		err = ci.TranspileAndValidate()
 		if err != nil {
-			res.Errors = append(res.Errors, err.Error())
+			jErr, _ := json.Marshal(err)
+			res.Errors = append(res.Errors, jErr)
 		}
 
 		for i := range ci.ValidationErrors {
-			res.Errors = append(res.Errors, ci.ValidationErrors[i].Error())
+			jErr, err := json.Marshal(ci.ValidationErrors[i])
+			if err != nil {
+				writeInternalError(w, err)
+				return
+			}
+			res.Errors = append(res.Errors, jErr)
 		}
 	}
-
 	writeJSON(w, res)
 }

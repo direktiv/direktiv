@@ -1,11 +1,12 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import config from '../../common/config'
 import helpers from '../../common/helpers'
 import request from '../../common/request'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test uninitialized secrets notifications', () => {
 	beforeAll(helpers.deleteAllNamespaces)
@@ -13,15 +14,19 @@ describe('Test uninitialized secrets notifications', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	it(`should read no notifications`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/notifications`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/notifications`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
 			data: [],
 		})
 	})
 
-	helpers.itShouldCreateFile(it, expect, namespace,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespace,
 		'/',
 		'foo1',
 		'workflow',
@@ -39,21 +44,25 @@ states:
     function: myfunc
     input: 'jq(.x)'
     secrets: ["a", "b"]
-`))
+`),
+	)
 
 	it(`should read one notification`, async () => {
 		await helpers.sleep(500)
 
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/notifications`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/notifications`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
-			data: [ {
-				description: 'secrets have not been initialized: [a b]',
-				count: 2,
-				level: 'warning',
-				type: 'uninitialized_secrets',
-			} ],
+			data: [
+				{
+					description: 'secrets have not been initialized: [a b]',
+					count: 2,
+					level: 'warning',
+					type: 'uninitialized_secrets',
+				},
+			],
 		})
 	})
 })

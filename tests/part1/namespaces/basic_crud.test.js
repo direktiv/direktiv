@@ -28,52 +28,57 @@ describe('Test namespaces get delete list calls', () => {
 	})
 
 	it(`should get the new namespace foo1`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/foo1`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/foo1`,
+		)
 		expect(res.statusCode).toEqual(200)
 
 		expect(res.body.data).toEqual(expectDummyNamespace('foo1'))
 	})
 
 	it(`should get the new namespace foo2`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/foo2`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/foo2`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual(expectDummyNamespace('foo2'))
 	})
 
 	it(`should list foo1 and foo2`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
-			data: [ expectDummyNamespace('foo1'), expectDummyNamespace('foo2') ],
+			data: [expectDummyNamespace('foo1'), expectDummyNamespace('foo2')],
 		})
 	})
 
 	it(`should delete foo1`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.delete(`/api/v2/namespaces/foo1`)
+		const res = await request(config.getDirektivBaseUrl()).delete(
+			`/api/v2/namespaces/foo1`,
+		)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should list foo1 and foo2`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
-			data: [ expectDummyNamespace('foo2') ],
+			data: [expectDummyNamespace('foo2')],
 		})
 	})
 })
 
-function makeDummyNamespace (name) {
+function makeDummyNamespace(name) {
 	return {
 		name,
 	}
 }
 
-function expectDummyNamespace (name) {
+function expectDummyNamespace(name) {
 	return {
 		name,
 		isSystemNamespace: false,

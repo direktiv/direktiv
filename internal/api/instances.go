@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -45,11 +46,36 @@ type InstanceData struct {
 	Metadata       []byte  `json:"metadata"`
 }
 
-type instController struct {
-	db        *gorm.DB
-	manager   any
-	engine    *engine.Engine
-	scheduler *sched.Scheduler
+type InstanceEvent struct {
+	EventID    uuid.UUID         `json:"eventId"`
+	InstanceID uuid.UUID         `json:"instanceId"`
+	Namespace  string            `json:"namespace"`
+	Metadata   map[string]string `json:"metadata"`
+	Type       string            `json:"type"`
+	Time       time.Time         `json:"time"`
+	Script     string            `json:"script,omitempty"`
+	Mappings   string            `json:"mappings,omitempty"`
+	Fn         string            `json:"fn,omitempty"`
+	Memory     json.RawMessage   `json:"memory,omitempty"`
+	Error      string            `json:"error,omitempty"`
+	Sequence   uint64            `json:"sequence"`
+}
+
+func convertToInstanceEvent(data *engine.InstanceEvent) *InstanceEvent {
+	return &InstanceEvent{
+		EventID:    data.EventID,
+		InstanceID: data.InstanceID,
+		Namespace:  data.Namespace,
+		Metadata:   data.Metadata,
+		Type:       string(data.Type),
+		Time:       data.Time,
+		Script:     data.Script,
+		Mappings:   data.Mappings,
+		Fn:         data.Fn,
+		Memory:     data.Memory,
+		Error:      data.Error,
+		Sequence:   data.Sequence,
+	}
 }
 
 func convertInstanceData(data *engine.InstanceStatus) *InstanceData {
@@ -86,10 +112,17 @@ func convertInstanceData(data *engine.InstanceStatus) *InstanceData {
 	return resp
 }
 
+type instController struct {
+	db        *gorm.DB
+	manager   any
+	engine    *engine.Engine
+	scheduler *sched.Scheduler
+}
+
 func (e *instController) mountRouter(r chi.Router) {
 	r.Get("/{instanceID}/subscribe", e.dummy)
 	r.Get("/{instanceID}/input", e.dummy)
-	r.Get("/{instanceID}/output", e.dummy)
+	r.Get("/{instanceID}/history", e.history)
 	r.Get("/{instanceID}/metadata", e.dummy)
 	r.Patch("/{instanceID}", e.dummy)
 
@@ -124,7 +157,11 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, notify, err := e.engine.RunWorkflow(r.Context(), namespace, path, string(input), map[string]string{
+	if len(input) == 0 {
+		input = []byte("null")
+	}
+
+	st, notify, err := e.engine.StartWorkflow(r.Context(), namespace, path, string(input), map[string]string{
 		core.EngineMappingPath: path,
 	})
 	if err != nil {
@@ -132,9 +169,11 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+	if r.URL.Query().Get("wait") == "true" {
+		st = <-notify
+	}
 
-	status := <-notify
-	writeJSON(w, convertInstanceData(status))
+	writeJSON(w, convertInstanceData(st))
 }
 
 func (e *instController) get(w http.ResponseWriter, r *http.Request) {
@@ -150,7 +189,7 @@ func (e *instController) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := e.engine.GetInstanceByID(r.Context(), namespace, instanceID)
+	data, err := e.engine.GetInstanceStatus(r.Context(), namespace, instanceID)
 	if err != nil {
 		writeEngineError(w, err)
 		return
@@ -165,7 +204,7 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 	limit := ParseQueryParam[int](r, "limit", 0)
 	offset := ParseQueryParam[int](r, "offset", 0)
 
-	list, total, err := e.engine.GetInstances(r.Context(), namespace, limit, offset)
+	list, total, err := e.engine.ListInstanceStatuses(r.Context(), namespace, limit, offset)
 	if err != nil {
 		writeEngineError(w, err)
 		return
@@ -181,4 +220,30 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSONWithMeta(w, out, metaInfo)
+}
+
+func (e *instController) history(w http.ResponseWriter, r *http.Request) {
+	namespace := chi.URLParam(r, "namespace")
+	instanceIDStr := chi.URLParam(r, "instanceID")
+	instanceID, err := uuid.Parse(instanceIDStr)
+	if err != nil {
+		writeError(w, &Error{
+			Code:    "request_id_invalid",
+			Message: "invalid instance uuid",
+		})
+
+		return
+	}
+
+	list, err := e.engine.GetInstanceHistory(r.Context(), namespace, instanceID)
+	if err != nil {
+		writeEngineError(w, err)
+		return
+	}
+	out := make([]any, len(list))
+	for i := range list {
+		out[i] = convertToInstanceEvent(list[i])
+	}
+
+	writeJSON(w, out)
 }

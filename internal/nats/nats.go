@@ -91,12 +91,29 @@ func Connect() (*nats.Conn, error) {
 	// set the deployment name in dns names
 	deploymentName := os.Getenv("DIREKTIV_DEPLOYMENT_NAME")
 
+	dirs := []string{
+		"/etc/direktiv-tls",
+		os.TempDir() + "/generated-direktiv-tls",
+	}
+
+	var dir string
+	for _, d := range dirs {
+		slog.Info("looking for tls files", "dir", d)
+		if _, err := os.Stat(d + "/server.crt"); err == nil {
+			dir = d
+			break
+		}
+	}
+	if dir == "" {
+		return nil, errors.New("tls files don't exist")
+	}
+
 	return nats.Connect(
 		fmt.Sprintf("tls://%s-nats.default.svc:4222", deploymentName),
 		nats.ClientTLSConfig(
 			func() (tls.Certificate, error) {
-				cert, err := tls.LoadX509KeyPair("/etc/direktiv-tls/server.crt",
-					"/etc/direktiv-tls/server.key")
+				cert, err := tls.LoadX509KeyPair(dir+"/server.crt",
+					dir+"/server.key")
 				if err != nil {
 					slog.Error("cannot create certificate pair", slog.Any("error", err))
 					return tls.Certificate{}, err
@@ -105,7 +122,7 @@ func Connect() (*nats.Conn, error) {
 				return cert, nil
 			},
 			func() (*x509.CertPool, error) {
-				caCert, err := os.ReadFile("/etc/direktiv-tls/ca.crt")
+				caCert, err := os.ReadFile(dir + "/ca.crt")
 				if err != nil {
 					return nil, err
 				}
@@ -127,27 +144,22 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 		return nil, fmt.Errorf("nats jetstream: %w", err)
 	}
 
-	err = resetStreams(ctx, js)
-	if err != nil {
-		return nil, fmt.Errorf("nats reset streams: %w", err)
-	}
-
 	// 1- ensure streams
-	for _, desc := range allDescriptors {
-		err = ensureStream(ctx, js, desc.streamConfig)
+	for _, dp := range allDescriptors {
+		err = ensureStream(ctx, js, dp.streamConfig)
 		if err != nil {
-			return nil, fmt.Errorf("nats ensure stream %s: %w", desc, err)
+			return nil, fmt.Errorf("nats ensure stream %s: %w", dp, err)
 		}
 	}
 
 	// 2- ensure shared durable consumers
-	for _, desc := range allDescriptors {
-		if desc.consumerConfig == nil {
+	for _, dp := range allDescriptors {
+		if dp.consumerConfig == nil {
 			continue
 		}
-		err = ensureConsumer(ctx, js, desc.consumerConfig)
+		err = ensureConsumer(ctx, js, dp.consumerConfig)
 		if err != nil {
-			return nil, fmt.Errorf("nats ensure consumer %s: %w", desc, err)
+			return nil, fmt.Errorf("nats ensure consumer %s: %w", dp, err)
 		}
 	}
 
@@ -155,7 +167,7 @@ func SetupJetStream(ctx context.Context, nc *nats.Conn) (nats.JetStreamContext, 
 }
 
 // TODO: remove this debug code.
-func resetStreams(ctx context.Context, js nats.JetStreamContext) error {
+func ResetStreams(ctx context.Context, js nats.JetStreamContext) error {
 	streams := js.StreamNames()
 	for s := range streams {
 		if err := js.DeleteStream(s); err != nil {

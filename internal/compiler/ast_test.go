@@ -403,7 +403,7 @@ func TestVariables(t *testing.T) {
 
 			for i := range parser.Errors {
 				ee := parser.Errors[i]
-				t.Logf("error '%s' (line: %d, column: %d)", ee.Message, ee.Line, ee.Column)
+				t.Logf("error '%s' (line: %d, column: %d)", ee.Message, ee.StartLine, ee.StartColumn)
 			}
 		})
 	}

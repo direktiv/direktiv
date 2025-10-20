@@ -37,21 +37,18 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 		workflowPath = filepath.Join("/", workflowPath)
 	}
 
-	list, _, err := e.engine.GetInstances(r.Context(), ns, 0, 0)
+	list, _, err := e.engine.ListInstanceStatuses(r.Context(), ns, 0, 0)
 	if err != nil {
 		writeEngineError(w, err)
 
 		return
 	}
 
-	allStatuses := []string{
-		"pending", "failed", "complete", "cancelled", "crashed",
-	}
 	stats := make(map[string]int)
 	stats["total"] = 0
 
-	for _, s := range allStatuses {
-		stats[s] = 0
+	for _, s := range engine.AllStateCodes {
+		stats[string(s)] = 0
 	}
 
 	foundMatching := false

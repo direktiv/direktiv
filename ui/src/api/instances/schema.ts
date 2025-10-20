@@ -4,7 +4,7 @@ export const possibleInstanceStatuses = [
   "pending",
   "failed",
   "cancelled",
-  "crashed",
+  "running",
   "complete",
 ] as const;
 
@@ -87,11 +87,11 @@ export const InstanceCreatedResponseSchema = z.object({
   data: InstanceSchema,
 });
 
-const InstanceCancelPayload = z.object({
+const _InstanceCancelPayload = z.object({
   status: z.literal("cancelled"),
 });
 
-export type InstanceCancelPayloadType = z.infer<typeof InstanceCancelPayload>;
+export type InstanceCancelPayloadType = z.infer<typeof _InstanceCancelPayload>;
 
 export const InstanceCanceledResponseSchema = z.null();
 

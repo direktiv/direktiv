@@ -36,8 +36,8 @@ func (s *Scheduler) Start(lc *lifecycle.Manager) error {
 
 func (s *Scheduler) dispatchIfDue(rule *Rule) error {
 	rule = rule.Clone()
-	now := s.clk.Now().UTC()
-	runAt := rule.RunAt.UTC()
+	now := s.clk.Now()
+	runAt := rule.RunAt
 
 	if rule.RunAt.IsZero() || runAt.After(now) {
 		return fmt.Errorf("not-due")
