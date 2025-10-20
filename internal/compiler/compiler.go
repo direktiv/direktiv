@@ -118,7 +118,7 @@ func (ci *CompileItem) validate() error {
 	pr.ValidateFunctionCalls()
 
 	config, err := pr.ValidateConfig()
-	vErr := &ValidationError{}
+	var vErr *ValidationError
 	if err != nil && errors.As(err, &vErr) {
 		pr.Errors = append(pr.Errors, vErr)
 	} else if err != nil {

@@ -317,7 +317,7 @@ func (ap *ASTParser) ValidateConfig() (*core.FlowConfig, error) {
 									Severity:    SeverityError,
 								}
 
-								return nil, &vErr
+								return flow, &vErr
 							}
 						case *ast.ArrayLiteral:
 							if key.Value.String() == "events" {
