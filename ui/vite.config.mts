@@ -6,7 +6,7 @@ import { envVariablesSchema } from "./src/config/env/schema";
 import react from "@vitejs/plugin-react";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 
-export default ({ mode }) => {
+export default ({ mode }: { mode: string }) => {
   const env = loadEnv(mode, process.cwd());
 
   const parsedEnv = envVariablesSchema.parse(env);
