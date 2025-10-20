@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/direktiv/direktiv/internal/api/filter"
 	"github.com/direktiv/direktiv/internal/engine"
 	intNats "github.com/direktiv/direktiv/internal/nats"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
@@ -75,7 +76,7 @@ func (d *DataBus) PublishInstanceQueueEvent(ctx context.Context, event *engine.I
 	return err
 }
 
-func (d *DataBus) ListInstanceStatuses(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*engine.InstanceStatus, int) {
+func (d *DataBus) ListInstanceStatuses(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int, filters filter.Filters) ([]*engine.InstanceStatus, int) {
 	return d.statusCache.SnapshotPage(filterNamespace, filterInstanceID, limit, offset)
 }
 

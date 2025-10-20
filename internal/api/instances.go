@@ -204,7 +204,7 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 	limit := ParseQueryParam[int](r, "limit", 0)
 	offset := ParseQueryParam[int](r, "offset", 0)
 
-	list, total, err := e.engine.ListInstanceStatuses(r.Context(), namespace, limit, offset)
+	list, total, err := e.engine.ListInstanceStatuses(r.Context(), namespace, limit, offset, nil)
 	if err != nil {
 		writeEngineError(w, err)
 		return

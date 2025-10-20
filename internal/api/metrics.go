@@ -37,7 +37,7 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 		workflowPath = filepath.Join("/", workflowPath)
 	}
 
-	list, _, err := e.engine.ListInstanceStatuses(r.Context(), ns, 0, 0)
+	list, _, err := e.engine.ListInstanceStatuses(r.Context(), ns, 0, 0, nil)
 	if err != nil {
 		writeEngineError(w, err)
 
