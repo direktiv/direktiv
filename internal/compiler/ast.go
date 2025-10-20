@@ -306,7 +306,18 @@ func (ap *ASTParser) ValidateConfig() (*core.FlowConfig, error) {
 						case *ast.StringLiteral:
 							err := setAndvalidate(flow, functions, key.Value.String(), value.Value.String())
 							if err != nil {
-								return flow, err
+								start := ap.file.Position(int(literal.Key.Idx0()))
+								end := ap.file.Position(int(literal.Value.Idx1()))
+								vErr := ValidationError{
+									Message:     err.Error(),
+									StartLine:   start.Line,
+									StartColumn: start.Column,
+									EndLine:     end.Line,
+									EndColumn:   end.Column,
+									Severity:    SeverityError,
+								}
+
+								return nil, &vErr
 							}
 						case *ast.ArrayLiteral:
 							if key.Value.String() == "events" {

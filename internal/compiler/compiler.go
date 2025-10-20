@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -117,7 +118,10 @@ func (ci *CompileItem) validate() error {
 	pr.ValidateFunctionCalls()
 
 	config, err := pr.ValidateConfig()
-	if err != nil {
+	vErr := &ValidationError{}
+	if err != nil && errors.As(err, &vErr) {
+		pr.Errors = append(pr.Errors, vErr)
+	} else if err != nil {
 		pr.Errors = append(pr.Errors, &ValidationError{
 			Message:     err.Error(),
 			StartLine:   0,
