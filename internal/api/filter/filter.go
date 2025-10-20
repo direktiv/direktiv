@@ -16,6 +16,26 @@ const (
 // map[field]map[operator]value.
 type Values map[string]map[string]string
 
+func (v Values) Match(field string, value string) bool {
+	if v == nil {
+		return true
+	}
+	filterField, ok := v[field]
+	if !ok {
+		return true
+	}
+
+	for op, filterValue := range filterField {
+		if op == OpEq {
+			if filterValue == value {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 // FromURLValues parses query parameters like filter[field][op]=value
 // and returns a Values.
 func FromURLValues(values url.Values) Values {

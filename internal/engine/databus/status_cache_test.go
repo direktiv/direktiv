@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/api/filter"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/google/uuid"
 )
@@ -139,7 +140,7 @@ func TestDeleteNamespace_RemovesAndRebuildsIndex(t *testing.T) {
 
 	c.DeleteNamespace("a")
 
-	left := c.Snapshot("", uuid.Nil)
+	left := c.Snapshot()
 	if len(left) != 1 {
 		t.Fatalf("expected 1 item after deleting ns 'a', got %d", len(left))
 	}
@@ -149,7 +150,7 @@ func TestDeleteNamespace_RemovesAndRebuildsIndex(t *testing.T) {
 
 	// Ensure index was rebuilt correctly by performing an update on the remaining item.
 	c.Upsert(mk("b", idB, now.Add(3*time.Minute), 2))
-	after := c.Snapshot("", uuid.Nil)
+	after := c.Snapshot()
 	if len(after) != 1 || after[0].HistorySequence != 2 {
 		t.Fatalf("expected remaining item to update via index, got: %+v", after[0])
 	}
@@ -163,13 +164,13 @@ func TestSnapshotReturnsClones_Immutability(t *testing.T) {
 	c.Upsert(mk("ns", id, now, 1))
 
 	// mutate the snapshot copy
-	snap := c.Snapshot("", uuid.Nil)
+	snap := c.Snapshot()
 	if len(snap) != 1 {
 		t.Fatalf("expected 1 item, got %d", len(snap))
 	}
 	snap[0].HistorySequence = 999 // should not affect the cache
 
-	again := c.Snapshot("", uuid.Nil)
+	again := c.Snapshot()
 	if again[0].HistorySequence != 1 {
 		t.Fatalf("expected cache to be immutable via snapshots, got %d", again[0].HistorySequence)
 	}

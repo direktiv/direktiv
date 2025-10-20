@@ -76,8 +76,8 @@ func (d *DataBus) PublishInstanceQueueEvent(ctx context.Context, event *engine.I
 	return err
 }
 
-func (d *DataBus) ListInstanceStatuses(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int, filters filter.Values) ([]*engine.InstanceStatus, int) {
-	return d.statusCache.SnapshotPage(filterNamespace, filterInstanceID, limit, offset, filters)
+func (d *DataBus) ListInstanceStatuses(ctx context.Context, limit int, offset int, filters filter.Values) ([]*engine.InstanceStatus, int) {
+	return d.statusCache.SnapshotPage(limit, offset, filters)
 }
 
 func (d *DataBus) DeleteNamespace(ctx context.Context, name string) error {
