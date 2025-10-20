@@ -72,7 +72,9 @@ const FilePicker = ({
           <>
             <FilepickerButton
               onClick={() => {
-                parent ? setPath(parent.absolute) : null;
+                if (parent) {
+                  setPath(parent.absolute);
+                }
               }}
             >
               <FilepickerListItem icon={FolderUp}>..</FilepickerListItem>

@@ -44,7 +44,9 @@ const WorkflowEditor: FC<{
 
   const { mutate: updateFile, isPending } = useUpdateFile({
     onError: (error) => {
-      error && setError(error);
+      if (error) {
+        setError(error);
+      }
     },
     onSuccess: async (data: SaveFileResponseSchemaType) => {
       await updateValidationCache(data);

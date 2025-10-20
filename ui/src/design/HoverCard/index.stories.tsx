@@ -1,5 +1,5 @@
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./index";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import Alert from "../Alert";
 
 const meta = {

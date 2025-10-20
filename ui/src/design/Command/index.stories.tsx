@@ -47,7 +47,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../Dropdown";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Popover, PopoverContent, PopoverTrigger } from "../Popover";
 import Badge from "../Badge";
 import Button from "../Button";

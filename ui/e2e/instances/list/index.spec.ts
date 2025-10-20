@@ -253,13 +253,13 @@ test("it paginates instances", async ({ page }) => {
     content,
   });
 
-  await createInstance({ namespace, path: parentWorkflow }),
-    /**
-     * child workflows are spawned asynchronously in the backend and the page
-     * does not refresh, so we need to wait until they are initialized before
-     * visiting the page.
-     */
-    await page.waitForTimeout(500);
+  await createInstance({ namespace, path: parentWorkflow });
+  /**
+   * child workflows are spawned asynchronously in the backend and the page
+   * does not refresh, so we need to wait until they are initialized before
+   * visiting the page.
+   */
+  await page.waitForTimeout(500);
 
   await page.goto(`/n/${namespace}/instances/`, { waitUntil: "networkidle" });
 
