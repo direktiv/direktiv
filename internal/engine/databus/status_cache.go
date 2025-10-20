@@ -3,6 +3,7 @@ package databus
 import (
 	"sync"
 
+	"github.com/direktiv/direktiv/internal/api/filter"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/google/uuid"
 )
@@ -42,12 +43,12 @@ func (c *StatusCache) Upsert(s *engine.InstanceStatus) {
 	}
 }
 
-func (c *StatusCache) Snapshot(filterNamespace string, filterInstanceID uuid.UUID) []*engine.InstanceStatus {
-	res, _ := c.SnapshotPage(filterNamespace, filterInstanceID, 0, 0)
+func (c *StatusCache) Snapshot(filterNamespace string, filterInstanceID uuid.UUID, filters filter.Values) []*engine.InstanceStatus {
+	res, _ := c.SnapshotPage(filterNamespace, filterInstanceID, 0, 0, nil)
 	return res
 }
 
-func (c *StatusCache) SnapshotPage(filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*engine.InstanceStatus, int) {
+func (c *StatusCache) SnapshotPage(filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int, filters filter.Values) ([]*engine.InstanceStatus, int) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 

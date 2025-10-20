@@ -182,7 +182,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	return nil
 }
 
-func (e *Engine) ListInstanceStatuses(ctx context.Context, namespace string, limit int, offset int, filters filter.Filters) ([]*InstanceStatus, int, error) {
+func (e *Engine) ListInstanceStatuses(ctx context.Context, namespace string, limit int, offset int, filters filter.Values) ([]*InstanceStatus, int, error) {
 	data, total := e.dataBus.ListInstanceStatuses(ctx, namespace, uuid.Nil, limit, offset, filters)
 	if len(data) == 0 {
 		return nil, 0, ErrDataNotFound

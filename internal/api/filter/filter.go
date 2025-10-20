@@ -12,15 +12,15 @@ const (
 	OpLt = "lt"
 )
 
-// Filters represents the parsed structure:
+// Values represents the parsed structure:
 // map[field]map[operator]value.
-type Filters map[string]map[string]string
+type Values map[string]map[string]string
 
-// ParseFilters parses query parameters like filter[field][op]=value
-// and returns a generic Filters map.
-func ParseFilters(values url.Values) Filters {
+// FromURLValues parses query parameters like filter[field][op]=value
+// and returns a Values.
+func FromURLValues(values url.Values) Values {
 	re := regexp.MustCompile(`^filter\[([^\]]+)\](?:\[(\w+)\])?$`)
-	result := make(Filters)
+	result := make(Values)
 
 	for key, vals := range values {
 		matches := re.FindStringSubmatch(key)
@@ -43,12 +43,12 @@ func ParseFilters(values url.Values) Filters {
 	return result
 }
 
-// ParseFiltersFromRaw is a helper if you have a raw query string.
-func ParseFiltersFromRaw(raw string) (Filters, error) {
+// FromQueryString is a helper if you have a raw query string.
+func FromQueryString(raw string) (Values, error) {
 	v, err := url.ParseQuery(raw)
 	if err != nil {
 		return nil, err
 	}
 
-	return ParseFilters(v), nil
+	return FromURLValues(v), nil
 }
