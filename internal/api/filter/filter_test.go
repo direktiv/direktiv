@@ -2,6 +2,7 @@ package filter_test
 
 import (
 	"net/url"
+	"reflect"
 	"testing"
 	"time"
 
@@ -88,5 +89,59 @@ func TestParseFilters_SkipNonFilterKeys(t *testing.T) {
 	}
 	if _, ok := f["status"]; !ok {
 		t.Fatalf("expected filter 'status' to exist")
+	}
+}
+
+func TestParse_URLDecoding(t *testing.T) {
+	tests := []struct {
+		name   string
+		raw    string
+		expect filter.Filters
+	}{
+		// %2F → '/', %40 → '@'
+		{
+			name: "percent-encoded slash and at-sign",
+			raw:  "filter[path]=dir%2Ffoo.wf.ts&filter[user]=alice%40example.com",
+			expect: filter.Filters{
+				"path": {"eq": "dir/foo.wf.ts"},
+				"user": {"eq": "alice@example.com"},
+			},
+		},
+		// '+' decodes to space in query strings
+		{
+			name: "plus decodes to space",
+			raw:  "filter[tag]=foo+bar",
+			expect: filter.Filters{
+				"tag": {"eq": "foo bar"},
+			},
+		},
+		// literal '+' must be %2B
+		{
+			name: "encoded plus preserved as literal plus",
+			raw:  "filter[tag]=foo%2Bbar",
+			expect: filter.Filters{
+				"tag": {"eq": "foo+bar"},
+			},
+		},
+		// Unicode ✓ (check mark) — %E2%9C%93
+		{
+			name: "unicode percent-encoding",
+			raw:  "filter[path]=%E2%9C%93",
+			expect: filter.Filters{
+				"path": {"eq": "✓"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := filter.ParseFiltersFromRaw(tt.raw)
+			if err != nil {
+				t.Fatalf("ParseFiltersFromRaw error: %v", err)
+			}
+			if !reflect.DeepEqual(got, tt.expect) {
+				t.Fatalf("parsed mismatch:\nwant: %#v\n got: %#v", tt.expect, got)
+			}
+		})
 	}
 }
