@@ -31,7 +31,9 @@ const RefineTime = ({
   };
 
   const handleKeyDown = (event: { key: string }) => {
-    event.key === "Enter" && setTimeOnDate();
+    if (event.key === "Enter") {
+      setTimeOnDate();
+    }
   };
 
   return (

@@ -46,7 +46,7 @@ import {
 } from "./index";
 import Button from "../Button";
 import { DialogClose } from "@radix-ui/react-dialog";
-import type { Meta } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { useState } from "react";
 
 const meta = {

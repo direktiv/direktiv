@@ -1,7 +1,7 @@
 import { Drawer, DrawerContent, DrawerTrigger } from "./index";
 import Button from "../Button";
 import Logo from "../Logo";
-import type { Meta } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 
 export default {
   title: "Components/Drawer",

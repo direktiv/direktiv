@@ -90,7 +90,9 @@ const Editor: FC<
   }, [tsLibs]);
 
   const handleChange = () => {
-    onChange && onChange(monacoRef.current?.getValue());
+    if (onChange) {
+      onChange(monacoRef.current?.getValue());
+    }
   };
 
   // this is the shared onMount function, that will be called for
@@ -99,7 +101,7 @@ const Editor: FC<
   const commonOnMount: EditorProps["onMount"] = (editor, monaco) => {
     monacoRef.current = editor;
     onMount?.(editor, monaco);
-    onSave &&
+    if (onSave) {
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
         onSave(
           monacoRef.current?.getValue()
@@ -107,6 +109,7 @@ const Editor: FC<
             : undefined
         );
       });
+    }
   };
 
   return (

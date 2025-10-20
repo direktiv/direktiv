@@ -40,7 +40,9 @@ export const Pagination = ({
             key={index}
             active={isActive}
             onClick={() => {
-              !isEllipsis && !isActive && onChange(page);
+              if (!isEllipsis && !isActive) {
+                onChange(page);
+              }
             }}
             disabled={(isFirstPage && isLastPage) || isEllipsis}
             data-testid={`pagination-btn-page-${page}`}
