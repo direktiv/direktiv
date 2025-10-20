@@ -88,6 +88,6 @@ func Build(items ...func() (string, string, string)) Values {
 
 func FieldEQ(filed string, value string) func() (string, string, string) {
 	return func() (string, string, string) {
-		return filed, OpEq, value
+		return OpEq, filed, value
 	}
 }
