@@ -49,7 +49,7 @@ export default ({ mode }) => {
         // https://github.com/vitejs/vite/issues/2139#issuecomment-1405624744
         defaultIsModuleExports(id) {
           try {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
             const module = require(id);
             if (module?.default) {
               return false;
