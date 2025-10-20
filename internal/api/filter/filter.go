@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-// Operator constants (you can expand these)
+// Operator constants (you can expand these).
 const (
 	OpEq = "eq"
 	OpGt = "gt"
@@ -13,7 +13,7 @@ const (
 )
 
 // Filters represents the parsed structure:
-// map[field]map[operator]value
+// map[field]map[operator]value.
 type Filters map[string]map[string]string
 
 // ParseFilters parses query parameters like filter[field][op]=value
@@ -49,5 +49,6 @@ func ParseFiltersFromRaw(raw string) (Filters, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return ParseFilters(v), nil
 }
