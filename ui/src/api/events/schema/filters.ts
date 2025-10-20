@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const FiltersSchema = z.object({
+const _FiltersSchema = z.object({
   before: z.date().optional(),
   createdBefore: z.date().optional(),
   createdAfter: z.date().optional(),
@@ -10,4 +10,4 @@ const FiltersSchema = z.object({
   typeContains: z.string().optional(),
 });
 
-export type FiltersSchemaType = z.infer<typeof FiltersSchema>;
+export type FiltersSchemaType = z.infer<typeof _FiltersSchema>;

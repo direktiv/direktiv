@@ -14,9 +14,11 @@ export const createNamespace = (name: string = createNamespaceName()) =>
       headers,
       body: JSON.stringify({ name }),
     }).then((response) => {
-      response.ok
-        ? resolve(name)
-        : reject(`creating namespace failed with code ${response.status}`);
+      if (response.ok) {
+        resolve(name);
+      } else {
+        reject(`creating namespace failed with code ${response.status}`);
+      }
     });
   });
 
@@ -26,9 +28,11 @@ export const deleteNamespace = (namespace: string) =>
       method: "DELETE",
       headers,
     }).then((response) => {
-      response.ok
-        ? resolve()
-        : reject(`deleting namespace failed with code ${response.status}`);
+      if (response.ok) {
+        resolve();
+      } else {
+        reject(`deleting namespace failed with code ${response.status}`);
+      }
     });
   });
 

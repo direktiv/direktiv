@@ -13,17 +13,19 @@ describe('Test gateway basic-auth plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldTSWorkflow(
+	helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		namespace,
 		'/',
-		'foo.wf.ts',
+		'wf2.yaml',
+		'workflow',
 		`
-function stateFirst(input) {
-	sleep(5)
-	return finish("Hello world!")
-}
+direktiv_api: workflow/v1
+states:
+- id: a
+  type: delay
+  duration: PT5S
 `,
 	)
 
@@ -45,7 +47,7 @@ x-direktiv-config:
             type: target-flow
             configuration:
                 namespace: ${namespace}
-                flow: /foo.wf.ts
+                flow: /wf2.yaml
 get:
     responses:
         "200":
@@ -71,7 +73,7 @@ x-direktiv-config:
             type: target-flow
             configuration:
                 namespace: ${namespace}
-                flow: /foo.wf.ts
+                flow: /wf2.yaml
 get:
     responses:
         "200":
@@ -96,7 +98,7 @@ x-direktiv-config:
             type: target-flow
             configuration:
                 namespace: ${namespace}
-                flow: /foo.wf.ts
+                flow: /wf2.yaml
 get:
     responses:
         "200":

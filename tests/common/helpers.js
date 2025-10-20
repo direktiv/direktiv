@@ -43,6 +43,8 @@ async function itShouldCreateFile(
 	data,
 ) {
 	it(`should create a new file ${path}`, async () => {
+		if (path === '/') path = ''
+
 		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ns}/files${path}`)
 			.set('Content-Type', 'application/json')
@@ -69,19 +71,6 @@ function itShouldCreateYamlFile(it, expect, ns, path, name, type, data) {
 	)
 }
 
-function itShouldTSWorkflow(it, expect, ns, path, name, data) {
-	return itShouldCreateFile(
-		it,
-		expect,
-		ns,
-		path,
-		name,
-		'workflow',
-		'application/x-typescript',
-		btoa(data),
-	)
-}
-
 async function itShouldCreateDir(it, expect, ns, path, name) {
 	it(`should create a new dir ${path}`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
@@ -97,7 +86,6 @@ async function itShouldCreateDir(it, expect, ns, path, name) {
 		expect(res.body.data).toEqual({
 			path: `${path}/${name}`,
 			type: 'directory',
-			errors: [],
 			createdAt: expect.stringMatching(regex.timestampRegex),
 			updatedAt: expect.stringMatching(regex.timestampRegex),
 		})
@@ -184,7 +172,6 @@ function sleep(ms) {
 export default {
 	deleteAllNamespaces,
 	itShouldCreateNamespace,
-	itShouldTSWorkflow,
 
 	itShouldUpdateYamlFile,
 	itShouldDeleteFile,

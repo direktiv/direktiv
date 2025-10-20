@@ -344,8 +344,9 @@ describe('Test workflow events', () => {
 			)
 			.send()
 		expect(getEventListenerResponse.body.meta.total).toEqual(2)
-		// eslint-disable-next-line no-prototype-builtins
+
 		const result = getEventListenerResponse.body.data.find((item) =>
+			// eslint-disable-next-line
 			item.hasOwnProperty('triggerInstance'),
 		)
 		expect(result).toMatchObject({

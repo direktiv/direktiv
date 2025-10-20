@@ -28,7 +28,7 @@ x-direktiv-config:
       target:
         type: target-flow
         configuration:
-          flow: /foo.wf.ts
+          flow: /target.yaml
           content_type: application/json
 post:
    responses:
@@ -36,9 +36,12 @@ post:
         description: works`
 
 const wf = `
-function stateFirst(input) {
-	return finish(input)
-}
+direktiv_api: workflow/v1
+states:
+- id: helloworld
+  type: noop
+  transform:
+    result: jq(.)
 `
 
 const consumer = `
@@ -66,7 +69,7 @@ x-direktiv-config:
       target:
         type: target-flow
         configuration:
-          flow: /foo.wf.ts
+          flow: /target.yaml
           content_type: application/json
 post:
    responses:
@@ -88,7 +91,7 @@ x-direktiv-config:
       target:
         type: target-flow
         configuration:
-          flow: /foo.wf.ts
+          flow: /target.yaml
           content_type: application/json
 post:
    responses:
@@ -112,7 +115,7 @@ x-direktiv-config:
       target:
         type: target-flow
         configuration:
-          flow: /foo.wf.ts
+          flow: /target.yaml
           content_type: application/json
 post:
    responses:
@@ -135,12 +138,13 @@ describe('Test js inbound plugin', () => {
 		endpointJSFile,
 	)
 
-	common.helpers.itShouldTSWorkflow(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
 		'/',
-		'foo.wf.ts',
+		'target.yaml',
+		'workflow',
 		wf,
 	)
 
@@ -150,13 +154,11 @@ describe('Test js inbound plugin', () => {
 			.set('Header1', 'Value1')
 			.send({ hello: 'world' })
 
-		const got = JSON.parse(req.body.data.output)
-
 		expect(req.statusCode).toEqual(200)
-		expect(got.addheader).toEqual('value3')
-		expect(got.addheaderdel).toEqual('')
-		expect(got.addquery).toEqual('value1')
-		expect(got.addquerydel).toEqual('')
+		expect(req.body.result.addheader).toEqual('value3')
+		expect(req.body.result.addheaderdel).toEqual('')
+		expect(req.body.result.addquery).toEqual('value1')
+		expect(req.body.result.addquerydel).toEqual('')
 	})
 })
 
@@ -185,12 +187,13 @@ describe('Test js inbound plugin consumer', () => {
 		endpointConsumerFile,
 	)
 
-	common.helpers.itShouldTSWorkflow(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
 		'/',
-		'foo.wf.ts',
+		'target.yaml',
+		'workflow',
 		wf,
 	)
 
@@ -200,10 +203,8 @@ describe('Test js inbound plugin consumer', () => {
 			.set('API-Token', 'apikey')
 			.send({ hello: 'world' })
 
-		const got = JSON.parse(req.body.data.output)
-
 		expect(req.statusCode).toEqual(200)
-		expect(got.user).toEqual('demo')
+		expect(req.body.result.user).toEqual('demo')
 	})
 })
 
@@ -222,12 +223,13 @@ describe('Test js inbound plugin url params', () => {
 		endpointParamFile,
 	)
 
-	common.helpers.itShouldTSWorkflow(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
 		'/',
-		'foo.wf.ts',
+		'target.yaml',
+		'workflow',
 		wf,
 	)
 
@@ -236,10 +238,8 @@ describe('Test js inbound plugin url params', () => {
 			.post(`/ns/` + testNamespace + `/target/myid`)
 			.send({ hello: 'world' })
 
-		const got = JSON.parse(req.body.data.output)
-
 		expect(req.statusCode).toEqual(200)
-		expect(got.params).toEqual('myid')
+		expect(req.body.result.params).toEqual('myid')
 	})
 })
 
@@ -258,12 +258,13 @@ describe('Test js inbound plugin errors', () => {
 		endpointErrorFile,
 	)
 
-	common.helpers.itShouldTSWorkflow(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
 		'/',
-		'foo.wf.ts',
+		'target.yaml',
+		'workflow',
 		wf,
 	)
 

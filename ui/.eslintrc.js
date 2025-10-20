@@ -90,7 +90,14 @@ module.exports = {
     // underscore prefix to indicate that the variable is unused on purpose
     // like f.e. in a function signature to indicate that the function takes
     // a parameter but does not use it
-    "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+        caughtErrors: "none",
+      },
+    ],
 
     // we will use TypeScript's types for component props instead)
     "react/prop-types": "off",

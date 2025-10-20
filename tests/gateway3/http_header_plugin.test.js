@@ -6,20 +6,7 @@ import { retry10 } from '../common/retry'
 
 const testNamespace = 'headers'
 
-describe('Test header plugin', () => {
-	beforeAll(common.helpers.deleteAllNamespaces)
-
-	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
-
-	common.helpers.itShouldCreateYamlFile(
-		it,
-		expect,
-		testNamespace,
-		'/',
-		'endpoint1.yaml',
-		'endpoint',
-		`
-x-direktiv-api: endpoint/v2
+const endpointJSFile = `x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: "/target"
     allow_anonymous: true
@@ -44,12 +31,35 @@ x-direktiv-config:
        target:
          type: target-flow
          configuration:
-            flow: /foo.wf.ts
+            flow: /target.yaml
             content_type: application/json
 post:
    responses:
       "200":
-        description: works`,
+        description: works`
+
+const wf = `
+direktiv_api: workflow/v1
+states:
+- id: helloworld
+  type: noop
+  transform:
+    result: jq(.)
+`
+
+describe('Test header plugin', () => {
+	beforeAll(common.helpers.deleteAllNamespaces)
+
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+
+	common.helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		testNamespace,
+		'/',
+		'endpoint1.yaml',
+		'endpoint',
+		endpointJSFile,
 	)
 
 	common.helpers.itShouldCreateYamlFile(
@@ -57,13 +67,9 @@ post:
 		expect,
 		testNamespace,
 		'/',
-		'foo.wf.ts',
+		'target.yaml',
 		'workflow',
-		`
-function stateFirst(input) {
-	return finish(input)
-}
-`,
+		wf,
 	)
 
 	retry10(`should have expected body after js`, async () => {
@@ -73,12 +79,10 @@ function stateFirst(input) {
 			.set('Header1', 'oldvalue')
 			.send({ hello: 'world' })
 
-		const got = JSON.parse(req.body.data.output)
-
 		expect(req.statusCode).toEqual(200)
-		expect(got.headers.Hello[0]).toEqual('world')
-		expect(got.headers.Header).toBeUndefined()
-		expect(got.headers.Header1[0]).toEqual('newvalue')
-		expect(got.method).toEqual('POST')
+		expect(req.body.result.headers.Hello[0]).toEqual('world')
+		expect(req.body.result.headers.Header).toBeUndefined()
+		expect(req.body.result.headers.Header1[0]).toEqual('newvalue')
+		expect(req.body.result.method).toEqual('POST')
 	})
 })

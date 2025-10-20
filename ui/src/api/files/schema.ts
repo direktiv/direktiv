@@ -131,11 +131,11 @@ export const CreateFileSchema = z.discriminatedUnion("type", [
   CreateGatewaySchema,
 ]);
 
-const RenameFileSchema = z.object({
+const _RenameFileSchema = z.object({
   path: z.string(),
 });
 
-const UpdateFileSchema = z.object({
+const _UpdateFileSchema = z.object({
   data: z.string(), // base64 encoded file body
 });
 
@@ -169,7 +169,7 @@ export const FileNameSchema = z
 
 export type BaseFileSchemaType = z.infer<typeof BaseFileSchema>;
 export type FileSchemaType = z.infer<typeof FileSchema>;
-export type UpdateFileSchemaType = z.infer<typeof UpdateFileSchema>;
-export type RenameFileSchemaType = z.infer<typeof RenameFileSchema>;
+export type UpdateFileSchemaType = z.infer<typeof _UpdateFileSchema>;
+export type RenameFileSchemaType = z.infer<typeof _RenameFileSchema>;
 export type CreateFileSchemaType = z.infer<typeof CreateFileSchema>;
 export type SaveFileResponseSchemaType = z.infer<typeof SaveFileResponseSchema>;

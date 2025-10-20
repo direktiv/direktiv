@@ -50,7 +50,7 @@ x-direktiv-config:
         target:
             type: target-flow
             configuration:
-                flow: /target.wf.ts
+                flow: /target.yaml
                 content_type: application/json
         inbound:
         - type: header-manipulation
@@ -71,21 +71,24 @@ post:
 `,
 	)
 
-	helpers.itShouldTSWorkflow(
+	helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		namespace,
 		'/',
-		'target.wf.ts',
+		'target.yaml',
+		'workflow',
 		`
-function stateFirst(input) {
-	return finish(input)
-}
-`,
+direktiv_api: workflow/v1
+states:
+- id: helloworld
+  type: noop
+  transform:
+    result: jq(.)`,
 	)
 
 	retry10(`should have expected body after js`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl())
+		const req = await request(common.config.getDirektivBaseUrl())
 			.post(
 				`/api/v2/namespaces/${namespace}/gateway/target?Query1=value1&Query2=value2`,
 			)
@@ -94,31 +97,31 @@ function stateFirst(input) {
 			.send({ hello: 'world' })
 			.auth('user1', 'pwd1')
 
-		expect(res.statusCode).toEqual(200)
-		const got = JSON.parse(res.body.data.output)
-		const want = {
-			body: {
-				hello: 'world',
+		expect(req.statusCode).toEqual(200)
+		expect(req.body).toMatchObject({
+			result: {
+				body: {
+					hello: 'world',
+				},
+				consumer: {
+					groups: ['group1'],
+					tags: ['tag1'],
+					username: 'user1',
+				},
+				headers: {
+					'Accept-Encoding': ['gzip, deflate'],
+					Authorization: ['Basic dXNlcjE6cHdkMQ=='],
+					'Content-Length': ['17'],
+					'Content-Type': ['application/json'],
+					Header1: ['newvalue'],
+					Hello: ['world'],
+				},
+				query_params: {
+					Query1: ['value1'],
+					Query2: ['value2'],
+				},
+				url_params: {},
 			},
-			consumer: {
-				groups: ['group1'],
-				tags: ['tag1'],
-				username: 'user1',
-			},
-			headers: {
-				'Accept-Encoding': ['gzip, deflate'],
-				Authorization: ['Basic dXNlcjE6cHdkMQ=='],
-				'Content-Length': ['17'],
-				'Content-Type': ['application/json'],
-				Header1: ['newvalue'],
-				Hello: ['world'],
-			},
-			query_params: {
-				Query1: ['value1'],
-				Query2: ['value2'],
-			},
-			url_params: {},
-		}
-		expect(got).toMatchObject(want)
+		})
 	})
 })

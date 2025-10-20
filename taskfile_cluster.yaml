@@ -73,11 +73,9 @@ tasks:
         --set database.password=password \
         --set database.name=direktiv \
         --set database.sslmode=disable \
-        --set flow.replicas={{ .REPLICAS }} \
         --set pullPolicy=Always \
         --set ingress-nginx.controller.hostPort.enabled=true \
         --set image={{ .DIREKTIV_IMAGE }} \
-        --set nats.delay=0 \
         --set registry={{ .DIREKTIV_IMAGE_REGISTRY }} \
         --set tag={{ .DIREKTIV_IMAGE_TAG }} \
         {{- if eq .TELEMETRY "true" }}
@@ -157,7 +155,7 @@ tasks:
     - |
        endpoint="{{ .DIREKTIV_BASE_URL }}/api/v2/status";
        echo -n "Wait for direktiv API to be ready";
-       for attempt in {1..100}
+       for attempt in {1..60}
        do
          status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint || true);
          echo -n ".";

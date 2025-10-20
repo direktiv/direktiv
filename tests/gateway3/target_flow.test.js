@@ -2,26 +2,39 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
 import request from '../common/request'
-import { retry10 } from '../common/retry'
+import { retry10, retry50 } from '../common/retry'
 
 const testNamespace = 'system'
 const limitedNamespace = 'limited_namespace'
 
 const workflow = `
-function stateFirst(input) {
-	return finish("Hello world!")
-}
+  direktiv_api: workflow/v1
+  description: A simple 'no-op' state that returns 'Hello world!'
+  states:
+  - id: helloworld
+    type: noop
+    transform:
+      result: Hello world!
 `
 
 const workflowNotToBetriggered = `
-function stateFirst(input) {
-	return finish("This wf should not be triggered!")
-}
+  direktiv_api: workflow/v1
+  description: A simple 'no-op' state that returns 'Hello world!'
+  states:
+  - id: helloworld
+    type: noop
+    transform:
+      result: This wf should not be triggered!
 `
 
 const workflowEcho = `
-function stateFirst(input) {
-	return finish(input)
+  direktiv_api: workflow/v1
+  description: A simple 'no-op' state that returns 'Hello world!'
+  states:
+  - id: helloworld
+    type: noop
+    transform:
+      result: 'jq(.)'
 `
 
 const endpointWorkflow =
@@ -37,7 +50,7 @@ x-direktiv-config:
           namespace: ` +
 	testNamespace +
 	`
-          flow: /foo.wf.ts
+          flow: /workflow.yaml
 get:
    responses:
       "200":
@@ -56,7 +69,7 @@ x-direktiv-config:
           namespace: ` +
 	limitedNamespace +
 	`
-          flow: /foo.wf.ts
+          flow: /workflow.yaml
 get:
    responses:
       "200":
@@ -75,7 +88,7 @@ x-direktiv-config:
           namespace: ` +
 	testNamespace +
 	`
-          flow: /foo.wf.ts
+          flow: /workflow.yaml
 post:
    responses:
       "200":
@@ -98,7 +111,7 @@ x-direktiv-config:
             namespace: ` +
 	testNamespace +
 	`
-            flow: /foo.wf.ts
+            flow: /workflow.yaml
 post:
    responses:
       "200":
@@ -117,8 +130,8 @@ x-direktiv-config:
           namespace: ` +
 	limitedNamespace +
 	`
-          flow: /foo.wf.ts
-          content_type: application/json
+          flow: /workflow.yaml
+          content_type: text/json
 get:
    responses:
       "200":
@@ -146,17 +159,18 @@ x-direktiv-config:
       target:
         type: target-flow
         configuration:
-          flow: /err.wf.ts
+          flow: /ep3.yaml
 get:
    responses:
       "200":
         description: works`
 
-const errorWorkflow = `
-function stateFirst(input) {
-	throw 'Missing or invalid value for required input.'
-	return finish("Hello world!")
-}
+const errorWorkflow = `direktiv_api: workflow/v1
+states:
+- id: a
+  type: error
+  error: badinput
+  message: 'Missing or invalid value for required input.'
 `
 
 const endpointNoContentType = `
@@ -235,12 +249,13 @@ describe('Test target workflow with errors', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldTSWorkflow(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
 		'/',
-		'err.wf.ts',
+		'ep3.yaml',
+		'workflow',
 		errorWorkflow,
 	)
 
@@ -254,14 +269,16 @@ describe('Test target workflow with errors', () => {
 		endpointErrorWorkflow,
 	)
 
-	retry10(`should return a workflow run from magic namespace`, async () => {
+	retry50(`should return a workflow run from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint3`,
 		)
-		expect(req.statusCode).toEqual(200)
-		expect(req.body.data.errorMessage).toEqual(
-			'invoke start: Missing or invalid value for required input. at stateFirst (err.wf.ts:3:1(2))',
-		)
+		expect(req.statusCode).toEqual(500)
+		expect(req.body.error).toEqual({
+			endpointFile: '/eperr3.yaml',
+			message:
+				'errCode: badinput, errMessage: Missing or invalid value for required input., instanceId: ',
+		})
 	})
 })
 
@@ -271,21 +288,23 @@ describe('Test target workflow plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldTSWorkflow(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
 		'/',
-		'foo.wf.ts',
+		'workflow.yaml',
+		'workflow',
 		workflow,
 	)
 
-	common.helpers.itShouldTSWorkflow(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		limitedNamespace,
 		'/',
-		'foo.wf.ts',
+		'workflow.yaml',
+		'workflow',
 		workflow,
 	)
 
@@ -329,14 +348,12 @@ describe('Test target workflow plugin', () => {
 		endpointWorkflowAllowed,
 	)
 
-	retry10(`should return a workflow run from magic namespace`, async () => {
+	retry50(`should return a workflow run from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(200)
-		const got = JSON.parse(req.body.data.output)
-
-		expect(got).toEqual('Hello world!')
+		expect(req.text).toEqual('{"result":"Hello world!"}')
 	})
 
 	retry10(
@@ -346,9 +363,8 @@ describe('Test target workflow plugin', () => {
 				`/ns/system/endpoint2`,
 			)
 			expect(req.statusCode).toEqual(200)
-			const got = JSON.parse(req.body.data.output)
-			expect(got).toEqual('Hello world!')
-			expect(req.header['content-type']).toEqual('application/json')
+			expect(req.text).toEqual('{"result":"Hello world!"}')
+			expect(req.header['content-type']).toEqual('text/json')
 		},
 	)
 
@@ -357,8 +373,7 @@ describe('Test target workflow plugin', () => {
 			`/ns/` + limitedNamespace + `/endpoint2`,
 		)
 		expect(req.statusCode).toEqual(200)
-		const got = JSON.parse(req.body.data.output)
-		expect(got).toEqual('Hello world!')
+		expect(req.text).toEqual('{"result":"Hello world!"}')
 	})
 
 	retry10(`should not return a workflow in non-magic namespace`, async () => {
@@ -375,12 +390,13 @@ describe('Test POST method for target workflow plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldTSWorkflow(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
 		'/',
-		'foo.wf.ts',
+		'workflow.yaml',
+		'workflow',
 		workflowEcho,
 	)
 
@@ -394,13 +410,12 @@ describe('Test POST method for target workflow plugin', () => {
 		endpointPOSTWorkflow,
 	)
 
-	retry10(`should return a workflow run from magic namespace`, async () => {
+	retry50(`should return a workflow run from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivBaseUrl())
 			.post(`/ns/system/endpoint1`)
 			.send({ message: 'Hi' })
 		expect(req.statusCode).toEqual(200)
-		const got = JSON.parse(req.body.data.output)
-		expect(got).toEqual({ message: 'Hi' })
+		expect(req.text).toEqual('{"result":{"message":"Hi"}}')
 	})
 })
 
@@ -410,12 +425,13 @@ describe('Test Complex POST method for target workflow plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldTSWorkflow(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
 		'/',
-		'foo.wf.ts',
+		'workflow.yaml',
+		'workflow',
 		workflowEcho,
 	)
 
@@ -429,14 +445,12 @@ describe('Test Complex POST method for target workflow plugin', () => {
 		endpointComplexPOSTWorkflow,
 	)
 
-	retry10(`should return a workflow run from magic namespace`, async () => {
+	retry50(`should return a workflow run from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivBaseUrl())
 			.post(`/ns/system/endpoint1`)
 			.send({ message: 'Hi' })
 		expect(req.statusCode).toEqual(200)
-		const got = JSON.parse(req.body.data.output)
-
-		expect(got).toEqual({ message: 'Changed' })
+		expect(req.text).toEqual('{"result":{"message":"Changed"}}')
 	})
 })
 
@@ -446,21 +460,23 @@ describe('Test scope for target workflow plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldTSWorkflow(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		limitedNamespace,
 		'/',
-		'foo.wf.ts',
+		'workflow.yaml',
+		'workflow',
 		workflow,
 	)
 
-	common.helpers.itShouldTSWorkflow(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
 		'/',
-		'foo.wf.ts',
+		'workflow.yaml',
+		'workflow',
 		workflowNotToBetriggered,
 	)
 
@@ -479,8 +495,7 @@ describe('Test scope for target workflow plugin', () => {
 			`/ns/system/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(200)
-		const got = JSON.parse(req.body.data.output)
-		expect(got).toEqual('Hello world!')
+		expect(req.text).toEqual('{"result":"Hello world!"}')
 	})
 })
 
@@ -509,12 +524,13 @@ describe('Test target workflow default contenttype', () => {
 		endpointContentType,
 	)
 
-	common.helpers.itShouldTSWorkflow(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
 		'/',
 		'contentType.yaml',
+		'workflow',
 		contentType,
 	)
 
