@@ -43,8 +43,8 @@ func (c *StatusCache) Upsert(s *engine.InstanceStatus) {
 	}
 }
 
-func (c *StatusCache) Snapshot() []*engine.InstanceStatus {
-	res, _ := c.SnapshotPage(0, 0, nil)
+func (c *StatusCache) Snapshot(filters filter.Values) []*engine.InstanceStatus {
+	res, _ := c.SnapshotPage(0, 0, filters)
 	return res
 }
 

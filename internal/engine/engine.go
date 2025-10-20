@@ -192,14 +192,10 @@ func (e *Engine) ListInstanceStatuses(ctx context.Context, limit int, offset int
 }
 
 func (e *Engine) GetInstanceStatus(ctx context.Context, namespace string, id uuid.UUID) (*InstanceStatus, error) {
-	data, _ := e.dataBus.ListInstanceStatuses(ctx, 0, 0, filter.Values{
-		"namespace": map[string]string{
-			"eq": namespace,
-		},
-		"instanceID": map[string]string{
-			"eq": id.String(),
-		},
-	})
+	data, _ := e.dataBus.ListInstanceStatuses(ctx, 0, 0, filter.Build(
+		filter.FieldEQ("namespace", namespace),
+		filter.FieldEQ("instanceID", id.String()),
+	))
 	if len(data) == 0 {
 		return nil, ErrDataNotFound
 	}

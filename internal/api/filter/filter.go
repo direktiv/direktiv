@@ -72,3 +72,22 @@ func FromQueryString(raw string) (Values, error) {
 
 	return FromURLValues(v), nil
 }
+
+func Build(items ...func() (string, string, string)) Values {
+	res := make(Values)
+	for _, item := range items {
+		op, field, value := item()
+		if _, ok := res[field]; !ok {
+			res[field] = make(map[string]string)
+		}
+		res[field][op] = value
+	}
+
+	return res
+}
+
+func FieldEQ(filed string, value string) func() (string, string, string) {
+	return func() (string, string, string) {
+		return filed, OpEq, value
+	}
+}

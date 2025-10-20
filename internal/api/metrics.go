@@ -38,11 +38,9 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 		workflowPath = filepath.Join("/", workflowPath)
 	}
 
-	list, _, err := e.engine.ListInstanceStatuses(r.Context(), 0, 0, filter.Values{
-		"namespace": map[string]string{
-			"eq": ns,
-		},
-	})
+	list, _, err := e.engine.ListInstanceStatuses(r.Context(), 0, 0, filter.Build(
+		filter.FieldEQ("namespace", ns),
+	))
 	if err != nil {
 		writeEngineError(w, err)
 

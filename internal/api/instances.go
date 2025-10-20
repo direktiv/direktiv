@@ -205,11 +205,9 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 	limit := ParseQueryParam[int](r, "limit", 0)
 	offset := ParseQueryParam[int](r, "offset", 0)
 
-	list, total, err := e.engine.ListInstanceStatuses(r.Context(), limit, offset, filter.Values{
-		"namespace": map[string]string{
-			"eq": namespace,
-		},
-	})
+	list, total, err := e.engine.ListInstanceStatuses(r.Context(), limit, offset, filter.Build(
+		filter.FieldEQ("namespace", namespace),
+	))
 	if err != nil {
 		writeEngineError(w, err)
 		return
