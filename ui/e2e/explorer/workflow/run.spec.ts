@@ -25,10 +25,10 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("it is possible to open and use the run workflow modal from the editor and the header of the workflow page", async ({
+test("it is possible to open and close the run workflow modal from the editor and the header of the workflow page", async ({
   page,
 }) => {
-  const workflowName = faker.system.commonFileName("yaml");
+  const workflowName = faker.system.commonFileName("wf.ts");
   await createFile({
     name: workflowName,
     namespace,
@@ -55,45 +55,11 @@ test("it is possible to open and use the run workflow modal from the editor and 
     "it opens the dialog from the header button"
   ).toBeVisible();
 
-  // use the tabs
-  expect(
-    await page
-      .getByTestId("run-workflow-json-tab-btn")
-      .getAttribute("aria-selected"),
-    "the json tab is selected by default (since this workflow has no JSON schema)"
-  ).toBe("true");
-
-  expect(
-    await page
-      .getByTestId("run-workflow-form-tab-btn")
-      .getAttribute("aria-selected")
-  ).toBe("false");
-
-  await page.getByTestId("run-workflow-form-tab-btn").click();
-
-  expect(
-    await page
-      .getByTestId("run-workflow-form-tab-btn")
-      .getAttribute("aria-selected"),
-    "the form tab is now selected"
-  ).toBe("true");
-
-  expect(
-    await page
-      .getByTestId("run-workflow-json-tab-btn")
-      .getAttribute("aria-selected")
-  ).toBe("false");
-
-  expect(
-    await page.getByTestId("run-workflow-form-input-hint"),
-    "it shows a hint that no form could be generated"
-  ).toBeVisible();
-
   await page.getByTestId("run-workflow-cancel-btn").click();
   expect(await page.getByTestId("run-workflow-dialog")).not.toBeVisible();
 });
 
-test("it is possible to run the workflow by setting an input JSON via the editor", async ({
+test("it is possible to run the workflow with an input JSON via the editor", async ({
   page,
   browserName,
 }) => {
@@ -119,23 +85,11 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     "the submit button is enabled by default"
   ).toEqual(true);
 
-  await page.type("textarea", "some invalid json");
-
-  expect(
-    await page.getByTestId("run-workflow-submit-btn").isEnabled(),
-    "submit button is disabled when the json is invalid"
-  ).toEqual(false);
-
   await page.getByTestId("run-workflow-editor").click();
   await page.keyboard.press(browserName === "webkit" ? "Meta+A" : "Control+A");
   await page.keyboard.press("Backspace");
-  const userInputString = `{"string": "1", "integer": 1, "boolean": true, "array": [1,2,3], "object": {"key": "value"}}`;
+  const userInputString = `{"string":"1","integer":1,"boolean":true,"array":[1,2,3],"object":{"key":"value"}}`;
   await page.keyboard.type(userInputString);
-
-  expect(
-    await page.getByTestId("run-workflow-submit-btn").isEnabled(),
-    "submit is enabled when the json is valid"
-  ).toEqual(true);
 
   // submit to run the workflow
   await page.getByTestId("run-workflow-submit-btn").click();
@@ -161,7 +115,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     headers,
   });
 
-  const inputResponseString = decode(res.data.input ?? "");
+  const inputResponseString = res.data.input ?? "";
 
   expect(
     inputResponseString,
@@ -171,6 +125,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
 
 test("it is possible to run a workflow with input data containing special characters", async ({
   page,
+  browserName,
 }) => {
   const name = "test-diacritics.yaml";
 
@@ -190,18 +145,20 @@ test("it is possible to run a workflow with input data containing special charac
   ).toContainText("A workflow for testing characters like îèüñÆ");
 
   await page.getByTestId("workflow-editor-btn-run").click();
-  await page.getByLabel("Name").fill("Kateřina Horáčková");
+
+  await page.keyboard.press(browserName === "webkit" ? "Meta+A" : "Control+A");
+  await page.keyboard.press("Backspace");
+  const userInputString = `{"name":"Kateřina Horáčková"}`;
+  await page.keyboard.type(userInputString);
+
   await page.getByTestId("run-workflow-submit-btn").click();
 
   await expect(
-    page.locator(".lines-content"),
+    page.getByTestId("inputOutputPanel").locator(".view-lines"),
     "The text from the input is rendered correctly in the workflow output"
-  ).toContainText(
-    `{    
-    "result": "Hello Kateřina Horáčková"
-}`,
-    { useInnerText: true }
-  );
+  ).toContainText(`"result": "Hello Kateřina Horáčková"`, {
+    useInnerText: true,
+  });
 });
 
 test("it is not possible to run the workflow when the editor has unsaved changes", async ({
