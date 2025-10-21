@@ -388,7 +388,7 @@ test(`when renaming a workflow, the name (before extension) may be the same as a
 }) => {
   const oldName = "old-name.wf.ts";
   const directoryName = "directory";
-  const newName = `${directoryName}.ft.ts`;
+  const newName = `${directoryName}.wf.ts`;
   await createDirectory({ namespace, name: directoryName });
   await createWorkflow(namespace, oldName);
 
@@ -431,12 +431,12 @@ test(`when renaming a workflow, the name (before extension) may be the same as a
   await expect(isRenamed).toBeTruthy();
 });
 
-test(`it will automatically add a yaml extension when renaming a workflow`, async ({
+test(`it will automatically add a wf.ts extension when renaming a workflow`, async ({
   page,
 }) => {
-  const oldName = "old-name.ft.ts";
+  const oldName = "old-name.wf.ts";
   const newNameWithoutYamlExtension = "new-name";
-  const newNameWithYamlExtension = `${newNameWithoutYamlExtension}.ft.ts`;
+  const newNameWithYamlExtension = `${newNameWithoutYamlExtension}.wf.ts`;
   await createWorkflow(namespace, oldName);
 
   await page.goto(`/n/${namespace}/explorer/tree/`);
@@ -484,8 +484,8 @@ test(`it will automatically add a yaml extension when renaming a workflow`, asyn
 test(`it is not possible to rename a workflow when the name already exists`, async ({
   page,
 }) => {
-  const tobeRenamed = "workflow-a.ft.ts";
-  const alreadyExists = "workflow-b.ft.ts";
+  const tobeRenamed = "workflow-a.wf.ts";
+  const alreadyExists = "workflow-b.wf.ts";
   await createWorkflow(namespace, tobeRenamed);
   await createWorkflow(namespace, alreadyExists);
 
@@ -507,8 +507,8 @@ test(`it is not possible to rename a workflow when the name already exists`, asy
 test(`it is not possible to rename a workflow when the name already exists and extension is added automatically`, async ({
   page,
 }) => {
-  const tobeRenamed = "workflow-a.ft.ts";
-  const alreadyExists = "workflow-b.ft.ts";
+  const tobeRenamed = "workflow-a.wf.ts";
+  const alreadyExists = "workflow-b.wf.ts";
   const alreadyExistsWithoutExtension = "workflow-b";
   await createWorkflow(namespace, tobeRenamed);
   await createWorkflow(namespace, alreadyExists);
@@ -666,6 +666,8 @@ test(`it is possible to delete a file (and it will be removed from cache)`, asyn
   ).toBeVisible();
 
   await page.getByTestId("node-delete-confirm").click();
+
+  debugger;
 
   /* assert file is deleted */
   await expect(

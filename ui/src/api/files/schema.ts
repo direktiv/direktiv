@@ -90,7 +90,7 @@ const CreateDirectorySchema = z.object({
 });
 
 const CreateYamlFileSchema = z.object({
-  type: z.enum(["consumer", "endpoint", "service", "workflow", "gateway"]),
+  type: z.enum(["consumer", "endpoint", "service", "gateway"]),
   name: z.string().nonempty(),
   mimeType: z.literal("application/yaml"),
   data: z.string(), // base64 encoded file body
