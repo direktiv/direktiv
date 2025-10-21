@@ -1,14 +1,14 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
-import { expect, test } from "@playwright/test";
 import {
+  errorWorkflow,
   simpleWorkflow,
   workflowWithFewLogs,
   workflowWithManyLogs,
 } from "../utils/workflows";
+import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils/index";
-import { error as errorWorkflowTemplate } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { faker } from "@faker-js/faker";
 import { mockClipboardAPI } from "e2e/utils/testutils";
 
@@ -387,7 +387,7 @@ test("it renders error details for errors in the logs", async ({ page }) => {
     name: workflowName,
     namespace,
     type: "workflow",
-    content: errorWorkflowTemplate.data,
+    content: errorWorkflow,
     mimeType: "application/x-typescript",
   });
 

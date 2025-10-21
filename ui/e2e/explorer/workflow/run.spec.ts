@@ -3,11 +3,11 @@ import {} from "~/util/helpers";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createFile } from "e2e/utils/files";
 import { faker } from "@faker-js/faker";
 import { getInstanceInput } from "~/api/instances/query/input";
 import { headers } from "e2e/utils/testutils";
+import { simpleWorkflow } from "e2e/instances/utils/workflows";
 import { testDiacriticsWorkflow } from "./utils";
 
 let namespace = "";
@@ -29,7 +29,7 @@ test("it is possible to open and close the run workflow modal from the editor an
     name: workflowName,
     namespace,
     type: "workflow",
-    content: basicWorkflow.data,
+    content: simpleWorkflow,
     mimeType: "application/x-typescript",
   });
 
@@ -64,7 +64,7 @@ test("it is possible to run the workflow with an input JSON via the editor", asy
     name: workflowName,
     namespace,
     type: "workflow",
-    content: basicWorkflow.data,
+    content: simpleWorkflow,
     mimeType: "application/x-typescript",
   });
 
@@ -165,7 +165,7 @@ test("it is not possible to run the workflow when the editor has unsaved changes
     name: workflowName,
     namespace,
     type: "workflow",
-    content: basicWorkflow.data,
+    content: simpleWorkflow,
     mimeType: "application/x-typescript",
   });
 

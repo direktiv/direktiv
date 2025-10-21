@@ -1,12 +1,15 @@
 import { createFile } from "./files";
 
-const noopYaml = `\
-description: A simple 'no-op' state that returns 'Hello world!'
-states:
-- id: helloworld
-  type: noop
-  transform:
-    result: Hello world!
+const noopYaml = `// A simple 'no-op' state that returns 'Hello world!
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateHello",
+};
+
+function stateHello(): StateFunction<unknown> {
+  return finish("Hello world!")
+};
 `;
 
 export const createWorkflow = async (namespace: string, name: string) => {

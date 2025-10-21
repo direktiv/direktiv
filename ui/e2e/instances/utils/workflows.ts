@@ -1,9 +1,28 @@
-export const simpleWorkflow = `description: A simple 'no-op' state that returns 'Hello world!'
-states:
-- id: helloworld
-  type: noop
-  transform:
-    result: Hello world!
+export const simpleWorkflow = `// A simple 'no-op' state that returns 'Hello world!
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateHello",
+};
+
+function stateHello(): StateFunction<unknown> {
+  return finish("Hello world!")
+};
+`;
+
+export const errorWorkflow = `// This workflow will fail unless provided the right input
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateError",
+};
+
+function stateError(input): StateFunction<unknown> {
+  if (input === "don't fail me") {
+    return finish("ok")
+  }
+  throw new Error("this was set up to fail")
+};
 `;
 
 export const workflowWithDelay = `direktiv_api: workflow/v1
