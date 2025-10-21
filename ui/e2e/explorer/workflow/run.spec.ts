@@ -34,6 +34,7 @@ test("it is possible to open and use the run workflow modal from the editor and 
     namespace,
     type: "workflow",
     content: basicWorkflow.data,
+    mimeType: "application/x-typescript",
   });
 
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -102,6 +103,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     namespace,
     type: "workflow",
     content: basicWorkflow.data,
+    mimeType: "application/x-typescript",
   });
 
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -177,6 +179,7 @@ test("it is possible to run a workflow with input data containing special charac
     namespace,
     type: "workflow",
     content: testDiacriticsWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${name}`);
@@ -210,6 +213,7 @@ test("it is not possible to run the workflow when the editor has unsaved changes
     namespace,
     type: "workflow",
     content: basicWorkflow.data,
+    mimeType: "application/x-typescript",
   });
 
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -243,6 +247,7 @@ test("it is possible to provide the input via generated form", async ({
     namespace,
     type: "workflow",
     content: jsonSchemaFormWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -361,6 +366,7 @@ test("it is possible to provide the input via generated form and resolve form er
     namespace,
     type: "workflow",
     content: jsonSchemaWithRequiredEnum,
+    mimeType: "application/x-typescript",
   });
 
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -451,6 +457,7 @@ test("it is possible to provide the input via Form Input and see the same data i
     namespace,
     type: "workflow",
     content: jsonSchemaWithRequiredEnum,
+    mimeType: "application/x-typescript",
   });
 
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -537,6 +544,7 @@ test("it is possible to provide the input via JSON Input and see the same data i
     namespace,
     type: "workflow",
     content: jsonSchemaWithRequiredEnum,
+    mimeType: "application/x-typescript",
   });
 
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -627,6 +635,7 @@ test("the input is synchronized between tabs, but the data that is currently in 
     namespace,
     type: "workflow",
     content: jsonSchemaWithRequiredEnum,
+    mimeType: "application/x-typescript",
   });
 
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -735,6 +744,7 @@ test("switching the window focus will preserve the state of the form", async ({
     namespace,
     type: "workflow",
     content: jsonSchemaWithRequiredEnum,
+    mimeType: "application/x-typescript",
   });
 
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);

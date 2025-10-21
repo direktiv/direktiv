@@ -26,6 +26,7 @@ test("the header of the instance page shows the relevant data for the workflow",
     namespace,
     type: "workflow",
     content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
   const instanceId = (
     await createInstance({

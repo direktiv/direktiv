@@ -34,6 +34,7 @@ test("It displays a log message from the workflow yaml, one initial and one fina
     namespace,
     type: "workflow",
     content: workflowWithFewLogs,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (
@@ -110,6 +111,7 @@ test("the logs panel can be maximized", async ({ page }) => {
     namespace,
     type: "workflow",
     content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (
@@ -173,6 +175,7 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
     namespace,
     type: "workflow",
     content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (
@@ -237,6 +240,7 @@ test("the logs can be copied", async ({ page }) => {
     namespace,
     type: "workflow",
     content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (
@@ -283,6 +287,7 @@ test("log entries will be automatically scrolled to the end", async ({
     namespace,
     type: "workflow",
     content: workflowWithManyLogs,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (
@@ -383,6 +388,7 @@ test("it renders error details for errors in the logs", async ({ page }) => {
     namespace,
     type: "workflow",
     content: errorWorkflowTemplate.data,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (
@@ -421,6 +427,7 @@ test("it renders an error when the api response returns an error", async ({
     namespace,
     type: "workflow",
     content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (

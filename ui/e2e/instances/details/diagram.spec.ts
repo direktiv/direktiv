@@ -26,6 +26,7 @@ test.skip("the diagram panel on the instance page responds to user interaction",
     namespace,
     type: "workflow",
     content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
   const instanceId = (
     await createInstance({
@@ -95,6 +96,7 @@ test.skip("the diagram on the instance page changes appearance dynamically", asy
     namespace,
     type: "workflow",
     content: workflowWithDelay,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (

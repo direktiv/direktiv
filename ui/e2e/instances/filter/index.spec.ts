@@ -22,6 +22,7 @@ test.beforeEach(async () => {
     namespace,
     type: "workflow",
     content: simpleWorkflowContent,
+    mimeType: "application/x-typescript",
   });
 
   await createFile({
@@ -29,6 +30,7 @@ test.beforeEach(async () => {
     namespace,
     type: "workflow",
     content: workflowThatFailsContent,
+    mimeType: "application/x-typescript",
   });
 });
 
@@ -58,6 +60,7 @@ const createTriggerFilterInstances = async () => {
       childPath: `/${simpleWorkflowName}`,
       children: 2,
     }),
+    mimeType: "application/x-typescript",
   });
 
   await createInstance({ namespace, path: parentWorkflowName });
@@ -266,6 +269,7 @@ test("it is possible to filter by AS (name)", async ({ page }) => {
         namespace,
         name,
         type: "workflow",
+        mimeType: "application/x-typescript",
       })
     )
   );
@@ -336,6 +340,7 @@ test("it is possible to apply multiple filters", async ({ page }) => {
         name,
         namespace,
         type: "workflow",
+        mimeType: "application/x-typescript",
       })
     )
   );

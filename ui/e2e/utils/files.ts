@@ -11,14 +11,14 @@ export const createFile = async ({
   content,
   namespace,
   type,
-  mimeType = "application/x-typescript",
+  mimeType,
   path = "/",
 }: {
   name: string;
   content: string;
   namespace: string;
   type: CreateFileSchemaType["type"];
-  mimeType?: Extract<CreateFileSchemaType, { mimeType: unknown }>["mimeType"];
+  mimeType: Extract<CreateFileSchemaType, { mimeType: unknown }>["mimeType"];
   path?: string;
 }) => {
   const payload = CreateFileSchema.parse({

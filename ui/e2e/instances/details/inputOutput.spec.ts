@@ -28,6 +28,7 @@ test("the input/output panel responds to user interaction", async ({
     namespace,
     type: "workflow",
     content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (
@@ -131,6 +132,7 @@ test("the output is shown when the workflow finished running", async ({
     namespace,
     type: "workflow",
     content: workflowWithDelay,
+    mimeType: "application/x-typescript",
   });
   const instanceId = (
     await createInstance({
@@ -182,6 +184,7 @@ test("after a running instance finishes, the output tab is automatically selecte
     namespace,
     type: "workflow",
     content: workflowWithDelay,
+    mimeType: "application/x-typescript",
   });
   const instanceId = (
     await createInstance({

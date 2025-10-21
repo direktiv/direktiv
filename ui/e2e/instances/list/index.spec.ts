@@ -29,6 +29,7 @@ test.beforeEach(async () => {
     namespace,
     type: "workflow",
     content: simpleWorkflowContent,
+    mimeType: "application/x-typescript",
   });
 
   await createFile({
@@ -36,6 +37,7 @@ test.beforeEach(async () => {
     namespace,
     type: "workflow",
     content: workflowThatFailsContent,
+    mimeType: "application/x-typescript",
   });
 
   await createFile({
@@ -43,6 +45,7 @@ test.beforeEach(async () => {
     namespace,
     type: "workflow",
     content: workflowWithDelayContent,
+    mimeType: "application/x-typescript",
   });
 });
 
@@ -251,6 +254,7 @@ test("it paginates instances", async ({ page }) => {
     namespace,
     type: "workflow",
     content,
+    mimeType: "application/x-typescript",
   });
 
   await createInstance({ namespace, path: parentWorkflow });
@@ -355,6 +359,7 @@ test("It will display child instances as well", async ({ page }) => {
       childPath: `/${simpleWorkflowName}`,
       children: 1,
     }),
+    mimeType: "application/x-typescript",
   });
 
   const parentInstance = await createInstance({

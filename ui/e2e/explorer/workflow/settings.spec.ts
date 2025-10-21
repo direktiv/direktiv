@@ -24,6 +24,7 @@ test.beforeEach(async () => {
     namespace,
     type: "workflow",
     content: basicWorkflow.data,
+    mimeType: "application/x-typescript",
   });
 });
 
@@ -258,6 +259,7 @@ test("it is possible to rename a variable that doesn't have a mimeType", async (
     namespace,
     type: "workflow",
     content: workflowThatCreatesVariable,
+    mimeType: "application/x-typescript",
   });
 
   await createInstance({

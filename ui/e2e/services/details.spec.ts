@@ -26,6 +26,7 @@ test("Service details page provides information about the service", async ({
     name: "request-service.yaml",
     namespace,
     type: "service",
+    mimeType: "application/yaml",
     content: createRequestServiceFile({ scale: 2 }),
   });
 
@@ -163,6 +164,7 @@ test.skip("Service details page renders no logs when the service did not mount",
     namespace,
     type: "service",
     content: serviceWithAnError,
+    mimeType: "application/yaml",
   });
 
   await expect

@@ -15,6 +15,7 @@ export const createWorkflow = async (namespace: string, name: string) => {
     name,
     type: "workflow",
     content: noopYaml,
+    mimeType: "application/x-typescript",
   });
 
   if (response.data.type !== "workflow") {
