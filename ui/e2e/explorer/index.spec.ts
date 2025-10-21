@@ -667,8 +667,6 @@ test(`it is possible to delete a file (and it will be removed from cache)`, asyn
 
   await page.getByTestId("node-delete-confirm").click();
 
-  debugger;
-
   /* assert file is deleted */
   await expect(
     page.getByTestId(`explorer-item-${service.name}`),
