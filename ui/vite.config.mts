@@ -5,6 +5,7 @@ import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import { envVariablesSchema } from "./src/config/env/schema";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
+import { viteSingleFile } from "vite-plugin-singlefile";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 
 export default ({ mode }: { mode: string }) => {
@@ -75,7 +76,12 @@ export default ({ mode }: { mode: string }) => {
         },
       },
     },
-    plugins: [react(), viteTsconfigPaths(), TanStackRouterVite()],
+    plugins: [
+      react(),
+      viteTsconfigPaths(),
+      TanStackRouterVite(),
+      viteSingleFile(),
+    ],
     test: {
       globals: true,
       environment: "jsdom",
