@@ -21,7 +21,7 @@ import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
-import { addTypescriptFileExtension } from "../../../../utils";
+import { addWorkflowFileExtension } from "../../../../utils";
 import { encode } from "js-base64";
 import { updateValidationCache } from "~/api/validate/utils";
 import { useCreateFile } from "~/api/files/mutate/createFile";
@@ -63,7 +63,7 @@ const NewWorkflow = ({
   const resolver = zodResolver(
     z.object({
       name: FileNameSchema.transform((enteredName) =>
-        addTypescriptFileExtension(enteredName)
+        addWorkflowFileExtension(enteredName)
       ).refine(
         (nameWithExtension) =>
           !(unallowedNames ?? []).some(
