@@ -10,7 +10,7 @@ import { encode } from "js-base64";
 import { faker } from "@faker-js/faker";
 import { forceLeadingSlash } from "~/api/files/utils";
 import { headers } from "e2e/utils/testutils";
-import { simpleWorkflow } from "e2e/instances/utils/workflows";
+import { simpleWorkflow } from "e2e/utils/workflow";
 
 let namespace = "";
 let workflow = "";

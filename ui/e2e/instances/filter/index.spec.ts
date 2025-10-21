@@ -2,13 +2,13 @@ import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 import {
   parentWorkflow as parentWorkflowContent,
-  simpleWorkflow as simpleWorkflowContent,
   workflowThatFails as workflowThatFailsContent,
 } from "../utils/workflows";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils";
 import { faker } from "@faker-js/faker";
+import { simpleWorkflow } from "e2e/utils/workflow";
 
 let namespace = "";
 const simpleWorkflowName = faker.system.commonFileName("yaml");
@@ -21,7 +21,7 @@ test.beforeEach(async () => {
     name: simpleWorkflowName,
     namespace,
     type: "workflow",
-    content: simpleWorkflowContent,
+    content: simpleWorkflow,
     mimeType: "application/x-typescript",
   });
 
@@ -265,7 +265,7 @@ test("it is possible to filter by AS (name)", async ({ page }) => {
   await Promise.all(
     workflowNames.map((name) =>
       createFile({
-        content: simpleWorkflowContent,
+        content: simpleWorkflow,
         namespace,
         name,
         type: "workflow",
@@ -336,7 +336,7 @@ test("it is possible to apply multiple filters", async ({ page }) => {
   await Promise.all(
     workflowNames.map((name) =>
       createFile({
-        content: simpleWorkflowContent,
+        content: simpleWorkflow,
         name,
         namespace,
         type: "workflow",

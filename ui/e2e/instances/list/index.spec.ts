@@ -2,7 +2,6 @@ import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 import {
   parentWorkflow as parentWorkflowContent,
-  simpleWorkflow as simpleWorkflowContent,
   workflowThatFails as workflowThatFailsContent,
   workflowWithDelay as workflowWithDelayContent,
 } from "../utils/workflows";
@@ -13,6 +12,7 @@ import { faker } from "@faker-js/faker";
 import { getInstances } from "~/api/instances/query/get";
 import { headers } from "e2e/utils/testutils";
 import moment from "moment";
+import { simpleWorkflow } from "e2e/utils/workflow";
 
 type Instance = Awaited<ReturnType<typeof createInstance>>;
 
@@ -28,7 +28,7 @@ test.beforeEach(async () => {
     name: simpleWorkflowName,
     namespace,
     type: "workflow",
-    content: simpleWorkflowContent,
+    content: simpleWorkflow,
     mimeType: "application/x-typescript",
   });
 

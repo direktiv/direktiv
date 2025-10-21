@@ -1,11 +1,7 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
-import {
-  errorWorkflow,
-  simpleWorkflow,
-  workflowWithFewLogs,
-  workflowWithManyLogs,
-} from "../utils/workflows";
+import { errorWorkflow, simpleWorkflow } from "e2e/utils/workflow";
 import { expect, test } from "@playwright/test";
+import { workflowWithFewLogs, workflowWithManyLogs } from "../utils/workflows";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils/index";

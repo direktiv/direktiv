@@ -6,7 +6,7 @@ import { faker } from "@faker-js/faker";
 
 let namespace = "";
 let workflow = "";
-const defaultDescription = "A simple 'no-op' state that returns 'Hello world!'";
+const defaultDescription = "// A simple 'no-op' state";
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
