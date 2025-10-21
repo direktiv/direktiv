@@ -8,7 +8,7 @@ import {
 import { expect, test } from "@playwright/test";
 
 import { createService } from "./service/utils";
-import { createWorkflow } from "../utils/workflow";
+import { createWorkflow } from "../utils/workflows";
 
 let namespace = "";
 

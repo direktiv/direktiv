@@ -7,7 +7,7 @@ import { createFile } from "e2e/utils/files";
 import { faker } from "@faker-js/faker";
 import { getInstanceInput } from "~/api/instances/query/input";
 import { headers } from "e2e/utils/testutils";
-import { simpleWorkflow } from "e2e/utils/workflow";
+import { simpleWorkflow } from "e2e/utils/workflows";
 import { testDiacriticsWorkflow } from "./utils";
 
 let namespace = "";

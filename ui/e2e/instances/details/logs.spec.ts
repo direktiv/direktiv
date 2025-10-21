@@ -1,5 +1,5 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
-import { errorWorkflow, simpleWorkflow } from "e2e/utils/workflow";
+import { errorWorkflow, simpleWorkflow } from "e2e/utils/workflows";
 import { expect, test } from "@playwright/test";
 import { workflowWithFewLogs, workflowWithManyLogs } from "../utils/workflows";
 

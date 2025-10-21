@@ -1,7 +1,7 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { createWorkflow } from "../../utils/workflow";
+import { createWorkflow } from "../../utils/workflows";
 import { faker } from "@faker-js/faker";
 
 let namespace = "";
@@ -12,7 +12,7 @@ test.beforeEach(async () => {
   namespace = await createNamespace();
   workflow = await createWorkflow(
     namespace,
-    faker.internet.domainWord() + ".yaml"
+    faker.internet.domainWord() + ".wf.ts"
   );
 });
 
@@ -68,8 +68,7 @@ test("it is possible to save the workflow", async ({ page }) => {
   await page.type("textarea", testText);
 
   // now click on Save
-  const saveButton = page.getByTestId("workflow-editor-btn-save");
-  await saveButton.click();
+  await page.getByTestId("workflow-editor-btn-save").click();
 
   // Commented out since this is not a critical step, but maybe we can enable
   // it again at some point after learning more about the following problem:
@@ -90,6 +89,7 @@ test("it is possible to save the workflow", async ({ page }) => {
     page.getByText(testText),
     "after saving, screen should have the updated text"
   ).toBeVisible();
+
   await page.reload({ waitUntil: "networkidle" });
   await expect(
     page.getByText(testText),

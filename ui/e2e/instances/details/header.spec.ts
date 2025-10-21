@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils/index";
 import { faker } from "@faker-js/faker";
-import { simpleWorkflow } from "e2e/utils/workflow";
+import { simpleWorkflow } from "e2e/utils/workflows";
 
 let namespace = "";
 
