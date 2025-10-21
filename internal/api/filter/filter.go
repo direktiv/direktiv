@@ -8,11 +8,12 @@ import (
 	"time"
 )
 
-// Operator constants (you can expand these).
+// Operator constants.
 const (
 	OpEq = "eq"
 	OpGt = "gt"
 	OpLt = "lt"
+	OpIn = "in"
 )
 
 // Values represents the parsed structure:
@@ -43,19 +44,61 @@ func (v Values) Match(field string, value string) bool {
 				// We couldn't parse both sides as number/float/time -> fail the match for safety.
 				return false
 			}
-			if op == OpGt && !(cmp > 0) {
+			if op == OpGt && (cmp <= 0) {
 				return false
 			}
-			if op == OpLt && !(cmp < 0) {
+			if op == OpLt && (cmp >= 0) {
+				return false
+			}
+		case OpIn:
+			if !containsIn(value, filterValue) {
 				return false
 			}
 		default:
-			// Unknown operator -> fail safe (or change to 'continue' if you prefer to ignore).
+			// TODO: Check here for unknown operator.
 			return false
 		}
 	}
 
 	return true
+}
+
+// containsIn checks whether 'val' is contained in the CSV 'csvList'.
+// Membership uses numeric/time-aware equality via compareScalars (cmp==0) OR
+// exact string equality (after trimming). Empty tokens are ignored.
+func containsIn(val, csvList string) bool {
+	val = strings.TrimSpace(val)
+	csvList = strings.TrimSpace(csvList)
+	if val == "" || csvList == "" {
+		return false
+	}
+
+	items := splitCSV(csvList)
+	for _, it := range items {
+		if it == "" {
+			continue
+		}
+		// First, try scalar-aware equality.
+		if cmp, ok := compareScalars(val, it); ok && cmp == 0 {
+			return true
+		}
+		// Fallback to plain string equality (useful for non-numeric/time strings).
+		if val == it {
+			return true
+		}
+	}
+
+	return false
+}
+
+// splitCSV splits on commas, trims spaces, and returns tokens (may include empty if consecutive commas).
+func splitCSV(s string) []string {
+	parts := strings.Split(s, ",")
+	for i := range parts {
+		parts[i] = strings.TrimSpace(parts[i])
+	}
+
+	return parts
 }
 
 // compareScalars tries (in order) int, float, time.
@@ -99,6 +142,7 @@ func compareScalars(a, b string) (cmp int, ok bool) {
 		if at.After(bt) {
 			return 1, true
 		}
+
 		return 0, true
 	}
 
@@ -114,11 +158,12 @@ func parseTime(s string) (time.Time, bool) {
 
 	// Unix ms / s detection
 	if isAllDigits(s) {
-		// 13 digits -> milliseconds, 10 digits -> seconds (simple heuristic).
+		// 13 digits -> milliseconds, 10 digits -> seconds.
 		if len(s) == 13 {
 			if ms, err := strconv.ParseInt(s, 10, 64); err == nil {
 				sec := ms / 1000
 				nsec := (ms % 1000) * int64(time.Millisecond)
+
 				return time.Unix(sec, nsec).UTC(), true
 			}
 		}
@@ -144,6 +189,7 @@ func parseTime(s string) (time.Time, bool) {
 			return t.UTC(), true
 		}
 	}
+
 	return time.Time{}, false
 }
 
@@ -153,6 +199,7 @@ func isAllDigits(s string) bool {
 			return false
 		}
 	}
+
 	return s != ""
 }
 
@@ -223,5 +270,11 @@ func FieldGT(field string, value string) func() (string, string, string) {
 func FieldLT(field string, value string) func() (string, string, string) {
 	return func() (string, string, string) {
 		return OpLt, field, value
+	}
+}
+
+func FieldIN(field string, csv string) func() (string, string, string) {
+	return func() (string, string, string) {
+		return OpIn, field, csv
 	}
 }
