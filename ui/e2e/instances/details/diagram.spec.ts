@@ -1,11 +1,10 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
+import { delayWorkflow, simpleWorkflow } from "e2e/utils/workflows";
 import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils/index";
 import { faker } from "@faker-js/faker";
-import { simpleWorkflow } from "e2e/utils/workflows";
-import { workflowWithDelay } from "../utils/workflows";
 
 let namespace = "";
 
@@ -96,7 +95,7 @@ test.skip("the diagram on the instance page changes appearance dynamically", asy
     name: workflowName,
     namespace,
     type: "workflow",
-    content: workflowWithDelay,
+    content: delayWorkflow,
     mimeType: "application/x-typescript",
   });
 

@@ -1,10 +1,10 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
-import { expect, test } from "@playwright/test";
 import {
-  parentWorkflow as parentWorkflowContent,
-  workflowThatFails as workflowThatFailsContent,
-  workflowWithDelay as workflowWithDelayContent,
-} from "../utils/workflows";
+  delayWorkflow,
+  errorWorkflow,
+  simpleWorkflow,
+} from "e2e/utils/workflows";
+import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils";
@@ -12,7 +12,7 @@ import { faker } from "@faker-js/faker";
 import { getInstances } from "~/api/instances/query/get";
 import { headers } from "e2e/utils/testutils";
 import moment from "moment";
-import { simpleWorkflow } from "e2e/utils/workflows";
+import { parentWorkflow as parentWorkflowContent } from "../utils/workflows";
 
 type Instance = Awaited<ReturnType<typeof createInstance>>;
 
@@ -36,7 +36,7 @@ test.beforeEach(async () => {
     name: failingWorkflowName,
     namespace,
     type: "workflow",
-    content: workflowThatFailsContent,
+    content: errorWorkflow,
     mimeType: "application/x-typescript",
   });
 
@@ -44,7 +44,7 @@ test.beforeEach(async () => {
     name: longRunningWorkflowName,
     namespace,
     type: "workflow",
-    content: workflowWithDelayContent,
+    content: delayWorkflow,
     mimeType: "application/x-typescript",
   });
 });

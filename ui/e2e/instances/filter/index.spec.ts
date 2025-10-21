@@ -1,14 +1,11 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
+import { errorWorkflow, simpleWorkflow } from "e2e/utils/workflows";
 import { expect, test } from "@playwright/test";
-import {
-  parentWorkflow as parentWorkflowContent,
-  workflowThatFails as workflowThatFailsContent,
-} from "../utils/workflows";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils";
 import { faker } from "@faker-js/faker";
-import { simpleWorkflow } from "e2e/utils/workflows";
+import { parentWorkflow as parentWorkflowContent } from "../utils/workflows";
 
 let namespace = "";
 const simpleWorkflowName = faker.system.commonFileName("yaml");
@@ -29,7 +26,7 @@ test.beforeEach(async () => {
     name: failingWorkflowName,
     namespace,
     type: "workflow",
-    content: workflowThatFailsContent,
+    content: errorWorkflow,
     mimeType: "application/x-typescript",
   });
 });

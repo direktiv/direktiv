@@ -8,7 +8,7 @@ const flow: FlowDefinition = {
 };
 
 function stateHello(): StateFunction<unknown> {
-  return finish("Hello world!")
+  return finish({ message: "Hello world!" })
 };
 `;
 
@@ -26,6 +26,25 @@ function stateError(input): StateFunction<unknown> {
   throw new Error("this was set up to fail")
 };
 `;
+
+export const delayWorkflow = `// This workflow waits for a number of seconds. You can specify the length 
+// in the workflow input. For example, { "time": 10 }.\
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateDelay",
+};
+
+function stateDelay(input): StateFunction<unknown> {
+  let seconds = 2;
+  if (typeof input === "object" && typeof input.time === "number") {
+    seconds = input.time
+  }
+  sleep(seconds)
+  return finish({
+    "message": \`waited for \${seconds}s.\`
+  })
+};`;
 
 export const createWorkflow = async (namespace: string, name: string) => {
   const response = await createFile({
