@@ -63,7 +63,9 @@
     "zustand": "^4.3.8"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "run-p check:*",
+    "dev:direktiv": "vite",
+    "dev:pages": "vite --config vite-pages.config.mts",
     "build": "run-p build:*",
     "build:compile": "vite build",
     "build:check": "pnpm run check",

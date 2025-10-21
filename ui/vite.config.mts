@@ -4,8 +4,6 @@ import { defineConfig, loadEnv } from "vite";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import { envVariablesSchema } from "./src/config/env/schema";
 import react from "@vitejs/plugin-react";
-import { resolve } from "path";
-import { viteSingleFile } from "vite-plugin-singlefile";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 
 export default ({ mode }: { mode: string }) => {
@@ -47,12 +45,6 @@ export default ({ mode }: { mode: string }) => {
         : {},
     },
     build: {
-      rollupOptions: {
-        input: {
-          main: resolve(__dirname, "index.html"),
-          pageBuilder: resolve(__dirname, "indexPageBuilder.html"),
-        },
-      },
       commonjsOptions: {
         // https://github.com/vitejs/vite/issues/2139#issuecomment-1405624744
         defaultIsModuleExports(id) {
@@ -69,19 +61,8 @@ export default ({ mode }: { mode: string }) => {
         },
       },
     },
-    optimizeDeps: {
-      esbuildOptions: {
-        loader: {
-          ".js": "jsx",
-        },
-      },
-    },
-    plugins: [
-      react(),
-      viteTsconfigPaths(),
-      TanStackRouterVite(),
-      viteSingleFile(),
-    ],
+    optimizeDeps: { esbuildOptions: { loader: { ".js": "jsx" } } },
+    plugins: [react(), viteTsconfigPaths(), TanStackRouterVite()],
     test: {
       globals: true,
       environment: "jsdom",
