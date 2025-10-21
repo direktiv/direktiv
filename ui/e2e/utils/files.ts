@@ -6,7 +6,7 @@ import { getFile as apiGetFile } from "~/api/files/query/file";
 import { encode } from "js-base64";
 import { headers } from "./testutils";
 
-export const createFile = async ({
+export const createFile = async <T extends CreateFileSchemaType["type"]>({
   name,
   content,
   namespace,
@@ -17,8 +17,12 @@ export const createFile = async ({
   name: string;
   content: string;
   namespace: string;
-  type: CreateFileSchemaType["type"];
-  mimeType: Extract<CreateFileSchemaType, { mimeType: unknown }>["mimeType"];
+  type: T;
+  mimeType?: Extract<CreateFileSchemaType, { type: T }> extends {
+    mimeType: infer M;
+  }
+    ? M
+    : never;
   path?: string;
 }) => {
   const payload = CreateFileSchema.parse({

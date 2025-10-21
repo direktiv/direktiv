@@ -89,37 +89,34 @@ const CreateDirectorySchema = z.object({
   name: z.string().nonempty(),
 });
 
-const CreateYamlFileSchema = z.object({
-  type: z.enum(["consumer", "endpoint", "service", "gateway"]),
+const CreateFileBaseSchema = z.object({
   name: z.string().nonempty(),
-  mimeType: z.literal("application/yaml"),
   data: z.string(), // base64 encoded file body
 });
 
-const CreateTSFileSchema = z.object({
-  name: z.string().nonempty(),
-  mimeType: z.literal("application/x-typescript"),
-  data: z.string(), // base64 encoded file body
-});
-
-const CreateConsumerSchema = CreateYamlFileSchema.extend({
+const CreateConsumerSchema = CreateFileBaseSchema.extend({
   type: z.literal("consumer"),
+  mimeType: z.literal("application/yaml"),
 });
 
-const CreateEndpointSchema = CreateYamlFileSchema.extend({
+const CreateEndpointSchema = CreateFileBaseSchema.extend({
   type: z.literal("endpoint"),
+  mimeType: z.literal("application/yaml"),
 });
 
-const CreateServiceSchema = CreateYamlFileSchema.extend({
+const CreateServiceSchema = CreateFileBaseSchema.extend({
   type: z.literal("service"),
+  mimeType: z.literal("application/yaml"),
 });
 
-const CreateWorkflowSchema = CreateTSFileSchema.extend({
+const CreateWorkflowSchema = CreateFileBaseSchema.extend({
   type: z.literal("workflow"),
+  mimeType: z.literal("application/x-typescript"),
 });
 
-const CreateGatewaySchema = CreateYamlFileSchema.extend({
+const CreateGatewaySchema = CreateFileBaseSchema.extend({
   type: z.literal("gateway"),
+  mimeType: z.literal("application/yaml"),
 });
 
 export const CreateFileSchema = z.discriminatedUnion("type", [
