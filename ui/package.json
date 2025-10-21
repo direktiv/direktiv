@@ -64,7 +64,7 @@
   },
   "scripts": {
     "dev": "run-p dev:*",
-    "dev:direktiv": "vite",
+    "dev:ui": "vite",
     "dev:pages": "vite --config src/_direktiv-pages/vite.config.mts",
     "build": "run-p build:*",
     "build:check": "pnpm run check",

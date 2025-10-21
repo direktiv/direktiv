@@ -34,13 +34,20 @@ This repository contains the user interface for [direktiv](https://github.com/di
 
 # Scripts you might want to run
 
+- `pnpm dev` starts the development server:
+  - `pnpm run dev:direktiv` runs the main UI dev server
+  - `pnpm run dev:pages` runs the pages dev server
+- `pnpm build` builds the project:
+  - `pnpm run build:check` runs all checks
+  - `pnpm run build:compile-ui` compiles the main UI
+  - `pnpm run build:compile-pages` compiles the pages
 - `pnpm run storybook` opens the storybook and documentation
 - `pnpm run test` runs the tests in watch mode
 - `pnpm run check` runs all the checks that will run in CI:
   - `pnpm run check:lint` runs the linter
   - `pnpm run check:types` checks all types
   - `pnpm run check:test` runs the tests in ci mode
-  - `pnpm run check:prettier` checks if all prettier formatting was applied (`pnpm run prettier`)
+  - `pnpm run check:prettier` checks if all prettier formatting was applied
   - `pnpm run check:deps` checks if all dependencies are up to date
   - `pnpm run check:knip` checks for unused code
 - `pnpm run fix` fixes all autofixable issues:
@@ -48,7 +55,9 @@ This repository contains the user interface for [direktiv](https://github.com/di
   - `pnpm run fix:knip` fixes all issues related to unused code
 - `pnpm run e2e:headless` runs all Playwright e2e tests in headless mode
 - `pnpm run e2e:ui` runs all Playwright e2e tests in ui mode
-- `pnpm run preview` locally preview the production build (requires you to run `pnpm build` first)
+- `pnpm run preview` locally previews the production build (requires you to run `pnpm build` first):
+  - `pnpm run preview:ui` previews the main UI
+  - `pnpm run preview:pages` previews the pages
 
 # Customize Logos
 
