@@ -132,3 +132,4 @@ server.key
 keycloak_db_user.txt
 
 charts/direktiv/tmpcharts*
+AGENTS.md

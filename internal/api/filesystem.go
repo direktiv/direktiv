@@ -413,7 +413,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		Errors: make([]json.RawMessage, 0),
 	}
 
-	if strings.HasSuffix(r.URL.Path, core.FlowFileExtension) {
+	if req.Data != "" && strings.HasSuffix(r.URL.Path, core.FlowFileExtension) {
 		ci := compiler.NewCompileItem(decodedBytes, r.URL.Path)
 		err = ci.TranspileAndValidate()
 		if err != nil {
@@ -430,5 +430,6 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			res.Errors = append(res.Errors, jErr)
 		}
 	}
+
 	writeJSON(w, res)
 }
