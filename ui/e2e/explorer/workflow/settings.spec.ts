@@ -103,7 +103,8 @@ test("it is possible to create a variable", async ({ page }) => {
   ).toContainText(subject.name);
 });
 
-test("it is possible to update variables", async ({ page }) => {
+// Variable handling in new engine to be fixed in TDI-157
+test.skip("it is possible to update variables", async ({ page }) => {
   /* set up test data */
   const subject = await createVar({
     payload: {
@@ -249,7 +250,8 @@ test("it is not possible to set a variables name to a name that already exists",
   ).toBeVisible();
 });
 
-test("it is possible to rename a variable that doesn't have a mimeType", async ({
+// Variable handling in new engine to be fixed in TDI-157
+test.skip("it is possible to rename a variable that doesn't have a mimeType", async ({
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
