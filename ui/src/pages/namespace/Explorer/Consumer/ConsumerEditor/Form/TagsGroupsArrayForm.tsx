@@ -15,17 +15,15 @@ export const TagsGroupsArrayForm = ({ field }: TagsGroupsArrayFormProps) => {
   return (
     <div className="grid gap-5 sm:grid-cols-2">
       <ArrayForm
-        defaultValue={field.value || []}
+        value={field.value || []}
         onChange={field.onChange}
         emptyItem=""
-        itemIsValid={(item) => item !== ""}
-        renderItem={({ value, setValue, handleKeyDown }) => (
+        renderItem={({ value, setValue }) => (
           <Input
             placeholder={t(
               `pages.explorer.consumer.editor.form.${field.name}Placeholder`
             )}
             value={value}
-            onKeyDown={handleKeyDown}
             onChange={(e) => {
               const newValue = e.target.value;
               setValue(newValue);
