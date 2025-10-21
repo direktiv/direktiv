@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/direktiv/direktiv/internal/api/filter"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/go-chi/chi/v5"
@@ -37,7 +38,9 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 		workflowPath = filepath.Join("/", workflowPath)
 	}
 
-	list, _, err := e.engine.ListInstanceStatuses(r.Context(), ns, 0, 0)
+	list, _, err := e.engine.ListInstanceStatuses(r.Context(), 0, 0, filter.Build(
+		filter.FieldEQ("namespace", ns),
+	))
 	if err != nil {
 		writeEngineError(w, err)
 

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/api/filter"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/google/uuid"
 )
@@ -158,7 +159,7 @@ type DataBus interface {
 	PublishInstanceHistoryEvent(ctx context.Context, event *InstanceEvent) error
 	PublishInstanceQueueEvent(ctx context.Context, event *InstanceEvent) error
 
-	ListInstanceStatuses(ctx context.Context, filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*InstanceStatus, int)
+	ListInstanceStatuses(ctx context.Context, limit int, offset int, filters filter.Values) ([]*InstanceStatus, int)
 	GetInstanceHistory(ctx context.Context, namespace string, instanceID uuid.UUID) []*InstanceEvent
 
 	NotifyInstanceStatus(ctx context.Context, instanceID uuid.UUID, done chan<- *InstanceStatus)

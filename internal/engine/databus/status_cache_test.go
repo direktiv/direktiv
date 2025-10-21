@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/api/filter"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/google/uuid"
 )
@@ -27,7 +28,7 @@ func TestUpsert_InsertAndUpdateNewerIgnoreOlder(t *testing.T) {
 	s1 := mk("ns", id, now, 1)
 	c.Upsert(s1)
 
-	got := c.Snapshot("", uuid.Nil)
+	got := c.Snapshot(nil)
 	if len(got) != 1 {
 		t.Fatalf("expected 1 item, got %d", len(got))
 	}
@@ -39,7 +40,7 @@ func TestUpsert_InsertAndUpdateNewerIgnoreOlder(t *testing.T) {
 	s2 := mk("ns", id, now.Add(1*time.Minute), 2)
 	c.Upsert(s2)
 
-	got = c.Snapshot("", uuid.Nil)
+	got = c.Snapshot(nil)
 	if len(got) != 1 {
 		t.Fatalf("expected 1 item after update, got %d", len(got))
 	}
@@ -51,7 +52,7 @@ func TestUpsert_InsertAndUpdateNewerIgnoreOlder(t *testing.T) {
 	s3 := mk("ns", id, now.Add(2*time.Minute), 1)
 	c.Upsert(s3)
 
-	got = c.Snapshot("", uuid.Nil)
+	got = c.Snapshot(nil)
 	if got[0].HistorySequence != 2 {
 		t.Fatalf("expected seq to remain 2 after older upsert, got %d", got[0].HistorySequence)
 	}
@@ -71,7 +72,7 @@ func TestSnapshot_FilteringAndOrdering(t *testing.T) {
 	c.Upsert(mk("b", id3, now, 1))
 
 	// All items
-	all := c.Snapshot("", uuid.Nil)
+	all := c.Snapshot(nil)
 	if len(all) != 3 {
 		t.Fatalf("expected 3 items, got %d", len(all))
 	}
@@ -80,7 +81,9 @@ func TestSnapshot_FilteringAndOrdering(t *testing.T) {
 	}
 
 	// Filter by namespace
-	nsA := c.Snapshot("a", uuid.Nil)
+	nsA := c.Snapshot(filter.Build(
+		filter.FieldEQ("namespace", "a"),
+	))
 	if len(nsA) != 1 {
 		t.Fatalf("expected 2 items in ns=a, got %d", len(nsA))
 	}
@@ -91,7 +94,9 @@ func TestSnapshot_FilteringAndOrdering(t *testing.T) {
 	}
 
 	// Filter by instance ID
-	byID := c.Snapshot("", id2)
+	byID := c.Snapshot(filter.Build(
+		filter.FieldEQ("instanceID", id2.String()),
+	))
 	if len(byID) != 1 || byID[0].InstanceID != id2 {
 		t.Fatalf("expected exactly the item with id2, got: %+v", byID)
 	}
@@ -108,7 +113,9 @@ func TestSnapshotPage_LimitOffsetAndTotal(t *testing.T) {
 	}
 
 	// Ask for limit=2, offset=1 within namespace "ns"
-	page, total := c.SnapshotPage("ns", uuid.Nil, 2, 1)
+	page, total := c.SnapshotPage(2, 1, filter.Build(
+		filter.FieldEQ("namespace", "ns"),
+	))
 	if total != 5 {
 		t.Fatalf("expected total=5, got %d", total)
 	}
@@ -139,7 +146,7 @@ func TestDeleteNamespace_RemovesAndRebuildsIndex(t *testing.T) {
 
 	c.DeleteNamespace("a")
 
-	left := c.Snapshot("", uuid.Nil)
+	left := c.Snapshot(nil)
 	if len(left) != 1 {
 		t.Fatalf("expected 1 item after deleting ns 'a', got %d", len(left))
 	}
@@ -149,7 +156,7 @@ func TestDeleteNamespace_RemovesAndRebuildsIndex(t *testing.T) {
 
 	// Ensure index was rebuilt correctly by performing an update on the remaining item.
 	c.Upsert(mk("b", idB, now.Add(3*time.Minute), 2))
-	after := c.Snapshot("", uuid.Nil)
+	after := c.Snapshot(nil)
 	if len(after) != 1 || after[0].HistorySequence != 2 {
 		t.Fatalf("expected remaining item to update via index, got: %+v", after[0])
 	}
@@ -163,13 +170,13 @@ func TestSnapshotReturnsClones_Immutability(t *testing.T) {
 	c.Upsert(mk("ns", id, now, 1))
 
 	// mutate the snapshot copy
-	snap := c.Snapshot("", uuid.Nil)
+	snap := c.Snapshot(nil)
 	if len(snap) != 1 {
 		t.Fatalf("expected 1 item, got %d", len(snap))
 	}
 	snap[0].HistorySequence = 999 // should not affect the cache
 
-	again := c.Snapshot("", uuid.Nil)
+	again := c.Snapshot(nil)
 	if again[0].HistorySequence != 1 {
 		t.Fatalf("expected cache to be immutable via snapshots, got %d", again[0].HistorySequence)
 	}

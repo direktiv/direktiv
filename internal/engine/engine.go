@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/api/filter"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/engine/runtime"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
@@ -181,8 +182,8 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	return nil
 }
 
-func (e *Engine) ListInstanceStatuses(ctx context.Context, namespace string, limit int, offset int) ([]*InstanceStatus, int, error) {
-	data, total := e.dataBus.ListInstanceStatuses(ctx, namespace, uuid.Nil, limit, offset)
+func (e *Engine) ListInstanceStatuses(ctx context.Context, limit int, offset int, filters filter.Values) ([]*InstanceStatus, int, error) {
+	data, total := e.dataBus.ListInstanceStatuses(ctx, limit, offset, filters)
 	if len(data) == 0 {
 		return nil, 0, ErrDataNotFound
 	}
@@ -191,7 +192,10 @@ func (e *Engine) ListInstanceStatuses(ctx context.Context, namespace string, lim
 }
 
 func (e *Engine) GetInstanceStatus(ctx context.Context, namespace string, id uuid.UUID) (*InstanceStatus, error) {
-	data, _ := e.dataBus.ListInstanceStatuses(ctx, namespace, id, 0, 0)
+	data, _ := e.dataBus.ListInstanceStatuses(ctx, 0, 0, filter.Build(
+		filter.FieldEQ("namespace", namespace),
+		filter.FieldEQ("instanceID", id.String()),
+	))
 	if len(data) == 0 {
 		return nil, ErrDataNotFound
 	}

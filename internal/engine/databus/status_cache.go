@@ -3,6 +3,7 @@ package databus
 import (
 	"sync"
 
+	"github.com/direktiv/direktiv/internal/api/filter"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/google/uuid"
 )
@@ -42,12 +43,12 @@ func (c *StatusCache) Upsert(s *engine.InstanceStatus) {
 	}
 }
 
-func (c *StatusCache) Snapshot(filterNamespace string, filterInstanceID uuid.UUID) []*engine.InstanceStatus {
-	res, _ := c.SnapshotPage(filterNamespace, filterInstanceID, 0, 0)
+func (c *StatusCache) Snapshot(filters filter.Values) []*engine.InstanceStatus {
+	res, _ := c.SnapshotPage(0, 0, filters)
 	return res
 }
 
-func (c *StatusCache) SnapshotPage(filterNamespace string, filterInstanceID uuid.UUID, limit int, offset int) ([]*engine.InstanceStatus, int) {
+func (c *StatusCache) SnapshotPage(limit int, offset int, filters filter.Values) ([]*engine.InstanceStatus, int) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -56,11 +57,13 @@ func (c *StatusCache) SnapshotPage(filterNamespace string, filterInstanceID uuid
 	total := 0
 	for i := len(c.items) - 1; i >= 0; i-- {
 		v := &c.items[i]
-		matchID := filterInstanceID == uuid.Nil || v.InstanceID == filterInstanceID
-		matchNS := filterNamespace == "" || v.Namespace == filterNamespace
-		if !matchID || !matchNS {
+		if !filters.Match("instanceID", v.InstanceID.String()) {
 			continue
 		}
+		if !filters.Match("namespace", v.Namespace) {
+			continue
+		}
+
 		total++
 		if offset > 0 {
 			offset--
