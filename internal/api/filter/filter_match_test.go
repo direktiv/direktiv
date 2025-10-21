@@ -203,7 +203,7 @@ func TestMatch_GtLt_Time(t *testing.T) {
 	later := base.Add(24 * time.Hour)
 	laterSec := later.Unix()
 	baseMs := base.UnixMilli()
-	laterMs := later.UnixMilli()
+	//laterMs := later.UnixMilli()
 
 	tests := []struct {
 		name   string
