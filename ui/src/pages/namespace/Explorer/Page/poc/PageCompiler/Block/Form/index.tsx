@@ -7,6 +7,7 @@ import {
   createLocalFormVariables,
   extractFormKeys,
 } from "../formPrimitives/utils";
+import { useCallback, useRef } from "react";
 
 import Alert from "~/design/Alert";
 import { BlockList } from "../utils/BlockList";
@@ -14,7 +15,6 @@ import { Button } from "../Button";
 import { FormType } from "../../../schema/blocks/form";
 import { LocalVariables } from "../../primitives/Variable/VariableContext";
 import { StopPropagation } from "~/components/StopPropagation";
-import { useCallback } from "react";
 import { usePageMutation } from "../../procedures/mutation";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
@@ -48,11 +48,30 @@ const FormWithContext = ({ blockProps, blockPath, register }: FormProps) => {
     },
   });
 
+  const observerRef = useRef<MutationObserver | null>(null);
+
   const registerForm = useCallback(
-    (form: HTMLFormElement | null) => {
-      if (!register || !form) return;
-      const localVariables = extractFormKeys(form.elements);
-      register({ this: localVariables });
+    (form: HTMLFormElement | null): void => {
+      if (!register) {
+        return;
+      }
+
+      if (!form) {
+        observerRef.current?.disconnect();
+        observerRef.current = null;
+        return;
+      }
+
+      const updateVariables = () => {
+        const localVariables = extractFormKeys(form.elements);
+        register({ this: localVariables });
+      };
+
+      updateVariables();
+
+      const observer = new MutationObserver(() => updateVariables());
+      observer.observe(form, { childList: true, subtree: true });
+      observerRef.current = observer;
     },
     [register]
   );
