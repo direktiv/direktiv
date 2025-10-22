@@ -1,5 +1,5 @@
 import "../../App.css";
-import "../../i18n";
+import "./i18n";
 
 import { Block } from "../../pages/namespace/Explorer/Page/poc/PageCompiler/Block";
 import { BlockList } from "../../pages/namespace/Explorer/Page/poc/PageCompiler/Block/utils/BlockList";

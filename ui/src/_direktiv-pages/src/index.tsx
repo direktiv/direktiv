@@ -1,11 +1,9 @@
 import "../../App.css";
-import "../../i18n";
+import "./i18n";
 
-import React, { lazy } from "react";
-
+import App from "./App";
+import React from "react";
 import { createRoot } from "react-dom/client";
-
-const App = lazy(() => import("./App"));
 
 const appContainer = document.getElementById("root");
 if (!appContainer) throw new Error("Root element not found");
