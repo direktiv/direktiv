@@ -15,7 +15,7 @@ import {
 } from "../../context/pageCompilerContext";
 
 import { BlockPathType } from "..";
-import { BlockSuspenseBoundary } from "./BlockSuspenseBoundary";
+import { BlockSuspenseBoundary } from "./SuspenseBoundary";
 import { BlockType } from "../../../schema/blocks";
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { SortableItem } from "~/design/DragAndDrop/Draggable";
