@@ -9,13 +9,12 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "~/design/Toast";
 import { page } from "./examplePage";
 import queryClient from "../../util/queryClient";
-import { setPage } from "../../pages/namespace/Explorer/Page/poc/PageCompiler/__tests__/utils";
 
 const appContainer = document.getElementById("root");
 if (!appContainer) throw new Error("Root element not found");
 
 const App = () => (
-  <PageCompilerContextProvider setPage={setPage} page={page} mode="live">
+  <PageCompilerContextProvider setPage={() => {}} page={page} mode="live">
     <QueryClientProvider client={queryClient}>
       <EditorPanelLayoutProvider>
         <BlockList path={[]}>
