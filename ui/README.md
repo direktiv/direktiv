@@ -39,7 +39,7 @@ This repository contains the user interface for [direktiv](https://github.com/di
   - `pnpm run dev:pages` runs the pages dev server
 - `pnpm build` builds the project:
   - `pnpm run build:check` runs all checks
-  - `pnpm run build:compile-ui` compiles the main UI
+  - `pnpm run build:compile-direktiv` compiles the main UI
   - `pnpm run build:compile-pages` compiles the pages
 - `pnpm run storybook` opens the storybook and documentation
 - `pnpm run test` runs the tests in watch mode
