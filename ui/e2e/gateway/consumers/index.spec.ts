@@ -60,6 +60,7 @@ test("Consumer list shows all available consumers", async ({ page }) => {
       username: "userA",
       password: "password",
     }),
+    mimeType: "application/yaml",
   });
 
   await expect
@@ -137,6 +138,7 @@ test("Consumer list will update the consumers when refetch button is clicked", a
       username: "userOld",
       password: "passwordOld",
     }),
+    mimeType: "application/yaml",
   });
 
   await page.goto(`/n/${namespace}/gateway/consumers`, {

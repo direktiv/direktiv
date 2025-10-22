@@ -60,7 +60,7 @@ export const useDeleteFile = ({
       });
       const parentKey = fileKeys.file(namespace, {
         apiKey: apiKey ?? undefined,
-        path: getParentFromPath(variables.file.path),
+        path: forceLeadingSlash(getParentFromPath(variables.file.path)),
       });
       await queryClient.removeQueries({
         queryKey: selfKey,

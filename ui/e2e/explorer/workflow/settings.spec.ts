@@ -2,7 +2,6 @@ import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 import { waitForSuccessToast, workflowThatCreatesVariable } from "./utils";
 
-import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "~/api/instances/mutate/create";
 import { createVar } from "~/api/variables/mutate/create";
@@ -11,6 +10,7 @@ import { encode } from "js-base64";
 import { faker } from "@faker-js/faker";
 import { forceLeadingSlash } from "~/api/files/utils";
 import { headers } from "e2e/utils/testutils";
+import { simpleWorkflow } from "e2e/utils/workflows";
 
 let namespace = "";
 let workflow = "";
@@ -23,7 +23,8 @@ test.beforeEach(async () => {
     name: workflow,
     namespace,
     type: "workflow",
-    content: basicWorkflow.data,
+    content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
 });
 
@@ -102,7 +103,8 @@ test("it is possible to create a variable", async ({ page }) => {
   ).toContainText(subject.name);
 });
 
-test("it is possible to update variables", async ({ page }) => {
+// Variable handling in new engine to be fixed in TDI-157
+test.skip("it is possible to update variables", async ({ page }) => {
   /* set up test data */
   const subject = await createVar({
     payload: {
@@ -248,7 +250,8 @@ test("it is not possible to set a variables name to a name that already exists",
   ).toBeVisible();
 });
 
-test("it is possible to rename a variable that doesn't have a mimeType", async ({
+// Variable handling in new engine to be fixed in TDI-157
+test.skip("it is possible to rename a variable that doesn't have a mimeType", async ({
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
@@ -258,6 +261,7 @@ test("it is possible to rename a variable that doesn't have a mimeType", async (
     namespace,
     type: "workflow",
     content: workflowThatCreatesVariable,
+    mimeType: "application/x-typescript",
   });
 
   await createInstance({

@@ -153,6 +153,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
     namespace,
     name: filename,
     type: "endpoint",
+    mimeType: "application/yaml",
     content: initialRouteYaml,
   });
 
@@ -448,6 +449,7 @@ test("it blocks navigation when there are unsaved changes", async ({
     namespace,
     name: filename,
     type: "endpoint",
+    mimeType: "application/yaml",
     content: initialRouteYaml,
   });
 
@@ -523,6 +525,7 @@ test("it does not block navigation when only formatting has changed", async ({
     namespace,
     name: filename,
     type: "endpoint",
+    mimeType: "application/yaml",
     content: initialRouteYaml,
   });
 
@@ -577,6 +580,7 @@ test("it shows a notification for outdated endpoint format", async ({
     namespace,
     name: filename,
     type: "endpoint",
+    mimeType: "application/yaml",
     content: outdatedRouteYaml,
   });
 

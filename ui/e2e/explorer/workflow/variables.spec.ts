@@ -17,6 +17,7 @@ test.beforeEach(async () => {
     namespace,
     type: "workflow",
     content: "direktiv_api: workflow/v1\nstates:\n- id: noop\n  type: noop",
+    mimeType: "application/x-typescript",
   });
 });
 

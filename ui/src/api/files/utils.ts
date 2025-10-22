@@ -24,7 +24,7 @@ export const getParentFromPath = (path: string): string => {
     case "/":
       throw Error("Cannot infer parent from '/'");
     default:
-      return path.split("/").slice(0, -1).join("/") || "/";
+      return path.split("/").slice(0, -1).join("/");
   }
 };
 

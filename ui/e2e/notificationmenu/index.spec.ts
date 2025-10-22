@@ -44,6 +44,7 @@ test("Notification Bell updates depending on the count of Notification Messages"
     namespace,
     type: "workflow",
     content: workflowWithSecrets,
+    mimeType: "application/x-typescript",
   });
 
   await page.goto(`/n/${namespace}/explorer/tree`, {
