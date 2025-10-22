@@ -2,14 +2,7 @@ import {
   LocalVariables,
   useVariablesContext,
 } from "../../primitives/Variable/VariableContext";
-import {
-  ReactElement,
-  Suspense,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { ReactElement, useEffect, useMemo, useRef, useState } from "react";
 import {
   findAncestor,
   incrementPath,
@@ -22,17 +15,14 @@ import {
 } from "../../context/pageCompilerContext";
 
 import { BlockPathType } from "..";
+import { BlockSuspenseBoundary } from "./BlockSuspenseBoundary";
 import { BlockType } from "../../../schema/blocks";
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
-import { ErrorBoundary } from "react-error-boundary";
-import { Loading } from "./Loading";
-import { ParsingError } from "./ParsingError";
 import { SortableItem } from "~/design/DragAndDrop/Draggable";
 import { isEmptyContainerBlock } from "./useIsInvisbleBlock";
 import { twMergeClsx } from "~/util/helpers";
 import { useDndContext } from "@dnd-kit/core";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
-import { useTranslation } from "react-i18next";
 import { useValidateDropzone } from "./useValidateDropzone";
 
 type BlockWrapperProps = {
@@ -46,7 +36,6 @@ const EditorBlockWrapper = ({
   blockPath,
   children,
 }: BlockWrapperProps) => {
-  const { t } = useTranslation();
   const page = usePage();
   const { panel, setPanel } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
@@ -164,17 +153,9 @@ const EditorBlockWrapper = ({
           data-block-wrapper
           onClick={handleClickBlock}
         >
-          <Suspense fallback={<Loading />}>
-            <ErrorBoundary
-              fallbackRender={({ error }) => (
-                <ParsingError title={t("direktivPage.error.genericError")}>
-                  {error.message}
-                </ParsingError>
-              )}
-            >
-              {block.type === "form" ? children(setLocalVariables) : children()}
-            </ErrorBoundary>
-          </Suspense>
+          <BlockSuspenseBoundary>
+            {block.type === "form" ? children(setLocalVariables) : children()}
+          </BlockSuspenseBoundary>
         </div>
       </SortableItem>
       <Dropzone payload={dropzonePayload} validate={validateDropzone} />
@@ -182,23 +163,11 @@ const EditorBlockWrapper = ({
   );
 };
 
-const VisitorBlockWrapper = ({ children }: BlockWrapperProps) => {
-  const { t } = useTranslation();
-
-  return (
-    <Suspense fallback={<Loading />}>
-      <ErrorBoundary
-        fallbackRender={({ error }) => (
-          <ParsingError title={t("direktivPage.error.genericError")}>
-            {error.message}
-          </ParsingError>
-        )}
-      >
-        <div className="my-3">{children()}</div>
-      </ErrorBoundary>
-    </Suspense>
-  );
-};
+const VisitorBlockWrapper = ({ children }: BlockWrapperProps) => (
+  <BlockSuspenseBoundary>
+    <div className="my-3">{children()}</div>
+  </BlockSuspenseBoundary>
+);
 
 export const BlockWrapper = (props: BlockWrapperProps) => {
   const { mode } = usePageStateContext();
