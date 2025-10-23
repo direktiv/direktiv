@@ -15,6 +15,6 @@ i18n.use(initReactI18next).init({
     transKeepBasicHtmlNodesFor: ["br", "strong", "i", "p", "b"],
   },
   interpolation: {
-    escapeValue: false, // react already safes from xss
+    escapeValue: false, // react already saves from xss
   },
 });
