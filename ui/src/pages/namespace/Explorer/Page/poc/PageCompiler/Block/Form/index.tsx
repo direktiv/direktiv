@@ -3,10 +3,6 @@ import {
   FormValidationContextProvider,
   useFormValidation,
 } from "./FormValidationContext";
-import {
-  createLocalFormVariables,
-  extractFormKeys,
-} from "../formPrimitives/utils";
 
 import Alert from "~/design/Alert";
 import { BlockList } from "../utils/BlockList";
@@ -14,8 +10,9 @@ import { Button } from "../Button";
 import { FormType } from "../../../schema/blocks/form";
 import { LocalVariables } from "../../primitives/Variable/VariableContext";
 import { StopPropagation } from "~/components/StopPropagation";
-import { useCallback } from "react";
+import { createLocalFormVariables } from "../formPrimitives/utils";
 import { usePageMutation } from "../../procedures/mutation";
+import { useRegisterForm } from "./useRegisterForm";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
@@ -48,14 +45,7 @@ const FormWithContext = ({ blockProps, blockPath, register }: FormProps) => {
     },
   });
 
-  const registerForm = useCallback(
-    (form: HTMLFormElement | null) => {
-      if (!register || !form) return;
-      const localVariables = extractFormKeys(form.elements);
-      register({ this: localVariables });
-    },
-    [register]
-  );
+  const registerForm = useRegisterForm(register);
 
   return (
     <form
