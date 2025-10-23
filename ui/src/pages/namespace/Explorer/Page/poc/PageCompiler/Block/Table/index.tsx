@@ -7,24 +7,20 @@ import {
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
-import {
-  VariableContextProvider,
-  useVariablesContext,
-} from "../../primitives/Variable/VariableContext";
 
 import { BlockPathType } from "..";
 import { Card } from "~/design/Card";
 import { PackageOpen } from "lucide-react";
 import { Pagination } from "~/components/Pagination";
 import PaginationProvider from "~/components/PaginationProvider";
-import { RowActions } from "./actions/RowActions";
 import { StopPropagation } from "~/components/StopPropagation";
 import { TableActions } from "./actions/TableActions";
-import { TableCell } from "./TableCell";
+import { TableRows } from "./Rows";
 import { TableType } from "../../../schema/blocks/table";
 import { VariableError } from "../../primitives/Variable/Error";
 import { useTranslation } from "react-i18next";
 import { useVariableArrayResolver } from "../../primitives/Variable/utils/useVariableArrayResolver";
+import { useVariablesContext } from "../../primitives/Variable/VariableContext";
 
 type TableProps = {
   blockProps: TableType;
@@ -54,7 +50,6 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
     );
   }
 
-  const hasRowActions = blocks[1].blocks.length > 0;
   const hasTableActions = blocks[0].blocks.length > 0;
   const numberOfHeaderColumns = columns.length + (hasTableActions ? 1 : 0);
   const hasRows = variableArray.data.length > 0;
@@ -95,44 +90,14 @@ export const Table = ({ blockProps, blockPath }: TableProps) => {
                   </TableHead>
                   <TableBody>
                     {hasRows ? (
-                      currentItems.map((item, index) => (
-                        <VariableContextProvider
-                          key={`${currentItems.length}-${index}`}
-                          variables={{
-                            ...parentVariables,
-                            loop: {
-                              ...parentVariables.loop,
-                              [loop.id]: item,
-                            },
-                          }}
-                        >
-                          <TableRow>
-                            {columns.map((column, columnIndex) => {
-                              const isLastColumn =
-                                columnIndex === columns.length - 1;
-                              return (
-                                <TableCell
-                                  key={columnIndex}
-                                  blockProps={column}
-                                  colSpan={
-                                    isLastColumn &&
-                                    hasTableActions &&
-                                    !hasRowActions
-                                      ? 2
-                                      : 1
-                                  }
-                                />
-                              );
-                            })}
-                            {hasRowActions && (
-                              <RowActions
-                                actions={blocks[1]}
-                                blockPath={blockPath}
-                              />
-                            )}
-                          </TableRow>
-                        </VariableContextProvider>
-                      ))
+                      <TableRows
+                        items={currentItems}
+                        blocks={blocks}
+                        total={variableArray.data.length}
+                        loopId={loop.id}
+                        columns={columns}
+                        blockPath={blockPath}
+                      />
                     ) : (
                       <TableRow>
                         <TableCellDesignComponent
