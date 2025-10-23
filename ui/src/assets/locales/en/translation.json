@@ -1661,7 +1661,7 @@
     },
     "page": {
       "error": {
-        "retry": "Retry"
+        "label": "Error"
       },
       "blocks": {
         "loop": {
