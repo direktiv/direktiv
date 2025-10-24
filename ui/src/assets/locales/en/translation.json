@@ -1660,9 +1660,6 @@
       }
     },
     "page": {
-      "error": {
-        "label": "Error"
-      },
       "blocks": {
         "loop": {
           "hiddenItems": "{{count}} hidden loop entries",
