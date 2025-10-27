@@ -28,11 +28,11 @@ export const LocalDialogContent = ({ children }: PropsWithChildren) => {
     <DialogPrimitive.DialogPortal container={container}>
       <div
         ref={setRectCallback}
-        className="absolute inset-0 z-40 flex items-start justify-center bg-red-500 sm:items-center"
+        className="absolute inset-0 flex items-center justify-center px-5"
         onClick={(event) => event.stopPropagation()}
       >
         <div
-          className="fixed inset-0 bg-black/10 backdrop-blur-sm transition-all duration-100 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in"
+          className="fixed inset-0 bg-black/10 backdrop-blur-sm"
           style={{
             width: rectRef.current?.width,
             height: rectRef.current?.height,
@@ -42,7 +42,7 @@ export const LocalDialogContent = ({ children }: PropsWithChildren) => {
         />
         <DialogPrimitive.Content
           className={twMergeClsx(
-            "pointer-events-auto fixed z-40 grid w-full gap-4 rounded-b-lg bg-gray-1 p-6 animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0",
+            "pointer-events-auto fixed z-50 grid w-full gap-4 rounded-b-lg bg-gray-1 p-6 animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0",
             "dark:bg-gray-dark-1"
           )}
           onInteractOutside={(event) => {
