@@ -1,9 +1,8 @@
-// eslint-disable sort-imports
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
-import { PropsWithChildren, useEffect, useState } from "react";
-
+import { PropsWithChildren } from "react";
 import { twMergeClsx } from "~/util/helpers";
+import { useDialogContainerWrapper } from "./useDialogContainerWrapper";
 import { useLocalDialogContainer } from "./container";
 
 export const LocalDialog = ({
@@ -22,16 +21,8 @@ export const LocalDialog = ({
 
 export const LocalDialogContent = ({ children }: PropsWithChildren) => {
   const { container } = useLocalDialogContainer();
-  const [rect, setRect] = useState<DOMRect | null>(null);
-
-  useEffect(() => {
-    const updateRect = () => {
-      setRect(container?.parentElement?.getBoundingClientRect() || null);
-    };
-    updateRect();
-    window.addEventListener("resize", updateRect);
-    return () => window.removeEventListener("resize", updateRect);
-  }, [container]);
+  const containerWrapper = useDialogContainerWrapper();
+  const containerWrapperRect = containerWrapper?.getBoundingClientRect();
 
   return (
     <DialogPrimitive.DialogPortal container={container}>
@@ -42,10 +33,10 @@ export const LocalDialogContent = ({ children }: PropsWithChildren) => {
         <div
           className="fixed inset-0 bg-black/10 backdrop-blur-sm"
           style={{
-            width: rect?.width,
-            height: rect?.height,
-            top: rect?.top,
-            left: rect?.left,
+            width: containerWrapperRect?.width,
+            height: containerWrapperRect?.height,
+            top: containerWrapperRect?.top,
+            left: containerWrapperRect?.left,
           }}
         />
         <DialogPrimitive.Content
