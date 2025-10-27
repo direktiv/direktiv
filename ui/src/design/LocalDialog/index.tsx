@@ -1,7 +1,8 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
+import { PropsWithChildren, useCallback, useRef } from "react";
+
 import { DialogProps } from "@radix-ui/react-dialog";
-import { PropsWithChildren } from "react";
 import { twMergeClsx } from "~/util/helpers";
 import { useLocalDialogContainer } from "./container";
 
@@ -17,17 +18,31 @@ export const LocalDialog = ({
 
 export const LocalDialogContent = ({ children }: PropsWithChildren) => {
   const { container } = useLocalDialogContainer();
+  const rectRef = useRef<DOMRect | undefined>(undefined);
+
+  const setRectCallback = useCallback((el: HTMLDivElement | null) => {
+    rectRef.current = el?.getBoundingClientRect();
+  }, []);
 
   return (
     <DialogPrimitive.DialogPortal container={container}>
       <div
-        className="absolute inset-0 flex items-center justify-center px-5"
+        ref={setRectCallback}
+        className="absolute inset-0 z-40 flex items-start justify-center bg-red-500 sm:items-center"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="absolute inset-0 bg-black/10 backdrop-blur-sm" />
+        <div
+          className="fixed inset-0 bg-black/10 backdrop-blur-sm transition-all duration-100 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in"
+          style={{
+            width: rectRef.current?.width,
+            height: rectRef.current?.height,
+            top: rectRef.current?.top,
+            left: rectRef.current?.left,
+          }}
+        />
         <DialogPrimitive.Content
           className={twMergeClsx(
-            "pointer-events-auto fixed z-50 grid w-full gap-4 rounded-b-lg bg-gray-1 p-6 animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0",
+            "pointer-events-auto fixed z-40 grid w-full gap-4 rounded-b-lg bg-gray-1 p-6 animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0",
             "dark:bg-gray-dark-1"
           )}
           onInteractOutside={(event) => {
