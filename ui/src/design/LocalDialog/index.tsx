@@ -1,10 +1,11 @@
 // eslint-disable sort-imports
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
-import { PropsWithChildren, useEffect, useState } from "react";
+import { PropsWithChildren } from "react";
 
 import { twMergeClsx } from "~/util/helpers";
 import { useLocalDialogContainer } from "./container";
+import { useParentRect } from "./useParentRect";
 
 export const LocalDialog = ({
   children,
@@ -22,16 +23,7 @@ export const LocalDialog = ({
 
 export const LocalDialogContent = ({ children }: PropsWithChildren) => {
   const { container } = useLocalDialogContainer();
-  const [rect, setRect] = useState<DOMRect | null>(null);
-
-  useEffect(() => {
-    const updateRect = () => {
-      setRect(container?.parentElement?.getBoundingClientRect() || null);
-    };
-    updateRect();
-    window.addEventListener("resize", updateRect);
-    return () => window.removeEventListener("resize", updateRect);
-  }, [container]);
+  const rect = useParentRect(container);
 
   return (
     <DialogPrimitive.DialogPortal container={container}>
