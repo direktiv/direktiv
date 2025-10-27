@@ -1,16 +1,20 @@
+// eslint-disable sort-imports
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
-import { DialogProps } from "@radix-ui/react-dialog";
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useEffect, useState } from "react";
+
 import { twMergeClsx } from "~/util/helpers";
-import { useElementRect } from "./useElementRect";
 import { useLocalDialogContainer } from "./container";
 
 export const LocalDialog = ({
   children,
   open,
   onOpenChange,
-}: PropsWithChildren & Pick<DialogProps, "onOpenChange" | "open">) => (
+}: PropsWithChildren &
+  Pick<
+    React.ComponentProps<typeof DialogPrimitive.Root>,
+    "onOpenChange" | "open"
+  >) => (
   <DialogPrimitive.Root modal={false} onOpenChange={onOpenChange} open={open}>
     {children}
   </DialogPrimitive.Root>
@@ -18,12 +22,20 @@ export const LocalDialog = ({
 
 export const LocalDialogContent = ({ children }: PropsWithChildren) => {
   const { container } = useLocalDialogContainer();
-  const { ref, rect } = useElementRect();
+  const [rect, setRect] = useState<DOMRect | null>(null);
+
+  useEffect(() => {
+    const updateRect = () => {
+      setRect(container?.parentElement?.getBoundingClientRect() || null);
+    };
+    updateRect();
+    window.addEventListener("resize", updateRect);
+    return () => window.removeEventListener("resize", updateRect);
+  }, [container]);
 
   return (
     <DialogPrimitive.DialogPortal container={container}>
       <div
-        ref={ref}
         className="absolute inset-0 flex items-center justify-center px-5"
         onClick={(event) => event.stopPropagation()}
       >
