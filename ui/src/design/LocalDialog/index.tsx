@@ -1,9 +1,9 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
-import { PropsWithChildren, useCallback, useRef } from "react";
-
 import { DialogProps } from "@radix-ui/react-dialog";
+import { PropsWithChildren } from "react";
 import { twMergeClsx } from "~/util/helpers";
+import { useElementRect } from "./useElementRect";
 import { useLocalDialogContainer } from "./container";
 
 export const LocalDialog = ({
@@ -18,26 +18,22 @@ export const LocalDialog = ({
 
 export const LocalDialogContent = ({ children }: PropsWithChildren) => {
   const { container } = useLocalDialogContainer();
-  const rectRef = useRef<DOMRect | undefined>(undefined);
-
-  const setRectCallback = useCallback((el: HTMLDivElement | null) => {
-    rectRef.current = el?.getBoundingClientRect();
-  }, []);
+  const { ref, rect } = useElementRect();
 
   return (
     <DialogPrimitive.DialogPortal container={container}>
       <div
-        ref={setRectCallback}
+        ref={ref}
         className="absolute inset-0 flex items-center justify-center px-5"
         onClick={(event) => event.stopPropagation()}
       >
         <div
           className="fixed inset-0 bg-black/10 backdrop-blur-sm"
           style={{
-            width: rectRef.current?.width,
-            height: rectRef.current?.height,
-            top: rectRef.current?.top,
-            left: rectRef.current?.left,
+            width: rect?.width,
+            height: rect?.height,
+            top: rect?.top,
+            left: rect?.left,
           }}
         />
         <DialogPrimitive.Content
