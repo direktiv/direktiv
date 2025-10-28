@@ -2,7 +2,6 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 import { PropsWithChildren } from "react";
-
 import { twMergeClsx } from "~/util/helpers";
 import { useLocalDialogContainer } from "./container";
 import { useParentRect } from "./useParentRect";
@@ -32,7 +31,7 @@ export const LocalDialogContent = ({ children }: PropsWithChildren) => {
         onClick={(event) => event.stopPropagation()}
       >
         <div
-          className="fixed inset-0 bg-black/10 backdrop-blur-sm"
+          className="fixed bg-black/10 backdrop-blur-sm max-sm:absolute max-sm:!inset-0"
           style={{
             width: rect?.width,
             height: rect?.height,
