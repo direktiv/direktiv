@@ -1,4 +1,3 @@
-// eslint-disable sort-imports
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 import { PropsWithChildren } from "react";
