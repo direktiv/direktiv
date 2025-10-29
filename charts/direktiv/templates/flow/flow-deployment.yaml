@@ -188,10 +188,6 @@ spec:
             value: "{{ .Values.nats.config.routeURLs.password }}"
           - name: DIREKTIV_LOGS_BACKEND
             value: "direktiv-victoria-logs-single-server.{{ .Release.Namespace }}.svc"
-              #           OTEL_EXPORTER_OTLP_ENDPOINT	localhost:4317
-              # OTEL_EXPORTER_OTLP_INSECURE	true
-              # OTEL_TRACES_EXPORTER	otlp
-          
           {{- if .Values.otel.install }}
           - name: DIREKTIV_OTEL_BACKEND
             value: localhost:4317

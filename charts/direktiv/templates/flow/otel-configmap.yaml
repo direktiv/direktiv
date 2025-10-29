@@ -9,17 +9,3 @@ data:
   collector-config.yaml: |
 {{ .Values.otel.config | indent 4 }}
 {{- end }}
-
-
-
-
-#  - name: otel-collector
-#     image: otel/opentelemetry-collector:0.138.0
-#     args: ["--config=/conf/collector-config.yaml"]
-#     ports:
-#       - containerPort: 4317
-#       - containerPort: 4318
-#     volumeMounts:
-#       - name: collector-config
-#         mountPath: /conf
-#         readOnly: true

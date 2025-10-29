@@ -20,7 +20,7 @@ data:
       [SERVICE]
           Daemon Off
           Flush 1
-          Log_Level DEBUG
+          Log_Level INFO
           HTTP_Server On
           HTTP_Listen 0.0.0.0
           HTTP_Port 2020

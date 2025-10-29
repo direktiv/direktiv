@@ -23,8 +23,7 @@ type logController struct {
 }
 
 type logParams struct {
-	namespace string
-	// callpath      string
+	namespace     string
 	scope         string
 	id            string
 	limit         string
@@ -57,9 +56,6 @@ func (l logParams) toQuery() string {
 	}
 
 	idQuery := fmt.Sprintf("id:=%s", l.id)
-	// if l.callpath != "" {
-	// 	idQuery = fmt.Sprintf("callpath:/%s/*", l.id)
-	// }
 
 	pipe := ""
 	if len(queryParts) > 0 {
@@ -293,7 +289,6 @@ func extractLogRequestParams(r *http.Request) logParams {
 	if r.URL.Query().Get("instance") != "" {
 		logParams.scope = "instance"
 		logParams.id = r.URL.Query().Get("instance")
-		// logParams.callpath = r.URL.Query().Get("instance")
 	}
 
 	if r.URL.Query().Get("activity") != "" {
@@ -325,7 +320,6 @@ type WorkflowEntryContext struct {
 	State    string `json:"state"`
 	Path     string `json:"workflow"`
 	Instance string `json:"instance"`
-	// CallPath string `json:"callpath"`
 }
 
 type ActivityEntryContext struct {
@@ -351,7 +345,6 @@ func toFeatureLogEntry(e logEntryBackend) logEntry {
 			Path:     e.Path,
 			State:    e.State,
 			Instance: e.ID,
-			// CallPath: e.CallPath,
 		}
 	}
 
@@ -369,14 +362,13 @@ func toFeatureLogEntry(e logEntryBackend) logEntry {
 }
 
 type logEntryBackend struct {
-	Time     time.Time `json:"_time"`
-	ID       string    `json:"id"`
-	StreamID string    `json:"_stream_id"`
-	Stream   string    `json:"_stream"`
-	Msg      string    `json:"_msg"`
-	P        string    `json:"_p"`
-	Invoker  string    `json:"invoker"`
-	// CallPath    string    `json:"callpath"`
+	Time        time.Time `json:"_time"`
+	ID          string    `json:"id"`
+	StreamID    string    `json:"_stream_id"`
+	Stream      string    `json:"_stream"`
+	Msg         string    `json:"_msg"`
+	P           string    `json:"_p"`
+	Invoker     string    `json:"invoker"`
 	Level       string    `json:"level"`
 	Namespace   string    `json:"namespace"`
 	Status      string    `json:"status"`
