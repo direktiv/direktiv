@@ -11,8 +11,5 @@ dependencies:
 - name: nats
   repository: https://nats-io.github.io/k8s/helm/charts
   version: 1.3.11
-- name: opentelemetry-collector
-  repository: https://open-telemetry.github.io/opentelemetry-helm-charts
-  version: 0.117.3
-digest: sha256:e70c49afa2447393c3558516cf08b5c7cb21a8451d89935a2552bfee4cfd56ab
-generated: "2025-08-19T16:17:02.107891792+02:00"
+digest: sha256:ed6dfb3d61cd375e485ba68f5065edfd7787117b60742964702cb2d3fcf97374
+generated: "2025-10-27T06:22:55.154877798+01:00"

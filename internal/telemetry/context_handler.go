@@ -27,7 +27,7 @@ func (h *ContextHandler) Enabled(ctx context.Context, level slog.Level) bool {
 
 // Handle implements slog.Handler.
 func (h *ContextHandler) Handle(ctx context.Context, rec slog.Record) error {
-	l := ctx.Value(logObjectCtx)
+	l := ctx.Value(DirektivLogCtx(LogObjectIdentifier))
 
 	res := make([]slog.Attr, 0)
 	res = append(res, slog.Attr{

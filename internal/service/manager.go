@@ -78,6 +78,7 @@ func (m *Manager) runCycle() []error {
 	if !m.servicesListHasBeenSet {
 		return nil
 	}
+
 	// clone the list
 	src := make([]reconcile.Item, len(m.list))
 	for i, v := range m.list {

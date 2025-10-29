@@ -91,6 +91,7 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 		Fn:       fn,
 		Memory:   json.RawMessage(input),
 	}
+
 	err := e.dataBus.PublishInstanceHistoryEvent(ctx, pEv)
 	if err != nil {
 		return nil, fmt.Errorf("push history stream: %w", err)
@@ -136,6 +137,10 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		Metadata: inst.Metadata,
 	}
 
+	onAction := func(config core.ActionConfig) error {
+		return e.dataBus.PublishIgniteAction(ctx, config,
+			inst.Metadata[core.EngineMappingNamespace], inst.Metadata[core.EngineMappingPath])
+	}
 	onFinish := func(output []byte) error {
 		endEv := &InstanceEvent{
 			EventID:    uuid.New(),
@@ -162,10 +167,11 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
 
-	err = runtime.ExecScript(sc, onFinish, onTransition)
+	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction)
 	if err == nil {
 		return nil
 	}
+
 	endEv := &InstanceEvent{
 		EventID:    uuid.New(),
 		InstanceID: inst.InstanceID,

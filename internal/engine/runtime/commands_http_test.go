@@ -1,6 +1,7 @@
 package runtime_test
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"testing"
@@ -68,16 +69,16 @@ func TestHttpRequest(t *testing.T) {
 			log(r.url)
 			log(r.text())
 			log(r.json()["path"])
-			return "JENS"
+			return "Hello"
 		}
 	`
 
-	err = runtime.ExecScript(&runtime.Script{
+	err = runtime.ExecScript(context.Background(), &runtime.Script{
 		InstID:   uuid.New(),
 		Text:     script,
 		Mappings: "",
 		Input:    "{}",
 		Fn:       "start",
-	}, runtime.NoOnFinish, runtime.NoOnTransition)
+	}, runtime.NoOnFinish, runtime.NoOnTransition, runtime.NoOnAction)
 	require.NoError(t, err)
 }

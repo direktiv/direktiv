@@ -1,6 +1,7 @@
 package runtime_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -32,13 +33,13 @@ func TestTransition(t *testing.T) {
 		}	
 	`
 
-	err := runtime.ExecScript(&runtime.Script{
+	err := runtime.ExecScript(context.Background(), &runtime.Script{
 		InstID:   uuid.New(),
 		Text:     script,
 		Mappings: "",
 		Fn:       "start",
 		Input:    "{}",
-	}, onFinish, onTransition)
+	}, onFinish, onTransition, runtime.NoOnAction)
 	require.NoError(t, err)
 	require.Equal(t, "\"returnValue\"", string(gotOutput))
 }
@@ -94,13 +95,13 @@ func TestTransitionErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := runtime.ExecScript(&runtime.Script{
+			err := runtime.ExecScript(context.Background(), &runtime.Script{
 				InstID:   uuid.New(),
 				Text:     tt.js,
 				Mappings: "",
 				Fn:       "start",
 				Input:    "{}",
-			}, runtime.NoOnFinish, runtime.NoOnTransition)
+			}, runtime.NoOnFinish, runtime.NoOnTransition, runtime.NoOnAction)
 			require.Error(t, err)
 		})
 	}

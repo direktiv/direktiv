@@ -20,7 +20,7 @@ data:
       [SERVICE]
           Daemon Off
           Flush 1
-          Log_Level INFO
+          Log_Level DEBUG
           HTTP_Server On
           HTTP_Listen 0.0.0.0
           HTTP_Port 2020
@@ -36,6 +36,23 @@ data:
           multiline.parser        cri, docker
           Refresh_Interval        1
           Buffer_Max_Size         64k
+      [FILTER]
+          Name                    parser
+          Match                   *
+          Parser                  direktiv
+          Key_Name                log
+          Reserve_Data            on
+      [FILTER]
+          Name                    modify
+          Match                   *
+          Add app direktiv
+          Add msg notset
+          Add state notset
+          Add status notset
+          Add namespace notset
+          Add id notset
+          Add path notset
+
       [OUTPUT]
           Name stdout
           Match *
@@ -48,10 +65,5 @@ data:
           uri /insert/jsonline?_stream_fields=stream&_msg_field=msg&_time_field=nanos
           format json_lines
           json_date_format iso8601
-      [FILTER]
-          Name                    parser
-          Match                   *
-          Parser                  direktiv
-          Key_Name                log
-          Reserve_Data            on
-    
+
+

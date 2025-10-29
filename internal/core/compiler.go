@@ -11,9 +11,11 @@ const (
 
 type ActionConfig struct {
 	Type  string
+	Cmd   string
 	Size  string
 	Image string
-	Envs  map[string]string
+	Envs  []EnvironmentVariable
+	// Patches []ServicePatch
 }
 
 type FlowConfig struct {

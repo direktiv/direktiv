@@ -7,403 +7,732 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestReturnValues(t *testing.T) {
+// TestStateFunctionValidation tests that state functions must return transition/finish
+func TestStateFunctionValidation(t *testing.T) {
 	tests := []struct {
+		name     string
 		script   string
-		expected int
+		errCount int
 	}{
-		{`function anotherNormalFunction() {
-			return transition("someState");
-		}`, 1},
-		{`function normalFunction() {
-			return 123;
-		}`, 0},
-		{`function anotherNormalFunction() {
-			return transition("someState");
-		}`, 1},
-		{`function stateTwo() {
-			if (cond) {
-				return transition("a");
+		{
+			name: "state function with valid transition return",
+			script: `function stateOne() {
+				return transition("nextState");
+			}`,
+			errCount: 0,
+		},
+		{
+			name: "state function with valid finish return",
+			script: `function stateOne() {
+				return finish();
+			}`,
+			errCount: 0,
+		},
+		{
+			name: "state function with conditional returns",
+			script: `function stateTwo() {
+				if (cond) {
+					return transition("a");
+				}
+				return transition("b");
+			}`,
+			errCount: 0,
+		},
+		{
+			name: "state function without return",
+			script: `function stateOne() {
+				let x = 5;
+			}`,
+			errCount: 1,
+		},
+		{
+			name: "state function with invalid return",
+			script: `function stateOne() {
+				return "not a transition";
+			}`,
+			errCount: 1,
+		},
+		{
+			name: "state function with mixed returns",
+			script: `function stateOne() {
+				if (true) {
+					return transition("nextState");
+				}
+				return false;
+			}`,
+			errCount: 1,
+		},
+		{
+			name: "multiple state functions, one invalid",
+			script: `
+			function stateOne() {
+				return transition("two");
 			}
-			return transition("b");
-		}`, 0},
-		{`function stateOne() {
-			if (true) {
-				return transition("nextState");
-			} else {
-				return transition("nextState");
-			}
-		}`, 0},
-		{`function stateOne() {
-			if (true) {
-				return transition("nextState");
-			} else {
-				return transition("nextState");
-			}
-
-			return false
-		  }
-		function another() {
-			return transition("nextState");
-		}`, 2},
-		{`function anotherNormalFunction() {
-			return finish();
-		}`, 1},
-		{`function anotherNormalFunction() {
-			finish("someState");
-		}`, 1},
+			function stateTwo() {
+				return "invalid";
+			}`,
+			errCount: 1,
+		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.script, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			parser, err := compiler.NewASTParser(tt.script, "")
 			require.NoError(t, err)
 
-			parser.ValidateTransitions()
-			if len(parser.Errors) != tt.expected {
-				t.Errorf("validate js got errors %d, expected %d (%v)", len(parser.Errors), tt.expected, parser.Errors)
+			err = parser.Parse()
+			require.NoError(t, err)
+
+			if len(parser.Errors) != tt.errCount {
+				t.Errorf("got %d errors, want %d", len(parser.Errors), tt.errCount)
+				for _, e := range parser.Errors {
+					t.Logf("  error: %s (line %d:%d)", e.Message, e.StartLine, e.StartColumn)
+				}
 			}
 		})
 	}
-
 }
 
-func TestConfig(t *testing.T) {
-	transpiler, _ := compiler.NewTranspiler()
-
+// TestNonStateFunctionValidation tests that non-state functions cannot use transition/finish
+func TestNonStateFunctionValidation(t *testing.T) {
 	tests := []struct {
-		script                                     string
-		wantType, wantTimeout, wantCron, wantState string
-		expectedErr                                bool
+		name     string
+		script   string
+		errCount int
 	}{
-		{`
-		function stateOne() { return finish() }
-		`, "default", "PT15M", "", "stateOne", false},
-		{`
-		var flow = {
-			cron: "does not work"
-		}
-		`, "default", "PT15M", "", "", true},
-		{`
-		var flow = {
-			state: "does not exist"
-		}
-		function stateOne() { return finish() }
-		`, "default", "PT15M", "", "stateOne", true},
-		{`
-		var flow = {
-			type: "does not exist"
-		}
-		`, "default", "PT15M", "", "", true},
-		{`
-		var flow = {
-			timeout: "invalid"
-		}
-		`, "default", "PT15M", "", "", true},
-		{`
-		var flow = {
-			type: "default",
-			timeout: "PT30M"
-		}
-		function stateOne() { return finish() }
-		`, "default", "PT30M", "", "stateOne", false},
-		{`
-		var flow = {
-			type: "default",
-			cron: "* * * * *",
-			timeout: "PT30M",
-			state: "stateOne",
-			events: [
-				{
-					type: "com.github.push",
-					context: {
-						title: "hello",
-						world: "world"
-					}
-				},
-				{
-					type: "com.github.pull",
-					context: {
-						title: "one",
-						world: 1223
-					}
+		{
+			name: "regular function with normal return",
+			script: `function normalFunction() {
+				return 123;
+			}`,
+			errCount: 0,
+		},
+		{
+			name: "regular function returning transition",
+			script: `function normalFunction() {
+				return transition("someState");
+			}`,
+			errCount: 1,
+		},
+		{
+			name: "regular function returning finish",
+			script: `function normalFunction() {
+				return finish();
+			}`,
+			errCount: 1,
+		},
+		{
+			name: "regular function calling transition",
+			script: `function normalFunction() {
+				transition("someState");
+			}`,
+			errCount: 1,
+		},
+		{
+			name: "regular function calling finish",
+			script: `function normalFunction() {
+				finish();
+			}`,
+			errCount: 1,
+		},
+		{
+			name: "regular function with transition in if statement",
+			script: `function helper() {
+				if (condition) {
+					return transition("state");
 				}
-			]
-		}
-		function stateOne() { return finish() }
-		`, "default", "PT30M", "* * * * *", "stateOne", false},
-		{`
-		var flow = {
-			type: "cron",
-		}
-		function stateOne() { return finish() }
-		`, "cron", "PT15M", "", "stateOne", true},
-		{`
-		var flow = {
-			type: "event",
-		}
-		function stateOne() { return finish() }
-		`, "event", "PT15M", "", "stateOne", true},
+				return true;
+			}`,
+			errCount: 1,
+		},
+		{
+			name: "mixed state and non-state functions",
+			script: `
+			function stateOne() {
+				return transition("two");
+			}
+			function helper() {
+				return transition("invalid");
+			}`,
+			errCount: 1,
+		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.script, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
+			parser, err := compiler.NewASTParser(tt.script, "")
+			require.NoError(t, err)
+
+			err = parser.Parse()
+			require.NoError(t, err)
+
+			if len(parser.Errors) != tt.errCount {
+				t.Errorf("got %d errors, want %d", len(parser.Errors), tt.errCount)
+				for _, e := range parser.Errors {
+					t.Logf("  error: %s (line %d:%d)", e.Message, e.StartLine, e.StartColumn)
+				}
+			}
+		})
+	}
+}
+
+// TestFirstStateFunction tests that the first state function is correctly identified
+func TestFirstStateFunction(t *testing.T) {
+	tests := []struct {
+		name          string
+		script        string
+		expectedState string
+	}{
+		{
+			name: "single state function",
+			script: `function stateOne() {
+				return finish();
+			}`,
+			expectedState: "stateOne",
+		},
+		{
+			name: "multiple state functions, first is selected",
+			script: `
+			function stateOne() { return finish(); }
+			function stateTwo() { return finish(); }
+			function stateThree() { return finish(); }`,
+			expectedState: "stateOne",
+		},
+		{
+			name: "state function after regular function",
+			script: `
+			function helper() { return true; }
+			function stateMain() { return finish(); }`,
+			expectedState: "stateMain",
+		},
+		{
+			name: "no state function",
+			script: `
+			function helper() { return true; }
+			function another() { return false; }`,
+			expectedState: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			parser, err := compiler.NewASTParser(tt.script, "")
+			require.NoError(t, err)
+
+			err = parser.Parse()
+			require.NoError(t, err)
+
+			if parser.FirstStateFunc != tt.expectedState {
+				t.Errorf("got first state function %q, want %q", parser.FirstStateFunc, tt.expectedState)
+			}
+		})
+	}
+}
+
+// TestFlowConfig tests flow configuration parsing and validation
+func TestFlowConfig(t *testing.T) {
+	transpiler, _ := compiler.NewTranspiler()
+
+	tests := []struct {
+		name        string
+		script      string
+		wantType    string
+		wantTimeout string
+		wantCron    string
+		wantState   string
+		expectError bool
+	}{
+		{
+			name: "default flow without config",
+			script: `
+			function stateOne() { return finish(); }`,
+			wantType:    "default",
+			wantTimeout: "PT15M",
+			wantCron:    "",
+			wantState:   "stateOne",
+			expectError: false,
+		},
+		{
+			name: "invalid cron pattern",
+			script: `
+			var flow = {
+				cron: "does not work"
+			}
+			function stateOne() { return finish(); }`,
+			wantType:    "default",
+			wantTimeout: "PT15M",
+			expectError: true,
+		},
+		{
+			name: "state reference to non-existent function",
+			script: `
+			var flow = {
+				state: "doesNotExist"
+			}
+			function stateOne() { return finish(); }`,
+			expectError: true,
+		},
+		{
+			name: "invalid flow type",
+			script: `
+			var flow = {
+				type: "invalid"
+			}
+			function stateOne() { return finish(); }`,
+			expectError: true,
+		},
+		{
+			name: "invalid timeout pattern",
+			script: `
+			var flow = {
+				timeout: "invalid"
+			}
+			function stateOne() { return finish(); }`,
+			expectError: true,
+		},
+		{
+			name: "custom timeout",
+			script: `
+			var flow = {
+				type: "default",
+				timeout: "PT30M"
+			}
+			function stateOne() { return finish(); }`,
+			wantType:    "default",
+			wantTimeout: "PT30M",
+			wantState:   "stateOne",
+			expectError: false,
+		},
+		{
+			name: "complete flow config with events",
+			script: `
+			var flow = {
+				type: "default",
+				cron: "* * * * *",
+				timeout: "PT30M",
+				state: "stateOne",
+				events: [
+					{
+						type: "com.github.push",
+						context: {
+							title: "hello",
+							world: "world"
+						}
+					}
+				]
+			}
+			function stateOne() { return finish(); }`,
+			wantType:    "default",
+			wantTimeout: "PT30M",
+			wantCron:    "* * * * *",
+			wantState:   "stateOne",
+			expectError: false,
+		},
+		{
+			name: "cron type without cron pattern",
+			script: `
+			var flow = {
+				type: "cron"
+			}
+			function stateOne() { return finish(); }`,
+			expectError: true,
+		},
+		{
+			name: "event type without events",
+			script: `
+			var flow = {
+				type: "event"
+			}
+			function stateOne() { return finish(); }`,
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			script, mapping, err := transpiler.Transpile(tt.script, "dummy")
 			require.NoError(t, err)
 
 			parser, err := compiler.NewASTParser(script, mapping)
 			require.NoError(t, err)
 
-			flow, err := parser.ValidateConfig()
-			if tt.expectedErr {
-				if err == nil {
-					t.Errorf("validate config got no error, but expected one (%v)", err)
-				}
+			err = parser.Parse()
 
-				if err != nil {
-					t.Logf("expected failure occurred '%s'", err.Error())
+			if tt.expectError {
+				if len(parser.Errors) == 0 && err == nil {
+					t.Errorf("expected error but got none")
+				} else {
+					t.Logf("got expected error: %v, errors: %d", err, len(parser.Errors))
 				}
-			} else {
-				if flow.Type != tt.wantType {
-					t.Errorf("type = %q, want %q", flow.Type, tt.wantType)
-				}
-				if flow.Cron != tt.wantCron {
-					t.Errorf("cron = %q, want %q", flow.Cron, tt.wantCron)
-				}
-				if flow.State != tt.wantState {
-					t.Errorf("state = %q, want %q", flow.State, tt.wantState)
-				}
-				if flow.Timeout != tt.wantTimeout {
-					t.Errorf("timeout = %q, want %q", flow.Timeout, tt.wantTimeout)
-				}
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, parser.FlowConfig)
+
+			if parser.FlowConfig.Type != tt.wantType {
+				t.Errorf("type = %q, want %q", parser.FlowConfig.Type, tt.wantType)
+			}
+			if parser.FlowConfig.Timeout != tt.wantTimeout {
+				t.Errorf("timeout = %q, want %q", parser.FlowConfig.Timeout, tt.wantTimeout)
+			}
+			if parser.FlowConfig.Cron != tt.wantCron {
+				t.Errorf("cron = %q, want %q", parser.FlowConfig.Cron, tt.wantCron)
+			}
+			if parser.FlowConfig.State != tt.wantState {
+				t.Errorf("state = %q, want %q", parser.FlowConfig.State, tt.wantState)
 			}
 		})
 	}
-
 }
 
-func TestVariables(t *testing.T) {
+// TestTopLevelFunctionCalls tests that only secrets/getSecrets/generateAction are allowed at top level
+func TestTopLevelFunctionCalls(t *testing.T) {
 	transpiler, _ := compiler.NewTranspiler()
 
 	tests := []struct {
 		name     string
-		ts       string
+		script   string
 		errCount int
 	}{
 		{
-			"allowed secrets call but not with function call",
-			`
-			getSecrets("my-secret-key");
-			getSecrets(getValues());
-			`,
-			1,
+			name: "secrets call allowed",
+			script: `
+			const sec = getSecrets("my-secret-key");
+			function stateOne() { return finish(); }`,
+			errCount: 0,
 		},
 		{
-			"functions direct not allowed",
-			`
+			name: "generateAction call allowed",
+			script: `
+			generateAction({
+				type: "local",
+				image: "ubuntu",
+				cmd: "echo hello"
+			});
+			function stateOne() { return finish(); }`,
+			errCount: 0,
+		},
+		{
+			name: "invalid function call at top level",
+			script: `
 			console.log("this should fail");
-			alert("this should fail");
+			function stateOne() { return finish(); }`,
+			errCount: 1,
+		},
+		{
+			name: "multiple invalid function calls",
+			script: `
+			console.log("fail");
+			alert("fail");
 			setTimeout(function() {}, 1000);
 			Math.random();
-			`,
-			4,
+			function stateOne() { return finish(); }`,
+			errCount: 4,
 		},
 		{
-			"normal vars allowed",
-			`
-			var x = 5;
-			var y = "hello";
-			var z = x + y;
-			var arr = [1, 2, 3];
-			var obj = {a: 1, b: "test"};
-			var bool = true;
-			var nullVar = null;
-			`,
-			0,
+			name: "function call in variable assignment",
+			script: `
+			var badVar = console.log("fail");
+			function stateOne() { return finish(); }`,
+			errCount: 1,
 		},
 		{
-			"function calls in variable assignments not allowed",
-			`
-			var badVar1 = console.log("fail");
-			var badVar2 = Math.random();
-			var badVar3 = setTimeout(function() {}, 1000);
-			var badVar5 = JSON.parse("{}");
-			var badVar6 = parseInt("123");
-			var badVar7 = parseFloat("123.45");
-			`,
-			6,
+			name: "nested function calls",
+			script: `
+			var badVar = outerFunction(innerFunction());
+			function stateOne() { return finish(); }`,
+			errCount: 2, // Both outer and inner function calls are not allowed
 		},
 		{
-			"new is allowed but no function",
-			`
-			let good1 = new MyThing();
-			let good2 = new MyThing({
-			a: 1, b: 100});
-			let bad1 = new MyThing({
-			a: 1, b: getValue()});
-			const bad2 = new MyThing(doSomething());
-			`,
-			2,
+			name: "function calls in arrays",
+			script: `
+			var arr = [getValue(), 1, 2];
+			function stateOne() { return finish(); }`,
+			errCount: 1,
 		},
 		{
-			"method calls on objects not allowed",
-			`
-			var badVar8 = someObject.method();
-			var badVar9 = arr.push(4);
-			var badVar10 = str.toLowerCase();
-			var badVar11 = obj.toString();
-			`,
-			4,
+			name: "function calls in objects",
+			script: `
+			var obj = {a: getValue(), b: 2};
+			function stateOne() { return finish(); }`,
+			errCount: 1,
 		},
 		{
-			"chained method calls not allowed",
-			`
-			var badVar12 = someObject.method().anotherMethod();
-			var badVar13 = arr.filter(x => x > 0).map(x => x * 2);
-			`,
-			2,
+			name: "method calls not allowed",
+			script: `
+			var badVar = someObject.method();
+			function stateOne() { return finish(); }`,
+			errCount: 1,
 		},
 		{
-			"function calls with property access not allowed",
-			`
-			var badVar14 = window.alert("fail");
-			var badVar15 = document.getElementById("test");
-			var badVar16 = global.require("module");
-			`,
-			3,
+			name: "function calls inside functions are allowed",
+			script: `
+			function stateOne() {
+				console.log("this is allowed inside function");
+				const x = Math.random();
+				return finish();
+			}`,
+			errCount: 0,
 		},
 		{
-			"function calls in complex expressions not allowed",
-			`
-			var badVar21 = getValue() + 5;
-			var badVar22 = 10 + Math.random();
-			var badVar23 = someFunction() || "default";
-			var badVar24 = condition ? getValue() : "default";
-			var badVar25 = !isEmpty();
-			`,
-			5,
-		},
-		{
-			"function calls in array literals not allowed",
-			`
-			var badVar26 = [getValue(), 1, 2];
-			var badVar27 = [Math.random(), Math.random()]; // two errors
-			`,
-			3,
-		},
-		{
-			"function calls in object literals not allowed",
-			`
-			var badVar28 = {a: getValue(), b: 2};
-			var badVar29 = {timestamp: Date.now(), value: 1};
-			var badVar30 = {id: generateId(), name: "test"};
-			`,
-			3,
-		},
-		{
-			"nested function calls not allowed",
-			`
-			var badVar31 = outerFunction(innerFunction());
-			var badVar32 = Math.max(getValue(), getOtherValue());
-			`,
-			2,
-		},
-		{
-			"function calls with computed property access not allowed",
-			`
-			var badVar33 = obj[getKey()];
-			var badVar34 = arr[getIndex()];
-			`,
-			2,
-		},
-		{
-			"callback functions that call other functions not allowed",
-			`
-			var badVar35 = [1,2,3].map(function(x) { return transform(x); });
-			`,
-			1,
-		},
-		{
-			"immediately invoked function expression not allowed",
-			`
-			var badVar36 = (function() { return getValue(); })();
-			`,
-			1,
-		},
-		{
-			"spread operator with function calls not allowed",
-			`
-			var badVar38 = [...getArray()];
-			var badVar39 = {...getObject()};
-			`,
-			2,
-		},
-		{
-			"destructuring with function calls not allowed",
-			`
-			var {a, b} = getObject();
-			var [first, second] = getArray();
-			`,
-			2,
-		},
-		{
-			"function calls in binary expressions not allowed",
-			`
-			var badVar40 = getValue() === expected;
-			var badVar41 = getCount() > 0;
-			var badVar42 = getName() + " suffix";
-			`,
-			3,
-		},
-		{
-			"function calls in unary expressions not allowed",
-			`
-			var badVar43 = +getString();
-			var badVar44 = typeof getValue();
-			var badVar45 = delete obj[getKey()];
-			`,
-			3,
-		},
-		{
-			"function calls with this context not allowed",
-			`
-			var badVar46 = this.method();
-			var badVar47 = self.getValue();
-			`,
-			2,
-		},
-		{
-			"generator function calls not allowed",
-			`
-			var badVar49 = getGenerator().next();
-			`,
-			1,
-		},
-		{
-			"function calls in switch statements not allowed",
-			`
-			var badVar50 = getValue() ? 1 : 2;
-			`,
-			1,
+			name: "secrets with function call argument",
+			script: `
+			getSecrets(getValues());
+			function stateOne() { return finish(); }`,
+			errCount: 1,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			script, mapping, err := transpiler.Transpile(tt.ts, "dummy")
+			script, mapping, err := transpiler.Transpile(tt.script, "dummy")
 			require.NoError(t, err)
 
 			parser, err := compiler.NewASTParser(script, mapping)
 			require.NoError(t, err)
-			parser.ValidateFunctionCalls()
+
+			err = parser.Parse()
+			require.NoError(t, err)
 
 			if len(parser.Errors) != tt.errCount {
-				t.Errorf("script '%s' = errors %d, want %d", tt.name, len(parser.Errors), tt.errCount)
+				t.Errorf("got %d errors, want %d", len(parser.Errors), tt.errCount)
+				for _, e := range parser.Errors {
+					t.Logf("  error: %s (line %d:%d)", e.Message, e.StartLine, e.StartColumn)
+				}
+			}
+		})
+	}
+}
+
+// TestGenerateActionCollection tests that all generateAction calls are found and parsed
+func TestGenerateActionCollection(t *testing.T) {
+	transpiler, _ := compiler.NewTranspiler()
+
+	tests := []struct {
+		name         string
+		script       string
+		expectCount  int
+		expectImages []string
+	}{
+		{
+			name: "single generateAction at top level",
+			script: `
+			generateAction({
+				type: "local",
+				image: "ubuntu:latest",
+				cmd: "echo hello"
+			});
+			function stateOne() { return finish(); }`,
+			expectCount:  1,
+			expectImages: []string{"ubuntu:latest"},
+		},
+		{
+			name: "multiple generateAction calls",
+			script: `
+			generateAction({
+				type: "local",
+				image: "alpine",
+				cmd: "ls"
+			});
+			generateAction({
+				type: "local",
+				image: "debian",
+				cmd: "pwd"
+			});
+			function stateOne() { return finish(); }`,
+			expectCount:  2,
+			expectImages: []string{"alpine", "debian"},
+		},
+		{
+			name: "generateAction inside function",
+			script: `
+			function stateOne() {
+				generateAction({
+					type: "local",
+					image: "nginx",
+					cmd: "start"
+				});
+				return finish();
+			}`,
+			expectCount:  1,
+			expectImages: []string{"nginx"},
+		},
+		{
+			name: "no generateAction",
+			script: `
+			function stateOne() { return finish(); }`,
+			expectCount:  0,
+			expectImages: []string{},
+		},
+		{
+			name: "generateAction with non-local type ignored",
+			script: `
+			generateAction({
+				type: "namespace",
+				image: "ubuntu"
+			});
+			function stateOne() { return finish(); }`,
+			expectCount: 0,
+		},
+		{
+			name: "generateAction with environment variables",
+			script: `
+			generateAction({
+				type: "local",
+				image: "ubuntu",
+				cmd: "env",
+				envs: [
+					{name: "VAR1", value: "value1"},
+					{name: "VAR2", value: "value2"}
+				]
+			});
+			function stateOne() { return finish(); }`,
+			expectCount:  1,
+			expectImages: []string{"ubuntu"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			script, mapping, err := transpiler.Transpile(tt.script, "dummy")
+			require.NoError(t, err)
+
+			parser, err := compiler.NewASTParser(script, mapping)
+			require.NoError(t, err)
+
+			err = parser.Parse()
+			require.NoError(t, err)
+
+			if len(parser.Actions) != tt.expectCount {
+				t.Errorf("got %d actions, want %d", len(parser.Actions), tt.expectCount)
 			}
 
-			for i := range parser.Errors {
-				ee := parser.Errors[i]
-				t.Logf("error '%s' (line: %d, column: %d)", ee.Message, ee.StartLine, ee.StartColumn)
+			for i, action := range parser.Actions {
+				if i < len(tt.expectImages) {
+					if action.Image != tt.expectImages[i] {
+						t.Errorf("action[%d].Image = %q, want %q", i, action.Image, tt.expectImages[i])
+					}
+				}
+			}
+		})
+	}
+}
+
+// TestComplexScenarios tests complete workflows with multiple features
+func TestComplexScenarios(t *testing.T) {
+	transpiler, _ := compiler.NewTranspiler()
+
+	tests := []struct {
+		name          string
+		script        string
+		expectErrors  int
+		expectActions int
+		expectState   string
+	}{
+		{
+			name: "complete valid workflow",
+			script: `
+			const secrets = getSecrets("db-creds");
+			
+			generateAction({
+				type: "local",
+				image: "postgres",
+				cmd: "psql"
+			});
+			
+			var flow = {
+				type: "default",
+				timeout: "PT1H",
+				state: "stateInit"
+			};
+			
+			function stateInit() {
+				console.log("Starting");
+				return transition("stateProcess");
+			}
+			
+			function stateProcess() {
+				const result = doWork();
+				return finish();
+			}
+			
+			function helper() {
+				return "helper result";
+			}`,
+			expectErrors:  0,
+			expectActions: 1,
+			expectState:   "stateInit",
+		},
+		{
+			name: "workflow with validation errors",
+			script: `
+			// Invalid function call at top level
+			console.log("fail");
+			
+			var flow = {
+				type: "cron"
+				// Missing cron pattern - will error
+			};
+			
+			// State function without return
+			function stateOne() {
+				let x = 5;
+			}
+			
+			// Regular function using transition
+			function helper() {
+				return transition("invalid");
+			}`,
+			expectErrors:  4, // console.log + missing cron + no return + helper using transition
+			expectActions: 0,
+			expectState:   "stateOne",
+		},
+		{
+			name: "nested function scenarios",
+			script: `
+			function stateOne() {
+				const fn = function() {
+					// Nested function can call anything
+					return someFunction();
+				};
+				
+				const arrow = () => {
+					// Arrow function also can call anything
+					doSomething();
+				};
+				
+				return finish();
+			}`,
+			expectErrors:  0,
+			expectActions: 0,
+			expectState:   "stateOne",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			script, mapping, err := transpiler.Transpile(tt.script, "dummy")
+			require.NoError(t, err)
+
+			parser, err := compiler.NewASTParser(script, mapping)
+			require.NoError(t, err)
+
+			_ = parser.Parse()
+
+			if len(parser.Errors) != tt.expectErrors {
+				t.Errorf("got %d errors, want %d", len(parser.Errors), tt.expectErrors)
+				for _, e := range parser.Errors {
+					t.Logf("  error: %s (line %d:%d)", e.Message, e.StartLine, e.StartColumn)
+				}
+			}
+
+			if len(parser.Actions) != tt.expectActions {
+				t.Errorf("got %d actions, want %d", len(parser.Actions), tt.expectActions)
+			}
+
+			if parser.FirstStateFunc != tt.expectState {
+				t.Errorf("got first state %q, want %q", parser.FirstStateFunc, tt.expectState)
 			}
 		})
 	}

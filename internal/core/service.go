@@ -19,16 +19,18 @@ const (
 	ServiceTypeWorkflow  = "workflow-service"
 )
 
+const IgniteSubject = "action.ignite"
+
 type EnvironmentVariable struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
 
-type ServicePatch struct {
-	Op    string      `json:"op"`
-	Path  string      `json:"path"`
-	Value interface{} `json:"value"`
-}
+// type ServicePatch struct {
+// 	Op    string      `json:"op"`
+// 	Path  string      `json:"path"`
+// 	Value interface{} `json:"value"`
+// }
 
 type ServiceFile struct {
 	DirektivAPI string                `yaml:"direktiv_api"`
@@ -37,7 +39,7 @@ type ServiceFile struct {
 	Size        string                `json:"size"         yaml:"size"`
 	Scale       int                   `json:"scale"        yaml:"scale"`
 	Envs        []EnvironmentVariable `json:"envs"         yaml:"envs"`
-	Patches     []ServicePatch        `json:"patches"      yaml:"patches"`
+	// Patches     []ServicePatch        `json:"patches"      yaml:"patches"`
 }
 
 func ParseServiceFile(data []byte) (*ServiceFile, error) {
@@ -94,9 +96,9 @@ func (c *ServiceFileData) GetValueHash() string {
 	for _, v := range c.Envs {
 		str += "-" + v.Name + "-" + v.Value
 	}
-	for _, v := range c.Patches {
-		str += "-" + v.Op + "-" + v.Path + "-" + fmt.Sprintf("%v", v.Value)
-	}
+	// for _, v := range c.Patches {
+	// 	str += "-" + v.Op + "-" + v.Path + "-" + fmt.Sprintf("%v", v.Value)
+	// }
 
 	sh := sha256.Sum256([]byte(str))
 

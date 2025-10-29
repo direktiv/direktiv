@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
@@ -20,19 +21,25 @@ type Runtime struct {
 	metadata     map[string]string
 	onFinish     OnFinishFunc
 	onTransition OnTransitionFunc
+	onAction     OnActionFunc
+
+	tracingPack *tracingPack
 }
 
 type (
 	OnFinishFunc     func(output []byte) error
 	OnTransitionFunc func(output []byte, fn string) error
+	OnActionFunc     func(config core.ActionConfig) error
 )
 
 var (
 	NoOnFinish     = func(output []byte) error { return nil }
 	NoOnTransition = func(output []byte, fn string) error { return nil }
+	NoOnAction     = func(config core.ActionConfig) error { return nil }
 )
 
-func New(instID uuid.UUID, metadata map[string]string, mappings string, onFinish OnFinishFunc, onTransition OnTransitionFunc) *Runtime {
+func New(instID uuid.UUID, metadata map[string]string, mappings string,
+	onFinish OnFinishFunc, onTransition OnTransitionFunc, onAction OnActionFunc) *Runtime {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
 
@@ -48,6 +55,7 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string, onFinish
 		metadata:     metadata,
 		onFinish:     onFinish,
 		onTransition: onTransition,
+		onAction:     onAction,
 	}
 
 	type setFunc struct {
@@ -76,22 +84,19 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string, onFinish
 	return rt
 }
 
-func (rt *Runtime) action(call sobek.FunctionCall) sobek.Value {
-	// imgObject := call.Argument(0).ToObject(rt.vm)
-
-	actionFunc := func(call sobek.FunctionCall) sobek.Value {
-		return rt.vm.ToValue("return value")
-	}
-
-	return rt.vm.ToValue(actionFunc)
+func (rt *Runtime) WithTracingPack(tp *tracingPack) *Runtime {
+	rt.tracingPack = tp
+	return rt
 }
 
 func (rt *Runtime) sleep(seconds int) sobek.Value {
+	rt.tracingPack.span.AddEvent("calling sleep")
 	time.Sleep(time.Duration(seconds) * time.Second)
 	return sobek.Undefined()
 }
 
 func (rt *Runtime) now() *sobek.Object {
+	rt.tracingPack.span.AddEvent("calling now")
 	t := time.Now()
 
 	obj := rt.vm.NewObject()
@@ -108,11 +113,13 @@ func (rt *Runtime) now() *sobek.Object {
 }
 
 func (rt *Runtime) id() sobek.Value {
+	rt.tracingPack.span.AddEvent("calling id")
 	return rt.vm.ToValue(rt.instID)
 }
 
 func (rt *Runtime) log(logs ...string) sobek.Value {
-	telemetry.LogInstance(context.Background(), telemetry.LogLevelInfo, strings.Join(logs, " "))
+	rt.tracingPack.span.AddEvent("calling log")
+	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, strings.Join(logs, " "))
 	return sobek.Undefined()
 }
 
@@ -137,6 +144,9 @@ func (rt *Runtime) transition(call sobek.FunctionCall) sobek.Value {
 	if fName == "" {
 		panic(rt.vm.ToValue(fmt.Sprintf("error parsing transition fn: %s", f)))
 	}
+
+	// otel: end previous and start new one
+	rt.tracingPack.tracingTransition(fName)
 
 	err = rt.onTransition(b, fName)
 	if err != nil {
@@ -177,6 +187,8 @@ func (rt *Runtime) finish(data sobek.Value) sobek.Value {
 		panic(rt.vm.ToValue(fmt.Sprintf("error calling on finish: %s", err.Error())))
 	}
 
+	// otel: finish span from transition
+	rt.tracingPack.tracingFinish()
 	return sobek.Null()
 }
 
@@ -200,8 +212,16 @@ type Script struct {
 	Metadata map[string]string
 }
 
-func ExecScript(script *Script, onFinish OnFinishFunc, onTransition OnTransitionFunc) error {
-	rt := New(script.InstID, script.Metadata, script.Mappings, onFinish, onTransition)
+func ExecScript(ctx context.Context, script *Script, onFinish OnFinishFunc, onTransition OnTransitionFunc, onAction OnActionFunc) error {
+	tp := newTracingPack(ctx, script.Metadata[core.EngineMappingNamespace],
+		script.InstID.String(), script.Metadata[core.EngineMappingCaller], script.Metadata[core.EngineMappingPath])
+	defer tp.finish()
+
+	rt := New(script.InstID, script.Metadata, script.Mappings, onFinish, onTransition, onAction).WithTracingPack(tp)
+
+	tp.tracingStart(script.Fn)
+	telemetry.LogInstance(tp.ctx, telemetry.LogLevelInfo,
+		fmt.Sprintf("transitioning to '%s'", script.Fn))
 
 	_, err := rt.vm.RunString(script.Text)
 	if err != nil {
@@ -220,6 +240,7 @@ func ExecScript(script *Script, onFinish OnFinishFunc, onTransition OnTransition
 
 	_, err = start(sobek.Undefined(), rt.vm.ToValue(inputMap))
 	if err != nil {
+		rt.tracingPack.handleError(err)
 		return fmt.Errorf("invoke start: %w", err)
 	}
 

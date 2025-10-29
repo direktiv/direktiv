@@ -163,8 +163,11 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	st, notify, err := e.engine.StartWorkflow(r.Context(), namespace, path, string(input), map[string]string{
-		core.EngineMappingPath: path,
+		core.EngineMappingPath:      path,
+		core.EngineMappingNamespace: namespace,
+		core.EngineMappingCaller:    "api",
 	})
+
 	if err != nil {
 		writeEngineError(w, err)
 

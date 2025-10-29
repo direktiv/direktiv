@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
@@ -82,6 +83,23 @@ func Start(lc *lifecycle.Manager) error {
 	}
 	datastore.SymmetricEncryptionKey = config.SecretKey
 
+	{
+		err = telemetry.InitOpenTelemetry(lc.Context(), config.OtelBackend)
+		if err != nil {
+			return fmt.Errorf("initialize open telemetry, err: %w", err)
+		}
+
+		// telemetry.LogNamespace(telemetry.LogLevelInfo, "test", "HELLO")
+
+		// tracer := otel.Tracer(telemetry.OtelServiceName)
+		// pctx, span := tracer.Start(context.Background(), "main-span")
+
+		// _, cspan := tracer.Start(pctx, "second")
+		// cspan.AddEvent("event1", trace.WithTimestamp(time.Now()))
+		// cspan.End()
+		// span.End()
+
+	}
 	// initializing pubsub
 	{
 		slog.Info("initializing pubsub")
@@ -143,9 +161,40 @@ func Start(lc *lifecycle.Manager) error {
 			return fmt.Errorf("start service-manager, err: %w", err)
 		}
 
+		app.PubSub.Subscribe(core.IgniteSubject, func(data []byte) {
+			var svc core.ServiceFileData
+			err := json.Unmarshal(data, &svc)
+			if err != nil {
+				slog.Error("error receiving action", slog.Any("error", err))
+				return
+			}
+			svc.Name = svc.GetValueHash()
+			svc.Typ = core.ServiceTypeWorkflow
+
+			slog.Info("igniting service", slog.String("name", svc.GetID()))
+
+			err = datasql.NewStore(app.DB).HeartBeats().Set(context.Background(), &datastore.HeartBeat{
+				Group: "life_services",
+				Key:   svc.GetID(),
+			})
+			if err != nil {
+				slog.Error("error setting up heartbeats for action", slog.Any("error", err))
+				return
+			}
+
+			err = app.ServiceManager.IgniteService(svc.GetID())
+			if err != nil {
+				slog.Error("error igniting action", slog.Any("error", err))
+				return
+			}
+		})
 		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
 			renderServiceFiles(app.DB, app.ServiceManager)
 		})
+		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
+			renderServiceFiles(app.DB, app.ServiceManager)
+		})
+
 		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
 			renderServiceFiles(app.DB, app.ServiceManager)
 		})

@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -114,28 +113,24 @@ func (ci *CompileItem) validate() error {
 		return err
 	}
 
-	pr.ValidateTransitions()
-	pr.ValidateFunctionCalls()
-
-	config, err := pr.ValidateConfig()
-	var vErr *ValidationError
-	if err != nil && errors.As(err, &vErr) {
-		pr.Errors = append(pr.Errors, vErr)
-	} else if err != nil {
-		pr.Errors = append(pr.Errors, &ValidationError{
-			Message:     err.Error(),
-			StartLine:   0,
-			StartColumn: 0,
-		})
+	err = pr.Parse()
+	if err != nil {
+		return err
 	}
 
-	config.Actions = pr.Actions
+	ci.config = pr.FlowConfig
+	ci.config.Actions = pr.Actions
 
 	for i := range pr.Errors {
 		ci.ValidationErrors = append(ci.ValidationErrors, pr.Errors[i])
 	}
 
-	ci.config = config
+	if pr.FirstStateFunc == "" {
+		ci.ValidationErrors = append(ci.ValidationErrors, &ValidationError{
+			Message:  "no state functions defined",
+			Severity: SeverityError,
+		})
+	}
 
 	return nil
 }
