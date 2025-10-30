@@ -1,6 +1,5 @@
 import { FormBase } from "./utils";
 import { TemplateString } from "../../primitives/templateString";
-import { VariableSchema } from "../../primitives/extendedKeyValue";
 import { z } from "zod";
 
 const ArraySchema = z.object({
@@ -8,12 +7,19 @@ const ArraySchema = z.object({
   value: z.array(z.string()),
 });
 
+export const VariableSelectOptions = z.object({
+  type: z.literal("variable-select-options"),
+  arrayPath: z.string().min(1),
+  labelPath: z.string().min(1),
+  valuePath: z.string().min(1),
+});
+
 const ValuesSchema = z.discriminatedUnion("type", [
-  VariableSchema,
+  VariableSelectOptions,
   ArraySchema,
 ]);
 
-export const allowedValuesTypes = ["variable", "array"] as const;
+export const allowedValuesTypes = ["select-options", "array"] as const;
 
 export const ValuesTypeSchema = z.enum(allowedValuesTypes);
 
