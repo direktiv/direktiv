@@ -200,8 +200,10 @@ export const page: DirektivPagesType = {
                           optional: false,
                           type: "form-select",
                           values: {
-                            type: "variable",
-                            value: "query.departments.data",
+                            type: "variable-select-options",
+                            arrayPath: "query.departments.data",
+                            labelPath: "label",
+                            valuePath: "value",
                           },
                           defaultValue: "",
                         },
@@ -482,8 +484,10 @@ export const page: DirektivPagesType = {
                               optional: false,
                               type: "form-select",
                               values: {
-                                type: "variable",
-                                value: "query.departments.data",
+                                type: "variable-select-options",
+                                arrayPath: "query.departments.data",
+                                labelPath: "label",
+                                valuePath: "value",
                               },
                               defaultValue:
                                 "{{query.employee.data.department}}",
