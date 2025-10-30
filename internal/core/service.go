@@ -19,8 +19,6 @@ const (
 	ServiceTypeWorkflow  = "workflow-service"
 )
 
-const IgniteSubject = "action.ignite"
-
 type EnvironmentVariable struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`

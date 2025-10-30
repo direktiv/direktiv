@@ -1,6 +1,7 @@
 package memcache
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/dgraph-io/ristretto/v2"
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
+	intNats "github.com/direktiv/direktiv/internal/nats"
 )
 
 type cacheMessage struct {
@@ -102,14 +104,14 @@ func (c *Cache) publish(key string) {
 		slog.Error("cannot publish cache event", "err", err)
 	}
 
-	err = c.bus.Publish(pubsub.SubjCacheDelete, b)
+	err = c.bus.Publish(context.Background(), intNats.StreamCacheDelete.Name(), b)
 	if err != nil {
 		slog.Error("cannot publish cache event", "err", err)
 	}
 }
 
 func (c *Cache) subscribe() error {
-	return c.bus.Subscribe(pubsub.SubjCacheDelete, func(data []byte) {
+	return c.bus.Subscribe(context.Background(), intNats.StreamCacheDelete.Name(), func(data []byte) {
 		var cm cacheMessage
 		err := json.Unmarshal(data, &cm)
 		if err != nil {

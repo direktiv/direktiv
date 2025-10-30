@@ -29,13 +29,13 @@ type Runtime struct {
 type (
 	OnFinishFunc     func(output []byte) error
 	OnTransitionFunc func(output []byte, fn string) error
-	OnActionFunc     func(config core.ActionConfig) error
+	OnActionFunc     func(svcID string) error
 )
 
 var (
 	NoOnFinish     = func(output []byte) error { return nil }
 	NoOnTransition = func(output []byte, fn string) error { return nil }
-	NoOnAction     = func(config core.ActionConfig) error { return nil }
+	NoOnAction     = func(svcID string) error { return nil }
 )
 
 func New(instID uuid.UUID, metadata map[string]string, mappings string,

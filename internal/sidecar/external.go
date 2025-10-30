@@ -1,12 +1,16 @@
 package sidecar
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 
 	"github.com/direktiv/direktiv/internal/core"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type externalServer struct {
@@ -18,11 +22,17 @@ func newExternalServer() *externalServer {
 	addr, _ := url.Parse("http://localhost:8080")
 	proxy := httputil.NewSingleHostReverseProxy(addr)
 
+	// ctx := otel.GetTextMapPropagator().Extract(r.Context(), propagation.HeaderCarrier(r.Header))
+
 	originalDirector := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		originalDirector(req)
 
 		if req.URL.Path == "/up" {
+
+			fmt.Println("GOT UP REQUEST!!!!!!!!!!!!!!!!!!!!!")
+
+			fmt.Println(req.Header)
 			// status request to avoid retry
 			// this makes the proxy fail
 			req.URL = nil
@@ -36,6 +46,25 @@ func newExternalServer() *externalServer {
 		for header := range req.Header {
 			req.Header.Del(header)
 		}
+
+		// forward to action container
+		// otel.GetTextMapPropagator().Inject(
+		// 	req.Context(),
+		// 	propagation.HeaderCarrier(req.Header),
+		// )
+		ctx := otel.GetTextMapPropagator().Extract(
+			req.Context(),
+			propagation.HeaderCarrier(req.Header),
+		)
+		span := trace.SpanFromContext(ctx)
+		span.AddEvent("sidecar call")
+
+		*req = *req.WithContext(ctx)
+		originalDirector(req)
+		otel.GetTextMapPropagator().Inject(
+			ctx,
+			propagation.HeaderCarrier(req.Header),
+		)
 
 		req.Header.Set(core.EngineHeaderActionID, actionID)
 

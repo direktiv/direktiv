@@ -16,6 +16,36 @@ import (
 )
 
 var (
+	// internal events
+	StreamFileChange = newDescriptor("filesystem.change",
+		&nats.StreamConfig{
+			Storage:    nats.FileStorage,
+			Retention:  nats.LimitsPolicy,
+			Duplicates: 0,
+		}, nil)
+
+	StreamNamespaceChange = newDescriptor("namespace.change",
+		&nats.StreamConfig{
+			Storage:    nats.FileStorage,
+			Retention:  nats.LimitsPolicy,
+			Duplicates: 0,
+		}, nil)
+
+	StreamCacheDelete = newDescriptor("cache.delete",
+		&nats.StreamConfig{
+			Storage:    nats.FileStorage,
+			Retention:  nats.LimitsPolicy,
+			Duplicates: 0,
+		}, nil)
+
+	// engine events
+	StreamIgniteAction = newDescriptor("ignite.action",
+		&nats.StreamConfig{
+			Storage:    nats.FileStorage,
+			Retention:  nats.LimitsPolicy,
+			Duplicates: 0,
+		}, nil)
+
 	StreamSchedRule = newDescriptor("sched.rule",
 		&nats.StreamConfig{
 			Storage:   nats.FileStorage,
@@ -83,6 +113,10 @@ var allDescriptors = []*Descriptor{
 	StreamSchedRule,
 	StreamSchedTask,
 	StreamEngineQueue,
+	StreamIgniteAction,
+	StreamFileChange,
+	StreamCacheDelete,
+	StreamNamespaceChange,
 }
 
 type Conn = nats.Conn
@@ -192,6 +226,8 @@ func ensureStream(ctx context.Context, js nats.JetStreamContext, cfg *nats.Strea
 	if !errors.Is(err, nats.ErrStreamNotFound) {
 		return fmt.Errorf("nats info stream %s: %w", cfg.Name, err)
 	}
+
+	slog.Info("creating nats stream", slog.String("name", cfg.Name), slog.Any("subjects", cfg.Subjects))
 	_, err = js.AddStream(cfg, nats.Context(ctx))
 	if err != nil {
 		return fmt.Errorf("nats add stream %s: %w", cfg.Name, err)

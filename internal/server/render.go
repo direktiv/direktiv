@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	"github.com/direktiv/direktiv/internal/compiler"
@@ -57,7 +56,6 @@ func renderGatewayFiles(db *gorm.DB, manager core.GatewayManager) {
 }
 
 func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager) {
-	fmt.Println("RENDER SERVICE FILE!!!!")
 	ctx := context.Background()
 	dStore := datasql.NewStore(db)
 
@@ -71,7 +69,6 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager) {
 
 	funConfigList := []*core.ServiceFileData{}
 	for i := range namespaces {
-		fmt.Println("RENDER SERVICE FILE!!!!2")
 		ns := namespaces[i]
 		files, err := fStore.ForRoot(ns.Name).ListAllFiles(ctx)
 		if err != nil {
@@ -85,7 +82,6 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager) {
 
 			switch f.Typ {
 			case filestore.FileTypeWorkflow:
-				fmt.Println("RENDER SERVICE FILE!!!!3")
 				c, err := compiler.NewCompiler(db, nil)
 				if err != nil {
 					slog.Error("cannot get compiler for workflow",
@@ -93,7 +89,6 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager) {
 						slog.String("path", f.Path), slog.Any("error", err))
 					continue
 				}
-				fmt.Println("RENDER SERVICE FILE!!!!4")
 				s, err := c.FetchScript(ctx, ns.Name, f.Path)
 				if err != nil {
 					slog.Error("cannot generate functions for workflow",
@@ -101,8 +96,6 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager) {
 						slog.String("path", f.Path), slog.Any("error", err))
 					continue
 				}
-				fmt.Println("RENDER SERVICE FILE!!!!5")
-				fmt.Printf("%+v\n", s.Config)
 				// to make it unique for flow actions, we use a hash as name
 				for k := range s.Config.Actions {
 					action := s.Config.Actions[k]
@@ -133,8 +126,6 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager) {
 		}
 
 	}
-
-	fmt.Println(funConfigList)
 
 	serviceManager.SetServices(funConfigList)
 }

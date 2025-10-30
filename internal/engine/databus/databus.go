@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/direktiv/direktiv/internal/api/filter"
-	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/engine"
 	intNats "github.com/direktiv/direktiv/internal/nats"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
@@ -158,25 +157,27 @@ func (d *DataBus) GetInstanceHistory(ctx context.Context, namespace string, inst
 	return d.historyCache.Snapshot(namespace, instanceID)
 }
 
-func (d *DataBus) PublishIgniteAction(ctx context.Context, config core.ActionConfig, namespace, path string) error {
-	sd := &core.ServiceFileData{
-		Typ:       core.ServiceTypeWorkflow,
-		Name:      "",
-		Namespace: namespace,
-		FilePath:  path,
-		ServiceFile: core.ServiceFile{
-			Image: config.Image,
-			Cmd:   config.Cmd,
-			Size:  config.Size,
-			Envs:  config.Envs,
-		},
-	}
+func (d *DataBus) PublishIgniteAction(ctx context.Context, svcID string) error {
+	// sd := &core.ServiceFileData{
+	// 	Typ:       core.ServiceTypeWorkflow,
+	// 	Name:      "",
+	// 	Namespace: namespace,
+	// 	FilePath:  path,
+	// 	ServiceFile: core.ServiceFile{
+	// 		Image: config.Image,
+	// 		Cmd:   config.Cmd,
+	// 		Size:  config.Size,
+	// 		Envs:  config.Envs,
+	// 	},
+	// }
 
-	b, err := json.Marshal(sd)
-	if err != nil {
-		return err
-	}
+	// sd.Name = sd.GetValueHash()
 
-	_, err = d.js.Publish(core.IgniteSubject, b, nats.Context(ctx))
+	// b, err := json.Marshal(sd)
+	// if err != nil {
+	// 	return err
+	// }
+
+	_, err := d.js.Publish(intNats.StreamIgniteAction.Name(), []byte(svcID), nats.Context(ctx))
 	return err
 }

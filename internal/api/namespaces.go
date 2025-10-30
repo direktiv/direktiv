@@ -13,6 +13,7 @@ import (
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/engine"
+	intNats "github.com/direktiv/direktiv/internal/nats"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
@@ -100,7 +101,7 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: yassir, check the logic of sending events on ns change in all actions.
-	err = e.bus.Publish(pubsub.SubjNamespacesChange, nil)
+	err = e.bus.Publish(r.Context(), intNats.StreamNamespaceChange.Name(), nil)
 	if err != nil {
 		slog.Error("pubsub publish filesystem event", "err", err)
 	}
@@ -302,7 +303,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = e.bus.Publish(pubsub.SubjNamespacesChange, nil)
+	err = e.bus.Publish(r.Context(), intNats.StreamNamespaceChange.Name(), nil)
 	if err != nil {
 		slog.Error("pubsub publish", "err", err)
 	}

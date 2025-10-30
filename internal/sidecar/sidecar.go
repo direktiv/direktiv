@@ -9,11 +9,18 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/direktiv/direktiv/internal/telemetry"
 )
 
 func RunApplication(ctx context.Context) {
 	err := waitForUserContainer()
 	if err != nil {
+	}
+
+	err = telemetry.InitOpenTelemetry(ctx, os.Getenv("DIREKTIV_OTEL_BACKEND"))
+	if err != nil {
+		slog.Warn("cannot init opentelemtry in sidecar", slog.Any("error", err))
 	}
 
 	sidecar := newSidecar()

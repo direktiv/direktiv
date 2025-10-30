@@ -339,7 +339,6 @@ func (m *Manager) GetServiceURL(namespace string, typ string, file string, name 
 func (m *Manager) IgniteService(serviceURL string) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
-
 	serviceID := serviceUrlToID(serviceURL, m.Cfg.KnativeNamespace)
 
 	err := m.runtimeClient.scaleService(serviceID, 1)

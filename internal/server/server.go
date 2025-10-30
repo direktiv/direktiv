@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
@@ -13,7 +12,6 @@ import (
 	"github.com/direktiv/direktiv/internal/api"
 	"github.com/direktiv/direktiv/internal/cluster/cache/memcache"
 	"github.com/direktiv/direktiv/internal/cluster/certs"
-	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	natspubsub "github.com/direktiv/direktiv/internal/cluster/pubsub/nats"
 	"github.com/direktiv/direktiv/internal/compiler"
 	"github.com/direktiv/direktiv/internal/core"
@@ -33,6 +31,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	_ "github.com/lib/pq" //nolint:revive
+	"github.com/nats-io/nats.go"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -88,18 +87,38 @@ func Start(lc *lifecycle.Manager) error {
 		if err != nil {
 			return fmt.Errorf("initialize open telemetry, err: %w", err)
 		}
-
-		// telemetry.LogNamespace(telemetry.LogLevelInfo, "test", "HELLO")
-
-		// tracer := otel.Tracer(telemetry.OtelServiceName)
-		// pctx, span := tracer.Start(context.Background(), "main-span")
-
-		// _, cspan := tracer.Start(pctx, "second")
-		// cspan.AddEvent("event1", trace.WithTimestamp(time.Now()))
-		// cspan.End()
-		// span.End()
-
 	}
+
+	var js nats.JetStreamContext
+	{
+		slog.Info("initializing engine-nats")
+		nc, err := intNats.Connect()
+		if err != nil {
+			return fmt.Errorf("create engine-nats, err: %w", err)
+		}
+
+		// TODO: remove this dev code.
+		{
+			js, err := nc.JetStream()
+			if err != nil {
+				return fmt.Errorf("reset streams, err: %w", err)
+			}
+			err = intNats.ResetStreams(context.Background(), js)
+			if err != nil {
+				err = fmt.Errorf("reset streams, err: %w", err)
+			}
+		}
+
+		js, err = intNats.SetupJetStream(context.Background(), nc)
+		if err != nil {
+			return fmt.Errorf("create engine-nats, err: %w", err)
+		}
+
+		lc.OnShutdown(func() error {
+			return nc.Drain()
+		})
+	}
+
 	// initializing pubsub
 	{
 		slog.Info("initializing pubsub")
@@ -160,42 +179,34 @@ func Start(lc *lifecycle.Manager) error {
 		if err != nil {
 			return fmt.Errorf("start service-manager, err: %w", err)
 		}
+		app.PubSub.Subscribe(lc.Context(), intNats.StreamIgniteAction.Name(), func(data []byte) {
+			// var svc core.ServiceFileData
+			// err := json.Unmarshal(data, &svc)
+			// if err != nil {
+			// 	slog.Error("cannot ignite service", slog.Any("error", err))
+			// }
 
-		app.PubSub.Subscribe(core.IgniteSubject, func(data []byte) {
-			var svc core.ServiceFileData
-			err := json.Unmarshal(data, &svc)
-			if err != nil {
-				slog.Error("error receiving action", slog.Any("error", err))
-				return
-			}
-			svc.Name = svc.GetValueHash()
-			svc.Typ = core.ServiceTypeWorkflow
-
-			slog.Info("igniting service", slog.String("name", svc.GetID()))
-
-			err = datasql.NewStore(app.DB).HeartBeats().Set(context.Background(), &datastore.HeartBeat{
+			err = datasql.NewStore(app.DB).HeartBeats().Set(lc.Context(), &datastore.HeartBeat{
 				Group: "life_services",
-				Key:   svc.GetID(),
+				Key:   string(data),
 			})
 			if err != nil {
-				slog.Error("error setting up heartbeats for action", slog.Any("error", err))
-				return
+				slog.Error("cannot ignite service", slog.Any("error", err))
 			}
 
-			err = app.ServiceManager.IgniteService(svc.GetID())
+			err = app.ServiceManager.IgniteService(string(data))
 			if err != nil {
-				slog.Error("error igniting action", slog.Any("error", err))
-				return
+				slog.Error("cannot ignite service", slog.Any("error", err))
 			}
 		})
-		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager)
-		})
-		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager)
-		})
 
-		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
+		app.PubSub.Subscribe(lc.Context(), intNats.StreamFileChange.Name(), func(_ []byte) {
+			renderServiceFiles(app.DB, app.ServiceManager)
+		})
+		app.PubSub.Subscribe(lc.Context(), intNats.StreamNamespaceChange.Name(), func(_ []byte) {
+			renderServiceFiles(app.DB, app.ServiceManager)
+		})
+		app.PubSub.Subscribe(lc.Context(), intNats.StreamNamespaceChange.Name(), func(_ []byte) {
 			renderServiceFiles(app.DB, app.ServiceManager)
 		})
 		// call at least once before booting
@@ -209,33 +220,6 @@ func Start(lc *lifecycle.Manager) error {
 		if err != nil {
 			return fmt.Errorf("creating compiler, err: %w", err)
 		}
-
-		slog.Info("initializing engine-nats")
-		nc, err := intNats.Connect()
-		if err != nil {
-			return fmt.Errorf("create engine-nats, err: %w", err)
-		}
-
-		// TODO: remove this dev code.
-		{
-			js, err := nc.JetStream()
-			if err != nil {
-				return fmt.Errorf("reset streams, err: %w", err)
-			}
-			err = intNats.ResetStreams(context.Background(), js)
-			if err != nil {
-				err = fmt.Errorf("reset streams, err: %w", err)
-			}
-		}
-
-		js, err := intNats.SetupJetStream(context.Background(), nc)
-		if err != nil {
-			return fmt.Errorf("create engine-nats, err: %w", err)
-		}
-
-		lc.OnShutdown(func() error {
-			return nc.Drain()
-		})
 
 		slog.Info("initializing engine")
 		app.Engine, err = engine.NewEngine(
@@ -273,10 +257,10 @@ func Start(lc *lifecycle.Manager) error {
 		slog.Info("initializing gateway manager")
 		app.GatewayManager = gateway.NewManager(app.SecretsManager)
 
-		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
+		app.PubSub.Subscribe(lc.Context(), intNats.StreamFileChange.Name(), func(_ []byte) {
 			renderGatewayFiles(app.DB, app.GatewayManager)
 		})
-		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
+		app.PubSub.Subscribe(lc.Context(), intNats.StreamNamespaceChange.Name(), func(_ []byte) {
 			renderGatewayFiles(app.DB, app.GatewayManager)
 		})
 		// call at least once before booting

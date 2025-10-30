@@ -21,6 +21,7 @@ func newDescriptor(name string, streamConfig *nats.StreamConfig, consumerConfig 
 	streamConfig.Name = dp.String()
 	streamConfig.Subjects = []string{
 		dp.Subject("*", "*"),
+		name,
 	}
 
 	if consumerConfig != nil {
@@ -42,6 +43,10 @@ func (n Descriptor) Subject(namespace string, id string) string {
 
 func (n Descriptor) String() string {
 	return strings.ReplaceAll(n.name, ".", "-")
+}
+
+func (n Descriptor) Name() string {
+	return n.name
 }
 
 func (n Descriptor) PullSubscribe(js nats.JetStreamContext, opts ...nats.SubOpt) (*nats.Subscription, error) {

@@ -1,18 +1,16 @@
 package pubsub
 
-type Subject string
-
-const (
-	SubjFileSystemChange Subject = "filesystem.change"
-	SubjNamespacesChange Subject = "namespace.change"
-	SubjCacheDelete      Subject = "cache.delete"
+import (
+	"context"
 )
+
+type Subject string
 
 type Handler func(data []byte)
 
 type EventBus interface {
-	Publish(subject Subject, data []byte) error
-	Subscribe(subject Subject, h Handler) error
+	Publish(ctx context.Context, subject string, data []byte) error
+	Subscribe(ctx context.Context, subject string, h Handler) error
 
 	Close() error
 }

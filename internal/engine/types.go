@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/api/filter"
-	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/google/uuid"
 )
@@ -167,5 +166,5 @@ type DataBus interface {
 
 	DeleteNamespace(ctx context.Context, namespace string) error
 
-	PublishIgniteAction(ctx context.Context, config core.ActionConfig, namespace, path string) error
+	PublishIgniteAction(ctx context.Context, svcID string) error
 }

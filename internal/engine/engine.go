@@ -137,9 +137,10 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		Metadata: inst.Metadata,
 	}
 
-	onAction := func(config core.ActionConfig) error {
-		return e.dataBus.PublishIgniteAction(ctx, config,
-			inst.Metadata[core.EngineMappingNamespace], inst.Metadata[core.EngineMappingPath])
+	onAction := func(svcID string) error {
+		// return e.dataBus.PublishIgniteAction(ctx, config,
+		// 	inst.Metadata[core.EngineMappingNamespace], inst.Metadata[core.EngineMappingPath])
+		return e.dataBus.PublishIgniteAction(ctx, svcID)
 	}
 	onFinish := func(output []byte) error {
 		endEv := &InstanceEvent{
