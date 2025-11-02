@@ -1,6 +1,6 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
+import { delayWorkflow, simpleWorkflow } from "e2e/utils/workflows";
 import { expect, test } from "@playwright/test";
-import { simpleWorkflow, workflowWithDelay } from "../utils/workflows";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils/index";
@@ -26,6 +26,7 @@ test.skip("the diagram panel on the instance page responds to user interaction",
     namespace,
     type: "workflow",
     content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
   const instanceId = (
     await createInstance({
@@ -94,7 +95,8 @@ test.skip("the diagram on the instance page changes appearance dynamically", asy
     name: workflowName,
     namespace,
     type: "workflow",
-    content: workflowWithDelay,
+    content: delayWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (

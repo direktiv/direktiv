@@ -44,5 +44,6 @@ export const createListener = async ({
     namespace,
     type: "workflow",
     content,
+    mimeType: "application/x-typescript",
   });
 };

@@ -11,12 +11,12 @@ export const addYamlFileExtension = (name: string) => {
   return `${newName}${yamlExtensions[0]}`;
 };
 
-const typescriptExtension = ".wf.ts";
+const workflowExtension = ".wf.ts";
 
-export const addTypescriptFileExtension = (name: string) => {
+export const addWorkflowFileExtension = (name: string) => {
   const newName = name.trim();
-  if (newName.endsWith(typescriptExtension)) {
+  if (newName.endsWith(workflowExtension)) {
     return newName;
   }
-  return `${newName}${typescriptExtension}`;
+  return `${newName}${workflowExtension}`;
 };

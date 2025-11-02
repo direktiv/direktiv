@@ -1,14 +1,10 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
+import { errorWorkflow, simpleWorkflow } from "e2e/utils/workflows";
 import { expect, test } from "@playwright/test";
-import {
-  simpleWorkflow,
-  workflowWithFewLogs,
-  workflowWithManyLogs,
-} from "../utils/workflows";
+import { workflowWithFewLogs, workflowWithManyLogs } from "../utils/workflows";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils/index";
-import { error as errorWorkflowTemplate } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { faker } from "@faker-js/faker";
 import { mockClipboardAPI } from "e2e/utils/testutils";
 
@@ -34,6 +30,7 @@ test("It displays a log message from the workflow yaml, one initial and one fina
     namespace,
     type: "workflow",
     content: workflowWithFewLogs,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (
@@ -110,6 +107,7 @@ test("the logs panel can be maximized", async ({ page }) => {
     namespace,
     type: "workflow",
     content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (
@@ -173,6 +171,7 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
     namespace,
     type: "workflow",
     content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (
@@ -237,6 +236,7 @@ test("the logs can be copied", async ({ page }) => {
     namespace,
     type: "workflow",
     content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (
@@ -283,6 +283,7 @@ test("log entries will be automatically scrolled to the end", async ({
     namespace,
     type: "workflow",
     content: workflowWithManyLogs,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (
@@ -382,7 +383,8 @@ test("it renders error details for errors in the logs", async ({ page }) => {
     name: workflowName,
     namespace,
     type: "workflow",
-    content: errorWorkflowTemplate.data,
+    content: errorWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (
@@ -421,6 +423,7 @@ test("it renders an error when the api response returns an error", async ({
     namespace,
     type: "workflow",
     content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (

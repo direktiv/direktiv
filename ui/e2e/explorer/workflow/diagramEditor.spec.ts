@@ -34,6 +34,7 @@ test.beforeEach(async () => {
     namespace,
     type: "workflow",
     content: consumeEventWorkflow.data,
+    mimeType: "application/x-typescript",
   });
 });
 
