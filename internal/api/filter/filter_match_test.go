@@ -170,11 +170,18 @@ func TestMatch_GtLt_Float(t *testing.T) {
 			want:   false,
 		},
 		{
-			name:   "AND float window",
+			name:   "AND float window(true)",
 			values: Values{"price": {OpGt: "9.99", OpLt: "10.01"}},
 			field:  "price",
 			input:  "10.00",
 			want:   true,
+		},
+		{
+			name:   "AND float window(false)",
+			values: Values{"price": {OpGt: "9.99", OpLt: "10.01"}},
+			field:  "price",
+			input:  "11.00",
+			want:   false,
 		},
 	}
 
@@ -225,6 +232,20 @@ func TestMatch_GtLt_Time(t *testing.T) {
 			field:  "created_at",
 			input:  laterRFC3339,
 			want:   false,
+		},
+		{
+			name:   "gt false RFC3339",
+			values: Values{"created_at": {OpGt: laterRFC3339}},
+			field:  "created_at",
+			input:  baseRFC3339,
+			want:   false,
+		},
+		{
+			name:   "lt true RFC3339",
+			values: Values{"created_at": {OpLt: laterRFC3339}},
+			field:  "created_at",
+			input:  baseRFC3339,
+			want:   true,
 		},
 		{
 			name:   "gt true Unix seconds",
