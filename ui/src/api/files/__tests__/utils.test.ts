@@ -35,13 +35,13 @@ describe("getFilenameFromPath()", () => {
 
 describe("getParentFromPath()", () => {
   test("file at root level", () => {
-    expect(getParentFromPath("/action.yaml")).toBe("/");
+    expect(getParentFromPath("/action.yaml")).toBe("");
   });
   test("file in directory", () => {
     expect(getParentFromPath("/foobar/nested.yaml")).toBe("/foobar");
   });
   test("directory at root level", () => {
-    expect(getParentFromPath("/examples")).toBe("/");
+    expect(getParentFromPath("/examples")).toBe("");
   });
   test("nested directory", () => {
     expect(getParentFromPath("/examples/nested")).toBe("/examples");

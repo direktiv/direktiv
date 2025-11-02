@@ -34,6 +34,7 @@ test("Route details page shows all important information about the route", async
       targetType: "instant-response",
       targetConfigurationStatus: "202",
     }),
+    mimeType: "application/yaml",
   });
 
   await expect
@@ -146,6 +147,7 @@ test("Route details page shows warning if the route was not configured correctly
     namespace,
     type: "endpoint",
     content: routeWithAnError,
+    mimeType: "application/yaml",
   });
 
   await expect

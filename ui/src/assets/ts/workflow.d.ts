@@ -18,3 +18,9 @@ declare function transition<T>(stateFn: StateFunction<T>, stateFnParams: T);
  * @param data end result output by the workflow, usually a JSON object.
  */
 declare function finish<T>(data: T);
+
+/**
+ * Waits for a number of seconds.
+ * @param seconds time to wait.
+ */
+declare function sleep(seconds: number): void;

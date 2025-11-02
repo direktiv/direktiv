@@ -10,88 +10,23 @@ export const waitForSuccessToast = async (page: Page) => {
   ).toBeHidden();
 };
 
-export const jsonSchemaFormWorkflow = `description: A workflow with a complex json schema form'
-states:
-- id: input
-  type: validate
-  schema:
-    title: some test
-    type: object
-    required:
-    - firstName
-    - lastName
-    properties:
-      firstName:
-        type: string
-        title: First name
-      lastName:
-        type: string
-        title: Last name
-      select:
-        title: role
-        type: string
-        enum: 
-          - admin
-          - guest
-      array:
-        title: A list of strings
-        type: array
-        items:
-          type: string
-      age:
-        type: integer
-        title: Age
-      file:
-        type: string
-        title: file upload
-        format: data-url`;
+export const testDiacriticsWorkflow = `// A workflow for testing characters like îèüñÆ.
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateValidateInput",
+};
 
-export const jsonSchemaWithRequiredEnum = `description: A workflow with a complex json schema form'
-states:
-- id: input
-  type: validate
-  schema:
-    title: some test
-    type: object
-    required:
-    - firstName
-    - lastName
-    - select
-    properties:
-      firstName:
-        type: string
-        title: First name
-      lastName:
-        type: string
-        title: Last name
-      select:
-        title: role
-        type: string
-        enum: 
-          - admin
-          - guest
-      `;
+function stateValidateInput(input) {
+  if (typeof input === "object" && typeof input.name === "string") {
+    return transition(stateSayHello, input)
+  }
+  throw new Error("invalid input")
+}
 
-export const testDiacriticsWorkflow = `direktiv_api: workflow/v1
-description: A workflow for testing characters like îèüñÆ.
-states:
-- id: validate-input
-  type: validate
-  schema:
-    type: object
-    required:
-    - name
-    properties:
-      name:
-        type: string
-        description: Name to greet
-        title: Name
-  transition: sayhello
-
-- id: sayhello
-  type: noop
-  transform:
-    result: 'Hello jq(.name)'
+function stateSayHello(input: { name: string}) {
+  return finish({"result": \`Hello \${input.name}\`})
+}
 `;
 
 export const workflowThatCreatesVariable = `direktiv_api: workflow/v1

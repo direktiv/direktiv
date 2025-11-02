@@ -52,6 +52,7 @@ test("Route list shows all available routes", async ({ page }) => {
       targetType: "instant-response",
       targetConfigurationStatus: "202",
     }),
+    mimeType: "application/yaml",
   });
 
   await expect
@@ -135,6 +136,7 @@ test("Route list shows an error on no target plugin", async ({ page }) => {
     namespace,
     type: "endpoint",
     content: routeWithAWarning,
+    mimeType: "application/yaml",
   });
 
   await expect
@@ -176,6 +178,7 @@ test("Route list shows an error", async ({ page }) => {
     namespace,
     type: "endpoint",
     content: routeWithAnError,
+    mimeType: "application/yaml",
   });
 
   await expect
@@ -221,6 +224,7 @@ test("Route list links the file name to the route file", async ({ page }) => {
     namespace,
     type: "endpoint",
     content: createRouteFile(),
+    mimeType: "application/yaml",
   });
 
   await page.goto(`/n/${namespace}/gateway/routes`, {
