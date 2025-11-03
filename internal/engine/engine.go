@@ -184,9 +184,6 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 func (e *Engine) ListInstanceStatuses(ctx context.Context, limit int, offset int, filters filter.Values) ([]*InstanceStatus, int, error) {
 	data, total := e.dataBus.ListInstanceStatuses(ctx, limit, offset, filters)
-	if len(data) == 0 {
-		return nil, 0, ErrDataNotFound
-	}
 
 	return data, total, nil
 }

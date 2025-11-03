@@ -106,6 +106,10 @@ function stateOne(payload) {
 			query: '',
 			wantCount: 3,
 		},
+		{
+			query: '?filter[status]=nothing',
+			wantCount: 0,
+		},
 	]
 
 	for (let i = 0; i < filterCases.length; i++) {
