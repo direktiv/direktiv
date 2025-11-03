@@ -150,7 +150,6 @@ export const getValueFromJsonPath = (
   return { success: true, data: returnValue };
 };
 
-// TODO: add tests
 export const getStringFromJsonPath = (json: unknown, path: string) => {
   const result = getValueFromJsonPath(json, path);
   if (!result.success) {

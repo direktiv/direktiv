@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
+  getStringFromJsonPath,
   getValueFromJsonPath,
   parseTemplateString,
   parseVariable,
@@ -480,5 +481,60 @@ describe("getValueFromJsonPath", () => {
         error: "invalidJson",
       });
     });
+  });
+});
+
+describe("getStringFromJsonPath", () => {
+  test("it should return string values as strings", () => {
+    const result = getStringFromJsonPath({ key: "value" }, "key");
+    expect(result).toBe("value");
+  });
+
+  test("it should convert number values to strings", () => {
+    const result = getStringFromJsonPath({ key: 42 }, "key");
+    expect(result).toBe("42");
+  });
+
+  test("it should convert boolean values to strings", () => {
+    expect(getStringFromJsonPath({ key: true }, "key")).toBe("true");
+    expect(getStringFromJsonPath({ key: false }, "key")).toBe("false");
+  });
+
+  test("it should handle nested paths", () => {
+    const obj = { user: { name: "John", age: 30, active: true } };
+    expect(getStringFromJsonPath(obj, "user.name")).toBe("John");
+    expect(getStringFromJsonPath(obj, "user.age")).toBe("30");
+    expect(getStringFromJsonPath(obj, "user.active")).toBe("true");
+  });
+
+  test("it should handle array indices", () => {
+    const obj = { items: ["first", 2, true] };
+    expect(getStringFromJsonPath(obj, "items.0")).toBe("first");
+    expect(getStringFromJsonPath(obj, "items.1")).toBe("2");
+    expect(getStringFromJsonPath(obj, "items.2")).toBe("true");
+  });
+
+  test("it should throw an error for invalid paths", () => {
+    expect(() => getStringFromJsonPath({ key: "value" }, "invalid")).toThrow(
+      "Failed to extract string from path invalid"
+    );
+  });
+
+  test("it should throw an error for invalid json input", () => {
+    expect(() => getStringFromJsonPath("not json", "key")).toThrow(
+      "Failed to extract string from path key"
+    );
+  });
+
+  test("it should throw an error for non-string/number/boolean values", () => {
+    expect(() =>
+      getStringFromJsonPath({ key: { nested: "value" } }, "key")
+    ).toThrow("Failed to parse extracted value [object Object]");
+    expect(() => getStringFromJsonPath({ key: ["array"] }, "key")).toThrow(
+      "Failed to parse extracted value array"
+    );
+    expect(() => getStringFromJsonPath({ key: null }, "key")).toThrow(
+      "Failed to parse extracted value null"
+    );
   });
 });
