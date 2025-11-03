@@ -128,7 +128,7 @@ export const Select = ({
             }}
           />
         )}
-        {form.watch("values.type") === "variable" && (
+        {form.watch("values.type") === "variable-select-options" && (
           <Controller
             control={form.control}
             name="values.value"

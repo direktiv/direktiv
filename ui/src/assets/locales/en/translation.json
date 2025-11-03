@@ -1845,7 +1845,7 @@
             "valuesLabel": "Options",
             "valuesPlaceholder": "Select option",
             "type": {
-              "variable": "Variable",
+              "variable-select-options": "Variable",
               "array": "Static"
             }
           }

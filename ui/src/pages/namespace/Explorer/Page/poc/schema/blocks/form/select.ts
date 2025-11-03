@@ -19,7 +19,7 @@ const ValuesSchema = z.discriminatedUnion("type", [
   ArraySchema,
 ]);
 
-export const allowedValuesTypes = ["select-options", "array"] as const;
+export const allowedValuesTypes = ["variable-select-options", "array"] as const;
 
 export const ValuesTypeSchema = z.enum(allowedValuesTypes);
 
