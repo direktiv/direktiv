@@ -81,7 +81,7 @@ func TestSnapshot_FilteringAndOrdering(t *testing.T) {
 	}
 
 	// Filter by namespace
-	nsA := c.Snapshot(filter.Build(
+	nsA := c.Snapshot(filter.With(nil,
 		filter.FieldEQ("namespace", "a"),
 	))
 	if len(nsA) != 1 {
@@ -94,7 +94,7 @@ func TestSnapshot_FilteringAndOrdering(t *testing.T) {
 	}
 
 	// Filter by instance ID
-	byID := c.Snapshot(filter.Build(
+	byID := c.Snapshot(filter.With(nil,
 		filter.FieldEQ("instanceID", id2.String()),
 	))
 	if len(byID) != 1 || byID[0].InstanceID != id2 {
@@ -113,7 +113,7 @@ func TestSnapshotPage_LimitOffsetAndTotal(t *testing.T) {
 	}
 
 	// Ask for limit=2, offset=1 within namespace "ns"
-	page, total := c.SnapshotPage(2, 1, filter.Build(
+	page, total := c.SnapshotPage(2, 1, filter.With(nil,
 		filter.FieldEQ("namespace", "ns"),
 	))
 	if total != 5 {

@@ -161,7 +161,7 @@ func TestMatch_In_Time(t *testing.T) {
 func TestBuild_FieldIN(t *testing.T) {
 	t.Parallel()
 
-	vals := Build(
+	vals := With(nil,
 		FieldEQ("status", "active"),
 		FieldIN("role", "admin,editor"),
 	)

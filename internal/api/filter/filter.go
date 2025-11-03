@@ -242,21 +242,8 @@ func FromQueryString(raw string) (Values, error) {
 	return FromURLValues(v), nil
 }
 
-func Build(items ...func() (string, string, string)) Values {
-	res := make(Values)
-	for _, item := range items {
-		op, field, value := item()
-		if _, ok := res[field]; !ok {
-			res[field] = make(map[string]string)
-		}
-		res[field][op] = value
-	}
-
-	return res
-}
-
-func Append(src Values, items ...func() (string, string, string)) Values {
-	dest := cloneValues(src)
+func With(base Values, items ...func() (string, string, string)) Values {
+	dest := cloneValues(base)
 	for _, item := range items {
 		op, field, value := item()
 		if _, ok := dest[field]; !ok {

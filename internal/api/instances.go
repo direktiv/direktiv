@@ -205,7 +205,7 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 	limit := ParseQueryParam[int](r, "limit", 0)
 	offset := ParseQueryParam[int](r, "offset", 0)
 
-	fil := filter.Append(
+	fil := filter.With(
 		filter.FromURLValues(r.URL.Query()),
 		filter.FieldEQ("namespace", namespace),
 	)
