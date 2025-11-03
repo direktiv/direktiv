@@ -111,10 +111,9 @@ function stateOne(payload) {
 	for (let i = 0; i < filterCases.length; i++) {
 		const filterCase = filterCases[i]
 		it(`should list instances with filter ${filterCase.query}`, async () => {
-			const res = await request(common.config.getDirektivBaseUrl())
-				.get(
-					`/api/v2/namespaces/${namespace}/instances${filterCase.query}`,
-				)
+			const res = await request(common.config.getDirektivBaseUrl()).get(
+				`/api/v2/namespaces/${namespace}/instances${filterCase.query}`,
+			)
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data.length).toBe(filterCase.wantCount)
 		})
