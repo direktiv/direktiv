@@ -255,6 +255,19 @@ func Build(items ...func() (string, string, string)) Values {
 	return res
 }
 
+func Append(src Values, items ...func() (string, string, string)) Values {
+	dest := cloneValues(src)
+	for _, item := range items {
+		op, field, value := item()
+		if _, ok := dest[field]; !ok {
+			dest[field] = make(map[string]string)
+		}
+		dest[field][op] = value
+	}
+
+	return dest
+}
+
 func FieldEQ(field string, value string) func() (string, string, string) {
 	return func() (string, string, string) {
 		return OpEq, field, value
@@ -277,4 +290,16 @@ func FieldIN(field string, csv string) func() (string, string, string) {
 	return func() (string, string, string) {
 		return OpIn, field, csv
 	}
+}
+
+func cloneValues(m Values) Values {
+	clone := make(Values, len(m))
+	for key, innerMap := range m {
+		innerClone := make(map[string]string, len(innerMap))
+		for k, v := range innerMap {
+			innerClone[k] = v
+		}
+		clone[key] = innerClone
+	}
+	return clone
 }

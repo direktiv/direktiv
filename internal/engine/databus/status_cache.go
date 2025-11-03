@@ -63,6 +63,12 @@ func (c *StatusCache) SnapshotPage(limit int, offset int, filters filter.Values)
 		if !filters.Match("namespace", v.Namespace) {
 			continue
 		}
+		if !filters.Match("status", v.StatusString()) {
+			continue
+		}
+		if !filters.Match("createdAt", v.CreatedAt.String()) {
+			continue
+		}
 
 		total++
 		if offset > 0 {
