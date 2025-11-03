@@ -73,28 +73,50 @@ function stateOne(payload) {
 		})
 	}
 
-	it(`should filter instances by filter[status]=complete`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl())
-			.get(
-				`/api/v2/namespaces/${namespace}/instances?filter[status]=complete`,
-			)
-		expect(res.statusCode).toEqual(200)
-		expect(res.body.data.length).toBe(2)
-	})
-	it(`should filter instances by filter[status]=failed`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl())
-			.get(
-				`/api/v2/namespaces/${namespace}/instances?filter[status]=failed`,
-			)
-		expect(res.statusCode).toEqual(200)
-		expect(res.body.data.length).toBe(1)
-	})
-	it(`should list all instances`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl())
-			.get(
-				`/api/v2/namespaces/${namespace}/instances`,
-			)
-		expect(res.statusCode).toEqual(200)
-		expect(res.body.data.length).toBe(3)
-	})
+	const filterCases = [
+		{
+			query: '?filter[status]=complete',
+			wantCount: 2,
+		},
+		{
+			query: '?filter[status][eq]=complete',
+			wantCount: 2,
+		},
+		{
+			query: '?filter[status][in]=complete',
+			wantCount: 2,
+		},
+		{
+			query: '?filter[status]=failed',
+			wantCount: 1,
+		},
+		{
+			query: '?filter[status][eq]=failed',
+			wantCount: 1,
+		},
+		{
+			query: '?filter[status][in]=failed',
+			wantCount: 1,
+		},
+		{
+			query: '?filter[status][in]=complete,failed',
+			wantCount: 3,
+		},
+		{
+			query: '',
+			wantCount: 3,
+		},
+	]
+
+	for (let i = 0; i < filterCases.length; i++) {
+		const filterCase = filterCases[i]
+		it(`should list instances with filter ${filterCase.query}`, async () => {
+			const res = await request(common.config.getDirektivBaseUrl())
+				.get(
+					`/api/v2/namespaces/${namespace}/instances${filterCase.query}`,
+				)
+			expect(res.statusCode).toEqual(200)
+			expect(res.body.data.length).toBe(filterCase.wantCount)
+		})
+	}
 })

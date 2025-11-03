@@ -288,5 +288,6 @@ func cloneValues(m Values) Values {
 		}
 		clone[key] = innerClone
 	}
+
 	return clone
 }
