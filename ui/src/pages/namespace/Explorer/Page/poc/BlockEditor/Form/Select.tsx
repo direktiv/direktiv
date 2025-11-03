@@ -47,14 +47,7 @@ export const Select = ({
     const parsedValueType = ValuesTypeSchema.safeParse(value);
     if (parsedValueType.data) {
       field.onChange(parsedValueType.data);
-      switch (parsedValueType.data) {
-        case "array":
-          form.setValue("values.value", []);
-          break;
-        case "variable":
-          form.setValue("values.value", "");
-          break;
-      }
+      form.setValue("values.value", []);
     }
   };
 
