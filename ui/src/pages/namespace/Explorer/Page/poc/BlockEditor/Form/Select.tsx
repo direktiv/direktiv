@@ -122,23 +122,39 @@ export const Select = ({
           />
         )}
         {form.watch("values.type") === "variable-select-options" && (
-          <Controller
-            control={form.control}
-            name="values.value"
-            render={({ field }) => {
-              const parsedValue = z.string().safeParse(field.value);
-              const value = parsedValue.success ? parsedValue.data : "";
-              return (
-                <VariableInput
-                  value={value}
-                  onUpdate={(value) => field.onChange(value)}
-                  placeholder={t(
-                    "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholderVariable"
-                  )}
-                />
-              );
-            }}
-          />
+          <>
+            <Controller
+              control={form.control}
+              name="values.arrayPath"
+              render={({ field }) => {
+                const parsedValue = z.string().safeParse(field.value);
+                const value = parsedValue.success ? parsedValue.data : "";
+                return (
+                  <VariableInput
+                    value={value}
+                    onUpdate={(value) => field.onChange(value)}
+                    placeholder={t(
+                      "direktivPage.blockEditor.blockForms.formPrimitives.select.arrayPathPlaceholder"
+                    )}
+                  />
+                );
+              }}
+            />
+            <Input
+              {...form.register("values.valuePath")}
+              id="id"
+              placeholder={t(
+                "direktivPage.blockEditor.blockForms.formPrimitives.select.valuePathPlaceholder"
+              )}
+            />
+            <Input
+              {...form.register("values.labelPath")}
+              id="id"
+              placeholder={t(
+                "direktivPage.blockEditor.blockForms.formPrimitives.select.labelPathPlaceholder"
+              )}
+            />
+          </>
         )}
       </Fieldset>
       <Fieldset

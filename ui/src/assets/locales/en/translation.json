@@ -1847,7 +1847,10 @@
             "type": {
               "variable-select-options": "Variable",
               "array": "Static"
-            }
+            },
+            "arrayPathPlaceholder": "path to an array of objects",
+            "labelPathPlaceholder": "path to the label property",
+            "valuePathPlaceholder": "path to the value property"
           }
         }
       },
