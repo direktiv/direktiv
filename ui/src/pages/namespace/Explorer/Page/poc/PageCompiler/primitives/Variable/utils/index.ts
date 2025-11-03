@@ -149,3 +149,18 @@ export const getValueFromJsonPath = (
 
   return { success: true, data: returnValue };
 };
+
+// TODO: add tests
+export const getStringFromJsonPath = (json: unknown, path: string) => {
+  const result = getValueFromJsonPath(json, path);
+  if (!result.success) {
+    throw new Error(`Failed to extract string from path ${path}`);
+  }
+  const schema = z.string().or(z.number()).or(z.boolean());
+  const parsed = schema.safeParse(result.data);
+  if (!parsed.success) {
+    throw new Error(`Failed to parse extracted value ${result.data}`);
+  }
+
+  return parsed.data.toString();
+};
