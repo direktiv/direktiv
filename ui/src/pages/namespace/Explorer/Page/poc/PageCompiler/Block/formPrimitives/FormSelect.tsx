@@ -6,15 +6,14 @@ import {
   SelectValue,
 } from "~/design/Select";
 
-import { AllVariableErrors } from "../../primitives/Variable/utils/errors";
 import { Fieldset } from "./utils/FieldSet";
 import { FormSelectType } from "../../../schema/blocks/form/select";
 import { StopPropagation } from "~/components/StopPropagation";
-import { ValidationResult } from "../../primitives/Variable/utils/types";
 import { encodeBlockKey } from "./utils";
 import { getStringValueFromJsonPath } from "../../primitives/Variable/utils";
 import { useStringInterpolation } from "../../primitives/Variable/utils/useStringInterpolation";
 import { useTranslation } from "react-i18next";
+import { useUnwrapOrThrow } from "../../primitives/Variable/utils/useUnwrapOrThrow";
 import { useVariableArrayResolver } from "../../primitives/Variable/utils/useVariableArrayResolver";
 
 type FormSelectProps = {
@@ -23,6 +22,7 @@ type FormSelectProps = {
 
 export const FormSelect = ({ blockProps }: FormSelectProps) => {
   const { t } = useTranslation();
+  const unwrapOrThrow = useUnwrapOrThrow();
   const interpolateString = useStringInterpolation();
   const variableResolver = useVariableArrayResolver();
   const { id, label, description, defaultValue, values, optional, type } =
@@ -30,20 +30,6 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
 
   const resolvedDefaultValue = interpolateString(defaultValue);
   const fieldName = encodeBlockKey(type, id, optional);
-
-  const unwrapOrThrow = <T, E extends AllVariableErrors>(
-    result: ValidationResult<T, E>,
-    variable: string
-  ): T => {
-    if (!result.success) {
-      throw new Error(
-        t(`direktivPage.error.templateString.${result.error}`, {
-          variable,
-        })
-      );
-    }
-    return result.data;
-  };
 
   let resolvedValues: { value: string; label: string }[];
 
