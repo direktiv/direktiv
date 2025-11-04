@@ -27,10 +27,6 @@ export type ResolveVariableError =
 
 export type ResolveVariableArrayError = ResolveVariableError | ArrayError;
 
-export type ResolveVariableStringArrayError =
-  | ResolveVariableArrayError
-  | StringArrayError;
-
 export type ResolveVariableStringError = ResolveVariableError | StringifyError;
 
 export type ResolveVariableBooleanError = ResolveVariableError | BooleanError;

@@ -7,7 +7,7 @@ const ArraySchema = z.object({
   value: z.array(z.string()),
 });
 
-export const VariableSelectOptions = z.object({
+const VariableSelectOptions = z.object({
   type: z.literal("variable-select-options"),
   arrayPath: z.string().min(1),
   labelPath: z.string().min(1),
