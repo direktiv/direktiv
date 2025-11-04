@@ -174,7 +174,6 @@ describe('Test target namespace variable plugin', () => {
 		expect(req.header['content-type']).toEqual('text/plain')
 	})
 
-
 	retry10(`should return a var from non-magic namespace`, async () => {
 		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/` + limitedNamespace + `/endpoint2`,
