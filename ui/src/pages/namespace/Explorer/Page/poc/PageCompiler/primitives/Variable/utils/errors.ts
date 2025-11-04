@@ -17,7 +17,7 @@ type BooleanError = "notABoolean";
 
 type NumberError = "notANumber";
 
-type StringifyError = "couldNotStringify";
+export type StringifyError = "couldNotStringify";
 
 export type ResolveVariableError =
   | ValidateVariableError
