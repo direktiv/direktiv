@@ -1,5 +1,6 @@
 import { FormBase } from "./utils";
 import { TemplateString } from "../../primitives/templateString";
+import { Variable } from "../../primitives/variable";
 import { z } from "zod";
 
 const ArraySchema = z.object({
@@ -9,9 +10,9 @@ const ArraySchema = z.object({
 
 const VariableSelectOptions = z.object({
   type: z.literal("variable-select-options"),
-  arrayPath: z.string().min(1),
-  labelPath: z.string().min(1),
-  valuePath: z.string().min(1),
+  arrayPath: Variable,
+  labelPath: Variable,
+  valuePath: Variable,
 });
 
 const ValuesSchema = z.discriminatedUnion("type", [
