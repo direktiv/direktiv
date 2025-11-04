@@ -50,7 +50,7 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
     resolvedValues = values.value.map((value) => ({ label: value, value }));
   }
 
-  const value = resolvedValues.find((v) => v.label === resolvedDefaultValue);
+  const value = resolvedValues.find((v) => v.value === resolvedDefaultValue);
 
   return (
     <Fieldset
@@ -60,9 +60,9 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
       htmlFor={fieldName}
       optional={optional}
     >
-      <Select defaultValue={value?.label} key={value?.label} name={fieldName}>
+      <Select defaultValue={value?.value} key={value?.value} name={fieldName}>
         <StopPropagation>
-          <SelectTrigger variant="outline" id={fieldName} value={value?.label}>
+          <SelectTrigger variant="outline" id={fieldName} value={value?.value}>
             <SelectValue
               placeholder={t("direktivPage.page.blocks.form.selectPlaceholder")}
             />
