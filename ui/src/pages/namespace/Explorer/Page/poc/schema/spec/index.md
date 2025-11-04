@@ -338,9 +338,9 @@ An extended key-value pair that supports multiple data types for the value, incl
 
 ## `VariableSelectOptions`
 
-| Attribute   | Type                        | Description                                            |
-| ----------- | --------------------------- | ------------------------------------------------------ |
-| `type`      | `"variable-select-options"` |                                                        |
-| `arrayPath` | `string`                    | Path to the variable that contains an array of objects |
-| `labelPath` | `string`                    | path to the label attribute relative to the array item |
-| `valuePath` | `string`                    | path to the value attribute relative to the array item |
+| Attribute | Type                        | Description                                            |
+| --------- | --------------------------- | ------------------------------------------------------ |
+| `type`    | `"variable-select-options"` |                                                        |
+| `data`    | `string`                    | Path to the variable that contains an array of objects |
+| `label`   | `string`                    | path to the label attribute relative to the array item |
+| `value`   | `string`                    | path to the value attribute relative to the array item |
