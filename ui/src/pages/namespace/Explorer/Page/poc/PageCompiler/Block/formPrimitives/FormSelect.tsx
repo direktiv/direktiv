@@ -34,16 +34,16 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
   let resolvedValues: { value: string; label: string }[];
 
   if (values.type === "variable-select-options") {
-    const arrayResult = variableResolver(values.arrayPath);
-    const resolvedArray = unwrapOrThrow(arrayResult, values.arrayPath);
+    const arrayResult = variableResolver(values.data);
+    const resolvedArray = unwrapOrThrow(arrayResult, values.data);
 
     resolvedValues = resolvedArray.map((object) => {
-      const labelResult = getStringValueFromJsonPath(object, values.labelPath);
-      const valueResult = getStringValueFromJsonPath(object, values.valuePath);
+      const labelResult = getStringValueFromJsonPath(object, values.label);
+      const valueResult = getStringValueFromJsonPath(object, values.value);
 
       return {
-        label: unwrapOrThrow(labelResult, values.labelPath),
-        value: unwrapOrThrow(valueResult, values.valuePath),
+        label: unwrapOrThrow(labelResult, values.label),
+        value: unwrapOrThrow(valueResult, values.value),
       };
     });
   } else {

@@ -10,9 +10,9 @@ const ArraySchema = z.object({
 
 const VariableSelectOptions = z.object({
   type: z.literal("variable-select-options"),
-  arrayPath: Variable,
-  labelPath: Variable,
-  valuePath: Variable,
+  data: Variable,
+  label: Variable,
+  value: Variable,
 });
 
 const ValuesSchema = z.discriminatedUnion("type", [

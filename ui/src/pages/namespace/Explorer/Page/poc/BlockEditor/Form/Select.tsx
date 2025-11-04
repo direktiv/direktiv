@@ -125,7 +125,7 @@ export const Select = ({
           <>
             <Controller
               control={form.control}
-              name="values.arrayPath"
+              name="values.data"
               render={({ field }) => {
                 const parsedValue = z.string().safeParse(field.value);
                 const value = parsedValue.success ? parsedValue.data : "";
@@ -134,24 +134,22 @@ export const Select = ({
                     value={value}
                     onUpdate={(value) => field.onChange(value)}
                     placeholder={t(
-                      "direktivPage.blockEditor.blockForms.formPrimitives.select.arrayPathPlaceholder"
+                      "direktivPage.blockEditor.blockForms.formPrimitives.select.dataPlaceholder"
                     )}
                   />
                 );
               }}
             />
             <Input
-              {...form.register("values.valuePath")}
-              id="id"
+              {...form.register("values.value")}
               placeholder={t(
-                "direktivPage.blockEditor.blockForms.formPrimitives.select.valuePathPlaceholder"
+                "direktivPage.blockEditor.blockForms.formPrimitives.select.valuePlaceholder"
               )}
             />
             <Input
-              {...form.register("values.labelPath")}
-              id="id"
+              {...form.register("values.label")}
               placeholder={t(
-                "direktivPage.blockEditor.blockForms.formPrimitives.select.labelPathPlaceholder"
+                "direktivPage.blockEditor.blockForms.formPrimitives.select.labelPlaceholder"
               )}
             />
           </>

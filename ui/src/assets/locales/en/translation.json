@@ -1848,9 +1848,9 @@
               "variable-select-options": "Variable",
               "array": "Static"
             },
-            "arrayPathPlaceholder": "path to an array of objects",
-            "labelPathPlaceholder": "path to the label property",
-            "valuePathPlaceholder": "path to the value property"
+            "dataPlaceholder": "path to an array of objects",
+            "labelPlaceholder": "path to the label property",
+            "valuePlaceholder": "path to the value property"
           }
         }
       },
