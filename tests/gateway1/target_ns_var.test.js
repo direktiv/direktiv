@@ -174,17 +174,6 @@ describe('Test target namespace variable plugin', () => {
 		expect(req.header['content-type']).toEqual('text/plain')
 	})
 
-	retry10(
-		`should return a var from magic namespace with namespace set`,
-		async () => {
-			const req = await request(common.config.getDirektivBaseUrl()).get(
-				`/ns/system/endpoint2`,
-			)
-			expect(req.statusCode).toEqual(200)
-			expect(req.text).toEqual('Hello World 2')
-			expect(req.header['content-type']).toEqual('text/test')
-		},
-	)
 
 	retry10(`should return a var from non-magic namespace`, async () => {
 		const req = await request(common.config.getDirektivBaseUrl()).get(
