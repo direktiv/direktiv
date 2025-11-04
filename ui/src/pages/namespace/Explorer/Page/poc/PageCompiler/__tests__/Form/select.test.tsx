@@ -129,7 +129,7 @@ describe("select input", () => {
     );
   });
 
-  test("shows error when using an array but the values are not strings", async () => {
+  test("shows error when the path to the label does not exist", async () => {
     await act(async () => {
       render(
         <PageCompiler
@@ -143,8 +143,8 @@ describe("select input", () => {
               type: "form-select",
               values: {
                 type: "variable-select-options",
-                arrayPath: "query.user.data.recentActivity",
-                labelPath: "label",
+                arrayPath: "query.user.meta.subscriptionPlanOptions",
+                labelPath: "this.label.does.not.exist",
                 valuePath: "value",
               },
               defaultValue: "",
@@ -161,7 +161,44 @@ describe("select input", () => {
       .click();
     expect(
       screen.getByText(
-        "Variable error (query.user.data.recentActivity): Pointing to a value that is not an array of strings."
+        "Variable error (this.label.does.not.exist): The path is not valid. It points to an undefined value."
+      )
+    );
+  });
+
+  test("shows error when the path to the value does not exist", async () => {
+    await act(async () => {
+      render(
+        <PageCompiler
+          setPage={setPage}
+          page={createDirektivPageWithForm([
+            {
+              id: "dynamic-select",
+              label: "dynamic select",
+              description: "default value is always two",
+              optional: false,
+              type: "form-select",
+              values: {
+                type: "variable-select-options",
+                arrayPath: "query.user.meta.subscriptionPlanOptions",
+                labelPath: "label",
+                valuePath: "this.value.does.not.exist",
+              },
+              defaultValue: "",
+            },
+          ])}
+          mode="live"
+        />
+      );
+    });
+    await screen
+      .getByRole("button", {
+        name: "There was an unexpected error",
+      })
+      .click();
+    expect(
+      screen.getByText(
+        "Variable error (this.value.does.not.exist): The path is not valid. It points to an undefined value."
       )
     );
   });
