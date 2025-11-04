@@ -10,7 +10,7 @@ import { Fieldset } from "./utils/FieldSet";
 import { FormSelectType } from "../../../schema/blocks/form/select";
 import { StopPropagation } from "~/components/StopPropagation";
 import { encodeBlockKey } from "./utils";
-import { getStringFromJsonPath } from "../../primitives/Variable/utils";
+import { getStringValueFromJsonPath } from "../../primitives/Variable/utils";
 import { useStringInterpolation } from "../../primitives/Variable/utils/useStringInterpolation";
 import { useTranslation } from "react-i18next";
 import { useVariableArrayResolver } from "../../primitives/Variable/utils/useVariableArrayResolver";
@@ -35,9 +35,26 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
     const result = variableResolver(values.arrayPath);
     if (result.success) {
       resolvedValues = result.data.map((object) => {
-        const value = getStringFromJsonPath(object, values.valuePath);
-        const label = getStringFromJsonPath(object, values.labelPath);
-        return { value, label };
+        const value = getStringValueFromJsonPath(object, values.valuePath);
+        const label = getStringValueFromJsonPath(object, values.labelPath);
+
+        if (!label.success) {
+          throw new Error(
+            t(`direktivPage.error.templateString.${label.error}`, {
+              variable: values.labelPath,
+            })
+          );
+        }
+
+        if (!value.success) {
+          throw new Error(
+            t(`direktivPage.error.templateString.${value.error}`, {
+              variable: values.valuePath,
+            })
+          );
+        }
+
+        return { value: value.data, label: label.data };
       });
     } else {
       throw new Error(
