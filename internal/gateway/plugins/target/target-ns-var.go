@@ -11,6 +11,7 @@ import (
 )
 
 type NamespaceVarPlugin struct {
+	// TODO: remove system namespace feature
 	Namespace   string `mapstructure:"namespace"`
 	Variable    string `mapstructure:"variable"`
 	ContentType string `mapstructure:"content_type"`
@@ -36,7 +37,7 @@ func (tnv *NamespaceVarPlugin) Execute(w http.ResponseWriter, r *http.Request) (
 	if tnv.Namespace == "" {
 		tnv.Namespace = currentNS
 	}
-	if tnv.Namespace != currentNS && currentNS != core.SystemNamespace {
+	if tnv.Namespace != currentNS {
 		gateway.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
 		return nil, nil
 	}

@@ -358,14 +358,16 @@ func namespaceAPIObject(ns *datastore.Namespace, mConfig *datastore.MirrorConfig
 	type apiObject struct {
 		*datastore.Namespace
 
-		Mirror            any  `json:"mirror"`
+		Mirror any `json:"mirror"`
+		// TODO: remove system namespace feature
 		IsSystemNamespace bool `json:"isSystemNamespace"`
 	}
 
 	if mConfig == nil {
 		return &apiObject{
-			Namespace:         ns,
-			IsSystemNamespace: ns.Name == core.SystemNamespace,
+			Namespace: ns,
+			// TODO: remove system namespace feature
+			IsSystemNamespace: false,
 		}
 	}
 
@@ -396,6 +398,7 @@ func namespaceAPIObject(ns *datastore.Namespace, mConfig *datastore.MirrorConfig
 			CreatedAt: mConfig.CreatedAt,
 			UpdatedAt: mConfig.UpdatedAt,
 		},
-		IsSystemNamespace: ns.Name == core.SystemNamespace,
+		// TODO: remove system namespace feature
+		IsSystemNamespace: false,
 	}
 }

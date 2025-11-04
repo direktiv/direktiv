@@ -16,7 +16,8 @@ import (
 type NamespaceFileServerPlugin struct {
 	AllowPaths []string `mapstructure:"allow_paths"`
 	DenyPaths  []string `mapstructure:"deny_paths"`
-	Namespace  string   `mapstructure:"namespace"`
+	// TODO: remove system namespace feature
+	Namespace string `mapstructure:"namespace"`
 }
 
 func (tnf *NamespaceFileServerPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
@@ -57,7 +58,7 @@ func (tnf *NamespaceFileServerPlugin) Execute(w http.ResponseWriter, r *http.Req
 	if tnf.Namespace == "" {
 		tnf.Namespace = currentNS
 	}
-	if tnf.Namespace != currentNS && currentNS != core.SystemNamespace {
+	if tnf.Namespace != currentNS {
 		gateway.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
 
 		return nil, nil

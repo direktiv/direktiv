@@ -13,6 +13,7 @@ import (
 
 // NamespaceFilePlugin returns a files in the explorer tree.
 type NamespaceFilePlugin struct {
+	// TODO: remove system namespace feature
 	Namespace   string `mapstructure:"namespace"`
 	File        string `mapstructure:"file"`
 	ContentType string `mapstructure:"content_type"`
@@ -46,7 +47,7 @@ func (tnf *NamespaceFilePlugin) Execute(w http.ResponseWriter, r *http.Request) 
 	if tnf.Namespace == "" {
 		tnf.Namespace = currentNS
 	}
-	if tnf.Namespace != currentNS && currentNS != core.SystemNamespace {
+	if tnf.Namespace != currentNS {
 		gateway.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
 		return nil, nil
 	}
