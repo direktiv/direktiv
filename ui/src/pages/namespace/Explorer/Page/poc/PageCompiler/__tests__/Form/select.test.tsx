@@ -89,7 +89,7 @@ describe("select input", () => {
     const select = screen.getByRole("combobox", {
       name: "dynamic select",
     }) as HTMLSelectElement;
-    expect(select.parentElement?.textContent).toContain("freeproenterprise");
+    expect(select.parentElement?.textContent).contain("FreeProEnterprise");
   });
 
   test("shows error when using a non array variable", async () => {
