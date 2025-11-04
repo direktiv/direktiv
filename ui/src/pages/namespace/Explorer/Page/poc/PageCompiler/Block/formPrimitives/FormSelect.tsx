@@ -6,9 +6,11 @@ import {
   SelectValue,
 } from "~/design/Select";
 
+import { AllVariableErrors } from "../../primitives/Variable/utils/errors";
 import { Fieldset } from "./utils/FieldSet";
 import { FormSelectType } from "../../../schema/blocks/form/select";
 import { StopPropagation } from "~/components/StopPropagation";
+import { ValidationResult } from "../../primitives/Variable/utils/types";
 import { encodeBlockKey } from "./utils";
 import { getStringValueFromJsonPath } from "../../primitives/Variable/utils";
 import { useStringInterpolation } from "../../primitives/Variable/utils/useStringInterpolation";
@@ -29,40 +31,35 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
   const resolvedDefaultValue = interpolateString(defaultValue);
   const fieldName = encodeBlockKey(type, id, optional);
 
-  let resolvedValues: { value: string; label: string }[];
-
-  if (values.type === "variable-select-options") {
-    const result = variableResolver(values.arrayPath);
-    if (result.success) {
-      resolvedValues = result.data.map((object) => {
-        const value = getStringValueFromJsonPath(object, values.valuePath);
-        const label = getStringValueFromJsonPath(object, values.labelPath);
-
-        if (!label.success) {
-          throw new Error(
-            t(`direktivPage.error.templateString.${label.error}`, {
-              variable: values.labelPath,
-            })
-          );
-        }
-
-        if (!value.success) {
-          throw new Error(
-            t(`direktivPage.error.templateString.${value.error}`, {
-              variable: values.valuePath,
-            })
-          );
-        }
-
-        return { value: value.data, label: label.data };
-      });
-    } else {
+  const unwrapOrThrow = <T, E extends AllVariableErrors>(
+    result: ValidationResult<T, E>,
+    variable: string
+  ): T => {
+    if (!result.success) {
       throw new Error(
         t(`direktivPage.error.templateString.${result.error}`, {
-          variable: values.arrayPath,
+          variable,
         })
       );
     }
+    return result.data;
+  };
+
+  let resolvedValues: { value: string; label: string }[];
+
+  if (values.type === "variable-select-options") {
+    const arrayResult = variableResolver(values.arrayPath);
+    const resolvedArray = unwrapOrThrow(arrayResult, values.arrayPath);
+
+    resolvedValues = resolvedArray.map((object) => {
+      const labelResult = getStringValueFromJsonPath(object, values.labelPath);
+      const valueResult = getStringValueFromJsonPath(object, values.valuePath);
+
+      return {
+        label: unwrapOrThrow(labelResult, values.labelPath),
+        value: unwrapOrThrow(valueResult, values.valuePath),
+      };
+    });
   } else {
     resolvedValues = values.value.map((value) => ({ label: value, value }));
   }

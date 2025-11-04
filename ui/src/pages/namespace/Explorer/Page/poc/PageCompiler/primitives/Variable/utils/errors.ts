@@ -36,3 +36,14 @@ export type ResolveVariableStringError = ResolveVariableError | StringifyError;
 export type ResolveVariableBooleanError = ResolveVariableError | BooleanError;
 
 export type ResolveVariableNumberError = ResolveVariableError | NumberError;
+
+export type AllVariableErrors =
+  | ValidateVariableError
+  | JsonPathError
+  | VariableError
+  | ThisNamespaceError
+  | ArrayError
+  | StringArrayError
+  | BooleanError
+  | NumberError
+  | StringifyError;
