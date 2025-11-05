@@ -26,6 +26,10 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 		panic(rt.vm.ToValue(fmt.Sprintf("error marshaling action configuration: %s", err.Error())))
 	}
 
+	if config.Retries == 0 {
+		config.Retries = 2
+	}
+
 	sd := &core.ServiceFileData{
 		Typ:       core.ServiceTypeWorkflow,
 		Name:      "",
@@ -61,7 +65,7 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 			panic(rt.vm.ToValue(fmt.Errorf("could not marshal payload for action: %s", err.Error())))
 		}
 
-		outData, err := callRetryable(rt.tracingPack.ctx, svcUrl, http.MethodPost, data, 30)
+		outData, err := callRetryable(rt.tracingPack.ctx, svcUrl, http.MethodPost, data, config.Retries)
 		if err != nil {
 			panic(rt.vm.ToValue(fmt.Errorf("calling action failed: %s", err.Error())))
 		}
@@ -93,6 +97,18 @@ func callRetryable(ctx context.Context, url, method string, payload []byte, retr
 		return nil, err
 	}
 
+	fmt.Println("URL")
+	fmt.Println(url)
+
+	l := ctx.Value(telemetry.DirektivLogCtx(telemetry.LogObjectIdentifier))
+	logObject, ok := l.(telemetry.LogObject)
+	if !ok {
+		return nil, fmt.Errorf("action context missing")
+	}
+
+	// set relevant headers
+	logObject.ToHeader(&req.Header)
+
 	// inject otel headers for propagation
 	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
 
@@ -101,6 +117,8 @@ func callRetryable(ctx context.Context, url, method string, payload []byte, retr
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	// TODO error handling, read headers
 
 	return io.ReadAll(resp.Body)
 }

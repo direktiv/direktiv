@@ -115,7 +115,7 @@ tasks:
       --set service.type=NodePort \
       grafana grafana/grafana
       helm uninstall loki || true
-      helm install \
+      helm install --version 6.44.0 \
       --set loki.useTestSchema=true \
       --set loki.commonConfig.replication_factor=1 \
       --set loki.pattern_ingester.enabled=true \
@@ -137,7 +137,7 @@ tasks:
       --set bloomGateway.replicas=0 \
       --set minio.enabled=true \
       --set loki.auth_enabled=false \
-      loki grafana/loki
+      loki grafana/loki 
       {{- end }}
 
   uninstall:

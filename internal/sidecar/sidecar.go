@@ -7,13 +7,20 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/server"
 	"github.com/direktiv/direktiv/internal/telemetry"
 )
 
 func RunApplication(ctx context.Context) {
+	server.InitSLog(&core.Config{
+		LogDebug: false,
+	})
+
 	err := waitForUserContainer()
 	if err != nil {
 	}
@@ -22,6 +29,7 @@ func RunApplication(ctx context.Context) {
 	if err != nil {
 		slog.Warn("cannot init opentelemtry in sidecar", slog.Any("error", err))
 	}
+	slog.Info("opentelemetry configured", slog.String("addr", os.Getenv("DIREKTIV_OTEL_BACKEND")))
 
 	sidecar := newSidecar()
 
@@ -63,4 +71,27 @@ func waitForUserContainer() error {
 			}
 		}
 	}
+}
+
+// legacy logging, can be removed later
+type requestMap struct {
+	mu      sync.Mutex
+	syncMap sync.Map
+}
+
+func (rm *requestMap) Add(id string, log telemetry.LogObject) {
+	rm.syncMap.Store(id, log)
+}
+
+func (rm *requestMap) Remove(id string) {
+	rm.mu.Lock()
+	defer rm.mu.Unlock()
+}
+
+func (rm *requestMap) Get(id string) telemetry.LogObject {
+	lo, ok := rm.syncMap.Load(id)
+	if !ok {
+		return telemetry.LogObject{}
+	}
+	return lo.(telemetry.LogObject)
 }

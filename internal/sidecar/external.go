@@ -1,38 +1,43 @@
 package sidecar
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 
 	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/telemetry"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
 
 type externalServer struct {
 	server *http.Server
+
+	rm *requestMap
 }
 
-func newExternalServer() *externalServer {
+type contextSpanKey string
+
+const spanKey contextSpanKey = "sidecar-call"
+
+func newExternalServer(rm *requestMap) *externalServer {
 	// we can ignore the error here
 	addr, _ := url.Parse("http://localhost:8080")
 	proxy := httputil.NewSingleHostReverseProxy(addr)
-
-	// ctx := otel.GetTextMapPropagator().Extract(r.Context(), propagation.HeaderCarrier(r.Header))
 
 	originalDirector := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		originalDirector(req)
 
 		if req.URL.Path == "/up" {
-
-			fmt.Println("GOT UP REQUEST!!!!!!!!!!!!!!!!!!!!!")
-
-			fmt.Println(req.Header)
 			// status request to avoid retry
 			// this makes the proxy fail
 			req.URL = nil
@@ -42,22 +47,32 @@ func newExternalServer() *externalServer {
 		// add action header
 		actionID := req.Header.Get(core.EngineHeaderActionID)
 
-		// remove all headers
-		for header := range req.Header {
-			req.Header.Del(header)
-		}
-
-		// forward to action container
-		// otel.GetTextMapPropagator().Inject(
-		// 	req.Context(),
-		// 	propagation.HeaderCarrier(req.Header),
-		// )
 		ctx := otel.GetTextMapPropagator().Extract(
 			req.Context(),
 			propagation.HeaderCarrier(req.Header),
 		)
-		span := trace.SpanFromContext(ctx)
-		span.AddEvent("sidecar call")
+
+		tracer := otel.Tracer("action-call")
+		ctx, span := tracer.Start(ctx, "action-call")
+		span.SetAttributes(attribute.KeyValue{
+			Key:   "instance",
+			Value: attribute.StringValue(actionID),
+		},
+			attribute.KeyValue{
+				Key:   "image",
+				Value: attribute.StringValue(os.Getenv("DIREKTIV_IMAGE")),
+			},
+		)
+		ctx = context.WithValue(ctx, spanKey, span)
+
+		// init logging
+		lo := telemetry.LogObjectFromHeader(ctx, req.Header)
+		ctx = telemetry.LogInitCtx(req.Context(), lo)
+
+		// add log object for internal server
+		rm.Add(actionID, lo)
+
+		telemetry.LogInstance(ctx, telemetry.LogLevelInfo, "action request received")
 
 		*req = *req.WithContext(ctx)
 		originalDirector(req)
@@ -66,7 +81,8 @@ func newExternalServer() *externalServer {
 			propagation.HeaderCarrier(req.Header),
 		)
 
-		req.Header.Set(core.EngineHeaderActionID, actionID)
+		// set headers
+		lo.ToHeader(&req.Header)
 
 		// TODO: create temp directory
 		req.Header.Set(core.EngineHeaderTempDir, "/tmp")
@@ -84,8 +100,44 @@ func newExternalServer() *externalServer {
 	}
 
 	proxy.ModifyResponse = func(resp *http.Response) error {
+		if span, ok := resp.Request.Context().Value(spanKey).(trace.Span); ok {
+			span.SetAttributes(
+				attribute.Int("http.status_code", resp.StatusCode),
+			)
+			span.AddEvent("response received")
+
+			if resp.StatusCode >= 400 {
+				span.SetStatus(codes.Error, "HTTP error")
+			}
+			span.End()
+		}
+
+		telemetry.LogInstance(resp.Request.Context(), telemetry.LogLevelInfo,
+			"action request finished")
+
+		// remove from the request map
+		lo, ok := resp.Request.Context().Value(telemetry.DirektivLogCtx(telemetry.LogObjectIdentifier)).(telemetry.LogObject)
+		if ok {
+			rm.Remove(lo.ID)
+		}
+
 		// if it is not ok, we return 502 to trigger the retry
 		if resp.StatusCode != http.StatusOK {
+			code := resp.Header.Get(core.EngineHeaderErrorCode)
+			msg := resp.Header.Get(core.EngineHeaderErrorMessage)
+
+			telemetry.LogInstance(resp.Request.Context(), telemetry.LogLevelError,
+				fmt.Sprintf("action request failed with status code %d", resp.StatusCode))
+
+			if code != "" {
+				msg += fmt.Sprintf(" (%s)", code)
+			}
+
+			if msg != "" {
+				telemetry.LogInstance(resp.Request.Context(), telemetry.LogLevelError,
+					msg)
+			}
+
 			resp.StatusCode = 502
 		}
 
@@ -99,6 +151,7 @@ func newExternalServer() *externalServer {
 			Addr:    "0.0.0.0:8890",
 			Handler: proxy,
 		},
+		rm: rm,
 	}
 
 	return s

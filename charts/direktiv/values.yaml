@@ -73,14 +73,25 @@ flow:
 
 otel:
   install: true
-  config: |
+
+opentelemetry-collector:
+  image:
+    repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s
+  mode: deployment
+  command:
+    name: otelcol-k8s
+  config:
     receivers:
       otlp:
         protocols:
           grpc:
+            endpoint: 0.0.0.0:4317 
           http:
+            endpoint: 0.0.0.0:4318 
     processors:
-      batch:
+      batch:  
+        timeout: 10s
+        send_batch_size: 1024
     exporters:
       otlp/tempo:
         endpoint: "tempo:4317"   
@@ -89,36 +100,17 @@ otel:
       debug:
         verbosity: detailed
     service:
+      telemetry:
+        logs:
+          level: debug
       pipelines:
         traces:
           receivers: [otlp]
           processors: [batch]
           exporters: [debug, otlp/tempo]
-
-opentelemetry-collector:
-  mode: deployment
-  config:
-    receivers:
-      otlp:
-        protocols:
-          grpc:
-          http:
-    processors:
-      batch:
-    exporters:
-      logging:
-        loglevel: debug   # prints spans to stdout
-    service:
-      pipelines:
-        traces:
-          receivers: [otlp]
-          processors: [batch]
-          exporters: [logging]
-
-# opentelemetry-collector:
-#   image:
-#     repository: otel/opentelemetry-collector-k8s
-#   mode: deployment
+  # configMap:
+  #   create: false
+    # existingName: direktiv-otel-collector-config
 
 database:
   # -- database host

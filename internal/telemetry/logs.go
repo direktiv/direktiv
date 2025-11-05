@@ -3,6 +3,7 @@ package telemetry
 import (
 	"context"
 	"log/slog"
+	"net/http"
 
 	"github.com/direktiv/direktiv/internal/core"
 )
@@ -18,6 +19,30 @@ type LogObject struct {
 	Namespace string   `json:"namespace"`
 	ID        string   `json:"id"`
 	Scope     LogScope `json:"scope"`
+}
+
+func LogObjectFromHeader(ctx context.Context, header http.Header) LogObject {
+	return LogObject{
+		InstanceInfo: InstanceInfo{
+			Invoker: header.Get(core.EngineHeaderInvoker),
+			Path:    header.Get(core.EngineHeaderPath),
+			State:   header.Get(core.EngineHeaderState),
+			Status:  core.LogStatus(header.Get(core.EngineHeaderStatus)),
+		},
+		Namespace: header.Get(core.EngineHeaderNamespace),
+		ID:        header.Get(core.EngineHeaderActionID),
+		Scope:     LogScope(header.Get(core.EngineHeaderScope)),
+	}
+}
+
+func (l LogObject) ToHeader(header *http.Header) {
+	header.Set(core.EngineHeaderState, l.State)
+	header.Set(core.EngineHeaderStatus, string(l.Status))
+	header.Set(core.EngineHeaderScope, string(l.Scope))
+	header.Set(core.EngineHeaderInvoker, l.Invoker)
+	header.Set(core.EngineHeaderPath, l.Path)
+	header.Set(core.EngineHeaderNamespace, l.Namespace)
+	header.Set(core.EngineHeaderActionID, l.ID)
 }
 
 type InstanceInfo struct {

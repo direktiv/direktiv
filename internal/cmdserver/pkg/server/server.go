@@ -14,15 +14,16 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/go-chi/chi/v5"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 const (
-	DirektivActionIDHeader     = "Direktiv-ActionID"
-	DirektivTempDir            = "Direktiv-TempDir"
-	DirektivErrorCodeHeader    = "Direktiv-ErrorCode"
-	DirektivErrorMessageHeader = "Direktiv-ErrorMessage"
-	DirektivErrorCode          = "io.direktiv.error.execution"
+	DirektivErrorCode = "io.direktiv.error.execution"
 )
 
 type File struct {
@@ -31,12 +32,12 @@ type File struct {
 	Permission uint   `json:"permission"`
 }
 
-type Payload[DATA any] struct {
-	Files []File `json:"files"`
-	Data  DATA   `json:"data"`
+type Payload struct {
+	Files    []File    `json:"files"`
+	Commands []Command `json:"commands"`
 }
 
-type Server[IN any] struct {
+type Server struct {
 	httpServer *http.Server
 	stopChan   chan os.Signal
 }
@@ -47,16 +48,16 @@ type ExecutionInfo struct {
 }
 
 // nolint
-func NewServer[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, error)) *Server[IN] {
+func NewServer() *Server {
 	server := &http.Server{
 		Addr:         "0.0.0.0:8080",
-		Handler:      Handler[IN](fn),
+		Handler:      Handler(),
 		ReadTimeout:  1 * time.Minute,
 		WriteTimeout: 4 * time.Hour,
 		IdleTimeout:  15 * time.Second,
 	}
 
-	return &Server[IN]{
+	return &Server{
 		httpServer: server,
 		stopChan:   make(chan os.Signal, 2),
 	}
@@ -64,8 +65,8 @@ func NewServer[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}
 
 func errWriter(w http.ResponseWriter, status int, errMsg string) {
 	slog.Error("writing error response", slog.Int("status", status), slog.String("error", errMsg))
-	w.Header().Set(DirektivErrorCodeHeader, DirektivErrorCode)
-	w.Header().Set(DirektivErrorMessageHeader, errMsg)
+	w.Header().Set(core.EngineHeaderErrorCode, DirektivErrorCode)
+	w.Header().Set(core.EngineHeaderErrorMessage, errMsg)
 
 	w.WriteHeader(status)
 
@@ -76,14 +77,14 @@ func errWriter(w http.ResponseWriter, status int, errMsg string) {
 }
 
 // nolint
-func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, error)) http.Handler {
+func Handler() http.Handler {
 	r := chi.NewRouter()
 
 	r.Get("/healthz", readinessHandler)
 	r.Get("/readiness", readinessHandler)
 
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
-		var in Payload[IN]
+		var in Payload
 		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			errWriter(w, http.StatusBadRequest, "failed to read request body")
@@ -98,26 +99,45 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 			}
 		}
 
-		tmpDir := r.Header.Get(DirektivTempDir)
+		tmpDir := r.Header.Get(core.EngineHeaderTempDir)
 		if tmpDir == "" {
 			errWriter(w, http.StatusBadRequest, "no temp directory provided")
 			return
 		}
 
-		actionID := r.Header.Get(DirektivActionIDHeader)
+		actionID := r.Header.Get(core.EngineHeaderActionID)
 		if actionID == "" {
 			errWriter(w, http.StatusBadRequest, "no action id provided")
 			return
 		}
 
-		backend := "http://localhost:8889"
-		if envBackend := os.Getenv("httpBackend"); envBackend != "" {
-			backend = envBackend
-		}
+		ctx := otel.GetTextMapPropagator().Extract(
+			r.Context(),
+			propagation.HeaderCarrier(r.Header),
+		)
+
+		tracer := otel.Tracer("action-call")
+		ctx, span := tracer.Start(ctx, "action-call")
+		span.SetAttributes(attribute.KeyValue{
+			Key:   "instance",
+			Value: attribute.StringValue(actionID),
+		},
+		)
+		defer span.End()
+
+		// setup logging
+		lo := telemetry.LogObjectFromHeader(ctx, r.Header)
+		ctx = telemetry.LogInitCtx(ctx, lo)
+		telemetry.LogInstance(ctx, telemetry.LogLevelInfo, "cmd container executing")
+
+		// backend := "http://localhost:8889"
+		// if envBackend := os.Getenv("httpBackend"); envBackend != "" {
+		// 	backend = envBackend
+		// }
 
 		ei := &ExecutionInfo{
 			TmpDir: tmpDir,
-			Log:    NewLogger(backend, actionID),
+			Log:    NewLogger(lo, actionID),
 		}
 
 		for _, file := range in.Files {
@@ -128,7 +148,7 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 			}
 		}
 
-		out, err := fn(r.Context(), in.Data, ei)
+		out, err := RunCommands(ctx, in, ei)
 		if err != nil {
 			errWriter(w, http.StatusInternalServerError, "handler function error: "+err.Error())
 			return
@@ -170,7 +190,7 @@ func prepareFile(path, content string, perm uint) error {
 	return nil
 }
 
-func (s *Server[IN]) Start() {
+func (s *Server) Start() {
 	slog.Info("starting server")
 
 	signal.Notify(s.stopChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -187,7 +207,7 @@ func (s *Server[IN]) Start() {
 }
 
 // nolint
-func (s *Server[IN]) Stop() {
+func (s *Server) Stop() {
 	slog.Info("stopping server")
 	s.httpServer.SetKeepAlivesEnabled(false)
 

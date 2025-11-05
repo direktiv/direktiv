@@ -29,7 +29,7 @@ data:
           Parsers_File /fluent-bit/etc/conf/custom_parsers.conf
       [INPUT]
           Name                    tail
-          Path                    /var/log/containers/*flow*.log,/var/log/containers/*direktiv-sidecar*.log
+          Path                    /var/log/containers/*flow*.log,/var/log/containers/*direktiv-sidecar*.log,,/var/log/containers/*direktiv-container*.log
           Mem_Buf_Limit           5MB
           Skip_Long_Lines         Off
           Tag                     input

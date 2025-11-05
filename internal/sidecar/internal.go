@@ -1,19 +1,22 @@
 package sidecar
 
 import (
-	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
+
+	"github.com/direktiv/direktiv/internal/telemetry"
 )
 
 type internalServer struct {
 	mux    *http.ServeMux
 	server *http.Server
+
+	rm *requestMap
 }
 
-func newInternalServer() *internalServer {
-	slog.Info("starting internal111 server")
+func newInternalServer(rm *requestMap) *internalServer {
+	slog.Info("starting internal server")
 	mux := http.NewServeMux()
 
 	s := &internalServer{
@@ -22,12 +25,14 @@ func newInternalServer() *internalServer {
 			Addr:    "127.0.0.1:8889",
 			Handler: mux,
 		},
+		rm: rm,
 	}
 	s.mux.HandleFunc("/log", s.handleLogs)
 
 	return s
 }
 
+// legacy
 func (s *internalServer) handleLogs(w http.ResponseWriter, r *http.Request) {
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -35,7 +40,9 @@ func (s *internalServer) handleLogs(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	fmt.Println(string(b))
+	lo := s.rm.Get(r.URL.Query().Get("aid"))
+	ctx := telemetry.LogInitCtx(r.Context(), lo)
+	telemetry.LogInstance(ctx, telemetry.LogLevelInfo, string(b))
 
 	w.WriteHeader(http.StatusOK)
 }

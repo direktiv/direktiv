@@ -190,28 +190,9 @@ spec:
             value: "direktiv-victoria-logs-single-server.{{ .Release.Namespace }}.svc"
           {{- if .Values.otel.install }}
           - name: DIREKTIV_OTEL_BACKEND
-            value: localhost:4317
+            value: direktiv-opentelemetry-collector.{{ .Release.Namespace }}.svc:4317
           {{- end }}
-        {{- if .Values.otel.install }}
-        - name: otel-collector
-          image: "otel/opentelemetry-collector:0.138.0"
-          args: ["--config=/conf/collector-config.yaml"]
-          ports:
-            - containerPort: 4317
-              name: otlp-grpc
-            - containerPort: 4318
-              name: otlp-http
-          volumeMounts:
-            - name: collector-config
-              mountPath: /conf
-              readOnly: true
-        {{- end }}
       volumes:
-        {{- if .Values.otel.install }}
-        - name: collector-config
-          configMap:
-            name: {{ include "direktiv.fullname" . }}-otel-collector-config
-        {{ end }}
         {{- if .Values.flow.extraVolumes }}
         {{ toYaml .Values.flow.extraVolumes | nindent 8 }}
         {{- end }}

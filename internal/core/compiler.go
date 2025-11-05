@@ -15,6 +15,8 @@ type ActionConfig struct {
 	Size  string
 	Image string
 	Envs  []EnvironmentVariable
+
+	Retries int
 	// Patches []ServicePatch
 }
 

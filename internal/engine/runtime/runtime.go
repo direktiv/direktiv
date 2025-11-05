@@ -119,7 +119,14 @@ func (rt *Runtime) id() sobek.Value {
 
 func (rt *Runtime) log(logs ...string) sobek.Value {
 	rt.tracingPack.span.AddEvent("calling log")
-	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, strings.Join(logs, " "))
+
+	// protect victoria logs from falling over without
+	msg := strings.Join(logs, " ")
+	if msg == "" {
+		msg = " "
+	}
+
+	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, msg)
 	return sobek.Undefined()
 }
 
@@ -217,7 +224,8 @@ func ExecScript(ctx context.Context, script *Script, onFinish OnFinishFunc, onTr
 		script.InstID.String(), script.Metadata[core.EngineMappingCaller], script.Metadata[core.EngineMappingPath])
 	defer tp.finish()
 
-	rt := New(script.InstID, script.Metadata, script.Mappings, onFinish, onTransition, onAction).WithTracingPack(tp)
+	rt := New(script.InstID, script.Metadata, script.Mappings, onFinish,
+		onTransition, onAction).WithTracingPack(tp)
 
 	tp.tracingStart(script.Fn)
 	telemetry.LogInstance(tp.ctx, telemetry.LogLevelInfo,

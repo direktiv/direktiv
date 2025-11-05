@@ -94,7 +94,7 @@ func (c *knativeClient) createService(sv *core.ServiceFileData) error {
 		return errors.New("image field is empty or not set")
 	}
 
-	fmt.Println("CREATE SERVICE")
+	slog.Info("rebuilding service", slog.String("name", sv.Name))
 
 	// Step1: prepare registry secrets
 	var registrySecrets []coreV1.LocalObjectReference
@@ -116,30 +116,25 @@ func (c *knativeClient) createService(sv *core.ServiceFileData) error {
 		return err
 	}
 
-	fmt.Println("CREATE DEPLOYMENT")
 	_, err = c.k8sCli.AppsV1().Deployments(c.config.KnativeNamespace).Create(context.Background(), depDef, metaV1.CreateOptions{})
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("CREATE SERVICE")
 	_, err = c.k8sCli.CoreV1().Services(c.config.KnativeNamespace).Create(context.Background(), svcDef, metaV1.CreateOptions{})
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("CREATE AUTOSCALER")
 	_, err = c.k8sCli.AutoscalingV2().HorizontalPodAutoscalers(c.config.KnativeNamespace).Create(context.Background(), hpaDef, metaV1.CreateOptions{})
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("CREATE PATCH")
-
-	err = c.applyPatch(sv)
-	if err != nil {
-		return fmt.Errorf("applying patch: %w", err)
-	}
+	// err = c.applyPatch(sv)
+	// if err != nil {
+	// 	return fmt.Errorf("applying patch: %w", err)
+	// }
 
 	return nil
 }

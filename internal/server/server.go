@@ -48,7 +48,7 @@ func Start(lc *lifecycle.Manager) error {
 	if err := config.Init(); err != nil {
 		return fmt.Errorf("init config, err: %w", err)
 	}
-	initSLog(config)
+	InitSLog(config)
 
 	// Create App struct
 	app := api.InitializeArgs{
@@ -351,7 +351,7 @@ func initDB(config *core.Config) (*gorm.DB, error) {
 	return db, nil
 }
 
-func initSLog(cfg *core.Config) {
+func InitSLog(cfg *core.Config) {
 	lvl := new(slog.LevelVar)
 	lvl.Set(slog.LevelInfo)
 
