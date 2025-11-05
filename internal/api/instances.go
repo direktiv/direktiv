@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/api/filter"
@@ -205,8 +206,22 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 	limit := ParseQueryParam[int](r, "limit", 0)
 	offset := ParseQueryParam[int](r, "offset", 0)
 
+	queryValues := r.URL.Query()
+
+	// We need to translate filter keys from the API to the engine.
+	replacements := map[string]string{
+		"[path]": "[metadata_" + core.EngineMappingPath + "]",
+	}
+	fixedQueryValues := make(map[string][]string)
+	for k, v := range queryValues {
+		for rSrc, rDes := range replacements {
+			k = strings.ReplaceAll(k, rSrc, rDes)
+		}
+		fixedQueryValues[k] = v
+	}
+
 	fil := filter.With(
-		filter.FromURLValues(r.URL.Query()),
+		filter.FromURLValues(fixedQueryValues),
 		filter.FieldEQ("namespace", namespace),
 	)
 	list, total, err := e.engine.ListInstanceStatuses(r.Context(), limit, offset, fil)
