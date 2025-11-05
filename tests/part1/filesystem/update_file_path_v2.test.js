@@ -1,9 +1,10 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import helpers from '../../common/helpers'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test filesystem tree update paths', () => {
 	beforeAll(helpers.deleteAllNamespaces)
@@ -14,8 +15,16 @@ describe('Test filesystem tree update paths', () => {
 	helpers.itShouldCheckPathExists(it, expect, namespace, '/foo1', false)
 
 	helpers.itShouldCreateDir(it, expect, namespace, '/', 'dir1')
-	helpers.itShouldCreateFile(it, expect, namespace, '/', 'foo1', 'workflow', 'text',
-		btoa(helpers.dummyWorkflow('foo1')))
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'foo1',
+		'workflow',
+		'text',
+		btoa(helpers.dummyWorkflow('foo1')),
+	)
 
 	helpers.itShouldCheckPathExists(it, expect, namespace, '/dir1', true)
 	helpers.itShouldCheckPathExists(it, expect, namespace, '/foo1', true)

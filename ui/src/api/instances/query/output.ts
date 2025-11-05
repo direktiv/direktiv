@@ -16,9 +16,7 @@ const getInstanceOutput = apiFactory({
     namespace: string;
     instanceId: string;
   }) =>
-    `${
-      baseUrl ?? ""
-    }/api/v2/namespaces/${namespace}/instances/${instanceId}/output`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/instances/${instanceId}`,
   method: "GET",
   schema: InstanceOutputResponseSchema,
 });

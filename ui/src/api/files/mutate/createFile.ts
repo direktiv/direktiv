@@ -1,4 +1,4 @@
-import { CreateFileSchemaType, FileCreatedSchema } from "../schema";
+import { CreateFileSchemaType, SaveFileResponseSchema } from "../schema";
 import {
   forceLeadingSlash,
   getFilenameFromPath,
@@ -26,7 +26,7 @@ export const createFile = apiFactory<CreateFileSchemaType>({
       path
     )}`,
   method: "POST",
-  schema: FileCreatedSchema,
+  schema: SaveFileResponseSchema,
 });
 
 type ResolvedCreateFile = Awaited<ReturnType<typeof createFile>>;

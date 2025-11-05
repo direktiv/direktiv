@@ -2,7 +2,7 @@ import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
 import { createInstance } from "e2e/instances/utils";
-import { createWorkflow } from "e2e/utils/workflow";
+import { createWorkflow } from "e2e/utils/workflows";
 
 let namespace = "";
 

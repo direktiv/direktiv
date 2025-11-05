@@ -126,12 +126,16 @@ describe('Test special command with files and permission', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'wf1.yaml', 'workflow',
+		'/',
+		'wf1.yaml',
+		'workflow',
 		filesWorkflow,
 	)
 
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf1.yaml&wait=true`)
+		const res = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${testNamespace}/instances?path=wf1.yaml&wait=true`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('HELLO')
 		expect(res.body.return[1].Output).toEqual(444)
@@ -147,12 +151,16 @@ describe('Test special command with env', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'wf2.yaml', 'workflow',
+		'/',
+		'wf2.yaml',
+		'workflow',
 		genericContainerWorkflow,
 	)
 
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf2.yaml&wait=true`)
+		const res = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${testNamespace}/instances?path=wf2.yaml&wait=true`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('HELLO=WORLD\n')
 	})
@@ -167,23 +175,31 @@ describe('Test special command with supress', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'wf3.yaml', 'workflow',
+		'/',
+		'wf3.yaml',
+		'workflow',
 		supressWorkflow,
 	)
 
 	// this prints both but doesn't show on logs
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf3.yaml&wait=true`)
+		const res = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${testNamespace}/instances?path=wf3.yaml&wait=true`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('hello1\n')
 		expect(res.body.return[1].Output).toEqual('hello2\n')
 	})
 
 	retry10(`should not contain instance log entries`, async () => {
-		const instRes = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ testNamespace }/instances?filter.field=AS&filter.type=CONTAINS&filter.val=wf3`)
+		const instRes = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${testNamespace}/instances?filter.field=AS&filter.type=CONTAINS&filter.val=wf3`,
+		)
 		expect(instRes.statusCode).toEqual(200)
 
-		const logRes = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ testNamespace }/logs?instance=${ instRes.body.data[0].id }`)
+		const logRes = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${testNamespace}/logs?instance=${instRes.body.data[0].id}`,
+		)
 		expect(logRes.statusCode).toEqual(200)
 
 		expect(logRes.body.data).toEqual(
@@ -202,8 +218,7 @@ describe('Test special command with supress', () => {
 				}),
 			]),
 		)
-	},
-	)
+	})
 })
 
 describe('Test special command with stop', () => {
@@ -215,7 +230,9 @@ describe('Test special command with stop', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'wf5.yaml', 'workflow',
+		'/',
+		'wf5.yaml',
+		'workflow',
 		stopWorkflow,
 	)
 
@@ -223,7 +240,9 @@ describe('Test special command with stop', () => {
 		it,
 		expect,
 		testNamespace,
-		'/', 'wf6.yaml', 'workflow',
+		'/',
+		'wf6.yaml',
+		'workflow',
 		stopWorkflow2,
 	)
 
@@ -232,12 +251,16 @@ describe('Test special command with stop', () => {
 	})
 
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf5.yaml&wait=true`)
+		const res = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${testNamespace}/instances?path=wf5.yaml&wait=true`,
+		)
 		expect(res.statusCode).toEqual(500)
 	})
 
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf6.yaml&wait=true`)
+		const res = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${testNamespace}/instances?path=wf6.yaml&wait=true`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return.length).toBe(2)
 	})

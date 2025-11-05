@@ -34,7 +34,15 @@ tasks:
     cmds:
       - task: build
       - docker push {{ .DOCKER_REPO }}/{{ .IMAGE_NAME }}:{{ .VERSION }}
-      
+
+  dev:
+    desc: Builds and pushed the image for local architecture and replaces the container for local development
+    cmds:
+      - task: build-push
+      - kubectl delete po -l app=direktiv-flow
+      - kubectl wait --for=condition=Ready po -l app=direktiv-flow
+      - kubectl logs -f -l app=direktiv-flow
+
   buildx:
     desc: Builds cross-platform image and pushes it directly to the registry
     cmds:

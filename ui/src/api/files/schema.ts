@@ -1,13 +1,14 @@
+import { WorkflowValidationSchema } from "../validate/schema";
 import { z } from "zod";
 
 /**
  * /api/v2/namespaces/:namespace/files/:path
- * 
- * lists the files and directories found under the given path. 
+ *
+ * lists the files and directories found under the given path.
  * "file" lists the item at the current path (this could be a directory).
  * If the returned item is a directory, "paths" will list the items
  * contained in it.
- * 
+ *
  * Example response for directory:
   {
     "data": {
@@ -29,12 +30,12 @@ import { z } from "zod";
           "mimeType": "application/direktiv",
           "createdAt": "2024-02-13T10:39:57.730916Z",
           "updatedAt": "2024-02-15T16:33:13.79461Z"
-        },   
-      ]  
+        },
+      ]
     }
  *
  * Example response for file:
- * 
+ *
   {
     "data": {
       "path": "/aaaa.yaml",
@@ -89,46 +90,42 @@ const CreateDirectorySchema = z.object({
   name: z.string().nonempty(),
 });
 
-const CreateYamlFileSchema = z.object({
-  type: z.enum([
-    "consumer",
-    "endpoint",
-    "service",
-    "workflow",
-    "page",
-    "gateway",
-    "page",
-  ]),
+const CreateFileBaseSchema = z.object({
   name: z.string().nonempty(),
-  mimeType: z.literal("application/yaml"),
   data: z.string(), // base64 encoded file body
 });
 
-const CreateConsumerSchema = CreateYamlFileSchema.extend({
+const CreateConsumerSchema = CreateFileBaseSchema.extend({
   type: z.literal("consumer"),
+  mimeType: z.literal("application/yaml"),
 });
 
-const CreateEndpointSchema = CreateYamlFileSchema.extend({
+const CreateEndpointSchema = CreateFileBaseSchema.extend({
   type: z.literal("endpoint"),
+  mimeType: z.literal("application/yaml"),
 });
 
-const CreateServiceSchema = CreateYamlFileSchema.extend({
+const CreateServiceSchema = CreateFileBaseSchema.extend({
   type: z.literal("service"),
+  mimeType: z.literal("application/yaml"),
 });
 
-const CreateWorkflowSchema = CreateYamlFileSchema.extend({
+const CreateWorkflowSchema = CreateFileBaseSchema.extend({
   type: z.literal("workflow"),
+  mimeType: z.literal("application/x-typescript"),
 });
 
-const CreatePageSchema = CreateYamlFileSchema.extend({
+const CreatePageSchema = CreateFileBaseSchema.extend({
   type: z.literal("page"),
+  mimeType: z.literal("application/yaml"),
 });
 
-const CreateGatewaySchema = CreateYamlFileSchema.extend({
+const CreateGatewaySchema = CreateFileBaseSchema.extend({
   type: z.literal("gateway"),
+  mimeType: z.literal("application/yaml"),
 });
 
-const _CreateFileSchema = z.discriminatedUnion("type", [
+export const CreateFileSchema = z.discriminatedUnion("type", [
   CreateDirectorySchema,
   CreateConsumerSchema,
   CreateEndpointSchema,
@@ -158,14 +155,13 @@ export const FileDeletedSchema = z.null();
  *
  * The actual response contains more data, but since we do not use
  * it, we do not bother defining it here.
+ * data is only present in the response when it has changed.
  */
-export const FileCreatedSchema = z.object({
-  data: BaseFileSchema,
-});
-
-/* data is only present in the response when it has changed. */
-export const FilePatchedSchema = z.object({
-  data: BaseFileSchema.extend({ data: z.string().optional() }),
+export const SaveFileResponseSchema = z.object({
+  data: BaseFileSchema.extend({
+    data: z.string().optional(),
+    errors: WorkflowValidationSchema,
+  }),
 });
 
 export const FileNameSchema = z
@@ -179,5 +175,5 @@ export type BaseFileSchemaType = z.infer<typeof BaseFileSchema>;
 export type FileSchemaType = z.infer<typeof FileSchema>;
 export type UpdateFileSchemaType = z.infer<typeof _UpdateFileSchema>;
 export type RenameFileSchemaType = z.infer<typeof _RenameFileSchema>;
-export type CreateFileSchemaType = z.infer<typeof _CreateFileSchema>;
-export type FileListSchemaType = z.infer<typeof FileListSchema>;
+export type CreateFileSchemaType = z.infer<typeof CreateFileSchema>;
+export type SaveFileResponseSchemaType = z.infer<typeof SaveFileResponseSchema>;

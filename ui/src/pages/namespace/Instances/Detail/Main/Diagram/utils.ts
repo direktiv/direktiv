@@ -12,9 +12,11 @@ export const instanceStatusToDiagramStatus = (
       return "failed";
     case "complete":
       return "complete";
-    case "crashed":
+    case "cancelled":
       return "failed";
     case "pending":
+    case "running":
+      return "pending";
     default:
       return undefined;
   }

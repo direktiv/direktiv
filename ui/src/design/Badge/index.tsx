@@ -1,4 +1,4 @@
-import { Check, Loader2, X } from "lucide-react";
+import { Check, Loader2, Timer, X } from "lucide-react";
 import React, { FC, PropsWithChildren } from "react";
 
 import { twMergeClsx } from "~/util/helpers";
@@ -6,7 +6,7 @@ import { twMergeClsx } from "~/util/helpers";
 export type BadgeProps = React.HTMLAttributes<HTMLDivElement> &
   PropsWithChildren & {
     variant?: "secondary" | "destructive" | "outline" | "success";
-    icon?: "pending" | "complete" | "failed" | "cancelled" | "crashed";
+    icon?: "pending" | "complete" | "failed" | "cancelled" | "running";
   };
 
 const Badge: FC<BadgeProps> = ({
@@ -35,11 +35,10 @@ const Badge: FC<BadgeProps> = ({
     {...props}
   >
     {children}
-    {icon === "pending" && <Loader2 className="h-3 animate-spin" />}
+    {icon === "pending" && <Timer className="h-3" />}
+    {icon === "running" && <Loader2 className="h-3 animate-spin" />}
     {icon === "complete" && <Check className="h-3" />}
-    {(icon === "failed" || icon === "crashed" || icon === "cancelled") && (
-      <X className="h-3" />
-    )}
+    {(icon === "failed" || icon === "cancelled") && <X className="h-3" />}
   </div>
 );
 

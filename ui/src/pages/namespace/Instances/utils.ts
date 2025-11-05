@@ -10,10 +10,10 @@ export const statusToBadgeVariant = (status: InstanceStatus): BadgeVariant => {
     case "complete":
       return "success";
     case "cancelled":
-    case "crashed":
     case "failed":
       return "destructive";
     case "pending":
+    case "running":
       return undefined;
     default:
       break;

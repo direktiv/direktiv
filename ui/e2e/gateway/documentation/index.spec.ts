@@ -100,7 +100,8 @@ test("Make sure Rapidoc component is displaying basic OpenAPI doc", async ({
     namespace,
     name: filename,
     type: "endpoint",
-    yaml: initialRouteYaml,
+    content: initialRouteYaml,
+    mimeType: "application/yaml",
   });
 
   await page.goto(`/n/${namespace}/gateway/openapiDoc`, {

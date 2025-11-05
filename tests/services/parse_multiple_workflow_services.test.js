@@ -11,8 +11,14 @@ describe('Test services crud operations', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFile(it, expect, testNamespace,
-		'/', 's2.yaml', 'workflow', `
+	common.helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		testNamespace,
+		'/',
+		's2.yaml',
+		'workflow',
+		`
 direktiv_api: workflow/v1
 
 functions:
@@ -38,11 +44,13 @@ states:
     input: 
       commands:
       - ls -la
-`)
+`,
+	)
 
 	retry10(`should list all services`, async () => {
-		const listRes = await request(common.config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ testNamespace }/services`)
+		const listRes = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${testNamespace}/services`,
+		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body).toMatchObject({
 			data: [

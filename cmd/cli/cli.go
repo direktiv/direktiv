@@ -11,12 +11,12 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"syscall"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/cmdserver"
-	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/server"
-	"github.com/direktiv/direktiv/pkg/sidecar"
+	"github.com/direktiv/direktiv/internal/cmdserver"
+	"github.com/direktiv/direktiv/internal/server"
+	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/spf13/cobra"
 )
 
@@ -47,7 +47,7 @@ You need to specify the SERVICE_NAME as an argument.`,
 	instancesCmd.AddCommand(instancesExecCmd)
 	instancesExecCmd.PersistentFlags().Bool("push", true, "Push before execute.")
 
-	startCmd.AddCommand(startAPICmd, startSidecarCmd, startDinitCmd, startCommandServerCmd)
+	startCmd.AddCommand(startAPICmd, startDinitCmd, startCommandServerCmd)
 
 	rootCmd := &cobra.Command{
 		Use:   "direktiv",
@@ -69,29 +69,27 @@ var startAPICmd = &cobra.Command{
 	Short: "direktiv API service",
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		slog.Info("starting 'api' service...")
+		slog.Info("service 'api' starting...")
 
-		circuit := core.NewCircuit(context.Background(), os.Interrupt)
+		lc := lifecycle.New(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-		err := server.Run(circuit)
+		err := server.Start(lc)
 		if err != nil {
 			slog.Error("booting api server", "err", err)
 			os.Exit(1)
 		}
-		slog.Info("api server booted successfully")
+		slog.Info("service 'api' started successfully")
 
 		// wait until server is done.
-		<-circuit.Done()
+		<-lc.Done()
 		slog.Info("terminating api server")
 
-		go func() {
-			time.Sleep(time.Second * 15)
-			slog.Error("ungraceful api server termination")
-			os.Exit(1)
-		}()
-
-		circuit.Wait()
-		slog.Info("graceful api server termination")
+		err = lc.Wait(time.Second * 10)
+		if err != nil {
+			slog.Info("harsh api server termination")
+		} else {
+			slog.Info("graceful api server termination")
+		}
 	},
 }
 
@@ -155,16 +153,6 @@ var startDinitCmd = &cobra.Command{
 		}
 
 		slog.Info("RunApplication completed successfully")
-	},
-}
-
-var startSidecarCmd = &cobra.Command{
-	Use:   "sidecar",
-	Short: "direktiv sidecar service, this service manage action request to user containers",
-	Args:  cobra.ExactArgs(0),
-	Run: func(cmd *cobra.Command, args []string) {
-		slog.Info("starting 'sidecar' service...")
-		sidecar.RunApplication(context.Background())
 	},
 }
 

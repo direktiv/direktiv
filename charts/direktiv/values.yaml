@@ -202,29 +202,34 @@ functions:
     #       memory: "2Gi"
     #       cpu:    "1"
 
+
+natsTLS: &natsTLS
+  enabled: true
+  secretName: direktiv-tls-secret
+  cert: server.crt
+  key: server.key
+
 nats:
-  install: false
+  delay: 15
+  tlsCA:
+    enabled: true
+    secretName: direktiv-tls-secret
   config:
+    nats:
+      tls: *natsTLS
+    jetstream:
+      enabled: true
+      fileStore:
+        enabled: true
+        pvc:
+          enabled: true
+          size: 10Gi
     cluster:
       enabled: true
-      port: 6222
-      replicas: 3
-    tls:
-      enabled: false
-      secretName:
-      dir: /etc/nats-certs/cluster
-      cert: tls.crt
-      key: tls.key
+      tls: *natsTLS
+
     routeURLs:
       user: direktiv
-      password: direktiv
-      useFQDN: false
-      k8sClusterDomain: cluster.local
-    nats:
-      port: 4222
-      tls:
-        enabled: false
-
 
 victoria-logs-single:
   server:
