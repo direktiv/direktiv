@@ -73,6 +73,7 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 					errors.New("target-page plugin can only be used with GET(only) method endpoints")))
 			}
 
+			pConfig.Namespace = item.Namespace
 			p, err := NewPlugin(pConfig)
 			if err != nil {
 				item.Errors = append(item.Errors, fmt.Sprintf("plugin '%s' err: %s", pConfig.Typ, err))
