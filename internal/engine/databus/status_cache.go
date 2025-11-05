@@ -2,8 +2,10 @@ package databus
 
 import (
 	"sync"
+	"time"
 
 	"github.com/direktiv/direktiv/internal/api/filter"
+	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/google/uuid"
 )
@@ -66,7 +68,11 @@ func (c *StatusCache) SnapshotPage(limit int, offset int, filters filter.Values)
 		if !filters.Match("status", v.StatusString()) {
 			continue
 		}
-		if !filters.Match("createdAt", v.CreatedAt.String()) {
+		if !filters.Match("createdAt", v.CreatedAt.Format(time.RFC3339Nano)) {
+			continue
+		}
+		workflowPath, _ := v.Metadata[core.EngineMappingPath]
+		if !filters.Match("metadata_"+core.EngineMappingPath, workflowPath) {
 			continue
 		}
 
