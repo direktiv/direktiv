@@ -1,12 +1,13 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import config from '../../common/config'
 import helpers from '../../common/helpers'
 import regex from '../../common/regex'
 import request from '../../common/request'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test filesystem tree read operations', () => {
 	beforeAll(helpers.deleteAllNamespaces)
@@ -17,8 +18,9 @@ describe('Test filesystem tree read operations', () => {
 	helpers.itShouldCreateDir(it, expect, namespace, '/', 'dir2')
 
 	it(`should read root dir with two paths`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/files`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
 			data: {
@@ -38,23 +40,27 @@ describe('Test filesystem tree read operations', () => {
 						type: 'directory',
 						createdAt: expect.stringMatching(regex.timestampRegex),
 						updatedAt: expect.stringMatching(regex.timestampRegex),
-
 					},
 				],
 			},
 		})
 	})
 
-	helpers.itShouldCreateFile(it, expect, namespace,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespace,
 		'/dir1',
 		'foo1',
 		'workflow',
 		'text/plain',
-		btoa(helpers.dummyWorkflow('foo1')))
+		btoa(helpers.dummyWorkflow('foo1')),
+	)
 
 	it(`should read root /dir1 with one path`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/files/dir1`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files/dir1`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
 			data: {

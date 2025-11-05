@@ -1,6 +1,6 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
+import { delayWorkflow, simpleWorkflow } from "e2e/utils/workflows";
 import { expect, test } from "@playwright/test";
-import { simpleWorkflow, workflowWithDelay } from "../utils/workflows";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils/index";
@@ -27,7 +27,8 @@ test("the input/output panel responds to user interaction", async ({
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflow,
+    content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (
@@ -58,9 +59,9 @@ test("the input/output panel responds to user interaction", async ({
     .nth(1);
 
   const textarea = inputOutputPanel.locator(".view-lines");
-  const expectedInput = `{}`;
-  const expectedOutput = `{    "result": "Hello world!"}`;
-  const expectedOutputCopy = '{"result":"Hello world!"}';
+  const expectedInput = "null";
+  const expectedOutput = `{    "message": "Hello world!"}`;
+  const expectedOutputCopy = '{"message":"Hello world!"}';
 
   await resizeButton.hover();
   await expect(
@@ -68,16 +69,16 @@ test("the input/output panel responds to user interaction", async ({
     "it shows the text 'maximize output' when hovering over the resize button"
   ).toBeVisible();
 
-  const minimizedWidth = (await inputOutputPanel.boundingBox())?.width;
+  const minimizedHeight = (await inputOutputPanel.boundingBox())?.height;
 
   await resizeButton.click();
 
-  const maximizedWidth = (await inputOutputPanel.boundingBox())?.width;
-  if (minimizedWidth === undefined || maximizedWidth === undefined) {
+  const maximizedHeight = (await inputOutputPanel.boundingBox())?.height;
+  if (minimizedHeight === undefined || maximizedHeight === undefined) {
     throw new Error("could not get width of input/output panel");
   }
   expect(
-    maximizedWidth / minimizedWidth,
+    maximizedHeight / minimizedHeight,
     "The panel is significantly bigger after maximizing"
   ).toBeGreaterThan(1.5);
 
@@ -89,11 +90,12 @@ test("the input/output panel responds to user interaction", async ({
 
   await page.reload();
 
-  const currentWidthAfterReload = (await inputOutputPanel.boundingBox())?.width;
+  const currentHeightAfterReload = (await inputOutputPanel.boundingBox())
+    ?.height;
   expect(
-    currentWidthAfterReload,
+    currentHeightAfterReload,
     "after reloading the page, the panel is still maximized"
-  ).toEqual(maximizedWidth);
+  ).toEqual(maximizedHeight);
 
   await resizeButton.click();
   await inputButton.click();
@@ -125,12 +127,13 @@ test("the input/output panel responds to user interaction", async ({
 test("the output is shown when the workflow finished running", async ({
   page,
 }) => {
-  const workflowName = faker.system.commonFileName("yaml");
+  const workflowName = faker.system.commonFileName("wf.ts");
   await createFile({
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: workflowWithDelay,
+    content: delayWorkflow,
+    mimeType: "application/x-typescript",
   });
   const instanceId = (
     await createInstance({
@@ -181,7 +184,8 @@ test("after a running instance finishes, the output tab is automatically selecte
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: workflowWithDelay,
+    content: delayWorkflow,
+    mimeType: "application/x-typescript",
   });
   const instanceId = (
     await createInstance({

@@ -1,14 +1,11 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
+import { errorWorkflow, simpleWorkflow } from "e2e/utils/workflows";
 import { expect, test } from "@playwright/test";
-import {
-  parentWorkflow as parentWorkflowContent,
-  simpleWorkflow as simpleWorkflowContent,
-  workflowThatFails as workflowThatFailsContent,
-} from "../utils/workflows";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils";
 import { faker } from "@faker-js/faker";
+import { parentWorkflow as parentWorkflowContent } from "../utils/workflows";
 
 let namespace = "";
 const simpleWorkflowName = faker.system.commonFileName("yaml");
@@ -21,14 +18,16 @@ test.beforeEach(async () => {
     name: simpleWorkflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflowContent,
+    content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   await createFile({
     name: failingWorkflowName,
     namespace,
     type: "workflow",
-    yaml: workflowThatFailsContent,
+    content: errorWorkflow,
+    mimeType: "application/x-typescript",
   });
 });
 
@@ -54,10 +53,11 @@ const createTriggerFilterInstances = async () => {
     name: parentWorkflowName,
     namespace,
     type: "workflow",
-    yaml: parentWorkflowContent({
+    content: parentWorkflowContent({
       childPath: `/${simpleWorkflowName}`,
       children: 2,
     }),
+    mimeType: "application/x-typescript",
   });
 
   await createInstance({ namespace, path: parentWorkflowName });
@@ -262,10 +262,11 @@ test("it is possible to filter by AS (name)", async ({ page }) => {
   await Promise.all(
     workflowNames.map((name) =>
       createFile({
-        yaml: simpleWorkflowContent,
+        content: simpleWorkflow,
         namespace,
         name,
         type: "workflow",
+        mimeType: "application/x-typescript",
       })
     )
   );
@@ -332,10 +333,11 @@ test("it is possible to apply multiple filters", async ({ page }) => {
   await Promise.all(
     workflowNames.map((name) =>
       createFile({
-        yaml: simpleWorkflowContent,
+        content: simpleWorkflow,
         name,
         namespace,
         type: "workflow",
+        mimeType: "application/x-typescript",
       })
     )
   );

@@ -2,20 +2,21 @@ package filestore_test
 
 import (
 	"context"
-	"github.com/direktiv/direktiv/pkg/datastore"
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/filestore/filesql"
+
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/google/uuid"
 )
 
 func Test_CorrectSetPath(t *testing.T) {
-	db, err := database.NewTestDB(t)
+	conn, err := database.NewTestDB(t)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDB() error = %v", err)
 	}
-	fs := db.FileStore()
+	fs := filesql.NewStore(conn)
 
 	tests := []struct {
 		name  string
@@ -127,13 +128,7 @@ func Test_CorrectSetPath(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ns, err := db.DataStore().Namespaces().Create(context.Background(), &datastore.Namespace{
-				Name: uuid.NewString(),
-			})
-			if err != nil {
-				t.Fatalf("unepxected CreateNamespace() error = %v", err)
-			}
-			root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
+			root, err := fs.CreateRoot(context.Background(), uuid.NewString())
 			if err != nil {
 				t.Fatalf("unepxected CreateRoot() error = %v", err)
 			}
@@ -144,7 +139,7 @@ func Test_CorrectSetPath(t *testing.T) {
 
 			assertAllPathsInRoot(t, fs, root.ID, tt.paths...)
 
-			file, err := fs.ForRootID(root.ID).GetFile(context.Background(), tt.getPath)
+			file, err := fs.ForRoot(root.ID).GetFile(context.Background(), tt.getPath)
 			if err != nil {
 				t.Fatalf("unepxected GetFile() error = %v", err)
 			}
@@ -159,10 +154,10 @@ func Test_CorrectSetPath(t *testing.T) {
 	}
 }
 
-func assertAllPathsInRoot(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, wantPaths ...string) {
+func assertAllPathsInRoot(t *testing.T, fs filestore.FileStore, rootID string, wantPaths ...string) {
 	t.Helper()
 
-	gotPaths, err := fs.ForRootID(rootID).ListAllFiles(context.Background())
+	gotPaths, err := fs.ForRoot(rootID).ListAllFiles(context.Background())
 	if err != nil {
 		t.Errorf("unexpected ListAllFiles() error = %v", err)
 
@@ -184,13 +179,14 @@ func assertAllPathsInRoot(t *testing.T, fs filestore.FileStore, rootID uuid.UUID
 }
 
 func Test_UpdateFile(t *testing.T) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	ns := uuid.NewString()
+	conn, err := database.NewTestDBWithNamespace(t, ns)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	fs := db.FileStore()
+	fs := filesql.NewStore(conn)
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
+	root, err := fs.CreateRoot(context.Background(), ns)
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -199,16 +195,14 @@ func Test_UpdateFile(t *testing.T) {
 	assertCreateFileV2(t, fs, root.ID, filestore.File{
 		Path: "/example1.text",
 		Typ:  filestore.FileTypeFile,
-		Data: []byte("example1_data"),
-	})
+	}, []byte("example1_data"))
 	assertCreateFileV2(t, fs, root.ID, filestore.File{
 		Path: "/example2.text",
 		Typ:  filestore.FileTypeFile,
-		Data: []byte("example2_data"),
-	})
+	}, []byte("example2_data"))
 
 	// update one file
-	f, _ := fs.ForRootID(root.ID).GetFile(context.Background(), "/example1.text")
+	f, _ := fs.ForRoot(root.ID).GetFile(context.Background(), "/example1.text")
 	checksum, err := fs.ForFile(f).SetData(context.Background(), []byte("example1_updated_data"))
 	if err != nil {
 		t.Errorf("unexpected SetData() error: %v", err)
@@ -225,11 +219,9 @@ func Test_UpdateFile(t *testing.T) {
 	assertFileExistsV2(t, fs, root.ID, filestore.File{
 		Path: "/example1.text",
 		Typ:  filestore.FileTypeFile,
-		Data: []byte("example1_updated_data"),
-	})
+	}, []byte("example1_updated_data"))
 	assertFileExistsV2(t, fs, root.ID, filestore.File{
 		Path: "/example2.text",
 		Typ:  filestore.FileTypeFile,
-		Data: []byte("example2_data"),
-	})
+	}, []byte("example2_data"))
 }

@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/api"
-	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/internal/api"
+	"github.com/direktiv/direktiv/internal/core"
 	"github.com/r3labs/sse"
 	"github.com/spf13/cobra"
 )
@@ -150,7 +150,7 @@ func handleOutput(profile profile, uploader *uploader, id string) error {
 			continue
 		}
 
-		fmt.Printf("Output:\n%s\n", string(instance.Data.Output))
+		fmt.Printf("Output:\n%v\n", instance.Data.Output)
 
 		break
 	}

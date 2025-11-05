@@ -10,3 +10,13 @@ export const addYamlFileExtension = (name: string) => {
   }
   return `${newName}${yamlExtensions[0]}`;
 };
+
+const workflowExtension = ".wf.ts";
+
+export const addWorkflowFileExtension = (name: string) => {
+  const newName = name.trim();
+  if (newName.endsWith(workflowExtension)) {
+    return newName;
+  }
+  return `${newName}${workflowExtension}`;
+};

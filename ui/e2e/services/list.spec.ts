@@ -43,7 +43,8 @@ test("Service list shows all available services", async ({ page }) => {
     name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createRequestServiceFile(),
+    content: createRequestServiceFile(),
+    mimeType: "application/yaml",
   });
 
   await expect
@@ -129,7 +130,8 @@ test("Service list links the file name to the service file", async ({
     name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createRequestServiceFile(),
+    content: createRequestServiceFile(),
+    mimeType: "application/yaml",
   });
 
   await page.goto(`/n/${namespace}/services`, {
@@ -159,7 +161,8 @@ test("Service list links the row to the service details page", async ({
     name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createRequestServiceFile(),
+    content: createRequestServiceFile(),
+    mimeType: "application/yaml",
   });
 
   await expect
@@ -211,7 +214,8 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
     name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createRequestServiceFile(),
+    content: createRequestServiceFile(),
+    mimeType: "application/yaml",
   });
 
   await expect
@@ -262,7 +266,8 @@ test("Service list highlights services that have errors", async ({ page }) => {
     name: "failed-service.yaml",
     namespace,
     type: "service",
-    yaml: serviceWithAnError,
+    content: serviceWithAnError,
+    mimeType: "application/yaml",
   });
 
   await expect
@@ -305,10 +310,11 @@ test("Service list will update the services when refetch button is clicked", asy
     name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createRequestServiceFile({
+    content: createRequestServiceFile({
       scale: 1,
       size: "large",
     }),
+    mimeType: "application/yaml",
   });
 
   await page.goto(`/n/${namespace}/services`, {
@@ -377,7 +383,8 @@ test.describe("system namespace", () => {
       name: systemServiceName,
       namespace: systemNamespaceName,
       type: "service",
-      yaml: createRequestServiceFile(),
+      content: createRequestServiceFile(),
+      mimeType: "application/yaml",
     });
   });
 

@@ -1,11 +1,12 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import config from '../../common/config'
 import helpers from '../../common/helpers'
 import request from '../../common/request'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test variable list calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
@@ -24,29 +25,32 @@ describe('Test variable list calls', () => {
 	})
 
 	it(`should list variable all`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/variables`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/variables`,
+		)
 		expect(res.statusCode).toEqual(200)
 
-		const reduced = res.body.data.map(item => item.name)
-		expect(reduced).toEqual([ 'foo1', 'foo2' ])
+		const reduced = res.body.data.map((item) => item.name)
+		expect(reduced).toEqual(['foo1', 'foo2'])
 	})
 
 	it(`should list variable foo2`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/variables?name=foo2`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/variables?name=foo2`,
+		)
 		expect(res.statusCode).toEqual(200)
 
-		const reduced = res.body.data.map(item => item.name)
-		expect(reduced).toEqual([ 'foo2' ])
+		const reduced = res.body.data.map((item) => item.name)
+		expect(reduced).toEqual(['foo2'])
 	})
 
 	it(`should list empty`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/variables?name=foo3`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/variables?name=foo3`,
+		)
 		expect(res.statusCode).toEqual(200)
 
-		const reduced = res.body.data.map(item => item.name)
+		const reduced = res.body.data.map((item) => item.name)
 		expect(reduced).toEqual([])
 	})
 })
