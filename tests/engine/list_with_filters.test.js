@@ -87,6 +87,10 @@ function stateOne(payload) {
 			wantCount: 2,
 		},
 		{
+			query: '?filter[status][cnt]=comp',
+			wantCount: 2,
+		},
+		{
 			query: '?filter[status]=failed',
 			wantCount: 1,
 		},
@@ -99,11 +103,19 @@ function stateOne(payload) {
 			wantCount: 1,
 		},
 		{
+			query: '?filter[status][cnt]=fail',
+			wantCount: 1,
+		},
+		{
 			query: '?filter[status][in]=complete,failed',
 			wantCount: 3,
 		},
 		{
 			query: '',
+			wantCount: 3,
+		},
+		{
+			query: '?filter[status][cnt]=le',
 			wantCount: 3,
 		},
 		{
