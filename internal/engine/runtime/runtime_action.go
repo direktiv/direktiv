@@ -97,9 +97,6 @@ func callRetryable(ctx context.Context, url, method string, payload []byte, retr
 		return nil, err
 	}
 
-	fmt.Println("URL")
-	fmt.Println(url)
-
 	l := ctx.Value(telemetry.DirektivLogCtx(telemetry.LogObjectIdentifier))
 	logObject, ok := l.(telemetry.LogObject)
 	if !ok {

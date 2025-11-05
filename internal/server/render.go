@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	"github.com/direktiv/direktiv/internal/compiler"
@@ -120,9 +119,6 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager) {
 
 					// set name for workflow action
 					sd.Name = sd.GetValueHash()
-
-					fmt.Println("RENDER")
-					fmt.Println(sd.Name)
 
 					funConfigList = append(funConfigList, sd)
 				}
