@@ -105,6 +105,7 @@ const OpenapiSpecificationEditor: FC<OpenapiSpecificationEditorProps> = ({
               onValueChange={handleEditorChange}
               onSave={saveContent}
               updatedAt={data.updatedAt}
+              language="yaml"
             />
             <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
               {hasUnsavedChanges && <UnsavedChangesHint />}

@@ -1,18 +1,18 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { createWorkflow } from "../../utils/workflow";
+import { createWorkflow } from "../../utils/workflows";
 import { faker } from "@faker-js/faker";
 
 let namespace = "";
 let workflow = "";
-const defaultDescription = "A simple 'no-op' state that returns 'Hello world!'";
+const defaultDescription = "// A simple 'no-op' state";
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
   workflow = await createWorkflow(
     namespace,
-    faker.internet.domainWord() + ".yaml"
+    faker.internet.domainWord() + ".wf.ts"
   );
 });
 
@@ -68,8 +68,7 @@ test("it is possible to save the workflow", async ({ page }) => {
   await page.type("textarea", testText);
 
   // now click on Save
-  const saveButton = page.getByTestId("workflow-editor-btn-save");
-  await saveButton.click();
+  await page.getByTestId("workflow-editor-btn-save").click();
 
   // Commented out since this is not a critical step, but maybe we can enable
   // it again at some point after learning more about the following problem:
@@ -90,6 +89,7 @@ test("it is possible to save the workflow", async ({ page }) => {
     page.getByText(testText),
     "after saving, screen should have the updated text"
   ).toBeVisible();
+
   await page.reload({ waitUntil: "networkidle" });
   await expect(
     page.getByText(testText),
@@ -101,38 +101,6 @@ test("it is possible to save the workflow", async ({ page }) => {
     page.getByTestId("workflow-txt-updated"),
     "text should be Updated a few seconds ago"
   ).toHaveText("Updated a few seconds ago");
-});
-
-test("it renders response errors when saving an invalid workflow", async ({
-  page,
-}) => {
-  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
-
-  const editor = page.locator(".lines-content");
-
-  await editor.click();
-  await editor.type("notvalidyaml");
-
-  await expect(
-    page.getByText("unsaved changes"),
-    "it renders a hint that there are unsaved changes"
-  ).toBeVisible();
-
-  await page.getByTestId("workflow-editor-btn-save").click();
-
-  await expect(
-    page.getByText("There is an issue"),
-    "after saving, it renders an error hint in the editor"
-  ).toBeVisible();
-  await expect(
-    page.getByText("updated file data has invalid yaml string"),
-    "it renders an error popup with the error message"
-  ).toBeVisible();
-
-  await expect(
-    page.getByText("unsaved changes"),
-    "it still renders a hint that there are unsaved changes"
-  ).toBeVisible();
 });
 
 test("it is possible to navigate to another route from the editor", async ({

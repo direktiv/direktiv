@@ -1,9 +1,10 @@
+import Editor, { EditorLanguagesType, ExtraLibsType } from "~/design/Editor";
+import { FC, useEffect, useRef } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import { Bug } from "lucide-react";
 import { Card } from "~/design/Card";
-import Editor from "~/design/Editor";
-import { FC } from "react";
+import { editor } from "monaco-editor";
 import useNavigationBlocker from "~/hooks/useNavigationBlocker";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -16,6 +17,9 @@ type EditorProps = {
   hasUnsavedChanges?: boolean;
   updatedAt: string | undefined;
   error?: string;
+  language: EditorLanguagesType;
+  tsLibs?: ExtraLibsType;
+  markers?: editor.IMarkerData[];
 };
 
 export const CodeEditor: FC<EditorProps> = ({
@@ -25,8 +29,12 @@ export const CodeEditor: FC<EditorProps> = ({
   hasUnsavedChanges = false,
   updatedAt,
   error,
+  language,
+  tsLibs = [],
+  markers = [],
 }) => {
   const { t } = useTranslation();
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
   const theme = useTheme();
   const updatedAtInWords = useUpdatedAt(updatedAt);
@@ -35,6 +43,12 @@ export const CodeEditor: FC<EditorProps> = ({
     hasUnsavedChanges ? t("components.blocker.unsavedChangesWarning") : null
   );
 
+  useEffect(() => {
+    const model = editorRef.current?.getModel();
+    if (!model) return;
+    editor.setModelMarkers(model, "workflow-validation", markers);
+  }, [markers]);
+
   return (
     <Card className="flex grow flex-col p-4">
       <div className="grow" data-testid="workflow-editor">
@@ -42,12 +56,15 @@ export const CodeEditor: FC<EditorProps> = ({
           value={value}
           onMount={(editor) => {
             editor.focus();
+            editorRef.current = editor;
           }}
           onChange={(newData) => {
             onValueChange(newData ?? "");
           }}
           theme={theme ?? undefined}
           onSave={onSave}
+          language={language}
+          tsLibs={tsLibs}
         />
       </div>
       <div

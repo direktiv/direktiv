@@ -1,30 +1,39 @@
-import { CreateFileSchemaType } from "~/api/files/schema";
+import { CreateFileSchema, CreateFileSchemaType } from "~/api/files/schema";
+
 import { createFile as apiCreateFile } from "~/api/files/mutate/createFile";
 import { deleteFile as apiDeleteFile } from "~/api/files/mutate/deleteFile";
 import { getFile as apiGetFile } from "~/api/files/query/file";
 import { encode } from "js-base64";
 import { headers } from "./testutils";
 
-export const createFile = async ({
+export const createFile = async <T extends CreateFileSchemaType["type"]>({
   name,
-  yaml,
+  content,
   namespace,
   type,
+  mimeType,
   path = "/",
 }: {
   name: string;
-  yaml: string;
+  content: string;
   namespace: string;
-  type: CreateFileSchemaType["type"];
+  type: T;
+  mimeType?: Extract<CreateFileSchemaType, { type: T }> extends {
+    mimeType: infer M;
+  }
+    ? M
+    : never;
   path?: string;
-}) =>
-  await apiCreateFile({
-    payload: {
-      data: encode(yaml),
-      name,
-      mimeType: "application/yaml",
-      type,
-    },
+}) => {
+  const payload = CreateFileSchema.parse({
+    data: encode(content),
+    name,
+    mimeType,
+    type,
+  });
+
+  return await apiCreateFile({
+    payload,
     urlParams: {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
@@ -32,6 +41,7 @@ export const createFile = async ({
     },
     headers,
   });
+};
 
 export const deleteFile = async ({
   namespace,

@@ -1,12 +1,13 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import config from '../common/config'
 import helpers from '../common/helpers'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test gateway reconciling', () => {
 	beforeAll(helpers.deleteAllNamespaces)
@@ -14,7 +15,7 @@ describe('Test gateway reconciling', () => {
 
 	it(`should create a new foo secret`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/secrets`)
+			.post(`/api/v2/namespaces/${namespace}/secrets`)
 			.send({
 				name: 'foo',
 				data: btoa('bar'),
@@ -22,8 +23,14 @@ describe('Test gateway reconciling', () => {
 		expect(res.statusCode).toEqual(200)
 	})
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'wf1.yml', 'workflow', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'wf1.yml',
+		'workflow',
+		`
 direktiv_api: workflow/v1
 description: A simple 'no-op' state that returns 'Hello world!'
 states:
@@ -31,10 +38,17 @@ states:
   type: noop
   transform:
     result: Hello world!
-`)
+`,
+	)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'c1.yaml', 'consumer', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'c1.yaml',
+		'consumer',
+		`
 direktiv_api: "consumer/v1"
 username: user1
 password: fetchSecret(foo)
@@ -43,10 +57,17 @@ tags:
 - tag1
 groups:
 - group1
-`)
+`,
+	)
 
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'ep1.yaml', 'endpoint', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'ep1.yaml',
+		'endpoint',
+		`
     x-direktiv-api: endpoint/v2
     x-direktiv-config:
         path: "/foo"
@@ -64,7 +85,8 @@ groups:
 	)
 
 	retry10(`should get access denied ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
+		const res = await request(config.getDirektivBaseUrl())
+			.post(`/api/v2/namespaces/${namespace}/gateway/foo`)
 			.send({})
 			.auth('user1', 'falsePassword')
 		expect(res.statusCode).toEqual(403)
@@ -77,7 +99,8 @@ groups:
 	})
 
 	retry10(`should execute protected ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
+		const res = await request(config.getDirektivBaseUrl())
+			.post(`/api/v2/namespaces/${namespace}/gateway/foo`)
 			.send({})
 			.auth('user1', 'bar')
 		expect(res.statusCode).toEqual(200)

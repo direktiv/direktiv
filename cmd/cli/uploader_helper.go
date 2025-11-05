@@ -17,10 +17,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-git/go-git/v6/plumbing/format/gitignore"
 )
 
@@ -99,28 +96,6 @@ func (u *uploader) createFile(path, filePath string) error {
 	if strings.HasSuffix(path, ".direktiv.ts") {
 		obj.Typ = string(filestore.FileTypeWorkflow)
 		obj.MimeType = "application/x-typescript"
-	} else if strings.HasSuffix(path, "yaml") || strings.HasSuffix(path, "yml") {
-		obj.MimeType = "application/yaml"
-
-		resource, err := model.LoadResource(b)
-		if errors.Is(err, model.ErrNotDirektivAPIResource) {
-			obj.Typ = string(filestore.FileTypeFile)
-		}
-
-		switch resource.(type) {
-		case *model.Workflow:
-			obj.Typ = string(filestore.FileTypeWorkflow)
-		case *openapi3.PathItem:
-			obj.Typ = string(filestore.FileTypeEndpoint)
-		case *openapi3.T:
-			obj.Typ = string(filestore.FileTypeGateway)
-		case *core.ConsumerFile:
-			obj.Typ = string(filestore.FileTypeConsumer)
-		case *core.ServiceFile:
-			obj.Typ = string(filestore.FileTypeService)
-		default:
-			obj.Typ = string(filestore.FileTypeFile)
-		}
 	} else {
 		obj.Typ = string(filestore.FileTypeFile)
 		mt := mime.TypeByExtension(filepath.Ext(path))

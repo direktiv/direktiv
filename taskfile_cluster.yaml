@@ -6,6 +6,7 @@ vars:
   DIREKTIV_IMAGE: '{{.DIREKTIV_IMAGE | default "direktiv" }}'
   DIREKTIV_IMAGE_TAG: '{{.DIREKTIV_IMAGE_TAG | default "dev" }}'
   DIREKTIV_IMAGE_REGISTRY: '{{.DIREKTIV_IMAGE_REGISTRY | default "localhost:5001" }}'
+  DIREKTIV_BASE_URL: '{{.DIREKTIV_BASE_URL | default "http://127.0.0.1:9090"}}'
 
 tasks:
   clean:
@@ -72,9 +73,11 @@ tasks:
         --set database.password=password \
         --set database.name=direktiv \
         --set database.sslmode=disable \
+        --set flow.replicas={{ .REPLICAS }} \
         --set pullPolicy=Always \
         --set ingress-nginx.controller.hostPort.enabled=true \
         --set image={{ .DIREKTIV_IMAGE }} \
+        --set nats.delay=0 \
         --set registry={{ .DIREKTIV_IMAGE_REGISTRY }} \
         --set tag={{ .DIREKTIV_IMAGE_TAG }} \
         {{- if eq .TELEMETRY "true" }}
@@ -82,6 +85,7 @@ tasks:
         {{- end }}
         direktiv charts/direktiv; \
     - task: telemetry
+    - task: wait-api
 
   telemetry:
     cmds:
@@ -146,3 +150,23 @@ tasks:
     desc: Kill all direktiv pods
     cmds:
     - kubectl delete pods -l app=direktiv-flow
+
+  wait-api:
+    desc: Wait for direktiv API to be ready
+    cmds:
+    - |
+       endpoint="{{ .DIREKTIV_BASE_URL }}/api/v2/status";
+       echo -n "Wait for direktiv API to be ready";
+       for attempt in {1..100}
+       do
+         status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint || true);
+         echo -n ".";
+         # echo -n "code($status_code)";
+         if [ $status_code -eq 200 ]
+         then
+           echo "" && echo "API ready" && exit 0;  
+         fi
+         sleep 1;
+       done
+       echo ""
+       exit 1;

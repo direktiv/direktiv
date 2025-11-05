@@ -1,5 +1,9 @@
 import { BaseFileSchemaType, RenameFileSchemaType } from "../schema";
-import { getFilenameFromPath, getParentFromPath } from "../utils";
+import {
+  forceLeadingSlash,
+  getFilenameFromPath,
+  getParentFromPath,
+} from "../utils";
 
 import { fileKeys } from "..";
 import { patchFile } from "./patchFile";
@@ -45,7 +49,7 @@ export const useRenameFile = ({
       queryClient.invalidateQueries({
         queryKey: fileKeys.file(namespace, {
           apiKey: apiKey ?? undefined,
-          path: getParentFromPath(data.data.path),
+          path: forceLeadingSlash(getParentFromPath(data.data.path)),
         }),
       });
       toast({

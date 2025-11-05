@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils/index";
 import { faker } from "@faker-js/faker";
-import { simpleWorkflow } from "../utils/workflows";
+import { simpleWorkflow } from "e2e/utils/workflows";
 
 let namespace = "";
 
@@ -25,7 +25,8 @@ test("the header of the instance page shows the relevant data for the workflow",
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflow,
+    content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
   const instanceId = (
     await createInstance({

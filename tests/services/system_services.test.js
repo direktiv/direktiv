@@ -14,16 +14,26 @@ describe('Test system services behaviour', () => {
 	helpers.itShouldCreateNamespace(it, expect, systemNamespace)
 	helpers.itShouldCreateNamespace(it, expect, normalNamespace)
 
-	helpers.itShouldCreateYamlFile(it, expect, systemNamespace,
-		'/', 'bash.yaml', 'service', `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		systemNamespace,
+		'/',
+		'bash.yaml',
+		'service',
+		`
 direktiv_api: service/v1
 name: bash
 image: direktiv/bash:dev
 cmd: ""
 scale: 1
-`)
+`,
+	)
 
-	helpers.itShouldCreateFile(it, expect, systemNamespace,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		systemNamespace,
 		'',
 		`a.yaml`,
 		'workflow',
@@ -42,10 +52,13 @@ states:
     input: 
       commands:
       - command: bash -c 'echo a'
-`))
+`),
+	)
 
 	retry10(`should list services on the system namespace`, async () => {
-		const req = await request(config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ systemNamespace }/services`)
+		const req = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${systemNamespace}/services`,
+		)
 
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
@@ -65,7 +78,9 @@ states:
 	})
 
 	it(`should invoke the '/a.yaml' workflow on the system namespace`, async () => {
-		const req = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ systemNamespace }/instances?path=a.yaml&wait=true`)
+		const req = await request(config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${systemNamespace}/instances?path=a.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			return: {
@@ -79,7 +94,10 @@ states:
 		})
 	})
 
-	helpers.itShouldCreateFile(it, expect, normalNamespace,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		normalNamespace,
 		'',
 		`a.yaml`,
 		'workflow',
@@ -98,10 +116,13 @@ states:
     input: 
       commands:
       - command: bash -c 'echo a'
-`))
+`),
+	)
 
 	it(`should invoke the '/a.yaml' workflow on the non-system namespace`, async () => {
-		const req = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ normalNamespace }/instances?path=a.yaml&wait=true`)
+		const req = await request(config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${normalNamespace}/instances?path=a.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			return: {
@@ -115,7 +136,10 @@ states:
 		})
 	})
 
-	helpers.itShouldCreateFile(it, expect, normalNamespace,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		normalNamespace,
 		'',
 		`b.yaml`,
 		'workflow',
@@ -178,10 +202,13 @@ states:
   - key: '/e.yaml'
     as: e
     scope: file
-`))
+`),
+	)
 
 	it(`should invoke the '/b.yaml' workflow on the non-system namespace, testing function files`, async () => {
-		const req = await request(config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ normalNamespace }/instances?path=b.yaml&wait=true`)
+		const req = await request(config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${normalNamespace}/instances?path=b.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			var: {

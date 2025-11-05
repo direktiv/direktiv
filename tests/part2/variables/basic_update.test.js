@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import common from '../../common'
 import config from '../../common/config'
@@ -7,7 +8,7 @@ import helpers from '../../common/helpers'
 import regex from '../../common/regex'
 import request from '../../common/request'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test variable update calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
@@ -16,7 +17,7 @@ describe('Test variable update calls', () => {
 	let createRes
 	it(`should create a variable case`, async () => {
 		createRes = await request(config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/variables`)
+			.post(`/api/v2/namespaces/${namespace}/variables`)
 			.send({
 				name: 'foo',
 				data: btoa('bar'),
@@ -100,11 +101,10 @@ describe('Test variable update calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		// eslint-disable-next-line no-loop-func
-		it(`should update variable case ${ i }`, async () => {
+		it(`should update variable case ${i}`, async () => {
 			const varId = createRes.body.data.id
 			const res = await request(config.getDirektivBaseUrl())
-				.patch(`/api/v2/namespaces/${ namespace }/variables/${ varId }`)
+				.patch(`/api/v2/namespaces/${namespace}/variables/${varId}`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data).toEqual({
@@ -126,7 +126,7 @@ describe('Test invalid variable update calls', () => {
 	let createRes
 	it(`should create a variable case`, async () => {
 		createRes = await request(config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/variables`)
+			.post(`/api/v2/namespaces/${namespace}/variables`)
 			.send({
 				name: 'foo',
 				data: btoa('bar'),
@@ -168,16 +168,13 @@ describe('Test invalid variable update calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		// eslint-disable-next-line no-loop-func
-		it(`should fail updating a variable case ${ i }`, async () => {
+		it(`should fail updating a variable case ${i}`, async () => {
 			const varId = createRes.body.data.id
 			const res = await request(config.getDirektivBaseUrl())
-				.patch(`/api/v2/namespaces/${ namespace }/variables/${ varId }`)
+				.patch(`/api/v2/namespaces/${namespace}/variables/${varId}`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
-			expect(res.body.error).toEqual(
-				testCase.wantError.error,
-			)
+			expect(res.body.error).toEqual(testCase.wantError.error)
 		})
 	}
 })

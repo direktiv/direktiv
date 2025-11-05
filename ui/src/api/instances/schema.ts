@@ -4,7 +4,7 @@ export const possibleInstanceStatuses = [
   "pending",
   "failed",
   "cancelled",
-  "crashed",
+  "running",
   "complete",
 ] as const;
 

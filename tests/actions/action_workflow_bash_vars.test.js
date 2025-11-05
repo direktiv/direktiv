@@ -1,11 +1,12 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 const testWorkflow = 'test-workflow-bash.yaml'
 
 describe('Test workflow bash vars via action', () => {
@@ -13,7 +14,10 @@ describe('Test workflow bash vars via action', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateFile(it, expect, namespace,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespace,
 		'',
 		testWorkflow,
 		'workflow',
@@ -31,9 +35,13 @@ states:
     files:
     - key: myvar
       scope: workflow
-`))
+`),
+	)
 	it(`should set plain text variable`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespace }/variables`)
+		const workflowVarResponse = await request(
+			common.config.getDirektivBaseUrl(),
+		)
+			.post(`/api/v2/namespaces/${namespace}/variables`)
 			.send({
 				name: 'myvar',
 				data: btoa('Hello World 55'),
@@ -42,9 +50,11 @@ states:
 			})
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
-	it(`read variable via bash action from ${ testWorkflow } workflow`, async () => {
+	it(`read variable via bash action from ${testWorkflow} workflow`, async () => {
 		const res = await request(common.config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/instances?path=${ testWorkflow }&wait=true`)
+			.post(
+				`/api/v2/namespaces/${namespace}/instances?path=${testWorkflow}&wait=true`,
+			)
 			.send({
 				commands: [
 					{
@@ -54,12 +64,15 @@ states:
 			})
 		expect(res.statusCode).toEqual(200)
 
-		expect(res.body.return.python).toMatchObject(
-			[ { result: 'Hello World 55', success: true } ])
+		expect(res.body.return.python).toMatchObject([
+			{ result: 'Hello World 55', success: true },
+		])
 	})
-	it(`set new variable via bash action from ${ testWorkflow } workflow`, async () => {
+	it(`set new variable via bash action from ${testWorkflow} workflow`, async () => {
 		const res = await request(common.config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${ namespace }/instances?path=${ testWorkflow }&wait=true`)
+			.post(
+				`/api/v2/namespaces/${namespace}/instances?path=${testWorkflow}&wait=true`,
+			)
 			.send({
 				commands: [
 					{
@@ -68,7 +81,11 @@ states:
 				],
 			})
 		expect(res.statusCode).toEqual(200)
-		const workflowVarResponse = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespace }/variables?workflowPath=/${ testWorkflow }`)
+		const workflowVarResponse = await request(
+			common.config.getDirektivBaseUrl(),
+		).get(
+			`/api/v2/namespaces/${namespace}/variables?workflowPath=/${testWorkflow}`,
+		)
 		expect(workflowVarResponse.statusCode).toEqual(200)
 		expect(workflowVarResponse.body.data.length).toBe(2)
 	})

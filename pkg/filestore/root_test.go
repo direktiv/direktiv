@@ -8,17 +8,19 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/google/uuid"
 )
 
 func TestRoot_CreateFile(t *testing.T) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	ns := uuid.NewString()
+	conn, err := database.NewTestDBWithNamespace(t, ns)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	fs := db.FileStore()
+	fs := filesql.NewStore(conn)
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
+	root, err := fs.CreateRoot(context.Background(), ns)
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -38,7 +40,7 @@ func TestRoot_CreateFile(t *testing.T) {
 	}
 }
 
-func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, path string) {
+func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, rootID string, path string) {
 	t.Helper()
 
 	var data []byte
@@ -51,10 +53,10 @@ func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, rootID 
 	assertRootCorrectFileCreationWithContent(t, fs, rootID, path, string(typ), data)
 }
 
-func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, path string, typ string, data []byte) {
+func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileStore, rootID string, path string, typ string, data []byte) {
 	t.Helper()
 
-	file, err := fs.ForRootID(rootID).CreateFile(context.Background(), path, filestore.FileType(typ), "application/octet-stream", data)
+	file, err := fs.ForRoot(rootID).CreateFile(context.Background(), path, filestore.FileType(typ), "application/octet-stream", data)
 	if err != nil {
 		t.Errorf("unexpected CreateFile() error: %v", err)
 
@@ -72,15 +74,18 @@ func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileSto
 	}
 
 	if typ != "directory" {
-		createdData, _ := fs.ForFile(file).GetData(context.Background())
+		createdData, err := fs.ForFile(file).GetData(context.Background())
+		if err != nil {
+			t.Errorf("unexpected GetData() error: %v", err)
+		}
 		if string(createdData) != string(data) {
-			t.Errorf("unexpected GetPath(), got: >%s<, want: >%s<", createdData, data)
+			t.Errorf("unexpected GetData(), got: >%s<, want: >%s<", createdData, data)
 
 			return
 		}
 	}
 
-	file, err = fs.ForRootID(rootID).GetFile(context.Background(), path)
+	file, err = fs.ForRoot(rootID).GetFile(context.Background(), path)
 	if err != nil {
 		t.Errorf("unexpected GetFile() error: %v", err)
 
@@ -98,7 +103,7 @@ func assertRootCorrectFileCreationWithContent(t *testing.T, fs filestore.FileSto
 	}
 }
 
-func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, path string, wantErr error) {
+func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, rootID string, path string, wantErr error) {
 	t.Helper()
 
 	typ := filestore.FileTypeDirectory
@@ -106,7 +111,7 @@ func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, rootID uu
 		typ = filestore.FileTypeFile
 	}
 
-	file, gotErr := fs.ForRootID(rootID).CreateFile(context.Background(), path, typ, "application/octet-stream", []byte(""))
+	file, gotErr := fs.ForRoot(rootID).CreateFile(context.Background(), path, typ, "application/octet-stream", []byte(""))
 	if file != nil {
 		t.Errorf("unexpected none nil CreateFile().file")
 
@@ -120,13 +125,14 @@ func assertRootErrorFileCreation(t *testing.T, fs filestore.FileStore, rootID uu
 }
 
 func TestRoot_CorrectReadDirectory(t *testing.T) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	ns := uuid.NewString()
+	conn, err := database.NewTestDBWithNamespace(t, ns)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	fs := db.FileStore()
+	fs := filesql.NewStore(conn)
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
+	root, err := fs.CreateRoot(context.Background(), ns)
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -183,13 +189,14 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 }
 
 func TestRoot_RenamePath(t *testing.T) {
-	db, ns, err := database.NewTestDBWithNamespace(t, uuid.NewString())
+	ns := uuid.NewString()
+	conn, err := database.NewTestDBWithNamespace(t, ns)
 	if err != nil {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
-	fs := db.FileStore()
+	fs := filesql.NewStore(conn)
 
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), ns.Name)
+	root, err := fs.CreateRoot(context.Background(), ns)
 	if err != nil {
 		t.Fatalf("unepxected CreateRoot() error = %v", err)
 	}
@@ -201,7 +208,7 @@ func TestRoot_RenamePath(t *testing.T) {
 		assertRootCorrectFileCreation(t, fs, root.ID, "/dir1/file.text")
 	}
 
-	f, err := fs.ForRootID(root.ID).GetFile(context.Background(), "/dir1/file.text")
+	f, err := fs.ForRoot(root.ID).GetFile(context.Background(), "/dir1/file.text")
 	if err != nil {
 		t.Fatalf("unepxected GetFile() error = %v", err)
 	}
@@ -215,7 +222,7 @@ func TestRoot_RenamePath(t *testing.T) {
 		"/file.text",
 	)
 
-	f, err = fs.ForRootID(root.ID).GetFile(context.Background(), "/dir1/dir2")
+	f, err = fs.ForRoot(root.ID).GetFile(context.Background(), "/dir1/dir2")
 	if err != nil {
 		t.Fatalf("unepxected GetFile() error = %v", err)
 	}
@@ -231,10 +238,10 @@ func TestRoot_RenamePath(t *testing.T) {
 	)
 }
 
-func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, searchPath string, paths ...string) {
+func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, rootID string, searchPath string, paths ...string) {
 	t.Helper()
 
-	files, err := fs.ForRootID(rootID).ReadDirectory(context.Background(), searchPath)
+	files, err := fs.ForRoot(rootID).ReadDirectory(context.Background(), searchPath)
 	if err != nil {
 		t.Errorf("unepxected ReadDirectory() error = %v", err)
 
@@ -255,10 +262,10 @@ func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, rootID uuid.UUI
 	}
 }
 
-func assertFileExistsV2(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, file filestore.File) {
+func assertFileExistsV2(t *testing.T, fs filestore.FileStore, rootID string, file filestore.File, data []byte) {
 	t.Helper()
 
-	f, err := fs.ForRootID(rootID).GetFile(context.Background(), file.Path)
+	f, err := fs.ForRoot(rootID).GetFile(context.Background(), file.Path)
 	if err != nil {
 		t.Errorf("unexpected GetFile() error: %v", err)
 
@@ -282,28 +289,28 @@ func assertFileExistsV2(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, 
 	if f.Typ == filestore.FileTypeDirectory {
 		return
 	}
-	data, err := fs.ForFile(f).GetData(context.Background())
+	fData, err := fs.ForFile(f).GetData(context.Background())
 	if err != nil {
 		t.Errorf("unexpected GetData() error: %v", err)
 
 		return
 	}
-	if data == nil {
+	if fData == nil {
 		t.Errorf("unexpected nil data GetData()")
 
 		return
 	}
-	if string(data) != string(file.Data) {
-		t.Errorf("unexpected data, got: >%s<, want: >%s<", string(data), string(file.Data))
+	if string(fData) != string(data) {
+		t.Errorf("unexpected data, got: >%s<, want: >%s<", string(fData), string(data))
 
 		return
 	}
 }
 
-func assertCreateFileV2(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, file filestore.File) {
+func assertCreateFileV2(t *testing.T, fs filestore.FileStore, rootID string, file filestore.File, data []byte) {
 	t.Helper()
 
-	f, err := fs.ForRootID(rootID).CreateFile(context.Background(), file.Path, file.Typ, "text/plain", file.Data)
+	f, err := fs.ForRoot(rootID).CreateFile(context.Background(), file.Path, file.Typ, "text/plain", data)
 	if err != nil {
 		t.Errorf("unexpected CreateFile() error: %v", err)
 
