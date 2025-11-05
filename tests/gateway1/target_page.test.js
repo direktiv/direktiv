@@ -39,17 +39,20 @@ blocks:
 		`
 x-direktiv-api: endpoint/v2
 x-direktiv-config:
-    path: /ep1
-    allow_anonymous: true
-    plugins:
-        target:
-            type: target-page
-            configuration:
-                file: /p1.yaml
+  allow_anonymous: true
+  path: /ep1
+  plugins:
+    auth: []
+    inbound: []
+    outbound: []
+    target:
+      type: target-page
+      configuration:
+        file: /p1.yaml
 get:
-    responses:
-        "200":
-        description: works
+  responses:
+    "200":
+      description: ""
 `,
 	)
 
