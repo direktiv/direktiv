@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/direktiv/direktiv/internal/cluster/cache"
 	"github.com/direktiv/direktiv/internal/compiler"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
@@ -55,7 +56,8 @@ func renderGatewayFiles(db *gorm.DB, manager core.GatewayManager) {
 	}
 }
 
-func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager) {
+func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
+	cacheManager cache.Manager) {
 	ctx := context.Background()
 	dStore := datasql.NewStore(db)
 
@@ -82,7 +84,7 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager) {
 
 			switch f.Typ {
 			case filestore.FileTypeWorkflow:
-				c, err := compiler.NewCompiler(db, nil)
+				c, err := compiler.NewCompiler(db, cacheManager.FlowCache())
 				if err != nil {
 					slog.Error("cannot get compiler for workflow",
 						slog.String("namespace", ns.Name),

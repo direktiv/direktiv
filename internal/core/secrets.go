@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const SecretsCacheName = "secrets"
+
 type Secret struct {
 	Name      string    `json:"name"`
 	Data      []byte    `json:"data"`

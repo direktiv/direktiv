@@ -13,7 +13,7 @@ import (
 
 type Compiler struct {
 	db    *gorm.DB
-	cache cache.Cache
+	cache cache.Cache[core.TypescriptFlow]
 }
 
 type CompileItem struct {
@@ -22,10 +22,10 @@ type CompileItem struct {
 	ValidationErrors []error
 
 	script, mapping string
-	config          *core.FlowConfig
+	config          core.FlowConfig
 }
 
-func NewCompiler(db *gorm.DB, cache cache.Cache) (*Compiler, error) {
+func NewCompiler(db *gorm.DB, cache cache.Cache[core.TypescriptFlow]) (*Compiler, error) {
 	return &Compiler{
 		db:    db,
 		cache: cache,
@@ -41,16 +41,17 @@ func (c *Compiler) getFile(ctx context.Context, namespace, path string) ([]byte,
 	return filesql.NewStore(c.db).ForFile(f).GetData(ctx)
 }
 
-func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (*core.TypescriptFlow, error) {
-	// cacheKey := fmt.Sprintf("%s-%s-%s", namespace, "script", path)
-	// flow, found := c.cache.Get(cacheKey)
-	// if found {
-	// 	return flow.(*core.TypescriptFlow), nil
-	// }
+func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (core.TypescriptFlow, error) {
+	cacheKey := fmt.Sprintf("%s-%s-%s", namespace, "script", path)
+	return c.cache.Get(cacheKey, func(a ...any) (core.TypescriptFlow, error) {
+		return c.genFlow(ctx, namespace, path)
+	})
+}
 
+func (c *Compiler) genFlow(ctx context.Context, namespace, path string) (core.TypescriptFlow, error) {
 	b, err := c.getFile(ctx, namespace, path)
 	if err != nil {
-		return nil, err
+		return core.TypescriptFlow{}, err
 	}
 
 	ci := &CompileItem{
@@ -60,7 +61,7 @@ func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (*co
 
 	err = ci.TranspileAndValidate()
 	if err != nil {
-		return nil, err
+		return core.TypescriptFlow{}, err
 	}
 
 	if len(ci.ValidationErrors) > 0 {
@@ -69,10 +70,8 @@ func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (*co
 			errList[i] = ci.ValidationErrors[i].Error()
 		}
 
-		return nil, fmt.Errorf("%s", strings.Join(errList, ", "))
+		return core.TypescriptFlow{}, fmt.Errorf("%s", strings.Join(errList, ", "))
 	}
-
-	// c.cache.Set(cacheKey, obj)
 
 	return ci.Config(), nil
 }
@@ -85,8 +84,8 @@ func NewCompileItem(script []byte, path string) *CompileItem {
 	}
 }
 
-func (ci *CompileItem) Config() *core.TypescriptFlow {
-	return &core.TypescriptFlow{
+func (ci *CompileItem) Config() core.TypescriptFlow {
+	return core.TypescriptFlow{
 		Script:  ci.script,
 		Mapping: ci.mapping,
 		Config:  ci.config,

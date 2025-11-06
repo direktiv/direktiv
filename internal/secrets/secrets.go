@@ -13,20 +13,20 @@ import (
 var ErrNotFound = errors.New("ErrNotFound")
 
 type Manager struct {
-	db    *gorm.DB
-	cache cache.Cache
+	db *gorm.DB
+	// cache cache.Cache
 }
 
 type Wrapper struct {
 	namespace string
 	secrets   core.Secrets
-	cache     cache.Cache
+	// cache     cache.Cache
 }
 
-func NewManager(db *gorm.DB, cache cache.Cache) core.SecretsManager {
+func NewManager(db *gorm.DB, cache cache.Manager) core.SecretsManager {
 	return &Manager{
-		db:    db,
-		cache: cache,
+		db: db,
+		// cache: cache,
 	}
 }
 
@@ -37,42 +37,45 @@ func (sm *Manager) SecretsForNamespace(ctx context.Context, namespace string) (c
 	}
 
 	return &Wrapper{
-		secrets:   dbs,
-		cache:     sm.cache,
+		secrets: dbs,
+		// cache:     sm.cache,
 		namespace: namespace,
 	}, nil
 }
 
 func (sw *Wrapper) Get(ctx context.Context, name string) (*core.Secret, error) {
-	value, exists := sw.cache.Get(sw.keyNameforSecret(name))
-	if exists {
-		s, ok := value.(*core.Secret)
-		if ok {
-			return s, nil
-		}
-	}
+	return nil, nil
+	// value, exists := sw.cache.Get(sw.keyNameforSecret(name))
+	// if exists {
+	// 	s, ok := value.(*core.Secret)
+	// 	if ok {
+	// 		return s, nil
+	// 	}
+	// }
 
-	s, err := sw.secrets.Get(ctx, name)
-	if err == nil {
-		sw.cache.Set(sw.keyNameforSecret(name), s)
-	}
+	// s, err := sw.secrets.Get(ctx, name)
+	// if err == nil {
+	// 	sw.cache.Set(sw.keyNameforSecret(name), s)
+	// }
 
-	return s, err
+	// return s, err
 }
 
 func (sw *Wrapper) Set(ctx context.Context, secret *core.Secret) (*core.Secret, error) {
 	// set in implementation first
-	v, err := sw.secrets.Set(ctx, secret)
-	if err != nil {
-		return nil, err
-	}
+	// v, err := sw.secrets.Set(ctx, secret)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	secret.CreatedAt = v.CreatedAt
-	secret.UpdatedAt = v.UpdatedAt
+	// secret.CreatedAt = v.CreatedAt
+	// secret.UpdatedAt = v.UpdatedAt
 
-	sw.cache.Set(sw.keyNameforSecret(secret.Name), secret)
+	// sw.cache.Set(sw.keyNameforSecret(secret.Name), secret)
 
-	return v, err
+	// return v, err
+
+	return nil, nil
 }
 
 func (sw *Wrapper) GetAll(ctx context.Context) ([]*core.Secret, error) {
@@ -84,13 +87,13 @@ func (sw *Wrapper) Update(ctx context.Context, secret *core.Secret) (*core.Secre
 	if err != nil {
 		return nil, err
 	}
-	sw.cache.Set(sw.keyNameforSecret(secret.Name), s)
+	// sw.cache.Set(sw.keyNameforSecret(secret.Name), s)
 
 	return s, err
 }
 
 func (sw *Wrapper) Delete(ctx context.Context, name string) error {
-	sw.cache.Delete(sw.keyNameforSecret(name))
+	// sw.cache.Delete(sw.keyNameforSecret(name))
 	return sw.secrets.Delete(ctx, name)
 }
 

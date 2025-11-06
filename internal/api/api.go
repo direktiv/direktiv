@@ -36,10 +36,10 @@ type Version struct {
 type InitializeArgs struct {
 	Version *Version
 	Config  *core.Config
-	Cache   cache.Cache
 	PubSub  pubsub.EventBus
 
 	ServiceManager core.ServiceManager
+	CacheManager   cache.Manager
 
 	RegistryManager core.RegistryManager
 	GatewayManager  core.GatewayManager
@@ -77,8 +77,9 @@ func New(app InitializeArgs) (*Server, error) {
 	}
 
 	fsCtr := &fsController{
-		db:  app.DB,
-		bus: app.PubSub,
+		db:    app.DB,
+		bus:   app.PubSub,
+		cache: app.CacheManager.FlowCache(),
 	}
 	regCtr := &registryController{
 		manager: app.RegistryManager,
@@ -122,7 +123,7 @@ func New(app InitializeArgs) (*Server, error) {
 
 	mw := &appMiddlewares{
 		db:    app.DB,
-		cache: app.Cache,
+		cache: app.CacheManager,
 	}
 
 	r := chi.NewRouter()

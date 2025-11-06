@@ -139,12 +139,12 @@ func Start(lc *lifecycle.Manager) error {
 	// initializing memcache
 	{
 		slog.Info("initializing memcache")
-		app.Cache, err = memcache.New(app.PubSub, os.Getenv("POD_NAME"), false, slog.Default())
+		app.CacheManager, err = memcache.NewManager(app.PubSub)
 		if err != nil {
 			return fmt.Errorf("create memcache, err: %w", err)
 		}
 		lc.OnShutdown(func() error {
-			app.Cache.Close()
+			// app.Cache.Close()
 			return nil
 		})
 	}
@@ -152,7 +152,7 @@ func Start(lc *lifecycle.Manager) error {
 	// initializing secrets-handler
 	{
 		slog.Info("initializing secrets-handler")
-		app.SecretsManager = secrets.NewManager(app.DB, app.Cache)
+		app.SecretsManager = secrets.NewManager(app.DB, app.CacheManager)
 	}
 
 	// initializing service-manager
@@ -201,22 +201,22 @@ func Start(lc *lifecycle.Manager) error {
 		})
 
 		app.PubSub.Subscribe(lc.Context(), intNats.StreamFileChange.Name(), func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager)
+			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
 		})
 		app.PubSub.Subscribe(lc.Context(), intNats.StreamNamespaceChange.Name(), func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager)
+			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
 		})
 		app.PubSub.Subscribe(lc.Context(), intNats.StreamNamespaceChange.Name(), func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager)
+			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
 		})
 		// call at least once before booting
-		renderServiceFiles(app.DB, app.ServiceManager)
+		renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
 	}
 
 	// initializing engine
 	{
 		// prepare compiler
-		comp, err := compiler.NewCompiler(app.DB, app.Cache)
+		comp, err := compiler.NewCompiler(app.DB, app.CacheManager.FlowCache())
 		if err != nil {
 			return fmt.Errorf("creating compiler, err: %w", err)
 		}

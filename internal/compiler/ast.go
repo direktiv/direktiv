@@ -51,7 +51,7 @@ type ASTParser struct {
 
 	Errors           []*ValidationError
 	Actions          []core.ActionConfig
-	FlowConfig       *core.FlowConfig
+	FlowConfig       core.FlowConfig
 	FirstStateFunc   string
 	FlowVariable     ast.Expression
 	allFunctionNames []string
@@ -126,10 +126,10 @@ func (ap *ASTParser) Parse() error {
 		ap.FlowConfig = config
 	} else {
 		// No flow variable, use defaults
-		ap.FlowConfig = &core.FlowConfig{
+		ap.FlowConfig = core.FlowConfig{
 			Type:    "default",
 			Timeout: "PT15M",
-			Events:  make([]*core.EventConfig, 0),
+			Events:  make([]core.EventConfig, 0),
 			State:   ap.FirstStateFunc,
 		}
 	}
@@ -637,11 +637,11 @@ func (ap *ASTParser) checkHasReturn(node ast.Node) bool {
 }
 
 // buildFlowConfig builds the flow configuration from the flow variable
-func (ap *ASTParser) buildFlowConfig() (*core.FlowConfig, error) {
-	flow := &core.FlowConfig{
+func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
+	flow := core.FlowConfig{
 		Type:    "default",
 		Timeout: "PT15M",
-		Events:  make([]*core.EventConfig, 0),
+		Events:  make([]core.EventConfig, 0),
 		State:   ap.FirstStateFunc,
 	}
 
@@ -790,8 +790,8 @@ func (ap *ASTParser) buildFlowConfig() (*core.FlowConfig, error) {
 }
 
 // parseEvent parses an event configuration
-func (ap *ASTParser) parseEvent(expr ast.Expression) (*core.EventConfig, error) {
-	event := &core.EventConfig{
+func (ap *ASTParser) parseEvent(expr ast.Expression) (core.EventConfig, error) {
+	event := core.EventConfig{
 		Context: make(map[string]any),
 	}
 
