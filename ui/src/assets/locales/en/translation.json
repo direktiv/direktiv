@@ -312,6 +312,7 @@
                 "types": {
                   "instant-response": "Instant Response",
                   "target-flow": "Workflow",
+                  "target-page": "Page",
                   "target-flow-var": "Workflow Variable",
                   "target-namespace-file": "Namespace File",
                   "target-namespace-var": "Namespace Variable",
@@ -330,6 +331,9 @@
                   "asynchronous": "Asynchronous",
                   "contentType": "Content Type (optional)",
                   "contentTypePlaceholder": "application/json"
+                },
+                "targetPage": {
+                  "file": "Page File"
                 },
                 "targetFlowVar": {
                   "namespace": "Namespace (optional)",
