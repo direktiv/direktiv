@@ -4,7 +4,7 @@ import { FormCheckboxType } from "../../../../schema/blocks/form/checkbox";
 import { StopPropagation } from "~/components/StopPropagation";
 import { encodeBlockKey } from "../utils";
 import { usePageStateContext } from "../../../context/pageCompilerContext";
-import { useTranslation } from "react-i18next";
+import { useUnwrapOrThrow } from "../../../primitives/Variable/utils/useUnwrapOrThrow";
 import { useVariableBooleanResolver } from "../../../primitives/Variable/utils/useVariableBooleanResolver";
 
 type FormCheckboxProps = {
@@ -12,7 +12,7 @@ type FormCheckboxProps = {
 };
 
 export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
-  const { t } = useTranslation();
+  const unwrapOrThrow = useUnwrapOrThrow();
   const resolveVariableBoolean = useVariableBooleanResolver();
   const { id, label, description, defaultValue, optional, type } = blockProps;
   const { mode } = usePageStateContext();
@@ -22,14 +22,7 @@ export const FormCheckbox = ({ blockProps }: FormCheckboxProps) => {
 
   if (defaultValue.type === "variable") {
     const resolvedDefaultValue = resolveVariableBoolean(defaultValue.value);
-    if (!resolvedDefaultValue.success) {
-      throw new Error(
-        t(`direktivPage.error.templateString.${resolvedDefaultValue.error}`, {
-          variable: defaultValue.value,
-        })
-      );
-    }
-    value = resolvedDefaultValue.data;
+    value = unwrapOrThrow(resolvedDefaultValue, defaultValue.value);
   } else {
     value = defaultValue.value;
   }

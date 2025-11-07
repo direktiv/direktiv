@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
+  getStringValueFromJsonPath,
   getValueFromJsonPath,
   parseTemplateString,
   parseVariable,
@@ -479,6 +480,98 @@ describe("getValueFromJsonPath", () => {
         success: false,
         error: "invalidJson",
       });
+    });
+  });
+});
+
+describe("getStringValueFromJsonPath", () => {
+  test("it should return string values as strings", () => {
+    const result = getStringValueFromJsonPath({ key: "value" }, "key");
+    expect(result).toEqual({
+      success: true,
+      data: "value",
+    });
+  });
+
+  test("it should convert number values to strings", () => {
+    const result = getStringValueFromJsonPath({ key: 42 }, "key");
+    expect(result).toEqual({
+      success: true,
+      data: "42",
+    });
+  });
+
+  test("it should convert boolean values to strings", () => {
+    expect(getStringValueFromJsonPath({ key: true }, "key")).toEqual({
+      success: true,
+      data: "true",
+    });
+    expect(getStringValueFromJsonPath({ key: false }, "key")).toEqual({
+      success: true,
+      data: "false",
+    });
+  });
+
+  test("it should handle nested paths", () => {
+    const obj = { user: { name: "John", age: 30, active: true } };
+    expect(getStringValueFromJsonPath(obj, "user.name")).toEqual({
+      success: true,
+      data: "John",
+    });
+    expect(getStringValueFromJsonPath(obj, "user.age")).toEqual({
+      success: true,
+      data: "30",
+    });
+    expect(getStringValueFromJsonPath(obj, "user.active")).toEqual({
+      success: true,
+      data: "true",
+    });
+  });
+
+  test("it should handle array indices", () => {
+    const obj = { items: ["first", 2, true] };
+    expect(getStringValueFromJsonPath(obj, "items.0")).toEqual({
+      success: true,
+      data: "first",
+    });
+    expect(getStringValueFromJsonPath(obj, "items.1")).toEqual({
+      success: true,
+      data: "2",
+    });
+    expect(getStringValueFromJsonPath(obj, "items.2")).toEqual({
+      success: true,
+      data: "true",
+    });
+  });
+
+  test("it should return error for invalid paths", () => {
+    expect(getStringValueFromJsonPath({ key: "value" }, "invalid")).toEqual({
+      success: false,
+      error: "invalidPath",
+    });
+  });
+
+  test("it should return error for invalid json input", () => {
+    expect(getStringValueFromJsonPath("not json", "key")).toEqual({
+      success: false,
+      error: "invalidJson",
+    });
+  });
+
+  test("it should return error for non-string/number/boolean values", () => {
+    expect(
+      getStringValueFromJsonPath({ key: { nested: "value" } }, "key")
+    ).toEqual({
+      success: false,
+      error: "couldNotStringify",
+    });
+    expect(getStringValueFromJsonPath({ key: ["array"] }, "key")).toEqual({
+      success: false,
+      error: "couldNotStringify",
+    });
+    expect(getStringValueFromJsonPath({ key: null }, "key")).toEqual({
+      success: false,
+      error: "couldNotStringify",
     });
   });
 });

@@ -3,7 +3,7 @@ import { FormNumberInputType } from "../../../schema/blocks/form/numberInput";
 import Input from "~/design/Input";
 import { StopPropagation } from "~/components/StopPropagation";
 import { encodeBlockKey } from "./utils";
-import { useTranslation } from "react-i18next";
+import { useUnwrapOrThrow } from "../../primitives/Variable/utils/useUnwrapOrThrow";
 import { useVariableNumberResolver } from "../../primitives/Variable/utils/useVariableNumberResolver";
 
 type FormNumberInputProps = {
@@ -11,7 +11,7 @@ type FormNumberInputProps = {
 };
 
 export const FormNumberInput = ({ blockProps }: FormNumberInputProps) => {
-  const { t } = useTranslation();
+  const unwrapOrThrow = useUnwrapOrThrow();
   const resolveVariableNumber = useVariableNumberResolver();
   const { id, label, description, defaultValue, optional, type } = blockProps;
 
@@ -20,14 +20,7 @@ export const FormNumberInput = ({ blockProps }: FormNumberInputProps) => {
 
   if (defaultValue.type === "variable") {
     const resolvedDefaultValue = resolveVariableNumber(defaultValue.value);
-    if (!resolvedDefaultValue.success) {
-      throw new Error(
-        t(`direktivPage.error.templateString.${resolvedDefaultValue.error}`, {
-          variable: defaultValue.value,
-        })
-      );
-    }
-    value = resolvedDefaultValue.data;
+    value = unwrapOrThrow(resolvedDefaultValue, defaultValue.value);
   } else {
     value = defaultValue.value;
   }

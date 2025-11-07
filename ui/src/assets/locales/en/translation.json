@@ -1846,9 +1846,12 @@
             "valuesLabel": "Options",
             "valuesPlaceholder": "Select option",
             "type": {
-              "variable": "Variable",
+              "variable-select-options": "Variable",
               "array": "Static"
-            }
+            },
+            "dataPlaceholder": "path to an array of objects",
+            "labelPlaceholder": "path to the label property",
+            "valuePlaceholder": "path to the value property"
           }
         }
       },

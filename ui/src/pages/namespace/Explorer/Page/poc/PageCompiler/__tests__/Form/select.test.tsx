@@ -74,8 +74,10 @@ describe("select input", () => {
               optional: false,
               type: "form-select",
               values: {
-                type: "variable",
-                value: "query.user.meta.subscriptionPlanOptions",
+                type: "variable-select-options",
+                data: "query.user.meta.subscriptionPlanOptions",
+                label: "label",
+                value: "value",
               },
               defaultValue: "",
             },
@@ -87,7 +89,7 @@ describe("select input", () => {
     const select = screen.getByRole("combobox", {
       name: "dynamic select",
     }) as HTMLSelectElement;
-    expect(select.parentElement?.textContent).toContain("freeproenterprise");
+    expect(select.parentElement?.textContent).contain("FreeProEnterprise");
   });
 
   test("shows error when using a non array variable", async () => {
@@ -103,8 +105,10 @@ describe("select input", () => {
               optional: false,
               type: "form-select",
               values: {
-                type: "variable",
-                value: "query.user.meta",
+                type: "variable-select-options",
+                data: "query.user.meta",
+                label: "label",
+                value: "value",
               },
               defaultValue: "",
             },
@@ -125,7 +129,7 @@ describe("select input", () => {
     );
   });
 
-  test("shows error when using an array but the values are not strings", async () => {
+  test("shows error when the path to the label does not exist", async () => {
     await act(async () => {
       render(
         <PageCompiler
@@ -138,8 +142,10 @@ describe("select input", () => {
               optional: false,
               type: "form-select",
               values: {
-                type: "variable",
-                value: "query.user.data.recentActivity",
+                type: "variable-select-options",
+                data: "query.user.meta.subscriptionPlanOptions",
+                label: "this.label.does.not.exist",
+                value: "value",
               },
               defaultValue: "",
             },
@@ -155,7 +161,44 @@ describe("select input", () => {
       .click();
     expect(
       screen.getByText(
-        "Variable error (query.user.data.recentActivity): Pointing to a value that is not an array of strings."
+        "Variable error (this.label.does.not.exist): The path is not valid. It points to an undefined value."
+      )
+    );
+  });
+
+  test("shows error when the path to the value does not exist", async () => {
+    await act(async () => {
+      render(
+        <PageCompiler
+          setPage={setPage}
+          page={createDirektivPageWithForm([
+            {
+              id: "dynamic-select",
+              label: "dynamic select",
+              description: "default value is always two",
+              optional: false,
+              type: "form-select",
+              values: {
+                type: "variable-select-options",
+                data: "query.user.meta.subscriptionPlanOptions",
+                label: "label",
+                value: "this.value.does.not.exist",
+              },
+              defaultValue: "",
+            },
+          ])}
+          mode="live"
+        />
+      );
+    });
+    await screen
+      .getByRole("button", {
+        name: "There was an unexpected error",
+      })
+      .click();
+    expect(
+      screen.getByText(
+        "Variable error (this.value.does.not.exist): The path is not valid. It points to an undefined value."
       )
     );
   });

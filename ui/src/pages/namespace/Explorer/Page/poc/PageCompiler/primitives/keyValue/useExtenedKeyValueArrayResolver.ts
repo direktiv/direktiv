@@ -1,7 +1,7 @@
 import { ExtendedKeyValueType } from "../../../schema/primitives/extendedKeyValue";
 import { KeyValueResolverFunction } from "./utils";
 import { useStringInterpolation } from "../Variable/utils/useStringInterpolation";
-import { useTranslation } from "react-i18next";
+import { useUnwrapOrThrow } from "../Variable/utils/useUnwrapOrThrow";
 import { useVariableResolver } from "../Variable/utils/useVariableResolver";
 
 /**
@@ -35,7 +35,7 @@ import { useVariableResolver } from "../Variable/utils/useVariableResolver";
 export const useExtendedKeyValueArrayResolver = (): KeyValueResolverFunction<
   ExtendedKeyValueType[]
 > => {
-  const { t } = useTranslation();
+  const unwrapOrThrow = useUnwrapOrThrow();
   const interpolateString = useStringInterpolation();
   const resolveVariable = useVariableResolver();
   return (extendedKeyValueArray, localVariables) =>
@@ -52,14 +52,10 @@ export const useExtendedKeyValueArrayResolver = (): KeyValueResolverFunction<
             valueType.value,
             localVariables
           );
-          if (!resolvedVariable.success) {
-            throw new Error(
-              t(`direktivPage.error.templateString.${resolvedVariable.error}`, {
-                variable: valueType.value,
-              })
-            );
-          }
-          return { key, value: resolvedVariable.data };
+          return {
+            key,
+            value: unwrapOrThrow(resolvedVariable, valueType.value),
+          };
         }
         case "boolean":
         case "number":
