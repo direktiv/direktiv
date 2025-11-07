@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/api/filter"
@@ -18,7 +19,10 @@ import (
 var ErrDataNotFound = fmt.Errorf("data not found")
 
 // LabelWithNotify used to mark an instance as called with a notify-chanel.
-const LabelWithNotify = "WithNotify"
+const (
+	LabelWithNotify   = "WithNotify"
+	LabelWithSyncExec = "WithSyncExec"
+)
 
 type Engine struct {
 	db       *gorm.DB
@@ -49,13 +53,13 @@ func (e *Engine) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (*InstanceStatus, <-chan *InstanceStatus, error) {
+func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (*InstanceEvent, <-chan *InstanceEvent, error) {
 	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("fetch script: %w", err)
 	}
 
-	notify := make(chan *InstanceStatus, 1)
+	notify := make(chan *InstanceEvent, 1)
 	st, err := e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)
 	if err != nil {
 		return nil, nil, err
@@ -64,7 +68,12 @@ func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPa
 	return st, notify, nil
 }
 
-func (e *Engine) startScript(ctx context.Context, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceStatus, metadata map[string]string) (*InstanceStatus, error) {
+var (
+	notifyMap  = map[string]chan<- *InstanceEvent{}
+	notifyLock = &sync.Mutex{}
+)
+
+func (e *Engine) startScript(ctx context.Context, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceEvent, metadata map[string]string) (*InstanceEvent, error) {
 	if !json.Valid([]byte(input)) {
 		return nil, fmt.Errorf("input is not a valid json string: %s", input)
 	}
@@ -73,23 +82,25 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 	if metadata == nil {
 		metadata = make(map[string]string)
 	}
-	metadata[LabelWithNotify] = "no"
-	if notify != nil {
-		metadata[LabelWithNotify] = "yes"
-	}
 
 	pEv := &InstanceEvent{
+		State: StateCodePending,
+
 		EventID:    uuid.New(),
 		InstanceID: instID,
 		Namespace:  namespace,
-		Type:       StateCodePending,
-		Time:       time.Now(),
 		Metadata:   metadata,
+		Script:     script,
+		Fn:         fn,
+		Mappings:   mappings,
 
-		Script:   script,
-		Mappings: mappings,
-		Fn:       fn,
-		Memory:   json.RawMessage(input),
+		Input:  json.RawMessage(input),
+		Output: nil,
+		Error:  "",
+
+		CreatedAt: time.Now(),
+		StartedAt: time.Time{},
+		EndedAt:   time.Time{},
 	}
 	err := e.dataBus.PublishInstanceHistoryEvent(ctx, pEv)
 	if err != nil {
@@ -97,7 +108,18 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 	}
 
 	if notify != nil {
-		e.dataBus.NotifyInstanceStatus(ctx, instID, notify)
+		notifyLock.Lock()
+		notifyMap[instID.String()] = notify
+		notifyLock.Unlock()
+	}
+
+	if metadata[LabelWithSyncExec] == "true" {
+		err = e.execInstance(ctx, pEv)
+		if err != nil {
+			return nil, fmt.Errorf("exec instance: %w", err)
+		}
+
+		return pEv, nil
 	}
 
 	err = e.dataBus.PublishInstanceQueueEvent(ctx, pEv)
@@ -105,22 +127,14 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 		return nil, fmt.Errorf("push queue stream: %w", err)
 	}
 
-	st := &InstanceStatus{}
-	ApplyInstanceEvent(st, pEv)
-
-	return st, nil
+	return pEv, nil
 }
 
 func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
-	startEv := &InstanceEvent{
-		EventID:    uuid.New(),
-		InstanceID: inst.InstanceID,
-		Namespace:  inst.Namespace,
-		Type:       StateCodeRunning,
-		Fn:         inst.Fn,
-		Memory:     inst.Memory,
-		Time:       time.Now(),
-	}
+	startEv := inst.Clone()
+	startEv.EventID = uuid.New()
+	startEv.State = StateCodeRunning
+	startEv.StartedAt = time.Now()
 
 	err := e.dataBus.PublishInstanceHistoryEvent(ctx, startEv)
 	if err != nil {
@@ -128,36 +142,38 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	}
 
 	sc := &runtime.Script{
-		InstID:   inst.InstanceID,
-		Text:     inst.Script,
-		Mappings: inst.Mappings,
-		Fn:       inst.Fn,
-		Input:    string(inst.Memory),
-		Metadata: inst.Metadata,
+		InstID:   startEv.InstanceID,
+		Text:     startEv.Script,
+		Mappings: startEv.Mappings,
+		Fn:       startEv.Fn,
+		Input:    string(startEv.Input),
+		Metadata: startEv.Metadata,
 	}
 
 	onFinish := func(output []byte) error {
-		endEv := &InstanceEvent{
-			EventID:    uuid.New(),
-			InstanceID: inst.InstanceID,
-			Namespace:  inst.Namespace,
-			Type:       StateCodeComplete,
-			Memory:     output,
-			Time:       time.Now(),
+		endEv := startEv.Clone()
+		endEv.EventID = uuid.New()
+		endEv.State = StateCodeComplete
+		endEv.Output = output
+		endEv.EndedAt = time.Now()
+		endEv.Fn = ""
+
+		if endEv.Metadata[LabelWithNotify] == "true" {
+			notifyLock.Lock()
+			if notify, ok := notifyMap[endEv.InstanceID.String()]; ok {
+				notify <- endEv
+			}
+			notifyLock.Unlock()
 		}
 
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
 	onTransition := func(memory []byte, fn string) error {
-		endEv := &InstanceEvent{
-			EventID:    uuid.New(),
-			InstanceID: inst.InstanceID,
-			Namespace:  inst.Namespace,
-			Type:       StateCodeRunning,
-			Fn:         fn,
-			Memory:     memory,
-			Time:       time.Now(),
-		}
+		endEv := startEv.Clone()
+		endEv.EventID = uuid.New()
+		endEv.State = StateCodeRunning
+		endEv.Output = memory
+		endEv.Fn = fn
 
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
@@ -166,13 +182,18 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	if err == nil {
 		return nil
 	}
-	endEv := &InstanceEvent{
-		EventID:    uuid.New(),
-		InstanceID: inst.InstanceID,
-		Namespace:  inst.Namespace,
-		Type:       StateCodeFailed,
-		Error:      err.Error(),
-		Time:       time.Now(),
+	endEv := startEv.Clone()
+	endEv.EventID = uuid.New()
+	endEv.State = StateCodeFailed
+	endEv.Error = err.Error()
+	endEv.EndedAt = time.Now()
+
+	if inst.Metadata[LabelWithNotify] == "true" {
+		notifyLock.Lock()
+		if notify, ok := notifyMap[inst.InstanceID.String()]; ok {
+			notify <- endEv
+		}
+		notifyLock.Unlock()
 	}
 	err = e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	if err != nil {
@@ -182,13 +203,13 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	return nil
 }
 
-func (e *Engine) ListInstanceStatuses(ctx context.Context, limit int, offset int, filters filter.Values) ([]*InstanceStatus, int, error) {
+func (e *Engine) ListInstanceStatuses(ctx context.Context, limit int, offset int, filters filter.Values) ([]*InstanceEvent, int, error) {
 	data, total := e.dataBus.ListInstanceStatuses(ctx, limit, offset, filters)
 
 	return data, total, nil
 }
 
-func (e *Engine) GetInstanceStatus(ctx context.Context, namespace string, id uuid.UUID) (*InstanceStatus, error) {
+func (e *Engine) GetInstanceStatus(ctx context.Context, namespace string, id uuid.UUID) (*InstanceEvent, error) {
 	data, _ := e.dataBus.ListInstanceStatuses(ctx, 0, 0, filter.With(nil,
 		filter.FieldEQ("namespace", namespace),
 		filter.FieldEQ("instanceID", id.String()),
