@@ -84,7 +84,7 @@ func (tp *tracingPack) handleError(err error) {
 	if tp.thrownError == nil {
 		tp.span.SetStatus(codes.Error, err.Error())
 	} else {
-		err = tp.thrownError	
+		err = tp.thrownError
 	}
 
 	telemetry.LogInstance(tp.ctx, telemetry.LogLevelError,
