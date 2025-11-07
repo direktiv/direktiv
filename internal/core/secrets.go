@@ -11,17 +11,13 @@ type Secret struct {
 	Name      string    `json:"name"`
 	Data      []byte    `json:"data"`
 	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-}
-
-type Secrets interface {
-	Get(ctx context.Context, name string) (*Secret, error)
-	Set(ctx context.Context, secret *Secret) (*Secret, error)
-	GetAll(ctx context.Context) ([]*Secret, error)
-	Update(ctx context.Context, secret *Secret) (*Secret, error)
-	Delete(ctx context.Context, name string) error
+	// UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type SecretsManager interface {
-	SecretsForNamespace(ctx context.Context, namespace string) (Secrets, error)
+	Create(ctx context.Context, namespace string, secret *Secret) (*Secret, error)
+	Get(ctx context.Context, namespace, name string) (*Secret, error)
+	GetAll(ctx context.Context, namespace string) ([]*Secret, error)
+	Update(ctx context.Context, namespace string, secret *Secret) (*Secret, error)
+	Delete(ctx context.Context, namespace, name string) error
 }
