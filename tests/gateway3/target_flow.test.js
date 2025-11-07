@@ -339,19 +339,6 @@ describe('Test target workflow plugin', () => {
 		expect(got).toEqual('Hello world!')
 	})
 
-	retry10(
-		`should return a flow run from magic namespace with namespace set`,
-		async () => {
-			const req = await request(common.config.getDirektivBaseUrl()).get(
-				`/ns/system/endpoint2`,
-			)
-			expect(req.statusCode).toEqual(200)
-			const got = JSON.parse(req.body.data.output)
-			expect(got).toEqual('Hello world!')
-			expect(req.header['content-type']).toEqual('application/json')
-		},
-	)
-
 	retry10(`should return a workflow var from non-magic namespace`, async () => {
 		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/` + limitedNamespace + `/endpoint2`,
@@ -473,15 +460,6 @@ describe('Test scope for target workflow plugin', () => {
 		'endpoint',
 		endpointTargetLimitedNamespaceWorkflow,
 	)
-
-	retry10(`should return a workflow run from limited namespace`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).get(
-			`/ns/system/endpoint1`,
-		)
-		expect(req.statusCode).toEqual(200)
-		const got = JSON.parse(req.body.data.output)
-		expect(got).toEqual('Hello world!')
-	})
 })
 
 describe('Test target workflow default contenttype', () => {

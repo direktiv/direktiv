@@ -33,7 +33,7 @@ func fetchSecret(sm core.SecretsManager, namespace string, callExpression string
 	if fArgs.namespace == "" {
 		fArgs.namespace = namespace
 	}
-	if fArgs.namespace != namespace && namespace != core.SystemNamespace {
+	if fArgs.namespace != namespace {
 		return "", fmt.Errorf("trying to fetch secret from different namespace")
 	}
 

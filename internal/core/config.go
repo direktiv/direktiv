@@ -8,8 +8,6 @@ import (
 
 var ErrNotFound = errors.New("ErrNotFound")
 
-const SystemNamespace = "system"
-
 // nolint:revive
 type Config struct {
 	DirektivNamespace string `env:"DIREKTIV_NAMESPACE"`

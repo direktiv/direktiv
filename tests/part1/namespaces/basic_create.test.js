@@ -16,16 +16,6 @@ describe('Test namespace create calls', () => {
 	const testCases = [
 		{
 			input: {
-				name: 'system',
-			},
-			want: {
-				name: 'system',
-				isSystemNamespace: true,
-				mirror: null,
-			},
-		},
-		{
-			input: {
 				name: 'api',
 			},
 			want: {

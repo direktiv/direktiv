@@ -14,6 +14,7 @@ import (
 
 // FlowPlugin executes a flow in a configured namespace.
 type FlowPlugin struct {
+	// TODO: remove system namespace feature
 	Namespace   string `mapstructure:"namespace"`
 	Flow        string `mapstructure:"flow"`
 	Async       bool   `mapstructure:"async"`
@@ -57,7 +58,7 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.Resp
 	if tf.Namespace == "" {
 		tf.Namespace = currentNS
 	}
-	if tf.Namespace != currentNS && currentNS != core.SystemNamespace {
+	if tf.Namespace != currentNS {
 		gateway.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
 		return nil, nil
 	}

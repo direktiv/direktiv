@@ -167,8 +167,8 @@ describe('Test workflow events and', () => {
 
 		expect(getEventListenerResponse.body.data.length).toEqual(2)
 
-		// eslint-disable-next-line no-prototype-builtins
 		const result = getEventListenerResponse.body.data.find((item) =>
+			// eslint-disable-next-line no-prototype-builtins
 			item.hasOwnProperty('triggerInstance'),
 		)
 

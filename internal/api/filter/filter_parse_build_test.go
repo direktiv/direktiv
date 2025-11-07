@@ -139,7 +139,7 @@ func TestBuildAndFieldHelpers(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			got := Build(tt.in...)
+			got := With(nil, tt.in...)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Fatalf("Build()=%v want %v", got, tt.want)
 			}

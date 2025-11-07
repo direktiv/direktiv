@@ -9,13 +9,13 @@ import (
 	"github.com/google/uuid"
 )
 
-// helper to build an InstanceStatus quickly
-func mk(ns string, id uuid.UUID, created time.Time, seq uint64) *engine.InstanceStatus {
-	return &engine.InstanceStatus{
-		InstanceID:      id,
-		Namespace:       ns,
-		CreatedAt:       created,
-		HistorySequence: seq,
+// helper to build an InstanceEvent quickly
+func mk(ns string, id uuid.UUID, created time.Time, seq uint64) *engine.InstanceEvent {
+	return &engine.InstanceEvent{
+		InstanceID: id,
+		Namespace:  ns,
+		CreatedAt:  created,
+		Sequence:   seq,
 	}
 }
 
@@ -32,7 +32,7 @@ func TestUpsert_InsertAndUpdateNewerIgnoreOlder(t *testing.T) {
 	if len(got) != 1 {
 		t.Fatalf("expected 1 item, got %d", len(got))
 	}
-	if got[0].InstanceID != id || got[0].HistorySequence != 1 {
+	if got[0].InstanceID != id || got[0].Sequence != 1 {
 		t.Fatalf("unexpected first insert: %+v", got[0])
 	}
 
@@ -44,8 +44,8 @@ func TestUpsert_InsertAndUpdateNewerIgnoreOlder(t *testing.T) {
 	if len(got) != 1 {
 		t.Fatalf("expected 1 item after update, got %d", len(got))
 	}
-	if got[0].HistorySequence != 2 {
-		t.Fatalf("expected seq=2 after newer update, got %d", got[0].HistorySequence)
+	if got[0].Sequence != 2 {
+		t.Fatalf("expected seq=2 after newer update, got %d", got[0].Sequence)
 	}
 
 	// attempt to "downgrade" with older HistorySequence (should be ignored)
@@ -53,8 +53,8 @@ func TestUpsert_InsertAndUpdateNewerIgnoreOlder(t *testing.T) {
 	c.Upsert(s3)
 
 	got = c.Snapshot(nil)
-	if got[0].HistorySequence != 2 {
-		t.Fatalf("expected seq to remain 2 after older upsert, got %d", got[0].HistorySequence)
+	if got[0].Sequence != 2 {
+		t.Fatalf("expected seq to remain 2 after older upsert, got %d", got[0].Sequence)
 	}
 }
 
@@ -81,7 +81,7 @@ func TestSnapshot_FilteringAndOrdering(t *testing.T) {
 	}
 
 	// Filter by namespace
-	nsA := c.Snapshot(filter.Build(
+	nsA := c.Snapshot(filter.With(nil,
 		filter.FieldEQ("namespace", "a"),
 	))
 	if len(nsA) != 1 {
@@ -94,7 +94,7 @@ func TestSnapshot_FilteringAndOrdering(t *testing.T) {
 	}
 
 	// Filter by instance ID
-	byID := c.Snapshot(filter.Build(
+	byID := c.Snapshot(filter.With(nil,
 		filter.FieldEQ("instanceID", id2.String()),
 	))
 	if len(byID) != 1 || byID[0].InstanceID != id2 {
@@ -113,7 +113,7 @@ func TestSnapshotPage_LimitOffsetAndTotal(t *testing.T) {
 	}
 
 	// Ask for limit=2, offset=1 within namespace "ns"
-	page, total := c.SnapshotPage(2, 1, filter.Build(
+	page, total := c.SnapshotPage(2, 1, filter.With(nil,
 		filter.FieldEQ("namespace", "ns"),
 	))
 	if total != 5 {
@@ -157,7 +157,7 @@ func TestDeleteNamespace_RemovesAndRebuildsIndex(t *testing.T) {
 	// Ensure index was rebuilt correctly by performing an update on the remaining item.
 	c.Upsert(mk("b", idB, now.Add(3*time.Minute), 2))
 	after := c.Snapshot(nil)
-	if len(after) != 1 || after[0].HistorySequence != 2 {
+	if len(after) != 1 || after[0].Sequence != 2 {
 		t.Fatalf("expected remaining item to update via index, got: %+v", after[0])
 	}
 }
@@ -174,10 +174,10 @@ func TestSnapshotReturnsClones_Immutability(t *testing.T) {
 	if len(snap) != 1 {
 		t.Fatalf("expected 1 item, got %d", len(snap))
 	}
-	snap[0].HistorySequence = 999 // should not affect the cache
+	snap[0].Sequence = 999 // should not affect the cache
 
 	again := c.Snapshot(nil)
-	if again[0].HistorySequence != 1 {
-		t.Fatalf("expected cache to be immutable via snapshots, got %d", again[0].HistorySequence)
+	if again[0].Sequence != 1 {
+		t.Fatalf("expected cache to be immutable via snapshots, got %d", again[0].Sequence)
 	}
 }

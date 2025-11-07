@@ -11,6 +11,7 @@ import (
 )
 
 type FlowVarPlugin struct {
+	// TODO: remove system namespace feature
 	Namespace   string `mapstructure:"namespace"`
 	Flow        string `mapstructure:"flow"`
 	Variable    string `mapstructure:"variable"`
@@ -37,7 +38,7 @@ func (tnv *FlowVarPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.
 	if tnv.Namespace == "" {
 		tnv.Namespace = currentNS
 	}
-	if tnv.Namespace != currentNS && currentNS != core.SystemNamespace {
+	if tnv.Namespace != currentNS {
 		gateway.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
 		return nil, nil
 	}
