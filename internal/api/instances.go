@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -49,43 +50,52 @@ type InstanceData struct {
 }
 
 type InstanceEvent struct {
-	EventID    uuid.UUID         `json:"eventId"`
+	State      string            `json:"state"`
 	InstanceID uuid.UUID         `json:"instanceId"`
 	Namespace  string            `json:"namespace"`
 	Metadata   map[string]string `json:"metadata"`
-	Type       string            `json:"type"`
-	Time       time.Time         `json:"time"`
 	Script     string            `json:"script,omitempty"`
-	Mappings   string            `json:"mappings,omitempty"`
 	Fn         string            `json:"fn,omitempty"`
-	Memory     json.RawMessage   `json:"memory,omitempty"`
-	Error      string            `json:"error,omitempty"`
-	Sequence   uint64            `json:"sequence"`
+	Mappings   string            `json:"mappings,omitempty"`
+
+	Input  json.RawMessage `json:"input,omitempty"`
+	Output json.RawMessage `json:"output,omitempty"`
+	Error  string          `json:"error,omitempty"`
+
+	CreatedAt time.Time `json:"createdAt"`
+	StartedAt time.Time `json:"startedAt"`
+	EndedAt   time.Time `json:"endedAt"`
+
+	EventID  uuid.UUID `json:"eventId"`
+	Sequence uint64    `json:"sequence"`
 }
 
 func convertToInstanceEvent(data *engine.InstanceEvent) *InstanceEvent {
 	return &InstanceEvent{
+		State:      string(data.State),
 		EventID:    data.EventID,
 		InstanceID: data.InstanceID,
 		Namespace:  data.Namespace,
 		Metadata:   data.Metadata,
-		Type:       string(data.Type),
-		Time:       data.Time,
 		Script:     data.Script,
-		Mappings:   data.Mappings,
 		Fn:         data.Fn,
-		Memory:     data.Memory,
+		Mappings:   data.Mappings,
+		Input:      data.Input,
+		Output:     data.Output,
 		Error:      data.Error,
+		CreatedAt:  data.CreatedAt,
+		StartedAt:  data.StartedAt,
+		EndedAt:    data.EndedAt,
 		Sequence:   data.Sequence,
 	}
 }
 
-func convertInstanceData(data *engine.InstanceStatus) *InstanceData {
+func convertInstanceData(data *engine.InstanceEvent) *InstanceData {
 	resp := &InstanceData{
 		ID:             data.InstanceID,
 		CreatedAt:      data.CreatedAt,
 		Started:        data.StartedAt,
-		Status:         data.StatusString(),
+		Status:         string(data.State),
 		WorkflowPath:   data.Metadata[core.EngineMappingPath],
 		ErrorCode:      nil,
 		Invoker:        "api",
@@ -163,15 +173,24 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		input = []byte("null")
 	}
 
+	withWait := r.URL.Query().Get("wait") == "true"
+	withSyncExec := withWait
+	if r.URL.Query().Get("asyncExec") == "true" {
+		withSyncExec = false
+	}
+
 	st, notify, err := e.engine.StartWorkflow(r.Context(), namespace, path, string(input), map[string]string{
-		core.EngineMappingPath: path,
+		core.EngineMappingPath:   path,
+		engine.LabelWithNotify:   strconv.FormatBool(withWait),
+		engine.LabelWithSyncExec: strconv.FormatBool(withSyncExec),
 	})
 	if err != nil {
 		writeEngineError(w, err)
 
 		return
 	}
-	if r.URL.Query().Get("wait") == "true" {
+
+	if withWait {
 		st = <-notify
 	}
 

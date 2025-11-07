@@ -104,6 +104,7 @@ func containsSubstring(haystack, needle string) bool {
 	if needle == "" || haystack == "" {
 		return false
 	}
+
 	return strings.Contains(haystack, needle)
 }
 
