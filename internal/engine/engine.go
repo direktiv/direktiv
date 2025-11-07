@@ -160,10 +160,11 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 		if endEv.Metadata[LabelWithNotify] == "true" {
 			notifyLock.Lock()
-			if notify, ok := notifyMap[endEv.InstanceID.String()]; ok {
+			notify, ok := notifyMap[endEv.InstanceID.String()]
+			notifyLock.Unlock()
+			if ok {
 				notify <- endEv
 			}
-			notifyLock.Unlock()
 		}
 
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
@@ -190,10 +191,11 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 	if inst.Metadata[LabelWithNotify] == "true" {
 		notifyLock.Lock()
-		if notify, ok := notifyMap[inst.InstanceID.String()]; ok {
+		notify, ok := notifyMap[endEv.InstanceID.String()]
+		notifyLock.Unlock()
+		if ok {
 			notify <- endEv
 		}
-		notifyLock.Unlock()
 	}
 	err = e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	if err != nil {
