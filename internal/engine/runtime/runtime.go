@@ -76,7 +76,7 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string,
 		{"fetchSync", rt.fetchSync},
 		{"sleep", rt.sleep},
 		{"generateAction", rt.action},
-		{"secrets", rt.secrets},
+		{"getSecrets", rt.secrets},
 	}
 
 	for _, v := range setList {
@@ -98,33 +98,23 @@ func (rt *Runtime) WithSecretsManager(secretsManager core.SecretsManager) *Runti
 	return rt
 }
 
-func (rt *Runtime) secret(secretName string) sobek.Value {
-	rt.tracingPack.span.AddEvent("fetching secret")
-
-	secrets, err := rt.fetchSecrets([]string{secretName})
-	if err != nil {
-		panic(rt.vm.ToValue(fmt.Sprintf("error fetching secret: %s",
-			err.Error())))
-	}
-
-	s, ok := secrets[secretName]
-	if !ok {
-		panic(rt.vm.ToValue("secret does not exist"))
-	}
-
-	return rt.vm.ToValue(s)
-}
-
 func (rt *Runtime) secrets(secretNames []string) sobek.Value {
 	rt.tracingPack.span.AddEvent("fetching secrets")
 
-	secrets, err := rt.fetchSecrets(secretNames)
-	if err != nil {
-		panic(rt.vm.ToValue(fmt.Sprintf("error fetching secrets: %s",
-			err.Error())))
+	s := make(map[string]string)
+
+	for i := range secretNames {
+		secret, err := rt.secretsManager.Get(rt.tracingPack.ctx,
+			rt.tracingPack.namespace, secretNames[i])
+		if err != nil {
+			panic(rt.vm.ToValue(fmt.Sprintf("error fetching secret %s: %s",
+				secretNames[i], err.Error())))
+		}
+
+		s[secretNames[i]] = string(secret.Data)
 	}
 
-	return rt.vm.ToValue(secrets)
+	return rt.vm.ToValue(s)
 }
 
 func (rt *Runtime) fetchSecrets(secretNames []string) (map[string]string, error) {
