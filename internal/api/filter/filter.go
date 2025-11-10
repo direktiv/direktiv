@@ -14,7 +14,7 @@ const (
 	OpGt       = "gt"
 	OpLt       = "lt"
 	OpIn       = "in"
-	OpContains = "cnt" // value contains filter substring
+	OpContains = "cn" // value contains filter substring
 )
 
 // Values represents the parsed structure:
