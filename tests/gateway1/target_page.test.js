@@ -56,12 +56,20 @@ get:
 `,
 	)
 
-	retry10(`should execute foo.wf.ts file`, async () => {
+	retry10(`should get pages react app under /gateway/ep1`, async () => {
 		const res = await request(config.getDirektivBaseUrl()).get(
 			`/api/v2/namespaces/${namespace}/gateway/ep1`,
 		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.text.slice(0, 15)).toBe('<!doctype html>')
 		expect(res.headers['content-type']).toEqual('text/html; charset=utf-8')
+	})
+
+	retry10(`should execute fetch page.json file`, async () => {
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/gateway/ep1/page.json`,
+		)
+		expect(res.statusCode).toEqual(200)
+		expect(res.text).toBe('{"blocks":[{"content":"Anything you want to display","type":"text"}],"direktiv_api":"page/v1","type":"page"}\n')
 	})
 })
