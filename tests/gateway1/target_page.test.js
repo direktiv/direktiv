@@ -61,7 +61,7 @@ get:
 			`/api/v2/namespaces/${namespace}/gateway/ep1`,
 		)
 		expect(res.statusCode).toEqual(200)
-		expect(res.text).toBe('Hello world from Pages!')
-		expect(res.headers['content-type']).toEqual('text/plain; charset=utf-8')
+		expect(res.text.slice(0, 15)).toBe('<!doctype html>')
+		expect(res.headers['content-type']).toEqual('text/html; charset=utf-8')
 	})
 })

@@ -1,6 +1,7 @@
 package target
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -54,10 +55,25 @@ func (tnf *PagePlugin) Type() string {
 }
 
 func (tnf *PagePlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte("Hello world from Pages!"))
+	if gateway.ExtractContextURLPattern(r) == "" {
+		gateway.WriteInternalError(r, w, errors.New("empty extract pattern"), "plugin couldn't parse url")
 
-	return w, r
+		return nil, nil
+	}
+	parts := strings.Split(r.URL.Path, gateway.ExtractContextURLPattern(r))
+	if len(parts) != 2 {
+		gateway.WriteInternalError(r, w, errors.New("unexpected request url"), "plugin couldn't parse url")
+
+		return nil, nil
+	}
+	if parts[1] == "" || parts[1] == "index" || parts[1] == "/index.html" {
+		http.ServeFile(w, r, "/app/ui/ui-pages.html")
+
+		return w, r
+	}
+	gateway.WriteJSONError(w, http.StatusNotFound, "", "gateway couldn't pages route")
+
+	return nil, nil
 }
 
 func init() {
