@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 
 	"github.com/direktiv/direktiv/internal/api/filter"
 	"github.com/direktiv/direktiv/internal/engine"
@@ -16,17 +17,14 @@ import (
 type DataBus struct {
 	js           nats.JetStreamContext
 	statusCache  *StatusCache
-	historyCache *HistoryCache
-
-	notifier *instanceNotifier
+	historyCache *StatusCache
 }
 
 func New(js nats.JetStreamContext) *DataBus {
 	return &DataBus{
 		js:           js,
 		statusCache:  NewStatusCache(),
-		historyCache: NewHistoryCache(),
-		notifier:     newInstanceNotifier(),
+		historyCache: NewStatusCache(),
 	}
 }
 
@@ -36,11 +34,6 @@ func (d *DataBus) Start(lc *lifecycle.Manager) error {
 	err := d.startCaches(lc.Context())
 	if err != nil {
 		return fmt.Errorf("start caches: %w", err)
-	}
-	p := &projector{d.js}
-	err = p.start(lc)
-	if err != nil {
-		return fmt.Errorf("start projector: %w", err)
 	}
 
 	return nil
@@ -53,10 +46,20 @@ func (d *DataBus) PublishInstanceHistoryEvent(ctx context.Context, event *engine
 	}
 
 	subject := intNats.StreamEngineHistory.Subject(event.Namespace, event.InstanceID.String())
-
 	_, err = d.js.Publish(subject, data,
 		nats.Context(ctx),
 		nats.MsgId(fmt.Sprintf("engine::history::%s", event.EventID)))
+	if err != nil {
+		return fmt.Errorf("nats publish: %w", err)
+	}
+
+	subject = intNats.StreamEngineStatus.Subject(event.Namespace, event.InstanceID.String())
+	_, err = d.js.Publish(subject, data,
+		nats.Context(ctx),
+		nats.MsgId(fmt.Sprintf("engine::status::%s", event.EventID)))
+	if err != nil {
+		return fmt.Errorf("nats publish: %w", err)
+	}
 
 	return err
 }
@@ -76,7 +79,7 @@ func (d *DataBus) PublishInstanceQueueEvent(ctx context.Context, event *engine.I
 	return err
 }
 
-func (d *DataBus) ListInstanceStatuses(ctx context.Context, limit int, offset int, filters filter.Values) ([]*engine.InstanceStatus, int) {
+func (d *DataBus) ListInstanceStatuses(ctx context.Context, limit int, offset int, filters filter.Values) ([]*engine.InstanceEvent, int) {
 	return d.statusCache.SnapshotPage(limit, offset, filters)
 }
 
@@ -103,26 +106,24 @@ func (d *DataBus) DeleteNamespace(ctx context.Context, name string) error {
 	return nil
 }
 
-func (d *DataBus) NotifyInstanceStatus(ctx context.Context, instanceID uuid.UUID, done chan<- *engine.InstanceStatus) {
-	d.notifier.Add(instanceID, done)
-}
-
 func (d *DataBus) startCaches(ctx context.Context) error {
 	// 1- start the status cache subscriber
 	subj := intNats.StreamEngineStatus.Subject("*", "*")
 	_, err := d.js.Subscribe(subj, func(msg *nats.Msg) {
-		var st engine.InstanceStatus
-		if err := json.Unmarshal(msg.Data, &st); err != nil {
+		var ev engine.InstanceEvent
+		if err := json.Unmarshal(msg.Data, &ev); err != nil {
 			// best-effort; ignore bad payloads
 			// TODO: log this
 			return
 		}
-
-		if st.IsEndStatus() && st.Metadata[engine.LabelWithNotify] == "yes" {
-			d.notifier.Notify(st.InstanceID, &st)
+		metadata, err := msg.Metadata()
+		if err != nil {
+			// best-effort; ignore bad payloads
+			// TODO: log this
+			return
 		}
-
-		d.statusCache.Upsert(&st)
+		ev.Sequence = metadata.Sequence.Stream
+		d.statusCache.Upsert(&ev)
 	}, nats.AckNone())
 	if err != nil {
 		return fmt.Errorf("start status cache subscriber: %w", err)
@@ -154,5 +155,11 @@ func (d *DataBus) startCaches(ctx context.Context) error {
 }
 
 func (d *DataBus) GetInstanceHistory(ctx context.Context, namespace string, instanceID uuid.UUID) []*engine.InstanceEvent {
-	return d.historyCache.Snapshot(namespace, instanceID)
+	list := d.historyCache.Snapshot(filter.With(nil,
+		filter.FieldEQ("namespace", namespace),
+		filter.FieldEQ("instanceID", instanceID.String())))
+
+	slices.Reverse(list)
+
+	return list
 }

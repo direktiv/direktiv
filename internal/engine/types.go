@@ -28,72 +28,29 @@ var AllStateCodes = []StateCode{
 	StateCodeCancelled,
 }
 
-type InstanceStatus struct {
+type InstanceEvent struct {
+	State      StateCode
 	InstanceID uuid.UUID
 	Namespace  string
 	Metadata   map[string]string
 	Script     string
+	Fn         string
 	Mappings   string
-	Input      json.RawMessage `json:",omitempty"`
-	Output     json.RawMessage `json:",omitempty"`
-	Error      string
-	State      StateCode
-	CreatedAt  time.Time
-	StartedAt  time.Time
-	EndedAt    time.Time
-	// history stream sequence this status came from
-	HistorySequence uint64
-	Sequence        uint64
-}
 
-func (i *InstanceStatus) StatusString() string {
-	return string(i.State)
-}
+	Input  json.RawMessage `json:",omitempty"`
+	Output json.RawMessage `json:",omitempty"`
+	Error  string
 
-func (i *InstanceStatus) Clone() *InstanceStatus {
-	// start with a shallow copy
-	clone := *i
+	CreatedAt time.Time
+	StartedAt time.Time
+	EndedAt   time.Time
 
-	// deep copy the Metadata map
-	if i.Metadata != nil {
-		clone.Metadata = make(map[string]string, len(i.Metadata))
-		for k, v := range i.Metadata {
-			clone.Metadata[k] = v
-		}
-	}
-	// deep copy the buffers
-	if i.Input != nil {
-		clone.Input = make(json.RawMessage, len(i.Input))
-		copy(clone.Input, i.Input)
-	}
-	if i.Output != nil {
-		clone.Output = make(json.RawMessage, len(i.Output))
-		copy(clone.Output, i.Output)
-	}
-
-	return &clone
-}
-
-func (i *InstanceStatus) IsEndStatus() bool {
-	return i.State == StateCodeComplete || i.State == StateCodeFailed || i.State == StateCodeCancelled
-}
-
-type InstanceEvent struct {
-	EventID    uuid.UUID
-	InstanceID uuid.UUID
-	Namespace  string
-	Metadata   map[string]string
-	Type       StateCode
-	Time       time.Time
-
-	Script   string
-	Mappings string
-	Fn       string
-	Memory   json.RawMessage `json:",omitempty"`
-	Error    string
-
-	// history stream sequence
+	EventID  uuid.UUID
 	Sequence uint64
+}
+
+func (e *InstanceEvent) IsEndStatus() bool {
+	return e.State == StateCodeComplete || e.State == StateCodeFailed || e.State == StateCodeCancelled
 }
 
 func (e *InstanceEvent) Clone() *InstanceEvent {
@@ -119,34 +76,10 @@ func (e *InstanceEvent) Clone() *InstanceEvent {
 		return dst
 	}
 
-	clone.Memory = copyRaw(e.Memory)
+	clone.Input = copyRaw(e.Input)
+	clone.Output = copyRaw(e.Output)
 
 	return &clone
-}
-
-func ApplyInstanceEvent(st *InstanceStatus, ev *InstanceEvent) {
-	st.State = ev.Type
-	st.HistorySequence = ev.Sequence //
-
-	switch ev.Type {
-	case StateCodePending:
-		st.InstanceID = ev.InstanceID
-		st.Namespace = ev.Namespace
-		st.Metadata = ev.Metadata
-		st.Script = ev.Script
-		st.Mappings = ev.Mappings
-		st.Input = ev.Memory
-		st.CreatedAt = ev.Time
-	case StateCodeRunning:
-		st.StartedAt = ev.Time
-	case StateCodeFailed:
-		st.EndedAt = ev.Time
-		st.Error = ev.Error
-	case StateCodeComplete:
-		st.EndedAt = ev.Time
-		st.Output = ev.Memory
-		st.Error = ev.Error
-	}
 }
 
 type WorkflowRunner interface {
@@ -159,10 +92,8 @@ type DataBus interface {
 	PublishInstanceHistoryEvent(ctx context.Context, event *InstanceEvent) error
 	PublishInstanceQueueEvent(ctx context.Context, event *InstanceEvent) error
 
-	ListInstanceStatuses(ctx context.Context, limit int, offset int, filters filter.Values) ([]*InstanceStatus, int)
+	ListInstanceStatuses(ctx context.Context, limit int, offset int, filters filter.Values) ([]*InstanceEvent, int)
 	GetInstanceHistory(ctx context.Context, namespace string, instanceID uuid.UUID) []*InstanceEvent
-
-	NotifyInstanceStatus(ctx context.Context, instanceID uuid.UUID, done chan<- *InstanceStatus)
 
 	DeleteNamespace(ctx context.Context, namespace string) error
 }

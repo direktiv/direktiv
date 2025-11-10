@@ -10,10 +10,11 @@ import (
 
 // Operator constants.
 const (
-	OpEq = "eq"
-	OpGt = "gt"
-	OpLt = "lt"
-	OpIn = "in"
+	OpEq       = "eq"
+	OpGt       = "gt"
+	OpLt       = "lt"
+	OpIn       = "in"
+	OpContains = "cn" // value contains filter substring
 )
 
 // Values represents the parsed structure:
@@ -54,6 +55,10 @@ func (v Values) Match(field string, value string) bool {
 			if !containsIn(value, filterValue) {
 				return false
 			}
+		case OpContains:
+			if !containsSubstring(value, filterValue) {
+				return false
+			}
 		default:
 			// TODO: Check here for unknown operator.
 			return false
@@ -89,6 +94,18 @@ func containsIn(val, csvList string) bool {
 	}
 
 	return false
+}
+
+// containsSubstring returns true if 'haystack' contains 'needle' as a substring.
+// Both sides are trimmed; empty needle does not match.
+func containsSubstring(haystack, needle string) bool {
+	haystack = strings.TrimSpace(haystack)
+	needle = strings.TrimSpace(needle)
+	if needle == "" || haystack == "" {
+		return false
+	}
+
+	return strings.Contains(haystack, needle)
 }
 
 // splitCSV splits on commas, trims spaces, and returns tokens (may include empty if consecutive commas).
@@ -276,6 +293,13 @@ func FieldLT(field string, value string) func() (string, string, string) {
 func FieldIN(field string, csv string) func() (string, string, string) {
 	return func() (string, string, string) {
 		return OpIn, field, csv
+	}
+}
+
+// FieldCONTAINS configures a substring match where the field's value must contain 'substr'.
+func FieldCONTAINS(field string, substr string) func() (string, string, string) {
+	return func() (string, string, string) {
+		return OpContains, field, substr
 	}
 }
 
