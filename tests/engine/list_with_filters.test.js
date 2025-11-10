@@ -90,7 +90,7 @@ function stateOne(payload) {
 			wantStatuses: ['complete', 'complete'],
 		},
 		{
-			query: '?filter[status][cnt]=comp',
+			query: '?filter[status][cn]=comp',
 			wantCount: 2,
 			wantStatuses: ['complete', 'complete'],
 		},
@@ -110,7 +110,7 @@ function stateOne(payload) {
 			wantStatuses: ['failed'],
 		},
 		{
-			query: '?filter[status][cnt]=fail',
+			query: '?filter[status][cn]=fail',
 			wantCount: 1,
 			wantStatuses: ['failed'],
 		},
@@ -125,7 +125,7 @@ function stateOne(payload) {
 			wantStatuses: ['failed', 'complete', 'complete'],
 		},
 		{
-			query: '?filter[status][cnt]=le',
+			query: '?filter[status][cn]=le',
 			wantCount: 3,
 			wantStatuses: ['failed', 'complete', 'complete'],
 		},
