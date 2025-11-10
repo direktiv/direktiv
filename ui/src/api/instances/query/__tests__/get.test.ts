@@ -6,19 +6,19 @@ const filterByAs: FiltersObj = {
 };
 
 const filterByStatus: FiltersObj = {
-  STATUS: { type: "MATCH", value: "failed" },
+  status: { type: "MATCH", value: "failed" },
 };
 
 const filterByTrigger: FiltersObj = {
-  TRIGGER: { type: "MATCH", value: "cloudevent" },
+  trigger: { type: "MATCH", value: "cloudevent" },
 };
 
 const filterByAfter: FiltersObj = {
-  AFTER: { type: "AFTER", value: new Date("2023-04-01T09:24:33.120Z") },
+  createdAtGt: { operator: "gt", value: new Date("2023-04-01T09:24:33.120Z") },
 };
 
 const filterByBefore: FiltersObj = {
-  BEFORE: { type: "BEFORE", value: new Date("2023-05-23T11:11:21.817Z") },
+  createdAtLt: { operator: "lt", value: new Date("2023-05-23T11:11:21.817Z") },
 };
 
 const filterByAsTriggerStatus: FiltersObj = {
@@ -38,15 +38,11 @@ const filterByAsBefore: FiltersObj = {
   ...filterByBefore,
 };
 
-const queryForAs = "&filter.field=AS&filter.type=CONTAINS&filter.val=Findme";
-const queryForStatus =
-  "&filter.field=STATUS&filter.type=MATCH&filter.val=failed";
-const queryForTrigger =
-  "&filter.field=TRIGGER&filter.type=MATCH&filter.val=cloudevent";
-const queryForAfter =
-  "&filter.field=CREATED&filter.type=AFTER&filter.val=2023-04-01T09:24:33.120Z";
-const queryForBefore =
-  "&filter.field=CREATED&filter.type=BEFORE&filter.val=2023-05-23T11:11:21.817Z";
+const queryForAs = "&filter[AS]=Findme";
+const queryForStatus = "&filter[status]=failed";
+const queryForTrigger = "&filter[trigger]=cloudevent";
+const queryForAfter = "&filter[createdAt][gt]=2023-04-01T09:24:33.120Z";
+const queryForBefore = "&filter[createdAt][lt]=2023-05-23T11:11:21.817Z";
 
 describe("getFilterQuery", () => {
   test("it returns a query string for filtering by name", () => {

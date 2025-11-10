@@ -21,19 +21,19 @@ type FiltersProps = {
 type MenuAnchor =
   | "main"
   | "AS"
-  | "STATUS"
-  | "TRIGGER"
-  | "AFTER"
-  | "BEFORE"
-  | "AFTER.time"
-  | "BEFORE.time";
+  | "status"
+  | "trigger"
+  | "createdAtGt"
+  | "createdAtLt"
+  | "createdAtGt.time"
+  | "createdAtLt.time";
 
 const fieldsInMenu: Array<keyof FiltersObj> = [
   "AS",
-  "STATUS",
-  "TRIGGER",
-  "AFTER",
-  "BEFORE",
+  "status",
+  "trigger",
+  "createdAtGt",
+  "createdAtLt",
 ];
 
 const Filters = ({ filters, onUpdate }: FiltersProps) => {
@@ -96,6 +96,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
         // For type safety, one separate return is required below for every type
         // so it is possible to assert filters[field]?.value is defined and TS
         // does not merge the different possible types of filters[field]?.value
+        const operator = selectedField === "createdAtGt" ? "gt" : "lt";
 
         if (field === "AS") {
           return (
@@ -144,7 +145,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
           );
         }
 
-        if (field === "STATUS" || field === "TRIGGER") {
+        if (field === "status" || field === "trigger") {
           return (
             <ButtonBar key={field}>
               <Button variant="outline" asChild>
@@ -160,14 +161,14 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   <Button variant="outline">{filters[field]?.value}</Button>
                 </PopoverTrigger>
                 <PopoverContent align="start">
-                  {field === "STATUS" && (
+                  {field === "status" && (
                     <Options
                       field={field}
                       value={filters[field]?.value}
                       setFilter={setFilter}
                     />
                   )}
-                  {field === "TRIGGER" && (
+                  {field === "trigger" && (
                     <Options
                       field={field}
                       value={filters[field]?.value}
@@ -187,7 +188,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
           );
         }
 
-        if (field === "AFTER" || field == "BEFORE") {
+        if (field === "createdAtGt" || field === "createdAtLt") {
           const dateValue = filters[field]?.value;
           if (!dateValue) {
             console.error("Early return: dateValue is not defined");
@@ -210,17 +211,21 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start">
-                  {(field === "AFTER" || field === "BEFORE") && (
+                  {(field === "createdAtGt" || field === "createdAtLt") && (
                     <DatePicker
                       date={filters[field]?.value}
                       heading={t(
                         `pages.instances.list.filter.menuHeading.${field}`
                       )}
-                      onChange={(value) =>
+                      onChange={(value) => {
                         setFilter({
-                          [field]: { field, type: field, value },
-                        })
-                      }
+                          [field]: {
+                            field,
+                            operator,
+                            value,
+                          },
+                        });
+                      }}
                     />
                   )}
                 </PopoverContent>
@@ -240,7 +245,12 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   <RefineTime
                     date={dateValue}
                     onChange={(newDate) => {
-                      setFilter({ [field]: { value: newDate, type: field } });
+                      setFilter({
+                        [field]: {
+                          value: newDate,
+                          operator,
+                        },
+                      });
                     }}
                   />
                 </PopoverContent>
@@ -312,33 +322,43 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   placeholder={t("pages.instances.list.filter.placeholder.AS")}
                 />
               )) ||
-              (selectedField === "STATUS" && (
+              (selectedField === "status" && (
                 <Options
                   field={selectedField}
                   value={filters[selectedField]?.value}
                   setFilter={setFilter}
                 />
               )) ||
-              (selectedField === "TRIGGER" && (
+              (selectedField === "trigger" && (
                 <Options
                   field={selectedField}
                   value={filters[selectedField]?.value}
                   setFilter={setFilter}
                 />
               )) ||
-              ((selectedField === "AFTER" || selectedField === "BEFORE") && (
-                <DatePicker
-                  date={filters[selectedField]?.value}
-                  heading={t(
-                    `pages.instances.list.filter.menuHeading.${selectedField}`
-                  )}
-                  onChange={(value) =>
-                    setFilter({
-                      [selectedField]: { type: selectedField, value },
-                    })
-                  }
-                />
-              ))}
+              ((selectedField === "createdAtGt" ||
+                selectedField === "createdAtLt") &&
+                (() => {
+                  const operator =
+                    selectedField === "createdAtGt" ? "gt" : "lt";
+                  return (
+                    <DatePicker
+                      date={filters[selectedField]?.value}
+                      heading={t(
+                        `pages.instances.list.filter.menuHeading.${selectedField}`
+                      )}
+                      onChange={(value) =>
+                        setFilter({
+                          [selectedField]: {
+                            type: selectedField,
+                            operator,
+                            value,
+                          },
+                        })
+                      }
+                    />
+                  );
+                })())}
           </PopoverContent>
         </Popover>
       )}

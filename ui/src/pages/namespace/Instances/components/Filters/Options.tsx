@@ -16,8 +16,8 @@ import {
 import { useTranslation } from "react-i18next";
 
 const optionMenus = {
-  STATUS: statusValues,
-  TRIGGER: triggerValues,
+  status: statusValues,
+  trigger: triggerValues,
 };
 
 type OptionsProps = {
@@ -25,11 +25,11 @@ type OptionsProps = {
 } & (
   | {
       value?: TriggerValue;
-      field: "TRIGGER";
+      field: "trigger";
     }
   | {
       value?: StatusValue;
-      field: "STATUS";
+      field: "status";
     }
 );
 
@@ -39,11 +39,11 @@ const Options = ({ value, field, setFilter }: OptionsProps) => {
     <Command value={value}>
       <CommandInput
         autoFocus
-        placeholder={t("pages.instances.list.filter.placeholder.STATUS")}
+        placeholder={t("pages.instances.list.filter.placeholder.status")}
       />
       <CommandList>
         <CommandGroup
-          heading={t("pages.instances.list.filter.menuHeading.STATUS")}
+          heading={t("pages.instances.list.filter.menuHeading.status")}
         >
           {optionMenus[field].map((option) => (
             <CommandItem
@@ -54,7 +54,7 @@ const Options = ({ value, field, setFilter }: OptionsProps) => {
                   [field]: {
                     value: option,
                     // TODO: Move this decision to the API layer?
-                    type: field === "TRIGGER" ? "CONTAINS" : "MATCH",
+                    type: field === "trigger" ? "CONTAINS" : "MATCH",
                   },
                 })
               }
