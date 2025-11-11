@@ -439,7 +439,7 @@ paths:
                           type: string
                           format: RFC3339Nano
                         serialID:
-                          type: int
+                          type: number
                         event:
                           type: object
                           required:
@@ -600,26 +600,22 @@ paths:
                     type: array
                     items:
                       type: object
+                      required: [id, createdAt, updatedAt, namespace, namespaceID, triggerType]
                       properties:
                         id:
                           type: string
-                          required: true
                           description: The unique identifier of the event listener.
                         createdAt:
                           type: string
-                          required: true
                           description: The timestamp indicating when the event listener was created.
                         updatedAt:
                           type: string
-                          required: true
                           description: The timestamp indicating when the event listener was last updated.
                         namespace:
                           type: string
-                          required: true
                           description: The name of the namespace to which the event listener belongs.
                         namespaceID:
                           type: string
-                          required: true
                           description: The id of the namespace to which the event listener belongs.
                         listeningForEventTypes:
                           type: array
@@ -628,7 +624,6 @@ paths:
                           description: The types of events the listener is configured to listen for.
                         triggerType:
                           type: string
-                          required: true
                           description: The type of trigger associated with the event listener.
                         triggerWorkflow:
                           type: string
@@ -679,26 +674,22 @@ paths:
                 properties:
                   data:
                     type: object
+                    required: [ id, createdAt, updatedAt, namespace, namespaceID, triggerType ]
                     properties:
                       id:
                         type: string
-                        required: true
                         description: The unique identifier of the event listener.
                       createdAt:
                         type: string
-                        required: true
                         description: The timestamp indicating when the event listener was created.
                       updatedAt:
                         type: string
-                        required: true
                         description: The timestamp indicating when the event listener was last updated.
                       namespaceID:
                         type: string
-                        required: true
                         description: The id of the namespace to which the event listener belongs.
                       namespace:
                         type: string
-                        required: true
                         description: The name of the namespace to which the event listener belongs.
                       listeningForEventTypes:
                         type: array
@@ -707,7 +698,6 @@ paths:
                         description: The types of events the listener is configured to listen for.
                       triggerType:
                         type: string
-                        required: true
                         description: The type of trigger associated with the event listener.
                       triggerWorkflow:
                         type: string
@@ -1020,17 +1010,17 @@ paths:
                     type: object
                     properties:
                       complete:
-                        type: int
+                        type: number
                       failed:
-                        type: int
+                        type: number
                       cancelled:
-                        type: int
+                        type: number
                       crashed:
-                        type: int
+                        type: number
                       pending:
-                        type: int
+                        type: number
                       total:
-                        type: int
+                        type: number
   /api/v2/namespaces:
     get:
       tags:
@@ -1073,8 +1063,8 @@ paths:
                                 - token
                               description: this field indicated what kind of authentication is used
                             publicKey:
-                              type: string(optional)
-                              description: associated publish key ssh credential
+                              type: string
+                              description: (optional) associated publish key ssh credential
                             insecure:
                               type: boolean
                               description: to ignore insecure ssl certificates
@@ -1123,17 +1113,17 @@ paths:
                         - token
                       description: this field indicated what kind of authentication is used
                     authToken:
-                      type: string(optional)
-                      description: auth token used to clone git repo
+                      type: string
+                      description: (optional) auth token used to clone git repo
                     publicKey:
-                      type: string(optional)
-                      description: associated publish key ssh credential
+                      type: string
+                      description: (optional) associated publish key ssh credential
                     privateKey:
-                      type: string(optional)
-                      description: associated private key ssh credential
+                      type: string
+                      description: (optional) associated private key ssh credential
                     privateKeyPassphrase:
-                      type: string(optional)
-                      description: associated private key passphrase ssh credential
+                      type: string
+                      description: (optional) associated private key passphrase ssh credential
                     insecure:
                       type: boolean
                       description: to ignore insecure ssl certificates
@@ -1231,8 +1221,8 @@ paths:
                               - token
                             description: this field indicated what kind of authentication is used
                           publicKey:
-                            type: string(optional)
-                            description: associated publish key ssh credential
+                            type: string
+                            description: (optional) associated publish key ssh credential
                           insecure:
                             type: boolean
                             description: to ignore insecure ssl certificates
@@ -1289,17 +1279,17 @@ paths:
                         - token
                       description: this field indicated what kind of authentication is used
                     authToken:
-                      type: string(optional)
-                      description: auth token used to clone git repo
+                      type: string
+                      description: (optional) auth token used to clone git repo
                     publicKey:
-                      type: string(optional)
-                      description: associated publish key ssh credential
+                      type: string
+                      description: (optional) associated publish key ssh credential
                     privateKey:
-                      type: string(optional)
-                      description: associated private key ssh credential
+                      type: string
+                      description: (optional) associated private key ssh credential
                     privateKeyPassphrase:
-                      type: string(optional)
-                      description: associated private key passphrase ssh credential
+                      type: string
+                      description: (optional) associated private key passphrase ssh credential
                     insecure:
                       type: boolean
                       description: to ignore insecure ssl certificates
@@ -1338,8 +1328,8 @@ paths:
                               - token
                             description: this field indicated what kind of authentication is used
                           publicKey:
-                            type: string(optional)
-                            description: associated publish key ssh credential
+                            type: string
+                            description: (optional) associated publish key ssh credential
                           insecure:
                             type: boolean
                             description: to ignore insecure ssl certificates
@@ -1892,7 +1882,7 @@ paths:
                         error:
                           type:
                             - string
-                            - null
+                            - "null"
                           description: 'error string when service failed to be scheduled, otherwise null'
                         envs:
                           type: [array]
