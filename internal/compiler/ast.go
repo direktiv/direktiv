@@ -899,10 +899,10 @@ func (ap *ASTParser) parseSecrets(expr ast.Expression) ([]string, error) {
 
 	secrets := make([]string, 0)
 
-	objArray, ok := expr.(*ast.ArrayLiteral)
-	if !ok {
-		return secrets, fmt.Errorf("secrets must be an array")
-	}
+	// objArray, ok := expr.(*ast.ArrayLiteral)
+	// if !ok {
+	// 	return secrets, fmt.Errorf("secrets must be an array")
+	// }
 
 	fmt.Println()
 	// arrayList, ok := e.ArgumentList[0].(*ast.ArrayLiteral)
@@ -923,6 +923,7 @@ func (ap *ASTParser) parseSecrets(expr ast.Expression) ([]string, error) {
 	// v, _ := json.Marshal(arrayList)
 	// fmt.Println(string(v))
 
+	return secrets, nil
 }
 
 // parseAction parses an action configuration from generateAction call
