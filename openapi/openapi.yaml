@@ -127,12 +127,6 @@ components:
       schema:
         type: string
       required: true
-    instanceID:
-      name: instanceID
-      in: path
-      schema:
-        type: string
-      required: true
     serviceID:
       name: serviceID
       in: path
@@ -147,12 +141,6 @@ components:
       required: true
     registryID:
       name: registryID
-      in: path
-      schema:
-        type: string
-      required: true
-    route-path:
-      name: route-path
       in: path
       schema:
         type: string
@@ -289,69 +277,13 @@ components:
         updatedAt:
           type: string
           description: timestamp of node last updating date
-    InstanceData:
-      type: object
-      description: filesystem node data
-      properties:
-        createdAt:
-          type: string
-        endedAt:
-          type: string
-        definition:
-          type: string
-          description: Base64 encoded copy of the instance's workflow yaml at the time the instance was created.
-        errorCode:
-          type: string
-        flow:
-          type: array
-          description: list of states that the instance has executed
-          items:
-            type: string
-        id:
-          type: string
-        invoker:
-          type: string
-        lineage:
-          type: array
-          description: 'This will be an empty list if the instance is not a subflow. Otherwise, it will be an array containing information about how this instance relates to its parent, recursively.'
-          items:
-            type: object
-            properties:
-              branch:
-                type: integer
-              id:
-                type: string
-                description: instance ID
-              state:
-                type: string
-              step:
-                type: integer
-        path:
-          type: string
-        status:
-          type: string
-          enum:
-            - pending
-            - running
-            - complete
-            - failed
-            - cancelled
-        traceId:
-          type: string
-          description: This is currently a placeholder and shouldn't yet be used.
-        inputLength:
-          type: integer
-        input:
-          type: string
-        outputLength:
-          type: integer
-        output:
-          type: string
-        metadataLength:
-          type: integer
-        metadata:
-          type: string
 paths:
+  '/api/v2/namespaces/{namespace}/instances':
+    $ref: ./paths/instances.yaml
+  '/api/v2/namespaces/{namespace}/instances/{id}':
+    $ref: ./paths/instances{id}.yaml
+
+
   '/api/v2/namespaces/{namespace}/events/broadcast':
     post:
       tags:
@@ -1047,194 +979,6 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/route'
-  '/api/v2/namespaces/{namespace}/instances':
-    get:
-      tags:
-        - instances
-      summary: Get all instances
-      parameters:
-        - $ref: '#/components/parameters/namespace'
-        - name: limit
-          in: query
-          required: false
-          schema:
-            type: integer
-        - name: offset
-          in: query
-          required: false
-          schema:
-            type: integer
-        - name: filter
-          in: query
-          required: false
-          schema:
-            type: string
-          style: deepObject
-          explode: true
-          description: |
-            Filtering options.   Each filter is expressed as `filter[field][op]=value`.   Multiple filters can be combined with `&`.
-            **Example:**   ``` ?filter[createdAt][lt]=2025-01-01&filter[status][eq]=active ```
-            **Fields:**   - `createdAt`: timestamp of creation   - `status`: entity status   - `path`: resource path  
-            **Operators:**   - `lt`: less than   - `gt`: greater than   - `cn`: contains (for string fields)   - `eq`: equals
-            **Default Operator:** - If `[op]` is omitted, `[eq]` (equals) is assumed.
-      responses:
-        '200':
-          description: Instances list returned
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  meta:
-                    type: object
-                    properties:
-                      total:
-                        type: integer
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/InstanceData'
-    post:
-      tags:
-        - instances
-      summary: Create an instance
-      parameters:
-        - $ref: '#/components/parameters/namespace'
-        - name: path
-          in: query
-          schema:
-            type: string
-            description: filepath of the workflow to base the instance on
-          required: true
-        - name: wait
-          in: query
-          required: false
-          schema:
-            type: boolean
-            description: if true waits until instance execution finalizes and responds with the raw response or a summary output (if output is set true)
-        - name: output
-          in: query
-          required: false
-          schema:
-            type: boolean
-            description: alters wait response to a instance summary output if set true
-      responses:
-        '200':
-          description: Instance created.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: '#/components/schemas/InstanceData'
-  '/api/v2/namespaces/{namespace}/instances/{instanceID}':
-    patch:
-      tags:
-        - instances
-      summary: Change information about an instance. Right now this can only be used to cancel an instance.
-      parameters:
-        - $ref: '#/components/parameters/namespace'
-        - $ref: '#/components/parameters/instanceID'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                status:
-                  type: string
-                  description: Must be 'cancelled'.
-      responses:
-        '200':
-          description: This request returns nothing.
-    get:
-      tags:
-        - instances
-      summary: Get detailed instance information including blob lengths.
-      parameters:
-        - $ref: '#/components/parameters/namespace'
-        - $ref: '#/components/parameters/instanceID'
-      responses:
-        '200':
-          description: Instance summary information only returned.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: '#/components/schemas/InstanceData'
-  '/api/v2/namespaces/{namespace}/instances/{instanceID}/input':
-    get:
-      tags:
-        - instances
-      summary: Get detailed instance information including the input blob.
-      parameters:
-        - $ref: '#/components/parameters/namespace'
-        - $ref: '#/components/parameters/instanceID'
-      responses:
-        '200':
-          description: Instance summary information plus input blob returned.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: '#/components/schemas/InstanceData'
-  '/api/v2/namespaces/{namespace}/instances/{instanceID}/output':
-    get:
-      tags:
-        - instances
-      summary: Get detailed instance information including the output blob.
-      parameters:
-        - $ref: '#/components/parameters/namespace'
-        - $ref: '#/components/parameters/instanceID'
-      responses:
-        '200':
-          description: Instance summary information plus output blob returned.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: '#/components/schemas/InstanceData'
-  '/api/v2/namespaces/{namespace}/instances/{instanceID}/metadata':
-    get:
-      tags:
-        - instances
-      summary: Get detailed instance information including the metadata blob.
-      parameters:
-        - $ref: '#/components/parameters/namespace'
-        - $ref: '#/components/parameters/instanceID'
-      responses:
-        '200':
-          description: Instance summary information plus metadata blob returned.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: '#/components/schemas/InstanceData'
-  '/api/v2/namespaces/{namespace}/instances/{instancesID}/subscribe':
-    get:
-      tags:
-        - instances
-      summary: API for SSE streaming of instance data. The form of the data should match the generic instance request.
-      parameters:
-        - $ref: '#/components/parameters/namespace'
-        - $ref: '#/components/parameters/instanceID'
-      responses:
-        '200':
-          description: Instance summary information only returned.
-          content:
-            text/event-stream:
-              schema:
-                type: object
   /api/v2/jx:
     post:
       summary: Perform a jx query.
