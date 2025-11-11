@@ -1,0 +1,15 @@
+version: '3'
+
+tasks:
+
+  serve:
+    desc: Serve openapi swagger UI
+    cmds:
+      - docker run -p 8888:8080 -e SWAGGER_JSON=/docs/openapi.yaml -v "$PWD/docs/openapi:/docs" swaggerapi/swagger-ui
+
+  lint:
+    desc: Lint openapi files
+    cmds:
+      # you can: --generate-ignore-file
+      - docker run --rm -w /docs -v $PWD/docs/openapi:/docs redocly/cli lint openapi.yaml
+

@@ -1,0 +1,13 @@
+# Use the default recommended ruleset as a base
+extends:
+  - recommended
+
+rules:
+  security-defined: off
+  operation-4xx-response: off
+  operation-operationId: off
+  no-unused-components: error
+  no-invalid-media-type-examples: off
+  no-invalid-schema-examples: off
+  info-license: off
+  path-parameters-defined: off

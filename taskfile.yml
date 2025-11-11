@@ -11,7 +11,9 @@ includes:
     taskfile: taskfile_build.yaml
   test:  
     taskfile: taskfile_test.yaml
-    
+  openapi:
+    taskfile: taskfile_openapi.yaml
+
 tasks:  
   default:
     desc: Basic Kind cluster with Direktiv. Run with TELEMETRY=true to enable telemetry with grafana. 

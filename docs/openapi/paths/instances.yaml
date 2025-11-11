@@ -1,0 +1,95 @@
+get:
+  tags:
+    - instances
+  summary: Get all instances
+  parameters:
+    - $ref: '../params/namespace.yaml'
+    - name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+    - name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+    - name: filter
+      in: query
+      required: false
+      schema:
+        type: string
+      style: deepObject
+      explode: true
+      description: |
+        Filtering options.
+        Each filter is expressed as `filter[field][op]=value`.
+        Multiple filters can be combined with `&`.
+        
+        **Example:**   
+          - ``` ?filter[status]=pending&filter[status]=running```
+          - ``` ?filter[status][in]=complete,failed```
+          - ``` ?filter[createdAt][lt]=2025-09-30T22:00:00Z&filter[status][eq]=active```
+          - ``` ?filter[path]=/foo.wf.ts```
+          - ``` ?filter[path][cn]=foo.wf```
+
+        **Fields:**   
+          - `createdAt`: timestamp of creation   
+          - `status`: entity status   
+          - `path`: workflow path
+          - `invoker`: one of the following values: `[api, cron, event]`
+
+        **Operators:**   
+          - `lt`: less than   
+          - `gt`: greater than   
+          - `cn`: contains (for string fields)   
+          - `eq`: equals
+          - `in`: in a list (for arrays)
+        
+        **Default Operator:** If `[op]` is omitted, `[eq]` (equals) is assumed.
+  responses:
+    '200':
+      description: Instances list returned
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              meta:
+                type: object
+                properties:
+                  total:
+                    type: integer
+              data:
+                type: array
+                items:
+                  $ref: '../schemas/InstanceData.yaml'
+post:
+  tags:
+    - instances
+  summary: Create an instance
+  parameters:
+    - $ref: '../params/namespace.yaml'
+    - name: path
+      in: query
+      schema:
+        type: string
+        description: filepath of the workflow to base the instance on
+      required: true
+    - name: wait
+      in: query
+      required: false
+      schema:
+        type: boolean
+        description: if true, waits until instance execution finalizes
+
+  responses:
+    '200':
+      description: Instance created.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '../schemas/InstanceData.yaml'
