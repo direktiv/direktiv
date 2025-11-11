@@ -1,0 +1,5 @@
+name: id
+in: path
+schema:
+  type: string
+required: true

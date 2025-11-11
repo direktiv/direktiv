@@ -1,0 +1,37 @@
+patch:
+  tags:
+    - instances
+  summary: Change information about an instance. Right now this can only be used to cancel an instance.
+  parameters:
+    - $ref: '../params/namespace.yaml'
+    - $ref: '../params/instanceID.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              description: Must be 'cancelled'.
+  responses:
+    '200':
+      description: This request returns nothing.
+get:
+  tags:
+    - instances
+  summary: Get detailed instance information including blob lengths.
+  parameters:
+    - $ref: '../params/namespace.yaml'
+    - $ref: '../params/instanceID.yaml'
+  responses:
+    '200':
+      description: Instance summary information only returned.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '../schemas/InstanceData.yaml'

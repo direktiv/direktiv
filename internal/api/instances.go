@@ -183,6 +183,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		core.EngineMappingPath:   path,
 		engine.LabelWithNotify:   strconv.FormatBool(withWait),
 		engine.LabelWithSyncExec: strconv.FormatBool(withSyncExec),
+		engine.LabelInvokerType:  "api",
 	})
 	if err != nil {
 		writeEngineError(w, err)
@@ -229,7 +230,8 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 
 	// We need to translate filter keys from the API to the engine.
 	replacements := map[string]string{
-		"[path]": "[metadata_" + core.EngineMappingPath + "]",
+		"[path]":    "[metadata_" + core.EngineMappingPath + "]",
+		"[invoker]": "[metadata_" + engine.LabelInvokerType + "]",
 	}
 	fixedQueryValues := make(map[string][]string)
 	for k, v := range queryValues {

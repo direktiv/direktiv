@@ -87,6 +87,10 @@ func (c *StatusCache) SnapshotPage(limit int, offset int, filters filter.Values)
 		if !filters.Match("metadata_"+core.EngineMappingPath, workflowPath) {
 			continue
 		}
+		invokerType := v.Metadata[engine.LabelInvokerType]
+		if !filters.Match("metadata_"+engine.LabelInvokerType, invokerType) {
+			continue
+		}
 
 		total++
 		if offset > 0 {
