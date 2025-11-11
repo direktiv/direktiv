@@ -619,7 +619,7 @@
           },
           "placeholder": {
             "mainMenu": "Type or select a field...",
-            "path": "filename.yaml",
+            "path": "filename.wf.ts",
             "status": "Type or select status...",
             "trigger": "Type or select trigger type..."
           }
@@ -655,7 +655,7 @@
             },
             "placeholder": {
               "mainMenu": "Type or select a field...",
-              "workflowName": "/path/filename.yaml",
+              "workflowName": "/path/filename.wf.ts",
               "stateName": "someStateName"
             }
           }
