@@ -152,7 +152,10 @@ func Start(lc *lifecycle.Manager) error {
 	// initializing secrets-handler
 	{
 		slog.Info("initializing secrets-handler")
-		app.SecretsManager = secrets.NewManager(app.DB, app.CacheManager)
+		app.SecretsManager, err = secrets.NewManager(config, app.CacheManager.SecretsCache())
+		if err != nil {
+			return fmt.Errorf("create secrets-manager, err: %w", err)
+		}
 	}
 
 	// initializing service-manager
@@ -226,6 +229,7 @@ func Start(lc *lifecycle.Manager) error {
 			databus.New(js),
 			comp,
 			js,
+			app.SecretsManager,
 		)
 		if err != nil {
 			return fmt.Errorf("create engine, err: %w", err)

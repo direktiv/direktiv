@@ -467,7 +467,7 @@ func (ap *ASTParser) walkExpression(expr ast.Expression, isInsideFunc bool, isSt
 		if identifier, ok := e.Callee.(*ast.Identifier); ok {
 			funcName = identifier.Name.String()
 			// Check if this is an allowed top-level function
-			isAllowedTopLevel = funcName == "secrets" || funcName == "getSecrets" || funcName == "generateAction"
+			isAllowedTopLevel = funcName == "getSecrets" || funcName == "generateAction"
 
 			// Check for generateAction and collect it
 			if funcName == "generateAction" {
@@ -477,6 +477,39 @@ func (ap *ASTParser) walkExpression(expr ast.Expression, isInsideFunc bool, isSt
 						ap.Actions = append(ap.Actions, action)
 					}
 				}
+			}
+
+			if funcName == "getSecrets" {
+				if len(e.ArgumentList) == 1 {
+					ap.parseSecrets(e.ArgumentList[0])
+				}
+				// objArray, ok := expr.(*ast.ArrayLiteral)
+				// if !ok {
+				// 	fmt.Println("NOT OKAY")
+				// 	start := ap.file.Position(int(e.Idx0()))
+				// 	end := ap.file.Position(int(e.Idx1()))
+				// 	ap.Errors = append(ap.Errors, &ValidationError{
+				// 		Message:     "getSecrets requires a list of secrets",
+				// 		StartLine:   start.Line,
+				// 		StartColumn: start.Column,
+				// 		EndLine:     end.Line,
+				// 		EndColumn:   end.Column,
+				// 		Severity:    SeverityError,
+				// 	})
+				// 	// continue
+				// }
+				fmt.Println("GET SECRETS!!!")
+				// for i := range objArray.Value {
+				// 	a := objArray.Value[i]
+
+				// }
+
+				// *ast.ArrayLiteral
+
+				fmt.Println(len(e.ArgumentList))
+				b, _ := json.Marshal(e.ArgumentList[0])
+				fmt.Println(string(b))
+				// fmt.Println(reflect.TypeOf(objArray.Value))
 			}
 		} else {
 			// For method calls, dot expressions, etc., they are NOT allowed at top level
@@ -860,6 +893,37 @@ func (ap *ASTParser) extractValue(expr ast.Expression) any {
 		}
 		return v.Value
 	}
+}
+
+func (ap *ASTParser) parseSecrets(expr ast.Expression) ([]string, error) {
+
+	secrets := make([]string, 0)
+
+	// objArray, ok := expr.(*ast.ArrayLiteral)
+	// if !ok {
+	// 	return secrets, fmt.Errorf("secrets must be an array")
+	// }
+
+	fmt.Println()
+	// arrayList, ok := e.ArgumentList[0].(*ast.ArrayLiteral)
+	// if !ok {
+	// 	fmt.Println("NOT OKAY")
+	// 	start := ap.file.Position(int(e.Idx0()))
+	// 	end := ap.file.Position(int(e.Idx1()))
+	// 	ap.Errors = append(ap.Errors, &ValidationError{
+	// 		Message:     "getSecrets requires a list of secrets",
+	// 		StartLine:   start.Line,
+	// 		StartColumn: start.Column,
+	// 		EndLine:     end.Line,
+	// 		EndColumn:   end.Column,
+	// 		Severity:    SeverityError,
+	// 	})
+	// 	// return ?
+	// }
+	// v, _ := json.Marshal(arrayList)
+	// fmt.Println(string(v))
+
+	return secrets, nil
 }
 
 // parseAction parses an action configuration from generateAction call
