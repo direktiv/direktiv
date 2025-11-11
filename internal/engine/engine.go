@@ -22,6 +22,7 @@ var ErrDataNotFound = fmt.Errorf("data not found")
 const (
 	LabelWithNotify   = "WithNotify"
 	LabelWithSyncExec = "WithSyncExec"
+	LabelInvokerType  = "InvokerType"
 )
 
 type Engine struct {
