@@ -10,7 +10,7 @@ export const possibleInstanceStatuses = [
 
 const InstanceStatusSchema = z.enum(possibleInstanceStatuses);
 
-export const possibleTriggerValues = [
+export const possibleInvokerValues = [
   "api",
   "cloudevent",
   "instance",

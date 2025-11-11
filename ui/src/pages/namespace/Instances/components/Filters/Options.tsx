@@ -7,25 +7,25 @@ import {
 } from "~/design/Command";
 import {
   FiltersObj,
+  InvokerValue,
   StatusValue,
-  TriggerValue,
+  invokerValues,
   statusValues,
-  triggerValues,
 } from "~/api/instances/query/utils";
 
 import { useTranslation } from "react-i18next";
 
 const optionMenus = {
   status: statusValues,
-  trigger: triggerValues,
+  invoker: invokerValues,
 };
 
 type OptionsProps = {
   setFilter: (filter: FiltersObj) => void;
 } & (
   | {
-      value?: TriggerValue;
-      field: "trigger";
+      value?: InvokerValue;
+      field: "invoker";
     }
   | {
       value?: StatusValue;

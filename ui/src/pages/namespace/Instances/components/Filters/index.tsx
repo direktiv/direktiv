@@ -22,7 +22,7 @@ type MenuAnchor =
   | "main"
   | "path"
   | "status"
-  | "trigger"
+  | "invoker"
   | "createdAtGt"
   | "createdAtLt"
   | "createdAtGt.time"
@@ -31,7 +31,7 @@ type MenuAnchor =
 const fieldsInMenu: Array<keyof FiltersObj> = [
   "path",
   "status",
-  "trigger",
+  "invoker",
   "createdAtGt",
   "createdAtLt",
 ];
@@ -147,7 +147,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
           );
         }
 
-        if (field === "status" || field === "trigger") {
+        if (field === "status" || field === "invoker") {
           return (
             <ButtonBar key={field}>
               <Button variant="outline" asChild>
@@ -170,7 +170,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                       setFilter={setFilter}
                     />
                   )}
-                  {field === "trigger" && (
+                  {field === "invoker" && (
                     <Options
                       field={field}
                       value={filters[field]?.value}
@@ -333,7 +333,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   setFilter={setFilter}
                 />
               )) ||
-              (selectedField === "trigger" && (
+              (selectedField === "invoker" && (
                 <Options
                   field={selectedField}
                   value={filters[selectedField]?.value}

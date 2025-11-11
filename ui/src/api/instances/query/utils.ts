@@ -1,12 +1,12 @@
-import { possibleInstanceStatuses, possibleTriggerValues } from "../schema";
+import { possibleInstanceStatuses, possibleInvokerValues } from "../schema";
 
 export const statusValues = possibleInstanceStatuses;
 
-export const triggerValues = possibleTriggerValues;
+export const invokerValues = possibleInvokerValues;
 
-type triggerValuesType = typeof possibleTriggerValues | `instance:${string}`;
+type invokerValuesType = typeof possibleInvokerValues | `instance:${string}`;
 
-export type TriggerValue = triggerValuesType[number];
+export type InvokerValue = invokerValuesType[number];
 export type StatusValue = (typeof statusValues)[number];
 
 export type FiltersObj = {
@@ -15,9 +15,9 @@ export type FiltersObj = {
     operator?: "eq";
     value: StatusValue;
   };
-  trigger?: {
+  invoker?: {
     operator?: "eq";
-    value: TriggerValue;
+    value: InvokerValue;
   };
   createdAtLt?: {
     operator: "lt";

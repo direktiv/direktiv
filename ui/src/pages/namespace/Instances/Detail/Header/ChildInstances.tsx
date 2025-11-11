@@ -28,7 +28,7 @@ const ChildInstances = () => {
     limit: maxChildInstancesToShow + 1,
     offset: 0,
     filters: {
-      trigger: {
+      invoker: {
         value: `instance:${instanceId}`,
       },
     },
