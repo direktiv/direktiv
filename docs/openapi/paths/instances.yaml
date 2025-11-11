@@ -22,11 +22,32 @@ get:
       style: deepObject
       explode: true
       description: |
-        Filtering options.   Each filter is expressed as `filter[field][op]=value`.   Multiple filters can be combined with `&`.
-        **Example:**   ``` ?filter[createdAt][lt]=2025-01-01&filter[status][eq]=active ```
-        **Fields:**   - `createdAt`: timestamp of creation   - `status`: entity status   - `path`: resource path  
-        **Operators:**   - `lt`: less than   - `gt`: greater than   - `cn`: contains (for string fields)   - `eq`: equals
-        **Default Operator:** - If `[op]` is omitted, `[eq]` (equals) is assumed.
+        Filtering options.
+        Each filter is expressed as `filter[field][op]=value`.
+        Multiple filters can be combined with `&`.
+        
+        **Example:**   
+          - ``` ?filter[status]=pending&filter[status]=running```
+          - ``` ?filter[status][in]=complete,failed```
+          - ``` ?filter[createdAt][lt]=2025-09-30T22:00:00Z&filter[status][eq]=active```
+          - ``` ?filter[path]=/foo.wf.ts```
+          - ``` ?filter[path][cn]=foo.wf```
+
+
+        
+        **Fields:**   
+          - `createdAt`: timestamp of creation   
+          - `status`: entity status   
+          - `path`: workflow path
+        
+        **Operators:**   
+          - `lt`: less than   
+          - `gt`: greater than   
+          - `cn`: contains (for string fields)   
+          - `eq`: equals
+          - `in`: in a list (for arrays)
+        
+        **Default Operator:** If `[op]` is omitted, `[eq]` (equals) is assumed.
   responses:
     '200':
       description: Instances list returned

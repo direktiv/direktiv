@@ -19,6 +19,7 @@ properties:
       type: string
     invoker:
       type: string
+      enum: [api, event, cron]
     lineage:
       type: array
       description: 'This will be an empty list if the instance is not a subflow. Otherwise, it will be an array containing information about how this instance relates to its parent, recursively.'
