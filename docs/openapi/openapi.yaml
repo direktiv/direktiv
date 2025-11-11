@@ -1,4 +1,4 @@
-openapi: 3.1.0
+openapi: 3.1.1
 servers:
   - url: 'https://direktiv.io'
 info:
@@ -185,9 +185,8 @@ components:
                             description: name of the outbound plugin
                             example: js-outbound
                           configuration:
-                            type: {}
+                            type: object
                             description: configuration for the plugin. can be of any type.
-                            nullable: true
                             example:
                               script: sleep(5)
                     inbound:
@@ -200,9 +199,8 @@ components:
                             description: name of the inbound plugin
                             example: acl
                           configuration:
-                            type: {}
+                            type: object
                             description: configuration for the plugin. can be of any type.
-                            nullable: true
                             example:
                               allowed-groups:
                                 - group1
@@ -218,23 +216,20 @@ components:
                             description: name of the auth plugin
                             example: basic-auth
                           configuration:
-                            type: {}
+                            type: object
                             description: configuration for the plugin. can be of any type.
-                            nullable: true
                             example:
                               add_username_header: true
                     target:
-                      type: object
-                      nullable: true
+                      type: [object, "null"]
                       properties:
                         type:
                           type: string
                           description: name of the target plugin. can only be one.
                           example: target-flow
                         configuration:
-                          type: {}
+                          type: object
                           description: configuration for the plugin. can be of any type.
-                          nullable: true
                           example:
                             flow: /directory/myflow.yaml
         errors:
@@ -423,13 +418,11 @@ paths:
                 type: object
                 properties:
                   meta:
-                    type: object
-                    nullable: true
+                    type: [object, "null"]
                     properties:
                       previousPage:
                         type: string
                         format: RFC3339Nano
-                        nullable: true
                       startingFrom:
                         type: string
                         format: RFC3339Nano
@@ -599,8 +592,7 @@ paths:
                 type: object
                 properties:
                   meta:
-                    type: object
-                    nullable: true
+                    type: [object, "null"]
                     properties:
                       total:
                         type: integer
@@ -898,14 +890,12 @@ paths:
                           type: string
                           description: api key for the user
                         tags:
-                          type: array
-                          nullable: true
+                          type: [array, "null"]
                           items:
                             type: string
                             description: tag identifier
                         groups:
-                          type: array
-                          nullable: true
+                          type: [array, "null"]
                           items:
                             type: string
                             description: group identifier
@@ -1066,8 +1056,7 @@ paths:
                           type: boolean
                           description: returns true only if this is a privileged namespace with special system-wide impacts.
                         mirror:
-                          type: object
-                          nullable: true
+                          type: [object, "null"]
                           description: git mirror settings associated with the namespace (only with git mirrored namespace). Null value means this is a none mirrored (ordinary) namespace
                           properties:
                             url:
@@ -1117,8 +1106,7 @@ paths:
                   type: string
                   description: a unique name string of the namespace
                 mirror:
-                  type: object
-                  nullable: true
+                  type: [object, "null"]
                   description: git mirror settings associated with the namespace (only with git mirrored namespace). Null value means this is a none mirrored (ordinary) namespace
                   properties:
                     url:
@@ -1167,8 +1155,7 @@ paths:
                         type: boolean
                         description: returns true only if this is a privileged namespace with special system-wide impacts.
                       mirror:
-                        type: object
-                        nullable: true
+                        type: [object, "null"]
                         description: git mirror settings associated with the namespace (only with git mirrored namespace). Null value means this is a none mirrored (ordinary) namespace
                         properties:
                           url:
@@ -1185,8 +1172,8 @@ paths:
                               - token
                             description: this field indicated what kind of authentication is used
                           publicKey:
-                            type: string(optional)
-                            description: associated publish key ssh credential
+                            type: string
+                            description: (optional) associated publish key ssh credential
                           insecure:
                             type: boolean
                             description: to ignore insecure ssl certificates
@@ -1227,8 +1214,7 @@ paths:
                         type: boolean
                         description: returns true only if this is a privileged namespace with special system-wide impacts.
                       mirror:
-                        type: object
-                        nullable: true
+                        type: [object, "null"]
                         description: git mirror settings associated with the namespace (only with git mirrored namespace). Null value means this is a none mirrored (ordinary) namespace
                         properties:
                           url:
@@ -1286,8 +1272,7 @@ paths:
               type: object
               properties:
                 mirror:
-                  type: object
-                  nullable: true
+                  type: [object, "null"]
                   description: git mirror settings associated with the namespace (only with git mirrored namespace). Null value means this is a none mirrored (ordinary) namespace
                   properties:
                     url:
@@ -1336,8 +1321,7 @@ paths:
                         type: boolean
                         description: returns true only if this is a privileged namespace with special system-wide impacts.
                       mirror:
-                        type: object
-                        nullable: true
+                        type: [object, "null"]
                         description: git mirror settings associated with the namespace (only with git mirrored namespace). Null value means this is a none mirrored (ordinary) namespace
                         properties:
                           url:
@@ -1498,13 +1482,11 @@ paths:
                 type: object
                 properties:
                   meta:
-                    type: object
-                    nullable: true
+                    type: [object, "null"]
                     properties:
                       previousPage:
-                        type: string
+                        type: [string, "null"]
                         format: RFC3339Nano
-                        nullable: true
                       startingFrom:
                         type: string
                         format: RFC3339Nano
@@ -1534,11 +1516,9 @@ paths:
                         namespace:
                           type: string
                         error:
-                          type: object
-                          nullable: true
+                          type: [object, "null"]
                         workflow:
-                          type: object
-                          nullable: true
+                          type: [object, "null"]
                           properties:
                             status:
                               type: string
@@ -1551,30 +1531,24 @@ paths:
                             state:
                               type: string
                             branch:
-                              type: string
-                              nullable: true
+                              type: [string, "null"]
                             workflow:
                               type: string
                             calledAs:
-                              type: string
-                              nullable: true
+                              type: [string, "null"]
                             instance:
                               type: string
                         activity:
-                          type: object
-                          nullable: true
+                          type: [object, "null"]
                           properties:
                             id:
-                              type: string
+                              type: [string, "null"]
                               format: uuid
-                              nullable: true
                         route:
-                          type: object
-                          nullable: true
+                          type: [object, "null"]
                           properties:
                             path:
-                              type: string
-                              nullable: true
+                              type: [string, "null"]
   '/api/v2/namespaces/{namespace}/logs/subscribe':
     get:
       tags:
@@ -1921,8 +1895,7 @@ paths:
                             - null
                           description: 'error string when service failed to be scheduled, otherwise null'
                         envs:
-                          type: array
-                          nullable: false
+                          type: [array]
                           description: environment variables used to exec the service
                           items:
                             type: object
@@ -1934,8 +1907,7 @@ paths:
                                 type: string
                                 description: value of the variable
                         conditions:
-                          type: array
-                          nullable: true
+                          type: [array, "null"]
                           description: 'list of checks indicating the health checks of the service, null value means the service is not scheduled yet'
                           items:
                             type: object

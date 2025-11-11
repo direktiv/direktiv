@@ -3,13 +3,7 @@
 openapi.yaml:
   struct:
     - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1events~1history/get/responses/200/content/application~1json/schema/properties/meta/nullable
-    - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1events~1history/get/responses/200/content/application~1json/schema/properties/meta/properties/previousPage/nullable
-    - >-
       #/paths/~1api~1v2~1namespaces~1{namespace}~1events~1history/get/responses/200/content/application~1json/schema/properties/data/items/properties/serialID/type
-    - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1events~1listeners/get/responses/200/content/application~1json/schema/properties/meta/nullable
     - >-
       #/paths/~1api~1v2~1namespaces~1{namespace}~1events~1listeners/get/responses/200/content/application~1json/schema/properties/data/items/properties/id/required
     - >-
@@ -35,27 +29,13 @@ openapi.yaml:
     - >-
       #/paths/~1api~1v2~1namespaces~1{namespace}~1events~1listeners~1{listenerID}/get/responses/200/content/application~1json/schema/properties/data/properties/triggerType/required
     - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1gateway~1consumers/get/responses/200/content/application~1json/schema/properties/data/items/properties/tags/nullable
-    - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1gateway~1consumers/get/responses/200/content/application~1json/schema/properties/data/items/properties/groups/nullable
-    - >-
       #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/outbound/items/properties/configuration/type
-    - >-
-      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/outbound/items/properties/configuration/nullable
     - >-
       #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/inbound/items/properties/configuration/type
     - >-
-      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/inbound/items/properties/configuration/nullable
-    - >-
       #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/auth/items/properties/configuration/type
     - >-
-      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/auth/items/properties/configuration/nullable
-    - >-
-      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/target/nullable
-    - >-
       #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/target/properties/configuration/type
-    - >-
-      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/target/properties/configuration/nullable
     - >-
       #/paths/~1api~1v2~1namespaces~1{namespace}~1metrics~1instance/get/responses/200/content/application~1json/schema/properties/data/properties/complete/type
     - >-
@@ -69,11 +49,7 @@ openapi.yaml:
     - >-
       #/paths/~1api~1v2~1namespaces~1{namespace}~1metrics~1instance/get/responses/200/content/application~1json/schema/properties/data/properties/total/type
     - >-
-      #/paths/~1api~1v2~1namespaces/get/responses/200/content/application~1json/schema/properties/data/items/properties/mirror/nullable
-    - >-
       #/paths/~1api~1v2~1namespaces/get/responses/200/content/application~1json/schema/properties/data/items/properties/mirror/properties/publicKey/type
-    - >-
-      #/paths/~1api~1v2~1namespaces/post/requestBody/content/application~1json/schema/properties/mirror/nullable
     - >-
       #/paths/~1api~1v2~1namespaces/post/requestBody/content/application~1json/schema/properties/mirror/properties/authToken/type
     - >-
@@ -83,15 +59,10 @@ openapi.yaml:
     - >-
       #/paths/~1api~1v2~1namespaces/post/requestBody/content/application~1json/schema/properties/mirror/properties/privateKeyPassphrase/type
     - >-
-      #/paths/~1api~1v2~1namespaces/post/responses/200/content/application~1json/schema/properties/data/properties/mirror/nullable
-    - >-
+
       #/paths/~1api~1v2~1namespaces/post/responses/200/content/application~1json/schema/properties/data/properties/mirror/properties/publicKey/type
     - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}/get/responses/200/content/application~1json/schema/properties/data/properties/mirror/nullable
-    - >-
       #/paths/~1api~1v2~1namespaces~1{namespace}/get/responses/200/content/application~1json/schema/properties/data/properties/mirror/properties/publicKey/type
-    - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}/patch/requestBody/content/application~1json/schema/properties/mirror/nullable
     - >-
       #/paths/~1api~1v2~1namespaces~1{namespace}/patch/requestBody/content/application~1json/schema/properties/mirror/properties/authToken/type
     - >-
@@ -101,32 +72,6 @@ openapi.yaml:
     - >-
       #/paths/~1api~1v2~1namespaces~1{namespace}/patch/requestBody/content/application~1json/schema/properties/mirror/properties/privateKeyPassphrase/type
     - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}/patch/responses/200/content/application~1json/schema/properties/data/properties/mirror/nullable
-    - >-
       #/paths/~1api~1v2~1namespaces~1{namespace}/patch/responses/200/content/application~1json/schema/properties/data/properties/mirror/properties/publicKey/type
     - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1logs/get/responses/200/content/application~1json/schema/properties/meta/nullable
-    - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1logs/get/responses/200/content/application~1json/schema/properties/meta/properties/previousPage/nullable
-    - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1logs/get/responses/200/content/application~1json/schema/properties/data/items/properties/error/nullable
-    - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1logs/get/responses/200/content/application~1json/schema/properties/data/items/properties/workflow/nullable
-    - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1logs/get/responses/200/content/application~1json/schema/properties/data/items/properties/workflow/properties/branch/nullable
-    - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1logs/get/responses/200/content/application~1json/schema/properties/data/items/properties/workflow/properties/calledAs/nullable
-    - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1logs/get/responses/200/content/application~1json/schema/properties/data/items/properties/activity/nullable
-    - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1logs/get/responses/200/content/application~1json/schema/properties/data/items/properties/activity/properties/id/nullable
-    - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1logs/get/responses/200/content/application~1json/schema/properties/data/items/properties/route/nullable
-    - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1logs/get/responses/200/content/application~1json/schema/properties/data/items/properties/route/properties/path/nullable
-    - >-
       #/paths/~1api~1v2~1namespaces~1{namespace}~1services/get/responses/200/content/application~1json/schema/properties/data/items/properties/error/type/1
-    - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1services/get/responses/200/content/application~1json/schema/properties/data/items/properties/envs/nullable
-    - >-
-      #/paths/~1api~1v2~1namespaces~1{namespace}~1services/get/responses/200/content/application~1json/schema/properties/data/items/properties/conditions/nullable
