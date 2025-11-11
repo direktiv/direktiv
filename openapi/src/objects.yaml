@@ -166,7 +166,7 @@ InstanceData:
       type: string
     status:
       type: string
-      enum: ["complete", "cancelled", "pending", "crashed", "failed"]
+      enum: ["pending", "running", "complete", "failed", "cancelled"]
     traceId:
       type: string
       description: This is currently a placeholder and shouldn't yet be used.
