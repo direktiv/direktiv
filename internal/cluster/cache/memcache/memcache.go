@@ -24,8 +24,9 @@ const (
 type CacheManager struct {
 	bus pubsub.EventBus
 
-	cacheSecret *Cache[core.Secret]
-	cacheFlow   *Cache[core.TypescriptFlow]
+	cacheSecret     *Cache[core.Secret]
+	cacheFlow       *Cache[core.TypescriptFlow]
+	cacheNamespaces *Cache[[]string]
 }
 
 type Cache[T any] struct {
@@ -47,10 +48,17 @@ func NewManager(bus pubsub.EventBus) (*CacheManager, error) {
 		return nil, err
 	}
 
+	namespaces, err := newCache[[]string]("namespaces", bus)
+	if err != nil {
+		slog.Error("cannot create namespace cache", slog.Any("error", err))
+		return nil, err
+	}
+
 	return &CacheManager{
-		cacheSecret: secrets,
-		cacheFlow:   flows,
-		bus:         bus,
+		cacheSecret:     secrets,
+		cacheFlow:       flows,
+		cacheNamespaces: namespaces,
+		bus:             bus,
 	}, nil
 }
 
@@ -75,6 +83,10 @@ func newCache[T any](name string, bus pubsub.EventBus) (*Cache[T], error) {
 		cache: c,
 		bus:   bus,
 	}, nil
+}
+
+func (cm *CacheManager) NamespaceCache() cache.Cache[[]string] {
+	return cm.cacheNamespaces
 }
 
 func (cm *CacheManager) SecretsCache() cache.Cache[core.Secret] {

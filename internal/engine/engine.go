@@ -29,17 +29,13 @@ type Engine struct {
 	dataBus  DataBus
 	compiler core.Compiler
 	js       nats.JetStreamContext
-
-	sm core.SecretsManager
 }
 
-func NewEngine(bus DataBus, compiler core.Compiler, js nats.JetStreamContext,
-	sm core.SecretsManager) (*Engine, error) {
+func NewEngine(bus DataBus, compiler core.Compiler, js nats.JetStreamContext) (*Engine, error) {
 	return &Engine{
 		dataBus:  bus,
 		compiler: compiler,
 		js:       js,
-		sm:       sm,
 	}, nil
 }
 
@@ -188,7 +184,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
 
-	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, e.sm)
+	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction)
 	if err == nil {
 		return nil
 	}

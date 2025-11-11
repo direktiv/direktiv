@@ -79,6 +79,6 @@ func TestHttpRequest(t *testing.T) {
 		Mappings: "",
 		Input:    "{}",
 		Fn:       "start",
-	}, runtime.NoOnFinish, runtime.NoOnTransition, runtime.NoOnAction, nil)
+	}, runtime.NoOnFinish, runtime.NoOnTransition, runtime.NoOnAction)
 	require.NoError(t, err)
 }

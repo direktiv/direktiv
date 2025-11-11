@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/direktiv/direktiv/internal/cluster/cache"
@@ -93,11 +94,18 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 				}
 				s, err := c.FetchScript(ctx, ns.Name, f.Path)
 				if err != nil {
-					slog.Error("cannot generate functions for workflow",
+					slog.Error("cannot generate script",
 						slog.String("namespace", ns.Name),
 						slog.String("path", f.Path), slog.Any("error", err))
 					continue
 				}
+
+				// setup secrets
+				for i := range s.Config.Secrets {
+					secret := s.Config.Secrets[i]
+					fmt.Printf("SECRET %s %s\n", ns.Name, secret)
+				}
+
 				// to make it unique for flow actions, we use a hash as name
 				for k := range s.Config.Actions {
 					action := s.Config.Actions[k]

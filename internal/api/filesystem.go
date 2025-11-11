@@ -395,7 +395,8 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Publish pubsub event (rename).
-	if req.Path != "" && updatedFile.Typ.IsDirektivSpecFile() {
+	// if req.Path != "" && updatedFile.Typ.IsDirektivSpecFile() {
+	if updatedFile.Typ.IsDirektivSpecFile() {
 		err = e.bus.Publish(r.Context(), intNats.StreamFileChange.Name(), nil)
 		if err != nil {
 			slog.Error("pubsub publish", "err", err)
@@ -434,6 +435,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			}
 			res.Errors = append(res.Errors, jErr)
 		}
+
 	}
 
 	writeJSON(w, res)

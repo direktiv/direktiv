@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/cluster/cache"
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore"
@@ -24,6 +25,7 @@ type nsController struct {
 	registryManager core.RegistryManager
 	bus             pubsub.EventBus
 	engine          *engine.Engine
+	cache           cache.Manager
 }
 
 func (e *nsController) mountRouter(r chi.Router) {
@@ -105,6 +107,11 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error("pubsub publish filesystem event", "err", err)
 	}
+
+	e.cache.NamespaceCache().Notify(r.Context(), cache.CacheNotify{
+		Key:    "namespaces",
+		Action: cache.CacheDelete,
+	})
 
 	writeOk(w)
 }
@@ -232,6 +239,11 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	e.cache.NamespaceCache().Notify(r.Context(), cache.CacheNotify{
+		Key:    "namespaces",
+		Action: cache.CacheUpdate,
+	})
+
 	writeJSON(w, namespaceAPIObject(ns, settings))
 }
 
@@ -307,6 +319,11 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error("pubsub publish", "err", err)
 	}
+
+	e.cache.NamespaceCache().Notify(r.Context(), cache.CacheNotify{
+		Key:    "namespaces",
+		Action: cache.CacheCreate,
+	})
 
 	writeJSON(w, namespaceAPIObject(ns, mConfig))
 }

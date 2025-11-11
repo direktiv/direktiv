@@ -29,6 +29,7 @@ type FlowConfig struct {
 	Timeout string
 	State   string
 	Actions []ActionConfig
+	Secrets []string
 }
 
 type EventConfig struct {

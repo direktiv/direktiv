@@ -39,7 +39,7 @@ func TestTransition(t *testing.T) {
 		Mappings: "",
 		Fn:       "start",
 		Input:    "{}",
-	}, onFinish, onTransition, runtime.NoOnAction, nil)
+	}, onFinish, onTransition, runtime.NoOnAction)
 	require.NoError(t, err)
 	require.Equal(t, "\"returnValue\"", string(gotOutput))
 }
@@ -101,7 +101,7 @@ func TestTransitionErrors(t *testing.T) {
 				Mappings: "",
 				Fn:       "start",
 				Input:    "{}",
-			}, runtime.NoOnFinish, runtime.NoOnTransition, runtime.NoOnAction, nil)
+			}, runtime.NoOnFinish, runtime.NoOnTransition, runtime.NoOnAction)
 			require.Error(t, err)
 		})
 	}

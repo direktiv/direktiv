@@ -55,6 +55,7 @@ type ASTParser struct {
 	FirstStateFunc   string
 	FlowVariable     ast.Expression
 	allFunctionNames []string
+	allSecretNames   []string
 }
 
 func NewASTParser(script, mapping string) (*ASTParser, error) {
@@ -65,6 +66,7 @@ func NewASTParser(script, mapping string) (*ASTParser, error) {
 		Script:           script,
 		mapping:          mapping,
 		allFunctionNames: make([]string, 0),
+		allSecretNames:   make([]string, 0),
 	}
 
 	option := parser.WithDisableSourceMaps
@@ -481,35 +483,22 @@ func (ap *ASTParser) walkExpression(expr ast.Expression, isInsideFunc bool, isSt
 
 			if funcName == "getSecrets" {
 				if len(e.ArgumentList) == 1 {
-					ap.parseSecrets(e.ArgumentList[0])
+					secrets, err := ap.parseSecrets(e.ArgumentList[0])
+					if err != nil {
+						start := ap.file.Position(int(e.Idx0()))
+						end := ap.file.Position(int(e.Idx1()))
+						ap.Errors = append(ap.Errors, &ValidationError{
+							Message:     err.Error(),
+							StartLine:   start.Line,
+							StartColumn: start.Column,
+							EndLine:     end.Line,
+							EndColumn:   end.Column,
+							Severity:    SeverityError,
+						})
+					}
+
+					ap.allSecretNames = append(ap.allSecretNames, secrets...)
 				}
-				// objArray, ok := expr.(*ast.ArrayLiteral)
-				// if !ok {
-				// 	fmt.Println("NOT OKAY")
-				// 	start := ap.file.Position(int(e.Idx0()))
-				// 	end := ap.file.Position(int(e.Idx1()))
-				// 	ap.Errors = append(ap.Errors, &ValidationError{
-				// 		Message:     "getSecrets requires a list of secrets",
-				// 		StartLine:   start.Line,
-				// 		StartColumn: start.Column,
-				// 		EndLine:     end.Line,
-				// 		EndColumn:   end.Column,
-				// 		Severity:    SeverityError,
-				// 	})
-				// 	// continue
-				// }
-				fmt.Println("GET SECRETS!!!")
-				// for i := range objArray.Value {
-				// 	a := objArray.Value[i]
-
-				// }
-
-				// *ast.ArrayLiteral
-
-				fmt.Println(len(e.ArgumentList))
-				b, _ := json.Marshal(e.ArgumentList[0])
-				fmt.Println(string(b))
-				// fmt.Println(reflect.TypeOf(objArray.Value))
 			}
 		} else {
 			// For method calls, dot expressions, etc., they are NOT allowed at top level
@@ -896,15 +885,29 @@ func (ap *ASTParser) extractValue(expr ast.Expression) any {
 }
 
 func (ap *ASTParser) parseSecrets(expr ast.Expression) ([]string, error) {
-
 	secrets := make([]string, 0)
 
-	// objArray, ok := expr.(*ast.ArrayLiteral)
-	// if !ok {
-	// 	return secrets, fmt.Errorf("secrets must be an array")
-	// }
+	objArray, ok := expr.(*ast.ArrayLiteral)
+	if !ok {
+		return secrets, fmt.Errorf("secrets must be an array")
+	}
 
-	fmt.Println()
+	for i := range objArray.Value {
+		s := objArray.Value[i]
+
+		sl, ok := s.(*ast.StringLiteral)
+		if !ok {
+			return secrets, fmt.Errorf("secret values must be a string")
+		}
+
+		// fmt.Println(sl.Value)
+		// b, _ := json.Marshal(sl)
+		// fmt.Println(string(b))
+		// fmt.Println(reflect.TypeOf(s))
+
+		secrets = append(secrets, sl.Value.String())
+	}
+
 	// arrayList, ok := e.ArgumentList[0].(*ast.ArrayLiteral)
 	// if !ok {
 	// 	fmt.Println("NOT OKAY")

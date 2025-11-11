@@ -16,11 +16,13 @@ type CacheAction string
 const (
 	CacheUpdate CacheAction = "update"
 	CacheDelete CacheAction = "delete"
+	CacheCreate CacheAction = "create"
 )
 
 type Manager interface {
 	SecretsCache() Cache[core.Secret]
 	FlowCache() Cache[core.TypescriptFlow]
+	NamespaceCache() Cache[[]string]
 }
 
 type Cache[T any] interface {

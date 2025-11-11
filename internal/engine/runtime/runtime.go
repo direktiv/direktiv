@@ -23,8 +23,7 @@ type Runtime struct {
 	onTransition OnTransitionFunc
 	onAction     OnActionFunc
 
-	tracingPack    *tracingPack
-	secretsManager core.SecretsManager
+	tracingPack *tracingPack
 }
 
 type (
@@ -40,8 +39,7 @@ var (
 )
 
 func New(instID uuid.UUID, metadata map[string]string, mappings string,
-	onFinish OnFinishFunc, onTransition OnTransitionFunc, onAction OnActionFunc,
-	sm core.SecretsManager) *Runtime {
+	onFinish OnFinishFunc, onTransition OnTransitionFunc, onAction OnActionFunc) *Runtime {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
 
@@ -52,13 +50,12 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string,
 	}
 
 	rt := &Runtime{
-		vm:             vm,
-		instID:         instID,
-		metadata:       metadata,
-		onFinish:       onFinish,
-		onTransition:   onTransition,
-		onAction:       onAction,
-		secretsManager: sm,
+		vm:           vm,
+		instID:       instID,
+		metadata:     metadata,
+		onFinish:     onFinish,
+		onTransition: onTransition,
+		onAction:     onAction,
 	}
 
 	type setFunc struct {
@@ -93,44 +90,40 @@ func (rt *Runtime) WithTracingPack(tp *tracingPack) *Runtime {
 	return rt
 }
 
-func (rt *Runtime) WithSecretsManager(secretsManager core.SecretsManager) *Runtime {
-	rt.secretsManager = secretsManager
-	return rt
-}
-
 func (rt *Runtime) secrets(secretNames []string) sobek.Value {
+	// rt.tracingPack.span.AddEvent("fetching secrets")
+
+	// s := make(map[string]string)
 	rt.tracingPack.span.AddEvent("fetching secrets")
 
-	s := make(map[string]string)
+	// s := make(map[string]string)
 
-	for i := range secretNames {
-		secret, err := rt.secretsManager.Get(rt.tracingPack.ctx,
-			rt.tracingPack.namespace, secretNames[i])
-		if err != nil {
-			panic(rt.vm.ToValue(fmt.Sprintf("error fetching secret %s: %s",
-				secretNames[i], err.Error())))
-		}
+	// for i := range secretNames {
+	// 	secret, err := rt.secretsManager.Get(rt.tracingPack.ctx,
+	// 		rt.tracingPack.namespace, secretNames[i])
+	// 	if err != nil {
+	// 		panic(rt.vm.ToValue(fmt.Sprintf("error fetching secret %s: %s",
+	// 			secretNames[i], err.Error())))
+	// 	}
 
-		s[secretNames[i]] = string(secret.Data)
-	}
+	// 	s[secretNames[i]] = string(secret.Data)
+	// }
 
-	return rt.vm.ToValue(s)
-}
+	// return rt.vm.ToValue(s)
+	// for i := range secretNames {
+	// 	secret, err := rt.secretsManager.Get(rt.tracingPack.ctx,
+	// 		rt.tracingPack.namespace, secretNames[i])
+	// 	if err != nil {
+	// 		panic(rt.vm.ToValue(fmt.Sprintf("error fetching secret %s: %s",
+	// 			secretNames[i], err.Error())))
+	// 	}
 
-func (rt *Runtime) fetchSecrets(secretNames []string) (map[string]string, error) {
-	s := make(map[string]string)
+	// 	s[secretNames[i]] = string(secret.Data)
+	// }
 
-	for i := range secretNames {
-		secret, err := rt.secretsManager.Get(rt.tracingPack.ctx,
-			rt.tracingPack.namespace, secretNames[i])
-		if err != nil {
-			return s, err
-		}
+	// return rt.vm.ToValue(s)
 
-		s[secretNames[i]] = string(secret.Data)
-	}
-
-	return s, nil
+	return nil
 }
 
 func (rt *Runtime) sleep(seconds int) sobek.Value {
@@ -264,14 +257,14 @@ type Script struct {
 }
 
 func ExecScript(ctx context.Context, script *Script, onFinish OnFinishFunc,
-	onTransition OnTransitionFunc, onAction OnActionFunc, sm core.SecretsManager) error {
+	onTransition OnTransitionFunc, onAction OnActionFunc) error {
 	tp := newTracingPack(ctx, script.Metadata[core.EngineMappingNamespace],
 		script.InstID.String(), script.Metadata[core.EngineMappingCaller],
 		script.Metadata[core.EngineMappingPath])
 	defer tp.finish()
 
 	rt := New(script.InstID, script.Metadata, script.Mappings, onFinish,
-		onTransition, onAction, sm).WithTracingPack(tp).WithSecretsManager(sm)
+		onTransition, onAction).WithTracingPack(tp)
 
 	tp.tracingStart(script.Fn)
 	telemetry.LogInstance(tp.ctx, telemetry.LogLevelInfo,

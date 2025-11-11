@@ -229,7 +229,6 @@ func Start(lc *lifecycle.Manager) error {
 			databus.New(js),
 			comp,
 			js,
-			app.SecretsManager,
 		)
 		if err != nil {
 			return fmt.Errorf("create engine, err: %w", err)
