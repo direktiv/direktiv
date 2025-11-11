@@ -29,7 +29,6 @@ const ChildInstances = () => {
     offset: 0,
     filters: {
       trigger: {
-        operator: "eq",
         value: `instance:${instanceId}`,
       },
     },

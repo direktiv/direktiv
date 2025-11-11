@@ -6,11 +6,11 @@ const filterByPath: FiltersObj = {
 };
 
 const filterByStatus: FiltersObj = {
-  status: { operator: "eq", value: "failed" },
+  status: { value: "failed" },
 };
 
 const filterByTrigger: FiltersObj = {
-  trigger: { operator: "eq", value: "cloudevent" },
+  trigger: { value: "cloudevent" },
 };
 
 const filterByAfter: FiltersObj = {
@@ -38,7 +38,7 @@ const filterByPathBefore: FiltersObj = {
   ...filterByBefore,
 };
 
-const queryForPath = "&filter[path]=Findme";
+const queryForPath = "&filter[path][cn]=Findme";
 const queryForStatus = "&filter[status]=failed";
 const queryForTrigger = "&filter[trigger]=cloudevent";
 const queryForAfter = "&filter[createdAt][gt]=2023-04-01T09:24:33.120Z";

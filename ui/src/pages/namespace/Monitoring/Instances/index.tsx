@@ -18,7 +18,6 @@ export const Instances = () => {
     offset: 0,
     filters: {
       status: {
-        operator: "eq",
         value: "complete",
       },
     },
@@ -34,7 +33,6 @@ export const Instances = () => {
     offset: 0,
     filters: {
       status: {
-        operator: "eq",
         value: "failed",
       },
     },

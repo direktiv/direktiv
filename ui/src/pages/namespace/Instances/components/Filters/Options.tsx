@@ -53,8 +53,6 @@ const Options = ({ value, field, setFilter }: OptionsProps) => {
                 setFilter({
                   [field]: {
                     value: option,
-                    // TODO: Move this decision to the API layer?
-                    type: field === "trigger" ? "CONTAINS" : "MATCH",
                   },
                 })
               }

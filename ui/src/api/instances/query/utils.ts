@@ -10,13 +10,13 @@ export type TriggerValue = triggerValuesType[number];
 export type StatusValue = (typeof statusValues)[number];
 
 export type FiltersObj = {
-  path?: { operator: "cn"; value: string };
+  path?: { operator?: "cn"; value: string };
   status?: {
-    operator: "eq";
+    operator?: "eq";
     value: StatusValue;
   };
   trigger?: {
-    operator: "eq";
+    operator?: "eq";
     value: TriggerValue;
   };
   createdAtLt?: {
@@ -40,8 +40,9 @@ export const getFilterQuery = (filters: FiltersObj) => {
     }
 
     let queryField: string;
-    let queryOperator: string | undefined;
     let queryValue: string;
+
+    const queryOperator = filters[field]?.operator ?? undefined;
 
     if (field === "createdAtLt" || field === "createdAtGt") {
       const date = filters[field]?.value;
@@ -56,9 +57,7 @@ export const getFilterQuery = (filters: FiltersObj) => {
         throw new Error("filter value is not defined");
       }
 
-      // every other case than date
       queryField = field;
-      queryOperator = filters[field]?.operator;
       queryValue = value;
     }
 
