@@ -604,14 +604,14 @@
           "filterButton": "Filter",
           "menuHeading": {
             "main": "Select filter",
-            "AS": "filter by name",
+            "path": "filter by name",
             "status": "filter by status",
             "trigger": "filter by trigger",
             "createdAtGt": "filter created after",
             "createdAtLt": "filter created before"
           },
           "field": {
-            "AS": "name",
+            "path": "name",
             "status": "status",
             "trigger": "trigger",
             "createdAtGt": "created after",
@@ -619,7 +619,7 @@
           },
           "placeholder": {
             "mainMenu": "Type or select a field...",
-            "AS": "filename.yaml",
+            "path": "filename.yaml",
             "status": "Type or select status...",
             "trigger": "Type or select trigger type..."
           }

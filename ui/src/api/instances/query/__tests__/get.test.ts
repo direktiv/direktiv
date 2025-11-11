@@ -1,16 +1,16 @@
 import { FiltersObj, getFilterQuery } from "../utils";
 import { describe, expect, test } from "vitest";
 
-const filterByAs: FiltersObj = {
-  AS: { type: "CONTAINS", value: "Findme" },
+const filterByPath: FiltersObj = {
+  path: { operator: "cn", value: "Findme" },
 };
 
 const filterByStatus: FiltersObj = {
-  status: { type: "MATCH", value: "failed" },
+  status: { operator: "eq", value: "failed" },
 };
 
 const filterByTrigger: FiltersObj = {
-  trigger: { type: "MATCH", value: "cloudevent" },
+  trigger: { operator: "eq", value: "cloudevent" },
 };
 
 const filterByAfter: FiltersObj = {
@@ -21,8 +21,8 @@ const filterByBefore: FiltersObj = {
   createdAtLt: { operator: "lt", value: new Date("2023-05-23T11:11:21.817Z") },
 };
 
-const filterByAsTriggerStatus: FiltersObj = {
-  ...filterByAs,
+const filterByPathTriggerStatus: FiltersObj = {
+  ...filterByPath,
   ...filterByTrigger,
   ...filterByStatus,
 };
@@ -33,12 +33,12 @@ const filterByTriggerAfterBefore: FiltersObj = {
   ...filterByBefore,
 };
 
-const filterByAsBefore: FiltersObj = {
-  ...filterByAs,
+const filterByPathBefore: FiltersObj = {
+  ...filterByPath,
   ...filterByBefore,
 };
 
-const queryForAs = "&filter[AS]=Findme";
+const queryForPath = "&filter[path]=Findme";
 const queryForStatus = "&filter[status]=failed";
 const queryForTrigger = "&filter[trigger]=cloudevent";
 const queryForAfter = "&filter[createdAt][gt]=2023-04-01T09:24:33.120Z";
@@ -46,7 +46,7 @@ const queryForBefore = "&filter[createdAt][lt]=2023-05-23T11:11:21.817Z";
 
 describe("getFilterQuery", () => {
   test("it returns a query string for filtering by name", () => {
-    expect(getFilterQuery(filterByAs)).toBe(queryForAs);
+    expect(getFilterQuery(filterByPath)).toBe(queryForPath);
   });
 
   test("it returns a query string for filtering by status", () => {
@@ -66,13 +66,15 @@ describe("getFilterQuery", () => {
   });
 
   test("it returns a query string for multiple filters: name, trigger, status", () => {
-    expect(getFilterQuery(filterByAsTriggerStatus)).toBe(
-      queryForAs + queryForTrigger + queryForStatus
+    expect(getFilterQuery(filterByPathTriggerStatus)).toBe(
+      queryForPath + queryForTrigger + queryForStatus
     );
   });
 
   test("it returns a query string for multiple filters: name, before", () => {
-    expect(getFilterQuery(filterByAsBefore)).toBe(queryForAs + queryForBefore);
+    expect(getFilterQuery(filterByPathBefore)).toBe(
+      queryForPath + queryForBefore
+    );
   });
 
   test("it returns a query string for multiple filters: trigger, after, before", () => {

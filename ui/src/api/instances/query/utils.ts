@@ -10,13 +10,13 @@ export type TriggerValue = triggerValuesType[number];
 export type StatusValue = (typeof statusValues)[number];
 
 export type FiltersObj = {
-  AS?: { type: "CONTAINS" | "WORKFLOW"; value: string };
+  path?: { operator: "cn"; value: string };
   status?: {
-    type: "MATCH";
+    operator: "eq";
     value: StatusValue;
   };
   trigger?: {
-    type: "MATCH";
+    operator: "eq";
     value: TriggerValue;
   };
   createdAtLt?: {
@@ -49,7 +49,6 @@ export const getFilterQuery = (filters: FiltersObj) => {
         throw new Error("date is not defined in date filter");
       }
       queryField = "createdAt";
-      queryOperator = filters[field]?.operator;
       queryValue = date.toISOString();
     } else {
       const value = filters[field]?.value;
@@ -59,7 +58,7 @@ export const getFilterQuery = (filters: FiltersObj) => {
 
       // every other case than date
       queryField = field;
-      queryOperator = undefined;
+      queryOperator = filters[field]?.operator;
       queryValue = value;
     }
 

@@ -28,8 +28,8 @@ const ChildInstances = () => {
     limit: maxChildInstancesToShow + 1,
     offset: 0,
     filters: {
-      TRIGGER: {
-        type: "MATCH",
+      trigger: {
+        operator: "eq",
         value: `instance:${instanceId}`,
       },
     },

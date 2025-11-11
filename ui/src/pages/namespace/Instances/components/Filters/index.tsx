@@ -20,7 +20,7 @@ type FiltersProps = {
 
 type MenuAnchor =
   | "main"
-  | "AS"
+  | "path"
   | "status"
   | "trigger"
   | "createdAtGt"
@@ -29,7 +29,7 @@ type MenuAnchor =
   | "createdAtLt.time";
 
 const fieldsInMenu: Array<keyof FiltersObj> = [
-  "AS",
+  "path",
   "status",
   "trigger",
   "createdAtGt",
@@ -98,7 +98,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
         // does not merge the different possible types of filters[field]?.value
         const operator = selectedField === "createdAtGt" ? "gt" : "lt";
 
-        if (field === "AS") {
+        if (field === "path") {
           return (
             <ButtonBar key={field}>
               <Button variant="outline" asChild>
@@ -114,21 +114,23 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   <Button variant="outline">{filters[field]?.value}</Button>
                 </PopoverTrigger>
                 <PopoverContent align="start">
-                  {field === "AS" && (
+                  {field === "path" && (
                     <TextInput
                       value={filters[field]?.value}
                       onSubmit={(value) => {
                         if (value) {
                           setFilter({
-                            [field]: { value, type: "CONTAINS" },
+                            [field]: { value, operator: "cn" },
                           });
                         } else {
                           clearFilter(field);
                         }
                       }}
-                      heading={t("pages.instances.list.filter.placeholder.AS")}
+                      heading={t(
+                        "pages.instances.list.filter.placeholder.path"
+                      )}
                       placeholder={t(
-                        "pages.instances.list.filter.placeholder.AS"
+                        "pages.instances.list.filter.placeholder.path"
                       )}
                     />
                   )}
@@ -306,20 +308,22 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                 )}
               />
             )) ||
-              (selectedField === "AS" && (
+              (selectedField === "path" && (
                 <TextInput
                   value={filters[selectedField]?.value}
                   onSubmit={(value) => {
                     if (value) {
                       setFilter({
-                        [selectedField]: { value, type: "CONTAINS" },
+                        [selectedField]: { value, operator: "cn" },
                       });
                     } else {
                       clearFilter(selectedField);
                     }
                   }}
-                  heading={t("pages.instances.list.filter.placeholder.AS")}
-                  placeholder={t("pages.instances.list.filter.placeholder.AS")}
+                  heading={t("pages.instances.list.filter.placeholder.path")}
+                  placeholder={t(
+                    "pages.instances.list.filter.placeholder.path"
+                  )}
                 />
               )) ||
               (selectedField === "status" && (
