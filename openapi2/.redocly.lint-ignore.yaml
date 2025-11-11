@@ -1,0 +1,50 @@
+# This file instructs Redocly's linter to ignore the rules contained for specific parts of your API.
+# See https://redocly.com/docs/cli/ for more information.
+openapi.yaml:
+  info-license:
+    - '#/info'
+  operation-operationId:
+    - '#/paths/~1api~1v2~1namespaces~1{namespace}~1instances/get/operationId'
+    - '#/paths/~1api~1v2~1namespaces~1{namespace}~1instances/post/operationId'
+  operation-4xx-response:
+    - '#/paths/~1api~1v2~1namespaces~1{namespace}~1instances/get/responses'
+    - '#/paths/~1api~1v2~1namespaces~1{namespace}~1instances/post/responses'
+  struct:
+    - >-
+      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/outbound/items/properties/configuration/type
+    - >-
+      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/outbound/items/properties/configuration/nullable
+    - >-
+      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/inbound/items/properties/configuration/type
+    - >-
+      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/inbound/items/properties/configuration/nullable
+    - >-
+      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/auth/items/properties/configuration/type
+    - >-
+      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/auth/items/properties/configuration/nullable
+    - >-
+      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/target/nullable
+    - >-
+      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/target/properties/configuration/type
+    - >-
+      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/target/properties/configuration/nullable
+  no-invalid-schema-examples:
+    - >-
+      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/outbound/items/properties/configuration/schema
+    - >-
+      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/inbound/items/properties/configuration/schema
+    - >-
+      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/auth/items/properties/configuration/schema
+    - >-
+      #/components/schemas/route/properties/spec/properties/x-direktiv-config/properties/plugins/properties/target/properties/configuration/schema
+  no-unused-components:
+    - '#/components/parameters/instanceID'
+    - '#/components/parameters/serviceID'
+    - '#/components/parameters/podID'
+    - '#/components/parameters/registryID'
+    - '#/components/parameters/route-path'
+    - '#/components/schemas/route'
+    - '#/components/schemas/FileNodeWithoutData'
+  security-defined:
+    - '#/paths/~1api~1v2~1namespaces~1{namespace}~1instances/get'
+    - '#/paths/~1api~1v2~1namespaces~1{namespace}~1instances/post'

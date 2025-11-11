@@ -1,0 +1,376 @@
+openapi: 3.1.0
+servers:
+  - url: 'https://direktiv.io'
+info:
+  version: 0.1.0
+  title: Direktiv APIv2 Reference
+  x-logo:
+    altText: Direktiv logo
+  description: |
+    Welcome to the Direktiv API documentation. Our API is based on the principle of REST.
+
+    # Introduction
+    All request and response bodies are `application/json` format.
+
+    # Methods
+    We use the following http methods:
+    | value | description |
+    |-----------|-------|
+    | `GET` | Get one object or a list of objects |
+    | `DELETE` | Delete one object  |
+    | `POST` | Create one object |
+    | `PUT` | Update(replace) one object |
+    Requests with methods `GET` and `DELETE` should have empty bodies.
+    For other methods, request body cannot be empty.
+
+    # Responses
+    For successful requests processing, the API will response with http status code `200` ⟶ `OK`.
+    Successful response always have a json body with field `data`.
+    Field `data` could be an `object`, or an `array`.
+
+    # Errors
+    If the API couldn't process the request for any reason, the response body will be a json object with a single field `error`.
+
+    ### Error Body
+
+    ```json
+    {
+      "error": {
+          "code": "internal",
+          "message": "server is currently under maintenance",
+        }
+    }
+
+    // Example with validation error
+    {
+      "error": {
+          "code": "request_data_invalid",
+          "message": "request data has invalid fields",
+          validation: { 
+            gitRef: 'field is required', 
+            url: 'field is required' 
+          }
+    }
+    ```
+
+    Field error.validation is only set when validation errors occur. Field error.code is one of the following values:
+
+    | value | description |
+    |-----------|-------|
+    | `internal` | some internal server error  |
+    | `request_path_not_found` | request path is not recognized (not found)  |
+    | `request_method_not_allowed` | method is not allowed for the used path  |
+    | `request_body_not_json` | request body is not valid json  |
+    | `request_body_bad_json_schema` | request body has invalid json schema |
+    | `resource_not_found` | requested resource id (namespace for example) not found |
+    | `resource_already_exists` | trying to insert a resource with duplicated id |
+    | `resource_id_invalid` | requested resource id (namespace for example) is invalid |
+    | `request_data_invalid` | body is valid json but has validation errors |
+
+
+    Http response codes for error responses could be one of the following: 
+    | value | description |
+    |-----------|-------|
+    | `400` | invalid user input (in path, in method, in body)  |
+    | `404` | resource not found  |
+    | `403` | access denied for something wrong with the token |
+    | `500` | something went wrong with the server |
+tags:
+  - name: server
+    description: Miscellaneous server endpoints
+  - name: namespaces
+    description: Endpoints for managing namespaces
+  - name: instances
+    description: Endpoints for managing workflow instances
+  - name: syncs
+    description: Endpoints for managing namespace mirror syncs
+  - name: services
+    description: Endpoints for managing services
+  - name: variables
+    description: Endpoints for managing direktiv variables
+  - name: secrets
+    description: Endpoints for managing direktiv secrets
+  - name: registries
+    description: Endpoints for managing registries
+  - name: gateway
+    description: Endpoints for fetchig API gateway information
+  - name: files
+    description: Endpoints reading and changing filesystem tree nodes
+  - name: plattformlogs
+    description: Endpoints to access logs that are exposed by the components
+  - name: notifications
+    description: Endpoints for managing notifications
+  - name: metrics
+    description: Endpoints for viewing metrics
+x-tagGroups:
+  - name: Endpoints
+    tags:
+      - server
+      - namespaces
+      - instances
+      - syncs
+      - files
+      - services
+      - variables
+      - secrets
+      - registries
+      - gateway
+      - plattformlogs
+      - events
+      - metrics
+      - notifications
+components:
+  parameters:
+    namespace:
+      name: namespace
+      in: path
+      schema:
+        type: string
+      required: true
+    instanceID:
+      name: instanceID
+      in: path
+      schema:
+        type: string
+      required: true
+    serviceID:
+      name: serviceID
+      in: path
+      schema:
+        type: string
+      required: true
+    podID:
+      name: podID
+      in: path
+      schema:
+        type: string
+      required: true
+    registryID:
+      name: registryID
+      in: path
+      schema:
+        type: string
+      required: true
+    route-path:
+      name: route-path
+      in: path
+      schema:
+        type: string
+      required: true
+  schemas:
+    route:
+      type: object
+      properties:
+        file_path:
+          type: string
+          description: path to file in file tree
+          example: /my/path.yaml
+        path:
+          type: string
+          description: full pattern including path_extension
+          example: '/my/path/{id}'
+        spec:
+          type: object
+          description: |-
+            contains a pathItem object of the OpenAPI spec. There is a custom object describing the 
+            Direktiv specific configuration. Methods are added following the OpenAPI spec.
+          properties:
+            x-direktiv-config:
+              type: object
+              properties:
+                allow_anonymous:
+                  type: boolean
+                  description: if access is allowed if there are not authentication plugins or authentication failed
+                path:
+                  type: string
+                  description: path to be used in the gateway URL
+                plugins:
+                  type: object
+                  properties:
+                    outbound:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            description: name of the outbound plugin
+                            example: js-outbound
+                          configuration:
+                            type: {}
+                            description: configuration for the plugin. can be of any type.
+                            nullable: true
+                            example:
+                              script: sleep(5)
+                    inbound:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            description: name of the inbound plugin
+                            example: acl
+                          configuration:
+                            type: {}
+                            description: configuration for the plugin. can be of any type.
+                            nullable: true
+                            example:
+                              allowed-groups:
+                                - group1
+                                - group2
+                    auth:
+                      type: array
+                      description: all auth plugins are getting executed. first successful authentication sets the consumer.
+                      items:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            description: name of the auth plugin
+                            example: basic-auth
+                          configuration:
+                            type: {}
+                            description: configuration for the plugin. can be of any type.
+                            nullable: true
+                            example:
+                              add_username_header: true
+                    target:
+                      type: object
+                      nullable: true
+                      properties:
+                        type:
+                          type: string
+                          description: name of the target plugin. can only be one.
+                          example: target-flow
+                        configuration:
+                          type: {}
+                          description: configuration for the plugin. can be of any type.
+                          nullable: true
+                          example:
+                            flow: /directory/myflow.yaml
+        errors:
+          type: array
+          items:
+            type: string
+            description: 'list of errors in plugins and the route itself, e.g. configuration errors in plugins'
+        warnings:
+          type: array
+          items:
+            type: string
+            description: list of warnings in plugins and the route itself
+            example: no target plugin set
+    FileNodeWithoutData:
+      type: object
+      description: filesystem node data
+      properties:
+        path:
+          type: string
+          description: path of the node
+        type:
+          type: string
+          enum:
+            - directory
+            - file
+            - workflow
+            - service
+            - endpoint
+            - consumer
+          description: type of the node
+        mimeType:
+          type: string
+          description: (only with type != directory) mime type of the file content
+        size:
+          type: number
+          description: (only with type != directory) file size in bytes
+        createdAt:
+          type: string
+          description: timestamp of node creation date
+        updatedAt:
+          type: string
+          description: timestamp of node last updating date
+    InstanceData:
+      $ref: ./schemas/InstanceData.yaml
+paths:
+  '/api/v2/namespaces/{namespace}/instances':
+    get:
+      tags:
+        - instances
+      summary: Get all instances
+      parameters:
+        - $ref: '#/components/parameters/namespace'
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: filter
+          in: query
+          required: false
+          schema:
+            type: string
+          style: deepObject
+          explode: true
+          description: |
+            Filtering options.   Each filter is expressed as `filter[field][op]=value`.   Multiple filters can be combined with `&`.
+            **Example:**   ``` ?filter[createdAt][lt]=2025-01-01&filter[status][eq]=active ```
+            **Fields:**   - `createdAt`: timestamp of creation   - `status`: entity status   - `path`: resource path  
+            **Operators:**   - `lt`: less than   - `gt`: greater than   - `cn`: contains (for string fields)   - `eq`: equals
+            **Default Operator:** - If `[op]` is omitted, `[eq]` (equals) is assumed.
+      responses:
+        '200':
+          description: Instances list returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InstanceData'
+    post:
+      tags:
+        - instances
+      summary: Create an instance
+      parameters:
+        - $ref: '#/components/parameters/namespace'
+        - name: path
+          in: query
+          schema:
+            type: string
+            description: filepath of the workflow to base the instance on
+          required: true
+        - name: wait
+          in: query
+          required: false
+          schema:
+            type: boolean
+            description: if true waits until instance execution finalizes and responds with the raw response or a summary output (if output is set true)
+        - name: output
+          in: query
+          required: false
+          schema:
+            type: boolean
+            description: alters wait response to a instance summary output if set true
+      responses:
+        '200':
+          description: Instance created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/InstanceData'
+
