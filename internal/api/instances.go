@@ -194,6 +194,16 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	if withWait {
 		st = <-notify
 	}
+	if withWait && r.URL.Query().Get("fullOutput") != "true" {
+		if st.Output != nil {
+			writeJSON(w, st.Output)
+			return
+		}
+		writeError(w, &Error{
+			Message: st.Error,
+		})
+		return
+	}
 
 	writeJSON(w, convertInstanceData(st))
 }

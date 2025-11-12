@@ -55,7 +55,7 @@ function stateThree(payload) {
 		it(`should invoke /${testCase.name} workflow`, async () => {
 			const res = await request(common.config.getDirektivBaseUrl())
 				.post(
-					`/api/v2/namespaces/${namespace}/instances?path=/${testCase.name}&wait=true`,
+					`/api/v2/namespaces/${namespace}/instances?path=/${testCase.name}&wait=true&fullOutput=true`,
 				)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)

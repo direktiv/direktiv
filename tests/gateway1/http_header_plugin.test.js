@@ -95,7 +95,7 @@ function stateFirst(input) {
 			.auth('user1', 'pwd1')
 
 		expect(res.statusCode).toEqual(200)
-		const got = JSON.parse(res.body.data.output)
+		const got = res.body.data
 		const want = {
 			body: {
 				hello: 'world',
