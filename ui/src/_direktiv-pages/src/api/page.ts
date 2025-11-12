@@ -4,13 +4,13 @@ import { DirektivPagesSchema } from "~/pages/namespace/Explorer/Page/poc/schema"
 import { apiFactory } from "~/api/apiFactory";
 import { removeTrailingSlash } from "~/api/files/utils";
 
-export const getPage = apiFactory({
+const getPage = apiFactory({
   url: ({ path }: { path: string }) => `${path}/page.json`,
   method: "GET",
   schema: DirektivPagesSchema,
 });
 
-export const pageKeys = {
+const pageKeys = {
   page: (path: string) => [{ scope: "page", path }] as const,
 };
 
