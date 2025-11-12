@@ -96,7 +96,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
         // For type safety, one separate return is required below for every type
         // so it is possible to assert filters[field]?.value is defined and TS
         // does not merge the different possible types of filters[field]?.value
-        const operator = selectedField === "createdAtGt" ? "gt" : "lt";
+        const operator = field === "createdAtGt" ? "gt" : "lt";
 
         if (field === "path") {
           return (
