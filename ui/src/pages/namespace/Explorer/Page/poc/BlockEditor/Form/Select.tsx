@@ -47,14 +47,7 @@ export const Select = ({
     const parsedValueType = ValuesTypeSchema.safeParse(value);
     if (parsedValueType.data) {
       field.onChange(parsedValueType.data);
-      switch (parsedValueType.data) {
-        case "array":
-          form.setValue("values.value", []);
-          break;
-        case "variable":
-          form.setValue("values.value", "");
-          break;
-      }
+      form.setValue("values.value", []);
     }
   };
 
@@ -128,24 +121,38 @@ export const Select = ({
             }}
           />
         )}
-        {form.watch("values.type") === "variable" && (
-          <Controller
-            control={form.control}
-            name="values.value"
-            render={({ field }) => {
-              const parsedValue = z.string().safeParse(field.value);
-              const value = parsedValue.success ? parsedValue.data : "";
-              return (
-                <VariableInput
-                  value={value}
-                  onUpdate={(value) => field.onChange(value)}
-                  placeholder={t(
-                    "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholderVariable"
-                  )}
-                />
-              );
-            }}
-          />
+        {form.watch("values.type") === "variable-select-options" && (
+          <>
+            <Controller
+              control={form.control}
+              name="values.data"
+              render={({ field }) => {
+                const parsedValue = z.string().safeParse(field.value);
+                const value = parsedValue.success ? parsedValue.data : "";
+                return (
+                  <VariableInput
+                    value={value}
+                    onUpdate={(value) => field.onChange(value)}
+                    placeholder={t(
+                      "direktivPage.blockEditor.blockForms.formPrimitives.select.dataPlaceholder"
+                    )}
+                  />
+                );
+              }}
+            />
+            <Input
+              {...form.register("values.value")}
+              placeholder={t(
+                "direktivPage.blockEditor.blockForms.formPrimitives.select.valuePlaceholder"
+              )}
+            />
+            <Input
+              {...form.register("values.label")}
+              placeholder={t(
+                "direktivPage.blockEditor.blockForms.formPrimitives.select.labelPlaceholder"
+              )}
+            />
+          </>
         )}
       </Fieldset>
       <Fieldset

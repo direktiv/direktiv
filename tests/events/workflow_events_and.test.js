@@ -74,11 +74,11 @@ states:
 
 const basevent = (type, id, value) => `{
   "specversion" : "1.0",
-  "type" : "${ type }",
-  "id": "${ id }",
+  "type" : "${type}",
+  "id": "${id}",
   "source" : "https://direktiv.io/test",
   "datacontenttype" : "application/json",
-  "hello": "${ value }",
+  "hello": "${value}",
   "data" : {
       "hello": "world",
       "123": 456
@@ -91,87 +91,137 @@ describe('Test workflow events and', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
 	// workflow with start
-	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
-		'', startWorkflowName, 'workflow',
-		startEventWorkflow)
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespaceName,
+		'',
+		startWorkflowName,
+		'workflow',
+		startEventWorkflow,
+	)
 
 	it(`should have one event listeners`, async () => {
 		await helpers.sleep(1000)
 
-		const getEventListenerResponse = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
+		const getEventListenerResponse = await request(
+			common.config.getDirektivBaseUrl(),
+		)
+			.get(
+				`/api/v2/namespaces/${namespaceName}/events/listeners?limit=8&offset=0`,
+			)
 			.send()
 		expect(getEventListenerResponse.body.data[0]).toMatchObject({
 			triggerWorkflow: '/startand.yaml',
 			triggerType: 'StartAnd',
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			eventContextFilters: expect.arrayContaining(
-				[ {
+			eventContextFilters: expect.arrayContaining([
+				{
 					type: 'eventtype4',
 					context: {},
-				}, {
+				},
+				{
 					type: 'eventtype3',
 					context: {},
-				} ],
-			),
+				},
+			]),
 		})
 
 		expect(getEventListenerResponse.body.data.length).toEqual(1)
 	})
 
 	// workflow with start
-	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
-		'', waitWorkflowName, 'workflow',
-		waitEventWorkflow)
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespaceName,
+		'',
+		waitWorkflowName,
+		'workflow',
+		waitEventWorkflow,
+	)
 
 	it(`should have two event listeners`, async () => {
 		await helpers.sleep(1000)
 
 		// start workflow
-		const runWorkflowResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowName }`)
+		const runWorkflowResponse = await request(
+			common.config.getDirektivBaseUrl(),
+		)
+			.post(
+				`/api/v2/namespaces/${namespaceName}/instances?path=${waitWorkflowName}`,
+			)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
-		await new Promise(r => setTimeout(r, 250))
+		await new Promise((r) => setTimeout(r, 250))
 
-		const getEventListenerResponse = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
+		const getEventListenerResponse = await request(
+			common.config.getDirektivBaseUrl(),
+		)
+			.get(
+				`/api/v2/namespaces/${namespaceName}/events/listeners?limit=8&offset=0`,
+			)
 			.send()
 
 		expect(getEventListenerResponse.body.data.length).toEqual(2)
 
-		const result = getEventListenerResponse.body.data.find(item => item.hasOwnProperty('triggerInstance'))
+		const result = getEventListenerResponse.body.data.find((item) =>
+			// eslint-disable-next-line no-prototype-builtins
+			item.hasOwnProperty('triggerInstance'),
+		)
 
 		expect(result).toMatchObject({
 			triggerType: 'WaitAnd',
 			triggerInstance: expect.stringMatching(common.regex.uuidRegex),
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			eventContextFilters: expect.arrayContaining(
-				[ {
+			eventContextFilters: expect.arrayContaining([
+				{
 					type: 'eventtype1',
 					context: {},
-				}, {
+				},
+				{
 					type: 'eventtype2',
 					context: {},
-				} ],
-			),
+				},
+			]),
 		})
 	})
 
 	it(`should kick off in flow workflow`, async () => {
 		// should not continue workflow
-		await events.sendEventAndList(namespaceName, basevent('eventtype1', 'eventtype1', 'world1'))
+		await events.sendEventAndList(
+			namespaceName,
+			basevent('eventtype1', 'eventtype1', 'world1'),
+		)
 
 		// the waiting workflow is running but nothing triggered by event, state pending
-		let instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, 'pending')
+		let instancesResponse = await events.listInstancesAndFilter(
+			namespaceName,
+			waitWorkflowName,
+			'pending',
+		)
 		expect(instancesResponse).not.toBeFalsy()
 
 		//  await events.sendEventAndList(namespaceName, basevent("eventtype1", "eventtype1", "world"))
-		await events.sendEventAndList(namespaceName, basevent('eventtype2', 'eventtype2', 'world2'))
-		instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, 'complete')
+		await events.sendEventAndList(
+			namespaceName,
+			basevent('eventtype2', 'eventtype2', 'world2'),
+		)
+		instancesResponse = await events.listInstancesAndFilter(
+			namespaceName,
+			waitWorkflowName,
+			'complete',
+		)
 		expect(instancesResponse).not.toBeFalsy()
 
-		const instanceOutput = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instancesResponse.id }/output`)
+		const instanceOutput = await request(
+			common.config.getDirektivBaseUrl(),
+		).get(
+			`/api/v2/namespaces/${namespaceName}/instances/${instancesResponse.id}/output`,
+		)
 		const output = Buffer.from(instanceOutput.body.data.output, 'base64')
 		const outputJSON = JSON.parse(output.toString())
 
@@ -181,15 +231,30 @@ describe('Test workflow events and', () => {
 	})
 
 	it(`should kick off start event workflow`, async () => {
-		await events.sendEventAndList(namespaceName, basevent('eventtype3', 'eventtype3', 'world1'))
-		let instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName)
+		await events.sendEventAndList(
+			namespaceName,
+			basevent('eventtype3', 'eventtype3', 'world1'),
+		)
+		let instance = await events.listInstancesAndFilter(
+			namespaceName,
+			startWorkflowName,
+		)
 
 		expect(instance).toBeFalsy()
 
-		await events.sendEventAndList(namespaceName, basevent('eventtype4', 'eventtype4', 'world2'))
-		instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName, 'complete')
+		await events.sendEventAndList(
+			namespaceName,
+			basevent('eventtype4', 'eventtype4', 'world2'),
+		)
+		instance = await events.listInstancesAndFilter(
+			namespaceName,
+			startWorkflowName,
+			'complete',
+		)
 
-		const instanceOutput = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instance.id }/output`)
+		const instanceOutput = await request(
+			common.config.getDirektivBaseUrl(),
+		).get(`/api/v2/namespaces/${namespaceName}/instances/${instance.id}/output`)
 		const output = Buffer.from(instanceOutput.body.data.output, 'base64')
 		const outputJSON = JSON.parse(output.toString())
 
@@ -199,65 +264,124 @@ describe('Test workflow events and', () => {
 	})
 
 	// timeout workflow
-	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
-		'', startWorkflowContextName, 'workflow',
-		startEventContextWorkflow)
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespaceName,
+		'',
+		startWorkflowContextName,
+		'workflow',
+		startEventContextWorkflow,
+	)
 
 	it(`start context`, async () => {
 		await helpers.sleep(1000)
 
-		let workflowEventResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
+		let workflowEventResponse = await request(
+			common.config.getDirektivBaseUrl(),
+		)
+			.post(`/api/v2/namespaces/${namespaceName}/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(basevent('eventtype9', 'eventtype9zz', 'world1'))
 		expect(workflowEventResponse.statusCode).toEqual(200)
 
-		workflowEventResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
+		workflowEventResponse = await request(common.config.getDirektivBaseUrl())
+			.post(`/api/v2/namespaces/${namespaceName}/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(basevent('eventtype10', 'eventtype1324320', 'world3'))
 		expect(workflowEventResponse.statusCode).toEqual(200)
 
-		let instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName)
+		let instance = await events.listInstancesAndFilter(
+			namespaceName,
+			startWorkflowContextName,
+		)
 		expect(instance).toBeFalsy()
 
-		workflowEventResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
+		workflowEventResponse = await request(common.config.getDirektivBaseUrl())
+			.post(`/api/v2/namespaces/${namespaceName}/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(basevent('eventtype10', 'eventtype10afg', 'world2'))
 		expect(workflowEventResponse.statusCode).toEqual(200)
 
-		instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName)
+		instance = await events.listInstancesAndFilter(
+			namespaceName,
+			startWorkflowContextName,
+		)
 		expect(instance).not.toBeFalsy()
 	})
 
 	// timeout workflow
-	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
-		'', waitWorkflowContextName, 'workflow',
-		waitEventContextimeout)
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespaceName,
+		'',
+		waitWorkflowContextName,
+		'workflow',
+		waitEventContextimeout,
+	)
 
 	it(`flow context`, async () => {
 		await helpers.sleep(1000)
 
-		const runWorkflowResponse = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowContextName }`)
+		const runWorkflowResponse = await request(
+			common.config.getDirektivBaseUrl(),
+		)
+			.post(
+				`/api/v2/namespaces/${namespaceName}/instances?path=${waitWorkflowContextName}`,
+			)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
 		await helpers.sleep(1000)
 
-		await events.sendEventAndList(namespaceName, basevent('eventtype11', 'eventtype11dfds', 'world1'))
-		await events.sendEventAndList(namespaceName, basevent('eventtype12', 'eventtype12dsfds', 'world3'))
+		await events.sendEventAndList(
+			namespaceName,
+			basevent('eventtype11', 'eventtype11dfds', 'world1'),
+		)
+		await events.sendEventAndList(
+			namespaceName,
+			basevent('eventtype12', 'eventtype12dsfds', 'world3'),
+		)
 
-		let instance = await events.listInstancesAndFilter(namespaceName, waitWorkflowContextName, 'pending')
+		let instance = await events.listInstancesAndFilter(
+			namespaceName,
+			waitWorkflowContextName,
+			'pending',
+		)
 		expect(instance).not.toBeFalsy()
 
-		await events.sendEventAndList(namespaceName, basevent('eventtype11', 'eventtype12a', 'world2'))
-		instance = await events.listInstancesAndFilter(namespaceName, waitWorkflowContextName, 'pending')
+		await events.sendEventAndList(
+			namespaceName,
+			basevent('eventtype11', 'eventtype12a', 'world2'),
+		)
+		instance = await events.listInstancesAndFilter(
+			namespaceName,
+			waitWorkflowContextName,
+			'pending',
+		)
 		expect(instance).not.toBeFalsy()
 
-		await events.sendEventAndList(namespaceName, basevent('eventtype11', 'eventtype12abc', 'world4'))
-		instance = await events.listInstancesAndFilter(namespaceName, waitWorkflowContextName, 'pending')
+		await events.sendEventAndList(
+			namespaceName,
+			basevent('eventtype11', 'eventtype12abc', 'world4'),
+		)
+		instance = await events.listInstancesAndFilter(
+			namespaceName,
+			waitWorkflowContextName,
+			'pending',
+		)
 		expect(instance).not.toBeFalsy()
 
-		await events.sendEventAndList(namespaceName, basevent('eventtype11', 'eventtype12ab', 'world2'))
-		instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName, 'complete')
+		await events.sendEventAndList(
+			namespaceName,
+			basevent('eventtype11', 'eventtype12ab', 'world2'),
+		)
+		instance = await events.listInstancesAndFilter(
+			namespaceName,
+			startWorkflowContextName,
+			'complete',
+		)
 		expect(instance).not.toBeFalsy()
 	})
 })

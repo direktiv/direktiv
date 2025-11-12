@@ -1,7 +1,6 @@
 import Editor from "~/design/Editor";
 import InfoText from "./OutputInfo";
 import Toolbar from "./Toolbar";
-import { decode } from "js-base64";
 import { forwardRef } from "react";
 import { prettifyJsonString } from "~/util/helpers";
 import { useInstanceId } from "../../store/instanceContext";
@@ -39,7 +38,7 @@ const Output = forwardRef<
     );
   }
 
-  const workflowOutput = decode(data?.output ?? "");
+  const workflowOutput = data?.output ?? "";
   const workflowOutputPretty = prettifyJsonString(workflowOutput);
 
   return (

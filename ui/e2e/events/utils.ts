@@ -33,16 +33,17 @@ states:
 export const createListener = async ({
   name,
   namespace,
-  yaml,
+  content,
 }: {
   name: string;
   namespace: string;
-  yaml: string;
+  content: string;
 }) => {
   await createFile({
     name,
     namespace,
     type: "workflow",
-    yaml,
+    content,
+    mimeType: "application/x-typescript",
   });
 };

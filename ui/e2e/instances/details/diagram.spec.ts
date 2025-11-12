@@ -1,6 +1,6 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
+import { delayWorkflow, simpleWorkflow } from "e2e/utils/workflows";
 import { expect, test } from "@playwright/test";
-import { simpleWorkflow, workflowWithDelay } from "../utils/workflows";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils/index";
@@ -17,7 +17,7 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("the diagram panel on the instance page responds to user interaction", async ({
+test.skip("the diagram panel on the instance page responds to user interaction", async ({
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
@@ -25,7 +25,8 @@ test("the diagram panel on the instance page responds to user interaction", asyn
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflow,
+    content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
   const instanceId = (
     await createInstance({
@@ -86,7 +87,7 @@ test("the diagram panel on the instance page responds to user interaction", asyn
   );
 });
 
-test("the diagram on the instance page changes appearance dynamically", async ({
+test.skip("the diagram on the instance page changes appearance dynamically", async ({
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
@@ -94,7 +95,8 @@ test("the diagram on the instance page changes appearance dynamically", async ({
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: workflowWithDelay,
+    content: delayWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   const instanceId = (

@@ -21,14 +21,16 @@ import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
-import { addYamlFileExtension } from "../../../../utils";
+import { addWorkflowFileExtension } from "../../../../utils";
 import { encode } from "js-base64";
+import { updateValidationCache } from "~/api/validate/utils";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNavigate } from "@tanstack/react-router";
 import { useNotifications } from "~/api/notifications/query/get";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
+import useTsWorkflowLibs from "~/hooks/useTsWorkflowLibs";
 import workflowTemplates from "./templates";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -61,7 +63,7 @@ const NewWorkflow = ({
   const resolver = zodResolver(
     z.object({
       name: FileNameSchema.transform((enteredName) =>
-        addYamlFileExtension(enteredName)
+        addWorkflowFileExtension(enteredName)
       ).refine(
         (nameWithExtension) =>
           !(unallowedNames ?? []).some(
@@ -93,6 +95,7 @@ const NewWorkflow = ({
        * creating a new workflow might introduce an uninitialized secret.
        * We need to update the notification bell, to see potential new messages.
        */
+      updateValidationCache(data);
       updateNotificationBell();
       navigate({
         to: "/n/$namespace/explorer/workflow/edit/$",
@@ -103,6 +106,8 @@ const NewWorkflow = ({
     },
   });
 
+  const tsLibs = useTsWorkflowLibs(true);
+
   const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
     createFile({
       path,
@@ -110,7 +115,7 @@ const NewWorkflow = ({
         name,
         data: encode(fileContent),
         type: "workflow",
-        mimeType: "application/yaml",
+        mimeType: "application/x-typescript",
       },
     });
   };
@@ -191,6 +196,8 @@ const NewWorkflow = ({
                   }
                 }}
                 theme={theme ?? undefined}
+                language="typescript"
+                tsLibs={tsLibs}
               />
             </Card>
           </fieldset>

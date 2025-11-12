@@ -1,0 +1,64 @@
+import { beforeAll, describe, expect, it } from '@jest/globals'
+import { basename } from 'path'
+import { fileURLToPath } from 'url'
+
+import config from '../../common/config'
+import helpers from '../../common/helpers'
+import request from '../../common/request'
+
+const namespace = basename(fileURLToPath(import.meta.url))
+
+describe('Test secret delete calls', () => {
+	beforeAll(helpers.deleteAllNamespaces)
+	helpers.itShouldCreateNamespace(it, expect, namespace)
+
+	let createRes
+	it(`should create a new secret`, async () => {
+		createRes = await request(config.getDirektivBaseUrl())
+			.post(`/api/v2/namespaces/${namespace}/secrets`)
+			.send({
+				name: 'foo',
+				data: btoa('bar'),
+			})
+		expect(createRes.statusCode).toEqual(200)
+	})
+
+	it(`should delete a secret`, async () => {
+		const secretName = createRes.body.data.name
+		const res = await request(config.getDirektivBaseUrl()).delete(
+			`/api/v2/namespaces/${namespace}/secrets/${secretName}`,
+		)
+		expect(res.statusCode).toEqual(200)
+	})
+})
+
+describe('Test invalid secret delete calls', () => {
+	beforeAll(helpers.deleteAllNamespaces)
+	helpers.itShouldCreateNamespace(it, expect, namespace)
+
+	const testCases = [
+		{
+			// invalid id.
+			name: 'something',
+			wantError: {
+				statusCode: 404,
+				error: {
+					code: 'secret_not_found',
+					message: 'requested secret is not found',
+				},
+			},
+		},
+	]
+
+	for (let i = 0; i < testCases.length; i++) {
+		const testCase = testCases[i]
+
+		it(`should fail delete a secret case ${i}`, async () => {
+			const res = await request(config.getDirektivBaseUrl())
+				.delete(`/api/v2/namespaces/${namespace}/secrets/${testCase.name}`)
+				.send(testCase.input)
+			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
+			expect(res.body.error).toEqual(testCase.wantError.error)
+		})
+	}
+})

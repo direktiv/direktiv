@@ -144,11 +144,11 @@ Form primitives are the basic input elements that collect user data within forms
 
 #### Select `Block`
 
-| Attribute      | Type                                   | Description                                                                                      |
-| -------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `type`         | `"form-select"`                        |                                                                                                  |
-| `values`       | `Array`, `VariablePath<Array<string>>` | Available options. Either a static array or a variable path that resolves to an array of strings |
-| `defaultValue` | `TemplateString`                       | Default selected value                                                                           |
+| Attribute      | Type                                     | Description                                                                                                         |
+| -------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `type`         | `"form-select"`                          |                                                                                                                     |
+| `values`       | `Array<string>`, `VariableSelectOptions` | Available options. Either a static array of strings or a variable mapping consisting of path to an array of objects |
+| `defaultValue` | `TemplateString`                         | Default selected value                                                                                              |
 
 #### Textarea `Block`
 
@@ -335,3 +335,12 @@ An extended key-value pair that supports multiple data types for the value, incl
 | --------- | ------------ | -------------------- |
 | `key`     | `"variable"` |                      |
 | `value`   | `Variable`   | a path to a variable |
+
+## `VariableSelectOptions`
+
+| Attribute | Type                        | Description                                            |
+| --------- | --------------------------- | ------------------------------------------------------ |
+| `type`    | `"variable-select-options"` |                                                        |
+| `data`    | `string`                    | Path to the variable that contains an array of objects |
+| `label`   | `string`                    | path to the label attribute relative to the array item |
+| `value`   | `string`                    | path to the value attribute relative to the array item |

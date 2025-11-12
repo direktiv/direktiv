@@ -10,6 +10,7 @@
 .vscode
 
 cmd/ee
+internal/ee
 pkg/ee
 direktiv-ee
 ee
@@ -131,3 +132,4 @@ server.key
 keycloak_db_user.txt
 
 charts/direktiv/tmpcharts*
+AGENTS.md

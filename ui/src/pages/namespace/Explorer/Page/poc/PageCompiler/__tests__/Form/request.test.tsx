@@ -670,7 +670,20 @@ describe("form request", () => {
         expect(jsonResponse["input-floating-number"]).toBe(4.99);
         expect(jsonResponse["input-date"]).toBe("2025-12-24");
         expect(jsonResponse["select"]).toBe("pro");
-        expect(jsonResponse["array"]).toEqual(["free", "pro", "enterprise"]);
+        expect(jsonResponse["array"]).toEqual([
+          {
+            label: "Free",
+            value: "free",
+          },
+          {
+            label: "Pro",
+            value: "pro",
+          },
+          {
+            label: "Enterprise",
+            value: "enterprise",
+          },
+        ]);
         expect(jsonResponse["object"]).toEqual({
           accountBalance: 19.99,
           emailVerified: true,

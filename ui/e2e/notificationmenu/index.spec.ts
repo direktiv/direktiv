@@ -43,7 +43,8 @@ test("Notification Bell updates depending on the count of Notification Messages"
     name: "worfklow-with-secrets.yaml",
     namespace,
     type: "workflow",
-    yaml: workflowWithSecrets,
+    content: workflowWithSecrets,
+    mimeType: "application/x-typescript",
   });
 
   await page.goto(`/n/${namespace}/explorer/tree`, {

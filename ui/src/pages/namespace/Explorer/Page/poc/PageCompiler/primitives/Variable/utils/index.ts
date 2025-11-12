@@ -1,4 +1,4 @@
-import { JsonPathError, ValidateVariableError } from "./errors";
+import { JsonPathError, StringifyError, ValidateVariableError } from "./errors";
 import {
   TemplateStringSeparator,
   TemplateStringType,
@@ -148,4 +148,22 @@ export const getValueFromJsonPath = (
   }
 
   return { success: true, data: returnValue };
+};
+
+export const getStringValueFromJsonPath = (
+  json: unknown,
+  path: string
+): ValidationResult<string, JsonPathError | StringifyError> => {
+  const result = getValueFromJsonPath(json, path);
+
+  if (!result.success) {
+    return { success: false, error: result.error };
+  }
+  const schema = z.string().or(z.number()).or(z.boolean());
+  const parsed = schema.safeParse(result.data);
+  if (!parsed.success) {
+    return { success: false, error: "couldNotStringify" };
+  }
+
+  return { success: true, data: parsed.data.toString() };
 };

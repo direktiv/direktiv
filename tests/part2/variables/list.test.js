@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import common from '../../common'
 import config from '../../common/config'
@@ -7,14 +8,22 @@ import helpers from '../../common/helpers'
 import regex from '../../common/regex'
 import request from '../../common/request'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test variable list calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateFile(it, expect, namespace, '/', 'wf.yaml', 'workflow', 'text',
-		btoa(helpers.dummyWorkflow('wf.yaml')))
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'wf.yaml',
+		'workflow',
+		'text',
+		btoa(helpers.dummyWorkflow('wf.yaml')),
+	)
 
 	helpers.itShouldCreateVariable(it, expect, namespace, {
 		name: 'foo1',
@@ -30,8 +39,9 @@ describe('Test variable list calls', () => {
 	})
 
 	it(`should list variable foo1`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/variables`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/variables`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.length).toEqual(1)
 		expect(res.body.data[0]).toEqual({
@@ -49,8 +59,9 @@ describe('Test variable list calls', () => {
 	})
 
 	it(`should list variable foo2`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/variables?workflowPath=/wf.yaml`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/variables?workflowPath=/wf.yaml`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.length).toEqual(1)
 		expect(res.body.data[0]).toEqual({

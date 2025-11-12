@@ -104,7 +104,7 @@
         "newWorkflow": {
           "title": "Create a new workflow",
           "nameLabel": "Name",
-          "namePlaceholder": "workflow-name.yaml",
+          "namePlaceholder": "workflow-name.wf.ts",
           "templateLabel": "Template",
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
@@ -162,10 +162,7 @@
         "workflow": {
           "runWorkflow": {
             "title": "Run Workflow",
-            "jsonInput": "JSON Input",
-            "invalidYaml": "Cannot run the workflow as it is not a valid YAML file.",
             "formInput": "Form Input",
-            "formInputHint": "The first state of this Workflow must be of type 'validate' to generate a form.",
             "learnMoreBtn": "Learn more",
             "cancelBtn": "Cancel",
             "runBtn": "Run",
@@ -315,6 +312,7 @@
                 "types": {
                   "instant-response": "Instant Response",
                   "target-flow": "Workflow",
+                  "target-page": "Page",
                   "target-flow-var": "Workflow Variable",
                   "target-namespace-file": "Namespace File",
                   "target-namespace-var": "Namespace Variable",
@@ -333,6 +331,9 @@
                   "asynchronous": "Asynchronous",
                   "contentType": "Content Type (optional)",
                   "contentTypePlaceholder": "application/json"
+                },
+                "targetPage": {
+                  "file": "Page File"
                 },
                 "targetFlowVar": {
                   "namespace": "Namespace (optional)",
@@ -1845,9 +1846,12 @@
             "valuesLabel": "Options",
             "valuesPlaceholder": "Select option",
             "type": {
-              "variable": "Variable",
+              "variable-select-options": "Variable",
               "array": "Static"
-            }
+            },
+            "dataPlaceholder": "path to an array of objects",
+            "labelPlaceholder": "path to the label property",
+            "valuePlaceholder": "path to the value property"
           }
         }
       },

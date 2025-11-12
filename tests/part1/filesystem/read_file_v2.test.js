@@ -1,23 +1,34 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { btoa } from 'js-base64'
 import { basename } from 'path'
+import { fileURLToPath } from 'url'
 
 import config from '../../common/config'
 import helpers from '../../common/helpers'
 import regex from '../../common/regex'
 import request from '../../common/request'
 
-const namespace = basename(__filename)
+const namespace = basename(fileURLToPath(import.meta.url))
 
 describe('Test filesystem read single file', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
 	helpers.itShouldCreateNamespace(it, expect, namespace)
-	helpers.itShouldCreateFile(it, expect, namespace, '/', 'foo.yaml', 'file', 'text/plain', btoa('some foo data'))
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'foo.yaml',
+		'file',
+		'text/plain',
+		btoa('some foo data'),
+	)
 
 	it(`should read file`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/files/foo.yaml`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files/foo.yaml`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -31,8 +42,9 @@ describe('Test filesystem read single file', () => {
 	})
 
 	it(`should read raw file`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/files/foo.yaml?raw=true`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files/foo.yaml?raw=true`,
+		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.headers['content-type']).toEqual('text/plain')
 		expect(res.headers['content-length']).toEqual('13')
@@ -40,14 +52,16 @@ describe('Test filesystem read single file', () => {
 	})
 
 	it(`should read raw file not found`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/files/something.yaml?raw=true`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files/something.yaml?raw=true`,
+		)
 		expect(res.statusCode).toEqual(404)
 	})
 
 	it(`should read raw file not found`, async () => {
-		const res = await request(config.getDirektivBaseUrl())
-			.get(`/api/v2/namespaces/${ namespace }/files/something.yaml`)
+		const res = await request(config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/files/something.yaml`,
+		)
 		expect(res.statusCode).toEqual(404)
 		expect(res.body).toMatchObject({
 			error: {

@@ -12,7 +12,10 @@ describe('Test wait success API behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFile(it, expect, namespaceName,
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespaceName,
 		'',
 		'noop.yaml',
 		'workflow',
@@ -22,10 +25,13 @@ states:
 - id: a
   type: noop
   transform:
-    result: x`))
+    result: x`),
+	)
 
 	it(`should invoke the 'noop.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=noop.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=noop.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 'x',
@@ -33,7 +39,9 @@ states:
 	})
 
 	it(`should invoke the '/noop.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=%2Fnoop.yaml&wait=true`)
+		const req = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=%2Fnoop.yaml&wait=true`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 'x',
@@ -41,7 +49,9 @@ states:
 	})
 
 	it(`should perform a list request`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).get(`/api/v2/namespaces/${ namespaceName }/instances`)
+		const req = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespaceName}/instances`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			data: [
@@ -50,7 +60,7 @@ states:
 					endedAt: expect.stringMatching(regex.timestampRegex),
 					definition: expect.stringMatching(regex.base64Regex),
 					errorCode: null,
-					flow: [ 'a' ],
+					flow: ['a'],
 					id: expect.stringMatching(regex.uuidRegex),
 					invoker: 'api',
 					lineage: [],
@@ -63,7 +73,7 @@ states:
 					endedAt: expect.stringMatching(regex.timestampRegex),
 					definition: expect.stringMatching(regex.base64Regex),
 					errorCode: null,
-					flow: [ 'a' ],
+					flow: ['a'],
 					id: expect.stringMatching(regex.uuidRegex),
 					invoker: 'api',
 					lineage: [],
@@ -78,7 +88,7 @@ states:
 	it(`should invoke the 'noop.yaml' workflow wait for completion and respond with the summary`, async () => {
 		const req = await request(common.config.getDirektivBaseUrl())
 			.post(
-				`/api/v2/namespaces/${ namespaceName }/instances?path=noop.yaml&wait=true&output=true`,
+				`/api/v2/namespaces/${namespaceName}/instances?path=noop.yaml&wait=true&output=true`,
 			)
 			.send({ a: 2 })
 		expect(req.statusCode).toEqual(200)
@@ -90,7 +100,7 @@ states:
 				endedAt: expect.stringMatching(regex.timestampRegex),
 				definition: expect.stringMatching(regex.base64Regex),
 				errorCode: null,
-				flow: [ 'a' ],
+				flow: ['a'],
 				id: expect.stringMatching(regex.uuidRegex),
 				invoker: 'api',
 				lineage: [],

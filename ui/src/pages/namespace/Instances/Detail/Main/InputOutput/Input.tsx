@@ -1,6 +1,5 @@
 import Editor from "~/design/Editor";
 import Toolbar from "./Toolbar";
-import { decode } from "js-base64";
 import { forwardRef } from "react";
 import { prettifyJsonString } from "~/util/helpers";
 import { useInstanceId } from "../../store/instanceContext";
@@ -12,7 +11,7 @@ const Input = forwardRef<HTMLDivElement>((_, ref) => {
   const { data } = useInstanceInput({ instanceId });
   const theme = useTheme();
 
-  const workflowInput = decode(data?.input ?? "");
+  const workflowInput = data?.input ?? "";
   const workflowInputPretty = prettifyJsonString(workflowInput);
 
   return (

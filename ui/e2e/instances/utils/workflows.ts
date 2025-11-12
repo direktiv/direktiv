@@ -1,21 +1,3 @@
-export const simpleWorkflow = `description: A simple 'no-op' state that returns 'Hello world!'
-states:
-- id: helloworld
-  type: noop
-  transform:
-    result: Hello world!
-`;
-
-export const workflowWithDelay = `direktiv_api: workflow/v1
-description: A simple 'delay' state that waits for 2 seconds
-states:
-- id: delay
-  type: delay
-  duration: PT2S
-  transform:
-    result: finished
-`;
-
 export const workflowWithFewLogs = `direktiv_api: workflow/v1
 description: A simple 'delay' state that waits for 4 seconds
 states:
@@ -50,14 +32,6 @@ states:
     transform:
       x: "jq(.x - 1)"
     `;
-
-export const workflowThatFails = `description: A simple workflow that throws an error'
-states:
-- id: error
-  type: error
-  error: i-am-an-error
-  message: this is my error message
-`;
 
 export const parentWorkflow = ({
   childPath,

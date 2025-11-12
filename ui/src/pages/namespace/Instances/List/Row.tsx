@@ -17,7 +17,6 @@ import { ConditionalWrapper } from "~/util/helpers";
 import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
-import { decode } from "js-base64";
 import moment from "moment";
 import { statusToBadgeVariant } from "../utils";
 import { useNavigate } from "@tanstack/react-router";
@@ -84,7 +83,7 @@ const InstanceTableRow: FC<{
                   <Alert variant="error">
                     <span className="font-bold">{instance.errorCode}</span>
                     <br />
-                    {instance.errorMessage && decode(instance.errorMessage)}
+                    {instance.errorMessage && instance.errorMessage}
                   </Alert>
                 </HoverCardContent>
               </HoverCard>

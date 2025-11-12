@@ -5,7 +5,6 @@ import { LogEntry } from "~/design/Logs";
 import { LogLevelSchemaType } from "~/api/logs/schema";
 import moment from "moment";
 import { twMerge } from "tailwind-merge";
-import { z } from "zod";
 
 /**
  * this method combines the usage of two utility libraries:
@@ -81,6 +80,3 @@ export const prettifyJsonString = (jsonString: string) => {
     return "{}";
   }
 };
-
-export const isObject = (input: unknown): input is object =>
-  z.object({}).safeParse(input).success;

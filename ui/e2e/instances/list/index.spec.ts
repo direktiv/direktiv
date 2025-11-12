@@ -1,11 +1,10 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
-import { expect, test } from "@playwright/test";
 import {
-  parentWorkflow as parentWorkflowContent,
-  simpleWorkflow as simpleWorkflowContent,
-  workflowThatFails as workflowThatFailsContent,
-  workflowWithDelay as workflowWithDelayContent,
-} from "../utils/workflows";
+  delayWorkflow,
+  errorWorkflow,
+  simpleWorkflow,
+} from "e2e/utils/workflows";
+import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils";
@@ -13,6 +12,7 @@ import { faker } from "@faker-js/faker";
 import { getInstances } from "~/api/instances/query/get";
 import { headers } from "e2e/utils/testutils";
 import moment from "moment";
+import { parentWorkflow as parentWorkflowContent } from "../utils/workflows";
 
 type Instance = Awaited<ReturnType<typeof createInstance>>;
 
@@ -28,21 +28,24 @@ test.beforeEach(async () => {
     name: simpleWorkflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflowContent,
+    content: simpleWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   await createFile({
     name: failingWorkflowName,
     namespace,
     type: "workflow",
-    yaml: workflowThatFailsContent,
+    content: errorWorkflow,
+    mimeType: "application/x-typescript",
   });
 
   await createFile({
     name: longRunningWorkflowName,
     namespace,
     type: "workflow",
-    yaml: workflowWithDelayContent,
+    content: delayWorkflow,
+    mimeType: "application/x-typescript",
   });
 });
 
@@ -241,7 +244,7 @@ test("it paginates instances", async ({ page }) => {
 
   const parentWorkflow = faker.system.commonFileName("yaml");
 
-  const yaml = parentWorkflowContent({
+  const content = parentWorkflowContent({
     childPath: `/${simpleWorkflowName}`,
     children: totalCount - 1,
   });
@@ -250,7 +253,8 @@ test("it paginates instances", async ({ page }) => {
     name: parentWorkflow,
     namespace,
     type: "workflow",
-    yaml,
+    content,
+    mimeType: "application/x-typescript",
   });
 
   await createInstance({ namespace, path: parentWorkflow });
@@ -351,10 +355,11 @@ test("It will display child instances as well", async ({ page }) => {
     name: parentWorkflow,
     namespace,
     type: "workflow",
-    yaml: parentWorkflowContent({
+    content: parentWorkflowContent({
       childPath: `/${simpleWorkflowName}`,
       children: 1,
     }),
+    mimeType: "application/x-typescript",
   });
 
   const parentInstance = await createInstance({
