@@ -3,19 +3,37 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 import common from '../common'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
+import helpers from "../common/helpers.js";
 
 const testNamespace = 'gitlab-auth'
 
-const wf = `
-direktiv_api: workflow/v1
-states:
-- id: helloworld
-  type: noop
-  transform:
-    result: jq(.)
-`
+describe('Test gitlab auth plugin', () => {
+	beforeAll(common.helpers.deleteAllNamespaces)
 
-const endpointFile = `x-direktiv-api: endpoint/v2
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+
+	helpers.itShouldTSWorkflow(
+		it,
+		expect,
+		testNamespace,
+		'/',
+		'foo.wf.ts',
+		`
+function stateFirst(input) {
+	return finish(input)
+}
+`,
+	)
+
+
+	common.helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		testNamespace,
+		'/',
+		'endpoint.yaml',
+		'endpoint',
+		`x-direktiv-api: endpoint/v2
 x-direktiv-config:
     path: "/target"
     allow_anonymous: false
@@ -27,36 +45,12 @@ x-direktiv-config:
        target:
          type: target-flow
          configuration:
-            flow: /target.yaml
+            flow: /foo.wf.ts
             content_type: application/json
 post:
    responses:
       "200":
-        description: works`
-
-describe('Test gitlab auth plugin', () => {
-	beforeAll(common.helpers.deleteAllNamespaces)
-
-	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
-
-	common.helpers.itShouldCreateYamlFile(
-		it,
-		expect,
-		testNamespace,
-		'/',
-		'target.yaml',
-		'workflow',
-		wf,
-	)
-
-	common.helpers.itShouldCreateYamlFile(
-		it,
-		expect,
-		testNamespace,
-		'/',
-		'endpoint.yaml',
-		'endpoint',
-		endpointFile,
+        description: works`,
 	)
 
 	retry10(`should execute`, async () => {

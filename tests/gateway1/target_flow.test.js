@@ -57,7 +57,7 @@ get:
 		)
 
 		expect(res.statusCode).toEqual(200)
-		const got = JSON.parse(res.body.data.output)
+		const got = res.body.data
 		const want = 'Hello world!'
 		expect(got).toBe(want)
 	})
