@@ -17,7 +17,7 @@ describe('Test js engine', () => {
 		{
 			name: 'singleStep.wf.ts',
 			input: { foo: 'bar' },
-			wantOutput: {"data":"done"},
+			wantOutput: { data: 'done' },
 			statusCode: 200,
 			file: `
 function stateOne(payload) {
@@ -27,7 +27,7 @@ function stateOne(payload) {
 		{
 			name: 'twoSteps.wf.ts',
 			input: JSON.stringify({ foo: 'bar' }),
-			wantOutput:  {"data":{"bar":"foo","foo":"bar"}},
+			wantOutput: { data: { bar: 'foo', foo: 'bar' } },
 			statusCode: 200,
 			file: `
 function stateOne(payload) {
@@ -43,7 +43,7 @@ function stateTwo(payload) {
 		{
 			name: 'stringInput.wf.ts',
 			input: JSON.stringify('hello'),
-			wantOutput: {"data":"helloWorld"},
+			wantOutput: { data: 'helloWorld' },
 			statusCode: 200,
 			file: `
 function stateOne(payload) {
@@ -53,7 +53,7 @@ function stateOne(payload) {
 		{
 			name: 'numberInput.wf.ts',
 			input: JSON.stringify(146),
-			wantOutput:  {"data":147},
+			wantOutput: { data: 147 },
 			statusCode: 200,
 			file: `
 function stateOne(payload) {
@@ -63,7 +63,13 @@ function stateOne(payload) {
 		{
 			name: 'throwError.wf.ts',
 			input: JSON.stringify('anything'),
-			wantOutput: {"error":{"code":"","message":"invoke start: simply failed at stateOne (throwError.wf.ts:3:1(2))"}},
+			wantOutput: {
+				error: {
+					code: '',
+					message:
+						'invoke start: simply failed at stateOne (throwError.wf.ts:3:1(2))',
+				},
+			},
 			statusCode: 500,
 			file: `
 function stateOne(payload) {

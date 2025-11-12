@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 import common from '../common'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
-import helpers from "../common/helpers.js";
+import helpers from '../common/helpers.js'
 
 const testNamespace = 'gitlab-auth'
 
@@ -24,7 +24,6 @@ function stateFirst(input) {
 }
 `,
 	)
-
 
 	common.helpers.itShouldCreateYamlFile(
 		it,

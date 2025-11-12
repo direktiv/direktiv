@@ -145,7 +145,9 @@ function stateOne(payload) {
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data.length).toBe(filterCase.wantCount)
 			expect(res.body.data.length).toBe(filterCase.wantStatuses.length)
-			expect(res.body.data.map(i => i.status)).toEqual(filterCase.wantStatuses)
+			expect(res.body.data.map((i) => i.status)).toEqual(
+				filterCase.wantStatuses,
+			)
 		})
 	}
 })

@@ -257,11 +257,10 @@ describe('Test target workflow with errors', () => {
 		)
 		expect(req.statusCode).toEqual(500)
 		expect(req.body.error).toEqual({
-
-				code: '',
-				message: 'invoke start: Missing or invalid value for required input. at stateFirst (err.wf.ts:3:1(2))'
-			}
-		)
+			code: '',
+			message:
+				'invoke start: Missing or invalid value for required input. at stateFirst (err.wf.ts:3:1(2))',
+		})
 	})
 })
 
