@@ -27,11 +27,13 @@ const FilePicker = ({
   defaultPath,
   onChange,
   selectable,
+  selectableFolders,
 }: {
   namespace?: string;
   defaultPath?: string;
   onChange?: (filePath: string) => void;
   selectable?: (file: BaseFileSchemaType) => boolean;
+  selectableFolders?: boolean;
 }) => {
   const [path, setPath] = useState(convertFileToPath(defaultPath));
   const [inputValue, setInputValue] = useState(defaultPath ? defaultPath : "");
@@ -52,10 +54,16 @@ const FilePicker = ({
   const emptyDirectory = !isError && noResults;
   const folderUpButton = !isError && !noResults && !isRoot;
 
+  selectableFolders = selectableFolders ?? false;
+
   return (
     <ButtonBar>
       <Filepicker
-        buttonText={t("components.filepicker.buttonText")}
+        buttonText={t(
+          selectableFolders
+            ? "components.folderpicker.buttonText"
+            : "components.filepicker.buttonText"
+        )}
         onClick={() => {
           setPath(convertFileToPath(inputValue));
         }}
@@ -104,6 +112,7 @@ const FilePicker = ({
             </FilepickerMessage>
           </>
         )}
+
         {results && (
           <FilepickerList>
             <FileList
@@ -112,13 +121,18 @@ const FilePicker = ({
               setPath={(path) => setPath(path)}
               setInputValue={(value) => setInputValue(value)}
               onChange={(path) => onChange?.(path)}
+              selectableFolders={selectableFolders}
             />
             <FilepickerSeparator />
           </FilepickerList>
         )}
       </Filepicker>
       <Input
-        placeholder={t("components.filepicker.placeholder")}
+        placeholder={t(
+          selectableFolders
+            ? "components.folderpicker.placeholder"
+            : "components.filepicker.placeholder"
+        )}
         value={inputValue}
         onChange={(e) => {
           setInputValue(e.target.value);
