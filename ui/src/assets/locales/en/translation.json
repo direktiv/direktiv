@@ -584,7 +584,7 @@
           "name": "name",
           "id": "id",
           "invoker": "invoker",
-          "state": "state",
+          "status": "status",
           "startedAt": "started at",
           "finishedAt": "finished at",
           "childInstances": {

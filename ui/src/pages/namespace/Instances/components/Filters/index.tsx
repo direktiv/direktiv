@@ -127,7 +127,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                         }
                       }}
                       heading={t(
-                        "pages.instances.list.filter.placeholder.path"
+                        "pages.instances.list.filter.menuHeading.path"
                       )}
                       placeholder={t(
                         "pages.instances.list.filter.placeholder.path"
@@ -320,7 +320,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                       clearFilter(selectedField);
                     }
                   }}
-                  heading={t("pages.instances.list.filter.placeholder.path")}
+                  heading={t("pages.instances.list.filter.menuHeading.path")}
                   placeholder={t(
                     "pages.instances.list.filter.placeholder.path"
                   )}

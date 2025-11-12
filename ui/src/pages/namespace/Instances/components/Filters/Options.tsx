@@ -39,11 +39,11 @@ const Options = ({ value, field, setFilter }: OptionsProps) => {
     <Command value={value}>
       <CommandInput
         autoFocus
-        placeholder={t("pages.instances.list.filter.placeholder.status")}
+        placeholder={t([`pages.instances.list.filter.placeholder.${field}`])}
       />
       <CommandList>
         <CommandGroup
-          heading={t("pages.instances.list.filter.menuHeading.status")}
+          heading={t([`pages.instances.list.filter.menuHeading.${field}`])}
         >
           {optionMenus[field].map((option) => (
             <CommandItem
