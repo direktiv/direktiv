@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LocalVariablesContent } from "../primitives/Variable/VariableContext";
 import { MutationType } from "../../schema/procedures/mutation";
 import { keyValueArrayToObject } from "../primitives/keyValue/utils";
+import { queryProviderCacheNamespace } from "./query";
 import { useExtendedKeyValueArrayResolver } from "../primitives/keyValue/useExtenedKeyValueArrayResolver";
 import { useKeyValueArrayResolver } from "../primitives/keyValue/useKeyValueArrayResolver";
 import { useUrlGenerator } from "./utils";
@@ -53,7 +54,9 @@ export const usePageMutation = ({ onError }: UsePageMutationParams = {}) => {
       return;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({
+        queryKey: [queryProviderCacheNamespace],
+      });
     },
     onError: (error) => {
       onError?.(error);
