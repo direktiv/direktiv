@@ -168,7 +168,7 @@ x-direktiv-config:
       target:
         type: target-flow
         configuration:
-          flow: /contentType.yaml
+          flow: /contentType.wf.ts
 get:
    responses:
       "200":
@@ -183,7 +183,7 @@ x-direktiv-config:
       target:
         type: target-flow
         configuration:
-          flow: /contentType.yaml
+          flow: /contentType.wf.ts
           content_type: test/me
 get:
    responses:
@@ -191,12 +191,9 @@ get:
         description: works`
 
 const contentType = `
-direktiv_api: workflow/v1
-states:
-- id: helloworld
-  type: noop
-  transform:
-    result: Hello world!
+function stateFirst(input) {
+	return finish(input)
+}
 `
 
 describe('Test target workflow wrong config', () => {
@@ -258,10 +255,12 @@ describe('Test target workflow with errors', () => {
 		const req = await request(common.config.getDirektivBaseUrl()).get(
 			`/ns/system/endpoint3`,
 		)
-		expect(req.statusCode).toEqual(200)
-		expect(req.body.data.errorMessage).toEqual(
-			'invoke start: Missing or invalid value for required input. at stateFirst (err.wf.ts:3:1(2))',
-		)
+		expect(req.statusCode).toEqual(500)
+		expect(req.body.error).toEqual({
+			code: '',
+			message:
+				'invoke start: Missing or invalid value for required input. at stateFirst (err.wf.ts:3:1(2))',
+		})
 	})
 })
 
@@ -334,7 +333,7 @@ describe('Test target workflow plugin', () => {
 			`/ns/system/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(200)
-		const got = JSON.parse(req.body.data.output)
+		const got = req.body.data
 
 		expect(got).toEqual('Hello world!')
 	})
@@ -344,7 +343,7 @@ describe('Test target workflow plugin', () => {
 			`/ns/` + limitedNamespace + `/endpoint2`,
 		)
 		expect(req.statusCode).toEqual(200)
-		const got = JSON.parse(req.body.data.output)
+		const got = req.body.data
 		expect(got).toEqual('Hello world!')
 	})
 
@@ -386,7 +385,7 @@ describe('Test POST method for target workflow plugin', () => {
 			.post(`/ns/system/endpoint1`)
 			.send({ message: 'Hi' })
 		expect(req.statusCode).toEqual(200)
-		const got = JSON.parse(req.body.data.output)
+		const got = req.body.data
 		expect(got).toEqual({ message: 'Hi' })
 	})
 })
@@ -421,7 +420,7 @@ describe('Test Complex POST method for target workflow plugin', () => {
 			.post(`/ns/system/endpoint1`)
 			.send({ message: 'Hi' })
 		expect(req.statusCode).toEqual(200)
-		const got = JSON.parse(req.body.data.output)
+		const got = req.body.data
 
 		expect(got).toEqual({ message: 'Changed' })
 	})
@@ -492,7 +491,7 @@ describe('Test target workflow default contenttype', () => {
 		expect,
 		testNamespace,
 		'/',
-		'contentType.yaml',
+		'contentType.wf.ts',
 		contentType,
 	)
 

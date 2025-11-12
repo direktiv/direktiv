@@ -150,7 +150,7 @@ describe('Test js inbound plugin', () => {
 			.set('Header1', 'Value1')
 			.send({ hello: 'world' })
 
-		const got = JSON.parse(req.body.data.output)
+		const got = req.body.data
 
 		expect(req.statusCode).toEqual(200)
 		expect(got.addheader).toEqual('value3')
@@ -200,7 +200,7 @@ describe('Test js inbound plugin consumer', () => {
 			.set('API-Token', 'apikey')
 			.send({ hello: 'world' })
 
-		const got = JSON.parse(req.body.data.output)
+		const got = req.body.data
 
 		expect(req.statusCode).toEqual(200)
 		expect(got.user).toEqual('demo')
@@ -236,7 +236,7 @@ describe('Test js inbound plugin url params', () => {
 			.post(`/ns/` + testNamespace + `/target/myid`)
 			.send({ hello: 'world' })
 
-		const got = JSON.parse(req.body.data.output)
+		const got = req.body.data
 
 		expect(req.statusCode).toEqual(200)
 		expect(got.params).toEqual('myid')
