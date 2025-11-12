@@ -92,9 +92,6 @@ func doHttpRequest(addr string, config any) (*httpResponseObject, error) {
 		headers:      http.Header{},
 	}
 
-	// sEnc := b64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", obj.Username, obj.Password)))
-	// 	req.Header.Add("Authorization", fmt.Sprintf("Basic %s", sEnc))
-
 	// generate query
 	q := u.Query()
 	for k, v := range req.Params {
@@ -104,6 +101,7 @@ func doHttpRequest(addr string, config any) (*httpResponseObject, error) {
 
 	request, err := http.NewRequest(req.Method, u.String(), nil)
 	if err != nil {
+		obj.err = err.Error()
 		return obj, nil
 	}
 
