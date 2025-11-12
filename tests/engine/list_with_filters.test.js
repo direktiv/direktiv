@@ -66,7 +66,7 @@ function stateOne(payload) {
 		it(`should invoke /${testCase.name} workflow`, async () => {
 			const res = await request(common.config.getDirektivBaseUrl())
 				.post(
-					`/api/v2/namespaces/${namespace}/instances?path=/${testCase.name}&wait=true`,
+					`/api/v2/namespaces/${namespace}/instances?path=/${testCase.name}&wait=true&fullOutput=true`,
 				)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
@@ -145,7 +145,9 @@ function stateOne(payload) {
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data.length).toBe(filterCase.wantCount)
 			expect(res.body.data.length).toBe(filterCase.wantStatuses.length)
-			expect(res.body.data.map(i => i.status)).toEqual(filterCase.wantStatuses)
+			expect(res.body.data.map((i) => i.status)).toEqual(
+				filterCase.wantStatuses,
+			)
 		})
 	}
 })
