@@ -17,9 +17,8 @@ describe('Test js engine', () => {
 		{
 			name: 'singleStep.wf.ts',
 			input: { foo: 'bar' },
-			wantOutput: JSON.stringify('done'),
-			wantErrorMessage: null,
-			wantStatus: 'complete',
+			wantOutput: {"data":"done"},
+			statusCode: 200,
 			file: `
 function stateOne(payload) {
 	return finish("done");
@@ -28,9 +27,8 @@ function stateOne(payload) {
 		{
 			name: 'twoSteps.wf.ts',
 			input: JSON.stringify({ foo: 'bar' }),
-			wantOutput: JSON.stringify({ bar: 'foo', foo: 'bar' }),
-			wantErrorMessage: null,
-			wantStatus: 'complete',
+			wantOutput:  {"data":{"bar":"foo","foo":"bar"}},
+			statusCode: 200,
 			file: `
 function stateOne(payload) {
 	print("RUN STATE FIRST");
@@ -45,9 +43,8 @@ function stateTwo(payload) {
 		{
 			name: 'stringInput.wf.ts',
 			input: JSON.stringify('hello'),
-			wantOutput: JSON.stringify('helloWorld'),
-			wantErrorMessage: null,
-			wantStatus: 'complete',
+			wantOutput: {"data":"helloWorld"},
+			statusCode: 200,
 			file: `
 function stateOne(payload) {
 	return finish(payload + "World");
@@ -56,9 +53,8 @@ function stateOne(payload) {
 		{
 			name: 'numberInput.wf.ts',
 			input: JSON.stringify(146),
-			wantOutput: JSON.stringify(147),
-			wantErrorMessage: null,
-			wantStatus: 'complete',
+			wantOutput:  {"data":147},
+			statusCode: 200,
 			file: `
 function stateOne(payload) {
 	return finish(payload + 1);
@@ -67,10 +63,8 @@ function stateOne(payload) {
 		{
 			name: 'throwError.wf.ts',
 			input: JSON.stringify('anything'),
-			wantOutput: null,
-			wantErrorMessage:
-				'invoke start: simply failed at stateOne (throwError.wf.ts:3:1(2))',
-			wantStatus: 'failed',
+			wantOutput: {"error":{"code":"","message":"invoke start: simply failed at stateOne (throwError.wf.ts:3:1(2))"}},
+			statusCode: 500,
 			file: `
 function stateOne(payload) {
 	throw "simply failed";
@@ -91,16 +85,13 @@ function stateOne(payload) {
 			'application/x-typescript',
 			btoa(testCase.file),
 		)
-		it(`should invoke /${testCase.name} workflow with &wait=true&fullOutput=true`, async () => {
+		it(`should invoke /${testCase.name} workflow with &wait=true`, async () => {
 			const res = await request(common.config.getDirektivBaseUrl())
 				.post(
-					`/api/v2/namespaces/${namespace}/instances?path=/${testCase.name}&wait=true&fullOutput=true`,
+					`/api/v2/namespaces/${namespace}/instances?path=/${testCase.name}&wait=true`,
 				)
 				.send(testCase.input)
-			expect(res.statusCode).toEqual(200)
-			expect(res.body.data.status).toEqual(testCase.wantStatus)
-			expect(res.body.data.errorMessage).toEqual(testCase.wantErrorMessage)
-			expect(res.body.data.output).toEqual(testCase.wantOutput)
+			expect(res.statusCode).toEqual(testCase.statusCode)
 		})
 	}
 })
