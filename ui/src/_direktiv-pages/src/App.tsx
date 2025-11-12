@@ -9,7 +9,6 @@ import { Loader2 } from "lucide-react";
 import { PageCompilerContextProvider } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/pageCompilerContext";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "~/design/Toast";
-import { page } from "./examplePage";
 import queryClient from "~/util/queryClient";
 import { usePage } from "./api/page";
 import { useTranslation } from "react-i18next";
@@ -18,7 +17,7 @@ const appContainer = document.getElementById("root");
 if (!appContainer) throw new Error("Root element not found");
 
 const PageLoader = () => {
-  const { data, error, isPending } = usePage(window.location.pathname);
+  const { data: page, error, isPending } = usePage(window.location.pathname);
   const { t } = useTranslation();
 
   if (error) {
@@ -39,10 +38,10 @@ const PageLoader = () => {
   }
 
   return (
-    <PageCompilerContextProvider setPage={() => {}} page={data} mode="live">
+    <PageCompilerContextProvider setPage={() => {}} page={page} mode="live">
       <EditorPanelLayoutProvider>
         <BlockList path={[]}>
-          {data.blocks.map((block, index) => (
+          {page.blocks.map((block, index) => (
             <Block key={index} block={block} blockPath={[index]} />
           ))}
         </BlockList>
