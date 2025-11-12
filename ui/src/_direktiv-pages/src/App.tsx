@@ -42,7 +42,7 @@ const PageLoader = () => {
     <PageCompilerContextProvider setPage={() => {}} page={data} mode="live">
       <EditorPanelLayoutProvider>
         <BlockList path={[]}>
-          {(data as typeof page).blocks.map((block, index) => (
+          {data.blocks.map((block, index) => (
             <Block key={index} block={block} blockPath={[index]} />
           ))}
         </BlockList>
