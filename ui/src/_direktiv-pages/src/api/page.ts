@@ -5,14 +5,14 @@ import { apiFactory } from "~/api/apiFactory";
 import { removeTrailingSlash } from "~/api/files/utils";
 
 const getPage = apiFactory({
-  url: ({ path }: { path: string }) => `${path}/page.json`,
+  url: ({ path }: { path: string }) => `${removeTrailingSlash(path)}/page.json`,
   method: "GET",
   schema: DirektivPagesSchema,
 });
 
 const pageQueryOptions = (path: string) =>
   queryOptions({
-    queryKey: ["page", removeTrailingSlash(path)],
+    queryKey: ["page", path],
     queryFn: () => getPage({ urlParams: { path } }),
   });
 
