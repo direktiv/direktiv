@@ -10,7 +10,7 @@ const filterByStatus: FiltersObj = {
 };
 
 const filterByInvoker: FiltersObj = {
-  invoker: { value: "cloudevent" },
+  invoker: { value: "event" },
 };
 
 const filterByAfter: FiltersObj = {
@@ -40,7 +40,7 @@ const filterByPathBefore: FiltersObj = {
 
 const queryForPath = "&filter[path][cn]=Findme";
 const queryForStatus = "&filter[status]=failed";
-const queryForInvoker = "&filter[invoker]=cloudevent";
+const queryForInvoker = "&filter[invoker]=event";
 const queryForAfter = "&filter[createdAt][gt]=2023-04-01T09:24:33.120Z";
 const queryForBefore = "&filter[createdAt][lt]=2023-05-23T11:11:21.817Z";
 
