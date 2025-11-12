@@ -398,7 +398,7 @@ func TestTopLevelFunctionCalls(t *testing.T) {
 		{
 			name: "secrets call allowed",
 			script: `
-			const sec = getSecrets("my-secret-key");
+			const sec = getSecrets(["my-secret-key"]);
 			function stateOne() { return finish(); }`,
 			errCount: 0,
 		},
@@ -478,9 +478,9 @@ func TestTopLevelFunctionCalls(t *testing.T) {
 		{
 			name: "secrets with function call argument",
 			script: `
-			getSecrets(getValues());
+			getSecrets([getValues()]);
 			function stateOne() { return finish(); }`,
-			errCount: 1,
+			errCount: 2,
 		},
 	}
 
@@ -633,7 +633,7 @@ func TestComplexScenarios(t *testing.T) {
 		{
 			name: "complete valid workflow",
 			script: `
-			const secrets = getSecrets("db-creds");
+			const secrets = getSecrets(["db-creds"]);
 			
 			generateAction({
 				type: "local",
