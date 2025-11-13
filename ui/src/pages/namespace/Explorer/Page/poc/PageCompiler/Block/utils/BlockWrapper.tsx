@@ -24,6 +24,7 @@ import { twMergeClsx } from "~/util/helpers";
 import { useDndContext } from "@dnd-kit/core";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 import { useValidateDropzone } from "./useValidateDropzone";
+import { useVariableArrayResolver } from "../../primitives/Variable/utils/useVariableArrayResolver";
 
 type BlockWrapperProps = {
   blockPath: BlockPathType;
@@ -40,6 +41,8 @@ const EditorBlockWrapper = ({
   const { panel, setPanel } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
   const contextVariables = useVariablesContext();
+  const resolveVariableArray = useVariableArrayResolver();
+
   const [localVariables, setLocalVariables] = useState<LocalVariables>({
     this: {},
   });
@@ -48,13 +51,26 @@ const EditorBlockWrapper = ({
   const dndContext = useDndContext();
   const isDragging = !!dndContext.active;
 
-  const variables = useMemo(
-    () =>
-      block.type === "form"
-        ? { ...contextVariables, ...localVariables }
-        : contextVariables,
-    [block, contextVariables, localVariables]
-  );
+  // These variables are exposed to the editor side panel via the dropzone
+  // payload, because in the DOM, it lives outside the scope of the page.
+  // For editing forms, we need to add the "this" namespace. For editing
+  // tables, we need to add the "loop.id" namespace used in the table.
+  const variables = useMemo(() => {
+    if (block.type === "form") {
+      return { ...contextVariables, ...localVariables };
+    }
+    if (block.type === "table") {
+      const loop = block.data;
+      const variableArray = resolveVariableArray(loop.data);
+      if (variableArray.success)
+        return {
+          ...contextVariables,
+          ...{ loop: { [loop.id]: variableArray.data[0] } },
+        };
+      console.warn(`Could not extract loop variables for ${block.data.id}`);
+    }
+    return contextVariables;
+  }, [block, contextVariables, localVariables, resolveVariableArray]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
