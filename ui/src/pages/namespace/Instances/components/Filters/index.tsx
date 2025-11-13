@@ -341,28 +341,23 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                 />
               )) ||
               ((selectedField === "createdAtGt" ||
-                selectedField === "createdAtLt") &&
-                (() => {
-                  const operator =
-                    selectedField === "createdAtGt" ? "gt" : "lt";
-                  return (
-                    <DatePicker
-                      date={filters[selectedField]?.value}
-                      heading={t(
-                        `pages.instances.list.filter.menuHeading.${selectedField}`
-                      )}
-                      onChange={(value) =>
-                        setFilter({
-                          [selectedField]: {
-                            type: selectedField,
-                            operator,
-                            value,
-                          },
-                        })
-                      }
-                    />
-                  );
-                })())}
+                selectedField === "createdAtLt") && (
+                <DatePicker
+                  date={filters[selectedField]?.value}
+                  heading={t(
+                    `pages.instances.list.filter.menuHeading.${selectedField}`
+                  )}
+                  onChange={(value) =>
+                    setFilter({
+                      [selectedField]: {
+                        type: selectedField,
+                        operator: selectedField === "createdAtGt" ? "gt" : "lt",
+                        value,
+                      },
+                    })
+                  }
+                />
+              ))}
           </PopoverContent>
         </Popover>
       )}
