@@ -109,8 +109,10 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	e.cache.NamespaceCache().Notify(r.Context(), cache.CacheNotify{
-		Key:    "namespaces",
-		Action: cache.CacheDelete,
+		Action: cache.CacheClear,
+	})
+	e.cache.FlowCache().Notify(r.Context(), cache.CacheNotify{
+		Action: cache.CacheClear,
 	})
 
 	writeOk(w)

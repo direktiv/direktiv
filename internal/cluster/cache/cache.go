@@ -17,6 +17,7 @@ const (
 	CacheUpdate CacheAction = "update"
 	CacheDelete CacheAction = "delete"
 	CacheCreate CacheAction = "create"
+	CacheClear  CacheAction = "clear"
 )
 
 type Manager interface {

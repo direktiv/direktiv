@@ -133,5 +133,10 @@ func (c *Cache[T]) Set(key string, value T) {
 }
 
 func (c *Cache[T]) Notify(ctx context.Context, notify cache.CacheNotify) {
-	c.Delete(notify.Key)
+	switch notify.Action {
+	case cache.CacheClear:
+		c.cache.Clear()
+	case cache.CacheDelete:
+		c.cache.Del(notify.Key)
+	}
 }
