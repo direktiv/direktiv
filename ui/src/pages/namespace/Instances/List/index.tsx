@@ -79,7 +79,7 @@ const InstancesListPage = () => {
                 {t("pages.instances.list.tableHeader.invoker")}
               </TableHeaderCell>
               <TableHeaderCell className="w-28">
-                {t("pages.instances.list.tableHeader.state")}
+                {t("pages.instances.list.tableHeader.status")}
               </TableHeaderCell>
               <TableHeaderCell className="w-40">
                 {t("pages.instances.list.tableHeader.startedAt")}
