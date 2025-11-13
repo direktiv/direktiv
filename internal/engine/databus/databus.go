@@ -7,6 +7,7 @@ import (
 	"slices"
 
 	"github.com/direktiv/direktiv/internal/api/filter"
+	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	"github.com/direktiv/direktiv/internal/engine"
 	intNats "github.com/direktiv/direktiv/internal/nats"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
@@ -18,13 +19,15 @@ type DataBus struct {
 	js           nats.JetStreamContext
 	statusCache  *StatusCache
 	historyCache *StatusCache
+	pubSub       pubsub.EventBus
 }
 
-func New(js nats.JetStreamContext) *DataBus {
+func New(js nats.JetStreamContext, pubSub pubsub.EventBus) *DataBus {
 	return &DataBus{
 		js:           js,
 		statusCache:  NewStatusCache(),
 		historyCache: NewStatusCache(),
+		pubSub:       pubSub,
 	}
 }
 
@@ -185,6 +188,6 @@ func (d *DataBus) PublishIgniteAction(ctx context.Context, svcID string) error {
 	// 	return err
 	// }
 
-	_, err := d.js.Publish(intNats.StreamIgniteAction.Name(), []byte(svcID), nats.Context(ctx))
+	err := d.pubSub.Publish(pubsub.SubjServiceIgnite, []byte(svcID))
 	return err
 }
