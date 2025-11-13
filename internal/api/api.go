@@ -96,6 +96,7 @@ func New(app InitializeArgs) (*Server, error) {
 		engine:          app.Engine,
 		registryManager: app.RegistryManager,
 		cache:           app.CacheManager,
+		sManager:        app.SecretsManager,
 	}
 	mirrorsCtr := &mirrorsController{
 		db:  app.DB,

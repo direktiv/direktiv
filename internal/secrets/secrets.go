@@ -189,6 +189,23 @@ func (sm *Manager) Delete(ctx context.Context, namespace, name string) error {
 	return err
 }
 
+func (sm *Manager) DeleteForNamespace(ctx context.Context, namespace string) error {
+	slog.Info("deleting secrets in a namespace", slog.String("namespace", namespace))
+
+	secrets, err := sm.GetAll(ctx, namespace)
+	if err != nil {
+		return err
+	}
+	for _, secret := range secrets {
+		err := sm.Delete(ctx, namespace, secret.Name)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (sm *Manager) getKubernetesSecret(ctx context.Context, namespace, name string) (*corev1.Secret, error) {
 	kname := toKubernetesName(namespace, name)
 

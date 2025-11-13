@@ -26,6 +26,7 @@ type nsController struct {
 	bus             pubsub.EventBus
 	engine          *engine.Engine
 	cache           cache.Manager
+	sManager        core.SecretsManager
 }
 
 func (e *nsController) mountRouter(r chi.Router) {
@@ -101,6 +102,11 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 		slog.With("component", "api").
 			Error("deleting registry namespace", "err", err)
 	}
+	err = e.sManager.DeleteForNamespace(r.Context(), name)
+	if err != nil {
+		slog.With("component", "api").
+			Error("deleting secrets namespace", "err", err)
+	}
 
 	// TODO: yassir, check the logic of sending events on ns change in all actions.
 	err = e.bus.Publish(r.Context(), intNats.StreamNamespaceChange.Name(), nil)
@@ -112,6 +118,9 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 		Action: cache.CacheClear,
 	})
 	e.cache.FlowCache().Notify(r.Context(), cache.CacheNotify{
+		Action: cache.CacheClear,
+	})
+	e.cache.SecretsCache().Notify(r.Context(), cache.CacheNotify{
 		Action: cache.CacheClear,
 	})
 
@@ -323,8 +332,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	e.cache.NamespaceCache().Notify(r.Context(), cache.CacheNotify{
-		Key:    "namespaces",
-		Action: cache.CacheCreate,
+		Action: cache.CacheClear,
 	})
 
 	writeJSON(w, namespaceAPIObject(ns, mConfig))

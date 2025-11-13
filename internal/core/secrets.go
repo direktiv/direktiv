@@ -20,4 +20,5 @@ type SecretsManager interface {
 	GetAll(ctx context.Context, namespace string) ([]*Secret, error)
 	Update(ctx context.Context, namespace string, secret *Secret) (*Secret, error)
 	Delete(ctx context.Context, namespace, name string) error
+	DeleteForNamespace(ctx context.Context, namespace string) error
 }
