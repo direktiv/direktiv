@@ -1,13 +1,13 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
-import { DirektivPagesSchema } from "~/pages/namespace/Explorer/Page/poc/schema";
 import { apiFactory } from "~/api/apiFactory";
 import { removeTrailingSlash } from "~/api/files/utils";
+import z from "zod";
 
 const getPage = apiFactory({
   url: ({ path }: { path: string }) => `${removeTrailingSlash(path)}/page.json`,
   method: "GET",
-  schema: DirektivPagesSchema,
+  schema: z.unknown(),
 });
 
 const pageQueryOptions = (path: string) =>
