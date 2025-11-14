@@ -27,9 +27,7 @@ describe('Test js engine', () => {
 		{
 			name: 'basicAction.wf.ts',
 			input: { foo: 'bar' },
-			wantOutput: JSON.stringify(
-				'{"data":{"foo":"bar","input":{"foo":"bar"}}}',
-			),
+			wantOutput: JSON.stringify({ foo: 'bar', input: { foo: 'bar' }}),
 			wantErrorMessage: null,
 			wantStatus: 'complete',
 			file: `
@@ -40,9 +38,12 @@ describe('Test js engine', () => {
 		});
 		function stateOne(payload) {
 			let result = echo({ 
-				data: {foo: "bar", input: payload}
+				body: {foo: "bar", input: payload}
+				headers: {
+				"content-type": "application/json"
+				}
 			});
-			return finish(result.body);
+			return finish(result.json);
 		}
 `,
 		},
