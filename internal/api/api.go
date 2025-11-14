@@ -109,7 +109,7 @@ func New(app InitializeArgs) (*Server, error) {
 		scheduler: app.Scheduler,
 	}
 	notificationsCtr := &notificationsController{
-		db: app.DB,
+		sManager: app.SecretsManager,
 	}
 	metricsCtr := &metricsController{
 		db:     app.DB,

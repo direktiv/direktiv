@@ -16,7 +16,6 @@ type Store interface {
 	// Mirror returns datastore.MirrorStore, is responsible for reading and writing mirrors information.
 	Mirror() MirrorStore
 
-	Secrets() SecretsStore
 	HeartBeats() HeartBeatsStore
 
 	RuntimeVariables() RuntimeVariablesStore

@@ -11,7 +11,6 @@ type Secret struct {
 	Name      string    `json:"name"`
 	Data      []byte    `json:"data"`
 	CreatedAt time.Time `json:"createdAt"`
-	// UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type SecretsManager interface {
