@@ -8,15 +8,16 @@ import helpers from '../common/helpers'
 import request from '../common/request'
 
 function randomLowercaseString(length) {
-	const letters = "abcdefghijklmnopqrstuvwxyz";
-	let result = "";
+	const letters = 'abcdefghijklmnopqrstuvwxyz'
+	let result = ''
 	for (let i = 0; i < length; i++) {
-		result += letters[Math.floor(Math.random() * 26)];
+		result += letters[Math.floor(Math.random() * 26)]
 	}
-	return result;
+	return result
 }
 
-const namespace = randomLowercaseString(3)  + "-" + basename(fileURLToPath(import.meta.url))
+const namespace =
+	randomLowercaseString(3) + '-' + basename(fileURLToPath(import.meta.url))
 
 describe('Test js engine', () => {
 	beforeAll(helpers.deleteAllNamespaces)
@@ -26,7 +27,9 @@ describe('Test js engine', () => {
 		{
 			name: 'basicAction.wf.ts',
 			input: { foo: 'bar' },
-			wantOutput: JSON.stringify("{\"data\":{\"foo\":\"bar\",\"input\":{\"foo\":\"bar\"}}}"),
+			wantOutput: JSON.stringify(
+				'{"data":{"foo":"bar","input":{"foo":"bar"}}}',
+			),
 			wantErrorMessage: null,
 			wantStatus: 'complete',
 			file: `
