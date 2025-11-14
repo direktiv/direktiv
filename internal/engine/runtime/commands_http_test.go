@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"testing"
+	"time"
 
 	"github.com/direktiv/direktiv/internal/engine/runtime"
 	"github.com/google/uuid"
@@ -83,7 +84,7 @@ func TestHttpRequest(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestHttpFetch(t *testing.T) {
+func TestHttpAsyncFetch(t *testing.T) {
 	// Create container request
 	req := testcontainers.ContainerRequest{
 		Image:        "mendhak/http-https-echo:latest",
@@ -106,30 +107,22 @@ func TestHttpFetch(t *testing.T) {
 
 	script := `
 		function start() {
-			log(now().format("2006-01-02"))
 			var r = fetch("` + fmt.Sprintf("http://localhost:%s", mappedPort.Port()) + `", {
-				 method: "GET",
-				 headers: {
-					"Content-Type": "application/json",
-					"Header1": "whatever",
-					"X-Custom-Header": "customValue",
-				},
+				method: "GET",
 				body: JSON.stringify({
 					key: "value",
 				}),
 			})
 			r.then(data => {
-				data.headers.Etag = undefined
-				data.headers.Date = undefined
-				log('Data:', JSON.stringify(data))
-				return finish(data)
+				data.url = undefined
+				data.headers = undefined
+				return finish(JSON.stringify(data))
 			})
 			.catch(error => {throw(error)});
 		}
 	`
 	var result []byte
 	onFinish := func(output []byte) error {
-		fmt.Println(">>>>>>>>>", string(output))
 		result = output
 		return nil
 	}
@@ -141,6 +134,12 @@ func TestHttpFetch(t *testing.T) {
 		Fn:       "start",
 	}, onFinish, runtime.NoOnTransition, runtime.NoOnAction)
 
+	for i := 0; i < 10; i++ {
+		if len(result) != 0 {
+			break
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
 	require.NoError(t, err)
-	require.Equal(t, "Hello", result)
+	require.Equal(t, `"{\"responseType\":\"basic\",\"error\":\"\",\"ok\":true,\"redirected\":false,\"status\":200,\"statusText\":\"200 OK\"}"`, string(result))
 }
