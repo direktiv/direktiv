@@ -1,6 +1,8 @@
 package target
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,10 +11,13 @@ import (
 
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/gateway"
+	"gopkg.in/yaml.v3"
 )
 
 type PagePlugin struct {
-	File string `mapstructure:"file"`
+	File            string `mapstructure:"file"`
+	pageFileContent string
+	namespace       string
 }
 
 func (tnf *PagePlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
@@ -22,6 +27,7 @@ func (tnf *PagePlugin) NewInstance(config core.PluginConfig) (core.Plugin, error
 	if err != nil {
 		return nil, err
 	}
+	tnf.namespace = config.Namespace
 
 	if pl.File == "" {
 		return nil, fmt.Errorf("file is required")
@@ -45,6 +51,11 @@ func (tnf *PagePlugin) NewInstance(config core.PluginConfig) (core.Plugin, error
 		body, _ := io.ReadAll(res.Body)
 		return nil, fmt.Errorf("couldn't fetch page file: %s", body)
 	}
+	data, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't read page file: %w", err)
+	}
+	pl.pageFileContent = string(data)
 
 	return pl, nil
 }
@@ -54,10 +65,39 @@ func (tnf *PagePlugin) Type() string {
 }
 
 func (tnf *PagePlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte("Hello world from Pages!"))
+	if gateway.ExtractContextURLPattern(r) == "" {
+		gateway.WriteInternalError(r, w, errors.New("empty extract pattern"), "plugin couldn't parse url")
 
-	return w, r
+		return nil, nil
+	}
+	parts := strings.Split(r.URL.Path, gateway.ExtractContextURLPattern(r))
+	if len(parts) != 2 {
+		gateway.WriteInternalError(r, w, errors.New("unexpected request url"), "plugin couldn't parse url")
+
+		return nil, nil
+	}
+	if parts[1] == "" || parts[1] == "index" || parts[1] == "/index.html" {
+		http.ServeFile(w, r, "/app/ui/ui-pages.html")
+
+		return w, r
+	}
+
+	if parts[1] == "page.json" {
+		p := map[string]any{}
+		err := yaml.Unmarshal([]byte(tnf.pageFileContent), &p)
+		if err != nil {
+			gateway.WriteInternalError(r, w, err, "plugin couldn't parse page file")
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(p)
+
+		return w, r
+	}
+
+	gateway.WriteJSONError(w, http.StatusNotFound, "", "gateway couldn't pages route")
+
+	return nil, nil
 }
 
 func init() {

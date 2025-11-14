@@ -4,6 +4,8 @@ import { QueryType } from "../../schema/procedures/query";
 import { useTranslation } from "react-i18next";
 import { useUrlGenerator } from "./utils";
 
+export const queryProviderCacheNamespace = "query-provider";
+
 export const usePageSuspenseQueries = (queries: QueryType[]) => {
   const { t } = useTranslation();
   const generateUrl = useUrlGenerator();
@@ -12,7 +14,7 @@ export const usePageSuspenseQueries = (queries: QueryType[]) => {
       const url = generateUrl(query);
       const { id } = query;
       return queryOptions({
-        queryKey: [id, url],
+        queryKey: [queryProviderCacheNamespace, id, url],
         queryFn: async () => {
           const response = await fetch(url);
           if (!response.ok) {
