@@ -1847,11 +1847,17 @@
             "valuesPlaceholder": "Select option",
             "type": {
               "variable-select-options": "Variable",
-              "array": "Static"
+              "static-select-options": "Static"
             },
-            "dataPlaceholder": "path to an array of objects",
-            "labelPlaceholder": "path to the label property",
-            "valuePlaceholder": "path to the value property"
+            "variable": {
+              "dataPlaceholder": "path to an array of objects",
+              "labelPlaceholder": "path to the label property",
+              "valuePlaceholder": "path to the value property"
+            },
+            "static": {
+              "labelPlaceholder": "label",
+              "valuePlaceholder": "value"
+            }
           }
         }
       },

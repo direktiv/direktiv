@@ -95,26 +95,41 @@ export const Select = ({
             </SelectDesignComponent>
           )}
         />
-        {form.watch("values.type") === "array" && (
+        {form.watch("values.type") === "static-select-options" && (
           <Controller
             control={form.control}
             name="values.value"
             render={({ field }) => {
-              const parsedValue = z.array(z.string()).safeParse(field.value);
+              const parsedValue = z
+                .array(z.object({ label: z.string(), value: z.string() }))
+                .safeParse(field.value);
               const defaultValue = parsedValue.success ? parsedValue.data : [];
               return (
                 <ArrayForm
                   value={defaultValue}
                   onChange={field.onChange}
-                  emptyItem=""
+                  emptyItem={{ label: "", value: "" }}
                   renderItem={({ value, setValue }) => (
-                    <Input
-                      placeholder={t(
-                        "direktivPage.blockEditor.blockForms.formPrimitives.select.valuesPlaceholder"
-                      )}
-                      value={value}
-                      onChange={(e) => setValue(e.target.value)}
-                    />
+                    <div className="flex gap-2">
+                      <SmartInput
+                        value={value.value}
+                        onUpdate={(newValue) =>
+                          setValue({ ...value, value: newValue })
+                        }
+                        placeholder={t(
+                          "direktivPage.blockEditor.blockForms.formPrimitives.select.static.valuePlaceholder"
+                        )}
+                      />
+                      <SmartInput
+                        value={value.label}
+                        onUpdate={(newLabel) =>
+                          setValue({ ...value, label: newLabel })
+                        }
+                        placeholder={t(
+                          "direktivPage.blockEditor.blockForms.formPrimitives.select.static.labelPlaceholder"
+                        )}
+                      />
+                    </div>
                   )}
                 />
               );
@@ -134,7 +149,7 @@ export const Select = ({
                     value={value}
                     onUpdate={(value) => field.onChange(value)}
                     placeholder={t(
-                      "direktivPage.blockEditor.blockForms.formPrimitives.select.dataPlaceholder"
+                      "direktivPage.blockEditor.blockForms.formPrimitives.select.variable.dataPlaceholder"
                     )}
                   />
                 );
@@ -143,13 +158,13 @@ export const Select = ({
             <Input
               {...form.register("values.value")}
               placeholder={t(
-                "direktivPage.blockEditor.blockForms.formPrimitives.select.valuePlaceholder"
+                "direktivPage.blockEditor.blockForms.formPrimitives.select.variable.valuePlaceholder"
               )}
             />
             <Input
               {...form.register("values.label")}
               placeholder={t(
-                "direktivPage.blockEditor.blockForms.formPrimitives.select.labelPlaceholder"
+                "direktivPage.blockEditor.blockForms.formPrimitives.select.variable.labelPlaceholder"
               )}
             />
           </>

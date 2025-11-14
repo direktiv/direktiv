@@ -309,7 +309,7 @@ export const blockTypes: BlockTypeConfig[] = [
     formComponent: Select,
     defaultValues: {
       id: "",
-      values: { type: "array", value: [] },
+      values: { type: "static-select-options", value: [] },
       defaultValue: "",
       description: "",
       label: "",

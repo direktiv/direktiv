@@ -263,8 +263,21 @@ describe("required fields", () => {
                   optional: false,
                   type: "form-select",
                   values: {
-                    type: "array",
-                    value: ["one", "two", "three"],
+                    type: "static-select-options",
+                    value: [
+                      {
+                        label: "One",
+                        value: "one",
+                      },
+                      {
+                        label: "Two",
+                        value: "two",
+                      },
+                      {
+                        label: "Three",
+                        value: "three",
+                      },
+                    ],
                   },
                   defaultValue: "",
                 },
@@ -298,8 +311,21 @@ describe("required fields", () => {
                   optional: false,
                   type: "form-select",
                   values: {
-                    type: "array",
-                    value: ["one", "two", "three"],
+                    type: "static-select-options",
+                    value: [
+                      {
+                        label: "One",
+                        value: "one",
+                      },
+                      {
+                        label: "Two",
+                        value: "two",
+                      },
+                      {
+                        label: "Three",
+                        value: "three",
+                      },
+                    ],
                   },
                   defaultValue: "one",
                 },
@@ -502,8 +528,21 @@ describe("required fields", () => {
                   optional: false,
                   type: "form-select",
                   values: {
-                    type: "array",
-                    value: ["one", "two", "three"],
+                    type: "static-select-options",
+                    value: [
+                      {
+                        label: "One",
+                        value: "one",
+                      },
+                      {
+                        label: "Two",
+                        value: "two",
+                      },
+                      {
+                        label: "Three",
+                        value: "three",
+                      },
+                    ],
                   },
                   defaultValue: "",
                 },
@@ -567,8 +606,21 @@ describe("required fields", () => {
                   optional: false,
                   type: "form-select",
                   values: {
-                    type: "array",
-                    value: ["one", "two", "three"],
+                    type: "static-select-options",
+                    value: [
+                      {
+                        label: "One",
+                        value: "one",
+                      },
+                      {
+                        label: "Two",
+                        value: "two",
+                      },
+                      {
+                        label: "Three",
+                        value: "three",
+                      },
+                    ],
                   },
                   defaultValue: "one",
                 },

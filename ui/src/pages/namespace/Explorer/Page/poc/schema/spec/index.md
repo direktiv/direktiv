@@ -144,11 +144,11 @@ Form primitives are the basic input elements that collect user data within forms
 
 #### Select `Block`
 
-| Attribute      | Type                                     | Description                                                                                                         |
-| -------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `type`         | `"form-select"`                          |                                                                                                                     |
-| `values`       | `Array<string>`, `VariableSelectOptions` | Available options. Either a static array of strings or a variable mapping consisting of path to an array of objects |
-| `defaultValue` | `TemplateString`                         | Default selected value                                                                                              |
+| Attribute      | Type                                           | Description                                                                                                         |
+| -------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `type`         | `"form-select"`                                |                                                                                                                     |
+| `values`       | `StaticSelectOptions`, `VariableSelectOptions` | Available options. Either a static array of objects or a variable mapping consisting of path to an array of objects |
+| `defaultValue` | `TemplateString`                               | Default selected value                                                                                              |
 
 #### Textarea `Block`
 
@@ -335,6 +335,20 @@ An extended key-value pair that supports multiple data types for the value, incl
 | --------- | ------------ | -------------------- |
 | `key`     | `"variable"` |                      |
 | `value`   | `Variable`   | a path to a variable |
+
+## `SelectOption`
+
+| Attribute | Type             | Description |
+| --------- | ---------------- | ----------- |
+| `label`   | `TemplateString` |             |
+| `value`   | `TemplateString` |             |
+
+## `StaticSelectOptions`
+
+| Attribute | Type                      | Description                    |
+| --------- | ------------------------- | ------------------------------ |
+| `type`    | `"static-select-options"` |                                |
+| `value`   | `SelectOption[]`          | Array of select option objects |
 
 ## `VariableSelectOptions`
 

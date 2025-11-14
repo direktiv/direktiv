@@ -3,9 +3,14 @@ import { TemplateString } from "../../primitives/templateString";
 import { Variable } from "../../primitives/variable";
 import { z } from "zod";
 
-const ArraySchema = z.object({
-  type: z.literal("array"),
-  value: z.array(z.string()),
+const SelectOption = z.object({
+  label: TemplateString,
+  value: TemplateString,
+});
+
+const StaticSelectOptions = z.object({
+  type: z.literal("static-select-options"),
+  value: z.array(SelectOption),
 });
 
 const VariableSelectOptions = z.object({
@@ -17,10 +22,13 @@ const VariableSelectOptions = z.object({
 
 const ValuesSchema = z.discriminatedUnion("type", [
   VariableSelectOptions,
-  ArraySchema,
+  StaticSelectOptions,
 ]);
 
-export const allowedValuesTypes = ["variable-select-options", "array"] as const;
+export const allowedValuesTypes = [
+  "variable-select-options",
+  "static-select-options",
+] as const;
 
 export const ValuesTypeSchema = z.enum(allowedValuesTypes);
 
