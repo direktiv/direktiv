@@ -1,7 +1,6 @@
 package nats
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 
@@ -12,7 +11,6 @@ import (
 type Bus struct {
 	nc     *nats.Conn
 	logger *slog.Logger
-	js     nats.JetStreamContext
 }
 
 func (b *Bus) Close() error {
@@ -33,25 +31,34 @@ func New(nc NatsConnect, logger *slog.Logger) (*Bus, error) {
 		return nil, fmt.Errorf("nats connect: %w", err)
 	}
 
-	js, err := conn.JetStream()
+	return &Bus{nc: conn, logger: logger}, nil
+}
+
+func (b *Bus) Publish(subject pubsub.Subject, data []byte) error {
+	err := b.nc.Publish(string(subject), data)
 	if err != nil {
-		return nil, fmt.Errorf("creating jetstream: %w", err)
+		return err
 	}
 
-	return &Bus{nc: conn, logger: logger, js: js}, nil
+	return nil
 }
 
-func (b *Bus) Subscribe(ctx context.Context, subject string, h pubsub.Handler) error {
-	_, err := b.js.Subscribe(subject, func(msg *nats.Msg) {
+func (b *Bus) Subscribe(subject pubsub.Subject, h pubsub.Handler) error {
+	wrapper := func(msg *nats.Msg) {
+		// Protect handlers; never let a panic kill the NATS dispatcher.
+		defer func() {
+			if r := recover(); r != nil {
+				b.logger.Error("panic in pubsub handler", "subject", msg.Subject, "recover", r)
+			}
+		}()
+
 		h(msg.Data)
+	}
 
-	}, nats.AckNone())
+	_, err := b.nc.Subscribe(string(subject), wrapper)
+	if err != nil {
+		return err
+	}
 
-	return err
-}
-
-func (b *Bus) Publish(ctx context.Context, subject string, data []byte) error {
-	_, err := b.js.Publish(subject, data, nats.Context(ctx))
-
-	return err
+	return nil
 }

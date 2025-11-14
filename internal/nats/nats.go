@@ -16,36 +16,6 @@ import (
 )
 
 var (
-	// internal events
-	StreamFileChange = newDescriptor("filesystem.change",
-		&nats.StreamConfig{
-			Storage:    nats.FileStorage,
-			Retention:  nats.LimitsPolicy,
-			Duplicates: 0,
-		}, nil)
-
-	StreamNamespaceChange = newDescriptor("namespace.change",
-		&nats.StreamConfig{
-			Storage:    nats.FileStorage,
-			Retention:  nats.LimitsPolicy,
-			Duplicates: 0,
-		}, nil)
-
-	StreamCacheDelete = newDescriptor("cache.delete",
-		&nats.StreamConfig{
-			Storage:    nats.FileStorage,
-			Retention:  nats.LimitsPolicy,
-			Duplicates: 0,
-		}, nil)
-
-	// engine events
-	StreamIgniteAction = newDescriptor("ignite.action",
-		&nats.StreamConfig{
-			Storage:    nats.FileStorage,
-			Retention:  nats.LimitsPolicy,
-			Duplicates: 0,
-		}, nil)
-
 	StreamSchedRule = newDescriptor("sched.rule",
 		&nats.StreamConfig{
 			Storage:   nats.FileStorage,
@@ -113,10 +83,6 @@ var allDescriptors = []*Descriptor{
 	StreamSchedRule,
 	StreamSchedTask,
 	StreamEngineQueue,
-	StreamIgniteAction,
-	StreamFileChange,
-	StreamCacheDelete,
-	StreamNamespaceChange,
 }
 
 type Conn = nats.Conn

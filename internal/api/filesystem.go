@@ -15,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/internal/compiler"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
-	intNats "github.com/direktiv/direktiv/internal/nats"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/go-chi/chi/v5"
@@ -187,7 +186,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 	// TODO: yassir, check the logic of sending events on fs change in all actions.
 	// Publish pubsub event.
 	if file.Typ.IsDirektivSpecFile() {
-		err = e.bus.Publish(r.Context(), intNats.StreamFileChange.Name(), nil)
+		err = e.bus.Publish(pubsub.SubjFileSystemChange, nil)
 		if err != nil {
 			slog.Error("pubsub publish", "err", err)
 		}
@@ -259,7 +258,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 	// publish pubsub event for gateway, consumer, services
 	if newFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.Publish(r.Context(), intNats.StreamFileChange.Name(), nil)
+		err = e.bus.Publish(pubsub.SubjFileSystemChange, nil)
 		// nolint:staticcheck
 		if err != nil {
 			slog.With("component", "api").
@@ -397,7 +396,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	// Publish pubsub event (rename).
 	// if req.Path != "" && updatedFile.Typ.IsDirektivSpecFile() {
 	if updatedFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.Publish(r.Context(), intNats.StreamFileChange.Name(), nil)
+		err = e.bus.Publish(pubsub.SubjFileSystemChange, nil)
 		if err != nil {
 			slog.Error("pubsub publish", "err", err)
 		}

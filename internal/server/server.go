@@ -12,6 +12,7 @@ import (
 	"github.com/direktiv/direktiv/internal/api"
 	"github.com/direktiv/direktiv/internal/cluster/cache/memcache"
 	"github.com/direktiv/direktiv/internal/cluster/certs"
+	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	natspubsub "github.com/direktiv/direktiv/internal/cluster/pubsub/nats"
 	"github.com/direktiv/direktiv/internal/compiler"
 	"github.com/direktiv/direktiv/internal/core"
@@ -182,7 +183,7 @@ func Start(lc *lifecycle.Manager) error {
 		if err != nil {
 			return fmt.Errorf("start service-manager, err: %w", err)
 		}
-		app.PubSub.Subscribe(lc.Context(), intNats.StreamIgniteAction.Name(), func(data []byte) {
+		app.PubSub.Subscribe(pubsub.SubjServiceIgnite, func(data []byte) {
 			// var svc core.ServiceFileData
 			// err := json.Unmarshal(data, &svc)
 			// if err != nil {
@@ -203,13 +204,13 @@ func Start(lc *lifecycle.Manager) error {
 			}
 		})
 
-		app.PubSub.Subscribe(lc.Context(), intNats.StreamFileChange.Name(), func(_ []byte) {
+		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
 			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
 		})
-		app.PubSub.Subscribe(lc.Context(), intNats.StreamNamespaceChange.Name(), func(_ []byte) {
+		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
 			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
 		})
-		app.PubSub.Subscribe(lc.Context(), intNats.StreamNamespaceChange.Name(), func(_ []byte) {
+		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
 			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
 		})
 		// call at least once before booting
@@ -226,7 +227,7 @@ func Start(lc *lifecycle.Manager) error {
 
 		slog.Info("initializing engine")
 		app.Engine, err = engine.NewEngine(
-			databus.New(js),
+			databus.New(js, app.PubSub),
 			comp,
 			js,
 		)
@@ -260,10 +261,10 @@ func Start(lc *lifecycle.Manager) error {
 		slog.Info("initializing gateway manager")
 		app.GatewayManager = gateway.NewManager(app.SecretsManager)
 
-		app.PubSub.Subscribe(lc.Context(), intNats.StreamFileChange.Name(), func(_ []byte) {
+		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
 			renderGatewayFiles(app.DB, app.GatewayManager)
 		})
-		app.PubSub.Subscribe(lc.Context(), intNats.StreamNamespaceChange.Name(), func(_ []byte) {
+		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
 			renderGatewayFiles(app.DB, app.GatewayManager)
 		})
 		// call at least once before booting
