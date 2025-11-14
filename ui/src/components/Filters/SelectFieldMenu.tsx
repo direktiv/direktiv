@@ -6,6 +6,8 @@ import {
   CommandList,
 } from "~/design/Command";
 
+import { Search } from "lucide-react";
+
 type Option<T> = {
   value: T;
   label: string;
@@ -23,7 +25,7 @@ export const SelectFieldMenu = <T extends string>({
   placeholder: string;
 }) => (
   <Command>
-    <CommandInput placeholder={placeholder} />
+    <CommandInput icon={Search} placeholder={placeholder} />
     <CommandList>
       <CommandGroup heading={heading}>
         {options.map((option) => (

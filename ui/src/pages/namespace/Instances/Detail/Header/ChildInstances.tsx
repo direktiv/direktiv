@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import Badge from "~/design/Badge";
 import RefreshButton from "~/design/RefreshButton";
+import { Search } from "lucide-react";
 import { statusToBadgeVariant } from "../../utils";
 import { t } from "i18next";
 import { useInstanceId } from "../store/instanceContext";
@@ -66,6 +67,7 @@ const ChildInstances = () => {
               <PopoverContent className="w-[500px] p-0">
                 <Command>
                   <CommandInput
+                    icon={Search}
                     placeholder={
                       moreInstances
                         ? t(

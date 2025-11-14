@@ -10,6 +10,10 @@ export const targetPluginTypes = {
     name: "target-flow",
     enterpriseOnly: false,
   },
+  targetPage: {
+    name: "target-page",
+    enterpriseOnly: false,
+  },
   targetFlowVar: {
     name: "target-flow-var",
     enterpriseOnly: false,

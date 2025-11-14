@@ -18,6 +18,7 @@ const (
 	FileTypeService   FileType = "service"
 	FileTypeFile      FileType = "file"
 	FileTypeDirectory FileType = "directory"
+	FileTypePage      FileType = "page"
 )
 
 var AllFileTypes = []FileType{
@@ -28,6 +29,7 @@ var AllFileTypes = []FileType{
 	FileTypeService,
 	FileTypeFile,
 	FileTypeDirectory,
+	FileTypePage,
 }
 
 func (t FileType) IsDirektivSpecFile() bool {
