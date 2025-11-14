@@ -108,14 +108,17 @@ func TestHttpAsyncFetch(t *testing.T) {
 	script := `
 		function start() {
 			var r = fetch("` + fmt.Sprintf("http://localhost:%s", mappedPort.Port()) + `", {
-				method: "GET",
+				method: "POST",
 				body: {
 					foo: "bar",
 				},
+				headers: {
+					"Content-Type": "application/json"
+				}
 			})
 			r.then(res => res.json())
 			.then(json => {
-				return finish(json.body)
+				return finish(json.json)
 			})
 			.catch(error => {throw(error)});
 		}
@@ -140,5 +143,5 @@ func TestHttpAsyncFetch(t *testing.T) {
 		time.Sleep(500 * time.Millisecond)
 	}
 	require.NoError(t, err)
-	require.Equal(t, `"{\"foo\":\"bar\"}"`, string(result))
+	require.Equal(t, `{"foo":"bar"}`, string(result))
 }

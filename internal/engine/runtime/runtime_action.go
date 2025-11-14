@@ -66,7 +66,6 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 		if err != nil {
 			panic(rt.vm.ToValue(fmt.Errorf("could not marshal payload for action: %s", err.Error())))
 		}
-
 		outData, err := callRetryable(rt.tracingPack.ctx, svcUrl, http.MethodPost, data, config.Retries)
 		if err != nil {
 			panic(rt.vm.ToValue(fmt.Errorf("calling action failed: %s", err.Error())))
