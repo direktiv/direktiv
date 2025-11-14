@@ -109,14 +109,13 @@ func TestHttpAsyncFetch(t *testing.T) {
 		function start() {
 			var r = fetch("` + fmt.Sprintf("http://localhost:%s", mappedPort.Port()) + `", {
 				method: "GET",
-				body: JSON.stringify({
-					key: "value",
-				}),
+				body: {
+					foo: "bar",
+				},
 			})
-			r.then(data => {
-				data.url = undefined
-				data.headers = undefined
-				return finish(JSON.stringify(data))
+			r.then(res => res.json())
+			.then(json => {
+				return finish(json.body)
 			})
 			.catch(error => {throw(error)});
 		}
@@ -141,5 +140,5 @@ func TestHttpAsyncFetch(t *testing.T) {
 		time.Sleep(500 * time.Millisecond)
 	}
 	require.NoError(t, err)
-	require.Equal(t, `"{\"responseType\":\"basic\",\"error\":\"\",\"ok\":true,\"redirected\":false,\"status\":200,\"statusText\":\"200 OK\"}"`, string(result))
+	require.Equal(t, `"{\"foo\":\"bar\"}"`, string(result))
 }

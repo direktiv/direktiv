@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/grafana/sobek"
@@ -99,7 +100,13 @@ func doHttpRequest(addr string, config any) (*httpResponseObject, error) {
 	}
 	u.RawQuery = q.Encode()
 
-	request, err := http.NewRequest(req.Method, u.String(), nil)
+	var rBody io.Reader = nil
+	if req.Body != nil {
+		b, _ = json.Marshal(req.Body)
+		rBody = strings.NewReader(string(b))
+	}
+
+	request, err := http.NewRequest(req.Method, u.String(), rBody)
 	if err != nil {
 		obj.err = err.Error()
 		return obj, nil
