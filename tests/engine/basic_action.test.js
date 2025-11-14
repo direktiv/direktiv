@@ -27,7 +27,7 @@ describe('Test js engine', () => {
 		{
 			name: 'basicAction.wf.ts',
 			input: { foo: 'bar' },
-			wantOutput: JSON.stringify({ foo: 'bar', input: { foo: 'bar' }}),
+			wantOutput: JSON.stringify({ foo: 'bar', input: { foo: 'bar' } }),
 			wantErrorMessage: null,
 			wantStatus: 'complete',
 			file: `
