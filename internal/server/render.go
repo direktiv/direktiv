@@ -116,7 +116,8 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 						Size:  action.Size,
 						Envs:  action.Envs,
 						// Patches: action.Patches,
-						Scale: 0,
+						// TODO: this need to be set to zero to enable zero scaling.
+						Scale: 1,
 					}
 
 					sd := &core.ServiceFileData{
