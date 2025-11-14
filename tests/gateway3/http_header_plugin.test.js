@@ -73,7 +73,7 @@ function stateFirst(input) {
 			.set('Header1', 'oldvalue')
 			.send({ hello: 'world' })
 
-		const got = JSON.parse(req.body.data.output)
+		const got = req.body.data
 
 		expect(req.statusCode).toEqual(200)
 		expect(got.headers.Hello[0]).toEqual('world')

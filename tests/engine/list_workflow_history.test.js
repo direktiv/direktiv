@@ -55,7 +55,7 @@ function stateThree(payload) {
 		it(`should invoke /${testCase.name} workflow`, async () => {
 			const res = await request(common.config.getDirektivBaseUrl())
 				.post(
-					`/api/v2/namespaces/${namespace}/instances?path=/${testCase.name}&wait=true`,
+					`/api/v2/namespaces/${namespace}/instances?path=/${testCase.name}&wait=true&fullOutput=true`,
 				)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
@@ -69,42 +69,48 @@ function stateThree(payload) {
 			expect(res.statusCode).toEqual(200)
 			console.log(res.body.data)
 			const history = res.body.data.map((item) => ({
-				type: item.type,
+				type: item.state,
 				fn: item.fn,
-				memory: item.memory,
+				input: item.input,
+				output: item.output,
 				sequence: item.sequence,
 			}))
-
+			console.log(history)
 			let firstSequence = history[0].sequence
 			expect(history).toEqual([
 				{
 					type: 'pending',
 					fn: 'stateOne',
-					memory: { foo: 'bar' },
+					input: { foo: 'bar' },
+					output: undefined,
 					sequence: firstSequence++,
 				},
 				{
 					type: 'running',
 					fn: 'stateOne',
-					memory: { foo: 'bar' },
+					input: { foo: 'bar' },
+					output: undefined,
 					sequence: firstSequence++,
 				},
 				{
 					type: 'running',
 					fn: 'stateTwo',
-					memory: { foo: 'bar', one: 1 },
+					input: { foo: 'bar' },
+					output: { foo: 'bar', one: 1 },
 					sequence: firstSequence++,
 				},
 				{
 					type: 'running',
 					fn: 'stateThree',
-					memory: { foo: 'bar', one: 1, two: 2 },
+					input: { foo: 'bar' },
+					output: { foo: 'bar', one: 1, two: 2 },
 					sequence: firstSequence++,
 				},
 				{
 					type: 'complete',
 					fn: undefined,
-					memory: { foo: 'bar', one: 1, three: 3, two: 2 },
+					input: { foo: 'bar' },
+					output: { foo: 'bar', one: 1, three: 3, two: 2 },
 					sequence: firstSequence++,
 				},
 			])

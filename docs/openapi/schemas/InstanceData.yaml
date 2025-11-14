@@ -1,0 +1,62 @@
+type: object
+description: filesystem node data
+properties:
+    createdAt:
+      type: string
+    endedAt:
+      type: string
+    definition:
+      type: string
+      description: Base64 encoded copy of the instance's workflow yaml at the time the instance was created.
+    errorCode:
+      type: string
+    flow:
+      type: array
+      description: list of states that the instance has executed
+      items:
+        type: string
+    id:
+      type: string
+    invoker:
+      type: string
+      enum: [api, event, cron]
+    lineage:
+      type: array
+      description: 'This will be an empty list if the instance is not a subflow. Otherwise, it will be an array containing information about how this instance relates to its parent, recursively.'
+      items:
+        type: object
+        properties:
+          branch:
+            type: integer
+          id:
+            type: string
+            description: instance ID
+          state:
+            type: string
+          step:
+            type: integer
+    path:
+      type: string
+    status:
+      type: string
+      enum:
+        - pending
+        - running
+        - complete
+        - failed
+        - cancelled
+    traceId:
+      type: string
+      description: This is currently a placeholder and shouldn't yet be used.
+    inputLength:
+      type: integer
+    input:
+      type: string
+    outputLength:
+      type: integer
+    output:
+      type: string
+    metadataLength:
+      type: integer
+    metadata:
+      type: string

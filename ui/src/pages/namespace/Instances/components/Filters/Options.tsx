@@ -7,30 +7,30 @@ import {
 } from "~/design/Command";
 import {
   FiltersObj,
+  InvokerValue,
   StatusValue,
-  TriggerValue,
+  invokerValues,
   statusValues,
-  triggerValues,
 } from "~/api/instances/query/utils";
 
 import { Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const optionMenus = {
-  STATUS: statusValues,
-  TRIGGER: triggerValues,
+  status: statusValues,
+  invoker: invokerValues,
 };
 
 type OptionsProps = {
   setFilter: (filter: FiltersObj) => void;
 } & (
   | {
-      value?: TriggerValue;
-      field: "TRIGGER";
+      value?: InvokerValue;
+      field: "invoker";
     }
   | {
       value?: StatusValue;
-      field: "STATUS";
+      field: "status";
     }
 );
 
@@ -41,11 +41,11 @@ const Options = ({ value, field, setFilter }: OptionsProps) => {
       <CommandInput
         icon={Search}
         autoFocus
-        placeholder={t("pages.instances.list.filter.placeholder.STATUS")}
+        placeholder={t([`pages.instances.list.filter.placeholder.${field}`])}
       />
       <CommandList>
         <CommandGroup
-          heading={t("pages.instances.list.filter.menuHeading.STATUS")}
+          heading={t([`pages.instances.list.filter.menuHeading.${field}`])}
         >
           {optionMenus[field].map((option) => (
             <CommandItem
@@ -55,8 +55,6 @@ const Options = ({ value, field, setFilter }: OptionsProps) => {
                 setFilter({
                   [field]: {
                     value: option,
-                    // TODO: Move this decision to the API layer?
-                    type: field === "TRIGGER" ? "CONTAINS" : "MATCH",
                   },
                 })
               }

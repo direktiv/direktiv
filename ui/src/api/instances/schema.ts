@@ -10,12 +10,7 @@ export const possibleInstanceStatuses = [
 
 const InstanceStatusSchema = z.enum(possibleInstanceStatuses);
 
-export const possibleTriggerValues = [
-  "api",
-  "cloudevent",
-  "instance",
-  "cron",
-] as const;
+export const possibleInvokerValues = ["api", "event", "cron"] as const;
 
 /**
  * example
@@ -62,10 +57,7 @@ const InstanceSchema = z.object({
   errorCode: z.string().nullable(),
   errorMessage: z.string().nullable(),
   /**
-   * either "api", "cron", "cloudevent" or "complete"
-   * if it's created as a subflow from another instance
-   * it's something like instance:%v, where %v is the
-   * instance ID of its parent
+   * either "api", "cron" or "event"
    */
   invoker: z.string(),
   definition: z.string(),

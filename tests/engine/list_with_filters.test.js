@@ -66,7 +66,7 @@ function stateOne(payload) {
 		it(`should invoke /${testCase.name} workflow`, async () => {
 			const res = await request(common.config.getDirektivBaseUrl())
 				.post(
-					`/api/v2/namespaces/${namespace}/instances?path=/${testCase.name}&wait=true`,
+					`/api/v2/namespaces/${namespace}/instances?path=/${testCase.name}&wait=true&fullOutput=true`,
 				)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
@@ -77,38 +77,62 @@ function stateOne(payload) {
 		{
 			query: '?filter[status]=complete',
 			wantCount: 2,
+			wantStatuses: ['complete', 'complete'],
 		},
 		{
 			query: '?filter[status][eq]=complete',
 			wantCount: 2,
+			wantStatuses: ['complete', 'complete'],
 		},
 		{
 			query: '?filter[status][in]=complete',
 			wantCount: 2,
+			wantStatuses: ['complete', 'complete'],
+		},
+		{
+			query: '?filter[status][cn]=comp',
+			wantCount: 2,
+			wantStatuses: ['complete', 'complete'],
 		},
 		{
 			query: '?filter[status]=failed',
 			wantCount: 1,
+			wantStatuses: ['failed'],
 		},
 		{
 			query: '?filter[status][eq]=failed',
 			wantCount: 1,
+			wantStatuses: ['failed'],
 		},
 		{
 			query: '?filter[status][in]=failed',
 			wantCount: 1,
+			wantStatuses: ['failed'],
+		},
+		{
+			query: '?filter[status][cn]=fail',
+			wantCount: 1,
+			wantStatuses: ['failed'],
 		},
 		{
 			query: '?filter[status][in]=complete,failed',
 			wantCount: 3,
+			wantStatuses: ['failed', 'complete', 'complete'],
 		},
 		{
 			query: '',
 			wantCount: 3,
+			wantStatuses: ['failed', 'complete', 'complete'],
+		},
+		{
+			query: '?filter[status][cn]=le',
+			wantCount: 3,
+			wantStatuses: ['failed', 'complete', 'complete'],
 		},
 		{
 			query: '?filter[status]=nothing',
 			wantCount: 0,
+			wantStatuses: [],
 		},
 	]
 
@@ -120,6 +144,10 @@ function stateOne(payload) {
 			)
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data.length).toBe(filterCase.wantCount)
+			expect(res.body.data.length).toBe(filterCase.wantStatuses.length)
+			expect(res.body.data.map((i) => i.status)).toEqual(
+				filterCase.wantStatuses,
+			)
 		})
 	}
 })

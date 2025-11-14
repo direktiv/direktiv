@@ -64,7 +64,7 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 		}
-		stats[v.StatusString()]++
+		stats[string(v.State)]++
 		stats["total"]++
 	}
 	if !foundMatching && workflowPath != "" {

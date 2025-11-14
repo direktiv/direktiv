@@ -17,8 +17,7 @@ export const Instances = () => {
     limit: 10,
     offset: 0,
     filters: {
-      STATUS: {
-        type: "MATCH",
+      status: {
         value: "complete",
       },
     },
@@ -33,8 +32,7 @@ export const Instances = () => {
     limit: 10,
     offset: 0,
     filters: {
-      STATUS: {
-        type: "MATCH",
+      status: {
         value: "failed",
       },
     },
