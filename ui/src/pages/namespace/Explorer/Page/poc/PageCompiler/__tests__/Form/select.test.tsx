@@ -45,8 +45,21 @@ describe("select input", () => {
               optional: false,
               type: "form-select",
               values: {
-                type: "array",
-                value: ["one", "two", "three"],
+                type: "static-select-options",
+                value: [
+                  {
+                    label: "One",
+                    value: "one",
+                  },
+                  {
+                    label: "Two",
+                    value: "two",
+                  },
+                  {
+                    label: "Three",
+                    value: "three",
+                  },
+                ],
               },
               defaultValue: "",
             },
@@ -58,7 +71,7 @@ describe("select input", () => {
     const select = screen.getByRole("combobox", {
       name: "dynamic select",
     }) as HTMLSelectElement;
-    expect(select.parentElement?.textContent).toContain("onetwothree");
+    expect(select.parentElement?.textContent).toContain("OneTwoThree");
   });
 
   test("values can be sourced from a variable", async () => {
