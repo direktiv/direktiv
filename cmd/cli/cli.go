@@ -1,4 +1,3 @@
-// nolint:forbidigo
 package cli
 
 import (

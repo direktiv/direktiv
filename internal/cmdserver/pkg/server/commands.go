@@ -21,7 +21,6 @@ func (e Env) toKV() string {
 	return fmt.Sprintf("%s=%s", e.Name, e.Value)
 }
 
-// nolint
 type Command struct {
 	Command         string `json:"command"`
 	Envs            []Env  `json:"envs"`
@@ -30,14 +29,12 @@ type Command struct {
 	SuppressOutput  bool   `json:"suppress_output"`
 }
 
-// nolint
 type CommandsResponse struct {
 	Error  string
 	Output interface{}
 	Stdout string `json:"-"`
 }
 
-// nolint
 func RunCommands(ctx context.Context, in Payload, info *ExecutionInfo) (interface{}, error) {
 	commandOutput := make([]CommandsResponse, 0)
 

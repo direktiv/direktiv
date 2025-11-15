@@ -90,7 +90,6 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (htt
 		o := val.ToObject(vm)
 		// make sure the input object got returned
 		if o.ExportType() == reflect.TypeFor[response]() {
-			// nolint checked before
 			responseDone := o.Export().(response)
 			for k, v := range responseDone.Headers {
 				for a := range v {

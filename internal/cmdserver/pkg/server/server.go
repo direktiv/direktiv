@@ -47,7 +47,6 @@ type ExecutionInfo struct {
 	Log    *Logger
 }
 
-// nolint
 func NewServer() *Server {
 	server := &http.Server{
 		Addr:         "0.0.0.0:8080",
@@ -76,7 +75,6 @@ func errWriter(w http.ResponseWriter, status int, errMsg string) {
 	}
 }
 
-// nolint
 func Handler() http.Handler {
 	r := chi.NewRouter()
 
@@ -205,7 +203,6 @@ func (s *Server) Start() {
 	s.Stop()
 }
 
-// nolint
 func (s *Server) Stop() {
 	slog.Info("stopping server")
 	s.httpServer.SetKeepAlivesEnabled(false)

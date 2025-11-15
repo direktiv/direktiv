@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-// nolint: containedctx
 type Manager struct {
 	ctx  context.Context
 	stop context.CancelFunc

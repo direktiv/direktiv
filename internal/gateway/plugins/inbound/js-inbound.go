@@ -138,7 +138,6 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (http
 		o := val.ToObject(vm)
 		// make sure the input object got returned
 		if o.ExportType() == reflect.TypeFor[request]() {
-			// nolint checked before
 			responseDone := o.Export().(request)
 			addHeader(responseDone.Headers, r.Header)
 
@@ -163,7 +162,6 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (http
 				w.WriteHeader(responseDone.Status)
 
 				// write response body
-				// nolint
 				w.Write([]byte(responseDone.Body))
 
 				return nil, nil

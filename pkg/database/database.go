@@ -21,7 +21,6 @@ import (
 //go:embed db_schema.sql
 var Schema string
 
-// nolint:usetesting
 func NewTestDB(t *testing.T) (*gorm.DB, error) {
 	t.Helper()
 	ctx := context.Background()

@@ -25,7 +25,6 @@ var (
 	varreg *regexp.Regexp
 )
 
-// nolint:gocritic,gochecknoinits,gosec
 func init() {
 	var err error
 	reg, err = regexp.Compile(RegexPattern)

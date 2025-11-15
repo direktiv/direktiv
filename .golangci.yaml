@@ -19,7 +19,6 @@ linters:
     - lll
     - mnd
     - musttag
-    - nolintlint
     - prealloc
     - tagliatelle
     - varnamelen
@@ -27,7 +26,6 @@ linters:
     - wsl
     - funcorder
     - wsl_v5
-
     - noinlineerr
 
   settings:
@@ -98,6 +96,159 @@ linters:
       - linters:
           - gochecknoinits
         path: internal/gateway/plugins/.*
+
+      - path: "cmd/cli/cli.go"
+        linters: [forbidigo]
+
+      - path: "cmd/cli/filesystem_helper.go"
+        linters: [forbidigo, gosec]
+
+      - path: "cmd/cli/uploader_helper.go"
+        linters: [gosec, nlreturn]
+
+      - path: "internal/api/filesystem.go"
+        linters: [gocognit]
+
+      - path: "internal/api/filter/filter.go"
+        linters: [nestif, nonamedreturns]
+
+      - path: "internal/api/jx.go"
+        linters: [contextcheck]
+
+      - path: "internal/api/middlewares.go"
+        linters: [contextcheck]
+
+      - path: "internal/api/secrets.go"
+        linters: [errcheck]
+
+      - path: "internal/cluster/cache/cache.go"
+        linters: [revive]
+
+      - path: "internal/cluster/cache/memcache/memcache.go"
+        linters: [exhaustive]
+
+      - path: "internal/cluster/certs/certs.go"
+        linters: [gosec]
+
+      - path: "internal/cluster/certs/updater.go"
+        linters: [gosec]
+
+      - path: "internal/cluster/pubsub/nats/pubsub.go"
+        linters: [revive]
+
+      - path: "internal/cmdserver/pkg/server/commands.go"
+        linters: [contextcheck, errcheck, modernize, nlreturn]
+
+      - path: "internal/cmdserver/pkg/server/server.go"
+        linters: [gocritic, gosec]
+
+      - path: "internal/compiler/ast.go"
+        linters: [gocognit, goconst, nestif, wastedassign]
+
+      - path: "internal/compiler/transpiler.go"
+        linters: [forcetypeassert]
+
+      - path: "internal/core/registry.go"
+        linters: [modernize]
+
+      - path: "internal/datastore/datasql/runtime_variables.go"
+        linters: [goconst]
+
+      - path: "internal/datastore/eventsstore.go"
+        linters: [godoclint]
+
+      - path: "internal/datastore/mirrors.go"
+        linters: [goconst, godoclint, interfacebloat]
+
+      - path: "internal/datastore/runtime_variables.go"
+        linters: [interfacebloat]
+
+      - path: "internal/datastore/traces.go"
+        linters: [modernize]
+
+      - path: "internal/engine/databus/databus.go"
+        linters: [unparam]
+
+      - path: "internal/engine/runtime/commands_http.go"
+        linters: [errcheck, forcetypeassert, gosec, noctx, revive]
+
+      - path: "internal/engine/runtime/runtime.go"
+        linters: [contextcheck, errcheck, forbidigo, revive]
+
+      - path: "internal/engine/runtime/runtime_action.go"
+        linters: [errcheck]
+
+      - path: "internal/engine/runtime/tracing.go"
+        linters: [containedctx, spancheck]
+
+      - path: "internal/engine/worker.go"
+        linters: [unparam]
+
+      - path: "internal/gateway/gateway.go"
+        linters: [contextcheck]
+
+      - path: "internal/gateway/plugins/inbound/js-inbound.go"
+        linters: [errcheck, forcetypeassert]
+
+      - path: "internal/gateway/plugins/target/instant-response.go"
+        linters: [errcheck]
+
+      - path: "internal/gateway/router.go"
+        linters: [gocognit]
+
+      - path: "internal/jqer/jqer.go"
+        linters: [errcheck, gocognit, gosec, makezero]
+
+      - path: "internal/mirroring/mirror.go"
+        linters: [contextcheck, gocognit]
+
+      - path: "internal/mirroring/source.go"
+        linters: [gosec]
+
+      - path: "internal/nats/nats.go"
+        linters: [godoclint]
+
+      - path: "internal/sched/sched.go"
+        linters: [unparam]
+
+      - path: "internal/sched/ticker.go"
+        linters: [forbidigo, gosec]
+
+      - path: "internal/server/render.go"
+        linters: [exhaustive, forbidigo]
+
+      - path: "internal/server/server.go"
+        linters: [errcheck, gocognit, ineffassign, revive]
+
+      - path: "internal/service/helper.go"
+        linters: [gosec]
+
+      - path: "internal/service/manager.go"
+        linters: [unparam]
+
+      - path: "internal/sidecar/external.go"
+        linters: [gosec]
+
+      - path: "internal/sidecar/internal.go"
+        linters: [gosec]
+
+      - path: "internal/sidecar/sidecar.go"
+        linters: [contextcheck, noctx, staticcheck]
+
+      - path: "internal/telemetry/logs.go"
+        linters: [forcetypeassert]
+
+      - path: "pkg/filestore/filesql/filestore.go"
+        linters: [unqueryvet]
+
+      - path: "pkg/filestore/filesql/root_query.go"
+        linters: [unqueryvet]
+
+      - path: "pkg/lifecycle/circuit.go"
+        linters: [containedctx]
+
+      - path: "pkg/utils/regex.go"
+        linters: [gochecknoinits, gocritic, gosec]
 
     paths:
       - third_party$
