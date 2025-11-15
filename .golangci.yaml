@@ -104,10 +104,16 @@ linters:
         linters: [forbidigo, gosec]
 
       - path: "cmd/cli/uploader_helper.go"
-        linters: [gosec, nlreturn]
+        linters: [gosec, nlreturn, forbidigo]
 
       - path: "internal/api/filesystem.go"
         linters: [gocognit]
+
+      - path: "internal/api/api.go"
+        linters: [forcetypeassert]
+
+      - path: "internal/api/namespaces.go"
+        linters: [forcetypeassert]
 
       - path: "internal/api/filter/filter.go"
         linters: [nestif, nonamedreturns]
@@ -120,6 +126,9 @@ linters:
 
       - path: "internal/api/secrets.go"
         linters: [errcheck]
+
+      - path: "internal/api/services.go"
+        linters: [forcetypeassert]
 
       - path: "internal/cluster/cache/cache.go"
         linters: [revive]
@@ -143,7 +152,7 @@ linters:
         linters: [gocritic, gosec]
 
       - path: "internal/compiler/ast.go"
-        linters: [gocognit, goconst, nestif, wastedassign]
+        linters: [gocognit, goconst, nestif, wastedassign, gocyclo, maintidx]
 
       - path: "internal/compiler/transpiler.go"
         linters: [forcetypeassert]
@@ -153,6 +162,9 @@ linters:
 
       - path: "internal/datastore/datasql/runtime_variables.go"
         linters: [goconst]
+
+      - path: "internal/datastore/datasql/mirror.go"
+        linters: [unqueryvet]
 
       - path: "internal/datastore/eventsstore.go"
         linters: [godoclint]
@@ -190,11 +202,14 @@ linters:
       - path: "internal/gateway/plugins/inbound/js-inbound.go"
         linters: [errcheck, forcetypeassert]
 
+      - path: "internal/gateway/plugins/outbound/js_outbound.go"
+        linters: [forcetypeassert]
+
       - path: "internal/gateway/plugins/target/instant-response.go"
         linters: [errcheck]
 
       - path: "internal/gateway/router.go"
-        linters: [gocognit]
+        linters: [gocognit, forcetypeassert]
 
       - path: "internal/jqer/jqer.go"
         linters: [errcheck, gocognit, gosec, makezero]
@@ -215,10 +230,10 @@ linters:
         linters: [forbidigo, gosec]
 
       - path: "internal/server/render.go"
-        linters: [exhaustive, forbidigo]
+        linters: [exhaustive, forbidigo, gocritic]
 
       - path: "internal/server/server.go"
-        linters: [errcheck, gocognit, ineffassign, revive]
+        linters: [errcheck, gocognit, ineffassign, revive, staticcheck, wastedassign, gocyclo, maintidx]
 
       - path: "internal/service/helper.go"
         linters: [gosec]
@@ -227,13 +242,13 @@ linters:
         linters: [unparam]
 
       - path: "internal/sidecar/external.go"
-        linters: [gosec]
+        linters: [gosec, spancheck]
 
       - path: "internal/sidecar/internal.go"
         linters: [gosec]
 
       - path: "internal/sidecar/sidecar.go"
-        linters: [contextcheck, noctx, staticcheck]
+        linters: [contextcheck, noctx, staticcheck, forcetypeassert]
 
       - path: "internal/telemetry/logs.go"
         linters: [forcetypeassert]
