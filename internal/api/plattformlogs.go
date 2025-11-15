@@ -261,7 +261,6 @@ func parseQueryTime(input string) (time.Time, error) {
 	return time.Time{}, errors.New("unrecognized time format")
 }
 
-// nolint:canonicalheader
 func extractLogRequestParams(r *http.Request) logParams {
 	var logParams logParams
 

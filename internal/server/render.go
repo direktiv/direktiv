@@ -40,7 +40,6 @@ func renderGatewayFiles(db *gorm.DB, manager core.GatewayManager) {
 		}
 		for i, file := range files {
 			data := dataList[i]
-			//nolint:exhaustive
 			switch file.Typ {
 			case filestore.FileTypeConsumer:
 				consumers = append(consumers, core.ParseConsumerFile(ns.Name, file.Path, data))

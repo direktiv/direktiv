@@ -169,7 +169,6 @@ func (s *sqlRuntimeVariablesStore) get(ctx context.Context, variable *datastore.
 	return s.GetForNamespace(ctx, variable.Namespace, variable.Name)
 }
 
-// nolint:goconst
 func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *datastore.RuntimeVariable) (*datastore.RuntimeVariable, error) {
 	if variable.Name == "" {
 		return nil, datastore.ErrInvalidRuntimeVariableName
@@ -368,7 +367,6 @@ func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *datasto
 	return s.GetByID(ctx, newUUID)
 }
 
-// nolint:goconst
 func (s *sqlRuntimeVariablesStore) Patch(ctx context.Context, id uuid.UUID, patch *datastore.RuntimeVariablePatch) (*datastore.RuntimeVariable, error) {
 	if patch.Name != nil {
 		if *patch.Name == "" {

@@ -65,7 +65,6 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.URL.Path, "/routes") {
 		ns := chi.URLParam(r, "namespace")
 		if ns != "" {
-			//nolint:contextcheck
 			WriteJSON(w, endpointsForAPI(filterNamespacedEndpoints(inner.endpoints, ns, r.URL.Query().Get("path")), ns, filesql.NewStore(m.db)))
 			return
 		}
@@ -90,7 +89,6 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 			server := r.URL.Query().Get("server")
 
-			//nolint:contextcheck
 			WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns, filesql.NewStore(m.db),
 				filterNamespacedEndpoints(inner.endpoints, ns, ""), expand, server))
 

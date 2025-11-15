@@ -259,7 +259,6 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	// publish pubsub event for gateway, consumer, services
 	if newFile.Typ.IsDirektivSpecFile() {
 		err = e.bus.Publish(pubsub.SubjFileSystemChange, nil)
-		// nolint:staticcheck
 		if err != nil {
 			slog.With("component", "api").
 				Error("publish filesystem event", "err", err)

@@ -126,7 +126,6 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 	writeOk(w)
 }
 
-//nolint:gocognit
 func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 
@@ -371,7 +370,6 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 	var result []any
 	for _, ns := range namespaces {
 		settings := indexedMirrors[ns.Name]
-		//nolint:forcetypeassert
 		if allowedNamespaces != nil && !strings.Contains(allowedNamespaces.(string), ","+ns.Name+",") {
 			continue
 		}

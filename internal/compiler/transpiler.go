@@ -58,7 +58,7 @@ func (t *Transpiler) Transpile(script, name string) (string, string, error) {
 	}
 
 	// returns mapping and source file
-	g := value.Export().(map[string]any) //nolint:forcetypeassert
+	g := value.Export().(map[string]any)
 
 	scriptOut, ok := g["outputText"].(string)
 	if !ok {

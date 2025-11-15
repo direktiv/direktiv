@@ -80,7 +80,6 @@ func newTestPostgres(dsn string) (*gorm.DB, error) {
 	return db, nil
 }
 
-//nolint:usetesting
 func NewTestDBWithNamespace(t *testing.T, namespace string) (*gorm.DB, error) {
 	t.Helper()
 

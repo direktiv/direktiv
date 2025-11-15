@@ -8,8 +8,6 @@ import (
 // application data, there is a MirrorStore responsible for doing all the reading and writing database operations.
 
 // Store object wraps all different direktiv application stores.
-//
-//nolint:interfacebloat
 type Store interface {
 	Namespaces() NamespacesStore
 

@@ -78,7 +78,6 @@ func JqState(l *lexer.L) lexer.StateFunc {
 	var jdxJ int
 
 	mover := func(rewind int, forward bool) {
-		//nolint:intrange
 		for range rewind {
 			if forward {
 				l.Next()
@@ -88,7 +87,6 @@ func JqState(l *lexer.L) lexer.StateFunc {
 		}
 	}
 
-	//nolint:intrange
 	for i := range 3 {
 		r := l.Next()
 		if r == lexer.EOFRune {
@@ -235,7 +233,6 @@ func recurseIntoString(data any, s string) ([]any, error) {
 			}(done)
 
 			// decoding base64
-			// nolint:errcheck
 			vm.Set("atob", func(txt string) string {
 				r, err := base64.StdEncoding.DecodeString(txt)
 				if err != nil {
@@ -246,7 +243,6 @@ func recurseIntoString(data any, s string) ([]any, error) {
 			})
 
 			// encoding base64
-			// nolint:errcheck
 			vm.Set("btoa", func(txt string) string {
 				return base64.StdEncoding.EncodeToString([]byte(txt))
 			})
@@ -336,7 +332,6 @@ func recurseIntoArray(data any, q []any) ([]any, error) {
 		}
 		array = append(array, x[0])
 	}
-	// nolint: asasalint
 	out = append(out, array)
 
 	return out, nil

@@ -58,7 +58,6 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 		if i < math.MinInt32 || i > math.MaxInt32 {
 			i = 0
 		}
-		//nolint:gosec
 		i32 := int32(i)
 
 		return &i32
@@ -124,7 +123,6 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 				Name:       sv.GetID(),
 			},
 			MinReplicas: minReplicas,
-			//nolint:gosec
 			MaxReplicas: int32(c.KnativeMaxScale),
 			Metrics: []autoscalingV2.MetricSpec{
 				{

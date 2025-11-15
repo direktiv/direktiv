@@ -31,7 +31,7 @@ import (
 	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
-	_ "github.com/lib/pq" //nolint:revive
+	_ "github.com/lib/pq"
 	"github.com/nats-io/nats.go"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -39,7 +39,6 @@ import (
 	"k8s.io/utils/clock"
 )
 
-//nolint:gocognit, maintidx
 func Start(lc *lifecycle.Manager) error {
 	var err error
 	config := &core.Config{}

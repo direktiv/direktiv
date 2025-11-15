@@ -81,7 +81,7 @@ func (c *jxController) handler(w http.ResponseWriter, r *http.Request) {
 	var failed bool
 	var firstResult any
 
-	results, err := jqer.Evaluate(document, query) //nolint:contextcheck
+	results, err := jqer.Evaluate(document, query)
 	if err != nil {
 		fmt.Fprintf(buf, "failure: %s\n", err.Error())
 		failed = true

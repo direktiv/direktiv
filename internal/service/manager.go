@@ -239,7 +239,6 @@ func (m *Manager) getList(filterNamespace string, filterTyp string, filterPath s
 	return sList, nil
 }
 
-// nolint:unparam
 func (m *Manager) getOne(namespace string, serviceID string) (*core.ServiceFileData, error) {
 	list, err := m.getList(namespace, "", "", "")
 	if err != nil {
