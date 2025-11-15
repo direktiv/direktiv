@@ -76,8 +76,41 @@ otel:
 
 opentelemetry-collector:
   image:
-    repository: otel/opentelemetry-collector-k8s
+    repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s
   mode: deployment
+  command:
+    name: otelcol-k8s
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317 
+          http:
+            endpoint: 0.0.0.0:4318 
+    processors:
+      batch:  
+        timeout: 10s
+        send_batch_size: 1024
+    exporters:
+      otlp/tempo:
+        endpoint: "tempo:4317"   
+        tls:
+          insecure: true          
+      debug:
+        verbosity: detailed
+    service:
+      telemetry:
+        logs:
+          level: debug
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [debug, otlp/tempo]
+  # configMap:
+  #   create: false
+    # existingName: direktiv-otel-collector-config
 
 database:
   # -- database host
@@ -172,11 +205,6 @@ functions:
   # -- Egress/Ingress network limit for functions if supported by network
   netShape:
 
-  # -- Cleaning up tasks, Kubernetes < 1.20 does not clean finished tasks
-  podCleaner: true # deprecated
-
-  # -- runtime to use, e.g. gvisor on GCP
-  runtime: "default"
 
   affinity: {}
 

@@ -4,11 +4,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"path/filepath"
 	"strings"
 
+	"github.com/direktiv/direktiv/internal/cluster/cache"
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	"github.com/direktiv/direktiv/internal/compiler"
 	"github.com/direktiv/direktiv/internal/core"
@@ -23,6 +25,8 @@ import (
 type fsController struct {
 	db  *gorm.DB
 	bus pubsub.EventBus
+
+	cache cache.Cache[core.TypescriptFlow]
 }
 
 func (e *fsController) mountRouter(r chi.Router) {
@@ -187,6 +191,11 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 			slog.Error("pubsub publish", "err", err)
 		}
 	}
+
+	e.cache.Notify(r.Context(), cache.CacheNotify{
+		Key:    fmt.Sprintf("%s-%s-%s", namespace, "script", path),
+		Action: cache.CacheUpdate,
+	})
 
 	writeOk(w)
 }
@@ -385,22 +394,18 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Publish pubsub event (rename).
-	if req.Path != "" && updatedFile.Typ.IsDirektivSpecFile() {
+	// if req.Path != "" && updatedFile.Typ.IsDirektivSpecFile() {
+	if updatedFile.Typ.IsDirektivSpecFile() {
 		err = e.bus.Publish(pubsub.SubjFileSystemChange, nil)
 		if err != nil {
 			slog.Error("pubsub publish", "err", err)
 		}
 	}
 
-	// Publish pubsub event (update).
-	if req.Data != "" && updatedFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.Publish(pubsub.SubjFileSystemChange, nil)
-		// nolint:staticcheck
-		if err != nil {
-			slog.With("component", "api").
-				Error("publish filesystem event", "err", err)
-		}
-	}
+	e.cache.Notify(r.Context(), cache.CacheNotify{
+		Key:    fmt.Sprintf("%s-%s-%s", namespace, "script", path),
+		Action: cache.CacheUpdate,
+	})
 
 	res := struct {
 		*filestore.File
@@ -429,6 +434,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			}
 			res.Errors = append(res.Errors, jErr)
 		}
+
 	}
 
 	writeJSON(w, res)

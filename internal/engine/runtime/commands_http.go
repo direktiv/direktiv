@@ -9,9 +9,12 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/grafana/sobek"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 )
 
 type httpRequestObject struct {
@@ -90,9 +93,6 @@ func doHttpRequest(addr string, config any) (*httpResponseObject, error) {
 		headers:      http.Header{},
 	}
 
-	// sEnc := b64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", obj.Username, obj.Password)))
-	// 	req.Header.Add("Authorization", fmt.Sprintf("Basic %s", sEnc))
-
 	// generate query
 	q := u.Query()
 	for k, v := range req.Params {
@@ -100,7 +100,13 @@ func doHttpRequest(addr string, config any) (*httpResponseObject, error) {
 	}
 	u.RawQuery = q.Encode()
 
-	request, err := http.NewRequest(req.Method, u.String(), nil)
+	var rBody io.Reader = nil
+	if req.Body != nil {
+		b, _ = json.Marshal(req.Body)
+		rBody = strings.NewReader(string(b))
+	}
+
+	request, err := http.NewRequest(req.Method, u.String(), rBody)
 	if err != nil {
 		obj.err = err.Error()
 		return obj, nil
@@ -138,9 +144,6 @@ func doHttpRequest(addr string, config any) (*httpResponseObject, error) {
 		obj.err = err.Error()
 		return obj, nil
 	}
-
-	// fg, _ := httputil.DumpResponse(resp, true)
-	// fmt.Println(string(fg))
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
@@ -199,15 +202,27 @@ func (rt *Runtime) populateResponseObject(response *httpResponseObject) *sobek.O
 }
 
 func (rt *Runtime) fetchSync(addr string, config any) *sobek.Object {
+	span := rt.tracingPack.trace("calling http")
+	span.SetAttributes(attribute.KeyValue{
+		Key:   "url",
+		Value: attribute.StringValue(addr),
+	})
+	defer span.End()
+
 	response, err := doHttpRequest(addr, config)
 	if err != nil {
+		rt.tracingPack.thrownError = err
+		span.SetStatus(codes.Error, err.Error())
 		panic(rt.vm.ToValue(err.Error()))
 	}
 
+	span.SetStatus(codes.Ok, codes.Ok.String())
 	return rt.populateResponseObject(response)
 }
 
 func (rt *Runtime) fetch(addr string, config any) *sobek.Promise {
+	span := rt.tracingPack.trace("calling http async")
+	defer span.End()
 	p, resolve, reject := rt.vm.NewPromise()
 	go func() {
 		response, err := doHttpRequest(addr, config)

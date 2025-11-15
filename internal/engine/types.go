@@ -96,4 +96,6 @@ type DataBus interface {
 	GetInstanceHistory(ctx context.Context, namespace string, instanceID uuid.UUID) []*InstanceEvent
 
 	DeleteNamespace(ctx context.Context, namespace string) error
+
+	PublishIgniteAction(ctx context.Context, svcID string) error
 }

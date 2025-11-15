@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/cluster/cache"
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore"
@@ -23,6 +24,8 @@ type nsController struct {
 	registryManager core.RegistryManager
 	bus             pubsub.EventBus
 	engine          *engine.Engine
+	cache           cache.Manager
+	sManager        core.SecretsManager
 }
 
 func (e *nsController) mountRouter(r chi.Router) {
@@ -98,12 +101,27 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 		slog.With("component", "api").
 			Error("deleting registry namespace", "err", err)
 	}
+	err = e.sManager.DeleteForNamespace(r.Context(), name)
+	if err != nil {
+		slog.With("component", "api").
+			Error("deleting secrets namespace", "err", err)
+	}
 
 	// TODO: yassir, check the logic of sending events on ns change in all actions.
 	err = e.bus.Publish(pubsub.SubjNamespacesChange, nil)
 	if err != nil {
 		slog.Error("pubsub publish filesystem event", "err", err)
 	}
+
+	e.cache.NamespaceCache().Notify(r.Context(), cache.CacheNotify{
+		Action: cache.CacheClear,
+	})
+	e.cache.FlowCache().Notify(r.Context(), cache.CacheNotify{
+		Action: cache.CacheClear,
+	})
+	e.cache.SecretsCache().Notify(r.Context(), cache.CacheNotify{
+		Action: cache.CacheClear,
+	})
 
 	writeOk(w)
 }
@@ -231,6 +249,11 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	e.cache.NamespaceCache().Notify(r.Context(), cache.CacheNotify{
+		Key:    "namespaces",
+		Action: cache.CacheUpdate,
+	})
+
 	writeJSON(w, namespaceAPIObject(ns, settings))
 }
 
@@ -306,6 +329,10 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error("pubsub publish", "err", err)
 	}
+
+	e.cache.NamespaceCache().Notify(r.Context(), cache.CacheNotify{
+		Action: cache.CacheClear,
+	})
 
 	writeJSON(w, namespaceAPIObject(ns, mConfig))
 }

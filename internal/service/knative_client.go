@@ -2,14 +2,12 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"log/slog"
 	"slices"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
@@ -17,7 +15,6 @@ import (
 	v1 "k8s.io/api/autoscaling/v1"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"knative.dev/serving/pkg/client/clientset/versioned"
 )
@@ -97,6 +94,8 @@ func (c *knativeClient) createService(sv *core.ServiceFileData) error {
 		return errors.New("image field is empty or not set")
 	}
 
+	slog.Info("rebuilding service", slog.String("name", sv.Name))
+
 	// Step1: prepare registry secrets
 	var registrySecrets []coreV1.LocalObjectReference
 	secrets, err := c.k8sCli.CoreV1().Secrets(c.config.KnativeNamespace).
@@ -132,51 +131,51 @@ func (c *knativeClient) createService(sv *core.ServiceFileData) error {
 		return err
 	}
 
-	err = c.applyPatch(sv)
-	if err != nil {
-		return fmt.Errorf("applying patch: %w", err)
-	}
+	// err = c.applyPatch(sv)
+	// if err != nil {
+	// 	return fmt.Errorf("applying patch: %w", err)
+	// }
 
 	return nil
 }
 
 func (c *knativeClient) applyPatch(sv *core.ServiceFileData) error {
-	pathWhiteList := []string{
-		"/spec/template/metadata/labels",
-		"/spec/template/metadata/annotations",
-		"/spec/template/spec/affinity",
-		"/spec/template/spec/securityContext",
-		"/spec/template/spec/containers/0",
-	}
+	// pathWhiteList := []string{
+	// 	"/spec/template/metadata/labels",
+	// 	"/spec/template/metadata/annotations",
+	// 	"/spec/template/spec/affinity",
+	// 	"/spec/template/spec/securityContext",
+	// 	"/spec/template/spec/containers/0",
+	// }
 
 	// check patch whitelist paths.
-	for i := range sv.Patches {
-		patch := sv.Patches[i]
+	// for i := range sv.Patches {
+	// 	patch := sv.Patches[i]
 
-		hasAllowedPrefix := false
-		for a := range pathWhiteList {
-			prefix := pathWhiteList[a]
-			if strings.HasPrefix(patch.Path, prefix) {
-				hasAllowedPrefix = true
+	// 	hasAllowedPrefix := false
+	// 	for a := range pathWhiteList {
+	// 		prefix := pathWhiteList[a]
+	// 		if strings.HasPrefix(patch.Path, prefix) {
+	// 			hasAllowedPrefix = true
 
-				break
-			}
-		}
-		// if the path is not in the allowed prefix list, return with an error.
-		if !hasAllowedPrefix {
-			return fmt.Errorf("path %s is not permitted for patches", patch.Path)
-		}
-	}
+	// 			break
+	// 		}
+	// 	}
+	// 	// if the path is not in the allowed prefix list, return with an error.
+	// 	if !hasAllowedPrefix {
+	// 		return fmt.Errorf("path %s is not permitted for patches", patch.Path)
+	// 	}
+	// }
 
-	patchBytes, err := json.Marshal(sv.Patches)
-	if err != nil {
-		return fmt.Errorf("marshalling patch: %w", err)
-	}
+	// patchBytes, err := json.Marshal(sv.Patches)
+	// if err != nil {
+	// 	return fmt.Errorf("marshalling patch: %w", err)
+	// }
 
-	_, err = c.k8sCli.AppsV1().Deployments(c.config.KnativeNamespace).Patch(context.Background(), sv.GetID(), types.JSONPatchType, patchBytes, metaV1.PatchOptions{})
-	if err != nil {
-		return fmt.Errorf("applying patch: %w", err)
-	}
+	// _, err = c.k8sCli.AppsV1().Deployments(c.config.KnativeNamespace).Patch(context.Background(), sv.GetID(), types.JSONPatchType, patchBytes, metaV1.PatchOptions{})
+	// if err != nil {
+	// 	return fmt.Errorf("applying patch: %w", err)
+	// }
 
 	return nil
 }

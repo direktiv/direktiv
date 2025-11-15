@@ -151,6 +151,11 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		Metadata: startEv.Metadata,
 	}
 
+	onAction := func(svcID string) error {
+		// return e.dataBus.PublishIgniteAction(ctx, config,
+		// 	inst.Metadata[core.EngineMappingNamespace], inst.Metadata[core.EngineMappingPath])
+		return e.dataBus.PublishIgniteAction(ctx, svcID)
+	}
 	onFinish := func(output []byte) error {
 		endEv := startEv.Clone()
 		endEv.EventID = uuid.New()
@@ -180,7 +185,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
 
-	err = runtime.ExecScript(sc, onFinish, onTransition)
+	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction)
 	if err == nil {
 		return nil
 	}
