@@ -5,14 +5,11 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
-
-	"github.com/direktiv/direktiv/internal/telemetry"
 )
 
 type sidecar struct {
-	external      *externalServer
-	internal      *internalServer
-	actionMapping map[string]telemetry.LogObject
+	external *externalServer
+	internal *internalServer
 }
 
 func newSidecar() *sidecar {

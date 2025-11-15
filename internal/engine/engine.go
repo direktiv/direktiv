@@ -13,7 +13,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
-	"gorm.io/gorm"
 )
 
 var ErrDataNotFound = fmt.Errorf("data not found")
@@ -26,7 +25,6 @@ const (
 )
 
 type Engine struct {
-	db       *gorm.DB
 	dataBus  DataBus
 	compiler core.Compiler
 	js       nats.JetStreamContext

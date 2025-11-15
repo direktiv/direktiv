@@ -14,9 +14,8 @@ import (
 type Logger struct {
 	io.Writer
 
-	LogData          bytes.Buffer
-	actionID         string
-	backendLogServer string
+	LogData  bytes.Buffer
+	actionID string
 
 	lo telemetry.LogObject
 }

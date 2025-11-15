@@ -139,47 +139,6 @@ func (c *knativeClient) createService(sv *core.ServiceFileData) error {
 	return nil
 }
 
-func (c *knativeClient) applyPatch(sv *core.ServiceFileData) error {
-	// pathWhiteList := []string{
-	// 	"/spec/template/metadata/labels",
-	// 	"/spec/template/metadata/annotations",
-	// 	"/spec/template/spec/affinity",
-	// 	"/spec/template/spec/securityContext",
-	// 	"/spec/template/spec/containers/0",
-	// }
-
-	// check patch whitelist paths.
-	// for i := range sv.Patches {
-	// 	patch := sv.Patches[i]
-
-	// 	hasAllowedPrefix := false
-	// 	for a := range pathWhiteList {
-	// 		prefix := pathWhiteList[a]
-	// 		if strings.HasPrefix(patch.Path, prefix) {
-	// 			hasAllowedPrefix = true
-
-	// 			break
-	// 		}
-	// 	}
-	// 	// if the path is not in the allowed prefix list, return with an error.
-	// 	if !hasAllowedPrefix {
-	// 		return fmt.Errorf("path %s is not permitted for patches", patch.Path)
-	// 	}
-	// }
-
-	// patchBytes, err := json.Marshal(sv.Patches)
-	// if err != nil {
-	// 	return fmt.Errorf("marshalling patch: %w", err)
-	// }
-
-	// _, err = c.k8sCli.AppsV1().Deployments(c.config.KnativeNamespace).Patch(context.Background(), sv.GetID(), types.JSONPatchType, patchBytes, metaV1.PatchOptions{})
-	// if err != nil {
-	// 	return fmt.Errorf("applying patch: %w", err)
-	// }
-
-	return nil
-}
-
 func (c *knativeClient) updateService(sv *core.ServiceFileData) error {
 	// Updating knative service is basically done by removing the old one and re-creating it.
 	err := c.deleteService(sv.GetID())
