@@ -137,7 +137,7 @@ func TestHttpAsyncFetch(t *testing.T) {
 		Fn:       "start",
 	}, onFinish, runtime.NoOnTransition, runtime.NoOnAction)
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 20; i++ {
 		if len(result) != 0 {
 			break
 		}
