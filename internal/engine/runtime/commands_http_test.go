@@ -85,6 +85,7 @@ func TestHttpRequest(t *testing.T) {
 }
 
 func TestHttpAsyncFetch(t *testing.T) {
+
 	// Create container request
 	req := testcontainers.ContainerRequest{
 		Image:        "mendhak/http-https-echo:latest",
@@ -143,5 +144,6 @@ func TestHttpAsyncFetch(t *testing.T) {
 		time.Sleep(500 * time.Millisecond)
 	}
 	require.NoError(t, err)
+	fmt.Printf(">>>>>%v< >%s< >%d<\n", result, result, len(result))
 	require.Equal(t, `{"foo":"bar"}`, string(result))
 }
