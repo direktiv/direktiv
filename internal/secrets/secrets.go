@@ -18,12 +18,16 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-const annotationNamespace = "direktiv.io/namespace"
-const annotationName = "direktiv.io/name"
-const secretKey = "secret"
+const (
+	annotationNamespace = "direktiv.io/namespace"
+	annotationName      = "direktiv.io/name"
+	secretKey           = "secret"
+)
 
-var ErrNotFound = errors.New("ErrNotFound")
-var nameRegex = regexp.MustCompile(`^[a-z\-]{1,24}$`)
+var (
+	ErrNotFound = errors.New("ErrNotFound")
+	nameRegex   = regexp.MustCompile(`^[a-z\-]{1,24}$`)
+)
 
 type Manager struct {
 	cache     cache.Cache[core.Secret]
@@ -107,6 +111,7 @@ func (sm *Manager) Create(ctx context.Context, namespace string, secret *core.Se
 			slog.Error("creating secret failed because it already exists")
 			return nil, datastore.ErrDuplication
 		}
+
 		return nil, err
 	}
 
@@ -125,7 +130,6 @@ func (sm *Manager) GetAll(ctx context.Context, namespace string) ([]*core.Secret
 			LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, namespace),
 		},
 	)
-
 	if err != nil {
 		return nil, err
 	}

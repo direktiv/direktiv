@@ -384,7 +384,6 @@ func buildEnvVars(forSidecar bool, c *core.Config, sv *core.ServiceFileData) []c
 			Name:  "DIREKTIV_IMAGE",
 			Value: sv.Image,
 		})
-
 	} else {
 		for _, v := range sv.Envs {
 			proxyEnvs = append(proxyEnvs, corev1.EnvVar{

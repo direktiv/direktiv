@@ -32,7 +32,7 @@ func newInternalServer(rm *requestMap) *internalServer {
 	return s
 }
 
-// legacy
+// legacy.
 func (s *internalServer) handleLogs(w http.ResponseWriter, r *http.Request) {
 	b, err := io.ReadAll(r.Body)
 	if err != nil {

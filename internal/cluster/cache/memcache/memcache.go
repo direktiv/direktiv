@@ -75,6 +75,7 @@ func newCache[T any](name string, bus pubsub.EventBus) (*Cache[T], error) {
 	if err != nil {
 		slog.Error("cannot create cache", slog.String("name", name),
 			slog.Any("error", err))
+
 		return nil, err
 	}
 

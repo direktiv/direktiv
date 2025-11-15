@@ -118,7 +118,7 @@ func doHttpRequest(addr string, config any) (*httpResponseObject, error) {
 	}
 
 	if req.Username != "" && req.Password != "" {
-		sEnc := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", req.Username, req.Password)))
+		sEnc := base64.StdEncoding.EncodeToString(fmt.Appendf(nil, "%s:%s", req.Username, req.Password))
 		request.Header.Add("Authorization", fmt.Sprintf("Basic %s", sEnc))
 	}
 
@@ -217,6 +217,7 @@ func (rt *Runtime) fetchSync(addr string, config any) *sobek.Object {
 	}
 
 	span.SetStatus(codes.Ok, codes.Ok.String())
+
 	return rt.populateResponseObject(response)
 }
 

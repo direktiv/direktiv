@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -93,7 +94,7 @@ func NewASTParser(script, mapping string) (*ASTParser, error) {
 	return p, nil
 }
 
-// Parse does everything in a single traversal
+// Parse does everything in a single traversal.
 func (ap *ASTParser) Parse() error {
 	// First pass: collect all function names and find first state function
 	for _, stmt := range ap.program.Body {
@@ -119,7 +120,8 @@ func (ap *ASTParser) Parse() error {
 	if ap.FlowVariable != nil {
 		config, err := ap.buildFlowConfig()
 		if err != nil {
-			if vErr, ok := err.(*ValidationError); ok {
+			vErr := &ValidationError{}
+			if errors.As(err, &vErr) {
 				ap.Errors = append(ap.Errors, vErr)
 			} else {
 				return err
@@ -140,7 +142,7 @@ func (ap *ASTParser) Parse() error {
 }
 
 // walkNode walks through every node in the tree
-// isInsideFunc indicates if we're inside a function body
+// isInsideFunc indicates if we're inside a function body.
 func (ap *ASTParser) walkNode(node ast.Node, isInsideFunc bool) {
 	if node == nil {
 		return
@@ -306,7 +308,7 @@ func (ap *ASTParser) walkNode(node ast.Node, isInsideFunc bool) {
 	}
 }
 
-// walkFunctionNode walks through function body and validates transition/finish usage
+// walkFunctionNode walks through function body and validates transition/finish usage.
 func (ap *ASTParser) walkFunctionNode(node ast.Node, isStateFunc bool) {
 	if node == nil {
 		return
@@ -440,7 +442,7 @@ func (ap *ASTParser) walkFunctionNode(node ast.Node, isStateFunc bool) {
 
 // walkExpression walks through all expressions
 // isInsideFunc: true if we're inside any function
-// isStateFunc: true if we're inside a state function
+// isStateFunc: true if we're inside a state function.
 func (ap *ASTParser) walkExpression(expr ast.Expression, isInsideFunc bool, isStateFunc bool) {
 	if expr == nil {
 		return
@@ -606,7 +608,7 @@ func (ap *ASTParser) walkExpression(expr ast.Expression, isInsideFunc bool, isSt
 	}
 }
 
-// isTransitionCall checks if a node is a call to transition or finish
+// isTransitionCall checks if a node is a call to transition or finish.
 func (ap *ASTParser) isTransitionCall(node ast.Node) bool {
 	callExpr, ok := node.(*ast.CallExpression)
 	if !ok || callExpr.Callee == nil {
@@ -621,7 +623,7 @@ func (ap *ASTParser) isTransitionCall(node ast.Node) bool {
 	return callee.Name == "transition" || callee.Name == "finish"
 }
 
-// checkHasReturn recursively checks if a node contains a return statement
+// checkHasReturn recursively checks if a node contains a return statement.
 func (ap *ASTParser) checkHasReturn(node ast.Node) bool {
 	if node == nil {
 		return false
@@ -658,7 +660,7 @@ func (ap *ASTParser) checkHasReturn(node ast.Node) bool {
 	return false
 }
 
-// buildFlowConfig builds the flow configuration from the flow variable
+// buildFlowConfig builds the flow configuration from the flow variable.
 func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 	flow := core.FlowConfig{
 		Type:    "default",
@@ -695,6 +697,7 @@ func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 				if !slices.Contains([]string{"default", "cron", "event", "eventsOr", "eventsAnd"}, flowType) {
 					start := ap.file.Position(int(keyed.Idx0()))
 					end := ap.file.Position(int(keyed.Idx1()))
+
 					return flow, &ValidationError{
 						Message:     fmt.Sprintf("unknown flow type: %s", flowType),
 						StartLine:   start.Line,
@@ -714,6 +717,7 @@ func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 				if err != nil {
 					start := ap.file.Position(int(keyed.Idx0()))
 					end := ap.file.Position(int(keyed.Idx1()))
+
 					return flow, &ValidationError{
 						Message:     fmt.Sprintf("invalid timeout pattern '%s', must be ISO8601", timeout),
 						StartLine:   start.Line,
@@ -733,6 +737,7 @@ func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 				if err != nil {
 					start := ap.file.Position(int(keyed.Idx0()))
 					end := ap.file.Position(int(keyed.Idx1()))
+
 					return flow, &ValidationError{
 						Message:     fmt.Sprintf("invalid cron pattern: %s", cronPattern),
 						StartLine:   start.Line,
@@ -751,6 +756,7 @@ func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 				if !slices.Contains(ap.allFunctionNames, state) {
 					start := ap.file.Position(int(keyed.Idx0()))
 					end := ap.file.Position(int(keyed.Idx1()))
+
 					return flow, &ValidationError{
 						Message:     fmt.Sprintf("state function '%s' does not exist", state),
 						StartLine:   start.Line,
@@ -782,6 +788,7 @@ func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 		if ap.FlowVariable != nil {
 			start = ap.file.Position(int(ap.FlowVariable.Idx0()))
 		}
+
 		return flow, &ValidationError{
 			Message:     "flow type is 'cron' but no cron pattern is set",
 			StartLine:   start.Line,
@@ -798,6 +805,7 @@ func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 		if ap.FlowVariable != nil {
 			start = ap.file.Position(int(ap.FlowVariable.Idx0()))
 		}
+
 		return flow, &ValidationError{
 			Message:     "flow type is event-based but no events are defined",
 			StartLine:   start.Line,
@@ -811,7 +819,7 @@ func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 	return flow, nil
 }
 
-// parseEvent parses an event configuration
+// parseEvent parses an event configuration.
 func (ap *ASTParser) parseEvent(expr ast.Expression) (core.EventConfig, error) {
 	event := core.EventConfig{
 		Context: make(map[string]any),
@@ -857,7 +865,7 @@ func (ap *ASTParser) parseEvent(expr ast.Expression) (core.EventConfig, error) {
 	return event, nil
 }
 
-// extractValue extracts a simple value from an expression
+// extractValue extracts a simple value from an expression.
 func (ap *ASTParser) extractValue(expr ast.Expression) any {
 	switch e := expr.(type) {
 	case *ast.StringLiteral:
@@ -880,6 +888,7 @@ func (ap *ASTParser) extractValue(expr ast.Expression) any {
 		if err != nil {
 			return nil
 		}
+
 		return v.Value
 	}
 }
@@ -929,7 +938,7 @@ func (ap *ASTParser) parseSecrets(expr ast.Expression) ([]string, error) {
 	return secrets, nil
 }
 
-// parseAction parses an action configuration from generateAction call
+// parseAction parses an action configuration from generateAction call.
 func (ap *ASTParser) parseAction(expr ast.Expression) (core.ActionConfig, error) {
 	action := core.ActionConfig{
 		Envs: make([]core.EnvironmentVariable, 0),

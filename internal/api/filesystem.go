@@ -434,7 +434,6 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			}
 			res.Errors = append(res.Errors, jErr)
 		}
-
 	}
 
 	writeJSON(w, res)

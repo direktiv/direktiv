@@ -39,7 +39,8 @@ var (
 )
 
 func New(instID uuid.UUID, metadata map[string]string, mappings string,
-	onFinish OnFinishFunc, onTransition OnTransitionFunc, onAction OnActionFunc) *Runtime {
+	onFinish OnFinishFunc, onTransition OnTransitionFunc, onAction OnActionFunc,
+) *Runtime {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
 
@@ -129,6 +130,7 @@ func (rt *Runtime) secrets(secretNames []string) sobek.Value {
 func (rt *Runtime) sleep(seconds int) sobek.Value {
 	rt.tracingPack.span.AddEvent("calling sleep")
 	time.Sleep(time.Duration(seconds) * time.Second)
+
 	return sobek.Undefined()
 }
 
@@ -164,6 +166,7 @@ func (rt *Runtime) log(logs ...string) sobek.Value {
 	}
 
 	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, msg)
+
 	return sobek.Undefined()
 }
 
@@ -233,6 +236,7 @@ func (rt *Runtime) finish(data sobek.Value) sobek.Value {
 
 	// otel: finish span from transition
 	rt.tracingPack.tracingFinish()
+
 	return sobek.Null()
 }
 
@@ -257,7 +261,8 @@ type Script struct {
 }
 
 func ExecScript(ctx context.Context, script *Script, onFinish OnFinishFunc,
-	onTransition OnTransitionFunc, onAction OnActionFunc) error {
+	onTransition OnTransitionFunc, onAction OnActionFunc,
+) error {
 	tp := newTracingPack(ctx, script.Metadata[core.EngineMappingNamespace],
 		script.InstID.String(), script.Metadata[core.EngineMappingCaller],
 		script.Metadata[core.EngineMappingPath])

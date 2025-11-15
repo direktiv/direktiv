@@ -89,7 +89,6 @@ func (e *secretsController) create(w http.ResponseWriter, r *http.Request) {
 		Name: req.Name,
 		Data: req.Data,
 	})
-
 	if err != nil {
 		writeSecretsError(w, err)
 		return

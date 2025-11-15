@@ -182,7 +182,7 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 
 	// edfault gateway
 	g := core.Gateway{
-		Base:      []byte(fmt.Sprintf("openapi: 3.0.0\ninfo:\n   title: %s\n   version: \"1.0\"", ns)),
+		Base:      fmt.Appendf(nil, "openapi: 3.0.0\ninfo:\n   title: %s\n   version: \"1.0\"", ns),
 		FilePath:  "/virtual.yaml",
 		IsVirtual: true,
 	}
@@ -289,11 +289,11 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 
 func endpointsForAPI(endpoints []core.Endpoint, ns string, fileStore filestore.FileStore) any {
 	type output struct {
-		Spec       interface{} `json:"spec"`
-		FilePath   string      `json:"file_path"`
-		Errors     []string    `json:"errors"`
-		ServerPath string      `json:"server_path"`
-		Warnings   []string    `json:"warnings"`
+		Spec       any      `json:"spec"`
+		FilePath   string   `json:"file_path"`
+		Errors     []string `json:"errors"`
+		ServerPath string   `json:"server_path"`
+		Warnings   []string `json:"warnings"`
 	}
 
 	result := []any{}

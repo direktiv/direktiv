@@ -43,7 +43,7 @@ func (h *ContextHandler) Handle(ctx context.Context, rec slog.Record) error {
 			return h.innerHandler.Handle(ctx, rec)
 		}
 
-		var attrs map[string]interface{}
+		var attrs map[string]any
 		err = json.Unmarshal(b, &attrs)
 		if err != nil {
 			slog.Error("can not unmarshal context", slog.Any("error", err))

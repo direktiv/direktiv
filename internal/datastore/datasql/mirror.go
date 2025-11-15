@@ -103,7 +103,7 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *datastore.Mirr
 
 	res := s.db.WithContext(ctx).Table("mirror_configs").
 		Where("namespace", config.Namespace).
-		Updates(map[string]interface{}{
+		Updates(map[string]any{
 			"url":                    config.URL,
 			"git_ref":                config.GitRef,
 			"public_key":             config.PublicKey,

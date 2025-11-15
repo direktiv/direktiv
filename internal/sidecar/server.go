@@ -16,7 +16,6 @@ type sidecar struct {
 }
 
 func newSidecar() *sidecar {
-
 	rm := &requestMap{}
 	return &sidecar{
 		internal: newInternalServer(rm),

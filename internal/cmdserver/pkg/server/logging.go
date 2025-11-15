@@ -60,7 +60,7 @@ func (l *Logger) SetWriterState(enable bool) {
 }
 
 // Logf logs a formatted message, appending a newline, and writes it to the configured writers.
-func (l *Logger) Logf(format string, args ...interface{}) {
+func (l *Logger) Logf(format string, args ...any) {
 	message := fmt.Sprintf(format+"\n", args...)
 	if message == "\n" {
 		message = ""

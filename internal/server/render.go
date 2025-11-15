@@ -58,7 +58,8 @@ func renderGatewayFiles(db *gorm.DB, manager core.GatewayManager) {
 }
 
 func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
-	cacheManager cache.Manager) {
+	cacheManager cache.Manager,
+) {
 	ctx := context.Background()
 	dStore := datasql.NewStore(db)
 
@@ -77,6 +78,7 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 		if err != nil {
 			slog.Error("cannot get namespace",
 				slog.String("name", ns.Name), slog.Any("error", err))
+
 			continue
 		}
 
@@ -90,6 +92,7 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 					slog.Error("cannot get compiler for workflow",
 						slog.String("namespace", ns.Name),
 						slog.String("path", f.Path), slog.Any("error", err))
+
 					continue
 				}
 				s, err := c.FetchScript(ctx, ns.Name, f.Path)
@@ -97,6 +100,7 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 					slog.Error("cannot generate script",
 						slog.String("namespace", ns.Name),
 						slog.String("path", f.Path), slog.Any("error", err))
+
 					continue
 				}
 
@@ -135,7 +139,6 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 				}
 			}
 		}
-
 	}
 
 	serviceManager.SetServices(funConfigList)

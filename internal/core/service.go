@@ -91,9 +91,11 @@ func (c *ServiceFileData) GetID() string {
 // different lists of objects.
 func (c *ServiceFileData) GetValueHash() string {
 	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.Cmd, c.Size, c.Scale)
+	var strSb94 strings.Builder
 	for _, v := range c.Envs {
-		str += "-" + v.Name + "-" + v.Value
+		strSb94.WriteString("-" + v.Name + "-" + v.Value)
 	}
+	str += strSb94.String()
 	// for _, v := range c.Patches {
 	// 	str += "-" + v.Op + "-" + v.Path + "-" + fmt.Sprintf("%v", v.Value)
 	// }

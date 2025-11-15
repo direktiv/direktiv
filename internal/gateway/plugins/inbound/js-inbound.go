@@ -115,7 +115,7 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (http
 		return nil, nil
 	}
 
-	err = vm.Set("log", func(txt interface{}) {
+	err = vm.Set("log", func(txt any) {
 		plugins.LogToRoute(r, txt)
 	})
 	if err != nil {
@@ -137,7 +137,7 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (http
 
 		o := val.ToObject(vm)
 		// make sure the input object got returned
-		if o.ExportType() == reflect.TypeOf(req) {
+		if o.ExportType() == reflect.TypeFor[request]() {
 			// nolint checked before
 			responseDone := o.Export().(request)
 			addHeader(responseDone.Headers, r.Header)

@@ -26,20 +26,20 @@ var (
 )
 
 // Evaluate evaluates the data against the query provided and returns the result.
-func Evaluate(data, query interface{}) ([]interface{}, error) {
+func Evaluate(data, query any) ([]any, error) {
 	if query == nil {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
 
 	x, _ := json.Marshal(data)
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 	_ = json.Unmarshal(x, &m)
 
 	return recursiveEvaluate(m, query)
 }
 
-func recursiveEvaluate(data, query interface{}) ([]interface{}, error) {
-	var out []interface{}
+func recursiveEvaluate(data, query any) ([]any, error) {
+	var out []any
 
 	if query == nil {
 		out = append(out, nil)
@@ -52,9 +52,9 @@ func recursiveEvaluate(data, query interface{}) ([]interface{}, error) {
 	case float64:
 	case string:
 		return recurseIntoString(data, q)
-	case map[string]interface{}:
+	case map[string]any:
 		return recurseIntoMap(data, q)
-	case []interface{}:
+	case []any:
 		return recurseIntoArray(data, q)
 	default:
 		return nil, fmt.Errorf("unexpected type: %s", reflect.TypeOf(query).String())
@@ -79,7 +79,7 @@ func JqState(l *lexer.L) lexer.StateFunc {
 
 	mover := func(rewind int, forward bool) {
 		//nolint:intrange
-		for a := 0; a < rewind; a++ {
+		for range rewind {
 			if forward {
 				l.Next()
 			} else {
@@ -89,7 +89,7 @@ func JqState(l *lexer.L) lexer.StateFunc {
 	}
 
 	//nolint:intrange
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		r := l.Next()
 		if r == lexer.EOFRune {
 			// emit string token if there is content in it
@@ -167,8 +167,8 @@ func JqState(l *lexer.L) lexer.StateFunc {
 	return JqState
 }
 
-func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
-	out := make([]interface{}, 0)
+func recurseIntoString(data any, s string) ([]any, error) {
+	out := make([]any, 0)
 
 	if TrimWhitespaceOnQueryStrings {
 		s = strings.TrimSpace(s)
@@ -287,15 +287,15 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 	}
 
 	s = strings.Join(x, "")
-	out = make([]interface{}, 1)
+	out = make([]any, 1)
 	out[0] = s
 
 	return out, nil
 }
 
-func recurseIntoMap(data interface{}, m map[string]interface{}) ([]interface{}, error) {
-	var out []interface{}
-	results := make(map[string]interface{})
+func recurseIntoMap(data any, m map[string]any) ([]any, error) {
+	var out []any
+	results := make(map[string]any)
 	var keys []string
 	for k := range m {
 		keys = append(keys, k)
@@ -320,9 +320,9 @@ func recurseIntoMap(data interface{}, m map[string]interface{}) ([]interface{}, 
 	return out, nil
 }
 
-func recurseIntoArray(data interface{}, q []interface{}) ([]interface{}, error) {
-	var out []interface{}
-	array := make([]interface{}, 0)
+func recurseIntoArray(data any, q []any) ([]any, error) {
+	var out []any
+	array := make([]any, 0)
 	for i := range q {
 		x, err := recursiveEvaluate(data, q[i])
 		if err != nil {
@@ -342,13 +342,13 @@ func recurseIntoArray(data interface{}, q []interface{}) ([]interface{}, error) 
 	return out, nil
 }
 
-func jq(input interface{}, command string) ([]interface{}, error) {
+func jq(input any, command string) ([]any, error) {
 	data, err := json.Marshal(input)
 	if err != nil {
 		return nil, err
 	}
 
-	var x interface{}
+	var x any
 
 	err = json.Unmarshal(data, &x)
 	if err != nil {
@@ -360,7 +360,7 @@ func jq(input interface{}, command string) ([]interface{}, error) {
 		return nil, err
 	}
 
-	var output []interface{}
+	var output []any
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()

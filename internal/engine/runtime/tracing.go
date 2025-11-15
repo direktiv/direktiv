@@ -114,6 +114,7 @@ func (tp *tracingPack) finish() {
 func (tp *tracingPack) trace(action string) trace.Span {
 	_, span := tp.tracer.Start(tp.ctx, action)
 	tp.setAttributes(span)
+
 	return span
 }
 

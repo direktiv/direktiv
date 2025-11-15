@@ -110,11 +110,11 @@ func (s *sqlRuntimeVariablesStore) GetByID(ctx context.Context, id uuid.UUID) (*
 	return variable, nil
 }
 
-func (s *sqlRuntimeVariablesStore) listByFieldValue(ctx context.Context, fieldNames []string, fieldValues []interface{}) ([]*datastore.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) listByFieldValue(ctx context.Context, fieldNames []string, fieldValues []any) ([]*datastore.RuntimeVariable, error) {
 	var variables []*datastore.RuntimeVariable
 
 	conditions := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 
 	for idx, fieldName := range fieldNames {
 		if fieldValues[idx] != nil {
@@ -142,17 +142,17 @@ func (s *sqlRuntimeVariablesStore) listByFieldValue(ctx context.Context, fieldNa
 }
 
 func (s *sqlRuntimeVariablesStore) ListForInstance(ctx context.Context, instanceID uuid.UUID) ([]*datastore.RuntimeVariable, error) {
-	return s.listByFieldValue(ctx, []string{"instance_id"}, []interface{}{instanceID.String()})
+	return s.listByFieldValue(ctx, []string{"instance_id"}, []any{instanceID.String()})
 }
 
 func (s *sqlRuntimeVariablesStore) ListForWorkflow(ctx context.Context, namespace string, workflowPath string) ([]*datastore.RuntimeVariable, error) {
 	workflowPath = path.Clean("/" + workflowPath)
 
-	return s.listByFieldValue(ctx, []string{"namespace", "workflow_path"}, []interface{}{namespace, workflowPath})
+	return s.listByFieldValue(ctx, []string{"namespace", "workflow_path"}, []any{namespace, workflowPath})
 }
 
 func (s *sqlRuntimeVariablesStore) ListForNamespace(ctx context.Context, namespace string) ([]*datastore.RuntimeVariable, error) {
-	return s.listByFieldValue(ctx, []string{"namespace", "workflow_path", "instance_id"}, []interface{}{namespace, nil, nil})
+	return s.listByFieldValue(ctx, []string{"namespace", "workflow_path", "instance_id"}, []any{namespace, nil, nil})
 }
 
 func (s *sqlRuntimeVariablesStore) get(ctx context.Context, variable *datastore.RuntimeVariable) (*datastore.RuntimeVariable, error) {
@@ -189,7 +189,7 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *datastore.
 	selectorField := ""
 
 	var extra string
-	args := []interface{}{
+	args := []any{
 		variable.MimeType, variable.Data, variable.Namespace, variable.Name,
 	}
 
@@ -237,7 +237,7 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *datastore.
 	}
 
 	newUUID := uuid.New()
-	args = append([]interface{}{newUUID}, args...)
+	args = append([]any{newUUID}, args...)
 
 	res = s.db.WithContext(ctx).Exec(fmt.Sprintf(`
 							INSERT INTO runtime_variables(

@@ -73,7 +73,7 @@ func waitForUserContainer() error {
 	}
 }
 
-// legacy logging, can be removed later
+// legacy logging, can be removed later.
 type requestMap struct {
 	mu      sync.Mutex
 	syncMap sync.Map
@@ -93,5 +93,6 @@ func (rm *requestMap) Get(id string) telemetry.LogObject {
 	if !ok {
 		return telemetry.LogObject{}
 	}
+
 	return lo.(telemetry.LogObject)
 }

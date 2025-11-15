@@ -306,9 +306,9 @@ func extractLogRequestParams(r *http.Request) logParams {
 
 type logEntry struct {
 	Time      time.Time             `json:"time"`
-	Msg       interface{}           `json:"msg"`
-	Level     interface{}           `json:"level"`
-	Namespace interface{}           `json:"namespace"`
+	Msg       any                   `json:"msg"`
+	Level     any                   `json:"level"`
+	Namespace any                   `json:"namespace"`
 	Workflow  *WorkflowEntryContext `json:"workflow,omitempty"`
 	Activity  *ActivityEntryContext `json:"activity,omitempty"`
 	Route     *RouteEntryContext    `json:"route,omitempty"`
@@ -323,10 +323,10 @@ type WorkflowEntryContext struct {
 }
 
 type ActivityEntryContext struct {
-	ID interface{} `json:"id,omitempty"`
+	ID any `json:"id,omitempty"`
 }
 type RouteEntryContext struct {
-	Path interface{} `json:"path,omitempty"`
+	Path any `json:"path,omitempty"`
 }
 
 func toFeatureLogEntry(e logEntryBackend) logEntry {

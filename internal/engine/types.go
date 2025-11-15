@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"encoding/json"
+	"maps"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/api/filter"
@@ -60,9 +61,7 @@ func (e *InstanceEvent) Clone() *InstanceEvent {
 	// deep copy Metadata
 	if e.Metadata != nil {
 		clone.Metadata = make(map[string]string, len(e.Metadata))
-		for k, v := range e.Metadata {
-			clone.Metadata[k] = v
-		}
+		maps.Copy(clone.Metadata, e.Metadata)
 	}
 
 	// deep copy json.RawMessage fields

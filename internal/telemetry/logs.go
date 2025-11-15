@@ -143,12 +143,14 @@ func LogNamespaceError(namespace, msg string, err error) {
 func SetInstanceLogState(ctx context.Context, state string) context.Context {
 	logObject := ctx.Value(DirektivLogCtx(LogObjectIdentifier)).(LogObject)
 	logObject.State = state
+
 	return context.WithValue(ctx, DirektivLogCtx(LogObjectIdentifier), logObject)
 }
 
 func SetInstanceLogStatus(ctx context.Context, status core.LogStatus) context.Context {
 	logObject := ctx.Value(DirektivLogCtx(LogObjectIdentifier)).(LogObject)
 	logObject.Status = status
+
 	return context.WithValue(ctx, DirektivLogCtx(LogObjectIdentifier), logObject)
 }
 

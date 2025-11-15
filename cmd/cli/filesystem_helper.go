@@ -201,7 +201,7 @@ func printLogSSE(ctx context.Context, instance string, profile profile) error {
 
 	go func() {
 		err := clientLogs.SubscribeWithContext(ctx, "message", func(msg *sse.Event) {
-			data := map[string]interface{}{}
+			data := map[string]any{}
 
 			if err := json.Unmarshal(msg.Data, &data); err != nil {
 				cancel()
@@ -212,7 +212,7 @@ func printLogSSE(ctx context.Context, instance string, profile profile) error {
 
 			formatLogEntry(data)
 
-			if wf, ok := data["workflow"].(map[string]interface{}); ok && (wf["status"] == string(core.LogCompletedStatus) || wf["status"] == string(core.LogFailedStatus) || wf["status"] == string(core.LogErrStatus)) {
+			if wf, ok := data["workflow"].(map[string]any); ok && (wf["status"] == string(core.LogCompletedStatus) || wf["status"] == string(core.LogFailedStatus) || wf["status"] == string(core.LogErrStatus)) {
 				cancel()
 				errCh <- nil
 
@@ -229,11 +229,11 @@ func printLogSSE(ctx context.Context, instance string, profile profile) error {
 	return err
 }
 
-func formatLogEntry(data map[string]interface{}) {
+func formatLogEntry(data map[string]any) {
 	type log struct {
-		workflow interface{}
-		instance interface{}
-		msg      interface{}
+		workflow any
+		instance any
+		msg      any
 	}
 
 	var l log
@@ -248,7 +248,7 @@ func formatLogEntry(data map[string]interface{}) {
 			l.msg = value
 		}
 
-		if nestedMap, ok := value.(map[string]interface{}); ok {
+		if nestedMap, ok := value.(map[string]any); ok {
 			wf, ok := nestedMap["workflow"]
 			if ok {
 				l.workflow = wf
