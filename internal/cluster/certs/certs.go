@@ -20,7 +20,7 @@ import (
 
 const (
 	rotationInterval = 10
-	secretName       = "direktiv-tls-secret" //nolint:gosec
+	secretName       = "direktiv-tls-secret"
 	dummyKey         = "dummy.crt"
 
 	hoursToRefresh = 168

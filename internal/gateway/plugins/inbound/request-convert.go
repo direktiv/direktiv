@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"maps"
 	"net/http"
 
 	"github.com/direktiv/direktiv/internal/core"
@@ -69,9 +70,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 	// convert query params
 	if !rcp.OmitQueries {
 		values := r.URL.Query()
-		for k, v := range values {
-			response.QueryParams[k] = v
-		}
+		maps.Copy(response.QueryParams, values)
 	}
 
 	// convert headers
@@ -109,8 +108,8 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 	if gateway.IsJSON(string(content)) {
 		response.Body = content
 	} else {
-		response.Body = []byte(fmt.Sprintf("{ \"data\": \"%s\" }",
-			base64.StdEncoding.EncodeToString(content)))
+		response.Body = fmt.Appendf(nil, "{ \"data\": \"%s\" }",
+			base64.StdEncoding.EncodeToString(content))
 	}
 
 	newBody, err := json.Marshal(response)

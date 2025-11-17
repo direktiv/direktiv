@@ -26,7 +26,7 @@ func (s *sqlTracesStore) Append(ctx context.Context, traces ...datastore.Trace) 
 	// The SQL query to insert multiple traces
 	q := `INSERT INTO traces (trace_id, span_id, parent_span_id, start_time, end_time, metadata) VALUES %s;`
 
-	var values []interface{}
+	var values []any
 	var placeholders []string
 
 	for _, trace := range traces {

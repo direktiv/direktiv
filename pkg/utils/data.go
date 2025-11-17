@@ -9,7 +9,7 @@ import (
 )
 
 // Checksum is a shortcut to calculate a hash for any given input by first marshalling it to json.
-func Checksum(x interface{}) string {
+func Checksum(x any) string {
 	data, err := json.Marshal(x)
 	if err != nil {
 		panic(err)
@@ -35,7 +35,7 @@ func ComputeHash(data []byte) (string, error) {
 }
 
 // Marshal is a shortcut to marshal any given input to json with our preferred indentation settings.
-func Marshal(x interface{}) string {
+func Marshal(x any) string {
 	data, err := json.MarshalIndent(x, "", "  ")
 	if err != nil {
 		panic(err)

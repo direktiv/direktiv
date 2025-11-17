@@ -119,7 +119,6 @@ func (e *serviceController) logs(w http.ResponseWriter, r *http.Request) {
 		}
 		_, _ = fmt.Fprintf(w, "%s", buffer[:n])
 
-		//nolint:forcetypeassert
 		w.(http.Flusher).Flush()
 		time.Sleep(10 * time.Millisecond)
 	}

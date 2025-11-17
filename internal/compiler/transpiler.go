@@ -49,8 +49,6 @@ func NewTranspiler() (*Transpiler, error) {
 }
 
 func (t *Transpiler) Transpile(script, name string) (string, string, error) {
-	// script = script + transitionCode
-
 	s := fmt.Sprintf("ts.transpileModule(%s('%s'), { compilerOptions: { sourceMap: true }, fileName: \"%s\", moduleName: \"default\", reportDiagnostics: false })",
 		t.fn, base64.StdEncoding.EncodeToString([]byte(script)), filepath.Base(name))
 
@@ -60,7 +58,7 @@ func (t *Transpiler) Transpile(script, name string) (string, string, error) {
 	}
 
 	// returns mapping and source file
-	g := value.Export().(map[string]any) //nolint:forcetypeassert
+	g := value.Export().(map[string]any)
 
 	scriptOut, ok := g["outputText"].(string)
 	if !ok {

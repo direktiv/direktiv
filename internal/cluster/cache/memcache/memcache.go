@@ -1,123 +1,143 @@
 package memcache
 
 import (
-	"encoding/json"
-	"fmt"
+	"context"
 	"log/slog"
 	"time"
 	"unsafe"
 
 	"github.com/dgraph-io/ristretto/v2"
+	"github.com/direktiv/direktiv/internal/cluster/cache"
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
+	"github.com/direktiv/direktiv/internal/core"
 )
 
-type cacheMessage struct {
-	Hostname string
-	Key      string
+const (
+	defaultCacheTTL = 5 * time.Minute
+)
+
+// type cacheMessage struct {
+// 	Hostname string
+// 	Key      string
+// }
+
+type CacheManager struct {
+	bus pubsub.EventBus
+
+	cacheSecret     *Cache[core.Secret]
+	cacheFlow       *Cache[core.TypescriptFlow]
+	cacheNamespaces *Cache[[]string]
 }
 
-type Cache struct {
-	cache    *ristretto.Cache[string, any]
-	bus      pubsub.EventBus
-	hostname string
-	logger   *slog.Logger
+type Cache[T any] struct {
+	name  string
+	cache *ristretto.Cache[string, T]
+	bus   pubsub.EventBus
 }
 
-func New(bus pubsub.EventBus, hostname string, enableMetrics bool, logger *slog.Logger) (*Cache, error) {
-	if logger != nil {
-		logger = logger.With("component", "cluster-cache")
-	} else {
-		logger = slog.New(slog.DiscardHandler)
+func NewManager(bus pubsub.EventBus) (*CacheManager, error) {
+	secrets, err := newCache[core.Secret](core.SecretsCacheName, bus)
+	if err != nil {
+		slog.Error("cannot create secret cache", slog.Any("error", err))
+		return nil, err
 	}
 
-	cache, err := ristretto.NewCache(&ristretto.Config[string, any]{
+	flows, err := newCache[core.TypescriptFlow](core.FlowCacheName, bus)
+	if err != nil {
+		slog.Error("cannot create flow cache", slog.Any("error", err))
+		return nil, err
+	}
+
+	namespaces, err := newCache[[]string]("namespaces", bus)
+	if err != nil {
+		slog.Error("cannot create namespace cache", slog.Any("error", err))
+		return nil, err
+	}
+
+	return &CacheManager{
+		cacheSecret:     secrets,
+		cacheFlow:       flows,
+		cacheNamespaces: namespaces,
+		bus:             bus,
+	}, nil
+}
+
+func newCache[T any](name string, bus pubsub.EventBus) (*Cache[T], error) {
+	c, err := ristretto.NewCache(&ristretto.Config[string, T]{
 		NumCounters: 10000000,
-		MaxCost:     1073741824,
+		MaxCost:     1 << 30,
 		BufferItems: 64,
-		Metrics:     enableMetrics,
+		OnEvict: func(item *ristretto.Item[T]) {
+			slog.Info("cache item evicted", slog.String("cache", name),
+				slog.Uint64("key", item.Key))
+		},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error creating ristretto instance: %w", err)
+		slog.Error("cannot create cache", slog.String("name", name),
+			slog.Any("error", err))
+
+		return nil, err
 	}
 
-	c := &Cache{
-		bus:      bus,
-		cache:    cache,
-		hostname: hostname,
-		logger:   logger,
+	return &Cache[T]{
+		name:  name,
+		cache: c,
+		bus:   bus,
+	}, nil
+}
+
+func (cm *CacheManager) NamespaceCache() cache.Cache[[]string] {
+	return cm.cacheNamespaces
+}
+
+func (cm *CacheManager) SecretsCache() cache.Cache[core.Secret] {
+	return cm.cacheSecret
+}
+
+func (cm *CacheManager) FlowCache() cache.Cache[core.TypescriptFlow] {
+	return cm.cacheFlow
+}
+
+func (c *Cache[T]) Get(key string, fetch func(...any) (T, error)) (T, error) {
+	var storeValue T
+	var err error
+
+	slog.Info("get key from cache", slog.String("cache", c.name), slog.String("key", key))
+
+	v, found := c.cache.Get(key)
+	if found {
+		slog.Info("found item in cache", slog.String("key", key))
+
+		return v, nil
 	}
 
-	err = c.subscribe()
+	storeValue, err = fetch()
 	if err != nil {
-		return nil, fmt.Errorf("error subscribing to cache events: %w", err)
+		return storeValue, err
 	}
 
-	return c, nil
+	c.Set(key, storeValue)
+
+	return storeValue, err
 }
 
-func (c *Cache) SetTTL(key string, value any, ttl int) {
-	if ttl == 0 {
-		c.cache.Set(key, value, int64(unsafe.Sizeof(value)))
-	} else {
-		c.cache.SetWithTTL(key, value, int64(unsafe.Sizeof(value)),
-			time.Duration(ttl)*time.Second)
-	}
-
-	c.cache.Wait()
-	c.publish(key)
-}
-
-func (c *Cache) Set(key string, value any) {
-	c.SetTTL(key, value, 0)
-}
-
-func (c *Cache) Delete(key string) {
+func (c *Cache[T]) Delete(key string) {
+	slog.Info("delete item from cache", slog.String("key", key))
 	c.cache.Del(key)
-	c.publish(key)
 }
 
-func (c *Cache) Get(key string) (any, bool) {
-	return c.cache.Get(key)
+func (c *Cache[T]) Set(key string, value T) {
+	slog.Info("set key in cache", slog.String("cache", c.name), slog.String("key", key))
+
+	c.cache.SetWithTTL(key, value,
+		int64(unsafe.Sizeof(value)), defaultCacheTTL)
 }
 
-func (c *Cache) Close() {
-	c.cache.Close()
-}
-
-func (c *Cache) Hits() uint64 {
-	return c.cache.Metrics.Hits()
-}
-
-func (c *Cache) Misses() uint64 {
-	return c.cache.Metrics.Misses()
-}
-
-func (c *Cache) publish(key string) {
-	cm := &cacheMessage{
-		Hostname: c.hostname,
-		Key:      key,
+func (c *Cache[T]) Notify(ctx context.Context, notify cache.CacheNotify) {
+	switch notify.Action {
+	case cache.CacheClear:
+		c.cache.Clear()
+	case cache.CacheDelete:
+		c.cache.Del(notify.Key)
 	}
-	b, err := json.Marshal(cm)
-	if err != nil {
-		slog.Error("cannot publish cache event", "err", err)
-	}
-
-	err = c.bus.Publish(pubsub.SubjCacheDelete, b)
-	if err != nil {
-		slog.Error("cannot publish cache event", "err", err)
-	}
-}
-
-func (c *Cache) subscribe() error {
-	return c.bus.Subscribe(pubsub.SubjCacheDelete, func(data []byte) {
-		var cm cacheMessage
-		err := json.Unmarshal(data, &cm)
-		if err != nil {
-			c.logger.Error("cannot unmarshal cache event", "error", err, "data", string(data))
-			return
-		}
-		if cm.Hostname != c.hostname {
-			c.cache.Del(cm.Key)
-		}
-	})
 }

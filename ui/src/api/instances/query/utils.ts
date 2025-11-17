@@ -1,35 +1,39 @@
-import { possibleInstanceStatuses, possibleTriggerValues } from "../schema";
+import { possibleInstanceStatuses, possibleInvokerValues } from "../schema";
 
 export const statusValues = possibleInstanceStatuses;
 
-export const triggerValues = possibleTriggerValues;
+export const invokerValues = possibleInvokerValues;
 
-type triggerValuesType = typeof possibleTriggerValues | `instance:${string}`;
+type invokerValuesType = typeof possibleInvokerValues | `instance:${string}`;
 
-export type TriggerValue = triggerValuesType[number];
+export type InvokerValue = invokerValuesType[number];
 export type StatusValue = (typeof statusValues)[number];
 
 export type FiltersObj = {
-  AS?: { type: "CONTAINS" | "WORKFLOW"; value: string };
-  STATUS?: {
-    type: "MATCH";
+  path?: { operator?: "cn"; value: string };
+  status?: {
+    operator?: "eq";
     value: StatusValue;
   };
-  TRIGGER?: {
-    type: "MATCH";
-    value: TriggerValue;
+  invoker?: {
+    operator?: "eq";
+    value: InvokerValue;
   };
-  AFTER?: { type: "AFTER"; value: Date };
-  BEFORE?: { type: "BEFORE"; value: Date };
+  createdAtLt?: {
+    operator: "lt";
+    value: Date;
+  };
+  createdAtGt?: {
+    operator: "gt";
+    value: Date;
+  };
 };
 
 export const getFilterQuery = (filters: FiltersObj) => {
   let query = "";
   const filterFields = Object.keys(filters) as Array<keyof FiltersObj>;
-
   filterFields.forEach((field) => {
     const filterItem = filters[field];
-
     // Without the guard, TS thinks filterItem may be undefined
     if (!filterItem) {
       return console.error("filterItem is not defined");
@@ -38,24 +42,27 @@ export const getFilterQuery = (filters: FiltersObj) => {
     let queryField: string;
     let queryValue: string;
 
-    if (field === "AFTER" || field === "BEFORE") {
+    const queryOperator = filters[field]?.operator ?? undefined;
+
+    if (field === "createdAtLt" || field === "createdAtGt") {
       const date = filters[field]?.value;
       if (!date) {
         throw new Error("date is not defined in date filter");
       }
-      queryField = "CREATED";
+      queryField = "createdAt";
       queryValue = date.toISOString();
     } else {
       const value = filters[field]?.value;
       if (!value) {
         throw new Error("filter value is not defined");
       }
+
       queryField = field;
       queryValue = value;
     }
 
     query = query.concat(
-      `&filter.field=${queryField}&filter.type=${filterItem.type}&filter.val=${queryValue}`
+      `&filter[${queryField}]${queryOperator ? `[${queryOperator}]` : ""}=${queryValue}`
     );
   });
 

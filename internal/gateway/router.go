@@ -25,8 +25,6 @@ type router struct {
 }
 
 // buildRouter compiles a new gateway router from endpoints and consumers lists.
-//
-//nolint:gocognit
 func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 	gateways []core.Gateway,
 ) *router {
@@ -147,7 +145,6 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 				}
 
 				if hasOutboundConfigured {
-					//nolint:forcetypeassert
 					w := w.(*httptest.ResponseRecorder)
 					// Copy headers to the original writer.
 					for key, values := range w.Header() {

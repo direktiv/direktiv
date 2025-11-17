@@ -8,7 +8,6 @@ import (
 
 var ErrNotFound = errors.New("ErrNotFound")
 
-// nolint:revive
 type Config struct {
 	DirektivNamespace string `env:"DIREKTIV_NAMESPACE"`
 

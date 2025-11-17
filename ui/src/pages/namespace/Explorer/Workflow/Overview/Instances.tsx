@@ -14,7 +14,7 @@ const Instances = ({ workflow }: { workflow: string }) => {
   const { data } = useInstances({
     limit: 10,
     offset: 0,
-    filters: { AS: { type: "WORKFLOW", value: forceLeadingSlash(workflow) } },
+    filters: { path: { operator: "cn", value: forceLeadingSlash(workflow) } },
   });
 
   const instances = data?.data ?? [];
