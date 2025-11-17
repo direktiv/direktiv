@@ -276,8 +276,21 @@ describe("default form values", () => {
                 optional: false,
                 type: "form-select",
                 values: {
-                  type: "array",
-                  value: ["free", "pro", "enterprise"],
+                  type: "static-select-options",
+                  value: [
+                    {
+                      label: "Free",
+                      value: "free",
+                    },
+                    {
+                      label: "Pro",
+                      value: "pro",
+                    },
+                    {
+                      label: "Enterprise",
+                      value: "enterprise",
+                    },
+                  ],
                 },
                 defaultValue: "free",
               },
@@ -309,8 +322,21 @@ describe("default form values", () => {
                 optional: false,
                 type: "form-select",
                 values: {
-                  type: "array",
-                  value: ["free", "pro", "enterprise"],
+                  type: "static-select-options",
+                  value: [
+                    {
+                      label: "Free",
+                      value: "free",
+                    },
+                    {
+                      label: "Pro",
+                      value: "pro",
+                    },
+                    {
+                      label: "Enterprise",
+                      value: "enterprise",
+                    },
+                  ],
                 },
                 defaultValue: "{{query.user.data.subscriptionPlan}}",
               },
@@ -449,8 +475,21 @@ describe("default form values", () => {
                 optional: false,
                 type: "form-select",
                 values: {
-                  type: "array",
-                  value: ["free", "pro", "enterprise"],
+                  type: "static-select-options",
+                  value: [
+                    {
+                      label: "Free",
+                      value: "free",
+                    },
+                    {
+                      label: "Pro",
+                      value: "pro",
+                    },
+                    {
+                      label: "Enterprise",
+                      value: "enterprise",
+                    },
+                  ],
                 },
                 defaultValue: "{{query.user.data}}",
               },
