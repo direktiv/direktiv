@@ -26,15 +26,6 @@ declare function finish<T>(data: T);
 declare function sleep(seconds: number): void;
 
 /**
- * Gets the secrets specified in the argument.
- * @param keys an array of secret ids.
- */
-// Not currently implemented
-// declare function getSecrets<T extends readonly string[]>(
-//   keys: readonly [...T]
-// ): { [K in T[number]]: string };
-
-/**
  * Returns the instance id of the workflow
  */
 declare function id(): string;
@@ -61,8 +52,10 @@ declare type DateObject = {
 declare function now(): DateObject;
 
 declare type ActionConfig = {
-  type: string; // todo: enum
+  type: "local" | "namespace" | "system";
+  size: "small" | "medium" | "large";
   image: string;
+  retries: number;
   envs: {
     name: string;
     value: string;
@@ -74,4 +67,4 @@ declare type ActionConfig = {
  * typescript function.
  * @param ActionConfig
  */
-declare function generateAction(ActionConfig): () => void;
+declare function generateAction(config: ActionConfig): () => void;
