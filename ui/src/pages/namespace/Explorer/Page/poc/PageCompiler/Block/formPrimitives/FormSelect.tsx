@@ -47,7 +47,10 @@ export const FormSelect = ({ blockProps }: FormSelectProps) => {
       };
     });
   } else {
-    resolvedValues = values.value.map((value) => ({ label: value, value }));
+    resolvedValues = values.value.map(({ label, value }) => ({
+      label: interpolateString(label),
+      value: interpolateString(value),
+    }));
   }
 
   const value = resolvedValues.find((v) => v.value === resolvedDefaultValue);
