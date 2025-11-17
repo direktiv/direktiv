@@ -52,6 +52,7 @@ const EditorModeSwitcher: FC<EditorModeSwitcherProps> = ({
               <TooltipTrigger asChild>
                 <div className="flex grow">
                   <Toggle
+                    data-testid={button.id}
                     onClick={() => {
                       onChange(button.id);
                     }}
