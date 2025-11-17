@@ -24,7 +24,6 @@ type logController struct {
 
 type logParams struct {
 	namespace     string
-	callpath      string
 	scope         string
 	id            string
 	limit         string
@@ -57,9 +56,6 @@ func (l logParams) toQuery() string {
 	}
 
 	idQuery := fmt.Sprintf("id:=%s", l.id)
-	if l.callpath != "" {
-		idQuery = fmt.Sprintf("callpath:/%s/*", l.id)
-	}
 
 	pipe := ""
 	if len(queryParts) > 0 {
@@ -265,7 +261,6 @@ func parseQueryTime(input string) (time.Time, error) {
 	return time.Time{}, errors.New("unrecognized time format")
 }
 
-// nolint:canonicalheader
 func extractLogRequestParams(r *http.Request) logParams {
 	var logParams logParams
 
@@ -293,7 +288,6 @@ func extractLogRequestParams(r *http.Request) logParams {
 	if r.URL.Query().Get("instance") != "" {
 		logParams.scope = "instance"
 		logParams.id = r.URL.Query().Get("instance")
-		logParams.callpath = r.URL.Query().Get("instance")
 	}
 
 	if r.URL.Query().Get("activity") != "" {
@@ -311,9 +305,9 @@ func extractLogRequestParams(r *http.Request) logParams {
 
 type logEntry struct {
 	Time      time.Time             `json:"time"`
-	Msg       interface{}           `json:"msg"`
-	Level     interface{}           `json:"level"`
-	Namespace interface{}           `json:"namespace"`
+	Msg       any                   `json:"msg"`
+	Level     any                   `json:"level"`
+	Namespace any                   `json:"namespace"`
 	Workflow  *WorkflowEntryContext `json:"workflow,omitempty"`
 	Activity  *ActivityEntryContext `json:"activity,omitempty"`
 	Route     *RouteEntryContext    `json:"route,omitempty"`
@@ -325,14 +319,13 @@ type WorkflowEntryContext struct {
 	State    string `json:"state"`
 	Path     string `json:"workflow"`
 	Instance string `json:"instance"`
-	CallPath string `json:"callpath"`
 }
 
 type ActivityEntryContext struct {
-	ID interface{} `json:"id,omitempty"`
+	ID any `json:"id,omitempty"`
 }
 type RouteEntryContext struct {
-	Path interface{} `json:"path,omitempty"`
+	Path any `json:"path,omitempty"`
 }
 
 func toFeatureLogEntry(e logEntryBackend) logEntry {
@@ -351,7 +344,6 @@ func toFeatureLogEntry(e logEntryBackend) logEntry {
 			Path:     e.Path,
 			State:    e.State,
 			Instance: e.ID,
-			CallPath: e.CallPath,
 		}
 	}
 
@@ -376,7 +368,6 @@ type logEntryBackend struct {
 	Msg         string    `json:"_msg"`
 	P           string    `json:"_p"`
 	Invoker     string    `json:"invoker"`
-	CallPath    string    `json:"callpath"`
 	Level       string    `json:"level"`
 	Namespace   string    `json:"namespace"`
 	Status      string    `json:"status"`

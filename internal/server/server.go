@@ -31,14 +31,14 @@ import (
 	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
-	_ "github.com/lib/pq" //nolint:revive
+	_ "github.com/lib/pq"
+	"github.com/nats-io/nats.go"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"k8s.io/utils/clock"
 )
 
-//nolint:gocognit, maintidx
 func Start(lc *lifecycle.Manager) error {
 	var err error
 	config := &core.Config{}
@@ -48,7 +48,7 @@ func Start(lc *lifecycle.Manager) error {
 	if err := config.Init(); err != nil {
 		return fmt.Errorf("init config, err: %w", err)
 	}
-	initSLog(config)
+	InitSLog(config)
 
 	// Create App struct
 	app := api.InitializeArgs{
@@ -82,6 +82,43 @@ func Start(lc *lifecycle.Manager) error {
 	}
 	datastore.SymmetricEncryptionKey = config.SecretKey
 
+	{
+		err = telemetry.InitOpenTelemetry(lc.Context(), config.OtelBackend)
+		if err != nil {
+			return fmt.Errorf("initialize open telemetry, err: %w", err)
+		}
+	}
+
+	var js nats.JetStreamContext
+	{
+		slog.Info("initializing engine-nats")
+		nc, err := intNats.Connect()
+		if err != nil {
+			return fmt.Errorf("create engine-nats, err: %w", err)
+		}
+
+		// TODO: remove this dev code.
+		{
+			js, err := nc.JetStream()
+			if err != nil {
+				return fmt.Errorf("reset streams, err: %w", err)
+			}
+			err = intNats.ResetStreams(context.Background(), js)
+			if err != nil {
+				err = fmt.Errorf("reset streams, err: %w", err)
+			}
+		}
+
+		js, err = intNats.SetupJetStream(context.Background(), nc)
+		if err != nil {
+			return fmt.Errorf("create engine-nats, err: %w", err)
+		}
+
+		lc.OnShutdown(func() error {
+			return nc.Drain()
+		})
+	}
+
 	// initializing pubsub
 	{
 		slog.Info("initializing pubsub")
@@ -102,12 +139,12 @@ func Start(lc *lifecycle.Manager) error {
 	// initializing memcache
 	{
 		slog.Info("initializing memcache")
-		app.Cache, err = memcache.New(app.PubSub, os.Getenv("POD_NAME"), false, slog.Default())
+		app.CacheManager, err = memcache.NewManager(app.PubSub)
 		if err != nil {
 			return fmt.Errorf("create memcache, err: %w", err)
 		}
 		lc.OnShutdown(func() error {
-			app.Cache.Close()
+			// app.Cache.Close()
 			return nil
 		})
 	}
@@ -115,7 +152,10 @@ func Start(lc *lifecycle.Manager) error {
 	// initializing secrets-handler
 	{
 		slog.Info("initializing secrets-handler")
-		app.SecretsManager = secrets.NewManager(app.DB, app.Cache)
+		app.SecretsManager, err = secrets.NewManager(config, app.CacheManager.SecretsCache())
+		if err != nil {
+			return fmt.Errorf("create secrets-manager, err: %w", err)
+		}
 	}
 
 	// initializing service-manager
@@ -142,55 +182,48 @@ func Start(lc *lifecycle.Manager) error {
 		if err != nil {
 			return fmt.Errorf("start service-manager, err: %w", err)
 		}
+		app.PubSub.Subscribe(pubsub.SubjServiceIgnite, func(data []byte) {
+			// var svc core.ServiceFileData
+			// err := json.Unmarshal(data, &svc)
+			// if err != nil {
+			// 	slog.Error("cannot ignite service", slog.Any("error", err))
+			// }
+
+			err = datasql.NewStore(app.DB).HeartBeats().Set(lc.Context(), &datastore.HeartBeat{
+				Group: "life_services",
+				Key:   string(data),
+			})
+			if err != nil {
+				slog.Error("cannot ignite service", slog.Any("error", err))
+			}
+
+			err = app.ServiceManager.IgniteService(string(data))
+			if err != nil {
+				slog.Error("cannot ignite service", slog.Any("error", err))
+			}
+		})
 
 		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager)
+			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
 		})
 		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager)
+			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
 		})
 		// call at least once before booting
-		renderServiceFiles(app.DB, app.ServiceManager)
+		renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
 	}
 
 	// initializing engine
 	{
 		// prepare compiler
-		comp, err := compiler.NewCompiler(app.DB, app.Cache)
+		comp, err := compiler.NewCompiler(app.DB, app.CacheManager.FlowCache())
 		if err != nil {
 			return fmt.Errorf("creating compiler, err: %w", err)
 		}
 
-		slog.Info("initializing engine-nats")
-		nc, err := intNats.Connect()
-		if err != nil {
-			return fmt.Errorf("create engine-nats, err: %w", err)
-		}
-
-		// TODO: remove this dev code.
-		{
-			js, err := nc.JetStream()
-			if err != nil {
-				return fmt.Errorf("reset streams, err: %w", err)
-			}
-			err = intNats.ResetStreams(context.Background(), js)
-			if err != nil {
-				err = fmt.Errorf("reset streams, err: %w", err)
-			}
-		}
-
-		js, err := intNats.SetupJetStream(context.Background(), nc)
-		if err != nil {
-			return fmt.Errorf("create engine-nats, err: %w", err)
-		}
-
-		lc.OnShutdown(func() error {
-			return nc.Drain()
-		})
-
 		slog.Info("initializing engine")
 		app.Engine, err = engine.NewEngine(
-			databus.New(js),
+			databus.New(js, app.PubSub),
 			comp,
 			js,
 		)
@@ -318,7 +351,7 @@ func initDB(config *core.Config) (*gorm.DB, error) {
 	return db, nil
 }
 
-func initSLog(cfg *core.Config) {
+func InitSLog(cfg *core.Config) {
 	lvl := new(slog.LevelVar)
 	lvl.Set(slog.LevelInfo)
 

@@ -1,64 +1,60 @@
 import { FiltersObj, getFilterQuery } from "../utils";
 import { describe, expect, test } from "vitest";
 
-const filterByAs: FiltersObj = {
-  AS: { type: "CONTAINS", value: "Findme" },
+const filterByPath: FiltersObj = {
+  path: { operator: "cn", value: "Findme" },
 };
 
 const filterByStatus: FiltersObj = {
-  STATUS: { type: "MATCH", value: "failed" },
+  status: { value: "failed" },
 };
 
-const filterByTrigger: FiltersObj = {
-  TRIGGER: { type: "MATCH", value: "cloudevent" },
+const filterByInvoker: FiltersObj = {
+  invoker: { value: "event" },
 };
 
 const filterByAfter: FiltersObj = {
-  AFTER: { type: "AFTER", value: new Date("2023-04-01T09:24:33.120Z") },
+  createdAtGt: { operator: "gt", value: new Date("2023-04-01T09:24:33.120Z") },
 };
 
 const filterByBefore: FiltersObj = {
-  BEFORE: { type: "BEFORE", value: new Date("2023-05-23T11:11:21.817Z") },
+  createdAtLt: { operator: "lt", value: new Date("2023-05-23T11:11:21.817Z") },
 };
 
-const filterByAsTriggerStatus: FiltersObj = {
-  ...filterByAs,
-  ...filterByTrigger,
+const filterByPathInvokerStatus: FiltersObj = {
+  ...filterByPath,
+  ...filterByInvoker,
   ...filterByStatus,
 };
 
-const filterByTriggerAfterBefore: FiltersObj = {
-  ...filterByTrigger,
+const filterByInvokerAfterBefore: FiltersObj = {
+  ...filterByInvoker,
   ...filterByAfter,
   ...filterByBefore,
 };
 
-const filterByAsBefore: FiltersObj = {
-  ...filterByAs,
+const filterByPathBefore: FiltersObj = {
+  ...filterByPath,
   ...filterByBefore,
 };
 
-const queryForAs = "&filter.field=AS&filter.type=CONTAINS&filter.val=Findme";
-const queryForStatus =
-  "&filter.field=STATUS&filter.type=MATCH&filter.val=failed";
-const queryForTrigger =
-  "&filter.field=TRIGGER&filter.type=MATCH&filter.val=cloudevent";
-const queryForAfter =
-  "&filter.field=CREATED&filter.type=AFTER&filter.val=2023-04-01T09:24:33.120Z";
-const queryForBefore =
-  "&filter.field=CREATED&filter.type=BEFORE&filter.val=2023-05-23T11:11:21.817Z";
+const queryForPath = "&filter[path][cn]=Findme";
+const queryForStatus = "&filter[status]=failed";
+const queryForInvoker = "&filter[invoker]=event";
+const queryForAfter = "&filter[createdAt][gt]=2023-04-01T09:24:33.120Z";
+const queryForBefore = "&filter[createdAt][lt]=2023-05-23T11:11:21.817Z";
 
 describe("getFilterQuery", () => {
   test("it returns a query string for filtering by name", () => {
-    expect(getFilterQuery(filterByAs)).toBe(queryForAs);
+    expect(getFilterQuery(filterByPath)).toBe(queryForPath);
   });
 
   test("it returns a query string for filtering by status", () => {
     expect(getFilterQuery(filterByStatus)).toBe(queryForStatus);
   });
 
-  test("it returns a query string for filtering by trigger", () => {
-    expect(getFilterQuery(filterByTrigger)).toBe(queryForTrigger);
+  test("it returns a query string for filtering by invoker", () => {
+    expect(getFilterQuery(filterByInvoker)).toBe(queryForInvoker);
   });
 
   test("it returns a query string for filtering by created after", () => {
@@ -69,19 +65,21 @@ describe("getFilterQuery", () => {
     expect(getFilterQuery(filterByBefore)).toBe(queryForBefore);
   });
 
-  test("it returns a query string for multiple filters: name, trigger, status", () => {
-    expect(getFilterQuery(filterByAsTriggerStatus)).toBe(
-      queryForAs + queryForTrigger + queryForStatus
+  test("it returns a query string for multiple filters: name, invoker, status", () => {
+    expect(getFilterQuery(filterByPathInvokerStatus)).toBe(
+      queryForPath + queryForInvoker + queryForStatus
     );
   });
 
   test("it returns a query string for multiple filters: name, before", () => {
-    expect(getFilterQuery(filterByAsBefore)).toBe(queryForAs + queryForBefore);
+    expect(getFilterQuery(filterByPathBefore)).toBe(
+      queryForPath + queryForBefore
+    );
   });
 
-  test("it returns a query string for multiple filters: trigger, after, before", () => {
-    expect(getFilterQuery(filterByTriggerAfterBefore)).toBe(
-      queryForTrigger + queryForAfter + queryForBefore
+  test("it returns a query string for multiple filters: invoker, after, before", () => {
+    expect(getFilterQuery(filterByInvokerAfterBefore)).toBe(
+      queryForInvoker + queryForAfter + queryForBefore
     );
   });
 });

@@ -20,20 +20,20 @@ type FiltersProps = {
 
 type MenuAnchor =
   | "main"
-  | "AS"
-  | "STATUS"
-  | "TRIGGER"
-  | "AFTER"
-  | "BEFORE"
-  | "AFTER.time"
-  | "BEFORE.time";
+  | "path"
+  | "status"
+  | "invoker"
+  | "createdAtGt"
+  | "createdAtLt"
+  | "createdAtGt.time"
+  | "createdAtLt.time";
 
 const fieldsInMenu: Array<keyof FiltersObj> = [
-  "AS",
-  "STATUS",
-  "TRIGGER",
-  "AFTER",
-  "BEFORE",
+  "path",
+  "status",
+  "invoker",
+  "createdAtGt",
+  "createdAtLt",
 ];
 
 const Filters = ({ filters, onUpdate }: FiltersProps) => {
@@ -96,8 +96,9 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
         // For type safety, one separate return is required below for every type
         // so it is possible to assert filters[field]?.value is defined and TS
         // does not merge the different possible types of filters[field]?.value
+        const operator = field === "createdAtGt" ? "gt" : "lt";
 
-        if (field === "AS") {
+        if (field === "path") {
           return (
             <ButtonBar key={field}>
               <Button variant="outline" asChild>
@@ -113,21 +114,23 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   <Button variant="outline">{filters[field]?.value}</Button>
                 </PopoverTrigger>
                 <PopoverContent align="start">
-                  {field === "AS" && (
+                  {field === "path" && (
                     <TextInput
                       value={filters[field]?.value}
                       onSubmit={(value) => {
                         if (value) {
                           setFilter({
-                            [field]: { value, type: "CONTAINS" },
+                            [field]: { value, operator: "cn" },
                           });
                         } else {
                           clearFilter(field);
                         }
                       }}
-                      heading={t("pages.instances.list.filter.placeholder.AS")}
+                      heading={t(
+                        "pages.instances.list.filter.menuHeading.path"
+                      )}
                       placeholder={t(
-                        "pages.instances.list.filter.placeholder.AS"
+                        "pages.instances.list.filter.placeholder.path"
                       )}
                     />
                   )}
@@ -144,7 +147,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
           );
         }
 
-        if (field === "STATUS" || field === "TRIGGER") {
+        if (field === "status" || field === "invoker") {
           return (
             <ButtonBar key={field}>
               <Button variant="outline" asChild>
@@ -160,14 +163,14 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   <Button variant="outline">{filters[field]?.value}</Button>
                 </PopoverTrigger>
                 <PopoverContent align="start">
-                  {field === "STATUS" && (
+                  {field === "status" && (
                     <Options
                       field={field}
                       value={filters[field]?.value}
                       setFilter={setFilter}
                     />
                   )}
-                  {field === "TRIGGER" && (
+                  {field === "invoker" && (
                     <Options
                       field={field}
                       value={filters[field]?.value}
@@ -187,7 +190,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
           );
         }
 
-        if (field === "AFTER" || field == "BEFORE") {
+        if (field === "createdAtGt" || field === "createdAtLt") {
           const dateValue = filters[field]?.value;
           if (!dateValue) {
             console.error("Early return: dateValue is not defined");
@@ -210,17 +213,21 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start">
-                  {(field === "AFTER" || field === "BEFORE") && (
+                  {(field === "createdAtGt" || field === "createdAtLt") && (
                     <DatePicker
                       date={filters[field]?.value}
                       heading={t(
                         `pages.instances.list.filter.menuHeading.${field}`
                       )}
-                      onChange={(value) =>
+                      onChange={(value) => {
                         setFilter({
-                          [field]: { field, type: field, value },
-                        })
-                      }
+                          [field]: {
+                            field,
+                            operator,
+                            value,
+                          },
+                        });
+                      }}
                     />
                   )}
                 </PopoverContent>
@@ -240,7 +247,12 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   <RefineTime
                     date={dateValue}
                     onChange={(newDate) => {
-                      setFilter({ [field]: { value: newDate, type: field } });
+                      setFilter({
+                        [field]: {
+                          value: newDate,
+                          operator,
+                        },
+                      });
                     }}
                   />
                 </PopoverContent>
@@ -296,37 +308,40 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                 )}
               />
             )) ||
-              (selectedField === "AS" && (
+              (selectedField === "path" && (
                 <TextInput
                   value={filters[selectedField]?.value}
                   onSubmit={(value) => {
                     if (value) {
                       setFilter({
-                        [selectedField]: { value, type: "CONTAINS" },
+                        [selectedField]: { value, operator: "cn" },
                       });
                     } else {
                       clearFilter(selectedField);
                     }
                   }}
-                  heading={t("pages.instances.list.filter.placeholder.AS")}
-                  placeholder={t("pages.instances.list.filter.placeholder.AS")}
+                  heading={t("pages.instances.list.filter.menuHeading.path")}
+                  placeholder={t(
+                    "pages.instances.list.filter.placeholder.path"
+                  )}
                 />
               )) ||
-              (selectedField === "STATUS" && (
+              (selectedField === "status" && (
                 <Options
                   field={selectedField}
                   value={filters[selectedField]?.value}
                   setFilter={setFilter}
                 />
               )) ||
-              (selectedField === "TRIGGER" && (
+              (selectedField === "invoker" && (
                 <Options
                   field={selectedField}
                   value={filters[selectedField]?.value}
                   setFilter={setFilter}
                 />
               )) ||
-              ((selectedField === "AFTER" || selectedField === "BEFORE") && (
+              ((selectedField === "createdAtGt" ||
+                selectedField === "createdAtLt") && (
                 <DatePicker
                   date={filters[selectedField]?.value}
                   heading={t(
@@ -334,7 +349,11 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   )}
                   onChange={(value) =>
                     setFilter({
-                      [selectedField]: { type: selectedField, value },
+                      [selectedField]: {
+                        type: selectedField,
+                        operator: selectedField === "createdAtGt" ? "gt" : "lt",
+                        value,
+                      },
                     })
                   }
                 />

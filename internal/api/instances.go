@@ -180,10 +180,12 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	st, notify, err := e.engine.StartWorkflow(r.Context(), namespace, path, string(input), map[string]string{
-		core.EngineMappingPath:   path,
-		engine.LabelWithNotify:   strconv.FormatBool(withWait),
-		engine.LabelWithSyncExec: strconv.FormatBool(withSyncExec),
-		engine.LabelInvokerType:  "api",
+		core.EngineMappingPath:      path,
+		core.EngineMappingNamespace: namespace,
+		core.EngineMappingCaller:    "api",
+		engine.LabelWithNotify:      strconv.FormatBool(withWait),
+		engine.LabelWithSyncExec:    strconv.FormatBool(withSyncExec),
+		engine.LabelInvokerType:     "api",
 	})
 	if err != nil {
 		writeEngineError(w, err)
@@ -202,6 +204,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		writeError(w, &Error{
 			Message: st.Error,
 		})
+
 		return
 	}
 

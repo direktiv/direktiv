@@ -2,8 +2,11 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
+	"github.com/direktiv/direktiv/internal/cluster/cache"
+	"github.com/direktiv/direktiv/internal/compiler"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/pkg/filestore"
@@ -37,7 +40,6 @@ func renderGatewayFiles(db *gorm.DB, manager core.GatewayManager) {
 		}
 		for i, file := range files {
 			data := dataList[i]
-			//nolint:exhaustive
 			switch file.Typ {
 			case filestore.FileTypeConsumer:
 				consumers = append(consumers, core.ParseConsumerFile(ns.Name, file.Path, data))
@@ -54,7 +56,86 @@ func renderGatewayFiles(db *gorm.DB, manager core.GatewayManager) {
 	}
 }
 
-func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager) {
-	// TODO: fix nil data params below.
-	return
+func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
+	cacheManager cache.Manager,
+) {
+	ctx := context.Background()
+	dStore := datasql.NewStore(db)
+
+	namespaces, err := dStore.Namespaces().GetAll(ctx)
+	if err != nil {
+		slog.Error("cannot render files", slog.Any("error", err))
+		return
+	}
+
+	fStore := filesql.NewStore(db)
+
+	funConfigList := []*core.ServiceFileData{}
+	for i := range namespaces {
+		ns := namespaces[i]
+		files, err := fStore.ForRoot(ns.Name).ListAllFiles(ctx)
+		if err != nil {
+			slog.Error("cannot get namespace",
+				slog.String("name", ns.Name), slog.Any("error", err))
+
+			continue
+		}
+
+		for a := range files {
+			f := files[a]
+
+			switch f.Typ {
+			case filestore.FileTypeWorkflow:
+				c, err := compiler.NewCompiler(db, cacheManager.FlowCache())
+				if err != nil {
+					slog.Error("cannot get compiler for workflow",
+						slog.String("namespace", ns.Name),
+						slog.String("path", f.Path), slog.Any("error", err))
+
+					continue
+				}
+				s, err := c.FetchScript(ctx, ns.Name, f.Path)
+				if err != nil {
+					slog.Error("cannot generate script",
+						slog.String("namespace", ns.Name),
+						slog.String("path", f.Path), slog.Any("error", err))
+
+					continue
+				}
+
+				// setup secrets
+				for i := range s.Config.Secrets {
+					secret := s.Config.Secrets[i]
+					fmt.Printf("SECRET %s %s\n", ns.Name, secret)
+				}
+
+				// to make it unique for flow actions, we use a hash as name
+				for k := range s.Config.Actions {
+					action := s.Config.Actions[k]
+
+					sf := core.ServiceFile{
+						Image: action.Image,
+						Cmd:   action.Cmd,
+						Size:  action.Size,
+						Envs:  action.Envs,
+					}
+
+					sd := &core.ServiceFileData{
+						Typ:         core.ServiceTypeWorkflow,
+						Name:        "",
+						Namespace:   ns.Name,
+						FilePath:    f.Path,
+						ServiceFile: sf,
+					}
+
+					// set name for workflow action
+					sd.Name = sd.GetValueHash()
+
+					funConfigList = append(funConfigList, sd)
+				}
+			}
+		}
+	}
+
+	serviceManager.SetServices(funConfigList)
 }

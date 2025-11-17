@@ -74,6 +74,12 @@ tasks:
       -e GOMODCACHE=/root/.cache/go/pkg/mod  \
       golangci/golangci-lint:v2.5.0 golangci-lint run --verbose --config /app/.golangci.yaml
 
+  lint-second:
+    desc: Runs Go linting
+    cmds:
+      - |
+        (cd tests && docker run -v $PWD:$PWD -w $PWD -it node:20 npm run lint)
+
   licenses:
     desc: Scans dependencies looking for blacklisted licenses.
     cmds:

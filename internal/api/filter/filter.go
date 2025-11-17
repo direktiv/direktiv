@@ -1,6 +1,7 @@
 package filter
 
 import (
+	"maps"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -307,9 +308,7 @@ func cloneValues(m Values) Values {
 	clone := make(Values, len(m))
 	for key, innerMap := range m {
 		innerClone := make(map[string]string, len(innerMap))
-		for k, v := range innerMap {
-			innerClone[k] = v
-		}
+		maps.Copy(innerClone, innerMap)
 		clone[key] = innerClone
 	}
 

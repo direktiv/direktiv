@@ -583,8 +583,8 @@
         "tableHeader": {
           "name": "name",
           "id": "id",
-          "invoker": "trigger",
-          "state": "state",
+          "invoker": "invoker",
+          "status": "status",
           "startedAt": "started at",
           "finishedAt": "finished at",
           "childInstances": {
@@ -604,24 +604,24 @@
           "filterButton": "Filter",
           "menuHeading": {
             "main": "Select filter",
-            "AS": "filter by name",
-            "STATUS": "filter by status",
-            "TRIGGER": "filter by trigger",
-            "AFTER": "filter created after",
-            "BEFORE": "filter created before"
+            "path": "filter by name",
+            "status": "filter by status",
+            "invoker": "filter by invoker",
+            "createdAtGt": "filter created after",
+            "createdAtLt": "filter created before"
           },
           "field": {
-            "AS": "name",
-            "STATUS": "status",
-            "TRIGGER": "trigger",
-            "AFTER": "created after",
-            "BEFORE": "created before"
+            "path": "name",
+            "status": "status",
+            "invoker": "invoker",
+            "createdAtGt": "created after",
+            "createdAtLt": "created before"
           },
           "placeholder": {
             "mainMenu": "Type or select a field...",
-            "AS": "filename.yaml",
-            "STATUS": "Type or select status...",
-            "TRIGGER": "Type or select trigger type..."
+            "path": "filename.wf.ts",
+            "status": "Type or select status...",
+            "invoker": "Type or select invoker type..."
           }
         }
       },
@@ -629,7 +629,7 @@
         "header": {
           "openWorkflow": "Open workflow",
           "cancelWorkflow": "Cancel workflow",
-          "invoker": "trigger",
+          "invoker": "invoker",
           "state": "state",
           "startedAt": "started at",
           "finishedAt": "finished at",
@@ -655,7 +655,7 @@
             },
             "placeholder": {
               "mainMenu": "Type or select a field...",
-              "workflowName": "/path/filename.yaml",
+              "workflowName": "/path/filename.wf.ts",
               "stateName": "someStateName"
             }
           }

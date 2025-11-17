@@ -19,15 +19,6 @@ func Test_HeartBeats(t *testing.T) {
 		t.Fatalf("unepxected NewTestDBWithNamespace() error = %v", err)
 	}
 	ds := datasql.NewStore(conn)
-	err = ds.Secrets().Set(context.Background(), &datastore.Secret{
-		Name:      "test",
-		Namespace: ns,
-		Data:      []byte("value"),
-	})
-	if err != nil {
-		t.Errorf("error: %v", err)
-	}
-
 	res, err := ds.HeartBeats().Since(context.Background(), "some_group", 0)
 	if err != nil {
 		t.Errorf("error: %v", err)

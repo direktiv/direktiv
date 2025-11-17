@@ -35,7 +35,7 @@ func (ss *sqlStagingEventStore) Append(ctx context.Context, events ...*datastore
 		if v.DatabaseID == uuid.Nil {
 			v.DatabaseID = uuid.New()
 		}
-		values := make([]interface{}, 0)
+		values := make([]any, 0)
 		values = append(values, v.DatabaseID)
 		values = append(values, v.Event.Event.ID())
 		values = append(values, v.Event.Event.Type())

@@ -35,8 +35,6 @@ type RuntimeVariablePatch struct {
 }
 
 // RuntimeVariablesStore responsible for fetching and setting direktiv runtime variables from datastore.
-//
-//nolint:interfacebloat
 type RuntimeVariablesStore interface {
 	// GetByID gets a single runtime variable from store. if no record found,
 	// it returns datastore.ErrNotFound error.
