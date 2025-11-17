@@ -6,6 +6,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/caarlos0/env/v10"
@@ -197,7 +198,14 @@ func Start(lc *lifecycle.Manager) error {
 				slog.Error("cannot ignite service", slog.Any("error", err))
 			}
 
-			err = app.ServiceManager.IgniteService(string(data))
+			var err error
+			for range 10 {
+				err = app.ServiceManager.IgniteService(string(data))
+				if err == nil || !strings.Contains(err.Error(), "not found") {
+					break
+				}
+				time.Sleep(100 * time.Millisecond)
+			}
 			if err != nil {
 				slog.Error("cannot ignite service", slog.Any("error", err))
 			}
