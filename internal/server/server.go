@@ -209,9 +209,6 @@ func Start(lc *lifecycle.Manager) error {
 		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
 			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
 		})
-		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
-		})
 		// call at least once before booting
 		renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
 	}
