@@ -53,9 +53,11 @@ function stateTwo(payload) {
 		`
 function stateOne(payload) {
 	print("(MAIN) RUN STATE ONE");
-	payload.events += "_start";
+	payload.events += "_start";	
 	
-	return transition(stateTwo, payload);
+	output = exec("/sub.wf.ts", "stateOne" ,payload);
+	
+	return transition(stateTwo, output);
 }
 function stateTwo(payload) {
 	print("(MAIN) RUN STATE TWO");
@@ -90,7 +92,7 @@ function stateTwo(payload) {
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.status).toEqual('complete')
 		expect(res.body.data.output).toEqual(
-			JSON.stringify({ events: '_start_end' }),
+			JSON.stringify({ events: '_start_sub1_sub2_end' }),
 		)
 	})
 })
