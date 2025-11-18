@@ -31,13 +31,13 @@ describe('Test js engine', () => {
 		`
 function stateOne(payload) {
 	print("(SUBFLOW) RUN STATE ONE");
-	payload.subflow1 = "OK1";	
-	
+	payload.events += "_sub1";
+
 	return transition(stateTwo, payload);
 }
 function stateTwo(payload) {
 	print("(SUBFLOW) RUN STATE TWO");
-	payload.subflow2 = "OK2";	
+	payload.events += "_sub2";
 	
     return finish(payload);
 }
@@ -53,13 +53,13 @@ function stateTwo(payload) {
 		`
 function stateOne(payload) {
 	print("(MAIN) RUN STATE ONE");
-	payload.main1 = "OK1";	
+	payload.events += "_start";
 	
 	return transition(stateTwo, payload);
 }
 function stateTwo(payload) {
 	print("(MAIN) RUN STATE TWO");
-	payload.main2 = "OK2";	
+	payload.events += "_end";
 	
     return finish(payload);
 }
@@ -71,12 +71,12 @@ function stateTwo(payload) {
 			.post(
 				`/api/v2/namespaces/${namespace}/instances?path=/sub.wf.ts&wait=true&fullOutput=true`,
 			)
-			.send({ foo: 'bar' })
+			.send({ events: '' })
 		console.log(res.body)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.status).toEqual('complete')
 		expect(res.body.data.output).toEqual(
-			JSON.stringify({ foo: 'bar', subflow1: 'OK1', subflow2: 'OK2' }),
+			JSON.stringify({ events: '_sub1_sub2' }),
 		)
 	})
 
@@ -85,12 +85,12 @@ function stateTwo(payload) {
 			.post(
 				`/api/v2/namespaces/${namespace}/instances?path=/main.wf.ts&wait=true&fullOutput=true`,
 			)
-			.send({ foo: 'bar' })
+			.send({ events: '' })
 		console.log(res.body)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.status).toEqual('complete')
 		expect(res.body.data.output).toEqual(
-			JSON.stringify({ foo: 'bar', main1: 'OK1', main2: 'OK2' }),
+			JSON.stringify({ events: '_start_end' }),
 		)
 	})
 })
