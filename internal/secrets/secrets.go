@@ -82,12 +82,6 @@ func (sm *Manager) Create(ctx context.Context, namespace string, secret *core.Se
 		return nil, fmt.Errorf("invalid secret name")
 	}
 
-	// Validate value is not empty
-	if string(secret.Data) == "" {
-		slog.Error("creating secret failed because it is empty")
-		return nil, fmt.Errorf("secret value cannot be empty")
-	}
-
 	secretKubernetes := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      kname,

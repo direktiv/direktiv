@@ -204,16 +204,16 @@ func Start(lc *lifecycle.Manager) error {
 		})
 
 		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
+			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager, app.SecretsManager)
 		})
 		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
+			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager, app.SecretsManager)
 		})
 		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
+			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager, app.SecretsManager)
 		})
 		// call at least once before booting
-		renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
+		renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager, app.SecretsManager)
 	}
 
 	// initializing engine
