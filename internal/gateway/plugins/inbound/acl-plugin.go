@@ -2,6 +2,7 @@ package inbound
 
 import (
 	"net/http"
+	"slices"
 
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/gateway"
@@ -60,10 +61,8 @@ func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.Resp
 func result(userValues []string, configValues []string) bool {
 	for i := range userValues {
 		g := userValues[i]
-		for a := range configValues {
-			if g == configValues[a] {
-				return true
-			}
+		if slices.Contains(configValues, g) {
+			return true
 		}
 	}
 

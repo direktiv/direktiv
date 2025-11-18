@@ -21,7 +21,6 @@ import (
 //go:embed db_schema.sql
 var Schema string
 
-// nolint:usetesting
 func NewTestDB(t *testing.T) (*gorm.DB, error) {
 	t.Helper()
 	ctx := context.Background()
@@ -80,7 +79,6 @@ func newTestPostgres(dsn string) (*gorm.DB, error) {
 	return db, nil
 }
 
-//nolint:usetesting
 func NewTestDBWithNamespace(t *testing.T, namespace string) (*gorm.DB, error) {
 	t.Helper()
 

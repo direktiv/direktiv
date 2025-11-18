@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-// nolint: containedctx
 type Manager struct {
 	ctx  context.Context
 	stop context.CancelFunc
@@ -42,15 +41,13 @@ func (c *Manager) Stop() {
 // Go lunches a goroutine and tracking it via a sync.WaitGroup. It enables simplified api to lunch graceful go
 // routines.
 func (c *Manager) Go(job func() error) {
-	c.wg.Add(1)
-	go func() {
-		defer c.wg.Done()
+	c.wg.Go(func() {
 		err := job()
 		if err != nil {
 			slog.Error("job crash", "err", err)
 			c.stop()
 		}
-	}()
+	})
 }
 
 func (c *Manager) OnShutdown(job func() error) {

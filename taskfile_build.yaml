@@ -21,6 +21,15 @@ vars:
 
 
 tasks:
+
+  build-and-log:
+    desc: builds and logs direktiv
+    cmds:
+      - task: build-push
+      - kubectl delete po -l app=direktiv-flow 
+      - kubectl wait --for=condition=Ready po -l app=direktiv-flow
+      - kubectl logs -f -l app=direktiv-flow
+
   build:
     desc: Building for local architecture
     cmds:
