@@ -138,6 +138,9 @@ importers:
       oidc-client-ts:
         specifier: ^2.4.0
         version: 2.4.0
+      prettier:
+        specifier: ^3.4.1
+        version: 3.4.1
       rapidoc:
         specifier: ^9.3.8
         version: 9.3.8
@@ -298,9 +301,6 @@ importers:
       postcss-nesting:
         specifier: ^13.0.1
         version: 13.0.1(postcss@8.4.21)
-      prettier:
-        specifier: ^3.4.1
-        version: 3.4.1
       prettier-plugin-tailwindcss:
         specifier: ^0.6.9
         version: 0.6.12(prettier@3.4.1)
