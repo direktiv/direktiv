@@ -6,4 +6,6 @@ export const formatTs = (code: string) =>
   prettier.format(code, {
     parser: "typescript",
     plugins: [pluginEstree, parserTypescript],
+    // if needed, define overrides for the default settings here,
+    // see https://prettier.io/docs/options.
   });
