@@ -17,7 +17,7 @@ export const DefaultPanel = () => {
             <Blocks size={16} />
             {t("direktivPage.blockEditor.generic.addBlockTab")}
           </TabsTrigger>
-          <TabsTrigger disabled className="w-full" value="settings">
+          <TabsTrigger className="w-full" value="settings">
             <Settings size={16} />
             {t("direktivPage.blockEditor.generic.settingsTab")}
           </TabsTrigger>
