@@ -10,6 +10,7 @@ export const PanelContainer = ({
   className,
 }: PanelContainerProps) => (
   <div
+    data-testid="editor-dragArea"
     className={twMergeClsx(
       "h-[300px] border-b-2 border-gray-4 dark:border-gray-dark-4 sm:h-[calc(100vh-230px)] sm:border-b-0 sm:border-r-2",
       className

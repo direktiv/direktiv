@@ -57,6 +57,7 @@ export const Dropzone: FC<DroppableProps> = ({
   return (
     <>
       <div
+        data-testid="dropzone"
         ref={setNodeRef}
         className={twMergeClsx(
           "relative h-[4px] w-full justify-center rounded-lg p-0",
