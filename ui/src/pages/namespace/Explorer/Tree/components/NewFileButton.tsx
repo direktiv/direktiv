@@ -3,6 +3,7 @@ import {
   Folder,
   Layers,
   Network,
+  PanelTop,
   Play,
   PlusCircle,
   Users,
@@ -33,6 +34,7 @@ export type FileTypeSelection =
   | "new-workflow"
   | "new-service"
   | "new-route"
+  | "new-page"
   | "new-consumer"
   | "new-openapiSpecification";
 
@@ -142,6 +144,17 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
+          <DialogTrigger
+            className="w-full"
+            onClick={() => {
+              setSelectedDialog("new-page");
+            }}
+          >
+            <DropdownMenuItem>
+              <PanelTop className="mr-2 size-4" />
+              {t("pages.explorer.tree.newFileButton.items.page")}
+            </DropdownMenuItem>
+          </DialogTrigger>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>

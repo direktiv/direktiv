@@ -166,18 +166,21 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await page.getByRole("combobox").click();
   await page.getByLabel("Access control list (acl)").click();
 
+  const addGroupButton = page
+    .locator("fieldset")
+    .filter({ hasText: "Allow Groups (optional)" })
+    .getByRole("button")
+    .last();
+
+  await addGroupButton.click();
+
   await page
     .locator("fieldset")
     .filter({ hasText: "Allow Groups (optional)" })
     .getByPlaceholder("Enter a group")
     .fill("allow this group 1");
 
-  /* submit via enter */
-  await page
-    .locator("fieldset")
-    .filter({ hasText: "Allow Groups (optional)" })
-    .getByPlaceholder("Enter a group")
-    .press("Enter");
+  await addGroupButton.click();
 
   await page
     .locator("fieldset")
@@ -185,14 +188,6 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
     .getByPlaceholder("Enter a group")
     .nth(1)
     .fill("allow this group 2");
-
-  /* submit via button */
-  await page
-    .locator("fieldset")
-    .filter({ hasText: "Allow Groups (optional)" })
-    .getByRole("button")
-    .nth(1)
-    .click();
 
   await page.getByRole("button", { name: "Save" }).click();
 
