@@ -192,6 +192,8 @@ func ensureStream(ctx context.Context, js nats.JetStreamContext, cfg *nats.Strea
 	if !errors.Is(err, nats.ErrStreamNotFound) {
 		return fmt.Errorf("nats info stream %s: %w", cfg.Name, err)
 	}
+
+	slog.Info("creating nats stream", slog.String("name", cfg.Name), slog.Any("subjects", cfg.Subjects))
 	_, err = js.AddStream(cfg, nats.Context(ctx))
 	if err != nil {
 		return fmt.Errorf("nats add stream %s: %w", cfg.Name, err)

@@ -65,7 +65,6 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.URL.Path, "/routes") {
 		ns := chi.URLParam(r, "namespace")
 		if ns != "" {
-			//nolint:contextcheck
 			WriteJSON(w, endpointsForAPI(filterNamespacedEndpoints(inner.endpoints, ns, r.URL.Query().Get("path")), ns, filesql.NewStore(m.db)))
 			return
 		}
@@ -90,7 +89,6 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 			server := r.URL.Query().Get("server")
 
-			//nolint:contextcheck
 			WriteJSON(w, gatewayForAPI(filterNamespacedGateways(inner.gateways, ns), ns, filesql.NewStore(m.db),
 				filterNamespacedEndpoints(inner.endpoints, ns, ""), expand, server))
 
@@ -182,7 +180,7 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 
 	// edfault gateway
 	g := core.Gateway{
-		Base:      []byte(fmt.Sprintf("openapi: 3.0.0\ninfo:\n   title: %s\n   version: \"1.0\"", ns)),
+		Base:      fmt.Appendf(nil, "openapi: 3.0.0\ninfo:\n   title: %s\n   version: \"1.0\"", ns),
 		FilePath:  "/virtual.yaml",
 		IsVirtual: true,
 	}
@@ -289,11 +287,11 @@ func gatewayForAPI(gateways []core.Gateway, ns string, fileStore filestore.FileS
 
 func endpointsForAPI(endpoints []core.Endpoint, ns string, fileStore filestore.FileStore) any {
 	type output struct {
-		Spec       interface{} `json:"spec"`
-		FilePath   string      `json:"file_path"`
-		Errors     []string    `json:"errors"`
-		ServerPath string      `json:"server_path"`
-		Warnings   []string    `json:"warnings"`
+		Spec       any      `json:"spec"`
+		FilePath   string   `json:"file_path"`
+		Errors     []string `json:"errors"`
+		ServerPath string   `json:"server_path"`
+		Warnings   []string `json:"warnings"`
 	}
 
 	result := []any{}

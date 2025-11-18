@@ -117,7 +117,7 @@ func ParseGatewayFile(ns string, filePath string, data []byte) Gateway {
 	}
 
 	// remove paths and servers
-	var interim map[string]interface{}
+	var interim map[string]any
 	err := yaml.Unmarshal(data, &interim)
 	if err != nil {
 		gw.Errors = append(gw.Errors, err.Error())
@@ -145,7 +145,7 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 		Errors:    make([]string, 0),
 	}
 
-	var interim map[string]interface{}
+	var interim map[string]any
 	err := yaml.Unmarshal(data, &interim)
 	if err != nil {
 		ep.Errors = append(ep.Errors, err.Error())
@@ -192,7 +192,7 @@ func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 	return ep
 }
 
-func extractMethods(pathItem map[string]interface{}) []string {
+func extractMethods(pathItem map[string]any) []string {
 	methods := make([]string, 0)
 
 	availableMethods := []string{
@@ -215,7 +215,7 @@ func extractMethods(pathItem map[string]interface{}) []string {
 	return methods
 }
 
-func parseConfig(pathItem map[string]interface{}) (EndpointConfig, error) {
+func parseConfig(pathItem map[string]any) (EndpointConfig, error) {
 	var config EndpointConfig
 
 	c, ok := pathItem["x-direktiv-config"]

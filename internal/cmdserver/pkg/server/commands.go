@@ -1,4 +1,4 @@
-package commands
+package server
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/direktiv/direktiv/internal/cmdserver/pkg/server"
+	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/mattn/go-shellwords"
 )
 
@@ -21,7 +21,6 @@ func (e Env) toKV() string {
 	return fmt.Sprintf("%s=%s", e.Name, e.Value)
 }
 
-// nolint
 type Command struct {
 	Command         string `json:"command"`
 	Envs            []Env  `json:"envs"`
@@ -30,23 +29,18 @@ type Command struct {
 	SuppressOutput  bool   `json:"suppress_output"`
 }
 
-type Commands struct {
-	Commands []Command `json:"commands"`
-}
-
-// nolint
 type CommandsResponse struct {
 	Error  string
 	Output interface{}
 	Stdout string `json:"-"`
 }
 
-// nolint
-func RunCommands(ctx context.Context, in Commands, info *server.ExecutionInfo) (interface{}, error) {
+func RunCommands(ctx context.Context, in Payload, info *ExecutionInfo) (interface{}, error) {
 	commandOutput := make([]CommandsResponse, 0)
 
-	info.Log.Logf("running %d commands", len(in.Commands))
 	slog.Info("starting to run commands", "total", len(in.Commands))
+
+	telemetry.LogInstance(ctx, telemetry.LogLevelInfo, fmt.Sprintf("running %d commands", len(in.Commands)))
 
 	for a := range in.Commands {
 		command := in.Commands[a]
@@ -109,7 +103,7 @@ func RunCommands(ctx context.Context, in Commands, info *server.ExecutionInfo) (
 	return commandOutput, nil
 }
 
-func runCmd(command Command, ei *server.ExecutionInfo) error {
+func runCmd(command Command, ei *ExecutionInfo) error {
 	slog.Debug("parsing command", "command", command.Command)
 
 	p := shellwords.NewParser()

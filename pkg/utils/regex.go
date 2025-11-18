@@ -11,7 +11,6 @@ const NameRegexPattern = `^` + NameRegexFragment + `$`
 
 const VarNameRegexPattern = `^(([a-zA-Z][a-zA-Z0-9_\-\.]*[a-zA-Z0-9])|([a-zA-Z]))$`
 
-//nolint:gosec
 const VarSecretNameAndSecretsFolderNamePattern = `^(([a-zA-Z][a-zA-Z0-9_\-\./]*[a-zA-Z0-9/])|([a-zA-Z/]))$`
 
 var VarNameRegex = regexp.MustCompile(VarNameRegexPattern)
@@ -26,7 +25,6 @@ var (
 	varreg *regexp.Regexp
 )
 
-// nolint:gocritic,gochecknoinits,gosec
 func init() {
 	var err error
 	reg, err = regexp.Compile(RegexPattern)

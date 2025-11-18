@@ -39,7 +39,6 @@ type response struct {
 }
 
 func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request) {
-	//nolint:forcetypeassert
 	rr := w.(*httptest.ResponseRecorder)
 	w = httptest.NewRecorder()
 
@@ -59,7 +58,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (htt
 		return nil, nil
 	}
 
-	err = vm.Set("log", func(txt interface{}) {
+	err = vm.Set("log", func(txt any) {
 		slog.Info("js log", slog.Any("log", txt))
 	})
 	if err != nil {
@@ -67,7 +66,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (htt
 		return nil, nil
 	}
 
-	err = vm.Set("sleep", func(t interface{}) {
+	err = vm.Set("sleep", func(t any) {
 		tt, ok := t.(int64)
 		if !ok {
 			return
@@ -90,8 +89,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (htt
 	if val != nil && !val.Equals(sobek.Undefined()) {
 		o := val.ToObject(vm)
 		// make sure the input object got returned
-		if o.ExportType() == reflect.TypeOf(resp) {
-			// nolint checked before
+		if o.ExportType() == reflect.TypeFor[response]() {
 			responseDone := o.Export().(response)
 			for k, v := range responseDone.Headers {
 				for a := range v {

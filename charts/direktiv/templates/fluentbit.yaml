@@ -29,13 +29,30 @@ data:
           Parsers_File /fluent-bit/etc/conf/custom_parsers.conf
       [INPUT]
           Name                    tail
-          Path                    /var/log/containers/*flow*.log,/var/log/containers/*direktiv-sidecar*.log
+          Path                    /var/log/containers/*flow*.log,/var/log/containers/*direktiv-sidecar*.log,,/var/log/containers/*direktiv-container*.log
           Mem_Buf_Limit           5MB
           Skip_Long_Lines         Off
           Tag                     input
           multiline.parser        cri, docker
           Refresh_Interval        1
           Buffer_Max_Size         64k
+      [FILTER]
+          Name                    parser
+          Match                   *
+          Parser                  direktiv
+          Key_Name                log
+          Reserve_Data            on
+      [FILTER]
+          Name                    modify
+          Match                   *
+          Add app direktiv
+          Add msg notset
+          Add state notset
+          Add status notset
+          Add namespace notset
+          Add id notset
+          Add path notset
+
       [OUTPUT]
           Name stdout
           Match *
@@ -48,10 +65,5 @@ data:
           uri /insert/jsonline?_stream_fields=stream&_msg_field=msg&_time_field=nanos
           format json_lines
           json_date_format iso8601
-      [FILTER]
-          Name                    parser
-          Match                   *
-          Parser                  direktiv
-          Key_Name                log
-          Reserve_Data            on
-    
+
+

@@ -36,7 +36,6 @@ func (ir *InstantResponsePlugin) Execute(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.WriteHeader(ir.StatusCode)
-	// nolint
 	w.Write([]byte(ir.StatusMessage))
 
 	return w, r
