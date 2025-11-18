@@ -7,7 +7,7 @@ fluent-bit:
           match  *
           host loki-gateway
           port 80
-          labels app=direktiv
+          labels app="direktiv", $namespace, $status, $id, $path
 
 opentelemetry-collector:
   config:

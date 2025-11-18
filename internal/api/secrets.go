@@ -31,32 +31,20 @@ func (e *secretsController) get(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 	secretName := chi.URLParam(r, "secretName")
 
-	sh, err := e.secretsManager.SecretsForNamespace(r.Context(), namespace)
+	sh, err := e.secretsManager.Get(r.Context(), namespace, secretName)
 	if err != nil {
 		writeSecretsError(w, err)
 		return
 	}
 
-	s, err := sh.Get(r.Context(), secretName)
-	if err != nil {
-		writeSecretsError(w, err)
-		return
-	}
-
-	writeJSON(w, convert(s))
+	writeJSON(w, convert(sh))
 }
 
 func (e *secretsController) delete(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 	secretName := chi.URLParam(r, "secretName")
 
-	sh, err := e.secretsManager.SecretsForNamespace(r.Context(), namespace)
-	if err != nil {
-		writeSecretsError(w, err)
-		return
-	}
-
-	err = sh.Delete(r.Context(), secretName)
+	err := e.secretsManager.Delete(r.Context(), namespace, secretName)
 	if err != nil {
 		writeSecretsError(w, err)
 		return
@@ -75,13 +63,7 @@ func (e *secretsController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sh, err := e.secretsManager.SecretsForNamespace(r.Context(), namespace)
-	if err != nil {
-		writeSecretsError(w, err)
-		return
-	}
-
-	s, err := sh.Update(r.Context(), &core.Secret{
+	s, err := e.secretsManager.Update(r.Context(), namespace, &core.Secret{
 		Name: secretName,
 		Data: req.Data,
 	})
@@ -103,13 +85,7 @@ func (e *secretsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sh, err := e.secretsManager.SecretsForNamespace(r.Context(), namespace)
-	if err != nil {
-		writeSecretsError(w, err)
-		return
-	}
-
-	s, err := sh.Set(r.Context(), &core.Secret{
+	secret, err := e.secretsManager.Create(r.Context(), namespace, &core.Secret{
 		Name: req.Name,
 		Data: req.Data,
 	})
@@ -118,19 +94,17 @@ func (e *secretsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, convert(s))
+	secret.Data = []byte{}
+
+	writeJSON(w, convert(secret))
 }
 
 func (e *secretsController) list(w http.ResponseWriter, r *http.Request) {
 	namespace := chi.URLParam(r, "namespace")
 
-	sh, err := e.secretsManager.SecretsForNamespace(r.Context(), namespace)
-	if err != nil {
-		writeSecretsError(w, err)
-		return
-	}
+	e.secretsManager.GetAll(r.Context(), namespace)
 
-	secretsList, err := sh.GetAll(r.Context())
+	secretsList, err := e.secretsManager.GetAll(r.Context(), namespace)
 	if err != nil {
 		writeSecretsError(w, err)
 		return
@@ -158,7 +132,6 @@ func convert(v *core.Secret) any {
 		Name:        v.Name,
 		Initialized: v.Data != nil,
 		CreatedAt:   v.CreatedAt,
-		UpdatedAt:   v.UpdatedAt,
 	}
 
 	return res

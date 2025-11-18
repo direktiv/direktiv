@@ -7,6 +7,7 @@ import (
 	"slices"
 
 	"github.com/direktiv/direktiv/internal/api/filter"
+	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	"github.com/direktiv/direktiv/internal/engine"
 	intNats "github.com/direktiv/direktiv/internal/nats"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
@@ -18,13 +19,15 @@ type DataBus struct {
 	js           nats.JetStreamContext
 	statusCache  *StatusCache
 	historyCache *StatusCache
+	pubSub       pubsub.EventBus
 }
 
-func New(js nats.JetStreamContext) *DataBus {
+func New(js nats.JetStreamContext, pubSub pubsub.EventBus) *DataBus {
 	return &DataBus{
 		js:           js,
 		statusCache:  NewStatusCache(),
 		historyCache: NewStatusCache(),
+		pubSub:       pubSub,
 	}
 }
 
@@ -162,4 +165,29 @@ func (d *DataBus) GetInstanceHistory(ctx context.Context, namespace string, inst
 	slices.Reverse(list)
 
 	return list
+}
+
+func (d *DataBus) PublishIgniteAction(ctx context.Context, svcID string) error {
+	// sd := &core.ServiceFileData{
+	// 	Typ:       core.ServiceTypeWorkflow,
+	// 	Name:      "",
+	// 	Namespace: namespace,
+	// 	FilePath:  path,
+	// 	ServiceFile: core.ServiceFile{
+	// 		Image: config.Image,
+	// 		Cmd:   config.Cmd,
+	// 		Size:  config.Size,
+	// 		Envs:  config.Envs,
+	// 	},
+	// }
+
+	// sd.Name = sd.GetValueHash()
+
+	// b, err := json.Marshal(sd)
+	// if err != nil {
+	// 	return err
+	// }
+
+	err := d.pubSub.Publish(pubsub.SubjServiceIgnite, []byte(svcID))
+	return err
 }

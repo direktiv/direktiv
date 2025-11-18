@@ -10,7 +10,7 @@ import (
 	"github.com/direktiv/direktiv/internal/telemetry"
 )
 
-func LogToRoute(r *http.Request, txt interface{}) {
+func LogToRoute(r *http.Request, txt any) {
 	items := strings.Split(r.URL.String(), "/")
 	if len(items) > 3 {
 		ns := items[2]

@@ -37,12 +37,7 @@ func fetchSecret(sm core.SecretsManager, namespace string, callExpression string
 		return "", fmt.Errorf("trying to fetch secret from different namespace")
 	}
 
-	sn, err := sm.SecretsForNamespace(context.Background(), fArgs.namespace)
-	if err != nil {
-		return "", err
-	}
-
-	s, err := sn.Get(context.Background(), fArgs.secretName)
+	s, err := sm.Get(context.Background(), fArgs.namespace, fArgs.secretName)
 	if err != nil {
 		return "", err
 	}

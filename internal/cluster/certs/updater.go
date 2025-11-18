@@ -49,7 +49,7 @@ func (c *CertificateUpdater) Start(lc *lifecycle.Manager) error {
 		if err != nil {
 			d = 10
 		}
-		sleepMinutes := rand.Intn(maxWait-minWait) + minWait //nolint:gosec
+		sleepMinutes := rand.Intn(maxWait-minWait) + minWait
 
 		initialTicker := time.NewTicker(time.Duration(d) * time.Second)
 		ticker := time.NewTicker(time.Duration(sleepMinutes) * time.Minute)

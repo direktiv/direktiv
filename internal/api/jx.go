@@ -45,8 +45,8 @@ func (c *jxController) handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var query interface{}
-	var document interface{}
+	var query any
+	var document any
 
 	err = json.Unmarshal(req.Data, &document)
 	if err != nil {
@@ -79,9 +79,9 @@ func (c *jxController) handler(w http.ResponseWriter, r *http.Request) {
 	buf := new(bytes.Buffer)
 
 	var failed bool
-	var firstResult interface{}
+	var firstResult any
 
-	results, err := jqer.Evaluate(document, query) //nolint:contextcheck
+	results, err := jqer.Evaluate(document, query)
 	if err != nil {
 		fmt.Fprintf(buf, "failure: %s\n", err.Error())
 		failed = true
@@ -115,7 +115,7 @@ func (c *jxController) handler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		case "array":
-			_, ok := firstResult.([]interface{})
+			_, ok := firstResult.([]any)
 			if !ok {
 				writeJxError(w, resp, &Error{
 					Code:    "assert_array",
@@ -126,7 +126,7 @@ func (c *jxController) handler(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case "object":
-			_, ok := firstResult.(map[string]interface{})
+			_, ok := firstResult.(map[string]any)
 			if !ok {
 				writeJxError(w, resp, &Error{
 					Code:    "assert_object",

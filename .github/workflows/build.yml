@@ -34,6 +34,17 @@ jobs:
       - name: Run check
         run: task test:licenses
 
+  backend-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.6
+          args: --issues-exit-code=0
+
   backend-test:
     runs-on: ubuntu-latest
     steps:
@@ -119,7 +130,7 @@ jobs:
 
 
   e2e:
-    needs: [build, backend-license, backend-test]
+    needs: [build, backend-license, backend-lint, backend-test]
     runs-on: ubuntu-latest
 
     timeout-minutes: 18
