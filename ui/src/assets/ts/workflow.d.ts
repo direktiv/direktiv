@@ -51,12 +51,16 @@ declare type DateObject = {
  */
 declare function now(): DateObject;
 
+/**
+ * Config for action
+ */
 declare type ActionConfig = {
-  type: "local" | "namespace" | "system";
-  size: "small" | "medium" | "large";
   image: string;
-  retries: number;
-  envs: {
+  type?: "local" | "namespace" | "system";
+  size?: "small" | "medium" | "large";
+  retries?: number;
+  cmd?: string;
+  envs?: {
     name: string;
     value: string;
   }[];
@@ -65,6 +69,13 @@ declare type ActionConfig = {
 /**
  * Creates a custom action that can then be called as a
  * typescript function.
- * @param ActionConfig
+ *
+ * @param ActionConfig configuration object
+ * - image: required, image to run as a container
+ * - type: optional, defaults to "local", or "namespace" | "system"
+ * - size: optional, defaults to "small", or "medium" | "large"
+ * - retries: optional, number,
+ * - cmd: optional, cmd to run in the container
+ * - envs: optional, { name: string, value: string }[].
  */
 declare function generateAction(config: ActionConfig): () => void;
