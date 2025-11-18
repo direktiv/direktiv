@@ -70,6 +70,8 @@ get:
 			`/api/v2/namespaces/${namespace}/gateway/ep1/page.json`,
 		)
 		expect(res.statusCode).toEqual(200)
-		expect(res.text).toBe('{"blocks":[{"content":"Anything you want to display","type":"text"}],"direktiv_api":"page/v1","type":"page"}\n')
+		expect(res.text).toBe(
+			'{"blocks":[{"content":"Anything you want to display","type":"text"}],"direktiv_api":"page/v1","type":"page"}\n',
+		)
 	})
 })
