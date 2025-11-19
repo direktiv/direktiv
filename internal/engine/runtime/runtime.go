@@ -75,6 +75,7 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string,
 		{"sleep", rt.sleep},
 		{"generateAction", rt.action},
 		{"getSecrets", rt.secrets},
+		{"execSubflow", rt.execSubflow},
 	}
 
 	for _, v := range setList {
@@ -216,6 +217,31 @@ func (rt *Runtime) transition(call sobek.FunctionCall) sobek.Value {
 	}
 
 	return value
+}
+
+func (rt *Runtime) execSubflow(call sobek.FunctionCall) sobek.Value {
+	if len(call.Arguments) != 3 {
+		panic(rt.vm.ToValue("exec requires a path, a function and a payload"))
+	}
+
+	var path string
+	if err := rt.vm.ExportTo(call.Arguments[0], &path); err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error exporting exec path: %s", err.Error())))
+	}
+	var f string
+	if err := rt.vm.ExportTo(call.Arguments[1], &f); err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error exporting exec fn: %s", err.Error())))
+	}
+	var memory any
+	if err := rt.vm.ExportTo(call.Arguments[2], &memory); err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error exporting exec data: %s", err.Error())))
+	}
+	b, err := json.Marshal(memory)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error marshaling transition data: %s", err.Error())))
+	}
+
+	return rt.vm.ToValue("" + path + "/" + f + "/" + string(b))
 }
 
 // TODO: remove return from finish() as it should be the last statement.
