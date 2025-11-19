@@ -27,6 +27,7 @@ import { TargetFlowForm } from "./TargetFlowForm";
 import { TargetFlowVarForm } from "./TargetFlowVarForm";
 import { TargetNamespaceFileForm } from "./TargetNamespaceFileForm";
 import { TargetNamespaceVarForm } from "./TargetNamespaceVarForm";
+import { TargetPageForm } from "./TargetPageForm";
 import { TargetPluginFormSchemaType } from "../../../schema/plugins/target/schema";
 import { useTranslation } from "react-i18next";
 
@@ -57,6 +58,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
   const {
     instantResponse,
     targetFlow,
+    targetPage,
     targetFlowVar,
     targetNamespaceFile,
     targetNamespaceVar,
@@ -111,7 +113,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
               <TableCell colSpan={2}>
                 {values["x-direktiv-config"]?.plugins?.target?.type ? (
                   <DialogTrigger asChild>
-                    <div className="cursor-pointer">
+                    <div className="cursor-pointer hover:underline">
                       {t(
                         `pages.explorer.endpoint.editor.form.plugins.target.types.${values["x-direktiv-config"].plugins?.target?.type}`
                       )}
@@ -188,6 +190,9 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
             defaultConfig={currentTargetFlowConfig}
             onSubmit={handleSubmit}
           />
+        )}
+        {selectedPlugin === targetPage.name && (
+          <TargetPageForm formId={formId} onSubmit={handleSubmit} />
         )}
         {selectedPlugin === targetFlowVar.name && (
           <TargetFlowVarForm

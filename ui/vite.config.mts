@@ -6,7 +6,7 @@ import { envVariablesSchema } from "./src/config/env/schema";
 import react from "@vitejs/plugin-react";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 
-export default ({ mode }) => {
+export default ({ mode }: { mode: string }) => {
   const env = loadEnv(mode, process.cwd());
 
   const parsedEnv = envVariablesSchema.parse(env);
@@ -49,7 +49,7 @@ export default ({ mode }) => {
         // https://github.com/vitejs/vite/issues/2139#issuecomment-1405624744
         defaultIsModuleExports(id) {
           try {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
             const module = require(id);
             if (module?.default) {
               return false;
@@ -61,17 +61,12 @@ export default ({ mode }) => {
         },
       },
     },
-    optimizeDeps: {
-      esbuildOptions: {
-        loader: {
-          ".js": "jsx",
-        },
-      },
-    },
+    optimizeDeps: { esbuildOptions: { loader: { ".js": "jsx" } } },
     plugins: [react(), viteTsconfigPaths(), TanStackRouterVite()],
     test: {
       globals: true,
       environment: "jsdom",
+      setupFiles: "./test/vitest.setup.ts",
       exclude: [
         "**/node_modules/**",
         "**/dist/**",

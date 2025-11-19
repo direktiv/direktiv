@@ -27,13 +27,10 @@ export const HeaderArrayForm = ({ field }: HeaderArrayFormProps) => {
   return (
     <div className="grid gap-5">
       <ArrayForm
-        defaultValue={field.value || []}
+        value={field.value || []}
         onChange={field.onChange}
         emptyItem={emptyItem}
-        itemIsValid={(item) =>
-          !!item && Object.values(item).every((v) => v !== "")
-        }
-        renderItem={({ value: objectValue, setValue, handleKeyDown }) => (
+        renderItem={({ value: objectValue, setValue }) => (
           <>
             {Object.entries(objectValue).map(([key, value]) => {
               const typedKey = key as keyof typeof objectValue;
@@ -45,7 +42,6 @@ export const HeaderArrayForm = ({ field }: HeaderArrayFormProps) => {
                     `pages.explorer.endpoint.editor.form.plugins.inbound.headerManipulation.${typedKey}Placeholder`
                   )}
                   value={value}
-                  onKeyDown={handleKeyDown}
                   onChange={(e) => {
                     const newObject = {
                       ...objectValue,

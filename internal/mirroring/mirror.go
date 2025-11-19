@@ -398,6 +398,7 @@ const (
 
 	ServiceAPIV1  = "service/v1"
 	ConsumerAPIV1 = "consumer/v1"
+	PageAPIV1     = "page/v1"
 )
 
 func (j *mirrorJob) detectDirektivYAML(path string, data []byte) (filestore.FileType, error) {
@@ -431,6 +432,8 @@ func (j *mirrorJob) detectDirektivYAML(path string, data []byte) (filestore.File
 		return filestore.FileTypeConsumer, nil
 	case ServiceAPIV1:
 		return filestore.FileTypeService, nil
+	case PageAPIV1:
+		return filestore.FileTypePage, nil
 	}
 
 	switch a.XDirektivAPI {

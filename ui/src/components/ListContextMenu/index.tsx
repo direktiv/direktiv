@@ -29,7 +29,10 @@ export const ListContextMenu: FC<ListContextMenuProps> = ({
         <Button
           variant="ghost"
           size="sm"
-          onClick={(e) => e.preventDefault()}
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+          }}
           icon
         >
           <MoreVertical />

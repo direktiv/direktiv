@@ -40,8 +40,6 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 			Cmd:   config.Cmd,
 			Size:  config.Size,
 			Envs:  config.Envs,
-			// TODO: this need to be set to zero to enable zero scaling.
-			Scale: 1,
 		},
 	}
 	sd.Name = sd.GetValueHash()
