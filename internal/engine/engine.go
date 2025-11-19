@@ -53,10 +53,13 @@ func (e *Engine) Start(lc *lifecycle.Manager) error {
 }
 
 func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (*InstanceEvent, <-chan *InstanceEvent, error) {
-	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
+	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath, true)
 	if err != nil {
 		return nil, nil, fmt.Errorf("fetch script: %w", err)
 	}
+
+	// fetch all the secrets here
+	metadata[core.EngineMappingSecrets] = flowDetails.Secrets
 
 	notify := make(chan *InstanceEvent, 1)
 	st, err := e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)

@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -75,6 +76,7 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string,
 		{"sleep", rt.sleep},
 		{"generateAction", rt.action},
 		{"getSecrets", rt.secrets},
+		{"getSecret", rt.secret},
 	}
 
 	for _, v := range setList {
@@ -91,40 +93,54 @@ func (rt *Runtime) WithTracingPack(tp *tracingPack) *Runtime {
 	return rt
 }
 
-func (rt *Runtime) secrets(secretNames []string) sobek.Value {
-	// rt.tracingPack.span.AddEvent("fetching secrets")
+func (rt *Runtime) secret(secretName string) sobek.Value {
+	rt.tracingPack.span.AddEvent("fetching secret")
 
-	// s := make(map[string]string)
+	secretJsonMap := rt.metadata[core.EngineMappingSecrets]
+	us := make(map[string]string)
+	json.Unmarshal([]byte(secretJsonMap), &us)
+
+	value, ok := us[secretName]
+	if !ok {
+		panic(rt.vm.ToValue(fmt.Sprintf("error fetching secret %s: %s",
+			secretName, fmt.Errorf("secret not available"))))
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(value)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error fetching secret %s: %s",
+			secretName, err)))
+	}
+
+	return rt.vm.ToValue(string(decoded))
+}
+
+func (rt *Runtime) secrets(secretNames []string) sobek.Value {
 	rt.tracingPack.span.AddEvent("fetching secrets")
 
-	// s := make(map[string]string)
+	secretJsonMap := rt.metadata[core.EngineMappingSecrets]
 
-	// for i := range secretNames {
-	// 	secret, err := rt.secretsManager.Get(rt.tracingPack.ctx,
-	// 		rt.tracingPack.namespace, secretNames[i])
-	// 	if err != nil {
-	// 		panic(rt.vm.ToValue(fmt.Sprintf("error fetching secret %s: %s",
-	// 			secretNames[i], err.Error())))
-	// 	}
+	us := make(map[string]string)
+	json.Unmarshal([]byte(secretJsonMap), &us)
 
-	// 	s[secretNames[i]] = string(secret.Data)
-	// }
+	retSecrets := make(map[string]string)
+	for i := range secretNames {
+		value, ok := us[secretNames[i]]
+		if !ok {
+			panic(rt.vm.ToValue(fmt.Sprintf("error fetching secret %s: %s",
+				secretNames[i], fmt.Errorf("secret not available"))))
+		}
 
-	// return rt.vm.ToValue(s)
-	// for i := range secretNames {
-	// 	secret, err := rt.secretsManager.Get(rt.tracingPack.ctx,
-	// 		rt.tracingPack.namespace, secretNames[i])
-	// 	if err != nil {
-	// 		panic(rt.vm.ToValue(fmt.Sprintf("error fetching secret %s: %s",
-	// 			secretNames[i], err.Error())))
-	// 	}
+		decoded, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			panic(rt.vm.ToValue(fmt.Sprintf("error fetching secret %s: %s",
+				secretNames[i], err)))
+		}
 
-	// 	s[secretNames[i]] = string(secret.Data)
-	// }
+		retSecrets[secretNames[i]] = string(decoded)
+	}
 
-	// return rt.vm.ToValue(s)
-
-	return nil
+	return rt.vm.ToValue(retSecrets)
 }
 
 func (rt *Runtime) sleep(seconds int) sobek.Value {

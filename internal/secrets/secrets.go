@@ -63,7 +63,7 @@ func (sm *Manager) Get(ctx context.Context, namespace, name string) (*core.Secre
 		}
 
 		return core.Secret{
-			Name:      s.Name,
+			Name:      s.Labels[annotationName],
 			CreatedAt: s.CreationTimestamp.Time,
 			Data:      s.Data[secretKey],
 		}, nil

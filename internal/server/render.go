@@ -119,7 +119,7 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 				funConfigList = append(funConfigList, svcFile(ac, ns.Name, f.Path))
 
 			case filestore.FileTypeWorkflow:
-				c, err := compiler.NewCompiler(db, cacheManager.FlowCache())
+				c, err := compiler.NewCompiler(db, secretsManager, cacheManager.FlowCache())
 				if err != nil {
 					slog.Error("cannot get compiler for workflow",
 						slog.String("namespace", ns.Name),
@@ -127,7 +127,7 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 
 					continue
 				}
-				s, err := c.FetchScript(ctx, ns.Name, f.Path)
+				s, err := c.FetchScript(ctx, ns.Name, f.Path, false)
 				if err != nil {
 					slog.Error("cannot generate script",
 						slog.String("namespace", ns.Name),

@@ -219,7 +219,7 @@ func Start(lc *lifecycle.Manager) error {
 	// initializing engine
 	{
 		// prepare compiler
-		comp, err := compiler.NewCompiler(app.DB, app.CacheManager.FlowCache())
+		comp, err := compiler.NewCompiler(app.DB, app.SecretsManager, app.CacheManager.FlowCache())
 		if err != nil {
 			return fmt.Errorf("creating compiler, err: %w", err)
 		}
