@@ -212,19 +212,22 @@ func Start(lc *lifecycle.Manager) error {
 		})
 
 		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
+			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager, app.SecretsManager)
 		})
 		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
+			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager, app.SecretsManager)
+		})
+		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
+			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager, app.SecretsManager)
 		})
 		// call at least once before booting
-		renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
+		renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager, app.SecretsManager)
 	}
 
 	// initializing engine
 	{
 		// prepare compiler
-		comp, err := compiler.NewCompiler(app.DB, app.CacheManager.FlowCache())
+		comp, err := compiler.NewCompiler(app.DB, app.SecretsManager, app.CacheManager.FlowCache())
 		if err != nil {
 			return fmt.Errorf("creating compiler, err: %w", err)
 		}
