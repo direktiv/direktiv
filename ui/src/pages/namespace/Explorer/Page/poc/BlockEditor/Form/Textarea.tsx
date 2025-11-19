@@ -48,7 +48,9 @@ export const Textarea = ({
       >
         <SmartInput
           value={form.watch("defaultValue")}
-          onUpdate={(value) => form.setValue("defaultValue", value)}
+          onUpdate={(value) =>
+            form.setValue("defaultValue", value, { shouldDirty: true })
+          }
           id="defaultValue"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholder"

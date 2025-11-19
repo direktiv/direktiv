@@ -42,7 +42,7 @@ export const QueryProvider = ({
       <Table
         data={form.getValues("queries")}
         onChange={(newValue) => {
-          form.setValue("queries", newValue);
+          form.setValue("queries", newValue, { shouldDirty: true });
         }}
         modalTitle={t(
           "direktivPage.blockEditor.blockForms.queryProvider.query.modalTitle"
