@@ -192,6 +192,7 @@ function stateTwo(payload) {
 		}))
 		console.log(history)
 		let firstSequence = history[0].sequence
+		let subflowID = history[2].scope
 		expect(history).toEqual([
 			{
 				scope: 'main',
@@ -210,6 +211,38 @@ function stateTwo(payload) {
 				sequence: firstSequence++,
 			},
 			{
+				type: 'pending',
+				scope: subflowID,
+				fn: 'stateOne',
+				input: { foo: 'bar', mainOne: 1 },
+				output: undefined,
+				sequence: firstSequence++,
+			},
+			{
+				type: 'running',
+				scope: subflowID,
+				fn: 'stateOne',
+				input: { foo: 'bar', mainOne: 1 },
+				output: undefined,
+				sequence: firstSequence++,
+			},
+			{
+				type: 'running',
+				scope: subflowID,
+				fn: 'stateTwo',
+				input: { foo: 'bar', mainOne: 1 },
+				output: { foo: 'bar', mainOne: 1, subflowOne: 1 },
+				sequence: firstSequence++,
+			},
+			{
+				type: 'complete',
+				scope: subflowID,
+				fn: undefined,
+				input: { foo: 'bar', mainOne: 1 },
+				output: { foo: 'bar', mainOne: 1, subflowOne: 1, subflowTwo: 2 },
+				sequence: firstSequence++,
+			},
+			{
 				scope: 'main',
 				type: 'running',
 				fn: 'stateTwo',
@@ -220,7 +253,7 @@ function stateTwo(payload) {
 			{
 				scope: 'main',
 				type: 'complete',
-				fn: 'stateThree',
+				fn: undefined,
 				input: { foo: 'bar' },
 				output: { foo: 'bar', mainOne: 1, subflowOne: 1, subflowTwo: 2, mainTwo: 2 },
 				sequence: firstSequence++,
