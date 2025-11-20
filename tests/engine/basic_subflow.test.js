@@ -55,7 +55,7 @@ function stateOne(payload) {
 	print("(MAIN) RUN STATE ONE");
 	payload.events += "_start";	
 	
-	output = exec("/sub.wf.ts", "stateOne" ,payload);
+	output = execSubflow("/sub.wf.ts", "stateOne" ,payload);
 	
 	return transition(stateTwo, output);
 }
