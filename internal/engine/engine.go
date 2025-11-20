@@ -22,6 +22,13 @@ const (
 	LabelWithNotify   = "WithNotify"
 	LabelWithSyncExec = "WithSyncExec"
 	LabelInvokerType  = "InvokerType"
+
+	// LabelWithScope used to mark a workflow instance if it is:
+	//	1- a main execution or
+	//  2- a subflow execution.
+	// For main execution, use string "main"
+	// For subflow execution, use string uuid that uniquely identifies the subflow.
+	LabelWithScope = "WithScope"
 )
 
 type Engine struct {
@@ -193,6 +200,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 			LabelWithNotify:             "true",
 			LabelWithSyncExec:           "true",
 			LabelInvokerType:            "api",
+			LabelWithScope:              uuid.New().String(),
 		})
 		if err != nil {
 			return nil, err

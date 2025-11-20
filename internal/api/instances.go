@@ -186,6 +186,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		engine.LabelWithNotify:      strconv.FormatBool(withWait),
 		engine.LabelWithSyncExec:    strconv.FormatBool(withSyncExec),
 		engine.LabelInvokerType:     "api",
+		engine.LabelWithScope:       "main",
 	})
 	if err != nil {
 		writeEngineError(w, err)
