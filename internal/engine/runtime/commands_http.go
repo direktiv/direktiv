@@ -13,8 +13,6 @@ import (
 	"time"
 
 	"github.com/grafana/sobek"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 )
 
 type httpRequestObject struct {
@@ -202,28 +200,15 @@ func (rt *Runtime) populateResponseObject(response *httpResponseObject) *sobek.O
 }
 
 func (rt *Runtime) fetchSync(addr string, config any) *sobek.Object {
-	span := rt.tracingPack.trace("calling http")
-	span.SetAttributes(attribute.KeyValue{
-		Key:   "url",
-		Value: attribute.StringValue(addr),
-	})
-	defer span.End()
-
 	response, err := doHttpRequest(addr, config)
 	if err != nil {
-		rt.tracingPack.thrownError = err
-		span.SetStatus(codes.Error, err.Error())
 		panic(rt.vm.ToValue(err.Error()))
 	}
-
-	span.SetStatus(codes.Ok, codes.Ok.String())
 
 	return rt.populateResponseObject(response)
 }
 
 func (rt *Runtime) fetch(addr string, config any) *sobek.Promise {
-	span := rt.tracingPack.trace("calling http async")
-	defer span.End()
 	p, resolve, reject := rt.vm.NewPromise()
 	go func() {
 		response, err := doHttpRequest(addr, config)
