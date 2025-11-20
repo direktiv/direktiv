@@ -6,17 +6,8 @@ import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
 
-function randomLowercaseString(length) {
-	const letters = 'abcdefghijklmnopqrstuvwxyz'
-	let result = ''
-	for (let i = 0; i < length; i++) {
-		result += letters[Math.floor(Math.random() * 26)]
-	}
-	return result
-}
-
 const namespace =
-	randomLowercaseString(3) + '-' + basename(fileURLToPath(import.meta.url))
+	basename(fileURLToPath(import.meta.url))
 
 describe('Test js engine', () => {
 	beforeAll(helpers.deleteAllNamespaces)
@@ -74,7 +65,6 @@ function stateTwo(payload) {
 				`/api/v2/namespaces/${namespace}/instances?path=/sub.wf.ts&wait=true&fullOutput=true`,
 			)
 			.send({ events: '' })
-		console.log(res.body)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.status).toEqual('complete')
 		expect(res.body.data.output).toEqual(
@@ -88,7 +78,6 @@ function stateTwo(payload) {
 				`/api/v2/namespaces/${namespace}/instances?path=/main.wf.ts&wait=true&fullOutput=true`,
 			)
 			.send({ events: '' })
-		console.log(res.body)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.status).toEqual('complete')
 		expect(res.body.data.output).toEqual(
