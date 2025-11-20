@@ -58,10 +58,8 @@ func renderGatewayFiles(db *gorm.DB, manager core.GatewayManager) {
 }
 
 func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
-	cacheManager cache.Manager, secretsManager core.SecretsManager) {
-
-	fmt.Println("RENDER SERVICE FILES")
-
+	cacheManager cache.Manager, secretsManager core.SecretsManager,
+) {
 	ctx := context.Background()
 	dStore := datasql.NewStore(db)
 

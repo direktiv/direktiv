@@ -52,5 +52,6 @@ USER nonroot:nonroot
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /direktiv /app/direktiv
 COPY --from=ui-builder /app/dist /app/ui
+COPY --from=ui-builder /app/src/_direktiv-pages/dist/index.html /app/ui/ui-pages.html
 
 CMD ["/app/direktiv"]

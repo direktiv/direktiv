@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -60,10 +61,20 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 
 		hasOutboundConfigured := len(item.Config.PluginsConfig.Outbound) > 0
 		hasFileServerConfigured := item.Config.PluginsConfig.Target.Typ == "target-fileserver"
-
+		hasOnlyMethodGET := strings.ToUpper(strings.Join(endpoints[i].Config.Methods, "")) == "GET"
+		hasPagePluginConfigured := false
 		// build plugins chain.
 		pChain := []core.Plugin{}
 		for _, pConfig := range pConfigs {
+			if pConfig.Typ == "target-page" {
+				hasPagePluginConfigured = true
+			}
+			if pConfig.Typ == "target-page" && !hasOnlyMethodGET {
+				item.Errors = append(item.Errors, fmt.Sprintf("plugin '%s' err: %s", pConfig.Typ,
+					errors.New("target-page plugin can only be used with GET(only) method endpoints")))
+			}
+
+			pConfig.Namespace = item.Namespace
 			p, err := NewPlugin(pConfig)
 			if err != nil {
 				item.Errors = append(item.Errors, fmt.Sprintf("plugin '%s' err: %s", pConfig.Typ, err))
@@ -89,7 +100,12 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer,
 			fmt.Sprintf("/api/v2/namespaces/%s/gateway/%s", item.Namespace, cleanPath),
 			fmt.Sprintf("/ns/%s/%s", item.Namespace, cleanPath),
 		}
-
+		if hasPagePluginConfigured {
+			paths = append(paths,
+				fmt.Sprintf("/api/v2/namespaces/%s/gateway/%s/", item.Namespace, cleanPath),
+				fmt.Sprintf("/ns/%s/%s/", item.Namespace, cleanPath),
+			)
+		}
 		if hasFileServerConfigured {
 			paths = []string{
 				fmt.Sprintf("/api/v2/namespaces/%s/gateway/%s/", item.Namespace, cleanPath),
