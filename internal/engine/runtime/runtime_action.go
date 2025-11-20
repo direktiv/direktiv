@@ -19,6 +19,36 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 )
 
+func (rt *Runtime) service(t, path string, payload any, retries int) sobek.Value {
+	var sd *core.ServiceFileData
+	switch t {
+	case core.FlowActionScopeSystem:
+		sd = &core.ServiceFileData{
+			Typ:       core.FlowActionScopeNamespace,
+			Namespace: core.FlowActionScopeSystem,
+			FilePath:  path,
+		}
+	case core.FlowActionScopeNamespace:
+		sd = &core.ServiceFileData{
+			Typ:       core.FlowActionScopeNamespace,
+			Namespace: rt.metadata[core.EngineMappingNamespace],
+			FilePath:  path,
+		}
+	default:
+		panic(rt.vm.ToValue(fmt.Errorf("unknown scope for script call")))
+	}
+
+	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
+		fmt.Sprintf("executing service %s in scope %s", path, t))
+
+	data, err := rt.callAction(sd, payload, retries)
+	if err != nil {
+		panic(rt.vm.ToValue(err))
+	}
+
+	return rt.vm.ToValue(data)
+}
+
 func (rt *Runtime) action(c map[string]any) sobek.Value {
 	var config core.ActionConfig
 	err := mapstructure.Decode(c, &config)
@@ -30,80 +60,106 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 		config.Retries = 2
 	}
 
-	if config.Type == "" {
-		config.Type = core.FlowActionScopeLocal
-	}
+	config.Type = core.FlowActionScopeLocal
 
-	var sd *core.ServiceFileData
-	switch config.Type {
-	case core.FlowActionScopeSystem:
-		sd = &core.ServiceFileData{
-			Typ:       core.FlowActionScopeNamespace,
-			Namespace: core.FlowActionScopeSystem,
-			FilePath:  config.Service,
-		}
-	case core.FlowActionScopeNamespace:
-		sd = &core.ServiceFileData{
-			Typ:       core.FlowActionScopeNamespace,
-			Namespace: rt.metadata[core.EngineMappingNamespace],
-			FilePath:  config.Service,
-		}
-	case core.FlowActionScopeLocal:
-		sd := &core.ServiceFileData{
-			Typ:       core.FlowActionScopeLocal,
-			Name:      "",
-			Namespace: rt.metadata[core.EngineMappingNamespace],
-			FilePath:  rt.metadata[core.EngineMappingPath],
-			ServiceFile: core.ServiceFile{
-				Image: config.Image,
-				Cmd:   config.Cmd,
-				Size:  config.Size,
-				Envs:  config.Envs,
-			},
-		}
-		sd.Name = sd.GetValueHash()
-	default:
-		panic(rt.vm.ToValue(fmt.Errorf("unknown action type")))
+	sd := &core.ServiceFileData{
+		Typ:       core.FlowActionScopeLocal,
+		Name:      "",
+		Namespace: rt.metadata[core.EngineMappingNamespace],
+		FilePath:  rt.metadata[core.EngineMappingPath],
+		ServiceFile: core.ServiceFile{
+			Image: config.Image,
+			Cmd:   config.Cmd,
+			Size:  config.Size,
+			Envs:  config.Envs,
+		},
 	}
+	sd.Name = sd.GetValueHash()
 
 	actionFunc := func(payload any) sobek.Value {
 		telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
 			fmt.Sprintf("executing action with image %s", config.Image))
 
-		rt.onAction(sd.GetID())
-
-		svcUrl := fmt.Sprintf("http://%s.%s.svc", sd.GetID(), os.Getenv("DIREKTIV_SERVICE_NAMESPACE"))
-
-		// ping service
-		_, err := callRetryable(rt.tracingPack.ctx, svcUrl+"/up", http.MethodGet, []byte(""), 30)
+		data, err := rt.callAction(sd, payload, config.Retries)
 		if err != nil {
-			panic(rt.vm.ToValue(fmt.Errorf("action did not start: %s", err.Error())))
+			panic(rt.vm.ToValue(err))
 		}
 
-		telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, "action ping successful, calling action")
+		return rt.vm.ToValue(data)
 
-		data, err := json.Marshal(payload)
-		if err != nil {
-			panic(rt.vm.ToValue(fmt.Errorf("could not marshal payload for action: %s", err.Error())))
-		}
+		// rt.onAction(sd.GetID())
 
-		outData, err := callRetryable(rt.tracingPack.ctx, svcUrl, http.MethodPost, data, config.Retries)
-		if err != nil {
-			panic(rt.vm.ToValue(fmt.Errorf("calling action failed: %s", err.Error())))
-		}
+		// svcUrl := fmt.Sprintf("http://%s.%s.svc", sd.GetID(), os.Getenv("DIREKTIV_SERVICE_NAMESPACE"))
 
-		telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, "action call successful")
+		// // ping service
+		// _, err := callRetryable(rt.tracingPack.ctx, svcUrl+"/up", http.MethodGet, []byte(""), 30)
+		// if err != nil {
+		// 	panic(rt.vm.ToValue(fmt.Errorf("action did not start: %s", err.Error())))
+		// }
 
-		var d any
-		err = json.Unmarshal(outData, &d)
-		if err != nil {
-			panic(rt.vm.ToValue(fmt.Errorf("could not unmarshale response: %s", err.Error())))
-		}
+		// telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, "action ping successful, calling action")
 
-		return rt.vm.ToValue(d)
+		// data, err := json.Marshal(payload)
+		// if err != nil {
+		// 	panic(rt.vm.ToValue(fmt.Errorf("could not marshal payload for action: %s", err.Error())))
+		// }
+
+		// outData, err := callRetryable(rt.tracingPack.ctx, svcUrl, http.MethodPost, data, config.Retries)
+		// if err != nil {
+		// 	panic(rt.vm.ToValue(fmt.Errorf("calling action failed: %s", err.Error())))
+		// }
+
+		// telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, "action call successful")
+
+		// var d any
+		// err = json.Unmarshal(outData, &d)
+		// if err != nil {
+		// 	panic(rt.vm.ToValue(fmt.Errorf("could not unmarshale response: %s", err.Error())))
+		// }
+
+		// return rt.vm.ToValue(d)
 	}
 
 	return rt.vm.ToValue(actionFunc)
+}
+
+func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, retries int) (any, error) {
+
+	rt.onAction(sd.GetID())
+
+	svcUrl := fmt.Sprintf("http://%s.%s.svc", sd.GetID(), os.Getenv("DIREKTIV_SERVICE_NAMESPACE"))
+
+	// ping service
+	_, err := callRetryable(rt.tracingPack.ctx, svcUrl+"/up", http.MethodGet, []byte(""), 30)
+	if err != nil {
+		return nil, fmt.Errorf("action did not start: %s", err.Error())
+		// panic(rt.vm.ToValue(fmt.Errorf("action did not start: %s", err.Error())))
+	}
+
+	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, "action ping successful, calling action")
+
+	data, err := json.Marshal(payload)
+	if err != nil {
+		// panic(rt.vm.ToValue(fmt.Errorf("could not marshal payload for action: %s", err.Error())))
+		return nil, fmt.Errorf("could not marshal payload for action: %s", err.Error())
+	}
+
+	outData, err := callRetryable(rt.tracingPack.ctx, svcUrl, http.MethodPost, data, retries)
+	if err != nil {
+		// panic(rt.vm.ToValue(fmt.Errorf("calling action failed: %s", err.Error())))
+		return nil, fmt.Errorf("calling action failed: %s", err.Error())
+	}
+
+	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, "action call successful")
+
+	var d any
+	err = json.Unmarshal(outData, &d)
+	if err != nil {
+		// panic(rt.vm.ToValue(fmt.Errorf("could not unmarshale response: %s", err.Error())))
+		return nil, fmt.Errorf("could not unmarshale response: %s", err.Error)
+	}
+
+	return d, nil
 }
 
 func callRetryable(ctx context.Context, url, method string, payload []byte, retries int) ([]byte, error) {

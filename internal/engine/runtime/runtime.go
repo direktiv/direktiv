@@ -77,6 +77,7 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string,
 		{"generateAction", rt.action},
 		{"getSecrets", rt.secrets},
 		{"getSecret", rt.secret},
+		{"execService", rt.service},
 	}
 
 	for _, v := range setList {

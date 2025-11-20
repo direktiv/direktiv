@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log/slog"
 
 	"github.com/direktiv/direktiv/internal/cluster/cache"
@@ -59,8 +58,6 @@ func renderGatewayFiles(db *gorm.DB, manager core.GatewayManager) {
 
 func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 	cacheManager cache.Manager, secretsManager core.SecretsManager) {
-
-	fmt.Println("RENDER SERVICE FILES")
 
 	ctx := context.Background()
 	dStore := datasql.NewStore(db)
