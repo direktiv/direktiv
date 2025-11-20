@@ -222,16 +222,16 @@ func (rt *Runtime) execSubflow(call sobek.FunctionCall) sobek.Value {
 
 	var path string
 	if err := rt.vm.ExportTo(call.Arguments[0], &path); err != nil {
-		panic(rt.vm.ToValue(fmt.Sprintf("error exporting exec path: %s", err.Error())))
+		panic(rt.vm.ToValue(fmt.Sprintf("error exporting execSubflow path: %s", err.Error())))
 	}
 
 	var memory any
 	if err := rt.vm.ExportTo(call.Arguments[1], &memory); err != nil {
-		panic(rt.vm.ToValue(fmt.Sprintf("error exporting exec data: %s", err.Error())))
+		panic(rt.vm.ToValue(fmt.Sprintf("error exporting execSubflow data: %s", err.Error())))
 	}
 	b, err := json.Marshal(memory)
 	if err != nil {
-		panic(rt.vm.ToValue(fmt.Sprintf("error marshaling transition data: %s", err.Error())))
+		panic(rt.vm.ToValue(fmt.Sprintf("error marshaling execSubflow data: %s", err.Error())))
 	}
 
 	out, err := rt.onSubflow(rt.ctx, path, b)
@@ -241,7 +241,7 @@ func (rt *Runtime) execSubflow(call sobek.FunctionCall) sobek.Value {
 
 	err = json.Unmarshal(out, &memory)
 	if err != nil {
-		panic(rt.vm.ToValue(fmt.Sprintf("error unmarshaling subflow output: %s", err.Error())))
+		panic(rt.vm.ToValue(fmt.Sprintf("error unmarshaling execSubflow output: %s", err.Error())))
 	}
 
 	return rt.vm.ToValue(memory)

@@ -54,6 +54,10 @@ func (e *InstanceEvent) IsEndStatus() bool {
 	return e.State == StateCodeComplete || e.State == StateCodeFailed || e.State == StateCodeCancelled
 }
 
+func (e *InstanceEvent) FullID() string {
+	return e.InstanceID.String() + "/" + e.Metadata[LabelWithScope]
+}
+
 func (e *InstanceEvent) Clone() *InstanceEvent {
 	// start with a shallow copy
 	clone := *e

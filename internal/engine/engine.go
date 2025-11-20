@@ -88,7 +88,9 @@ func (e *Engine) startScript(ctx context.Context, instID uuid.UUID, namespace st
 	}
 
 	if metadata == nil {
-		metadata = make(map[string]string)
+		metadata = map[string]string{
+			LabelWithScope: "main",
+		}
 	}
 
 	pEv := &InstanceEvent{
@@ -117,7 +119,7 @@ func (e *Engine) startScript(ctx context.Context, instID uuid.UUID, namespace st
 
 	if notify != nil {
 		notifyLock.Lock()
-		notifyMap[instID.String()+metadata[LabelWithScope]] = notify
+		notifyMap[pEv.FullID()] = notify
 		notifyLock.Unlock()
 	}
 
@@ -173,7 +175,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 		if endEv.Metadata[LabelWithNotify] == "true" {
 			notifyLock.Lock()
-			notify, ok := notifyMap[endEv.InstanceID.String()+endEv.Metadata[LabelWithScope]]
+			notify, ok := notifyMap[endEv.FullID()]
 			notifyLock.Unlock()
 			if ok {
 				notify <- endEv
@@ -225,7 +227,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 	if inst.Metadata[LabelWithNotify] == "true" {
 		notifyLock.Lock()
-		notify, ok := notifyMap[endEv.InstanceID.String()+endEv.Metadata[LabelWithScope]]
+		notify, ok := notifyMap[endEv.FullID()]
 		notifyLock.Unlock()
 		if ok {
 			notify <- endEv
