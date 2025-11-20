@@ -161,11 +161,6 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 				for k := range s.Config.Actions {
 					action := s.Config.Actions[k]
 
-					// if it is not a local action, we can skip it
-					if action.Service != core.FlowActionScopeLocal {
-						continue
-					}
-
 					sf := core.ServiceFile{
 						Image: action.Image,
 						Cmd:   action.Cmd,
