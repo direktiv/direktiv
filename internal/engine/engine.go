@@ -117,7 +117,7 @@ func (e *Engine) startScript(ctx context.Context, instID uuid.UUID, namespace st
 
 	if notify != nil {
 		notifyLock.Lock()
-		notifyMap[instID.String()] = notify
+		notifyMap[instID.String()+metadata[LabelWithScope]] = notify
 		notifyLock.Unlock()
 	}
 
@@ -173,7 +173,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 		if endEv.Metadata[LabelWithNotify] == "true" {
 			notifyLock.Lock()
-			notify, ok := notifyMap[endEv.InstanceID.String()]
+			notify, ok := notifyMap[endEv.InstanceID.String()+endEv.Metadata[LabelWithScope]]
 			notifyLock.Unlock()
 			if ok {
 				notify <- endEv
@@ -193,7 +193,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	}
 
 	onSubflow := func(ctx context.Context, path string, input []byte) ([]byte, error) {
-		_, notify, err := e.StartWorkflow(ctx, uuid.New(), inst.Namespace, path, string(input), map[string]string{
+		_, notify, err := e.StartWorkflow(ctx, inst.InstanceID, inst.Namespace, path, string(input), map[string]string{
 			core.EngineMappingPath:      path,
 			core.EngineMappingNamespace: inst.Namespace,
 			core.EngineMappingCaller:    "api",
@@ -225,7 +225,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 	if inst.Metadata[LabelWithNotify] == "true" {
 		notifyLock.Lock()
-		notify, ok := notifyMap[endEv.InstanceID.String()]
+		notify, ok := notifyMap[endEv.InstanceID.String()+endEv.Metadata[LabelWithScope]]
 		notifyLock.Unlock()
 		if ok {
 			notify <- endEv

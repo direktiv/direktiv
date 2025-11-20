@@ -8,6 +8,7 @@ import (
 
 	"github.com/direktiv/direktiv/internal/api/filter"
 	"github.com/direktiv/direktiv/internal/cluster/pubsub"
+	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/engine"
 	intNats "github.com/direktiv/direktiv/internal/nats"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
@@ -163,6 +164,12 @@ func (d *DataBus) GetInstanceHistory(ctx context.Context, namespace string, inst
 		filter.FieldEQ("instanceID", instanceID.String())))
 
 	slices.Reverse(list)
+
+	fmt.Printf(">>>>>>>>>%s\n", instanceID.String())
+	for _, ev := range list {
+		fmt.Printf("%s %s %s\n", ev.State, ev.Metadata[core.EngineMappingPath], ev.Metadata[engine.LabelWithScope])
+	}
+	fmt.Println("<<<<<<<<<")
 
 	return list
 }
