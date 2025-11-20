@@ -591,6 +591,78 @@ func TestGenerateActionCollection(t *testing.T) {
 			expectCount:  1,
 			expectImages: []string{"ubuntu"},
 		},
+		{
+			name: "generateAction in variable assignment inside function",
+			script: `
+			function stateOne(data) {
+				log(data)
+				var f = generateAction({
+					type: "local",
+					image: "ealen/echo-server:latest"
+				})
+				return finish("JENS")
+			}`,
+			expectCount:  1,
+			expectImages: []string{"ealen/echo-server:latest"},
+		},
+		{
+			name: "generateAction without type field (user's exact case)",
+			script: `
+			function stateOne(data) {
+				log(data)
+				var f = generateAction({
+					image: "ealen/echo-server:latest"
+				})
+				return finish("JENS")
+			}`,
+			expectCount:  1,
+			expectImages: []string{"ealen/echo-server:latest"},
+		},
+		{
+			name: "generateAction in nested function",
+			script: `
+			function stateOne() {
+				function helper() {
+					var action = generateAction({
+						type: "local",
+						image: "ubuntu:22.04"
+					});
+				}
+				return finish();
+			}`,
+			expectCount:  1,
+			expectImages: []string{"ubuntu:22.04"},
+		},
+		{
+			name: "generateAction in arrow function",
+			script: `
+			function stateOne() {
+				const fn = () => {
+					generateAction({
+						type: "local",
+						image: "alpine:3.18"
+					});
+				};
+				return finish();
+			}`,
+			expectCount:  1,
+			expectImages: []string{"alpine:3.18"},
+		},
+		{
+			name: "generateAction in if block within function",
+			script: `
+			function stateOne() {
+				if (true) {
+					generateAction({
+						type: "local",
+						image: "node:18"
+					});
+				}
+				return finish();
+			}`,
+			expectCount:  1,
+			expectImages: []string{"node:18"},
+		},
 	}
 
 	for _, tt := range tests {

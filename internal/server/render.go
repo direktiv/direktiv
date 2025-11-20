@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 
 	"github.com/direktiv/direktiv/internal/cluster/cache"
@@ -58,6 +59,9 @@ func renderGatewayFiles(db *gorm.DB, manager core.GatewayManager) {
 
 func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 	cacheManager cache.Manager, secretsManager core.SecretsManager) {
+
+	fmt.Println("RENDER SERVICE FILES")
+
 	ctx := context.Background()
 	dStore := datasql.NewStore(db)
 
@@ -116,6 +120,11 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 					continue
 				}
 
+				// it doesn't matter to what we set this, but not local
+				// that means all service which are not local are using "namespace"
+				// we differentiate in the runtime when we call it
+				ac.Type = core.FlowActionScopeNamespace
+
 				funConfigList = append(funConfigList, svcFile(ac, ns.Name, f.Path))
 
 			case filestore.FileTypeWorkflow:
@@ -155,6 +164,11 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 				for k := range s.Config.Actions {
 					action := s.Config.Actions[k]
 
+					// if it is not a local action, we can skip it
+					if action.Service != core.FlowActionScopeLocal {
+						continue
+					}
+
 					sf := core.ServiceFile{
 						Image: action.Image,
 						Cmd:   action.Cmd,
@@ -162,11 +176,11 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 						Envs:  action.Envs,
 						// Patches: action.Patches,
 						// TODO: this need to be set to zero to enable zero scaling.
-						Scale: 1,
+						// Scale: 1,
 					}
 
 					sd := &core.ServiceFileData{
-						Typ:         core.ServiceTypeWorkflow,
+						Typ:         core.FlowActionScopeLocal,
 						Name:        "",
 						Namespace:   ns.Name,
 						FilePath:    f.Path,
@@ -191,11 +205,12 @@ func svcFile(action core.ActionConfig, namespace, path string) *core.ServiceFile
 		Cmd:   action.Cmd,
 		Size:  action.Size,
 		Envs:  action.Envs,
-		Scale: 1,
+		Scale: 0,
 	}
 
 	return &core.ServiceFileData{
-		Typ:         core.ServiceTypeWorkflow,
+		// Typ:         core.ServiceTypeWorkflow,
+		Typ:         action.Type,
 		Name:        "",
 		Namespace:   namespace,
 		FilePath:    path,
