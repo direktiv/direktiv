@@ -230,7 +230,7 @@ linters:
         linters: [forbidigo, gosec]
 
       - path: "internal/server/render.go"
-        linters: [exhaustive, forbidigo, gocritic]
+        linters: [exhaustive, forbidigo, gocritic, gocognit]
 
       - path: "internal/server/server.go"
         linters: [errcheck, gocognit, ineffassign, revive, staticcheck, wastedassign, gocyclo, maintidx]

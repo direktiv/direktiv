@@ -338,6 +338,14 @@ func (j *mirrorJob) copyFilesToTempFSRoot() {
 		} else if strings.HasSuffix(path, "svc.json") {
 			mimeType = "text/javascript"
 			ft = filestore.FileTypeService
+		} else if filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml" {
+			mimeType = "application/yaml"
+			// detect direktiv mimetypes
+			ft, err = j.detectDirektivYAML(path, data)
+			if err != nil {
+				telemetry.LogActivity(telemetry.LogLevelWarn, j.process.Namespace,
+					j.process.ID.String(), fmt.Sprintf("detecing yaml failed: %v", err))
+			}
 		} else {
 			mt := mimetype.Detect(data)
 			mimeType = strings.Split(mt.String(), ";")[0]
@@ -398,6 +406,7 @@ const (
 
 	ServiceAPIV1  = "service/v1"
 	ConsumerAPIV1 = "consumer/v1"
+	PageAPIV1     = "page/v1"
 )
 
 func (j *mirrorJob) detectDirektivYAML(path string, data []byte) (filestore.FileType, error) {
@@ -431,6 +440,8 @@ func (j *mirrorJob) detectDirektivYAML(path string, data []byte) (filestore.File
 		return filestore.FileTypeConsumer, nil
 	case ServiceAPIV1:
 		return filestore.FileTypeService, nil
+	case PageAPIV1:
+		return filestore.FileTypePage, nil
 	}
 
 	switch a.XDirektivAPI {

@@ -1,4 +1,4 @@
-import { Check, Circle, Loader2, Square } from "lucide-react";
+import { Check, Circle, Loader2, Search, Square } from "lucide-react";
 import {
   CommandEmpty,
   CommandGroup,
@@ -40,6 +40,7 @@ export const NamespaceSelectorList = ({
   return (
     <>
       <CommandInput
+        icon={Search}
         placeholder={t("components.breadcrumb.searchPlaceholder")}
       />
       {hasResults && (

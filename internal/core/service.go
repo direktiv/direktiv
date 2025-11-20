@@ -28,6 +28,10 @@ type ServiceFile struct {
 	// Patches     []ServicePatch        `json:"patches"      yaml:"patches"`
 }
 
+type PageFile struct {
+	DirektivAPI string `yaml:"direktiv_api"`
+}
+
 func ParseServiceFile(data []byte) (*ServiceFile, error) {
 	res := &ServiceFile{}
 	err := yaml.Unmarshal(data, res)

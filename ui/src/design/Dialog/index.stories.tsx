@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogXClose,
 } from "./index";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import Button from "../Button";
@@ -74,6 +75,24 @@ export const WithButtonAsTrigger = () => (
         </DialogClose>
         <Button>Submit</Button>
       </DialogFooter>
+    </DialogContent>
+  </Dialog>
+);
+
+export const WithCloseButton = () => (
+  <Dialog>
+    <DialogTrigger>
+      <Button>With close button</Button>
+    </DialogTrigger>
+    <DialogContent>
+      <DialogXClose />
+      <DialogHeader>
+        <DialogTitle>Dialog Title</DialogTitle>
+        <DialogDescription>
+          This is a description of the dialog.
+        </DialogDescription>
+      </DialogHeader>
+      Content goes here
     </DialogContent>
   </Dialog>
 );

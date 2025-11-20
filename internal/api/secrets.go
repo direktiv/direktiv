@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -131,11 +130,9 @@ func convert(v *core.Secret) any {
 
 	res := &secretForAPI{
 		Name:        v.Name,
-		Initialized: v.Data != nil && len(v.Data) > 0,
+		Initialized: len(v.Data) > 0,
 		CreatedAt:   v.CreatedAt,
 	}
-
-	fmt.Printf("%+v\n", res)
 
 	return res
 }

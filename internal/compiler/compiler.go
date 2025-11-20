@@ -50,7 +50,6 @@ func (c *Compiler) FetchScript(ctx context.Context, namespace, path string, with
 	flow, err := c.cache.Get(cacheKey, func(a ...any) (core.TypescriptFlow, error) {
 		return c.genFlow(ctx, namespace, path)
 	})
-
 	if err != nil {
 		slog.Error("cannot fetch sript during compile", slog.Any("error", err))
 		return flow, err

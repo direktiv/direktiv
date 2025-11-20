@@ -56,7 +56,7 @@ func (c *notificationsController) lintSecrets(ctx context.Context, ns string) ([
 	keys := []string{}
 
 	for _, secret := range secrets {
-		if secret.Data == nil || len(secret.Data) == 0 {
+		if len(secret.Data) == 0 {
 			keys = append(keys, secret.Name)
 		}
 	}

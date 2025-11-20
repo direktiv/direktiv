@@ -12,6 +12,7 @@ import {
 import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
 import RunWorkflow from "../components/RunWorkflow";
+import { formatTs } from "~/util/formatTs";
 import { useNamespace } from "~/util/store/namespace";
 import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
@@ -61,12 +62,14 @@ const WorkflowEditor: FC<{
 
   if (!data) throw Error("data (file) is undefined in Editor");
 
-  const onSave = (toSave: string | undefined) => {
-    if (toSave) {
+  const onSave = async (content: string | undefined) => {
+    if (content) {
+      const prettierContent = await formatTs(content);
       setError(undefined);
+      setEditorContent(prettierContent);
       updateFile({
         path: data.path,
-        payload: { data: encode(toSave) },
+        payload: { data: encode(prettierContent) },
       });
     }
   };
