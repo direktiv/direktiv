@@ -52,7 +52,7 @@ func (e *Engine) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (*InstanceEvent, <-chan *InstanceEvent, error) {
+func (e *Engine) StartWorkflow(ctx context.Context, instID uuid.UUID, namespace string, workflowPath string, input string, metadata map[string]string) (*InstanceEvent, <-chan *InstanceEvent, error) {
 	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath, true)
 	if err != nil {
 		return nil, nil, fmt.Errorf("fetch script: %w", err)
@@ -62,7 +62,7 @@ func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPa
 	metadata[core.EngineMappingSecrets] = flowDetails.Secrets
 
 	notify := make(chan *InstanceEvent, 1)
-	st, err := e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)
+	st, err := e.startScript(ctx, instID, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -75,11 +75,10 @@ var (
 	notifyLock = &sync.Mutex{}
 )
 
-func (e *Engine) startScript(ctx context.Context, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceEvent, metadata map[string]string) (*InstanceEvent, error) {
+func (e *Engine) startScript(ctx context.Context, instID uuid.UUID, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceEvent, metadata map[string]string) (*InstanceEvent, error) {
 	if !json.Valid([]byte(input)) {
 		return nil, fmt.Errorf("input is not a valid json string: %s", input)
 	}
-	instID := uuid.New()
 
 	if metadata == nil {
 		metadata = make(map[string]string)
@@ -187,7 +186,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	}
 
 	onSubflow := func(ctx context.Context, path string, input []byte) ([]byte, error) {
-		_, notify, err := e.StartWorkflow(ctx, inst.Namespace, path, string(input), map[string]string{
+		_, notify, err := e.StartWorkflow(ctx, uuid.New(), inst.Namespace, path, string(input), map[string]string{
 			core.EngineMappingPath:      path,
 			core.EngineMappingNamespace: inst.Namespace,
 			core.EngineMappingCaller:    "api",
