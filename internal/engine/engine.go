@@ -186,7 +186,27 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
 
-	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction)
+	onSubflow := func(ctx context.Context, path string, input []byte) ([]byte, error) {
+		_, notify, err := e.StartWorkflow(ctx, inst.Namespace, path, string(input), map[string]string{
+			core.EngineMappingPath:      path,
+			core.EngineMappingNamespace: inst.Namespace,
+			core.EngineMappingCaller:    "api",
+			LabelWithNotify:             "true",
+			LabelWithSyncExec:           "true",
+			LabelInvokerType:            "api",
+		})
+		if err != nil {
+			return nil, err
+		}
+		st := <-notify
+		if st.State != StateCodeComplete {
+			return nil, fmt.Errorf("subflow did not complete: %s", st.Error)
+		}
+
+		return st.Output, nil
+	}
+
+	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, onSubflow)
 	if err == nil {
 		return nil
 	}

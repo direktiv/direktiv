@@ -22,6 +22,7 @@ type Runtime struct {
 	onFinish     OnFinishFunc
 	onTransition OnTransitionFunc
 	onAction     OnActionFunc
+	onSubflow    OnSubflowFunc
 	//nolint:containedctx
 	ctx context.Context
 }
@@ -30,16 +31,19 @@ type (
 	OnFinishFunc     func(output []byte) error
 	OnTransitionFunc func(output []byte, fn string) error
 	OnActionFunc     func(svcID string) error
+
+	OnSubflowFunc func(ctx context.Context, path string, input []byte) ([]byte, error)
 )
 
 var (
 	NoOnFinish     = func(output []byte) error { return nil }
 	NoOnTransition = func(output []byte, fn string) error { return nil }
 	NoOnAction     = func(svcID string) error { return nil }
+	NoOnSubflow    = func(ctx context.Context, path string, input []byte) ([]byte, error) { return nil, nil }
 )
 
 func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mappings string,
-	onFinish OnFinishFunc, onTransition OnTransitionFunc, onAction OnActionFunc,
+	onFinish OnFinishFunc, onTransition OnTransitionFunc, onAction OnActionFunc, onSubflow OnSubflowFunc,
 ) *Runtime {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
@@ -58,6 +62,7 @@ func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mapp
 		onFinish:     onFinish,
 		onTransition: onTransition,
 		onAction:     onAction,
+		onSubflow:    onSubflow,
 	}
 
 	type setFunc struct {
@@ -232,7 +237,12 @@ func (rt *Runtime) execSubflow(call sobek.FunctionCall) sobek.Value {
 		panic(rt.vm.ToValue(fmt.Sprintf("error marshaling transition data: %s", err.Error())))
 	}
 
-	return rt.vm.ToValue("" + path + "/" + f + "/" + string(b))
+	out, err := rt.onSubflow(rt.ctx, path, b)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error calling on subflow: %s", err.Error())))
+	}
+
+	return rt.vm.ToValue(out)
 }
 
 // TODO: remove return from finish() as it should be the last statement.
@@ -275,10 +285,10 @@ type Script struct {
 }
 
 func ExecScript(ctx context.Context, script *Script, onFinish OnFinishFunc,
-	onTransition OnTransitionFunc, onAction OnActionFunc,
+	onTransition OnTransitionFunc, onAction OnActionFunc, onSubflow OnSubflowFunc,
 ) error {
 	rt := New(ctx, script.InstID, script.Metadata, script.Mappings, onFinish,
-		onTransition, onAction)
+		onTransition, onAction, onSubflow)
 
 	_, err := rt.vm.RunString(script.Text)
 	if err != nil {
