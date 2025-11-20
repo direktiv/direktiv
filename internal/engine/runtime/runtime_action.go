@@ -156,7 +156,7 @@ func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, retries int
 	err = json.Unmarshal(outData, &d)
 	if err != nil {
 		// panic(rt.vm.ToValue(fmt.Errorf("could not unmarshale response: %s", err.Error())))
-		return nil, fmt.Errorf("could not unmarshale response: %s", err.Error)
+		return nil, fmt.Errorf("could not unmarshale response: %s", err.Error())
 	}
 
 	return d, nil
