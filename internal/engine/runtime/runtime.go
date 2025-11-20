@@ -242,7 +242,12 @@ func (rt *Runtime) execSubflow(call sobek.FunctionCall) sobek.Value {
 		panic(rt.vm.ToValue(fmt.Sprintf("error calling on subflow: %s", err.Error())))
 	}
 
-	return rt.vm.ToValue(out)
+	err = json.Unmarshal(out, &memory)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error unmarshaling subflow output: %s", err.Error())))
+	}
+
+	return rt.vm.ToValue(memory)
 }
 
 // TODO: remove return from finish() as it should be the last statement.
