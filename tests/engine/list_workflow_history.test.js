@@ -70,6 +70,7 @@ function stateThree(payload) {
 			console.log(res.body.data)
 			const history = res.body.data.map((item) => ({
 				type: item.state,
+				scope: item.metadata.WithScope,
 				fn: item.fn,
 				input: item.input,
 				output: item.output,
@@ -79,6 +80,7 @@ function stateThree(payload) {
 			let firstSequence = history[0].sequence
 			expect(history).toEqual([
 				{
+					scope: 'main',
 					type: 'pending',
 					fn: 'stateOne',
 					input: { foo: 'bar' },
@@ -86,6 +88,7 @@ function stateThree(payload) {
 					sequence: firstSequence++,
 				},
 				{
+					scope: 'main',
 					type: 'running',
 					fn: 'stateOne',
 					input: { foo: 'bar' },
@@ -93,6 +96,7 @@ function stateThree(payload) {
 					sequence: firstSequence++,
 				},
 				{
+					scope: 'main',
 					type: 'running',
 					fn: 'stateTwo',
 					input: { foo: 'bar' },
@@ -100,6 +104,7 @@ function stateThree(payload) {
 					sequence: firstSequence++,
 				},
 				{
+					scope: 'main',
 					type: 'running',
 					fn: 'stateThree',
 					input: { foo: 'bar' },
@@ -107,6 +112,7 @@ function stateThree(payload) {
 					sequence: firstSequence++,
 				},
 				{
+					scope: 'main',
 					type: 'complete',
 					fn: undefined,
 					input: { foo: 'bar' },
