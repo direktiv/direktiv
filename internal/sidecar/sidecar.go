@@ -21,13 +21,9 @@ func RunApplication(ctx context.Context) {
 		LogDebug: false,
 	})
 
-	fmt.Println("1")
-
 	err := waitForUserContainer()
 	if err != nil {
 	}
-
-	fmt.Println("2")
 
 	err = telemetry.InitOpenTelemetry(ctx, os.Getenv("DIREKTIV_OTEL_BACKEND"))
 	if err != nil {
@@ -36,8 +32,6 @@ func RunApplication(ctx context.Context) {
 	slog.Info("opentelemetry configured", slog.String("addr", os.Getenv("DIREKTIV_OTEL_BACKEND")))
 
 	sidecar := newSidecar()
-
-	fmt.Println("3")
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
