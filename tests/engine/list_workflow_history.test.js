@@ -113,11 +113,9 @@ function stateThree(payload) {
 	})
 })
 
-
 describe('List workflow with subflow history', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
-
 
 	helpers.itShouldCreateFile(
 		it,
@@ -138,8 +136,6 @@ function stateTwo(payload) {
 }
 `),
 	)
-
-
 
 	helpers.itShouldCreateFile(
 		it,
@@ -162,7 +158,6 @@ function stateTwo(payload) {
 }
 `),
 	)
-
 
 	let instanceId = null
 
@@ -255,7 +250,13 @@ function stateTwo(payload) {
 				type: 'complete',
 				fn: undefined,
 				input: { foo: 'bar' },
-				output: { foo: 'bar', mainOne: 1, subflowOne: 1, subflowTwo: 2, mainTwo: 2 },
+				output: {
+					foo: 'bar',
+					mainOne: 1,
+					subflowOne: 1,
+					subflowTwo: 2,
+					mainTwo: 2,
+				},
 				sequence: firstSequence++,
 			},
 		])
