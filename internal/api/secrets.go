@@ -130,7 +130,7 @@ func convert(v *core.Secret) any {
 
 	res := &secretForAPI{
 		Name:        v.Name,
-		Initialized: v.Data != nil,
+		Initialized: len(v.Data) > 0,
 		CreatedAt:   v.CreatedAt,
 	}
 

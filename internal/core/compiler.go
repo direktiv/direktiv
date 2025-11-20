@@ -40,8 +40,9 @@ type EventConfig struct {
 type TypescriptFlow struct {
 	Script, Mapping string
 	Config          FlowConfig
+	Secrets         string // json map
 }
 
 type Compiler interface {
-	FetchScript(ctx context.Context, namespace, path string) (TypescriptFlow, error)
+	FetchScript(ctx context.Context, namespace, path string, withSecrets bool) (TypescriptFlow, error)
 }

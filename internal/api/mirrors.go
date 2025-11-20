@@ -37,7 +37,7 @@ func (e *mirrorsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	proc, err := mirroring.MirrorExec(r.Context(), e.db, mirConfig, datastore.ProcessTypeInit)
+	proc, err := mirroring.MirrorExec(r.Context(), e.bus, e.db, mirConfig, datastore.ProcessTypeInit)
 	if err != nil {
 		writeDataStoreError(w, err)
 		return

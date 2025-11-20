@@ -39,6 +39,7 @@ func (tnf *PagePlugin) NewInstance(config core.PluginConfig) (core.Plugin, error
 	url := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/files%s?raw=true",
 		os.Getenv("DIREKTIV_API_PORT"), config.Namespace, pl.File)
 
+	//nolint:gosec,noctx
 	res, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("direktiv api error: %w", err)

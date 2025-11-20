@@ -137,7 +137,7 @@ func (c *Cache[T]) Notify(ctx context.Context, notify cache.CacheNotify) {
 	switch notify.Action {
 	case cache.CacheClear:
 		c.cache.Clear()
-	case cache.CacheDelete:
+	case cache.CacheDelete, cache.CacheUpdate, cache.CacheCreate:
 		c.cache.Del(notify.Key)
 	}
 }
