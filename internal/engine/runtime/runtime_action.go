@@ -11,12 +11,9 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
-	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/grafana/sobek"
 	"github.com/hashicorp/go-retryablehttp"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/propagation"
 )
 
 func (rt *Runtime) action(c map[string]any) sobek.Value {
@@ -104,25 +101,13 @@ func callRetryable(ctx context.Context, url, method string, headers map[string]s
 	client.HTTPClient.Timeout = 10 * time.Second // total timeout per request
 	// client.Logger = nil                          // silence internal
 
-	req, err := retryablehttp.NewRequest(method, url, bytes.NewReader(payload))
+	req, err := retryablehttp.NewRequestWithContext(ctx, method, url, bytes.NewReader(payload))
 	if err != nil {
 		return nil, err
 	}
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
-
-	l := ctx.Value(telemetry.DirektivLogCtx(telemetry.LogObjectIdentifier))
-	logObject, ok := l.(telemetry.LogObject)
-	if !ok {
-		return nil, fmt.Errorf("action context missing")
-	}
-
-	// set relevant headers
-	logObject.ToHeader(&req.Header)
-
-	// inject otel headers for propagation
-	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
 
 	resp, err := client.Do(req)
 	if err != nil {
