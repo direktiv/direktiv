@@ -163,8 +163,6 @@ func SetupInstanceLogs(ctx context.Context, namespace, id, invoker, path string)
 			InstanceInfo: InstanceInfo{
 				Invoker: invoker,
 				Path:    path,
-				Status:  core.LogRunningStatus,
-				State:   "pre-run",
 			},
 		})
 

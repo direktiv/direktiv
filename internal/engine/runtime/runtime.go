@@ -23,24 +23,31 @@ type Runtime struct {
 	onFinish     OnFinishFunc
 	onTransition OnTransitionFunc
 	onAction     OnActionFunc
-
-	tracingPack *tracingPack
+	onSubflow    OnSubflowFunc
+	//nolint:containedctx
+	ctx context.Context
 }
 
 type (
 	OnFinishFunc     func(output []byte) error
 	OnTransitionFunc func(output []byte, fn string) error
 	OnActionFunc     func(svcID string) error
+
+	OnSubflowFunc func(ctx context.Context, path string, input []byte) ([]byte, error)
 )
 
 var (
 	NoOnFinish     = func(output []byte) error { return nil }
 	NoOnTransition = func(output []byte, fn string) error { return nil }
 	NoOnAction     = func(svcID string) error { return nil }
+	NoOnSubflow    = func(ctx context.Context, path string, input []byte) ([]byte, error) { return nil, nil }
 )
 
-func New(instID uuid.UUID, metadata map[string]string, mappings string,
-	onFinish OnFinishFunc, onTransition OnTransitionFunc, onAction OnActionFunc,
+func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mappings string,
+	onFinish OnFinishFunc,
+	onTransition OnTransitionFunc,
+	onAction OnActionFunc,
+	onSubflow OnSubflowFunc,
 ) *Runtime {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
@@ -52,12 +59,14 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string,
 	}
 
 	rt := &Runtime{
+		ctx:          ctx,
 		vm:           vm,
 		instID:       instID,
 		metadata:     metadata,
 		onFinish:     onFinish,
 		onTransition: onTransition,
 		onAction:     onAction,
+		onSubflow:    onSubflow,
 	}
 
 	type setFunc struct {
@@ -77,6 +86,7 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string,
 		{"generateAction", rt.action},
 		{"getSecrets", rt.secrets},
 		{"getSecret", rt.secret},
+		{"execSubflow", rt.execSubflow},
 	}
 
 	for _, v := range setList {
@@ -88,14 +98,7 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string,
 	return rt
 }
 
-func (rt *Runtime) WithTracingPack(tp *tracingPack) *Runtime {
-	rt.tracingPack = tp
-	return rt
-}
-
 func (rt *Runtime) secret(secretName string) sobek.Value {
-	rt.tracingPack.span.AddEvent("fetching secret")
-
 	secretJsonMap := rt.metadata[core.EngineMappingSecrets]
 	us := make(map[string]string)
 	json.Unmarshal([]byte(secretJsonMap), &us)
@@ -116,8 +119,6 @@ func (rt *Runtime) secret(secretName string) sobek.Value {
 }
 
 func (rt *Runtime) secrets(secretNames []string) sobek.Value {
-	rt.tracingPack.span.AddEvent("fetching secrets")
-
 	secretJsonMap := rt.metadata[core.EngineMappingSecrets]
 
 	us := make(map[string]string)
@@ -144,14 +145,12 @@ func (rt *Runtime) secrets(secretNames []string) sobek.Value {
 }
 
 func (rt *Runtime) sleep(seconds int) sobek.Value {
-	rt.tracingPack.span.AddEvent("calling sleep")
 	time.Sleep(time.Duration(seconds) * time.Second)
 
 	return sobek.Undefined()
 }
 
 func (rt *Runtime) now() *sobek.Object {
-	rt.tracingPack.span.AddEvent("calling now")
 	t := time.Now()
 
 	obj := rt.vm.NewObject()
@@ -168,20 +167,17 @@ func (rt *Runtime) now() *sobek.Object {
 }
 
 func (rt *Runtime) id() sobek.Value {
-	rt.tracingPack.span.AddEvent("calling id")
 	return rt.vm.ToValue(rt.instID)
 }
 
 func (rt *Runtime) log(logs ...string) sobek.Value {
-	rt.tracingPack.span.AddEvent("calling log")
-
 	// protect victoria logs from falling over without
 	msg := strings.Join(logs, " ")
 	if msg == "" {
 		msg = " "
 	}
 
-	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, msg)
+	telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo, msg)
 
 	return sobek.Undefined()
 }
@@ -208,9 +204,6 @@ func (rt *Runtime) transition(call sobek.FunctionCall) sobek.Value {
 		panic(rt.vm.ToValue(fmt.Sprintf("error parsing transition fn: %s", f)))
 	}
 
-	// otel: end previous and start new one
-	rt.tracingPack.tracingTransition(fName)
-
 	err = rt.onTransition(b, fName)
 	if err != nil {
 		panic(rt.vm.ToValue(fmt.Sprintf("error calling on transition: %s", err.Error())))
@@ -234,6 +227,38 @@ func (rt *Runtime) transition(call sobek.FunctionCall) sobek.Value {
 	return value
 }
 
+func (rt *Runtime) execSubflow(call sobek.FunctionCall) sobek.Value {
+	if len(call.Arguments) != 2 {
+		panic(rt.vm.ToValue("exec requires a path, a function and a payload"))
+	}
+
+	var path string
+	if err := rt.vm.ExportTo(call.Arguments[0], &path); err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error exporting execSubflow path: %s", err.Error())))
+	}
+
+	var memory any
+	if err := rt.vm.ExportTo(call.Arguments[1], &memory); err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error exporting execSubflow data: %s", err.Error())))
+	}
+	b, err := json.Marshal(memory)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error marshaling execSubflow data: %s", err.Error())))
+	}
+
+	out, err := rt.onSubflow(rt.ctx, path, b)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error calling on subflow: %s", err.Error())))
+	}
+
+	err = json.Unmarshal(out, &memory)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error unmarshaling execSubflow output: %s", err.Error())))
+	}
+
+	return rt.vm.ToValue(memory)
+}
+
 // TODO: remove return from finish() as it should be the last statement.
 func (rt *Runtime) finish(data sobek.Value) sobek.Value {
 	var output any
@@ -249,9 +274,6 @@ func (rt *Runtime) finish(data sobek.Value) sobek.Value {
 	if err != nil {
 		panic(rt.vm.ToValue(fmt.Sprintf("error calling on finish: %s", err.Error())))
 	}
-
-	// otel: finish span from transition
-	rt.tracingPack.tracingFinish()
 
 	return sobek.Null()
 }
@@ -277,19 +299,16 @@ type Script struct {
 }
 
 func ExecScript(ctx context.Context, script *Script, onFinish OnFinishFunc,
-	onTransition OnTransitionFunc, onAction OnActionFunc,
+	onTransition OnTransitionFunc, onAction OnActionFunc, onSubflow OnSubflowFunc,
 ) error {
-	tp := newTracingPack(ctx, script.Metadata[core.EngineMappingNamespace],
-		script.InstID.String(), script.Metadata[core.EngineMappingCaller],
+	ctx = telemetry.SetupInstanceLogs(ctx,
+		script.Metadata[core.EngineMappingNamespace],
+		script.InstID.String(),
+		script.Metadata[core.EngineMappingCaller],
 		script.Metadata[core.EngineMappingPath])
-	defer tp.finish()
 
-	rt := New(script.InstID, script.Metadata, script.Mappings, onFinish,
-		onTransition, onAction).WithTracingPack(tp)
-
-	tp.tracingStart(script.Fn)
-	telemetry.LogInstance(tp.ctx, telemetry.LogLevelInfo,
-		fmt.Sprintf("transitioning to '%s'", script.Fn))
+	rt := New(ctx, script.InstID, script.Metadata, script.Mappings, onFinish,
+		onTransition, onAction, onSubflow)
 
 	_, err := rt.vm.RunString(script.Text)
 	if err != nil {
@@ -308,7 +327,6 @@ func ExecScript(ctx context.Context, script *Script, onFinish OnFinishFunc,
 
 	_, err = start(sobek.Undefined(), rt.vm.ToValue(inputMap))
 	if err != nil {
-		rt.tracingPack.handleError(err)
 		return fmt.Errorf("invoke start: %w", err)
 	}
 
