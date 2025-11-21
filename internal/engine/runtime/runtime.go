@@ -36,10 +36,6 @@ type (
 	OnSubflowFunc func(ctx context.Context, path string, input []byte) ([]byte, error)
 )
 
-var (
-	NoOnAction = func(svcID string) error { return nil }
-)
-
 func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mappings string,
 	onFinish OnFinishFunc,
 	onTransition OnTransitionFunc,

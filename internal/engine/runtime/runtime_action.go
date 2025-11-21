@@ -90,7 +90,12 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 }
 
 func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, retries int) (any, error) {
-	rt.onAction(sd.GetID())
+	if rt.onAction != nil {
+		err := rt.onAction(sd.GetID())
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	svcUrl := fmt.Sprintf("http://%s.%s.svc", sd.GetID(), os.Getenv("DIREKTIV_SERVICE_NAMESPACE"))
 
