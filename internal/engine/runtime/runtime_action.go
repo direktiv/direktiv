@@ -84,38 +84,6 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 		}
 
 		return rt.vm.ToValue(data)
-
-		// rt.onAction(sd.GetID())
-
-		// svcUrl := fmt.Sprintf("http://%s.%s.svc", sd.GetID(), os.Getenv("DIREKTIV_SERVICE_NAMESPACE"))
-
-		// // ping service
-		// _, err := callRetryable(rt.tracingPack.ctx, svcUrl+"/up", http.MethodGet, []byte(""), 30)
-		// if err != nil {
-		// 	panic(rt.vm.ToValue(fmt.Errorf("action did not start: %s", err.Error())))
-		// }
-
-		// telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, "action ping successful, calling action")
-
-		// data, err := json.Marshal(payload)
-		// if err != nil {
-		// 	panic(rt.vm.ToValue(fmt.Errorf("could not marshal payload for action: %s", err.Error())))
-		// }
-
-		// outData, err := callRetryable(rt.tracingPack.ctx, svcUrl, http.MethodPost, data, config.Retries)
-		// if err != nil {
-		// 	panic(rt.vm.ToValue(fmt.Errorf("calling action failed: %s", err.Error())))
-		// }
-
-		// telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, "action call successful")
-
-		// var d any
-		// err = json.Unmarshal(outData, &d)
-		// if err != nil {
-		// 	panic(rt.vm.ToValue(fmt.Errorf("could not unmarshale response: %s", err.Error())))
-		// }
-
-		// return rt.vm.ToValue(d)
 	}
 
 	return rt.vm.ToValue(actionFunc)
@@ -147,7 +115,6 @@ func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, retries int
 		return nil, fmt.Errorf("calling action failed: %s", err.Error())
 	}
 
-	telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo, "action call successful")
 	telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo, "action call successful")
 
 	var d any
