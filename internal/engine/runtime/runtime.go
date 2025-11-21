@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/google/uuid"
 	"github.com/grafana/sobek"
 	"github.com/grafana/sobek/parser"
@@ -167,6 +168,14 @@ func (rt *Runtime) id() sobek.Value {
 }
 
 func (rt *Runtime) log(logs ...string) sobek.Value {
+	// protect victoria logs from falling over without
+	msg := strings.Join(logs, " ")
+	if msg == "" {
+		msg = " "
+	}
+
+	telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo, msg)
+
 	return sobek.Undefined()
 }
 

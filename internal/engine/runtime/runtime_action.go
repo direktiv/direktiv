@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/grafana/sobek"
 	"github.com/hashicorp/go-retryablehttp"
@@ -42,6 +43,9 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 	sd.Name = sd.GetValueHash()
 
 	actionFunc := func(actionCallArgs map[string]any) sobek.Value {
+		telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo,
+			fmt.Sprintf("executing action with image %s", config.Image))
+
 		rt.onAction(sd.GetID())
 
 		if _, ok := actionCallArgs["body"]; !ok {
@@ -72,6 +76,8 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 			panic(rt.vm.ToValue(fmt.Errorf("action did not start: %s", err.Error())))
 		}
 
+		telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo, "action ping successful, calling action")
+
 		data, err := json.Marshal(actionCallArgs["body"])
 		if err != nil {
 			panic(rt.vm.ToValue(fmt.Errorf("could not marshal payload for action: %s", err.Error())))
@@ -80,6 +86,8 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 		if err != nil {
 			panic(rt.vm.ToValue(fmt.Errorf("calling action failed: %s", err.Error())))
 		}
+
+		telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo, "action call successful")
 
 		var d any
 		err = json.Unmarshal(outData, &d)
