@@ -20,20 +20,19 @@ type Runtime struct {
 	vm           *sobek.Runtime
 	instID       uuid.UUID
 	metadata     map[string]string
-	onFinish     OnFinishFunc
-	onTransition OnTransitionFunc
-	onAction     OnActionFunc
-	onSubflow    OnSubflowFunc
+	onFinish     OnFinishHook
+	onTransition OnTransitionHook
+	onAction     OnActionHook
+	onSubflow    OnSubflowHook
 	//nolint:containedctx
 	ctx context.Context
 }
 
 type (
-	OnFinishFunc     func(output []byte) error
-	OnTransitionFunc func(output []byte, fn string) error
-	OnActionFunc     func(svcID string) error
-
-	OnSubflowFunc func(ctx context.Context, path string, input []byte) ([]byte, error)
+	OnFinishHook     func(output []byte) error
+	OnTransitionHook func(output []byte, fn string) error
+	OnActionHook     func(svcID string) error
+	OnSubflowHook    func(ctx context.Context, path string, input []byte) ([]byte, error)
 )
 
 func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mappings string, hooks ...any) *Runtime {
@@ -90,13 +89,13 @@ func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mapp
 // setHook is a dynamic way to set hooks on the runtime.
 func (rt *Runtime) setHook(f any) *Runtime {
 	switch f := f.(type) {
-	case OnFinishFunc:
+	case OnFinishHook:
 		rt.onFinish = f
-	case OnTransitionFunc:
+	case OnTransitionHook:
 		rt.onTransition = f
-	case OnActionFunc:
+	case OnActionHook:
 		rt.onAction = f
-	case OnSubflowFunc:
+	case OnSubflowHook:
 		rt.onSubflow = f
 	default:
 		panic(fmt.Sprintf("unknown hook type: %T", f))

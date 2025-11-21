@@ -125,7 +125,7 @@ func TestHttpAsyncFetch(t *testing.T) {
 		}
 	`
 	var result []byte
-	var onFinish runtime.OnFinishFunc = func(output []byte) error {
+	var onFinish runtime.OnFinishHook = func(output []byte) error {
 		result = output
 		return nil
 	}

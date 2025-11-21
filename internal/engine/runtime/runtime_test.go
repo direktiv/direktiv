@@ -12,12 +12,12 @@ import (
 
 func TestTransition(t *testing.T) {
 	var gotOutput []byte
-	var onFinish runtime.OnFinishFunc = func(output []byte) error {
+	var onFinish runtime.OnFinishHook = func(output []byte) error {
 		gotOutput = output
 		return nil
 	}
 	var gotMemory []string
-	var onTransition runtime.OnTransitionFunc = func(memory []byte, fn string) error {
+	var onTransition runtime.OnTransitionHook = func(memory []byte, fn string) error {
 		gotMemory = append(gotMemory, fmt.Sprintf("%s -> %s", fn, memory))
 		return nil
 	}
