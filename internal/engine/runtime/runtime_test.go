@@ -101,7 +101,7 @@ func TestTransitionErrors(t *testing.T) {
 				Mappings: "",
 				Fn:       "start",
 				Input:    "{}",
-			}, runtime.NoOnFinish, runtime.NoOnTransition, runtime.NoOnAction, runtime.NoOnSubflow)
+			}, nil, runtime.NoOnTransition, runtime.NoOnAction, runtime.NoOnSubflow)
 			require.Error(t, err)
 		})
 	}

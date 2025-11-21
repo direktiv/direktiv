@@ -37,7 +37,6 @@ type (
 )
 
 var (
-	NoOnFinish     = func(output []byte) error { return nil }
 	NoOnTransition = func(output []byte, fn string) error { return nil }
 	NoOnAction     = func(svcID string) error { return nil }
 	NoOnSubflow    = func(ctx context.Context, path string, input []byte) ([]byte, error) { return nil, nil }
@@ -271,9 +270,11 @@ func (rt *Runtime) finish(data sobek.Value) sobek.Value {
 		panic(rt.vm.ToValue(fmt.Sprintf("error marshaling output: %s", err.Error())))
 	}
 
-	err = rt.onFinish(b)
-	if err != nil {
-		panic(rt.vm.ToValue(fmt.Sprintf("error calling on finish: %s", err.Error())))
+	if rt.onFinish != nil {
+		err = rt.onFinish(b)
+		if err != nil {
+			panic(rt.vm.ToValue(fmt.Sprintf("error calling onFinish hook: %s", err.Error())))
+		}
 	}
 
 	return sobek.Null()
