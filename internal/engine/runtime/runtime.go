@@ -37,9 +37,8 @@ type (
 )
 
 var (
-	NoOnTransition = func(output []byte, fn string) error { return nil }
-	NoOnAction     = func(svcID string) error { return nil }
-	NoOnSubflow    = func(ctx context.Context, path string, input []byte) ([]byte, error) { return nil, nil }
+	NoOnAction  = func(svcID string) error { return nil }
+	NoOnSubflow = func(ctx context.Context, path string, input []byte) ([]byte, error) { return nil, nil }
 )
 
 func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mappings string,
@@ -204,9 +203,11 @@ func (rt *Runtime) transition(call sobek.FunctionCall) sobek.Value {
 		panic(rt.vm.ToValue(fmt.Sprintf("error parsing transition fn: %s", f)))
 	}
 
-	err = rt.onTransition(b, fName)
-	if err != nil {
-		panic(rt.vm.ToValue(fmt.Sprintf("error calling on transition: %s", err.Error())))
+	if rt.onTransition != nil {
+		err = rt.onTransition(b, fName)
+		if err != nil {
+			panic(rt.vm.ToValue(fmt.Sprintf("error calling onTransition hook: %s", err.Error())))
+		}
 	}
 
 	fn, ok := sobek.AssertFunction(call.Arguments[0])
