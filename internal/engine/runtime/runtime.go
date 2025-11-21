@@ -44,7 +44,10 @@ var (
 )
 
 func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mappings string,
-	onFinish OnFinishFunc, onTransition OnTransitionFunc, onAction OnActionFunc, onSubflow OnSubflowFunc,
+	onFinish OnFinishFunc,
+	onTransition OnTransitionFunc,
+	onAction OnActionFunc,
+	onSubflow OnSubflowFunc,
 ) *Runtime {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
