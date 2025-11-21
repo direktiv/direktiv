@@ -298,6 +298,12 @@ type Script struct {
 func ExecScript(ctx context.Context, script *Script, onFinish OnFinishFunc,
 	onTransition OnTransitionFunc, onAction OnActionFunc, onSubflow OnSubflowFunc,
 ) error {
+	ctx = telemetry.SetupInstanceLogs(ctx,
+		script.Metadata[core.EngineMappingNamespace],
+		script.InstID.String(),
+		script.Metadata[core.EngineMappingCaller],
+		script.Metadata[core.EngineMappingPath])
+
 	rt := New(ctx, script.InstID, script.Metadata, script.Mappings, onFinish,
 		onTransition, onAction, onSubflow)
 
