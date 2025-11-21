@@ -42,7 +42,7 @@ async function itShouldCreateFile(
 	mimeType,
 	data,
 ) {
-	it(`should create a new file ${path}`, async () => {
+	it(`should create a new file ${path}/${name}`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ns}/files${path}`)
 			.set('Content-Type', 'application/json')

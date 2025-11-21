@@ -15,8 +15,6 @@ import (
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/grafana/sobek"
 	"github.com/hashicorp/go-retryablehttp"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/propagation"
 )
 
 func (rt *Runtime) service(t, path string, payload any, retries int) sobek.Value {
@@ -149,6 +147,7 @@ func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, retries int
 		return nil, fmt.Errorf("calling action failed: %s", err.Error())
 	}
 
+		telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo, "action call successful")
 	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, "action call successful")
 
 	var d any
@@ -169,22 +168,10 @@ func callRetryable(ctx context.Context, url, method string, payload []byte, retr
 	client.HTTPClient.Timeout = 10 * time.Second // total timeout per request
 	// client.Logger = nil                          // silence internal
 
-	req, err := retryablehttp.NewRequest(method, url, bytes.NewReader(payload))
+	req, err := retryablehttp.NewRequestWithContext(ctx, method, url, bytes.NewReader(payload))
 	if err != nil {
 		return nil, err
 	}
-
-	l := ctx.Value(telemetry.DirektivLogCtx(telemetry.LogObjectIdentifier))
-	logObject, ok := l.(telemetry.LogObject)
-	if !ok {
-		return nil, fmt.Errorf("action context missing")
-	}
-
-	// set relevant headers
-	logObject.ToHeader(&req.Header)
-
-	// inject otel headers for propagation
-	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
 
 	resp, err := client.Do(req)
 	if err != nil {

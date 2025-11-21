@@ -22,6 +22,13 @@ const (
 	LabelWithNotify   = "WithNotify"
 	LabelWithSyncExec = "WithSyncExec"
 	LabelInvokerType  = "InvokerType"
+
+	// LabelWithScope used to mark a workflow instance if it is:
+	//	1- a main execution or
+	//  2- a subflow execution.
+	// For main execution, use string "main"
+	// For subflow execution, use string uuid that uniquely identifies the subflow.
+	LabelWithScope = "WithScope"
 )
 
 type Engine struct {
@@ -52,7 +59,7 @@ func (e *Engine) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (*InstanceEvent, <-chan *InstanceEvent, error) {
+func (e *Engine) StartWorkflow(ctx context.Context, instID uuid.UUID, namespace string, workflowPath string, input string, metadata map[string]string) (*InstanceEvent, <-chan *InstanceEvent, error) {
 	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath, true)
 	if err != nil {
 		return nil, nil, fmt.Errorf("fetch script: %w", err)
@@ -62,7 +69,7 @@ func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPa
 	metadata[core.EngineMappingSecrets] = flowDetails.Secrets
 
 	notify := make(chan *InstanceEvent, 1)
-	st, err := e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)
+	st, err := e.startScript(ctx, instID, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -75,14 +82,15 @@ var (
 	notifyLock = &sync.Mutex{}
 )
 
-func (e *Engine) startScript(ctx context.Context, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceEvent, metadata map[string]string) (*InstanceEvent, error) {
+func (e *Engine) startScript(ctx context.Context, instID uuid.UUID, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceEvent, metadata map[string]string) (*InstanceEvent, error) {
 	if !json.Valid([]byte(input)) {
 		return nil, fmt.Errorf("input is not a valid json string: %s", input)
 	}
-	instID := uuid.New()
 
 	if metadata == nil {
-		metadata = make(map[string]string)
+		metadata = map[string]string{
+			LabelWithScope: "main",
+		}
 	}
 
 	pEv := &InstanceEvent{
@@ -111,7 +119,7 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 
 	if notify != nil {
 		notifyLock.Lock()
-		notifyMap[instID.String()] = notify
+		notifyMap[pEv.FullID()] = notify
 		notifyLock.Unlock()
 	}
 
@@ -167,7 +175,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 		if endEv.Metadata[LabelWithNotify] == "true" {
 			notifyLock.Lock()
-			notify, ok := notifyMap[endEv.InstanceID.String()]
+			notify, ok := notifyMap[endEv.FullID()]
 			notifyLock.Unlock()
 			if ok {
 				notify <- endEv
@@ -186,7 +194,28 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
 
-	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction)
+	onSubflow := func(ctx context.Context, path string, input []byte) ([]byte, error) {
+		_, notify, err := e.StartWorkflow(ctx, inst.InstanceID, inst.Namespace, path, string(input), map[string]string{
+			core.EngineMappingPath:      path,
+			core.EngineMappingNamespace: inst.Namespace,
+			core.EngineMappingCaller:    "api",
+			LabelWithNotify:             "true",
+			LabelWithSyncExec:           "true",
+			LabelInvokerType:            "api",
+			LabelWithScope:              uuid.New().String(),
+		})
+		if err != nil {
+			return nil, err
+		}
+		st := <-notify
+		if st.State != StateCodeComplete {
+			return nil, fmt.Errorf("subflow did not complete: %s", st.Error)
+		}
+
+		return st.Output, nil
+	}
+
+	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, onSubflow)
 	if err == nil {
 		return nil
 	}
@@ -198,7 +227,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 	if inst.Metadata[LabelWithNotify] == "true" {
 		notifyLock.Lock()
-		notify, ok := notifyMap[endEv.InstanceID.String()]
+		notify, ok := notifyMap[endEv.FullID()]
 		notifyLock.Unlock()
 		if ok {
 			notify <- endEv
