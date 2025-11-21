@@ -37,12 +37,7 @@ describe('Test js engine', () => {
 			image: "mendhak/http-https-echo:latest"
 		});
 		function stateOne(payload) {
-			let result = echo({ 
-				body: {foo: "bar", input: payload}
-				headers: {
-				"content-type": "application/json"
-				}
-			});
+			let result = echo({foo: "bar", input: payload});
 			return finish(result.json);
 		}
 `,
