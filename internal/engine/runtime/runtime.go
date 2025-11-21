@@ -36,12 +36,7 @@ type (
 	OnSubflowFunc func(ctx context.Context, path string, input []byte) ([]byte, error)
 )
 
-func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mappings string,
-	onFinish OnFinishFunc,
-	onTransition OnTransitionFunc,
-	onAction OnActionFunc,
-	onSubflow OnSubflowFunc,
-) *Runtime {
+func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mappings string, hooks ...any) *Runtime {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
 
@@ -52,14 +47,10 @@ func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mapp
 	}
 
 	rt := &Runtime{
-		ctx:          ctx,
-		vm:           vm,
-		instID:       instID,
-		metadata:     metadata,
-		onFinish:     onFinish,
-		onTransition: onTransition,
-		onAction:     onAction,
-		onSubflow:    onSubflow,
+		ctx:      ctx,
+		vm:       vm,
+		instID:   instID,
+		metadata: metadata,
 	}
 
 	type setFunc struct {
@@ -87,6 +78,28 @@ func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mapp
 		if err := vm.Set(v.name, v.fn); err != nil {
 			panic(fmt.Sprintf("error setting runtime function '%s': %s", v.name, err.Error()))
 		}
+	}
+
+	for _, h := range hooks {
+		rt.setHook(h)
+	}
+
+	return rt
+}
+
+// setHook is a dynamic way to set hooks on the runtime.
+func (rt *Runtime) setHook(f any) *Runtime {
+	switch f := f.(type) {
+	case OnFinishFunc:
+		rt.onFinish = f
+	case OnTransitionFunc:
+		rt.onTransition = f
+	case OnActionFunc:
+		rt.onAction = f
+	case OnSubflowFunc:
+		rt.onSubflow = f
+	default:
+		panic(fmt.Sprintf("unknown hook type: %T", f))
 	}
 
 	return rt
@@ -299,17 +312,14 @@ type Script struct {
 	Metadata map[string]string
 }
 
-func ExecScript(ctx context.Context, script *Script, onFinish OnFinishFunc,
-	onTransition OnTransitionFunc, onAction OnActionFunc, onSubflow OnSubflowFunc,
-) error {
+func ExecScript(ctx context.Context, script *Script, hooks ...any) error {
 	ctx = telemetry.SetupInstanceLogs(ctx,
 		script.Metadata[core.EngineMappingNamespace],
 		script.InstID.String(),
 		script.Metadata[core.EngineMappingCaller],
 		script.Metadata[core.EngineMappingPath])
 
-	rt := New(ctx, script.InstID, script.Metadata, script.Mappings, onFinish,
-		onTransition, onAction, onSubflow)
+	rt := New(ctx, script.InstID, script.Metadata, script.Mappings, hooks...)
 
 	_, err := rt.vm.RunString(script.Text)
 	if err != nil {
