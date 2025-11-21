@@ -134,6 +134,8 @@ func (c *Cache[T]) Set(key string, value T) {
 }
 
 func (c *Cache[T]) Notify(ctx context.Context, notify cache.CacheNotify) {
+	slog.Info("cache notify", slog.String("key", notify.Key))
+
 	switch notify.Action {
 	case cache.CacheClear:
 		c.cache.Clear()

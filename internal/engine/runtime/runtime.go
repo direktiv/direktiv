@@ -87,6 +87,7 @@ func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mapp
 		{"getSecrets", rt.secrets},
 		{"getSecret", rt.secret},
 		{"execSubflow", rt.execSubflow},
+		{"execService", rt.service},
 	}
 
 	for _, v := range setList {

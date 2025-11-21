@@ -117,6 +117,11 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 					continue
 				}
 
+				// it doesn't matter to what we set this, but not local
+				// that means all service which are not local are using "namespace"
+				// we differentiate in the runtime when we call it
+				ac.Type = core.FlowActionScopeNamespace
+
 				funConfigList = append(funConfigList, svcFile(ac, ns.Name, f.Path))
 
 			case filestore.FileTypeWorkflow:
@@ -161,10 +166,13 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 						Cmd:   action.Cmd,
 						Size:  action.Size,
 						Envs:  action.Envs,
+						// Patches: action.Patches,
+						// TODO: this need to be set to zero to enable zero scaling.
+						// Scale: 1,
 					}
 
 					sd := &core.ServiceFileData{
-						Typ:         core.ServiceTypeWorkflow,
+						Typ:         core.FlowActionScopeLocal,
 						Name:        "",
 						Namespace:   ns.Name,
 						FilePath:    f.Path,
@@ -189,11 +197,12 @@ func svcFile(action core.ActionConfig, namespace, path string) *core.ServiceFile
 		Cmd:   action.Cmd,
 		Size:  action.Size,
 		Envs:  action.Envs,
-		Scale: 1,
+		Scale: 0,
 	}
 
 	return &core.ServiceFileData{
-		Typ:         core.ServiceTypeWorkflow,
+		// Typ:         core.ServiceTypeWorkflow,
+		Typ:         action.Type,
 		Name:        "",
 		Namespace:   namespace,
 		FilePath:    path,

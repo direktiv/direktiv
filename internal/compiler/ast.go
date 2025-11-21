@@ -320,6 +320,12 @@ func (ap *ASTParser) walkFunctionNode(node ast.Node, isStateFunc bool) {
 			ap.walkFunctionNode(stmt, isStateFunc)
 		}
 
+	case *ast.FunctionDeclaration:
+		// Nested function declaration - treat as regular function (not state function)
+		if n.Function != nil && n.Function.Body != nil {
+			ap.walkFunctionNode(n.Function.Body, false)
+		}
+
 	case *ast.IfStatement:
 		ap.walkExpression(n.Test, true, isStateFunc)
 		ap.walkFunctionNode(n.Consequent, isStateFunc)
@@ -941,6 +947,7 @@ func (ap *ASTParser) parseSecrets(expr ast.Expression) ([]string, error) {
 // parseAction parses an action configuration from generateAction call.
 func (ap *ASTParser) parseAction(expr ast.Expression) (core.ActionConfig, error) {
 	action := core.ActionConfig{
+		Type: core.FlowActionScopeLocal, // Default to "local" if not specified
 		Envs: make([]core.EnvironmentVariable, 0),
 	}
 

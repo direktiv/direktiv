@@ -392,15 +392,6 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Publish pubsub event (rename).
-	// if req.Path != "" && updatedFile.Typ.IsDirektivSpecFile() {
-	if updatedFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.Publish(pubsub.SubjFileSystemChange, nil)
-		if err != nil {
-			slog.Error("pubsub publish", "err", err)
-		}
-	}
-
 	e.cache.Notify(r.Context(), cache.CacheNotify{
 		Key:    fmt.Sprintf("%s-%s-%s", namespace, "script", path),
 		Action: cache.CacheUpdate,
@@ -432,6 +423,15 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			res.Errors = append(res.Errors, jErr)
+		}
+	}
+
+	// Publish pubsub event (rename).
+	// if req.Path != "" && updatedFile.Typ.IsDirektivSpecFile() {
+	if updatedFile.Typ.IsDirektivSpecFile() {
+		err = e.bus.Publish(pubsub.SubjFileSystemChange, nil)
+		if err != nil {
+			slog.Error("pubsub publish", "err", err)
 		}
 	}
 
