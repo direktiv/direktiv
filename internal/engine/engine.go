@@ -160,12 +160,12 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		Metadata: startEv.Metadata,
 	}
 
-	onAction := func(svcID string) error {
+	var onAction runtime.OnActionHook = func(svcID string) error {
 		// return e.dataBus.PublishIgniteAction(ctx, config,
 		// 	inst.Metadata[core.EngineMappingNamespace], inst.Metadata[core.EngineMappingPath])
 		return e.dataBus.PublishIgniteAction(ctx, svcID)
 	}
-	onFinish := func(output []byte) error {
+	var onFinish runtime.OnFinishHook = func(output []byte) error {
 		endEv := startEv.Clone()
 		endEv.EventID = uuid.New()
 		endEv.State = StateCodeComplete
@@ -184,7 +184,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
-	onTransition := func(memory []byte, fn string) error {
+	var onTransition runtime.OnTransitionHook = func(memory []byte, fn string) error {
 		endEv := startEv.Clone()
 		endEv.EventID = uuid.New()
 		endEv.State = StateCodeRunning
@@ -194,7 +194,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
 
-	onSubflow := func(ctx context.Context, path string, input []byte) ([]byte, error) {
+	var onSubflow runtime.OnSubflowHook = func(ctx context.Context, path string, input []byte) ([]byte, error) {
 		_, notify, err := e.StartWorkflow(ctx, inst.InstanceID, inst.Namespace, path, string(input), map[string]string{
 			core.EngineMappingPath:      path,
 			core.EngineMappingNamespace: inst.Namespace,
