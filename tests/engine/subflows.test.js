@@ -37,7 +37,8 @@ describe('Test Subflows', () => {
 			
 			return finish(payload);
 		}
-`},
+`,
+		},
 		{
 			name: 'errorSubflow.wf.ts',
 			file: `
@@ -62,19 +63,48 @@ describe('Test Subflows', () => {
 		)
 	}
 
-
 	const testCases = [
 		{
 			name: 'basic.wf.ts',
 			input: { foo: 'bar' },
-			wantOutput: { foo: 'bar', events:[
-				"processed on okSubflow.wf.ts -> stateOne",
-			]},
+			wantOutput: {
+				foo: 'bar',
+				events: ['processed on okSubflow.wf.ts -> stateOne'],
+			},
 			wantErrorMessage: null,
 			wantStatus: 'complete',
 			file: `
 		function stateOne(payload) {
 			let result = execSubflow("/okSubflow.wf.ts", payload);
+			return finish(result);
+		}
+`,
+		},
+		{
+			name: 'error.wf.ts',
+			input: { foo: 'bar' },
+			wantOutput: null,
+			wantErrorMessage:
+				'invoke start: error calling on subflow: subflow did not complete: invoke start: error in errorSubflow.wf.ts -> stateOne at stateOne',
+			wantStatus: 'failed',
+			file: `
+		function stateOne(payload) {
+			let result = execSubflow("/errorSubflow.wf.ts", payload);
+			return finish(result);
+		}
+`,
+		},
+
+		{
+			name: 'nonExist.wf.ts',
+			input: { foo: 'bar' },
+			wantOutput: null,
+			wantErrorMessage:
+				"invoke start: error calling on subflow: fetch script: file '/nonExistSubflow.wf.ts': ErrNotFound at",
+			wantStatus: 'failed',
+			file: `
+		function stateOne(payload) {
+			let result = execSubflow("/nonExistSubflow.wf.ts", payload);
 			return finish(result);
 		}
 `,
@@ -99,13 +129,15 @@ describe('Test Subflows', () => {
 					`/api/v2/namespaces/${namespace}/instances?path=/${testCase.name}&wait=true&fullOutput=true`,
 				)
 				.send(testCase.input)
-			console.log(res.body)
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data.status).toEqual(testCase.wantStatus)
-			expect(res.body.data.errorMessage).toEqual(testCase.wantErrorMessage)
+
+			if (testCase.wantErrorMessage === null) {
+				expect(res.body.data.errorMessage).toEqual(null)
+			} else {
+				expect(res.body.data.errorMessage).toContain(testCase.wantErrorMessage)
+			}
 			expect(JSON.parse(res.body.data.output)).toEqual(testCase.wantOutput)
 		})
 	}
-
-
 })
