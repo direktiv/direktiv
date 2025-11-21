@@ -37,8 +37,7 @@ type (
 )
 
 var (
-	NoOnAction  = func(svcID string) error { return nil }
-	NoOnSubflow = func(ctx context.Context, path string, input []byte) ([]byte, error) { return nil, nil }
+	NoOnAction = func(svcID string) error { return nil }
 )
 
 func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mappings string,
@@ -247,6 +246,9 @@ func (rt *Runtime) execSubflow(call sobek.FunctionCall) sobek.Value {
 		panic(rt.vm.ToValue(fmt.Sprintf("error marshaling execSubflow data: %s", err.Error())))
 	}
 
+	if rt.onSubflow == nil {
+		panic(rt.vm.ToValue("onSubflow hook not set"))
+	}
 	out, err := rt.onSubflow(rt.ctx, path, b)
 	if err != nil {
 		panic(rt.vm.ToValue(fmt.Sprintf("error calling on subflow: %s", err.Error())))

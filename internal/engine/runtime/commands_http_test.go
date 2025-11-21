@@ -80,7 +80,7 @@ func TestHttpRequest(t *testing.T) {
 		Mappings: "",
 		Input:    "{}",
 		Fn:       "start",
-	}, nil, nil, runtime.NoOnAction, runtime.NoOnSubflow)
+	}, nil, nil, runtime.NoOnAction, nil)
 	require.NoError(t, err)
 }
 
@@ -135,7 +135,7 @@ func TestHttpAsyncFetch(t *testing.T) {
 		Mappings: "",
 		Input:    "{}",
 		Fn:       "start",
-	}, onFinish, nil, runtime.NoOnAction, runtime.NoOnSubflow)
+	}, onFinish, nil, runtime.NoOnAction, nil)
 
 	for i := 0; i < 20; i++ {
 		if len(result) != 0 {
