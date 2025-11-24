@@ -248,7 +248,6 @@ func renderWorkflowFiles(db *gorm.DB, scheduler *sched.Scheduler, cacheManager c
 				slog.Error("cannot schedule workflow",
 					slog.String("namespace", ns.Name),
 					slog.String("path", f.Path), slog.Any("error", err))
-				continue
 			}
 		}
 	}
