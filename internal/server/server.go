@@ -210,15 +210,9 @@ func Start(lc *lifecycle.Manager) error {
 				slog.Error("cannot ignite service", slog.Any("error", err))
 			}
 		})
-
-		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
+		registerRenderFunc(app.PubSub, func() {
 			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager, app.SecretsManager)
 		})
-		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager, app.SecretsManager)
-		})
-		// call at least once before booting
-		renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager, app.SecretsManager)
 	}
 
 	// initializing engine
@@ -249,13 +243,9 @@ func Start(lc *lifecycle.Manager) error {
 		if err != nil {
 			return fmt.Errorf("start scheduler, err: %w", err)
 		}
-		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
+		registerRenderFunc(app.PubSub, func() {
 			renderWorkflowFiles(app.DB, app.Scheduler, app.CacheManager, app.SecretsManager)
 		})
-		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
-			renderWorkflowFiles(app.DB, app.Scheduler, app.CacheManager, app.SecretsManager)
-		})
-		renderWorkflowFiles(app.DB, app.Scheduler, app.CacheManager, app.SecretsManager)
 	}
 
 	// initializing registry-manager
@@ -272,14 +262,9 @@ func Start(lc *lifecycle.Manager) error {
 		slog.Info("initializing gateway manager")
 		app.GatewayManager = gateway.NewManager(app.SecretsManager)
 
-		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
+		registerRenderFunc(app.PubSub, func() {
 			renderGatewayFiles(app.DB, app.GatewayManager)
 		})
-		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
-			renderGatewayFiles(app.DB, app.GatewayManager)
-		})
-		// call at least once before booting
-		renderGatewayFiles(app.DB, app.GatewayManager)
 	}
 
 	// initializing extensions
@@ -416,4 +401,14 @@ func checkNATSConnectivity() {
 			panic("cannot connect to nats")
 		}
 	}
+}
+
+func registerRenderFunc(pub pubsub.EventBus, fn func()) {
+	pub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
+		fn()
+	})
+	pub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
+		fn()
+	})
+	fn()
 }
