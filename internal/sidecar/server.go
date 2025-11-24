@@ -14,9 +14,17 @@ type sidecar struct {
 
 func newSidecar() *sidecar {
 	rm := &requestMap{}
+
+	external, err := newExternalServer(rm)
+	if err != nil {
+		// can only happen if there is no db connection
+		slog.Error("cannot create external server", slog.Any("error", err))
+		panic(err)
+	}
+
 	return &sidecar{
 		internal: newInternalServer(rm),
-		external: newExternalServer(rm),
+		external: external,
 	}
 }
 
