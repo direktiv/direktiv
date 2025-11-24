@@ -403,11 +403,11 @@ func checkNATSConnectivity() {
 	}
 }
 
-func registerRenderFunc(pub pubsub.EventBus, fn func()) {
-	pub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
+func registerRenderFunc(bs pubsub.EventBus, fn func()) {
+	bs.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
 		fn()
 	})
-	pub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
+	bs.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
 		fn()
 	})
 	fn()
