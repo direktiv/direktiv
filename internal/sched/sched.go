@@ -115,7 +115,7 @@ func (s *Scheduler) SetRule(ctx context.Context, rule *Rule) (*Rule, error) {
 
 	rule.ID = CalculateRuleID(*rule)
 	rule.CreatedAt = s.clk.Now()
-	rule.UpdatedAt = rule.CreatedAt
+	rule.UpdatedAt = s.clk.Now()
 
 	data, err := json.Marshal(rule)
 	if err != nil {

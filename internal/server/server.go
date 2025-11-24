@@ -252,6 +252,7 @@ func Start(lc *lifecycle.Manager) error {
 		if err != nil {
 			return fmt.Errorf("start scheduler, err: %w", err)
 		}
+		renderWorkflowFiles(app.DB, app.Scheduler, app.CacheManager, app.SecretsManager)
 	}
 
 	// initializing registry-manager
