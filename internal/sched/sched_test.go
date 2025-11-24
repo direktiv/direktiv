@@ -53,7 +53,7 @@ func TestDispatchIfDue_PublishesTaskAndAdvancesRule(t *testing.T) {
 	js := &fakeJS{}
 	start := time.Date(2025, 1, 1, 1, 0, 0, 0, time.Local)
 	clk := tclock.NewFakeClock(start)
-	s := New(js, clk, slog.New(slog.DiscardHandler))
+	s := NewWithoutEngine(js, clk, slog.New(slog.DiscardHandler))
 
 	runAt := clk.Now()
 
@@ -94,7 +94,7 @@ func TestDispatchIfDue_SkipsWhenNotDue(t *testing.T) {
 	js := &fakeJS{}
 	start := time.Date(2025, 1, 1, 1, 0, 0, 0, time.Local)
 	clk := tclock.NewFakeClock(start)
-	s := New(js, clk, slog.New(slog.DiscardHandler))
+	s := NewWithoutEngine(js, clk, slog.New(slog.DiscardHandler))
 
 	rule := &Rule{
 		ID:           "rid",

@@ -17,15 +17,20 @@ import (
 )
 
 type Scheduler struct {
-	js     JetStream
-	cache  *RuleCache
-	clk    clock.WithTicker
-	lg     *slog.Logger
-	engine *engine.Engine
+	js         JetStream
+	cache      *RuleCache
+	clk        clock.WithTicker
+	lg         *slog.Logger
+	engine     *engine.Engine
+	withEngine bool
 }
 
 func New(js JetStream, engine *engine.Engine, clk clock.WithTicker, lg *slog.Logger) *Scheduler {
-	return &Scheduler{js: js, engine: engine, cache: NewRulesCache(), clk: clk, lg: lg}
+	return &Scheduler{js: js, engine: engine, withEngine: true, cache: NewRulesCache(), clk: clk, lg: lg}
+}
+
+func NewWithoutEngine(js JetStream, clk clock.WithTicker, lg *slog.Logger) *Scheduler {
+	return &Scheduler{js: js, withEngine: false, cache: NewRulesCache(), clk: clk, lg: lg}
 }
 
 func (s *Scheduler) Start(lc *lifecycle.Manager) error {
@@ -33,7 +38,7 @@ func (s *Scheduler) Start(lc *lifecycle.Manager) error {
 	if err != nil {
 		return fmt.Errorf("start status cache: %w", err)
 	}
-	if s.engine != nil {
+	if s.withEngine {
 		err = s.startTaskSubscription(lc.Context())
 		if err != nil {
 			return fmt.Errorf("start task worker: %w", err)
@@ -75,7 +80,7 @@ func (s *Scheduler) dispatchIfDue(rule *Rule) error {
 	s.lg.Debug("published task", "msgID", id)
 
 	// advance rule, persist
-	next, err := calculateCronExpr(rule.CronExpr, runAt)
+	next, err := CalculateCronExpr(rule.CronExpr, runAt)
 	if err != nil {
 		return fmt.Errorf("calculate next run: %w", err)
 	}
@@ -178,12 +183,19 @@ func (s *Scheduler) startRuleSubscription(ctx context.Context) error {
 func (s *Scheduler) startTaskSubscription(ctx context.Context) error {
 	subj := intNats.StreamSchedTask.Subject("*", "*")
 	_, err := s.js.Subscribe(subj, func(msg *nats.Msg) {
+		// Immediately bail out if the context is cancelled
+		if ctx.Err() != nil {
+			_ = msg.Nak() // best-effort
+			return
+		}
+
 		var tsk Task
 		if err := json.Unmarshal(msg.Data, &tsk); err != nil {
 			// best-effort; ignore bad payloads
 			return
 		}
 		s.lg.Info("task received from stream", "id", tsk.ID, "ns", tsk.Namespace, "wf", tsk.WorkflowPath)
+		//nolint:contextcheck
 		_, _, err := s.engine.StartWorkflow(context.Background(), uuid.New(), tsk.Namespace, tsk.WorkflowPath, "{}", map[string]string{
 			engine.LabelWithNotify:   strconv.FormatBool(false),
 			engine.LabelWithSyncExec: strconv.FormatBool(false),
@@ -192,12 +204,20 @@ func (s *Scheduler) startTaskSubscription(ctx context.Context) error {
 		})
 		if err != nil {
 			s.lg.Error("failed to start cron workflow", "err", err, "id", tsk.ID, "ns", tsk.Namespace, "wf", tsk.WorkflowPath)
-			msg.Nak()
+			if ackErr := msg.Nak(); ackErr != nil {
+				s.lg.Error("failed to nak task message", "err", ackErr, "id", tsk.ID)
+			}
+
 			return
 		}
 		s.lg.Info("started cron workflow", "id", tsk.ID, "ns", tsk.Namespace, "wf", tsk.WorkflowPath)
-		msg.Ack()
-	}, nats.AckExplicit())
+		if err := msg.Ack(); err != nil {
+			s.lg.Error("failed to ack task message", "err", err, "id", tsk.ID)
+		}
+	}, nats.ManualAck(),
+		nats.AckExplicit(), // Explicit ack policy
+		nats.MaxAckPending(1024),
+		nats.Context(ctx))
 	if err != nil {
 		return fmt.Errorf("nats subscribe task: %w", err)
 	}

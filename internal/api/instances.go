@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -144,7 +143,6 @@ func (e *instController) mountRouter(r chi.Router) {
 
 	r.Post("/", e.create)
 	r.Get("/scheds", e.scheds)
-
 }
 
 func (e *instController) dummy(w http.ResponseWriter, r *http.Request) {
@@ -303,8 +301,8 @@ func (e *instController) history(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, out)
 }
 
-func (e *instController) scheds(writer http.ResponseWriter, request *http.Request) {
-	list, err := e.scheduler.ListRules(context.Background())
+func (e *instController) scheds(writer http.ResponseWriter, r *http.Request) {
+	list, err := e.scheduler.ListRules(r.Context())
 	if err != nil {
 		writeInternalError(writer, err)
 		return

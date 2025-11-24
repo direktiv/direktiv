@@ -14,7 +14,6 @@ import (
 	"github.com/grafana/sobek/ast"
 	"github.com/grafana/sobek/file"
 	"github.com/grafana/sobek/parser"
-	"github.com/robfig/cron/v3"
 	"github.com/sosodev/duration"
 )
 
@@ -741,8 +740,8 @@ func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 		case "cron":
 			if strLit, ok := keyed.Value.(*ast.StringLiteral); ok {
 				cronPattern := strLit.Value.String()
-				// for valiation, calculate the next cron time.
-				_, err = sched.CalculateCronExpr(cronPattern, time.Now())
+				// for validation, calculate the next cron time.
+				_, err := sched.CalculateCronExpr(cronPattern, time.Now())
 				if err != nil {
 					start := ap.file.Position(int(keyed.Idx0()))
 					end := ap.file.Position(int(keyed.Idx1()))
