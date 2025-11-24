@@ -237,6 +237,7 @@ func renderWorkflowFiles(db *gorm.DB, scheduler *sched.Scheduler, cacheManager c
 
 				continue
 			}
+
 			_, err = scheduler.SetRule(context.Background(), &sched.Rule{
 				Namespace:    ns.Name,
 				WorkflowPath: f.Path,
@@ -247,6 +248,7 @@ func renderWorkflowFiles(db *gorm.DB, scheduler *sched.Scheduler, cacheManager c
 				slog.Error("cannot schedule workflow",
 					slog.String("namespace", ns.Name),
 					slog.String("path", f.Path), slog.Any("error", err))
+				continue
 			}
 		}
 	}

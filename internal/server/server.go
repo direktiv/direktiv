@@ -217,9 +217,6 @@ func Start(lc *lifecycle.Manager) error {
 		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
 			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager, app.SecretsManager)
 		})
-		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager, app.SecretsManager)
-		})
 		// call at least once before booting
 		renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager, app.SecretsManager)
 	}
@@ -252,6 +249,12 @@ func Start(lc *lifecycle.Manager) error {
 		if err != nil {
 			return fmt.Errorf("start scheduler, err: %w", err)
 		}
+		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
+			renderWorkflowFiles(app.DB, app.Scheduler, app.CacheManager, app.SecretsManager)
+		})
+		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
+			renderWorkflowFiles(app.DB, app.Scheduler, app.CacheManager, app.SecretsManager)
+		})
 		renderWorkflowFiles(app.DB, app.Scheduler, app.CacheManager, app.SecretsManager)
 	}
 
