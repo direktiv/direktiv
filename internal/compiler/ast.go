@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/sched"
 	"github.com/go-sourcemap/sourcemap"
 	"github.com/grafana/sobek/ast"
 	"github.com/grafana/sobek/file"
@@ -739,7 +741,8 @@ func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 		case "cron":
 			if strLit, ok := keyed.Value.(*ast.StringLiteral); ok {
 				cronPattern := strLit.Value.String()
-				_, err := cron.ParseStandard(cronPattern)
+				// for valiation, calculate the next cron time.
+				_, err = sched.CalculateCronExpr(cronPattern, time.Now())
 				if err != nil {
 					start := ap.file.Position(int(keyed.Idx0()))
 					end := ap.file.Position(int(keyed.Idx1()))

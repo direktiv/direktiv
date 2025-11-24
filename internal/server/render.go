@@ -205,6 +205,12 @@ func renderWorkflowFiles(db *gorm.DB, scheduler *sched.Scheduler, cacheManager c
 
 	fStore := filesql.NewStore(db)
 
+	c, err := compiler.NewCompiler(db, secretsManager, cacheManager.FlowCache())
+	if err != nil {
+		slog.Error("cannot get compiler", slog.Any("error", err))
+		return
+	}
+
 	for i := range namespaces {
 		ns := namespaces[i]
 		files, err := fStore.ForRoot(ns.Name).ListAllFiles(ctx)
@@ -221,20 +227,15 @@ func renderWorkflowFiles(db *gorm.DB, scheduler *sched.Scheduler, cacheManager c
 			if f.Typ != filestore.FileTypeWorkflow {
 				continue
 			}
-			c, err := compiler.NewCompiler(db, secretsManager, cacheManager.FlowCache())
-			if err != nil {
-				slog.Error("cannot get compiler for workflow",
-					slog.String("namespace", ns.Name),
-					slog.String("path", f.Path), slog.Any("error", err))
-
-				continue
-			}
 			s, err := c.FetchScript(ctx, ns.Name, f.Path, false)
 			if err != nil {
 				slog.Error("cannot generate script",
 					slog.String("namespace", ns.Name),
 					slog.String("path", f.Path), slog.Any("error", err))
 
+				continue
+			}
+			if s.Config.Cron == "" {
 				continue
 			}
 

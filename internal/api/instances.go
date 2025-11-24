@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -98,7 +99,7 @@ func convertInstanceData(data *engine.InstanceEvent) *InstanceData {
 		Status:         string(data.State),
 		WorkflowPath:   data.Metadata[core.EngineMappingPath],
 		ErrorCode:      nil,
-		Invoker:        "api",
+		Invoker:        data.Metadata[engine.LabelInvokerType],
 		Definition:     []byte(data.Script),
 		ErrorMessage:   nil,
 		Flow:           []string{},
@@ -142,6 +143,8 @@ func (e *instController) mountRouter(r chi.Router) {
 	r.Get("/{instanceID}", e.get)
 
 	r.Post("/", e.create)
+	r.Get("/scheds", e.scheds)
+
 }
 
 func (e *instController) dummy(w http.ResponseWriter, r *http.Request) {
@@ -180,13 +183,10 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	st, notify, err := e.engine.StartWorkflow(r.Context(), uuid.New(), namespace, path, string(input), map[string]string{
-		core.EngineMappingPath:      path,
-		core.EngineMappingNamespace: namespace,
-		core.EngineMappingCaller:    "api",
-		engine.LabelWithNotify:      strconv.FormatBool(withWait),
-		engine.LabelWithSyncExec:    strconv.FormatBool(withSyncExec),
-		engine.LabelInvokerType:     "api",
-		engine.LabelWithScope:       "main",
+		engine.LabelWithNotify:   strconv.FormatBool(withWait),
+		engine.LabelWithSyncExec: strconv.FormatBool(withSyncExec),
+		engine.LabelInvokerType:  "api",
+		engine.LabelWithScope:    "main",
 	})
 	if err != nil {
 		writeEngineError(w, err)
@@ -301,4 +301,13 @@ func (e *instController) history(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, out)
+}
+
+func (e *instController) scheds(writer http.ResponseWriter, request *http.Request) {
+	list, err := e.scheduler.ListRules(context.Background())
+	if err != nil {
+		writeInternalError(writer, err)
+		return
+	}
+	writeJSON(writer, list)
 }

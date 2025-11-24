@@ -35,7 +35,7 @@ func TestScheduler_TestProcessDueRules(t *testing.T) {
 	clk := tclock.NewFakeClock(start)
 
 	// Build scheduler (real JS, real cache)
-	s := New(js, clk, slog.New(slog.DiscardHandler))
+	s := New(js, nil, clk, slog.New(slog.DiscardHandler))
 
 	// Start rule subscription (fills cache)
 	require.NoError(t, s.startRuleSubscription(ctx))

@@ -5,23 +5,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/engine"
 	intNats "github.com/direktiv/direktiv/internal/nats"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
+	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 	"k8s.io/utils/clock"
 )
 
 type Scheduler struct {
-	js    JetStream
-	cache *RuleCache
-	clk   clock.WithTicker
-	lg    *slog.Logger
+	js     JetStream
+	cache  *RuleCache
+	clk    clock.WithTicker
+	lg     *slog.Logger
+	engine *engine.Engine
 }
 
-func New(js JetStream, clk clock.WithTicker, lg *slog.Logger) *Scheduler {
-	return &Scheduler{js: js, cache: NewRulesCache(), clk: clk, lg: lg}
+func New(js JetStream, engine *engine.Engine, clk clock.WithTicker, lg *slog.Logger) *Scheduler {
+	return &Scheduler{js: js, engine: engine, cache: NewRulesCache(), clk: clk, lg: lg}
 }
 
 func (s *Scheduler) Start(lc *lifecycle.Manager) error {
@@ -29,6 +33,13 @@ func (s *Scheduler) Start(lc *lifecycle.Manager) error {
 	if err != nil {
 		return fmt.Errorf("start status cache: %w", err)
 	}
+	if s.engine != nil {
+		err = s.startTaskSubscription(lc.Context())
+		if err != nil {
+			return fmt.Errorf("start task worker: %w", err)
+		}
+	}
+
 	startTicking(lc, s.clk, 100*time.Millisecond, s.processDueRules)
 
 	return nil
@@ -159,6 +170,36 @@ func (s *Scheduler) startRuleSubscription(ctx context.Context) error {
 	}, nats.AckNone())
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (s *Scheduler) startTaskSubscription(ctx context.Context) error {
+	subj := intNats.StreamSchedTask.Subject("*", "*")
+	_, err := s.js.Subscribe(subj, func(msg *nats.Msg) {
+		var tsk Task
+		if err := json.Unmarshal(msg.Data, &tsk); err != nil {
+			// best-effort; ignore bad payloads
+			return
+		}
+		s.lg.Info("task received from stream", "id", tsk.ID, "ns", tsk.Namespace, "wf", tsk.WorkflowPath)
+		_, _, err := s.engine.StartWorkflow(context.Background(), uuid.New(), tsk.Namespace, tsk.WorkflowPath, "{}", map[string]string{
+			engine.LabelWithNotify:   strconv.FormatBool(false),
+			engine.LabelWithSyncExec: strconv.FormatBool(false),
+			engine.LabelInvokerType:  "cron",
+			engine.LabelWithScope:    "main",
+		})
+		if err != nil {
+			s.lg.Error("failed to start cron workflow", "err", err, "id", tsk.ID, "ns", tsk.Namespace, "wf", tsk.WorkflowPath)
+			msg.Nak()
+			return
+		}
+		s.lg.Info("started cron workflow", "id", tsk.ID, "ns", tsk.Namespace, "wf", tsk.WorkflowPath)
+		msg.Ack()
+	}, nats.AckExplicit())
+	if err != nil {
+		return fmt.Errorf("nats subscribe task: %w", err)
 	}
 
 	return nil
