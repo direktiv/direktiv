@@ -213,8 +213,12 @@ func (s *Scheduler) startTaskSubscription(ctx context.Context) error {
 			}
 		}
 		if err != nil && !isNotFound {
-			if err := msg.Nak(); err != nil {
-				s.lg.Error("failed to nak task message", "err", err, "id", tsk.ID)
+			if nakErr := msg.Nak(); nakErr != nil {
+				s.lg.Error("failed to nak task message", "err", nakErr, "id", tsk.ID)
+			}
+			delErr := s.deleteRuleFor(tsk.Namespace, tsk.WorkflowPath)
+			if delErr != nil {
+				s.lg.Error("failed to delete rule for cron workflow", "err", delErr, "id", tsk.ID, "ns", tsk.Namespace, "wf", tsk.WorkflowPath)
 			}
 		}
 		if err != nil {
@@ -222,8 +226,8 @@ func (s *Scheduler) startTaskSubscription(ctx context.Context) error {
 			return
 		}
 		s.lg.Info("started cron workflow", "id", tsk.ID, "ns", tsk.Namespace, "wf", tsk.WorkflowPath)
-		if err := msg.Ack(); err != nil {
-			s.lg.Error("failed to ack task message", "err", err, "id", tsk.ID)
+		if akErr := msg.Ack(); akErr != nil {
+			s.lg.Error("failed to ack task message", "err", akErr, "id", tsk.ID)
 		}
 	}, nats.ManualAck(),
 		nats.AckExplicit(), // Explicit ack policy
@@ -232,6 +236,27 @@ func (s *Scheduler) startTaskSubscription(ctx context.Context) error {
 		nats.Context(ctx))
 	if err != nil {
 		return fmt.Errorf("nats subscribe task: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Scheduler) deleteRuleFor(namespace string, path string) error {
+	for _, rule := range s.cache.Snapshot(namespace) {
+		if rule.WorkflowPath != path {
+			continue
+		}
+		rule.DeletedAt = time.Now()
+		data, _ := json.Marshal(rule)
+		subject := intNats.StreamSchedRule.Subject(rule.Namespace, rule.ID)
+		_, err := s.js.Publish(subject, data,
+			nats.ExpectStream(intNats.StreamSchedRule.String()),
+			nats.ExpectLastSequencePerSubject(rule.Sequence),
+			nats.MsgId(fmt.Sprintf("sched::rule::%s", rule.Fingerprint())),
+		)
+		if err == nil {
+			return fmt.Errorf("nats publish rule delete, err: %w", err)
+		}
 	}
 
 	return nil
