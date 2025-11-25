@@ -3,6 +3,7 @@ package sched
 import (
 	"sort"
 	"sync"
+	"time"
 )
 
 type RuleCache struct {
@@ -31,7 +32,7 @@ func (c *RuleCache) Snapshot(filterNamespace string) []*Rule {
 	defer c.mu.RUnlock()
 	out := make([]*Rule, 0, len(c.items))
 	for _, v := range c.items {
-		if v.Namespace != filterNamespace && filterNamespace != "" {
+		if v.Namespace != filterNamespace && filterNamespace != "" || v.DeletedAt != (time.Time{}) {
 			continue
 		}
 		out = append(out, v.Clone())

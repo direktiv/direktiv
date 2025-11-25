@@ -207,12 +207,12 @@ func (s *Scheduler) startTaskSubscription(ctx context.Context) error {
 		isNotFound := err != nil && (strings.Contains(err.Error(), "not found") ||
 			strings.Contains(err.Error(), "NotFound") ||
 			strings.Contains(err.Error(), "notfound"))
-		if err != nil && isNotFound {
+		if err != nil && !isNotFound {
 			if err := msg.Term(); err != nil {
 				s.lg.Error("failed to term task message", "err", err, "id", tsk.ID)
 			}
 		}
-		if err != nil && !isNotFound {
+		if err != nil && isNotFound {
 			if nakErr := msg.Nak(); nakErr != nil {
 				s.lg.Error("failed to nak task message", "err", nakErr, "id", tsk.ID)
 			}

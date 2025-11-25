@@ -29,7 +29,7 @@ type Rule struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 	DeletedAt time.Time `json:"deletedAt"`
 
-	Sequence uint64 `json:"-"`
+	Sequence uint64 `json:"sequence"`
 }
 
 func (c *Rule) Fingerprint() string {
