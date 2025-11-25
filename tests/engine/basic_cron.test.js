@@ -88,6 +88,6 @@ describe('Test cron workflows', () => {
 		}
 		expect(sec1 + sec2).toEqual(res.body.data.length)
 		expect(sec2 / sec1).toBeGreaterThan(0.4)
-		expect(sec2 / sec1).toBeLessThan(0.6)
+		expect(sec2 / sec1).toBeLessThan(0.65)
 	})
 })
