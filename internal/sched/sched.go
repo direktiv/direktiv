@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/engine"
@@ -202,12 +203,22 @@ func (s *Scheduler) startTaskSubscription(ctx context.Context) error {
 			engine.LabelInvokerType:  "cron",
 			engine.LabelWithScope:    "main",
 		})
+
+		isNotFound := strings.Contains(err.Error(), "not found") ||
+			strings.Contains(err.Error(), "NotFound") ||
+			strings.Contains(err.Error(), "notfound")
+		if err != nil && isNotFound {
+			if err := msg.Term(); err != nil {
+				s.lg.Error("failed to term task message", "err", err, "id", tsk.ID)
+			}
+		}
+		if err != nil && !isNotFound {
+			if err := msg.Nak(); err != nil {
+				s.lg.Error("failed to nak task message", "err", err, "id", tsk.ID)
+			}
+		}
 		if err != nil {
 			s.lg.Error("failed to start cron workflow", "err", err, "id", tsk.ID, "ns", tsk.Namespace, "wf", tsk.WorkflowPath)
-			if ackErr := msg.Nak(); ackErr != nil {
-				s.lg.Error("failed to nak task message", "err", ackErr, "id", tsk.ID)
-			}
-
 			return
 		}
 		s.lg.Info("started cron workflow", "id", tsk.ID, "ns", tsk.Namespace, "wf", tsk.WorkflowPath)
@@ -217,6 +228,7 @@ func (s *Scheduler) startTaskSubscription(ctx context.Context) error {
 	}, nats.ManualAck(),
 		nats.AckExplicit(), // Explicit ack policy
 		nats.MaxAckPending(1024),
+		nats.MaxDeliver(5),
 		nats.Context(ctx))
 	if err != nil {
 		return fmt.Errorf("nats subscribe task: %w", err)
