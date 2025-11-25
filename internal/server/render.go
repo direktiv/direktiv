@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"log/slog"
+	"time"
 
 	"github.com/direktiv/direktiv/internal/cluster/cache"
 	"github.com/direktiv/direktiv/internal/compiler"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
+	"github.com/direktiv/direktiv/internal/sched"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"gorm.io/gorm"
@@ -189,6 +191,67 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 	}
 
 	serviceManager.SetServices(funConfigList)
+}
+
+func renderWorkflowFiles(db *gorm.DB, scheduler *sched.Scheduler, cacheManager cache.Manager, secretsManager core.SecretsManager) {
+	ctx := context.Background()
+	dStore := datasql.NewStore(db)
+
+	namespaces, err := dStore.Namespaces().GetAll(ctx)
+	if err != nil {
+		slog.Error("cannot render files", slog.Any("error", err))
+		return
+	}
+
+	fStore := filesql.NewStore(db)
+
+	c, err := compiler.NewCompiler(db, secretsManager, cacheManager.FlowCache())
+	if err != nil {
+		slog.Error("cannot get compiler", slog.Any("error", err))
+		return
+	}
+
+	for i := range namespaces {
+		ns := namespaces[i]
+		files, err := fStore.ForRoot(ns.Name).ListAllFiles(ctx)
+		if err != nil {
+			slog.Error("cannot get namespace",
+				slog.String("name", ns.Name), slog.Any("error", err))
+
+			continue
+		}
+
+		for a := range files {
+			f := files[a]
+			// only workflows
+			if f.Typ != filestore.FileTypeWorkflow {
+				continue
+			}
+			s, err := c.FetchScript(ctx, ns.Name, f.Path, false)
+			if err != nil {
+				slog.Error("cannot generate script",
+					slog.String("namespace", ns.Name),
+					slog.String("path", f.Path), slog.Any("error", err))
+
+				continue
+			}
+			if s.Config.Cron == "" {
+				continue
+			}
+
+			_, err = scheduler.SetRule(context.Background(), &sched.Rule{
+				Namespace:    ns.Name,
+				WorkflowPath: f.Path,
+				RunAt:        time.Now(),
+				CronExpr:     s.Config.Cron,
+			})
+			if err != nil {
+				slog.Error("cannot schedule workflow",
+					slog.String("namespace", ns.Name),
+					slog.String("path", f.Path), slog.Any("error", err))
+			}
+		}
+	}
 }
 
 func svcFile(action core.ActionConfig, namespace, path string) *core.ServiceFileData {

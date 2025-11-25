@@ -3,7 +3,6 @@ package core
 const (
 	EngineMappingPath      = "path"
 	EngineMappingNamespace = "namespace"
-	EngineMappingCaller    = "caller"
 	EngineMappingSecrets   = "secrets"
 
 	EngineHeaderActionID  = "Direktiv-ActionID"

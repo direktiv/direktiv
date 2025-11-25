@@ -39,7 +39,7 @@ func (rt *Runtime) service(t, path string, payload any, files []map[string]strin
 		panic(rt.vm.ToValue(fmt.Errorf("unknown scope for script call")))
 	}
 
-	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
+	telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo,
 		fmt.Sprintf("executing service %s in scope %s", path, t))
 
 	data, err := rt.callAction(sd, payload, files, retries)
@@ -78,8 +78,8 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 	sd.Name = sd.GetValueHash()
 
 	actionFunc := func(payload any, files []map[string]string) sobek.Value {
-		telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
-			fmt.Sprintf("executing action with image %s", config.Image))
+		// telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
+		// 	fmt.Sprintf("executing action with image %s", config.Image))
 
 		data, err := rt.callAction(sd, payload, files, config.Retries)
 		if err != nil {
@@ -100,13 +100,13 @@ func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, files []map
 	slog.Info("calling service", slog.String("url", svcUrl))
 
 	// ping service
-	_, err := callRetryable(rt.tracingPack.ctx, svcUrl+"/up", http.MethodGet, []byte(""), nil, 30)
+	_, err := callRetryable(context.Background(), svcUrl+"/up", http.MethodGet, []byte(""), nil, 30)
 	if err != nil {
 		return nil, fmt.Errorf("action did not start: %s", err.Error())
 		// panic(rt.vm.ToValue(fmt.Errorf("action did not start: %s", err.Error())))
 	}
 
-	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, "action ping successful, calling action")
+	telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo, "action ping successful, calling action")
 
 	data, err := json.Marshal(payload)
 	if err != nil {
@@ -119,13 +119,13 @@ func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, files []map
 		return nil, fmt.Errorf("could not prepare files for action: %s", err.Error())
 	}
 
-	outData, err := callRetryable(rt.tracingPack.ctx, svcUrl, http.MethodPost, data, h, retries)
+	outData, err := callRetryable(context.Background(), svcUrl, http.MethodPost, data, h, retries)
 	if err != nil {
 		// panic(rt.vm.ToValue(fmt.Errorf("calling action failed: %s", err.Error())))
 		return nil, fmt.Errorf("calling action failed: %s", err.Error())
 	}
 
-	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, "action call successful")
+	telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo, "action call successful")
 
 	var d any
 	err = json.Unmarshal(outData, &d)
@@ -170,7 +170,7 @@ func callRetryable(ctx context.Context, url, method string, payload []byte, head
 	client.HTTPClient.Timeout = 10 * time.Second // total timeout per request
 	// client.Logger = nil                          // silence internal
 
-	req, err := retryablehttp.NewRequest(method, url, bytes.NewReader(payload))
+	req, err := retryablehttp.NewRequestWithContext(ctx, method, url, bytes.NewReader(payload))
 	if err != nil {
 		return nil, err
 	}

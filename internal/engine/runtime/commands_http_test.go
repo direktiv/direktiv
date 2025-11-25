@@ -80,7 +80,7 @@ func TestHttpRequest(t *testing.T) {
 		Mappings: "",
 		Input:    "{}",
 		Fn:       "start",
-	}, runtime.NoOnFinish, runtime.NoOnTransition, runtime.NoOnAction)
+	})
 	require.NoError(t, err)
 }
 
@@ -125,17 +125,18 @@ func TestHttpAsyncFetch(t *testing.T) {
 		}
 	`
 	var result []byte
-	onFinish := func(output []byte) error {
+	var onFinish runtime.OnFinishHook = func(output []byte) error {
 		result = output
 		return nil
 	}
+
 	err = runtime.ExecScript(context.Background(), &runtime.Script{
 		InstID:   uuid.New(),
 		Text:     script,
 		Mappings: "",
 		Input:    "{}",
 		Fn:       "start",
-	}, onFinish, runtime.NoOnTransition, runtime.NoOnAction)
+	}, onFinish)
 
 	for i := 0; i < 20; i++ {
 		if len(result) != 0 {

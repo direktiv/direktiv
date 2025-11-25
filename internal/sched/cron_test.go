@@ -86,7 +86,7 @@ func TestCalculateCronExpr(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := calculateCronExpr(tt.cronExpr, tt.start)
+			got, err := CalculateCronExpr(tt.cronExpr, tt.start)
 			if tt.wantErr {
 				if err == nil {
 					t.Fatalf("expected error, got nil (got=%v)", got)

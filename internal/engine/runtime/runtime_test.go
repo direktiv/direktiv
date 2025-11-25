@@ -12,12 +12,12 @@ import (
 
 func TestTransition(t *testing.T) {
 	var gotOutput []byte
-	onFinish := func(output []byte) error {
+	var onFinish runtime.OnFinishHook = func(output []byte) error {
 		gotOutput = output
 		return nil
 	}
 	var gotMemory []string
-	onTransition := func(memory []byte, fn string) error {
+	var onTransition runtime.OnTransitionHook = func(memory []byte, fn string) error {
 		gotMemory = append(gotMemory, fmt.Sprintf("%s -> %s", fn, memory))
 		return nil
 	}
@@ -39,7 +39,7 @@ func TestTransition(t *testing.T) {
 		Mappings: "",
 		Fn:       "start",
 		Input:    "{}",
-	}, onFinish, onTransition, runtime.NoOnAction)
+	}, onFinish, onTransition)
 	require.NoError(t, err)
 	require.Equal(t, "\"returnValue\"", string(gotOutput))
 }
@@ -101,7 +101,7 @@ func TestTransitionErrors(t *testing.T) {
 				Mappings: "",
 				Fn:       "start",
 				Input:    "{}",
-			}, runtime.NoOnFinish, runtime.NoOnTransition, runtime.NoOnAction)
+			})
 			require.Error(t, err)
 		})
 	}

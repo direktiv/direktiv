@@ -20,28 +20,22 @@ type Runtime struct {
 	vm           *sobek.Runtime
 	instID       uuid.UUID
 	metadata     map[string]string
-	onFinish     OnFinishFunc
-	onTransition OnTransitionFunc
-	onAction     OnActionFunc
-
-	tracingPack *tracingPack
+	onFinish     OnFinishHook
+	onTransition OnTransitionHook
+	onAction     OnActionHook
+	onSubflow    OnSubflowHook
+	//nolint:containedctx
+	ctx context.Context
 }
 
 type (
-	OnFinishFunc     func(output []byte) error
-	OnTransitionFunc func(output []byte, fn string) error
-	OnActionFunc     func(svcID string) error
+	OnFinishHook     func(output []byte) error
+	OnTransitionHook func(output []byte, fn string) error
+	OnActionHook     func(svcID string) error
+	OnSubflowHook    func(ctx context.Context, path string, input []byte) ([]byte, error)
 )
 
-var (
-	NoOnFinish     = func(output []byte) error { return nil }
-	NoOnTransition = func(output []byte, fn string) error { return nil }
-	NoOnAction     = func(svcID string) error { return nil }
-)
-
-func New(instID uuid.UUID, metadata map[string]string, mappings string,
-	onFinish OnFinishFunc, onTransition OnTransitionFunc, onAction OnActionFunc,
-) *Runtime {
+func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mappings string, hooks ...any) *Runtime {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
 
@@ -52,12 +46,10 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string,
 	}
 
 	rt := &Runtime{
-		vm:           vm,
-		instID:       instID,
-		metadata:     metadata,
-		onFinish:     onFinish,
-		onTransition: onTransition,
-		onAction:     onAction,
+		ctx:      ctx,
+		vm:       vm,
+		instID:   instID,
+		metadata: metadata,
 	}
 
 	type setFunc struct {
@@ -77,6 +69,7 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string,
 		{"generateAction", rt.action},
 		{"getSecrets", rt.secrets},
 		{"getSecret", rt.secret},
+		{"execSubflow", rt.execSubflow},
 		{"execService", rt.service},
 	}
 
@@ -86,17 +79,32 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string,
 		}
 	}
 
+	for _, h := range hooks {
+		rt.setHook(h)
+	}
+
 	return rt
 }
 
-func (rt *Runtime) WithTracingPack(tp *tracingPack) *Runtime {
-	rt.tracingPack = tp
+// setHook is a dynamic way to set hooks on the runtime.
+func (rt *Runtime) setHook(f any) *Runtime {
+	switch f := f.(type) {
+	case OnFinishHook:
+		rt.onFinish = f
+	case OnTransitionHook:
+		rt.onTransition = f
+	case OnActionHook:
+		rt.onAction = f
+	case OnSubflowHook:
+		rt.onSubflow = f
+	default:
+		panic(fmt.Sprintf("unknown hook type: %T", f))
+	}
+
 	return rt
 }
 
 func (rt *Runtime) secret(secretName string) sobek.Value {
-	rt.tracingPack.span.AddEvent("fetching secret")
-
 	secretJsonMap := rt.metadata[core.EngineMappingSecrets]
 	us := make(map[string]string)
 	json.Unmarshal([]byte(secretJsonMap), &us)
@@ -117,8 +125,6 @@ func (rt *Runtime) secret(secretName string) sobek.Value {
 }
 
 func (rt *Runtime) secrets(secretNames []string) sobek.Value {
-	rt.tracingPack.span.AddEvent("fetching secrets")
-
 	secretJsonMap := rt.metadata[core.EngineMappingSecrets]
 
 	us := make(map[string]string)
@@ -145,14 +151,12 @@ func (rt *Runtime) secrets(secretNames []string) sobek.Value {
 }
 
 func (rt *Runtime) sleep(seconds int) sobek.Value {
-	rt.tracingPack.span.AddEvent("calling sleep")
 	time.Sleep(time.Duration(seconds) * time.Second)
 
 	return sobek.Undefined()
 }
 
 func (rt *Runtime) now() *sobek.Object {
-	rt.tracingPack.span.AddEvent("calling now")
 	t := time.Now()
 
 	obj := rt.vm.NewObject()
@@ -169,20 +173,17 @@ func (rt *Runtime) now() *sobek.Object {
 }
 
 func (rt *Runtime) id() sobek.Value {
-	rt.tracingPack.span.AddEvent("calling id")
 	return rt.vm.ToValue(rt.instID)
 }
 
 func (rt *Runtime) log(logs ...string) sobek.Value {
-	rt.tracingPack.span.AddEvent("calling log")
-
 	// protect victoria logs from falling over without
 	msg := strings.Join(logs, " ")
 	if msg == "" {
 		msg = " "
 	}
 
-	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, msg)
+	telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo, msg)
 
 	return sobek.Undefined()
 }
@@ -209,12 +210,11 @@ func (rt *Runtime) transition(call sobek.FunctionCall) sobek.Value {
 		panic(rt.vm.ToValue(fmt.Sprintf("error parsing transition fn: %s", f)))
 	}
 
-	// otel: end previous and start new one
-	rt.tracingPack.tracingTransition(fName)
-
-	err = rt.onTransition(b, fName)
-	if err != nil {
-		panic(rt.vm.ToValue(fmt.Sprintf("error calling on transition: %s", err.Error())))
+	if rt.onTransition != nil {
+		err = rt.onTransition(b, fName)
+		if err != nil {
+			panic(rt.vm.ToValue(fmt.Sprintf("error calling onTransition hook: %s", err.Error())))
+		}
 	}
 
 	fn, ok := sobek.AssertFunction(call.Arguments[0])
@@ -235,6 +235,41 @@ func (rt *Runtime) transition(call sobek.FunctionCall) sobek.Value {
 	return value
 }
 
+func (rt *Runtime) execSubflow(call sobek.FunctionCall) sobek.Value {
+	if len(call.Arguments) != 2 {
+		panic(rt.vm.ToValue("exec requires a path, a function and a payload"))
+	}
+
+	var path string
+	if err := rt.vm.ExportTo(call.Arguments[0], &path); err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error exporting execSubflow path: %s", err.Error())))
+	}
+
+	var memory any
+	if err := rt.vm.ExportTo(call.Arguments[1], &memory); err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error exporting execSubflow data: %s", err.Error())))
+	}
+	b, err := json.Marshal(memory)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error marshaling execSubflow data: %s", err.Error())))
+	}
+
+	if rt.onSubflow == nil {
+		panic(rt.vm.ToValue("onSubflow hook not set"))
+	}
+	out, err := rt.onSubflow(rt.ctx, path, b)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error calling on subflow: %s", err.Error())))
+	}
+
+	err = json.Unmarshal(out, &memory)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("error unmarshaling execSubflow output: %s", err.Error())))
+	}
+
+	return rt.vm.ToValue(memory)
+}
+
 // TODO: remove return from finish() as it should be the last statement.
 func (rt *Runtime) finish(data sobek.Value) sobek.Value {
 	var output any
@@ -246,13 +281,12 @@ func (rt *Runtime) finish(data sobek.Value) sobek.Value {
 		panic(rt.vm.ToValue(fmt.Sprintf("error marshaling output: %s", err.Error())))
 	}
 
-	err = rt.onFinish(b)
-	if err != nil {
-		panic(rt.vm.ToValue(fmt.Sprintf("error calling on finish: %s", err.Error())))
+	if rt.onFinish != nil {
+		err = rt.onFinish(b)
+		if err != nil {
+			panic(rt.vm.ToValue(fmt.Sprintf("error calling onFinish hook: %s", err.Error())))
+		}
 	}
-
-	// otel: finish span from transition
-	rt.tracingPack.tracingFinish()
 
 	return sobek.Null()
 }
@@ -277,20 +311,8 @@ type Script struct {
 	Metadata map[string]string
 }
 
-func ExecScript(ctx context.Context, script *Script, onFinish OnFinishFunc,
-	onTransition OnTransitionFunc, onAction OnActionFunc,
-) error {
-	tp := newTracingPack(ctx, script.Metadata[core.EngineMappingNamespace],
-		script.InstID.String(), script.Metadata[core.EngineMappingCaller],
-		script.Metadata[core.EngineMappingPath])
-	defer tp.finish()
-
-	rt := New(script.InstID, script.Metadata, script.Mappings, onFinish,
-		onTransition, onAction).WithTracingPack(tp)
-
-	tp.tracingStart(script.Fn)
-	telemetry.LogInstance(tp.ctx, telemetry.LogLevelInfo,
-		fmt.Sprintf("transitioning to '%s'", script.Fn))
+func ExecScript(ctx context.Context, script *Script, hooks ...any) error {
+	rt := New(ctx, script.InstID, script.Metadata, script.Mappings, hooks...)
 
 	_, err := rt.vm.RunString(script.Text)
 	if err != nil {
@@ -309,7 +331,6 @@ func ExecScript(ctx context.Context, script *Script, onFinish OnFinishFunc,
 
 	_, err = start(sobek.Undefined(), rt.vm.ToValue(inputMap))
 	if err != nil {
-		rt.tracingPack.handleError(err)
 		return fmt.Errorf("invoke start: %w", err)
 	}
 
