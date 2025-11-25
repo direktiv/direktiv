@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -19,7 +20,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 )
 
-func (rt *Runtime) service(t, path string, payload any, retries int) sobek.Value {
+func (rt *Runtime) service(t, path string, payload any, files []map[string]string, retries int) sobek.Value {
 	var sd *core.ServiceFileData
 	switch t {
 	case core.FlowActionScopeSystem:
@@ -41,8 +42,7 @@ func (rt *Runtime) service(t, path string, payload any, retries int) sobek.Value
 	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
 		fmt.Sprintf("executing service %s in scope %s", path, t))
 
-	var h = make([]map[string]string, 0)
-	data, err := rt.callAction(sd, payload, h, retries)
+	data, err := rt.callAction(sd, payload, files, retries)
 	if err != nil {
 		panic(rt.vm.ToValue(err))
 	}
@@ -96,6 +96,8 @@ func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, files []map
 	rt.onAction(sd.GetID())
 
 	svcUrl := fmt.Sprintf("http://%s.%s.svc", sd.GetID(), os.Getenv("DIREKTIV_SERVICE_NAMESPACE"))
+
+	slog.Info("calling service", slog.String("url", svcUrl))
 
 	// ping service
 	_, err := callRetryable(rt.tracingPack.ctx, svcUrl+"/up", http.MethodGet, []byte(""), nil, 30)

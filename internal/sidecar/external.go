@@ -78,8 +78,6 @@ func newExternalServer(rm *requestMap) (*externalServer, error) {
 			return
 		}
 
-		fmt.Println("-------------")
-		fmt.Println(req.Header)
 		// add action header
 		actionID := req.Header.Get(core.EngineHeaderActionID)
 
@@ -265,10 +263,6 @@ func handleInFiles(ctx context.Context, namespace, workflow, dirs string, db *go
 				return err
 			}
 		default:
-
-			fmt.Println("-------------------------------------------------")
-			fmt.Println(split[1])
-
 			// calculate absolute path, if relative is given
 			if !filepath.IsAbs(split[1]) {
 				absFile := filepath.Join(filepath.Dir(workflow), split[1])

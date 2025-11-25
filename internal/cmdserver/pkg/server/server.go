@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -29,7 +30,7 @@ const (
 type File struct {
 	Name       string `json:"name"`
 	Content    string `json:"content"`
-	Permission uint   `json:"permission"`
+	Permission string `json:"permission"`
 }
 
 type Payload struct {
@@ -128,11 +129,6 @@ func Handler() http.Handler {
 		ctx = telemetry.LogInitCtx(ctx, lo)
 		telemetry.LogInstance(ctx, telemetry.LogLevelInfo, "cmd container executing")
 
-		// backend := "http://localhost:8889"
-		// if envBackend := os.Getenv("httpBackend"); envBackend != "" {
-		// 	backend = envBackend
-		// }
-
 		ei := &ExecutionInfo{
 			TmpDir: tmpDir,
 			Log:    NewLogger(lo, actionID),
@@ -162,7 +158,7 @@ func Handler() http.Handler {
 	return r
 }
 
-func prepareFile(path, content string, perm uint) error {
+func prepareFile(path, content string, perm string) error {
 	slog.Debug("preparing file", slog.String("path", path), slog.Any("permission", perm))
 	file, err := os.Create(path)
 	if err != nil {
@@ -177,7 +173,13 @@ func prepareFile(path, content string, perm uint) error {
 		return err
 	}
 
-	if err := file.Chmod(fs.FileMode(perm)); err != nil {
+	p, err := strconv.ParseUint(perm, 8, 32)
+	if err != nil {
+		slog.Error("failed to parse permission", slog.String("path", path), slog.String("error", err.Error()))
+		return err
+	}
+
+	if err := file.Chmod(fs.FileMode(p)); err != nil {
 		slog.Error("failed to set file permissions", slog.String("path", path), slog.String("error", err.Error()))
 		return err
 	}
