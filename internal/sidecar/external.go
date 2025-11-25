@@ -12,11 +12,13 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/telemetry"
+	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 	"github.com/mholt/archives"
@@ -76,6 +78,8 @@ func newExternalServer(rm *requestMap) (*externalServer, error) {
 			return
 		}
 
+		fmt.Println("-------------")
+		fmt.Println(req.Header)
 		// add action header
 		actionID := req.Header.Get(core.EngineHeaderActionID)
 
@@ -116,8 +120,14 @@ func newExternalServer(rm *requestMap) (*externalServer, error) {
 		// set headers
 		lo.ToHeader(&req.Header)
 
-		// TODO: create temp directory
+		// create temp directory
 		setupDirectories(actionID)
+
+		// prepare files
+		err = handleInFiles(req.Context(), lo.Namespace, lo.Path, path.Join(sharedDir, actionID), db, req.Header)
+		if err != nil {
+			telemetry.LogInstance(ctx, telemetry.LogLevelError, fmt.Sprintf("could not prepare in files: %s", err.Error()))
+		}
 
 		req.Header.Set(core.EngineHeaderTempDir, path.Join(sharedDir, actionID))
 
@@ -203,6 +213,91 @@ func newExternalServer(rm *requestMap) (*externalServer, error) {
 	}
 
 	return s, nil
+}
+
+func handleInFiles(ctx context.Context, namespace, workflow, dirs string, db *gorm.DB, header http.Header) error {
+	files := header.Values(core.EngineHeaderFile)
+
+	dStore := datasql.NewStore(db)
+	fStore := filesql.NewStore(db)
+
+	slog.Info("handle in files")
+	for a := range files {
+		f := files[a]
+
+		slog.Info("handling in file", slog.String("value", f))
+		split := strings.Split(f, ";")
+		if len(split) != 2 {
+			return fmt.Errorf("file value not valid: %s", f)
+		}
+
+		writePath := filepath.Join(dirs, filepath.Base(split[1]))
+
+		switch split[0] {
+		case "workflow":
+			variable, err := dStore.RuntimeVariables().GetForWorkflow(ctx, namespace, workflow, split[1])
+			if err != nil {
+				return err
+			}
+
+			b, err := dStore.RuntimeVariables().LoadData(ctx, variable.ID)
+			if err != nil {
+				return err
+			}
+
+			err = os.WriteFile(writePath, b, 0755)
+			if err != nil {
+				return err
+			}
+		case "namespace":
+			variable, err := dStore.RuntimeVariables().GetForNamespace(ctx, namespace, split[1])
+			if err != nil {
+				return err
+			}
+
+			b, err := dStore.RuntimeVariables().LoadData(ctx, variable.ID)
+			if err != nil {
+				return err
+			}
+
+			err = os.WriteFile(writePath, b, 0755)
+			if err != nil {
+				return err
+			}
+		default:
+
+			fmt.Println("-------------------------------------------------")
+			fmt.Println(split[1])
+
+			// calculate absolute path, if relative is given
+			if !filepath.IsAbs(split[1]) {
+				absFile := filepath.Join(filepath.Dir(workflow), split[1])
+				fmt.Println(absFile)
+
+				// remove the temporary filesystem path
+				direktivPath := strings.Replace(absFile, dirs, "", 1)
+				fmt.Println(direktivPath)
+
+				split[1] = direktivPath
+			}
+
+			f, err := fStore.ForRoot(namespace).GetFile(ctx, split[1])
+			if err != nil {
+				return err
+			}
+			b, err := fStore.ForFile(f).GetData(ctx)
+			if err != nil {
+				return err
+			}
+
+			err = os.WriteFile(writePath, b, 0755)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func handleOutFiles(ctx context.Context, db *gorm.DB, namespace, filePath, id string) error {
@@ -323,7 +418,13 @@ func setupDirectories(id string) error {
 	for i := range subDirs {
 		tmpDir := path.Join(sharedDir, id, fmt.Sprintf("out/%s", subDirs[i]))
 		slog.Info("creating tmp folder", slog.String("dir", tmpDir))
-		err := os.MkdirAll(tmpDir, 0o777)
+
+		err := os.MkdirAll(path.Join(sharedDir, id), 0777)
+		if err != nil {
+			slog.Error("cannot create tmp dir", slog.Any("error", err))
+			return err
+		}
+		err = os.MkdirAll(tmpDir, 0o777)
 		if err != nil {
 			slog.Error("cannot create tmp dirs", slog.Any("error", err))
 			return err
