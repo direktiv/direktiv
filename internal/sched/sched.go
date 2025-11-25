@@ -204,9 +204,9 @@ func (s *Scheduler) startTaskSubscription(ctx context.Context) error {
 			engine.LabelWithScope:    "main",
 		})
 
-		isNotFound := strings.Contains(err.Error(), "not found") ||
+		isNotFound := err != nil && (strings.Contains(err.Error(), "not found") ||
 			strings.Contains(err.Error(), "NotFound") ||
-			strings.Contains(err.Error(), "notfound")
+			strings.Contains(err.Error(), "notfound"))
 		if err != nil && isNotFound {
 			if err := msg.Term(); err != nil {
 				s.lg.Error("failed to term task message", "err", err, "id", tsk.ID)
