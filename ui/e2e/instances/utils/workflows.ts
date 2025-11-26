@@ -1,16 +1,22 @@
-export const workflowWithFewLogs = `direktiv_api: workflow/v1
-description: A simple 'delay' state that waits for 4 seconds
-states:
-- id: delay
-  type: delay
-  duration: PT4S
-  transition: logs
-- id: logs
-  type: noop
-  log: hello-world
-  transform:
-    result: Hello world!
-`;
+export const workflowWithFewLogs = `const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT1S",
+  state: "stateFirst",
+};
+
+const error = 'input must contain { "data": "string" or number }'
+
+function stateFirst(input): StateFunction<unknown> {
+  const { data } = input;
+  if (!data) {
+    return finish({ error });
+  }
+  return transition(stateSecond, data);
+}
+
+function formatMessage(data: string | number, type: string) {
+  return { message: formatted }
+}`;
 
 export const workflowWithManyLogs = `direktiv_api: workflow/v1
 description: Produces a fair amount of logs
