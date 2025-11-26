@@ -230,6 +230,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	endEv := startEv.Clone()
 	endEv.EventID = uuid.New()
 	endEv.State = StateCodeFailed
+	endEv.Fn = ""
 	endEv.Error = err.Error()
 	endEv.EndedAt = time.Now()
 
