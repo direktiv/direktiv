@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/api/filter"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/engine/runtime"
+	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
@@ -67,6 +69,8 @@ func (e *Engine) StartWorkflow(ctx context.Context, instID uuid.UUID, namespace 
 
 	// fetch all the secrets here
 	metadata[core.EngineMappingSecrets] = flowDetails.Secrets
+	metadata[core.EngineMappingNamespace] = namespace
+	metadata[core.EngineMappingPath] = workflowPath
 
 	notify := make(chan *InstanceEvent, 1)
 	st, err := e.startScript(ctx, instID, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)
@@ -196,13 +200,10 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 	var onSubflow runtime.OnSubflowHook = func(ctx context.Context, path string, input []byte) ([]byte, error) {
 		_, notify, err := e.StartWorkflow(ctx, inst.InstanceID, inst.Namespace, path, string(input), map[string]string{
-			core.EngineMappingPath:      path,
-			core.EngineMappingNamespace: inst.Namespace,
-			core.EngineMappingCaller:    "api",
-			LabelWithNotify:             "true",
-			LabelWithSyncExec:           "true",
-			LabelInvokerType:            "api",
-			LabelWithScope:              uuid.New().String(),
+			LabelWithNotify:   strconv.FormatBool(true),
+			LabelWithSyncExec: strconv.FormatBool(true),
+			LabelInvokerType:  inst.Metadata[LabelInvokerType],
+			LabelWithScope:    uuid.New().String(),
 		})
 		if err != nil {
 			return nil, err
@@ -215,13 +216,21 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		return st.Output, nil
 	}
 
+	ctx = telemetry.SetupInstanceLogs(ctx,
+		sc.Metadata[core.EngineMappingNamespace],
+		sc.InstID.String(),
+		sc.Metadata[LabelInvokerType],
+		sc.Metadata[core.EngineMappingPath])
+
 	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, onSubflow)
 	if err == nil {
 		return nil
 	}
+
 	endEv := startEv.Clone()
 	endEv.EventID = uuid.New()
 	endEv.State = StateCodeFailed
+	endEv.Fn = ""
 	endEv.Error = err.Error()
 	endEv.EndedAt = time.Now()
 

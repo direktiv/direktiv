@@ -5,23 +5,33 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"strconv"
+	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/engine"
 	intNats "github.com/direktiv/direktiv/internal/nats"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
+	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 	"k8s.io/utils/clock"
 )
 
 type Scheduler struct {
-	js    JetStream
-	cache *RuleCache
-	clk   clock.WithTicker
-	lg    *slog.Logger
+	js         JetStream
+	cache      *RuleCache
+	clk        clock.WithTicker
+	lg         *slog.Logger
+	engine     *engine.Engine
+	withEngine bool
 }
 
-func New(js JetStream, clk clock.WithTicker, lg *slog.Logger) *Scheduler {
-	return &Scheduler{js: js, cache: NewRulesCache(), clk: clk, lg: lg}
+func New(js JetStream, engine *engine.Engine, clk clock.WithTicker, lg *slog.Logger) *Scheduler {
+	return &Scheduler{js: js, engine: engine, withEngine: true, cache: NewRulesCache(), clk: clk, lg: lg}
+}
+
+func NewWithoutEngine(js JetStream, clk clock.WithTicker, lg *slog.Logger) *Scheduler {
+	return &Scheduler{js: js, withEngine: false, cache: NewRulesCache(), clk: clk, lg: lg}
 }
 
 func (s *Scheduler) Start(lc *lifecycle.Manager) error {
@@ -29,6 +39,13 @@ func (s *Scheduler) Start(lc *lifecycle.Manager) error {
 	if err != nil {
 		return fmt.Errorf("start status cache: %w", err)
 	}
+	if s.withEngine {
+		err = s.startTaskSubscription(lc.Context())
+		if err != nil {
+			return fmt.Errorf("start task worker: %w", err)
+		}
+	}
+
 	startTicking(lc, s.clk, 100*time.Millisecond, s.processDueRules)
 
 	return nil
@@ -64,7 +81,7 @@ func (s *Scheduler) dispatchIfDue(rule *Rule) error {
 	s.lg.Debug("published task", "msgID", id)
 
 	// advance rule, persist
-	next, err := calculateCronExpr(rule.CronExpr, runAt)
+	next, err := CalculateCronExpr(rule.CronExpr, runAt)
 	if err != nil {
 		return fmt.Errorf("calculate next run: %w", err)
 	}
@@ -115,7 +132,7 @@ func (s *Scheduler) SetRule(ctx context.Context, rule *Rule) (*Rule, error) {
 
 	rule.ID = CalculateRuleID(*rule)
 	rule.CreatedAt = s.clk.Now()
-	rule.UpdatedAt = rule.CreatedAt
+	rule.UpdatedAt = s.clk.Now()
 
 	data, err := json.Marshal(rule)
 	if err != nil {
@@ -159,6 +176,87 @@ func (s *Scheduler) startRuleSubscription(ctx context.Context) error {
 	}, nats.AckNone())
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (s *Scheduler) startTaskSubscription(ctx context.Context) error {
+	subj := intNats.StreamSchedTask.Subject("*", "*")
+	_, err := s.js.Subscribe(subj, func(msg *nats.Msg) {
+		// Immediately bail out if the context is cancelled
+		if ctx.Err() != nil {
+			_ = msg.Nak() // best-effort
+			return
+		}
+
+		var tsk Task
+		if err := json.Unmarshal(msg.Data, &tsk); err != nil {
+			// best-effort; ignore bad payloads
+			return
+		}
+		s.lg.Info("task received from stream", "id", tsk.ID, "ns", tsk.Namespace, "wf", tsk.WorkflowPath)
+		//nolint:contextcheck
+		_, _, err := s.engine.StartWorkflow(context.Background(), uuid.New(), tsk.Namespace, tsk.WorkflowPath, "{}", map[string]string{
+			engine.LabelWithNotify:   strconv.FormatBool(false),
+			engine.LabelWithSyncExec: strconv.FormatBool(false),
+			engine.LabelInvokerType:  "cron",
+			engine.LabelWithScope:    "main",
+		})
+
+		isNotFound := err != nil && (strings.Contains(err.Error(), "not found") ||
+			strings.Contains(err.Error(), "NotFound") ||
+			strings.Contains(err.Error(), "notfound"))
+		if err != nil && !isNotFound {
+			if err := msg.Term(); err != nil {
+				s.lg.Error("failed to term task message", "err", err, "id", tsk.ID)
+			}
+		}
+		if err != nil && isNotFound {
+			if nakErr := msg.Nak(); nakErr != nil {
+				s.lg.Error("failed to nak task message", "err", nakErr, "id", tsk.ID)
+			}
+			delErr := s.deleteRuleFor(tsk.Namespace, tsk.WorkflowPath)
+			if delErr != nil {
+				s.lg.Error("failed to delete rule for cron workflow", "err", delErr, "id", tsk.ID, "ns", tsk.Namespace, "wf", tsk.WorkflowPath)
+			}
+		}
+		if err != nil {
+			s.lg.Error("failed to start cron workflow", "err", err, "id", tsk.ID, "ns", tsk.Namespace, "wf", tsk.WorkflowPath)
+			return
+		}
+		s.lg.Info("started cron workflow", "id", tsk.ID, "ns", tsk.Namespace, "wf", tsk.WorkflowPath)
+		if akErr := msg.Ack(); akErr != nil {
+			s.lg.Error("failed to ack task message", "err", akErr, "id", tsk.ID)
+		}
+	}, nats.ManualAck(),
+		nats.AckExplicit(), // Explicit ack policy
+		nats.MaxAckPending(1024),
+		nats.MaxDeliver(5),
+		nats.Context(ctx))
+	if err != nil {
+		return fmt.Errorf("nats subscribe task: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Scheduler) deleteRuleFor(namespace string, path string) error {
+	for _, rule := range s.cache.Snapshot(namespace) {
+		if rule.WorkflowPath != path {
+			continue
+		}
+		rule.DeletedAt = time.Now()
+		data, _ := json.Marshal(rule)
+		subject := intNats.StreamSchedRule.Subject(rule.Namespace, rule.ID)
+		_, err := s.js.Publish(subject, data,
+			nats.ExpectStream(intNats.StreamSchedRule.String()),
+			nats.ExpectLastSequencePerSubject(rule.Sequence),
+			nats.MsgId(fmt.Sprintf("sched::rule::%s", rule.Fingerprint())),
+		)
+		if err == nil {
+			return fmt.Errorf("nats publish rule delete, err: %w", err)
+		}
 	}
 
 	return nil

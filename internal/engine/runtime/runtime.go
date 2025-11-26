@@ -312,12 +312,6 @@ type Script struct {
 }
 
 func ExecScript(ctx context.Context, script *Script, hooks ...any) error {
-	ctx = telemetry.SetupInstanceLogs(ctx,
-		script.Metadata[core.EngineMappingNamespace],
-		script.InstID.String(),
-		script.Metadata[core.EngineMappingCaller],
-		script.Metadata[core.EngineMappingPath])
-
 	rt := New(ctx, script.InstID, script.Metadata, script.Mappings, hooks...)
 
 	_, err := rt.vm.RunString(script.Text)
