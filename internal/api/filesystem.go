@@ -88,10 +88,21 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 		Data []byte `json:"data,omitempty"`
 
 		Children []*filestore.File `json:"children"`
+
+		StateViews map[string]*core.StateView `json:"states,omitempty"`
 	}{
-		File:     file,
-		Data:     data,
-		Children: children,
+		File:       file,
+		Data:       data,
+		Children:   children,
+		StateViews: make(map[string]*core.StateView),
+	}
+
+	if file.Typ == filestore.FileTypeWorkflow {
+		ci := compiler.NewCompileItem(data, path)
+		err = ci.TranspileAndValidate()
+		if err == nil {
+			res.StateViews = ci.Config().Config.StateViews
+		}
 	}
 
 	writeJSON(w, res)
