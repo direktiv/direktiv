@@ -652,7 +652,12 @@ func (ap *ASTParser) isTransitionCall(node ast.Node) bool {
 		return false
 	}
 
-	stateView := ap.stateviews[ap.currentStateNode]
+	stateView, ok := ap.stateviews[ap.currentStateNode]
+	if !ok {
+		// can only happen in a non-state function using transition or finish
+		return callee.Name == "transition" || callee.Name == "finish"
+	}
+
 	if callee.Name == "finish" {
 		stateView.Finish = true
 	} else if callee.Name == "transition" {
