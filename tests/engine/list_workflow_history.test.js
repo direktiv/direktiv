@@ -359,7 +359,8 @@ function stateThree(payload) {
 				fn: undefined,
 				input: { foo: 'bar' },
 				output: undefined,
-				error: "invoke start: ReferenceError: threw is not defined at stateTwo (foo.wf.ts:9:1(1))",
+				error:
+					'invoke start: ReferenceError: threw is not defined at stateTwo (foo.wf.ts:9:1(1))',
 				sequence: firstSequence++,
 			},
 		])
@@ -470,7 +471,8 @@ function stateThree(payload) {
 				fn: undefined,
 				input: { foo: 'bar' },
 				output: undefined,
-				error:  "invoke start: ReferenceError: threw is not defined at stateThree (foo.wf.ts:15:1(1))",
+				error:
+					'invoke start: ReferenceError: threw is not defined at stateThree (foo.wf.ts:15:1(1))',
 				sequence: firstSequence++,
 			},
 		])
