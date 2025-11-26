@@ -198,9 +198,6 @@ func (e *instController) flow(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		fmt.Println(event.Fn)
-		fmt.Printf("%+v\n", event.State)
-
 		state, ok := ci.Config().Config.StateViews[event.Fn]
 		if !ok {
 			writeEngineError(w, fmt.Errorf("state unknown for typescript"))
@@ -209,7 +206,14 @@ func (e *instController) flow(w http.ResponseWriter, r *http.Request) {
 		}
 		state.Visited = true
 
+		// if failed we set the previous event to failed
 		if event.State == engine.StateCodeFailed {
+			state, ok = ci.Config().Config.StateViews[l[a-1].Fn]
+			if !ok {
+				writeEngineError(w, fmt.Errorf("state unknown for typescript"))
+
+				return
+			}
 			state.Failed = true
 		}
 	}
