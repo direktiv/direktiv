@@ -226,6 +226,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	if err == nil {
 		return nil
 	}
+
 	endEv := startEv.Clone()
 	endEv.EventID = uuid.New()
 	endEv.State = StateCodeFailed

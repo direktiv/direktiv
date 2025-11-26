@@ -25,6 +25,8 @@ type StateView struct {
 	Name        string   `json:"name"`
 	Start       bool     `json:"start"`
 	Finish      bool     `json:"finish"`
+	Visited     bool     `json:"visited"`
+	Failed      bool     `json:"failed"`
 	Transitions []string `json:"transitions"`
 }
 

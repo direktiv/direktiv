@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/api/filter"
+	"github.com/direktiv/direktiv/internal/compiler"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/internal/sched"
@@ -136,6 +138,7 @@ func (e *instController) mountRouter(r chi.Router) {
 	r.Get("/{instanceID}/input", e.dummy)
 	r.Get("/{instanceID}/history", e.history)
 	r.Get("/{instanceID}/metadata", e.dummy)
+	r.Get("/{instanceID}/flow", e.flow)
 	r.Patch("/{instanceID}", e.dummy)
 
 	r.Get("/", e.list)
@@ -146,6 +149,72 @@ func (e *instController) mountRouter(r chi.Router) {
 }
 
 func (e *instController) dummy(w http.ResponseWriter, r *http.Request) {
+}
+
+func (e *instController) flow(w http.ResponseWriter, r *http.Request) {
+	namespace := chi.URLParam(r, "namespace")
+	instanceIDStr := chi.URLParam(r, "instanceID")
+	instanceID, err := uuid.Parse(instanceIDStr)
+	if err != nil {
+		writeError(w, &Error{
+			Code:    "request_id_invalid",
+			Message: "invalid instance uuid",
+		})
+
+		return
+	}
+
+	event, err := e.engine.GetInstanceStatus(r.Context(), namespace, instanceID)
+	if err != nil {
+		writeError(w, &Error{
+			Code:    "request_id_invalid",
+			Message: "invalid instance uuid",
+		})
+
+		return
+	}
+
+	// event.Script
+	ci := compiler.NewCompileItem([]byte(event.Script), "/dummy")
+	err = ci.TranspileAndValidate()
+	if err != nil {
+		writeEngineError(w, err)
+
+		return
+	}
+
+	l, err := e.engine.GetInstanceHistory(r.Context(), namespace, instanceID)
+	if err != nil {
+		writeEngineError(w, err)
+
+		return
+	}
+
+	for a := range l {
+		event = l[a]
+
+		if event.Fn == "" || event.State == engine.StateCodePending ||
+			event.State == engine.StateCodeComplete {
+			continue
+		}
+
+		fmt.Println(event.Fn)
+		fmt.Printf("%+v\n", event.State)
+
+		state, ok := ci.Config().Config.StateViews[event.Fn]
+		if !ok {
+			writeEngineError(w, fmt.Errorf("state unknown for typescript"))
+
+			return
+		}
+		state.Visited = true
+
+		if event.State == engine.StateCodeFailed {
+			state.Failed = true
+		}
+	}
+
+	writeJSON(w, ci.Config().Config.StateViews)
 }
 
 func (e *instController) create(w http.ResponseWriter, r *http.Request) {
