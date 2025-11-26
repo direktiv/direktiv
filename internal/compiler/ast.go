@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"slices"
 	"strings"
 	"time"
@@ -58,6 +59,9 @@ type ASTParser struct {
 	FlowVariable     ast.Expression
 	allFunctionNames []string
 	allSecretNames   []string
+
+	currentStateNode string
+	stateviews       map[string]*core.StateView
 }
 
 func NewASTParser(script, mapping string) (*ASTParser, error) {
@@ -69,6 +73,7 @@ func NewASTParser(script, mapping string) (*ASTParser, error) {
 		mapping:          mapping,
 		allFunctionNames: make([]string, 0),
 		allSecretNames:   make([]string, 0),
+		stateviews:       make(map[string]*core.StateView),
 	}
 
 	option := parser.WithDisableSourceMaps
@@ -129,6 +134,10 @@ func (ap *ASTParser) Parse() error {
 			}
 		}
 		ap.FlowConfig = config
+
+		if config.State == "" {
+			ap.FlowConfig.State = ap.FirstStateFunc
+		}
 	} else {
 		// No flow variable, use defaults
 		ap.FlowConfig = core.FlowConfig{
@@ -138,6 +147,16 @@ func (ap *ASTParser) Parse() error {
 			State:   ap.FirstStateFunc,
 		}
 	}
+
+	// in the state views we have to set the start node at the end
+	// when everything is parsed
+
+	state, ok := ap.stateviews[ap.FlowConfig.State]
+	if !ok {
+		slog.Error("cannot set start state in state view")
+		return nil
+	}
+	state.Start = true
 
 	return nil
 }
@@ -166,6 +185,12 @@ func (ap *ASTParser) walkNode(node ast.Node, isInsideFunc bool) {
 
 			// Validate state function has at least one return
 			if isStateFunc {
+				ap.currentStateNode = funcName
+				ap.stateviews[funcName] = &core.StateView{
+					Name:        funcName,
+					Transitions: make([]string, 0),
+				}
+
 				hasReturn := ap.checkHasReturn(n.Function.Body)
 				if !hasReturn {
 					start := ap.file.Position(int(n.Idx0()))
@@ -627,6 +652,19 @@ func (ap *ASTParser) isTransitionCall(node ast.Node) bool {
 		return false
 	}
 
+	stateView := ap.stateviews[ap.currentStateNode]
+	if callee.Name == "finish" {
+		stateView.Finish = true
+	} else if callee.Name == "transition" {
+		ident, ok := callExpr.ArgumentList[0].(*ast.Identifier)
+		if !ok {
+			slog.Error("cannot parse transition node")
+			// still ok
+			return true
+		}
+		stateView.Transitions = append(stateView.Transitions, ident.Name.String())
+	}
+
 	return callee.Name == "transition" || callee.Name == "finish"
 }
 
@@ -916,11 +954,6 @@ func (ap *ASTParser) parseSecrets(expr ast.Expression) ([]string, error) {
 		if !ok {
 			return secrets, fmt.Errorf("secret values must be a string")
 		}
-
-		// fmt.Println(sl.Value)
-		// b, _ := json.Marshal(sl)
-		// fmt.Println(string(b))
-		// fmt.Println(reflect.TypeOf(s))
 
 		secrets = append(secrets, sl.Value.String())
 	}
