@@ -658,9 +658,10 @@ func (ap *ASTParser) isTransitionCall(node ast.Node) bool {
 		return callee.Name == "transition" || callee.Name == "finish"
 	}
 
-	if callee.Name == "finish" {
+	switch callee.Name {
+	case "finish":
 		stateView.Finish = true
-	} else if callee.Name == "transition" {
+	case "transition":
 		ident, ok := callExpr.ArgumentList[0].(*ast.Identifier)
 		if !ok {
 			slog.Error("cannot parse transition node")
