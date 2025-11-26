@@ -162,7 +162,7 @@ function stateTwo(payload) {
 
 	let instanceId = null
 
-	it(`should invoke /foo.wf.ts workflow`, async () => {
+	it(`should invoke /main.wf.ts workflow`, async () => {
 		const res = await request(common.config.getDirektivBaseUrl())
 			.post(
 				`/api/v2/namespaces/${namespace}/instances?path=/main.wf.ts&wait=true&fullOutput=true`,
@@ -473,6 +473,158 @@ function stateThree(payload) {
 				output: undefined,
 				error:
 					'invoke start: ReferenceError: threw is not defined at stateThree (foo.wf.ts:15:1(1))',
+				sequence: firstSequence++,
+			},
+		])
+	})
+})
+
+describe('List workflow failed with subflow history', () => {
+	beforeAll(helpers.deleteAllNamespaces)
+	helpers.itShouldCreateNamespace(it, expect, namespace)
+
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'subflow.wf.ts',
+		'workflow',
+		'application/x-typescript',
+		btoa(`
+function stateOne(payload) {
+	payload.subflowOne = 1;
+	return transition(stateTwo, payload);
+}
+function stateTwo(payload) {
+	threw new Error("logic failed");
+	payload.subflowTwo = 2;
+    return finish(payload);
+}
+`),
+	)
+
+	helpers.itShouldCreateFile(
+		it,
+		expect,
+		namespace,
+		'/',
+		'main.wf.ts',
+		'workflow',
+		'application/x-typescript',
+		btoa(`
+function stateOne(payload) {
+	payload.mainOne = 1;
+	let newPayload = execSubflow("/subflow.wf.ts", payload);
+	
+	return transition(stateTwo, newPayload);
+}
+function stateTwo(payload) {
+	payload.mainTwo = 2;
+    return finish(payload);
+}
+`),
+	)
+
+	let instanceId = null
+
+	it(`should invoke /main.wf.ts workflow`, async () => {
+		const res = await request(common.config.getDirektivBaseUrl())
+			.post(
+				`/api/v2/namespaces/${namespace}/instances?path=/main.wf.ts&wait=true&fullOutput=true`,
+			)
+			.send({ foo: 'bar' })
+		expect(res.statusCode).toEqual(200)
+		instanceId = res.body.data.id
+	})
+
+	it(`should list /main.wf.ts workflow history`, async () => {
+		const res = await request(common.config.getDirektivBaseUrl()).get(
+			`/api/v2/namespaces/${namespace}/instances/${instanceId}/history`,
+		)
+		expect(res.statusCode).toEqual(200)
+		console.log(res.body.data)
+		const history = res.body.data.map((item) => ({
+			type: item.state,
+			scope: item.metadata.WithScope,
+			fn: item.fn,
+			input: item.input,
+			output: item.output,
+			error: item.error,
+			sequence: item.sequence,
+		}))
+		console.log(history)
+		let firstSequence = history[0].sequence
+		let subflowID = history[2].scope
+		expect(history).toEqual([
+			{
+				scope: 'main',
+				type: 'pending',
+				fn: 'stateOne',
+				input: { foo: 'bar' },
+				output: undefined,
+				sequence: firstSequence++,
+			},
+			{
+				scope: 'main',
+				type: 'running',
+				fn: 'stateOne',
+				input: { foo: 'bar' },
+				output: undefined,
+				sequence: firstSequence++,
+			},
+			{
+				type: 'pending',
+				scope: subflowID,
+				fn: 'stateOne',
+				input: { foo: 'bar', mainOne: 1 },
+				output: undefined,
+				sequence: firstSequence++,
+			},
+			{
+				type: 'running',
+				scope: subflowID,
+				fn: 'stateOne',
+				input: { foo: 'bar', mainOne: 1 },
+				output: undefined,
+				sequence: firstSequence++,
+			},
+			{
+				type: 'running',
+				scope: subflowID,
+				fn: 'stateTwo',
+				input: { foo: 'bar', mainOne: 1 },
+				output: { foo: 'bar', mainOne: 1, subflowOne: 1 },
+				sequence: firstSequence++,
+			},
+			{
+				type: 'complete',
+				scope: subflowID,
+				fn: undefined,
+				input: { foo: 'bar', mainOne: 1 },
+				output: { foo: 'bar', mainOne: 1, subflowOne: 1, subflowTwo: 2 },
+				sequence: firstSequence++,
+			},
+			{
+				scope: 'main',
+				type: 'running',
+				fn: 'stateTwo',
+				input: { foo: 'bar' },
+				output: { foo: 'bar', mainOne: 1, subflowOne: 1, subflowTwo: 2 },
+				sequence: firstSequence++,
+			},
+			{
+				scope: 'main',
+				type: 'complete',
+				fn: undefined,
+				input: { foo: 'bar' },
+				output: {
+					foo: 'bar',
+					mainOne: 1,
+					subflowOne: 1,
+					subflowTwo: 2,
+					mainTwo: 2,
+				},
 				sequence: firstSequence++,
 			},
 		])
