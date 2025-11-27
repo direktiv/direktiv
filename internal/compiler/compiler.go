@@ -147,6 +147,7 @@ func (ci *CompileItem) validate() error {
 	ci.config = pr.FlowConfig
 	ci.config.Actions = pr.Actions
 	ci.config.Secrets = pr.allSecretNames
+	ci.config.StateViews = pr.stateviews
 
 	for i := range pr.Errors {
 		ci.ValidationErrors = append(ci.ValidationErrors, pr.Errors[i])

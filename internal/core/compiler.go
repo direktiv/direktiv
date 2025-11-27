@@ -19,17 +19,26 @@ type ActionConfig struct {
 	Envs  []EnvironmentVariable
 
 	Retries int
-	// Patches []ServicePatch
+}
+
+type StateView struct {
+	Name        string   `json:"name"`
+	Start       bool     `json:"start"`
+	Finish      bool     `json:"finish"`
+	Visited     bool     `json:"visited"`
+	Failed      bool     `json:"failed"`
+	Transitions []string `json:"transitions"`
 }
 
 type FlowConfig struct {
-	Type    string
-	Events  []EventConfig
-	Cron    string
-	Timeout string
-	State   string
-	Actions []ActionConfig
-	Secrets []string
+	Type       string
+	Events     []EventConfig
+	Cron       string
+	Timeout    string
+	State      string
+	Actions    []ActionConfig
+	Secrets    []string
+	StateViews map[string]*StateView
 }
 
 type EventConfig struct {
