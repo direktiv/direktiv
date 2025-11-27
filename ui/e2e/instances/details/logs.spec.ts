@@ -24,7 +24,7 @@ test("It displays a log message from the workflow yaml, one initial and one fina
   page,
 }) => {
   /* prepare data*/
-  const workflowName = faker.system.commonFileName("yaml");
+  const workflowName = faker.system.commonFileName("wf.ts");
   await createFile({
     name: workflowName,
     namespace,
@@ -91,7 +91,7 @@ test("It displays a log message from the workflow yaml, one initial and one fina
   await expect(
     scrollContainer.locator("pre").locator("span").last(),
     "It displays a final log entry"
-  ).toContainText("msg: workflow completed");
+  ).toContainText("msg: flow finished");
 
   await expect(
     entriesCounter,
@@ -192,7 +192,7 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
     page.getByTestId("instance-header-container").locator("div").first()
   ).toContainText("complete");
 
-  const twoNumbersAndTheLogMessage = /[0-9]{2}msg: workflow completed/;
+  const twoNumbersAndTheLogMessage = /[0-9]{2}msg: flow finished/;
   await expect(
     scrollContainer.getByText(twoNumbersAndTheLogMessage),
     "It does not display the state in the last log entry"
@@ -213,7 +213,7 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
   await expect(
     scrollContainer.locator("pre").last(),
     "It displays the state in the last log entry"
-  ).toContainText("state: helloworldmsg: workflow completed");
+  ).toContainText("state: stateHellomsg: flow finished");
 
   page.reload();
 
@@ -225,7 +225,7 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
   await expect(
     scrollContainer.locator("pre").last(),
     "After reloading the page it still displays the state in the last log entry"
-  ).toContainText("state: helloworldmsg: workflow completed");
+  ).toContainText("state: stateHellomsg: flow finished");
 });
 
 test("the logs can be copied", async ({ page }) => {
@@ -269,7 +269,14 @@ test("the logs can be copied", async ({ page }) => {
   await copyButton.click();
 
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
-    "yaml - helloworld - running state logic"
+    "flow starting"
+  );
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
+    "transitioning to 'stateHello'"
+  );
+
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
+    "flow finished"
   );
 });
 
