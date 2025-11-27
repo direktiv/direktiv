@@ -57,7 +57,7 @@ test("the header of the instance page shows the relevant data for the workflow",
   ).toContainText("complete");
 
   await expect(
-    header.getByText("triggerapi"),
+    header.getByText("invokerapi"),
     "It renders the instance trigger"
   ).toBeVisible();
 
