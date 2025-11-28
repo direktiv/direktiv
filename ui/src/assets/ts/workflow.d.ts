@@ -68,3 +68,23 @@ declare type ActionConfig = {
  * @param ActionConfig
  */
 declare function generateAction(config: ActionConfig): () => void;
+
+declare type FileObject = {
+  scope: "workflow" | "namespace" | "filesystem";
+  name: string;
+};
+
+declare type ServiceConfig = {
+  scope: "namespace" | "system";
+  path: string;
+  payload: object;
+  files: FileObject[];
+  retries: number;
+};
+
+/**
+ * Creates a custom service that can then be called as a
+ * typescript function.
+ * @param ActionConfig
+ */
+declare function execService(config: ServiceConfig): () => void;
