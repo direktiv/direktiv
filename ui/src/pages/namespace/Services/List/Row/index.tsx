@@ -30,7 +30,7 @@ const ServicesTableRow: FC<{
       <TableRow
         data-testid="service-row"
         onClick={() => {
-          if (service.type === "workflow-service" && path) {
+          if (service.type === "workflow" && path) {
             return navigate({
               to: "/n/$namespace/explorer/workflow/services/$",
               from: "/n/$namespace",
@@ -51,7 +51,7 @@ const ServicesTableRow: FC<{
           <div className="flex flex-col gap-1">
             <div>
               <span className="whitespace-pre-wrap break-all">
-                {service.type === "workflow-service" && path ? (
+                {service.type === "workflow" && path ? (
                   <Link
                     to="/n/$namespace/explorer/workflow/services/$"
                     from="/n/$namespace"

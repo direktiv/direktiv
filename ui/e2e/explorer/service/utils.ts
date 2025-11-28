@@ -65,7 +65,7 @@ export const createService = async (namespace: string, service: Service) => {
     name: service.name,
     namespace,
     type: "service",
-    mimeType: "application/yaml",
+    mimeType: "application/json",
     content,
   });
 };
