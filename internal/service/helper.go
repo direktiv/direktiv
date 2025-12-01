@@ -239,7 +239,23 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 
 	// direktiv sidecar
 	sidecarEnvs := buildEnvVars(true, c, sv)
-	sidecarEnvs = append(sidecarEnvs, corev1.EnvVar{Name: "API_KEY", Value: os.Getenv("DIREKTIV_API_KEY")})
+	// sidecarEnvs = append(sidecarEnvs, corev1.EnvVar{Name: "API_KEY", Value: os.Getenv("DIREKTIV_API_KEY")})
+
+	// add database to the sidecar
+	deploymentName := os.Getenv("DIREKTIV_DEPLOYMENT_NAME")
+	dbSecret := corev1.EnvVar{
+		Name: "DB",
+		ValueFrom: &corev1.EnvVarSource{
+			SecretKeyRef: &corev1.SecretKeySelector{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: deploymentName,
+				},
+				Key: "db",
+			},
+		},
+	}
+	sidecarEnvs = append(sidecarEnvs, dbSecret)
+
 	sc := corev1.Container{
 		Name:         containerSidecar,
 		Image:        c.KnativeSidecar,
