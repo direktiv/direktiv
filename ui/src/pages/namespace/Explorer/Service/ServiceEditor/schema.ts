@@ -32,8 +32,8 @@ export const PatchSchema = z.object({
 });
 
 export const ServiceFormSchema = z.object({
-  direktiv_api: z.literal("service/v1"),
-  image: z.string().nonempty().optional(),
+  direktiv_api: z.literal("service/v1").optional(),
+  image: z.string().nonempty(),
   scale: z.number().min(0).lt(10).optional(),
   size: z.string().optional(),
   cmd: z.string().optional(),

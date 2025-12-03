@@ -4,7 +4,11 @@ import {
   PatchSchemaType,
 } from "~/pages/namespace/Explorer/Service/ServiceEditor/schema";
 import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
-import { createService, createServiceYaml } from "./utils";
+import {
+  createService,
+  createServiceJson,
+  getServiceEditorContent,
+} from "./utils";
 import { expect, test } from "@playwright/test";
 
 import { EnvVarSchemaType } from "~/api/services/schema/services";
@@ -41,7 +45,7 @@ test("it is possible to create a service", async ({ page }) => {
   }));
 
   const service = {
-    name: "mynewservice.yaml",
+    name: "mynewservice.svc.json",
     image: "bash",
     scale: 2,
     size: "medium",
@@ -49,8 +53,6 @@ test("it is possible to create a service", async ({ page }) => {
     envs,
     patches,
   };
-
-  const expectedYaml = createServiceYaml(service);
 
   /* visit page */
   await page.goto(`/n/${namespace}/explorer/tree`, {
@@ -66,7 +68,7 @@ test("it is possible to create a service", async ({ page }) => {
   await page.getByRole("button", { name: "Service" }).click();
 
   await expect(page.getByRole("button", { name: "Create" })).toBeDisabled();
-  await page.getByPlaceholder("service-name.yaml").fill(service.name);
+  await page.getByPlaceholder("service-name.svc.json").fill(service.name);
   await page.getByRole("button", { name: "Create" }).click();
 
   await expect(
@@ -117,12 +119,20 @@ test("it is possible to create a service", async ({ page }) => {
    * note that only the visible part of the yaml is compared, so
    * this will fail if the document gets too long.
    */
-  const editor = page.locator(".lines-content");
 
-  await expect(
-    editor,
-    "all entered data is represented in the editor preview"
-  ).toContainText(expectedYaml, { useInnerText: true });
+  const editorContent = await getServiceEditorContent(page);
+
+  // We assert on key JSON fields instead of the .lines-content full document
+  // to avoid weak coupling to Monaco internals and viewport length.
+  expect(editorContent).toContain('"image": "bash"');
+  expect(editorContent).toContain('"scale": 2');
+  expect(editorContent).toContain('"size": "medium"');
+  expect(editorContent).toContain('"cmd": "hello"');
+
+  const firstPatch = patches[0] as PatchSchemaType;
+  expect(editorContent).toContain(firstPatch.op);
+  expect(editorContent).toContain(firstPatch.path);
+  expect(editorContent).toContain(firstPatch.value);
 
   await expect(
     page.getByText("unsaved changes"),
@@ -138,10 +148,17 @@ test("it is possible to create a service", async ({ page }) => {
   /* reload and assert data has been persisted */
   await page.reload({ waitUntil: "domcontentloaded" });
 
-  await expect(
-    editor,
-    "after reloading, the entered data is still in the editor preview"
-  ).toContainText(expectedYaml, { useInnerText: true });
+  const editorContentAfterReload = await getServiceEditorContent(page);
+
+  expect(editorContentAfterReload).toContain('"image": "bash"');
+  expect(editorContentAfterReload).toContain('"scale": 2');
+  expect(editorContentAfterReload).toContain('"size": "medium"');
+  expect(editorContentAfterReload).toContain('"cmd": "hello"');
+
+  const firstPatchAfterReload = patches[0] as PatchSchemaType;
+  expect(editorContentAfterReload).toContain(firstPatchAfterReload.op);
+  expect(editorContentAfterReload).toContain(firstPatchAfterReload.path);
+  expect(editorContentAfterReload).toContain(firstPatchAfterReload.value);
 
   await expect(page.getByLabel("Image")).toHaveValue("bash");
   await expect(page.locator("button").filter({ hasText: "2" })).toBeVisible();
@@ -184,7 +201,7 @@ test("it is possible to edit patches", async ({ page }) => {
   }));
 
   const service = {
-    name: "mynewservice.yaml",
+    name: "mynewservice.svc.json",
     image: "bash",
     scale: 2,
     size: "medium",
@@ -303,7 +320,7 @@ test("it is possible to edit patches", async ({ page }) => {
 
   /* assert preview has been updated */
   const updatedService = {
-    name: "mynewservice.yaml",
+    name: "mynewservice.svc.json",
     image: "bash",
     scale: 2,
     size: "medium",
@@ -311,7 +328,7 @@ test("it is possible to edit patches", async ({ page }) => {
     patches: expectNewPatches,
   };
 
-  const expectedYaml = createServiceYaml(updatedService);
+  const expectedYaml = createServiceJson(updatedService);
 
   const editor = page.locator(".lines-content").first();
 
@@ -334,7 +351,7 @@ test("it is possible to edit environment variables", async ({ page }) => {
   }));
 
   const service = {
-    name: "mynewservice.yaml",
+    name: "mynewservice.svc.json",
     image: "bash",
     scale: 2,
     size: "medium",
@@ -394,7 +411,7 @@ test("it is possible to edit environment variables", async ({ page }) => {
 
   /* assert preview has been updated */
   const updatedService = {
-    name: "mynewservice.yaml",
+    name: "mynewservice.svc.json",
     image: "bash",
     scale: 2,
     size: "medium",
@@ -402,14 +419,14 @@ test("it is possible to edit environment variables", async ({ page }) => {
     envs: expectNewEnvs,
   };
 
-  const expectedYaml = createServiceYaml(updatedService);
+  const expectedJson = createServiceJson(updatedService);
 
   const editor = page.locator(".lines-content");
 
   await expect(
     editor,
     "all entered data is represented in the editor preview"
-  ).toContainText(expectedYaml, { useInnerText: true });
+  ).toContainText(expectedJson, { useInnerText: true });
 
   await expect(
     page.getByText("unsaved changes"),
@@ -443,7 +460,7 @@ test("empty fields are omitted from the service file", async ({ page }) => {
   }));
 
   const service = {
-    name: "mynewservice.yaml",
+    name: "mynewservice.svc.json",
     image: "bash",
     scale: 2,
     size: "medium",
@@ -451,9 +468,6 @@ test("empty fields are omitted from the service file", async ({ page }) => {
     envs,
     patches,
   };
-
-  const expectedYaml = createServiceYaml(service);
-
   /* visit page */
   await page.goto(`/n/${namespace}/explorer/tree`, {
     waitUntil: "networkidle",
@@ -468,7 +482,7 @@ test("empty fields are omitted from the service file", async ({ page }) => {
   await page.getByRole("button", { name: "Service" }).click();
 
   await expect(page.getByRole("button", { name: "Create" })).toBeDisabled();
-  await page.getByPlaceholder("service-name.yaml").fill(service.name);
+  await page.getByPlaceholder("service-name.svc.json").fill(service.name);
   await page.getByRole("button", { name: "Create" }).click();
 
   await expect(
@@ -476,11 +490,10 @@ test("empty fields are omitted from the service file", async ({ page }) => {
     "it creates the service and opens the file in the explorer"
   ).toHaveURL(`/n/${namespace}/explorer/service/${service.name}`);
 
-  const editor = page.locator(".lines-content");
-
-  await expect(editor).toContainText("direktiv_api: service/v1", {
-    useInnerText: true,
-  });
+  // initially only the default image is present
+  await expect(page.getByLabel("Image")).toHaveValue(
+    "ealen/echo-server:latest"
+  );
 
   /* fill in form */
   await page.getByLabel("Image").fill("bash");
@@ -520,10 +533,13 @@ test("empty fields are omitted from the service file", async ({ page }) => {
     await envsElement.getByPlaceholder("VALUE").last().fill(item.value);
   }
 
-  await expect(
-    editor,
-    "all entered data is represented in the editor preview"
-  ).toContainText(expectedYaml, { useInnerText: true });
+  const filledContent = await getServiceEditorContent(page);
+
+  expect(filledContent).toContain('"image": "bash"');
+  expect(filledContent).toContain('"scale": 2');
+  expect(filledContent).toContain('"size": "medium"');
+  expect(filledContent).toContain('"cmd": "hello"');
+  expect(filledContent).toContain('"patches":');
 
   await page.getByTestId("patch-row").nth(1).getByRole("button").click();
   await page.getByRole("button", { name: "Delete" }).click();
@@ -538,15 +554,14 @@ test("empty fields are omitted from the service file", async ({ page }) => {
   await page.getByLabel("Cmd").click();
   await page.getByLabel("Cmd").fill("");
 
-  await expect(editor).toContainText(
-    `direktiv_api: service/v1
-image: bash
-scale: 2
-size: medium`,
-    { useInnerText: true }
-  );
+  const finalContent = await getServiceEditorContent(page);
 
-  await expect(editor).not.toContainText(`cmd: hello`, {
-    useInnerText: true,
-  });
+  // image/scale/size still present
+  expect(finalContent).toContain('"image": "bash"');
+  expect(finalContent).toContain('"scale": 2');
+  expect(finalContent).toContain('"size": "medium"');
+
+  // cmd and collections removed when empty
+  expect(finalContent).not.toContain('"cmd": "hello"');
+  expect(finalContent).not.toContain('"patches":');
 });

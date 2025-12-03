@@ -1,5 +1,4 @@
 import { ServiceFormSchema, ServiceFormSchemaType } from "./schema";
-import { jsonToYaml, yamlToJsonOrNull } from "../../utils";
 
 import { ZodError } from "zod";
 
@@ -22,10 +21,15 @@ type SerializeReturnType =
   | [ServiceFormSchemaType, undefined]
   | [undefined, ZodError<ServiceFormSchemaType>];
 
-export const serializeServiceFile = (yaml: string): SerializeReturnType => {
-  const json = yamlToJsonOrNull(yaml);
+export const serializeServiceFile = (json: string): SerializeReturnType => {
+  let parsedJson: unknown;
+  try {
+    parsedJson = JSON.parse(json);
+  } catch (e) {
+    parsedJson = null;
+  }
 
-  const jsonParsed = ServiceFormSchema.safeParse(json);
+  const jsonParsed = ServiceFormSchema.safeParse(parsedJson);
   if (jsonParsed.success) {
     return [jsonParsed.data, undefined];
   }
@@ -33,8 +37,6 @@ export const serializeServiceFile = (yaml: string): SerializeReturnType => {
   return [undefined, jsonParsed.error];
 };
 
-const defaultServiceFileJson: ServiceFormSchemaType = {
-  direktiv_api: "service/v1",
+export const defaultServiceFileJson: ServiceFormSchemaType = {
+  image: "ealen/echo-server:latest",
 };
-
-export const defaultServiceYaml = jsonToYaml(defaultServiceFileJson);
