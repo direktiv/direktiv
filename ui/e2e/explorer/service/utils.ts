@@ -55,7 +55,7 @@ export const createService = async (namespace: string, service: Service) => {
 // and tightly coupled to Monaco internals. Targeting the labeled textbox
 // keeps tests stable across layout changes and updates.
 
-export const getServiceEditor = (page: Page) =>
+const getServiceEditor = (page: Page) =>
   page.getByRole("textbox", { name: /Editor content/i });
 
 export const getServiceEditorContent = async (page: Page) => {
