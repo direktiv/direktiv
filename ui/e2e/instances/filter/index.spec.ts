@@ -8,8 +8,8 @@ import { faker } from "@faker-js/faker";
 import { parentWorkflow as parentWorkflowContent } from "../utils/workflows";
 
 let namespace = "";
-const simpleWorkflowName = faker.system.commonFileName("yaml");
-const failingWorkflowName = faker.system.commonFileName("yaml");
+const simpleWorkflowName = faker.system.commonFileName("wf.ts");
+const failingWorkflowName = faker.system.commonFileName("wf.ts");
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
@@ -45,8 +45,8 @@ const createStatusFilterInstances = async () => {
   await createInstance({ namespace, path: simpleWorkflowName });
 };
 
-/* create 1 instance with trigger "api" and 2 with trigger "instance" */
-const createTriggerFilterInstances = async () => {
+/* create 1 instance with invoker "api" and 2 with invoker "instance" */
+const createInvokerFilterInstances = async () => {
   const parentWorkflowName = faker.system.commonFileName("yaml");
 
   await createFile({
@@ -172,8 +172,8 @@ test("it is possible to filter by date using created before", async ({
   ).toHaveCount(2);
 });
 
-test("it is possible to filter by trigger", async ({ page }) => {
-  await createTriggerFilterInstances();
+test("it is possible to filter by invoker", async ({ page }) => {
+  await createInvokerFilterInstances();
   await page.goto(`/n/${namespace}/instances/`);
 
   /* there should be 3 items initially */
@@ -184,27 +184,27 @@ test("it is possible to filter by trigger", async ({ page }) => {
 
   const btnPlus = page.getByTestId("filter-add");
   await btnPlus.click();
-  await page.getByRole("option", { name: "trigger" }).click();
+  await page.getByRole("option", { name: "invoker" }).click();
   await page.getByRole("option", { name: "instance" }).click();
 
   await expect(
     page.getByTestId(/instance-row/),
-    "there should be 2 rows with filter trigger: instance"
+    "there should be 2 rows with filter invoker: instance"
   ).toHaveCount(2);
 
-  /* change trigger filter to "api", expect 1 instance to be rendered */
+  /* change invoker filter to "api", expect 1 instance to be rendered */
   await page
     .getByTestId("filter-component")
-    .getByRole("button", { name: "instance" })
+    .getByRole("button", { name: "invoker" })
     .click();
   await page.getByRole("option", { name: "api" }).click();
   await expect(
     page.getByTestId(/instance-row/),
-    "there should be 1 rows with filter trigger: api"
+    "there should be 1 rows with filter invoker: api"
   ).toHaveCount(1);
 
   /* clear filter, expect 3 instances to be rendered */
-  await page.getByTestId("filter-clear-TRIGGER").click();
+  await page.getByTestId("filter-clear-invoker").click();
   await expect(
     page.getByTestId(/instance-row/),
     "there should be 3 rows when we cancel the filter"
@@ -320,7 +320,7 @@ test("it is possible to filter by AS (name)", async ({ page }) => {
 
 test("it is possible to apply multiple filters", async ({ page }) => {
   /* set up test data */
-  createTriggerFilterInstances();
+  createInvokerFilterInstances();
 
   const workflowNames = [
     "five-a.yaml",
@@ -367,9 +367,9 @@ test("it is possible to apply multiple filters", async ({ page }) => {
     "initially, it renders all instances"
   ).toHaveCount(11);
 
-  /* add filter by "trigger": "api" */
+  /* add filter by "invoker": "api" */
   await page.getByTestId("filter-add").click();
-  await page.getByRole("option", { name: "trigger" }).click();
+  await page.getByRole("option", { name: "invoker" }).click();
   await page.getByRole("option", { name: "api" }).click();
 
   await expect(
@@ -387,7 +387,7 @@ test("it is possible to apply multiple filters", async ({ page }) => {
     "it renders the expected number of results"
   ).toHaveCount(3);
 
-  /* change filter by "trigger" to "instance" */
+  /* change filter by "invoker" to "instance" */
   await page.getByTestId("filter-add").click();
   await page
     .getByTestId("filter-component")
@@ -413,17 +413,17 @@ test("it is possible to apply multiple filters", async ({ page }) => {
     "it renders the expected number of results"
   ).toHaveCount(2);
 
-  /* remove filter by "trigger" */
-  await page.getByTestId("filter-clear-TRIGGER").click();
+  /* remove filter by "invoker" */
+  await page.getByTestId("filter-clear-invoker").click();
 
   await expect(
     page.getByTestId(/instance-row/),
     "it renders the expected number of results"
   ).toHaveCount(8);
 
-  /* add second filter by "trigger": "api" (filter) */
+  /* add second filter by "invoker": "api" (filter) */
   await page.getByTestId("filter-add").click();
-  await page.getByRole("option", { name: "trigger" }).click();
+  await page.getByRole("option", { name: "invoker" }).click();
   await page.getByRole("option", { name: "api" }).click();
 
   await expect(
