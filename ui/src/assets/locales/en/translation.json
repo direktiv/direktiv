@@ -113,7 +113,7 @@
         "newService": {
           "title": "Create a new service",
           "nameLabel": "Name",
-          "namePlaceholder": "service-name.yaml",
+          "namePlaceholder": "service-name.svc.json",
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
           "createBtn": "Create"

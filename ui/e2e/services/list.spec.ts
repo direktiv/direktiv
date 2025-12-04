@@ -44,7 +44,7 @@ test("Service list shows all available services", async ({ page }) => {
     namespace,
     type: "service",
     content: createRequestServiceFile(),
-    mimeType: "application/yaml",
+    mimeType: "application/json",
   });
 
   await expect
@@ -131,7 +131,7 @@ test("Service list links the file name to the service file", async ({
     namespace,
     type: "service",
     content: createRequestServiceFile(),
-    mimeType: "application/yaml",
+    mimeType: "application/json",
   });
 
   await page.goto(`/n/${namespace}/services`, {
@@ -162,7 +162,7 @@ test("Service list links the row to the service details page", async ({
     namespace,
     type: "service",
     content: createRequestServiceFile(),
-    mimeType: "application/yaml",
+    mimeType: "application/json",
   });
 
   await expect
@@ -215,7 +215,7 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
     namespace,
     type: "service",
     content: createRequestServiceFile(),
-    mimeType: "application/yaml",
+    mimeType: "application/json",
   });
 
   await expect
@@ -267,7 +267,7 @@ test("Service list highlights services that have errors", async ({ page }) => {
     namespace,
     type: "service",
     content: serviceWithAnError,
-    mimeType: "application/yaml",
+    mimeType: "application/json",
   });
 
   await expect
@@ -314,7 +314,7 @@ test("Service list will update the services when refetch button is clicked", asy
       scale: 1,
       size: "large",
     }),
-    mimeType: "application/yaml",
+    mimeType: "application/json",
   });
 
   await page.goto(`/n/${namespace}/services`, {
@@ -384,7 +384,7 @@ test.describe("system namespace", () => {
       namespace: systemNamespaceName,
       type: "service",
       content: createRequestServiceFile(),
-      mimeType: "application/yaml",
+      mimeType: "application/json",
     });
   });
 

@@ -107,7 +107,7 @@ const CreateEndpointSchema = CreateFileBaseSchema.extend({
 
 const CreateServiceSchema = CreateFileBaseSchema.extend({
   type: z.literal("service"),
-  mimeType: z.literal("application/yaml"),
+  mimeType: z.literal("application/json"),
 });
 
 const CreateWorkflowSchema = CreateFileBaseSchema.extend({
