@@ -85,6 +85,6 @@ declare type ServiceConfig = {
 /**
  * Creates a custom service that can then be called as a
  * typescript function.
- * @param ActionConfig
+ * @param ServiceConfig
  */
 declare function execService(config: ServiceConfig): () => void;
