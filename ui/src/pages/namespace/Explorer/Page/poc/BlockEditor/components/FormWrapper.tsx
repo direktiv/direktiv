@@ -1,11 +1,13 @@
 import { FieldValues, UseFormReturn } from "react-hook-form";
 import FormErrors, { errorsType } from "~/components/FormErrors";
+import { ReactNode, useEffect } from "react";
 
 import { BlockEditFormProps } from "..";
 import { BlockType } from "../../schema/blocks";
 import { Footer } from "./Footer";
 import { Header } from "./Header";
-import { ReactNode } from "react";
+import { NavigationBlocker } from "~/components/NavigationBlocker";
+import { usePageEditorPanel } from "../EditorPanelProvider";
 
 interface FormWrapperProps<T extends FieldValues> {
   form: UseFormReturn<T>;
@@ -32,8 +34,11 @@ export const FormWrapper = <T extends FieldValues>({
 }: FormWrapperProps<T>) => {
   const {
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = form;
+  const { setDirty } = usePageEditorPanel();
+
+  useEffect(() => setDirty(isDirty), [isDirty, setDirty]);
 
   return (
     <form
@@ -41,7 +46,9 @@ export const FormWrapper = <T extends FieldValues>({
       id={formId}
       className="flex flex-col gap-4 px-1"
     >
+      {isDirty && <NavigationBlocker />}
       <Header action={action} path={path} block={block} />
+      <div>{JSON.stringify(isDirty)}</div>
       <div className="text-gray-10 dark:text-gray-10">{description}</div>
       {errors && <FormErrors errors={errors as errorsType} />}
       {children}

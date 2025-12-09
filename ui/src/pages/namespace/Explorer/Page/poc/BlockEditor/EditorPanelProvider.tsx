@@ -32,6 +32,8 @@ type EditorPanelContextType = {
   setPanel: React.Dispatch<React.SetStateAction<EditorPanelState>>;
   dialog: EditorDialogState;
   setDialog: React.Dispatch<React.SetStateAction<EditorDialogState>>;
+  dirty: boolean;
+  setDirty: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const EditorPanelContext = createContext<EditorPanelContextType | null>(null);
@@ -54,6 +56,7 @@ export const EditorPanelLayoutProvider = ({
   const { addBlock, deleteBlock, moveBlock } = usePageEditor();
   const [panel, setPanel] = useState<EditorPanelState>(null);
   const [dialog, setDialog] = useState<EditorDialogState>(null);
+  const [dirty, setDirty] = useState(false);
   const { mode } = usePageStateContext();
 
   const createBlock = (
@@ -101,6 +104,8 @@ export const EditorPanelLayoutProvider = ({
             setPanel,
             dialog,
             setDialog,
+            dirty,
+            setDirty,
           }}
         >
           <div className="grow sm:grid sm:grid-cols-[350px_1fr]">

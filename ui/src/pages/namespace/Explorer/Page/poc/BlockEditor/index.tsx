@@ -27,7 +27,7 @@ type BlockFormProps = {
 
 export const BlockForm = ({ action, block, path }: BlockFormProps) => {
   const { addBlock, updateBlock } = usePageEditor();
-  const { setPanel, panel } = usePageEditorPanel();
+  const { setPanel, panel, setDirty } = usePageEditorPanel();
 
   if (isPage(block)) {
     throw Error("Unexpected page object when parsing block");
@@ -47,7 +47,10 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
     setPanel(null);
   };
 
-  const handleClose = () => setPanel(null);
+  const handleClose = () => {
+    setDirty(false);
+    setPanel(null);
+  };
 
   // Key needed to instantiate new component per block and action
   const key = `${action}-${path.join(".")}`;
