@@ -44,7 +44,7 @@ const PageEditor = ({
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
       {isDirty && <NavigationBlocker />}
-      <Card className="flex grow">
+      <Card className="flex">
         {mode === "code" ? (
           <Editor
             value={jsonToYaml(page)}

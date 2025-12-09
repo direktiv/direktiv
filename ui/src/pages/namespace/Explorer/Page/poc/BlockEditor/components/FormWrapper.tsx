@@ -44,15 +44,20 @@ export const FormWrapper = <T extends FieldValues>({
     <form
       onSubmit={handleSubmit(onSubmit)}
       id={formId}
-      className="flex flex-col gap-4 px-1"
+      className="flex flex-col"
     >
       {isDirty && <NavigationBlocker />}
-      <Header action={action} path={path} block={block} />
-      <div>{JSON.stringify(isDirty)}</div>
-      <div className="text-gray-10 dark:text-gray-10">{description}</div>
-      {errors && <FormErrors errors={errors as errorsType} />}
-      {children}
-      <Footer formId={formId} onCancel={onCancel} />
+      <div className="flex h-full flex-col gap-4 overflow-y-scroll px-1">
+        <div className="p-4">
+          <Header action={action} path={path} block={block} />
+          <div className="text-gray-10 dark:text-gray-10">{description}</div>
+          {errors && <FormErrors errors={errors as errorsType} />}
+          {children}
+        </div>
+      </div>
+      <div className="shrink-0 px-4">
+        <Footer formId={formId} onCancel={onCancel} />
+      </div>
     </form>
   );
 };
