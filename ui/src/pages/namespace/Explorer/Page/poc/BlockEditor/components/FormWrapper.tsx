@@ -47,7 +47,7 @@ export const FormWrapper = <T extends FieldValues>({
       className="flex flex-col"
     >
       {isDirty && <NavigationBlocker />}
-      <div className="flex h-full flex-col gap-4 overflow-y-scroll px-1">
+      <div className="flex flex-col gap-4 px-1">
         <div className="p-4">
           <Header action={action} path={path} block={block} />
           <div className="text-gray-10 dark:text-gray-10">{description}</div>

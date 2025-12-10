@@ -42,8 +42,6 @@ test("it is possible to create a page and view the result in the page editor", a
     "it creates the page and opens the file in the explorer"
   ).toHaveURL(`/n/${namespace}/explorer/page/${filename}`);
 
-  const dragarea = page.getByTestId("editor-dragArea");
-
   /* add 'headline' block per drag and drop */
   await page
     .getByRole("button", { name: "headline" })
@@ -52,8 +50,12 @@ test("it is possible to create a page and view the result in the page editor", a
   /* fill in values for headline block */
   await page.getByPlaceholder("Headline").fill("my-headline");
   await page.getByRole("combobox").click();
-  page.getByLabel("h3").click();
-  await dragarea.getByRole("button", { name: "save" }).click();
+  await page.getByRole("option", { name: "h3" }).click();
+
+  await page
+    .locator("#block-editor-form")
+    .getByRole("button", { name: "Save" })
+    .click();
 
   /* add 'text' block per drag and drop */
   await page
@@ -62,7 +64,10 @@ test("it is possible to create a page and view the result in the page editor", a
 
   /* fill in values for text block */
   await page.getByPlaceholder("Enter text here...").fill("my-text");
-  await dragarea.getByRole("button", { name: "save" }).click();
+  await page
+    .locator("#block-editor-form")
+    .getByRole("button", { name: "Save" })
+    .click();
 
   const liveMode = page.getByTestId("live");
   const headline = page.locator("h3", { hasText: "my-headline" });
@@ -112,8 +117,6 @@ test("it is possible to create a page and view the result in a gateway route", a
     "it creates the page and opens the file in the explorer"
   ).toHaveURL(`/n/${namespace}/explorer/page/${filename}`);
 
-  const dragarea = page.getByTestId("editor-dragArea");
-
   /* add 'headline' block per drag and drop */
   await page
     .getByRole("button", { name: "headline" })
@@ -123,7 +126,10 @@ test("it is possible to create a page and view the result in a gateway route", a
   await page.getByPlaceholder("Headline").fill("my-headline");
   await page.getByRole("combobox").click();
   page.getByLabel("h3").click();
-  await dragarea.getByRole("button", { name: "save" }).click();
+  await page
+    .locator("#block-editor-form")
+    .getByRole("button", { name: "Save" })
+    .click();
 
   /* add 'text' block per drag and drop */
   await page
@@ -132,7 +138,10 @@ test("it is possible to create a page and view the result in a gateway route", a
 
   /* fill in values for text block */
   await page.getByPlaceholder("Enter text here...").fill("my-text");
-  await dragarea.getByRole("button", { name: "save" }).click();
+  await page
+    .locator("#block-editor-form")
+    .getByRole("button", { name: "Save" })
+    .click();
 
   const headline = page.locator("h3");
   const text = page.locator("p");
