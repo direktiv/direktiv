@@ -42,9 +42,9 @@ const PageEditor = ({
   const disableSaveBtn = isPending || !isDirty;
 
   return (
-    <div className="relative flex grow flex-col space-y-4 p-5">
+    <div className="relative flex min-h-0 flex-col space-y-4 p-5">
       {isDirty && <NavigationBlocker />}
-      <Card className="flex">
+      <Card className="relative flex min-h-0 flex-1 flex-col">
         {mode === "code" ? (
           <Editor
             value={jsonToYaml(page)}
