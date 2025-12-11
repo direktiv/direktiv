@@ -44,6 +44,7 @@ export const BlockForm = ({ action, block, path }: BlockFormProps) => {
         updateBlock(path, newBlock);
         break;
     }
+    setDirty(false);
     setPanel(null);
   };
 
