@@ -78,13 +78,19 @@ declare type ServiceConfig = {
   scope: "namespace" | "system";
   path: string;
   payload: object;
-  files: FileObject[];
-  retries: number;
+  files?: FileObject[];
+  retries?: number;
 };
 
 /**
  * Creates a custom service that can then be called as a
  * typescript function.
- * @param ServiceConfig
+ * @param ServiceConfig configuration object
+ * - scope: required, "namespace" | "system"
+ * - path: required, the path of the service
+ * - payload: required, object of any kind
+ * - files: optional, [{ scope: "workflow" | "namespace" | "filesystem", name: string }]
+ * - retries: optional, number
  */
+
 declare function execService(config: ServiceConfig): () => void;
