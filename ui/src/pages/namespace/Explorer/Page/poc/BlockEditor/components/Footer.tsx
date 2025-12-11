@@ -4,9 +4,14 @@ import { useTranslation } from "react-i18next";
 type BlockEditorFooterProps = {
   formId: string;
   onCancel: () => void;
+  disableSave: boolean;
 };
 
-export const Footer = ({ formId, onCancel }: BlockEditorFooterProps) => {
+export const Footer = ({
+  formId,
+  onCancel,
+  disableSave,
+}: BlockEditorFooterProps) => {
   const { t } = useTranslation();
 
   return (
@@ -15,7 +20,12 @@ export const Footer = ({ formId, onCancel }: BlockEditorFooterProps) => {
         {t("direktivPage.blockEditor.generic.cancelButton")}
       </Button>
 
-      <Button variant="primary" type="submit" form={formId}>
+      <Button
+        variant="primary"
+        type="submit"
+        form={formId}
+        disabled={disableSave}
+      >
         {t("direktivPage.blockEditor.generic.saveButton")}
       </Button>
     </div>

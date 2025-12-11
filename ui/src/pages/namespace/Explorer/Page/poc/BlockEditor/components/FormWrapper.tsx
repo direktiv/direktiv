@@ -49,15 +49,15 @@ export const FormWrapper = <T extends FieldValues>({
       {isDirty && <NavigationBlocker />}
 
       <div className="flex flex-col gap-4 px-1">
-        <div className="p-4">
+        <div className="p-4 pb-0">
           <Header action={action} path={path} block={block} />
           <div className="text-gray-10 dark:text-gray-10">{description}</div>
           {errors && <FormErrors errors={errors as errorsType} />}
           {children}
         </div>
       </div>
-      <div className="shrink-0 px-4 sm:sticky sm:bottom-0 sm:bg-white sm:py-2">
-        <Footer formId={formId} onCancel={onCancel} />
+      <div className="shrink-0 px-4 py-3 sm:sticky sm:bottom-0 sm:bg-white">
+        <Footer formId={formId} onCancel={onCancel} disableSave={!isDirty} />
       </div>
     </form>
   );
