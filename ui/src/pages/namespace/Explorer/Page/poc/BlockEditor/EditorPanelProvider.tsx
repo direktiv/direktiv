@@ -39,7 +39,7 @@ type EditorPanelContextType = {
 const EditorPanelContext = createContext<EditorPanelContextType | null>(null);
 
 const PagePreviewContainer = ({ children }: PropsWithChildren) => (
-  <div className="overflow-y-auto border-l-2">
+  <div className="sm:overflow-y-scroll sm:border-l-2">
     <LocalDialogContainer className="min-w-0 flex-1">
       <div className="mx-auto max-w-screen-lg overflow-hidden p-4">
         {children}
@@ -108,7 +108,7 @@ export const EditorPanelLayoutProvider = ({
             setDirty,
           }}
         >
-          <div className="relative h-[calc(100vh-230px)] min-h-0 sm:grid sm:grid-cols-[350px_1fr]">
+          <div className="sm:relative sm:grid sm:h-[calc(100vh-230px)] sm:min-h-0 sm:grid-cols-[350px_1fr]">
             {panel?.action ? <ActionPanel panel={panel} /> : <DefaultPanel />}
             <PagePreviewContainer>{children}</PagePreviewContainer>
           </div>

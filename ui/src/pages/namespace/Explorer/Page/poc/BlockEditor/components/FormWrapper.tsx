@@ -44,9 +44,10 @@ export const FormWrapper = <T extends FieldValues>({
     <form
       onSubmit={handleSubmit(onSubmit)}
       id={formId}
-      className="relative flex-col overflow-y-auto"
+      className="relative max-h-[calc(100vh-270px)] flex-col overflow-y-auto sm:h-auto"
     >
       {isDirty && <NavigationBlocker />}
+
       <div className="flex flex-col gap-4 px-1">
         <div className="p-4">
           <Header action={action} path={path} block={block} />
@@ -55,7 +56,7 @@ export const FormWrapper = <T extends FieldValues>({
           {children}
         </div>
       </div>
-      <div className="shrink-0 px-4">
+      <div className="shrink-0 px-4 sm:sticky sm:bottom-0 sm:bg-white sm:py-2">
         <Footer formId={formId} onCancel={onCancel} />
       </div>
     </form>
