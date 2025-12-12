@@ -515,6 +515,37 @@ func (ap *ASTParser) walkExpression(expr ast.Expression, isInsideFunc bool, isSt
 				}
 			}
 
+			if funcName == "getSecret" {
+				if len(e.ArgumentList) <= 0 {
+					start := ap.file.Position(int(e.Idx0()))
+					end := ap.file.Position(int(e.Idx1()))
+					ap.Errors = append(ap.Errors, &ValidationError{
+						Message:     "getSecret requires argument",
+						StartLine:   start.Line,
+						StartColumn: start.Column,
+						EndLine:     end.Line,
+						EndColumn:   end.Column,
+						Severity:    SeverityError,
+					})
+				}
+
+				sl, ok := e.ArgumentList[0].(*ast.StringLiteral)
+				if !ok {
+					start := ap.file.Position(int(e.Idx0()))
+					end := ap.file.Position(int(e.Idx1()))
+					ap.Errors = append(ap.Errors, &ValidationError{
+						Message:     "getSecret requires string argument",
+						StartLine:   start.Line,
+						StartColumn: start.Column,
+						EndLine:     end.Line,
+						EndColumn:   end.Column,
+						Severity:    SeverityError,
+					})
+				}
+
+				ap.allSecretNames = append(ap.allSecretNames, sl.Value.String())
+			}
+
 			if funcName == "getSecrets" {
 				if len(e.ArgumentList) == 1 {
 					secrets, err := ap.parseSecrets(e.ArgumentList[0])
