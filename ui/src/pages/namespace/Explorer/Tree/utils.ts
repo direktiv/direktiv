@@ -20,3 +20,13 @@ export const addWorkflowFileExtension = (name: string) => {
   }
   return `${newName}${workflowExtension}`;
 };
+
+const serviceExtension = ".svc.json";
+
+export const addServiceFileExtension = (name: string) => {
+  const newName = name.trim();
+  if (newName.endsWith(serviceExtension)) {
+    return newName;
+  }
+  return `${newName}${serviceExtension}`;
+};

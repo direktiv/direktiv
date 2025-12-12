@@ -11,8 +11,8 @@ import Button from "~/design/Button";
 import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
-import { addYamlFileExtension } from "../../../../utils";
-import { defaultServiceYaml } from "~/pages/namespace/Explorer/Service/ServiceEditor/utils";
+import { addServiceFileExtension } from "../../../../utils";
+import { defaultServiceFileJson } from "~/pages/namespace/Explorer/Service/ServiceEditor/utils";
 import { encode } from "js-base64";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNavigate } from "@tanstack/react-router";
@@ -39,7 +39,7 @@ const NewService = ({
   const resolver = zodResolver(
     z.object({
       name: FileNameSchema.transform((enteredName) =>
-        addYamlFileExtension(enteredName)
+        addServiceFileExtension(enteredName)
       ).refine(
         (nameWithExtension) =>
           !(unallowedNames ?? []).some(
@@ -60,7 +60,7 @@ const NewService = ({
   } = useForm<FormInput>({
     resolver,
     defaultValues: {
-      fileContent: defaultServiceYaml,
+      fileContent: JSON.stringify(defaultServiceFileJson, null, 2),
     },
   });
 
@@ -80,7 +80,7 @@ const NewService = ({
       path,
       payload: {
         name,
-        mimeType: "application/yaml",
+        mimeType: "application/json",
         type: "service",
         data: encode(fileContent),
       },

@@ -16,7 +16,6 @@ import FormErrors from "~/components/FormErrors";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { ServiceFormSchemaType } from "./schema";
-import { jsonToYaml } from "../../utils";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
@@ -39,10 +38,11 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
 
   const save = (value: ServiceFormSchemaType) => {
     const cleanedValues = omitEmptyFields(value);
-    const toSave = jsonToYaml(cleanedValues);
+    const encodedData = encode(JSON.stringify(cleanedValues));
+
     updateService({
       path: data.path,
-      payload: { data: encode(toSave) },
+      payload: { data: encodedData },
     });
   };
 
@@ -57,8 +57,9 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
         values,
       }) => {
         const cleanedValues = omitEmptyFields(values);
-        const preview = jsonToYaml(cleanedValues);
-        const parsedOriginal = serviceConfig && jsonToYaml(serviceConfig);
+        const preview = JSON.stringify(cleanedValues, null, 2);
+        const parsedOriginal =
+          serviceConfig && JSON.stringify(serviceConfig, null, 2);
         const filehasChanged = preview !== parsedOriginal;
         const isDirty = !serviceConfigError && filehasChanged;
         const disableButton = isPending || !!serviceConfigError;
