@@ -108,7 +108,7 @@ export const EditorPanelLayoutProvider = ({
             setDirty,
           }}
         >
-          <div className="sm:relative sm:grid sm:h-[calc(100vh-230px)] sm:grid-cols-[350px_1fr]">
+          <div className="relative sm:grid sm:h-[calc(100vh-230px)] sm:grid-cols-[350px_1fr]">
             {panel?.action ? <ActionPanel panel={panel} /> : <DefaultPanel />}
             <PagePreviewContainer>{children}</PagePreviewContainer>
           </div>

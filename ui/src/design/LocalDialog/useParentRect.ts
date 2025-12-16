@@ -9,6 +9,8 @@ export const useParentRect = (container: HTMLElement | null) => {
     };
     updateRect();
     window.addEventListener("resize", updateRect);
+    window.addEventListener("scroll", updateRect, { passive: true });
+
     return () => window.removeEventListener("resize", updateRect);
   }, [container]);
 

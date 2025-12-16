@@ -40,7 +40,7 @@ export const LocalDialogContent = ({ children }: PropsWithChildren) => {
         />
         <DialogPrimitive.Content
           className={twMergeClsx(
-            "pointer-events-auto fixed z-50 grid w-full gap-4 rounded-b-lg bg-gray-1 p-6 animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 dark:bg-gray-dark-1 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0"
+            "pointer-events-auto fixed z-50 grid max-w-full gap-4 rounded-b-lg bg-gray-1 p-6 animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 dark:bg-gray-dark-1 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0"
           )}
           onInteractOutside={(event) => {
             event.preventDefault();
