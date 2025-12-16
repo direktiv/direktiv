@@ -39,7 +39,7 @@ type EditorPanelContextType = {
 const EditorPanelContext = createContext<EditorPanelContextType | null>(null);
 
 const PagePreviewContainer = ({ children }: PropsWithChildren) => (
-  <div className="sm:overflow-y-scroll sm:border-l-2">
+  <div className="sm:overflow-y-scroll">
     <LocalDialogContainer className="min-w-0 flex-1">
       <div className="mx-auto max-w-screen-lg overflow-hidden p-4">
         {children}

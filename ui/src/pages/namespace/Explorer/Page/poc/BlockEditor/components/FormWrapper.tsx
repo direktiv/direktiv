@@ -44,12 +44,12 @@ export const FormWrapper = <T extends FieldValues>({
     <form
       onSubmit={handleSubmit(onSubmit)}
       id={formId}
-      className="relative max-h-[50vh] flex-col overflow-y-auto border-b sm:max-h-full sm:border-b-0"
+      className="relative max-h-[50vh] flex-col overflow-y-auto border-b border-r sm:max-h-full sm:border-b-0"
     >
       {isDirty && <NavigationBlocker />}
 
-      <div className="flex flex-col gap-4 px-1">
-        <div className="p-4 pb-0">
+      <div className="flex flex-col">
+        <div className="flex flex-col gap-4 p-4 pb-0">
           <Header action={action} path={path} block={block} />
           <div className="text-gray-10 dark:text-gray-10">{description}</div>
           {errors && <FormErrors errors={errors as errorsType} />}

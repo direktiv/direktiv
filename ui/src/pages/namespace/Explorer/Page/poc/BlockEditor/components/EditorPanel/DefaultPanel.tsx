@@ -7,7 +7,10 @@ export const DefaultPanel = () => {
   const { t } = useTranslation();
 
   return (
-    <div data-testid="editor-sidePanel" className="overflow-y-clip">
+    <div
+      data-testid="editor-sidePanel"
+      className="overflow-y-clip sm:border-r-2"
+    >
       <div className="w-full rounded rounded-b-none border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
         <h3 className="flex grow gap-x-2 font-bold">
           <Blocks className="h-5" />
