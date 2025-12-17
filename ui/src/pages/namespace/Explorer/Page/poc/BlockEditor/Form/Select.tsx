@@ -47,7 +47,7 @@ export const Select = ({
     const parsedValueType = ValuesTypeSchema.safeParse(value);
     if (parsedValueType.data) {
       field.onChange(parsedValueType.data);
-      form.setValue("values.value", []);
+      form.setValue("values.value", [], { shouldDirty: true });
     }
   };
 
@@ -178,7 +178,9 @@ export const Select = ({
       >
         <SmartInput
           value={form.watch("defaultValue")}
-          onUpdate={(value) => form.setValue("defaultValue", value)}
+          onUpdate={(value) =>
+            form.setValue("defaultValue", value, { shouldDirty: true })
+          }
           id="defaultValue"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholderSelect"

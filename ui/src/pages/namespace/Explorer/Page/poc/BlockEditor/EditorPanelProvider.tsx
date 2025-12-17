@@ -32,13 +32,15 @@ type EditorPanelContextType = {
   setPanel: React.Dispatch<React.SetStateAction<EditorPanelState>>;
   dialog: EditorDialogState;
   setDialog: React.Dispatch<React.SetStateAction<EditorDialogState>>;
+  dirty: boolean;
+  setDirty: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const EditorPanelContext = createContext<EditorPanelContextType | null>(null);
 
 const PagePreviewContainer = ({ children }: PropsWithChildren) => (
-  <div className="grow sm:overflow-y-scroll">
-    <LocalDialogContainer className="h-full min-w-0 flex-1">
+  <div className="sm:overflow-y-scroll">
+    <LocalDialogContainer className="min-w-0 flex-1">
       <div className="mx-auto max-w-screen-lg overflow-hidden p-4">
         {children}
       </div>
@@ -54,6 +56,7 @@ export const EditorPanelLayoutProvider = ({
   const { addBlock, deleteBlock, moveBlock } = usePageEditor();
   const [panel, setPanel] = useState<EditorPanelState>(null);
   const [dialog, setDialog] = useState<EditorDialogState>(null);
+  const [dirty, setDirty] = useState(false);
   const { mode } = usePageStateContext();
 
   const createBlock = (
@@ -101,9 +104,11 @@ export const EditorPanelLayoutProvider = ({
             setPanel,
             dialog,
             setDialog,
+            dirty,
+            setDirty,
           }}
         >
-          <div className="grow sm:grid sm:grid-cols-[350px_1fr]">
+          <div className="sm:relative sm:grid sm:h-[calc(100vh-230px)] sm:grid-cols-[350px_1fr]">
             {panel?.action ? <ActionPanel panel={panel} /> : <DefaultPanel />}
             <PagePreviewContainer>{children}</PagePreviewContainer>
           </div>
