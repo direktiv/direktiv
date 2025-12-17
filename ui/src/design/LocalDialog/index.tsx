@@ -28,11 +28,11 @@ export const LocalDialogContent = ({ children }: PropsWithChildren) => {
   return (
     <DialogPrimitive.DialogPortal container={container}>
       <div
-        className="absolute inset-0 flex items-center justify-center px-5"
+        className="absolute inset-0 flex items-center justify-center"
         onClick={(event) => event.stopPropagation()}
       >
         <div
-          className="fixed bg-black/10 backdrop-blur-sm max-sm:absolute max-sm:!inset-0"
+          className="fixed bg-black/10 backdrop-blur-sm max-lg:absolute max-lg:!inset-0"
           style={{
             width: rect?.width,
             height: rect?.height,
