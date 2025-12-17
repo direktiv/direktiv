@@ -44,7 +44,7 @@ export const FormWrapper = <T extends FieldValues>({
     <form
       onSubmit={handleSubmit(onSubmit)}
       id={formId}
-      className="relative max-h-[50vh] flex-col overflow-y-auto border-b border-r sm:max-h-full sm:border-b-0"
+      className="relative flex-col overflow-y-auto max-lg:border-b lg:border-r"
     >
       {isDirty && <NavigationBlocker />}
 

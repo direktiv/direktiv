@@ -60,7 +60,7 @@ const PagePreviewContainer = ({ children }: PropsWithChildren) => {
   }, [setScrollPos]);
 
   return (
-    <div className="sm:overflow-y-scroll" ref={scrollRef}>
+    <div className="lg:overflow-y-auto" ref={scrollRef}>
       <LocalDialogContainer className="min-w-0 flex-1">
         <div className="mx-auto min-h-[55vh] max-w-screen-lg overflow-hidden p-4">
           {children}
@@ -79,7 +79,7 @@ export const EditorPanelLayoutProvider = ({
   const [panel, setPanel] = useState<EditorPanelState>(null);
   const [dialog, setDialog] = useState<EditorDialogState>(null);
   const [dirty, setDirty] = useState(false);
-  const { mode, scrollPos } = usePageStateContext();
+  const { mode } = usePageStateContext();
 
   const createBlock = (
     type: BlockType["type"],

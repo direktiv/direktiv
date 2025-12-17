@@ -9,7 +9,7 @@ export const DefaultPanel = () => {
   return (
     <div
       data-testid="editor-sidePanel"
-      className="overflow-y-clip sm:border-r-2"
+      className="overflow-y-clip max-lg:border-b lg:border-r"
     >
       <div className="w-full rounded rounded-b-none border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
         <h3 className="flex grow gap-x-2 font-bold">
