@@ -3,6 +3,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { PropsWithChildren } from "react";
 import { twMergeClsx } from "~/util/helpers";
 import { useLocalDialogContainer } from "./container";
+import { usePageStateContext } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/pageCompilerContext";
 import { useParentRect } from "./useParentRect";
 
 export const LocalDialog = ({
@@ -22,6 +23,7 @@ export const LocalDialog = ({
 export const LocalDialogContent = ({ children }: PropsWithChildren) => {
   const { container } = useLocalDialogContainer();
   const rect = useParentRect(container);
+  const { scrollPos } = usePageStateContext();
 
   return (
     <DialogPrimitive.DialogPortal container={container}>
@@ -46,6 +48,9 @@ export const LocalDialogContent = ({ children }: PropsWithChildren) => {
           )}
           onInteractOutside={(event) => {
             event.preventDefault();
+          }}
+          style={{
+            top: scrollPos + 48,
           }}
         >
           {children}
