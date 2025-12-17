@@ -17,7 +17,7 @@ export const DefaultPanel = () => {
           {t("direktivPage.blockEditor.generic.addBlockTab")}
         </h3>
       </div>
-      <div className="grid grid-cols-2 gap-2 p-5">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(128px,1fr))] gap-2 p-5">
         {blockTypes.map((type, index) => (
           <DraggablePaletteItem
             key={index}
