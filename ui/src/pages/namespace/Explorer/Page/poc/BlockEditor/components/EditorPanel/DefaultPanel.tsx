@@ -9,7 +9,7 @@ export const DefaultPanel = () => {
   return (
     <div
       data-testid="editor-sidePanel"
-      className="overflow-y-clip sm:border-r-2"
+      className="overflow-y-clip max-lg:border-b lg:border-r"
     >
       <div className="w-full rounded rounded-b-none border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
         <h3 className="flex grow gap-x-2 font-bold">
@@ -17,7 +17,7 @@ export const DefaultPanel = () => {
           {t("direktivPage.blockEditor.generic.addBlockTab")}
         </h3>
       </div>
-      <div className="grid grid-cols-2 gap-2 p-5">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(128px,1fr))] gap-2 p-5">
         {blockTypes.map((type, index) => (
           <DraggablePaletteItem
             key={index}

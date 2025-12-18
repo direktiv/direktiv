@@ -1,5 +1,12 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
-import { PropsWithChildren, createContext, useContext, useState } from "react";
+import {
+  PropsWithChildren,
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   usePageEditor,
   usePageStateContext,
@@ -38,15 +45,30 @@ type EditorPanelContextType = {
 
 const EditorPanelContext = createContext<EditorPanelContextType | null>(null);
 
-const PagePreviewContainer = ({ children }: PropsWithChildren) => (
-  <div className="sm:overflow-y-scroll">
-    <LocalDialogContainer className="min-w-0 flex-1">
-      <div className="mx-auto max-w-screen-lg overflow-hidden p-4">
-        {children}
-      </div>
-    </LocalDialogContainer>
-  </div>
-);
+const PagePreviewContainer = ({ children }: PropsWithChildren) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { setScrollPos } = usePageStateContext();
+
+  useEffect(() => {
+    const element = scrollRef.current;
+    if (!element) return;
+
+    const onScroll = () => setScrollPos(element.scrollTop);
+
+    element.addEventListener("scroll", onScroll);
+    return () => element.removeEventListener("scroll", onScroll);
+  }, [setScrollPos]);
+
+  return (
+    <div className="lg:overflow-y-auto" ref={scrollRef}>
+      <LocalDialogContainer className="min-w-0 flex-1">
+        <div className="mx-auto min-h-[55vh] max-w-screen-lg overflow-hidden p-4">
+          {children}
+        </div>
+      </LocalDialogContainer>
+    </div>
+  );
+};
 
 export const EditorPanelLayoutProvider = ({
   children,
@@ -108,7 +130,7 @@ export const EditorPanelLayoutProvider = ({
             setDirty,
           }}
         >
-          <div className="sm:relative sm:grid sm:h-[calc(100vh-230px)] sm:grid-cols-[350px_1fr]">
+          <div className="relative lg:grid lg:h-[calc(100vh-230px)] lg:grid-cols-[350px_1fr]">
             {panel?.action ? <ActionPanel panel={panel} /> : <DefaultPanel />}
             <PagePreviewContainer>{children}</PagePreviewContainer>
           </div>
