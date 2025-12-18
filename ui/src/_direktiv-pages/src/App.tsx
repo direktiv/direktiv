@@ -4,7 +4,6 @@ import "./i18n";
 import { Block } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/Block";
 import { BlockList } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/Block/utils/BlockList";
 import { DirektivPagesSchema } from "~/pages/namespace/Explorer/Page/poc/schema";
-import { EditorPanelLayoutProvider } from "~/pages/namespace/Explorer/Page/poc/BlockEditor/EditorPanelProvider";
 import ErrorMessage from "./Error";
 import { Loader2 } from "lucide-react";
 import { PageCompilerContextProvider } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/pageCompilerContext";
@@ -42,13 +41,11 @@ const PageLoader = () => {
       setScrollPos={setScrollPos}
       mode="live"
     >
-      <EditorPanelLayoutProvider>
-        <BlockList path={[]}>
-          {page.data.blocks.map((block, index) => (
-            <Block key={index} block={block} blockPath={[index]} />
-          ))}
-        </BlockList>
-      </EditorPanelLayoutProvider>
+      <BlockList path={[]}>
+        {page.data.blocks.map((block, index) => (
+          <Block key={index} block={block} blockPath={[index]} />
+        ))}
+      </BlockList>
     </PageCompilerContextProvider>
   );
 };
