@@ -4,7 +4,8 @@
   "project": "**/*.{js,ts,tsx}",
   "ignore": [
     "src/routeTree.gen.ts",
-    "src/_direktiv-pages/src/aliases/usePageStateContext.ts"
+    "src/_direktiv-pages/src/aliases/usePageStateContext.ts",
+    "src/_direktiv-pages/src/aliases/BlockList.tsx"
   ],
   "vite": {
     "config": [

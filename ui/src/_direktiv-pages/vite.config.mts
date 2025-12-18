@@ -44,7 +44,8 @@ export default () =>
       alias: {
         "@/app/pageState/usePageStateContext": path.resolve(
           __dirname,
-          "src/_direktiv-pages/aliases/usePageStateContext.ts"
+          // "src/_direktiv-pages/aliases/usePageStateContext.ts",
+          "src/_direktiv-pages/aliases/BlockList.tsx"
         ),
       },
     },
