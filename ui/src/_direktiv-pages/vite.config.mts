@@ -3,6 +3,7 @@ import type { ViteDevServer } from "vite";
 import { defineConfig } from "vite";
 import { page } from "./src/examplePage";
 import react from "@vitejs/plugin-react";
+import { visualizer } from "rollup-plugin-visualizer";
 import { viteSingleFile } from "vite-plugin-singlefile";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 
@@ -31,5 +32,11 @@ export default () =>
       viteTsconfigPaths(),
       viteSingleFile(),
       DirektivPagesMockPlugin(),
+      visualizer({
+        filename: "dist/bundle-report.html",
+        open: true,
+        gzipSize: true,
+        brotliSize: true,
+      }),
     ],
   });
