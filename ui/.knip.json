@@ -1,8 +1,11 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": [ "src/index.tsx", "src/_direktiv-pages/src/index.tsx" ],
+  "entry": ["src/index.tsx", "src/_direktiv-pages/src/index.tsx"],
   "project": "**/*.{js,ts,tsx}",
-  "ignore": [ "src/routeTree.gen.ts" ],
+  "ignore": [
+    "src/routeTree.gen.ts",
+    "src/_direktiv-pages/src/aliases/usePageStateContext.ts"
+  ],
   "vite": {
     "config": [
       "vite.config.{js,mjs,ts,cjs,mts,cts}",

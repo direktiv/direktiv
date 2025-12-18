@@ -61,7 +61,7 @@ const EditorBlockList = ({
   );
 };
 
-const VisitorBlockList = ({
+export const VisitorBlockList = ({
   horizontal,
   children,
 }: BlockListComponentProps) => (
