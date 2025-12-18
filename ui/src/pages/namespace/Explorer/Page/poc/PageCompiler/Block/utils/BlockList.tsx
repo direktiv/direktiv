@@ -19,8 +19,6 @@ type WrapperProps = {
   children: ReactElement;
 };
 
-type BlockListComponentProps = BlockListProps;
-
 const BlockListWrapper = ({ children, horizontal }: WrapperProps) => (
   <div
     className={twMergeClsx(
@@ -34,11 +32,7 @@ const BlockListWrapper = ({ children, horizontal }: WrapperProps) => (
   </div>
 );
 
-const EditorBlockList = ({
-  horizontal,
-  children,
-  path,
-}: BlockListComponentProps) => {
+const EditorBlockList = ({ horizontal, children, path }: BlockListProps) => {
   const validateDropzone = useValidateDropzone();
   const variables = useVariablesContext();
 
@@ -61,16 +55,13 @@ const EditorBlockList = ({
   );
 };
 
-const VisitorBlockList = ({
-  horizontal,
-  children,
-}: BlockListComponentProps) => (
+export const VisitorBlockList = ({ horizontal, children }: BlockListProps) => (
   <BlockListWrapper horizontal={horizontal}>
     <Suspense fallback={<Loading />}>{children}</Suspense>
   </BlockListWrapper>
 );
 
-export const BlockList = (props: BlockListComponentProps) => {
+export const BlockList = (props: BlockListProps) => {
   const { mode } = usePageStateContext();
 
   if (mode === "edit") {
