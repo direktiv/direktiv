@@ -2,7 +2,6 @@
 import type { ViteDevServer } from "vite";
 import { defineConfig } from "vite";
 import { page } from "./src/examplePage";
-import path from "path";
 import react from "@vitejs/plugin-react";
 import { visualizer } from "rollup-plugin-visualizer";
 import { viteSingleFile } from "vite-plugin-singlefile";
@@ -40,13 +39,4 @@ export default () =>
         brotliSize: true,
       }),
     ],
-    resolve: {
-      alias: {
-        "@/app/pageState/usePageStateContext": path.resolve(
-          __dirname,
-          // "src/_direktiv-pages/aliases/usePageStateContext.ts",
-          "src/_direktiv-pages/aliases/BlockList.tsx"
-        ),
-      },
-    },
   });
