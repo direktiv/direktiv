@@ -5,6 +5,7 @@ import { Block } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/Block";
 import { DirektivPagesSchema } from "~/pages/namespace/Explorer/Page/poc/schema";
 import ErrorMessage from "./Error";
 import { Loader2 } from "lucide-react";
+import { LocalDialogContainer } from "~/design/LocalDialog/container";
 import { PageCompilerContextProvider } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/pageCompilerContext";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "~/design/Toast";
@@ -41,11 +42,13 @@ const PageLoader = () => {
       setScrollPos={setScrollPos}
       mode="live"
     >
-      <VisitorBlockList path={[]}>
-        {page.data.blocks.map((block, index) => (
-          <Block key={index} block={block} blockPath={[index]} />
-        ))}
-      </VisitorBlockList>
+      <LocalDialogContainer className="mx-auto max-w-screen-lg">
+        <VisitorBlockList path={[]}>
+          {page.data.blocks.map((block, index) => (
+            <Block key={index} block={block} blockPath={[index]} />
+          ))}
+        </VisitorBlockList>
+      </LocalDialogContainer>
     </PageCompilerContextProvider>
   );
 };
