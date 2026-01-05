@@ -72,7 +72,7 @@ tasks:
       -e GOCACHE=/root/.cache/  \
       -e GOLANGCI_LINT_CACHE=/root/.cache/ \
       -e GOMODCACHE=/root/.cache/go/pkg/mod  \
-      golangci/golangci-lint:v2.6 golangci-lint run --verbose --config /app/.golangci.yaml
+      golangci/golangci-lint:v2.7 golangci-lint run --verbose --config /app/.golangci.yaml
 
   lint-second:
     desc: Runs Go linting
