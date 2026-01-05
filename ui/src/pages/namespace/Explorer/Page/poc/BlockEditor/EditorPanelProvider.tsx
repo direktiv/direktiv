@@ -156,7 +156,7 @@ export const EditorPanelLayoutProvider = ({
   }
 
   return (
-    <div className="relative lg:flex lg:h-[calc(100vh-230px)]">
+    <div className="relative flex-col lg:flex lg:h-[calc(100vh-230px)]">
       <PagePreviewContainer>{children}</PagePreviewContainer>
     </div>
   );
