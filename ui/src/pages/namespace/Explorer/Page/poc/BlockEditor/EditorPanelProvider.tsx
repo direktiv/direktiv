@@ -155,7 +155,11 @@ export const EditorPanelLayoutProvider = ({
     );
   }
 
-  return <PagePreviewContainer>{children}</PagePreviewContainer>;
+  return (
+    <div className="relative lg:flex lg:h-[calc(100vh-230px)]">
+      <PagePreviewContainer>{children}</PagePreviewContainer>
+    </div>
+  );
 };
 
 export const usePageEditorPanel = () => {
