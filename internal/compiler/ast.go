@@ -516,7 +516,7 @@ func (ap *ASTParser) walkExpression(expr ast.Expression, isInsideFunc bool, isSt
 			}
 
 			if funcName == "getSecret" {
-				if len(e.ArgumentList) <= 0 {
+				if len(e.ArgumentList) == 0 {
 					start := ap.file.Position(int(e.Idx0()))
 					end := ap.file.Position(int(e.Idx1()))
 					ap.Errors = append(ap.Errors, &ValidationError{
