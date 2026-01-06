@@ -29,20 +29,18 @@ function stateError(input): StateFunction<unknown> {
 
 export const delayWorkflow = `// This workflow waits for a number of seconds. You can specify the length 
 // in the workflow input. For example, { "time": 10 }.\
+
 const flow: FlowDefinition = {
   type: "default",
-  timeout: "PT30S",
+  timeout: "PT1S",
   state: "stateDelay",
 };
 
-function stateDelay(input): StateFunction<unknown> {
-  let seconds = 2;
-  if (typeof input === "object" && typeof input.time === "number") {
-    seconds = input.time
-  }
+function stateDelay(): StateFunction<unknown> {
+  let seconds = 1;
   sleep(seconds)
   return finish({
-    "message": \`waited for \${seconds}s.\`
+    message: "Hello world!" 
   })
 };`;
 

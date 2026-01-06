@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/cluster/pubsub"
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/telemetry"
@@ -96,7 +97,7 @@ func RunCleanMirrorProcesses(ctx context.Context, db *gorm.DB) {
 	}
 }
 
-func MirrorExec(ctx context.Context, db *gorm.DB, cfg *datastore.MirrorConfig, typ string) (*datastore.MirrorProcess, error) {
+func MirrorExec(ctx context.Context, bus pubsub.EventBus, db *gorm.DB, cfg *datastore.MirrorConfig, typ string) (*datastore.MirrorProcess, error) {
 	pro := &datastore.MirrorProcess{
 		ID:        uuid.New(),
 		Namespace: cfg.Namespace,
@@ -116,6 +117,15 @@ func MirrorExec(ctx context.Context, db *gorm.DB, cfg *datastore.MirrorConfig, t
 	}
 
 	go func() {
+		// even if there is no change, we need to kick render files
+		defer func() {
+			// rerender files
+			err = bus.Publish(pubsub.SubjNamespacesChange, nil)
+			if err != nil {
+				slog.Error("pubsub publish filesystem event", "err", err)
+			}
+		}()
+
 		job.setProcessStatus(datastore.ProcessStatusExecuting)
 		job.createTempDirectory()
 		job.pullSourceIntoTempDirectory(GitSource{}, cfg)
@@ -325,9 +335,11 @@ func (j *mirrorJob) copyFilesToTempFSRoot() {
 		if strings.HasSuffix(path, "wf.ts") {
 			mimeType = "application/x-typescript"
 			ft = filestore.FileTypeWorkflow
+		} else if strings.HasSuffix(path, "svc.json") {
+			mimeType = "text/javascript"
+			ft = filestore.FileTypeService
 		} else if filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml" {
 			mimeType = "application/yaml"
-
 			// detect direktiv mimetypes
 			ft, err = j.detectDirektivYAML(path, data)
 			if err != nil {
@@ -394,6 +406,7 @@ const (
 
 	ServiceAPIV1  = "service/v1"
 	ConsumerAPIV1 = "consumer/v1"
+	PageAPIV1     = "page/v1"
 )
 
 func (j *mirrorJob) detectDirektivYAML(path string, data []byte) (filestore.FileType, error) {
@@ -427,6 +440,8 @@ func (j *mirrorJob) detectDirektivYAML(path string, data []byte) (filestore.File
 		return filestore.FileTypeConsumer, nil
 	case ServiceAPIV1:
 		return filestore.FileTypeService, nil
+	case PageAPIV1:
+		return filestore.FileTypePage, nil
 	}
 
 	switch a.XDirektivAPI {

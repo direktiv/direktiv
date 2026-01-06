@@ -88,10 +88,21 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 		Data []byte `json:"data,omitempty"`
 
 		Children []*filestore.File `json:"children"`
+
+		StateViews map[string]*core.StateView `json:"states,omitempty"`
 	}{
-		File:     file,
-		Data:     data,
-		Children: children,
+		File:       file,
+		Data:       data,
+		Children:   children,
+		StateViews: make(map[string]*core.StateView),
+	}
+
+	if file.Typ == filestore.FileTypeWorkflow {
+		ci := compiler.NewCompileItem(data, path)
+		err = ci.TranspileAndValidate()
+		if err == nil {
+			res.StateViews = ci.Config().Config.StateViews
+		}
 	}
 
 	writeJSON(w, res)
@@ -392,15 +403,6 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Publish pubsub event (rename).
-	// if req.Path != "" && updatedFile.Typ.IsDirektivSpecFile() {
-	if updatedFile.Typ.IsDirektivSpecFile() {
-		err = e.bus.Publish(pubsub.SubjFileSystemChange, nil)
-		if err != nil {
-			slog.Error("pubsub publish", "err", err)
-		}
-	}
-
 	e.cache.Notify(r.Context(), cache.CacheNotify{
 		Key:    fmt.Sprintf("%s-%s-%s", namespace, "script", path),
 		Action: cache.CacheUpdate,
@@ -432,6 +434,15 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			res.Errors = append(res.Errors, jErr)
+		}
+	}
+
+	// Publish pubsub event (rename).
+	// if req.Path != "" && updatedFile.Typ.IsDirektivSpecFile() {
+	if updatedFile.Typ.IsDirektivSpecFile() {
+		err = e.bus.Publish(pubsub.SubjFileSystemChange, nil)
+		if err != nil {
+			slog.Error("pubsub publish", "err", err)
 		}
 	}
 

@@ -13,22 +13,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const (
-	ServiceTypeSystem    = "system-service"
-	ServiceTypeNamespace = "namespace-service"
-	ServiceTypeWorkflow  = "workflow-service"
-)
-
 type EnvironmentVariable struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
-
-// type ServicePatch struct {
-// 	Op    string      `json:"op"`
-// 	Path  string      `json:"path"`
-// 	Value interface{} `json:"value"`
-// }
 
 type ServiceFile struct {
 	DirektivAPI string                `yaml:"direktiv_api"`
@@ -38,6 +26,10 @@ type ServiceFile struct {
 	Scale       int                   `json:"scale"        yaml:"scale"`
 	Envs        []EnvironmentVariable `json:"envs"         yaml:"envs"`
 	// Patches     []ServicePatch        `json:"patches"      yaml:"patches"`
+}
+
+type PageFile struct {
+	DirektivAPI string `yaml:"direktiv_api"`
 }
 
 func ParseServiceFile(data []byte) (*ServiceFile, error) {
@@ -90,6 +82,7 @@ func (c *ServiceFileData) GetID() string {
 // GetValueHash calculates a unique hash string based on the settings fields. This hash helps in comparing
 // different lists of objects.
 func (c *ServiceFileData) GetValueHash() string {
+	// set default to small
 	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.Cmd, c.Size, c.Scale)
 	var strSb94 strings.Builder
 	for _, v := range c.Envs {

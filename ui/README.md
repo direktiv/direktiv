@@ -34,21 +34,29 @@ This repository contains the user interface for [direktiv](https://github.com/di
 
 # Scripts you might want to run
 
-- `pnpm run storybook` opens the storybook and documentation
-- `pnpm run test` runs the tests in watch mode
-- `pnpm run check` runs all the checks that will run in CI:
-  - `pnpm run check:lint` runs the linter
-  - `pnpm run check:types` checks all types
-  - `pnpm run check:test` runs the tests in ci mode
-  - `pnpm run check:prettier` checks if all prettier formatting was applied (`pnpm run prettier`)
-  - `pnpm run check:deps` checks if all dependencies are up to date
-  - `pnpm run check:knip` checks for unused code
-- `pnpm run fix` fixes all autofixable issues:
-  - `pnpm run fix:prettier` fixes all prettier formatting issues
-  - `pnpm run fix:knip` fixes all issues related to unused code
-- `pnpm run e2e:headless` runs all Playwright e2e tests in headless mode
-- `pnpm run e2e:ui` runs all Playwright e2e tests in ui mode
-- `pnpm run preview` locally preview the production build (requires you to run `pnpm build` first)
+- `pnpm dev` starts the main ui development server
+- `pnpm dev-pages` starts the pages development server
+- `pnpm build` builds the project:
+  - `pnpm build:check` runs all checks
+  - `pnpm build:compile-direktiv` compiles the main UI
+  - `pnpm build:compile-pages` compiles the pages
+- `pnpm storybook` opens the storybook and documentationT
+- `pnpm test` runs the tests in watch mode
+- `pnpm check` runs all the checks that will run in CI:
+  - `pnpm check:lint` runs the linter
+  - `pnpm check:types` checks all types
+  - `pnpm check:test` runs the tests in ci mode
+  - `pnpm check:prettier` checks if all prettier formatting was applied
+  - `pnpm check:deps` checks if all dependencies are up to date
+  - `pnpm check:knip` checks for unused code
+- `pnpm fix` fixes all autofixable issues:
+  - `pnpm fix:prettier` fixes all prettier formatting issues
+  - `pnpm fix:knip` fixes all issues related to unused code
+- `pnpm e2e:headless` runs all Playwright e2e tests in headless mode
+- `pnpm e2e:ui` runs all Playwright e2e tests in ui mode
+- `pnpm preview` locally previews the production build (requires you to run `pnpm build` first):
+  - `pnpm preview:ui` previews the main UI
+  - `pnpm preview:pages` previews the pages
 
 # Customize Logos
 

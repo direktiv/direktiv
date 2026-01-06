@@ -57,6 +57,7 @@ const fileTypes = [
   "file",
   "service",
   "workflow",
+  "page",
   "gateway",
 ] as const;
 
@@ -106,12 +107,17 @@ const CreateEndpointSchema = CreateFileBaseSchema.extend({
 
 const CreateServiceSchema = CreateFileBaseSchema.extend({
   type: z.literal("service"),
-  mimeType: z.literal("application/yaml"),
+  mimeType: z.literal("application/json"),
 });
 
 const CreateWorkflowSchema = CreateFileBaseSchema.extend({
   type: z.literal("workflow"),
   mimeType: z.literal("application/x-typescript"),
+});
+
+const CreatePageSchema = CreateFileBaseSchema.extend({
+  type: z.literal("page"),
+  mimeType: z.literal("application/yaml"),
 });
 
 const CreateGatewaySchema = CreateFileBaseSchema.extend({
@@ -125,6 +131,7 @@ export const CreateFileSchema = z.discriminatedUnion("type", [
   CreateEndpointSchema,
   CreateServiceSchema,
   CreateWorkflowSchema,
+  CreatePageSchema,
   CreateGatewaySchema,
 ]);
 

@@ -7,17 +7,10 @@ import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
 
-function randomLowercaseString(length) {
-	const letters = 'abcdefghijklmnopqrstuvwxyz'
-	let result = ''
-	for (let i = 0; i < length; i++) {
-		result += letters[Math.floor(Math.random() * 26)]
-	}
-	return result
-}
-
 const namespace =
-	randomLowercaseString(3) + '-' + basename(fileURLToPath(import.meta.url))
+	helpers.randomLowercaseString(3) +
+	'-' +
+	basename(fileURLToPath(import.meta.url))
 
 describe('Test js engine', () => {
 	beforeAll(helpers.deleteAllNamespaces)
@@ -37,12 +30,7 @@ describe('Test js engine', () => {
 			image: "mendhak/http-https-echo:latest"
 		});
 		function stateOne(payload) {
-			let result = echo({ 
-				body: {foo: "bar", input: payload}
-				headers: {
-				"content-type": "application/json"
-				}
-			});
+			let result = echo({foo: "bar", input: payload});
 			return finish(result.json);
 		}
 `,

@@ -2,7 +2,9 @@ package compiler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/direktiv/direktiv/internal/cluster/cache"
@@ -12,8 +14,9 @@ import (
 )
 
 type Compiler struct {
-	db    *gorm.DB
-	cache cache.Cache[core.TypescriptFlow]
+	db             *gorm.DB
+	cache          cache.Cache[core.TypescriptFlow]
+	secretsManager core.SecretsManager
 }
 
 type CompileItem struct {
@@ -25,10 +28,11 @@ type CompileItem struct {
 	config          core.FlowConfig
 }
 
-func NewCompiler(db *gorm.DB, cache cache.Cache[core.TypescriptFlow]) (*Compiler, error) {
+func NewCompiler(db *gorm.DB, secretsManager core.SecretsManager, cache cache.Cache[core.TypescriptFlow]) (*Compiler, error) {
 	return &Compiler{
-		db:    db,
-		cache: cache,
+		db:             db,
+		cache:          cache,
+		secretsManager: secretsManager,
 	}, nil
 }
 
@@ -41,11 +45,34 @@ func (c *Compiler) getFile(ctx context.Context, namespace, path string) ([]byte,
 	return filesql.NewStore(c.db).ForFile(f).GetData(ctx)
 }
 
-func (c *Compiler) FetchScript(ctx context.Context, namespace, path string) (core.TypescriptFlow, error) {
+func (c *Compiler) FetchScript(ctx context.Context, namespace, path string, withSecrets bool) (core.TypescriptFlow, error) {
 	cacheKey := fmt.Sprintf("%s-%s-%s", namespace, "script", path)
-	return c.cache.Get(cacheKey, func(a ...any) (core.TypescriptFlow, error) {
+	flow, err := c.cache.Get(cacheKey, func(a ...any) (core.TypescriptFlow, error) {
 		return c.genFlow(ctx, namespace, path)
 	})
+	if err != nil {
+		slog.Error("cannot fetch sript during compile", slog.Any("error", err))
+		return flow, err
+	}
+
+	secretMap := make(map[string][]byte)
+	if withSecrets {
+		for a := range flow.Config.Secrets {
+			secret, err := c.secretsManager.Get(ctx, namespace, flow.Config.Secrets[a])
+			if err != nil {
+				slog.Error("cannot fetch secret during compile", slog.Any("error", err))
+				return flow, err
+			}
+
+			secretMap[secret.Name] = secret.Data
+		}
+	}
+
+	// store secrets as json map
+	sm, _ := json.Marshal(secretMap)
+	flow.Secrets = string(sm)
+
+	return flow, nil
 }
 
 func (c *Compiler) genFlow(ctx context.Context, namespace, path string) (core.TypescriptFlow, error) {
@@ -120,6 +147,7 @@ func (ci *CompileItem) validate() error {
 	ci.config = pr.FlowConfig
 	ci.config.Actions = pr.Actions
 	ci.config.Secrets = pr.allSecretNames
+	ci.config.StateViews = pr.stateviews
 
 	for i := range pr.Errors {
 		ci.ValidationErrors = append(ci.ValidationErrors, pr.Errors[i])

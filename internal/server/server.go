@@ -210,21 +210,15 @@ func Start(lc *lifecycle.Manager) error {
 				slog.Error("cannot ignite service", slog.Any("error", err))
 			}
 		})
-
-		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
+		registerRenderFunc(app.PubSub, func() {
+			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager, app.SecretsManager)
 		})
-		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
-			renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
-		})
-		// call at least once before booting
-		renderServiceFiles(app.DB, app.ServiceManager, app.CacheManager)
 	}
 
 	// initializing engine
 	{
 		// prepare compiler
-		comp, err := compiler.NewCompiler(app.DB, app.CacheManager.FlowCache())
+		comp, err := compiler.NewCompiler(app.DB, app.SecretsManager, app.CacheManager.FlowCache())
 		if err != nil {
 			return fmt.Errorf("creating compiler, err: %w", err)
 		}
@@ -244,11 +238,14 @@ func Start(lc *lifecycle.Manager) error {
 		}
 
 		slog.Info("initializing scheduler")
-		app.Scheduler = sched.New(js, clock.RealClock{}, slog.With("component", "scheduler"))
+		app.Scheduler = sched.New(js, app.Engine, clock.RealClock{}, slog.With("component", "scheduler"))
 		err = app.Scheduler.Start(lc)
 		if err != nil {
 			return fmt.Errorf("start scheduler, err: %w", err)
 		}
+		registerRenderFunc(app.PubSub, func() {
+			renderWorkflowFiles(app.DB, app.Scheduler, app.CacheManager, app.SecretsManager)
+		})
 	}
 
 	// initializing registry-manager
@@ -265,14 +262,9 @@ func Start(lc *lifecycle.Manager) error {
 		slog.Info("initializing gateway manager")
 		app.GatewayManager = gateway.NewManager(app.SecretsManager)
 
-		app.PubSub.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
+		registerRenderFunc(app.PubSub, func() {
 			renderGatewayFiles(app.DB, app.GatewayManager)
 		})
-		app.PubSub.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
-			renderGatewayFiles(app.DB, app.GatewayManager)
-		})
-		// call at least once before booting
-		renderGatewayFiles(app.DB, app.GatewayManager)
 	}
 
 	// initializing extensions
@@ -409,4 +401,14 @@ func checkNATSConnectivity() {
 			panic("cannot connect to nats")
 		}
 	}
+}
+
+func registerRenderFunc(bs pubsub.EventBus, fn func()) {
+	bs.Subscribe(pubsub.SubjFileSystemChange, func(_ []byte) {
+		fn()
+	})
+	bs.Subscribe(pubsub.SubjNamespacesChange, func(_ []byte) {
+		fn()
+	})
+	fn()
 }

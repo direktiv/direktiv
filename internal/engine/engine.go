@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/api/filter"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/engine/runtime"
+	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
@@ -22,6 +24,13 @@ const (
 	LabelWithNotify   = "WithNotify"
 	LabelWithSyncExec = "WithSyncExec"
 	LabelInvokerType  = "InvokerType"
+
+	// LabelWithScope used to mark a workflow instance if it is:
+	//	1- a main execution or
+	//  2- a subflow execution.
+	// For main execution, use string "main"
+	// For subflow execution, use string uuid that uniquely identifies the subflow.
+	LabelWithScope = "WithScope"
 )
 
 type Engine struct {
@@ -52,14 +61,19 @@ func (e *Engine) Start(lc *lifecycle.Manager) error {
 	return nil
 }
 
-func (e *Engine) StartWorkflow(ctx context.Context, namespace string, workflowPath string, input string, metadata map[string]string) (*InstanceEvent, <-chan *InstanceEvent, error) {
-	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath)
+func (e *Engine) StartWorkflow(ctx context.Context, instID uuid.UUID, namespace string, workflowPath string, input string, metadata map[string]string) (*InstanceEvent, <-chan *InstanceEvent, error) {
+	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath, true)
 	if err != nil {
 		return nil, nil, fmt.Errorf("fetch script: %w", err)
 	}
 
+	// fetch all the secrets here
+	metadata[core.EngineMappingSecrets] = flowDetails.Secrets
+	metadata[core.EngineMappingNamespace] = namespace
+	metadata[core.EngineMappingPath] = workflowPath
+
 	notify := make(chan *InstanceEvent, 1)
-	st, err := e.startScript(ctx, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)
+	st, err := e.startScript(ctx, instID, namespace, flowDetails.Script, flowDetails.Mapping, flowDetails.Config.State, input, notify, metadata)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -72,14 +86,15 @@ var (
 	notifyLock = &sync.Mutex{}
 )
 
-func (e *Engine) startScript(ctx context.Context, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceEvent, metadata map[string]string) (*InstanceEvent, error) {
+func (e *Engine) startScript(ctx context.Context, instID uuid.UUID, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceEvent, metadata map[string]string) (*InstanceEvent, error) {
 	if !json.Valid([]byte(input)) {
 		return nil, fmt.Errorf("input is not a valid json string: %s", input)
 	}
-	instID := uuid.New()
 
 	if metadata == nil {
-		metadata = make(map[string]string)
+		metadata = map[string]string{
+			LabelWithScope: "main",
+		}
 	}
 
 	pEv := &InstanceEvent{
@@ -108,7 +123,7 @@ func (e *Engine) startScript(ctx context.Context, namespace string, script strin
 
 	if notify != nil {
 		notifyLock.Lock()
-		notifyMap[instID.String()] = notify
+		notifyMap[pEv.FullID()] = notify
 		notifyLock.Unlock()
 	}
 
@@ -149,12 +164,12 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		Metadata: startEv.Metadata,
 	}
 
-	onAction := func(svcID string) error {
+	var onAction runtime.OnActionHook = func(svcID string) error {
 		// return e.dataBus.PublishIgniteAction(ctx, config,
 		// 	inst.Metadata[core.EngineMappingNamespace], inst.Metadata[core.EngineMappingPath])
 		return e.dataBus.PublishIgniteAction(ctx, svcID)
 	}
-	onFinish := func(output []byte) error {
+	var onFinish runtime.OnFinishHook = func(output []byte) error {
 		endEv := startEv.Clone()
 		endEv.EventID = uuid.New()
 		endEv.State = StateCodeComplete
@@ -164,7 +179,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 		if endEv.Metadata[LabelWithNotify] == "true" {
 			notifyLock.Lock()
-			notify, ok := notifyMap[endEv.InstanceID.String()]
+			notify, ok := notifyMap[endEv.FullID()]
 			notifyLock.Unlock()
 			if ok {
 				notify <- endEv
@@ -173,7 +188,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
-	onTransition := func(memory []byte, fn string) error {
+	var onTransition runtime.OnTransitionHook = func(memory []byte, fn string) error {
 		endEv := startEv.Clone()
 		endEv.EventID = uuid.New()
 		endEv.State = StateCodeRunning
@@ -183,19 +198,45 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
 
-	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction)
+	var onSubflow runtime.OnSubflowHook = func(ctx context.Context, path string, input []byte) ([]byte, error) {
+		_, notify, err := e.StartWorkflow(ctx, inst.InstanceID, inst.Namespace, path, string(input), map[string]string{
+			LabelWithNotify:   strconv.FormatBool(true),
+			LabelWithSyncExec: strconv.FormatBool(true),
+			LabelInvokerType:  inst.Metadata[LabelInvokerType],
+			LabelWithScope:    uuid.New().String(),
+		})
+		if err != nil {
+			return nil, err
+		}
+		st := <-notify
+		if st.State != StateCodeComplete {
+			return nil, fmt.Errorf("subflow did not complete: %s", st.Error)
+		}
+
+		return st.Output, nil
+	}
+
+	ctx = telemetry.SetupInstanceLogs(ctx,
+		sc.Metadata[core.EngineMappingNamespace],
+		sc.InstID.String(),
+		sc.Metadata[LabelInvokerType],
+		sc.Metadata[core.EngineMappingPath])
+
+	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, onSubflow)
 	if err == nil {
 		return nil
 	}
+
 	endEv := startEv.Clone()
 	endEv.EventID = uuid.New()
 	endEv.State = StateCodeFailed
+	endEv.Fn = ""
 	endEv.Error = err.Error()
 	endEv.EndedAt = time.Now()
 
 	if inst.Metadata[LabelWithNotify] == "true" {
 		notifyLock.Lock()
-		notify, ok := notifyMap[endEv.InstanceID.String()]
+		notify, ok := notifyMap[endEv.FullID()]
 		notifyLock.Unlock()
 		if ok {
 			notify <- endEv

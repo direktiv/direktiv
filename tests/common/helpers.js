@@ -42,7 +42,7 @@ async function itShouldCreateFile(
 	mimeType,
 	data,
 ) {
-	it(`should create a new file ${path}`, async () => {
+	it(`should create a new file ${path}/${name}`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${ns}/files${path}`)
 			.set('Content-Type', 'application/json')
@@ -181,6 +181,15 @@ function sleep(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+function randomLowercaseString(length) {
+	const letters = 'abcdefghijklmnopqrstuvwxyz'
+	let result = ''
+	for (let i = 0; i < length; i++) {
+		result += letters[Math.floor(Math.random() * 26)]
+	}
+	return result
+}
+
 export default {
 	deleteAllNamespaces,
 	itShouldCreateNamespace,
@@ -197,4 +206,5 @@ export default {
 	itShouldUpdateFile,
 	itShouldCreateVariable,
 	sleep,
+	randomLowercaseString,
 }

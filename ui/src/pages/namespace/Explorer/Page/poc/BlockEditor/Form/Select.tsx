@@ -1,0 +1,192 @@
+import { Controller, ControllerRenderProps, useForm } from "react-hook-form";
+import {
+  FormSelect,
+  FormSelectType,
+  ValuesTypeSchema,
+  allowedValuesTypes,
+} from "../../schema/blocks/form/select";
+import {
+  SelectContent,
+  Select as SelectDesignComponent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/design/Select";
+
+import { ArrayForm } from "~/components/Form/Array";
+import { BaseForm } from "./BaseForm";
+import { BlockEditFormProps } from "..";
+import { Fieldset } from "~/components/Form/Fieldset";
+import { FormWrapper } from "../components/FormWrapper";
+import Input from "~/design/Input";
+import { SmartInput } from "../components/SmartInput";
+import { VariableInput } from "../components/VariableInput";
+import { useTranslation } from "react-i18next";
+import z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+type SelectProps = BlockEditFormProps<FormSelectType>;
+
+export const Select = ({
+  action,
+  block: propBlock,
+  path,
+  onSubmit,
+  onCancel,
+}: SelectProps) => {
+  const { t } = useTranslation();
+  const form = useForm<FormSelectType>({
+    resolver: zodResolver(FormSelect),
+    defaultValues: propBlock,
+  });
+
+  const onSelectChange = (
+    field: ControllerRenderProps<FormSelectType, "values.type">,
+    value: string
+  ) => {
+    const parsedValueType = ValuesTypeSchema.safeParse(value);
+    if (parsedValueType.data) {
+      field.onChange(parsedValueType.data);
+      form.setValue("values.value", [], { shouldDirty: true });
+    }
+  };
+
+  return (
+    <FormWrapper
+      description={t(
+        "direktivPage.blockEditor.blockForms.formPrimitives.select.description"
+      )}
+      form={form}
+      block={propBlock}
+      action={action}
+      path={path}
+      onSubmit={onSubmit}
+      onCancel={onCancel}
+    >
+      <BaseForm form={form} />
+      <Fieldset
+        label={t(
+          "direktivPage.blockEditor.blockForms.formPrimitives.select.valuesLabel"
+        )}
+        htmlFor="values-type"
+      >
+        <Controller
+          control={form.control}
+          name="values.type"
+          render={({ field }) => (
+            <SelectDesignComponent
+              value={field.value}
+              onValueChange={(value) => {
+                onSelectChange(field, value);
+              }}
+            >
+              <SelectTrigger variant="outline" id="values-type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {allowedValuesTypes.map((type) => (
+                  <SelectItem value={type} key={type}>
+                    {t(
+                      `direktivPage.blockEditor.blockForms.formPrimitives.select.type.${type}`
+                    )}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </SelectDesignComponent>
+          )}
+        />
+        {form.watch("values.type") === "static-select-options" && (
+          <Controller
+            control={form.control}
+            name="values.value"
+            render={({ field }) => {
+              const parsedValue = z
+                .array(z.object({ label: z.string(), value: z.string() }))
+                .safeParse(field.value);
+              const defaultValue = parsedValue.success ? parsedValue.data : [];
+              return (
+                <ArrayForm
+                  value={defaultValue}
+                  onChange={field.onChange}
+                  emptyItem={{ label: "", value: "" }}
+                  renderItem={({ value, setValue }) => (
+                    <div className="flex gap-2">
+                      <SmartInput
+                        value={value.value}
+                        onUpdate={(newValue) =>
+                          setValue({ ...value, value: newValue })
+                        }
+                        placeholder={t(
+                          "direktivPage.blockEditor.blockForms.formPrimitives.select.static.valuePlaceholder"
+                        )}
+                      />
+                      <SmartInput
+                        value={value.label}
+                        onUpdate={(newLabel) =>
+                          setValue({ ...value, label: newLabel })
+                        }
+                        placeholder={t(
+                          "direktivPage.blockEditor.blockForms.formPrimitives.select.static.labelPlaceholder"
+                        )}
+                      />
+                    </div>
+                  )}
+                />
+              );
+            }}
+          />
+        )}
+        {form.watch("values.type") === "variable-select-options" && (
+          <>
+            <Controller
+              control={form.control}
+              name="values.data"
+              render={({ field }) => {
+                const parsedValue = z.string().safeParse(field.value);
+                const value = parsedValue.success ? parsedValue.data : "";
+                return (
+                  <VariableInput
+                    value={value}
+                    onUpdate={(value) => field.onChange(value)}
+                    placeholder={t(
+                      "direktivPage.blockEditor.blockForms.formPrimitives.select.variable.dataPlaceholder"
+                    )}
+                  />
+                );
+              }}
+            />
+            <Input
+              {...form.register("values.value")}
+              placeholder={t(
+                "direktivPage.blockEditor.blockForms.formPrimitives.select.variable.valuePlaceholder"
+              )}
+            />
+            <Input
+              {...form.register("values.label")}
+              placeholder={t(
+                "direktivPage.blockEditor.blockForms.formPrimitives.select.variable.labelPlaceholder"
+              )}
+            />
+          </>
+        )}
+      </Fieldset>
+      <Fieldset
+        label={t(
+          "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.label"
+        )}
+        htmlFor="defaultValue"
+      >
+        <SmartInput
+          value={form.watch("defaultValue")}
+          onUpdate={(value) =>
+            form.setValue("defaultValue", value, { shouldDirty: true })
+          }
+          id="defaultValue"
+          placeholder={t(
+            "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholderSelect"
+          )}
+        />
+      </Fieldset>
+    </FormWrapper>
+  );
+};

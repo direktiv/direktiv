@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/api/filter"
+	"github.com/direktiv/direktiv/internal/compiler"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/internal/sched"
@@ -98,7 +100,7 @@ func convertInstanceData(data *engine.InstanceEvent) *InstanceData {
 		Status:         string(data.State),
 		WorkflowPath:   data.Metadata[core.EngineMappingPath],
 		ErrorCode:      nil,
-		Invoker:        "api",
+		Invoker:        data.Metadata[engine.LabelInvokerType],
 		Definition:     []byte(data.Script),
 		ErrorMessage:   nil,
 		Flow:           []string{},
@@ -136,15 +138,87 @@ func (e *instController) mountRouter(r chi.Router) {
 	r.Get("/{instanceID}/input", e.dummy)
 	r.Get("/{instanceID}/history", e.history)
 	r.Get("/{instanceID}/metadata", e.dummy)
+	r.Get("/{instanceID}/flow", e.flow)
 	r.Patch("/{instanceID}", e.dummy)
 
 	r.Get("/", e.list)
 	r.Get("/{instanceID}", e.get)
 
 	r.Post("/", e.create)
+	r.Get("/scheds", e.scheds)
 }
 
 func (e *instController) dummy(w http.ResponseWriter, r *http.Request) {
+}
+
+func (e *instController) flow(w http.ResponseWriter, r *http.Request) {
+	namespace := chi.URLParam(r, "namespace")
+	instanceIDStr := chi.URLParam(r, "instanceID")
+	instanceID, err := uuid.Parse(instanceIDStr)
+	if err != nil {
+		writeError(w, &Error{
+			Code:    "request_id_invalid",
+			Message: "invalid instance uuid",
+		})
+
+		return
+	}
+
+	event, err := e.engine.GetInstanceStatus(r.Context(), namespace, instanceID)
+	if err != nil {
+		writeError(w, &Error{
+			Code:    "request_id_invalid",
+			Message: "invalid instance uuid",
+		})
+
+		return
+	}
+
+	// event.Script
+	ci := compiler.NewCompileItem([]byte(event.Script), "/dummy")
+	err = ci.TranspileAndValidate()
+	if err != nil {
+		writeEngineError(w, err)
+
+		return
+	}
+
+	l, err := e.engine.GetInstanceHistory(r.Context(), namespace, instanceID)
+	if err != nil {
+		writeEngineError(w, err)
+
+		return
+	}
+
+	for a := range l {
+		event = l[a]
+
+		if event.Fn == "" || event.State == engine.StateCodePending ||
+			event.State == engine.StateCodeComplete {
+			continue
+		}
+
+		state, ok := ci.Config().Config.StateViews[event.Fn]
+		if !ok {
+			writeEngineError(w, fmt.Errorf("state unknown for typescript"))
+
+			return
+		}
+		state.Visited = true
+
+		// if failed we set the previous event to failed
+		if event.State == engine.StateCodeFailed {
+			state, ok = ci.Config().Config.StateViews[l[a-1].Fn]
+			if !ok {
+				writeEngineError(w, fmt.Errorf("state unknown for typescript"))
+
+				return
+			}
+			state.Failed = true
+		}
+	}
+
+	writeJSON(w, ci.Config().Config.StateViews)
 }
 
 func (e *instController) create(w http.ResponseWriter, r *http.Request) {
@@ -179,13 +253,11 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		withSyncExec = false
 	}
 
-	st, notify, err := e.engine.StartWorkflow(r.Context(), namespace, path, string(input), map[string]string{
-		core.EngineMappingPath:      path,
-		core.EngineMappingNamespace: namespace,
-		core.EngineMappingCaller:    "api",
-		engine.LabelWithNotify:      strconv.FormatBool(withWait),
-		engine.LabelWithSyncExec:    strconv.FormatBool(withSyncExec),
-		engine.LabelInvokerType:     "api",
+	st, notify, err := e.engine.StartWorkflow(r.Context(), uuid.New(), namespace, path, string(input), map[string]string{
+		engine.LabelWithNotify:   strconv.FormatBool(withWait),
+		engine.LabelWithSyncExec: strconv.FormatBool(withSyncExec),
+		engine.LabelInvokerType:  "api",
+		engine.LabelWithScope:    "main",
 	})
 	if err != nil {
 		writeEngineError(w, err)
@@ -300,4 +372,13 @@ func (e *instController) history(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, out)
+}
+
+func (e *instController) scheds(writer http.ResponseWriter, r *http.Request) {
+	list, err := e.scheduler.ListRules(r.Context())
+	if err != nil {
+		writeInternalError(writer, err)
+		return
+	}
+	writeJSON(writer, list)
 }

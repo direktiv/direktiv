@@ -52,10 +52,12 @@ properties:
       type: integer
     input:
       type: string
+      description: This field is a JSON string containing the instance's input data.
     outputLength:
       type: integer
     output:
       type: string
+      description: When the instance is complete, this field is a JSON string containing the instance's output data. Otherwise, it is null.'
     metadataLength:
       type: integer
     metadata:

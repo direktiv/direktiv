@@ -155,6 +155,6 @@ export const InstanceInputResponseSchema = z.object({
 export const InstanceOutputResponseSchema = z.object({
   data: InstanceSchema.extend({
     outputLength: z.number(),
-    output: z.string().optional(),
+    output: z.string().nullable(),
   }),
 });

@@ -1,6 +1,7 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import * as React from "react";
 
+import { XIcon } from "lucide-react";
 import { twMergeClsx } from "~/util/helpers";
 
 const Dialog = DialogPrimitive.Root;
@@ -10,11 +11,10 @@ const DialogTrigger = DialogPrimitive.Trigger;
 const DialogClose = DialogPrimitive.Close;
 
 const DialogPortal = ({
-  className,
   children,
   ...props
 }: DialogPrimitive.DialogPortalProps) => (
-  <DialogPrimitive.Portal className={twMergeClsx(className)} {...props}>
+  <DialogPrimitive.Portal {...props}>
     <div className="fixed inset-0 z-40 flex items-start justify-center sm:items-center">
       {children}
     </div>
@@ -121,10 +121,25 @@ const DialogDescription = React.forwardRef<
 ));
 DialogDescription.displayName = DialogPrimitive.Description.displayName;
 
+type DialogXCloseProps = {
+  onClick?: React.MouseEventHandler;
+};
+
+const DialogXClose = (props: DialogXCloseProps) => (
+  <DialogPrimitive.Close
+    data-slot="dialog-close"
+    className="absolute right-4 top-4 z-30 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline focus:outline-2 disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+    {...props}
+  >
+    <XIcon />
+  </DialogPrimitive.Close>
+);
+
 export {
   Dialog,
   DialogTrigger,
   DialogClose,
+  DialogXClose,
   DialogContent,
   DialogHeader,
   DialogFooter,

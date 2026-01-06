@@ -92,6 +92,7 @@
             "directory": "Directory",
             "workflow": "Workflow",
             "service": "Service",
+            "page": "Page",
             "gateway": {
               "label": "Gateway",
               "route": "Route",
@@ -112,7 +113,7 @@
         "newService": {
           "title": "Create a new service",
           "nameLabel": "Name",
-          "namePlaceholder": "service-name.yaml",
+          "namePlaceholder": "service-name.svc.json",
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
           "createBtn": "Create"
@@ -133,7 +134,14 @@
           "cancelBtn": "Cancel",
           "createBtn": "Create"
         },
-
+        "newPage": {
+          "title": "Create a new page",
+          "nameLabel": "Name",
+          "namePlaceholder": "page-name.yaml",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
+        },
         "openapiSpecification": {
           "title": "Create a new OpenAPI Specification",
           "nameLabel": "Name",
@@ -233,7 +241,6 @@
         "goToServices": "Go to services",
         "editor": {
           "saveBtn": "Save",
-          "unsavedNote": "unsaved changes",
           "form": {
             "serialisationError": "There was an error serializing the form data",
             "image": "Image",
@@ -305,6 +312,7 @@
                 "types": {
                   "instant-response": "Instant Response",
                   "target-flow": "Workflow",
+                  "target-page": "Page",
                   "target-flow-var": "Workflow Variable",
                   "target-namespace-file": "Namespace File",
                   "target-namespace-var": "Namespace Variable",
@@ -323,6 +331,9 @@
                   "asynchronous": "Asynchronous",
                   "contentType": "Content Type (optional)",
                   "contentTypePlaceholder": "application/json"
+                },
+                "targetPage": {
+                  "file": "Page File"
                 },
                 "targetFlowVar": {
                   "namespace": "Namespace (optional)",
@@ -460,8 +471,7 @@
               }
             }
           },
-          "saveBtn": "Save",
-          "unsavedNote": "unsaved changes"
+          "saveBtn": "Save"
         }
       },
       "consumer": {
@@ -477,8 +487,7 @@
             "tagsPlaceholder": "Enter a tag",
             "groupsPlaceholder": "Enter a group"
           },
-          "saveBtn": "Save",
-          "unsavedNote": "unsaved changes"
+          "saveBtn": "Save"
         }
       }
     },
@@ -1620,6 +1629,295 @@
             "description": "The role could not be deleted 😢"
           }
         }
+      }
+    }
+  },
+  "direktivPage": {
+    "error": {
+      "invalidSchema": "The page can not be rendered because it has an invalid configuration",
+      "blockNotImplemented": "The block type \"{{type}}\" is not implemented yet",
+      "genericError": "There was an unexpected error",
+      "duplicateId": "Error in block with id {{id}}: The id is already used by one of the parent blocks",
+      "query": {
+        "queryFailed": "Error in query with id {{id}}: {{url}} responded with {{status}}",
+        "invalidJson": "Error in query with id {{id}}: {{url}} returned an invalid JSON"
+      },
+      "blocks": {
+        "table": { "noResult": "No entries to show" }
+      },
+      "templateString": {
+        "namespaceInvalid": "Variable error ({{variable}}): The template string does not have a valid namespace.",
+        "idUndefined": "Variable error ({{variable}}): The template string is missing an id.",
+        "pointerUndefined": "Variable error ({{variable}}): The template string is missing a pointer.",
+        "NoStateForId": "Variable error ({{variable}}): Could not find any state for the id.",
+        "ThisNotAvailable": "Variable error ({{variable}}): You can't access variables from the 'this' namespace in this context.",
+        "invalidJson": "Variable error ({{variable}}): Trying to process a template string on an invalid JSON object.",
+        "invalidPath": "Variable error ({{variable}}): The path is not valid. It points to an undefined value.",
+        "couldNotStringify": "Variable error ({{variable}}): Pointing to a value that can not be stringified. Make sure to point to either a String, Number, Boolean, or Null.",
+        "notAnArray": "Variable error ({{variable}}): Pointing to a value that is not an array.",
+        "notAnArrayOfStrings": "Variable error ({{variable}}): Pointing to a value that is not an array of strings.",
+        "notABoolean": "Variable error ({{variable}}): Pointing to a value that is not a boolean.",
+        "notANumber": "Variable error ({{variable}}): Pointing to a value that is not a number."
+      }
+    },
+    "page": {
+      "blocks": {
+        "loop": {
+          "hiddenItems": "{{count}} hidden loop entries",
+          "hiddenItems_one": "{{count}} hidden loop entry",
+          "infoHiddenItems_first": "Click on the Live View Button",
+          "infoHiddenItems_second": "to see the full list"
+        },
+        "table": { "noResult": "No entries to show" },
+        "form": {
+          "success": "The form has been submitted successfully",
+          "error": "Form submission failed",
+          "incompleteForm": "Some required fields are missing ({{fields}})",
+          "optional": "(optional)",
+          "selectPlaceholder": "Select an option",
+          "datePickerPlaceholder": "Pick a date"
+        }
+      }
+    },
+    "blockEditor": {
+      "generic": {
+        "settingsTab": "Settings",
+        "addBlockTab": "Add Block",
+        "saveButton": "Save",
+        "cancelButton": "Cancel",
+        "confirmButton": "Confirm"
+      },
+      "toolbar": {
+        "code": "Code View",
+        "edit": "Edit",
+        "live": "Live View"
+      },
+      "blockName": {
+        "headline": "Headline",
+        "text": "Text",
+        "button": "Button",
+        "card": "Card",
+        "dialog": "Dialog",
+        "form": "Form",
+        "form-checkbox": "Checkbox",
+        "form-string-input": "String Input",
+        "form-date-input": "Date Input",
+        "form-number-input": "Number Input",
+        "form-select": "Select",
+        "form-textarea": "Textarea",
+        "loop": "Loop",
+        "query-provider": "Query Provider",
+        "column": "Column",
+        "columns": "Columns",
+        "image": "Image",
+        "table": "Table"
+      },
+      "blockForms": {
+        "keyValue": {
+          "key": "Key",
+          "value": "Value",
+          "variable": "variable name"
+        },
+        "text": {
+          "description": "Text blocks are used to display a block of text.",
+          "contentLabel": "Content",
+          "contentPlaceholder": "Enter text here..."
+        },
+        "headline": {
+          "description": "Headlines are used to display a title for a section of content. They can be used to create a hierarchy of content.",
+          "labelLabel": "Label",
+          "labelPlaceholder": "Headline",
+          "levelLabel": "Level"
+        },
+        "image": {
+          "description": "Image blocks are used to display images on the page.",
+          "srcLabel": "Image Source",
+          "srcPlaceholder": "Enter image URL",
+          "widthLabel": "Width",
+          "widthPlaceholder": "Width in pixels",
+          "heightLabel": "Height",
+          "heightPlaceholder": "Height in pixels"
+        },
+        "dialog": {
+          "description": "A Dialog block contains a button that opens a dialog when clicked. The dialog can contain any number of blocks.",
+          "triggerLabelLabel": "Button Label",
+          "triggerLabelPlaceholder": "Open Dialog"
+        },
+        "loop": {
+          "description": "A Loop block allows you to repeat a set of blocks for each item in an array.",
+          "idLabel": "loop ID",
+          "idPlaceholder": "unique identifier name to reference the content of a loop iteration",
+          "dataLabel": "data",
+          "dataPlaceholder": "Path to an array for the loop (e.g. query.companies.data)",
+          "pageSizeLabel": "Page Size",
+          "pageSizePlaceholder": "Number of items to show on a page (e.g. 10)"
+        },
+        "table": {
+          "description": "A Table block displays data in a table format, as one row for each item in an array. It can be used to display data from a Query Provider",
+          "data": {
+            "idLabel": "loop ID",
+            "idPlaceholder": "unique identifier to reference the data for the current row",
+            "dataLabel": "data",
+            "dataPlaceholder": "Path to an array for the table (e.g. query.companies.data)"
+          },
+          "tableAction": {
+            "modalTitle": "Create new table action",
+            "tableLabel": "{{count}} table actions",
+            "tableLabel_one": "{{count}} table action"
+          },
+          "rowAction": {
+            "modalTitle": "Create new row action",
+            "tableLabel": "{{count}} row actions",
+            "tableLabel_one": "{{count}} row action"
+          },
+          "column": {
+            "labelLabel": "Label",
+            "labelPlaceholder": "Column label",
+            "contentLabel": "Content",
+            "contentPlaceholder": "The content of the column (e.g. E-Mail: {{loop.company-table.email}})",
+            "modalTitle": "Create new column",
+            "tableLabel": "{{count}} columns",
+            "tableLabel_one": "{{count}} column"
+          }
+        },
+        "queryProvider": {
+          "description": "A Query Provider fetches data from one or multiple APIs and makes the results accessible to its child blocks.",
+          "query": {
+            "idLabel": "ID",
+            "idPlaceholder": "unique identifier name to reference this query in any child block",
+            "urlLabel": "URL",
+            "urlPlaceholder": "relative or absolute url like /path/to/endpoint or https://...",
+            "modalTitle": "Create new query",
+            "tableLabel": "{{count}} queries",
+            "tableLabel_one": "{{count}} query",
+            "queryParamsLabel": "Query Parameters"
+          }
+        },
+        "form": {
+          "description": "A Form block allows you to create a form that can be submitted to a URL.",
+          "mutation": {
+            "triggerLabelLabel": "Button Label",
+            "triggerLabelPlaceholder": "Submit Form",
+            "methodLabel": "HTTP Method",
+            "urlLabel": "URL",
+            "urlPlaceholder": "relative or absolute url like /path/to/endpoint or https://...",
+            "queryParamsLabel": "Query Parameters",
+            "requestHeadersLabel": "Request Headers",
+            "requestBodyLabel": "Request Body"
+          }
+        },
+        "formPrimitives": {
+          "idLabel": "ID",
+          "idPlaceholder": "unique identifier to reference this form element in the form block",
+          "label": "Label",
+          "labelPlaceholder": "Label for the form element",
+          "description": "Description",
+          "descriptionPlaceholder": "Description for the form element",
+          "optional": "Optional field",
+          "defaultValue": {
+            "label": "Default value",
+            "type": {
+              "boolean": "Static",
+              "number": "Static",
+              "variable": "Variable"
+            },
+            "placeholder": "Enter default value",
+            "placeholderVariable": "Enter variable name",
+            "placeholderSelect": "Select default option"
+          },
+          "stringInput": {
+            "description": "An input field that allows users to enter text.",
+            "variantLabel": "Input Type"
+          },
+          "dateInput": {
+            "description": "An input field that allows users to enter a date."
+          },
+          "numberInput": {
+            "description": "An input field that allows users to enter a number."
+          },
+          "checkbox": {
+            "description": "A checkbox allows users to select or unselect a boolean option."
+          },
+          "textarea": {
+            "description": "A textarea allows users to enter multi-line text."
+          },
+          "select": {
+            "description": "A select dropdown allows users to choose from a predefined list of options.",
+            "valuesLabel": "Options",
+            "valuesPlaceholder": "Select option",
+            "type": {
+              "variable-select-options": "Variable",
+              "static-select-options": "Static"
+            },
+            "variable": {
+              "dataPlaceholder": "path to an array of objects",
+              "labelPlaceholder": "path to the label property",
+              "valuePlaceholder": "path to the value property"
+            },
+            "static": {
+              "labelPlaceholder": "label",
+              "valuePlaceholder": "value"
+            }
+          }
+        }
+      },
+      "contextMenu": {
+        "deleteButton": "Delete"
+      },
+      "blockForm": {
+        "title": "{{action}} {{type}} @{{path}}",
+        "noFormDescription": "This block has no properties other than child blocks, which you can add/remove in the page preview.",
+        "action": {
+          "create": "create",
+          "edit": "edit",
+          "delete": "delete"
+        },
+        "type": {
+          "page": "page",
+          "text": "text block",
+          "headline": "headline block",
+          "button": "button block",
+          "card": "card block",
+          "dialog": "dialog block",
+          "form": "form block",
+          "form-checkbox": "checkbox block",
+          "form-string-input": "string input block",
+          "form-number-input": "number input block",
+          "form-date-input": "date input block",
+          "form-select": "select block",
+          "form-textarea": "textarea block",
+          "loop": "loop block",
+          "query-provider": "query provider",
+          "column": "column block",
+          "columns": "set of columns",
+          "image": "image block",
+          "table": "table block",
+          "table-actions": "table actions block",
+          "row-actions": "row actions block"
+        }
+      },
+      "smartInput": {
+        "dialogTitle": "Edit template string",
+        "templateHelp": {
+          "header": "This field may contain variables in the style {{type.id.pointer}}.",
+          "namespace": "type: type of block providing the data (loop, query)",
+          "id": "id: data provider's given identifier",
+          "pointer": "pointer: key for the value (chain pointers for nested values)"
+        },
+        "templatePlaceholders": {
+          "namespace": "type",
+          "id": "id",
+          "pointer": "pointer"
+        },
+        "variableBtn": "Add variable"
+      },
+      "delete": {
+        "warning": "This will remove the current block and all content (including blocks nested into it). Are you sure you want to proceed?"
+      },
+      "treePicker": {
+        "placeholder": "Find or add a segment",
+        "valuesHeader": "Known segments",
+        "listEmpty": "No segments found at current level. Add a custom segment or finish editing."
       }
     }
   }

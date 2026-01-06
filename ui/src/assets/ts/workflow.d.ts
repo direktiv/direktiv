@@ -79,3 +79,15 @@ declare type ActionConfig = {
  * - envs: optional, { name: string, value: string }[].
  */
 declare function generateAction(config: ActionConfig): () => void;
+
+/**
+ * Returns a map where the key is the secret name and the value is the value of the secret
+ * @param secrets the array of secrets names
+ */
+declare function getSecrets(secrets: string[]): Record<string, string>;
+
+/**
+ * Returns the secret value
+ * @param secret the name of one secret
+ */
+declare function getSecret(secret: string): string;

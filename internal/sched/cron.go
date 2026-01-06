@@ -8,7 +8,7 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-func calculateCronExpr(cronExpr string, start time.Time) (time.Time, error) {
+func CalculateCronExpr(cronExpr string, start time.Time) (time.Time, error) {
 	opts := cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow
 
 	// if the cron expression has a seconds field, add it to the options

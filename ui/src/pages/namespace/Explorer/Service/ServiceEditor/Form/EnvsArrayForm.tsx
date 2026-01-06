@@ -13,13 +13,10 @@ export const EnvsArrayForm = ({ field }: EnvsArrayFormProps) => {
   return (
     <div className="grid gap-5" data-testid="env-item-form">
       <ArrayForm
-        defaultValue={field.value || []}
+        value={field.value || []}
         onChange={field.onChange}
         emptyItem={{ name: "", value: "" }}
-        itemIsValid={(item) =>
-          !!item && Object.values(item).every((v) => v !== "")
-        }
-        renderItem={({ value: objectValue, setValue, handleKeyDown }) => (
+        renderItem={({ value: objectValue, setValue }) => (
           <>
             {Object.entries(objectValue).map(([key, value]) => {
               const typedKey = key as keyof typeof objectValue;
@@ -31,7 +28,6 @@ export const EnvsArrayForm = ({ field }: EnvsArrayFormProps) => {
                     `pages.explorer.service.editor.form.envs.${typedKey}Placeholder`
                   )}
                   value={value}
-                  onKeyDown={handleKeyDown}
                   onChange={(e) => {
                     const newObject = {
                       ...objectValue,

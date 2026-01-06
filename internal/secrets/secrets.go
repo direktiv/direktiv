@@ -63,7 +63,7 @@ func (sm *Manager) Get(ctx context.Context, namespace, name string) (*core.Secre
 		}
 
 		return core.Secret{
-			Name:      s.Name,
+			Name:      s.Labels[annotationName],
 			CreatedAt: s.CreationTimestamp.Time,
 			Data:      s.Data[secretKey],
 		}, nil
@@ -80,12 +80,6 @@ func (sm *Manager) Create(ctx context.Context, namespace string, secret *core.Se
 	if !nameRegex.MatchString(secret.Name) {
 		slog.Error("creating secret failed because of an invalid name")
 		return nil, fmt.Errorf("invalid secret name")
-	}
-
-	// Validate value is not empty
-	if string(secret.Data) == "" {
-		slog.Error("creating secret failed because it is empty")
-		return nil, fmt.Errorf("secret value cannot be empty")
 	}
 
 	secretKubernetes := &corev1.Secret{
