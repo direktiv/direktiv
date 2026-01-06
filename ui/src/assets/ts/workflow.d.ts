@@ -60,6 +60,7 @@ declare type ActionConfig = {
   size?: "small" | "medium" | "large";
   retries?: number;
   cmd?: string;
+  body?: object;
   envs?: {
     name: string;
     value: string;
