@@ -8,8 +8,9 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { DirektivPagesType } from "../schema";
 import Editor from "~/design/Editor";
-import EditorModeSwitcher from "./EditorModeSwitcher";
-import { PageCompiler } from "../PageCompiler";
+import { EditorLayout } from "./EditorLayout";
+import LayoutSwitcher from "./LayoutSwitcher";
+import { LiveLayout } from "./LiveLayout";
 import { PageCompilerMode } from "../PageCompiler/context/pageCompilerContext";
 import { Save } from "lucide-react";
 import { jsonToYaml } from "../../../utils";
@@ -24,7 +25,7 @@ type PageEditorProps = {
 
 export type PageEditorMode = PageCompilerMode | "code";
 
-const PageEditor = ({
+const PageLayout = ({
   isPending,
   page: chachedPage,
   onSave,
@@ -45,20 +46,22 @@ const PageEditor = ({
     <div className="relative flex min-h-0 flex-col space-y-4 p-5">
       {isDirty && <NavigationBlocker />}
       <Card className="relative flex min-h-0 flex-1 flex-col">
-        {mode === "code" ? (
+        {mode === "code" && (
           <Editor
             value={jsonToYaml(page)}
             options={{ readOnly: true }}
             theme={theme ?? undefined}
             className="p-5"
           />
-        ) : (
-          <PageCompiler mode={mode} page={page} setPage={setPage} />
         )}
+        {mode === "edit" && (
+          <EditorLayout mode={mode} page={page} setPage={setPage} />
+        )}
+        {mode === "live" && <LiveLayout page={page} />}
       </Card>
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
         {isDirty && <UnsavedChangesHint />}
-        <EditorModeSwitcher value={mode} onChange={setMode} />
+        <LayoutSwitcher value={mode} onChange={setMode} />
         <Button
           variant="primary"
           type="button"
@@ -75,4 +78,4 @@ const PageEditor = ({
   );
 };
 
-export default PageEditor;
+export default PageLayout;

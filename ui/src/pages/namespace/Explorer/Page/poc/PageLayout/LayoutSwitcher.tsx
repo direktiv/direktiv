@@ -32,15 +32,12 @@ const buttons: Button[] = [
   },
 ];
 
-type EditorModeSwitcherProps = {
+type LayoutSwitcherProps = {
   value: PageEditorMode;
   onChange: (value: PageEditorMode) => void;
 };
 
-const EditorModeSwitcher: FC<EditorModeSwitcherProps> = ({
-  value,
-  onChange,
-}) => {
+const LayoutSwitcher: FC<LayoutSwitcherProps> = ({ value, onChange }) => {
   const { t } = useTranslation();
   return (
     <ButtonBar>
@@ -74,4 +71,4 @@ const EditorModeSwitcher: FC<EditorModeSwitcherProps> = ({
   );
 };
 
-export default EditorModeSwitcher;
+export default LayoutSwitcher;

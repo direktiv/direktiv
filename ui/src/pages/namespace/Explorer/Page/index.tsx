@@ -5,7 +5,7 @@ import { jsonToYaml, yamlToJsonOrNull } from "../utils";
 import { Card } from "~/design/Card";
 import { FC } from "react";
 import { NoPermissions } from "~/design/Table";
-import PageEditor from "./poc/PageEditor";
+import PageLayout from "./poc/PageLayout";
 import { PanelTop } from "lucide-react";
 import { analyzePath } from "~/util/router/utils";
 import { useFile } from "~/api/files/query/file";
@@ -69,7 +69,7 @@ const UIPage: FC = () => {
         </div>
       </div>
 
-      <PageEditor
+      <PageLayout
         page={parsedPage.data}
         isPending={isPending}
         onSave={(page) => handleSave(page)}
