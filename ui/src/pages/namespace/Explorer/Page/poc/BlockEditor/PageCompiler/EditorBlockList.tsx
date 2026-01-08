@@ -1,10 +1,13 @@
-import { BlockListProps, BlockListWrapper } from ".";
+import {
+  BlockListProps,
+  BlockListWrapper,
+} from "../../PageCompiler/Block/utils/BlockList";
 import { Suspense, useMemo } from "react";
 
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
-import { Loading } from "../Loading";
-import { useValidateDropzone } from "../useValidateDropzone";
-import { useVariablesContext } from "../../../primitives/Variable/VariableContext";
+import { Loading } from "../../PageCompiler/Block/utils/Loading";
+import { useValidateDropzone } from "./useValidateDropzone";
+import { useVariablesContext } from "../../PageCompiler/primitives/Variable/VariableContext";
 
 export const EditorBlockList = ({
   horizontal,

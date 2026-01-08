@@ -1,6 +1,6 @@
 import { BlockSuspenseBoundary } from "./utils/SuspenseBoundary";
 import { BlockType } from "../../schema/blocks";
-import { BlockWrapper } from "./utils/BlockWrapper";
+import { BlockWrapper } from "../../BlockEditor/PageCompiler/BlockWrapper";
 import { Button } from "./Button";
 import { Card } from "./Card";
 import { Columns } from "./Columns";

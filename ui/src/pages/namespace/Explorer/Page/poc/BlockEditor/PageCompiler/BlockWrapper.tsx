@@ -1,27 +1,27 @@
 import {
   LocalVariables,
   useVariablesContext,
-} from "../../primitives/Variable/VariableContext";
+} from "../../PageCompiler/primitives/Variable/VariableContext";
 import { ReactElement, useEffect, useMemo, useRef, useState } from "react";
 import {
   findAncestor,
   incrementPath,
   isFirstChildPath,
   pathsEqual,
-} from "../../context/utils";
+} from "../../PageCompiler/context/utils";
 
-import { BlockPathType } from "..";
-import { BlockSuspenseBoundary } from "./SuspenseBoundary";
-import { BlockType } from "../../../schema/blocks";
+import { BlockPathType } from "../../PageCompiler/Block";
+import { BlockSuspenseBoundary } from "../../PageCompiler/Block/utils/SuspenseBoundary";
+import { BlockType } from "../../schema/blocks";
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { SortableItem } from "~/design/DragAndDrop/Draggable";
 import { isEmptyContainerBlock } from "./useIsInvisbleBlock";
 import { twMergeClsx } from "~/util/helpers";
 import { useDndContext } from "@dnd-kit/core";
-import { usePage } from "../../context/pageCompilerContext";
-import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
+import { usePage } from "../../PageCompiler/context/pageCompilerContext";
+import { usePageEditorPanel } from "../EditorPanelProvider";
 import { useValidateDropzone } from "./useValidateDropzone";
-import { useVariableArrayResolver } from "../../primitives/Variable/utils/useVariableArrayResolver";
+import { useVariableArrayResolver } from "../../PageCompiler/primitives/Variable/utils/useVariableArrayResolver";
 
 type BlockWrapperProps = {
   blockPath: BlockPathType;

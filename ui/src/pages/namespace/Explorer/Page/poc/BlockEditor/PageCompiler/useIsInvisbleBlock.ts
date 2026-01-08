@@ -2,7 +2,7 @@ import {
   BlockType,
   ContainerBlockType,
   containerBlockTypeList,
-} from "../../../schema/blocks";
+} from "../../schema/blocks";
 
 const isContainerBlockType = (block: BlockType): block is ContainerBlockType =>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

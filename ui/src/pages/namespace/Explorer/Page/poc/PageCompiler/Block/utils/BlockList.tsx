@@ -1,10 +1,10 @@
 import { ReactElement, Suspense } from "react";
 
-import { BlockPathType } from "../..";
-import { EditorBlockList } from "./EditorBlockList";
-import { Loading } from "../Loading";
+import { BlockPathType } from "..";
+import { EditorBlockList } from "../../../BlockEditor/PageCompiler/EditorBlockList";
+import { Loading } from "./Loading";
 import { twMergeClsx } from "~/util/helpers";
-import { usePageStateContext } from "../../../context/pageCompilerContext";
+import { usePageStateContext } from "../../context/pageCompilerContext";
 
 declare const __IS_PAGESAPP__: boolean;
 
