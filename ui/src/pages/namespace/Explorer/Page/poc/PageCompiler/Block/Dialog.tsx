@@ -5,16 +5,18 @@ import { LocalDialog, LocalDialogContent } from "~/design/LocalDialog";
 import { BlockList } from "./utils/BlockList";
 import { Button } from "./Button";
 import { DialogType } from "../../schema/blocks/dialog";
-import { usePageEditor } from "../context/pageCompilerContext";
-import { usePageEditorPanel } from "../../BlockEditor/EditorPanelProvider";
+import { EditModeDialog } from "../../BlockEditor/PageCompiler/EditModeDialog";
+import { usePageStateContext } from "../context/pageCompilerContext";
 
-type DialogProps = {
+declare const __IS_PAGESAPP__: boolean;
+
+export type DialogProps = {
   blockProps: DialogType;
   blockPath: BlockPathType;
   onOpenChange?: (open: boolean) => void;
 };
 
-const DialogBaseComponent = ({
+export const DialogBaseComponent = ({
   blockProps,
   blockPath,
   onOpenChange,
@@ -46,21 +48,12 @@ const DialogBaseComponent = ({
   );
 };
 
-const EditModeDialog = (props: DialogProps) => {
-  const { setDialog } = usePageEditorPanel();
-
-  return (
-    <DialogBaseComponent
-      {...props}
-      onOpenChange={(open) => setDialog(open ? props.blockPath : null)}
-    />
-  );
-};
-
 export const Dialog = (props: DialogProps) => {
-  const { mode } = usePageEditor();
+  const { mode } = usePageStateContext();
 
-  if (mode === "edit") return <EditModeDialog {...props} />;
+  if (__IS_PAGESAPP__ || mode === "live") {
+    return <DialogBaseComponent {...props} />;
+  }
 
-  return <DialogBaseComponent {...props} />;
+  return <EditModeDialog {...props} />;
 };
