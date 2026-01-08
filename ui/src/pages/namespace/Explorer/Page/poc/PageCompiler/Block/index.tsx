@@ -20,6 +20,7 @@ import { ParsingError } from "./utils/ParsingError";
 import { QueryProvider } from "./QueryProvider";
 import { Table } from "./Table";
 import { Text } from "./Text";
+import { usePageStateContext } from "../context/pageCompilerContext";
 import { useTranslation } from "react-i18next";
 
 declare const __IS_PAGESAPP__: boolean;
@@ -33,6 +34,7 @@ type BlockProps = {
 
 export const Block = ({ block, blockPath }: BlockProps) => {
   const { t } = useTranslation();
+  const { mode } = usePageStateContext();
   const renderContent = (register?: (vars: LocalVariables) => void) => {
     switch (block.type) {
       case "headline":
@@ -82,7 +84,7 @@ export const Block = ({ block, blockPath }: BlockProps) => {
     }
   };
 
-  if (__IS_PAGESAPP__) {
+  if (__IS_PAGESAPP__ || mode === "live") {
     return (
       <BlockSuspenseBoundary>
         <div className="my-3">{renderContent()}</div>

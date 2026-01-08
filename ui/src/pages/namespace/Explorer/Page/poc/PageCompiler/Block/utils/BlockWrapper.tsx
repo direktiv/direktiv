@@ -9,10 +9,6 @@ import {
   isFirstChildPath,
   pathsEqual,
 } from "../../context/utils";
-import {
-  usePage,
-  usePageStateContext,
-} from "../../context/pageCompilerContext";
 
 import { BlockPathType } from "..";
 import { BlockSuspenseBoundary } from "./SuspenseBoundary";
@@ -22,6 +18,7 @@ import { SortableItem } from "~/design/DragAndDrop/Draggable";
 import { isEmptyContainerBlock } from "./useIsInvisbleBlock";
 import { twMergeClsx } from "~/util/helpers";
 import { useDndContext } from "@dnd-kit/core";
+import { usePage } from "../../context/pageCompilerContext";
 import { usePageEditorPanel } from "../../../BlockEditor/EditorPanelProvider";
 import { useValidateDropzone } from "./useValidateDropzone";
 import { useVariableArrayResolver } from "../../primitives/Variable/utils/useVariableArrayResolver";
@@ -32,7 +29,7 @@ type BlockWrapperProps = {
   children: (register?: (vars: LocalVariables) => void) => ReactElement;
 };
 
-const EditorBlockWrapper = ({
+export const BlockWrapper = ({
   block,
   blockPath,
   children,
@@ -182,20 +179,4 @@ const EditorBlockWrapper = ({
       <Dropzone payload={dropzonePayload} validate={validateDropzone} />
     </>
   );
-};
-
-const VisitorBlockWrapper = ({ children }: BlockWrapperProps) => (
-  <BlockSuspenseBoundary>
-    <div className="my-3">{children()}</div>
-  </BlockSuspenseBoundary>
-);
-
-export const BlockWrapper = (props: BlockWrapperProps) => {
-  const { mode } = usePageStateContext();
-
-  if (mode === "edit") {
-    return <EditorBlockWrapper {...props} />;
-  }
-
-  return <VisitorBlockWrapper {...props} />;
 };
