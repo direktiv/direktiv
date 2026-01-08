@@ -1,3 +1,4 @@
+import { BlockSuspenseBoundary } from "./utils/SuspenseBoundary";
 import { BlockType } from "../../schema/blocks";
 import { BlockWrapper } from "./utils/BlockWrapper";
 import { Button } from "./Button";
@@ -20,6 +21,8 @@ import { QueryProvider } from "./QueryProvider";
 import { Table } from "./Table";
 import { Text } from "./Text";
 import { useTranslation } from "react-i18next";
+
+declare const __IS_PAGESAPP__: boolean;
 
 export type BlockPathType = number[];
 
@@ -78,6 +81,14 @@ export const Block = ({ block, blockPath }: BlockProps) => {
         );
     }
   };
+
+  if (__IS_PAGESAPP__) {
+    return (
+      <BlockSuspenseBoundary>
+        <div className="my-3">{renderContent()}</div>
+      </BlockSuspenseBoundary>
+    );
+  }
 
   return (
     <BlockWrapper blockPath={blockPath} block={block}>
