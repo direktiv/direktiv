@@ -13,7 +13,7 @@ type ConfigBase = {
 };
 
 // inline blocks don't have a form component
-type WithForm = {
+type WithoutForm = {
   [K in NoFormBlockType as K["type"]]: {
     type: K["type"];
     formComponent?: never;
@@ -22,7 +22,7 @@ type WithForm = {
 }[NoFormBlockType["type"]];
 
 // BlockTypeConfigWithForm must have a form component that implements a form for that very block type
-type WithoutForm = {
+type WithForm = {
   [K in FormBlockType as K["type"]]: {
     type: K["type"];
     formComponent: ComponentType<BlockEditFormProps<K>>;
