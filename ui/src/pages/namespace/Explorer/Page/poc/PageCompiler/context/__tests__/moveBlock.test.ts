@@ -2,8 +2,8 @@ import { describe, expect, test } from "vitest";
 
 import { BlockType } from "../../../schema/blocks";
 import complex from "../../../schema/__tests__/examples/complex";
-import { findBlock } from "../utils";
-import { moveBlockWithinPage } from "../utils/updatePage";
+import { findBlock } from "../../../BlockEditor/utils";
+import { moveBlockWithinPage } from "../../../BlockEditor/utils/updatePage";
 
 describe("moveBlockWithinPage", () => {
   test("Places block after origin index at root level", () => {

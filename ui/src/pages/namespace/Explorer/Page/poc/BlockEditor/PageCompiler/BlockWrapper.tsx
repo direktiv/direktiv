@@ -8,7 +8,7 @@ import {
   incrementPath,
   isFirstChildPath,
   pathsEqual,
-} from "../../PageCompiler/context/utils";
+} from "../utils";
 
 import { BlockPathType } from "../../PageCompiler/Block";
 import { BlockSuspenseBoundary } from "../../PageCompiler/Block/utils/SuspenseBoundary";

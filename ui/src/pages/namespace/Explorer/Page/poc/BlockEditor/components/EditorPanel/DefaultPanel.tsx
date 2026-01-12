@@ -1,6 +1,6 @@
 import { Blocks } from "lucide-react";
 import { DraggablePaletteItem } from "~/design/DragAndDrop/Draggable";
-import { blockTypes } from "../../../PageCompiler/context/utils/useBlockTypes";
+import { blockTypes } from "../../utils/useBlockTypes";
 import { useTranslation } from "react-i18next";
 
 export const DefaultPanel = () => {

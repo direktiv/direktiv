@@ -4,7 +4,7 @@ import { describe, expect, test } from "vitest";
 import { DirektivPagesType } from "../../../schema";
 import complex from "../../../schema/__tests__/examples/complex";
 import simple from "../../../schema/__tests__/examples/simple";
-import { updateBlockInPage } from "../utils/updatePage";
+import { updateBlockInPage } from "../../../BlockEditor/utils/updatePage";
 
 describe("updateBlockInPage", () => {
   test("it updates the block at the specified path", () => {

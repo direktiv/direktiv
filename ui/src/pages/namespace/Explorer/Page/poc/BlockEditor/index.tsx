@@ -3,9 +3,9 @@ import { ComponentType, Key } from "react";
 import { BlockPathType } from "../PageCompiler/Block";
 import { BlockType } from "../schema/blocks";
 import { NoFormBlockSidePanel } from "./NoFormBlockSidePanel";
-import { getBlockConfig } from "../PageCompiler/context/utils/useBlockTypes";
-import { isPage } from "../PageCompiler/context/utils";
-import { usePageEditor } from "../PageCompiler/context/pageCompilerContext";
+import { getBlockConfig } from "./utils/useBlockTypes";
+import { isPage } from "./utils";
+import { usePageEditor } from "./utils/usePageEditor";
 import { usePageEditorPanel } from "./EditorPanelProvider";
 
 export type BlockEditorAction = "create" | "edit" | "delete";

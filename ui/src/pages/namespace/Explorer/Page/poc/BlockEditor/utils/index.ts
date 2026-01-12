@@ -1,8 +1,29 @@
-import { BlockType, ParentBlockUnion } from "../../../schema/blocks";
-import { DirektivPagesSchema, DirektivPagesType } from "../../../schema";
+import { BlockType, ParentBlockUnion } from "../../schema/blocks";
+import { DirektivPagesSchema, DirektivPagesType } from "../../schema";
 
-import { BlockPathType } from "../../Block";
+import { BlockPathType } from "../../PageCompiler/Block";
+import { QueryType } from "../../schema/procedures/query";
+import { keyValueArrayToObject } from "../../PageCompiler/primitives/keyValue/utils";
 import { z } from "zod";
+
+export const clonePage = (page: DirektivPagesType): DirektivPagesType =>
+  structuredClone(page);
+
+export const queryToUrl = (query: QueryType) => {
+  let { url } = query;
+
+  const searchParams = new URLSearchParams(
+    keyValueArrayToObject(query.queryParams ?? [])
+  );
+
+  const paramsString = searchParams.toString();
+
+  if (paramsString) {
+    url = url.concat("?", paramsString);
+  }
+
+  return url;
+};
 
 export const isParentBlock = (
   block: BlockType

@@ -10,7 +10,7 @@ import {
   pathIsDescendant,
   pathsEqual,
   reindexTargetPath,
-} from "../utils";
+} from "../../../BlockEditor/utils";
 
 import { BlockPathType } from "../../Block";
 import { ColumnsType } from "../../../schema/blocks/columns";

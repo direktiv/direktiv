@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import { HeadlineType } from "../../../schema/blocks/headline";
-import { addBlockToPage } from "../utils/updatePage";
+import { addBlockToPage } from "../../../BlockEditor/utils/updatePage";
 import simple from "../../../schema/__tests__/examples/simple";
 
 describe("addBlockToPage", () => {

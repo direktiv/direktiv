@@ -1,13 +1,9 @@
-import {
-  incrementPath,
-  pathIsDescendant,
-  pathsEqual,
-} from "../../PageCompiler/context/utils";
+import { incrementPath, pathIsDescendant, pathsEqual } from "../utils";
 
 import { BlockPathType } from "../../PageCompiler/Block";
 import { DragPayloadSchemaType } from "~/design/DragAndDrop/schema";
 import { DropzoneStatus } from "~/design/DragAndDrop/Dropzone";
-import { useAllowedBlockTypes } from "../../PageCompiler/context/utils/useBlockTypes";
+import { useAllowedBlockTypes } from "../utils/useBlockTypes";
 import { useCallback } from "react";
 import { usePageEditorPanel } from "../EditorPanelProvider";
 

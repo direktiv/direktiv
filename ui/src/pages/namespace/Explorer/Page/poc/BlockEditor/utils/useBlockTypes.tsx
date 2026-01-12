@@ -16,26 +16,26 @@ import {
   Type,
 } from "lucide-react";
 
-import { BlockPathType } from "../../Block";
-import { BlockTypeConfig } from "./types";
-import { Checkbox } from "../../../BlockEditor/Form/Checkbox";
-import { DateInput } from "../../../BlockEditor/Form/DateInput";
-import { Dialog as DialogForm } from "../../../BlockEditor/Dialog";
-import { Form as FormForm } from "../../../BlockEditor/Form";
-import { Headline } from "../../../BlockEditor/Headline";
-import { Image as ImageForm } from "../../../BlockEditor/Image";
-import { Loop as LoopForm } from "../../../BlockEditor/Loop";
-import { NumberInput } from "../../../BlockEditor/Form/NumberInput";
-import { QueryProvider as QueryProviderForm } from "../../../BlockEditor/QueryProvider";
-import { Select } from "../../../BlockEditor/Form/Select";
-import { StringInput } from "../../../BlockEditor/Form/StringInput";
-import { Table as TableForm } from "../../../BlockEditor/Table";
-import { Text as TextForm } from "../../../BlockEditor/Text";
-import { Textarea } from "../../../BlockEditor/Form/Textarea";
+import { BlockPathType } from "../../PageCompiler/Block";
+import { BlockTypeConfig } from "../../PageCompiler/context/utils/types";
+import { Checkbox } from "../Form/Checkbox";
+import { DateInput } from "../Form/DateInput";
+import { Dialog as DialogForm } from "../Dialog";
+import { Form as FormForm } from "../Form";
+import { Headline } from "../Headline";
+import { Image as ImageForm } from "../Image";
+import { Loop as LoopForm } from "../Loop";
+import { NumberInput } from "../Form/NumberInput";
+import { QueryProvider as QueryProviderForm } from "../QueryProvider";
+import { Select } from "../Form/Select";
+import { StringInput } from "../Form/StringInput";
+import { Table as TableForm } from "../Table";
+import { Text as TextForm } from "../Text";
+import { Textarea } from "../Form/Textarea";
 import { findAncestor } from ".";
 import { t } from "i18next";
 import { useCallback } from "react";
-import { usePage } from "../pageCompilerContext";
+import { usePage } from "../../PageCompiler/context/pageCompilerContext";
 
 export const blockTypes: BlockTypeConfig[] = [
   {

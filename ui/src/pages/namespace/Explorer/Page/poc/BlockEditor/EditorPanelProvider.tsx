@@ -7,10 +7,6 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  usePageEditor,
-  usePageStateContext,
-} from "../PageCompiler/context/pageCompilerContext";
 
 import { ActionPanel } from "./components/EditorPanel/ActionPanel";
 import { BlockDeleteForm } from "./components/Delete";
@@ -21,7 +17,9 @@ import { DefaultPanel } from "./components/EditorPanel/DefaultPanel";
 import { DndContext } from "~/design/DragAndDrop";
 import { DragAndDropPayloadSchemaType } from "~/design/DragAndDrop/schema";
 import { LocalDialogContainer } from "~/design/LocalDialog/container";
-import { getBlockConfig } from "../PageCompiler/context/utils/useBlockTypes";
+import { getBlockConfig } from "./utils/useBlockTypes";
+import { usePageEditor } from "./utils/usePageEditor";
+import { usePageStateContext } from "../PageCompiler/context/pageCompilerContext";
 
 export type EditorPanelAction = {
   action: "create" | "edit" | "delete";

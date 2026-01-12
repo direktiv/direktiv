@@ -1,9 +1,14 @@
-import { findBlock, isPage, isParentBlock, reindexTargetPath } from ".";
+import {
+  clonePage,
+  findBlock,
+  isPage,
+  isParentBlock,
+  reindexTargetPath,
+} from ".";
 
-import { BlockPathType } from "../../Block";
-import { BlockType } from "../../../schema/blocks";
-import { DirektivPagesType } from "../../../schema";
-import { clonePage } from "../../../BlockEditor/utils";
+import { BlockPathType } from "../../PageCompiler/Block";
+import { BlockType } from "../../schema/blocks";
+import { DirektivPagesType } from "../../schema";
 
 export const updateBlockInPage = (
   page: DirektivPagesType,

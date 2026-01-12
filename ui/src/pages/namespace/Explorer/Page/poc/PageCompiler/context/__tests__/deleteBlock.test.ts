@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import { ColumnsType } from "../../../schema/blocks/columns";
-import { deleteBlockFromPage } from "../utils/updatePage";
+import { deleteBlockFromPage } from "../../../BlockEditor/utils/updatePage";
 import simple from "../../../schema/__tests__/examples/simple";
 
 describe("deleteBlockFromPage", () => {
