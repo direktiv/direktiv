@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 import { BlockPathType } from "../../PageCompiler/Block";
-import { BlockTypeConfig } from "../../PageCompiler/context/utils/types";
+import { BlockTypeConfig } from "./types";
 import { Checkbox } from "../Form/Checkbox";
 import { DateInput } from "../Form/DateInput";
 import { Dialog as DialogForm } from "../Dialog";

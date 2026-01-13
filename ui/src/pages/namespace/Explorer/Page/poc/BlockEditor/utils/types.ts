@@ -1,9 +1,9 @@
-import { FormBlockType, NoFormBlockType } from "../../../schema/blocks";
+import { FormBlockType, NoFormBlockType } from "../../schema/blocks";
 
-import { BlockEditFormProps } from "../../../BlockEditor";
-import { BlockPathType } from "../../Block";
+import { BlockEditFormProps } from "..";
+import { BlockPathType } from "../../PageCompiler/Block";
 import { ComponentType } from "react";
-import { DirektivPagesType } from "../../../schema";
+import { DirektivPagesType } from "../../schema";
 import { LucideIcon } from "lucide-react";
 
 type ConfigBase = {
