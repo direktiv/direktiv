@@ -12,7 +12,7 @@ import {
   reindexTargetPath,
 } from "../../../BlockEditor/utils";
 
-import { BlockPathType } from "../../Block";
+import { BlockPathType } from "../../../PageCompiler/Block";
 import { ColumnsType } from "../../../schema/blocks/columns";
 import { DirektivPagesType } from "../../../schema";
 import complex from "../../../schema/__tests__/examples/complex";
