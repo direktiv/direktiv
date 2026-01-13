@@ -8,13 +8,9 @@ import {
   test,
   vi,
 } from "vitest";
-import {
-  createDirektivPageWithForm,
-  setPage,
-  setupResizeObserverMock,
-} from "../utils";
+import { createDirektivPageWithForm, setupResizeObserverMock } from "../utils";
 
-import { PageCompiler } from "../..";
+import { TestLivePage } from "../utils/TestPage";
 import { setupFormApi } from "./utils";
 import userEvent from "@testing-library/user-event";
 
@@ -37,8 +33,7 @@ describe("required fields", () => {
     test("shows an error when a required string input field is missing a value", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(
               [
                 {
@@ -57,7 +52,6 @@ describe("required fields", () => {
                 requestBody: [],
               }
             )}
-            mode="live"
           />
         );
       });
@@ -69,8 +63,7 @@ describe("required fields", () => {
     test("submits the form when the required string input field is filled in", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(
               [
                 {
@@ -89,7 +82,6 @@ describe("required fields", () => {
                 requestBody: [],
               }
             )}
-            mode="live"
           />
         );
       });
@@ -106,8 +98,7 @@ describe("required fields", () => {
     test("shows an error when a required number input field is missing a value", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(
               [
                 {
@@ -128,7 +119,6 @@ describe("required fields", () => {
                 requestBody: [],
               }
             )}
-            mode="live"
           />
         );
       });
@@ -146,8 +136,7 @@ describe("required fields", () => {
     test("submits the form when the required number input field is filled in", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(
               [
                 {
@@ -168,7 +157,6 @@ describe("required fields", () => {
                 requestBody: [],
               }
             )}
-            mode="live"
           />
         );
       });
@@ -185,8 +173,7 @@ describe("required fields", () => {
     test("shows an error when a required date input field is missing a value", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(
               [
                 {
@@ -204,7 +191,6 @@ describe("required fields", () => {
                 requestBody: [],
               }
             )}
-            mode="live"
           />
         );
       });
@@ -216,8 +202,7 @@ describe("required fields", () => {
     test("submits the form when the required date input field is filled in", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(
               [
                 {
@@ -235,7 +220,6 @@ describe("required fields", () => {
                 requestBody: [],
               }
             )}
-            mode="live"
           />
         );
       });
@@ -252,8 +236,7 @@ describe("required fields", () => {
     test("shows an error when a required select field is missing a value", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(
               [
                 {
@@ -288,7 +271,6 @@ describe("required fields", () => {
                 requestBody: [],
               }
             )}
-            mode="live"
           />
         );
       });
@@ -300,8 +282,7 @@ describe("required fields", () => {
     test("submits the form when the required select field is filled in", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(
               [
                 {
@@ -336,7 +317,6 @@ describe("required fields", () => {
                 requestBody: [],
               }
             )}
-            mode="live"
           />
         );
       });
@@ -353,8 +333,7 @@ describe("required fields", () => {
     test("shows an error when a required checkbox field is missing a value", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(
               [
                 {
@@ -375,7 +354,6 @@ describe("required fields", () => {
                 requestBody: [],
               }
             )}
-            mode="live"
           />
         );
       });
@@ -389,8 +367,7 @@ describe("required fields", () => {
     test("submits the form when the required checkbox field is filled in", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(
               [
                 {
@@ -411,7 +388,6 @@ describe("required fields", () => {
                 requestBody: [],
               }
             )}
-            mode="live"
           />
         );
       });
@@ -428,8 +404,7 @@ describe("required fields", () => {
     test("shows an error when a required textarea field is missing a value", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(
               [
                 {
@@ -447,7 +422,6 @@ describe("required fields", () => {
                 requestBody: [],
               }
             )}
-            mode="live"
           />
         );
       });
@@ -461,8 +435,7 @@ describe("required fields", () => {
     test("submits the form when the required textarea field is filled in", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(
               [
                 {
@@ -480,7 +453,6 @@ describe("required fields", () => {
                 requestBody: [],
               }
             )}
-            mode="live"
           />
         );
       });
@@ -497,8 +469,7 @@ describe("required fields", () => {
     test("shows an error when some required fields are missing and others are filled in", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(
               [
                 {
@@ -553,7 +524,6 @@ describe("required fields", () => {
                 requestBody: [],
               }
             )}
-            mode="live"
           />
         );
       });
@@ -567,8 +537,7 @@ describe("required fields", () => {
     test("submits the form when all required fields of different types are filled in", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(
               [
                 {
@@ -650,7 +619,6 @@ describe("required fields", () => {
                 requestBody: [],
               }
             )}
-            mode="live"
           />
         );
       });

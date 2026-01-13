@@ -9,14 +9,15 @@ import {
   test,
   vi,
 } from "vitest";
-import { createDirektivPage, setPage } from "./utils";
 import {
   dataTypesResponse,
   getClientDetailsResponse,
   getCompanyListResponse,
 } from "./utils/api/samples";
 
-import { PageCompiler } from "..";
+import { TestLivePage } from "./utils/TestPage";
+import { Toaster } from "~/design/Toast";
+import { createDirektivPage } from "./utils";
 import { setupServer } from "msw/node";
 
 const apiServer = setupServer(
@@ -41,8 +42,7 @@ describe("VariableString", () => {
     test("shows an error when the variable has an invalid namespace", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPage([
               {
                 type: "headline",
@@ -50,7 +50,6 @@ describe("VariableString", () => {
                 label: "template string without id: {{thisDoesNotExist}}",
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -63,8 +62,7 @@ describe("VariableString", () => {
     test("shows an error when the variable uses the 'this' namespace outside of a form block", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPage([
               {
                 type: "headline",
@@ -73,7 +71,6 @@ describe("VariableString", () => {
                   "using this namespace outside of a form: {{this.fieldName}}",
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -86,30 +83,31 @@ describe("VariableString", () => {
     test("shows an error when the variable uses 'this' references a non-existent field", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
-            page={createDirektivPage([
-              {
-                type: "form",
-                trigger: {
-                  type: "button",
-                  label: "save",
+          <>
+            <TestLivePage
+              page={createDirektivPage([
+                {
+                  type: "form",
+                  trigger: {
+                    type: "button",
+                    label: "save",
+                  },
+                  mutation: {
+                    method: "POST",
+                    url: "/test",
+                    queryParams: [
+                      {
+                        key: "string",
+                        value: "{{this.this-field-does-not-exist}}",
+                      },
+                    ],
+                  },
+                  blocks: [],
                 },
-                mutation: {
-                  method: "POST",
-                  url: "/test",
-                  queryParams: [
-                    {
-                      key: "string",
-                      value: "{{this.this-field-does-not-exist}}",
-                    },
-                  ],
-                },
-                blocks: [],
-              },
-            ])}
-            mode="live"
-          />
+              ])}
+            />
+            <Toaster />
+          </>
         );
       });
 
@@ -117,7 +115,7 @@ describe("VariableString", () => {
 
       await waitFor(() => {
         expect(
-          screen.getAllByText(
+          expect(screen.getByTestId("toast-error").textContent).toContain(
             "Variable error (this.this-field-does-not-exist): Could not find any state for the id."
           )
         );
@@ -127,8 +125,7 @@ describe("VariableString", () => {
     test("shows an error when the variable has no id", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPage([
               {
                 type: "headline",
@@ -136,7 +133,6 @@ describe("VariableString", () => {
                 label: "template string without id: {{query}}",
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -147,8 +143,7 @@ describe("VariableString", () => {
     test("shows an error when the variable has no pointer", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPage([
               {
                 type: "headline",
@@ -156,7 +151,6 @@ describe("VariableString", () => {
                 label: "template string without id: {{query.id}}",
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -169,8 +163,7 @@ describe("VariableString", () => {
     test("shows an error when the variable points to an undefined id", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPage([
               {
                 type: "headline",
@@ -178,7 +171,6 @@ describe("VariableString", () => {
                 label: "template string without id: {{query.id.nothing}}",
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -191,8 +183,7 @@ describe("VariableString", () => {
     test("shows an error when the variable points to an undefined value", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPage([
               {
                 type: "query-provider",
@@ -212,7 +203,6 @@ describe("VariableString", () => {
                 ],
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -227,8 +217,7 @@ describe("VariableString", () => {
     test("children can access data from a query provider", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPage([
               {
                 type: "headline",
@@ -275,7 +264,6 @@ describe("VariableString", () => {
                 ],
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -296,8 +284,7 @@ describe("VariableString", () => {
     test("only serializable data is accessible from a query provider", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPage([
               {
                 type: "query-provider",
@@ -347,7 +334,6 @@ describe("VariableString", () => {
                 ],
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -373,8 +359,7 @@ describe("VariableString", () => {
     test("reusing a query ID within the same branch is disallowed", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPage([
               {
                 type: "query-provider",
@@ -398,7 +383,6 @@ describe("VariableString", () => {
                 ],
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -413,8 +397,7 @@ describe("VariableString", () => {
     test("children can access data from a loop", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPage([
               {
                 type: "headline",
@@ -452,7 +435,6 @@ describe("VariableString", () => {
                 ],
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -480,8 +462,7 @@ describe("VariableString", () => {
     test("children can access data from nested loops", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPage([
               {
                 type: "query-provider",
@@ -538,7 +519,6 @@ describe("VariableString", () => {
                 ],
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -582,8 +562,7 @@ describe("VariableString", () => {
     test("shows an error when loop data is not an array", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPage([
               {
                 type: "query-provider",
@@ -615,7 +594,6 @@ describe("VariableString", () => {
                 ],
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -633,8 +611,7 @@ describe("VariableString", () => {
     test("reusing a loop ID within the same branch is disallowed", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPage([
               {
                 type: "query-provider",
@@ -674,7 +651,6 @@ describe("VariableString", () => {
                 ],
               },
             ])}
-            mode="live"
           />
         );
       });

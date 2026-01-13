@@ -1,19 +1,15 @@
 import { DirektivPagesSchema, DirektivPagesType } from "../schema";
-import {
-  PageCompilerContextProvider,
-  PageCompilerMode,
-} from "../PageCompiler/context/pageCompilerContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { Block } from "../PageCompiler/Block";
 import { BlockList } from "../PageCompiler/Block/utils/BlockList";
 import { EditorPanelLayoutProvider } from "../BlockEditor/EditorPanelProvider";
+import { PageCompilerContextProvider } from "../PageCompiler/context/pageCompilerContext";
 import { ParsingError } from "../PageCompiler/Block/utils/ParsingError";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 type EditorLayoutProps = {
-  mode: PageCompilerMode;
   page: DirektivPagesType;
   setPage: (page: DirektivPagesType) => void;
 };

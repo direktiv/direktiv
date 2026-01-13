@@ -54,9 +54,7 @@ const PageLayout = ({
             className="p-5"
           />
         )}
-        {mode === "edit" && (
-          <EditorLayout mode={mode} page={page} setPage={setPage} />
-        )}
+        {mode === "edit" && <EditorLayout page={page} setPage={setPage} />}
         {mode === "live" && <LiveLayout page={page} />}
       </Card>
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">

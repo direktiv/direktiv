@@ -11,7 +11,8 @@ import {
 } from "vitest";
 import { createDirektivPage, setPage } from "./utils";
 
-import { PageCompiler } from "..";
+import { EditorLayout } from "../../PageLayout/EditorLayout";
+import { TestLivePage } from "./utils/TestPage";
 import { setupServer } from "msw/node";
 
 const apiRequestMock = vi.fn();
@@ -59,8 +60,7 @@ describe("QueryProvider", () => {
   test("makes the query result available to its child blocks", async () => {
     await act(async () => {
       render(
-        <PageCompiler
-          setPage={setPage}
+        <TestLivePage
           page={createDirektivPage([
             {
               type: "query-provider",
@@ -80,7 +80,6 @@ describe("QueryProvider", () => {
               ],
             },
           ])}
-          mode="live"
         />
       );
     });
@@ -93,8 +92,7 @@ describe("QueryProvider", () => {
   test("will interpolate variables in the url and query params", async () => {
     await act(async () => {
       render(
-        <PageCompiler
-          setPage={setPage}
+        <TestLivePage
           page={createDirektivPage([
             {
               type: "query-provider",
@@ -121,7 +119,6 @@ describe("QueryProvider", () => {
               ],
             },
           ])}
-          mode="live"
         />
       );
     });
@@ -139,8 +136,7 @@ describe("QueryProvider", () => {
   test("shows an error when the query returns a status code outside of the 200 range", async () => {
     await act(async () => {
       render(
-        <PageCompiler
-          setPage={setPage}
+        <TestLivePage
           page={createDirektivPage([
             {
               type: "query-provider",
@@ -159,7 +155,6 @@ describe("QueryProvider", () => {
               ],
             },
           ])}
-          mode="live"
         />
       );
     });
@@ -177,8 +172,7 @@ describe("QueryProvider", () => {
   test("shows an error when the query returns a non json response", async () => {
     await act(async () => {
       render(
-        <PageCompiler
-          setPage={setPage}
+        <TestLivePage
           page={createDirektivPage([
             {
               type: "query-provider",
@@ -197,7 +191,6 @@ describe("QueryProvider", () => {
               ],
             },
           ])}
-          mode="live"
         />
       );
     });
