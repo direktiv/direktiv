@@ -1,7 +1,7 @@
 import { Block } from "../PageCompiler/Block";
 import { DirektivPagesType } from "../schema";
-import { LocalDialogContainer } from "~/design/LocalDialog/container";
 import { PageCompilerContextProvider } from "../PageCompiler/context/pageCompilerContext";
+import { PagePreviewContainer } from "../BlockEditor/PagePreviewContainer";
 import { VisitorBlockList } from "../PageCompiler/Block/utils/BlockList";
 import { useState } from "react";
 
@@ -16,13 +16,15 @@ export const LiveLayout = ({ page }: { page: DirektivPagesType }) => {
       setScrollPos={setScrollPos}
       mode="live"
     >
-      <LocalDialogContainer className="mx-auto max-w-screen-lg">
-        <VisitorBlockList path={[]}>
-          {page.blocks.map((block, index) => (
-            <Block key={index} block={block} blockPath={[index]} />
-          ))}
-        </VisitorBlockList>
-      </LocalDialogContainer>
+      <div className="relative lg:flex lg:h-[calc(100vh-230px)] lg:flex-col">
+        <PagePreviewContainer>
+          <VisitorBlockList path={[]}>
+            {page.blocks.map((block, index) => (
+              <Block key={index} block={block} blockPath={[index]} />
+            ))}
+          </VisitorBlockList>
+        </PagePreviewContainer>
+      </div>
     </PageCompilerContextProvider>
   );
 };

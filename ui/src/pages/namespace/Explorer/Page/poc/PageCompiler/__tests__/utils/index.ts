@@ -48,5 +48,3 @@ export const createDirektivPageWithForm = (
       ],
     },
   ]);
-
-export const setPage = (page: DirektivPagesType) => page;

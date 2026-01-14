@@ -9,10 +9,9 @@ import {
   test,
   vi,
 } from "vitest";
-import { createDirektivPage, setPage } from "./utils";
 
-import { EditorLayout } from "../../PageLayout/EditorLayout";
 import { TestLivePage } from "./utils/TestPage";
+import { createDirektivPage } from "./utils";
 import { setupServer } from "msw/node";
 
 const apiRequestMock = vi.fn();
@@ -123,14 +122,14 @@ describe("QueryProvider", () => {
       );
     });
 
-    expect(apiRequestMock).toHaveBeenCalledTimes(2);
+    expect(apiRequestMock).toHaveBeenCalledTimes(1);
 
-    const [, secondRequest] = apiRequestMock.mock.calls;
-    const [params] = secondRequest;
-    const secondRequestUrl = new URL(params.request.url);
+    const [request] = apiRequestMock.mock.calls;
+    const [params] = request;
+    const requestUrl = new URL(params.request.url);
 
-    expect(secondRequestUrl.pathname).toBe("/dynamic/1/path");
-    expect(secondRequestUrl.search).toBe("?id=1");
+    expect(requestUrl.pathname).toBe("/dynamic/1/path");
+    expect(requestUrl.search).toBe("?id=1");
   });
 
   test("shows an error when the query returns a status code outside of the 200 range", async () => {
