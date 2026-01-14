@@ -1,23 +1,23 @@
-import { Orientation, Workflow } from "./types";
 import { generateElements, getLayoutedElements } from "./utils";
-import { useMemo, useState } from "react";
 
 import Alert from "../Alert";
+import { Orientation } from "./types";
 import { ReactFlowProvider } from "reactflow";
+import { Workflow } from "~/api/instances/schema";
 import { ZoomPanDiagram } from "./ZoomPanDiagram";
-import { parse } from "yaml";
+import { useState } from "react";
 
 /**
  * Renders a diagram of a workflow and optionally its current state position during a instance.
  * * Props
- *   * workflow: YAML string of workflow.
- *   * flow: Array of executed states in an instance. Example - ['noopA', 'noopB']
+ *   * workflow: JSON of workflow.
+ *   * flow: Array of executed states in an instance. Example - ['stateA', 'stateB']
  *   * instanceStatus: Status of current instance. This is used to display if flow is complete with animated connections.
  *   * disabled: Disables diagram zoom-in
  */
 type WorkflowDiagramProps = {
-  workflow: string;
-  flow?: string[];
+  workflow: Workflow;
+  flow: string[];
   orientation?: Orientation;
   instanceStatus?: "pending" | "complete" | "failed";
   disabled?: boolean;
@@ -26,28 +26,13 @@ type WorkflowDiagramProps = {
 export default function WorkflowDiagram(props: WorkflowDiagramProps) {
   const {
     workflow,
-    flow = [],
+    flow,
     instanceStatus = "pending",
     disabled = false,
     orientation = "horizontal",
   } = props;
 
-  const [invalidWorkflow, setInvalidWorkflow] = useState<string | null>(null);
-
-  const parsedWorkflow = useMemo(() => {
-    if (!workflow) {
-      setInvalidWorkflow(null);
-      return null;
-    }
-    try {
-      const workflowObj = parse(workflow) as Workflow;
-      setInvalidWorkflow(null);
-      return workflowObj;
-    } catch (error: unknown) {
-      setInvalidWorkflow(error?.toString() ?? "Unknown error");
-      return null;
-    }
-  }, [workflow]);
+  const [invalidWorkflow] = useState<string | null>(null);
 
   if (invalidWorkflow)
     return (
@@ -58,7 +43,7 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
 
   const flowElements = generateElements(
     getLayoutedElements,
-    parsedWorkflow,
+    workflow,
     flow,
     instanceStatus,
     orientation
