@@ -14,25 +14,28 @@ import Button from "~/design/Button";
 import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
-import { decode } from "js-base64";
 import { instanceStatusToDiagramStatus } from "./utils";
-import { useInstanceDetails } from "~/api/instances/query/details";
-import { useInstanceId } from "../../store/instanceContext";
+import { useInstanceFlow } from "~/api/instances/query/flow";
 import { useTranslation } from "react-i18next";
 
 type DiagramProps = {
-  flow: string[];
+  flow?: string[];
+  instanceId: string;
   status: InstanceSchemaType["status"];
 };
 
-const Diagram: FC<DiagramProps> = ({ flow, status }) => {
-  const instanceId = useInstanceId();
-  const { data } = useInstanceDetails({ instanceId });
+const Diagram: FC<DiagramProps> = ({ instanceId, status }) => {
   const { setMaximizedPanel } = useLogsPreferencesActions();
   const { t } = useTranslation();
   const maximizedPanel = useLogsPreferencesMaximizedPanel();
   const isMaximized = maximizedPanel === "diagram";
-  const workflowData = decode(data?.definition ?? "");
+
+  const { data } = useInstanceFlow({ instanceId });
+  const workflowData = data ?? null;
+
+  if (data === undefined) return null;
+
+  if (!workflowData) return null;
 
   return (
     <div className="relative flex grow">
@@ -63,7 +66,7 @@ const Diagram: FC<DiagramProps> = ({ flow, status }) => {
       </TooltipProvider>
       <WorkflowDiagram
         workflow={workflowData}
-        flow={flow}
+        flow={Object.keys(data.states ?? {})}
         orientation="horizontal"
         instanceStatus={instanceStatusToDiagramStatus(status)}
       />
