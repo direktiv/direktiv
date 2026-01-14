@@ -21,6 +21,9 @@ function DirektivPagesMockPlugin() {
 
 export default () =>
   defineConfig({
+    resolve: {
+      conditions: ["pagesapp"],
+    },
     define: {
       // Compile time constant used for tree-shaking when building
       // the standalone gateway page compiler app.
