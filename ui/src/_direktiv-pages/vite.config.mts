@@ -24,11 +24,6 @@ export default () =>
     resolve: {
       conditions: ["pagesapp"],
     },
-    define: {
-      // Compile time constant used for tree-shaking when building
-      // the standalone gateway page compiler app.
-      __IS_PAGESAPP__: true,
-    },
     root: "src/_direktiv-pages",
     server: {
       host: "0.0.0.0",

@@ -19,9 +19,6 @@ export default ({ mode }: { mode: string }) => {
 
   return defineConfig({
     define: {
-      // __IS_PAGESAPP__ = compile time constant used for tree-shaking when building
-      // the gateway page compiler app. Must always be false in the full direktiv UI.
-      __IS_PAGESAPP__: false,
       "process.env.VITE": parsedEnv,
     },
     server: {
