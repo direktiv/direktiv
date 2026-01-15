@@ -5,7 +5,7 @@ import {
 } from "./FormValidationContext";
 
 import Alert from "~/design/Alert";
-import { BlockList } from "../utils/BlockList";
+import { BlockList } from "page-blocklist";
 import { Button } from "../Button";
 import { FormType } from "../../../schema/blocks/form";
 import { LocalVariables } from "../../primitives/Variable/VariableContext";

@@ -1,16 +1,5 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
-import {
-  PropsWithChildren,
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import {
-  usePageEditor,
-  usePageStateContext,
-} from "../PageCompiler/context/pageCompilerContext";
+import { createContext, useContext, useState } from "react";
 
 import { ActionPanel } from "./components/EditorPanel/ActionPanel";
 import { BlockDeleteForm } from "./components/Delete";
@@ -20,8 +9,9 @@ import { ContextVariables } from "../PageCompiler/primitives/Variable/VariableCo
 import { DefaultPanel } from "./components/EditorPanel/DefaultPanel";
 import { DndContext } from "~/design/DragAndDrop";
 import { DragAndDropPayloadSchemaType } from "~/design/DragAndDrop/schema";
-import { LocalDialogContainer } from "~/design/LocalDialog/container";
-import { getBlockConfig } from "../PageCompiler/context/utils/useBlockTypes";
+import { PagePreviewContainer } from "./PagePreviewContainer";
+import { getBlockConfig } from "./utils/useBlockTypes";
+import { usePageEditor } from "./utils/usePageEditor";
 
 export type EditorPanelAction = {
   action: "create" | "edit" | "delete";
@@ -45,31 +35,6 @@ type EditorPanelContextType = {
 
 const EditorPanelContext = createContext<EditorPanelContextType | null>(null);
 
-const PagePreviewContainer = ({ children }: PropsWithChildren) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const { setScrollPos } = usePageStateContext();
-
-  useEffect(() => {
-    const element = scrollRef.current;
-    if (!element) return;
-
-    const onScroll = () => setScrollPos(element.scrollTop);
-
-    element.addEventListener("scroll", onScroll);
-    return () => element.removeEventListener("scroll", onScroll);
-  }, [setScrollPos]);
-
-  return (
-    <div className="lg:overflow-y-auto" ref={scrollRef}>
-      <LocalDialogContainer className="min-w-0 flex-1">
-        <div className="mx-auto min-h-[55vh] max-w-screen-lg overflow-hidden p-4">
-          {children}
-        </div>
-      </LocalDialogContainer>
-    </div>
-  );
-};
-
 export const EditorPanelLayoutProvider = ({
   children,
 }: {
@@ -79,7 +44,6 @@ export const EditorPanelLayoutProvider = ({
   const [panel, setPanel] = useState<EditorPanelState>(null);
   const [dialog, setDialog] = useState<EditorDialogState>(null);
   const [dirty, setDirty] = useState(false);
-  const { mode } = usePageStateContext();
 
   const createBlock = (
     type: BlockType["type"],
@@ -117,48 +81,40 @@ export const EditorPanelLayoutProvider = ({
     }
   };
 
-  if (mode === "edit") {
-    return (
-      <DndContext onDrop={onDrop} onDrag={() => setPanel(null)}>
-        <EditorPanelContext.Provider
-          value={{
-            panel,
-            setPanel,
-            dialog,
-            setDialog,
-            dirty,
-            setDirty,
-          }}
-        >
-          <div className="relative lg:grid lg:h-[calc(100vh-230px)] lg:grid-cols-[350px_1fr]">
-            {panel?.action ? <ActionPanel panel={panel} /> : <DefaultPanel />}
-            <PagePreviewContainer>{children}</PagePreviewContainer>
-          </div>
-          <Dialog open={panel && panel.action === "delete" ? true : false}>
-            <DialogContent>
-              {!!panel && panel.action === "delete" && (
-                <BlockDeleteForm
-                  path={panel.path}
-                  onSubmit={() => {
-                    deleteBlock(panel.path);
-                    setPanel(null);
-                  }}
-                  onCancel={() => {
-                    setPanel({ ...panel, action: "edit" });
-                  }}
-                />
-              )}
-            </DialogContent>
-          </Dialog>
-        </EditorPanelContext.Provider>
-      </DndContext>
-    );
-  }
-
   return (
-    <div className="relative lg:flex lg:h-[calc(100vh-230px)] lg:flex-col">
-      <PagePreviewContainer>{children}</PagePreviewContainer>
-    </div>
+    <DndContext onDrop={onDrop} onDrag={() => setPanel(null)}>
+      <EditorPanelContext.Provider
+        value={{
+          panel,
+          setPanel,
+          dialog,
+          setDialog,
+          dirty,
+          setDirty,
+        }}
+      >
+        <div className="relative lg:grid lg:h-[calc(100vh-230px)] lg:grid-cols-[350px_1fr]">
+          {panel?.action ? <ActionPanel panel={panel} /> : <DefaultPanel />}
+          <PagePreviewContainer>{children}</PagePreviewContainer>
+        </div>
+        <Dialog open={panel && panel.action === "delete" ? true : false}>
+          <DialogContent>
+            {!!panel && panel.action === "delete" && (
+              <BlockDeleteForm
+                path={panel.path}
+                onSubmit={() => {
+                  deleteBlock(panel.path);
+                  setPanel(null);
+                }}
+                onCancel={() => {
+                  setPanel({ ...panel, action: "edit" });
+                }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      </EditorPanelContext.Provider>
+    </DndContext>
   );
 };
 

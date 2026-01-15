@@ -15,7 +15,7 @@ import {
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
-import { Card } from "@tremor/react";
+import { Card } from "~/design/Card";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
 import { Preview } from "./Preview";
