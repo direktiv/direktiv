@@ -1,8 +1,8 @@
 import { Block } from "../PageCompiler/Block";
 import { DirektivPagesType } from "../schema";
+import { LiveBlockList } from "../PageCompiler/BlockList/LiveBlockList";
 import { PageCompilerContextProvider } from "../PageCompiler/context/pageCompilerContext";
 import { PagePreviewContainer } from "../BlockEditor/PagePreviewContainer";
-import { VisitorBlockList } from "../PageCompiler/Block/utils/BlockList";
 import { useState } from "react";
 
 export const LiveLayout = ({ page }: { page: DirektivPagesType }) => {
@@ -18,11 +18,11 @@ export const LiveLayout = ({ page }: { page: DirektivPagesType }) => {
     >
       <div className="relative lg:flex lg:h-[calc(100vh-230px)] lg:flex-col">
         <PagePreviewContainer>
-          <VisitorBlockList path={[]}>
+          <LiveBlockList path={[]}>
             {page.blocks.map((block, index) => (
               <Block key={index} block={block} blockPath={[index]} />
             ))}
-          </VisitorBlockList>
+          </LiveBlockList>
         </PagePreviewContainer>
       </div>
     </PageCompilerContextProvider>

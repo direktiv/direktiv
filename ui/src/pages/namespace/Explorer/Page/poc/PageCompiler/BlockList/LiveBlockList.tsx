@@ -1,12 +1,8 @@
 import { ReactElement, Suspense } from "react";
 
-import { BlockPathType } from "..";
-import { EditorBlockList } from "../../../BlockEditor/PageCompiler/EditorBlockList";
-import { Loading } from "./Loading";
+import { BlockPathType } from "../Block";
+import { Loading } from "../Block/utils/Loading";
 import { twMergeClsx } from "~/util/helpers";
-import { usePageStateContext } from "../../context/pageCompilerContext";
-
-declare const __IS_PAGESAPP__: boolean;
 
 export type BlockListProps = {
   horizontal?: boolean;
@@ -32,18 +28,8 @@ export const BlockListWrapper = ({ children, horizontal }: WrapperProps) => (
   </div>
 );
 
-export const VisitorBlockList = ({ horizontal, children }: BlockListProps) => (
+export const LiveBlockList = ({ horizontal, children }: BlockListProps) => (
   <BlockListWrapper horizontal={horizontal}>
     <Suspense fallback={<Loading />}>{children}</Suspense>
   </BlockListWrapper>
 );
-
-export const BlockList = (props: BlockListProps) => {
-  const { mode } = usePageStateContext();
-
-  if (__IS_PAGESAPP__ || mode === "live") {
-    return <VisitorBlockList {...props} />;
-  }
-
-  return <EditorBlockList {...props} />;
-};

@@ -1,6 +1,6 @@
 import { Block, BlockPathType } from ".";
 
-import { BlockList } from "./utils/BlockList";
+import { BlockList } from "page-blocklist";
 import { ColumnsType } from "../../schema/blocks/columns";
 
 type ColumnsProps = {

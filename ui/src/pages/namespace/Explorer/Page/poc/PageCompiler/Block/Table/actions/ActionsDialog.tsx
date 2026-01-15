@@ -11,7 +11,7 @@ import {
   TableActionsType,
 } from "../../../../schema/blocks/table";
 
-import { BlockList } from "../../utils/BlockList";
+import { BlockList } from "page-blocklist";
 import { StopPropagation } from "~/components/StopPropagation";
 import { TemplateString } from "../../../primitives/TemplateString";
 import { useState } from "react";

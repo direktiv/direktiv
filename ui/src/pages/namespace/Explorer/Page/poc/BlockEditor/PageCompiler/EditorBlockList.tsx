@@ -1,7 +1,7 @@
 import {
   BlockListProps,
   BlockListWrapper,
-} from "../../PageCompiler/Block/utils/BlockList";
+} from "../../PageCompiler/BlockList/LiveBlockList";
 import { Suspense, useMemo } from "react";
 
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";

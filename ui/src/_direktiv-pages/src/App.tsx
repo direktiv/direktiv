@@ -4,12 +4,12 @@ import "./i18n";
 import { Block } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/Block";
 import { DirektivPagesSchema } from "~/pages/namespace/Explorer/Page/poc/schema";
 import ErrorMessage from "./Error";
+import { LiveBlockList } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/BlockList/LiveBlockList";
 import { Loader2 } from "lucide-react";
 import { LocalDialogContainer } from "~/design/LocalDialog/container";
 import { PageCompilerContextProvider } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/pageCompilerContext";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "~/design/Toast";
-import { VisitorBlockList } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/Block/utils/BlockList";
 import queryClient from "~/util/queryClient";
 import { usePage } from "./api/page";
 import { useState } from "react";
@@ -43,11 +43,11 @@ const PageLoader = () => {
       mode="live"
     >
       <LocalDialogContainer className="mx-auto max-w-screen-lg">
-        <VisitorBlockList path={[]}>
+        <LiveBlockList path={[]}>
           {page.data.blocks.map((block, index) => (
             <Block key={index} block={block} blockPath={[index]} />
           ))}
-        </VisitorBlockList>
+        </LiveBlockList>
       </LocalDialogContainer>
     </PageCompilerContextProvider>
   );

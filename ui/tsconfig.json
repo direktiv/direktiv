@@ -26,6 +26,9 @@
       ],
       "page-blockwrapper": [
         "./src/pages/namespace/Explorer/Page/poc/PageCompiler/BlockWrapper"
+      ],
+      "page-blocklist": [
+        "./src/pages/namespace/Explorer/Page/poc/PageCompiler/BlockList"
       ]
     }
   },

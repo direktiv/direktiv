@@ -2,7 +2,7 @@ import { Block, BlockPathType } from "..";
 import { DialogTrigger, DialogXClose } from "~/design/Dialog";
 import { LocalDialog, LocalDialogContent } from "~/design/LocalDialog";
 
-import { BlockList } from "../utils/BlockList";
+import { BlockList } from "page-blocklist";
 import { Button } from "../Button";
 import { DialogType } from "../../../schema/blocks/dialog";
 

@@ -2,7 +2,7 @@ import { DirektivPagesSchema, DirektivPagesType } from "../schema";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { Block } from "../PageCompiler/Block";
-import { BlockList } from "../PageCompiler/Block/utils/BlockList";
+import { BlockList } from "page-blocklist";
 import { EditorPanelLayoutProvider } from "../BlockEditor/EditorPanelProvider";
 import { PageCompilerContextProvider } from "../PageCompiler/context/pageCompilerContext";
 import { ParsingError } from "../PageCompiler/Block/utils/ParsingError";
