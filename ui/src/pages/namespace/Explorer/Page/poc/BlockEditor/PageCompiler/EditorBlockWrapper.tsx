@@ -2,17 +2,16 @@ import {
   LocalVariables,
   useVariablesContext,
 } from "../../PageCompiler/primitives/Variable/VariableContext";
-import { ReactElement, useEffect, useMemo, useRef, useState } from "react";
 import {
   findAncestor,
   incrementPath,
   isFirstChildPath,
   pathsEqual,
 } from "../utils";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import { BlockPathType } from "../../PageCompiler/Block";
 import { BlockSuspenseBoundary } from "../../PageCompiler/Block/utils/SuspenseBoundary";
-import { BlockType } from "../../schema/blocks";
+import { BlockWrapperProps } from "../../PageCompiler/BlockWrapper/LiveBlockWrapper";
 import { Dropzone } from "~/design/DragAndDrop/Dropzone";
 import { SortableItem } from "~/design/DragAndDrop/Draggable";
 import { isEmptyContainerBlock } from "./useIsInvisbleBlock";
@@ -22,12 +21,6 @@ import { usePage } from "../../PageCompiler/context/pageCompilerContext";
 import { usePageEditorPanel } from "../EditorPanelProvider";
 import { useValidateDropzone } from "./useValidateDropzone";
 import { useVariableArrayResolver } from "../../PageCompiler/primitives/Variable/utils/useVariableArrayResolver";
-
-type BlockWrapperProps = {
-  blockPath: BlockPathType;
-  block: BlockType;
-  children: (register?: (vars: LocalVariables) => void) => ReactElement;
-};
 
 export const BlockWrapper = ({
   block,

@@ -5,7 +5,7 @@ import {
   DialogProps,
 } from "../../PageCompiler/Block/Dialog/DialogBase";
 
-import { usePageEditorPanel } from "../../BlockEditor/EditorPanelProvider";
+import { usePageEditorPanel } from "../EditorPanelProvider";
 
 export const EditModeDialog = (props: DialogProps) => {
   const { setDialog } = usePageEditorPanel();

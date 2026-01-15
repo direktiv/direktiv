@@ -23,6 +23,9 @@
       "~/*": ["./src/*"],
       "page-dialog": [
         "./src/pages/namespace/Explorer/Page/poc/PageCompiler/Block/Dialog"
+      ],
+      "page-blockwrapper": [
+        "./src/pages/namespace/Explorer/Page/poc/PageCompiler/BlockWrapper"
       ]
     }
   },
