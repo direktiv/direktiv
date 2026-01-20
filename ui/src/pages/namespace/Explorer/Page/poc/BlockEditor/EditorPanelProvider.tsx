@@ -1,5 +1,12 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
-import { PropsWithChildren, createContext, useContext, useState } from "react";
+import {
+  PropsWithChildren,
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   usePageEditor,
   usePageStateContext,
@@ -32,19 +39,36 @@ type EditorPanelContextType = {
   setPanel: React.Dispatch<React.SetStateAction<EditorPanelState>>;
   dialog: EditorDialogState;
   setDialog: React.Dispatch<React.SetStateAction<EditorDialogState>>;
+  dirty: boolean;
+  setDirty: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const EditorPanelContext = createContext<EditorPanelContextType | null>(null);
 
-const PagePreviewContainer = ({ children }: PropsWithChildren) => (
-  <div className="grow sm:overflow-y-scroll">
-    <LocalDialogContainer className="h-full min-w-0 flex-1">
-      <div className="mx-auto max-w-screen-lg overflow-hidden p-4">
-        {children}
-      </div>
-    </LocalDialogContainer>
-  </div>
-);
+const PagePreviewContainer = ({ children }: PropsWithChildren) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { setScrollPos } = usePageStateContext();
+
+  useEffect(() => {
+    const element = scrollRef.current;
+    if (!element) return;
+
+    const onScroll = () => setScrollPos(element.scrollTop);
+
+    element.addEventListener("scroll", onScroll);
+    return () => element.removeEventListener("scroll", onScroll);
+  }, [setScrollPos]);
+
+  return (
+    <div className="lg:overflow-y-auto" ref={scrollRef}>
+      <LocalDialogContainer className="min-w-0 flex-1">
+        <div className="mx-auto min-h-[55vh] max-w-screen-lg overflow-hidden p-4">
+          {children}
+        </div>
+      </LocalDialogContainer>
+    </div>
+  );
+};
 
 export const EditorPanelLayoutProvider = ({
   children,
@@ -54,6 +78,7 @@ export const EditorPanelLayoutProvider = ({
   const { addBlock, deleteBlock, moveBlock } = usePageEditor();
   const [panel, setPanel] = useState<EditorPanelState>(null);
   const [dialog, setDialog] = useState<EditorDialogState>(null);
+  const [dirty, setDirty] = useState(false);
   const { mode } = usePageStateContext();
 
   const createBlock = (
@@ -101,9 +126,11 @@ export const EditorPanelLayoutProvider = ({
             setPanel,
             dialog,
             setDialog,
+            dirty,
+            setDirty,
           }}
         >
-          <div className="grow sm:grid sm:grid-cols-[350px_1fr]">
+          <div className="relative lg:grid lg:h-[calc(100vh-230px)] lg:grid-cols-[350px_1fr]">
             {panel?.action ? <ActionPanel panel={panel} /> : <DefaultPanel />}
             <PagePreviewContainer>{children}</PagePreviewContainer>
           </div>
@@ -128,7 +155,11 @@ export const EditorPanelLayoutProvider = ({
     );
   }
 
-  return <PagePreviewContainer>{children}</PagePreviewContainer>;
+  return (
+    <div className="relative lg:flex lg:h-[calc(100vh-230px)] lg:flex-col">
+      <PagePreviewContainer>{children}</PagePreviewContainer>
+    </div>
+  );
 };
 
 export const usePageEditorPanel = () => {

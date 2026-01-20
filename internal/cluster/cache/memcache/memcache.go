@@ -2,6 +2,7 @@ package memcache
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 	"time"
 	"unsafe"
@@ -67,23 +68,32 @@ func newCache[T any](name string, bus pubsub.EventBus) (*Cache[T], error) {
 		NumCounters: 10000000,
 		MaxCost:     1 << 30,
 		BufferItems: 64,
-		OnEvict: func(item *ristretto.Item[T]) {
-			slog.Info("cache item evicted", slog.String("cache", name),
-				slog.Uint64("key", item.Key))
-		},
 	})
 	if err != nil {
-		slog.Error("cannot create cache", slog.String("name", name),
-			slog.Any("error", err))
-
 		return nil, err
 	}
 
-	return &Cache[T]{
+	cacheInstance := &Cache[T]{
 		name:  name,
 		cache: c,
 		bus:   bus,
-	}, nil
+	}
+
+	// SUBSCRIBE to cache invalidation events
+	err = bus.Subscribe(pubsub.SubjCacheDelete, func(data []byte) {
+		var notify cache.CacheNotify
+		if err := json.Unmarshal(data, &notify); err != nil {
+			slog.Error("failed to unmarshal cache notify", slog.Any("error", err))
+			return
+		}
+		// IMPORTANT: apply locally ONLY
+		cacheInstance.applyNotify(notify)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return cacheInstance, nil
 }
 
 func (cm *CacheManager) NamespaceCache() cache.Cache[[]string] {
@@ -134,12 +144,33 @@ func (c *Cache[T]) Set(key string, value T) {
 }
 
 func (c *Cache[T]) Notify(ctx context.Context, notify cache.CacheNotify) {
-	slog.Info("cache notify", slog.String("key", notify.Key))
+	// 1. Apply locally
+	c.applyNotify(notify)
 
+	// 2. Broadcast to cluster
+	b, err := json.Marshal(notify)
+	if err != nil {
+		return
+	}
+
+	err = c.bus.Publish(pubsub.SubjCacheDelete, b)
+	if err != nil {
+		slog.Error("failed to publish cache delete event", slog.Any("error", err))
+
+		return
+	}
+}
+
+func (c *Cache[T]) applyNotify(notify cache.CacheNotify) {
+	slog.Info("apply cache notify",
+		slog.String("cache", c.name),
+		slog.String("key", notify.Key),
+		slog.String("action", string(notify.Action)),
+	)
 	switch notify.Action {
 	case cache.CacheClear:
 		c.cache.Clear()
-	case cache.CacheDelete, cache.CacheUpdate, cache.CacheCreate:
+	default:
 		c.cache.Del(notify.Key)
 	}
 }

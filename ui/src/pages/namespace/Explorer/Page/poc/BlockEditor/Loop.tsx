@@ -52,7 +52,9 @@ export const Loop = ({
       >
         <VariableInput
           value={form.watch("data")}
-          onUpdate={(value) => form.setValue("data", value)}
+          onUpdate={(value) =>
+            form.setValue("data", value, { shouldDirty: true })
+          }
           id="data-data"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.loop.dataPlaceholder"

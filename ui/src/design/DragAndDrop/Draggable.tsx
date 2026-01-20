@@ -85,8 +85,8 @@ export const DraggablePaletteItem: FC<DraggablePaletteItemProps> = ({
 
   return (
     <div ref={setNodeRef} {...listeners} {...attributes} style={styles}>
-      <Card className="z-50 flex items-center justify-center bg-gray-2 p-2 text-sm hover:cursor-move active:cursor-move dark:bg-gray-dark-2">
-        <Icon size={16} className="mr-2" /> {children}
+      <Card className="z-50 flex items-center justify-center truncate bg-gray-2 p-2 text-sm hover:cursor-move active:cursor-move dark:bg-gray-dark-2">
+        <Icon size={16} className="mr-2 shrink-0" /> {children}
       </Card>
     </div>
   );

@@ -17,7 +17,9 @@ export const TriggerLabelFieldset = ({ form }: TriggerLabelFieldsetProps) => {
     >
       <SmartInput
         value={form.watch("trigger.label")}
-        onUpdate={(value) => form.setValue("trigger.label", value)}
+        onUpdate={(value) =>
+          form.setValue("trigger.label", value, { shouldDirty: true })
+        }
         id="label"
         placeholder={t(
           "direktivPage.blockEditor.blockForms.dialog.triggerLabelPlaceholder"

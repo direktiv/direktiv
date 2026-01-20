@@ -55,7 +55,9 @@ export const Table = ({
       >
         <VariableInput
           value={form.watch("data.data")}
-          onUpdate={(value) => form.setValue("data.data", value)}
+          onUpdate={(value) =>
+            form.setValue("data.data", value, { shouldDirty: true })
+          }
           id="data-data"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.table.data.dataPlaceholder"
@@ -65,7 +67,7 @@ export const Table = ({
       <TableForm
         data={form.getValues("blocks.0.blocks")}
         onChange={(newValue) => {
-          form.setValue("blocks.0.blocks", newValue);
+          form.setValue("blocks.0.blocks", newValue, { shouldDirty: true });
         }}
         modalTitle={t(
           "direktivPage.blockEditor.blockForms.table.tableAction.modalTitle"
@@ -90,7 +92,7 @@ export const Table = ({
       <TableForm
         data={form.getValues("blocks.1.blocks")}
         onChange={(newValue) => {
-          form.setValue("blocks.1.blocks", newValue);
+          form.setValue("blocks.1.blocks", newValue, { shouldDirty: true });
         }}
         modalTitle={t(
           "direktivPage.blockEditor.blockForms.table.rowAction.modalTitle"
@@ -112,7 +114,7 @@ export const Table = ({
       <TableForm
         data={form.getValues("columns")}
         onChange={(newValue) => {
-          form.setValue("columns", newValue);
+          form.setValue("columns", newValue, { shouldDirty: true });
         }}
         modalTitle={t(
           "direktivPage.blockEditor.blockForms.table.column.modalTitle"

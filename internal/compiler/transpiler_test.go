@@ -6,7 +6,17 @@ import (
 
 	"github.com/direktiv/direktiv/internal/compiler"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestGetSecret(t *testing.T) {
+	script := `function stateStart() { getSecret("hello") }`
+	ci := compiler.NewCompileItem([]byte(script), "")
+	err := ci.TranspileAndValidate()
+	require.NoError(t, err)
+
+	require.Len(t, ci.Config().Config.Secrets, 1)
+}
 
 func TestTranspilerLoop(t *testing.T) {
 

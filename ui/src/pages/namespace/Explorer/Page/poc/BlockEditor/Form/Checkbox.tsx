@@ -47,10 +47,10 @@ export const Checkbox = ({
       field.onChange(parsedValueType.data);
       switch (parsedValueType.data) {
         case "boolean":
-          form.setValue("defaultValue.value", false);
+          form.setValue("defaultValue.value", false, { shouldDirty: true });
           break;
         case "variable":
-          form.setValue("defaultValue.value", "");
+          form.setValue("defaultValue.value", "", { shouldDirty: true });
           break;
       }
     }
@@ -137,7 +137,9 @@ export const Checkbox = ({
                   <VariableInput
                     value={defaultValue}
                     onUpdate={(value) =>
-                      form.setValue("defaultValue.value", value)
+                      form.setValue("defaultValue.value", value, {
+                        shouldDirty: true,
+                      })
                     }
                     placeholder={t(
                       "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholderVariable"
