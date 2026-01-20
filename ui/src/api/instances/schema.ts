@@ -158,3 +158,75 @@ export const InstanceOutputResponseSchema = z.object({
     output: z.string().nullable(),
   }),
 });
+
+const workflowStateSchema = z.object({
+  id: z.string().optional(), // just needs to be optional because of WorkflowEditor / EditorPage
+  type: z.string().optional(), // just needs to be optional because of WorkflowEditor / EditorPage
+  name: z.string(),
+  start: z.boolean().optional(),
+  finish: z.boolean().optional(),
+  visited: z.boolean().optional(),
+  failed: z.boolean().optional(),
+  transitions: z.array(z.string()).optional(),
+  events: z
+    .array(
+      z.object({
+        transition: z.string(),
+      })
+    )
+    .optional(),
+  conditions: z
+    .array(
+      z.object({
+        transition: z.string(),
+      })
+    )
+    .optional(),
+  catch: z
+    .array(
+      z.object({
+        x: z.string(),
+        y: z.string(),
+        transition: z.string(),
+      })
+    )
+    .optional(),
+  transition: z.string().optional(),
+  defaultTransition: z.string().optional(),
+});
+
+/**
+ * example
+ * 
+  {
+    "states": {
+      "stateOne": {
+        "id": "stateOne",
+        "type": "function",
+        "name": "stateOne",             
+        "start": true,
+        "finish": false,
+        "visited": true,
+        "failed": false,
+        "transitions": ["stateTwo"],
+
+        "events": [],
+        "conditions": [],
+        "catch": [],
+        "transition": "",
+        "defaultTransition": ""
+      },
+      ...
+    }
+  }
+ */
+
+export const StateSchema = z.record(workflowStateSchema);
+
+export const InstanceFlowResponseSchema = z.object({
+  states: StateSchema.optional(),
+  start: z.object({ state: z.string() }).optional(),
+  functions: z.array(z.string()).optional(),
+});
+
+export type Workflow = z.infer<typeof InstanceFlowResponseSchema>;
