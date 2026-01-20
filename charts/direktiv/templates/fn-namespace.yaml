@@ -6,3 +6,15 @@ metadata:
     {{- include "direktiv.labels" . | nindent 4 }}
   annotations:
     linkerd.io/inject: enabled
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "direktiv.fullname" . }}
+  namespace:  {{ .Values.functions.namespace }}
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+type: Opaque
+data:
+   db: {{ printf "host=%s port=%d user=%s dbname=%s password=%s sslmode=%s %s" .Values.database.host ( .Values.database.port | int64 )  .Values.database.user .Values.database.name .Values.database.password .Values.database.sslmode .Values.database.additional | b64enc | quote }}
+
