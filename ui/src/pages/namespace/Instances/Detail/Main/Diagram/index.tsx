@@ -1,3 +1,7 @@
+import {
+  InstanceFlowResponseSchema,
+  InstanceSchemaType,
+} from "~/api/instances/schema";
 import { Maximize2, Minimize2 } from "lucide-react";
 import {
   Tooltip,
@@ -12,7 +16,6 @@ import {
 
 import Button from "~/design/Button";
 import { FC } from "react";
-import { InstanceSchemaType } from "~/api/instances/schema";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
 import { decode } from "js-base64";
 import { instanceStatusToDiagramStatus } from "./utils";
@@ -33,6 +36,13 @@ const Diagram: FC<DiagramProps> = ({ flow, status }) => {
   const maximizedPanel = useLogsPreferencesMaximizedPanel();
   const isMaximized = maximizedPanel === "diagram";
   const workflowData = decode(data?.definition ?? "");
+
+  const parsedWorkflow = InstanceFlowResponseSchema.safeParse(workflowData);
+
+  if (!parsedWorkflow.success) {
+    // Todo: Decide what kind of error handling is appropriate here
+    return null;
+  }
 
   return (
     <div className="relative flex grow">
@@ -62,7 +72,7 @@ const Diagram: FC<DiagramProps> = ({ flow, status }) => {
         </Tooltip>
       </TooltipProvider>
       <WorkflowDiagram
-        workflow={workflowData}
+        workflow={parsedWorkflow.data}
         flow={flow}
         orientation="horizontal"
         instanceStatus={instanceStatusToDiagramStatus(status)}

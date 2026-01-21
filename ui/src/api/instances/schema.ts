@@ -221,7 +221,7 @@ const workflowStateSchema = z.object({
   }
  */
 
-export const StateSchema = z.record(workflowStateSchema);
+const StateSchema = z.record(workflowStateSchema);
 
 export const InstanceFlowResponseSchema = z.object({
   states: StateSchema.optional(),

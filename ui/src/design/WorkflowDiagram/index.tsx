@@ -1,10 +1,9 @@
-import { generateElements, getLayoutedElements } from "./utils";
-
 import Alert from "../Alert";
 import { Orientation } from "./types";
 import { ReactFlowProvider } from "reactflow";
 import { Workflow } from "~/api/instances/schema";
 import { ZoomPanDiagram } from "./ZoomPanDiagram";
+import { createElements } from "./utils";
 import { useState } from "react";
 
 /**
@@ -26,7 +25,6 @@ type WorkflowDiagramProps = {
 export default function WorkflowDiagram(props: WorkflowDiagramProps) {
   const {
     workflow,
-    flow,
     instanceStatus = "pending",
     disabled = false,
     orientation = "horizontal",
@@ -41,13 +39,7 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
       </Alert>
     );
 
-  const flowElements = generateElements(
-    getLayoutedElements,
-    workflow,
-    flow,
-    instanceStatus,
-    orientation
-  );
+  const flowElements = createElements(workflow, instanceStatus, orientation);
 
   return (
     <ReactFlowProvider>
