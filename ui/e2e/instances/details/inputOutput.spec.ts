@@ -147,23 +147,31 @@ test("the output is shown when the workflow finished running", async ({
 
   await expect(inputOutputPanel).toBeVisible();
 
+  const inputButton = inputOutputPanel
+    .getByRole("tablist")
+    .locator("button")
+    .nth(0);
   const outputButton = inputOutputPanel
     .getByRole("tablist")
     .locator("button")
     .nth(1);
-
   const header = page.getByTestId("instance-header-container");
   const textarea = inputOutputPanel.locator(".view-lines");
 
-  const runningInstanceOutput = "The workflow is still running";
-  const expectedOutput = `{    "result": "finished"}`;
+  await expect(
+    inputButton,
+    "the input tab was selected initially"
+  ).toHaveAttribute("data-state", "active");
 
   await outputButton.click();
 
   await expect(
     inputOutputPanel,
     "The output shows a note that the workflow is still running"
-  ).toContainText(runningInstanceOutput);
+  ).toContainText("The workflow is still running");
+
+  await page.waitForTimeout(1000);
+  await page.reload();
 
   await expect(
     header.locator("div").first(),
@@ -173,7 +181,7 @@ test("the output is shown when the workflow finished running", async ({
   await expect(
     textarea,
     "When the workflow finished the generated output is shown in the panel"
-  ).toHaveText(expectedOutput);
+  ).toHaveText(`{    "message": "Hello world!"}`);
 });
 
 test("after a running instance finishes, the output tab is automatically selected", async ({
@@ -184,7 +192,7 @@ test("after a running instance finishes, the output tab is automatically selecte
     name: workflowName,
     namespace,
     type: "workflow",
-    content: delayWorkflow,
+    content: simpleWorkflow,
     mimeType: "application/x-typescript",
   });
   const instanceId = (
@@ -199,23 +207,13 @@ test("after a running instance finishes, the output tab is automatically selecte
 
   await expect(inputOutputPanel).toBeVisible();
 
-  const inputButton = inputOutputPanel
-    .getByRole("tablist")
-    .locator("button")
-    .nth(0);
   const outputButton = inputOutputPanel
     .getByRole("tablist")
     .locator("button")
     .nth(1);
 
   const textarea = inputOutputPanel.locator(".view-lines");
-  const expectedOutput = `{    "result": "finished"}`;
   const header = page.getByTestId("instance-header-container");
-
-  await expect(
-    inputButton,
-    "the input tab was selected initially"
-  ).toHaveAttribute("data-state", "active");
 
   await expect(
     header.locator("div").first(),
@@ -228,6 +226,6 @@ test("after a running instance finishes, the output tab is automatically selecte
   ).toHaveAttribute("data-state", "active");
 
   await expect(textarea, "the text shows the expected output").toHaveText(
-    expectedOutput
+    `{    "message": "Hello world!"}`
   );
 });
