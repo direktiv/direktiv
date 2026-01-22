@@ -47,7 +47,7 @@ const createStatusFilterInstances = async () => {
 
 /* create 1 instance with invoker "api" and 2 with invoker "instance" */
 const createInvokerFilterInstances = async () => {
-  const parentWorkflowName = faker.system.commonFileName("yaml");
+  const parentWorkflowName = faker.system.commonFileName("wf.ts");
 
   await createFile({
     name: parentWorkflowName,
@@ -148,7 +148,7 @@ test("it is possible to filter by date using created before", async ({
   ).toHaveCount(0);
 
   /* remove the date filter */
-  await page.getByTestId("filter-clear-BEFORE").click();
+  await page.getByTestId("filter-clear-createdAtLt").click();
   await expect(
     page.getByTestId(/instance-row/),
     "there should be 2 rows after removing the filter"
@@ -165,7 +165,7 @@ test("it is possible to filter by date using created before", async ({
     "there should be 0 rows when filtering by created after with a future date"
   ).toHaveCount(0);
 
-  await page.getByTestId("filter-clear-AFTER").click();
+  await page.getByTestId("filter-clear-createdAtGt").click();
   await expect(
     page.getByTestId(/instance-row/),
     "there should be 2 rows after removing the filter"
@@ -243,7 +243,7 @@ test("it is possible to filter by status", async ({ page }) => {
   ).toHaveCount(3);
 
   /* clear filter, expect 5 results to be rendered */
-  await page.getByTestId("filter-clear-STATUS").click();
+  await page.getByTestId("filter-clear-status").click();
 
   await expect(
     page.getByTestId(/instance-row/),
@@ -251,7 +251,7 @@ test("it is possible to filter by status", async ({ page }) => {
   ).toHaveCount(5);
 });
 
-test("it is possible to filter by AS (name)", async ({ page }) => {
+test("it is possible to filter by path", async ({ page }) => {
   const workflowNames = [
     "workflow1.yaml",
     "workflow2.yaml",
@@ -291,8 +291,8 @@ test("it is possible to filter by AS (name)", async ({ page }) => {
   await page.getByTestId("filter-add").click();
   await page.getByRole("option", { name: "name" }).click();
 
-  await page.getByPlaceholder("filename.yaml").type("workflow");
-  await page.getByPlaceholder("filename.yaml").press("Enter");
+  await page.getByPlaceholder("filename.wf.ts").fill("workflow");
+  await page.getByPlaceholder("filename.wf.ts").press("Enter");
 
   /* filter by name "workflow", result should be 3 */
   await expect(
@@ -302,8 +302,8 @@ test("it is possible to filter by AS (name)", async ({ page }) => {
 
   /* change the filter to name "test", result should be 1 */
   await page.getByRole("button", { name: "workflow" }).click();
-  await page.getByPlaceholder("filename.yaml").fill("test");
-  await page.getByPlaceholder("filename.yaml").press("Enter");
+  await page.getByPlaceholder("filename.wf.ts").fill("test");
+  await page.getByPlaceholder("filename.wf.ts").press("Enter");
 
   await expect(
     page.getByTestId(/instance-row/),
@@ -311,7 +311,7 @@ test("it is possible to filter by AS (name)", async ({ page }) => {
   ).toHaveCount(1);
 
   /* clear filter */
-  await page.getByTestId("filter-clear-AS").click();
+  await page.getByTestId("filter-clear-path").click();
   await expect(
     page.getByTestId(/instance-row/),
     "after clearing the filter, there should be 4 results again"
@@ -329,6 +329,14 @@ test("it is possible to apply multiple filters", async ({ page }) => {
     "five-d.yaml",
     "five-f.yaml",
   ];
+
+  // await createFile({
+  //   name: simpleWorkflowName,
+  //   namespace,
+  //   type: "workflow",
+  //   content: simpleWorkflow,
+  //   mimeType: "application/x-typescript",
+  // });
 
   await Promise.all(
     workflowNames.map((name) =>
