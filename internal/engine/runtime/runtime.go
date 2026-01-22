@@ -377,8 +377,8 @@ func ParseFuncNameFromText(s string) string {
 	s = s[len(prefix):]
 
 	// find the first '(' to isolate the name
-	if idx := strings.Index(s, "("); idx != -1 {
-		return strings.TrimSpace(s[:idx])
+	if before, _, ok := strings.Cut(s, "("); ok {
+		return strings.TrimSpace(before)
 	}
 
 	return ""
