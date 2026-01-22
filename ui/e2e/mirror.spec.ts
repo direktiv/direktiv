@@ -65,8 +65,6 @@ test("it is possible to create and sync a mirror, view logs", async ({
   /* visit detail page and ensure logs are rendered */
   await page.getByTestId("sync-row").click();
 
-  debugger;
-
   await expect(
     page.getByText("msg: no .direktivignore file detected")
   ).toBeVisible();
