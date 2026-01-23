@@ -21,9 +21,7 @@ const getInstanceFlow = apiFactory({
 
 const fetchInstanceFlow = async ({
   queryKey: [{ apiKey, namespace, instanceId }],
-}: QueryFunctionContext<
-  ReturnType<(typeof instanceKeys)["instanceDetails"]>
->) =>
+}: QueryFunctionContext<ReturnType<(typeof instanceKeys)["instanceFlow"]>>) =>
   getInstanceFlow({
     apiKey,
     urlParams: { namespace, instanceId },
@@ -38,7 +36,7 @@ export const useInstanceFlow = ({ instanceId }: { instanceId: string }) => {
   }
 
   return useQueryWithPermissions({
-    queryKey: instanceKeys.instanceDetails(namespace, {
+    queryKey: instanceKeys.instanceFlow(namespace, {
       apiKey: apiKey ?? undefined,
       instanceId,
     }),

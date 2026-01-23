@@ -7,10 +7,8 @@ import { useState } from "react";
 import { Workflow as workflowtype } from "~/api/instances/schema";
 
 const exampleWorkflowInitial = {
-  states: {
+  data: {
     stateFirst: {
-      id: "hello-world",
-      type: "function",
       name: "hello-world",
       start: true,
       finish: false,
@@ -26,8 +24,6 @@ const exampleWorkflowInitial = {
     },
 
     stateSecond: {
-      id: "exit",
-      type: "function",
       name: "exit",
       start: false,
       finish: true,
@@ -42,17 +38,11 @@ const exampleWorkflowInitial = {
       defaultTransition: "",
     },
   },
-
-  start: { state: "hello-world" },
-
-  functions: [],
 };
 
 const exampleWorkflowStepOne = {
-  states: {
+  data: {
     stateFirst: {
-      id: "hello-world",
-      type: "function",
       name: "hello-world",
       start: true,
       finish: false,
@@ -68,8 +58,6 @@ const exampleWorkflowStepOne = {
     },
 
     stateSecond: {
-      id: "exit",
-      type: "function",
       name: "exit",
       start: false,
       finish: true,
@@ -84,17 +72,11 @@ const exampleWorkflowStepOne = {
       defaultTransition: "",
     },
   },
-
-  start: { state: "hello-world" },
-
-  functions: [],
 };
 
 const exampleWorkflowStepTwo = {
-  states: {
+  data: {
     stateFirst: {
-      id: "hello-world",
-      type: "function",
       name: "hello-world",
       start: true,
       finish: false,
@@ -110,8 +92,6 @@ const exampleWorkflowStepTwo = {
     },
 
     stateSecond: {
-      id: "exit",
-      type: "function",
       name: "exit",
       start: false,
       finish: true,
@@ -126,17 +106,11 @@ const exampleWorkflowStepTwo = {
       defaultTransition: "",
     },
   },
-
-  start: { state: "hello-world" },
-
-  functions: [],
 };
 
 const exampleWorkflowPending = {
-  states: {
+  data: {
     stateFirst: {
-      id: "hello-world",
-      type: "function",
       name: "hello-world",
       start: true,
       finish: false,
@@ -152,8 +126,6 @@ const exampleWorkflowPending = {
     },
 
     stateSecond: {
-      id: "exit",
-      type: "function",
       name: "exit",
       start: false,
       finish: true,
@@ -168,17 +140,11 @@ const exampleWorkflowPending = {
       defaultTransition: "",
     },
   },
-
-  start: { state: "hello-world" },
-
-  functions: [],
 };
 
 const exampleWorkflowFailed = {
-  states: {
+  data: {
     stateFirst: {
-      id: "stateFirst",
-      type: "function",
       name: "stateFirst",
       start: true,
       finish: false,
@@ -194,8 +160,6 @@ const exampleWorkflowFailed = {
     },
 
     stateSecond: {
-      id: "stateSecond",
-      type: "function",
       name: "stateSecond",
       start: false,
       finish: false,
@@ -211,8 +175,6 @@ const exampleWorkflowFailed = {
     },
 
     stateThird: {
-      id: "stateThird",
-      type: "function",
       name: "stateThird",
       start: false,
       finish: true,
@@ -227,17 +189,11 @@ const exampleWorkflowFailed = {
       defaultTransition: "",
     },
   },
-
-  start: { state: "stateFirst" },
-
-  functions: [],
 };
 
 const exampleWorkflowComplete = {
-  states: {
+  data: {
     stateFirst: {
-      id: "hello-world",
-      type: "function",
       name: "hello-world",
       start: true,
       finish: false,
@@ -253,8 +209,6 @@ const exampleWorkflowComplete = {
     },
 
     stateSecond: {
-      id: "exit",
-      type: "function",
       name: "exit",
       start: false,
       finish: true,
@@ -269,17 +223,11 @@ const exampleWorkflowComplete = {
       defaultTransition: "",
     },
   },
-
-  start: { state: "hello-world" },
-
-  functions: [],
 };
 
 const exampleWorkflowComplex = {
-  states: {
+  data: {
     stateFirst: {
-      id: "hello-world",
-      type: "function",
       name: "hello-world",
       start: true,
       finish: false,
@@ -294,8 +242,6 @@ const exampleWorkflowComplex = {
       defaultTransition: "",
     },
     stateSecondOptionA: {
-      id: "actionOne",
-      type: "function",
       name: "actionOne",
       start: false,
       finish: false,
@@ -310,8 +256,6 @@ const exampleWorkflowComplex = {
       defaultTransition: "",
     },
     stateSecondOptionB: {
-      id: "actionTwo",
-      type: "function",
       name: "actionTwo",
       start: false,
       finish: false,
@@ -327,8 +271,6 @@ const exampleWorkflowComplex = {
     },
 
     stateSecond: {
-      id: "exit",
-      type: "function",
       name: "exit",
       start: false,
       finish: true,
@@ -343,10 +285,6 @@ const exampleWorkflowComplex = {
       defaultTransition: "",
     },
   },
-
-  start: { state: "hello-world" },
-
-  functions: [],
 };
 
 export default {

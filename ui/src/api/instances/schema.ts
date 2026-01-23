@@ -160,9 +160,7 @@ export const InstanceOutputResponseSchema = z.object({
 });
 
 const workflowStateSchema = z.object({
-  id: z.string(),
-  type: z.string(),
-  name: z.string(),
+  name: z.string().optional(),
   start: z.boolean().optional(),
   finish: z.boolean().optional(),
   visited: z.boolean().optional(),
@@ -221,12 +219,8 @@ const workflowStateSchema = z.object({
   }
  */
 
-const StateSchema = z.record(workflowStateSchema);
-
 export const InstanceFlowResponseSchema = z.object({
-  states: StateSchema.optional(),
-  start: z.object({ state: z.string() }).optional(),
-  functions: z.array(z.string()).optional(),
+  data: z.record(workflowStateSchema),
 });
 
 export type Workflow = z.infer<typeof InstanceFlowResponseSchema>;

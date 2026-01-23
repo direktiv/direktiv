@@ -58,22 +58,13 @@ export function generateElements(
   const newElements: (Node | Edge)[] = [];
   if (!value) return [];
 
-  const statesParent = (value as Workflow).states as unknown;
-  let rawStates: Record<string, State> = {};
+  const states = Object.values(value.data) as unknown as State[];
 
-  if (statesParent && typeof statesParent === "object") {
-    if ("state" in (statesParent as Record<string, unknown>)) {
-      const s = (statesParent as { state: Record<string, State> }).state;
-      if (s && typeof s === "object") rawStates = s;
-    } else {
-      rawStates = statesParent as Record<string, State>;
-    }
-  }
-
-  const states = Object.values(rawStates) as State[];
+  if (states.length === 0) return [];
 
   let isFirst = true;
-  let lastNode: State | null = null;
+  const lastNode = states[states.length - 1] as State | undefined;
+  const lastNodeId = lastNode?.name ?? "";
 
   // create start node
   newElements.push({
@@ -84,31 +75,34 @@ export function generateElements(
     sourcePosition: Position.Right,
   });
 
+  const startState = states.find((s) => s && (s as State).start === true);
+  const startId = startState ? startState.name : undefined;
+
   // loop through all the state nodes
   for (const state of states) {
     // create start edge
     if (isFirst) {
       isFirst = false;
-      const startId = value.start?.state ?? state.id;
 
-      newElements.push({
-        id: `startNode-${startId}`,
-        source: "startNode",
-        target: startId,
-        type: defaultEdgeType,
-        animated: state.visited,
-      });
+      if (startId) {
+        newElements.push({
+          id: `startNode-${startId}`,
+          source: "startNode",
+          target: startId,
+          type: defaultEdgeType,
+          animated: state.visited,
+        });
+      }
     }
 
     // create state node
     const stateNode: Node = {
-      id: state.id,
+      id: state.name,
       position,
       data: {
-        label: state.id,
-        type: state.type,
+        type: "function",
+        label: state.name,
         state,
-        functions: value.functions,
         wasExecuted: state.visited,
         orientation,
       },
@@ -117,9 +111,9 @@ export function generateElements(
     newElements.push(stateNode);
 
     // create edge to next state
-    const sourceId = state.id;
+    const sourceId = state.name;
     const outgoingTargets = new Set<string>();
-    state.transitions.forEach((t) => t && outgoingTargets.add(t));
+    state.transitions?.forEach((t) => t && outgoingTargets.add(t));
     state.events?.forEach(
       (ev) => ev.transition && outgoingTargets.add(ev.transition)
     );
@@ -140,16 +134,12 @@ export function generateElements(
         target: targetId,
         type: defaultEdgeType,
         animated:
-          state.visited &&
-          states.find((state) => state.id === targetId)?.visited, // line gets animated if state before and after were visited
+          state.visited && states.find((s) => s.name === targetId)?.visited,
       });
     }
 
     // create end edge
-    lastNode = states[states.length - 1] as State;
-    const lastNodeId = lastNode?.id ?? "";
-
-    if (state === lastNode) {
+    if (lastNode && state.name === lastNode.name) {
       newElements.push({
         id: `${lastNodeId}-endNode`,
         source: lastNodeId,
