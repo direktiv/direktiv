@@ -159,7 +159,7 @@ export const InstanceOutputResponseSchema = z.object({
   }),
 });
 
-const workflowStateSchema = z.object({
+export const workflowStateSchema = z.object({
   name: z.string().optional(),
   start: z.boolean().optional(),
   finish: z.boolean().optional(),
