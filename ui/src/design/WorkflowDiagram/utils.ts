@@ -6,7 +6,7 @@ import dagre from "dagre";
 
 const defaultEdgeType = "default";
 
-export const getLayoutedElements = (
+const createLayoutedElements = (
   incomingEles: (Edge | Node)[],
   orientation: Orientation = "vertical"
 ) => {
@@ -45,11 +45,7 @@ export const getLayoutedElements = (
 
 const position = { x: 0, y: 0 };
 
-export function generateElements(
-  getLayoutedElements: (
-    incomingEles: (Node | Edge)[],
-    orientation: Orientation
-  ) => (Node | Edge)[],
+export function createElements(
   value: Workflow,
   flow: string[],
   status: "pending" | "complete" | "failed",
@@ -62,9 +58,8 @@ export function generateElements(
 
   if (states.length === 0) return [];
 
-  let isFirst = true;
-  const lastNode = states[states.length - 1] as State | undefined;
-  const lastNodeId = lastNode?.name ?? "";
+  const lastState = states[states.length - 1] as State | undefined;
+  const lastStateId = lastState?.name ?? "";
 
   // create start node
   newElements.push({
@@ -76,14 +71,12 @@ export function generateElements(
   });
 
   const startState = states.find((s) => s && (s as State).start === true);
-  const startId = startState ? startState.name : undefined;
+  const startId = startState ? startState.name : "";
 
   // loop through all the state nodes
-  for (const state of states) {
+  for (const [index, state] of states.entries()) {
     // create start edge
-    if (isFirst) {
-      isFirst = false;
-
+    if (index === 0) {
       if (startId) {
         newElements.push({
           id: `startNode-${startId}`,
@@ -139,10 +132,10 @@ export function generateElements(
     }
 
     // create end edge
-    if (lastNode && state.name === lastNode.name) {
+    if (lastState && state.name === lastState.name) {
       newElements.push({
-        id: `${lastNodeId}-endNode`,
-        source: lastNodeId,
+        id: `${lastStateId}-endNode`,
+        source: lastStateId,
         target: "endNode",
         type: defaultEdgeType,
         animated: state.visited && status === "complete",
@@ -151,7 +144,7 @@ export function generateElements(
   }
 
   // create end node
-  const reachedEnd = lastNode?.visited && status === "complete";
+  const reachedEnd = lastState?.visited && status === "complete";
 
   newElements.push({
     id: "endNode",
@@ -160,5 +153,5 @@ export function generateElements(
     position,
   });
 
-  return getLayoutedElements(newElements, orientation);
+  return createLayoutedElements(newElements, orientation);
 }

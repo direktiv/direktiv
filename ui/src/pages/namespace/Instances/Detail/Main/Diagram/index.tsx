@@ -1,4 +1,7 @@
-import { InstanceSchemaType, Workflow } from "~/api/instances/schema";
+import {
+  InstanceFlowResponseSchema,
+  InstanceSchemaType,
+} from "~/api/instances/schema";
 import { Maximize2, Minimize2 } from "lucide-react";
 import {
   Tooltip,
@@ -16,38 +19,32 @@ import { FC } from "react";
 import { State } from "~/design/WorkflowDiagram/types";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
 import { instanceStatusToDiagramStatus } from "./utils";
-import { useFile } from "~/api/files/query/file";
 import { useInstanceFlow } from "~/api/instances/query/flow";
 import { useTranslation } from "react-i18next";
 
 type DiagramProps = {
-  flow?: string[];
   instanceId: string;
-  path?: string;
   status: InstanceSchemaType["status"];
 };
 
-const Diagram: FC<DiagramProps> = ({ instanceId, path, status }) => {
+const Diagram: FC<DiagramProps> = ({ instanceId, status }) => {
   const { setMaximizedPanel } = useLogsPreferencesActions();
   const { t } = useTranslation();
   const maximizedPanel = useLogsPreferencesMaximizedPanel();
   const isMaximized = maximizedPanel === "diagram";
 
-  const { data: dataFromInstance } = useInstanceFlow({ instanceId });
-  const { data: dataFromWorkflow } = useFile({ path });
+  const { data } = useInstanceFlow({ instanceId });
 
-  const dataObject =
-    instanceId === "null" && dataFromWorkflow?.type === "workflow"
-      ? { data: dataFromWorkflow.states || {} }
-      : (dataFromInstance ?? { data: {} });
+  const parsedWorkflow = InstanceFlowResponseSchema.safeParse(data);
 
-  const workflowData = (dataObject as Workflow) ?? undefined;
+  if (!parsedWorkflow.success) {
+    // Todo: Decide what kind of error handling is appropriate here
+    return null;
+  }
 
-  if (!workflowData) return null;
+  if (data === undefined) return null;
 
-  const dataArray = Array.isArray(dataObject)
-    ? dataObject
-    : Object.values(dataObject.data);
+  const dataArray = Array.isArray(data) ? data : Object.values(data.data);
   const flowStatesArray = dataArray.every((item: State) => item.name)
     ? dataArray.map((item) => item.name)
     : [""];
@@ -80,7 +77,7 @@ const Diagram: FC<DiagramProps> = ({ instanceId, path, status }) => {
         </Tooltip>
       </TooltipProvider>
       <WorkflowDiagram
-        workflow={workflowData}
+        workflow={parsedWorkflow.data}
         flow={flowStatesArray}
         orientation="horizontal"
         instanceStatus={instanceStatusToDiagramStatus(status)}
