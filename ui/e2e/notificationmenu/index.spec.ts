@@ -56,7 +56,8 @@ test("Notification Bell shows dot for uninitialized secrets", async ({
     "it renders the Notification Bell"
   ).toBeVisible();
 
-  await page.waitForTimeout(10000);
+  // TODO in TDI-219: Implement polling, remove manual reload
+  await page.waitForTimeout(2000);
   await page.reload({ waitUntil: "networkidle" });
 
   expect(
@@ -80,13 +81,16 @@ test("Notification Bell shows dot for uninitialized secrets", async ({
 
   await page.locator("textarea").fill("abc");
   await page.getByRole("button", { name: "Save" }).click();
-  await page.getByTestId("notification-bell").nth(1).click();
 
+  // TODO in TDI-219: Implement polling, remove manual reload
+  await page.waitForTimeout(2000);
+  await page.reload({ waitUntil: "networkidle" });
+
+  await page.getByTestId("notification-bell").nth(1).click();
   expect(
     page.getByTestId("notification-indicator").nth(1),
     "the indicator for new messages is visible"
   ).toBeVisible();
-
   expect(
     await page.getByTestId("notification-text").textContent(),
     "the modal should now display 'You have 1 uninitialized secret.'"
@@ -104,6 +108,10 @@ test("Notification Bell shows dot for uninitialized secrets", async ({
     page.getByTestId("notification-indicator"),
     "the indicator for new messages is NOT visible"
   ).toHaveCount(0);
+
+  // TODO in TDI-219: Implement polling, remove manual reload
+  await page.waitForTimeout(2000);
+  await page.reload({ waitUntil: "networkidle" });
 
   await page.getByTestId("notification-bell").nth(1).click();
 
