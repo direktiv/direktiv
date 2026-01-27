@@ -4,7 +4,6 @@ import { expect, test } from "@playwright/test";
 import { createFile } from "e2e/utils/files";
 import { createWorkflowVariables } from "../../utils/variables";
 import { faker } from "@faker-js/faker";
-import { waitForSuccessToast } from "./utils";
 
 let namespace = "";
 let workflow = "";
@@ -38,7 +37,10 @@ test("bulk delete workflow variables", async ({ page }) => {
     page.getByText(`Are you sure you want to delete variable`, { exact: false })
   ).toBeVisible();
   await page.getByRole("button", { name: "Delete" }).click();
-  await waitForSuccessToast(page);
+
+  await expect(page.getByTestId("toast-success")).toBeVisible();
+  await page.getByTestId("toast-close").click();
+
   await expect(page.getByTestId("item-name")).toHaveCount(3);
 
   // Check second checkbox and click delete
@@ -65,7 +67,9 @@ test("bulk delete workflow variables", async ({ page }) => {
 
   // Confirm deletion
   await page.getByRole("button", { name: "Delete" }).click();
-  await waitForSuccessToast(page);
+
+  await expect(page.getByTestId("toast-success")).toBeVisible();
+  await page.getByTestId("toast-close").click();
 
   await expect(page.getByTestId("item-name")).toHaveCount(0);
 });
