@@ -1,5 +1,5 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
-import { delayWorkflow, simpleWorkflow } from "e2e/utils/workflows";
+import { delayWorkflow1s, simpleWorkflow } from "e2e/utils/workflows";
 import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
@@ -132,7 +132,7 @@ test("the output is shown when the workflow finished running", async ({
     name: workflowName,
     namespace,
     type: "workflow",
-    content: delayWorkflow,
+    content: delayWorkflow1s,
     mimeType: "application/x-typescript",
   });
   const instanceId = (
