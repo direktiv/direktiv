@@ -330,14 +330,6 @@ test("it is possible to apply multiple filters", async ({ page }) => {
     "five-f.yaml",
   ];
 
-  // await createFile({
-  //   name: simpleWorkflowName,
-  //   namespace,
-  //   type: "workflow",
-  //   content: simpleWorkflow,
-  //   mimeType: "application/x-typescript",
-  // });
-
   await Promise.all(
     workflowNames.map((name) =>
       createFile({
