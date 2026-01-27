@@ -307,13 +307,6 @@ export default {
         type: { summary: "object" },
       },
     },
-    flow: {
-      description:
-        "Array of executed / visited states in an instance. Example - ['stateA', 'stateB']",
-      table: {
-        type: { summary: "string[]" },
-      },
-    },
     disabled: {
       description: "Disables diagram zoom-in",
       table: {
@@ -325,7 +318,7 @@ export default {
 
 export const Workflow = () => (
   <div className="h-96">
-    <WorkflowDiagram workflow={exampleWorkflowInitial} flow={[]} />
+    <WorkflowDiagram workflow={exampleWorkflowInitial} />
   </div>
 );
 
@@ -333,7 +326,6 @@ export const WorkflowInstancePending = () => (
   <div className="h-96">
     <WorkflowDiagram
       workflow={exampleWorkflowPending}
-      flow={["stateFirst", "stateFirst"]}
       instanceStatus="pending"
     />
   </div>
@@ -341,11 +333,7 @@ export const WorkflowInstancePending = () => (
 
 export const WorkflowInstanceFailed = () => (
   <div className="h-96">
-    <WorkflowDiagram
-      workflow={exampleWorkflowFailed}
-      flow={["stateFirst", "stateSecond", "stateThird"]}
-      instanceStatus="failed"
-    />
+    <WorkflowDiagram workflow={exampleWorkflowFailed} instanceStatus="failed" />
   </div>
 );
 
@@ -353,7 +341,6 @@ export const WorkflowInstanceComplete = () => (
   <div className="h-96">
     <WorkflowDiagram
       workflow={exampleWorkflowComplete}
-      flow={["helloworld", "exit"]}
       instanceStatus="complete"
     />
   </div>
@@ -415,7 +402,6 @@ export const UpdateWorkflow = () => {
       </ButtonBar>
       <WorkflowDiagram
         workflow={workflow}
-        flow={["stateFirst"]}
         instanceStatus={status}
         orientation={orientation}
       />
@@ -431,7 +417,6 @@ export const ComplexWorkflowDiagram = () => (
   <div className="h-[600px]">
     <WorkflowDiagram
       workflow={exampleWorkflowComplex}
-      flow={["state"]}
       instanceStatus="complete"
     />
   </div>

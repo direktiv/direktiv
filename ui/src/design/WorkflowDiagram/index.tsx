@@ -10,13 +10,11 @@ import { useState } from "react";
  * Renders a diagram of a workflow and optionally its current state position during a instance.
  * * Props
  *   * workflow: JSON of workflow.
- *   * flow: Array of executed states in an instance. Example - ['stateA', 'stateB']
  *   * instanceStatus: Status of current instance. This is used to display if flow is complete with animated connections.
  *   * disabled: Disables diagram zoom-in
  */
 type WorkflowDiagramProps = {
   workflow: Workflow;
-  flow: string[];
   orientation?: Orientation;
   instanceStatus?: "pending" | "complete" | "failed";
   disabled?: boolean;
@@ -25,7 +23,6 @@ type WorkflowDiagramProps = {
 export default function WorkflowDiagram(props: WorkflowDiagramProps) {
   const {
     workflow,
-    flow,
     instanceStatus = "pending",
     disabled = false,
     orientation = "horizontal",
@@ -40,12 +37,7 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
       </Alert>
     );
 
-  const flowElements = createElements(
-    workflow,
-    flow,
-    instanceStatus,
-    orientation
-  );
+  const flowElements = createElements(workflow, instanceStatus, orientation);
 
   return (
     <ReactFlowProvider>

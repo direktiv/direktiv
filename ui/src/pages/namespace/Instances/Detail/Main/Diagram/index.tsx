@@ -16,7 +16,6 @@ import {
 
 import Button from "~/design/Button";
 import { FC } from "react";
-import { State } from "~/design/WorkflowDiagram/types";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
 import { instanceStatusToDiagramStatus } from "./utils";
 import { useInstanceFlow } from "~/api/instances/query/flow";
@@ -43,11 +42,6 @@ const Diagram: FC<DiagramProps> = ({ instanceId, status }) => {
   }
 
   if (data === undefined) return null;
-
-  const dataArray = Array.isArray(data) ? data : Object.values(data.data);
-  const flowStatesArray = dataArray.every((item: State) => item.name)
-    ? dataArray.map((item) => item.name)
-    : [""];
 
   return (
     <div className="relative flex grow">
@@ -78,7 +72,6 @@ const Diagram: FC<DiagramProps> = ({ instanceId, status }) => {
       </TooltipProvider>
       <WorkflowDiagram
         workflow={parsedWorkflow.data}
-        flow={flowStatesArray}
         orientation="horizontal"
         instanceStatus={instanceStatusToDiagramStatus(status)}
       />

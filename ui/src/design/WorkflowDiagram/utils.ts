@@ -47,7 +47,6 @@ const position = { x: 0, y: 0 };
 
 export function createElements(
   value: Workflow,
-  flow: string[],
   status: "pending" | "complete" | "failed",
   orientation: Orientation
 ) {

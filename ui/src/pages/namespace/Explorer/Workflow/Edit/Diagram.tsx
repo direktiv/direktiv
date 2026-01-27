@@ -16,7 +16,6 @@ import {
 
 import Button from "~/design/Button";
 import { FC } from "react";
-import { State } from "~/design/WorkflowDiagram/types";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
 import { useFile } from "~/api/files/query/file";
 import { useTranslation } from "react-i18next";
@@ -53,14 +52,6 @@ const Diagram: FC<DiagramProps> = ({ path }) => {
     return null;
   }
 
-  const dataArray = Array.isArray(parsedWorkflow.data.data)
-    ? parsedWorkflow.data.data
-    : Object.values(parsedWorkflow.data.data ?? {});
-
-  const flowStatesArray = dataArray.every((item: State) => item.name)
-    ? dataArray.map((item) => item.name)
-    : [""];
-
   return (
     <div className="relative flex grow">
       <TooltipProvider>
@@ -90,7 +81,6 @@ const Diagram: FC<DiagramProps> = ({ path }) => {
       </TooltipProvider>
       <WorkflowDiagram
         workflow={parsedWorkflow.data}
-        flow={flowStatesArray}
         orientation="horizontal"
         instanceStatus="pending"
       />
