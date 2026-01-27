@@ -58,8 +58,7 @@ export function createElements(
 
   if (states.length === 0) return [];
 
-  const lastState = states[states.length - 1] as State | undefined;
-  const lastStateId = lastState?.name ?? "";
+  const finishStates = states.filter((s) => s && (s as State).finish === true);
 
   // create start node
   newElements.push({
@@ -131,11 +130,11 @@ export function createElements(
       });
     }
 
-    // create end edge
-    if (lastState && state.name === lastState.name) {
+    // create end edges
+    if (state.finish === true) {
       newElements.push({
-        id: `${lastStateId}-endNode`,
-        source: lastStateId,
+        id: `${state.name}-endNode`,
+        source: state.name,
         target: "endNode",
         type: defaultEdgeType,
         animated: state.visited && status === "complete",
@@ -143,8 +142,8 @@ export function createElements(
     }
   }
 
-  // create end node
-  const reachedEnd = lastState?.visited && status === "complete";
+  const reachedEnd =
+    finishStates.find((s) => s.visited === true) && status === "complete";
 
   newElements.push({
     id: "endNode",
