@@ -11,14 +11,20 @@ const (
 	FlowActionScopeSystem    = "system"
 )
 
-type ActionConfig struct {
-	Type  string
-	Cmd   string
-	Size  string
-	Image string
-	Envs  []EnvironmentVariable
+type BasicAuthConfig struct {
+	Username string
+	Password string
+}
 
+type ActionConfig struct {
+	Type    string
+	Cmd     string
+	Size    string
+	Image   string
+	Envs    []EnvironmentVariable
 	Retries int
+
+	Auth *BasicAuthConfig
 }
 
 type StateView struct {
