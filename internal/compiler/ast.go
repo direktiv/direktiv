@@ -1094,6 +1094,30 @@ func (ap *ASTParser) parseAction(expr ast.Expression) (core.ActionConfig, error)
 					}
 				}
 			}
+		case "auth":
+			if authObj, ok := keyed.Value.(*ast.ObjectLiteral); ok {
+				auth := &core.BasicAuthConfig{}
+
+				for _, authProp := range authObj.Value {
+					if ak, ok := authProp.(*ast.PropertyKeyed); ok {
+						key := ap.extractValue(ak.Key)
+						val := ap.extractValue(ak.Value)
+
+						switch key {
+						case "username":
+							if s, ok := val.(string); ok {
+								auth.Username = s
+							}
+						case "password":
+							if s, ok := val.(string); ok {
+								auth.Password = s
+							}
+						}
+					}
+				}
+
+				action.Auth = auth
+			}
 		}
 	}
 
