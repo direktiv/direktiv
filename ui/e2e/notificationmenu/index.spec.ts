@@ -56,7 +56,7 @@ test("Notification Bell shows dot for uninitialized secrets", async ({
     "it renders the Notification Bell"
   ).toBeVisible();
 
-  // TODO in TDI-219: Implement polling, remove manual reload
+  // TODO in TDI-219: remove manual reloads after streaming updates have been restored
   await page.waitForTimeout(2000);
   await page.reload({ waitUntil: "networkidle" });
 
@@ -82,7 +82,7 @@ test("Notification Bell shows dot for uninitialized secrets", async ({
   await page.locator("textarea").fill("abc");
   await page.getByRole("button", { name: "Save" }).click();
 
-  // TODO in TDI-219: Implement polling, remove manual reload
+  // TODO in TDI-219: remove manual reloads after streaming updates have been restored
   await page.waitForTimeout(2000);
   await page.reload({ waitUntil: "networkidle" });
 
@@ -109,7 +109,7 @@ test("Notification Bell shows dot for uninitialized secrets", async ({
     "the indicator for new messages is NOT visible"
   ).toHaveCount(0);
 
-  // TODO in TDI-219: Implement polling, remove manual reload
+  // TODO in TDI-219: remove manual reloads after streaming updates have been restored
   await page.waitForTimeout(2000);
   await page.reload({ waitUntil: "networkidle" });
 

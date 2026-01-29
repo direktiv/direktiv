@@ -170,6 +170,7 @@ test("the output is shown when the workflow finished running", async ({
     "The output shows a note that the workflow is still running"
   ).toContainText("The workflow is still running");
 
+  // TODO in TDI-219: remove manual reloads after streaming updates have been restored
   await page.waitForTimeout(1000);
   await page.reload();
 
