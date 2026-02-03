@@ -75,15 +75,13 @@ export function createElements(
   for (const [index, state] of states.entries()) {
     // create start edge
     if (index === 0) {
-      if (startId) {
-        newElements.push({
-          id: `startNode-${startId}`,
-          source: "startNode",
-          target: startId,
-          type: defaultEdgeType,
-          animated: state.visited,
-        });
-      }
+      newElements.push({
+        id: `startNode-${startId}`,
+        source: "startNode",
+        target: startId,
+        type: defaultEdgeType,
+        animated: state.visited,
+      });
     }
 
     // create state node
