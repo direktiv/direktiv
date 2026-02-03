@@ -159,6 +159,32 @@ export const InstanceOutputResponseSchema = z.object({
   }),
 });
 
+/**
+ * example
+ * 
+  {
+    "states": {
+      "stateOne": {
+        "id": "stateOne",
+        "type": "function",
+        "name": "stateOne",             
+        "start": true,
+        "finish": false,
+        "visited": true,
+        "failed": false,
+        "transitions": ["stateTwo"],
+
+        "events": [],
+        "conditions": [],
+        "catch": [],
+        "transition": "",
+        "defaultTransition": ""
+      },
+      ...
+    }
+  }
+ */
+
 export const workflowStateSchema = z.object({
   name: z.string().optional(),
   start: z.boolean().optional(),
@@ -192,32 +218,6 @@ export const workflowStateSchema = z.object({
   transition: z.string().optional(),
   defaultTransition: z.string().optional(),
 });
-
-/**
- * example
- * 
-  {
-    "states": {
-      "stateOne": {
-        "id": "stateOne",
-        "type": "function",
-        "name": "stateOne",             
-        "start": true,
-        "finish": false,
-        "visited": true,
-        "failed": false,
-        "transitions": ["stateTwo"],
-
-        "events": [],
-        "conditions": [],
-        "catch": [],
-        "transition": "",
-        "defaultTransition": ""
-      },
-      ...
-    }
-  }
- */
 
 export const InstanceFlowResponseSchema = z.object({
   data: z.record(workflowStateSchema),
