@@ -53,7 +53,9 @@ export const Form = ({
         <SmartInput
           blacklist={[localVariableNamespace]}
           value={form.watch("trigger.label")}
-          onUpdate={(value) => form.setValue("trigger.label", value)}
+          onUpdate={(value) =>
+            form.setValue("trigger.label", value, { shouldDirty: true })
+          }
           id="trigger-label"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.form.mutation.triggerLabelPlaceholder"
@@ -91,7 +93,9 @@ export const Form = ({
       >
         <SmartInput
           value={form.watch("mutation.url")}
-          onUpdate={(value) => form.setValue("mutation.url", value)}
+          onUpdate={(value) =>
+            form.setValue("mutation.url", value, { shouldDirty: true })
+          }
           id="mutation-url"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.form.mutation.urlPlaceholder"

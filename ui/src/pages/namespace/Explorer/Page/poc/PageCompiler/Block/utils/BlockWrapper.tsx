@@ -38,7 +38,7 @@ const EditorBlockWrapper = ({
   children,
 }: BlockWrapperProps) => {
   const page = usePage();
-  const { panel, setPanel } = usePageEditorPanel();
+  const { panel, setPanel, dirty } = usePageEditorPanel();
   const [isHovered, setIsHovered] = useState(false);
   const contextVariables = useVariablesContext();
   const resolveVariableArray = useVariableArrayResolver();
@@ -106,6 +106,11 @@ const EditorBlockWrapper = ({
       path: blockPath,
       match: (block) => block.type === "dialog",
     });
+
+    // if editor panel is dirty, do nothing.
+    if (dirty) {
+      return;
+    }
 
     // if block losing focus is in a Dialog, focus the Dialog.
     if (isFocused && parentDialog) {
