@@ -41,8 +41,6 @@ const Diagram: FC<DiagramProps> = ({ instanceId, status }) => {
     return null;
   }
 
-  if (data === undefined) return null;
-
   return (
     <div className="relative flex grow">
       <TooltipProvider>
