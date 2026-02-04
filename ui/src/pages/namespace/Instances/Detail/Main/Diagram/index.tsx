@@ -14,6 +14,7 @@ import {
   useLogsPreferencesMaximizedPanel,
 } from "~/util/store/logs";
 
+import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { FC } from "react";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
@@ -37,8 +38,15 @@ const Diagram: FC<DiagramProps> = ({ instanceId, status }) => {
   const parsedInstanceFlow = InstanceFlowResponseSchema.safeParse(data);
 
   if (!parsedInstanceFlow.success) {
-    // Todo: Decide what kind of error handling is appropriate here
-    return null;
+    return (
+      <div className="relative flex grow">
+        <div>
+          <Alert variant="error" className="grow-0">
+            {t("pages.instances.detail.diagram.invalid")}
+          </Alert>
+        </div>
+      </div>
+    );
   }
 
   return (
