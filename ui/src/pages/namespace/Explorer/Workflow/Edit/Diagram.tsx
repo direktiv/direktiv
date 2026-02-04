@@ -1,6 +1,6 @@
 import {
   InstanceFlowResponseSchema,
-  workflowStateSchema,
+  InstanceFlowSchema,
 } from "~/api/instances/schema";
 import { Maximize2, Minimize2 } from "lucide-react";
 import {
@@ -38,14 +38,14 @@ const Diagram: FC<DiagramProps> = ({ path }) => {
   const workflowData =
     data.type === "workflow" ? { data: data.states } : undefined;
 
-  const parsedWorkflow = InstanceFlowResponseSchema.safeParse(workflowData);
+  const parsedInstanceFlow = InstanceFlowResponseSchema.safeParse(workflowData);
 
-  if (!parsedWorkflow.success) {
+  if (!parsedInstanceFlow.success) {
     // Todo: Decide what kind of error handling is appropriate here
     return null;
   }
 
-  const parsedWorkflowData = workflowStateSchema.safeParse(workflowData?.data);
+  const parsedWorkflowData = InstanceFlowSchema.safeParse(workflowData?.data);
 
   if (!parsedWorkflowData.success) {
     // Todo: Decide what kind of error handling is appropriate here
@@ -80,7 +80,7 @@ const Diagram: FC<DiagramProps> = ({ path }) => {
         </Tooltip>
       </TooltipProvider>
       <WorkflowDiagram
-        workflow={parsedWorkflow.data}
+        workflow={parsedInstanceFlow.data}
         orientation="horizontal"
         instanceStatus="pending"
       />

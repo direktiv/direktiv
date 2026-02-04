@@ -1,10 +1,10 @@
 import Button from "../Button";
 import { ButtonBar } from "../ButtonBar";
 import { Card } from "../Card";
+import { InstanceFlowResponse } from "~/api/instances/schema";
 import { Orientation } from "./types";
 import WorkflowDiagram from "./index";
 import { useState } from "react";
-import { Workflow as workflowtype } from "~/api/instances/schema";
 
 const exampleWorkflowInitial = {
   data: {
@@ -347,7 +347,7 @@ export const WorkflowInstanceComplete = () => (
 );
 
 export const UpdateWorkflow = () => {
-  const [workflow, setWorkflow] = useState<workflowtype>(
+  const [workflow, setWorkflow] = useState<InstanceFlowResponse>(
     exampleWorkflowInitial
   );
   const [status, setStatus] = useState<"pending" | "complete">("pending");
