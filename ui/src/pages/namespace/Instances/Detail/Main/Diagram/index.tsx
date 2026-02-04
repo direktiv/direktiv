@@ -34,9 +34,9 @@ const Diagram: FC<DiagramProps> = ({ instanceId, status }) => {
 
   const { data } = useInstanceFlow({ instanceId });
 
-  const parsedWorkflow = InstanceFlowResponseSchema.safeParse(data);
+  const parsedInstanceFlow = InstanceFlowResponseSchema.safeParse(data);
 
-  if (!parsedWorkflow.success) {
+  if (!parsedInstanceFlow.success) {
     // Todo: Decide what kind of error handling is appropriate here
     return null;
   }
@@ -69,7 +69,7 @@ const Diagram: FC<DiagramProps> = ({ instanceId, status }) => {
         </Tooltip>
       </TooltipProvider>
       <WorkflowDiagram
-        workflow={parsedWorkflow.data}
+        states={parsedInstanceFlow.data}
         orientation="horizontal"
         instanceStatus={instanceStatusToDiagramStatus(status)}
       />
