@@ -78,7 +78,7 @@ const FileSchema = BaseFileSchema.extend({
   size: z.number(),
   mimeType: z.string(),
   data: z.string(),
-  states: z.record(WorkflowStatesSchema).optional(),
+  states: WorkflowStatesSchema.optional(),
 });
 
 /* Additional properties exist on files in "children", but aren't currently used. */

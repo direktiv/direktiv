@@ -1,5 +1,5 @@
 import { Card } from "~/design/Card";
-import Diagram from "./Main/Diagram";
+import Diagram from "../../../../components/Diagram";
 import Header from "./Header";
 import InputOutput from "./Main/InputOutput";
 import Logs from "./Main/Logs";
