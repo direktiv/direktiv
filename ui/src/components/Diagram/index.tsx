@@ -38,9 +38,9 @@ const Diagram: FC<DiagramProps> = ({
   const maximizedPanel = useLogsPreferencesMaximizedPanel();
   const isMaximized = maximizedPanel === "diagram";
 
-  const parsedInstanceFlow = WorkflowStatesSchema.safeParse(states);
+  const parsedStates = WorkflowStatesSchema.safeParse(states);
 
-  if (!parsedInstanceFlow.success) {
+  if (!parsedStates.success) {
     return (
       <div className="flex grow flex-col items-center justify-center">
         <Alert variant="error" className="grow-0">
@@ -80,7 +80,7 @@ const Diagram: FC<DiagramProps> = ({
         </TooltipProvider>
       )}
       <WorkflowDiagram
-        states={parsedInstanceFlow.data}
+        states={parsedStates.data}
         orientation="horizontal"
         // todo: is this still needed?
         instanceStatus={instanceStatusToDiagramStatus(instanceStatus)}
