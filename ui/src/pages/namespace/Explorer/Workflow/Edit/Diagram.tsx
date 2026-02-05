@@ -40,12 +40,10 @@ const Diagram: FC<DiagramProps> = ({ path }) => {
 
   if (!parsedInstanceFlow.success) {
     return (
-      <div className="relative flex grow">
-        <div>
-          <Alert variant="error" className="grow-0">
-            {t("pages.instances.detail.diagram.invalid")}
-          </Alert>
-        </div>
+      <div className="flex grow flex-col items-center justify-center">
+        <Alert variant="error" className="grow-0">
+          {t("pages.instances.detail.diagram.invalid")}
+        </Alert>
       </div>
     );
   }
