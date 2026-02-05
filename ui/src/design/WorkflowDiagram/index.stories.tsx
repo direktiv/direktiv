@@ -3,287 +3,273 @@ import { ButtonBar } from "../ButtonBar";
 import { Card } from "../Card";
 import { Orientation } from "./types";
 import WorkflowDiagram from "./index";
+import { WorkflowStatesSchemaType } from "~/api/instances/schema";
 import { useState } from "react";
-import { Workflow as workflowtype } from "~/api/instances/schema";
 
 const exampleWorkflowInitial = {
-  data: {
-    stateFirst: {
-      name: "hello-world",
-      start: true,
-      finish: false,
-      visited: false,
-      failed: false,
-      transitions: ["exit"],
+  stateFirst: {
+    name: "hello-world",
+    start: true,
+    finish: false,
+    visited: false,
+    failed: false,
+    transitions: ["exit"],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
+  },
 
-    stateSecond: {
-      name: "exit",
-      start: false,
-      finish: true,
-      visited: false,
-      failed: false,
-      transitions: [],
+  stateSecond: {
+    name: "exit",
+    start: false,
+    finish: true,
+    visited: false,
+    failed: false,
+    transitions: [],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
   },
 };
 
 const exampleWorkflowStepOne = {
-  data: {
-    stateFirst: {
-      name: "hello-world",
-      start: true,
-      finish: false,
-      visited: true,
-      failed: false,
-      transitions: ["exit"],
+  stateFirst: {
+    name: "hello-world",
+    start: true,
+    finish: false,
+    visited: true,
+    failed: false,
+    transitions: ["exit"],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
+  },
 
-    stateSecond: {
-      name: "exit",
-      start: false,
-      finish: true,
-      visited: false,
-      failed: false,
-      transitions: [],
+  stateSecond: {
+    name: "exit",
+    start: false,
+    finish: true,
+    visited: false,
+    failed: false,
+    transitions: [],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
   },
 };
 
 const exampleWorkflowStepTwo = {
-  data: {
-    stateFirst: {
-      name: "hello-world",
-      start: true,
-      finish: false,
-      visited: true,
-      failed: false,
-      transitions: ["exit"],
+  stateFirst: {
+    name: "hello-world",
+    start: true,
+    finish: false,
+    visited: true,
+    failed: false,
+    transitions: ["exit"],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
+  },
 
-    stateSecond: {
-      name: "exit",
-      start: false,
-      finish: true,
-      visited: true,
-      failed: false,
-      transitions: [],
+  stateSecond: {
+    name: "exit",
+    start: false,
+    finish: true,
+    visited: true,
+    failed: false,
+    transitions: [],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
   },
 };
 
 const exampleWorkflowPending = {
-  data: {
-    stateFirst: {
-      name: "hello-world",
-      start: true,
-      finish: false,
-      visited: true,
-      failed: false,
-      transitions: ["exit"],
+  stateFirst: {
+    name: "hello-world",
+    start: true,
+    finish: false,
+    visited: true,
+    failed: false,
+    transitions: ["exit"],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
+  },
 
-    stateSecond: {
-      name: "exit",
-      start: false,
-      finish: true,
-      visited: true,
-      failed: false,
-      transitions: [],
+  stateSecond: {
+    name: "exit",
+    start: false,
+    finish: true,
+    visited: true,
+    failed: false,
+    transitions: [],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
   },
 };
 
 const exampleWorkflowFailed = {
-  data: {
-    stateFirst: {
-      name: "stateFirst",
-      start: true,
-      finish: false,
-      visited: true,
-      failed: false,
-      transitions: ["stateSecond"],
+  stateFirst: {
+    name: "stateFirst",
+    start: true,
+    finish: false,
+    visited: true,
+    failed: false,
+    transitions: ["stateSecond"],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
+  },
 
-    stateSecond: {
-      name: "stateSecond",
-      start: false,
-      finish: false,
-      visited: true,
-      failed: true,
-      transitions: ["stateThird"],
+  stateSecond: {
+    name: "stateSecond",
+    start: false,
+    finish: false,
+    visited: true,
+    failed: true,
+    transitions: ["stateThird"],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
+  },
 
-    stateThird: {
-      name: "stateThird",
-      start: false,
-      finish: true,
-      visited: false,
-      failed: false,
-      transitions: [],
+  stateThird: {
+    name: "stateThird",
+    start: false,
+    finish: true,
+    visited: false,
+    failed: false,
+    transitions: [],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
   },
 };
 
 const exampleWorkflowComplete = {
-  data: {
-    stateFirst: {
-      name: "hello-world",
-      start: true,
-      finish: false,
-      visited: true,
-      failed: false,
-      transitions: ["exit"],
+  stateFirst: {
+    name: "hello-world",
+    start: true,
+    finish: false,
+    visited: true,
+    failed: false,
+    transitions: ["exit"],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
+  },
 
-    stateSecond: {
-      name: "exit",
-      start: false,
-      finish: true,
-      visited: true,
-      failed: false,
-      transitions: [],
+  stateSecond: {
+    name: "exit",
+    start: false,
+    finish: true,
+    visited: true,
+    failed: false,
+    transitions: [],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
   },
 };
 
 const exampleWorkflowComplex = {
-  data: {
-    stateFirst: {
-      name: "hello-world",
-      start: true,
-      finish: false,
-      visited: true,
-      failed: false,
-      transitions: ["actionOne", "actionTwo"],
+  stateFirst: {
+    name: "hello-world",
+    start: true,
+    finish: false,
+    visited: true,
+    failed: false,
+    transitions: ["actionOne", "actionTwo"],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
-    stateSecondOptionA: {
-      name: "actionOne",
-      start: false,
-      finish: false,
-      visited: false,
-      failed: false,
-      transitions: ["exit"],
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
+  },
+  stateSecondOptionA: {
+    name: "actionOne",
+    start: false,
+    finish: false,
+    visited: false,
+    failed: false,
+    transitions: ["exit"],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
-    stateSecondOptionB: {
-      name: "actionTwo",
-      start: false,
-      finish: false,
-      visited: true,
-      failed: false,
-      transitions: ["exit"],
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
+  },
+  stateSecondOptionB: {
+    name: "actionTwo",
+    start: false,
+    finish: false,
+    visited: true,
+    failed: false,
+    transitions: ["exit"],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
+  },
 
-    stateSecond: {
-      name: "exit",
-      start: false,
-      finish: true,
-      visited: true,
-      failed: false,
-      transitions: [],
+  stateSecond: {
+    name: "exit",
+    start: false,
+    finish: true,
+    visited: true,
+    failed: false,
+    transitions: [],
 
-      events: [],
-      conditions: [],
-      catch: [],
-      transition: "",
-      defaultTransition: "",
-    },
+    events: [],
+    conditions: [],
+    catch: [],
+    transition: "",
+    defaultTransition: "",
   },
 };
 
@@ -318,36 +304,33 @@ export default {
 
 export const Workflow = () => (
   <div className="h-96">
-    <WorkflowDiagram workflow={exampleWorkflowInitial} />
+    <WorkflowDiagram states={exampleWorkflowInitial} />
   </div>
 );
 
 export const WorkflowInstancePending = () => (
   <div className="h-96">
-    <WorkflowDiagram
-      workflow={exampleWorkflowPending}
-      instanceStatus="pending"
-    />
+    <WorkflowDiagram states={exampleWorkflowPending} instanceStatus="pending" />
   </div>
 );
 
 export const WorkflowInstanceFailed = () => (
   <div className="h-96">
-    <WorkflowDiagram workflow={exampleWorkflowFailed} instanceStatus="failed" />
+    <WorkflowDiagram states={exampleWorkflowFailed} instanceStatus="failed" />
   </div>
 );
 
 export const WorkflowInstanceComplete = () => (
   <div className="h-96">
     <WorkflowDiagram
-      workflow={exampleWorkflowComplete}
+      states={exampleWorkflowComplete}
       instanceStatus="complete"
     />
   </div>
 );
 
 export const UpdateWorkflow = () => {
-  const [workflow, setWorkflow] = useState<workflowtype>(
+  const [workflow, setWorkflow] = useState<WorkflowStatesSchemaType>(
     exampleWorkflowInitial
   );
   const [status, setStatus] = useState<"pending" | "complete">("pending");
@@ -401,7 +384,7 @@ export const UpdateWorkflow = () => {
         </Button>
       </ButtonBar>
       <WorkflowDiagram
-        workflow={workflow}
+        states={workflow}
         instanceStatus={status}
         orientation={orientation}
       />
@@ -416,7 +399,7 @@ export const UpdateWorkflow = () => {
 export const ComplexWorkflowDiagram = () => (
   <div className="h-[600px]">
     <WorkflowDiagram
-      workflow={exampleWorkflowComplex}
+      states={exampleWorkflowComplex}
       instanceStatus="complete"
     />
   </div>

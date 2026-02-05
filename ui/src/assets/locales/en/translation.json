@@ -671,7 +671,8 @@
         },
         "diagram": {
           "minimizeInput": "Minimize diagram",
-          "maximizeInput": "Maximize diagram"
+          "maximizeInput": "Maximize diagram",
+          "invalid": "No valid workflow state description found"
         },
         "inputOutput": {
           "copyInput": "Copy input",

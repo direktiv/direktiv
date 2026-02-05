@@ -11,7 +11,7 @@ import {
 
 import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
-import Diagram from "./Diagram";
+import Diagram from "~/components/Diagram";
 import { EditorLayoutSwitcher } from "~/components/EditorLayoutSwitcher";
 import RunWorkflow from "../components/RunWorkflow";
 import { WorkspaceLayout } from "~/components/WorkspaceLayout";
@@ -85,7 +85,7 @@ const WorkflowEditor: FC<{
     <div className="relative flex grow flex-col space-y-4 p-5">
       <WorkspaceLayout
         layout={currentLayout}
-        diagramComponent={<Diagram path={data.path} />}
+        diagramComponent={<Diagram states={data.states} resizable={false} />}
         editorComponent={
           <CodeEditor
             value={editorContent}

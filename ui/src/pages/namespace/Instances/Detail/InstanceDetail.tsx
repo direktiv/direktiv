@@ -1,11 +1,12 @@
 import { Card } from "~/design/Card";
-import Diagram from "./Main/Diagram";
+import Diagram from "../../../../components/Diagram";
 import Header from "./Header";
 import InputOutput from "./Main/InputOutput";
 import Logs from "./Main/Logs";
 import { NoPermissions } from "~/design/Table";
 import WorkspaceLayout from "./Main";
 import { useInstanceDetails } from "~/api/instances/query/details";
+import { useInstanceFlow } from "~/api/instances/query/flow";
 import { useInstanceId } from "./store/instanceContext";
 import { useLogsPreferencesMaximizedPanel } from "~/util/store/logs";
 
@@ -13,6 +14,7 @@ const InstancesDetail = () => {
   const instanceId = useInstanceId();
   const { data, isFetched, isAllowed, noPermissionMessage } =
     useInstanceDetails({ instanceId });
+  const { data: instanceStates } = useInstanceFlow({ instanceId });
   const preferedLayout = useLogsPreferencesMaximizedPanel();
 
   if (!isFetched) return null;
@@ -32,7 +34,11 @@ const InstancesDetail = () => {
         layout={preferedLayout}
         logComponent={<Logs />}
         diagramComponent={
-          <Diagram instanceId={instanceId} status={data.status} />
+          <Diagram
+            states={instanceStates?.data}
+            instanceStatus={data.status}
+            resizable={true}
+          />
         }
         inputOutputComponent={<InputOutput />}
       />
