@@ -6,8 +6,15 @@ import dagre from "dagre";
 
 const defaultEdgeType = "default";
 
+type DiagramNodeData = {
+  type?: "function";
+  label: string;
+  status: string; // todo: update
+  orientation: Orientation;
+};
+
 const createLayoutedElements = (
-  incomingEles: (Edge | Node)[],
+  incomingEles: (Edge | Node<DiagramNodeData>)[],
   orientation: Orientation = "vertical"
 ) => {
   const dagreGraph = new dagre.graphlib.Graph();
@@ -50,7 +57,7 @@ export function createElements(
   instanceStatus: "pending" | "complete" | "failed",
   orientation: Orientation
 ) {
-  const newElements: (Node | Edge)[] = [];
+  const newElements: (Node<DiagramNodeData> | Edge)[] = [];
   if (!value) return [];
 
   const states = Object.values(value);
