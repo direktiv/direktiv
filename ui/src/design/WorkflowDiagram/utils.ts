@@ -47,7 +47,7 @@ const position = { x: 0, y: 0 };
 
 export function createElements(
   value: WorkflowStatesSchemaType,
-  status: "pending" | "complete" | "failed",
+  instanceStatus: "pending" | "complete" | "failed",
   orientation: Orientation
 ) {
   const newElements: (Node | Edge)[] = [];
@@ -61,7 +61,7 @@ export function createElements(
   newElements.push({
     id: "startNode",
     position,
-    data: { label: "", wasExecuted: status !== "pending", orientation },
+    data: { label: "", status: instanceStatus, orientation },
     type: "start",
     sourcePosition: Position.Right,
   });
@@ -86,8 +86,10 @@ export function createElements(
       data: {
         type: "function",
         label: state.name,
-        state,
-        wasExecuted: state.visited,
+        status:
+          (state.failed && "failed") ||
+          (state.visited && "success") ||
+          "pending",
         orientation,
       },
       type: "state",
@@ -137,7 +139,7 @@ export function createElements(
   newElements.push({
     id: "endNode",
     type: "end",
-    data: { label: "", wasExecuted: status === "complete", orientation },
+    data: { label: "", status: instanceStatus, orientation },
     position,
   });
 

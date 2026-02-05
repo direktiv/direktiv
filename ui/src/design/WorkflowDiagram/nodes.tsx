@@ -6,27 +6,33 @@ import { Orientation } from "./types";
 import { Separator } from "../Separator";
 import { twMergeClsx } from "~/util/helpers";
 
+type DiagramElementStatus = "pending" | "complete" | "failed";
+
 type StateProps = {
   data: {
     label: string;
     type: string;
-    wasExecuted: boolean;
+    status: DiagramElementStatus;
     orientation: Orientation;
   };
 };
 
 type StartEndProps = {
   data: {
-    wasExecuted: boolean;
+    status: DiagramElementStatus;
     orientation: Orientation;
   };
 };
 
 type HandleProps = ComponentProps<typeof Handle> & {
-  highlight?: boolean;
+  status?: DiagramElementStatus;
 };
 
-const CustomHandle: FC<HandleProps> = ({ type, position, highlight }) => (
+const CustomHandle: FC<HandleProps> = ({
+  type,
+  position,
+  status = "pending",
+}) => (
   <Handle
     type={type}
     position={position}
@@ -34,49 +40,51 @@ const CustomHandle: FC<HandleProps> = ({ type, position, highlight }) => (
     className={twMergeClsx(
       "size-2 rounded border",
       "!bg-white dark:!bg-black",
-      highlight
-        ? "!border-success-9 dark:!border-success-dark-9"
-        : "!border-gray-8 dark:!border-gray-dark-8"
+      status === "complete" && "!border-success-9 dark:!border-success-dark-9",
+      status === "failed" && "!border-danger-9 dark:!border-danger-dark-9",
+      status === "pending" && "border-gray-8 dark:!border-gray-dark-8"
     )}
   />
 );
 
 export const State: FC<StateProps> = ({ data }) => {
-  const { label, type, wasExecuted, orientation } = data;
+  const { label, type, status, orientation } = data;
   return (
     <Card
       className={twMergeClsx(
         "flex flex-col",
-        wasExecuted
-          ? "ring-success-9 dark:ring-success-dark-9"
-          : "ring-gray-8 dark:ring-gray-dark-8"
+        status === "complete" && "ring-success-9 dark:ring-success-dark-9",
+        status === "failed" && "ring-danger-9 dark:ring-danger-dark-9",
+        status === "pending" && "ring-gray-8 dark:ring-gray-dark-8"
       )}
       background="weight-1"
     >
       <CustomHandle
         type="target"
         position={orientation === "horizontal" ? Position.Left : Position.Top}
-        highlight={wasExecuted}
+        status={status}
       />
       <div
         className={twMergeClsx(
           "p-1 text-xs font-bold",
-          wasExecuted && "text-success-9 dark:text-success-dark-9"
+          status === "complete" && "text-success-9 dark:text-success-dark-9",
+          status === "failed" && "text-danger-9 dark:text-danger-dark-9"
         )}
       >
         {type}
       </div>
       <Separator
         className={twMergeClsx(
-          wasExecuted
-            ? "bg-success-9 dark:bg-success-dark-9"
-            : "bg-gray-8 dark:bg-gray-dark-8"
+          status === "complete" && "bg-success-9 dark:bg-success-dark-9",
+          status === "failed" && "bg-danger-9 dark:bg-danger-dark-9",
+          status === "pending" && "bg-gray-8 dark:bg-gray-dark-8"
         )}
       />
       <div
         className={twMergeClsx(
           "p-1 text-xs",
-          wasExecuted && "text-success-9 dark:text-success-dark-9"
+          status === "complete" && "text-success-9 dark:text-success-dark-9",
+          status === "failed" && "text-danger-9 dark:text-danger-dark-9"
         )}
       >
         {label}
@@ -86,7 +94,7 @@ export const State: FC<StateProps> = ({ data }) => {
         position={
           orientation === "horizontal" ? Position.Right : Position.Bottom
         }
-        highlight={wasExecuted}
+        status={status}
       />
     </Card>
   );
@@ -94,32 +102,32 @@ export const State: FC<StateProps> = ({ data }) => {
 
 type StartEndHandleProps = PropsWithChildren & {
   end?: boolean;
-  highlight?: boolean;
+  status: DiagramElementStatus;
 };
 
 const StartEndHandle: FC<StartEndHandleProps> = ({
   children,
-  end,
-  highlight,
+  end = false,
+  status = "pending",
 }) => (
   <Card
     className={twMergeClsx(
       "size-12 rounded-full p-2",
-      highlight
-        ? "ring-success-9 dark:ring-success-dark-9"
-        : "ring-gray-8 dark:ring-gray-dark-8"
+      status === "complete" && "ring-success-9 dark:ring-success-dark-9",
+      status === "failed" && "ring-danger-9 dark:ring-danger-dark-9",
+      status === "pending" && "ring-gray-8 dark:ring-gray-dark-8"
     )}
     background="weight-1"
   >
     <div
       className={twMergeClsx(
         "size-full rounded-full",
-        end && "bg-success-9 dark:bg-success-dark-9",
+        end && "bg-gray-8 dark:bg-gray-dark-8",
         !end && [
           "ring-1",
-          highlight
-            ? "ring-success-9 dark:ring-success-dark-9"
-            : "ring-gray-8 dark:ring-gray-dark-8",
+          status === "complete" && "ring-success-9 dark:ring-success-dark-9",
+          status === "failed" && "ring-danger-9 dark:ring-danger-dark-9",
+          status === "pending" && "ring-gray-8 dark:ring-gray-dark-8",
         ]
       )}
     >
@@ -129,25 +137,25 @@ const StartEndHandle: FC<StartEndHandleProps> = ({
 );
 
 export const Start: FC<StartEndProps> = ({ data }) => (
-  <StartEndHandle highlight={data.wasExecuted}>
+  <StartEndHandle status={data.status}>
     <CustomHandle
       type="source"
       position={
         data.orientation === "horizontal" ? Position.Right : Position.Bottom
       }
-      highlight={data.wasExecuted}
+      status={data.status}
     />
   </StartEndHandle>
 );
 
 export const End: FC<StartEndProps> = ({ data }) => (
-  <StartEndHandle highlight={data.wasExecuted} end>
+  <StartEndHandle status={data.status} end>
     <CustomHandle
       type="target"
       position={
         data.orientation === "horizontal" ? Position.Left : Position.Top
       }
-      highlight={data.wasExecuted}
+      status={data.status}
     />
   </StartEndHandle>
 );
