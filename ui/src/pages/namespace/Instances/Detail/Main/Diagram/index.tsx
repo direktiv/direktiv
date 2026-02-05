@@ -1,6 +1,7 @@
 import {
-  InstanceFlowResponseSchema,
   InstanceSchemaType,
+  WorkflowStatesSchema,
+  WorkflowStatesSchemaType,
 } from "~/api/instances/schema";
 import { Maximize2, Minimize2 } from "lucide-react";
 import {
@@ -19,23 +20,25 @@ import Button from "~/design/Button";
 import { FC } from "react";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
 import { instanceStatusToDiagramStatus } from "./utils";
-import { useInstanceFlow } from "~/api/instances/query/flow";
 import { useTranslation } from "react-i18next";
 
 type DiagramProps = {
-  instanceId: string;
-  status: InstanceSchemaType["status"];
+  states?: WorkflowStatesSchemaType;
+  instanceStatus?: InstanceSchemaType["status"];
+  resizable?: boolean;
 };
 
-const Diagram: FC<DiagramProps> = ({ instanceId, status }) => {
+const Diagram: FC<DiagramProps> = ({
+  states,
+  instanceStatus,
+  resizable = false,
+}) => {
   const { setMaximizedPanel } = useLogsPreferencesActions();
   const { t } = useTranslation();
   const maximizedPanel = useLogsPreferencesMaximizedPanel();
   const isMaximized = maximizedPanel === "diagram";
 
-  const { data } = useInstanceFlow({ instanceId });
-
-  const parsedInstanceFlow = InstanceFlowResponseSchema.safeParse(data);
+  const parsedInstanceFlow = WorkflowStatesSchema.safeParse(states);
 
   if (!parsedInstanceFlow.success) {
     return (
@@ -49,35 +52,38 @@ const Diagram: FC<DiagramProps> = ({ instanceId, status }) => {
 
   return (
     <div className="relative flex grow">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="absolute right-5 top-5 z-50">
-              <Button
-                data-testid="resizeDiagram"
-                icon
-                size="sm"
-                variant="outline"
-                className="bg-white dark:bg-black"
-                onClick={() => {
-                  setMaximizedPanel(isMaximized ? "none" : "diagram");
-                }}
-              >
-                {isMaximized ? <Minimize2 /> : <Maximize2 />}
-              </Button>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            {isMaximized
-              ? t("pages.instances.detail.diagram.minimizeInput")
-              : t("pages.instances.detail.diagram.maximizeInput")}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      {resizable && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="absolute right-5 top-5 z-50">
+                <Button
+                  data-testid="resizeDiagram"
+                  icon
+                  size="sm"
+                  variant="outline"
+                  className="bg-white dark:bg-black"
+                  onClick={() => {
+                    setMaximizedPanel(isMaximized ? "none" : "diagram");
+                  }}
+                >
+                  {isMaximized ? <Minimize2 /> : <Maximize2 />}
+                </Button>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              {isMaximized
+                ? t("pages.instances.detail.diagram.minimizeInput")
+                : t("pages.instances.detail.diagram.maximizeInput")}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
       <WorkflowDiagram
         states={parsedInstanceFlow.data}
         orientation="horizontal"
-        instanceStatus={instanceStatusToDiagramStatus(status)}
+        // todo: is this still needed?
+        instanceStatus={instanceStatusToDiagramStatus(instanceStatus)}
       />
     </div>
   );

@@ -13,8 +13,8 @@ import {
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { FC } from "react";
-import { InstanceFlowResponseSchema } from "~/api/instances/schema";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
+import { WorkflowStatesSchema } from "~/api/instances/schema";
 import { useFile } from "~/api/files/query/file";
 import { useTranslation } from "react-i18next";
 
@@ -36,7 +36,7 @@ const Diagram: FC<DiagramProps> = ({ path }) => {
   const workflowData =
     data.type === "workflow" ? { data: data.states } : undefined;
 
-  const parsedInstanceFlow = InstanceFlowResponseSchema.safeParse(workflowData);
+  const parsedInstanceFlow = WorkflowStatesSchema.safeParse(workflowData);
 
   if (!parsedInstanceFlow.success) {
     return (

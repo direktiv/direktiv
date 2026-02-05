@@ -1,4 +1,4 @@
-import { InstanceFlowSchema } from "../instances/schema";
+import { WorkflowStatesSchema } from "../instances/schema";
 import { WorkflowValidationSchema } from "../validate/schema";
 import { z } from "zod";
 
@@ -78,7 +78,7 @@ const FileSchema = BaseFileSchema.extend({
   size: z.number(),
   mimeType: z.string(),
   data: z.string(),
-  states: z.record(InstanceFlowSchema).optional(),
+  states: z.record(WorkflowStatesSchema).optional(),
 });
 
 /* Additional properties exist on files in "children", but aren't currently used. */

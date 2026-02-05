@@ -1,6 +1,6 @@
-import { InstanceFlowResponse } from "~/api/instances/schema";
 import { Orientation } from "./types";
 import { ReactFlowProvider } from "reactflow";
+import { WorkflowStatesSchemaType } from "~/api/instances/schema";
 import { ZoomPanDiagram } from "./ZoomPanDiagram";
 import { createElements } from "./utils";
 
@@ -12,7 +12,7 @@ import { createElements } from "./utils";
  *   * disabled: Disables diagram zoom-in
  */
 type WorkflowDiagramProps = {
-  states: InstanceFlowResponse;
+  states: WorkflowStatesSchemaType;
   orientation?: Orientation;
   instanceStatus?: "pending" | "complete" | "failed";
   disabled?: boolean;
