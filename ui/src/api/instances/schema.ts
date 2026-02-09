@@ -186,7 +186,7 @@ export const InstanceOutputResponseSchema = z.object({
  */
 
 export const workflowStateSchema = z.object({
-  name: z.string(),
+  name: z.string().optional(),
   start: z.boolean().optional(),
   finish: z.boolean().optional(),
   visited: z.boolean().optional(),

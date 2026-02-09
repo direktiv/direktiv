@@ -1,6 +1,6 @@
 import { Edge, Node, Position, isNode } from "reactflow";
+import { Orientation, State } from "./types";
 
-import { Orientation } from "./types";
 import { Workflow } from "~/api/instances/schema";
 import dagre from "dagre";
 
@@ -53,9 +53,11 @@ export function createElements(
   const newElements: (Node | Edge)[] = [];
   if (!value) return [];
 
-  const states = Object.values(value.data);
+  const states = Object.values(value.data) as unknown as State[];
 
   if (states.length === 0) return [];
+
+  const finishStates = states.filter((s) => s && (s as State).finish === true);
 
   // create start node
   newElements.push({
@@ -66,14 +68,17 @@ export function createElements(
     sourcePosition: Position.Right,
   });
 
+  const startState = states.find((s) => s && (s as State).start === true);
+  const startId = startState ? startState.name : "";
+
   // loop through all the state nodes
-  for (const state of states) {
+  for (const [index, state] of states.entries()) {
     // create start edge
-    if (state.start === true) {
+    if (index === 0) {
       newElements.push({
-        id: `startNode-${state.name}`,
+        id: `startNode-${startId}`,
         source: "startNode",
-        target: state.name,
+        target: startId,
         type: defaultEdgeType,
         animated: state.visited,
       });
@@ -134,10 +139,13 @@ export function createElements(
     }
   }
 
+  const reachedEnd =
+    finishStates.find((s) => s.visited === true) && status === "complete";
+
   newElements.push({
     id: "endNode",
     type: "end",
-    data: { label: "", wasExecuted: status === "complete", orientation },
+    data: { label: "", wasExecuted: reachedEnd, orientation },
     position,
   });
 
