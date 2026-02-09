@@ -224,10 +224,14 @@ func Start(lc *lifecycle.Manager) error {
 		}
 
 		slog.Info("initializing engine")
+
+		store := datasql.NewStore(app.DB)
+
 		app.Engine, err = engine.NewEngine(
 			databus.New(js, app.PubSub),
 			comp,
 			js,
+			store,
 		)
 		if err != nil {
 			return fmt.Errorf("create engine, err: %w", err)

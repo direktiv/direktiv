@@ -10,6 +10,7 @@ import (
 
 	"github.com/direktiv/direktiv/internal/api/filter"
 	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/engine/runtime"
 	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
@@ -37,13 +38,15 @@ type Engine struct {
 	dataBus  DataBus
 	compiler core.Compiler
 	js       nats.JetStreamContext
+	store    datastore.Store
 }
 
-func NewEngine(bus DataBus, compiler core.Compiler, js nats.JetStreamContext) (*Engine, error) {
+func NewEngine(bus DataBus, compiler core.Compiler, js nats.JetStreamContext, store datastore.Store) (*Engine, error) {
 	return &Engine{
 		dataBus:  bus,
 		compiler: compiler,
 		js:       js,
+		store:    store,
 	}, nil
 }
 
@@ -212,17 +215,46 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		if st.State != StateCodeComplete {
 			return nil, fmt.Errorf("subflow did not complete: %s", st.Error)
 		}
-
 		return st.Output, nil
 	}
-
+	var onSetVariable runtime.OnSetVariableHook = func(ctx context.Context, scope string, name string, data []byte) error {
+		if name == "" {
+			return datastore.ErrInvalidRuntimeVariableName
+		}
+	
+		rv := &datastore.RuntimeVariable{
+			Namespace: inst.Namespace,
+			Name:      name,
+			Data:      data,
+			// Simple default; you can adjust later (e.g. detect JSON vs binary).
+			MimeType: "application/octet-stream",
+		}
+	
+		switch core.VariableScope(scope) {
+		case core.VariableScopeNamespace:
+			// namespace-level: nothing else to set
+		case core.VariableScopeWorkflow:
+			wfPath := inst.Metadata[core.EngineMappingPath]
+			if wfPath == "" {
+				return fmt.Errorf("missing workflow path in instance metadata for workflow-scoped variable")
+			}
+			rv.WorkflowPath = wfPath
+		case core.VariableScopeInstance:
+			rv.InstanceID = inst.InstanceID
+		default:
+			return fmt.Errorf("invalid variable scope %q", scope)
+		}
+	
+		_, err := e.store.RuntimeVariables().Create(ctx, rv)
+		return err
+	}
 	ctx = telemetry.SetupInstanceLogs(ctx,
 		sc.Metadata[core.EngineMappingNamespace],
 		sc.InstID.String(),
 		sc.Metadata[LabelInvokerType],
 		sc.Metadata[core.EngineMappingPath])
 
-	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, onSubflow)
+	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, onSubflow, onSetVariable)
 	if err == nil {
 		return nil
 	}

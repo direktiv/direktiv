@@ -17,22 +17,24 @@ import (
 )
 
 type Runtime struct {
-	vm           *sobek.Runtime
-	instID       uuid.UUID
-	metadata     map[string]string
-	onFinish     OnFinishHook
-	onTransition OnTransitionHook
-	onAction     OnActionHook
-	onSubflow    OnSubflowHook
+	vm            *sobek.Runtime
+	instID        uuid.UUID
+	metadata      map[string]string
+	onFinish      OnFinishHook
+	onTransition  OnTransitionHook
+	onAction      OnActionHook
+	onSubflow     OnSubflowHook
+	onSetVariable OnSetVariableHook
 	//nolint:containedctx
 	ctx context.Context
 }
 
 type (
-	OnFinishHook     func(output []byte) error
-	OnTransitionHook func(output []byte, fn string) error
-	OnActionHook     func(svcID string) error
-	OnSubflowHook    func(ctx context.Context, path string, input []byte) ([]byte, error)
+	OnFinishHook      func(output []byte) error
+	OnTransitionHook  func(output []byte, fn string) error
+	OnActionHook      func(svcID string) error
+	OnSubflowHook     func(ctx context.Context, path string, input []byte) ([]byte, error)
+	OnSetVariableHook func(ctx context.Context, scope string, name string, data []byte) error
 )
 
 func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mappings string, hooks ...any) *Runtime {
@@ -71,6 +73,7 @@ func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mapp
 		{"getSecret", rt.secret},
 		{"execSubflow", rt.execSubflow},
 		{"execService", rt.service},
+		{"setVariable", rt.setVariable},
 	}
 
 	for _, v := range setList {
@@ -97,6 +100,9 @@ func (rt *Runtime) setHook(f any) *Runtime {
 		rt.onAction = f
 	case OnSubflowHook:
 		rt.onSubflow = f
+	case OnSetVariableHook:
+		rt.onSetVariable = f
+
 	default:
 		panic(fmt.Sprintf("unknown hook type: %T", f))
 	}
@@ -148,6 +154,24 @@ func (rt *Runtime) secrets(secretNames []string) sobek.Value {
 	}
 
 	return rt.vm.ToValue(retSecrets)
+}
+func (rt *Runtime) setVariable(scope string, name string, content string) sobek.Value {
+
+	data, err := base64.StdEncoding.DecodeString(content)
+	if err != nil {
+		panic(rt.vm.ToValue("invalid base64 content"))
+	}
+
+	if rt.onSetVariable == nil {
+		panic(rt.vm.ToValue("setVariable not supported"))
+	}
+
+	err = rt.onSetVariable(rt.ctx, scope, name, data)
+	if err != nil {
+		panic(rt.vm.ToValue(err.Error()))
+	}
+
+	return sobek.Undefined()
 }
 
 func (rt *Runtime) sleep(seconds int) sobek.Value {
