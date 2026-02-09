@@ -12,12 +12,14 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "~/design/Toast";
 import queryClient from "~/util/queryClient";
 import { usePage } from "./api/page";
+import { useState } from "react";
 
 const appContainer = document.getElementById("root");
 if (!appContainer) throw new Error("Root element not found");
 
 const PageLoader = () => {
   const { data, error, isPending } = usePage(window.location.pathname);
+  const [scrollPos, setScrollPos] = useState(0);
 
   if (isPending) {
     return <Loader2 className="mx-auto mt-10 animate-spin" />;
@@ -36,6 +38,8 @@ const PageLoader = () => {
     <PageCompilerContextProvider
       setPage={() => {}}
       page={page.data}
+      scrollPos={scrollPos}
+      setScrollPos={setScrollPos}
       mode="live"
     >
       <EditorPanelLayoutProvider>

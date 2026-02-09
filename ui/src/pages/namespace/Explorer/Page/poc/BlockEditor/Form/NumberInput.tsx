@@ -47,10 +47,10 @@ export const NumberInput = ({
       field.onChange(parsedValueType.data);
       switch (parsedValueType.data) {
         case "number":
-          form.setValue("defaultValue.value", 0);
+          form.setValue("defaultValue.value", 0, { shouldDirty: true });
           break;
         case "variable":
-          form.setValue("defaultValue.value", "");
+          form.setValue("defaultValue.value", "", { shouldDirty: true });
           break;
       }
     }
@@ -137,7 +137,9 @@ export const NumberInput = ({
                   <VariableInput
                     value={defaultValue}
                     onUpdate={(value) =>
-                      form.setValue("defaultValue.value", value)
+                      form.setValue("defaultValue.value", value, {
+                        shouldDirty: true,
+                      })
                     }
                     placeholder={t(
                       "direktivPage.blockEditor.blockForms.formPrimitives.defaultValue.placeholderVariable"

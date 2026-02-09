@@ -15,7 +15,7 @@ export const NoFormBlockSidePanel = ({
 }: NoFormBlockProps) => {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-col gap-4 px-1">
+    <div className="flex flex-col gap-4 p-4 max-lg:border-b lg:border-r">
       <Header action={action} path={path} block={block} />
       <div className="text-gray-10">
         {t("direktivPage.blockEditor.blockForm.noFormDescription")}

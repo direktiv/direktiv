@@ -1,4 +1,11 @@
-import { FC, PropsWithChildren, createContext, useContext } from "react";
+import {
+  Dispatch,
+  FC,
+  PropsWithChildren,
+  SetStateAction,
+  createContext,
+  useContext,
+} from "react";
 import {
   addBlockToPage,
   deleteBlockFromPage,
@@ -13,15 +20,20 @@ import { findBlock } from "./utils";
 
 export type PageCompilerMode = "edit" | "live";
 
-export type PageCompilerProps = {
+type PageCompilerContextProps = {
   mode: PageCompilerMode;
   page: DirektivPagesType;
   setPage: (page: DirektivPagesType) => void;
+  scrollPos: number;
+  setScrollPos: Dispatch<SetStateAction<number>>;
 };
 
-const PageCompilerContext = createContext<PageCompilerProps | null>(null);
+const PageCompilerContext = createContext<PageCompilerContextProps | null>(
+  null
+);
 
-type PageCompilerContextProviderProps = PropsWithChildren<PageCompilerProps>;
+type PageCompilerContextProviderProps =
+  PropsWithChildren<PageCompilerContextProps>;
 
 export const PageCompilerContextProvider: FC<
   PageCompilerContextProviderProps

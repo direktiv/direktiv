@@ -36,7 +36,9 @@ export const BaseForm = ({ form: anyForm }: BaseFormProps) => {
       >
         <SmartInput
           value={form.watch("label")}
-          onUpdate={(value) => form.setValue("label", value)}
+          onUpdate={(value) =>
+            form.setValue("label", value, { shouldDirty: true })
+          }
           id="label"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.formPrimitives.labelPlaceholder"
@@ -51,7 +53,9 @@ export const BaseForm = ({ form: anyForm }: BaseFormProps) => {
       >
         <SmartInput
           value={form.watch("description")}
-          onUpdate={(value) => form.setValue("description", value)}
+          onUpdate={(value) =>
+            form.setValue("description", value, { shouldDirty: true })
+          }
           id="description"
           placeholder={t(
             "direktivPage.blockEditor.blockForms.formPrimitives.descriptionPlaceholder"
@@ -67,7 +71,7 @@ export const BaseForm = ({ form: anyForm }: BaseFormProps) => {
           defaultChecked={form.getValues("optional")}
           onCheckedChange={(value) => {
             if (typeof value === "boolean") {
-              form.setValue("optional", value);
+              form.setValue("optional", value, { shouldDirty: true });
             }
           }}
           id="required"
