@@ -56,7 +56,7 @@ declare function now(): DateObject;
  */
 declare type ActionConfig = {
   image: string;
-  type?: "local" | "namespace" | "system";
+  type?: "workflow" | "namespace" | "system";
   size?: "small" | "medium" | "large";
   retries?: number;
   cmd?: string;

@@ -174,7 +174,7 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 					}
 
 					sd := &core.ServiceFileData{
-						Typ:         core.FlowActionScopeLocal,
+						Typ:         core.FlowActionScopeWorkflow,
 						Name:        "",
 						Namespace:   ns.Name,
 						FilePath:    f.Path,

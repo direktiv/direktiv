@@ -216,16 +216,11 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		return st.Output, nil
 	}
 
-	ctx = telemetry.SetupInstanceLogs(ctx,
-		sc.Metadata[core.EngineMappingNamespace],
-		sc.InstID.String(),
-		sc.Metadata[LabelInvokerType],
-		sc.Metadata[core.EngineMappingPath])
-
 	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, onSubflow)
 	if err == nil {
 		return nil
 	}
+	telemetry.LogInstance(ctx, telemetry.LogLevelError, fmt.Sprintf("flow execution failed: %s", err.Error()))
 
 	endEv := startEv.Clone()
 	endEv.EventID = uuid.New()
