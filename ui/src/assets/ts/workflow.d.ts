@@ -79,7 +79,9 @@ declare type ActionConfig = {
  * - cmd: optional, cmd to run in the container
  * - envs: optional, { name: string, value: string }[].
  */
-declare function generateAction(config: ActionConfig): () => void;
+declare function generateAction(
+  config: ActionConfig
+): (payload: unknown) => void;
 
 /**
  * Returns a map where the key is the secret name and the value is the value of the secret
