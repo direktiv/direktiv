@@ -219,6 +219,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	if err == nil {
 		return nil
 	}
+	telemetry.LogInstance(ctx, telemetry.LogLevelError, fmt.Sprintf("flow execution failed: %s", err.Error()))
 
 	endEv := startEv.Clone()
 	endEv.EventID = uuid.New()

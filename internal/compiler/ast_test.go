@@ -406,7 +406,7 @@ func TestTopLevelFunctionCalls(t *testing.T) {
 			name: "generateAction call allowed",
 			script: `
 			generateAction({
-				type: "local",
+				type: "workflow",
 				image: "ubuntu",
 				cmd: "echo hello"
 			});
@@ -519,7 +519,7 @@ func TestGenerateActionCollection(t *testing.T) {
 			name: "single generateAction at top level",
 			script: `
 			generateAction({
-				type: "local",
+				type: "workflow",
 				image: "ubuntu:latest",
 				cmd: "echo hello"
 			});
@@ -531,12 +531,12 @@ func TestGenerateActionCollection(t *testing.T) {
 			name: "multiple generateAction calls",
 			script: `
 			generateAction({
-				type: "local",
+				type: "workflow",
 				image: "alpine",
 				cmd: "ls"
 			});
 			generateAction({
-				type: "local",
+				type: "workflow",
 				image: "debian",
 				cmd: "pwd"
 			});
@@ -549,7 +549,7 @@ func TestGenerateActionCollection(t *testing.T) {
 			script: `
 			function stateOne() {
 				generateAction({
-					type: "local",
+					type: "workflow",
 					image: "nginx",
 					cmd: "start"
 				});
@@ -579,7 +579,7 @@ func TestGenerateActionCollection(t *testing.T) {
 			name: "generateAction with environment variables",
 			script: `
 			generateAction({
-				type: "local",
+				type: "workflow",
 				image: "ubuntu",
 				cmd: "env",
 				envs: [
@@ -597,7 +597,7 @@ func TestGenerateActionCollection(t *testing.T) {
 			function stateOne(data) {
 				log(data)
 				var f = generateAction({
-					type: "local",
+					type: "workflow",
 					image: "ealen/echo-server:latest"
 				})
 				return finish("JENS")
@@ -624,7 +624,7 @@ func TestGenerateActionCollection(t *testing.T) {
 			function stateOne() {
 				function helper() {
 					var action = generateAction({
-						type: "local",
+						type: "workflow",
 						image: "ubuntu:22.04"
 					});
 				}
@@ -639,7 +639,7 @@ func TestGenerateActionCollection(t *testing.T) {
 			function stateOne() {
 				const fn = () => {
 					generateAction({
-						type: "local",
+						type: "workflow",
 						image: "alpine:3.18"
 					});
 				};
@@ -654,7 +654,7 @@ func TestGenerateActionCollection(t *testing.T) {
 			function stateOne() {
 				if (true) {
 					generateAction({
-						type: "local",
+						type: "workflow",
 						image: "node:18"
 					});
 				}
@@ -708,7 +708,7 @@ func TestComplexScenarios(t *testing.T) {
 			const secrets = getSecrets(["db-creds"]);
 			
 			generateAction({
-				type: "local",
+				type: "workflow",
 				image: "postgres",
 				cmd: "psql"
 			});

@@ -6,7 +6,7 @@ const FlowCacheName = "flows"
 
 const (
 	FlowFileExtension        = ".wf.ts"
-	FlowActionScopeLocal     = "local"
+	FlowActionScopeWorkflow  = "workflow"
 	FlowActionScopeNamespace = "namespace"
 	FlowActionScopeSystem    = "system"
 )

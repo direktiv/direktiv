@@ -60,10 +60,10 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 		config.Retries = 2
 	}
 
-	config.Type = core.FlowActionScopeLocal
+	config.Type = core.FlowActionScopeWorkflow
 
 	sd := &core.ServiceFileData{
-		Typ:       core.FlowActionScopeLocal,
+		Typ:       core.FlowActionScopeWorkflow,
 		Name:      "",
 		Namespace: rt.metadata[core.EngineMappingNamespace],
 		FilePath:  rt.metadata[core.EngineMappingPath],
