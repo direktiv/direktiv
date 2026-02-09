@@ -1,5 +1,6 @@
 import { Edge, Node, Position, isNode } from "reactflow";
 
+import { DiagramElementStatus } from "./nodes";
 import { Orientation } from "./types";
 import { WorkflowStatesSchemaType } from "~/api/instances/schema";
 import dagre from "dagre";
@@ -9,7 +10,7 @@ const defaultEdgeType = "default";
 type DiagramNodeData = {
   type?: "function";
   label: string;
-  status: string; // todo: update
+  status: DiagramElementStatus;
   orientation: Orientation;
 };
 
@@ -87,7 +88,7 @@ export function createElements(
     }
 
     // create state node
-    const stateNode: Node = {
+    const stateNode: Node<DiagramNodeData> = {
       id: state.name,
       position,
       data: {
@@ -95,7 +96,7 @@ export function createElements(
         label: state.name,
         status:
           (state.failed && "failed") ||
-          (state.visited && "success") ||
+          (state.visited && "complete") ||
           "pending",
         orientation,
       },
@@ -138,7 +139,7 @@ export function createElements(
         source: state.name,
         target: "endNode",
         type: defaultEdgeType,
-        animated: state.visited && status === "complete",
+        animated: state.visited && instanceStatus === "complete",
       });
     }
   }

@@ -6,7 +6,7 @@ import { Orientation } from "./types";
 import { Separator } from "../Separator";
 import { twMergeClsx } from "~/util/helpers";
 
-type DiagramElementStatus = "pending" | "complete" | "failed";
+export type DiagramElementStatus = "pending" | "complete" | "failed";
 
 type StateProps = {
   data: {
