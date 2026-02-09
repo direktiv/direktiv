@@ -11,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/internal/api/filter"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/engine/runtime"
+	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
