@@ -91,11 +91,23 @@ const secrets = {
   data: `const flow: FlowDefinition = {
   type: "default",
   timeout: "PT30S",
-  state: "stateFirst",
+  state: "stateVerifySecrets",
 };
 
-function stateFirst(): StateFunction<unknown> {
-  return finish({ data: "hello world" })  
+function stateVerifySecrets(): StateFunction<unknown> {
+  const secrets = getSecrets(["one", "two"]);
+
+  Object.values(secrets).forEach((value) => {
+    if (value.length === 0) {
+      throw Error("The secrets must not be empty");
+    }
+  });
+
+  if (secrets.one !== secrets.two) {
+    throw Error("The secrets must match");
+  }
+
+  return finish(secrets);
 }
 `,
 };
@@ -109,11 +121,7 @@ const variables = {
 };
 
 function stateFirst(): StateFunction<unknown> {
-  if (true) {
-    throw Error("this was set up to fail");
-  }
-
-  return finish("unreachable");
+  return finish("TBD");
 }
 `,
 };
