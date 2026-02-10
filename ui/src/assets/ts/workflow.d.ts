@@ -56,7 +56,7 @@ declare function now(): DateObject;
  */
 declare type ActionConfig = {
   image: string;
-  type?: "workflow" | "namespace" | "system";
+  type?: "workflow";
   size?: "small" | "medium" | "large";
   retries?: number;
   body?: object;
@@ -72,10 +72,10 @@ declare type ActionConfig = {
  *
  * @param ActionConfig configuration object
  * - image: required, image to run as a container
- * - type: optional, defaults to "local", or "namespace" | "system"
- * - size: optional, defaults to "small", or "medium" | "large"
+ * - type: optional, defaults to "workflow"
+ * - size: optional, defaults to "medium", or "small" | "large"
  * - retries: optional, number,
- * - cmd: optional, cmd to run in the container
+ 
  * - envs: optional, { name: string, value: string }[].
  */
 declare function generateAction(
