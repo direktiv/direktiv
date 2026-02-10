@@ -80,7 +80,7 @@ declare type ActionConfig = {
  */
 declare function generateAction(
   config: ActionConfig
-): (payload: unknown) => void;
+): (payload?: unknown) => void;
 
 /**
  * Returns a map where the key is the secret name and the value is the value of the secret
