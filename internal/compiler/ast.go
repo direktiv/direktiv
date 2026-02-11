@@ -509,7 +509,7 @@ func (ap *ASTParser) walkExpression(expr ast.Expression, isInsideFunc bool, isSt
 			if funcName == "generateAction" {
 				if len(e.ArgumentList) == 1 {
 					action, err := ap.parseAction(e.ArgumentList[0])
-					if err == nil && action.Type == core.FlowActionScopeLocal {
+					if err == nil && action.Type == core.FlowActionScopeWorkflow {
 						ap.Actions = append(ap.Actions, action)
 					}
 				}
@@ -1019,7 +1019,7 @@ func (ap *ASTParser) parseSecrets(expr ast.Expression) ([]string, error) {
 // parseAction parses an action configuration from generateAction call.
 func (ap *ASTParser) parseAction(expr ast.Expression) (core.ActionConfig, error) {
 	action := core.ActionConfig{
-		Type: core.FlowActionScopeLocal, // Default to "local" if not specified
+		Type: core.FlowActionScopeWorkflow, // Default to "local" if not specified
 		Envs: make([]core.EnvironmentVariable, 0),
 	}
 
