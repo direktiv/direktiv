@@ -193,6 +193,17 @@ func (e *instController) flow(w http.ResponseWriter, r *http.Request) {
 	for a := range l {
 		event = l[a]
 
+		// if failed we set the previous event to failed
+		if event.State == engine.StateCodeFailed {
+			state, ok := ci.Config().Config.StateViews[l[a-1].Fn]
+			if !ok {
+				writeEngineError(w, fmt.Errorf("state unknown for typescript"))
+
+				return
+			}
+			state.Failed = true
+		}
+
 		if event.Fn == "" || event.State == engine.StateCodePending ||
 			event.State == engine.StateCodeComplete {
 			continue
@@ -205,17 +216,6 @@ func (e *instController) flow(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		state.Visited = true
-
-		// if failed we set the previous event to failed
-		if event.State == engine.StateCodeFailed {
-			state, ok = ci.Config().Config.StateViews[l[a-1].Fn]
-			if !ok {
-				writeEngineError(w, fmt.Errorf("state unknown for typescript"))
-
-				return
-			}
-			state.Failed = true
-		}
 	}
 
 	writeJSON(w, ci.Config().Config.StateViews)
