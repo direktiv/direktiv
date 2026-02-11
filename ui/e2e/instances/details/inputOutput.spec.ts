@@ -1,5 +1,5 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
-import { delayWorkflow, simpleWorkflow } from "e2e/utils/workflows";
+import { delayWorkflow1s, simpleWorkflow } from "e2e/utils/workflows";
 import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
@@ -132,59 +132,7 @@ test("the output is shown when the workflow finished running", async ({
     name: workflowName,
     namespace,
     type: "workflow",
-    content: delayWorkflow,
-    mimeType: "application/x-typescript",
-  });
-  const instanceId = (
-    await createInstance({
-      namespace,
-      path: workflowName,
-    })
-  ).data.id;
-  await page.goto(`/n/${namespace}/instances/${instanceId}`);
-
-  const inputOutputPanel = page.getByTestId("inputOutputPanel");
-
-  await expect(inputOutputPanel).toBeVisible();
-
-  const outputButton = inputOutputPanel
-    .getByRole("tablist")
-    .locator("button")
-    .nth(1);
-
-  const header = page.getByTestId("instance-header-container");
-  const textarea = inputOutputPanel.locator(".view-lines");
-
-  const runningInstanceOutput = "The workflow is still running";
-  const expectedOutput = `{    "result": "finished"}`;
-
-  await outputButton.click();
-
-  await expect(
-    inputOutputPanel,
-    "The output shows a note that the workflow is still running"
-  ).toContainText(runningInstanceOutput);
-
-  await expect(
-    header.locator("div").first(),
-    "the badge complete is visible"
-  ).toContainText("complete");
-
-  await expect(
-    textarea,
-    "When the workflow finished the generated output is shown in the panel"
-  ).toHaveText(expectedOutput);
-});
-
-test("after a running instance finishes, the output tab is automatically selected", async ({
-  page,
-}) => {
-  const workflowName = faker.system.commonFileName("yaml");
-  await createFile({
-    name: workflowName,
-    namespace,
-    type: "workflow",
-    content: delayWorkflow,
+    content: delayWorkflow1s,
     mimeType: "application/x-typescript",
   });
   const instanceId = (
@@ -207,15 +155,66 @@ test("after a running instance finishes, the output tab is automatically selecte
     .getByRole("tablist")
     .locator("button")
     .nth(1);
-
-  const textarea = inputOutputPanel.locator(".view-lines");
-  const expectedOutput = `{    "result": "finished"}`;
   const header = page.getByTestId("instance-header-container");
+  const textarea = inputOutputPanel.locator(".view-lines");
 
   await expect(
     inputButton,
     "the input tab was selected initially"
   ).toHaveAttribute("data-state", "active");
+
+  await outputButton.click();
+
+  await expect(
+    inputOutputPanel,
+    "The output shows a note that the workflow is still running"
+  ).toContainText("The workflow is still running");
+
+  // TODO in TDI-219: remove manual reloads after streaming updates have been restored
+  await page.waitForTimeout(1000);
+  await page.reload();
+
+  await expect(
+    header.locator("div").first(),
+    "the badge complete is visible"
+  ).toContainText("complete");
+
+  await expect(
+    textarea,
+    "When the workflow finished the generated output is shown in the panel"
+  ).toHaveText(`{    "message": "Hello world!"}`);
+});
+
+test("after a running instance finishes, the output tab is automatically selected", async ({
+  page,
+}) => {
+  const workflowName = faker.system.commonFileName("yaml");
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    content: simpleWorkflow,
+    mimeType: "application/x-typescript",
+  });
+  const instanceId = (
+    await createInstance({
+      namespace,
+      path: workflowName,
+    })
+  ).data.id;
+  await page.goto(`/n/${namespace}/instances/${instanceId}`);
+
+  const inputOutputPanel = page.getByTestId("inputOutputPanel");
+
+  await expect(inputOutputPanel).toBeVisible();
+
+  const outputButton = inputOutputPanel
+    .getByRole("tablist")
+    .locator("button")
+    .nth(1);
+
+  const textarea = inputOutputPanel.locator(".view-lines");
+  const header = page.getByTestId("instance-header-container");
 
   await expect(
     header.locator("div").first(),
@@ -228,6 +227,6 @@ test("after a running instance finishes, the output tab is automatically selecte
   ).toHaveAttribute("data-state", "active");
 
   await expect(textarea, "the text shows the expected output").toHaveText(
-    expectedOutput
+    `{    "message": "Hello world!"}`
   );
 });

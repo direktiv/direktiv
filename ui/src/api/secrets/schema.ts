@@ -34,7 +34,12 @@ export const SecretCreatedUpdatedSchema = z.object({
 });
 
 export const SecretFormCreateEditSchema = z.object({
-  name: z.string().nonempty(),
+  name: z
+    .string()
+    .nonempty()
+    .regex(/^[a-z-]+$/, {
+      message: "Only lowercase letters and dashes are allowed",
+    }),
   data: z.string().nonempty(),
 });
 

@@ -10,20 +10,25 @@ type CreateServiceFileParams = {
 export const createRequestServiceFile = ({
   scale = 1,
   size = "small",
-}: CreateServiceFileParams = {}) => `direktiv_api: service/v1
-image: direktiv/request:v4
-scale: ${scale}
-size: ${size}
-cmd: /request
-envs:
-  - name: MY_ENV_VAR
-    value: env-var-value
+}: CreateServiceFileParams = {}) => `{
+  "image": "direktiv/request:v4",
+  "scale": ${scale},
+  "size": "${size}",
+  "cmd": "/request",
+  "envs": [
+    {
+      "name": "MY_ENV_VAR",
+      "value": "env-var-value"
+    }
+  ]
+}
 `;
 
-export const serviceWithAnError = `direktiv_api: service/v1
-image: this-image-does-not-exist
-scale: 1
-size: small
+export const serviceWithAnError = `{
+  "image": "nope",
+  "scale": 1,
+  "size": "small"
+}
 `;
 
 type FindServiceWithApiRequestParams = {
@@ -45,12 +50,13 @@ export const findServiceWithApiRequest = async ({
       },
       headers,
     });
-    return services.find(match);
+    // if no match, return null so .poll() will retry.
+    return services.find(match) ?? null;
   } catch (error) {
     const typedError = error as ErrorType;
     if (typedError.response.status === 404) {
-      // fail silently to allow for using poll() in tests
-      return false;
+      // return null so .poll() will retry.
+      return null;
     }
     throw new Error(
       `Unexpected error ${typedError?.response?.status} during lookup of service ${match} in namespace ${namespace}`
