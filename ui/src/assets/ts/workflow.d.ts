@@ -60,6 +60,7 @@ declare type ActionConfig = {
   size?: "small" | "medium" | "large";
   retries?: number;
   body?: object;
+  cmd?: string;
   envs?: {
     name: string;
     value: string;
@@ -75,7 +76,7 @@ declare type ActionConfig = {
  * - type: optional, defaults to "workflow"
  * - size: optional, defaults to "medium", or "small" | "large"
  * - retries: optional, number,
- 
+ * - cmd: optional, command to run in container
  * - envs: optional, { name: string, value: string }[].
  */
 declare function generateAction(
@@ -93,3 +94,24 @@ declare function getSecrets(secrets: string[]): Record<string, string>;
  * @param secret the name of one secret
  */
 declare function getSecret(secret: string): string;
+
+/**
+ * Config for execService
+ */
+declare type ServiceConfig = {
+  scope: "namespace" | "system";
+  path: string;
+  payload: unknown;
+  retries?: number;
+};
+
+/**
+ * Executes a service defined in the same namespace (or system namespace).
+ *
+ * @param ServiceConfig configuration object
+ * - scope: required, "namespace" or "system"
+ * - path: required, path to service definition file
+ * - payload: required, input for the service
+ * - retries: optional, number of retries
+ */
+declare function execService(config: ServiceConfig);

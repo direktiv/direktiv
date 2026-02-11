@@ -65,23 +65,63 @@ const actions = {
   state: "stateFirst",
 };
 
-const echo = generateAction({
-  image: "mendhak/http-https-echo",
-  type: "workflow",
-  size: "medium",
-  retries: 3,
+const d = generateAction({
+  image: "ubuntu:24.04",
+  cmd: "/usr/share/direktiv/direktiv-cmd",
+  size: "small",
   envs: [
     {
-      name: "MESSAGE",
-      value: "foo",
+      name: "myenv",
+      value: "myenvvalue",
     },
   ],
 });
 
-function stateFirst(input): StateFunction<unknown> {
-  const response = echo(input);
+function stateFirst(): StateFunction<unknown> {
+  var payload = {
+    commands: [
+      {
+        command: "ls -la",
+      },
+    ],
+  };
+  let result = d(payload);
+  return finish(result);
+}
+`,
+};
 
-  return finish({ response });
+const services = {
+  name: "services",
+  data: `const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateFirst",
+};
+
+function stateFirst(input) {
+  var payload = {
+    commands: [
+      {
+        command: "ls -la",
+      },
+    ],
+  };
+
+  execService({
+    scope: "namespace",
+    path: "/myservice.svc.json",
+    payload,
+  });
+
+  execService({
+    scope: "system",
+    path: "/system-service.svc.json",
+    payload: payload,
+    retries: 3,
+  });
+
+  return finish("done");
 }
 `,
 };
@@ -169,6 +209,14 @@ states:
 `,
 };
 
-const templates = [hello, input, actions, secrets, variables, error] as const;
+const templates = [
+  hello,
+  input,
+  actions,
+  services,
+  secrets,
+  variables,
+  error,
+] as const;
 
 export default templates;
