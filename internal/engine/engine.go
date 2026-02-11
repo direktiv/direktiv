@@ -11,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/internal/api/filter"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/engine/runtime"
+	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
@@ -219,6 +220,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	if err == nil {
 		return nil
 	}
+	telemetry.LogInstance(ctx, telemetry.LogLevelError, fmt.Sprintf("flow execution failed: %s", err.Error()))
 
 	endEv := startEv.Clone()
 	endEv.EventID = uuid.New()

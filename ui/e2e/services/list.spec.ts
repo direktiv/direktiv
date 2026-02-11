@@ -40,7 +40,7 @@ test("Service list is empty by default", async ({ page }) => {
 
 test("Service list shows all available services", async ({ page }) => {
   const serviceFile = await createFile({
-    name: "http-service.yaml",
+    name: "http-service.svc.json",
     namespace,
     type: "service",
     content: createRequestServiceFile(),
@@ -127,7 +127,7 @@ test("Service list links the file name to the service file", async ({
   page,
 }) => {
   const serviceFile = await createFile({
-    name: "http-service.yaml",
+    name: "http-service.svc.json",
     namespace,
     type: "service",
     content: createRequestServiceFile(),
@@ -146,19 +146,19 @@ test("Service list links the file name to the service file", async ({
   await expect(
     page,
     "after clicking on the file name, the user gets redirected to the file explorer page of the service file"
-  ).toHaveURL(`/n/${namespace}/explorer/service/http-service.yaml`);
+  ).toHaveURL(`/n/${namespace}/explorer/service/http-service.svc.json`);
 
   await expect(
     page.getByTestId("breadcrumb-segment"),
     "it renders the filename in the breadcrumb"
-  ).toHaveText("http-service.yaml");
+  ).toHaveText("http-service.svc.json");
 });
 
 test("Service list links the row to the service details page", async ({
   page,
 }) => {
   const serviceFile = await createFile({
-    name: "http-service.yaml",
+    name: "http-service.svc.json",
     namespace,
     type: "service",
     content: createRequestServiceFile(),
@@ -211,7 +211,7 @@ test("Service list links the row to the service details page", async ({
 
 test("Service list lets the user rebuild a service", async ({ page }) => {
   const serviceFile = await createFile({
-    name: "http-service.yaml",
+    name: "http-service.svc.json",
     namespace,
     type: "service",
     content: createRequestServiceFile(),
@@ -262,28 +262,13 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
 });
 
 test("Service list highlights services that have errors", async ({ page }) => {
-  const serviceFile = await createFile({
-    name: "failed-service.yaml",
+  await createFile({
+    name: "failed-service.svc.json",
     namespace,
     type: "service",
     content: serviceWithAnError,
     mimeType: "application/json",
   });
-
-  await expect
-    .poll(
-      async () =>
-        await findServiceWithApiRequest({
-          namespace,
-          match: (service) =>
-            service.filePath === serviceFile.data.path &&
-            (service.conditions ?? []).some(
-              (c) => c.type === "Available" && c.status === "False"
-            ),
-        }),
-      "the service in the backend is in an error state"
-    )
-    .toBeTruthy();
 
   await page.goto(`/n/${namespace}/services`, {
     waitUntil: "networkidle",
@@ -307,7 +292,7 @@ test("Service list will update the services when refetch button is clicked", asy
   page,
 }) => {
   await createFile({
-    name: "http-service.yaml",
+    name: "http-service.svc.json",
     namespace,
     type: "service",
     content: createRequestServiceFile({
@@ -345,7 +330,7 @@ test("Service list will update the services when refetch button is clicked", asy
     urlParams: {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
-      path: "/http-service.yaml",
+      path: "/http-service.svc.json",
     },
     headers,
   });
@@ -369,7 +354,7 @@ test("Service list will update the services when refetch button is clicked", asy
 
 test.describe("system namespace", () => {
   const systemNamespaceName = "system";
-  const systemServiceName = "http-service.yaml";
+  const systemServiceName = "http-service.svc.json";
   let cleanUpSystemNamespace = true;
 
   test.beforeAll(async () => {

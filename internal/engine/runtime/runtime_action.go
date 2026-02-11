@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -19,7 +20,39 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 )
 
-func (rt *Runtime) service(t, path string, payload any, retries int) sobek.Value {
+func (rt *Runtime) service(c map[string]any) sobek.Value {
+	// func (rt *Runtime) service(t, path string, payload any, retries int) sobek.Value {
+
+	t, ok := c["scope"]
+	if !ok {
+		panic(rt.vm.ToValue(fmt.Errorf("scope not provided, must be namespace or system")))
+	}
+
+	p, ok := c["path"]
+	if !ok {
+		panic(rt.vm.ToValue(fmt.Errorf("path not provided, must be set to service file in namespace or system")))
+	}
+
+	path, ok := p.(string)
+	if !ok {
+		panic(rt.vm.ToValue(fmt.Errorf("path must be a string")))
+	}
+
+	r, ok := c["retries"]
+	if !ok {
+		r = any(3)
+	}
+
+	retries, ok := r.(int)
+	if !ok {
+		panic(rt.vm.ToValue(fmt.Errorf("retries must be an integer")))
+	}
+
+	payload, ok := c["payload"]
+	if !ok {
+		payload = ""
+	}
+
 	var sd *core.ServiceFileData
 	switch t {
 	case core.FlowActionScopeSystem:
@@ -60,10 +93,10 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 		config.Retries = 2
 	}
 
-	config.Type = core.FlowActionScopeLocal
+	config.Type = core.FlowActionScopeWorkflow
 
 	sd := &core.ServiceFileData{
-		Typ:       core.FlowActionScopeLocal,
+		Typ:       core.FlowActionScopeWorkflow,
 		Name:      "",
 		Namespace: rt.metadata[core.EngineMappingNamespace],
 		FilePath:  rt.metadata[core.EngineMappingPath],
@@ -118,6 +151,7 @@ func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, retries int
 
 	outData, err := callRetryable(rt.tracingPack.ctx, svcUrl, http.MethodPost, data, retries)
 	if err != nil {
+		slog.Error("could not call action", slog.Any("error", err))
 		// panic(rt.vm.ToValue(fmt.Errorf("calling action failed: %s", err.Error())))
 		return nil, fmt.Errorf("calling action failed: %s", err.Error())
 	}
@@ -127,8 +161,9 @@ func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, retries int
 	var d any
 	err = json.Unmarshal(outData, &d)
 	if err != nil {
-		// panic(rt.vm.ToValue(fmt.Errorf("could not unmarshale response: %s", err.Error())))
-		return nil, fmt.Errorf("could not unmarshale response: %s", err.Error())
+		// panic(rt.vm.ToValue(fmt.Errorf("could not unmarshal response: %s", err.Error())))
+		slog.Error("could not unmarshal response", slog.Any("error", err), slog.String("data", string(data)))
+		return nil, fmt.Errorf("could not unmarshal response: %s", err.Error())
 	}
 
 	return d, nil
