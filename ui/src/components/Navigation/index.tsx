@@ -7,7 +7,6 @@ import {
   Layers,
   LucideIcon,
   Network,
-  PlaySquare,
   Radio,
   Settings,
 } from "lucide-react";
@@ -80,11 +79,6 @@ const Navigation: FC = () => {
       path: "/n/$namespace/settings",
       label: t("components.mainMenu.settings"),
       icon: Settings,
-    },
-    {
-      path: "/n/$namespace/jq",
-      label: t("components.mainMenu.jqPlayground"),
-      icon: PlaySquare,
     },
   ];
 
