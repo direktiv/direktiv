@@ -20,7 +20,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 )
 
-func (rt *Runtime) service(c map[string]any, retries int) sobek.Value {
+func (rt *Runtime) service(c map[string]any) sobek.Value {
 	// func (rt *Runtime) service(t, path string, payload any, retries int) sobek.Value {
 
 	t, ok := c["scope"]
@@ -36,6 +36,16 @@ func (rt *Runtime) service(c map[string]any, retries int) sobek.Value {
 	path, ok := p.(string)
 	if !ok {
 		panic(rt.vm.ToValue(fmt.Errorf("path must be a string")))
+	}
+
+	r, ok := c["retries"]
+	if !ok {
+		r = any(3)
+	}
+
+	retries, ok := r.(int)
+	if !ok {
+		panic(rt.vm.ToValue(fmt.Errorf("retries must be an integer")))
 	}
 
 	payload, ok := c["payload"]
