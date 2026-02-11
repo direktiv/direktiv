@@ -26,16 +26,40 @@ describe('Runtime variables from workflow setVariable()', () => {
       content: string,
     ): void;
 
+    declare function getVariable(
+      scope: 'namespace' | 'workflow' | 'instance',
+      name: string,
+    ): string | null;
+
     function stateOne(payload: any) {
       const value = 'hello from runtime variable';
 
       // precomputed base64 of the value above so we don't need btoa() in Sobek
       const content = 'aGVsbG8gZnJvbSBydW50aW1lIHZhcmlhYmxl';
 
-      // create a namespace-scoped runtime variable
-      setVariable('namespace', 'myVar', content);
+      // 1) namespace-scoped
+      setVariable("namespace", "nsVar", content);
+      const nsRead = getVariable("namespace", "nsVar");
 
-      return finish({ ok: true, stored: value });
+      // 2) workflow-scoped
+      setVariable("workflow", "wfVar", content);
+      const wfRead = getVariable("workflow", "wfVar");
+
+      // 3) instance-scoped
+      setVariable("instance", "instVar", content);
+      const instRead = getVariable("instance", "instVar");
+
+      // 4) not-found case
+      const missing = getVariable("namespace", "does-not-exist");
+
+      return finish({
+        ok: true,
+        stored: value,
+        nsRead,
+        wfRead,
+        instRead,
+        missing,
+      });
     }
   `
 
@@ -62,6 +86,13 @@ describe('Runtime variables from workflow setVariable()', () => {
 
     expect(startRes.statusCode).toEqual(200)
     expect(startRes.body.data.status).toEqual('complete')
+
+    // Validate getVariable outputs from the workflow result
+    const output = JSON.parse(startRes.body.data.output)
+    expect(output.nsRead).toEqual(encodedContent)
+    expect(output.wfRead).toEqual(encodedContent)
+    expect(output.instRead).toEqual(encodedContent)
+    expect(output.missing).toBeNull()
 
     // 2) Query runtime variables for this namespace + name
     const varsRes = await request(baseUrl).get(

@@ -25,6 +25,7 @@ type Runtime struct {
 	onAction      OnActionHook
 	onSubflow     OnSubflowHook
 	onSetVariable OnSetVariableHook
+	onGetVariable OnGetVariableHook
 	//nolint:containedctx
 	ctx context.Context
 	vm           *sobek.Runtime
@@ -43,6 +44,7 @@ type (
 	OnActionHook      func(svcID string) error
 	OnSubflowHook     func(ctx context.Context, path string, input []byte) ([]byte, error)
 	OnSetVariableHook func(ctx context.Context, scope string, name string, data []byte) error
+	OnGetVariableHook func(ctx context.Context, scope string, name string) ([]byte, error)
 )
 
 func New(instID uuid.UUID, metadata map[string]string, mappings string, hooks ...any) *Runtime {
@@ -81,6 +83,7 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string, hooks ..
 		{"execSubflow", rt.execSubflow},
 		{"execService", rt.service},
 		{"setVariable", rt.setVariable},
+		{"getVariable", rt.getVariable},
 	}
 
 	for _, v := range setList {
@@ -114,6 +117,8 @@ func (rt *Runtime) setHook(f any) *Runtime {
 		rt.onSubflow = f
 	case OnSetVariableHook:
 		rt.onSetVariable = f
+	case OnGetVariableHook:
+		rt.onGetVariable = f
 
 	default:
 		panic(fmt.Sprintf("unknown hook type: %T", f))
@@ -188,6 +193,26 @@ func (rt *Runtime) setVariable(scope string, name string, content string) sobek.
 	}
 
 	return sobek.Undefined()
+}
+
+func (rt *Runtime) getVariable(scope string, name string) sobek.Value {
+	if rt.onGetVariable == nil {
+		panic(rt.vm.ToValue("getVariable not supported"))
+	}
+
+	data, err := rt.onGetVariable(rt.ctx, scope, name)
+	if err != nil {
+		panic(rt.vm.ToValue(err.Error()))
+	}
+
+	// If hook returns nil data with no error, treat as not found -> null.
+	if data == nil {
+		return sobek.Null()
+	}
+
+	encoded := base64.StdEncoding.EncodeToString(data)
+
+	return rt.vm.ToValue(encoded)
 }
 
 func (rt *Runtime) sleep(seconds int) sobek.Value {

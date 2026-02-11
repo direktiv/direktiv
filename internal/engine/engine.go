@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strconv"
@@ -43,13 +44,14 @@ type Engine struct {
 	store    datastore.Store
 }
 
-func NewEngine(bus DataBus, compiler core.Compiler, js nats.JetStreamContext, store datastore.Store) (*Engine, error) {
-	return &Engine{
-		dataBus:  bus,
+func NewEngine(dataBus DataBus, compiler core.Compiler, js nats.JetStreamContext, store datastore.Store) (*Engine, error) {
+	e := &Engine{
+		dataBus:  dataBus,
 		compiler: compiler,
 		js:       js,
 		store:    store,
-	}, nil
+	}
+	return e, nil
 }
 
 func (e *Engine) Start(lc *lifecycle.Manager) error {
@@ -227,23 +229,6 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
-
-	var onSubflow runtime.OnSubflowHook = func(ctx context.Context, path string, input []byte) ([]byte, error) {
-		_, notify, err := e.StartWorkflow(ctx, inst.InstanceID, inst.Namespace, path, string(input), map[string]string{
-			LabelWithNotify:   strconv.FormatBool(true),
-			LabelWithSyncExec: strconv.FormatBool(true),
-			LabelInvokerType:  inst.Metadata[LabelInvokerType],
-			LabelWithScope:    uuid.New().String(),
-		})
-		if err != nil {
-			return nil, err
-		}
-		st := <-notify
-		if st.State != StateCodeComplete {
-			return nil, fmt.Errorf("subflow did not complete: %s", st.Error)
-		}
-		return st.Output, nil
-	}
 	var onSetVariable runtime.OnSetVariableHook = func(ctx context.Context, scope string, name string, data []byte) error {
 		if name == "" {
 			return datastore.ErrInvalidRuntimeVariableName
@@ -253,13 +238,11 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 			Namespace: inst.Namespace,
 			Name:      name,
 			Data:      data,
-			// Simple default; you can adjust later (e.g. detect JSON vs binary).
-			MimeType: "application/octet-stream",
+			MimeType:  "application/octet-stream",
 		}
 
 		switch core.VariableScope(scope) {
 		case core.VariableScopeNamespace:
-			// namespace-level: nothing else to set
 		case core.VariableScopeWorkflow:
 			wfPath := inst.Metadata[core.EngineMappingPath]
 			if wfPath == "" {
@@ -281,9 +264,76 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		sc.Metadata[LabelInvokerType],
 		sc.Metadata[core.EngineMappingPath])
 
+		if _, err := e.store.RuntimeVariables().Create(ctx, rv); err != nil {
+			return err
+		}
+
+		// publish simple event
+		return e.dataBus.PublishRuntimeVariableSet(ctx, rv.Namespace, rv.Name, string(rv.Data))
+	}
+	var onGetVariable runtime.OnGetVariableHook = func(ctx context.Context, scope string, name string) ([]byte, error) {
+		var (
+			v   *datastore.RuntimeVariable
+			err error
+		)
+
+		switch core.VariableScope(scope) {
+		case core.VariableScopeNamespace:
+			v, err = e.store.RuntimeVariables().GetForNamespace(ctx, inst.Namespace, name)
+		case core.VariableScopeWorkflow:
+			wfPath := inst.Metadata[core.EngineMappingPath]
+			if wfPath == "" {
+				return nil, fmt.Errorf("missing workflow path in instance metadata for workflow-scoped variable")
+			}
+			v, err = e.store.RuntimeVariables().GetForWorkflow(ctx, inst.Namespace, wfPath, name)
+		case core.VariableScopeInstance:
+			v, err = e.store.RuntimeVariables().GetForInstance(ctx, inst.InstanceID, name)
+		default:
+			return nil, fmt.Errorf("invalid variable scope %q", scope)
+		}
+
+		if err != nil {
+			if errors.Is(err, datastore.ErrNotFound) {
+				// not found -> represented as null in the runtime
+				return nil, nil
+			}
+
+			return nil, err
+		}
+
+		data, err := e.store.RuntimeVariables().LoadData(ctx, v.ID)
+		if err != nil {
+			if errors.Is(err, datastore.ErrNotFound) {
+				return nil, nil
+			}
+
+			return nil, err
+		}
+
+		return data, nil
+	}
+	var onSubflow runtime.OnSubflowHook = func(ctx context.Context, path string, input []byte) ([]byte, error) {
+		_, notify, err := e.StartWorkflow(ctx, inst.InstanceID, inst.Namespace, path, string(input), map[string]string{
+			LabelWithNotify:   strconv.FormatBool(true),
+			LabelWithSyncExec: strconv.FormatBool(true),
+			LabelInvokerType:  inst.Metadata[LabelInvokerType],
+			LabelWithScope:    uuid.New().String(),
+		})
+		if err != nil {
+			return nil, err
+		}
+		st := <-notify
+		if st.State != StateCodeComplete {
+			return nil, fmt.Errorf("subflow did not complete: %s", st.Error)
+		}
+
 	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, onSubflow, onSetVariable)
 
 	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, onSubflow)
+		return st.Output, nil
+	}
+
+	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, onSubflow, onSetVariable, onGetVariable)
 	if err == nil {
 		return nil
 	}
