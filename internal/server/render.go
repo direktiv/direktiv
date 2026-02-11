@@ -106,7 +106,6 @@ func renderServiceFiles(db *gorm.DB, serviceManager core.ServiceManager,
 
 				var ac core.ActionConfig
 				err = json.Unmarshal(svc, &ac)
-
 				if err != nil {
 					slog.Error("cannot marshal service file", slog.String("path", f.Path),
 						slog.Any("error", err))
