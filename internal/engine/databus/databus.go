@@ -15,6 +15,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
+var _ engine.DataBus = &DataBus{}
 type DataBus struct {
 	js           nats.JetStreamContext
 	statusCache  *StatusCache
@@ -30,8 +31,6 @@ func New(js nats.JetStreamContext, pubSub pubsub.EventBus) *DataBus {
 		pubSub:       pubSub,
 	}
 }
-
-var _ engine.DataBus = &DataBus{}
 
 func (d *DataBus) Start(lc *lifecycle.Manager) error {
 	err := d.startCaches(lc.Context())
@@ -190,4 +189,17 @@ func (d *DataBus) PublishIgniteAction(ctx context.Context, svcID string) error {
 
 	err := d.pubSub.Publish(pubsub.SubjServiceIgnite, []byte(svcID))
 	return err
+}
+
+func (d *DataBus) PublishRuntimeVariableSet(ctx context.Context, namespace string, name string, value string) error {
+	ev := &engine.RuntimeVariableSetEvent{
+		Namespace: namespace,
+		Name:      name,
+		Value:     value,
+	}
+    b, err := json.Marshal(ev)
+    if err != nil {
+        return fmt.Errorf("marshal runtime variable event: %w", err)
+    }
+    return d.pubSub.Publish(pubsub.SubjRuntimeVariableSet, b)
 }

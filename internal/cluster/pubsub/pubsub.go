@@ -7,6 +7,7 @@ const (
 	SubjNamespacesChange Subject = "namespace.change"
 	SubjCacheDelete      Subject = "cache.delete"
 	SubjServiceIgnite    Subject = "service.ignite"
+	SubjRuntimeVariableSet Subject = "runtimevariable.set" 
 )
 
 type Handler func(data []byte)

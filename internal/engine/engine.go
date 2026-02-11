@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"sync"
@@ -41,13 +42,14 @@ type Engine struct {
 	store    datastore.Store
 }
 
-func NewEngine(bus DataBus, compiler core.Compiler, js nats.JetStreamContext, store datastore.Store) (*Engine, error) {
-	return &Engine{
-		dataBus:  bus,
+func NewEngine(dataBus DataBus, compiler core.Compiler, js nats.JetStreamContext, store datastore.Store) (*Engine, error) {
+	e := &Engine{
+		dataBus:  dataBus,
 		compiler: compiler,
 		js:       js,
 		store:    store,
-	}, nil
+	}
+	return e, nil
 }
 
 func (e *Engine) Start(lc *lifecycle.Manager) error {
@@ -200,7 +202,80 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
+	var onSetVariable runtime.OnSetVariableHook = func(ctx context.Context, scope string, name string, data []byte) error {
+		if name == "" {
+			return datastore.ErrInvalidRuntimeVariableName
+		}
 
+		rv := &datastore.RuntimeVariable{
+			Namespace: inst.Namespace,
+			Name:      name,
+			Data:      data,
+			MimeType:  "application/octet-stream",
+		}
+
+		switch core.VariableScope(scope) {
+		case core.VariableScopeNamespace:
+		case core.VariableScopeWorkflow:
+			wfPath := inst.Metadata[core.EngineMappingPath]
+			if wfPath == "" {
+				return fmt.Errorf("missing workflow path in instance metadata for workflow-scoped variable")
+			}
+			rv.WorkflowPath = wfPath
+		case core.VariableScopeInstance:
+			rv.InstanceID = inst.InstanceID
+		default:
+			return fmt.Errorf("invalid variable scope %q", scope)
+		}
+
+		if _, err := e.store.RuntimeVariables().Create(ctx, rv); err != nil {
+			return err
+		}
+
+		// publish simple event
+		return e.dataBus.PublishRuntimeVariableSet(ctx, rv.Namespace, rv.Name, string(rv.Data))
+	}
+	var onGetVariable runtime.OnGetVariableHook = func(ctx context.Context, scope string, name string) ([]byte, error) {
+		var (
+			v   *datastore.RuntimeVariable
+			err error
+		)
+
+		switch core.VariableScope(scope) {
+		case core.VariableScopeNamespace:
+			v, err = e.store.RuntimeVariables().GetForNamespace(ctx, inst.Namespace, name)
+		case core.VariableScopeWorkflow:
+			wfPath := inst.Metadata[core.EngineMappingPath]
+			if wfPath == "" {
+				return nil, fmt.Errorf("missing workflow path in instance metadata for workflow-scoped variable")
+			}
+			v, err = e.store.RuntimeVariables().GetForWorkflow(ctx, inst.Namespace, wfPath, name)
+		case core.VariableScopeInstance:
+			v, err = e.store.RuntimeVariables().GetForInstance(ctx, inst.InstanceID, name)
+		default:
+			return nil, fmt.Errorf("invalid variable scope %q", scope)
+		}
+
+		if err != nil {
+			if errors.Is(err, datastore.ErrNotFound) {
+				// not found -> represented as null in the runtime
+				return nil, nil
+			}
+
+			return nil, err
+		}
+
+		data, err := e.store.RuntimeVariables().LoadData(ctx, v.ID)
+		if err != nil {
+			if errors.Is(err, datastore.ErrNotFound) {
+				return nil, nil
+			}
+
+			return nil, err
+		}
+
+		return data, nil
+	}
 	var onSubflow runtime.OnSubflowHook = func(ctx context.Context, path string, input []byte) ([]byte, error) {
 		_, notify, err := e.StartWorkflow(ctx, inst.InstanceID, inst.Namespace, path, string(input), map[string]string{
 			LabelWithNotify:   strconv.FormatBool(true),
@@ -215,49 +290,15 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		if st.State != StateCodeComplete {
 			return nil, fmt.Errorf("subflow did not complete: %s", st.Error)
 		}
+
 		return st.Output, nil
 	}
-	var onSetVariable runtime.OnSetVariableHook = func(ctx context.Context, scope string, name string, data []byte) error {
-		if name == "" {
-			return datastore.ErrInvalidRuntimeVariableName
-		}
-	
-		rv := &datastore.RuntimeVariable{
-			Namespace: inst.Namespace,
-			Name:      name,
-			Data:      data,
-			// Simple default; you can adjust later (e.g. detect JSON vs binary).
-			MimeType: "application/octet-stream",
-		}
-	
-		switch core.VariableScope(scope) {
-		case core.VariableScopeNamespace:
-			// namespace-level: nothing else to set
-		case core.VariableScopeWorkflow:
-			wfPath := inst.Metadata[core.EngineMappingPath]
-			if wfPath == "" {
-				return fmt.Errorf("missing workflow path in instance metadata for workflow-scoped variable")
-			}
-			rv.WorkflowPath = wfPath
-		case core.VariableScopeInstance:
-			rv.InstanceID = inst.InstanceID
-		default:
-			return fmt.Errorf("invalid variable scope %q", scope)
-		}
-	
-		_, err := e.store.RuntimeVariables().Create(ctx, rv)
-		return err
-	}
-	ctx = telemetry.SetupInstanceLogs(ctx,
-		sc.Metadata[core.EngineMappingNamespace],
-		sc.InstID.String(),
-		sc.Metadata[LabelInvokerType],
-		sc.Metadata[core.EngineMappingPath])
 
-	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, onSubflow, onSetVariable)
+	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, onSubflow, onSetVariable, onGetVariable)
 	if err == nil {
 		return nil
 	}
+	telemetry.LogInstance(ctx, telemetry.LogLevelError, fmt.Sprintf("flow execution failed: %s", err.Error()))
 
 	endEv := startEv.Clone()
 	endEv.EventID = uuid.New()
