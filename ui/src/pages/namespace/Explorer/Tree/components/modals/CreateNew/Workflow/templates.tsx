@@ -1,4 +1,4 @@
-const tsdemo = {
+export const tsdemo = {
   name: "tsdemo",
   data: `// Simple example workflow that validates type of input
 const flow: FlowDefinition = {
