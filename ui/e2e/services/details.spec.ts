@@ -22,13 +22,16 @@ test.afterEach(async () => {
 test("Service details page provides information about the service", async ({
   page,
 }) => {
+  const servicejson = createRequestServiceFile({ scale: 2, size: "small" });
   const serviceFile = await createFile({
-    name: "request-service.yaml",
+    name: "request-service.svc.json",
     namespace,
     type: "service",
     mimeType: "application/json",
-    content: createRequestServiceFile({ scale: 2 }),
+    content: servicejson,
   });
+
+  await page.goto(`/n/${namespace}/services/`);
 
   await expect
     .poll(
