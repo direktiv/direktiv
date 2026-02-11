@@ -184,6 +184,47 @@ function stateFirst(): StateFunction<unknown> {
 `,
 };
 
+const branches = {
+  name: "branches",
+  data: `// this will randomly progress through alternative states,
+// resulting in an interesting flow visualization
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateA",
+};
+
+function stateA(): StateFunction<unknown> {
+  if (Math.random() > 0.25) {
+    return transition(stateB, {});
+  }
+  return transition(stateC, {});
+}
+
+function stateB(): StateFunction<unknown> {
+  if (Math.random() > 0.25) {
+    return transition(stateD, {});
+  }
+  return finish({ message: "finishing from stateB" });
+}
+
+function stateC(): StateFunction<unknown> {
+  return finish({ message: "finishing from stateC" });
+}
+
+function stateD(): StateFunction<unknown> {
+  if (Math.random() > 0.5) {
+    return transition(stateE, {});
+  }
+  return transition(stateC, {});
+}
+
+function stateE(input): StateFunction<unknown> {
+  return finish({ message: "finishing from stateE" });
+}
+`,
+};
+
 export const consumeEvent = {
   name: "consumeEvent",
   data: `direktiv_api: workflow/v1
@@ -217,6 +258,7 @@ const templates = [
   secrets,
   variables,
   error,
+  branches,
 ] as const;
 
 export default templates;
