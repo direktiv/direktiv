@@ -260,7 +260,7 @@ func svcFile(action core.ActionConfig, namespace, path string) *core.ServiceFile
 		Cmd:   action.Cmd,
 		Size:  action.Size,
 		Envs:  action.Envs,
-		Scale: 0,
+		Scale: action.Scale,
 	}
 
 	return &core.ServiceFileData{
