@@ -168,26 +168,6 @@ func (d *DataBus) GetInstanceHistory(ctx context.Context, namespace string, inst
 }
 
 func (d *DataBus) PublishIgniteAction(ctx context.Context, svcID string) error {
-	// sd := &core.ServiceFileData{
-	// 	Typ:       core.ServiceTypeWorkflow,
-	// 	Name:      "",
-	// 	Namespace: namespace,
-	// 	FilePath:  path,
-	// 	ServiceFile: core.ServiceFile{
-	// 		Image: config.Image,
-	// 		Cmd:   config.Cmd,
-	// 		Size:  config.Size,
-	// 		Envs:  config.Envs,
-	// 	},
-	// }
-
-	// sd.Name = sd.GetValueHash()
-
-	// b, err := json.Marshal(sd)
-	// if err != nil {
-	// 	return err
-	// }
-
 	err := d.pubSub.Publish(pubsub.SubjServiceIgnite, []byte(svcID))
 	return err
 }

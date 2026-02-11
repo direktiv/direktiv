@@ -19,6 +19,9 @@ type ActionConfig struct {
 	Envs  []EnvironmentVariable
 
 	Retries int
+
+	// service file specific
+	Scale int
 }
 
 type StateView struct {
