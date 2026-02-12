@@ -381,6 +381,7 @@ func loadDoc(data []byte, filePath, ns string, fileStore filestore.FileStore) (*
 		if err != nil {
 			return nil, err
 		}
+
 		return fileStore.ForFile(file).GetData(context.Background())
 	}
 
