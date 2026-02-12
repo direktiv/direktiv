@@ -1,4 +1,4 @@
-const hello = {
+export const hello = {
   name: "hello",
   data: `const flow: FlowDefinition = {
   type: "default",
