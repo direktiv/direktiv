@@ -46,9 +46,10 @@ func (m *manager) atomicSetRouter(inner *router) {
 
 var _ core.GatewayManager = &manager{}
 
-func NewManager(secretsManager core.SecretsManager) core.GatewayManager {
+func NewManager(secretsManager core.SecretsManager, db *gorm.DB) core.GatewayManager {
 	return &manager{
 		secretsManager: secretsManager,
+		db:             db,
 	}
 }
 
@@ -367,8 +368,16 @@ func validateEndpoint(item core.Endpoint, ns string, fileStore filestore.FileSto
 func loadDoc(data []byte, filePath, ns string, fileStore filestore.FileStore) (*openapi3.T, error) {
 	loader := openapi3.NewLoader()
 	loader.IsExternalRefsAllowed = true
-	loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
-		file, err := fileStore.ForRoot(ns).GetFile(context.Background(), url.String())
+	loader.ReadFromURIFunc = func(loader *openapi3.Loader, ref *url.URL) ([]byte, error) {
+		path := ref.Path
+		if path == "" {
+			path = "/"
+		}
+		if !strings.HasPrefix(path, "/") {
+			path = "/" + path
+		}
+		path = filepath.Clean(path)
+		file, err := fileStore.ForRoot(ns).GetFile(context.Background(), path)
 		if err != nil {
 			return nil, err
 		}
