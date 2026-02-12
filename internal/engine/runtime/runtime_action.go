@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -15,9 +16,43 @@ import (
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/grafana/sobek"
 	"github.com/hashicorp/go-retryablehttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
 
-func (rt *Runtime) service(t, path string, payload any, retries int) sobek.Value {
+func (rt *Runtime) service(c map[string]any) sobek.Value {
+	// func (rt *Runtime) service(t, path string, payload any, retries int) sobek.Value {
+
+	t, ok := c["scope"]
+	if !ok {
+		panic(rt.vm.ToValue(fmt.Errorf("scope not provided, must be namespace or system")))
+	}
+
+	p, ok := c["path"]
+	if !ok {
+		panic(rt.vm.ToValue(fmt.Errorf("path not provided, must be set to service file in namespace or system")))
+	}
+
+	path, ok := p.(string)
+	if !ok {
+		panic(rt.vm.ToValue(fmt.Errorf("path must be a string")))
+	}
+
+	r, ok := c["retries"]
+	if !ok {
+		r = any(3)
+	}
+
+	retries, ok := r.(int)
+	if !ok {
+		panic(rt.vm.ToValue(fmt.Errorf("retries must be an integer")))
+	}
+
+	payload, ok := c["payload"]
+	if !ok {
+		payload = ""
+	}
+
 	var sd *core.ServiceFileData
 	switch t {
 	case core.FlowActionScopeSystem:
@@ -36,7 +71,7 @@ func (rt *Runtime) service(t, path string, payload any, retries int) sobek.Value
 		panic(rt.vm.ToValue(fmt.Errorf("unknown scope for script call")))
 	}
 
-	telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo,
+	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
 		fmt.Sprintf("executing service %s in scope %s", path, t))
 
 	data, err := rt.callAction(sd, payload, retries)
@@ -58,10 +93,10 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 		config.Retries = 2
 	}
 
-	config.Type = core.FlowActionScopeLocal
+	config.Type = core.FlowActionScopeWorkflow
 
 	sd := &core.ServiceFileData{
-		Typ:       core.FlowActionScopeLocal,
+		Typ:       core.FlowActionScopeWorkflow,
 		Name:      "",
 		Namespace: rt.metadata[core.EngineMappingNamespace],
 		FilePath:  rt.metadata[core.EngineMappingPath],
@@ -75,7 +110,7 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 	sd.Name = sd.GetValueHash()
 
 	actionFunc := func(payload any) sobek.Value {
-		telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo,
+		telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
 			fmt.Sprintf("executing action with image %s", config.Image))
 
 		data, err := rt.callAction(sd, payload, config.Retries)
@@ -100,13 +135,13 @@ func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, retries int
 	svcUrl := fmt.Sprintf("http://%s.%s.svc", sd.GetID(), os.Getenv("DIREKTIV_SERVICE_NAMESPACE"))
 
 	// ping service
-	_, err := callRetryable(rt.ctx, svcUrl+"/up", http.MethodGet, []byte(""), 30)
+	_, err := callRetryable(rt.tracingPack.ctx, svcUrl+"/up", http.MethodGet, []byte(""), 30)
 	if err != nil {
 		return nil, fmt.Errorf("action did not start: %s", err.Error())
 		// panic(rt.vm.ToValue(fmt.Errorf("action did not start: %s", err.Error())))
 	}
 
-	telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo, "action ping successful, calling action")
+	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, "action ping successful, calling action")
 
 	data, err := json.Marshal(payload)
 	if err != nil {
@@ -114,19 +149,21 @@ func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, retries int
 		return nil, fmt.Errorf("could not marshal payload for action: %s", err.Error())
 	}
 
-	outData, err := callRetryable(rt.ctx, svcUrl, http.MethodPost, data, retries)
+	outData, err := callRetryable(rt.tracingPack.ctx, svcUrl, http.MethodPost, data, retries)
 	if err != nil {
+		slog.Error("could not call action", slog.Any("error", err))
 		// panic(rt.vm.ToValue(fmt.Errorf("calling action failed: %s", err.Error())))
 		return nil, fmt.Errorf("calling action failed: %s", err.Error())
 	}
 
-	telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo, "action call successful")
+	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, "action call successful")
 
 	var d any
 	err = json.Unmarshal(outData, &d)
 	if err != nil {
-		// panic(rt.vm.ToValue(fmt.Errorf("could not unmarshale response: %s", err.Error())))
-		return nil, fmt.Errorf("could not unmarshale response: %s", err.Error())
+		// panic(rt.vm.ToValue(fmt.Errorf("could not unmarshal response: %s", err.Error())))
+		slog.Error("could not unmarshal response", slog.Any("error", err), slog.String("data", string(data)))
+		return nil, fmt.Errorf("could not unmarshal response: %s", err.Error())
 	}
 
 	return d, nil
@@ -145,6 +182,18 @@ func callRetryable(ctx context.Context, url, method string, payload []byte, retr
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+
+	l := ctx.Value(telemetry.DirektivLogCtx(telemetry.LogObjectIdentifier))
+	logObject, ok := l.(telemetry.LogObject)
+	if !ok {
+		return nil, fmt.Errorf("action context missing")
+	}
+
+	// set relevant headers
+	logObject.ToHeader(&req.Header)
+
+	// inject otel headers for propagation
+	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
 
 	resp, err := client.Do(req)
 	if err != nil {

@@ -6,7 +6,7 @@ const FlowCacheName = "flows"
 
 const (
 	FlowFileExtension        = ".wf.ts"
-	FlowActionScopeLocal     = "local"
+	FlowActionScopeWorkflow  = "workflow"
 	FlowActionScopeNamespace = "namespace"
 	FlowActionScopeSystem    = "system"
 )
@@ -19,6 +19,9 @@ type ActionConfig struct {
 	Envs  []EnvironmentVariable
 
 	Retries int
+
+	// service file specific
+	Scale int
 }
 
 type StateView struct {
