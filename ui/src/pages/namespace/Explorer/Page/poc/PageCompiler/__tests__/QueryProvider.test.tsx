@@ -9,9 +9,9 @@ import {
   test,
   vi,
 } from "vitest";
-import { createDirektivPage, setPage } from "./utils";
 
-import { PageCompiler } from "..";
+import { TestLivePage } from "./utils/TestPage";
+import { createDirektivPage } from "./utils";
 import { setupServer } from "msw/node";
 
 const apiRequestMock = vi.fn();
@@ -59,8 +59,7 @@ describe("QueryProvider", () => {
   test("makes the query result available to its child blocks", async () => {
     await act(async () => {
       render(
-        <PageCompiler
-          setPage={setPage}
+        <TestLivePage
           page={createDirektivPage([
             {
               type: "query-provider",
@@ -80,7 +79,6 @@ describe("QueryProvider", () => {
               ],
             },
           ])}
-          mode="live"
         />
       );
     });
@@ -93,8 +91,7 @@ describe("QueryProvider", () => {
   test("will interpolate variables in the url and query params", async () => {
     await act(async () => {
       render(
-        <PageCompiler
-          setPage={setPage}
+        <TestLivePage
           page={createDirektivPage([
             {
               type: "query-provider",
@@ -121,26 +118,24 @@ describe("QueryProvider", () => {
               ],
             },
           ])}
-          mode="live"
         />
       );
     });
 
-    expect(apiRequestMock).toHaveBeenCalledTimes(2);
+    expect(apiRequestMock).toHaveBeenCalledTimes(1);
 
-    const [, secondRequest] = apiRequestMock.mock.calls;
-    const [params] = secondRequest;
-    const secondRequestUrl = new URL(params.request.url);
+    const [request] = apiRequestMock.mock.calls;
+    const [params] = request;
+    const requestUrl = new URL(params.request.url);
 
-    expect(secondRequestUrl.pathname).toBe("/dynamic/1/path");
-    expect(secondRequestUrl.search).toBe("?id=1");
+    expect(requestUrl.pathname).toBe("/dynamic/1/path");
+    expect(requestUrl.search).toBe("?id=1");
   });
 
   test("shows an error when the query returns a status code outside of the 200 range", async () => {
     await act(async () => {
       render(
-        <PageCompiler
-          setPage={setPage}
+        <TestLivePage
           page={createDirektivPage([
             {
               type: "query-provider",
@@ -159,7 +154,6 @@ describe("QueryProvider", () => {
               ],
             },
           ])}
-          mode="live"
         />
       );
     });
@@ -177,8 +171,7 @@ describe("QueryProvider", () => {
   test("shows an error when the query returns a non json response", async () => {
     await act(async () => {
       render(
-        <PageCompiler
-          setPage={setPage}
+        <TestLivePage
           page={createDirektivPage([
             {
               type: "query-provider",
@@ -197,7 +190,6 @@ describe("QueryProvider", () => {
               ],
             },
           ])}
-          mode="live"
         />
       );
     });

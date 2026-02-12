@@ -12,7 +12,7 @@ import {
 } from "../primitives/Variable/VariableContext";
 
 import Badge from "~/design/Badge";
-import { BlockList } from "./utils/BlockList";
+import { BlockList } from "page-blocklist";
 import { LoopType } from "../../schema/blocks/loop";
 import { Pagination } from "~/components/Pagination";
 import PaginationProvider from "~/components/PaginationProvider";

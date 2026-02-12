@@ -1,9 +1,9 @@
 import { BlockType } from "../../schema/blocks";
-import { BlockWrapper } from "./utils/BlockWrapper";
+import { BlockWrapper } from "page-blockwrapper";
 import { Button } from "./Button";
 import { Card } from "./Card";
 import { Columns } from "./Columns";
-import { Dialog } from "./Dialog";
+import { Dialog } from "page-dialog";
 import { Form } from "./Form";
 import { FormCheckbox } from "./formPrimitives/FormCheckbox";
 import { FormDateInput } from "./formPrimitives/FormDateInput";

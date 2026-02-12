@@ -20,7 +20,16 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": ["./src/*"],
+      "page-dialog": [
+        "./src/pages/namespace/Explorer/Page/poc/PageCompiler/Block/Dialog"
+      ],
+      "page-blockwrapper": [
+        "./src/pages/namespace/Explorer/Page/poc/PageCompiler/BlockWrapper"
+      ],
+      "page-blocklist": [
+        "./src/pages/namespace/Explorer/Page/poc/PageCompiler/BlockList"
+      ]
     }
   },
   "include": ["src", "e2e", "vite.config.mts"]

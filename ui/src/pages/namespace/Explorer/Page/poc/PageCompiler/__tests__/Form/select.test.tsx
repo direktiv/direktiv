@@ -8,13 +8,9 @@ import {
   test,
   vi,
 } from "vitest";
-import {
-  createDirektivPageWithForm,
-  setPage,
-  setupResizeObserverMock,
-} from "../utils";
+import { createDirektivPageWithForm, setupResizeObserverMock } from "../utils";
 
-import { PageCompiler } from "../..";
+import { TestLivePage } from "../utils/TestPage";
 import { setupFormApi } from "./utils";
 
 const { apiServer } = setupFormApi();
@@ -35,8 +31,7 @@ describe("select input", () => {
   test("values can be sourced from a list of strings", async () => {
     await act(async () => {
       render(
-        <PageCompiler
-          setPage={setPage}
+        <TestLivePage
           page={createDirektivPageWithForm([
             {
               id: "dynamic-select",
@@ -64,7 +59,6 @@ describe("select input", () => {
               defaultValue: "",
             },
           ])}
-          mode="live"
         />
       );
     });
@@ -77,8 +71,7 @@ describe("select input", () => {
   test("values can be sourced from a variable", async () => {
     await act(async () => {
       render(
-        <PageCompiler
-          setPage={setPage}
+        <TestLivePage
           page={createDirektivPageWithForm([
             {
               id: "dynamic-select",
@@ -95,7 +88,6 @@ describe("select input", () => {
               defaultValue: "",
             },
           ])}
-          mode="live"
         />
       );
     });
@@ -108,8 +100,7 @@ describe("select input", () => {
   test("shows error when using a non array variable", async () => {
     await act(async () => {
       render(
-        <PageCompiler
-          setPage={setPage}
+        <TestLivePage
           page={createDirektivPageWithForm([
             {
               id: "dynamic-select",
@@ -126,7 +117,6 @@ describe("select input", () => {
               defaultValue: "",
             },
           ])}
-          mode="live"
         />
       );
     });
@@ -145,8 +135,7 @@ describe("select input", () => {
   test("shows error when the path to the label does not exist", async () => {
     await act(async () => {
       render(
-        <PageCompiler
-          setPage={setPage}
+        <TestLivePage
           page={createDirektivPageWithForm([
             {
               id: "dynamic-select",
@@ -163,7 +152,6 @@ describe("select input", () => {
               defaultValue: "",
             },
           ])}
-          mode="live"
         />
       );
     });
@@ -182,8 +170,7 @@ describe("select input", () => {
   test("shows error when the path to the value does not exist", async () => {
     await act(async () => {
       render(
-        <PageCompiler
-          setPage={setPage}
+        <TestLivePage
           page={createDirektivPageWithForm([
             {
               id: "dynamic-select",
@@ -200,7 +187,6 @@ describe("select input", () => {
               defaultValue: "",
             },
           ])}
-          mode="live"
         />
       );
     });

@@ -16,7 +16,7 @@ import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { addYamlFileExtension } from "../../../../utils";
-import { defaultPageFile } from "~/pages/namespace/Explorer/Page/poc/PageEditor/utils";
+import { defaultPageFile } from "~/pages/namespace/Explorer/Page/poc/utils";
 import { encode } from "js-base64";
 import { jsonToYaml } from "~/pages/namespace/Explorer/utils";
 import { useCreateFile } from "~/api/files/mutate/createFile";

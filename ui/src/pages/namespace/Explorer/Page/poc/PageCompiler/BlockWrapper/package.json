@@ -1,0 +1,9 @@
+{
+  "name": "page-blockwrapper",
+  "exports": {
+    ".": {
+      "pagesapp": "./BlockWrapper.pagesapp.tsx",
+      "default": "./BlockWrapper.default.tsx"
+    }
+  }
+}

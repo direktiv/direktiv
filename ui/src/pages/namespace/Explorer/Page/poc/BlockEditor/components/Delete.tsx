@@ -7,7 +7,7 @@ import {
 
 import { BlockPathType } from "../../PageCompiler/Block";
 import Button from "~/design/Button";
-import { useBlock } from "../../PageCompiler/context/pageCompilerContext";
+import { useBlock } from "../utils/useBlock";
 import { useTranslation } from "react-i18next";
 
 type BlockDeleteFormProps = {

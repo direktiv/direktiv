@@ -1,0 +1,9 @@
+{
+  "name": "page-dialog",
+  "exports": {
+    ".": {
+      "pagesapp": "./Dialog.pagesapp.tsx",
+      "default": "./Dialog.default.tsx"
+    }
+  }
+}
