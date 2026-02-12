@@ -1,9 +1,9 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import { btoa } from 'js-base64'
-import { basename } from 'path'
-import { fileURLToPath } from 'url'
 
+import { basename } from 'path'
+import { btoa } from 'js-base64'
 import common from '../common'
+import { fileURLToPath } from 'url'
 import helpers from '../common/helpers'
 import request from '../common/request'
 
