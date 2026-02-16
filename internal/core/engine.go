@@ -5,6 +5,8 @@ const (
 	EngineMappingNamespace = "namespace"
 	EngineMappingSecrets   = "secrets"
 
+	EngineMappingTimeout = "timeout"
+
 	EngineHeaderActionID  = "Direktiv-ActionID"
 	EngineHeaderState     = "Direktiv-State"
 	EngineHeaderStatus    = "Direktiv-Status"
