@@ -205,7 +205,7 @@ func (e *varController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db := e.db.WithContext(r.Context())
+	db := e.db.WithContext(r.Context()).Begin()
 	if db.Error != nil {
 		writeInternalError(w, db.Error)
 		return

@@ -4,7 +4,6 @@ import { FileRoutesById } from "~/routeTree.gen";
 import GatewayBreadcrumb from "./Gateway";
 import HistoryBreadcrumb from "./Events/HistoryBreadcrumb";
 import InstancesBreadcrumb from "./InstancesBreadcrumb";
-import JqPlaygroundBreadcrumb from "./JqPlaygroundBreadcrumb";
 import ListenerBreadcrumb from "./Events/ListenerBreadcrumb";
 import MirrorBreadcrumb from "./MirrorBreadcrumb";
 import MonitoringBreadcrumb from "./MonitoringBreadcrumb";
@@ -39,7 +38,6 @@ const Breadcrumb = () => {
         <PermissionsBreadcrumb />
       )}
       {matchRouteStart("/n/$namespace/settings") && <SettingsBreadcrumb />}
-      {matchRouteStart("/n/$namespace/jq") && <JqPlaygroundBreadcrumb />}
       {matchRouteStart("/n/$namespace/mirror/") && <MirrorBreadcrumb />}
       {matchRouteStart("/n/$namespace/gateway") && <GatewayBreadcrumb />}
     </BreadcrumbRoot>

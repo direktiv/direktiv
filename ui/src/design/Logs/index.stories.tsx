@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import Button from "../Button";
 import { Card } from "../Card";
 import Editor from "../Editor";
-import { YamlSample } from "../Editor/languageSamples";
+import { tsdemo } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { useState } from "react";
 
 const meta = {
@@ -109,7 +109,7 @@ export const EditorVSLogsFontCompare = () => {
           </Logs>
         </Card>
         <Card className="h-[500px] flex-1 p-4">
-          <Editor className="grow" value={YamlSample} />
+          <Editor className="grow" value={tsdemo.data} />
         </Card>
       </div>
     </div>
