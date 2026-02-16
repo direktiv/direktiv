@@ -160,8 +160,8 @@ func (rt *Runtime) secrets(secretNames []string) sobek.Value {
 
 	return rt.vm.ToValue(retSecrets)
 }
-func (rt *Runtime) setVariable(scope string, name string, content string) sobek.Value {
 
+func (rt *Runtime) setVariable(scope string, name string, content string) sobek.Value {
 	data, err := base64.StdEncoding.DecodeString(content)
 	if err != nil {
 		panic(rt.vm.ToValue("invalid base64 content"))

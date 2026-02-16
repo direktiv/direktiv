@@ -55,6 +55,7 @@ type RuntimeVariableSetEvent struct {
 	Name      string
 	Value     string
 }
+
 func (e *InstanceEvent) IsEndStatus() bool {
 	return e.State == StateCodeComplete || e.State == StateCodeFailed || e.State == StateCodeCancelled
 }
