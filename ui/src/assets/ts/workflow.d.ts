@@ -82,6 +82,31 @@ declare function generateAction(
   config: ActionConfig
 ): (payload?: unknown) => void;
 
+declare type FileObject = {
+  scope: "workflow" | "namespace" | "filesystem";
+  name: string;
+};
+
+declare type ServiceConfig = {
+  scope: "namespace" | "system";
+  path: string;
+  payload: object;
+  files?: FileObject[];
+  retries?: number;
+};
+
+/**
+ * Creates a custom service that can then be called as a
+ * typescript function.
+ * @param ServiceConfig configuration object
+ * - scope: required, "namespace" | "system"
+ * - path: required, the path of the service
+ * - payload: required, object of any kind
+ * - files: optional, [{ scope: "workflow" | "namespace" | "filesystem", name: string }]
+ * - retries: optional, number
+ */
+
+declare function execService(config: ServiceConfig): () => void;
 /**
  * Returns a map where the key is the secret name and the value is the value of the secret
  * @param secrets the array of secrets names
