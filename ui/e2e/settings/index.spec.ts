@@ -7,7 +7,6 @@ import { createVariables } from "../utils/variables";
 import { decode } from "js-base64";
 import { faker } from "@faker-js/faker";
 import { radixClick } from "../utils/testutils";
-import { waitForSuccessToast } from "../explorer/workflow/utils";
 
 let namespace = "";
 
@@ -73,8 +72,8 @@ test("it is possible to create and delete secrets", async ({ page }) => {
     value: faker.string.alphanumeric(20),
   };
 
-  await page.getByPlaceholder("secret-name").type(firstSecretName);
-  await page.locator("textarea").type(newSecret.value);
+  await page.getByPlaceholder("secret-name").fill(firstSecretName);
+  await page.locator("textarea").fill(newSecret.value);
   await page.getByRole("button", { name: "Create" }).click();
 
   await expect(
@@ -82,10 +81,13 @@ test("it is possible to create and delete secrets", async ({ page }) => {
     "it renders an error message when using a name that already exists"
   ).toBeVisible();
 
-  await page.getByPlaceholder("secret-name").type(newSecret.name);
+  await page.getByPlaceholder("secret-name").fill(newSecret.name);
+  await page.locator("textarea").fill(newSecret.value);
+
   await page.getByRole("button", { name: "Create" }).click();
 
-  await waitForSuccessToast(page);
+  await expect(page.getByTestId("toast-success")).toBeVisible();
+  await page.getByTestId("toast-close").click();
 
   const secretElements = page.getByTestId("item-name");
   await expect(secretElements, "number of secrets should be 4").toHaveCount(4);
@@ -97,7 +99,9 @@ test("it is possible to create and delete secrets", async ({ page }) => {
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByRole("button", { name: "Delete" }).click();
 
-  await waitForSuccessToast(page);
+  await expect(page.getByTestId("toast-success")).toBeVisible();
+  await page.getByTestId("toast-close").click();
+
   await expect(secretElements, "number of secrets should be 3").toHaveCount(3);
 
   await expect(
@@ -114,14 +118,16 @@ test("secrets are displayed in alphabetical order", async ({ page }) => {
   await page.goto(`/n/${namespace}/settings`);
 
   // Firt Create secrets in non-alphabetical order
-  const secretNames = ["X", "T", "A", "01"];
+  const secretNames = ["xanadu", "titanic", "avalon"];
 
   for (const name of secretNames) {
     await page.getByTestId("secret-create").click();
-    await page.getByPlaceholder("secret-name").type(name);
-    await page.locator("textarea").type("test-value");
+    await page.getByPlaceholder("secret-name").fill(name);
+    await page.locator("textarea").fill("test-value");
     await page.getByRole("button", { name: "Create" }).click();
-    await waitForSuccessToast(page);
+
+    await expect(page.getByTestId("toast-success")).toBeVisible();
+    await page.getByTestId("toast-close").click();
   }
 
   // Then get all secret names in the list
@@ -131,7 +137,7 @@ test("secrets are displayed in alphabetical order", async ({ page }) => {
   const displayedNames = await secretElements.allTextContents();
 
   // And check if the names are in alphabetical order
-  expect(displayedNames).toEqual(["01", "A", "T", "X"]);
+  expect(displayedNames).toEqual(["avalon", "titanic", "xanadu"]);
 });
 
 test("it is possible to create and delete registries", async ({ page }) => {
@@ -155,7 +161,9 @@ test("it is possible to create and delete registries", async ({ page }) => {
   await page.getByTestId("new-registry-user").type(newRegistry.user);
 
   await page.getByTestId("registry-create-submit").click();
-  await waitForSuccessToast(page);
+
+  await expect(page.getByTestId("toast-success")).toBeVisible();
+  await page.getByTestId("toast-close").click();
 
   const registryElements = page.getByTestId("item-name");
   await expect(
@@ -167,7 +175,9 @@ test("it is possible to create and delete registries", async ({ page }) => {
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByTestId("registry-delete-confirm").click();
 
-  await waitForSuccessToast(page);
+  await expect(page.getByTestId("toast-success")).toBeVisible();
+  await page.getByTestId("toast-close").click();
+
   await expect(
     registryElements,
     "number of registry elements rendered should be 3"
@@ -204,7 +214,9 @@ test("it is possible to create and delete variables", async ({
   await page.getByLabel("Mimetype").click();
   await page.getByLabel("HTML").click();
   await page.getByRole("button", { name: "create" }).click();
-  await waitForSuccessToast(page);
+
+  await expect(page.getByTestId("toast-success")).toBeVisible();
+  await page.getByTestId("toast-close").click();
 
   /* reload and make sure changes have been persisted */
   await page.reload({
@@ -239,7 +251,9 @@ test("it is possible to create and delete variables", async ({
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByTestId("registry-delete-confirm").click();
 
-  await waitForSuccessToast(page);
+  await expect(page.getByTestId("toast-success")).toBeVisible();
+  await page.getByTestId("toast-close").click();
+
   await expect(
     page.getByTestId("item-name"),
     "after deleting a variable, there are 3 variables left"
@@ -274,7 +288,10 @@ test("bulk delete variables", async ({ page }) => {
     page.getByText(`Are you sure you want to delete variable`, { exact: false })
   ).toBeVisible();
   await page.getByRole("button", { name: "Delete" }).click();
-  await waitForSuccessToast(page);
+
+  await expect(page.getByTestId("toast-success")).toBeVisible();
+  await page.getByTestId("toast-close").click();
+
   await expect(page.getByTestId("item-name")).toHaveCount(3);
 
   // Check second checkbox and click delete
@@ -301,7 +318,9 @@ test("bulk delete variables", async ({ page }) => {
 
   // Confirm deletion
   await page.getByRole("button", { name: "Delete" }).click();
-  await waitForSuccessToast(page);
+
+  await expect(page.getByTestId("toast-success")).toBeVisible();
+  await page.getByTestId("toast-close").click();
 
   await expect(page.getByTestId("item-name")).toHaveCount(0);
 });
@@ -351,7 +370,9 @@ test("it is possible to edit variables", async ({ page }) => {
   await page.getByLabel("YAML").click();
 
   await page.getByRole("button", { name: "save" }).click();
-  await waitForSuccessToast(page);
+
+  await expect(page.getByTestId("toast-success")).toBeVisible();
+  await page.getByTestId("toast-close").click();
 
   /* reload and make sure changes have been persisted */
   await page.reload({

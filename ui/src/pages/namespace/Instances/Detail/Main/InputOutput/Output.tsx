@@ -11,18 +11,18 @@ import { useTranslation } from "react-i18next";
 const Output = forwardRef<
   HTMLDivElement,
   {
-    instanceIsFinished: boolean;
+    isPending: boolean;
   }
->(({ instanceIsFinished }, ref) => {
+>(({ isPending }, ref) => {
   const instanceId = useInstanceId();
   const { t } = useTranslation();
   const { data, isError } = useInstanceOutput({
     instanceId,
-    enabled: instanceIsFinished,
+    enabled: !isPending,
   });
   const theme = useTheme();
 
-  if (!instanceIsFinished) {
+  if (isPending) {
     return (
       <InfoText>
         {t("pages.instances.detail.inputOutput.output.stillRunningMsg")}

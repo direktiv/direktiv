@@ -1,6 +1,5 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
-import { waitForSuccessToast, workflowThatCreatesVariable } from "./utils";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "~/api/instances/mutate/create";
@@ -11,6 +10,7 @@ import { faker } from "@faker-js/faker";
 import { forceLeadingSlash } from "~/api/files/utils";
 import { headers } from "e2e/utils/testutils";
 import { simpleWorkflow } from "e2e/utils/workflows";
+import { workflowThatCreatesVariable } from "./utils";
 
 let namespace = "";
 let workflow = "";
@@ -155,7 +155,9 @@ test.skip("it is possible to update variables", async ({ page }) => {
   /* save changes and assert they have been persisted */
   await page.getByRole("button", { name: "Save" }).click();
 
-  await waitForSuccessToast(page);
+  await expect(page.getByTestId("toast-success")).toBeVisible();
+  await page.getByTestId("toast-close").click();
+
   await page.reload();
 
   await expect(
@@ -193,7 +195,9 @@ test("it is possible to delete variables", async ({ page }) => {
     "it renders the confirmation dialog"
   ).toBeVisible();
   await page.getByRole("button", { name: "Delete" }).click();
-  await waitForSuccessToast(page);
+
+  await expect(page.getByTestId("toast-success")).toBeVisible();
+  await page.getByTestId("toast-close").click();
 
   await expect(
     page.getByTestId("variable-row"),

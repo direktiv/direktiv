@@ -1,4 +1,10 @@
-type State = {
+export type State = {
+  name: string;
+  start: boolean;
+  finish: boolean;
+  visited: boolean;
+  failed: boolean;
+  transitions: string[];
   id: string;
   type: string;
   events: {
@@ -14,16 +20,6 @@ type State = {
   }[];
   transition: string;
   defaultTransition: string;
-};
-
-type NonEmptyArray<T> = [T, ...T[]];
-
-export type Workflow = {
-  states: NonEmptyArray<State>;
-  start: {
-    state: string;
-  };
-  functions: object[];
 };
 
 export type Orientation = "horizontal" | "vertical";

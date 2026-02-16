@@ -6,7 +6,7 @@ const FlowCacheName = "flows"
 
 const (
 	FlowFileExtension        = ".wf.ts"
-	FlowActionScopeLocal     = "local"
+	FlowActionScopeWorkflow  = "workflow"
 	FlowActionScopeNamespace = "namespace"
 	FlowActionScopeSystem    = "system"
 )
@@ -17,14 +17,18 @@ type BasicAuthConfig struct {
 }
 
 type ActionConfig struct {
-	Type    string
-	Cmd     string
-	Size    string
-	Image   string
-	Envs    []EnvironmentVariable
+	Type  string
+	Cmd   string
+	Size  string
+	Image string
+	Envs  []EnvironmentVariable
+
 	Retries int
 
 	Auth *BasicAuthConfig
+
+	// service file specific
+	Scale int
 }
 
 type StateView struct {

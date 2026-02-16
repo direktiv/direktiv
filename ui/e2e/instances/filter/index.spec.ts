@@ -47,7 +47,7 @@ const createStatusFilterInstances = async () => {
 
 /* create 1 instance with invoker "api" and 2 with invoker "instance" */
 const createInvokerFilterInstances = async () => {
-  const parentWorkflowName = faker.system.commonFileName("yaml");
+  const parentWorkflowName = faker.system.commonFileName("wf.ts");
 
   await createFile({
     name: parentWorkflowName,
@@ -68,7 +68,7 @@ test("it is possible to navigate to the instances list, it renders and paginates
 }) => {
   await Promise.all(
     Array.from({ length: 17 }).map(() => {
-      createInstance({ namespace, path: simpleWorkflowName });
+      createInstance({ namespace, path: `/${simpleWorkflowName}` });
     })
   );
 
@@ -80,9 +80,9 @@ test("it is possible to navigate to the instances list, it renders and paginates
     .click();
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "it lists the expected number of instances on page 1"
-  ).toHaveCount(10);
+  ).toHaveCount(10, { timeout: 5000 });
 
   await expect(page.getByLabel("Pagination")).toBeVisible();
   await expect(
@@ -98,14 +98,14 @@ test("it is possible to navigate to the instances list, it renders and paginates
   await page.getByTestId("pagination-btn-right").click();
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "it lists the expected number of instances on page 2"
   ).toHaveCount(7);
 
   await page.getByTestId("pagination-btn-left").click();
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "it lists the expected number of instances on page 1"
   ).toHaveCount(10);
 });
@@ -120,7 +120,7 @@ test("it is possible to filter by date using created before", async ({
 
   /* there should be 2 items initially */
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "there should be 2 instances"
   ).toHaveCount(2);
 
@@ -143,14 +143,14 @@ test("it is possible to filter by date using created before", async ({
   await todayElement.click();
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "there should be 0 rows when we filter before today"
   ).toHaveCount(0);
 
   /* remove the date filter */
-  await page.getByTestId("filter-clear-BEFORE").click();
+  await page.getByTestId("filter-clear-createdAtLt").click();
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "there should be 2 rows after removing the filter"
   ).toHaveCount(2);
 
@@ -161,13 +161,13 @@ test("it is possible to filter by date using created before", async ({
   await page.getByText("15", { exact: true }).click();
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "there should be 0 rows when filtering by created after with a future date"
   ).toHaveCount(0);
 
-  await page.getByTestId("filter-clear-AFTER").click();
+  await page.getByTestId("filter-clear-createdAtGt").click();
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "there should be 2 rows after removing the filter"
   ).toHaveCount(2);
 });
@@ -178,7 +178,7 @@ test("it is possible to filter by invoker", async ({ page }) => {
 
   /* there should be 3 items initially */
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "there should be 3 rows"
   ).toHaveCount(3);
 
@@ -188,7 +188,7 @@ test("it is possible to filter by invoker", async ({ page }) => {
   await page.getByRole("option", { name: "instance" }).click();
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "there should be 2 rows with filter invoker: instance"
   ).toHaveCount(2);
 
@@ -199,14 +199,14 @@ test("it is possible to filter by invoker", async ({ page }) => {
     .click();
   await page.getByRole("option", { name: "api" }).click();
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "there should be 1 rows with filter invoker: api"
   ).toHaveCount(1);
 
   /* clear filter, expect 3 instances to be rendered */
   await page.getByTestId("filter-clear-invoker").click();
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "there should be 3 rows when we cancel the filter"
   ).toHaveCount(3);
 });
@@ -217,7 +217,7 @@ test("it is possible to filter by status", async ({ page }) => {
 
   /* there should be 5 items initially */
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "there should be 5 rows"
   ).toHaveCount(5);
 
@@ -229,7 +229,7 @@ test("it is possible to filter by status", async ({ page }) => {
   await page.getByRole("option", { name: "complete" }).click();
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "there should be 2 rows with filter status: complete"
   ).toHaveCount(2);
 
@@ -238,20 +238,20 @@ test("it is possible to filter by status", async ({ page }) => {
   await page.getByRole("option", { name: "failed" }).click();
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "there should be 3 rows with filter status: failed"
   ).toHaveCount(3);
 
   /* clear filter, expect 5 results to be rendered */
-  await page.getByTestId("filter-clear-STATUS").click();
+  await page.getByTestId("filter-clear-status").click();
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "there should be 5 rows when we clear the filter"
   ).toHaveCount(5);
 });
 
-test("it is possible to filter by AS (name)", async ({ page }) => {
+test("it is possible to filter by path", async ({ page }) => {
   const workflowNames = [
     "workflow1.yaml",
     "workflow2.yaml",
@@ -284,36 +284,36 @@ test("it is possible to filter by AS (name)", async ({ page }) => {
 
   /* there should be 4 items initially */
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "there should be 4 rows"
   ).toHaveCount(4);
 
   await page.getByTestId("filter-add").click();
   await page.getByRole("option", { name: "name" }).click();
 
-  await page.getByPlaceholder("filename.yaml").type("workflow");
-  await page.getByPlaceholder("filename.yaml").press("Enter");
+  await page.getByPlaceholder("filename.wf.ts").fill("workflow");
+  await page.getByPlaceholder("filename.wf.ts").press("Enter");
 
   /* filter by name "workflow", result should be 3 */
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "there should be 3 rows with filter name: workflow"
   ).toHaveCount(3);
 
   /* change the filter to name "test", result should be 1 */
   await page.getByRole("button", { name: "workflow" }).click();
-  await page.getByPlaceholder("filename.yaml").fill("test");
-  await page.getByPlaceholder("filename.yaml").press("Enter");
+  await page.getByPlaceholder("filename.wf.ts").fill("test");
+  await page.getByPlaceholder("filename.wf.ts").press("Enter");
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "there should be 1 rows with filter name: test"
   ).toHaveCount(1);
 
   /* clear filter */
-  await page.getByTestId("filter-clear-AS").click();
+  await page.getByTestId("filter-clear-path").click();
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "after clearing the filter, there should be 4 results again"
   ).toHaveCount(4);
 });
@@ -363,7 +363,7 @@ test("it is possible to apply multiple filters", async ({ page }) => {
   page.getByLabel("Show 20 rows").click();
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "initially, it renders all instances"
   ).toHaveCount(11);
 
@@ -373,7 +373,7 @@ test("it is possible to apply multiple filters", async ({ page }) => {
   await page.getByRole("option", { name: "api" }).click();
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "it renders the expected number of results"
   ).toHaveCount(9);
 
@@ -383,7 +383,7 @@ test("it is possible to apply multiple filters", async ({ page }) => {
   await page.getByRole("option", { name: "failed" }).click();
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "it renders the expected number of results"
   ).toHaveCount(3);
 
@@ -396,7 +396,7 @@ test("it is possible to apply multiple filters", async ({ page }) => {
   await page.getByRole("option", { name: "instance" }).click();
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "it renders the expected number of results"
   ).toHaveCount(0);
 
@@ -409,7 +409,7 @@ test("it is possible to apply multiple filters", async ({ page }) => {
   await page.getByRole("option", { name: "complete" }).click();
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "it renders the expected number of results"
   ).toHaveCount(2);
 
@@ -417,7 +417,7 @@ test("it is possible to apply multiple filters", async ({ page }) => {
   await page.getByTestId("filter-clear-invoker").click();
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "it renders the expected number of results"
   ).toHaveCount(8);
 
@@ -427,7 +427,7 @@ test("it is possible to apply multiple filters", async ({ page }) => {
   await page.getByRole("option", { name: "api" }).click();
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "it renders the expected number of results"
   ).toHaveCount(6);
 
@@ -438,7 +438,7 @@ test("it is possible to apply multiple filters", async ({ page }) => {
   await page.getByPlaceholder("filename.yaml").press("Enter");
 
   await expect(
-    page.getByTestId(/instance-row/),
+    page.getByTestId("instance-column-id"),
     "it renders the expected number of results"
   ).toHaveCount(5);
 });

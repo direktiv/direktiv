@@ -61,4 +61,16 @@ export const instanceKeys = {
         instanceId,
       },
     ] as const,
+  instanceFlow: (
+    namespace: string,
+    { apiKey, instanceId }: { apiKey?: string; instanceId: string }
+  ) =>
+    [
+      {
+        scope: "instance-flow",
+        apiKey,
+        namespace,
+        instanceId,
+      },
+    ] as const,
 };

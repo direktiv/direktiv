@@ -64,9 +64,11 @@ test("it is possible to create and sync a mirror, view logs", async ({
 
   /* visit detail page and ensure logs are rendered */
   await page.getByTestId("sync-row").click();
+
   await expect(
-    page.getByText("msg: error loading possible Direktiv workflow definition")
+    page.getByText("msg: no .direktivignore file detected")
   ).toBeVisible();
+
   await page.getByRole("main").getByRole("link", { name: "Mirror" }).click();
 
   /* update mirror to be invalid */

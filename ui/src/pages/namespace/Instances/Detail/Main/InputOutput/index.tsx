@@ -13,20 +13,16 @@ const InputOutput = () => {
   const { data } = useInstanceDetails({ instanceId });
   const tabs = ["input", "output"] as const;
 
-  const instanceWasSuccessfull = data?.status === "complete";
-  const instanceIsFinished = data?.status !== "pending";
-
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>(
-    instanceWasSuccessfull ? "output" : "input"
+    data?.status === "complete" ? "output" : "input"
   );
 
+  const outputIsPending =
+    !!data && (data.status === "pending" || data.status === "running");
+
   useEffect(() => {
-    /**
-     * switch to the output tab when the instance is switching
-     * to a finished state while this component is mounted
-     */
-    setActiveTab(instanceWasSuccessfull ? "output" : "input");
-  }, [instanceWasSuccessfull]);
+    setActiveTab(outputIsPending ? "input" : "output");
+  }, [outputIsPending]);
 
   if (!data) return null;
 
@@ -47,7 +43,7 @@ const InputOutput = () => {
           <Input />
         </TabsContent>
         <TabsContent value={tabs[1]} className="flex grow" asChild>
-          <Output instanceIsFinished={instanceIsFinished} />
+          <Output isPending={outputIsPending} />
         </TabsContent>
         <TabsList variant="boxed" className="w-max">
           <TabsTrigger variant="boxed" value={tabs[0]}>

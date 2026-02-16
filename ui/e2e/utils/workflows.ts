@@ -27,7 +27,7 @@ function stateError(input): StateFunction<unknown> {
 };
 `;
 
-export const delayWorkflow = `// This workflow waits for a number of seconds. You can specify the length 
+export const delayWorkflow1s = `// This workflow waits for a number of seconds. You can specify the length 
 // in the workflow input. For example, { "time": 10 }.\
 
 const flow: FlowDefinition = {
@@ -37,8 +37,23 @@ const flow: FlowDefinition = {
 };
 
 function stateDelay(): StateFunction<unknown> {
-  let seconds = 1;
-  sleep(seconds)
+  sleep(1)
+  return finish({
+    message: "Hello world!" 
+  })
+};`;
+
+export const delayWorkflow5s = `// This workflow waits for a number of seconds. You can specify the length 
+// in the workflow input. For example, { "time": 10 }.\
+
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT1S",
+  state: "stateDelay",
+};
+
+function stateDelay(): StateFunction<unknown> {
+  sleep(5)
   return finish({
     message: "Hello world!" 
   })

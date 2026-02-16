@@ -121,8 +121,6 @@ func New(app InitializeArgs) (*Server, error) {
 		startWorkflow: nil,
 	}
 
-	jxCtr := jxController{}
-
 	mw := &appMiddlewares{
 		db:    app.DB,
 		cache: app.CacheManager,
@@ -238,10 +236,6 @@ func New(app InitializeArgs) (*Server, error) {
 					})
 				}
 			}
-		})
-
-		r.Route("/jx", func(r chi.Router) {
-			jxCtr.mountRouter(r)
 		})
 	})
 

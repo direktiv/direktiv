@@ -26,8 +26,8 @@ type Runtime struct {
 	onSubflow     OnSubflowHook
 	onSetVariable OnSetVariableHook
 	onGetVariable OnGetVariableHook
-	//nolint:containedctx
 	ctx context.Context
+	tracingPack  *tracingPack
 }
 
 type (
@@ -39,7 +39,7 @@ type (
 	OnGetVariableHook func(ctx context.Context, scope string, name string) ([]byte, error)
 )
 
-func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mappings string, hooks ...any) *Runtime {
+func New(instID uuid.UUID, metadata map[string]string, mappings string, hooks ...any) *Runtime {
 	vm := sobek.New()
 	vm.SetMaxCallStackSize(256)
 
@@ -50,7 +50,6 @@ func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mapp
 	}
 
 	rt := &Runtime{
-		ctx:      ctx,
 		vm:       vm,
 		instID:   instID,
 		metadata: metadata,
@@ -92,6 +91,11 @@ func New(ctx context.Context, instID uuid.UUID, metadata map[string]string, mapp
 	return rt
 }
 
+func (rt *Runtime) WithTracingPack(tp *tracingPack) *Runtime {
+	rt.tracingPack = tp
+	return rt
+}
+
 // setHook is a dynamic way to set hooks on the runtime.
 func (rt *Runtime) setHook(f any) *Runtime {
 	switch f := f.(type) {
@@ -116,6 +120,8 @@ func (rt *Runtime) setHook(f any) *Runtime {
 }
 
 func (rt *Runtime) secret(secretName string) sobek.Value {
+	rt.tracingPack.span.AddEvent("fetching secret")
+
 	secretJsonMap := rt.metadata[core.EngineMappingSecrets]
 	us := make(map[string]string)
 	json.Unmarshal([]byte(secretJsonMap), &us)
@@ -136,6 +142,8 @@ func (rt *Runtime) secret(secretName string) sobek.Value {
 }
 
 func (rt *Runtime) secrets(secretNames []string) sobek.Value {
+	rt.tracingPack.span.AddEvent("fetching secrets")
+
 	secretJsonMap := rt.metadata[core.EngineMappingSecrets]
 
 	us := make(map[string]string)
@@ -200,12 +208,16 @@ func (rt *Runtime) getVariable(scope string, name string) sobek.Value {
 }
 
 func (rt *Runtime) sleep(seconds int) sobek.Value {
+	rt.tracingPack.span.AddEvent("calling sleep")
+
 	time.Sleep(time.Duration(seconds) * time.Second)
 
 	return sobek.Undefined()
 }
 
 func (rt *Runtime) now() *sobek.Object {
+	rt.tracingPack.span.AddEvent("calling now")
+
 	t := time.Now()
 
 	obj := rt.vm.NewObject()
@@ -222,17 +234,21 @@ func (rt *Runtime) now() *sobek.Object {
 }
 
 func (rt *Runtime) id() sobek.Value {
+	rt.tracingPack.span.AddEvent("calling id")
+
 	return rt.vm.ToValue(rt.instID)
 }
 
 func (rt *Runtime) log(logs ...string) sobek.Value {
+	rt.tracingPack.span.AddEvent("calling log")
+
 	// protect victoria logs from falling over without
 	msg := strings.Join(logs, " ")
 	if msg == "" {
 		msg = " "
 	}
 
-	telemetry.LogInstance(rt.ctx, telemetry.LogLevelInfo, msg)
+	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, msg)
 
 	return sobek.Undefined()
 }
@@ -259,6 +275,8 @@ func (rt *Runtime) transition(call sobek.FunctionCall) sobek.Value {
 		panic(rt.vm.ToValue(fmt.Sprintf("error parsing transition fn: %s", f)))
 	}
 
+	// otel: end previous and start new one
+	rt.tracingPack.tracingTransition(fName)
 	if rt.onTransition != nil {
 		err = rt.onTransition(b, fName)
 		if err != nil {
@@ -306,7 +324,7 @@ func (rt *Runtime) execSubflow(call sobek.FunctionCall) sobek.Value {
 	if rt.onSubflow == nil {
 		panic(rt.vm.ToValue("onSubflow hook not set"))
 	}
-	out, err := rt.onSubflow(rt.ctx, path, b)
+	out, err := rt.onSubflow(rt.tracingPack.ctx, path, b)
 	if err != nil {
 		panic(rt.vm.ToValue(fmt.Sprintf("error calling on subflow: %s", err.Error())))
 	}
@@ -337,6 +355,9 @@ func (rt *Runtime) finish(data sobek.Value) sobek.Value {
 		}
 	}
 
+	// otel: finish span from transition
+	rt.tracingPack.tracingFinish()
+
 	return sobek.Null()
 }
 
@@ -361,7 +382,16 @@ type Script struct {
 }
 
 func ExecScript(ctx context.Context, script *Script, hooks ...any) error {
-	rt := New(ctx, script.InstID, script.Metadata, script.Mappings, hooks...)
+	tp := newTracingPack(ctx, script.Metadata[core.EngineMappingNamespace],
+		script.InstID.String(), script.Metadata[core.EngineHeaderInvoker],
+		script.Metadata[core.EngineMappingPath])
+	defer tp.finish()
+
+	rt := New(script.InstID, script.Metadata, script.Mappings, hooks...).WithTracingPack(tp)
+
+	tp.tracingStart(script.Fn)
+	telemetry.LogInstance(tp.ctx, telemetry.LogLevelInfo,
+		fmt.Sprintf("transitioning to '%s'", script.Fn))
 
 	_, err := rt.vm.RunString(script.Text)
 	if err != nil {
@@ -380,6 +410,7 @@ func ExecScript(ctx context.Context, script *Script, hooks ...any) error {
 
 	_, err = start(sobek.Undefined(), rt.vm.ToValue(inputMap))
 	if err != nil {
+		rt.tracingPack.handleError(err)
 		return fmt.Errorf("invoke start: %w", err)
 	}
 
@@ -396,8 +427,8 @@ func ParseFuncNameFromText(s string) string {
 	s = s[len(prefix):]
 
 	// find the first '(' to isolate the name
-	if idx := strings.Index(s, "("); idx != -1 {
-		return strings.TrimSpace(s[:idx])
+	if before, _, ok := strings.Cut(s, "("); ok {
+		return strings.TrimSpace(before)
 	}
 
 	return ""

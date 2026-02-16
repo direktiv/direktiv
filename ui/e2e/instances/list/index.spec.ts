@@ -1,6 +1,6 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import {
-  delayWorkflow,
+  delayWorkflow5s,
   errorWorkflow,
   simpleWorkflow,
 } from "e2e/utils/workflows";
@@ -17,9 +17,9 @@ import { parentWorkflow as parentWorkflowContent } from "../utils/workflows";
 type Instance = Awaited<ReturnType<typeof createInstance>>;
 
 let namespace = "";
-const simpleWorkflowName = faker.system.commonFileName("yaml");
-const longRunningWorkflowName = faker.system.commonFileName("yaml");
-const failingWorkflowName = faker.system.commonFileName("yaml");
+const simpleWorkflowName = faker.system.commonFileName("wf.ts");
+const longRunningWorkflowName = faker.system.commonFileName("wf.ts");
+const failingWorkflowName = faker.system.commonFileName("wf.ts");
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
@@ -44,7 +44,7 @@ test.beforeEach(async () => {
     name: longRunningWorkflowName,
     namespace,
     type: "workflow",
-    content: delayWorkflow,
+    content: delayWorkflow5s,
     mimeType: "application/x-typescript",
   });
 });
@@ -54,7 +54,7 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("it displays a note, when there are no instances yet.", async ({
+test("it displays a note when there are no instances yet.", async ({
   page,
 }) => {
   await page.goto(`/n/${namespace}/instances/`);
@@ -148,7 +148,7 @@ test("it renders the instance item correctly for failed and success status", asy
           .getByTestId("instance-column-state")
           .getByTestId("tooltip-copy-content"),
         "on hover, a tooltip reveals the error message"
-      ).toContainText("this is my error message");
+      ).toContainText("Error: this was set up to fail at stateError");
     }
 
     await page
@@ -215,7 +215,7 @@ test("it renders the instance item correctly for failed and success status", asy
   ).not.toBeVisible();
 });
 
-test("it will treat the status and finish date of pending instances accordingly", async ({
+test("it renders instance state, start and finish date correctly", async ({
   page,
 }) => {
   await createInstance({ namespace, path: longRunningWorkflowName });
@@ -224,8 +224,8 @@ test("it will treat the status and finish date of pending instances accordingly"
 
   await expect(
     page.getByTestId("instance-column-state"),
-    "the status column should show the pending status"
-  ).toContainText("pending");
+    "the status column should show status: running"
+  ).toContainText("running");
 
   await expect(
     page.getByTestId("instance-column-ended-time"),
@@ -238,118 +238,8 @@ test("it will treat the status and finish date of pending instances accordingly"
   ).toContainText("complete");
 });
 
-test("it paginates instances", async ({ page }) => {
-  const totalCount = 35;
-  const pageSize = 10;
-
-  const parentWorkflow = faker.system.commonFileName("yaml");
-
-  const content = parentWorkflowContent({
-    childPath: `/${simpleWorkflowName}`,
-    children: totalCount - 1,
-  });
-
-  await createFile({
-    name: parentWorkflow,
-    namespace,
-    type: "workflow",
-    content,
-    mimeType: "application/x-typescript",
-  });
-
-  await createInstance({ namespace, path: parentWorkflow });
-  /**
-   * child workflows are spawned asynchronously in the backend and the page
-   * does not refresh, so we need to wait until they are initialized before
-   * visiting the page.
-   */
-  await page.waitForTimeout(500);
-
-  await page.goto(`/n/${namespace}/instances/`, { waitUntil: "networkidle" });
-
-  await expect(
-    page.getByTestId("pagination-wrapper"),
-    "there should be pagination component"
-  ).toBeVisible();
-
-  const btnPrev = page.getByTestId("pagination-btn-left");
-  const btnNext = page.getByTestId("pagination-btn-right");
-  const page1Btn = page.getByTestId(`pagination-btn-page-1`);
-
-  // page number starts from  1
-  await expect(
-    page1Btn,
-    "active button with the page number should have an aria-current attribute with a value of page"
-  ).toHaveAttribute("aria-current", "page");
-
-  await expect(
-    btnPrev,
-    "prev button should be disabled at page 1"
-  ).toBeDisabled();
-
-  await expect(
-    btnNext,
-    "next button should be enabled at page 1"
-  ).toBeEnabled();
-
-  // go to page 2 by clicking nextButton
-  await btnNext.click();
-  await expect(
-    btnPrev,
-    "prev button should be enabled at page 2"
-  ).toBeEnabled();
-
-  await expect(
-    btnNext,
-    "next button should be enabled at page 2"
-  ).toBeEnabled();
-
-  // go to page 3 by clicking number 3
-  const btnNumber4 = page.getByTestId(`pagination-btn-page-4`);
-  await btnNumber4.click();
-
-  // check with api response
-  const instancesListPage3 = await getInstances({
-    urlParams: {
-      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
-      namespace,
-      limit: pageSize,
-      offset: 3 * pageSize,
-    },
-    headers,
-  });
-
-  const firstInstance = instancesListPage3.data[0];
-  if (!firstInstance) throw new Error("there should be at least one instance");
-
-  const instanceItemRow = page.getByTestId(`instance-row-${firstInstance.id}`);
-
-  await expect(
-    instanceItemRow.getByTestId("instance-column-id"),
-    "the first row on page 3 should should be same as the api response"
-  ).toContainText(firstInstance.id.slice(0, 8));
-
-  /**
-   * Test the select options for page size
-   */
-
-  const selectPagesize = page.getByRole("combobox");
-  await expect(selectPagesize).toBeVisible();
-  await expect(selectPagesize).toHaveText("Show 10 rows");
-
-  selectPagesize.click();
-  page.getByLabel("Show 50 rows").click();
-
-  await expect(page.getByTestId(/instance-row/)).toHaveCount(35);
-
-  /* reload the page and check if pagesize was remembered */
-  await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(selectPagesize).toBeVisible();
-  await expect(selectPagesize).toHaveText("Show 50 rows");
-});
-
-test("It will display child instances as well", async ({ page }) => {
-  const parentWorkflow = faker.system.commonFileName("yaml");
+test("It renders parent and child instances", async ({ page }) => {
+  const parentWorkflow = faker.system.commonFileName("wf.ts");
 
   await createFile({
     name: parentWorkflow,

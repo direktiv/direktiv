@@ -1,6 +1,6 @@
 import {
   InstanceFlowResponseSchema,
-  InstanceSchemaType,
+  workflowStateSchema,
 } from "~/api/instances/schema";
 import { Maximize2, Minimize2 } from "lucide-react";
 import {
@@ -17,26 +17,37 @@ import {
 import Button from "~/design/Button";
 import { FC } from "react";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
-import { instanceStatusToDiagramStatus } from "./utils";
-import { useInstanceFlow } from "~/api/instances/query/flow";
+import { useFile } from "~/api/files/query/file";
 import { useTranslation } from "react-i18next";
 
 type DiagramProps = {
-  instanceId: string;
-  status: InstanceSchemaType["status"];
+  flow?: string[];
+  path?: string;
 };
 
-const Diagram: FC<DiagramProps> = ({ instanceId, status }) => {
+const Diagram: FC<DiagramProps> = ({ path }) => {
   const { setMaximizedPanel } = useLogsPreferencesActions();
   const { t } = useTranslation();
   const maximizedPanel = useLogsPreferencesMaximizedPanel();
   const isMaximized = maximizedPanel === "diagram";
 
-  const { data } = useInstanceFlow({ instanceId });
+  const { data } = useFile({ path });
 
-  const parsedWorkflow = InstanceFlowResponseSchema.safeParse(data);
+  if (data === undefined) return null;
+
+  const workflowData =
+    data.type === "workflow" ? { data: data.states } : undefined;
+
+  const parsedWorkflow = InstanceFlowResponseSchema.safeParse(workflowData);
 
   if (!parsedWorkflow.success) {
+    // Todo: Decide what kind of error handling is appropriate here
+    return null;
+  }
+
+  const parsedWorkflowData = workflowStateSchema.safeParse(workflowData?.data);
+
+  if (!parsedWorkflowData.success) {
     // Todo: Decide what kind of error handling is appropriate here
     return null;
   }
@@ -71,7 +82,7 @@ const Diagram: FC<DiagramProps> = ({ instanceId, status }) => {
       <WorkflowDiagram
         workflow={parsedWorkflow.data}
         orientation="horizontal"
-        instanceStatus={instanceStatusToDiagramStatus(status)}
+        instanceStatus="pending"
       />
     </div>
   );

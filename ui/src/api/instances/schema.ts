@@ -158,3 +158,69 @@ export const InstanceOutputResponseSchema = z.object({
     output: z.string().nullable(),
   }),
 });
+
+/**
+ * example
+ * 
+  {
+    "states": {
+      "stateOne": {
+        "id": "stateOne",
+        "type": "function",
+        "name": "stateOne",             
+        "start": true,
+        "finish": false,
+        "visited": true,
+        "failed": false,
+        "transitions": ["stateTwo"],
+
+        "events": [],
+        "conditions": [],
+        "catch": [],
+        "transition": "",
+        "defaultTransition": ""
+      },
+      ...
+    }
+  }
+ */
+
+export const workflowStateSchema = z.object({
+  name: z.string().optional(),
+  start: z.boolean().optional(),
+  finish: z.boolean().optional(),
+  visited: z.boolean().optional(),
+  failed: z.boolean().optional(),
+  transitions: z.array(z.string()).optional(),
+  events: z
+    .array(
+      z.object({
+        transition: z.string(),
+      })
+    )
+    .optional(),
+  conditions: z
+    .array(
+      z.object({
+        transition: z.string(),
+      })
+    )
+    .optional(),
+  catch: z
+    .array(
+      z.object({
+        x: z.string(),
+        y: z.string(),
+        transition: z.string(),
+      })
+    )
+    .optional(),
+  transition: z.string().optional(),
+  defaultTransition: z.string().optional(),
+});
+
+export const InstanceFlowResponseSchema = z.object({
+  data: z.record(workflowStateSchema),
+});
+
+export type Workflow = z.infer<typeof InstanceFlowResponseSchema>;

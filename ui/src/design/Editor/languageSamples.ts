@@ -1055,39 +1055,3 @@ Praesent at dignissim dolor. Donec quis placerat sem. Cras vitae placerat sapien
 
 Mauris auctor nunc in quam tempor, eget consectetur nisi rhoncus. Donec et nulla imperdiet, gravida dui at, accumsan velit. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Proin sollicitudin condimentum auctor. Sed lacinia eleifend nisi, id scelerisque leo laoreet sit amet. Morbi congue augue a malesuada pulvinar. Curabitur nec ante finibus, commodo orci vel, aliquam libero. Morbi molestie purus non nunc placerat fermentum. Pellentesque commodo ligula sed pretium aliquam. Praesent ut nibh ex. Vivamus vestibulum velit in leo suscipit, vitae pellentesque urna vulputate. Suspendisse pretium placerat ligula eu ullamcorper. Nam eleifend mi tellus, ut tristique ante ultricies vitae. Quisque venenatis dapibus tellus sit amet mattis. Donec erat arcu, elementum vel nisl at, sagittis vulputate nisi.
 `;
-
-export const YamlSample = `# some comment here
-functions:
-- id: greeter
-  image: direktiv/greeting:v3
-  type: knative-workflow
-- id: solve2
-  image: direktiv/solve:v3
-  type: knative-workflow
-description: 1
-states:
-- id: event-xor
-  type: eventXor
-  timeout: PT1H
-  events:
-  - event: 
-      type: solveexpressioncloudevent
-    transition: solve
-  - event: 
-      type: greetingcloudevent
-    transition: greet
-- id: greet
-  type: action
-  action:
-    function: greeter
-    input: jq(.greetingcloudevent.data)
-  transform: 
-    greeting: jq(.return.greeting)
-- id: solve
-  type: action
-  action:
-    function: solve2
-    input: jq(.solveexpressioncloudevent.data)
-  transform: 
-    solvedexpression: jq(.return)
-`;

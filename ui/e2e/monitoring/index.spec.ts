@@ -35,10 +35,10 @@ test("It will show the logs on the monitoring page", async ({ page }) => {
   ).toBeVisible();
 
   /**
-   * move to the jq Playground and come back to the monitoring page.
+   * move to the instances and come back to the monitoring page.
    * This will invalidate the cache and cause reloading of the logs
    */
-  await page.getByRole("link", { name: "jq Playground" }).click();
+  await page.getByRole("link", { name: "Instances" }).click();
   await page.getByRole("link", { name: "Monitoring" }).click();
 
   // give the cache some time to update

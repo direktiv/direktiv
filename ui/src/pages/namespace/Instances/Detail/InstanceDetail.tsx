@@ -31,7 +31,9 @@ const InstancesDetail = () => {
       <WorkspaceLayout
         layout={preferedLayout}
         logComponent={<Logs />}
-        diagramComponent={<Diagram flow={data.flow} status={data.status} />}
+        diagramComponent={
+          <Diagram instanceId={instanceId} status={data.status} />
+        }
         inputOutputComponent={<InputOutput />}
       />
     </div>
