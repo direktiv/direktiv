@@ -43,7 +43,7 @@ func (rt *Runtime) service(c map[string]any) sobek.Value {
 		r = any(3)
 	}
 
-	retries, ok := r.(int)
+	retries, ok := r.(int64)
 	if !ok {
 		panic(rt.vm.ToValue(fmt.Errorf("retries must be an integer")))
 	}
@@ -74,7 +74,7 @@ func (rt *Runtime) service(c map[string]any) sobek.Value {
 	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
 		fmt.Sprintf("executing service %s in scope %s", path, t))
 
-	data, err := rt.callAction(sd, payload, retries)
+	data, err := rt.callAction(sd, payload, int(retries))
 	if err != nil {
 		panic(rt.vm.ToValue(err))
 	}
@@ -132,12 +132,15 @@ func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, retries int
 		}
 	}
 
+	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo, "connecting to action/service")
+
 	svcUrl := fmt.Sprintf("http://%s.%s.svc", sd.GetID(), os.Getenv("DIREKTIV_SERVICE_NAMESPACE"))
 
 	// ping service
-	_, err := callRetryable(rt.tracingPack.ctx, svcUrl+"/up", http.MethodGet, []byte(""), 30)
+	_, err := callRetryable(rt.tracingPack.ctx, svcUrl+"/up", http.MethodGet, []byte(""), 29)
 	if err != nil {
-		return nil, fmt.Errorf("action did not start: %s", err.Error())
+		slog.Error("could not connect to service or action", slog.Any("error", err))
+		return nil, fmt.Errorf("cannot connect to service or action, please check action/service deployment")
 		// panic(rt.vm.ToValue(fmt.Errorf("action did not start: %s", err.Error())))
 	}
 
@@ -151,7 +154,7 @@ func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, retries int
 
 	outData, err := callRetryable(rt.tracingPack.ctx, svcUrl, http.MethodPost, data, retries)
 	if err != nil {
-		slog.Error("could not call action", slog.Any("error", err))
+		slog.Error("could not call service or action", slog.Any("error", err))
 		// panic(rt.vm.ToValue(fmt.Errorf("calling action failed: %s", err.Error())))
 		return nil, fmt.Errorf("calling action failed: %s", err.Error())
 	}
