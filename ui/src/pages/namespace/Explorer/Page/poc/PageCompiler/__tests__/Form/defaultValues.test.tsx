@@ -8,13 +8,9 @@ import {
   test,
   vi,
 } from "vitest";
-import {
-  createDirektivPageWithForm,
-  setPage,
-  setupResizeObserverMock,
-} from "../utils";
+import { createDirektivPageWithForm, setupResizeObserverMock } from "../utils";
 
-import { PageCompiler } from "../..";
+import { TestLivePage } from "../utils/TestPage";
 import { setupFormApi } from "./utils";
 
 const { apiServer } = setupFormApi();
@@ -36,8 +32,7 @@ describe("default form values", () => {
     test("string input can use string templates in the default value attribute", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm([
               {
                 id: "string",
@@ -50,7 +45,6 @@ describe("default form values", () => {
                   "a string input can use variable placeholders like string: {{query.user.data.status}}, number: {{query.user.data.userId}} and boolean: {{query.user.data.emailVerified}}",
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -69,8 +63,7 @@ describe("default form values", () => {
     test("textarea can use string templates in the default value attribute", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm([
               {
                 id: "textarea",
@@ -82,7 +75,6 @@ describe("default form values", () => {
                   "a textarea can use variable placeholders like string: {{query.user.data.status}}, number: {{query.user.data.userId}} and boolean: {{query.user.data.emailVerified}}",
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -101,8 +93,7 @@ describe("default form values", () => {
     test("checkbox can be checked by default", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm([
               {
                 id: "static-checkbox",
@@ -116,7 +107,6 @@ describe("default form values", () => {
                 },
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -128,8 +118,7 @@ describe("default form values", () => {
     test("checkbox can have a default value from a variable", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm([
               {
                 id: "dynamic-checkbox",
@@ -144,7 +133,6 @@ describe("default form values", () => {
                 },
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -158,8 +146,7 @@ describe("default form values", () => {
     test("number input can have a static default value", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm([
               {
                 id: "static-number-input",
@@ -173,7 +160,6 @@ describe("default form values", () => {
                 },
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -189,8 +175,7 @@ describe("default form values", () => {
     test("number input can have a default value from a variable", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm([
               {
                 id: "dynamic-number-input",
@@ -205,7 +190,6 @@ describe("default form values", () => {
                 },
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -221,8 +205,7 @@ describe("default form values", () => {
     test("date input can have a static default value", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm([
               {
                 id: "static-date",
@@ -233,7 +216,6 @@ describe("default form values", () => {
                 defaultValue: "2025-12-24T00:00:00.000Z",
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -243,8 +225,7 @@ describe("default form values", () => {
     test("date input can have a default value from a variable", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm([
               {
                 id: "dynamic-date",
@@ -256,7 +237,6 @@ describe("default form values", () => {
                 defaultValue: "{{query.user.data.membershipStartDate}}",
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -266,8 +246,7 @@ describe("default form values", () => {
     test("select input can have a static default value", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm([
               {
                 id: "static-select",
@@ -295,7 +274,6 @@ describe("default form values", () => {
                 defaultValue: "free",
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -311,8 +289,7 @@ describe("default form values", () => {
     test("select input can have a default value from a variable", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm([
               {
                 id: "dynamic-select",
@@ -341,7 +318,6 @@ describe("default form values", () => {
                 defaultValue: "{{query.user.data.subscriptionPlan}}",
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -359,8 +335,7 @@ describe("default form values", () => {
     test("shows an error when textarea default value is an object", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm([
               {
                 id: "textarea-using-an-object",
@@ -372,7 +347,6 @@ describe("default form values", () => {
                 defaultValue: "{{query.user.data}}",
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -392,8 +366,7 @@ describe("default form values", () => {
     test("shows an error when checkbox default value is a string", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm([
               {
                 id: "checkbox-pointing-to-string",
@@ -408,7 +381,6 @@ describe("default form values", () => {
                 },
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -428,8 +400,7 @@ describe("default form values", () => {
     test("shows an error when number input default value is a string", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm([
               {
                 id: "number-using-string",
@@ -444,7 +415,6 @@ describe("default form values", () => {
                 },
               },
             ])}
-            mode="live"
           />
         );
       });
@@ -464,8 +434,7 @@ describe("default form values", () => {
     test("shows an error when select input default value is an object", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm([
               {
                 id: "select-pointing-to-object",
@@ -494,7 +463,6 @@ describe("default form values", () => {
                 defaultValue: "{{query.user.data}}",
               },
             ])}
-            mode="live"
           />
         );
       });

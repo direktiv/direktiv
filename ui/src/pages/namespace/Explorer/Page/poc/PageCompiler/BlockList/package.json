@@ -1,0 +1,9 @@
+{
+  "name": "page-blocklist",
+  "exports": {
+    ".": {
+      "pagesapp": "./BlockList.pagesapp.tsx",
+      "default": "./BlockList.default.tsx"
+    }
+  }
+}

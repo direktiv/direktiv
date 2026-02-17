@@ -2,11 +2,11 @@ import "../../App.css";
 import "./i18n";
 
 import { Block } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/Block";
-import { BlockList } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/Block/utils/BlockList";
 import { DirektivPagesSchema } from "~/pages/namespace/Explorer/Page/poc/schema";
-import { EditorPanelLayoutProvider } from "~/pages/namespace/Explorer/Page/poc/BlockEditor/EditorPanelProvider";
 import ErrorMessage from "./Error";
+import { LiveBlockList } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/BlockList/LiveBlockList";
 import { Loader2 } from "lucide-react";
+import { LocalDialogContainer } from "~/design/LocalDialog/container";
 import { PageCompilerContextProvider } from "~/pages/namespace/Explorer/Page/poc/PageCompiler/context/pageCompilerContext";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "~/design/Toast";
@@ -42,13 +42,13 @@ const PageLoader = () => {
       setScrollPos={setScrollPos}
       mode="live"
     >
-      <EditorPanelLayoutProvider>
-        <BlockList path={[]}>
+      <LocalDialogContainer className="mx-auto max-w-screen-lg">
+        <LiveBlockList path={[]}>
           {page.data.blocks.map((block, index) => (
             <Block key={index} block={block} blockPath={[index]} />
           ))}
-        </BlockList>
-      </EditorPanelLayoutProvider>
+        </LiveBlockList>
+      </LocalDialogContainer>
     </PageCompilerContextProvider>
   );
 };

@@ -1,6 +1,6 @@
 import { Block, BlockPathType } from ".";
 
-import { BlockList } from "./utils/BlockList";
+import { BlockList } from "page-blocklist";
 import { Card as CardDesignComponent } from "~/design/Card";
 import { CardType } from "../../schema/blocks/card";
 

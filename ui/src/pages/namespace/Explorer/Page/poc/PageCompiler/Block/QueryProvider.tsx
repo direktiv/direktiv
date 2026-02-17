@@ -5,7 +5,7 @@ import {
   useVariablesContext,
 } from "../primitives/Variable/VariableContext";
 
-import { BlockList } from "./utils/BlockList";
+import { BlockList } from "page-blocklist";
 import { QueryProviderType } from "../../schema/blocks/queryProvider";
 import { usePageSuspenseQueries } from "../procedures/query";
 import { useTranslation } from "react-i18next";
