@@ -19,27 +19,32 @@ function DirektivPagesMockPlugin() {
   };
 }
 
-export default () =>
-  defineConfig({
-    resolve: {
-      conditions: ["pagesapp"],
-    },
-    root: "src/_direktiv-pages",
-    server: {
-      host: "0.0.0.0",
-      port: 3001,
-    },
-    optimizeDeps: { esbuildOptions: { loader: { ".js": "jsx" } } },
-    plugins: [
-      react(),
-      viteTsconfigPaths(),
-      viteSingleFile(),
-      DirektivPagesMockPlugin(),
-      visualizer({
-        filename: "dist/bundle-report.html",
-        open: true,
-        gzipSize: true,
-        brotliSize: true,
-      }),
-    ],
-  });
+export default defineConfig(({ mode }) => ({
+  resolve: {
+    conditions: ["pagesapp"],
+  },
+  root: "src/_direktiv-pages",
+  server: {
+    host: "0.0.0.0",
+    port: 3001,
+  },
+  optimizeDeps: {
+    esbuildOptions: { loader: { ".js": "jsx" } },
+  },
+  plugins: [
+    react(),
+    viteTsconfigPaths(),
+    viteSingleFile(),
+    DirektivPagesMockPlugin(),
+    ...(mode === "analyze"
+      ? [
+          visualizer({
+            filename: "dist/bundle-report.html",
+            open: true,
+            gzipSize: true,
+            brotliSize: true,
+          }),
+        ]
+      : []),
+  ],
+}));

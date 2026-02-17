@@ -71,6 +71,7 @@
     "build:check": "pnpm run check",
     "build:compile-direktiv": "vite --config vite.config.mts build",
     "build:compile-pages": "vite --config src/_direktiv-pages/vite.config.mts build",
+    "build:analyze-pages": "vite --config src/_direktiv-pages/vite.config.mts build --mode analyze",
     "preview": "run-p preview:*",
     "preview:ui": "vite preview",
     "preview:pages": "vite --config src/_direktiv-pages/vite.config.mts preview",
