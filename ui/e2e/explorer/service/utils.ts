@@ -1,6 +1,5 @@
 import { EnvVarSchemaType } from "~/api/services/schema/services";
 import type { Page } from "@playwright/test";
-import { PatchSchemaType } from "~/pages/namespace/Explorer/Service/ServiceEditor/schema";
 import { createFile } from "e2e/utils/files";
 
 type Service = {
@@ -9,7 +8,6 @@ type Service = {
   scale: number;
   size: string;
   cmd: string;
-  patches?: PatchSchemaType[];
   envs?: EnvVarSchemaType[];
 };
 
@@ -18,7 +16,6 @@ export const createServiceJson = ({
   scale,
   size,
   cmd,
-  patches,
   envs,
 }: Service) => {
   // despite the name, this now matches the JSON used in the editor
@@ -27,7 +24,6 @@ export const createServiceJson = ({
     scale,
     size,
     cmd,
-    ...(patches && patches.length ? { patches } : {}),
     ...(envs && envs.length ? { envs } : {}),
   };
 
