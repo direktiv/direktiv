@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -190,8 +191,13 @@ func (e *instController) flow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	flow := make([]string, 0)
 	for a := range l {
 		event = l[a]
+
+		if event.Fn != "" && event.State == engine.StateCodeRunning {
+			flow = append(flow, event.Fn)
+		}
 
 		// if failed we set the previous event to failed
 		if event.State == engine.StateCodeFailed {
@@ -218,7 +224,17 @@ func (e *instController) flow(w http.ResponseWriter, r *http.Request) {
 		state.Visited = true
 	}
 
-	writeJSON(w, ci.Config().Config.StateViews)
+	stateViews := ci.Config().Config.StateViews
+	states := make([]*core.StateView, 0, len(stateViews))
+	for _, v := range stateViews {
+		states = append(states, v)
+	}
+	sort.Slice(states, func(i, j int) bool { return states[i].Name < states[j].Name })
+
+	writeJSON(w, map[string]any{
+		"flow":   flow,
+		"states": states,
+	})
 }
 
 func (e *instController) create(w http.ResponseWriter, r *http.Request) {
