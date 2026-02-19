@@ -260,7 +260,7 @@ func Start(lc *lifecycle.Manager) error {
 	// initializing gateway-manager
 	{
 		slog.Info("initializing gateway manager")
-		app.GatewayManager = gateway.NewManager(app.SecretsManager)
+		app.GatewayManager = gateway.NewManager(app.SecretsManager, app.DB)
 
 		registerRenderFunc(app.PubSub, func() {
 			renderGatewayFiles(app.DB, app.GatewayManager)

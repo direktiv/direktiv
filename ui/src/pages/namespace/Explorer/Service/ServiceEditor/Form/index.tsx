@@ -32,7 +32,6 @@ import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { HelpCircle } from "lucide-react";
 import Input from "~/design/Input";
-import { PatchesForm } from "./Patches";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -46,7 +45,7 @@ type FormProps = {
   }) => JSX.Element;
 };
 
-export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
+export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
   const { t } = useTranslation();
   const form = useForm<ServiceFormSchemaType>({
     resolver: zodResolver(ServiceFormSchema),
@@ -160,7 +159,6 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
         >
           <Input {...register("cmd")} id="cmd" />
         </Fieldset>
-        <PatchesForm form={form} onSave={onSave} />
         <Fieldset
           label={t("pages.explorer.service.editor.form.envs.label")}
           htmlFor="size"

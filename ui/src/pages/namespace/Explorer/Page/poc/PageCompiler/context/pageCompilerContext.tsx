@@ -6,17 +6,8 @@ import {
   createContext,
   useContext,
 } from "react";
-import {
-  addBlockToPage,
-  deleteBlockFromPage,
-  moveBlockWithinPage,
-  updateBlockInPage,
-} from "./utils/updatePage";
 
-import { BlockPathType } from "../Block";
-import { BlockType } from "../../schema/blocks";
 import { DirektivPagesType } from "../../schema";
-import { findBlock } from "./utils";
 
 export type PageCompilerMode = "edit" | "live";
 
@@ -56,51 +47,4 @@ export const usePageStateContext = () => {
 export const usePage = () => {
   const { page } = usePageStateContext();
   return page;
-};
-
-export const useBlock = (path: BlockPathType) => {
-  const page = usePage();
-  return findBlock(page, path);
-};
-
-/**
- * This hook returns variables and methods to update the page,
- * for example, creating, updating or deleting blocks.
- */
-export const usePageEditor = () => {
-  const page = usePage();
-  const { mode, setPage } = usePageStateContext();
-
-  const updateBlock = (path: BlockPathType, newBlock: BlockType) => {
-    const newPage = updateBlockInPage(page, path, newBlock);
-    setPage(newPage);
-  };
-
-  const addBlock = (path: BlockPathType, block: BlockType, after = false) => {
-    const newPage = addBlockToPage(page, path, block, after);
-    setPage(newPage);
-  };
-
-  const deleteBlock = (path: BlockPathType) => {
-    const newPage = deleteBlockFromPage(page, path);
-    setPage(newPage);
-  };
-
-  const moveBlock = (
-    origin: BlockPathType,
-    target: BlockPathType,
-    block: BlockType
-  ) => {
-    const newPage = moveBlockWithinPage(page, origin, target, block);
-    setPage(newPage);
-  };
-
-  return {
-    mode,
-    addBlock,
-    deleteBlock,
-    moveBlock,
-    updateBlock,
-    setPage,
-  };
 };
