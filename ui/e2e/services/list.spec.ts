@@ -471,6 +471,28 @@ test.describe("system namespace", () => {
       waitUntil: "networkidle",
     });
 
+    await expect
+      .poll(
+        async () =>
+          await findServiceWithApiRequest({
+            namespace: systemNamespaceName,
+            match: (service) =>
+              service.filePath === `/${systemServiceName}` &&
+              (service.conditions ?? []).some(
+                (c) => c.type === "Available" && c.status === "True"
+              ),
+          }),
+        {
+          timeout: 50000,
+          message: "the service in the backend is in state Available",
+        }
+      )
+      .toBeTruthy();
+
+    await page.goto(`/n/${systemNamespaceName}/services`, {
+      waitUntil: "networkidle",
+    });
+
     await expect(
       page.getByTestId("service-row").getByText(systemServiceName),
       "it renders the service name"
