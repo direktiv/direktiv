@@ -137,6 +137,20 @@ test("Service list links the file name to the service file", async ({
     mimeType: "application/json",
   });
 
+  await expect
+    .poll(
+      async () =>
+        await findServiceWithApiRequest({
+          namespace,
+          match: (service) => service.filePath === serviceFile.data.path,
+        }),
+      {
+        timeout: 50000,
+        message: "the service was mounted in the backend",
+      }
+    )
+    .toBeTruthy();
+
   await page.goto(`/n/${namespace}/services`, {
     waitUntil: "networkidle",
   });
@@ -175,7 +189,10 @@ test("Service list links the row to the service details page", async ({
           namespace,
           match: (service) => service.filePath === serviceFile.data.path,
         }),
-      "the service was mounted in the backend"
+      {
+        timeout: 50000,
+        message: "the service was mounted in the backend",
+      }
     )
     .toBeTruthy();
 
@@ -232,7 +249,10 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
               (c) => c.type === "Available" && c.status === "True"
             ),
         }),
-      "the service in the backend is in state Available"
+      {
+        timeout: 50000,
+        message: "the service in the backend is in state Available",
+      }
     )
     .toBeTruthy();
 
@@ -273,6 +293,20 @@ test("Service list highlights services that have errors", async ({ page }) => {
     mimeType: "application/json",
   });
 
+  await expect
+    .poll(
+      async () =>
+        await findServiceWithApiRequest({
+          namespace,
+          match: () => true,
+        }),
+      {
+        timeout: 50000,
+        message: "the service was mounted in the backend",
+      }
+    )
+    .toBeTruthy();
+
   await page.goto(`/n/${namespace}/services`, {
     waitUntil: "networkidle",
   });
@@ -304,6 +338,20 @@ test("Service list will update the services when refetch button is clicked", asy
     }),
     mimeType: "application/json",
   });
+
+  await expect
+    .poll(
+      async () =>
+        await findServiceWithApiRequest({
+          namespace,
+          match: () => true,
+        }),
+      {
+        timeout: 50000,
+        message: "the service was mounted in the backend",
+      }
+    )
+    .toBeTruthy();
 
   await page.goto(`/n/${namespace}/services`, {
     waitUntil: "networkidle",
