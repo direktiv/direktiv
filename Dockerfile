@@ -43,7 +43,10 @@ RUN pnpm install --frozen-lockfile
 
 COPY ui/ ./
 
-RUN pnpm run build
+# Build the UI bundles only. The `ui` package's `build` script includes a full
+# check suite (lint/types/tests/knip) which is better suited for CI than for
+# image builds.
+RUN pnpm run build:compile-direktiv && pnpm run build:compile-pages
 
 ########################################################################################
 FROM  gcr.io/distroless/static

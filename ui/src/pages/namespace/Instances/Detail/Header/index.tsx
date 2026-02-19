@@ -34,7 +34,7 @@ const Header = () => {
     cancelInstance(instanceId);
   };
 
-  const canBeCanceled = instance.status === "pending";
+  const canBeCanceled = instance.status === "pending" || instance.status === "running";
 
   return (
     <div

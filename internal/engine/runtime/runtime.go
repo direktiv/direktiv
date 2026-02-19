@@ -160,7 +160,19 @@ func (rt *Runtime) secrets(secretNames []string) sobek.Value {
 func (rt *Runtime) sleep(seconds int) sobek.Value {
 	rt.tracingPack.span.AddEvent("calling sleep")
 
-	time.Sleep(time.Duration(seconds) * time.Second)
+	d := time.Duration(seconds) * time.Second
+	if d <= 0 {
+		return sobek.Undefined()
+	}
+
+	timer := time.NewTimer(d)
+	defer timer.Stop()
+	select {
+	case <-timer.C:
+	case <-rt.tracingPack.ctx.Done():
+		// Abort execution so the engine can mark the instance as cancelled.
+		panic(rt.vm.ToValue(rt.tracingPack.ctx.Err().Error()))
+	}
 
 	return sobek.Undefined()
 }
