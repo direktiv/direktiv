@@ -406,7 +406,20 @@ test("Service list will update the services when refetch button is clicked", asy
     headers,
   });
 
-  await page.waitForTimeout(1000);
+  await expect
+    .poll(
+      async () =>
+        await findServiceWithApiRequest({
+          namespace,
+          match: (service) =>
+            service.filePath === serviceFile.data.path && service.scale === 2,
+        }),
+      {
+        timeout: 50000,
+        message: "the service in the backend changed to scale 2",
+      }
+    )
+    .toBeTruthy();
 
   await page.getByLabel("Refetch services").click();
 
