@@ -83,11 +83,17 @@ declare function generateAction(
   config: ActionConfig
 ): (payload?: unknown) => void;
 
+/**
+ * Describes a file passed into a service
+ */
 declare type FileObject = {
   scope: "workflow" | "namespace" | "filesystem";
   name: string;
 };
 
+/**
+ * Config for execService
+ */
 declare type ServiceConfig = {
   scope: "namespace" | "system";
   path: string;
@@ -97,17 +103,17 @@ declare type ServiceConfig = {
 };
 
 /**
- * Creates a custom service that can then be called as a
- * typescript function.
+ * Executes a service defined in the same namespace (or system namespace).
+ *
  * @param ServiceConfig configuration object
- * - scope: required, "namespace" | "system"
- * - path: required, the path of the service
- * - payload: required, object of any kind
+ * - scope: required, "namespace" or "system"
+ * - path: required, path to service definition file
+ * - payload: required, input for the service
  * - files: optional, [{ scope: "workflow" | "namespace" | "filesystem", name: string }]
- * - retries: optional, number
+ * - retries: optional, number of retries
  */
-
 declare function execService(config: ServiceConfig): () => void;
+
 /**
  * Returns a map where the key is the secret name and the value is the value of the secret
  * @param secrets the array of secrets names
@@ -119,24 +125,3 @@ declare function getSecrets(secrets: string[]): Record<string, string>;
  * @param secret the name of one secret
  */
 declare function getSecret(secret: string): string;
-
-/**
- * Config for execService
- */
-declare type ServiceConfig = {
-  scope: "namespace" | "system";
-  path: string;
-  payload: unknown;
-  retries?: number;
-};
-
-/**
- * Executes a service defined in the same namespace (or system namespace).
- *
- * @param ServiceConfig configuration object
- * - scope: required, "namespace" or "system"
- * - path: required, path to service definition file
- * - payload: required, input for the service
- * - retries: optional, number of retries
- */
-declare function execService(config: ServiceConfig);
