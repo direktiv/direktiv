@@ -254,23 +254,6 @@
               "placeholder": "Select a size"
             },
             "cmd": "Cmd",
-            "patches": {
-              "label": "{{count}} Patches",
-              "label_one": "{{count}} Patch",
-              "addButton": "add patch",
-              "modal": {
-                "title": {
-                  "edit": "Edit patch",
-                  "create": "Create patch"
-                },
-                "op": {
-                  "label": "Operation",
-                  "placeholder": "Select an operation"
-                },
-                "path": "Path",
-                "value": "Value"
-              }
-            },
             "envs": {
               "label": "Environment variables",
               "namePlaceholder": "NAME",

@@ -26,8 +26,8 @@ type Runtime struct {
 	onSubflow     OnSubflowHook
 	onSetVariable OnSetVariableHook
 	onGetVariable OnGetVariableHook
-	ctx context.Context
-	tracingPack  *tracingPack
+	ctx           context.Context
+	tracingPack   *tracingPack
 }
 
 type (

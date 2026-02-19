@@ -8,14 +8,11 @@ import {
   test,
   vi,
 } from "vitest";
-import {
-  createDirektivPageWithForm,
-  setPage,
-  setupResizeObserverMock,
-} from "../utils";
+import { createDirektivPageWithForm, setupResizeObserverMock } from "../utils";
 
 import { BlockType } from "../../../schema/blocks";
-import { PageCompiler } from "../..";
+import { TestLivePage } from "../utils/TestPage";
+import { Toaster } from "~/design/Toast";
 import { setupFormApi } from "./utils";
 
 const { apiServer, apiRequestMock } = setupFormApi();
@@ -134,13 +131,11 @@ describe("form request", () => {
     test("interpolates variables in URL path", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(form, {
               method: "DELETE",
               url: "/blog-post/{{query.user.data.userId}}/{{this.string}}",
             })}
-            mode="live"
           />
         );
       });
@@ -160,14 +155,15 @@ describe("form request", () => {
     test("shows error for non-stringifiable variables in URL", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
-            page={createDirektivPageWithForm(form, {
-              method: "POST",
-              url: "/save-user/{{query.user.data.profile}}",
-            })}
-            mode="live"
-          />
+          <>
+            <TestLivePage
+              page={createDirektivPageWithForm(form, {
+                method: "POST",
+                url: "/save-user/{{query.user.data.profile}}",
+              })}
+            />
+            <Toaster />
+          </>
         );
       });
 
@@ -185,8 +181,7 @@ describe("form request", () => {
     test("interpolates variables in query parameters", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(form, {
               method: "POST",
               url: "/save-user",
@@ -241,7 +236,6 @@ describe("form request", () => {
                 },
               ],
             })}
-            mode="live"
           />
         );
       });
@@ -261,20 +255,21 @@ describe("form request", () => {
     test("shows error for non-stringifiable variables in query params", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
-            page={createDirektivPageWithForm(form, {
-              method: "POST",
-              url: "/save-user",
-              queryParams: [
-                {
-                  key: "object",
-                  value: "String: {{query.user.data.profile}}",
-                },
-              ],
-            })}
-            mode="live"
-          />
+          <>
+            <TestLivePage
+              page={createDirektivPageWithForm(form, {
+                method: "POST",
+                url: "/save-user",
+                queryParams: [
+                  {
+                    key: "object",
+                    value: "String: {{query.user.data.profile}}",
+                  },
+                ],
+              })}
+            />
+            <Toaster />
+          </>
         );
       });
 
@@ -292,8 +287,7 @@ describe("form request", () => {
     test("interpolates variables in request headers", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(form, {
               method: "POST",
               url: "/save-user",
@@ -348,7 +342,6 @@ describe("form request", () => {
                 },
               ],
             })}
-            mode="live"
           />
         );
       });
@@ -393,20 +386,21 @@ describe("form request", () => {
     test("shows error for non-stringifiable variables in headers", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
-            page={createDirektivPageWithForm(form, {
-              method: "POST",
-              url: "/save-user",
-              requestHeaders: [
-                {
-                  key: "object",
-                  value: "String: {{query.user.data.profile}}",
-                },
-              ],
-            })}
-            mode="live"
-          />
+          <>
+            <TestLivePage
+              page={createDirektivPageWithForm(form, {
+                method: "POST",
+                url: "/save-user",
+                requestHeaders: [
+                  {
+                    key: "object",
+                    value: "String: {{query.user.data.profile}}",
+                  },
+                ],
+              })}
+            />
+            <Toaster />
+          </>
         );
       });
 
@@ -424,8 +418,7 @@ describe("form request", () => {
     test("interpolates variables in request body", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(form, {
               method: "POST",
               url: "/save-user",
@@ -516,7 +509,6 @@ describe("form request", () => {
                 },
               ],
             })}
-            mode="live"
           />
         );
       });
@@ -556,8 +548,7 @@ describe("form request", () => {
     test("resolves variable pointer in request body", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(form, {
               method: "POST",
               url: "/save-user",
@@ -662,7 +653,6 @@ describe("form request", () => {
                 },
               ],
             })}
-            mode="live"
           />
         );
       });
@@ -724,8 +714,7 @@ describe("form request", () => {
     test("can use booleans in request body", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(form, {
               method: "POST",
               url: "/save-user",
@@ -746,7 +735,6 @@ describe("form request", () => {
                 },
               ],
             })}
-            mode="live"
           />
         );
       });
@@ -766,8 +754,7 @@ describe("form request", () => {
     test("can use numbers in request body", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
+          <TestLivePage
             page={createDirektivPageWithForm(form, {
               method: "POST",
               url: "/save-user",
@@ -788,7 +775,6 @@ describe("form request", () => {
                 },
               ],
             })}
-            mode="live"
           />
         );
       });
@@ -808,23 +794,24 @@ describe("form request", () => {
     test("shows error for non-serializable veriables in request body", async () => {
       await act(async () => {
         render(
-          <PageCompiler
-            setPage={setPage}
-            page={createDirektivPageWithForm(form, {
-              method: "POST",
-              url: "/save-user",
-              requestBody: [
-                {
-                  key: "object",
-                  value: {
-                    type: "string",
-                    value: "String: {{query.user.data.profile}}",
+          <>
+            <TestLivePage
+              page={createDirektivPageWithForm(form, {
+                method: "POST",
+                url: "/save-user",
+                requestBody: [
+                  {
+                    key: "object",
+                    value: {
+                      type: "string",
+                      value: "String: {{query.user.data.profile}}",
+                    },
                   },
-                },
-              ],
-            })}
-            mode="live"
-          />
+                ],
+              })}
+            />
+            <Toaster />
+          </>
         );
       });
 

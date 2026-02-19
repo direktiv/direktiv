@@ -3,6 +3,7 @@ import type { ViteDevServer } from "vite";
 import { defineConfig } from "vite";
 import { page } from "./src/examplePage";
 import react from "@vitejs/plugin-react";
+import { visualizer } from "rollup-plugin-visualizer";
 import { viteSingleFile } from "vite-plugin-singlefile";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 
@@ -18,18 +19,32 @@ function DirektivPagesMockPlugin() {
   };
 }
 
-export default () =>
-  defineConfig({
-    root: "src/_direktiv-pages",
-    server: {
-      host: "0.0.0.0",
-      port: 3001,
-    },
-    optimizeDeps: { esbuildOptions: { loader: { ".js": "jsx" } } },
-    plugins: [
-      react(),
-      viteTsconfigPaths(),
-      viteSingleFile(),
-      DirektivPagesMockPlugin(),
-    ],
-  });
+export default defineConfig(({ mode }) => ({
+  resolve: {
+    conditions: ["pagesapp"],
+  },
+  root: "src/_direktiv-pages",
+  server: {
+    host: "0.0.0.0",
+    port: 3001,
+  },
+  optimizeDeps: {
+    esbuildOptions: { loader: { ".js": "jsx" } },
+  },
+  plugins: [
+    react(),
+    viteTsconfigPaths(),
+    viteSingleFile(),
+    DirektivPagesMockPlugin(),
+    ...(mode === "analyze"
+      ? [
+          visualizer({
+            filename: "dist/bundle-report.html",
+            open: true,
+            gzipSize: true,
+            brotliSize: true,
+          }),
+        ]
+      : []),
+  ],
+}));
