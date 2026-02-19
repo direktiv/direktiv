@@ -112,6 +112,7 @@ function stateFirst(input) {
     scope: "namespace",
     path: "/myservice.svc.json",
     payload,
+    retries: 3,
   });
 
   execService({
@@ -167,7 +168,7 @@ function stateFirst(): StateFunction<unknown> {
 };
 
 const error = {
-  name: "hello",
+  name: "error",
   data: `const flow: FlowDefinition = {
   type: "default",
   timeout: "PT30S",
