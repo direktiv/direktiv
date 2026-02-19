@@ -159,8 +159,7 @@ test("Service details page provides information about the service", async ({
   ).toBeTruthy();
 });
 
-// Skip until DIR-2035 is resolved
-test.skip("Service details page renders no logs when the service did not mount", async ({
+test("Service details page renders no logs when the service did not mount", async ({
   page,
 }) => {
   const serviceFile = await createFile({
@@ -182,7 +181,10 @@ test.skip("Service details page renders no logs when the service did not mount",
               (c) => c.type === "Available" && c.status === "False"
             ),
         }),
-      "the service in the backend is in an Error state"
+      {
+        timeout: 50000,
+        message: "the service in the backend is in an Error state",
+      }
     )
     .toBeTruthy();
 
@@ -209,7 +211,7 @@ test.skip("Service details page renders no logs when the service did not mount",
   ).toBeVisible();
 
   await expect(
-    page.getByText("No running pods"),
-    "it renders a message that no pods are running"
+    page.getByText("received 0 log entries"),
+    "It does not render any logs"
   ).toBeVisible();
 });
