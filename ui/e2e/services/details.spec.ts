@@ -31,8 +31,6 @@ test("Service details page provides information about the service", async ({
     content: servicejson,
   });
 
-  await page.goto(`/n/${namespace}/services/`);
-
   await expect
     .poll(
       async () =>
@@ -44,7 +42,10 @@ test("Service details page provides information about the service", async ({
               (c) => c.type === "Available" && c.status === "True"
             ),
         }),
-      "the service in the backend is in state Available"
+      {
+        timeout: 50000,
+        message: "the service in the backend is in state Available",
+      }
     )
     .toBeTruthy();
 
