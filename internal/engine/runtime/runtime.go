@@ -36,6 +36,9 @@ type Runtime struct {
 	onAction     OnActionHook
 	onSubflow    OnSubflowHook
 	tracingPack  *tracingPack
+	//nolint:containedctx // ctx is short-lived, only used during ExecScript; not stored long-term
+	ctx         context.Context
+	tracingPack *tracingPack
 }
 
 type (
