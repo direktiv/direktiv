@@ -306,15 +306,11 @@ test("Service list highlights services that have errors", async ({ page }) => {
       async () =>
         await findServiceWithApiRequest({
           namespace,
-          match: (service) => {
-            console.log(service.conditions);
-            return (
-              service.filePath === serviceFile.data.path &&
-              (service.conditions ?? []).some(
-                (c) => c.type === "Available" && c.status === "False"
-              )
-            );
-          },
+          match: (service) =>
+            service.filePath === serviceFile.data.path &&
+            (service.conditions ?? []).some(
+              (c) => c.type === "Available" && c.status === "False"
+            ),
         }),
       {
         timeout: 50000,
