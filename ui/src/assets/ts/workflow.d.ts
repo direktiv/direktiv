@@ -98,12 +98,12 @@ declare type ServiceConfig = {
   scope: "namespace" | "system";
   path: string;
   payload: object;
+  retries: number;
   files?: FileObject[];
-  retries?: number;
 };
 
 /**
- * Executes a service defined in the same namespace (or system namespace).
+ * Executes a service that exists in the same namespace (or system namespace).
  *
  * @param ServiceConfig configuration object
  * - scope: required, "namespace" or "system"
