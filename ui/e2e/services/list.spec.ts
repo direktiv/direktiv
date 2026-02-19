@@ -142,11 +142,15 @@ test("Service list links the file name to the service file", async ({
       async () =>
         await findServiceWithApiRequest({
           namespace,
-          match: (service) => service.filePath === serviceFile.data.path,
+          match: (service) =>
+            service.filePath === serviceFile.data.path &&
+            (service.conditions ?? []).some(
+              (c) => c.type === "Available" && c.status === "True"
+            ),
         }),
       {
         timeout: 50000,
-        message: "the service was mounted in the backend",
+        message: "the service in the backend is in state Available",
       }
     )
     .toBeTruthy();
@@ -187,11 +191,15 @@ test("Service list links the row to the service details page", async ({
       async () =>
         await findServiceWithApiRequest({
           namespace,
-          match: (service) => service.filePath === serviceFile.data.path,
+          match: (service) =>
+            service.filePath === serviceFile.data.path &&
+            (service.conditions ?? []).some(
+              (c) => c.type === "Available" && c.status === "True"
+            ),
         }),
       {
         timeout: 50000,
-        message: "the service was mounted in the backend",
+        message: "the service in the backend is in state Available",
       }
     )
     .toBeTruthy();
@@ -285,7 +293,7 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
 });
 
 test("Service list highlights services that have errors", async ({ page }) => {
-  await createFile({
+  const serviceFile = await createFile({
     name: "failed-service.svc.json",
     namespace,
     type: "service",
@@ -298,11 +306,19 @@ test("Service list highlights services that have errors", async ({ page }) => {
       async () =>
         await findServiceWithApiRequest({
           namespace,
-          match: () => true,
+          match: (service) => {
+            console.log(service.conditions);
+            return (
+              service.filePath === serviceFile.data.path &&
+              (service.conditions ?? []).some(
+                (c) => c.type === "Available" && c.status === "False"
+              )
+            );
+          },
         }),
       {
         timeout: 50000,
-        message: "the service was mounted in the backend",
+        message: "the service in the backend is in state Not Available",
       }
     )
     .toBeTruthy();
@@ -328,7 +344,7 @@ test("Service list highlights services that have errors", async ({ page }) => {
 test("Service list will update the services when refetch button is clicked", async ({
   page,
 }) => {
-  await createFile({
+  const serviceFile = await createFile({
     name: "http-service.svc.json",
     namespace,
     type: "service",
@@ -344,11 +360,15 @@ test("Service list will update the services when refetch button is clicked", asy
       async () =>
         await findServiceWithApiRequest({
           namespace,
-          match: () => true,
+          match: (service) =>
+            service.filePath === serviceFile.data.path &&
+            (service.conditions ?? []).some(
+              (c) => c.type === "Available" && c.status === "True"
+            ),
         }),
       {
         timeout: 50000,
-        message: "the service was mounted in the backend",
+        message: "the service in the backend is in state Available",
       }
     )
     .toBeTruthy();
