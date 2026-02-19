@@ -26,8 +26,9 @@ type Runtime struct {
 	onSubflow     OnSubflowHook
 	onSetVariable OnSetVariableHook
 	onGetVariable OnGetVariableHook
-	ctx           context.Context
-	tracingPack   *tracingPack
+	//nolint:containedctx // ctx is short-lived, only used during ExecScript; not stored long-term
+	ctx         context.Context
+	tracingPack *tracingPack
 }
 
 type (
