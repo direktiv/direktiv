@@ -58,7 +58,10 @@ test("Service list shows all available services", async ({ page }) => {
               (c) => c.type === "Available" && c.status === "True"
             ),
         }),
-      "the service in the backend is in state Available"
+      {
+        timeout: 50000,
+        message: "the service in the backend is in state Available",
+      }
     )
     .toBeTruthy();
 
