@@ -3,6 +3,7 @@ import {
   createRequestServiceFile,
   findServiceWithApiRequest,
   serviceWithAnError,
+  serviceWithScaleZero,
 } from "./utils";
 import { expect, test } from "@playwright/test";
 
@@ -213,5 +214,60 @@ test("Service details page renders no logs when the service did not mount", asyn
   await expect(
     page.getByText("received 0 log entries"),
     "It does not render any logs"
+  ).toBeVisible();
+});
+
+test("Service details page shows no pods when scale is 0", async ({ page }) => {
+  const serviceFile = await createFile({
+    name: "error-service.yaml",
+    namespace,
+    type: "service",
+    content: serviceWithScaleZero,
+    mimeType: "application/json",
+  });
+
+  await expect
+    .poll(
+      async () =>
+        await findServiceWithApiRequest({
+          namespace,
+          match: (service) =>
+            service.filePath === serviceFile.data.path &&
+            (service.conditions ?? []).some(
+              (c) => c.type === "Available" && c.status === "True"
+            ),
+        }),
+      {
+        timeout: 50000,
+        message: "the service in the backend is in state Available",
+      }
+    )
+    .toBeTruthy();
+
+  const createdService = await findServiceWithApiRequest({
+    namespace,
+    match: (service) => service.filePath === serviceFile.data.path,
+  });
+
+  if (!createdService) throw new Error("could not find service");
+
+  await page.goto(`/n/${namespace}/services/${createdService.id}`);
+
+  await expect(
+    page.getByRole("heading", { name: createdService.id, exact: true }),
+    "it renders the service id as a heading"
+  ).toBeVisible();
+
+  await expect(
+    page
+      .getByTestId("service-detail-header")
+      .locator("a")
+      .filter({ hasText: "Error" }),
+    "it renders the Error status"
+  ).toBeVisible();
+
+  await expect(
+    page.getByText("No running pods"),
+    "it renders a message that no pods are running"
   ).toBeVisible();
 });
