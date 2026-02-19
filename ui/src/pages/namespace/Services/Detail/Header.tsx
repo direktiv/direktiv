@@ -23,7 +23,7 @@ const Header = ({ serviceId }: { serviceId: string }) => {
   if (!service) return null;
 
   const serviceTitle = service.name ? service.name : serviceId;
-  
+
   const link: keyof FileRoutesById =
     service.type === "workflow"
       ? "/n/$namespace/explorer/workflow/services/$"
