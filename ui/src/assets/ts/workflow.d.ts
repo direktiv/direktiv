@@ -60,6 +60,7 @@ declare type ActionConfig = {
   size?: "small" | "medium" | "large";
   retries?: number;
   body?: object;
+  cmd?: string;
   envs?: {
     name: string;
     value: string;
@@ -75,38 +76,44 @@ declare type ActionConfig = {
  * - type: optional, defaults to "workflow"
  * - size: optional, defaults to "medium", or "small" | "large"
  * - retries: optional, number,
- 
+ * - cmd: optional, command to run in container
  * - envs: optional, { name: string, value: string }[].
  */
 declare function generateAction(
   config: ActionConfig
 ): (payload?: unknown) => void;
 
+/**
+ * Describes a file passed into a service
+ */
 declare type FileObject = {
   scope: "workflow" | "namespace" | "filesystem";
   name: string;
 };
 
+/**
+ * Config for execService
+ */
 declare type ServiceConfig = {
   scope: "namespace" | "system";
   path: string;
   payload: object;
+  retries: number;
   files?: FileObject[];
-  retries?: number;
 };
 
 /**
- * Creates a custom service that can then be called as a
- * typescript function.
+ * Executes a service that exists in the same namespace (or system namespace).
+ *
  * @param ServiceConfig configuration object
- * - scope: required, "namespace" | "system"
- * - path: required, the path of the service
- * - payload: required, object of any kind
+ * - scope: required, "namespace" or "system"
+ * - path: required, path to service definition file
+ * - payload: required, input for the service
  * - files: optional, [{ scope: "workflow" | "namespace" | "filesystem", name: string }]
- * - retries: optional, number
+ * - retries: optional, number of retries
  */
-
 declare function execService(config: ServiceConfig): () => void;
+
 /**
  * Returns a map where the key is the secret name and the value is the value of the secret
  * @param secrets the array of secrets names
