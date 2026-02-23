@@ -25,7 +25,7 @@ describe('Test js engine', () => {
 			wantStatus: 'complete',
 			file: `
 		var echo = generateAction({
-			type: "local",
+			type: "workflow",
 			size: "medium",
 			image: "mendhak/http-https-echo:latest"
 		});
