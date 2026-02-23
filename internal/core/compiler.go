@@ -22,8 +22,13 @@ type ActionConfig struct {
 
 	// service file specific
 	Scale int
-}
 
+	Auth *BasicAuthConfig
+}
+type BasicAuthConfig struct {
+	Username string
+	Password string
+}
 type StateView struct {
 	Name        string   `json:"name"`
 	Start       bool     `json:"start"`
