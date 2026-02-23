@@ -66,12 +66,12 @@ export const workflowWithService = `const flow: FlowDefinition = {
 };
 
 const d = generateAction({
-  image: "ealen/echo-server:latest",
+  image: "direktiv/request:v4",
   size: "small",
   envs: [
     {
-      name: "myenv",
-      value: "myenvvalue",
+      name: "MY_ENV_VAR",
+      value: "env-var-value",
     },
   ],
 });
