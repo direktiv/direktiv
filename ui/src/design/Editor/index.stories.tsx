@@ -8,13 +8,13 @@ import {
 import { Card } from "../Card";
 import Editor from "./index";
 import type { Meta } from "@storybook/react-vite";
-import { tsdemo } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
+import { hello } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 
 export default {
   title: "Components/Editor",
 } satisfies Meta<typeof Editor>;
 
-const tsExample = tsdemo.data;
+const tsExample = hello.data;
 
 export const Default = () => (
   <div className="flex flex-col gap-y-3 bg-white p-4">
