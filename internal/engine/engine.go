@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strconv"
 	"sync"
 	"time"
@@ -16,6 +17,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
+	"github.com/sosodev/duration"
 )
 
 var ErrDataNotFound = fmt.Errorf("data not found")
@@ -66,6 +68,15 @@ func (e *Engine) StartWorkflow(ctx context.Context, instID uuid.UUID, namespace 
 	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath, true)
 	if err != nil {
 		return nil, nil, fmt.Errorf("fetch script: %w", err)
+	}
+
+	to, err := duration.Parse(flowDetails.Config.Timeout)
+	if err != nil {
+		// cannot happen, already checked in AST parsing
+		slog.Error("error parsing flow timeout", slog.Any("error", err))
+	} else {
+		// we store the end time when the timeout would expire for this instance
+		metadata[core.EngineMappingTimeout] = fmt.Sprintf("%v", time.Now().UTC().Add(to.ToTimeDuration()).Unix())
 	}
 
 	// fetch all the secrets here
@@ -219,6 +230,22 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		endEv.State = StateCodeRunning
 		endEv.Output = memory
 		endEv.Fn = fn
+
+		to, ok := inst.Metadata[core.EngineMappingTimeout]
+		if ok {
+			unixSec, err := strconv.ParseInt(to, 10, 64)
+			if err != nil {
+				// we just log
+				slog.Error("could not parse the timeout time for flow", slog.Any("error", err))
+			} else {
+				// the deadline time
+				t := time.Unix(unixSec, 0)
+
+				if time.Now().UTC().After(t) {
+					return fmt.Errorf("timeout for flow exceeded")
+				}
+			}
+		}
 
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
