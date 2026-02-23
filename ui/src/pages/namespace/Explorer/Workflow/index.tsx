@@ -70,10 +70,10 @@ const WorkflowLayout: FC = () => {
     },
     {
       value: "services",
-      active: match("/n/$namespace/explorer/workflow/services/$"),
+      active: match("/n/$namespace/explorer/workflow/services/list/$"),
       icon: <Layers aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.services"),
-      link: "/n/$namespace/explorer/workflow/services/$",
+      link: "/n/$namespace/explorer/workflow/services/list/$",
     },
     {
       value: "settings",

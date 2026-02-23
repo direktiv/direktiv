@@ -1,5 +1,6 @@
 import Header from "~/pages/namespace/Services/Detail/Header";
 import { Pods } from "~/pages/namespace/Services/Detail/Pods";
+import { useParams } from "@tanstack/react-router";
 
 const ServiceDetails = ({ serviceId }: { serviceId: string }) => (
   <div className="flex grow flex-col">
@@ -13,4 +14,12 @@ const ServiceDetails = ({ serviceId }: { serviceId: string }) => (
   </div>
 );
 
-export default ServiceDetails;
+const ServiceDetailsPage = () => {
+  const { service } = useParams({
+    from: "/n/$namespace/explorer/workflow/services/$service/$",
+  });
+
+  return <ServiceDetails serviceId={service} />;
+};
+
+export default ServiceDetailsPage;
