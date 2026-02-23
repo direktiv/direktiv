@@ -26,16 +26,6 @@ type Runtime struct {
 	onSubflow     OnSubflowHook
 	onSetVariable OnSetVariableHook
 	onGetVariable OnGetVariableHook
-	//nolint:containedctx
-	ctx context.Context
-	vm           *sobek.Runtime
-	instID       uuid.UUID
-	metadata     map[string]string
-	onFinish     OnFinishHook
-	onTransition OnTransitionHook
-	onAction     OnActionHook
-	onSubflow    OnSubflowHook
-	tracingPack  *tracingPack
 	//nolint:containedctx // ctx is short-lived, only used during ExecScript; not stored long-term
 	ctx         context.Context
 	tracingPack *tracingPack

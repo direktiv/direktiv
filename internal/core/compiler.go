@@ -11,6 +11,11 @@ const (
 	FlowActionScopeSystem    = "system"
 )
 
+type BasicAuthConfig struct {
+	Username string
+	Password string
+}
+
 type ActionConfig struct {
 	Type    string
 	Cmd     string
@@ -18,6 +23,8 @@ type ActionConfig struct {
 	Image   string
 	Envs    []EnvironmentVariable
 	Retries int
+
+	Auth *BasicAuthConfig
 
 	// service file specific
 	Scale int

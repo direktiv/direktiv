@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"strconv"
 	"sync"
 	"time"
@@ -17,7 +16,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
-	"github.com/sosodev/duration"
 )
 
 var ErrDataNotFound = fmt.Errorf("data not found")
@@ -70,15 +68,6 @@ func (e *Engine) StartWorkflow(ctx context.Context, instID uuid.UUID, namespace 
 	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath, true)
 	if err != nil {
 		return nil, nil, fmt.Errorf("fetch script: %w", err)
-	}
-
-	to, err := duration.Parse(flowDetails.Config.Timeout)
-	if err != nil {
-		// cannot happen, already checked in AST parsing
-		slog.Error("error parsing flow timeout", slog.Any("error", err))
-	} else {
-		// we store the end time when the timeout would expire for this instance
-		metadata[core.EngineMappingTimeout] = fmt.Sprintf("%v", time.Now().UTC().Add(to.ToTimeDuration()).Unix())
 	}
 
 	// fetch all the secrets here
@@ -209,110 +198,9 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		endEv.Output = memory
 		endEv.Fn = fn
 
-		to, ok := inst.Metadata[core.EngineMappingTimeout]
-		if ok {
-			unixSec, err := strconv.ParseInt(to, 10, 64)
-			if err != nil {
-				// we just log
-				slog.Error("could not parse the timeout time for flow", slog.Any("error", err))
-			} else {
-				// the deadline time
-				t := time.Unix(unixSec, 0)
-
-				if time.Now().UTC().After(t) {
-					return fmt.Errorf("timeout for flow exceeded")
-				}
-			}
-		}
-
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
 
-	onSetVariable := e.makeOnSetVariableHook(inst)
-	onGetVariable := e.makeOnGetVariableHook(inst)
-	var onSetVariable runtime.OnSetVariableHook = func(ctx context.Context, scope string, name string, data []byte) error {
-		if name == "" {
-			return datastore.ErrInvalidRuntimeVariableName
-		}
-
-		rv := &datastore.RuntimeVariable{
-			Namespace: inst.Namespace,
-			Name:      name,
-			Data:      data,
-			MimeType:  "application/octet-stream",
-		}
-
-		switch core.VariableScope(scope) {
-		case core.VariableScopeNamespace:
-		case core.VariableScopeWorkflow:
-			wfPath := inst.Metadata[core.EngineMappingPath]
-			if wfPath == "" {
-				return fmt.Errorf("missing workflow path in instance metadata for workflow-scoped variable")
-			}
-			rv.WorkflowPath = wfPath
-		case core.VariableScopeInstance:
-			rv.InstanceID = inst.InstanceID
-		default:
-			return fmt.Errorf("invalid variable scope %q", scope)
-		}
-
-		_, err := e.store.RuntimeVariables().Create(ctx, rv)
-		return err
-	}
-	ctx = telemetry.SetupInstanceLogs(ctx,
-		sc.Metadata[core.EngineMappingNamespace],
-		sc.InstID.String(),
-		sc.Metadata[LabelInvokerType],
-		sc.Metadata[core.EngineMappingPath])
-
-		if _, err := e.store.RuntimeVariables().Create(ctx, rv); err != nil {
-			return err
-		}
-
-		// publish simple event
-		return e.dataBus.PublishRuntimeVariableSet(ctx, rv.Namespace, rv.Name, string(rv.Data))
-	}
-	var onGetVariable runtime.OnGetVariableHook = func(ctx context.Context, scope string, name string) ([]byte, error) {
-		var (
-			v   *datastore.RuntimeVariable
-			err error
-		)
-
-		switch core.VariableScope(scope) {
-		case core.VariableScopeNamespace:
-			v, err = e.store.RuntimeVariables().GetForNamespace(ctx, inst.Namespace, name)
-		case core.VariableScopeWorkflow:
-			wfPath := inst.Metadata[core.EngineMappingPath]
-			if wfPath == "" {
-				return nil, fmt.Errorf("missing workflow path in instance metadata for workflow-scoped variable")
-			}
-			v, err = e.store.RuntimeVariables().GetForWorkflow(ctx, inst.Namespace, wfPath, name)
-		case core.VariableScopeInstance:
-			v, err = e.store.RuntimeVariables().GetForInstance(ctx, inst.InstanceID, name)
-		default:
-			return nil, fmt.Errorf("invalid variable scope %q", scope)
-		}
-
-		if err != nil {
-			if errors.Is(err, datastore.ErrNotFound) {
-				// not found -> represented as null in the runtime
-				return nil, nil
-			}
-
-			return nil, err
-		}
-
-		data, err := e.store.RuntimeVariables().LoadData(ctx, v.ID)
-		if err != nil {
-			if errors.Is(err, datastore.ErrNotFound) {
-				return nil, nil
-			}
-
-			return nil, err
-		}
-
-		return data, nil
-	}
 	var onSubflow runtime.OnSubflowHook = func(ctx context.Context, path string, input []byte) ([]byte, error) {
 		_, notify, err := e.StartWorkflow(ctx, inst.InstanceID, inst.Namespace, path, string(input), map[string]string{
 			LabelWithNotify:   strconv.FormatBool(true),
@@ -328,9 +216,6 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 			return nil, fmt.Errorf("subflow did not complete: %s", st.Error)
 		}
 
-	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, onSubflow, onSetVariable)
-
-	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, onSubflow)
 		return st.Output, nil
 	}
 	var onSetVariable runtime.OnSetVariableHook = func(ctx context.Context, scope string, name string, data []byte) error {
