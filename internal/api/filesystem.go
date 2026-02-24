@@ -89,19 +89,23 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 
 		Children []*filestore.File `json:"children"`
 
-		StateViews map[string]*core.StateView `json:"states,omitempty"`
+		StateViews []*core.StateView `json:"states,omitempty"`
 	}{
 		File:       file,
 		Data:       data,
 		Children:   children,
-		StateViews: make(map[string]*core.StateView),
+		StateViews: nil,
 	}
 
 	if file.Typ == filestore.FileTypeWorkflow {
 		ci := compiler.NewCompileItem(data, path)
 		err = ci.TranspileAndValidate()
 		if err == nil {
-			res.StateViews = ci.Config().Config.StateViews
+			views := ci.Config().Config.StateViews
+			res.StateViews = make([]*core.StateView, 0, len(views))
+			for _, v := range views {
+				res.StateViews = append(res.StateViews, v)
+			}
 		}
 	}
 
