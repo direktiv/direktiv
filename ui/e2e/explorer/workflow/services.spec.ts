@@ -138,3 +138,92 @@ test("Workflow service list shows all services mounted by the workflow", async (
     "it renders the size of the service"
   ).toBeVisible();
 });
+
+test("Workflow service details page provides information about the service", async ({
+  page,
+}) => {
+  const workflowName = faker.system.commonFileName("wf.ts");
+  const workflowFile = await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    content: workflowWithService,
+    mimeType: "application/x-typescript",
+  });
+
+  await createInstance({
+    namespace,
+    path: workflowName,
+  });
+
+  await expect
+    .poll(
+      async () =>
+        await findServiceWithApiRequest({
+          namespace,
+          match: (service) =>
+            service.filePath === workflowFile.data.path &&
+            (service.conditions ?? []).some(
+              (c) => c.type === "Available" && c.status === "True"
+            ),
+        }),
+      {
+        timeout: 50000,
+        message: "the service in the backend is in state Available",
+      }
+    )
+    .toBeTruthy();
+
+  const createdService = await findServiceWithApiRequest({
+    namespace,
+    match: (service) => service.filePath === workflowFile.data.path,
+  });
+  if (!createdService) throw new Error("could not find service");
+
+  await page.goto(
+    `/n/${namespace}/explorer/workflow/services/${createdService.id}/${workflowName}`,
+    {
+      waitUntil: "networkidle",
+    }
+  );
+
+  await expect(
+    page.getByRole("heading", { name: `${createdService.name}`, exact: true }),
+    "it renders the service id as a heading"
+  ).toBeVisible();
+
+  await expect(
+    page.getByRole("link", { name: workflowFile.data.path, exact: true }),
+    "it renders a link to the service file"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId("service-detail-header").getByText("direktiv/request:v4"),
+    "it renders the service image name"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId("service-detail-header").getByText("0 / -"),
+    "it renders the service scale"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId("service-detail-header").getByText("small"),
+    "it renders the service size"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId("service-detail-header").filter({ hasText: "Available" }),
+    "it renders the Available status"
+  ).toBeVisible();
+
+  await expect(
+    page
+      .getByTestId("service-detail-header")
+      .locator("a")
+      .filter({ hasText: "1 environment variable" }),
+    "it renders the environment variable count"
+  ).toBeVisible();
+
+  await expect(page.getByText("cmd-"), "it renders the cmd").toBeVisible();
+});
