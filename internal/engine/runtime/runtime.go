@@ -216,6 +216,14 @@ func (rt *Runtime) log(logs ...string) sobek.Value {
 }
 
 func (rt *Runtime) transition(call sobek.FunctionCall) sobek.Value {
+	// first check if context is cancelled?
+
+	select {
+	case <-rt.tracingPack.ctx.Done():
+		panic(rt.vm.ToValue(rt.tracingPack.ctx.Err().Error()))
+	default:
+	}
+
 	if len(call.Arguments) != 2 {
 		panic(rt.vm.ToValue("transition requires a function and a payload"))
 	}
@@ -301,6 +309,12 @@ func (rt *Runtime) execSubflow(call sobek.FunctionCall) sobek.Value {
 
 // TODO: remove return from finish() as it should be the last statement.
 func (rt *Runtime) finish(data sobek.Value) sobek.Value {
+	select {
+	case <-rt.tracingPack.ctx.Done():
+		panic(rt.vm.ToValue(rt.tracingPack.ctx.Err().Error()))
+	default:
+	}
+
 	var output any
 	if err := rt.vm.ExportTo(data, &output); err != nil {
 		panic(rt.vm.ToValue(fmt.Sprintf("error exporting output: %s", err.Error())))

@@ -356,21 +356,6 @@ func (e *Engine) DeleteNamespace(ctx context.Context, name string) error {
 }
 
 func (e *Engine) CancelInstance(ctx context.Context, namespace string, id uuid.UUID) error {
-	// Publish a cancelled status event so status-cache/UI update even if the
-	// instance is still pending in the queue.
-	cancelEv := &InstanceEvent{
-		State:      StateCodeCancelled,
-		InstanceID: id,
-		Namespace:  namespace,
-		Metadata: map[string]string{
-			LabelWithScope: "main",
-		},
-		CreatedAt: time.Now(),
-		EndedAt:   time.Now(),
-		EventID:   uuid.New(),
-	}
-	_ = e.dataBus.PublishInstanceHistoryEvent(ctx, cancelEv)
-
 	// Cancel any running contexts for this instance (all scopes).
 	cancelLock.Lock()
 	defer cancelLock.Unlock()
