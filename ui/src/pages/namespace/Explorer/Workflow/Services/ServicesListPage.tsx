@@ -11,7 +11,13 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWorkflowServices } from "~/api/services/query/services";
 
-const ServicesList = ({ workflow }: { workflow: string }) => {
+const ServicesListPage = () => {
+  const { _splat: workflowPath } = useParams({
+    from: "/n/$namespace/explorer/workflow/services/list/$",
+  });
+
+  if (!workflowPath) throw new Error("Workflow path not found");
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [rebuildService, setRebuildService] = useState<ServiceSchemaType>();
 
@@ -22,7 +28,7 @@ const ServicesList = ({ workflow }: { workflow: string }) => {
     isFetching,
     noPermissionMessage,
     refetch,
-  } = useWorkflowServices(workflow);
+  } = useWorkflowServices(workflowPath);
 
   const { t } = useTranslation();
 
@@ -68,16 +74,6 @@ const ServicesList = ({ workflow }: { workflow: string }) => {
       </section>
     </div>
   );
-};
-
-const ServicesListPage = () => {
-  const { _splat: workflowPath } = useParams({
-    from: "/n/$namespace/explorer/workflow/services/list/$",
-  });
-
-  if (!workflowPath) throw new Error("Workflow path not found");
-
-  return <ServicesList workflow={workflowPath} />;
 };
 
 export default ServicesListPage;
