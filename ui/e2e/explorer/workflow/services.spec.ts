@@ -187,7 +187,7 @@ test("Workflow service details page provides information about the service", asy
 
   await expect(
     page.getByRole("heading", { name: `${createdService.name}`, exact: true }),
-    "it renders the service id as a heading"
+    "it renders the service name as a heading"
   ).toBeVisible();
 
   await expect(
