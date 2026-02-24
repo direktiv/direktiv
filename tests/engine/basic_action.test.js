@@ -1,9 +1,9 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import { btoa } from 'js-base64'
-import { basename } from 'path'
-import { fileURLToPath } from 'url'
 
+import { basename } from 'path'
+import { btoa } from 'js-base64'
 import common from '../common'
+import { fileURLToPath } from 'url'
 import helpers from '../common/helpers'
 import request from '../common/request'
 
@@ -25,7 +25,7 @@ describe('Test js engine', () => {
 			wantStatus: 'complete',
 			file: `
 		var echo = generateAction({
-			type: "local",
+			type: "workflow",
 			size: "medium",
 			image: "mendhak/http-https-echo:latest"
 		});
