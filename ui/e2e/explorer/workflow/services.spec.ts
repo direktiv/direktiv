@@ -29,7 +29,10 @@ test("Workflow service list is empty by default", async ({ page }) => {
   });
 
   await page.goto(
-    `/n/${namespace}/explorer/workflow/services/list/${workflowName}`
+    `/n/${namespace}/explorer/workflow/services/list/${workflowName}`,
+    {
+      waitUntil: "networkidle",
+    }
   );
 
   await expect(
