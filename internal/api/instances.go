@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"path/filepath"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -224,12 +223,7 @@ func (e *instController) flow(w http.ResponseWriter, r *http.Request) {
 		state.Visited = true
 	}
 
-	stateViews := ci.Config().Config.StateViews
-	states := make([]*core.StateView, 0, len(stateViews))
-	for _, v := range stateViews {
-		states = append(states, v)
-	}
-	sort.Slice(states, func(i, j int) bool { return states[i].Name < states[j].Name })
+	states := core.SortedStateViews(ci.Config().Config.StateViews)
 
 	writeJSON(w, map[string]any{
 		"flow":   flow,

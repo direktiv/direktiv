@@ -101,11 +101,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 		ci := compiler.NewCompileItem(data, path)
 		err = ci.TranspileAndValidate()
 		if err == nil {
-			views := ci.Config().Config.StateViews
-			res.StateViews = make([]*core.StateView, 0, len(views))
-			for _, v := range views {
-				res.StateViews = append(res.StateViews, v)
-			}
+			res.StateViews = core.SortedStateViews(ci.Config().Config.StateViews)
 		}
 	}
 
