@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 import { simpleWorkflow, workflowWithService } from "e2e/utils/workflows";
 
 import { createFile } from "e2e/utils/files";
-import { createInstance } from "~/api/instances/mutate/create";
+import { createInstance } from "e2e/instances/utils";
 import { faker } from "@faker-js/faker";
 import { findServiceWithApiRequest } from "e2e/services/utils";
 
@@ -53,11 +53,8 @@ test("Workflow service list shows all services mounted by the workflow", async (
   });
 
   await createInstance({
-    urlParams: {
-      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
-      namespace,
-      path: workflowName,
-    },
+    namespace,
+    path: workflowName,
   });
 
   await expect
