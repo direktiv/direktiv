@@ -221,7 +221,7 @@ export const workflowStateSchema = z.object({
 
 export const InstanceFlowResponseSchema = z.object({
   data: z.object({
-    flow: z.array(z.string()),
+    flow: z.array(z.string()).optional(),
     states: z.array(workflowStateSchema),
   }),
 });

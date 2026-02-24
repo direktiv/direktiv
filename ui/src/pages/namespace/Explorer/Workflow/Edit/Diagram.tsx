@@ -1,7 +1,3 @@
-import {
-  InstanceFlowResponseSchema,
-  workflowStateSchema,
-} from "~/api/instances/schema";
 import { Maximize2, Minimize2 } from "lucide-react";
 import {
   Tooltip,
@@ -16,6 +12,7 @@ import {
 
 import Button from "~/design/Button";
 import { FC } from "react";
+import { InstanceFlowResponseSchema } from "~/api/instances/schema";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
 import { useFile } from "~/api/files/query/file";
 import { useTranslation } from "react-i18next";
@@ -35,19 +32,11 @@ const Diagram: FC<DiagramProps> = ({ path }) => {
 
   if (data === undefined) return null;
 
-  const workflowData =
-    data.type === "workflow" ? { data: data.states } : undefined;
+  const workflowData = data.type === "workflow" ? { data } : undefined;
 
   const parsedWorkflow = InstanceFlowResponseSchema.safeParse(workflowData);
 
   if (!parsedWorkflow.success) {
-    // Todo: Decide what kind of error handling is appropriate here
-    return null;
-  }
-
-  const parsedWorkflowData = workflowStateSchema.safeParse(workflowData?.data);
-
-  if (!parsedWorkflowData.success) {
     // Todo: Decide what kind of error handling is appropriate here
     return null;
   }
