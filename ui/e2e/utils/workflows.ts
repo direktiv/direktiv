@@ -27,6 +27,30 @@ function stateError(input): StateFunction<unknown> {
 };
 `;
 
+export const selectStateThroughInputWorkflow = `// this will progress through state B or state C dependent on input
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateA",
+};
+
+function stateA(input): StateFunction<unknown> {
+  const { data } = input;
+  if (data === "B") {
+    return transition(stateB, {});
+  }
+  return transition(stateC, {});
+}
+
+function stateB(): StateFunction<unknown> {
+  return finish({ message: "finishing from stateB" });
+}
+
+function stateC(): StateFunction<unknown> {
+  return finish({ message: "finishing from stateC" });
+}
+`;
+
 export const delayWorkflow1s = `// This workflow waits for a number of seconds. You can specify the length 
 // in the workflow input. For example, { "time": 10 }.\
 
