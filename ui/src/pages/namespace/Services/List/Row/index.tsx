@@ -31,7 +31,6 @@ const ServicesTableRow: FC<{
         data-testid="service-row"
         onClick={() => {
           if (service.type === "workflow" && path) {
-            debugger;
             return navigate({
               to: "/n/$namespace/explorer/workflow/services/$service/$",
               from: "/n/$namespace",
