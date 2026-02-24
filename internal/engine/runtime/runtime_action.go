@@ -74,7 +74,7 @@ func (rt *Runtime) service(c map[string]any) sobek.Value {
 	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
 		fmt.Sprintf("executing service %s in scope %s", path, t))
 
-	data, err := rt.callAction(sd, payload, int(retries), nil)
+	data, err := rt.callAction(sd, payload, int(retries))
 	if err != nil {
 		panic(rt.vm.ToValue(err))
 	}
@@ -113,7 +113,7 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 		telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
 			fmt.Sprintf("executing action with image %s", config.Image))
 
-		data, err := rt.callAction(sd, payload, config.Retries, config.Auth)
+		data, err := rt.callAction(sd, payload, config.Retries)
 		if err != nil {
 			panic(rt.vm.ToValue(err))
 		}
@@ -124,7 +124,7 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 	return rt.vm.ToValue(actionFunc)
 }
 
-func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, retries int, auth *core.BasicAuthConfig) (any, error) {
+func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, retries int) (any, error) {
 	if rt.onAction != nil {
 		err := rt.onAction(sd.GetID())
 		if err != nil {
@@ -137,7 +137,7 @@ func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, retries int
 	svcUrl := fmt.Sprintf("http://%s.%s.svc", sd.GetID(), os.Getenv("DIREKTIV_SERVICE_NAMESPACE"))
 
 	// ping service
-	_, err := callRetryable(rt.tracingPack.ctx, svcUrl+"/up", http.MethodGet, []byte(""), 29, auth)
+	_, err := callRetryable(rt.tracingPack.ctx, svcUrl+"/up", http.MethodGet, []byte(""), 29)
 	if err != nil {
 		slog.Error("could not connect to service or action", slog.Any("error", err))
 		return nil, fmt.Errorf("cannot connect to service or action, please check action/service deployment")
@@ -152,7 +152,7 @@ func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, retries int
 		return nil, fmt.Errorf("could not marshal payload for action: %s", err.Error())
 	}
 
-	outData, err := callRetryable(rt.tracingPack.ctx, svcUrl, http.MethodPost, data, retries, auth)
+	outData, err := callRetryable(rt.tracingPack.ctx, svcUrl, http.MethodPost, data, retries)
 	if err != nil {
 		slog.Error("could not call service or action", slog.Any("error", err))
 		// panic(rt.vm.ToValue(fmt.Errorf("calling action failed: %s", err.Error())))
@@ -172,7 +172,7 @@ func (rt *Runtime) callAction(sd *core.ServiceFileData, payload any, retries int
 	return d, nil
 }
 
-func callRetryable(ctx context.Context, url, method string, payload []byte, retries int, auth *core.BasicAuthConfig) ([]byte, error) {
+func callRetryable(ctx context.Context, url, method string, payload []byte, retries int) ([]byte, error) {
 	client := retryablehttp.NewClient()
 	client.RetryMax = retries
 	client.RetryWaitMin = 500 * time.Millisecond
@@ -183,10 +183,6 @@ func callRetryable(ctx context.Context, url, method string, payload []byte, retr
 	req, err := retryablehttp.NewRequestWithContext(ctx, method, url, bytes.NewReader(payload))
 	if err != nil {
 		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	if auth != nil {
-		req.SetBasicAuth(auth.Username, auth.Password)
 	}
 
 	l := ctx.Value(telemetry.DirektivLogCtx(telemetry.LogObjectIdentifier))
