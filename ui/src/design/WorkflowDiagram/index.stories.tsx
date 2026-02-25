@@ -8,7 +8,7 @@ import { Workflow as workflowtype } from "~/api/instances/schema";
 
 const exampleWorkflowInitial = {
   data: {
-    flow: ["hello-world", "exit"],
+    flow: [],
     states: [
       {
         name: "hello-world",
@@ -45,7 +45,7 @@ const exampleWorkflowInitial = {
 
 const exampleWorkflowStepOne = {
   data: {
-    flow: ["hello-world", "exit"],
+    flow: ["hello-world"],
     states: [
       {
         name: "hello-world",
@@ -98,44 +98,6 @@ const exampleWorkflowStepTwo = {
         transition: "",
         defaultTransition: "",
       },
-
-      {
-        name: "exit",
-        start: false,
-        finish: true,
-        visited: true,
-        failed: false,
-        transitions: [],
-
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-    ],
-  },
-};
-
-const exampleWorkflowPending = {
-  data: {
-    flow: ["hello-world", "exit"],
-    states: [
-      {
-        name: "hello-world",
-        start: true,
-        finish: false,
-        visited: true,
-        failed: false,
-        transitions: ["exit"],
-
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-
       {
         name: "exit",
         start: false,
@@ -156,7 +118,7 @@ const exampleWorkflowPending = {
 
 const exampleWorkflowFailed = {
   data: {
-    flow: ["stateFirst", "stateSecond", "stateThird"],
+    flow: ["stateFirst", "stateSecond"],
     states: [
       {
         name: "stateFirst",
@@ -165,14 +127,12 @@ const exampleWorkflowFailed = {
         visited: true,
         failed: false,
         transitions: ["stateSecond"],
-
         events: [],
         conditions: [],
         catch: [],
         transition: "",
         defaultTransition: "",
       },
-
       {
         name: "stateSecond",
         start: false,
@@ -180,14 +140,12 @@ const exampleWorkflowFailed = {
         visited: true,
         failed: true,
         transitions: ["stateThird"],
-
         events: [],
         conditions: [],
         catch: [],
         transition: "",
         defaultTransition: "",
       },
-
       {
         name: "stateThird",
         start: false,
@@ -195,7 +153,6 @@ const exampleWorkflowFailed = {
         visited: false,
         failed: false,
         transitions: [],
-
         events: [],
         conditions: [],
         catch: [],
@@ -217,7 +174,6 @@ const exampleWorkflowComplete = {
         visited: true,
         failed: false,
         transitions: ["exit"],
-
         events: [],
         conditions: [],
         catch: [],
@@ -232,7 +188,6 @@ const exampleWorkflowComplete = {
         visited: true,
         failed: false,
         transitions: [],
-
         events: [],
         conditions: [],
         catch: [],
@@ -254,7 +209,6 @@ const exampleWorkflowComplex = {
         visited: true,
         failed: false,
         transitions: ["actionOne", "actionTwo"],
-
         events: [],
         conditions: [],
         catch: [],
@@ -268,7 +222,6 @@ const exampleWorkflowComplex = {
         visited: false,
         failed: false,
         transitions: ["exit"],
-
         events: [],
         conditions: [],
         catch: [],
@@ -282,14 +235,12 @@ const exampleWorkflowComplex = {
         visited: true,
         failed: false,
         transitions: ["exit"],
-
         events: [],
         conditions: [],
         catch: [],
         transition: "",
         defaultTransition: "",
       },
-
       {
         name: "exit",
         start: false,
@@ -297,7 +248,6 @@ const exampleWorkflowComplex = {
         visited: true,
         failed: false,
         transitions: [],
-
         events: [],
         conditions: [],
         catch: [],
@@ -346,7 +296,7 @@ export const Workflow = () => (
 export const WorkflowInstancePending = () => (
   <div className="h-96">
     <WorkflowDiagram
-      workflow={exampleWorkflowPending}
+      workflow={exampleWorkflowStepTwo}
       instanceStatus="pending"
     />
   </div>
