@@ -98,10 +98,40 @@ var (
 	notifyLock = &sync.Mutex{}
 )
 
+func notifyIfRequested(ev *InstanceEvent) {
+	if ev.Metadata[LabelWithNotify] != "true" {
+		return
+	}
+
+	notifyLock.Lock()
+	ch, ok := notifyMap[ev.FullID()]
+	notifyLock.Unlock()
+	if ok {
+		ch <- ev
+	}
+}
+
 var (
 	cancelMap  = map[string]context.CancelFunc{}
 	cancelLock = &sync.Mutex{}
 )
+
+func registerInstanceCancel(ctx context.Context, fullID string) (context.Context, func()) {
+	instCtx, cancel := context.WithCancel(ctx)
+
+	cancelLock.Lock()
+	cancelMap[fullID] = cancel
+	cancelLock.Unlock()
+
+	cleanup := func() {
+		cancelLock.Lock()
+		delete(cancelMap, fullID)
+		cancelLock.Unlock()
+		cancel()
+	}
+
+	return instCtx, cleanup
+}
 
 func (e *Engine) startScript(ctx context.Context, instID uuid.UUID, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceEvent, metadata map[string]string) (*InstanceEvent, error) {
 	if !json.Valid([]byte(input)) {
@@ -170,16 +200,8 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 	// Create a cancellable context per instance so API cancellation can stop
 	// blocking operations (sleep/fetch/actions) inside the runtime.
-	instCtx, cancel := context.WithCancel(ctx)
-	cancelLock.Lock()
-	cancelMap[inst.FullID()] = cancel
-	cancelLock.Unlock()
-	defer func() {
-		cancelLock.Lock()
-		delete(cancelMap, inst.FullID())
-		cancelLock.Unlock()
-		cancel()
-	}()
+	instCtx, cleanupCancel := registerInstanceCancel(ctx, inst.FullID())
+	defer cleanupCancel()
 
 	startEv := inst.Clone()
 	startEv.EventID = uuid.New()
@@ -213,14 +235,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		endEv.EndedAt = time.Now()
 		endEv.Fn = ""
 
-		if endEv.Metadata[LabelWithNotify] == "true" {
-			notifyLock.Lock()
-			notify, ok := notifyMap[endEv.FullID()]
-			notifyLock.Unlock()
-			if ok {
-				notify <- endEv
-			}
-		}
+		notifyIfRequested(endEv)
 
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
@@ -282,14 +297,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		cancelEv.Error = ""
 		cancelEv.EndedAt = time.Now()
 
-		if inst.Metadata[LabelWithNotify] == "true" {
-			notifyLock.Lock()
-			notify, ok := notifyMap[cancelEv.FullID()]
-			notifyLock.Unlock()
-			if ok {
-				notify <- cancelEv
-			}
-		}
+		notifyIfRequested(cancelEv)
 
 		pubErr := e.dataBus.PublishInstanceHistoryEvent(ctx, cancelEv)
 		if pubErr != nil {
@@ -308,14 +316,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	endEv.Error = err.Error()
 	endEv.EndedAt = time.Now()
 
-	if inst.Metadata[LabelWithNotify] == "true" {
-		notifyLock.Lock()
-		notify, ok := notifyMap[endEv.FullID()]
-		notifyLock.Unlock()
-		if ok {
-			notify <- endEv
-		}
-	}
+	notifyIfRequested(endEv)
 	err = e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	if err != nil {
 		return fmt.Errorf("push history end event, inst: %s: %w", inst.InstanceID, err)
