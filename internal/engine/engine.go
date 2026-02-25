@@ -287,11 +287,6 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	}
 	onSetVariable := e.makeOnSetVariableHook(inst)
 	onGetVariable := e.makeOnGetVariableHook(inst)
-	ctx = telemetry.SetupInstanceLogs(ctx,
-		sc.Metadata[core.EngineMappingNamespace],
-		sc.InstID.String(),
-		sc.Metadata[LabelInvokerType],
-		sc.Metadata[core.EngineMappingPath])
 
 	err = runtime.ExecScript(instCtx, sc, onFinish, onTransition, onAction, onSubflow, onSetVariable, onGetVariable)
 	if err == nil {
