@@ -58,7 +58,10 @@ test("Service list shows all available services", async ({ page }) => {
               (c) => c.type === "Available" && c.status === "True"
             ),
         }),
-      "the service in the backend is in state Available"
+      {
+        timeout: 50000,
+        message: "the service in the backend is in state Available",
+      }
     )
     .toBeTruthy();
 
@@ -134,6 +137,24 @@ test("Service list links the file name to the service file", async ({
     mimeType: "application/json",
   });
 
+  await expect
+    .poll(
+      async () =>
+        await findServiceWithApiRequest({
+          namespace,
+          match: (service) =>
+            service.filePath === serviceFile.data.path &&
+            (service.conditions ?? []).some(
+              (c) => c.type === "Available" && c.status === "True"
+            ),
+        }),
+      {
+        timeout: 50000,
+        message: "the service in the backend is in state Available",
+      }
+    )
+    .toBeTruthy();
+
   await page.goto(`/n/${namespace}/services`, {
     waitUntil: "networkidle",
   });
@@ -170,9 +191,16 @@ test("Service list links the row to the service details page", async ({
       async () =>
         await findServiceWithApiRequest({
           namespace,
-          match: (service) => service.filePath === serviceFile.data.path,
+          match: (service) =>
+            service.filePath === serviceFile.data.path &&
+            (service.conditions ?? []).some(
+              (c) => c.type === "Available" && c.status === "True"
+            ),
         }),
-      "the service was mounted in the backend"
+      {
+        timeout: 50000,
+        message: "the service in the backend is in state Available",
+      }
     )
     .toBeTruthy();
 
@@ -229,7 +257,10 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
               (c) => c.type === "Available" && c.status === "True"
             ),
         }),
-      "the service in the backend is in state Available"
+      {
+        timeout: 50000,
+        message: "the service in the backend is in state Available",
+      }
     )
     .toBeTruthy();
 
@@ -262,13 +293,31 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
 });
 
 test("Service list highlights services that have errors", async ({ page }) => {
-  await createFile({
+  const serviceFile = await createFile({
     name: "failed-service.svc.json",
     namespace,
     type: "service",
     content: serviceWithAnError,
     mimeType: "application/json",
   });
+
+  await expect
+    .poll(
+      async () =>
+        await findServiceWithApiRequest({
+          namespace,
+          match: (service) =>
+            service.filePath === serviceFile.data.path &&
+            (service.conditions ?? []).some(
+              (c) => c.type === "Available" && c.status === "False"
+            ),
+        }),
+      {
+        timeout: 50000,
+        message: "the service in the backend is in state Not Available",
+      }
+    )
+    .toBeTruthy();
 
   await page.goto(`/n/${namespace}/services`, {
     waitUntil: "networkidle",
@@ -291,7 +340,7 @@ test("Service list highlights services that have errors", async ({ page }) => {
 test("Service list will update the services when refetch button is clicked", async ({
   page,
 }) => {
-  await createFile({
+  const serviceFile = await createFile({
     name: "http-service.svc.json",
     namespace,
     type: "service",
@@ -301,6 +350,24 @@ test("Service list will update the services when refetch button is clicked", asy
     }),
     mimeType: "application/json",
   });
+
+  await expect
+    .poll(
+      async () =>
+        await findServiceWithApiRequest({
+          namespace,
+          match: (service) =>
+            service.filePath === serviceFile.data.path &&
+            (service.conditions ?? []).some(
+              (c) => c.type === "Available" && c.status === "True"
+            ),
+        }),
+      {
+        timeout: 50000,
+        message: "the service in the backend is in state Available",
+      }
+    )
+    .toBeTruthy();
 
   await page.goto(`/n/${namespace}/services`, {
     waitUntil: "networkidle",
@@ -335,7 +402,20 @@ test("Service list will update the services when refetch button is clicked", asy
     headers,
   });
 
-  await page.waitForTimeout(1000);
+  await expect
+    .poll(
+      async () =>
+        await findServiceWithApiRequest({
+          namespace,
+          match: (service) =>
+            service.filePath === serviceFile.data.path && service.scale === 2,
+        }),
+      {
+        timeout: 50000,
+        message: "the service in the backend changed to scale 2",
+      }
+    )
+    .toBeTruthy();
 
   await page.getByLabel("Refetch services").click();
 
@@ -387,6 +467,28 @@ test.describe("system namespace", () => {
   test("services will also be listed in the system namespace", async ({
     page,
   }) => {
+    await page.goto(`/n/${systemNamespaceName}/services`, {
+      waitUntil: "networkidle",
+    });
+
+    await expect
+      .poll(
+        async () =>
+          await findServiceWithApiRequest({
+            namespace: systemNamespaceName,
+            match: (service) =>
+              service.filePath === `/${systemServiceName}` &&
+              (service.conditions ?? []).some(
+                (c) => c.type === "Available" && c.status === "True"
+              ),
+          }),
+        {
+          timeout: 50000,
+          message: "the service in the backend is in state Available",
+        }
+      )
+      .toBeTruthy();
+
     await page.goto(`/n/${systemNamespaceName}/services`, {
       waitUntil: "networkidle",
     });
