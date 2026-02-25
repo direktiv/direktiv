@@ -121,12 +121,12 @@ test("Service details page provides information about the service", async ({
 
   await expect(
     page.getByRole("tab", { name: "Pod 1 of 2" }),
-    "it renders the the first pod tab"
+    "it renders the first pod tab"
   ).toBeVisible();
 
   await expect(
     page.getByRole("tab", { name: "Pod 2 of 2" }),
-    "it renders the the second pod tab"
+    "it renders the second pod tab"
   ).toBeVisible();
 
   await page.click("text=Pod 2 of 2");
