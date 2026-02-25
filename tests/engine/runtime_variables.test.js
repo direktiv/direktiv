@@ -18,7 +18,10 @@ describe('Runtime variables from workflow setVariable()', () => {
 
   const workflowName = 'setVariable.wf.ts'
 
-  // Workflow code: creates a NAMESPACE-scoped runtime variable "myVar"
+  const storedValue = 'hello from runtime variable'
+  const encodedContent = btoa(storedValue)
+
+  // Workflow code: creates runtime variables in each scope via setVariable()
   const workflowSource = `
     declare function setVariable(
       scope: 'namespace' | 'workflow' | 'instance',
@@ -32,9 +35,9 @@ describe('Runtime variables from workflow setVariable()', () => {
     ): string | null;
 
     function stateOne(payload: any) {
-      const value = 'hello from runtime variable';
+      const value = '${storedValue}';
 
-      // precomputed base64 of the value above so we don't need btoa() in Sobek
+      // precomputed base64 so we don't need btoa() in Sobek
       const content = 'aGVsbG8gZnJvbSBydW50aW1lIHZhcmlhYmxl';
 
       // 1) namespace-scoped
@@ -73,7 +76,7 @@ describe('Runtime variables from workflow setVariable()', () => {
     workflowSource,
   )
 
-  it('should create a namespace-scoped runtime variable "myVar"', async () => {
+  it('should set and read runtime variables via setVariable()/getVariable()', async () => {
     const baseUrl = common.config.getDirektivBaseUrl()
 
     // 1) Run the workflow and wait for completion
@@ -89,14 +92,15 @@ describe('Runtime variables from workflow setVariable()', () => {
 
     // Validate getVariable outputs from the workflow result
     const output = JSON.parse(startRes.body.data.output)
+    expect(output.stored).toEqual(storedValue)
     expect(output.nsRead).toEqual(encodedContent)
     expect(output.wfRead).toEqual(encodedContent)
     expect(output.instRead).toEqual(encodedContent)
     expect(output.missing).toBeNull()
 
-    // 2) Query runtime variables for this namespace + name
+    // 2) Query namespace-scoped runtime variables for this namespace + name
     const varsRes = await request(baseUrl).get(
-      `/api/v2/namespaces/${namespace}/variables?name=myVar`,
+      `/api/v2/namespaces/${namespace}/variables?name=nsVar`,
     )
 
     expect(varsRes.statusCode).toEqual(200)
@@ -104,7 +108,7 @@ describe('Runtime variables from workflow setVariable()', () => {
     expect(varsRes.body.data.length).toBe(1)
 
     const v = varsRes.body.data[0]
-    expect(v.name).toBe('myVar')
+    expect(v.name).toBe('nsVar')
     expect(v.type).toBe('namespace-variable')
     expect(v.reference).toBe(namespace)
   })

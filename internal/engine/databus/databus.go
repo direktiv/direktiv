@@ -31,6 +31,8 @@ func New(js nats.JetStreamContext, pubSub pubsub.EventBus) *DataBus {
 	}
 }
 
+var _ engine.DataBus = &DataBus{}
+
 func (d *DataBus) Start(lc *lifecycle.Manager) error {
 	err := d.startCaches(lc.Context())
 	if err != nil {

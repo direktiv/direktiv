@@ -12,11 +12,12 @@ const (
 )
 
 type ActionConfig struct {
-	Type    string
-	Cmd     string
-	Size    string
-	Image   string
-	Envs    []EnvironmentVariable
+	Type  string
+	Cmd   string
+	Size  string
+	Image string
+	Envs  []EnvironmentVariable
+
 	Retries int
 
 	// service file specific
