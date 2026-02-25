@@ -3,11 +3,10 @@ package pubsub
 type Subject string
 
 const (
-	SubjFileSystemChange   Subject = "filesystem.change"
-	SubjNamespacesChange   Subject = "namespace.change"
-	SubjCacheDelete        Subject = "cache.delete"
-	SubjServiceIgnite      Subject = "service.ignite"
-	SubjRuntimeVariableSet Subject = "runtimevariable.set"
+	SubjFileSystemChange Subject = "filesystem.change"
+	SubjNamespacesChange Subject = "namespace.change"
+	SubjCacheDelete      Subject = "cache.delete"
+	SubjServiceIgnite    Subject = "service.ignite"
 )
 
 type Handler func(data []byte)

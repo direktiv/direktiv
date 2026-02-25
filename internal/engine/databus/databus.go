@@ -171,17 +171,3 @@ func (d *DataBus) PublishIgniteAction(ctx context.Context, svcID string) error {
 	err := d.pubSub.Publish(pubsub.SubjServiceIgnite, []byte(svcID))
 	return err
 }
-
-func (d *DataBus) PublishRuntimeVariableSet(ctx context.Context, namespace string, name string, value string) error {
-	ev := &engine.RuntimeVariableSetEvent{
-		Namespace: namespace,
-		Name:      name,
-		Value:     value,
-	}
-	b, err := json.Marshal(ev)
-	if err != nil {
-		return fmt.Errorf("marshal runtime variable event: %w", err)
-	}
-
-	return d.pubSub.Publish(pubsub.SubjRuntimeVariableSet, b)
-}

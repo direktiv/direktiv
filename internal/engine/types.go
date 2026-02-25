@@ -50,12 +50,6 @@ type InstanceEvent struct {
 	Sequence uint64
 }
 
-type RuntimeVariableSetEvent struct {
-	Namespace string
-	Name      string
-	Value     string
-}
-
 func (e *InstanceEvent) IsEndStatus() bool {
 	return e.State == StateCodeComplete || e.State == StateCodeFailed || e.State == StateCodeCancelled
 }
@@ -107,5 +101,4 @@ type DataBus interface {
 	DeleteNamespace(ctx context.Context, namespace string) error
 
 	PublishIgniteAction(ctx context.Context, svcID string) error
-	PublishRuntimeVariableSet(ctx context.Context, namespace string, name string, value string) error
 }

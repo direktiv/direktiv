@@ -397,7 +397,7 @@ func (e *Engine) makeOnSetVariableHook(inst *InstanceEvent) runtime.OnSetVariabl
 			return err
 		}
 
-		return e.dataBus.PublishRuntimeVariableSet(ctx, rv.Namespace, rv.Name, string(rv.Data))
+		return nil
 	}
 }
 
