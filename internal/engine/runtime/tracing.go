@@ -106,7 +106,7 @@ func (tp *tracingPack) finish() {
 	tp.parentSpan.SetStatus(codes.Ok, codes.Ok.String())
 	// }
 
-	telemetry.LogInstance(tp.ctx, telemetry.LogLevelInfo, "flow finished")
+	telemetry.LogInstance(tp.ctx, telemetry.LogLevelInfo, "instance terminated")
 
 	tp.parentSpan.End()
 }
