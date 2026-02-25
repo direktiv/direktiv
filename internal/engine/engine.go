@@ -101,6 +101,41 @@ var (
 	notifyLock = &sync.Mutex{}
 )
 
+func notifyIfRequested(ev *InstanceEvent) {
+	if ev.Metadata[LabelWithNotify] != "true" {
+		return
+	}
+
+	notifyLock.Lock()
+	ch, ok := notifyMap[ev.FullID()]
+	notifyLock.Unlock()
+	if ok {
+		ch <- ev
+	}
+}
+
+var (
+	cancelMap  = map[string]context.CancelFunc{}
+	cancelLock = &sync.Mutex{}
+)
+
+func registerInstanceCancel(ctx context.Context, fullID string) (context.Context, func()) {
+	instCtx, cancel := context.WithCancel(ctx)
+
+	cancelLock.Lock()
+	cancelMap[fullID] = cancel
+	cancelLock.Unlock()
+
+	cleanup := func() {
+		cancelLock.Lock()
+		delete(cancelMap, fullID)
+		cancelLock.Unlock()
+		cancel()
+	}
+
+	return instCtx, cleanup
+}
+
 func (e *Engine) startScript(ctx context.Context, instID uuid.UUID, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceEvent, metadata map[string]string) (*InstanceEvent, error) {
 	if !json.Valid([]byte(input)) {
 		return nil, fmt.Errorf("input is not a valid json string: %s", input)
@@ -160,6 +195,17 @@ func (e *Engine) startScript(ctx context.Context, instID uuid.UUID, namespace st
 }
 
 func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
+	// If this instance was cancelled before it started running, skip execution.
+	// We rely on status-cache being populated by PublishInstanceHistoryEvent.
+	if st, err := e.GetInstanceStatus(ctx, inst.Namespace, inst.InstanceID); err == nil && st.State == StateCodeCancelled {
+		return nil
+	}
+
+	// Create a cancellable context per instance so API cancellation can stop
+	// blocking operations (sleep/fetch/actions) inside the runtime.
+	instCtx, cleanupCancel := registerInstanceCancel(ctx, inst.FullID())
+	defer cleanupCancel()
+
 	startEv := inst.Clone()
 	startEv.EventID = uuid.New()
 	startEv.State = StateCodeRunning
@@ -192,14 +238,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		endEv.EndedAt = time.Now()
 		endEv.Fn = ""
 
-		if endEv.Metadata[LabelWithNotify] == "true" {
-			notifyLock.Lock()
-			notify, ok := notifyMap[endEv.FullID()]
-			notifyLock.Unlock()
-			if ok {
-				notify <- endEv
-			}
-		}
+		notifyIfRequested(endEv)
 
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
@@ -254,10 +293,30 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		sc.Metadata[LabelInvokerType],
 		sc.Metadata[core.EngineMappingPath])
 
-	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, onSubflow, onSetVariable, onGetVariable)
+	err = runtime.ExecScript(instCtx, sc, onFinish, onTransition, onAction, onSubflow, onSetVariable, onGetVariable)
 	if err == nil {
 		return nil
 	}
+
+	// If the instance context was cancelled, treat as cancelled not failed.
+	if errors.Is(instCtx.Err(), context.Canceled) {
+		cancelEv := startEv.Clone()
+		cancelEv.EventID = uuid.New()
+		cancelEv.State = StateCodeCancelled
+		cancelEv.Fn = ""
+		cancelEv.Error = ""
+		cancelEv.EndedAt = time.Now()
+
+		notifyIfRequested(cancelEv)
+
+		pubErr := e.dataBus.PublishInstanceHistoryEvent(ctx, cancelEv)
+		if pubErr != nil {
+			return fmt.Errorf("push history cancel event, inst: %s: %w", inst.InstanceID, pubErr)
+		}
+
+		return nil
+	}
+
 	telemetry.LogInstance(ctx, telemetry.LogLevelError, fmt.Sprintf("flow execution failed: %s", err.Error()))
 
 	endEv := startEv.Clone()
@@ -267,14 +326,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	endEv.Error = err.Error()
 	endEv.EndedAt = time.Now()
 
-	if inst.Metadata[LabelWithNotify] == "true" {
-		notifyLock.Lock()
-		notify, ok := notifyMap[endEv.FullID()]
-		notifyLock.Unlock()
-		if ok {
-			notify <- endEv
-		}
-	}
+	notifyIfRequested(endEv)
 	err = e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	if err != nil {
 		return fmt.Errorf("push history end event, inst: %s: %w", inst.InstanceID, err)
@@ -390,4 +442,17 @@ func (e *Engine) makeOnGetVariableHook(inst *InstanceEvent) runtime.OnGetVariabl
 
 		return data, nil
 	}
+}
+
+func (e *Engine) CancelInstance(ctx context.Context, namespace string, id uuid.UUID) error {
+	// Cancel any running contexts for this instance (all scopes).
+	cancelLock.Lock()
+	defer cancelLock.Unlock()
+	for key, cancel := range cancelMap {
+		if len(key) >= len(id.String()) && key[:len(id.String())] == id.String() {
+			cancel()
+		}
+	}
+
+	return nil
 }

@@ -31,6 +31,13 @@ export const serviceWithAnError = `{
 }
 `;
 
+export const serviceWithScaleZero = `{
+  "image": "nope",
+  "scale": 0,
+  "size": "small"
+}
+`;
+
 type FindServiceWithApiRequestParams = {
   namespace: string;
   match: (service: ServiceSchemaType) => boolean;

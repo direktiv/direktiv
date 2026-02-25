@@ -211,7 +211,19 @@ func (rt *Runtime) getVariable(scope string, name string) sobek.Value {
 func (rt *Runtime) sleep(seconds int) sobek.Value {
 	rt.tracingPack.span.AddEvent("calling sleep")
 
-	time.Sleep(time.Duration(seconds) * time.Second)
+	d := time.Duration(seconds) * time.Second
+	if d <= 0 {
+		return sobek.Undefined()
+	}
+
+	timer := time.NewTimer(d)
+	defer timer.Stop()
+	select {
+	case <-timer.C:
+	case <-rt.tracingPack.ctx.Done():
+		// Abort execution so the engine can mark the instance as cancelled.
+		panic(rt.vm.ToValue(rt.tracingPack.ctx.Err().Error()))
+	}
 
 	return sobek.Undefined()
 }
@@ -255,6 +267,14 @@ func (rt *Runtime) log(logs ...string) sobek.Value {
 }
 
 func (rt *Runtime) transition(call sobek.FunctionCall) sobek.Value {
+	// first check if context is cancelled?
+
+	select {
+	case <-rt.tracingPack.ctx.Done():
+		panic(rt.vm.ToValue(rt.tracingPack.ctx.Err().Error()))
+	default:
+	}
+
 	if len(call.Arguments) != 2 {
 		panic(rt.vm.ToValue("transition requires a function and a payload"))
 	}
@@ -340,6 +360,12 @@ func (rt *Runtime) execSubflow(call sobek.FunctionCall) sobek.Value {
 
 // TODO: remove return from finish() as it should be the last statement.
 func (rt *Runtime) finish(data sobek.Value) sobek.Value {
+	select {
+	case <-rt.tracingPack.ctx.Done():
+		panic(rt.vm.ToValue(rt.tracingPack.ctx.Err().Error()))
+	default:
+	}
+
 	var output any
 	if err := rt.vm.ExportTo(data, &output); err != nil {
 		panic(rt.vm.ToValue(fmt.Sprintf("error exporting output: %s", err.Error())))
