@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strconv"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/direktiv/direktiv/internal/api/filter"
 	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/engine/runtime"
 	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/direktiv/direktiv/pkg/lifecycle"
@@ -39,13 +41,15 @@ type Engine struct {
 	dataBus  DataBus
 	compiler core.Compiler
 	js       nats.JetStreamContext
+	store    datastore.Store
 }
 
-func NewEngine(bus DataBus, compiler core.Compiler, js nats.JetStreamContext) (*Engine, error) {
+func NewEngine(bus DataBus, compiler core.Compiler, js nats.JetStreamContext, store datastore.Store) (*Engine, error) {
 	return &Engine{
 		dataBus:  bus,
 		compiler: compiler,
 		js:       js,
+		store:    store,
 	}, nil
 }
 
@@ -96,6 +100,41 @@ var (
 	notifyMap  = map[string]chan<- *InstanceEvent{}
 	notifyLock = &sync.Mutex{}
 )
+
+func notifyIfRequested(ev *InstanceEvent) {
+	if ev.Metadata[LabelWithNotify] != "true" {
+		return
+	}
+
+	notifyLock.Lock()
+	ch, ok := notifyMap[ev.FullID()]
+	notifyLock.Unlock()
+	if ok {
+		ch <- ev
+	}
+}
+
+var (
+	cancelMap  = map[string]context.CancelFunc{}
+	cancelLock = &sync.Mutex{}
+)
+
+func registerInstanceCancel(ctx context.Context, fullID string) (context.Context, func()) {
+	instCtx, cancel := context.WithCancel(ctx)
+
+	cancelLock.Lock()
+	cancelMap[fullID] = cancel
+	cancelLock.Unlock()
+
+	cleanup := func() {
+		cancelLock.Lock()
+		delete(cancelMap, fullID)
+		cancelLock.Unlock()
+		cancel()
+	}
+
+	return instCtx, cleanup
+}
 
 func (e *Engine) startScript(ctx context.Context, instID uuid.UUID, namespace string, script string, mappings string, fn string, input string, notify chan<- *InstanceEvent, metadata map[string]string) (*InstanceEvent, error) {
 	if !json.Valid([]byte(input)) {
@@ -156,6 +195,17 @@ func (e *Engine) startScript(ctx context.Context, instID uuid.UUID, namespace st
 }
 
 func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
+	// If this instance was cancelled before it started running, skip execution.
+	// We rely on status-cache being populated by PublishInstanceHistoryEvent.
+	if st, err := e.GetInstanceStatus(ctx, inst.Namespace, inst.InstanceID); err == nil && st.State == StateCodeCancelled {
+		return nil
+	}
+
+	// Create a cancellable context per instance so API cancellation can stop
+	// blocking operations (sleep/fetch/actions) inside the runtime.
+	instCtx, cleanupCancel := registerInstanceCancel(ctx, inst.FullID())
+	defer cleanupCancel()
+
 	startEv := inst.Clone()
 	startEv.EventID = uuid.New()
 	startEv.State = StateCodeRunning
@@ -188,14 +238,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 		endEv.EndedAt = time.Now()
 		endEv.Fn = ""
 
-		if endEv.Metadata[LabelWithNotify] == "true" {
-			notifyLock.Lock()
-			notify, ok := notifyMap[endEv.FullID()]
-			notifyLock.Unlock()
-			if ok {
-				notify <- endEv
-			}
-		}
+		notifyIfRequested(endEv)
 
 		return e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	}
@@ -242,11 +285,33 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 
 		return st.Output, nil
 	}
+	onSetVariable := e.makeOnSetVariableHook(inst)
+	onGetVariable := e.makeOnGetVariableHook(inst)
 
-	err = runtime.ExecScript(ctx, sc, onFinish, onTransition, onAction, onSubflow)
+	err = runtime.ExecScript(instCtx, sc, onFinish, onTransition, onAction, onSubflow, onSetVariable, onGetVariable)
 	if err == nil {
 		return nil
 	}
+
+	// If the instance context was cancelled, treat as cancelled not failed.
+	if errors.Is(instCtx.Err(), context.Canceled) {
+		cancelEv := startEv.Clone()
+		cancelEv.EventID = uuid.New()
+		cancelEv.State = StateCodeCancelled
+		cancelEv.Fn = ""
+		cancelEv.Error = ""
+		cancelEv.EndedAt = time.Now()
+
+		notifyIfRequested(cancelEv)
+
+		pubErr := e.dataBus.PublishInstanceHistoryEvent(ctx, cancelEv)
+		if pubErr != nil {
+			return fmt.Errorf("push history cancel event, inst: %s: %w", inst.InstanceID, pubErr)
+		}
+
+		return nil
+	}
+
 	telemetry.LogInstance(ctx, telemetry.LogLevelError, fmt.Sprintf("flow execution failed: %s", err.Error()))
 
 	endEv := startEv.Clone()
@@ -256,14 +321,7 @@ func (e *Engine) execInstance(ctx context.Context, inst *InstanceEvent) error {
 	endEv.Error = err.Error()
 	endEv.EndedAt = time.Now()
 
-	if inst.Metadata[LabelWithNotify] == "true" {
-		notifyLock.Lock()
-		notify, ok := notifyMap[endEv.FullID()]
-		notifyLock.Unlock()
-		if ok {
-			notify <- endEv
-		}
-	}
+	notifyIfRequested(endEv)
 	err = e.dataBus.PublishInstanceHistoryEvent(ctx, endEv)
 	if err != nil {
 		return fmt.Errorf("push history end event, inst: %s: %w", inst.InstanceID, err)
@@ -301,4 +359,95 @@ func (e *Engine) GetInstanceHistory(ctx context.Context, namespace string, id uu
 
 func (e *Engine) DeleteNamespace(ctx context.Context, name string) error {
 	return e.dataBus.DeleteNamespace(ctx, name)
+}
+
+func (e *Engine) makeOnSetVariableHook(inst *InstanceEvent) runtime.OnSetVariableHook {
+	return func(ctx context.Context, scope string, name string, data []byte) error {
+		if name == "" {
+			return datastore.ErrInvalidRuntimeVariableName
+		}
+
+		rv := &datastore.RuntimeVariable{
+			Namespace: inst.Namespace,
+			Name:      name,
+			Data:      data,
+			MimeType:  "application/octet-stream",
+		}
+
+		switch core.VariableScope(scope) {
+		case core.VariableScopeNamespace:
+		case core.VariableScopeWorkflow:
+			wfPath := inst.Metadata[core.EngineMappingPath]
+			if wfPath == "" {
+				return fmt.Errorf("missing workflow path in instance metadata for workflow-scoped variable")
+			}
+			rv.WorkflowPath = wfPath
+		case core.VariableScopeInstance:
+			rv.InstanceID = inst.InstanceID
+		default:
+			return fmt.Errorf("invalid variable scope %q", scope)
+		}
+
+		if _, err := e.store.RuntimeVariables().Create(ctx, rv); err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
+func (e *Engine) makeOnGetVariableHook(inst *InstanceEvent) runtime.OnGetVariableHook {
+	return func(ctx context.Context, scope string, name string) ([]byte, error) {
+		var (
+			v   *datastore.RuntimeVariable
+			err error
+		)
+
+		switch core.VariableScope(scope) {
+		case core.VariableScopeNamespace:
+			v, err = e.store.RuntimeVariables().GetForNamespace(ctx, inst.Namespace, name)
+		case core.VariableScopeWorkflow:
+			wfPath := inst.Metadata[core.EngineMappingPath]
+			if wfPath == "" {
+				return nil, fmt.Errorf("missing workflow path in instance metadata for workflow-scoped variable")
+			}
+			v, err = e.store.RuntimeVariables().GetForWorkflow(ctx, inst.Namespace, wfPath, name)
+		case core.VariableScopeInstance:
+			v, err = e.store.RuntimeVariables().GetForInstance(ctx, inst.InstanceID, name)
+		default:
+			return nil, fmt.Errorf("invalid variable scope %q", scope)
+		}
+
+		if err != nil {
+			if errors.Is(err, datastore.ErrNotFound) {
+				return nil, nil
+			}
+
+			return nil, err
+		}
+
+		data, err := e.store.RuntimeVariables().LoadData(ctx, v.ID)
+		if err != nil {
+			if errors.Is(err, datastore.ErrNotFound) {
+				return nil, nil
+			}
+
+			return nil, err
+		}
+
+		return data, nil
+	}
+}
+
+func (e *Engine) CancelInstance(ctx context.Context, namespace string, id uuid.UUID) error {
+	// Cancel any running contexts for this instance (all scopes).
+	cancelLock.Lock()
+	defer cancelLock.Unlock()
+	for key, cancel := range cancelMap {
+		if len(key) >= len(id.String()) && key[:len(id.String())] == id.String() {
+			cancel()
+		}
+	}
+
+	return nil
 }
