@@ -157,7 +157,8 @@ test("it is possible to create a folder", async ({ page }) => {
   ).toBeVisible();
 });
 
-test.skip("it is possible to create a workflow", async ({ page }) => {
+// TODO: in TBD match this with a ticket
+test("it is possible to create a workflow", async ({ page }) => {
   await page.goto(`/n/${namespace}/explorer/tree`);
   await expect(
     page.getByTestId("breadcrumb-namespace"),

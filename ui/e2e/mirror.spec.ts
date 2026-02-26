@@ -16,7 +16,8 @@ test.afterAll(async () => {
   namespace = "";
 });
 
-test.skip("it is possible to create and sync a mirror, view logs", async ({
+// TODO: in TBD match this with a ticket
+test("it is possible to create and sync a mirror, view logs", async ({
   page,
 }) => {
   /* prepare test data */
