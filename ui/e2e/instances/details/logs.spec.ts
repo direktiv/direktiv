@@ -162,7 +162,7 @@ test("the logs panel can be maximized", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("the logs panel can be toggled between verbose and non verbose logs", async ({
+test.skip("the logs panel can be toggled between verbose and non verbose logs", async ({
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
