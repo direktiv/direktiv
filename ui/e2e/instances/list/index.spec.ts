@@ -238,6 +238,7 @@ test("it renders instance state, start and finish date correctly", async ({
   ).toContainText("complete");
 });
 
+// TODO: in TDI-221 Fix tests with parent worklflows
 test.skip("It renders parent and child instances", async ({ page }) => {
   const parentWorkflow = faker.system.commonFileName("wf.ts");
 

@@ -20,6 +20,7 @@ test.afterEach(async () => {
   namespace = "";
 });
 
+// TODO: in TDI-222 Fix tests for logging (instances, monitoring)
 test.skip("It displays a log message from the workflow yaml, one initial and one final log entry", async ({
   page,
 }) => {
@@ -162,6 +163,7 @@ test("the logs panel can be maximized", async ({ page }) => {
   ).toBeVisible();
 });
 
+// TODO: in TDI-222 Fix tests for logging (instances, monitoring)
 test.skip("the logs panel can be toggled between verbose and non verbose logs", async ({
   page,
 }) => {
@@ -228,6 +230,7 @@ test.skip("the logs panel can be toggled between verbose and non verbose logs", 
   ).toContainText("state: stateHellomsg: flow finished");
 });
 
+// TODO: in TDI-222 Fix tests for logging (instances, monitoring)
 test.skip("the logs can be copied", async ({ page }) => {
   const workflowName = faker.system.commonFileName("yaml");
 
@@ -280,6 +283,7 @@ test.skip("the logs can be copied", async ({ page }) => {
   );
 });
 
+// TODO: in TDI-222 Fix tests for logging (instances, monitoring)
 test.skip("log entries will be automatically scrolled to the end", async ({
   page,
 }) => {
@@ -382,6 +386,7 @@ test.skip("log entries will be automatically scrolled to the end", async ({
   ).not.toBeVisible();
 });
 
+// TODO: in TDI-222 Fix tests for logging (instances, monitoring)
 test.skip("it renders error details for errors in the logs", async ({
   page,
 }) => {

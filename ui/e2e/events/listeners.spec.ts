@@ -17,6 +17,7 @@ test.afterEach(async () => {
   namespace = "";
 });
 
+// TODO: in TDI-227 Fix tests for events and event listeners
 test.skip("it renders event listeners", async ({ page }) => {
   /* set up test data */
   const workflowNames = Array.from(
@@ -79,6 +80,7 @@ test.skip("it renders event listeners", async ({ page }) => {
   ).toHaveURL(`/n/${namespace}/explorer/workflow/edit/${workflowNames[2]}`);
 });
 
+// TODO: in TDI-227 Fix tests for events and event listeners
 test.skip("it paginates event listeners", async ({ page }) => {
   /* set up test data */
   const workflowNames = Array.from(
@@ -177,6 +179,7 @@ test.skip("it paginates event listeners", async ({ page }) => {
   ).not.toBeVisible();
 });
 
+// TODO: in TDI-227 Fix tests for events and event listeners
 test.skip("it renders event context filters", async ({ page }) => {
   /* set up test data */
   const content = contextFiltersListenerYaml;
