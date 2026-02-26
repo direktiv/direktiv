@@ -230,8 +230,13 @@ func (e *instController) flow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	flow := make([]string, 0)
 	for a := range l {
 		event = l[a]
+
+		if event.Fn != "" && event.State == engine.StateCodeRunning {
+			flow = append(flow, event.Fn)
+		}
 
 		// if failed we set the previous event to failed
 		if event.State == engine.StateCodeFailed {
@@ -258,7 +263,12 @@ func (e *instController) flow(w http.ResponseWriter, r *http.Request) {
 		state.Visited = true
 	}
 
-	writeJSON(w, ci.Config().Config.StateViews)
+	states := core.SortedStateViews(ci.Config().Config.StateViews)
+
+	writeJSON(w, map[string]any{
+		"flow":   flow,
+		"states": states,
+	})
 }
 
 func (e *instController) create(w http.ResponseWriter, r *http.Request) {

@@ -1,0 +1,13 @@
+type: object
+description: Instance flow response (states executed in order and state metadata).
+properties:
+  flow:
+    type: array
+    description: State names in the order they were executed.
+    items:
+      type: string
+  states:
+    type: array
+    description: Workflow states with visited/failed and transition metadata.
+    items:
+      $ref: ./StateView.yaml
