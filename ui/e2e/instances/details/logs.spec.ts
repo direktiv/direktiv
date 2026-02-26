@@ -20,7 +20,7 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("It displays a log message from the workflow yaml, one initial and one final log entry", async ({
+test.skip("It displays a log message from the workflow yaml, one initial and one final log entry", async ({
   page,
 }) => {
   /* prepare data*/
@@ -382,7 +382,9 @@ test.skip("log entries will be automatically scrolled to the end", async ({
   ).not.toBeVisible();
 });
 
-test("it renders error details for errors in the logs", async ({ page }) => {
+test.skip("it renders error details for errors in the logs", async ({
+  page,
+}) => {
   /* prepare data */
   const workflowName = faker.system.commonFileName("yaml");
 

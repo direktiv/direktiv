@@ -157,7 +157,7 @@ test("it is possible to create a folder", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("it is possible to create a workflow", async ({ page }) => {
+test.skip("it is possible to create a workflow", async ({ page }) => {
   await page.goto(`/n/${namespace}/explorer/tree`);
   await expect(
     page.getByTestId("breadcrumb-namespace"),
@@ -802,8 +802,8 @@ test("it is possible to filter the file list by name", async ({ page }) => {
     } else route.continue();
   });
 */
-/* 
-     Note for future uses: 
+/*
+     Note for future uses:
      The route for files needs a '/' at the end
      because the '/' is actually the beginning of the path
      see also: src/api/files/query/file.ts

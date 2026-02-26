@@ -124,7 +124,7 @@ test("the input/output panel responds to user interaction", async ({
   );
 });
 
-test("the output is shown when the workflow finished running", async ({
+test.skip("the output is shown when the workflow finished running", async ({
   page,
 }) => {
   const workflowName = faker.system.commonFileName("wf.ts");

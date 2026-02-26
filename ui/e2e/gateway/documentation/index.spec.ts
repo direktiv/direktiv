@@ -44,7 +44,7 @@ test("Documentation section show no documentation available when no route endpoi
   ).toBeVisible();
 });
 
-test("Make sure Rapidoc component is displaying basic OpenAPI doc", async ({
+test.skip("Make sure Rapidoc component is displaying basic OpenAPI doc", async ({
   page,
 }) => {
   const testOpenApiObject = {

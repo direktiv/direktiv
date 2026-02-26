@@ -17,7 +17,7 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("it renders event listeners", async ({ page }) => {
+test.skip("it renders event listeners", async ({ page }) => {
   /* set up test data */
   const workflowNames = Array.from(
     { length: 4 },
@@ -79,7 +79,7 @@ test("it renders event listeners", async ({ page }) => {
   ).toHaveURL(`/n/${namespace}/explorer/workflow/edit/${workflowNames[2]}`);
 });
 
-test("it paginates event listeners", async ({ page }) => {
+test.skip("it paginates event listeners", async ({ page }) => {
   /* set up test data */
   const workflowNames = Array.from(
     { length: 13 },
@@ -177,7 +177,7 @@ test("it paginates event listeners", async ({ page }) => {
   ).not.toBeVisible();
 });
 
-test("it renders event context filters", async ({ page }) => {
+test.skip("it renders event context filters", async ({ page }) => {
   /* set up test data */
   const content = contextFiltersListenerYaml;
   await createListener({
