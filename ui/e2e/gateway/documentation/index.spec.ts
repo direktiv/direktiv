@@ -44,7 +44,6 @@ test("Documentation section show no documentation available when no route endpoi
   ).toBeVisible();
 });
 
-// TODO: in TBD match this with a ticket
 test("Make sure Rapidoc component is displaying basic OpenAPI doc", async ({
   page,
 }) => {

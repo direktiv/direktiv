@@ -124,7 +124,6 @@ test("the input/output panel responds to user interaction", async ({
   );
 });
 
-// TODO: in TBD match this with a ticket
 test("the output is shown when the workflow finished running", async ({
   page,
 }) => {
