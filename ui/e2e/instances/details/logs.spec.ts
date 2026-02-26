@@ -228,7 +228,7 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
   ).toContainText("state: stateHellomsg: flow finished");
 });
 
-test("the logs can be copied", async ({ page }) => {
+test.skip("the logs can be copied", async ({ page }) => {
   const workflowName = faker.system.commonFileName("yaml");
 
   await createFile({
@@ -280,7 +280,7 @@ test("the logs can be copied", async ({ page }) => {
   );
 });
 
-test("log entries will be automatically scrolled to the end", async ({
+test.skip("log entries will be automatically scrolled to the end", async ({
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");

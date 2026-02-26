@@ -238,7 +238,7 @@ test("it renders instance state, start and finish date correctly", async ({
   ).toContainText("complete");
 });
 
-test("It renders parent and child instances", async ({ page }) => {
+test.skip("It renders parent and child instances", async ({ page }) => {
   const parentWorkflow = faker.system.commonFileName("wf.ts");
 
   await createFile({

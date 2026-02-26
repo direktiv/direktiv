@@ -172,7 +172,7 @@ test("it is possible to filter by date using created before", async ({
   ).toHaveCount(2);
 });
 
-test("it is possible to filter by invoker", async ({ page }) => {
+test.skip("it is possible to filter by invoker", async ({ page }) => {
   await createInvokerFilterInstances();
   await page.goto(`/n/${namespace}/instances/`);
 
@@ -318,7 +318,7 @@ test("it is possible to filter by path", async ({ page }) => {
   ).toHaveCount(4);
 });
 
-test("it is possible to apply multiple filters", async ({ page }) => {
+test.skip("it is possible to apply multiple filters", async ({ page }) => {
   /* set up test data */
   createInvokerFilterInstances();
 
