@@ -157,7 +157,6 @@ test("it is possible to create a folder", async ({ page }) => {
   ).toBeVisible();
 });
 
-// TODO: in TBD match this with a ticket
 test("it is possible to create a workflow", async ({ page }) => {
   await page.goto(`/n/${namespace}/explorer/tree`);
   await expect(
@@ -202,9 +201,7 @@ test("it is possible to create a workflow", async ({ page }) => {
   await expect(nodeCreated).toBeTruthy();
 
   // TODO: test editor functions in separate test once editor is implemented
-  await expect(
-    page.getByText("// Simple example workflow that validates type of input")
-  ).toBeVisible();
+  await expect(page.getByText("const flow: FlowDefinition = {")).toBeVisible();
 
   // navigate back by clicking on the namespace breadcrumb"
   await page.getByTestId("breadcrumb-namespace").getByText(namespace).click();
