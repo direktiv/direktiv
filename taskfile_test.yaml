@@ -88,7 +88,7 @@ tasks:
         go-licenses check --ignore=github.com/bbuck/go-lexer,github.com/xi2/xz,modernc.org/mathutil ./... --disallowed_types forbidden,unknown,restricted
 
   playwright:
-    desc: sjsjs
+    desc: Run Playwright tests
     cmds: 
     - |
       PLAYWRIGHT_SHARD=${PLAYWRIGHT_SHARD:-1/1}
