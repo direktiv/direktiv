@@ -277,7 +277,8 @@ paths:
     $ref: ./paths/instances.yaml
   '/api/v2/namespaces/{namespace}/instances/{id}':
     $ref: ./paths/instances{id}.yaml
-
+  '/api/v2/namespaces/{namespace}/instances/{id}/flow':
+    $ref: ./paths/instances{id}flow.yaml
 
   '/api/v2/namespaces/{namespace}/events/broadcast':
     post:

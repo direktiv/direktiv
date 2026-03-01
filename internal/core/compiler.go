@@ -1,6 +1,9 @@
 package core
 
-import "context"
+import (
+	"context"
+	"sort"
+)
 
 const FlowCacheName = "flows"
 
@@ -53,6 +56,20 @@ type TypescriptFlow struct {
 	Script, Mapping string
 	Config          FlowConfig
 	Secrets         string // json map
+}
+
+// SortedStateViews returns the state views as a slice sorted by name.
+func SortedStateViews(views map[string]*StateView) []*StateView {
+	if views == nil {
+		return nil
+	}
+	out := make([]*StateView, 0, len(views))
+	for _, v := range views {
+		out = append(out, v)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].Name < out[j].Name })
+
+	return out
 }
 
 type Compiler interface {

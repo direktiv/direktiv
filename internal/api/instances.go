@@ -139,8 +139,7 @@ func (e *instController) mountRouter(r chi.Router) {
 	r.Get("/{instanceID}/history", e.history)
 	r.Get("/{instanceID}/metadata", e.dummy)
 	r.Get("/{instanceID}/flow", e.flow)
-	r.Patch("/{instanceID}", e.dummy)
-
+	r.Patch("/{instanceID}", e.patch)
 	r.Get("/", e.list)
 	r.Get("/{instanceID}", e.get)
 
@@ -149,6 +148,47 @@ func (e *instController) mountRouter(r chi.Router) {
 }
 
 func (e *instController) dummy(w http.ResponseWriter, r *http.Request) {
+}
+
+func (e *instController) patch(w http.ResponseWriter, r *http.Request) {
+	namespace := chi.URLParam(r, "namespace")
+	instanceIDStr := chi.URLParam(r, "instanceID")
+	instanceID, err := uuid.Parse(instanceIDStr)
+	if err != nil {
+		writeError(w, &Error{
+			Code:    "request_id_invalid",
+			Message: "invalid instance uuid",
+		})
+
+		return
+	}
+
+	// UI uses PATCH /instances/:id with payload { status: "cancelled" }.
+	req := struct {
+		Status string `json:"status"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeNotJSONError(w, err)
+		return
+	}
+
+	if req.Status != "cancelled" {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "only status 'cancelled' is supported",
+		})
+
+		return
+	}
+
+	err = e.engine.CancelInstance(r.Context(), namespace, instanceID)
+	if err != nil {
+		writeEngineError(w, err)
+		return
+	}
+
+	// Important: empty body so UI zod schema (null) passes.
+	writeOk(w)
 }
 
 func (e *instController) flow(w http.ResponseWriter, r *http.Request) {
@@ -190,8 +230,13 @@ func (e *instController) flow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	flow := make([]string, 0)
 	for a := range l {
 		event = l[a]
+
+		if event.Fn != "" && event.State == engine.StateCodeRunning {
+			flow = append(flow, event.Fn)
+		}
 
 		// if failed we set the previous event to failed
 		if event.State == engine.StateCodeFailed {
@@ -218,7 +263,12 @@ func (e *instController) flow(w http.ResponseWriter, r *http.Request) {
 		state.Visited = true
 	}
 
-	writeJSON(w, ci.Config().Config.StateViews)
+	states := core.SortedStateViews(ci.Config().Config.StateViews)
+
+	writeJSON(w, map[string]any{
+		"flow":   flow,
+		"states": states,
+	})
 }
 
 func (e *instController) create(w http.ResponseWriter, r *http.Request) {

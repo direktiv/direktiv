@@ -220,7 +220,10 @@ export const workflowStateSchema = z.object({
 });
 
 export const InstanceFlowResponseSchema = z.object({
-  data: z.record(workflowStateSchema),
+  data: z.object({
+    flow: z.array(z.string()).optional(),
+    states: z.array(workflowStateSchema),
+  }),
 });
 
 export type Workflow = z.infer<typeof InstanceFlowResponseSchema>;

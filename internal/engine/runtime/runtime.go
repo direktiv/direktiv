@@ -17,21 +17,27 @@ import (
 )
 
 type Runtime struct {
-	vm           *sobek.Runtime
-	instID       uuid.UUID
-	metadata     map[string]string
-	onFinish     OnFinishHook
-	onTransition OnTransitionHook
-	onAction     OnActionHook
-	onSubflow    OnSubflowHook
-	tracingPack  *tracingPack
+	vm            *sobek.Runtime
+	instID        uuid.UUID
+	metadata      map[string]string
+	onFinish      OnFinishHook
+	onTransition  OnTransitionHook
+	onAction      OnActionHook
+	onSubflow     OnSubflowHook
+	onSetVariable OnSetVariableHook
+	onGetVariable OnGetVariableHook
+	//nolint:containedctx // ctx is short-lived, only used during ExecScript; not stored long-term
+	ctx         context.Context
+	tracingPack *tracingPack
 }
 
 type (
-	OnFinishHook     func(output []byte) error
-	OnTransitionHook func(output []byte, fn string) error
-	OnActionHook     func(svcID string) error
-	OnSubflowHook    func(ctx context.Context, path string, input []byte) ([]byte, error)
+	OnFinishHook      func(output []byte) error
+	OnTransitionHook  func(output []byte, fn string) error
+	OnActionHook      func(svcID string) error
+	OnSubflowHook     func(ctx context.Context, path string, input []byte) ([]byte, error)
+	OnSetVariableHook func(ctx context.Context, scope string, name string, data []byte) error
+	OnGetVariableHook func(ctx context.Context, scope string, name string) ([]byte, error)
 )
 
 func New(instID uuid.UUID, metadata map[string]string, mappings string, hooks ...any) *Runtime {
@@ -69,6 +75,8 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string, hooks ..
 		{"getSecret", rt.secret},
 		{"execSubflow", rt.execSubflow},
 		{"execService", rt.service},
+		{"setVariable", rt.setVariable},
+		{"getVariable", rt.getVariable},
 	}
 
 	for _, v := range setList {
@@ -100,6 +108,11 @@ func (rt *Runtime) setHook(f any) *Runtime {
 		rt.onAction = f
 	case OnSubflowHook:
 		rt.onSubflow = f
+	case OnSetVariableHook:
+		rt.onSetVariable = f
+	case OnGetVariableHook:
+		rt.onGetVariable = f
+
 	default:
 		panic(fmt.Sprintf("unknown hook type: %T", f))
 	}
@@ -157,10 +170,60 @@ func (rt *Runtime) secrets(secretNames []string) sobek.Value {
 	return rt.vm.ToValue(retSecrets)
 }
 
+func (rt *Runtime) setVariable(scope string, name string, content string) sobek.Value {
+	data, err := base64.StdEncoding.DecodeString(content)
+	if err != nil {
+		panic(rt.vm.ToValue("invalid base64 content"))
+	}
+
+	if rt.onSetVariable == nil {
+		panic(rt.vm.ToValue("setVariable not supported"))
+	}
+
+	err = rt.onSetVariable(rt.ctx, scope, name, data)
+	if err != nil {
+		panic(rt.vm.ToValue(err.Error()))
+	}
+
+	return sobek.Undefined()
+}
+
+func (rt *Runtime) getVariable(scope string, name string) sobek.Value {
+	if rt.onGetVariable == nil {
+		panic(rt.vm.ToValue("getVariable not supported"))
+	}
+
+	data, err := rt.onGetVariable(rt.ctx, scope, name)
+	if err != nil {
+		panic(rt.vm.ToValue(err.Error()))
+	}
+
+	// If hook returns nil data with no error, treat as not found -> null.
+	if data == nil {
+		return sobek.Null()
+	}
+
+	encoded := base64.StdEncoding.EncodeToString(data)
+
+	return rt.vm.ToValue(encoded)
+}
+
 func (rt *Runtime) sleep(seconds int) sobek.Value {
 	rt.tracingPack.span.AddEvent("calling sleep")
 
-	time.Sleep(time.Duration(seconds) * time.Second)
+	d := time.Duration(seconds) * time.Second
+	if d <= 0 {
+		return sobek.Undefined()
+	}
+
+	timer := time.NewTimer(d)
+	defer timer.Stop()
+	select {
+	case <-timer.C:
+	case <-rt.tracingPack.ctx.Done():
+		// Abort execution so the engine can mark the instance as cancelled.
+		panic(rt.vm.ToValue(rt.tracingPack.ctx.Err().Error()))
+	}
 
 	return sobek.Undefined()
 }
@@ -204,6 +267,14 @@ func (rt *Runtime) log(logs ...string) sobek.Value {
 }
 
 func (rt *Runtime) transition(call sobek.FunctionCall) sobek.Value {
+	// first check if context is cancelled?
+
+	select {
+	case <-rt.tracingPack.ctx.Done():
+		panic(rt.vm.ToValue(rt.tracingPack.ctx.Err().Error()))
+	default:
+	}
+
 	if len(call.Arguments) != 2 {
 		panic(rt.vm.ToValue("transition requires a function and a payload"))
 	}
@@ -289,6 +360,12 @@ func (rt *Runtime) execSubflow(call sobek.FunctionCall) sobek.Value {
 
 // TODO: remove return from finish() as it should be the last statement.
 func (rt *Runtime) finish(data sobek.Value) sobek.Value {
+	select {
+	case <-rt.tracingPack.ctx.Done():
+		panic(rt.vm.ToValue(rt.tracingPack.ctx.Err().Error()))
+	default:
+	}
+
 	var output any
 	if err := rt.vm.ExportTo(data, &output); err != nil {
 		panic(rt.vm.ToValue(fmt.Sprintf("error exporting output: %s", err.Error())))

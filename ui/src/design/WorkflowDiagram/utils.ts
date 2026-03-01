@@ -53,7 +53,9 @@ export function createElements(
   const newElements: (Node | Edge)[] = [];
   if (!value) return [];
 
-  const states = Object.values(value.data) as unknown as State[];
+  const visitedStates = value.data.flow || [];
+
+  const states = value.data.states as unknown as State[];
 
   if (states.length === 0) return [];
 
@@ -123,7 +125,8 @@ export function createElements(
         target: targetId,
         type: defaultEdgeType,
         animated:
-          state.visited && states.find((s) => s.name === targetId)?.visited,
+          targetId ===
+          visitedStates[visitedStates.findIndex((s) => s === sourceId) + 1],
       });
     }
 
@@ -134,7 +137,9 @@ export function createElements(
         source: state.name,
         target: "endNode",
         type: defaultEdgeType,
-        animated: state.visited && status === "complete",
+        animated:
+          visitedStates[visitedStates.length - 1] === state.name &&
+          status === "complete",
       });
     }
   }
