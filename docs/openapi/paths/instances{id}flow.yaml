@@ -1,0 +1,18 @@
+get:
+  tags:
+    - instances
+  summary: Get instance flow and state metadata
+  description: Returns the list of states executed in order and workflow state metadata (visited, failed, transitions).
+  parameters:
+    - $ref: '../params/namespace.yaml'
+    - $ref: '../params/instanceID.yaml'
+  responses:
+    '200':
+      description: Instance flow and states returned.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '../schemas/InstanceFlowData.yaml'

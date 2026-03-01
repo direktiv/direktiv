@@ -1,5 +1,9 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
-import { delayWorkflow1s, simpleWorkflow } from "e2e/utils/workflows";
+import {
+  delayWorkflow1s,
+  selectStateThroughInputWorkflow,
+  simpleWorkflow,
+} from "e2e/utils/workflows";
 import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
@@ -190,4 +194,133 @@ test.skip("the diagram on the instance page changes appearance dynamically", asy
     "stroke-dasharray",
     "5px"
   );
+});
+
+test("the diagram shows the visited path as green and animated", async ({
+  page,
+  browserName,
+}) => {
+  const workflowName = faker.system.commonFileName("wf.ts");
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    content: selectStateThroughInputWorkflow,
+    mimeType: "application/x-typescript",
+  });
+
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
+
+  await page.getByTestId("workflow-editor-btn-run").click();
+  expect(
+    await page.getByTestId("run-workflow-dialog"),
+    "it opens the dialog"
+  ).toBeVisible();
+
+  expect(
+    await page.getByTestId("run-workflow-submit-btn").isEnabled(),
+    "the submit button is enabled by default"
+  ).toEqual(true);
+
+  await page.getByTestId("run-workflow-editor").click();
+  await page.keyboard.press(browserName === "webkit" ? "Meta+A" : "Control+A");
+  await page.keyboard.press("Backspace");
+  const userInputString = `{"data":"B"}`;
+  await page.keyboard.type(userInputString);
+
+  // submit to run the workflow
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  const reg = new RegExp(`/n/${namespace}/instances/(.*)`);
+  await expect(
+    page,
+    "workflow was triggered with our input and user was redirected to the instances page"
+  ).toHaveURL(reg);
+  const instanceId = page.url().match(reg)?.[1];
+
+  if (!instanceId) {
+    throw new Error("instanceId not found");
+  }
+
+  const logsScrollContainer = page.getByTestId(
+    "instance-logs-scroll-container"
+  );
+
+  await expect(logsScrollContainer, "stateA was visited").toContainText(
+    "transitioning to 'stateA'"
+  );
+
+  await expect(
+    page.getByTestId("rf__edge-startNode-stateA"),
+    "edge to stateA is animated"
+  ).toHaveClass(/(^|\s)animated(\s|$)/);
+
+  await expect(logsScrollContainer, "stateB was visited").toContainText(
+    "transitioning to 'stateB'"
+  );
+
+  await expect(
+    page.getByTestId("rf__edge-stateA-stateB"),
+    "edge to stateB is animated"
+  ).toHaveClass(/(^|\s)animated(\s|$)/);
+
+  await expect(logsScrollContainer, "stateC was NOT visited").not.toContainText(
+    "transitioning to 'stateC'"
+  );
+
+  await expect(
+    page.getByTestId("rf__edge-stateA-stateC"),
+    "the edge to stateC is NOT animated because it was not visited"
+  ).not.toHaveClass(/(^|\s)animated(\s|$)/);
+
+  // testing the other path by reloading the page and submitting the workflow with different input
+
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
+
+  await page.getByTestId("workflow-editor-btn-run").click();
+  expect(
+    await page.getByTestId("run-workflow-dialog"),
+    "it opens the dialog"
+  ).toBeVisible();
+
+  expect(
+    await page.getByTestId("run-workflow-submit-btn").isEnabled(),
+    "the submit button is enabled by default"
+  ).toEqual(true);
+
+  await page.getByTestId("run-workflow-editor").click();
+  await page.keyboard.press(browserName === "webkit" ? "Meta+A" : "Control+A");
+  await page.keyboard.press("Backspace");
+  const otherUserInputString = `{"data":"C"}`;
+  await page.keyboard.type(otherUserInputString);
+
+  // submit to run the workflow
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  await expect(logsScrollContainer, "stateA was visited").toContainText(
+    "transitioning to 'stateA'"
+  );
+
+  await expect(
+    page.getByTestId("rf__edge-startNode-stateA"),
+    "edge to stateA is animated"
+  ).toHaveClass(/(^|\s)animated(\s|$)/);
+
+  await expect(logsScrollContainer, "stateC was visited").toContainText(
+    "transitioning to 'stateC'"
+  );
+
+  await expect(
+    page.getByTestId("rf__edge-stateA-stateC"),
+    "edge to stateC is animated"
+  ).toHaveClass(/(^|\s)animated(\s|$)/);
+
+  await expect(logsScrollContainer, "stateB was NOT visited").not.toContainText(
+    "transitioning to 'stateB'"
+  );
+
+  await expect(
+    page.getByTestId("rf__edge-stateA-stateB"),
+    "the edge to stateB is NOT animated because it was not visited"
+  ).not.toHaveClass(/(^|\s)animated(\s|$)/);
 });

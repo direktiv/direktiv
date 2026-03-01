@@ -1,0 +1,17 @@
+type: object
+description: Workflow state view with metadata (visited, failed, transitions).
+properties:
+  name:
+    type: string
+  start:
+    type: boolean
+  finish:
+    type: boolean
+  visited:
+    type: boolean
+  failed:
+    type: boolean
+  transitions:
+    type: array
+    items:
+      type: string
