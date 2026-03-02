@@ -230,6 +230,47 @@ describe("Cedar policy zod schema", () => {
     ).toBe(false);
   });
 
+  test("accepts condition with Unknown JsonExpr", () => {
+    // permit(principal, action, resource) when { Unknown("x") };
+    const input: CedarPolicySchemaType = {
+      effect: "permit",
+      principal: { op: "All" },
+      action: { op: "All" },
+      resource: { op: "All" },
+      conditions: [
+        {
+          kind: "when",
+          body: {
+            Unknown: { name: "x" },
+          },
+        },
+      ],
+    };
+
+    expect(CedarPolicySchema.safeParse(input).success).toBe(true);
+    expect(CedarPolicySchema.parse(input)).toEqual(input);
+  });
+
+  test("rejects Unknown JsonExpr with multiple keys", () => {
+    // permit(principal, action, resource) when { Unknown("x", "y") };
+    expect(
+      CedarPolicySchema.safeParse({
+        effect: "permit",
+        principal: { op: "All" },
+        action: { op: "All" },
+        resource: { op: "All" },
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              Unknown: { a: "x", b: "y" },
+            },
+          },
+        ],
+      }).success
+    ).toBe(false);
+  });
+
   test("rejects invalid condition kind", () => {
     // permit(principal, action, resource) iff { true };
     expect(
