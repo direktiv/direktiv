@@ -61,7 +61,10 @@ export default ({ mode }: { mode: string }) => {
         },
       },
     },
-    optimizeDeps: { esbuildOptions: { loader: { ".js": "jsx" } } },
+    optimizeDeps: {
+      esbuildOptions: { loader: { ".js": "jsx" } },
+      exclude: ["radix-ui_react-tabs"],
+    },
     plugins: [react(), viteTsconfigPaths(), TanStackRouterVite()],
     test: {
       globals: true,
