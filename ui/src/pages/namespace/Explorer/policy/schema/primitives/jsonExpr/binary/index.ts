@@ -1,24 +1,5 @@
+import { JsonExprBinaryOperators } from "../constants";
 import { z } from "zod";
-
-const BinaryOperators = [
-  "==",
-  "!=",
-  "in",
-  "<",
-  "<=",
-  ">",
-  ">=",
-  "&&",
-  "||",
-  "+",
-  "-",
-  "*",
-  "contains",
-  "containsAll",
-  "containsAny",
-  "hasTag",
-  "getTag",
-] as const;
 
 const BinaryArgumentsSchema = (jsonExprSchema: z.ZodTypeAny) =>
   z
@@ -29,7 +10,7 @@ const BinaryArgumentsSchema = (jsonExprSchema: z.ZodTypeAny) =>
     .strict();
 
 const BinaryOperatorSchema = (
-  operator: (typeof BinaryOperators)[number],
+  operator: (typeof JsonExprBinaryOperators)[number],
   jsonExprSchema: z.ZodTypeAny
 ) =>
   z
@@ -40,7 +21,7 @@ const BinaryOperatorSchema = (
 
 // when { principal == action };
 export const BinaryJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) => {
-  const schemas = BinaryOperators.map((operator) =>
+  const schemas = JsonExprBinaryOperators.map((operator) =>
     BinaryOperatorSchema(operator, jsonExprSchema)
   );
 

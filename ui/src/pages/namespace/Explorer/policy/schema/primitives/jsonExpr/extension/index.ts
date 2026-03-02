@@ -1,38 +1,5 @@
+import { JsonExprReservedKeys } from "../constants";
 import { z } from "zod";
-
-const ReservedJsonExprKeys = new Set([
-  "Value",
-  "Var",
-  "Slot",
-  "Unknown",
-  "!",
-  "neg",
-  "isEmpty",
-  "==",
-  "!=",
-  "in",
-  "<",
-  "<=",
-  ">",
-  ">=",
-  "&&",
-  "||",
-  "+",
-  "-",
-  "*",
-  "contains",
-  "containsAll",
-  "containsAny",
-  "hasTag",
-  "getTag",
-  ".",
-  "has",
-  "is",
-  "like",
-  "if-then-else",
-  "Set",
-  "Record",
-]);
 
 // when { decimal("10.0") } / when { context.source_ip.isInRange(ip("222.222.222.0/24")) };
 export const ExtensionJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
@@ -44,7 +11,7 @@ export const ExtensionJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
     })
     .refine((value) => {
       const [key] = Object.keys(value);
-      return key !== undefined && !ReservedJsonExprKeys.has(key);
+      return key !== undefined && !JsonExprReservedKeys.has(key);
     });
 
 export type ExtensionJsonExprSchemaType = z.infer<
