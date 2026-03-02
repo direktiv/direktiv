@@ -1,6 +1,7 @@
 import { Edge, Node, Position, isNode } from "reactflow";
 import { Orientation, State } from "./types";
 
+import { DiagramElementStatus } from "./nodes";
 import { InstanceFlowSchemaType } from "~/api/instances/schema";
 import dagre from "dagre";
 
@@ -9,7 +10,7 @@ const defaultEdgeType = "default";
 type DiagramNodeData = {
   type?: "function";
   label: string;
-  status: string; // todo: update
+  status: DiagramElementStatus;
   orientation: Orientation;
 };
 
@@ -97,7 +98,7 @@ export function createElements(
       });
     }
 
-    const stateNode: Node = {
+    const stateNode: Node<DiagramNodeData> = {
       id: state.name,
       position,
       data: {
