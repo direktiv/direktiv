@@ -23,7 +23,7 @@ describe('Test js engine', () => {
             var echo = generateAction({
                 type: "workflow",
                 size: "medium",
-                image: "ramiferdocker/auth-echo:latest",
+                image: "ramiferdocker/auth-echo:1.5",
                 auth: { username: "user", password: "pass" },
             });
             function stateOne(payload) {
@@ -58,7 +58,7 @@ describe('Test js engine', () => {
             var echo = generateAction({
                 type: "workflow",
                 size: "medium",
-                image: "ramiferdocker/auth-echo:latest",
+                image: "ramiferdocker/auth-echo:1.5",
                 auth: { username: "wrong", password: "creds" },
             });
             function stateOne(payload) {
