@@ -9,6 +9,7 @@ describe("Cedar policy zod schema", () => {
       principal: { op: "All" },
       action: { op: "All" },
       resource: { op: "All" },
+      conditions: [],
     };
 
     expect(CedarPolicySchema.safeParse(input).success).toBe(true);
@@ -25,6 +26,7 @@ describe("Cedar policy zod schema", () => {
       },
       action: { op: "All" },
       resource: { op: "All" },
+      conditions: [],
     };
 
     expect(CedarPolicySchema.safeParse(input).success).toBe(true);
@@ -42,6 +44,7 @@ describe("Cedar policy zod schema", () => {
       },
       action: { op: "All" },
       resource: { op: "All" },
+      conditions: [],
     };
 
     expect(CedarPolicySchema.safeParse(input).success).toBe(true);
@@ -56,6 +59,7 @@ describe("Cedar policy zod schema", () => {
         principal: { op: "All" },
         action: { op: "All" },
         resource: { op: "All" },
+        conditions: [],
       }).success
     ).toBe(false);
   });
@@ -68,6 +72,7 @@ describe("Cedar policy zod schema", () => {
         principal: { op: "==", slot: "?resource" },
         action: { op: "All" },
         resource: { op: "All" },
+        conditions: [],
       }).success
     ).toBe(false);
   });
@@ -85,6 +90,7 @@ describe("Cedar policy zod schema", () => {
         ],
       },
       resource: { op: "All" },
+      conditions: [],
     };
 
     expect(CedarPolicySchema.safeParse(input).success).toBe(true);
@@ -99,6 +105,7 @@ describe("Cedar policy zod schema", () => {
         principal: { op: "All" },
         action: { op: "==", slot: "?principal" },
         resource: { op: "All" },
+        conditions: [],
       }).success
     ).toBe(false);
   });
@@ -114,6 +121,7 @@ describe("Cedar policy zod schema", () => {
         entity_type: "Folder",
         in: { slot: "?resource" },
       },
+      conditions: [],
     };
 
     expect(CedarPolicySchema.safeParse(input).success).toBe(true);
@@ -128,6 +136,72 @@ describe("Cedar policy zod schema", () => {
         principal: { op: "All" },
         action: { op: "All" },
         resource: { op: "==", slot: "?principal" },
+        conditions: [],
+      }).success
+    ).toBe(false);
+  });
+
+  test("accepts when condition", () => {
+    // permit(principal, action, resource) when { context.tls_version == "1.3" };
+    const input: CedarPolicySchemaType = {
+      effect: "permit",
+      principal: { op: "All" },
+      action: { op: "All" },
+      resource: { op: "All" },
+      conditions: [
+        {
+          kind: "when",
+          body: {
+            "==": {
+              left: {
+                ".": {
+                  left: { Var: "context" },
+                  attr: "tls_version",
+                },
+              },
+              right: {
+                Value: "1.3",
+              },
+            },
+          },
+        },
+      ],
+    };
+
+    expect(CedarPolicySchema.safeParse(input).success).toBe(true);
+    expect(CedarPolicySchema.parse(input)).toEqual(input);
+  });
+
+  test("rejects invalid condition kind", () => {
+    // permit(principal, action, resource) iff { true };
+    expect(
+      CedarPolicySchema.safeParse({
+        effect: "permit",
+        principal: { op: "All" },
+        action: { op: "All" },
+        resource: { op: "All" },
+        conditions: [{ kind: "iff", body: { Value: true } }],
+      }).success
+    ).toBe(false);
+  });
+
+  test("rejects condition body with multiple top-level keys", () => {
+    // permit(principal, action, resource) when { true && false };
+    expect(
+      CedarPolicySchema.safeParse({
+        effect: "permit",
+        principal: { op: "All" },
+        action: { op: "All" },
+        resource: { op: "All" },
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              Value: true,
+              Var: "context",
+            },
+          },
+        ],
       }).success
     ).toBe(false);
   });
