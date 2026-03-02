@@ -19,7 +19,7 @@ type StateProps = {
 
 type StartEndProps = {
   data: {
-    wasExecuted: boolean;
+    status: DiagramElementStatus;
     orientation: Orientation;
   };
 };
@@ -137,25 +137,25 @@ const StartEndHandle: FC<StartEndHandleProps> = ({
 );
 
 export const Start: FC<StartEndProps> = ({ data }) => (
-  <StartEndHandle wasExecuted={data.wasExecuted}>
+  <StartEndHandle wasExecuted={data.status === "complete"}>
     <CustomHandle
       type="source"
       position={
         data.orientation === "horizontal" ? Position.Right : Position.Bottom
       }
-      status={data.wasExecuted ? "complete" : "pending"}
+      status={data.status}
     />
   </StartEndHandle>
 );
 
 export const End: FC<StartEndProps> = ({ data }) => (
-  <StartEndHandle wasExecuted={data.wasExecuted} end>
+  <StartEndHandle wasExecuted={data.status === "complete"} end>
     <CustomHandle
       type="target"
       position={
         data.orientation === "horizontal" ? Position.Left : Position.Top
       }
-      status={data.wasExecuted ? "complete" : "pending"}
+      status={data.status}
     />
   </StartEndHandle>
 );

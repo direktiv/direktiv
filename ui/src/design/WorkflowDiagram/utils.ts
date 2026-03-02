@@ -6,8 +6,15 @@ import dagre from "dagre";
 
 const defaultEdgeType = "default";
 
+type DiagramNodeData = {
+  type?: "function";
+  label: string;
+  status: string; // todo: update
+  orientation: Orientation;
+};
+
 const createLayoutedElements = (
-  incomingEles: (Edge | Node)[],
+  incomingEles: (Edge | Node<DiagramNodeData>)[],
   orientation: Orientation = "vertical"
 ) => {
   const dagreGraph = new dagre.graphlib.Graph();
@@ -50,7 +57,7 @@ export function createElements(
   instanceStatus: "pending" | "complete" | "failed",
   orientation: Orientation
 ) {
-  const newElements: (Node | Edge)[] = [];
+  const newElements: (Node<DiagramNodeData> | Edge)[] = [];
   if (!value) return [];
 
   const visitedStates = value.flow || [];
@@ -59,11 +66,17 @@ export function createElements(
 
   if (states.length === 0) return [];
 
+  const hasInstanceStarted = visitedStates.length > 0;
+
   // create start node
   newElements.push({
     id: "startNode",
     position,
-    data: { label: "", wasExecuted: instanceStatus !== "pending", orientation },
+    data: {
+      label: "",
+      status: hasInstanceStarted ? "complete" : "pending",
+      orientation,
+    },
     type: "start",
     sourcePosition: Position.Right,
   });
@@ -148,7 +161,7 @@ export function createElements(
     type: "end",
     data: {
       label: "",
-      wasExecuted: instanceStatus === "complete",
+      status: instanceStatus === "complete" ? "complete" : "pending",
       orientation,
     },
     position,
