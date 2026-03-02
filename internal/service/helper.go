@@ -201,10 +201,11 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 
 	// user container
 	uc := corev1.Container{
-		Name:      containerUser,
-		Image:     sv.Image,
-		Env:       buildEnvVars(false, c, sv),
-		Resources: *rl,
+		Name:            containerUser,
+		Image:           sv.Image,
+		ImagePullPolicy: corev1.PullAlways,
+		Env:             buildEnvVars(false, c, sv),
+		Resources:       *rl,
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      "workdir",
