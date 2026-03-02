@@ -8,6 +8,7 @@ describe("Cedar policy zod schema", () => {
       effect: "permit",
       principal: { op: "All" },
       action: { op: "All" },
+      resource: { op: "All" },
     };
 
     expect(CedarPolicySchema.safeParse(input).success).toBe(true);
@@ -23,6 +24,7 @@ describe("Cedar policy zod schema", () => {
         entity: { type: "User", id: "alice" },
       },
       action: { op: "All" },
+      resource: { op: "All" },
     };
 
     expect(CedarPolicySchema.safeParse(input).success).toBe(true);
@@ -39,6 +41,7 @@ describe("Cedar policy zod schema", () => {
         in: { slot: "?principal" },
       },
       action: { op: "All" },
+      resource: { op: "All" },
     };
 
     expect(CedarPolicySchema.safeParse(input).success).toBe(true);
@@ -52,6 +55,7 @@ describe("Cedar policy zod schema", () => {
         effect: "allow",
         principal: { op: "All" },
         action: { op: "All" },
+        resource: { op: "All" },
       }).success
     ).toBe(false);
   });
@@ -63,6 +67,7 @@ describe("Cedar policy zod schema", () => {
         effect: "permit",
         principal: { op: "==", slot: "?resource" },
         action: { op: "All" },
+        resource: { op: "All" },
       }).success
     ).toBe(false);
   });
@@ -79,6 +84,7 @@ describe("Cedar policy zod schema", () => {
           { type: "Action", id: "readFile" },
         ],
       },
+      resource: { op: "All" },
     };
 
     expect(CedarPolicySchema.safeParse(input).success).toBe(true);
@@ -92,6 +98,36 @@ describe("Cedar policy zod schema", () => {
         effect: "permit",
         principal: { op: "All" },
         action: { op: "==", slot: "?principal" },
+        resource: { op: "All" },
+      }).success
+    ).toBe(false);
+  });
+
+  test("accepts resource is with in slot", () => {
+    // permit(principal, action, resource is Folder in ?resource);
+    const input: CedarPolicySchemaType = {
+      effect: "permit",
+      principal: { op: "All" },
+      action: { op: "All" },
+      resource: {
+        op: "is",
+        entity_type: "Folder",
+        in: { slot: "?resource" },
+      },
+    };
+
+    expect(CedarPolicySchema.safeParse(input).success).toBe(true);
+    expect(CedarPolicySchema.parse(input)).toEqual(input);
+  });
+
+  test("rejects invalid resource slot", () => {
+    // permit(principal, action, resource == ?principal);
+    expect(
+      CedarPolicySchema.safeParse({
+        effect: "permit",
+        principal: { op: "All" },
+        action: { op: "All" },
+        resource: { op: "==", slot: "?principal" },
       }).success
     ).toBe(false);
   });
