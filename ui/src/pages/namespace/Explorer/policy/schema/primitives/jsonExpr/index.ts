@@ -3,6 +3,7 @@ import { BinaryJsonExprSchema } from "./binary";
 import { IfThenElseJsonExprSchema } from "./ifThenElse";
 import { IsJsonExprSchema } from "./is";
 import { LikeJsonExprSchema } from "./like";
+import { SetJsonExprSchema } from "./set";
 import { SlotJsonExprSchema } from "./slot";
 import { UnaryJsonExprSchema } from "./unary";
 import { UnknownJsonExprSchema } from "./unknown";
@@ -22,6 +23,7 @@ export const JsonExprSchema: z.ZodTypeAny = z.lazy(() =>
     IsJsonExprSchema(JsonExprSchema),
     LikeJsonExprSchema(JsonExprSchema),
     IfThenElseJsonExprSchema(JsonExprSchema),
+    SetJsonExprSchema(JsonExprSchema),
   ])
 );
 

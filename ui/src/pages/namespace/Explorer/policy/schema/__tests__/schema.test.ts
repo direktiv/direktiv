@@ -616,6 +616,47 @@ describe("Cedar policy zod schema", () => {
     ).toBe(false);
   });
 
+  test("accepts condition with Set JsonExpr", () => {
+    // permit(principal, action, resource) when { [1, 2, "something"] };
+    const input: CedarPolicySchemaType = {
+      effect: "permit",
+      principal: { op: "All" },
+      action: { op: "All" },
+      resource: { op: "All" },
+      conditions: [
+        {
+          kind: "when",
+          body: {
+            Set: [{ Value: 1 }, { Value: 2 }, { Value: "something" }],
+          },
+        },
+      ],
+    };
+
+    expect(CedarPolicySchema.safeParse(input).success).toBe(true);
+    expect(CedarPolicySchema.parse(input)).toEqual(input);
+  });
+
+  test("rejects Set JsonExpr with invalid element", () => {
+    // permit(principal, action, resource) when { [1, ???] };
+    expect(
+      CedarPolicySchema.safeParse({
+        effect: "permit",
+        principal: { op: "All" },
+        action: { op: "All" },
+        resource: { op: "All" },
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              Set: [{ Value: 1 }, { nope: true }],
+            },
+          },
+        ],
+      }).success
+    ).toBe(false);
+  });
+
   test("accepts annotations with string and null", () => {
     // @shadow_mode, @reason("temporary block")
     const input: CedarPolicySchemaType = {
