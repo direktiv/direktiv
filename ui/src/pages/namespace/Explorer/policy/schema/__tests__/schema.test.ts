@@ -468,6 +468,54 @@ describe("Cedar policy zod schema", () => {
     ).toBe(false);
   });
 
+  test("accepts condition with is JsonExpr", () => {
+    // permit(principal, action, resource) when { principal is User in Group::"friends" };
+    const input: CedarPolicySchemaType = {
+      effect: "permit",
+      principal: { op: "All" },
+      action: { op: "All" },
+      resource: { op: "All" },
+      conditions: [
+        {
+          kind: "when",
+          body: {
+            is: {
+              left: { Var: "principal" },
+              entity_type: "User",
+              in: { Value: { __entity: { type: "Group", id: "friends" } } },
+            },
+          },
+        },
+      ],
+    };
+
+    expect(CedarPolicySchema.safeParse(input).success).toBe(true);
+    expect(CedarPolicySchema.parse(input)).toEqual(input);
+  });
+
+  test("rejects is JsonExpr without entity_type", () => {
+    // permit(principal, action, resource) when { principal is in Group::"friends" };
+    expect(
+      CedarPolicySchema.safeParse({
+        effect: "permit",
+        principal: { op: "All" },
+        action: { op: "All" },
+        resource: { op: "All" },
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              is: {
+                left: { Var: "principal" },
+                in: { Value: { __entity: { type: "Group", id: "friends" } } },
+              },
+            },
+          },
+        ],
+      }).success
+    ).toBe(false);
+  });
+
   test("accepts annotations with string and null", () => {
     // @shadow_mode, @reason("temporary block")
     const input: CedarPolicySchemaType = {
