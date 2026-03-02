@@ -347,8 +347,8 @@ describe("Cedar policy zod schema", () => {
     ).toBe(false);
   });
 
-  test("rejects condition body with unsupported JsonExpr primitive", () => {
-    // permit(principal, action, resource) when { context.tls_version == "1.3" };
+  test("accepts condition with binary == JsonExpr", () => {
+    // permit(principal, action, resource) when { context == "1.3" };
     expect(
       CedarPolicySchema.safeParse({
         effect: "permit",
@@ -361,13 +361,34 @@ describe("Cedar policy zod schema", () => {
             body: {
               "==": {
                 left: {
-                  ".": {
-                    left: { Var: "context" },
-                    attr: "tls_version",
-                  },
+                  Var: "context",
                 },
                 right: {
                   Value: "1.3",
+                },
+              },
+            },
+          },
+        ],
+      }).success
+    ).toBe(true);
+  });
+
+  test("rejects binary JsonExpr without right operand", () => {
+    // permit(principal, action, resource) when { context == };
+    expect(
+      CedarPolicySchema.safeParse({
+        effect: "permit",
+        principal: { op: "All" },
+        action: { op: "All" },
+        resource: { op: "All" },
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              "==": {
+                left: {
+                  Var: "context",
                 },
               },
             },
