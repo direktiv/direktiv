@@ -41,7 +41,7 @@ describe('Test js engine', () => {
             var echo = generateAction({
                 type: "workflow",
                 size: "medium",
-                image: "ramiferdocker/auth-echo:latest",
+                image: "ramiferdocker/auth-echo:1.5",
             });
             function stateOne(payload) {
                 let result = echo({ foo: "bar", input: payload });
