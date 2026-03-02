@@ -22,6 +22,4 @@ export const LikeJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
       .strict()
   );
 
-type LikeJsonExprSchemaType = z.infer<
-  ReturnType<typeof LikeJsonExprSchema>
->;
+type LikeJsonExprSchemaType = z.infer<ReturnType<typeof LikeJsonExprSchema>>;
