@@ -196,6 +196,40 @@ describe("Cedar policy zod schema", () => {
     ).toBe(false);
   });
 
+  test("accepts condition with Slot JsonExpr", () => {
+    // permit(principal, action, resource) when { ?principal };
+    const input: CedarPolicySchemaType = {
+      effect: "permit",
+      principal: { op: "All" },
+      action: { op: "All" },
+      resource: { op: "All" },
+      conditions: [
+        {
+          kind: "when",
+          body: {
+            Slot: "?principal",
+          },
+        },
+      ],
+    };
+
+    expect(CedarPolicySchema.safeParse(input).success).toBe(true);
+    expect(CedarPolicySchema.parse(input)).toEqual(input);
+  });
+
+  test("rejects invalid Slot JsonExpr value", () => {
+    // permit(principal, action, resource) when { ?action };
+    expect(
+      CedarPolicySchema.safeParse({
+        effect: "permit",
+        principal: { op: "All" },
+        action: { op: "All" },
+        resource: { op: "All" },
+        conditions: [{ kind: "when", body: { Slot: "?action" } }],
+      }).success
+    ).toBe(false);
+  });
+
   test("rejects invalid condition kind", () => {
     // permit(principal, action, resource) iff { true };
     expect(
