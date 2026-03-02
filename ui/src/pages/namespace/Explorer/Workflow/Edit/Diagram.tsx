@@ -75,7 +75,7 @@ const Diagram: FC<DiagramProps> = ({ path }) => {
         </Tooltip>
       </TooltipProvider>
       <WorkflowDiagram
-        states={parsedInstanceFlow.data}
+        data={parsedInstanceFlow.data.data}
         orientation="horizontal"
         instanceStatus="pending"
       />

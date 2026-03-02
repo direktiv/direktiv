@@ -1,7 +1,7 @@
 import { Edge, Node, Position, isNode } from "reactflow";
 import { Orientation, State } from "./types";
 
-import { InstanceFlowResponse } from "~/api/instances/schema";
+import { InstanceFlowSchemaType } from "~/api/instances/schema";
 import dagre from "dagre";
 
 const defaultEdgeType = "default";
@@ -46,16 +46,16 @@ const createLayoutedElements = (
 const position = { x: 0, y: 0 };
 
 export function createElements(
-  value: InstanceFlowResponse,
+  value: InstanceFlowSchemaType,
   status: "pending" | "complete" | "failed",
   orientation: Orientation
 ) {
   const newElements: (Node | Edge)[] = [];
   if (!value) return [];
 
-  const visitedStates = value.data.flow || [];
+  const visitedStates = value.flow || [];
 
-  const states = value.data.states as unknown as State[];
+  const states = value.states;
 
   if (states.length === 0) return [];
 
