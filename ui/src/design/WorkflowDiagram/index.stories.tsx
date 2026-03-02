@@ -289,29 +289,26 @@ export default {
 
 export const Workflow = () => (
   <div className="h-96">
-    <WorkflowDiagram workflow={exampleWorkflowInitial} />
+    <WorkflowDiagram states={exampleWorkflowInitial} />
   </div>
 );
 
 export const WorkflowInstancePending = () => (
   <div className="h-96">
-    <WorkflowDiagram
-      workflow={exampleWorkflowStepTwo}
-      instanceStatus="pending"
-    />
+    <WorkflowDiagram states={exampleWorkflowStepTwo} instanceStatus="pending" />
   </div>
 );
 
 export const WorkflowInstanceFailed = () => (
   <div className="h-96">
-    <WorkflowDiagram workflow={exampleWorkflowFailed} instanceStatus="failed" />
+    <WorkflowDiagram states={exampleWorkflowFailed} instanceStatus="failed" />
   </div>
 );
 
 export const WorkflowInstanceComplete = () => (
   <div className="h-96">
     <WorkflowDiagram
-      workflow={exampleWorkflowComplete}
+      states={exampleWorkflowComplete}
       instanceStatus="complete"
     />
   </div>
@@ -372,7 +369,7 @@ export const UpdateWorkflow = () => {
         </Button>
       </ButtonBar>
       <WorkflowDiagram
-        workflow={workflow}
+        states={workflow}
         instanceStatus={status}
         orientation={orientation}
       />
@@ -387,7 +384,7 @@ export const UpdateWorkflow = () => {
 export const ComplexWorkflowDiagram = () => (
   <div className="h-[600px]">
     <WorkflowDiagram
-      workflow={exampleWorkflowComplex}
+      states={exampleWorkflowComplex}
       instanceStatus="complete"
     />
   </div>
