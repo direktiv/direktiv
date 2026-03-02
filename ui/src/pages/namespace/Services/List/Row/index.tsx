@@ -32,9 +32,9 @@ const ServicesTableRow: FC<{
         onClick={() => {
           if (service.type === "workflow" && path) {
             return navigate({
-              to: "/n/$namespace/explorer/workflow/services/$",
+              to: "/n/$namespace/explorer/workflow/services/$service/$",
               from: "/n/$namespace",
-              params: { _splat: path },
+              params: { _splat: path, service: service.id },
             });
           }
           return navigate({
@@ -53,7 +53,7 @@ const ServicesTableRow: FC<{
               <span className="whitespace-pre-wrap break-all">
                 {service.type === "workflow" && path ? (
                   <Link
-                    to="/n/$namespace/explorer/workflow/services/$"
+                    to="/n/$namespace/explorer/workflow/edit/$"
                     from="/n/$namespace"
                     params={{ _splat: path }}
                     onClick={(e) => e.stopPropagation()}
