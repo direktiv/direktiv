@@ -516,6 +516,58 @@ describe("Cedar policy zod schema", () => {
     ).toBe(false);
   });
 
+  test("accepts condition with like JsonExpr", () => {
+    // permit(principal, action, resource) when { resource.email like "*@amazon.com" };
+    const input: CedarPolicySchemaType = {
+      effect: "permit",
+      principal: { op: "All" },
+      action: { op: "All" },
+      resource: { op: "All" },
+      conditions: [
+        {
+          kind: "when",
+          body: {
+            like: {
+              left: {
+                ".": {
+                  left: { Var: "resource" },
+                  attr: "email",
+                },
+              },
+              pattern: ["Wildcard", { Literal: "@amazon.com" }],
+            },
+          },
+        },
+      ],
+    };
+
+    expect(CedarPolicySchema.safeParse(input).success).toBe(true);
+    expect(CedarPolicySchema.parse(input)).toEqual(input);
+  });
+
+  test("rejects like JsonExpr with invalid pattern element", () => {
+    // permit(principal, action, resource) when { resource.email like [123] };
+    expect(
+      CedarPolicySchema.safeParse({
+        effect: "permit",
+        principal: { op: "All" },
+        action: { op: "All" },
+        resource: { op: "All" },
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              like: {
+                left: { Var: "resource" },
+                pattern: [123],
+              },
+            },
+          },
+        ],
+      }).success
+    ).toBe(false);
+  });
+
   test("accepts annotations with string and null", () => {
     // @shadow_mode, @reason("temporary block")
     const input: CedarPolicySchemaType = {
