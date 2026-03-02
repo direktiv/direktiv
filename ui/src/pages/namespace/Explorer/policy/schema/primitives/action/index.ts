@@ -1,23 +1,22 @@
+import {
+  AllOperatorSchema,
+  EqualOperatorSchema,
+  InOperatorSchema,
+} from "../shared/operators";
+import { EntitySchema } from "../shared/entity";
 import { z } from "zod";
-
-const EntitySchema = z
-  .object({
-    type: z.string(),
-    id: z.string(),
-  })
-  .strict();
 
 // action
 const ActionAllSchema = z
   .object({
-    op: z.literal("All"),
+    op: AllOperatorSchema,
   })
   .strict();
 
 // action == Action::"readFile"
 const ActionEqualSchema = z
   .object({
-    op: z.literal("=="),
+    op: EqualOperatorSchema,
     entity: EntitySchema,
   })
   .strict();
@@ -25,7 +24,7 @@ const ActionEqualSchema = z
 // action in Action::"readOnly"
 const ActionInEntitySchema = z
   .object({
-    op: z.literal("in"),
+    op: InOperatorSchema,
     entity: EntitySchema,
   })
   .strict();
@@ -33,7 +32,7 @@ const ActionInEntitySchema = z
 // action in [Action::"ManageFiles", Action::"readFile"]
 const ActionInEntitiesSchema = z
   .object({
-    op: z.literal("in"),
+    op: InOperatorSchema,
     entities: z.array(EntitySchema),
   })
   .strict();

@@ -1,25 +1,24 @@
+import {
+  AllOperatorSchema,
+  EqualOperatorSchema,
+  InOperatorSchema,
+  IsOperatorSchema,
+} from "../shared/operators";
+import { EntitySchema } from "../shared/entity";
+import { ResourceSlotSchema } from "../shared/slot";
 import { z } from "zod";
-
-const EntitySchema = z
-  .object({
-    type: z.string(),
-    id: z.string(),
-  })
-  .strict();
-
-const ResourceSlotSchema = z.literal("?resource");
 
 // resource
 const ResourceAllSchema = z
   .object({
-    op: z.literal("All"),
+    op: AllOperatorSchema,
   })
   .strict();
 
 // resource == Folder::"abc"
 const ResourceEqualEntitySchema = z
   .object({
-    op: z.literal("=="),
+    op: EqualOperatorSchema,
     entity: EntitySchema,
   })
   .strict();
@@ -27,7 +26,7 @@ const ResourceEqualEntitySchema = z
 // resource == ?resource
 const ResourceEqualSlotSchema = z
   .object({
-    op: z.literal("=="),
+    op: EqualOperatorSchema,
     slot: ResourceSlotSchema,
   })
   .strict();
@@ -35,7 +34,7 @@ const ResourceEqualSlotSchema = z
 // resource in Folder::"abc"
 const ResourceInEntitySchema = z
   .object({
-    op: z.literal("in"),
+    op: InOperatorSchema,
     entity: EntitySchema,
   })
   .strict();
@@ -43,7 +42,7 @@ const ResourceInEntitySchema = z
 // resource in ?resource
 const ResourceInSlotSchema = z
   .object({
-    op: z.literal("in"),
+    op: InOperatorSchema,
     slot: ResourceSlotSchema,
   })
   .strict();
@@ -51,7 +50,7 @@ const ResourceInSlotSchema = z
 // resource is Folder in Folder::"Public" / resource is Folder in ?resource
 const ResourceIsSchema = z
   .object({
-    op: z.literal("is"),
+    op: IsOperatorSchema,
     entity_type: z.string(),
     in: z
       .union([

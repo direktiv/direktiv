@@ -1,25 +1,24 @@
+import {
+  AllOperatorSchema,
+  EqualOperatorSchema,
+  InOperatorSchema,
+  IsOperatorSchema,
+} from "../shared/operators";
+import { EntitySchema } from "../shared/entity";
+import { PrincipalSlotSchema } from "../shared/slot";
 import { z } from "zod";
-
-const EntitySchema = z
-  .object({
-    type: z.string(),
-    id: z.string(),
-  })
-  .strict();
-
-const PrincipalSlotSchema = z.literal("?principal");
 
 // principal
 const PrincipalAllSchema = z
   .object({
-    op: z.literal("All"),
+    op: AllOperatorSchema,
   })
   .strict();
 
 // principal == User::"alice"
 const PrincipalEqualEntitySchema = z
   .object({
-    op: z.literal("=="),
+    op: EqualOperatorSchema,
     entity: EntitySchema,
   })
   .strict();
@@ -27,7 +26,7 @@ const PrincipalEqualEntitySchema = z
 // principal == ?principal
 const PrincipalEqualSlotSchema = z
   .object({
-    op: z.literal("=="),
+    op: EqualOperatorSchema,
     slot: PrincipalSlotSchema,
   })
   .strict();
@@ -35,7 +34,7 @@ const PrincipalEqualSlotSchema = z
 // principal in Group::"Admins"
 const PrincipalInEntitySchema = z
   .object({
-    op: z.literal("in"),
+    op: InOperatorSchema,
     entity: EntitySchema,
   })
   .strict();
@@ -43,7 +42,7 @@ const PrincipalInEntitySchema = z
 // principal in ?principal
 const PrincipalInSlotSchema = z
   .object({
-    op: z.literal("in"),
+    op: InOperatorSchema,
     slot: PrincipalSlotSchema,
   })
   .strict();
@@ -51,7 +50,7 @@ const PrincipalInSlotSchema = z
 // principal is User in Group::"Admins" / principal is User in ?principal
 const PrincipalIsSchema = z
   .object({
-    op: z.literal("is"),
+    op: IsOperatorSchema,
     entity_type: z.string(),
     in: z
       .union([

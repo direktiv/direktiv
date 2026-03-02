@@ -1,4 +1,9 @@
-import { CedarPolicySchema, type CedarPolicySchemaType } from "..";
+import {
+  CedarPolicySchema,
+  CedarPolicySetSchema,
+  type CedarPolicySchemaType,
+  type CedarPolicySetSchemaType,
+} from "..";
 import { describe, expect, test } from "vitest";
 
 describe("Cedar policy zod schema", () => {
@@ -774,6 +779,59 @@ describe("Cedar policy zod schema", () => {
         annotations: {
           priority: 10,
         },
+      }).success
+    ).toBe(false);
+  });
+
+  test("accepts policy set with staticPolicies and templateLinks", () => {
+    // policy set with one static policy and one template link value for ?resource
+    const input: CedarPolicySetSchemaType = {
+      staticPolicies: {
+        policy0: {
+          effect: "permit",
+          principal: { op: "All" },
+          action: { op: "All" },
+          resource: { op: "All" },
+          conditions: [],
+        },
+      },
+      templates: {
+        template0: {
+          effect: "forbid",
+          principal: { op: "All" },
+          action: { op: "All" },
+          resource: { op: "in", slot: "?resource" },
+          conditions: [],
+        },
+      },
+      templateLinks: [
+        {
+          templateId: "template0",
+          newId: "policy1",
+          values: {
+            "?resource": { type: "Folder", id: "def" },
+          },
+        },
+      ],
+    };
+
+    expect(CedarPolicySetSchema.safeParse(input).success).toBe(true);
+    expect(CedarPolicySetSchema.parse(input)).toEqual(input);
+  });
+
+  test("rejects policy set template link with invalid slot key", () => {
+    // template link values can only use ?principal or ?resource
+    expect(
+      CedarPolicySetSchema.safeParse({
+        templateLinks: [
+          {
+            templateId: "template0",
+            newId: "policy1",
+            values: {
+              "?action": { type: "Action", id: "read" },
+            },
+          },
+        ],
       }).success
     ).toBe(false);
   });
