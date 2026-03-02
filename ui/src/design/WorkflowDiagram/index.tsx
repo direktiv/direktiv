@@ -7,7 +7,7 @@ import { createElements } from "./utils";
 /**
  * Renders a diagram of a workflow and optionally its current state position during a instance.
  * * Props
- *   * states: JSON describing the states of the workflow.
+ *   * data: JSON describing the states of the workflow, and listing visited states.
  *   * instanceStatus: Status of current instance. This is used to display if flow is complete with animated connections.
  *   * disabled: Disables diagram zoom-in
  */
