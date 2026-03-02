@@ -182,10 +182,7 @@ test("Workflow service details page provides information about the service", asy
   if (!createdService) throw new Error("could not find service");
 
   await page.goto(
-    `/n/${namespace}/explorer/workflow/services/${createdService.id}/${workflowName}`,
-    {
-      waitUntil: "networkidle",
-    }
+    `/n/${namespace}/explorer/workflow/services/${createdService.id}/${workflowName}`
   );
 
   await expect(
