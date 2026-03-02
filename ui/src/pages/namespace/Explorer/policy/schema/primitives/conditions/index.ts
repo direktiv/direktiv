@@ -1,9 +1,5 @@
+import { JsonExprSchema } from "../jsonExpr";
 import { z } from "zod";
-
-// JsonExpr object placeholder: one top-level key, implemented in detail later.
-const JsonExprSchema = z
-  .record(z.unknown())
-  .refine((expr) => Object.keys(expr).length === 1);
 
 // when { ... } / unless { ... }
 const ConditionSchema = z

@@ -142,7 +142,7 @@ describe("Cedar policy zod schema", () => {
   });
 
   test("accepts when condition", () => {
-    // permit(principal, action, resource) when { context.tls_version == "1.3" };
+    // permit(principal, action, resource) when { true };
     const input: CedarPolicySchemaType = {
       effect: "permit",
       principal: { op: "All" },
@@ -152,17 +152,7 @@ describe("Cedar policy zod schema", () => {
         {
           kind: "when",
           body: {
-            "==": {
-              left: {
-                ".": {
-                  left: { Var: "context" },
-                  attr: "tls_version",
-                },
-              },
-              right: {
-                Value: "1.3",
-              },
-            },
+            Value: true,
           },
         },
       ],
@@ -185,8 +175,8 @@ describe("Cedar policy zod schema", () => {
     ).toBe(false);
   });
 
-  test("rejects condition body with multiple top-level keys", () => {
-    // permit(principal, action, resource) when { true && false };
+  test("rejects condition body with unsupported JsonExpr primitive", () => {
+    // permit(principal, action, resource) when { context.tls_version == "1.3" };
     expect(
       CedarPolicySchema.safeParse({
         effect: "permit",
@@ -197,8 +187,17 @@ describe("Cedar policy zod schema", () => {
           {
             kind: "when",
             body: {
-              Value: true,
-              Var: "context",
+              "==": {
+                left: {
+                  ".": {
+                    left: { Var: "context" },
+                    attr: "tls_version",
+                  },
+                },
+                right: {
+                  Value: "1.3",
+                },
+              },
             },
           },
         ],
