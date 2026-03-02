@@ -4,6 +4,10 @@ import {
   type CedarPolicySchemaType,
   type CedarPolicySetSchemaType,
 } from "..";
+import {
+  JsonExprBinaryOperators,
+  JsonExprUnaryOperators,
+} from "../primitives/jsonExpr/constants";
 import { describe, expect, test } from "vitest";
 
 describe("Cedar policy zod schema", () => {
@@ -832,6 +836,97 @@ describe("Cedar policy zod schema", () => {
             },
           },
         ],
+      }).success
+    ).toBe(false);
+  });
+
+  for (const operator of JsonExprUnaryOperators) {
+    test(`accepts unary operator ${operator}`, () => {
+      expect(
+        CedarPolicySchema.safeParse({
+          effect: "permit",
+          principal: { op: "All" },
+          action: { op: "All" },
+          resource: { op: "All" },
+          conditions: [
+            {
+              kind: "when",
+              body: {
+                [operator]: {
+                  arg: { Value: true },
+                },
+              },
+            },
+          ],
+        }).success
+      ).toBe(true);
+    });
+  }
+
+  for (const operator of JsonExprBinaryOperators) {
+    test(`accepts binary operator ${operator}`, () => {
+      expect(
+        CedarPolicySchema.safeParse({
+          effect: "permit",
+          principal: { op: "All" },
+          action: { op: "All" },
+          resource: { op: "All" },
+          conditions: [
+            {
+              kind: "when",
+              body: {
+                [operator]: {
+                  left: { Value: 1 },
+                  right: { Value: 2 },
+                },
+              },
+            },
+          ],
+        }).success
+      ).toBe(true);
+    });
+  }
+
+  test("rejects principal == variant with missing entity or slot", () => {
+    expect(
+      CedarPolicySchema.safeParse({
+        effect: "permit",
+        principal: { op: "==" },
+        action: { op: "All" },
+        resource: { op: "All" },
+        conditions: [],
+      }).success
+    ).toBe(false);
+  });
+
+  test("rejects action in variant with extra keys", () => {
+    expect(
+      CedarPolicySchema.safeParse({
+        effect: "permit",
+        principal: { op: "All" },
+        action: {
+          op: "in",
+          entity: { type: "Action", id: "read" },
+          entities: [{ type: "Action", id: "write" }],
+        },
+        resource: { op: "All" },
+        conditions: [],
+      }).success
+    ).toBe(false);
+  });
+
+  test("rejects resource is variant with invalid in slot", () => {
+    expect(
+      CedarPolicySchema.safeParse({
+        effect: "permit",
+        principal: { op: "All" },
+        action: { op: "All" },
+        resource: {
+          op: "is",
+          entity_type: "Folder",
+          in: { slot: "?principal" },
+        },
+        conditions: [],
       }).success
     ).toBe(false);
   });

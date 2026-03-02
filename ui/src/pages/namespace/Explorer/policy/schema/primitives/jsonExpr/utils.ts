@@ -1,7 +1,12 @@
 import { z } from "zod";
 
-export const strictSingleKeyObject = (key: string, valueSchema: z.ZodTypeAny) =>
-  z.object({ [key]: valueSchema }).strict();
+export const strictSingleKeyObject = <
+  Key extends string,
+  Schema extends z.ZodTypeAny,
+>(
+  key: Key,
+  valueSchema: Schema
+) => z.object({ [key]: valueSchema } as Record<Key, Schema>).strict();
 
 export const unionFromArray = (schemas: z.ZodTypeAny[]) => {
   const [first, second, ...rest] = schemas;
