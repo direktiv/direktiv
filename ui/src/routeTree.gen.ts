@@ -52,9 +52,10 @@ import { Route as NNamespaceExplorerOpenapiSpecificationSplatImport } from './ro
 import { Route as NNamespaceExplorerEndpointSplatImport } from './routes/n/$namespace/explorer/endpoint.$'
 import { Route as NNamespaceExplorerConsumerSplatImport } from './routes/n/$namespace/explorer/consumer.$'
 import { Route as NNamespaceExplorerWorkflowSettingsSplatImport } from './routes/n/$namespace/explorer/workflow/settings.$'
-import { Route as NNamespaceExplorerWorkflowServicesSplatImport } from './routes/n/$namespace/explorer/workflow/services.$'
 import { Route as NNamespaceExplorerWorkflowOverviewSplatImport } from './routes/n/$namespace/explorer/workflow/overview.$'
 import { Route as NNamespaceExplorerWorkflowEditSplatImport } from './routes/n/$namespace/explorer/workflow/edit.$'
+import { Route as NNamespaceExplorerWorkflowServicesListSplatImport } from './routes/n/$namespace/explorer/workflow/services/list.$'
+import { Route as NNamespaceExplorerWorkflowServicesServiceSplatImport } from './routes/n/$namespace/explorer/workflow/services/$service.$'
 
 // Create Virtual Routes
 
@@ -328,13 +329,6 @@ const NNamespaceExplorerWorkflowSettingsSplatRoute =
     getParentRoute: () => NNamespaceExplorerWorkflowRouteRoute,
   } as any)
 
-const NNamespaceExplorerWorkflowServicesSplatRoute =
-  NNamespaceExplorerWorkflowServicesSplatImport.update({
-    id: '/services/$',
-    path: '/services/$',
-    getParentRoute: () => NNamespaceExplorerWorkflowRouteRoute,
-  } as any)
-
 const NNamespaceExplorerWorkflowOverviewSplatRoute =
   NNamespaceExplorerWorkflowOverviewSplatImport.update({
     id: '/overview/$',
@@ -346,6 +340,20 @@ const NNamespaceExplorerWorkflowEditSplatRoute =
   NNamespaceExplorerWorkflowEditSplatImport.update({
     id: '/edit/$',
     path: '/edit/$',
+    getParentRoute: () => NNamespaceExplorerWorkflowRouteRoute,
+  } as any)
+
+const NNamespaceExplorerWorkflowServicesListSplatRoute =
+  NNamespaceExplorerWorkflowServicesListSplatImport.update({
+    id: '/services/list/$',
+    path: '/services/list/$',
+    getParentRoute: () => NNamespaceExplorerWorkflowRouteRoute,
+  } as any)
+
+const NNamespaceExplorerWorkflowServicesServiceSplatRoute =
+  NNamespaceExplorerWorkflowServicesServiceSplatImport.update({
+    id: '/services/$service/$',
+    path: '/services/$service/$',
     getParentRoute: () => NNamespaceExplorerWorkflowRouteRoute,
   } as any)
 
@@ -647,18 +655,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NNamespaceExplorerWorkflowOverviewSplatImport
       parentRoute: typeof NNamespaceExplorerWorkflowRouteImport
     }
-    '/n/$namespace/explorer/workflow/services/$': {
-      id: '/n/$namespace/explorer/workflow/services/$'
-      path: '/services/$'
-      fullPath: '/n/$namespace/explorer/workflow/services/$'
-      preLoaderRoute: typeof NNamespaceExplorerWorkflowServicesSplatImport
-      parentRoute: typeof NNamespaceExplorerWorkflowRouteImport
-    }
     '/n/$namespace/explorer/workflow/settings/$': {
       id: '/n/$namespace/explorer/workflow/settings/$'
       path: '/settings/$'
       fullPath: '/n/$namespace/explorer/workflow/settings/$'
       preLoaderRoute: typeof NNamespaceExplorerWorkflowSettingsSplatImport
+      parentRoute: typeof NNamespaceExplorerWorkflowRouteImport
+    }
+    '/n/$namespace/explorer/workflow/services/$service/$': {
+      id: '/n/$namespace/explorer/workflow/services/$service/$'
+      path: '/services/$service/$'
+      fullPath: '/n/$namespace/explorer/workflow/services/$service/$'
+      preLoaderRoute: typeof NNamespaceExplorerWorkflowServicesServiceSplatImport
+      parentRoute: typeof NNamespaceExplorerWorkflowRouteImport
+    }
+    '/n/$namespace/explorer/workflow/services/list/$': {
+      id: '/n/$namespace/explorer/workflow/services/list/$'
+      path: '/services/list/$'
+      fullPath: '/n/$namespace/explorer/workflow/services/list/$'
+      preLoaderRoute: typeof NNamespaceExplorerWorkflowServicesListSplatImport
       parentRoute: typeof NNamespaceExplorerWorkflowRouteImport
     }
   }
@@ -686,8 +701,9 @@ const NNamespaceEventsRouteRouteWithChildren =
 interface NNamespaceExplorerWorkflowRouteRouteChildren {
   NNamespaceExplorerWorkflowEditSplatRoute: typeof NNamespaceExplorerWorkflowEditSplatRoute
   NNamespaceExplorerWorkflowOverviewSplatRoute: typeof NNamespaceExplorerWorkflowOverviewSplatRoute
-  NNamespaceExplorerWorkflowServicesSplatRoute: typeof NNamespaceExplorerWorkflowServicesSplatRoute
   NNamespaceExplorerWorkflowSettingsSplatRoute: typeof NNamespaceExplorerWorkflowSettingsSplatRoute
+  NNamespaceExplorerWorkflowServicesServiceSplatRoute: typeof NNamespaceExplorerWorkflowServicesServiceSplatRoute
+  NNamespaceExplorerWorkflowServicesListSplatRoute: typeof NNamespaceExplorerWorkflowServicesListSplatRoute
 }
 
 const NNamespaceExplorerWorkflowRouteRouteChildren: NNamespaceExplorerWorkflowRouteRouteChildren =
@@ -696,10 +712,12 @@ const NNamespaceExplorerWorkflowRouteRouteChildren: NNamespaceExplorerWorkflowRo
       NNamespaceExplorerWorkflowEditSplatRoute,
     NNamespaceExplorerWorkflowOverviewSplatRoute:
       NNamespaceExplorerWorkflowOverviewSplatRoute,
-    NNamespaceExplorerWorkflowServicesSplatRoute:
-      NNamespaceExplorerWorkflowServicesSplatRoute,
     NNamespaceExplorerWorkflowSettingsSplatRoute:
       NNamespaceExplorerWorkflowSettingsSplatRoute,
+    NNamespaceExplorerWorkflowServicesServiceSplatRoute:
+      NNamespaceExplorerWorkflowServicesServiceSplatRoute,
+    NNamespaceExplorerWorkflowServicesListSplatRoute:
+      NNamespaceExplorerWorkflowServicesListSplatRoute,
   }
 
 const NNamespaceExplorerWorkflowRouteRouteWithChildren =
@@ -893,8 +911,9 @@ export interface FileRoutesByFullPath {
   '/n/$namespace/gateway/routes': typeof NNamespaceGatewayRoutesIndexRoute
   '/n/$namespace/explorer/workflow/edit/$': typeof NNamespaceExplorerWorkflowEditSplatRoute
   '/n/$namespace/explorer/workflow/overview/$': typeof NNamespaceExplorerWorkflowOverviewSplatRoute
-  '/n/$namespace/explorer/workflow/services/$': typeof NNamespaceExplorerWorkflowServicesSplatRoute
   '/n/$namespace/explorer/workflow/settings/$': typeof NNamespaceExplorerWorkflowSettingsSplatRoute
+  '/n/$namespace/explorer/workflow/services/$service/$': typeof NNamespaceExplorerWorkflowServicesServiceSplatRoute
+  '/n/$namespace/explorer/workflow/services/list/$': typeof NNamespaceExplorerWorkflowServicesListSplatRoute
 }
 
 export interface FileRoutesByTo {
@@ -931,8 +950,9 @@ export interface FileRoutesByTo {
   '/n/$namespace/gateway/routes': typeof NNamespaceGatewayRoutesIndexRoute
   '/n/$namespace/explorer/workflow/edit/$': typeof NNamespaceExplorerWorkflowEditSplatRoute
   '/n/$namespace/explorer/workflow/overview/$': typeof NNamespaceExplorerWorkflowOverviewSplatRoute
-  '/n/$namespace/explorer/workflow/services/$': typeof NNamespaceExplorerWorkflowServicesSplatRoute
   '/n/$namespace/explorer/workflow/settings/$': typeof NNamespaceExplorerWorkflowSettingsSplatRoute
+  '/n/$namespace/explorer/workflow/services/$service/$': typeof NNamespaceExplorerWorkflowServicesServiceSplatRoute
+  '/n/$namespace/explorer/workflow/services/list/$': typeof NNamespaceExplorerWorkflowServicesListSplatRoute
 }
 
 export interface FileRoutesById {
@@ -979,8 +999,9 @@ export interface FileRoutesById {
   '/n/$namespace/gateway/routes/': typeof NNamespaceGatewayRoutesIndexRoute
   '/n/$namespace/explorer/workflow/edit/$': typeof NNamespaceExplorerWorkflowEditSplatRoute
   '/n/$namespace/explorer/workflow/overview/$': typeof NNamespaceExplorerWorkflowOverviewSplatRoute
-  '/n/$namespace/explorer/workflow/services/$': typeof NNamespaceExplorerWorkflowServicesSplatRoute
   '/n/$namespace/explorer/workflow/settings/$': typeof NNamespaceExplorerWorkflowSettingsSplatRoute
+  '/n/$namespace/explorer/workflow/services/$service/$': typeof NNamespaceExplorerWorkflowServicesServiceSplatRoute
+  '/n/$namespace/explorer/workflow/services/list/$': typeof NNamespaceExplorerWorkflowServicesListSplatRoute
 }
 
 export interface FileRouteTypes {
@@ -1026,8 +1047,9 @@ export interface FileRouteTypes {
     | '/n/$namespace/gateway/routes'
     | '/n/$namespace/explorer/workflow/edit/$'
     | '/n/$namespace/explorer/workflow/overview/$'
-    | '/n/$namespace/explorer/workflow/services/$'
     | '/n/$namespace/explorer/workflow/settings/$'
+    | '/n/$namespace/explorer/workflow/services/$service/$'
+    | '/n/$namespace/explorer/workflow/services/list/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1063,8 +1085,9 @@ export interface FileRouteTypes {
     | '/n/$namespace/gateway/routes'
     | '/n/$namespace/explorer/workflow/edit/$'
     | '/n/$namespace/explorer/workflow/overview/$'
-    | '/n/$namespace/explorer/workflow/services/$'
     | '/n/$namespace/explorer/workflow/settings/$'
+    | '/n/$namespace/explorer/workflow/services/$service/$'
+    | '/n/$namespace/explorer/workflow/services/list/$'
   id:
     | '__root__'
     | '/'
@@ -1109,8 +1132,9 @@ export interface FileRouteTypes {
     | '/n/$namespace/gateway/routes/'
     | '/n/$namespace/explorer/workflow/edit/$'
     | '/n/$namespace/explorer/workflow/overview/$'
-    | '/n/$namespace/explorer/workflow/services/$'
     | '/n/$namespace/explorer/workflow/settings/$'
+    | '/n/$namespace/explorer/workflow/services/$service/$'
+    | '/n/$namespace/explorer/workflow/services/list/$'
   fileRoutesById: FileRoutesById
 }
 
@@ -1229,8 +1253,9 @@ export const routeTree = rootRoute
       "children": [
         "/n/$namespace/explorer/workflow/edit/$",
         "/n/$namespace/explorer/workflow/overview/$",
-        "/n/$namespace/explorer/workflow/services/$",
-        "/n/$namespace/explorer/workflow/settings/$"
+        "/n/$namespace/explorer/workflow/settings/$",
+        "/n/$namespace/explorer/workflow/services/$service/$",
+        "/n/$namespace/explorer/workflow/services/list/$"
       ]
     },
     "/n/$namespace/events/history": {
@@ -1365,12 +1390,16 @@ export const routeTree = rootRoute
       "filePath": "n/$namespace/explorer/workflow/overview.$.tsx",
       "parent": "/n/$namespace/explorer/workflow"
     },
-    "/n/$namespace/explorer/workflow/services/$": {
-      "filePath": "n/$namespace/explorer/workflow/services.$.tsx",
-      "parent": "/n/$namespace/explorer/workflow"
-    },
     "/n/$namespace/explorer/workflow/settings/$": {
       "filePath": "n/$namespace/explorer/workflow/settings.$.tsx",
+      "parent": "/n/$namespace/explorer/workflow"
+    },
+    "/n/$namespace/explorer/workflow/services/$service/$": {
+      "filePath": "n/$namespace/explorer/workflow/services/$service.$.tsx",
+      "parent": "/n/$namespace/explorer/workflow"
+    },
+    "/n/$namespace/explorer/workflow/services/list/$": {
+      "filePath": "n/$namespace/explorer/workflow/services/list.$.tsx",
       "parent": "/n/$namespace/explorer/workflow"
     }
   }

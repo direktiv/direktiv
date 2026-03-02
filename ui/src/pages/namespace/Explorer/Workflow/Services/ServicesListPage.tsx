@@ -6,11 +6,18 @@ import Rebuild from "~/pages/namespace/Services/List/Rebuild";
 import RefreshButton from "~/design/RefreshButton";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import ServicesTable from "~/pages/namespace/Services/List/Table";
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWorkflowServices } from "~/api/services/query/services";
 
-const ServicesList = ({ workflow }: { workflow: string }) => {
+const ServicesListPage = () => {
+  const { _splat: workflowPath } = useParams({
+    from: "/n/$namespace/explorer/workflow/services/list/$",
+  });
+
+  if (!workflowPath) throw new Error("Workflow path not found");
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [rebuildService, setRebuildService] = useState<ServiceSchemaType>();
 
@@ -21,7 +28,7 @@ const ServicesList = ({ workflow }: { workflow: string }) => {
     isFetching,
     noPermissionMessage,
     refetch,
-  } = useWorkflowServices(workflow);
+  } = useWorkflowServices(workflowPath);
 
   const { t } = useTranslation();
 
@@ -69,4 +76,4 @@ const ServicesList = ({ workflow }: { workflow: string }) => {
   );
 };
 
-export default ServicesList;
+export default ServicesListPage;
