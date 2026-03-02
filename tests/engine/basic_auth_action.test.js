@@ -23,7 +23,7 @@ describe('Test js engine', () => {
             var echo = generateAction({
                 type: "workflow",
                 size: "medium",
-                image: "ramiferdocker/auth-echo:v1.2",
+                image: "ramiferdocker/auth-echo:v1.4",
                 auth: { username: "user", password: "pass" },
             });
             function stateOne(payload) {
@@ -41,7 +41,7 @@ describe('Test js engine', () => {
             var echo = generateAction({
                 type: "workflow",
                 size: "medium",
-                image: "ramiferdocker/auth-echo:v1.2",
+                image: "ramiferdocker/auth-echo:v1.4",
             });
             function stateOne(payload) {
                 let result = echo({ foo: "bar", input: payload });
@@ -58,7 +58,7 @@ describe('Test js engine', () => {
             var echo = generateAction({
                 type: "workflow",
                 size: "medium",
-                image: "ramiferdocker/auth-echo:v1.2",
+                image: "ramiferdocker/auth-echo:1.4",
                 auth: { username: "wrong", password: "creds" },
             });
             function stateOne(payload) {
