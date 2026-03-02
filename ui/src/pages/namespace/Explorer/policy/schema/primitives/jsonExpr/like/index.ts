@@ -1,3 +1,4 @@
+import { strictSingleKeyObject } from "../utils";
 import { z } from "zod";
 
 const PatternElementSchema = z.union([
@@ -11,16 +12,15 @@ const PatternElementSchema = z.union([
 
 // when { resource.email like "*@amazon.com" };
 export const LikeJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
-  z
-    .object({
-      like: z
-        .object({
-          left: jsonExprSchema,
-          pattern: z.array(PatternElementSchema),
-        })
-        .strict(),
-    })
-    .strict();
+  strictSingleKeyObject(
+    "like",
+    z
+      .object({
+        left: jsonExprSchema,
+        pattern: z.array(PatternElementSchema),
+      })
+      .strict()
+  );
 
 export type LikeJsonExprSchemaType = z.infer<
   ReturnType<typeof LikeJsonExprSchema>

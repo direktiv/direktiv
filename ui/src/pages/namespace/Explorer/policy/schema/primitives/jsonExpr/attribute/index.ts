@@ -1,3 +1,4 @@
+import { strictSingleKeyObject, unionFromArray } from "../utils";
 import { z } from "zod";
 
 const AttributeArgumentsSchema = (jsonExprSchema: z.ZodTypeAny) =>
@@ -8,26 +9,11 @@ const AttributeArgumentsSchema = (jsonExprSchema: z.ZodTypeAny) =>
     })
     .strict();
 
-// when { context.tls_version };
-const DotJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
-  z
-    .object({
-      ".": AttributeArgumentsSchema(jsonExprSchema),
-    })
-    .strict();
-
-// when { principal has "email" };
-const HasJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
-  z
-    .object({
-      has: AttributeArgumentsSchema(jsonExprSchema),
-    })
-    .strict();
-
+// when { context.tls_version }; / when { principal has "email" };
 export const AttributeJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
-  z.union([
-    DotJsonExprSchema(jsonExprSchema),
-    HasJsonExprSchema(jsonExprSchema),
+  unionFromArray([
+    strictSingleKeyObject(".", AttributeArgumentsSchema(jsonExprSchema)),
+    strictSingleKeyObject("has", AttributeArgumentsSchema(jsonExprSchema)),
   ]);
 
 export type AttributeJsonExprSchemaType = z.infer<

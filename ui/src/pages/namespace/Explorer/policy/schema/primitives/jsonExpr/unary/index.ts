@@ -1,3 +1,5 @@
+import { JsonExprUnaryOperators } from "../constants";
+import { strictSingleKeyObject, unionFromArray } from "../utils";
 import { z } from "zod";
 
 const UnaryArgumentSchema = (jsonExprSchema: z.ZodTypeAny) =>
@@ -7,36 +9,13 @@ const UnaryArgumentSchema = (jsonExprSchema: z.ZodTypeAny) =>
     })
     .strict();
 
-// when { !context.something };
-const NotJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
-  z
-    .object({
-      "!": UnaryArgumentSchema(jsonExprSchema),
-    })
-    .strict();
-
-// when { -1 };
-const NegJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
-  z
-    .object({
-      neg: UnaryArgumentSchema(jsonExprSchema),
-    })
-    .strict();
-
-// when { [1, 2].isEmpty() };
-const IsEmptyJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
-  z
-    .object({
-      isEmpty: UnaryArgumentSchema(jsonExprSchema),
-    })
-    .strict();
-
+// when { !context.something }; / when { -1 }; / when { [1, 2].isEmpty() };
 export const UnaryJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
-  z.union([
-    NotJsonExprSchema(jsonExprSchema),
-    NegJsonExprSchema(jsonExprSchema),
-    IsEmptyJsonExprSchema(jsonExprSchema),
-  ]);
+  unionFromArray(
+    JsonExprUnaryOperators.map((operator) =>
+      strictSingleKeyObject(operator, UnaryArgumentSchema(jsonExprSchema))
+    )
+  );
 
 export type UnaryJsonExprSchemaType = z.infer<
   ReturnType<typeof UnaryJsonExprSchema>

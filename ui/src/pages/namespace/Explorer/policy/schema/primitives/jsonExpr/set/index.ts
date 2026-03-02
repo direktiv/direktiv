@@ -1,12 +1,9 @@
+import { strictSingleKeyObject } from "../utils";
 import { z } from "zod";
 
 // when { [1, 2, "something"] };
 export const SetJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
-  z
-    .object({
-      Set: z.array(jsonExprSchema),
-    })
-    .strict();
+  strictSingleKeyObject("Set", z.array(jsonExprSchema));
 
 export type SetJsonExprSchemaType = z.infer<
   ReturnType<typeof SetJsonExprSchema>

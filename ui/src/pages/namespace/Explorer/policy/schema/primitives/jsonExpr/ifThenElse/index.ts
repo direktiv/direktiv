@@ -1,18 +1,18 @@
+import { strictSingleKeyObject } from "../utils";
 import { z } from "zod";
 
 // when { if context.something then principal has "email" else false };
 export const IfThenElseJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
-  z
-    .object({
-      "if-then-else": z
-        .object({
-          if: jsonExprSchema,
-          then: jsonExprSchema,
-          else: jsonExprSchema,
-        })
-        .strict(),
-    })
-    .strict();
+  strictSingleKeyObject(
+    "if-then-else",
+    z
+      .object({
+        if: jsonExprSchema,
+        then: jsonExprSchema,
+        else: jsonExprSchema,
+      })
+      .strict()
+  );
 
 export type IfThenElseJsonExprSchemaType = z.infer<
   ReturnType<typeof IfThenElseJsonExprSchema>

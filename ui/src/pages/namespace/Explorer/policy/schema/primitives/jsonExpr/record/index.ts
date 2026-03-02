@@ -1,12 +1,9 @@
+import { strictSingleKeyObject } from "../utils";
 import { z } from "zod";
 
 // when { { foo: "spam", somethingelse: false } };
 export const RecordJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
-  z
-    .object({
-      Record: z.record(jsonExprSchema),
-    })
-    .strict();
+  strictSingleKeyObject("Record", z.record(jsonExprSchema));
 
 export type RecordJsonExprSchemaType = z.infer<
   ReturnType<typeof RecordJsonExprSchema>
