@@ -205,4 +205,38 @@ describe("Cedar policy zod schema", () => {
       }).success
     ).toBe(false);
   });
+
+  test("accepts annotations with string and null", () => {
+    // @shadow_mode, @reason("temporary block")
+    const input: CedarPolicySchemaType = {
+      effect: "permit",
+      principal: { op: "All" },
+      action: { op: "All" },
+      resource: { op: "All" },
+      conditions: [],
+      annotations: {
+        shadow_mode: null,
+        reason: "temporary block",
+      },
+    };
+
+    expect(CedarPolicySchema.safeParse(input).success).toBe(true);
+    expect(CedarPolicySchema.parse(input)).toEqual(input);
+  });
+
+  test("rejects invalid annotation value type", () => {
+    // @priority(10)
+    expect(
+      CedarPolicySchema.safeParse({
+        effect: "permit",
+        principal: { op: "All" },
+        action: { op: "All" },
+        resource: { op: "All" },
+        conditions: [],
+        annotations: {
+          priority: 10,
+        },
+      }).success
+    ).toBe(false);
+  });
 });
