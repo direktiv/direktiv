@@ -185,7 +185,7 @@ export const InstanceOutputResponseSchema = z.object({
   }
  */
 
-export const workflowStateSchema = z.object({
+export const InstanceFlowSchema = z.object({
   name: z.string().optional(),
   start: z.boolean().optional(),
   finish: z.boolean().optional(),
@@ -222,8 +222,8 @@ export const workflowStateSchema = z.object({
 export const InstanceFlowResponseSchema = z.object({
   data: z.object({
     flow: z.array(z.string()).optional(),
-    states: z.array(workflowStateSchema),
+    states: z.array(InstanceFlowSchema),
   }),
 });
 
-export type Workflow = z.infer<typeof InstanceFlowResponseSchema>;
+export type InstanceFlowResponse = z.infer<typeof InstanceFlowResponseSchema>;

@@ -1,7 +1,7 @@
 import { Edge, Node, Position, isNode } from "reactflow";
 import { Orientation, State } from "./types";
 
-import { Workflow } from "~/api/instances/schema";
+import { InstanceFlowResponse } from "~/api/instances/schema";
 import dagre from "dagre";
 
 const defaultEdgeType = "default";
@@ -46,7 +46,7 @@ const createLayoutedElements = (
 const position = { x: 0, y: 0 };
 
 export function createElements(
-  value: Workflow,
+  value: InstanceFlowResponse,
   status: "pending" | "complete" | "failed",
   orientation: Orientation
 ) {
