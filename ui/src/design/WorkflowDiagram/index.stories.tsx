@@ -181,7 +181,7 @@ const exampleWorkflowComplete = {
 } satisfies InstanceFlowSchemaType;
 
 const exampleWorkflowComplex = {
-  flow: ["hello-world", "actionOne", "actionTwo", "exit"],
+  flow: ["hello-world", "actionTwo", "exit"],
   states: [
     {
       name: "hello-world",

@@ -47,7 +47,7 @@ const position = { x: 0, y: 0 };
 
 export function createElements(
   value: InstanceFlowSchemaType,
-  status: "pending" | "complete" | "failed",
+  instanceStatus: "pending" | "complete" | "failed",
   orientation: Orientation
 ) {
   const newElements: (Node | Edge)[] = [];
@@ -59,13 +59,11 @@ export function createElements(
 
   if (states.length === 0) return [];
 
-  const finishStates = states.filter((s) => s && (s as State).finish === true);
-
   // create start node
   newElements.push({
     id: "startNode",
     position,
-    data: { label: "", wasExecuted: status !== "pending", orientation },
+    data: { label: "", wasExecuted: instanceStatus !== "pending", orientation },
     type: "start",
     sourcePosition: Position.Right,
   });
@@ -86,15 +84,16 @@ export function createElements(
       });
     }
 
-    // create state node
     const stateNode: Node = {
       id: state.name,
       position,
       data: {
         type: "function",
         label: state.name,
-        state,
-        wasExecuted: state.visited,
+        status:
+          (state.failed && "failed") ||
+          (state.visited && "complete") ||
+          "pending",
         orientation,
       },
       type: "state",
@@ -139,18 +138,19 @@ export function createElements(
         type: defaultEdgeType,
         animated:
           visitedStates[visitedStates.length - 1] === state.name &&
-          status === "complete",
+          instanceStatus === "complete",
       });
     }
   }
 
-  const reachedEnd =
-    finishStates.find((s) => s.visited === true) && status === "complete";
-
   newElements.push({
     id: "endNode",
     type: "end",
-    data: { label: "", wasExecuted: reachedEnd, orientation },
+    data: {
+      label: "",
+      wasExecuted: instanceStatus === "complete",
+      orientation,
+    },
     position,
   });
 
