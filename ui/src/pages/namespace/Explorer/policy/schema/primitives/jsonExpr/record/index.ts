@@ -5,6 +5,6 @@ import { z } from "zod";
 export const RecordJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
   strictSingleKeyObject("Record", z.record(jsonExprSchema));
 
-export type RecordJsonExprSchemaType = z.infer<
+type RecordJsonExprSchemaType = z.infer<
   ReturnType<typeof RecordJsonExprSchema>
 >;

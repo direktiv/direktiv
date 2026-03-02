@@ -7,4 +7,4 @@ export const VarJsonExprSchema = z
   })
   .strict();
 
-export type VarJsonExprSchemaType = z.infer<typeof VarJsonExprSchema>;
+type VarJsonExprSchemaType = z.infer<typeof VarJsonExprSchema>;

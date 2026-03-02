@@ -8,4 +8,4 @@ export const EntitySchema = z
   })
   .strict();
 
-export type EntitySchemaType = z.infer<typeof EntitySchema>;
+type EntitySchemaType = z.infer<typeof EntitySchema>;

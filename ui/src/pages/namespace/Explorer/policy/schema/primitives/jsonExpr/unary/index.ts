@@ -17,6 +17,6 @@ export const UnaryJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
     )
   );
 
-export type UnaryJsonExprSchemaType = z.infer<
+type UnaryJsonExprSchemaType = z.infer<
   ReturnType<typeof UnaryJsonExprSchema>
 >;

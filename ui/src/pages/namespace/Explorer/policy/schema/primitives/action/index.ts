@@ -44,4 +44,4 @@ export const ActionSchema = z.union([
   ActionInEntitiesSchema,
 ]);
 
-export type ActionSchemaType = z.infer<typeof ActionSchema>;
+type ActionSchemaType = z.infer<typeof ActionSchema>;

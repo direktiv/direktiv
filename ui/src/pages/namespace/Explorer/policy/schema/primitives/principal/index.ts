@@ -70,4 +70,4 @@ export const PrincipalSchema = z.union([
   PrincipalIsSchema,
 ]);
 
-export type PrincipalSchemaType = z.infer<typeof PrincipalSchema>;
+type PrincipalSchemaType = z.infer<typeof PrincipalSchema>;

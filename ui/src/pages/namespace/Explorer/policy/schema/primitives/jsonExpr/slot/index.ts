@@ -7,4 +7,4 @@ export const SlotJsonExprSchema = z
   })
   .strict();
 
-export type SlotJsonExprSchemaType = z.infer<typeof SlotJsonExprSchema>;
+type SlotJsonExprSchemaType = z.infer<typeof SlotJsonExprSchema>;

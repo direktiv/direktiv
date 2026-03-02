@@ -14,4 +14,4 @@ export const IsJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
       .strict()
   );
 
-export type IsJsonExprSchemaType = z.infer<ReturnType<typeof IsJsonExprSchema>>;
+type IsJsonExprSchemaType = z.infer<ReturnType<typeof IsJsonExprSchema>>;

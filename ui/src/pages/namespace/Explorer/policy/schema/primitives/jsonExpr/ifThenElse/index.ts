@@ -14,6 +14,6 @@ export const IfThenElseJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
       .strict()
   );
 
-export type IfThenElseJsonExprSchemaType = z.infer<
+type IfThenElseJsonExprSchemaType = z.infer<
   ReturnType<typeof IfThenElseJsonExprSchema>
 >;

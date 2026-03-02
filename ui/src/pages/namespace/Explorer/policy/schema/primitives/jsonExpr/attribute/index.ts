@@ -16,6 +16,6 @@ export const AttributeJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
     strictSingleKeyObject("has", AttributeArgumentsSchema(jsonExprSchema)),
   ]);
 
-export type AttributeJsonExprSchemaType = z.infer<
+type AttributeJsonExprSchemaType = z.infer<
   ReturnType<typeof AttributeJsonExprSchema>
 >;

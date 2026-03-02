@@ -24,6 +24,6 @@ export const BinaryJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) => {
   );
 };
 
-export type BinaryJsonExprSchemaType = z.infer<
+type BinaryJsonExprSchemaType = z.infer<
   ReturnType<typeof BinaryJsonExprSchema>
 >;

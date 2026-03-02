@@ -2,7 +2,7 @@ import { EntitySchema } from "../shared/entity";
 import { SlotSchema } from "../shared/slot";
 import { z } from "zod";
 
-export const PolicySetTemplateLinkSchema = z
+const PolicySetTemplateLinkSchema = z
   .object({
     templateId: z.string().min(1),
     newId: z.string().min(1),
@@ -19,7 +19,7 @@ export const PolicySetSchema = (policySchema: z.ZodTypeAny) =>
     })
     .strict();
 
-export type PolicySetTemplateLinkSchemaType = z.infer<
+type PolicySetTemplateLinkSchemaType = z.infer<
   typeof PolicySetTemplateLinkSchema
 >;
-export type PolicySetSchemaType = z.infer<ReturnType<typeof PolicySetSchema>>;
+type PolicySetSchemaType = z.infer<ReturnType<typeof PolicySetSchema>>;

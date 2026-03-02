@@ -5,6 +5,6 @@ import { z } from "zod";
 export const SetJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
   strictSingleKeyObject("Set", z.array(jsonExprSchema));
 
-export type SetJsonExprSchemaType = z.infer<
+type SetJsonExprSchemaType = z.infer<
   ReturnType<typeof SetJsonExprSchema>
 >;
