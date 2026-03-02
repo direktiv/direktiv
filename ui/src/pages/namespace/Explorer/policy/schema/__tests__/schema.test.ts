@@ -568,6 +568,54 @@ describe("Cedar policy zod schema", () => {
     ).toBe(false);
   });
 
+  test("accepts condition with if-then-else JsonExpr", () => {
+    // permit(principal, action, resource) when { if context then true else false };
+    const input: CedarPolicySchemaType = {
+      effect: "permit",
+      principal: { op: "All" },
+      action: { op: "All" },
+      resource: { op: "All" },
+      conditions: [
+        {
+          kind: "when",
+          body: {
+            "if-then-else": {
+              if: { Var: "context" },
+              then: { Value: true },
+              else: { Value: false },
+            },
+          },
+        },
+      ],
+    };
+
+    expect(CedarPolicySchema.safeParse(input).success).toBe(true);
+    expect(CedarPolicySchema.parse(input)).toEqual(input);
+  });
+
+  test("rejects if-then-else JsonExpr without else", () => {
+    // permit(principal, action, resource) when { if context then true };
+    expect(
+      CedarPolicySchema.safeParse({
+        effect: "permit",
+        principal: { op: "All" },
+        action: { op: "All" },
+        resource: { op: "All" },
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              "if-then-else": {
+                if: { Var: "context" },
+                then: { Value: true },
+              },
+            },
+          },
+        ],
+      }).success
+    ).toBe(false);
+  });
+
   test("accepts annotations with string and null", () => {
     // @shadow_mode, @reason("temporary block")
     const input: CedarPolicySchemaType = {
