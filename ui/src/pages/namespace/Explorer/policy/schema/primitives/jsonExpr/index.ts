@@ -1,3 +1,4 @@
+import { AttributeJsonExprSchema } from "./attribute";
 import { BinaryJsonExprSchema } from "./binary";
 import { SlotJsonExprSchema } from "./slot";
 import { UnaryJsonExprSchema } from "./unary";
@@ -14,6 +15,7 @@ export const JsonExprSchema: z.ZodTypeAny = z.lazy(() =>
     UnknownJsonExprSchema,
     UnaryJsonExprSchema(JsonExprSchema),
     BinaryJsonExprSchema(JsonExprSchema),
+    AttributeJsonExprSchema(JsonExprSchema),
   ])
 );
 

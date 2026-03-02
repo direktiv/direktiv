@@ -398,6 +398,76 @@ describe("Cedar policy zod schema", () => {
     ).toBe(false);
   });
 
+  test("accepts condition with attribute . JsonExpr", () => {
+    // permit(principal, action, resource) when { context.tls_version };
+    const input: CedarPolicySchemaType = {
+      effect: "permit",
+      principal: { op: "All" },
+      action: { op: "All" },
+      resource: { op: "All" },
+      conditions: [
+        {
+          kind: "when",
+          body: {
+            ".": {
+              left: { Var: "context" },
+              attr: "tls_version",
+            },
+          },
+        },
+      ],
+    };
+
+    expect(CedarPolicySchema.safeParse(input).success).toBe(true);
+    expect(CedarPolicySchema.parse(input)).toEqual(input);
+  });
+
+  test("accepts condition with attribute has JsonExpr", () => {
+    // permit(principal, action, resource) when { principal has "email" };
+    const input: CedarPolicySchemaType = {
+      effect: "permit",
+      principal: { op: "All" },
+      action: { op: "All" },
+      resource: { op: "All" },
+      conditions: [
+        {
+          kind: "when",
+          body: {
+            has: {
+              left: { Var: "principal" },
+              attr: "email",
+            },
+          },
+        },
+      ],
+    };
+
+    expect(CedarPolicySchema.safeParse(input).success).toBe(true);
+    expect(CedarPolicySchema.parse(input)).toEqual(input);
+  });
+
+  test("rejects attribute JsonExpr without attr", () => {
+    // permit(principal, action, resource) when { context. };
+    expect(
+      CedarPolicySchema.safeParse({
+        effect: "permit",
+        principal: { op: "All" },
+        action: { op: "All" },
+        resource: { op: "All" },
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              ".": {
+                left: { Var: "context" },
+              },
+            },
+          },
+        ],
+      }).success
+    ).toBe(false);
+  });
+
   test("accepts annotations with string and null", () => {
     // @shadow_mode, @reason("temporary block")
     const input: CedarPolicySchemaType = {
