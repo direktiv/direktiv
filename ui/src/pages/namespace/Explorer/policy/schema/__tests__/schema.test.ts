@@ -271,6 +271,69 @@ describe("Cedar policy zod schema", () => {
     ).toBe(false);
   });
 
+  test("accepts condition with unary ! JsonExpr", () => {
+    // permit(principal, action, resource) when { !context };
+    const input: CedarPolicySchemaType = {
+      effect: "permit",
+      principal: { op: "All" },
+      action: { op: "All" },
+      resource: { op: "All" },
+      conditions: [
+        {
+          kind: "when",
+          body: {
+            "!": {
+              arg: {
+                Var: "context",
+              },
+            },
+          },
+        },
+      ],
+    };
+
+    expect(CedarPolicySchema.safeParse(input).success).toBe(true);
+    expect(CedarPolicySchema.parse(input)).toEqual(input);
+  });
+
+  test("accepts condition with unary neg JsonExpr", () => {
+    // permit(principal, action, resource) when { -1 };
+    const input: CedarPolicySchemaType = {
+      effect: "permit",
+      principal: { op: "All" },
+      action: { op: "All" },
+      resource: { op: "All" },
+      conditions: [
+        {
+          kind: "when",
+          body: {
+            neg: {
+              arg: {
+                Value: 1,
+              },
+            },
+          },
+        },
+      ],
+    };
+
+    expect(CedarPolicySchema.safeParse(input).success).toBe(true);
+    expect(CedarPolicySchema.parse(input)).toEqual(input);
+  });
+
+  test("rejects unary JsonExpr without arg", () => {
+    // permit(principal, action, resource) when { ! };
+    expect(
+      CedarPolicySchema.safeParse({
+        effect: "permit",
+        principal: { op: "All" },
+        action: { op: "All" },
+        resource: { op: "All" },
+        conditions: [{ kind: "when", body: { "!": {} } }],
+      }).success
+    ).toBe(false);
+  });
+
   test("rejects invalid condition kind", () => {
     // permit(principal, action, resource) iff { true };
     expect(
