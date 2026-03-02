@@ -11,5 +11,3 @@ const ConditionSchema = z
 
 // ... when { ... } unless { ... }
 export const ConditionsSchema = z.array(ConditionSchema);
-
-type ConditionsSchemaType = z.infer<typeof ConditionsSchema>;

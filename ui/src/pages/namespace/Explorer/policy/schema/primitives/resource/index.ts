@@ -77,5 +77,3 @@ export const ResourceSchema = z.union([
   ResourceInSlotSchema,
   ResourceIsSchema,
 ]);
-
-type ResourceSchemaType = z.infer<typeof ResourceSchema>;

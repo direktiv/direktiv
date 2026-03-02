@@ -13,7 +13,3 @@ export const ExtensionJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
       const [key] = Object.keys(value);
       return key !== undefined && !JsonExprReservedKeys.has(key);
     });
-
-type ExtensionJsonExprSchemaType = z.infer<
-  ReturnType<typeof ExtensionJsonExprSchema>
->;

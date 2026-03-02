@@ -7,5 +7,3 @@ export const UnknownJsonExprSchema = z
   })
   .strict()
   .refine((value) => Object.keys(value.Unknown).length === 1);
-
-type UnknownJsonExprSchemaType = z.infer<typeof UnknownJsonExprSchema>;

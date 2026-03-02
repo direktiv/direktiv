@@ -69,5 +69,3 @@ export const PrincipalSchema = z.union([
   PrincipalInSlotSchema,
   PrincipalIsSchema,
 ]);
-
-type PrincipalSchemaType = z.infer<typeof PrincipalSchema>;

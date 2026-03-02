@@ -7,5 +7,3 @@ export const EntitySchema = z
     id: z.string(),
   })
   .strict();
-
-type EntitySchemaType = z.infer<typeof EntitySchema>;

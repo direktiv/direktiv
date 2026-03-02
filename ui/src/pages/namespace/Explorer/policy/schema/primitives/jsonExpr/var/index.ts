@@ -6,5 +6,3 @@ export const VarJsonExprSchema = z
     Var: z.enum(["principal", "action", "resource", "context"]),
   })
   .strict();
-
-type VarJsonExprSchemaType = z.infer<typeof VarJsonExprSchema>;

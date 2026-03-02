@@ -30,5 +30,3 @@ export const JsonExprSchema: z.ZodTypeAny = z.lazy(() =>
     ExtensionJsonExprSchema(JsonExprSchema),
   ])
 );
-
-type JsonExprSchemaType = z.infer<typeof JsonExprSchema>;

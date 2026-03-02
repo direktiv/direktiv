@@ -1,7 +1,7 @@
 import {
   CedarPolicySchema,
-  CedarPolicySetSchema,
   type CedarPolicySchemaType,
+  CedarPolicySetSchema,
   type CedarPolicySetSchemaType,
 } from "..";
 import {

@@ -18,8 +18,3 @@ export const PolicySetSchema = (policySchema: z.ZodTypeAny) =>
       templateLinks: z.array(PolicySetTemplateLinkSchema).optional(),
     })
     .strict();
-
-type PolicySetTemplateLinkSchemaType = z.infer<
-  typeof PolicySetTemplateLinkSchema
->;
-type PolicySetSchemaType = z.infer<ReturnType<typeof PolicySetSchema>>;

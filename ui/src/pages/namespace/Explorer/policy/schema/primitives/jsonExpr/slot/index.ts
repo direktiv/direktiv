@@ -6,5 +6,3 @@ export const SlotJsonExprSchema = z
     Slot: z.enum(["?principal", "?resource"]),
   })
   .strict();
-
-type SlotJsonExprSchemaType = z.infer<typeof SlotJsonExprSchema>;

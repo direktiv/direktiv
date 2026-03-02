@@ -1,5 +1,5 @@
-import { JsonExprBinaryOperators } from "../constants";
 import { strictSingleKeyObject, unionFromArray } from "../utils";
+import { JsonExprBinaryOperators } from "../constants";
 import { z } from "zod";
 
 const BinaryArgumentsSchema = (jsonExprSchema: z.ZodTypeAny) =>
@@ -16,14 +16,9 @@ const BinaryOperatorSchema = (
 ) => strictSingleKeyObject(operator, BinaryArgumentsSchema(jsonExprSchema));
 
 // when { principal == action };
-export const BinaryJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) => {
-  return unionFromArray(
+export const BinaryJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
+  unionFromArray(
     JsonExprBinaryOperators.map((operator) =>
       BinaryOperatorSchema(operator, jsonExprSchema)
     )
   );
-};
-
-type BinaryJsonExprSchemaType = z.infer<
-  ReturnType<typeof BinaryJsonExprSchema>
->;

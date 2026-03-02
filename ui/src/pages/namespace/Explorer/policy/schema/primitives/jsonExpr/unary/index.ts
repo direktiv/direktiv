@@ -1,5 +1,5 @@
-import { JsonExprUnaryOperators } from "../constants";
 import { strictSingleKeyObject, unionFromArray } from "../utils";
+import { JsonExprUnaryOperators } from "../constants";
 import { z } from "zod";
 
 const UnaryArgumentSchema = (jsonExprSchema: z.ZodTypeAny) =>
@@ -16,5 +16,3 @@ export const UnaryJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
       strictSingleKeyObject(operator, UnaryArgumentSchema(jsonExprSchema))
     )
   );
-
-type UnaryJsonExprSchemaType = z.infer<ReturnType<typeof UnaryJsonExprSchema>>;
