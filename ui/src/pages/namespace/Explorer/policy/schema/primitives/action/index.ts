@@ -7,11 +7,7 @@ import { EntitySchema } from "../shared/entity";
 import { z } from "zod";
 
 // action
-const ActionAllSchema = z
-  .object({
-    op: AllOperatorSchema,
-  })
-  .strict();
+const ActionAllSchema = z.object({ op: AllOperatorSchema }).strict();
 
 // action == Action::"readFile"
 const ActionEqualSchema = z
