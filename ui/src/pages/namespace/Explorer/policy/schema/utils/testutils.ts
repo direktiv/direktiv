@@ -22,7 +22,7 @@ export const expectValidPolicy = (input: CedarPolicySchemaType) => {
   expect(CedarPolicySchema.parse(input)).toEqual(input);
 };
 
-export const expectInvalidPolicy = (input: CedarPolicySetSchemaType) => {
+export const expectInvalidPolicy = (input: CedarPolicySchemaType) => {
   expect(CedarPolicySchema.safeParse(input).success).toBe(false);
 };
 
