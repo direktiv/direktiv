@@ -14,7 +14,45 @@ describe("Cedar principal schema", () => {
     const input = createBasePolicy({
       principal: { op: "==", entity: { type: "User", id: "alice" } },
     });
+    expectValidPolicy(input);
+  });
 
+  test("accepts principal == slot", () => {
+    const input = createBasePolicy({
+      principal: { op: "==", slot: "?principal" },
+    });
+    expectValidPolicy(input);
+  });
+
+  test("accepts principal in entity", () => {
+    const input = createBasePolicy({
+      principal: { op: "in", entity: { type: "Group", id: "Admins" } },
+    });
+    expectValidPolicy(input);
+  });
+
+  test("accepts principal in slot", () => {
+    const input = createBasePolicy({
+      principal: { op: "in", slot: "?principal" },
+    });
+    expectValidPolicy(input);
+  });
+
+  test("accepts principal is entity_type", () => {
+    const input = createBasePolicy({
+      principal: { op: "is", entity_type: "User" },
+    });
+    expectValidPolicy(input);
+  });
+
+  test("accepts principal is with in entity", () => {
+    const input = createBasePolicy({
+      principal: {
+        op: "is",
+        entity_type: "User",
+        in: { entity: { type: "Group", id: "Admins" } },
+      },
+    });
     expectValidPolicy(input);
   });
 
@@ -22,7 +60,6 @@ describe("Cedar principal schema", () => {
     const input = createBasePolicy({
       principal: { op: "is", entity_type: "User", in: { slot: "?principal" } },
     });
-
     expectValidPolicy(input);
   });
 
