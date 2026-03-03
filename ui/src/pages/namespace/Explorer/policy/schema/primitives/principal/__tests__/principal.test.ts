@@ -72,6 +72,28 @@ describe("Cedar principal schema", () => {
     );
   });
 
+  test("rejects invalid principal in slot", () => {
+    expectInvalidPolicy(
+      createBasePolicy({
+        // @ts-expect-error - principal slot only allows ?principal
+        principal: { op: "in", slot: "?resource" },
+      })
+    );
+  });
+
+  test("rejects principal is variant with invalid in slot", () => {
+    expectInvalidPolicy(
+      createBasePolicy({
+        // @ts-expect-error - principal is/in slot only allows ?principal
+        principal: {
+          op: "is",
+          entity_type: "User",
+          in: { slot: "?resource" },
+        },
+      })
+    );
+  });
+
   test("rejects principal == variant with missing entity or slot", () => {
     expectInvalidPolicy(
       createBasePolicy({
