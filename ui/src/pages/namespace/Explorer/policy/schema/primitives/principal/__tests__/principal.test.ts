@@ -7,7 +7,7 @@ import { describe, test } from "vitest";
 
 describe("Cedar principal schema", () => {
   test("accepts principal All", () => {
-    expectValidPolicy(createBasePolicy());
+    expectValidPolicy(createBasePolicy({ principal: { op: "All" } }));
   });
 
   test("accepts principal == entity", () => {
