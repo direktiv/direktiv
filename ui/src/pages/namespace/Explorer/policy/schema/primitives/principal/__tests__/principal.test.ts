@@ -6,7 +6,7 @@ import {
 import { describe, test } from "vitest";
 
 describe("Cedar principal schema", () => {
-  test("accepts principal All", () => {
+  test("accepts principal All operator", () => {
     expectValidPolicy(createBasePolicy({ principal: { op: "All" } }));
   });
 
@@ -38,14 +38,14 @@ describe("Cedar principal schema", () => {
     expectValidPolicy(input);
   });
 
-  test("accepts principal is entity_type", () => {
+  test("accepts principal is entity type", () => {
     const input = createBasePolicy({
       principal: { op: "is", entity_type: "User" },
     });
     expectValidPolicy(input);
   });
 
-  test("accepts principal is with in entity", () => {
+  test("accepts principal is in entity", () => {
     const input = createBasePolicy({
       principal: {
         op: "is",
@@ -56,7 +56,7 @@ describe("Cedar principal schema", () => {
     expectValidPolicy(input);
   });
 
-  test("accepts principal is with in slot", () => {
+  test("accepts principal is in slot", () => {
     const input = createBasePolicy({
       principal: { op: "is", entity_type: "User", in: { slot: "?principal" } },
     });

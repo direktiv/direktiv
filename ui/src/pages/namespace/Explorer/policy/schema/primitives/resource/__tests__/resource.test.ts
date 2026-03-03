@@ -6,7 +6,7 @@ import {
 import { describe, test } from "vitest";
 
 describe("Cedar resource schema", () => {
-  test("accepts resource is with in slot", () => {
+  test("accepts resource is in slot", () => {
     const input = createBasePolicy({
       resource: {
         op: "is",

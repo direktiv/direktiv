@@ -6,7 +6,7 @@ import {
 import { describe, test } from "vitest";
 
 describe("Cedar action schema", () => {
-  test("accepts action All", () => {
+  test("accepts action All operator", () => {
     expectValidPolicy(createBasePolicy({ action: { op: "All" } }));
   });
 
