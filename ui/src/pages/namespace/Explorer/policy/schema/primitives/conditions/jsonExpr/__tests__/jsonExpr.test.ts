@@ -7,11 +7,37 @@ import {
 import { describe, test } from "vitest";
 
 describe("Cedar policy conditions and JsonExpr", () => {
+  test("accepts condition with Value JsonExpr", () => {
+    expectValidPolicy(
+      createBasePolicy({
+        conditions: [
+          {
+            kind: "when",
+            body: { Value: { nested: [1, null, false] } },
+          },
+        ],
+      })
+    );
+  });
+
   test("accepts condition with Var JsonExpr", () => {
     // permit(principal, action, resource) when { context };
     expectValidPolicy(
       createBasePolicy({
         conditions: [{ kind: "when", body: { Var: "context" } }],
+      })
+    );
+  });
+
+  test("accepts all valid Var JsonExpr values", () => {
+    expectValidPolicy(
+      createBasePolicy({
+        conditions: [
+          { kind: "when", body: { Var: "principal" } },
+          { kind: "when", body: { Var: "action" } },
+          { kind: "when", body: { Var: "resource" } },
+          { kind: "when", body: { Var: "context" } },
+        ],
       })
     );
   });
@@ -30,6 +56,17 @@ describe("Cedar policy conditions and JsonExpr", () => {
     expectValidPolicy(
       createBasePolicy({
         conditions: [{ kind: "when", body: { Slot: "?principal" } }],
+      })
+    );
+  });
+
+  test("accepts all valid Slot JsonExpr values", () => {
+    expectValidPolicy(
+      createBasePolicy({
+        conditions: [
+          { kind: "when", body: { Slot: "?principal" } },
+          { kind: "when", body: { Slot: "?resource" } },
+        ],
       })
     );
   });
@@ -57,6 +94,19 @@ describe("Cedar policy conditions and JsonExpr", () => {
     expectInvalidPolicy(
       createBasePolicy({
         conditions: [{ kind: "when", body: { Unknown: { a: "x", b: "y" } } }],
+      })
+    );
+  });
+
+  test("rejects Unknown JsonExpr with non-string values", () => {
+    expectInvalidPolicy(
+      createBasePolicy({
+        conditions: [
+          {
+            kind: "when",
+            body: { Unknown: { anything: 1 } },
+          },
+        ],
       })
     );
   });
@@ -90,6 +140,19 @@ describe("Cedar policy conditions and JsonExpr", () => {
     );
   });
 
+  test("rejects unary JsonExpr with additional argument keys", () => {
+    expectInvalidPolicy(
+      createBasePolicy({
+        conditions: [
+          {
+            kind: "when",
+            body: { "!": { arg: { Var: "context" }, other: true } },
+          },
+        ],
+      })
+    );
+  });
+
   test("accepts condition with binary == JsonExpr", () => {
     // permit(principal, action, resource) when { context == "1.3" };
     expectValidPolicy(
@@ -112,6 +175,25 @@ describe("Cedar policy conditions and JsonExpr", () => {
       createBasePolicy({
         conditions: [
           { kind: "when", body: { "==": { left: { Var: "context" } } } },
+        ],
+      })
+    );
+  });
+
+  test("rejects binary JsonExpr with additional argument keys", () => {
+    expectInvalidPolicy(
+      createBasePolicy({
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              "==": {
+                left: { Var: "context" },
+                right: { Value: "1.3" },
+                extra: { Value: true },
+              },
+            },
+          },
         ],
       })
     );
@@ -156,6 +238,19 @@ describe("Cedar policy conditions and JsonExpr", () => {
     );
   });
 
+  test("rejects attribute JsonExpr with non-string attr", () => {
+    expectInvalidPolicy(
+      createBasePolicy({
+        conditions: [
+          {
+            kind: "when",
+            body: { has: { left: { Var: "principal" }, attr: 1 } },
+          },
+        ],
+      })
+    );
+  });
+
   test("accepts condition with is JsonExpr", () => {
     // permit(principal, action, resource) when { principal is User in Group::"friends" };
     expectValidPolicy(
@@ -176,6 +271,24 @@ describe("Cedar policy conditions and JsonExpr", () => {
     );
   });
 
+  test("accepts is JsonExpr without in", () => {
+    expectValidPolicy(
+      createBasePolicy({
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              is: {
+                left: { Var: "principal" },
+                entity_type: "User",
+              },
+            },
+          },
+        ],
+      })
+    );
+  });
+
   test("rejects is JsonExpr without entity_type", () => {
     // permit(principal, action, resource) when { principal is in Group::"friends" };
     expectInvalidPolicy(
@@ -187,6 +300,24 @@ describe("Cedar policy conditions and JsonExpr", () => {
               is: {
                 left: { Var: "principal" },
                 in: { Value: { __entity: { type: "Group", id: "friends" } } },
+              },
+            },
+          },
+        ],
+      })
+    );
+  });
+
+  test("rejects is JsonExpr with non-string entity_type", () => {
+    expectInvalidPolicy(
+      createBasePolicy({
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              is: {
+                left: { Var: "principal" },
+                entity_type: 1,
               },
             },
           },
@@ -222,6 +353,24 @@ describe("Cedar policy conditions and JsonExpr", () => {
           {
             kind: "when",
             body: { like: { left: { Var: "resource" }, pattern: [123] } },
+          },
+        ],
+      })
+    );
+  });
+
+  test("rejects like JsonExpr with invalid literal pattern shape", () => {
+    expectInvalidPolicy(
+      createBasePolicy({
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              like: {
+                left: { Var: "resource" },
+                pattern: [{ Literal: "mail", extra: true }],
+              },
+            },
           },
         ],
       })
@@ -264,6 +413,26 @@ describe("Cedar policy conditions and JsonExpr", () => {
     );
   });
 
+  test("rejects if-then-else JsonExpr with additional keys", () => {
+    expectInvalidPolicy(
+      createBasePolicy({
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              "if-then-else": {
+                if: { Var: "context" },
+                then: { Value: true },
+                else: { Value: false },
+                extra: { Value: false },
+              },
+            },
+          },
+        ],
+      })
+    );
+  });
+
   test("accepts condition with Set JsonExpr", () => {
     // permit(principal, action, resource) when { [1, 2, "something"] };
     expectValidPolicy(
@@ -284,6 +453,22 @@ describe("Cedar policy conditions and JsonExpr", () => {
       createBasePolicy({
         conditions: [
           { kind: "when", body: { Set: [{ Value: 1 }, { nope: true }] } },
+        ],
+      })
+    );
+  });
+
+  test("rejects Set JsonExpr with additional top-level keys", () => {
+    expectInvalidPolicy(
+      createBasePolicy({
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              Set: [{ Value: 1 }],
+              Record: {},
+            },
+          },
         ],
       })
     );
@@ -319,6 +504,22 @@ describe("Cedar policy conditions and JsonExpr", () => {
     );
   });
 
+  test("rejects Record JsonExpr with additional top-level keys", () => {
+    expectInvalidPolicy(
+      createBasePolicy({
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              Record: { foo: { Value: true } },
+              Set: [],
+            },
+          },
+        ],
+      })
+    );
+  });
+
   test("accepts condition with extension function JsonExpr", () => {
     // permit(principal, action, resource) when { decimal("10.0") };
     expectValidPolicy(
@@ -333,6 +534,35 @@ describe("Cedar policy conditions and JsonExpr", () => {
     expectInvalidPolicy(
       createBasePolicy({
         conditions: [{ kind: "when", body: { decimal: { Value: "10.0" } } }],
+      })
+    );
+  });
+
+  test("rejects extension JsonExpr with reserved key", () => {
+    expectInvalidPolicy(
+      createBasePolicy({
+        conditions: [
+          {
+            kind: "when",
+            body: { is: [{ Value: "10.0" }] },
+          },
+        ],
+      })
+    );
+  });
+
+  test("rejects extension JsonExpr with multiple keys", () => {
+    expectInvalidPolicy(
+      createBasePolicy({
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              decimal: [{ Value: "10.0" }],
+              ip: [{ Value: "222.222.222.0/24" }],
+            },
+          },
+        ],
       })
     );
   });

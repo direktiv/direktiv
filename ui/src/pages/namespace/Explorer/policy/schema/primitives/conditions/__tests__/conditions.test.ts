@@ -6,6 +6,17 @@ import {
 import { describe, test } from "vitest";
 
 describe("Cedar conditions schema", () => {
+  test("accepts multiple conditions", () => {
+    expectValidPolicy(
+      createBasePolicy({
+        conditions: [
+          { kind: "when", body: { Value: true } },
+          { kind: "unless", body: { Value: false } },
+        ],
+      })
+    );
+  });
+
   test("accepts when condition", () => {
     expectValidPolicy(
       createBasePolicy({
@@ -30,6 +41,33 @@ describe("Cedar conditions schema", () => {
             // @ts-expect-error - condition kind only allows when/unless
             kind: "if",
             body: { Value: true },
+          },
+        ],
+      })
+    );
+  });
+
+  test("rejects condition without body", () => {
+    expectInvalidPolicy(
+      createBasePolicy({
+        conditions: [
+          {
+            kind: "when",
+          },
+        ],
+      })
+    );
+  });
+
+  test("rejects condition with additional keys", () => {
+    expectInvalidPolicy(
+      createBasePolicy({
+        conditions: [
+          {
+            kind: "when",
+            body: { Value: true },
+            // @ts-expect-error - condition is strict and disallows extra keys
+            extra: true,
           },
         ],
       })
