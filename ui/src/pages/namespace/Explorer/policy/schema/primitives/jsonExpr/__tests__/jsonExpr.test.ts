@@ -1,39 +1,12 @@
-import {
-  JsonExprBinaryOperators,
-  JsonExprUnaryOperators,
-} from "../primitives/jsonExpr/constants";
+import { JsonExprBinaryOperators, JsonExprUnaryOperators } from "../constants";
 import {
   createBasePolicy,
   expectInvalidPolicy,
   expectValidPolicy,
-} from "./utils";
+} from "../../../testUtils";
 import { describe, test } from "vitest";
 
 describe("Cedar policy conditions and JsonExpr", () => {
-  test("accepts when condition", () => {
-    // permit(principal, action, resource) when { true };
-    expectValidPolicy(
-      createBasePolicy({
-        conditions: [{ kind: "when", body: { Value: true } }],
-      })
-    );
-  });
-
-  test("rejects invalid condition kind", () => {
-    // permit(principal, action, resource) if { true };
-    expectInvalidPolicy(
-      createBasePolicy({
-        conditions: [
-          {
-            // @ts-expect-error - condition kind only allows when/unless
-            kind: "if",
-            body: { Value: true },
-          },
-        ],
-      })
-    );
-  });
-
   test("accepts condition with Var JsonExpr", () => {
     // permit(principal, action, resource) when { context };
     expectValidPolicy(

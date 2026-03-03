@@ -3,7 +3,7 @@ import {
   type CedarPolicySchemaType,
   CedarPolicySetSchema,
   type CedarPolicySetSchemaType,
-} from "..";
+} from ".";
 import { expect } from "vitest";
 
 export const createBasePolicy = (

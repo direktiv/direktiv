@@ -1,7 +1,10 @@
 import { describe, test } from "vitest";
 
-import { expectInvalidPolicySet, expectValidPolicySet } from "./utils";
-import type { CedarPolicySetSchemaType } from "..";
+import {
+  expectInvalidPolicySet,
+  expectValidPolicySet,
+} from "../../../testUtils";
+import type { CedarPolicySetSchemaType } from "../../../index";
 
 describe("Cedar policy set schema", () => {
   test("accepts staticPolicies, templates, and templateLinks", () => {
