@@ -2,7 +2,7 @@ import {
   createBasePolicy,
   expectInvalidPolicy,
   expectValidPolicy,
-} from "../../../testUtils";
+} from "../../../utils/testutils";
 import { describe, test } from "vitest";
 
 describe("Cedar annotations schema", () => {

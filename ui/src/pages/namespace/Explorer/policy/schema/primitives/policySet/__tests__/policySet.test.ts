@@ -3,7 +3,7 @@ import { describe, test } from "vitest";
 import {
   expectInvalidPolicySet,
   expectValidPolicySet,
-} from "../../../testUtils";
+} from "../../../utils/testutils";
 import type { CedarPolicySetSchemaType } from "../../../index";
 
 describe("Cedar policy set schema", () => {
