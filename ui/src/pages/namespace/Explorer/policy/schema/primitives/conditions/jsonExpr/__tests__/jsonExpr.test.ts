@@ -3,7 +3,7 @@ import {
   createBasePolicy,
   expectInvalidPolicy,
   expectValidPolicy,
-} from "../../../testUtils";
+} from "../../../../testUtils";
 import { describe, test } from "vitest";
 
 describe("Cedar policy conditions and JsonExpr", () => {

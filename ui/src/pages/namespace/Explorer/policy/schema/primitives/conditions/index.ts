@@ -1,4 +1,4 @@
-import { JsonExprSchema } from "../jsonExpr";
+import { JsonExprSchema } from "./jsonExpr";
 import { z } from "zod";
 
 // when { ... } / unless { ... }
