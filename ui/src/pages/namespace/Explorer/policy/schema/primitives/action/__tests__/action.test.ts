@@ -6,6 +6,26 @@ import {
 import { describe, test } from "vitest";
 
 describe("Cedar action schema", () => {
+  test("accepts action All", () => {
+    expectValidPolicy(createBasePolicy({ action: { op: "All" } }));
+  });
+
+  test("accepts action == entity", () => {
+    const input = createBasePolicy({
+      action: { op: "==", entity: { type: "Action", id: "readFile" } },
+    });
+
+    expectValidPolicy(input);
+  });
+
+  test("accepts action in entity", () => {
+    const input = createBasePolicy({
+      action: { op: "in", entity: { type: "Action", id: "readOnly" } },
+    });
+
+    expectValidPolicy(input);
+  });
+
   test("accepts action in entities", () => {
     const input = createBasePolicy({
       action: {
