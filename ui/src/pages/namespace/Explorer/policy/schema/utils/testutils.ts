@@ -22,7 +22,7 @@ export const expectValidPolicy = (input: CedarPolicySchemaType) => {
   expect(CedarPolicySchema.parse(input)).toEqual(input);
 };
 
-export const expectInvalidPolicy = (input: unknown) => {
+export const expectInvalidPolicy = (input: CedarPolicySetSchemaType) => {
   expect(CedarPolicySchema.safeParse(input).success).toBe(false);
 };
 
@@ -31,6 +31,6 @@ export const expectValidPolicySet = (input: CedarPolicySetSchemaType) => {
   expect(CedarPolicySetSchema.parse(input)).toEqual(input);
 };
 
-export const expectInvalidPolicySet = (input: unknown) => {
+export const expectInvalidPolicySet = (input: CedarPolicySetSchemaType) => {
   expect(CedarPolicySetSchema.safeParse(input).success).toBe(false);
 };
