@@ -1,11 +1,12 @@
 import { describe, test } from "vitest";
 
 import { expectInvalidPolicySet, expectValidPolicySet } from "./utils";
+import type { CedarPolicySetSchemaType } from "..";
 
 describe("Cedar policy set schema", () => {
   test("accepts staticPolicies, templates, and templateLinks", () => {
     // policy set with one static policy and one template link value for ?resource
-    const input = {
+    const input: CedarPolicySetSchemaType = {
       staticPolicies: {
         policy0: {
           effect: "permit",
@@ -40,16 +41,19 @@ describe("Cedar policy set schema", () => {
 
   test("rejects template link with invalid slot key", () => {
     // template link values can only use ?principal or ?resource
-    expectInvalidPolicySet({
+    const input: CedarPolicySetSchemaType = {
       templateLinks: [
         {
           templateId: "template0",
           newId: "policy1",
           values: {
+            // @ts-expect-error - only ?principal and ?resource are allowed
             "?action": { type: "Action", id: "read" },
           },
         },
       ],
-    });
+    };
+
+    expectInvalidPolicySet(input);
   });
 });

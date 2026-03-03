@@ -32,13 +32,21 @@ describe("Cedar policy schema", () => {
 
   test("rejects unknown effect", () => {
     // allow(principal, action, resource);
-    expectInvalidPolicy(createBasePolicy({ effect: "allow" as never }));
+    expectInvalidPolicy(
+      createBasePolicy({
+        // @ts-expect-error - only permit/forbid are allowed
+        effect: "allow",
+      })
+    );
   });
 
   test("rejects invalid principal slot", () => {
     // permit(principal == ?resource, action, resource);
     expectInvalidPolicy(
-      createBasePolicy({ principal: { op: "==", slot: "?resource" } as never })
+      createBasePolicy({
+        // @ts-expect-error - principal slot only allows ?principal
+        principal: { op: "==", slot: "?resource" },
+      })
     );
   });
 
@@ -60,7 +68,10 @@ describe("Cedar policy schema", () => {
   test("rejects invalid action slot", () => {
     // permit(principal, action == ?principal, resource);
     expectInvalidPolicy(
-      createBasePolicy({ action: { op: "==", slot: "?principal" } as never })
+      createBasePolicy({
+        // @ts-expect-error - action slot only allows ?action
+        action: { op: "==", slot: "?principal" },
+      })
     );
   });
 
@@ -80,7 +91,10 @@ describe("Cedar policy schema", () => {
   test("rejects invalid resource slot", () => {
     // permit(principal, action, resource == ?principal);
     expectInvalidPolicy(
-      createBasePolicy({ resource: { op: "==", slot: "?principal" } as never })
+      createBasePolicy({
+        // @ts-expect-error - resource slot only allows ?resource
+        resource: { op: "==", slot: "?principal" },
+      })
     );
   });
 
@@ -101,14 +115,20 @@ describe("Cedar policy schema", () => {
     expectInvalidPolicy(
       createBasePolicy({
         annotations: {
+          // @ts-expect-error - annotation values must be string or null
           priority: 10,
-        } as never,
+        },
       })
     );
   });
 
   test("rejects principal == variant with missing entity or slot", () => {
-    expectInvalidPolicy(createBasePolicy({ principal: { op: "==" } as never }));
+    expectInvalidPolicy(
+      createBasePolicy({
+        // @ts-expect-error - principal == requires entity or slot
+        principal: { op: "==" },
+      })
+    );
   });
 
   test("rejects action in variant with extra keys", () => {
@@ -118,7 +138,7 @@ describe("Cedar policy schema", () => {
           op: "in",
           entity: { type: "Action", id: "read" },
           entities: [{ type: "Action", id: "write" }],
-        } as never,
+        },
       })
     );
   });
@@ -129,8 +149,9 @@ describe("Cedar policy schema", () => {
         resource: {
           op: "is",
           entity_type: "Folder",
+          // @ts-expect-error - resource is/in slot only allows ?resource
           in: { slot: "?principal" },
-        } as never,
+        },
       })
     );
   });

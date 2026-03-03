@@ -20,10 +20,16 @@ describe("Cedar policy conditions and JsonExpr", () => {
   });
 
   test("rejects invalid condition kind", () => {
-    // permit(principal, action, resource) iff { true };
+    // permit(principal, action, resource) if { true };
     expectInvalidPolicy(
       createBasePolicy({
-        conditions: [{ kind: "iff", body: { Value: true } } as never],
+        conditions: [
+          {
+            // @ts-expect-error - condition kind only allows when/unless
+            kind: "if",
+            body: { Value: true },
+          },
+        ],
       })
     );
   });
@@ -41,7 +47,7 @@ describe("Cedar policy conditions and JsonExpr", () => {
     // permit(principal, action, resource) when { actor };
     expectInvalidPolicy(
       createBasePolicy({
-        conditions: [{ kind: "when", body: { Var: "actor" } }] as never,
+        conditions: [{ kind: "when", body: { Var: "actor" } }],
       })
     );
   });
@@ -59,7 +65,7 @@ describe("Cedar policy conditions and JsonExpr", () => {
     // permit(principal, action, resource) when { ?action };
     expectInvalidPolicy(
       createBasePolicy({
-        conditions: [{ kind: "when", body: { Slot: "?action" } }] as never,
+        conditions: [{ kind: "when", body: { Slot: "?action" } }],
       })
     );
   });
@@ -106,7 +112,7 @@ describe("Cedar policy conditions and JsonExpr", () => {
     // permit(principal, action, resource) when { ! };
     expectInvalidPolicy(
       createBasePolicy({
-        conditions: [{ kind: "when", body: { "!": {} } }] as never,
+        conditions: [{ kind: "when", body: { "!": {} } }],
       })
     );
   });
@@ -133,7 +139,7 @@ describe("Cedar policy conditions and JsonExpr", () => {
       createBasePolicy({
         conditions: [
           { kind: "when", body: { "==": { left: { Var: "context" } } } },
-        ] as never,
+        ],
       })
     );
   });
@@ -172,7 +178,7 @@ describe("Cedar policy conditions and JsonExpr", () => {
       createBasePolicy({
         conditions: [
           { kind: "when", body: { ".": { left: { Var: "context" } } } },
-        ] as never,
+        ],
       })
     );
   });
@@ -211,7 +217,7 @@ describe("Cedar policy conditions and JsonExpr", () => {
               },
             },
           },
-        ] as never,
+        ],
       })
     );
   });
@@ -244,7 +250,7 @@ describe("Cedar policy conditions and JsonExpr", () => {
             kind: "when",
             body: { like: { left: { Var: "resource" }, pattern: [123] } },
           },
-        ] as never,
+        ],
       })
     );
   });
@@ -280,7 +286,7 @@ describe("Cedar policy conditions and JsonExpr", () => {
               "if-then-else": { if: { Var: "context" }, then: { Value: true } },
             },
           },
-        ] as never,
+        ],
       })
     );
   });
@@ -305,7 +311,7 @@ describe("Cedar policy conditions and JsonExpr", () => {
       createBasePolicy({
         conditions: [
           { kind: "when", body: { Set: [{ Value: 1 }, { nope: true }] } },
-        ] as never,
+        ],
       })
     );
   });
@@ -335,7 +341,7 @@ describe("Cedar policy conditions and JsonExpr", () => {
       createBasePolicy({
         conditions: [
           { kind: "when", body: { Record: { foo: { nope: true } } } },
-        ] as never,
+        ],
       })
     );
   });
@@ -353,9 +359,7 @@ describe("Cedar policy conditions and JsonExpr", () => {
     // permit(principal, action, resource) when { decimal("10.0") } represented with invalid JSON shape;
     expectInvalidPolicy(
       createBasePolicy({
-        conditions: [
-          { kind: "when", body: { decimal: { Value: "10.0" } } },
-        ] as never,
+        conditions: [{ kind: "when", body: { decimal: { Value: "10.0" } } }],
       })
     );
   });
@@ -367,7 +371,7 @@ describe("Cedar policy conditions and JsonExpr", () => {
           conditions: [
             {
               kind: "when",
-              body: { [operator]: { arg: { Value: true } } } as never,
+              body: { [operator]: { arg: { Value: true } } },
             },
           ],
         })
@@ -384,7 +388,7 @@ describe("Cedar policy conditions and JsonExpr", () => {
               kind: "when",
               body: {
                 [operator]: { left: { Value: 1 }, right: { Value: 2 } },
-              } as never,
+              },
             },
           ],
         })
