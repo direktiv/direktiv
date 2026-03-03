@@ -30,10 +30,10 @@ describe("Cedar resource schema", () => {
   test("rejects resource is variant with invalid in slot", () => {
     expectInvalidPolicy(
       createBasePolicy({
+        // @ts-expect-error - resource is/in slot only allows ?resource
         resource: {
           op: "is",
           entity_type: "Folder",
-          // @ts-expect-error - resource is/in slot only allows ?resource
           in: { slot: "?principal" },
         },
       })
