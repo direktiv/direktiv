@@ -7,7 +7,11 @@ import { describe, test } from "vitest";
 
 describe("Cedar effect schema", () => {
   test("accepts permit effect", () => {
-    expectValidPolicy(createBasePolicy());
+    expectValidPolicy(
+      createBasePolicy({
+        effect: "permit",
+      })
+    );
   });
 
   test("accepts forbid effect", () => {
