@@ -47,25 +47,29 @@ const ResourceInSlotSchema = z
   })
   .strict();
 
-// resource is Folder in Folder::"Public" / resource is Folder in ?resource
+// resource is Folder
 const ResourceIsSchema = z
   .object({
     op: IsOperatorSchema,
     entity_type: z.string(),
-    in: z
-      .union([
-        z
-          .object({
-            entity: EntitySchema,
-          })
-          .strict(),
-        z
-          .object({
-            slot: ResourceSlotSchema,
-          })
-          .strict(),
-      ])
-      .optional(),
+  })
+  .strict();
+
+// resource is Folder in Folder::"Public"
+const ResourceIsInEntitySchema = z
+  .object({
+    op: IsOperatorSchema,
+    entity_type: z.string(),
+    in: z.object({ entity: EntitySchema }).strict(),
+  })
+  .strict();
+
+// resource is Folder in ?resource
+const ResourceIsInSlotSchema = z
+  .object({
+    op: IsOperatorSchema,
+    entity_type: z.string(),
+    in: z.object({ slot: ResourceSlotSchema }).strict(),
   })
   .strict();
 
@@ -76,4 +80,6 @@ export const ResourceSchema = z.union([
   ResourceInEntitySchema,
   ResourceInSlotSchema,
   ResourceIsSchema,
+  ResourceIsInEntitySchema,
+  ResourceIsInSlotSchema,
 ]);

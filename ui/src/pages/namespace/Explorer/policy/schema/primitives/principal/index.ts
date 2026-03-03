@@ -47,17 +47,29 @@ const PrincipalInSlotSchema = z
   })
   .strict();
 
-// principal is User in Group::"Admins" / principal is User in ?principal
+// principal is User
 const PrincipalIsSchema = z
   .object({
     op: IsOperatorSchema,
     entity_type: z.string(),
-    in: z
-      .union([
-        z.object({ entity: EntitySchema }).strict(),
-        z.object({ slot: PrincipalSlotSchema }).strict(),
-      ])
-      .optional(),
+  })
+  .strict();
+
+// principal is User in Group::"Admins"
+const PrincipalIsInEntitySchema = z
+  .object({
+    op: IsOperatorSchema,
+    entity_type: z.string(),
+    in: z.object({ entity: EntitySchema }).strict(),
+  })
+  .strict();
+
+// principal is User in ?principal
+const PrincipalIsInSlotSchema = z
+  .object({
+    op: IsOperatorSchema,
+    entity_type: z.string(),
+    in: z.object({ slot: PrincipalSlotSchema }).strict(),
   })
   .strict();
 
@@ -68,4 +80,6 @@ export const PrincipalSchema = z.union([
   PrincipalInEntitySchema,
   PrincipalInSlotSchema,
   PrincipalIsSchema,
+  PrincipalIsInEntitySchema,
+  PrincipalIsInSlotSchema,
 ]);
