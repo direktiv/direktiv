@@ -13,7 +13,6 @@ describe("Cedar annotations schema", () => {
         reason: "temporary block",
       },
     });
-
     expectValidPolicy(input);
   });
 
