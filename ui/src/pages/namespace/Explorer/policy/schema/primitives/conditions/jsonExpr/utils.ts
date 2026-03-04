@@ -27,8 +27,6 @@ export const JsonExprReservedKeys = new Set([
   "Var",
   "Slot",
   "Unknown",
-  ...JsonExprUnaryOperators,
-  ...JsonExprBinaryOperators,
   ".",
   "has",
   "is",
@@ -36,6 +34,8 @@ export const JsonExprReservedKeys = new Set([
   "if-then-else",
   "Set",
   "Record",
+  ...JsonExprUnaryOperators,
+  ...JsonExprBinaryOperators,
 ]);
 
 export const strictSingleKeyObject = <
