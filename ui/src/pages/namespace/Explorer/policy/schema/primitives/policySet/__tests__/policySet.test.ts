@@ -55,7 +55,6 @@ describe("Cedar policy set schema", () => {
   });
 
   test("accepts staticPolicies, templates, and templateLinks", () => {
-    // policy set with one static policy and one template link value for ?resource
     const input: CedarPolicySetSchemaType = {
       staticPolicies: {
         policy0: {
@@ -90,7 +89,6 @@ describe("Cedar policy set schema", () => {
   });
 
   test("rejects template link with invalid slot key", () => {
-    // template link values can only use ?principal or ?resource
     const input: CedarPolicySetSchemaType = {
       templateLinks: [
         {

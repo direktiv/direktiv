@@ -7,12 +7,20 @@ import { describe, test } from "vitest";
 
 describe("Attribute Expression schema", () => {
   test("accepts dot accessor expression", () => {
+    // Cedar: when { context.tls_version == "1.3" };
     expectValidPolicy(
       createBasePolicy({
         conditions: [
           {
             kind: "when",
-            body: { ".": { left: { Var: "context" }, attr: "tls_version" } },
+            body: {
+              "==": {
+                left: {
+                  ".": { left: { Var: "context" }, attr: "tls_version" },
+                },
+                right: { Value: "1.3" },
+              },
+            },
           },
         ],
       })
@@ -20,6 +28,7 @@ describe("Attribute Expression schema", () => {
   });
 
   test("accepts has accessor expression", () => {
+    // Cedar: when { principal has email };
     expectValidPolicy(
       createBasePolicy({
         conditions: [

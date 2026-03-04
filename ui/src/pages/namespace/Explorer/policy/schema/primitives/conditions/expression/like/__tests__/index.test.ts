@@ -7,6 +7,7 @@ import { describe, test } from "vitest";
 
 describe("Like Expression schema", () => {
   test("accepts like expression", () => {
+    // Cedar: when { resource.email like "*@amazon.com" };
     expectValidPolicy(
       createBasePolicy({
         conditions: [

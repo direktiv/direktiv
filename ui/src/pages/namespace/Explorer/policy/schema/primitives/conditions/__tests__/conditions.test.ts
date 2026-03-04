@@ -7,6 +7,7 @@ import { describe, test } from "vitest";
 
 describe("Cedar conditions schema", () => {
   test("accepts multiple conditions", () => {
+    // Cedar: when { true } unless { false };
     expectValidPolicy(
       createBasePolicy({
         conditions: [
@@ -18,6 +19,7 @@ describe("Cedar conditions schema", () => {
   });
 
   test("accepts when condition", () => {
+    // Cedar: when { true };
     expectValidPolicy(
       createBasePolicy({
         conditions: [{ kind: "when", body: { Value: true } }],
@@ -26,6 +28,7 @@ describe("Cedar conditions schema", () => {
   });
 
   test("accepts unless condition", () => {
+    // Cedar: unless { true };
     expectValidPolicy(
       createBasePolicy({
         conditions: [{ kind: "unless", body: { Value: true } }],
@@ -50,11 +53,7 @@ describe("Cedar conditions schema", () => {
   test("rejects condition without body", () => {
     expectInvalidPolicy(
       createBasePolicy({
-        conditions: [
-          {
-            kind: "when",
-          },
-        ],
+        conditions: [{ kind: "when" }],
       })
     );
   });

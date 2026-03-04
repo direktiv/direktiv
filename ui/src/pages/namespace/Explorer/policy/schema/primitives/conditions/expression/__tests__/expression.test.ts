@@ -6,6 +6,7 @@ import { describe, test } from "vitest";
 
 describe("Cedar Expression schema", () => {
   test("accepts nested Expression variants", () => {
+    // Cedar: when { if !context then resource.email like "*@amazon.com" else false };
     expectValidPolicy(
       createBasePolicy({
         conditions: [

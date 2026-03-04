@@ -7,9 +7,20 @@ import { describe, test } from "vitest";
 
 describe("Extension Expression schema", () => {
   test("accepts extension function expression", () => {
+    // Cedar: when { decimal("10.0") == context.maxAmount };
     expectValidPolicy(
       createBasePolicy({
-        conditions: [{ kind: "when", body: { decimal: [{ Value: "10.0" }] } }],
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              "==": {
+                left: { decimal: [{ Value: "10.0" }] },
+                right: { ".": { left: { Var: "context" }, attr: "maxAmount" } },
+              },
+            },
+          },
+        ],
       })
     );
   });

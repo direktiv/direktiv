@@ -7,9 +7,22 @@ import { describe, test } from "vitest";
 
 describe("Unknown Expression schema", () => {
   test("accepts Unknown with exactly one string argument", () => {
+    // Cedar: when { unknown("x") == context.lookupName };
     expectValidPolicy(
       createBasePolicy({
-        conditions: [{ kind: "when", body: { Unknown: { name: "x" } } }],
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              "==": {
+                left: { Unknown: { name: "x" } },
+                right: {
+                  ".": { left: { Var: "context" }, attr: "lookupName" },
+                },
+              },
+            },
+          },
+        ],
       })
     );
   });

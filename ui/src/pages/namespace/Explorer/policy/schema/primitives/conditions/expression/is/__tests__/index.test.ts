@@ -7,6 +7,7 @@ import { describe, test } from "vitest";
 
 describe("Is Expression schema", () => {
   test("accepts is expression with optional in clause", () => {
+    // Cedar: when { principal is User in Group::"friends" };
     expectValidPolicy(
       createBasePolicy({
         conditions: [
@@ -26,6 +27,7 @@ describe("Is Expression schema", () => {
   });
 
   test("accepts is expression without in clause", () => {
+    // Cedar: when { principal is User };
     expectValidPolicy(
       createBasePolicy({
         conditions: [

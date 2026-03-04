@@ -7,11 +7,32 @@ import { describe, test } from "vitest";
 
 describe("Slot Expression schema", () => {
   test("accepts all valid Slot values", () => {
+    /*
+      Cedar templates:
+      when { principal == ?principal };
+      when { resource == ?resource };
+    */
     expectValidPolicy(
       createBasePolicy({
         conditions: [
-          { kind: "when", body: { Slot: "?principal" } },
-          { kind: "when", body: { Slot: "?resource" } },
+          {
+            kind: "when",
+            body: {
+              "==": {
+                left: { Var: "principal" },
+                right: { Slot: "?principal" },
+              },
+            },
+          },
+          {
+            kind: "when",
+            body: {
+              "==": {
+                left: { Var: "resource" },
+                right: { Slot: "?resource" },
+              },
+            },
+          },
         ],
       })
     );

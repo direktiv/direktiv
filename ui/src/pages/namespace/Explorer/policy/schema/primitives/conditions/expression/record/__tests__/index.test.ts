@@ -7,15 +7,26 @@ import { describe, test } from "vitest";
 
 describe("Record Expression schema", () => {
   test("accepts Record expression", () => {
+    // Cedar: when { {"foo": "spam", "somethingelse": false}.foo == "spam" };
     expectValidPolicy(
       createBasePolicy({
         conditions: [
           {
             kind: "when",
             body: {
-              Record: {
-                foo: { Value: "spam" },
-                somethingelse: { Value: false },
+              "==": {
+                left: {
+                  ".": {
+                    left: {
+                      Record: {
+                        foo: { Value: "spam" },
+                        somethingelse: { Value: false },
+                      },
+                    },
+                    attr: "foo",
+                  },
+                },
+                right: { Value: "spam" },
               },
             },
           },
@@ -25,23 +36,39 @@ describe("Record Expression schema", () => {
   });
 
   test("accepts nested Record expression for user profile", () => {
+    // Cedar: when { {"user": {"profile": {"name": "alice", "isActive": true}}}.user.profile.isActive };
     expectValidPolicy(
       createBasePolicy({
         conditions: [
           {
             kind: "when",
             body: {
-              Record: {
-                user: {
-                  Record: {
-                    profile: {
-                      Record: {
-                        name: { Value: "alice" },
-                        isActive: { Value: true },
+              ".": {
+                left: {
+                  ".": {
+                    left: {
+                      ".": {
+                        left: {
+                          Record: {
+                            user: {
+                              Record: {
+                                profile: {
+                                  Record: {
+                                    name: { Value: "alice" },
+                                    isActive: { Value: true },
+                                  },
+                                },
+                              },
+                            },
+                          },
+                        },
+                        attr: "user",
                       },
                     },
+                    attr: "profile",
                   },
                 },
+                attr: "isActive",
               },
             },
           },

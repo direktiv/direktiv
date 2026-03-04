@@ -7,6 +7,7 @@ import { describe, test } from "vitest";
 
 describe("IfThenElse Expression schema", () => {
   test("accepts if-then-else expression", () => {
+    // Cedar: when { if context then true else false };
     expectValidPolicy(
       createBasePolicy({
         conditions: [
