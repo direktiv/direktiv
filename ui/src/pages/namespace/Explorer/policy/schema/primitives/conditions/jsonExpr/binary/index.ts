@@ -14,10 +14,16 @@ const BinaryOperatorSchema = (
   jsonExprSchema: z.ZodTypeAny
 ) => strictSingleKeyObject(operator, BinaryArgumentsSchema(jsonExprSchema));
 
+type BinaryOperatorSchemaType = ReturnType<typeof BinaryOperatorSchema>;
+
 // when { principal == action };
 export const BinaryJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
   z.union(
     JsonExprBinaryOperators.map((operator) =>
       BinaryOperatorSchema(operator, jsonExprSchema)
-    ) as unknown as [z.ZodTypeAny, z.ZodTypeAny, ...z.ZodTypeAny[]]
+    ) as [
+      BinaryOperatorSchemaType,
+      BinaryOperatorSchemaType,
+      ...BinaryOperatorSchemaType[],
+    ]
   );
