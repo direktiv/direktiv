@@ -1,11 +1,11 @@
-import { JsonExprSchema } from "./jsonExpr";
+import { ExpressionSchema } from "./expression";
 import { z } from "zod";
 
 // when { ... } / unless { ... }
 const ConditionSchema = z
   .object({
     kind: z.enum(["when", "unless"]),
-    body: JsonExprSchema,
+    body: ExpressionSchema,
   })
   .strict();
 
