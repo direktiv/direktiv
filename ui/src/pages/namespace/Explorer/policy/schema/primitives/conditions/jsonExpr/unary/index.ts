@@ -1,8 +1,4 @@
-import {
-  JsonExprUnaryOperators,
-  strictSingleKeyObject,
-  unionFromArray,
-} from "../utils";
+import { JsonExprUnaryOperators, strictSingleKeyObject } from "../utils";
 import { z } from "zod";
 
 const UnaryArgumentSchema = (jsonExprSchema: z.ZodTypeAny) =>
@@ -10,8 +6,8 @@ const UnaryArgumentSchema = (jsonExprSchema: z.ZodTypeAny) =>
 
 // when { !context.something }; / when { -1 }; / when { [1, 2].isEmpty() };
 export const UnaryJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
-  unionFromArray(
+  z.union(
     JsonExprUnaryOperators.map((operator) =>
       strictSingleKeyObject(operator, UnaryArgumentSchema(jsonExprSchema))
-    )
+    ) as unknown as [z.ZodTypeAny, z.ZodTypeAny, ...z.ZodTypeAny[]]
   );

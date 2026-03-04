@@ -1,8 +1,4 @@
-import {
-  JsonExprBinaryOperators,
-  strictSingleKeyObject,
-  unionFromArray,
-} from "../utils";
+import { JsonExprBinaryOperators, strictSingleKeyObject } from "../utils";
 import { z } from "zod";
 
 const BinaryArgumentsSchema = (jsonExprSchema: z.ZodTypeAny) =>
@@ -20,8 +16,8 @@ const BinaryOperatorSchema = (
 
 // when { principal == action };
 export const BinaryJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
-  unionFromArray(
+  z.union(
     JsonExprBinaryOperators.map((operator) =>
       BinaryOperatorSchema(operator, jsonExprSchema)
-    )
+    ) as unknown as [z.ZodTypeAny, z.ZodTypeAny, ...z.ZodTypeAny[]]
   );

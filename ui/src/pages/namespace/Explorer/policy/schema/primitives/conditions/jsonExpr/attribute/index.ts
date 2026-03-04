@@ -1,4 +1,4 @@
-import { strictSingleKeyObject, unionFromArray } from "../utils";
+import { strictSingleKeyObject } from "../utils";
 import { z } from "zod";
 
 const AttributeArgumentsSchema = (jsonExprSchema: z.ZodTypeAny) =>
@@ -11,7 +11,7 @@ const AttributeArgumentsSchema = (jsonExprSchema: z.ZodTypeAny) =>
 
 // when { context.tls_version }; / when { principal has "email" };
 export const AttributeJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
-  unionFromArray([
+  z.union([
     strictSingleKeyObject(".", AttributeArgumentsSchema(jsonExprSchema)),
     strictSingleKeyObject("has", AttributeArgumentsSchema(jsonExprSchema)),
   ]);

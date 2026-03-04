@@ -45,8 +45,3 @@ export const strictSingleKeyObject = <
   key: Key,
   valueSchema: Schema
 ) => z.object({ [key]: valueSchema } as Record<Key, Schema>).strict();
-
-export const unionFromArray = (schemas: z.ZodTypeAny[]) => {
-  const [first, second, ...rest] = schemas;
-  return z.union([first!, second!, ...rest]);
-};
