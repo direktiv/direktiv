@@ -25,8 +25,9 @@ const (
 )
 
 var (
-	ErrNotFound = errors.New("ErrNotFound")
-	nameRegex   = regexp.MustCompile(`^[a-z\-]{1,24}$`)
+	ErrNotFound          = errors.New("ErrNotFound")
+	ErrInvalidSecretName = errors.New("ErrInvalidSecretName")
+	nameRegex            = regexp.MustCompile(`^[a-z](?:[a-z\-]{0,22}[a-z])?$`)
 )
 
 type Manager struct {
@@ -79,7 +80,7 @@ func (sm *Manager) Create(ctx context.Context, namespace string, secret *core.Se
 
 	if !nameRegex.MatchString(secret.Name) {
 		slog.Error("creating secret failed because of an invalid name")
-		return nil, fmt.Errorf("invalid secret name")
+		return nil, ErrInvalidSecretName
 	}
 
 	secretKubernetes := &corev1.Secret{
