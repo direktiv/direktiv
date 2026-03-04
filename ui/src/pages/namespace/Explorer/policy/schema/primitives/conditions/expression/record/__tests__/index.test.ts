@@ -24,6 +24,32 @@ describe("Record Expression schema", () => {
     );
   });
 
+  test("accepts nested Record expression for user profile", () => {
+    expectValidPolicy(
+      createBasePolicy({
+        conditions: [
+          {
+            kind: "when",
+            body: {
+              Record: {
+                user: {
+                  Record: {
+                    profile: {
+                      Record: {
+                        name: { Value: "alice" },
+                        isActive: { Value: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+      })
+    );
+  });
+
   test("rejects Record expression with invalid field expr", () => {
     expectInvalidPolicy(
       createBasePolicy({
