@@ -3,11 +3,7 @@ import { z } from "zod";
 
 const PatternElementSchema = z.union([
   z.literal("Wildcard"),
-  z
-    .object({
-      Literal: z.string(),
-    })
-    .strict(),
+  z.object({ Literal: z.string() }).strict(),
 ]);
 
 // when { resource.email like "*@amazon.com" };
