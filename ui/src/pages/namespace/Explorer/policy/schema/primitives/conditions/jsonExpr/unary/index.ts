@@ -6,11 +6,7 @@ import {
 import { z } from "zod";
 
 const UnaryArgumentSchema = (jsonExprSchema: z.ZodTypeAny) =>
-  z
-    .object({
-      arg: jsonExprSchema,
-    })
-    .strict();
+  z.object({ arg: jsonExprSchema }).strict();
 
 // when { !context.something }; / when { -1 }; / when { [1, 2].isEmpty() };
 export const UnaryJsonExprSchema = (jsonExprSchema: z.ZodTypeAny) =>
