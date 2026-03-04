@@ -1,4 +1,4 @@
-import { JsonExprBinaryOperators } from "../../constants";
+import { JsonExprBinaryOperators } from "../../utils";
 import {
   createBasePolicy,
   expectInvalidPolicy,

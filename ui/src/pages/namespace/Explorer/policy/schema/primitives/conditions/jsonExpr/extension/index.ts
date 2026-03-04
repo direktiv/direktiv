@@ -1,4 +1,4 @@
-import { JsonExprReservedKeys } from "../constants";
+import { JsonExprReservedKeys } from "../utils";
 import { z } from "zod";
 
 // when { decimal("10.0") } / when { context.source_ip.isInRange(ip("222.222.222.0/24")) };

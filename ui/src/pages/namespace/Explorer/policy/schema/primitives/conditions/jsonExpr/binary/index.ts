@@ -1,5 +1,8 @@
-import { strictSingleKeyObject, unionFromArray } from "../utils";
-import { JsonExprBinaryOperators } from "../constants";
+import {
+  JsonExprBinaryOperators,
+  strictSingleKeyObject,
+  unionFromArray,
+} from "../utils";
 import { z } from "zod";
 
 const BinaryArgumentsSchema = (jsonExprSchema: z.ZodTypeAny) =>

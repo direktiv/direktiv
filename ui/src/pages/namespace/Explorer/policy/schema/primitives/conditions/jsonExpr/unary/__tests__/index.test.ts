@@ -1,4 +1,4 @@
-import { JsonExprUnaryOperators } from "../../constants";
+import { JsonExprUnaryOperators } from "../../utils";
 import {
   createBasePolicy,
   expectInvalidPolicy,
