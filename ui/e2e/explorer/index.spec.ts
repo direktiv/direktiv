@@ -201,9 +201,7 @@ test("it is possible to create a workflow", async ({ page }) => {
   await expect(nodeCreated).toBeTruthy();
 
   // TODO: test editor functions in separate test once editor is implemented
-  await expect(
-    page.getByText("// Simple example workflow that validates type of input")
-  ).toBeVisible();
+  await expect(page.getByText("const flow: FlowDefinition = {")).toBeVisible();
 
   // navigate back by clicking on the namespace breadcrumb"
   await page.getByTestId("breadcrumb-namespace").getByText(namespace).click();
@@ -802,8 +800,8 @@ test("it is possible to filter the file list by name", async ({ page }) => {
     } else route.continue();
   });
 */
-/* 
-     Note for future uses: 
+/*
+     Note for future uses:
      The route for files needs a '/' at the end
      because the '/' is actually the beginning of the path
      see also: src/api/files/query/file.ts

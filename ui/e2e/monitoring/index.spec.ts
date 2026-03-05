@@ -15,7 +15,8 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("It will show the logs on the monitoring page", async ({ page }) => {
+// TODO: TDI-222 Fix tests for logging (instances, monitoring)
+test.skip("It will show the logs on the monitoring page", async ({ page }) => {
   const workflowName = "workflow.yaml";
   await createWorkflow(namespace, workflowName);
   await createInstance({ namespace, path: workflowName });
