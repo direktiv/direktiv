@@ -90,6 +90,10 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 		Children []*filestore.File `json:"children"`
 
 		StateViews []*core.StateView `json:"states,omitempty"`
+
+		Mapping string `json:"mapping,omitempty"`
+
+		Errors []json.RawMessage `json:"errors"`
 	}{
 		File:       file,
 		Data:       data,
@@ -103,6 +107,17 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			res.StateViews = core.SortedStateViews(ci.Config().Config.StateViews)
 		}
+
+		for i := range ci.ValidationErrors {
+			jErr, err := json.Marshal(ci.ValidationErrors[i])
+			if err != nil {
+				writeInternalError(w, err)
+				return
+			}
+			res.Errors = append(res.Errors, jErr)
+		}
+
+		res.Mapping = base64.URLEncoding.EncodeToString([]byte(ci.Config().Mapping))
 	}
 
 	writeJSON(w, res)
@@ -281,6 +296,8 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 		Data   []byte            `json:"data,omitempty"`
 		Errors []json.RawMessage `json:"errors"`
+
+		Mapping string `json:"mapping,omitempty"`
 	}{
 		File:   newFile,
 		Data:   decodedBytes,
@@ -304,6 +321,8 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 			}
 			res.Errors = append(res.Errors, jErr)
 		}
+
+		res.Mapping = base64.URLEncoding.EncodeToString([]byte(ci.Config().Mapping))
 	}
 
 	writeJSON(w, res)
@@ -411,8 +430,9 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	res := struct {
 		*filestore.File
 
-		Data   []byte            `json:"data,omitempty"`
-		Errors []json.RawMessage `json:"errors"`
+		Data    []byte            `json:"data,omitempty"`
+		Errors  []json.RawMessage `json:"errors"`
+		Mapping string            `json:"mapping,omitempty"`
 	}{
 		File:   updatedFile,
 		Data:   decodedBytes,
@@ -435,6 +455,8 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			}
 			res.Errors = append(res.Errors, jErr)
 		}
+
+		res.Mapping = base64.URLEncoding.EncodeToString([]byte(ci.Config().Mapping))
 	}
 
 	// Publish pubsub event (rename).

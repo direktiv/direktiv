@@ -18,33 +18,6 @@ import (
 	"github.com/sosodev/duration"
 )
 
-type Severity string
-
-const (
-	SeverityHint    Severity = "hint"
-	SeverityInfo    Severity = "info"
-	SeverityWarning Severity = "warning"
-	SeverityError   Severity = "error"
-)
-
-type ValidationError struct {
-	Message     string   `json:"message"`
-	StartLine   int      `json:"startLine"`
-	StartColumn int      `json:"startColumn"`
-	EndLine     int      `json:"endLine"`
-	EndColumn   int      `json:"endColumn"`
-	Severity    Severity `json:"severity"`
-}
-
-func (ve *ValidationError) Error() string {
-	b, err := json.Marshal(ve)
-	if err != nil {
-		return fmt.Sprintf("%s (line: %d, column: %d)", ve.Message, ve.StartLine, ve.StartColumn)
-	}
-
-	return string(b)
-}
-
 type ASTParser struct {
 	Script  string
 	mapping string
@@ -52,7 +25,7 @@ type ASTParser struct {
 	program *ast.Program
 	file    *file.File
 
-	Errors           []*ValidationError
+	Errors           []*core.ValidationError
 	Actions          []core.ActionConfig
 	FlowConfig       core.FlowConfig
 	FirstStateFunc   string
@@ -67,7 +40,7 @@ type ASTParser struct {
 func NewASTParser(script, mapping string) (*ASTParser, error) {
 	p := &ASTParser{
 		file:             file.NewFile("", script, 0),
-		Errors:           make([]*ValidationError, 0),
+		Errors:           make([]*core.ValidationError, 0),
 		Actions:          make([]core.ActionConfig, 0),
 		Script:           script,
 		mapping:          mapping,
@@ -126,7 +99,7 @@ func (ap *ASTParser) Parse() error {
 	if ap.FlowVariable != nil {
 		config, err := ap.buildFlowConfig()
 		if err != nil {
-			vErr := &ValidationError{}
+			vErr := &core.ValidationError{}
 			if errors.As(err, &vErr) {
 				ap.Errors = append(ap.Errors, vErr)
 			} else {
@@ -195,13 +168,13 @@ func (ap *ASTParser) walkNode(node ast.Node, isInsideFunc bool) {
 				if !hasReturn {
 					start := ap.file.Position(int(n.Idx0()))
 					end := ap.file.Position(int(n.Idx1()))
-					ap.Errors = append(ap.Errors, &ValidationError{
+					ap.Errors = append(ap.Errors, &core.ValidationError{
 						Message:     fmt.Sprintf("state function '%s' must contain at least one return statement with 'transition' or 'finish'", funcName),
 						StartLine:   start.Line,
 						StartColumn: start.Column,
 						EndLine:     end.Line,
 						EndColumn:   end.Column,
-						Severity:    SeverityError,
+						Severity:    core.SeverityError,
 					})
 				}
 			}
@@ -365,26 +338,26 @@ func (ap *ASTParser) walkFunctionNode(node ast.Node, isStateFunc bool) {
 			if !ap.isTransitionCall(n.Argument) {
 				start := ap.file.Position(int(n.Idx0()))
 				end := ap.file.Position(int(n.Idx1()))
-				ap.Errors = append(ap.Errors, &ValidationError{
+				ap.Errors = append(ap.Errors, &core.ValidationError{
 					Message:     "state function must return a call to 'transition' or 'finish'",
 					StartLine:   start.Line,
 					StartColumn: start.Column,
 					EndLine:     end.Line,
 					EndColumn:   end.Column,
-					Severity:    SeverityError,
+					Severity:    core.SeverityError,
 				})
 			}
 		} else {
 			if ap.isTransitionCall(n.Argument) {
 				start := ap.file.Position(int(n.Idx0()))
 				end := ap.file.Position(int(n.Idx1()))
-				ap.Errors = append(ap.Errors, &ValidationError{
+				ap.Errors = append(ap.Errors, &core.ValidationError{
 					Message:     "non-state function cannot return 'transition' or 'finish'",
 					StartLine:   start.Line,
 					StartColumn: start.Column,
 					EndLine:     end.Line,
 					EndColumn:   end.Column,
-					Severity:    SeverityError,
+					Severity:    core.SeverityError,
 				})
 			}
 		}
@@ -486,13 +459,13 @@ func (ap *ASTParser) walkExpression(expr ast.Expression, isInsideFunc bool, isSt
 		if isInsideFunc && !isStateFunc && ap.isTransitionCall(e) {
 			start := ap.file.Position(int(e.Idx0()))
 			end := ap.file.Position(int(e.Idx1()))
-			ap.Errors = append(ap.Errors, &ValidationError{
+			ap.Errors = append(ap.Errors, &core.ValidationError{
 				Message:     "non-state function cannot call 'transition' or 'finish'",
 				StartLine:   start.Line,
 				StartColumn: start.Column,
 				EndLine:     end.Line,
 				EndColumn:   end.Column,
-				Severity:    SeverityError,
+				Severity:    core.SeverityError,
 			})
 		}
 
@@ -519,31 +492,33 @@ func (ap *ASTParser) walkExpression(expr ast.Expression, isInsideFunc bool, isSt
 				if len(e.ArgumentList) == 0 {
 					start := ap.file.Position(int(e.Idx0()))
 					end := ap.file.Position(int(e.Idx1()))
-					ap.Errors = append(ap.Errors, &ValidationError{
+					ap.Errors = append(ap.Errors, &core.ValidationError{
 						Message:     "getSecret requires argument",
 						StartLine:   start.Line,
 						StartColumn: start.Column,
 						EndLine:     end.Line,
 						EndColumn:   end.Column,
-						Severity:    SeverityError,
+						Severity:    core.SeverityError,
 					})
 				}
 
-				sl, ok := e.ArgumentList[0].(*ast.StringLiteral)
-				if !ok {
-					start := ap.file.Position(int(e.Idx0()))
-					end := ap.file.Position(int(e.Idx1()))
-					ap.Errors = append(ap.Errors, &ValidationError{
-						Message:     "getSecret requires string argument",
-						StartLine:   start.Line,
-						StartColumn: start.Column,
-						EndLine:     end.Line,
-						EndColumn:   end.Column,
-						Severity:    SeverityError,
-					})
+				if len(e.ArgumentList) > 0 {
+					sl, ok := e.ArgumentList[0].(*ast.StringLiteral)
+					if !ok {
+						start := ap.file.Position(int(e.Idx0()))
+						end := ap.file.Position(int(e.Idx1()))
+						ap.Errors = append(ap.Errors, &core.ValidationError{
+							Message:     "getSecret requires string argument",
+							StartLine:   start.Line,
+							StartColumn: start.Column,
+							EndLine:     end.Line,
+							EndColumn:   end.Column,
+							Severity:    core.SeverityError,
+						})
+					} else {
+						ap.allSecretNames = append(ap.allSecretNames, sl.Value.String())
+					}
 				}
-
-				ap.allSecretNames = append(ap.allSecretNames, sl.Value.String())
 			}
 
 			if funcName == "getSecrets" {
@@ -552,13 +527,13 @@ func (ap *ASTParser) walkExpression(expr ast.Expression, isInsideFunc bool, isSt
 					if err != nil {
 						start := ap.file.Position(int(e.Idx0()))
 						end := ap.file.Position(int(e.Idx1()))
-						ap.Errors = append(ap.Errors, &ValidationError{
+						ap.Errors = append(ap.Errors, &core.ValidationError{
 							Message:     err.Error(),
 							StartLine:   start.Line,
 							StartColumn: start.Column,
 							EndLine:     end.Line,
 							EndColumn:   end.Column,
-							Severity:    SeverityError,
+							Severity:    core.SeverityError,
 						})
 					}
 
@@ -580,13 +555,13 @@ func (ap *ASTParser) walkExpression(expr ast.Expression, isInsideFunc bool, isSt
 			} else {
 				msg = "function call is not allowed outside of functions"
 			}
-			ap.Errors = append(ap.Errors, &ValidationError{
+			ap.Errors = append(ap.Errors, &core.ValidationError{
 				Message:     msg,
 				StartLine:   start.Line,
 				StartColumn: start.Column,
 				EndLine:     end.Line,
 				EndColumn:   end.Column,
-				Severity:    SeverityError,
+				Severity:    core.SeverityError,
 			})
 		}
 
@@ -780,13 +755,13 @@ func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 					start := ap.file.Position(int(keyed.Idx0()))
 					end := ap.file.Position(int(keyed.Idx1()))
 
-					return flow, &ValidationError{
+					return flow, &core.ValidationError{
 						Message:     fmt.Sprintf("unknown flow type: %s", flowType),
 						StartLine:   start.Line,
 						StartColumn: start.Column,
 						EndLine:     end.Line,
 						EndColumn:   end.Column,
-						Severity:    SeverityError,
+						Severity:    core.SeverityError,
 					}
 				}
 				flow.Type = flowType
@@ -800,13 +775,13 @@ func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 					start := ap.file.Position(int(keyed.Idx0()))
 					end := ap.file.Position(int(keyed.Idx1()))
 
-					return flow, &ValidationError{
+					return flow, &core.ValidationError{
 						Message:     fmt.Sprintf("invalid timeout pattern '%s', must be ISO8601", timeout),
 						StartLine:   start.Line,
 						StartColumn: start.Column,
 						EndLine:     end.Line,
 						EndColumn:   end.Column,
-						Severity:    SeverityError,
+						Severity:    core.SeverityError,
 					}
 				}
 				flow.Timeout = timeout
@@ -821,13 +796,13 @@ func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 					start := ap.file.Position(int(keyed.Idx0()))
 					end := ap.file.Position(int(keyed.Idx1()))
 
-					return flow, &ValidationError{
+					return flow, &core.ValidationError{
 						Message:     fmt.Sprintf("invalid cron pattern: %s", cronPattern),
 						StartLine:   start.Line,
 						StartColumn: start.Column,
 						EndLine:     end.Line,
 						EndColumn:   end.Column,
-						Severity:    SeverityError,
+						Severity:    core.SeverityError,
 					}
 				}
 				flow.Cron = cronPattern
@@ -840,13 +815,13 @@ func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 					start := ap.file.Position(int(keyed.Idx0()))
 					end := ap.file.Position(int(keyed.Idx1()))
 
-					return flow, &ValidationError{
+					return flow, &core.ValidationError{
 						Message:     fmt.Sprintf("state function '%s' does not exist", state),
 						StartLine:   start.Line,
 						StartColumn: start.Column,
 						EndLine:     end.Line,
 						EndColumn:   end.Column,
-						Severity:    SeverityError,
+						Severity:    core.SeverityError,
 					}
 				}
 				flow.State = state
@@ -872,13 +847,13 @@ func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 			start = ap.file.Position(int(ap.FlowVariable.Idx0()))
 		}
 
-		return flow, &ValidationError{
+		return flow, &core.ValidationError{
 			Message:     "flow type is 'cron' but no cron pattern is set",
 			StartLine:   start.Line,
 			StartColumn: start.Column,
 			EndLine:     start.Line,
 			EndColumn:   start.Column,
-			Severity:    SeverityError,
+			Severity:    core.SeverityError,
 		}
 	}
 
@@ -889,13 +864,13 @@ func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 			start = ap.file.Position(int(ap.FlowVariable.Idx0()))
 		}
 
-		return flow, &ValidationError{
+		return flow, &core.ValidationError{
 			Message:     "flow type is event-based but no events are defined",
 			StartLine:   start.Line,
 			StartColumn: start.Column,
 			EndLine:     start.Line,
 			EndColumn:   start.Column,
-			Severity:    SeverityError,
+			Severity:    core.SeverityError,
 		}
 	}
 
