@@ -174,7 +174,7 @@ func (sm *Manager) Delete(ctx context.Context, namespace, name string) error {
 	err := sm.clientSet.CoreV1().Secrets(sm.namespace).Delete(ctx, kname, metav1.DeleteOptions{})
 	if apierrors.ReasonForError(err) == metav1.StatusReasonNotFound {
 		slog.Error("deleting secret failed", slog.Any("secret", err.Error()))
-		return datastore.ErrNotFound
+		return ErrNotFound
 	}
 
 	// only update if dleete was successful
