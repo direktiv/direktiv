@@ -104,6 +104,12 @@ export function createElements(
     // create edge to next state
     const sourceId = state.name;
     const outgoingTargets = new Set<string>();
+
+    // if there is a state which is both start and finish, we create a "helperState" state to make the diagram look better
+    if (states.length > 1 && state.start === true && state.finish === true) {
+      outgoingTargets.add("helperState");
+    }
+
     state.transitions?.forEach((t) => t && outgoingTargets.add(t));
     state.events?.forEach(
       (ev) => ev.transition && outgoingTargets.add(ev.transition)
