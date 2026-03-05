@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"strings"
 
 	"github.com/direktiv/direktiv/internal/cluster/cache"
 	"github.com/direktiv/direktiv/internal/core"
@@ -22,7 +21,7 @@ type Compiler struct {
 type CompileItem struct {
 	tsScript         []byte
 	path             string
-	ValidationErrors []error
+	ValidationErrors []*core.ValidationError
 
 	script, mapping string
 	config          core.FlowConfig
@@ -92,12 +91,17 @@ func (c *Compiler) genFlow(ctx context.Context, namespace, path string) (core.Ty
 	}
 
 	if len(ci.ValidationErrors) > 0 {
+		cve := core.CompilerValidationError{
+			Errors: make([]*core.ValidationError, 0),
+		}
+
 		errList := make([]string, len(ci.ValidationErrors))
 		for i := range ci.ValidationErrors {
 			errList[i] = ci.ValidationErrors[i].Error()
+			cve.Errors = append(cve.Errors, ci.ValidationErrors[i])
 		}
 
-		return core.TypescriptFlow{}, fmt.Errorf("%s", strings.Join(errList, ", "))
+		return core.TypescriptFlow{}, cve
 	}
 
 	return ci.Config(), nil
@@ -107,7 +111,7 @@ func NewCompileItem(script []byte, path string) *CompileItem {
 	return &CompileItem{
 		tsScript:         script,
 		path:             path,
-		ValidationErrors: make([]error, 0),
+		ValidationErrors: make([]*core.ValidationError, 0),
 	}
 }
 
@@ -154,9 +158,9 @@ func (ci *CompileItem) validate() error {
 	}
 
 	if pr.FirstStateFunc == "" {
-		ci.ValidationErrors = append(ci.ValidationErrors, &ValidationError{
+		ci.ValidationErrors = append(ci.ValidationErrors, &core.ValidationError{
 			Message:  "no state functions defined",
-			Severity: SeverityError,
+			Severity: core.SeverityError,
 		})
 	}
 

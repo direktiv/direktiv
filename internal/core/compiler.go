@@ -2,6 +2,8 @@ package core
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"sort"
 )
 
@@ -13,6 +15,42 @@ const (
 	FlowActionScopeNamespace = "namespace"
 	FlowActionScopeSystem    = "system"
 )
+
+type Severity string
+
+const (
+	SeverityHint    Severity = "hint"
+	SeverityInfo    Severity = "info"
+	SeverityWarning Severity = "warning"
+	SeverityError   Severity = "error"
+)
+
+type ValidationError struct {
+	Message     string   `json:"message"`
+	StartLine   int      `json:"startLine"`
+	StartColumn int      `json:"startColumn"`
+	EndLine     int      `json:"endLine"`
+	EndColumn   int      `json:"endColumn"`
+	Severity    Severity `json:"severity"`
+}
+
+func (ve *ValidationError) Error() string {
+	b, err := json.Marshal(ve)
+	if err != nil {
+		return fmt.Sprintf("%s (line: %d, column: %d)", ve.Message, ve.StartLine, ve.StartColumn)
+	}
+
+	return string(b)
+}
+
+type CompilerValidationError struct {
+	Errors []*ValidationError
+}
+
+func (cve CompilerValidationError) Error() string {
+	// return fmt.Sprintf("%s", strings.Join(cve.Errors, ", "))
+	return ""
+}
 
 type ActionConfig struct {
 	Type  string
