@@ -1,7 +1,10 @@
 import { ExpressionReservedKeys } from "../utils";
 import { z } from "zod";
 
-// when { decimal("10.0") } / when { context.source_ip.isInRange(ip("222.222.222.0/24")) };
+/*
+  when { decimal("100.00") <= context.invoiceAmount }
+  when { context.source_ip.isInRange(ip("10.0.0.0/8")) };
+*/
 export const ExtensionExpressionSchema = (expressionSchema: z.ZodTypeAny) =>
   z
     .record(z.array(expressionSchema))

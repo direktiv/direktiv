@@ -1,7 +1,7 @@
 import { strictSingleKeyObject } from "../utils";
 import { z } from "zod";
 
-// when { if context.something then principal has "email" else false };
+// when { if context.uses_mfa then principal has "mfa_device_id" else false };
 export const IfThenElseExpressionSchema = (expressionSchema: z.ZodTypeAny) =>
   strictSingleKeyObject(
     "if-then-else",

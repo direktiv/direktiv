@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// when { Unknown("x") };
+// when { unknown("department") == context.expectedDepartment };
 export const UnknownExpressionSchema = z
   .object({
     Unknown: z.record(z.string()),

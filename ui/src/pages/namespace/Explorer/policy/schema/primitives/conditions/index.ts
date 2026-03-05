@@ -1,7 +1,10 @@
 import { ExpressionSchema } from "./expression";
 import { z } from "zod";
 
-// when { ... } / unless { ... }
+/*
+  when { principal == User::"alice" }
+  unless { resource in Folder::"quarantine" }
+*/
 const ConditionSchema = z
   .object({
     kind: z.enum(["when", "unless"]),
@@ -9,5 +12,8 @@ const ConditionSchema = z
   })
   .strict();
 
-// ... when { ... } unless { ... }
+/*
+  ... when { principal has "email" }
+      unless { context.riskScore > 90 }
+*/
 export const ConditionsSchema = z.array(ConditionSchema);

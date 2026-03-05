@@ -16,7 +16,7 @@ const BinaryOperatorSchema = (
 
 type BinaryOperatorSchemaType = ReturnType<typeof BinaryOperatorSchema>;
 
-// when { principal == action };
+// when { principal == User::"alice" };
 export const BinaryExpressionSchema = (expressionSchema: z.ZodTypeAny) =>
   z.union(
     ExpressionBinaryOperators.map((operator) =>

@@ -1,6 +1,6 @@
 import { strictSingleKeyObject } from "../utils";
 import { z } from "zod";
 
-// when { [1, 2, "something"] };
+// when { action in [Action::"viewReport", Action::"downloadReport"] };
 export const SetExpressionSchema = (expressionSchema: z.ZodTypeAny) =>
   strictSingleKeyObject("Set", z.array(expressionSchema));

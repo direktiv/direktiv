@@ -6,7 +6,7 @@ const PatternElementSchema = z.union([
   z.object({ Literal: z.string() }).strict(),
 ]);
 
-// when { resource.email like "*@amazon.com" };
+// when { context.requesterEmail like "*@company.com" };
 export const LikeExpressionSchema = (expressionSchema: z.ZodTypeAny) =>
   strictSingleKeyObject(
     "like",

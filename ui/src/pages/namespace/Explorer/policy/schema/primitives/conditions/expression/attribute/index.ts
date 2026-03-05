@@ -9,7 +9,10 @@ const AttributeArgumentsSchema = (expressionSchema: z.ZodTypeAny) =>
     })
     .strict();
 
-// when { context.tls_version }; / when { principal has "email" };
+/*
+  when { context.tls_version == "1.3" };
+  when { principal has "email" };
+*/
 export const AttributeExpressionSchema = (expressionSchema: z.ZodTypeAny) =>
   z.union([
     strictSingleKeyObject(".", AttributeArgumentsSchema(expressionSchema)),
