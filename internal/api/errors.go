@@ -94,6 +94,14 @@ func writeSecretsError(w http.ResponseWriter, err error) {
 
 		return
 	}
+	if errors.Is(err, secrets.ErrInvalidSecretName) {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "invalid secret name",
+		})
+
+		return
+	}
 
 	writeInternalError(w, err)
 }
