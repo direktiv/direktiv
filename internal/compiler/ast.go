@@ -1064,7 +1064,30 @@ func (ap *ASTParser) parseAction(expr ast.Expression) (core.ActionConfig, error)
 			if strLit, ok := keyed.Value.(*ast.StringLiteral); ok {
 				action.Size = strLit.Value.String()
 			}
+		case "auth":
+			if authObj, ok := keyed.Value.(*ast.ObjectLiteral); ok {
+				auth := &core.BasicAuthConfig{}
 
+				for _, authProp := range authObj.Value {
+					if ak, ok := authProp.(*ast.PropertyKeyed); ok {
+						key := ap.extractValue(ak.Key)
+						val := ap.extractValue(ak.Value)
+
+						switch key {
+						case "username":
+							if s, ok := val.(string); ok {
+								auth.Username = s
+							}
+						case "password":
+							if s, ok := val.(string); ok {
+								auth.Password = s
+							}
+						}
+					}
+				}
+
+				action.Auth = auth
+			}
 		case "envs":
 			if arrLit, ok := keyed.Value.(*ast.ArrayLiteral); ok {
 				for _, elem := range arrLit.Value {

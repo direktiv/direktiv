@@ -83,6 +83,36 @@ function stateDelay(): StateFunction<unknown> {
   })
 };`;
 
+export const workflowWithService = `const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateFirst",
+};
+
+const d = generateAction({
+  image: "direktiv/request:v4",
+  size: "small",
+  envs: [
+    {
+      name: "MY_ENV_VAR",
+      value: "env-var-value",
+    },
+  ],
+});
+
+function stateFirst(): StateFunction<unknown> {
+  var payload = {
+    commands: [
+      {
+        command: "ls -la",
+      },
+    ],
+  };
+  let result = d(payload);
+  return finish(result);
+}
+`;
+
 export const createWorkflow = async (namespace: string, name: string) => {
   const response = await createFile({
     namespace,
