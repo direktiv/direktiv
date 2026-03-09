@@ -14,7 +14,8 @@ const Condition = ({
   invert,
 }: ConditionComponentProps) => (
   <Card
-    className="flex min-w-40 flex-col items-center justify-end"
+    background="weight-2"
+    className="flex min-w-40 flex-col items-center justify-end py-2"
     aria-label="condition"
   >
     <div className="self-center text-xs">{label}</div>
