@@ -185,8 +185,8 @@ export const InstanceOutputResponseSchema = z.object({
   }
  */
 
-export const workflowStateSchema = z.object({
-  name: z.string().optional(),
+const WorkflowStateSchema = z.object({
+  name: z.string(),
   start: z.boolean().optional(),
   finish: z.boolean().optional(),
   visited: z.boolean().optional(),
@@ -219,11 +219,15 @@ export const workflowStateSchema = z.object({
   defaultTransition: z.string().optional(),
 });
 
-export const InstanceFlowResponseSchema = z.object({
-  data: z.object({
-    flow: z.array(z.string()).optional(),
-    states: z.array(workflowStateSchema),
-  }),
+export const WorkflowStatesSchema = z.array(WorkflowStateSchema);
+
+export const InstanceFlowSchema = z.object({
+  flow: z.array(z.string()).optional(),
+  states: WorkflowStatesSchema,
 });
 
-export type Workflow = z.infer<typeof InstanceFlowResponseSchema>;
+export const InstanceFlowResponseSchema = z.object({
+  data: InstanceFlowSchema,
+});
+
+export type InstanceFlowSchemaType = z.infer<typeof InstanceFlowSchema>;
