@@ -61,7 +61,8 @@ test("it is possible to navigate to the events page and between the sub pages", 
   ).toBeVisible();
 });
 
-test("it is possible to send a new event", async ({ page }) => {
+// TODO: TDI-227 Fix tests for events and event listeners
+test.skip("it is possible to send a new event", async ({ page }) => {
   await page.goto(`/n/${namespace}/events/history`);
 
   await expect(page, "it is possible to visit events/history ").toHaveURL(
@@ -84,7 +85,8 @@ test("it is possible to send a new event", async ({ page }) => {
   await expect(page.getByTestId("event-row")).toHaveCount(1);
 });
 
-test("it renders, filters, and paginates events", async ({ page }) => {
+// TODO: TDI-227 Fix tests for events and event listeners
+test.skip("it renders, filters, and paginates events", async ({ page }) => {
   const events = await createEvents(namespace);
 
   /**

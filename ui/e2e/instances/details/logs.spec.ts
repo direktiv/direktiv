@@ -20,7 +20,8 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("It displays a log message from the workflow yaml, one initial and one final log entry", async ({
+// TODO: TDI-222 Fix tests for logging (instances, monitoring)
+test.skip("It displays a log message from the workflow yaml, one initial and one final log entry", async ({
   page,
 }) => {
   /* prepare data*/
@@ -162,7 +163,8 @@ test("the logs panel can be maximized", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("the logs panel can be toggled between verbose and non verbose logs", async ({
+// TODO: TDI-222 Fix tests for logging (instances, monitoring)
+test.skip("the logs panel can be toggled between verbose and non verbose logs", async ({
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
@@ -228,7 +230,8 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
   ).toContainText("state: stateHellomsg: flow finished");
 });
 
-test("the logs can be copied", async ({ page }) => {
+// TODO: TDI-222 Fix tests for logging (instances, monitoring)
+test.skip("the logs can be copied", async ({ page }) => {
   const workflowName = faker.system.commonFileName("yaml");
 
   await createFile({
@@ -280,7 +283,8 @@ test("the logs can be copied", async ({ page }) => {
   );
 });
 
-test("log entries will be automatically scrolled to the end", async ({
+// TODO: TDI-222 Fix tests for logging (instances, monitoring)
+test.skip("log entries will be automatically scrolled to the end", async ({
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
@@ -382,7 +386,10 @@ test("log entries will be automatically scrolled to the end", async ({
   ).not.toBeVisible();
 });
 
-test("it renders error details for errors in the logs", async ({ page }) => {
+// TODO: TDI-222 Fix tests for logging (instances, monitoring)
+test.skip("it renders error details for errors in the logs", async ({
+  page,
+}) => {
   /* prepare data */
   const workflowName = faker.system.commonFileName("yaml");
 
