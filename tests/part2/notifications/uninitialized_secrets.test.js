@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import { basename } from 'path'
-import { fileURLToPath } from 'url'
 
+import { basename } from 'path'
 import config from '../../common/config'
+import { fileURLToPath } from 'url'
 import helpers from '../../common/helpers'
 import request from '../../common/request'
 
@@ -28,22 +28,22 @@ describe('Test uninitialized secrets notifications', () => {
 		expect,
 		namespace,
 		'/',
-		'foo1',
+		'secrets.wf.ts',
 		'workflow',
-		'text/plain',
+		'application/typescript',
 		btoa(`
-direktiv_api: workflow/v1
-functions:
-- type: subflow
-  id: myfunc
-  workflow: subflow.yaml
-states:
-- id: a
-  type: action
-  action:
-    function: myfunc
-    input: 'jq(.x)'
-    secrets: ["a", "b"]
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT5S",
+  state: "stateCreateSecrets",
+};
+
+function stateCreateSecrets(): StateFunction<unknown> {
+  // this initializes the secrets if they don't exist yet
+  getSecrets(["foo", "bar"]);
+
+  return finish("uninitialized secrets should now exist");
+}
 `),
 	)
 
@@ -57,7 +57,7 @@ states:
 		expect(res.body).toEqual({
 			data: [
 				{
-					description: 'secrets have not been initialized: [a b]',
+					description: 'secrets have not been initialized: [bar foo]',
 					count: 2,
 					level: 'warning',
 					type: 'uninitialized_secrets',

@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import { basename } from 'path'
-import { fileURLToPath } from 'url'
 
+import { basename } from 'path'
 import config from '../../common/config'
+import { fileURLToPath } from 'url'
 import helpers from '../../common/helpers'
 import regex from '../../common/regex'
 import request from '../../common/request'
@@ -13,35 +13,35 @@ describe('Test secrets get delete list calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	it(`should create a new secret foo1`, async () => {
+	it(`should create a new secret foo-one`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${namespace}/secrets`)
-			.send(makeDummySecret('foo1'))
+			.send(makeDummySecret('foo-one'))
 		expect(res.statusCode).toEqual(200)
 	})
 
-	it(`should create a new secret foo2`, async () => {
+	it(`should create a new secret foo-two`, async () => {
 		const res = await request(config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${namespace}/secrets`)
-			.send(makeDummySecret('foo2'))
+			.send(makeDummySecret('foo-two'))
 		expect(res.statusCode).toEqual(200)
 	})
 
-	it(`should get the new secret foo1`, async () => {
+	it(`should get the new secret foo-one`, async () => {
 		const res = await request(config.getDirektivBaseUrl()).get(
-			`/api/v2/namespaces/${namespace}/secrets/foo1`,
+			`/api/v2/namespaces/${namespace}/secrets/foo-one`,
 		)
 		expect(res.statusCode).toEqual(200)
 
-		expect(res.body.data).toEqual(expectDummySecret('foo1'))
+		expect(res.body.data).toEqual(expectDummySecret('foo-one'))
 	})
 
-	it(`should get the new secret foo2`, async () => {
+	it(`should get the new secret foo-two`, async () => {
 		const res = await request(config.getDirektivBaseUrl()).get(
-			`/api/v2/namespaces/${namespace}/secrets/foo2`,
+			`/api/v2/namespaces/${namespace}/secrets/foo-two`,
 		)
 		expect(res.statusCode).toEqual(200)
-		expect(res.body.data).toEqual(expectDummySecret('foo2'))
+		expect(res.body.data).toEqual(expectDummySecret('foo-two'))
 	})
 
 	it(`should list foo1 and foo2`, async () => {
@@ -50,24 +50,24 @@ describe('Test secrets get delete list calls', () => {
 		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
-			data: [expectDummySecret('foo1'), expectDummySecret('foo2')],
+			data: [expectDummySecret('foo-one'), expectDummySecret('foo-two')],
 		})
 	})
 
-	it(`should delete foo1`, async () => {
+	it(`should delete foo-one`, async () => {
 		const res = await request(config.getDirektivBaseUrl()).delete(
-			`/api/v2/namespaces/${namespace}/secrets/foo1`,
+			`/api/v2/namespaces/${namespace}/secrets/foo-one`,
 		)
 		expect(res.statusCode).toEqual(200)
 	})
 
-	it(`should list foo1 and foo2`, async () => {
+	it(`should list foo1 and foo-two`, async () => {
 		const res = await request(config.getDirektivBaseUrl()).get(
 			`/api/v2/namespaces/${namespace}/secrets`,
 		)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
-			data: [expectDummySecret('foo2')],
+			data: [expectDummySecret('foo-two')],
 		})
 	})
 })
