@@ -899,6 +899,8 @@ func (ap *ASTParser) buildFlowConfig() (core.FlowConfig, error) {
 		}
 	}
 
+	flow.Timeout = ap.adjustFlowTimeoutForActions(flow.Timeout)
+
 	return flow, nil
 }
 
@@ -1121,4 +1123,45 @@ func (ap *ASTParser) parseAction(expr ast.Expression) (core.ActionConfig, error)
 	}
 
 	return action, nil
+}
+
+func (ap *ASTParser) adjustFlowTimeoutForActions(flowTimeoutStr string) string {
+	// If no actions, return original timeout
+	if len(ap.Actions) == 0 {
+		return flowTimeoutStr
+	}
+
+	// Parse the current flow timeout
+	flowDuration, err := duration.Parse(flowTimeoutStr)
+	if err != nil {
+		// If we can't parse it, return original (should not happen as we validated earlier)
+		slog.Error("failed to parse flow timeout during adjustment", "error", err)
+		return flowTimeoutStr
+	}
+	flowTimeoutSeconds := int64(flowDuration.ToTimeDuration().Seconds())
+
+	// Calculate minimum required timeout:
+	// - Each action can take up to defaultTimeout (5 minutes = 300 seconds)
+	// - Add a buffer for overhead (connection, startup, etc.) of 30 seconds per action
+	// - Multiply by number of actions (conservative: assumes actions run sequentially)
+	const defaultActionTimeoutSeconds = 300 // 5 minutes
+	const actionOverheadSeconds = 30        // buffer per action
+
+	minRequiredSeconds := int64(len(ap.Actions)) * (defaultActionTimeoutSeconds + actionOverheadSeconds)
+
+	// If flow timeout is shorter than required, extend it
+	if flowTimeoutSeconds < minRequiredSeconds {
+		// Convert back to ISO8601 duration format
+		newTimeout := fmt.Sprintf("PT%dS", minRequiredSeconds)
+		slog.Info("adjusting flow timeout to accommodate actions",
+			"original", flowTimeoutStr,
+			"new", newTimeout,
+			"actions_count", len(ap.Actions),
+			"reason", "flow timeout shorter than estimated action duration")
+
+		return newTimeout
+	}
+
+	// Flow timeout is already sufficient
+	return flowTimeoutStr
 }
