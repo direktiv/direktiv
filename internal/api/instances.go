@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -310,7 +311,16 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		engine.LabelWithScope:    "main",
 	})
 	if err != nil {
-		writeEngineError(w, err)
+		var valErr core.CompilerValidationError
+		if errors.As(err, &valErr) {
+			writeError(w, &Error{
+				Code:                 "resource_not_valid",
+				Message:              "flow has validation errors",
+				FlowValidationErrors: valErr.Errors,
+			})
+		} else {
+			writeEngineError(w, err)
+		}
 
 		return
 	}

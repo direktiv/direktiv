@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/engine"
 	"github.com/direktiv/direktiv/internal/secrets"
@@ -14,9 +15,10 @@ import (
 )
 
 type Error struct {
-	Code       string            `json:"code"`
-	Message    string            `json:"message"`
-	Validation map[string]string `json:"validation,omitempty"`
+	Code                 string                  `json:"code"`
+	Message              string                  `json:"message"`
+	Validation           map[string]string       `json:"validation,omitempty"`
+	FlowValidationErrors []*core.ValidationError `json:"validation_errors,omitempty"`
 }
 
 func writeError(w http.ResponseWriter, err *Error) {
