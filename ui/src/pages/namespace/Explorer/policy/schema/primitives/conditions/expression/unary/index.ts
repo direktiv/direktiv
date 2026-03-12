@@ -1,5 +1,5 @@
 import { ExpressionUnaryOperators, strictSingleKeyObject } from "../utils";
-import type { ExpressionSchemaType } from "..";
+import type { ExpressionSchemaType } from "../types";
 import { z } from "zod";
 
 const UnaryArgumentSchema = (expressionSchema: ExpressionSchemaType) =>

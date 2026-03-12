@@ -4,7 +4,7 @@ import {
   type LowercaseLetter,
   type UnaryOperator,
 } from "../utils";
-import type { ExpressionSchemaType } from "..";
+import type { ExpressionSchemaType } from "../types";
 import { z } from "zod";
 
 type ReservedExtensionIdentifier =

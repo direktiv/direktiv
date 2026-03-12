@@ -1,4 +1,4 @@
-import type { ExpressionSchemaType } from "..";
+import type { ExpressionSchemaType } from "../types";
 import { strictSingleKeyObject } from "../utils";
 import { z } from "zod";
 
