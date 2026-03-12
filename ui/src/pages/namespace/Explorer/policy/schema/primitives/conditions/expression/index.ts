@@ -8,17 +8,34 @@ import {
   type ExtensionIdentifier,
 } from "./extension";
 import { LikeExpressionSchema, type PatternElement } from "./like";
+import {
+  type SlotExpression,
+  type SlotExpressionInput,
+  SlotExpressionSchema,
+} from "./slot";
+import {
+  type UnknownExpression,
+  type UnknownExpressionInput,
+  UnknownExpressionSchema,
+} from "./unknown";
+import {
+  type ValueExpression,
+  type ValueExpressionInput,
+  ValueExpressionSchema,
+} from "./value";
+import {
+  type VarExpression,
+  type VarExpressionInput,
+  VarExpressionSchema,
+} from "./var";
+
 import { AttributeExpressionSchema } from "./attribute";
 import { BinaryExpressionSchema } from "./binary";
 import { IfThenElseExpressionSchema } from "./ifThenElse";
 import { IsExpressionSchema } from "./is";
 import { RecordExpressionSchema } from "./record";
 import { SetExpressionSchema } from "./set";
-import { SlotExpressionSchema } from "./slot";
 import { UnaryExpressionSchema } from "./unary";
-import { UnknownExpressionSchema } from "./unknown";
-import { ValueExpressionSchema } from "./value";
-import { VarExpressionSchema } from "./var";
 import { z } from "zod";
 
 // Turns a union of operator names like "==" | ">" into a union of
@@ -27,21 +44,21 @@ type SingleKeyExpression<Key extends string, Value> = {
   [K in Key]: { [P in K]: Value };
 }[Key];
 
-// These are the non-recursive leaf nodes in the expressions
-type PrimitiveExpression =
-  | z.infer<typeof ValueExpressionSchema>
-  | z.infer<typeof VarExpressionSchema>
-  | z.infer<typeof SlotExpressionSchema>
-  | z.infer<typeof UnknownExpressionSchema>;
+// Non recursive expressions
+type NonRecursiveExpression =
+  | ValueExpression
+  | VarExpression
+  | SlotExpression
+  | UnknownExpression;
 
-// z.input<> describes what each schema accepts before parsing.
-// We keep input and output types separate so the recursive
-// schema can stay precise about both sides of the ZodType contract.
-type PrimitiveExpressionInput =
-  | z.input<typeof ValueExpressionSchema>
-  | z.input<typeof VarExpressionSchema>
-  | z.input<typeof SlotExpressionSchema>
-  | z.input<typeof UnknownExpressionSchema>;
+// describes what each schema accepts before parsing. We keep
+// input and output types separate so the recursive schema can
+// stay precise about both sides of the ZodType contract.
+type NonRecursiveExpressionInput =
+  | ValueExpressionInput
+  | VarExpressionInput
+  | SlotExpressionInput
+  | UnknownExpressionInput;
 
 type IsPayload<TExpression> = {
   left: TExpression;
@@ -92,11 +109,9 @@ type SetExpressionType = { Set: ExpressionType[] };
 
 type RecordExpressionType = { Record: Record<string, ExpressionType> };
 
-// This is the full parsed expression tree used by the rest of the app.
-// Every recursive branch points back to ExpressionType, allowing arbitrarily
-// deep nesting while still preserving a concrete TypeScript representation.
+// This is the fully parsed expression tree type
 type ExpressionType =
-  | PrimitiveExpression
+  | NonRecursiveExpression
   | UnaryExpressionType
   | BinaryExpressionType
   | AttributeExpressionType
@@ -143,7 +158,7 @@ type ExtensionExpressionInputType = {
 // Keeping the input type explicit lets the schema stay type-safe in both
 // directions: what it accepts and what it returns after parsing.
 type ExpressionInputType =
-  | PrimitiveExpressionInput
+  | NonRecursiveExpressionInput
   | UnaryExpressionInputType
   | BinaryExpressionInputType
   | AttributeExpressionInputType
