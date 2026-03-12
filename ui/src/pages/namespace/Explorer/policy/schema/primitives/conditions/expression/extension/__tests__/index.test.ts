@@ -28,6 +28,7 @@ describe("Extension Expression schema", () => {
   test("rejects extension expression with non-array args", () => {
     expectInvalidPolicy(
       createBasePolicy({
+        // @ts-expect-error - extension args must be an array
         conditions: [{ kind: "when", body: { decimal: { Value: "10.0" } } }],
       })
     );

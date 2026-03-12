@@ -33,6 +33,7 @@ describe("IfThenElse Expression schema", () => {
           {
             kind: "when",
             body: {
+              // @ts-expect-error - if-then-else requires if/then/else
               "if-then-else": { if: { Var: "context" }, then: { Value: true } },
             },
           },
@@ -49,6 +50,7 @@ describe("IfThenElse Expression schema", () => {
             kind: "when",
             body: {
               "if-then-else": {
+                // @ts-expect-error - if-then-else is strict
                 if: { Var: "context" },
                 then: { Value: true },
                 else: { Value: false },

@@ -3,7 +3,8 @@ import {
   expectInvalidPolicy,
   expectValidPolicy,
 } from "../../../utils/testutils";
-import { describe, test } from "vitest";
+import { describe, expect, test } from "vitest";
+import { CedarPolicySchema } from "../../..";
 
 describe("Cedar conditions schema", () => {
   test("accepts multiple conditions", () => {
@@ -51,11 +52,17 @@ describe("Cedar conditions schema", () => {
   });
 
   test("rejects condition without body", () => {
-    expectInvalidPolicy(
-      createBasePolicy({
+    createBasePolicy({
+      // @ts-expect-error - conditions require a body expression
+      conditions: [{ kind: "when" }],
+    });
+
+    expect(
+      CedarPolicySchema.safeParse({
+        ...createBasePolicy(),
         conditions: [{ kind: "when" }],
-      })
-    );
+      }).success
+    ).toBe(false);
   });
 
   test("rejects condition with additional keys", () => {
