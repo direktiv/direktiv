@@ -1,13 +1,21 @@
 import { Edge, Node, Position, isNode } from "reactflow";
 import { Orientation, State } from "./types";
 
-import { Workflow } from "~/api/instances/schema";
+import { DiagramElementStatus } from "./nodes";
+import { InstanceFlowSchemaType } from "~/api/instances/schema";
 import dagre from "dagre";
 
 const defaultEdgeType = "default";
 
+type DiagramNodeData = {
+  type?: "function";
+  label: string;
+  status: DiagramElementStatus;
+  orientation: Orientation;
+};
+
 const createLayoutedElements = (
-  incomingEles: (Edge | Node)[],
+  incomingEles: (Edge | Node<DiagramNodeData>)[],
   orientation: Orientation = "vertical"
 ) => {
   const dagreGraph = new dagre.graphlib.Graph();
@@ -46,26 +54,30 @@ const createLayoutedElements = (
 const position = { x: 0, y: 0 };
 
 export function createElements(
-  value: Workflow,
-  status: "pending" | "complete" | "failed",
+  value: InstanceFlowSchemaType,
+  instanceStatus: "pending" | "complete" | "failed",
   orientation: Orientation
 ) {
-  const newElements: (Node | Edge)[] = [];
+  const newElements: (Node<DiagramNodeData> | Edge)[] = [];
   if (!value) return [];
 
-  const visitedStates = value.data.flow || [];
+  const visitedStates = value.flow || [];
 
-  const states = value.data.states as unknown as State[];
+  const states = value.states;
 
   if (states.length === 0) return [];
 
-  const finishStates = states.filter((s) => s && (s as State).finish === true);
+  const hasInstanceStarted = visitedStates.length > 0;
 
   // create start node
   newElements.push({
     id: "startNode",
     position,
-    data: { label: "", wasExecuted: status !== "pending", orientation },
+    data: {
+      label: "",
+      status: hasInstanceStarted ? "complete" : "pending",
+      orientation,
+    },
     type: "start",
     sourcePosition: Position.Right,
   });
@@ -86,15 +98,16 @@ export function createElements(
       });
     }
 
-    // create state node
-    const stateNode: Node = {
+    const stateNode: Node<DiagramNodeData> = {
       id: state.name,
       position,
       data: {
         type: "function",
         label: state.name,
-        state,
-        wasExecuted: state.visited,
+        status:
+          (state.failed && "failed") ||
+          (state.visited && "complete") ||
+          "pending",
         orientation,
       },
       type: "state",
@@ -145,18 +158,19 @@ export function createElements(
         type: defaultEdgeType,
         animated:
           visitedStates[visitedStates.length - 1] === state.name &&
-          status === "complete",
+          instanceStatus === "complete",
       });
     }
   }
 
-  const reachedEnd =
-    finishStates.find((s) => s.visited === true) && status === "complete";
-
   newElements.push({
     id: "endNode",
     type: "end",
-    data: { label: "", wasExecuted: reachedEnd, orientation },
+    data: {
+      label: "",
+      status: instanceStatus === "complete" ? "complete" : "pending",
+      orientation,
+    },
     position,
   });
 
