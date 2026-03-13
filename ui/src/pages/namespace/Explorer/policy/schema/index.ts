@@ -18,7 +18,6 @@ export const CedarPolicySchema = z.object({
 
 export const CedarPolicySetSchema = PolicySetSchema(CedarPolicySchema);
 
-export type CedarPolicySchemaType = z.infer<typeof CedarPolicySchema>;
 export type CedarPolicySchemaInputType = z.input<typeof CedarPolicySchema>;
 export type CedarPolicySetSchemaType = z.infer<typeof CedarPolicySetSchema>;
 export type CedarPolicySetSchemaInputType = z.input<

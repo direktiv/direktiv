@@ -1,10 +1,9 @@
-import { CedarPolicySchema, CedarPolicySchemaType } from "..";
 import {
   createBasePolicy,
   expectInvalidPolicy,
   expectValidPolicy,
 } from "../utils/testutils";
-import { describe, expect, test } from "vitest";
+import { describe, test } from "vitest";
 
 describe("Cedar policy schema", () => {
   test("accepts a full policy without annotations", () => {
