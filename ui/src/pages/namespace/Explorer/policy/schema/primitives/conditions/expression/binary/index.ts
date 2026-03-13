@@ -1,7 +1,8 @@
 import { ExpressionBinaryOperators, strictSingleKeyObject } from "../utils";
+import type { ExpressionSchemaType } from "../types";
 import { z } from "zod";
 
-const BinaryArgumentsSchema = (expressionSchema: z.ZodTypeAny) =>
+const BinaryArgumentsSchema = (expressionSchema: ExpressionSchemaType) =>
   z
     .object({
       left: expressionSchema,
@@ -11,13 +12,15 @@ const BinaryArgumentsSchema = (expressionSchema: z.ZodTypeAny) =>
 
 const BinaryOperatorSchema = (
   operator: (typeof ExpressionBinaryOperators)[number],
-  expressionSchema: z.ZodTypeAny
+  expressionSchema: ExpressionSchemaType
 ) => strictSingleKeyObject(operator, BinaryArgumentsSchema(expressionSchema));
 
 type BinaryOperatorSchemaType = ReturnType<typeof BinaryOperatorSchema>;
 
 // when { principal == User::"alice" };
-export const BinaryExpressionSchema = (expressionSchema: z.ZodTypeAny) =>
+export const BinaryExpressionSchema = (
+  expressionSchema: ExpressionSchemaType
+) =>
   z.union(
     ExpressionBinaryOperators.map((operator) =>
       BinaryOperatorSchema(operator, expressionSchema)

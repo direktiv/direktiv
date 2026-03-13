@@ -81,6 +81,7 @@ describe("Record Expression schema", () => {
     expectInvalidPolicy(
       createBasePolicy({
         conditions: [
+          // @ts-expect-error - record fields must contain valid expressions
           { kind: "when", body: { Record: { foo: { nope: true } } } },
         ],
       })
@@ -95,6 +96,7 @@ describe("Record Expression schema", () => {
             kind: "when",
             body: {
               Record: { foo: { Value: true } },
+              // @ts-expect-error - expressions must have exactly one top-level key
               Set: [],
             },
           },

@@ -45,6 +45,7 @@ describe("Attribute Expression schema", () => {
     expectInvalidPolicy(
       createBasePolicy({
         conditions: [
+          // @ts-expect-error - attribute expressions require attr
           { kind: "when", body: { ".": { left: { Var: "context" } } } },
         ],
       })
@@ -57,6 +58,7 @@ describe("Attribute Expression schema", () => {
         conditions: [
           {
             kind: "when",
+            // @ts-expect-error - attr must be a string
             body: { has: { left: { Var: "principal" }, attr: 1 } },
           },
         ],

@@ -96,6 +96,7 @@ describe("Binary Expression schema", () => {
     expectInvalidPolicy(
       createBasePolicy({
         conditions: [
+          // @ts-expect-error - binary expressions require both operands
           { kind: "when", body: { "==": { left: { Var: "context" } } } },
         ],
       })
@@ -112,6 +113,7 @@ describe("Binary Expression schema", () => {
               "==": {
                 left: { Var: "context" },
                 right: { Value: "1.3" },
+                // @ts-expect-error - binary expressions are strict
                 extra: { Value: true },
               },
             },

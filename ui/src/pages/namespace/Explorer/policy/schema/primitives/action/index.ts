@@ -4,7 +4,18 @@ import {
   InOperatorSchema,
 } from "../shared/operators";
 import { EntitySchema } from "../shared/entity";
+import type { StrictUnion } from "../../utils/strictUnion";
 import { z } from "zod";
+
+type EntityInput = z.input<typeof EntitySchema>;
+
+type ActionType =
+  | { op: "All" }
+  | { op: "=="; entity: EntityInput }
+  | { op: "in"; entity: EntityInput }
+  | { op: "in"; entities: EntityInput[] };
+
+type ActionInputType = StrictUnion<ActionType>;
 
 // action
 const ActionAllSchema = z.object({ op: AllOperatorSchema }).strict();
@@ -33,7 +44,11 @@ const ActionInEntitiesSchema = z
   })
   .strict();
 
-export const ActionSchema = z.union([
+export const ActionSchema: z.ZodType<
+  ActionType,
+  z.ZodTypeDef,
+  ActionInputType
+> = z.union([
   ActionAllSchema,
   ActionEqualSchema,
   ActionInEntitySchema,

@@ -1,14 +1,15 @@
 import {
   CedarPolicySchema,
-  type CedarPolicySchemaType,
+  type CedarPolicySchemaInputType,
   CedarPolicySetSchema,
+  type CedarPolicySetSchemaInputType,
   type CedarPolicySetSchemaType,
 } from "..";
 import { expect } from "vitest";
 
 export const createBasePolicy = (
-  overrides: Partial<CedarPolicySchemaType> = {}
-): CedarPolicySchemaType => ({
+  overrides: Partial<CedarPolicySchemaInputType> = {}
+): CedarPolicySchemaInputType => ({
   effect: "permit",
   principal: { op: "All" },
   action: { op: "All" },
@@ -17,12 +18,12 @@ export const createBasePolicy = (
   ...overrides,
 });
 
-export const expectValidPolicy = (input: CedarPolicySchemaType) => {
+export const expectValidPolicy = (input: CedarPolicySchemaInputType) => {
   expect(CedarPolicySchema.safeParse(input).success).toBe(true);
   expect(CedarPolicySchema.parse(input)).toEqual(input);
 };
 
-export const expectInvalidPolicy = (input: CedarPolicySchemaType) => {
+export const expectInvalidPolicy = (input: CedarPolicySchemaInputType) => {
   expect(CedarPolicySchema.safeParse(input).success).toBe(false);
 };
 
@@ -31,6 +32,8 @@ export const expectValidPolicySet = (input: CedarPolicySetSchemaType) => {
   expect(CedarPolicySetSchema.parse(input)).toEqual(input);
 };
 
-export const expectInvalidPolicySet = (input: CedarPolicySetSchemaType) => {
+export const expectInvalidPolicySet = (
+  input: CedarPolicySetSchemaInputType
+) => {
   expect(CedarPolicySetSchema.safeParse(input).success).toBe(false);
 };

@@ -1,7 +1,8 @@
 import { ExpressionUnaryOperators, strictSingleKeyObject } from "../utils";
+import type { ExpressionSchemaType } from "../types";
 import { z } from "zod";
 
-const UnaryArgumentSchema = (expressionSchema: z.ZodTypeAny) =>
+const UnaryArgumentSchema = (expressionSchema: ExpressionSchemaType) =>
   z.object({ arg: expressionSchema }).strict();
 
 /*
@@ -9,9 +10,15 @@ const UnaryArgumentSchema = (expressionSchema: z.ZodTypeAny) =>
   when { -context.risk_score };
   when { isEmpty(context.session.tags) };
 */
-export const UnaryExpressionSchema = (expressionSchema: z.ZodTypeAny) =>
+export const UnaryExpressionSchema = (expressionSchema: ExpressionSchemaType) =>
   z.union(
-    ExpressionUnaryOperators.map((operator) =>
-      strictSingleKeyObject(operator, UnaryArgumentSchema(expressionSchema))
-    ) as unknown as [z.ZodTypeAny, z.ZodTypeAny, ...z.ZodTypeAny[]]
+    ExpressionUnaryOperators.map(
+      (operator) =>
+        strictSingleKeyObject(operator, UnaryArgumentSchema(expressionSchema))
+      // z.union() expects at least two schemas.
+    ) as unknown as [
+      ExpressionSchemaType,
+      ExpressionSchemaType,
+      ...ExpressionSchemaType[],
+    ]
   );

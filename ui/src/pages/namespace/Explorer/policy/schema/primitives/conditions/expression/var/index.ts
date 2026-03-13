@@ -6,3 +6,6 @@ export const VarExpressionSchema = z
     Var: z.enum(["principal", "action", "resource", "context"]),
   })
   .strict();
+
+export type VarExpression = z.infer<typeof VarExpressionSchema>;
+export type VarExpressionInput = z.input<typeof VarExpressionSchema>;
