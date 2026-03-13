@@ -175,14 +175,16 @@ func Start(lc *lifecycle.Manager) error {
 			return list, nil
 		}
 
-		app.ServiceManager, err = service.NewManager(config, fas)
+		svcManager, err := service.NewManager(config, fas)
 		if err != nil {
 			return fmt.Errorf("create service-manager, err: %w", err)
 		}
-		err = app.ServiceManager.Start(lc)
+		svcManager.Start(lc)
 		if err != nil {
 			return fmt.Errorf("start service-manager, err: %w", err)
 		}
+		app.ServiceManager = svcManager
+
 		app.PubSub.Subscribe(pubsub.SubjServiceIgnite, func(data []byte) {
 			// var svc core.ServiceFileData
 			// err := json.Unmarshal(data, &svc)
