@@ -47,9 +47,14 @@ describe("Like Expression schema", () => {
             kind: "when",
             body: {
               like: {
-                // @ts-expect-error - literal pattern objects are strict
                 left: { Var: "resource" },
-                pattern: [{ Literal: "mail", extra: true }],
+                pattern: [
+                  {
+                    Literal: "mail",
+                    // @ts-expect-error - literal pattern objects are strict
+                    extra: true,
+                  },
+                ],
               },
             },
           },
