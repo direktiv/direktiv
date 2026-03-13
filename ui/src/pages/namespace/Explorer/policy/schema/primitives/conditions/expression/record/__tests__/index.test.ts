@@ -96,6 +96,7 @@ describe("Record Expression schema", () => {
             kind: "when",
             body: {
               Record: { foo: { Value: true } },
+              // @ts-expect-error - expressions must have exactly one top-level key
               Set: [],
             },
           },
