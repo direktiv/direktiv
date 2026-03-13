@@ -12,8 +12,10 @@ const UnaryArgumentSchema = (expressionSchema: ExpressionSchemaType) =>
 */
 export const UnaryExpressionSchema = (expressionSchema: ExpressionSchemaType) =>
   z.union(
-    ExpressionUnaryOperators.map((operator) =>
-      strictSingleKeyObject(operator, UnaryArgumentSchema(expressionSchema))
+    ExpressionUnaryOperators.map(
+      (operator) =>
+        strictSingleKeyObject(operator, UnaryArgumentSchema(expressionSchema))
+      // z.union() expects at least two schemas.
     ) as unknown as [
       ExpressionSchemaType,
       ExpressionSchemaType,
