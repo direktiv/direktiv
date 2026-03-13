@@ -18,20 +18,23 @@ import { z } from "zod";
 // Without it, ExpressionSchema would try to reference itself before
 // the value exists. ExpressionSchemaType defines the contract for
 // this recursive schema
-export const ExpressionSchema: ExpressionSchemaType = z.lazy(() =>
-  z.union([
-    ValueExpressionSchema,
-    VarExpressionSchema,
-    SlotExpressionSchema,
-    UnknownExpressionSchema,
-    UnaryExpressionSchema(ExpressionSchema),
-    BinaryExpressionSchema(ExpressionSchema),
-    AttributeExpressionSchema(ExpressionSchema),
-    IsExpressionSchema(ExpressionSchema),
-    LikeExpressionSchema(ExpressionSchema),
-    IfThenElseExpressionSchema(ExpressionSchema),
-    SetExpressionSchema(ExpressionSchema),
-    RecordExpressionSchema(ExpressionSchema),
-    ExtensionExpressionSchema(ExpressionSchema),
-  ])
-);
+export const ExpressionSchema = z.lazy(
+  () =>
+    z.union([
+      ValueExpressionSchema,
+      VarExpressionSchema,
+      SlotExpressionSchema,
+      UnknownExpressionSchema,
+      UnaryExpressionSchema(ExpressionSchema),
+      BinaryExpressionSchema(ExpressionSchema),
+      AttributeExpressionSchema(ExpressionSchema),
+      IsExpressionSchema(ExpressionSchema),
+      LikeExpressionSchema(ExpressionSchema),
+      IfThenElseExpressionSchema(ExpressionSchema),
+      SetExpressionSchema(ExpressionSchema),
+      RecordExpressionSchema(ExpressionSchema),
+      ExtensionExpressionSchema(ExpressionSchema),
+    ])
+  // Without this assertion, TypeScript uses Zods looser inferred
+  // input type instead of our stricter ExpressionSchemaType.
+) as ExpressionSchemaType;
