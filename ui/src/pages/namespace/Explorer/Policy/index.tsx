@@ -1,7 +1,6 @@
 import { Card } from "~/design/Card";
 import { FC } from "react";
 import { NoPermissions } from "~/design/Table";
-import PolicyEditor from "./PolicyEditor";
 import { Shield } from "lucide-react";
 import { analyzePath } from "~/util/router/utils";
 import { useFile } from "~/api/files/query/file";
@@ -41,7 +40,6 @@ const PolicyPage: FC = () => {
           </h3>
         </div>
       </div>
-      <PolicyEditor data={policyData} />
     </>
   );
 };
