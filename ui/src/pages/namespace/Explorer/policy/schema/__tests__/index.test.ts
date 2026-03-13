@@ -1,5 +1,9 @@
 import { CedarPolicySchema, CedarPolicySchemaType } from "..";
-import { createBasePolicy, expectValidPolicy } from "../utils/testutils";
+import {
+  createBasePolicy,
+  expectInvalidPolicy,
+  expectValidPolicy,
+} from "../utils/testutils";
 import { describe, expect, test } from "vitest";
 
 describe("Cedar policy schema", () => {
@@ -74,25 +78,17 @@ describe("Cedar policy schema", () => {
     /*
       Cedar (invalid for this schema):
       permit(principal in Group::"Admins", action, resource);
+      when { }
     */
-    const invalidPolicy: CedarPolicySchemaType = {
-      effect: "permit",
-      principal: { op: "in", entity: { type: "Group", id: "Admins" } },
-      action: { op: "All" },
-      resource: { op: "All" },
-      // @ts-expect-error - conditions require a body expression
-      conditions: [{ kind: "when" }],
-    };
-
-    const runtimeInput = {
-      effect: "permit",
-      principal: { op: "in", entity: { type: "Group", id: "Admins" } },
-      action: { op: "All" },
-      resource: { op: "All" },
-      conditions: [{ kind: "when" }],
-    };
-
-    expect(invalidPolicy).toBeDefined();
-    expect(CedarPolicySchema.safeParse(runtimeInput).success).toBe(false);
+    expectInvalidPolicy(
+      createBasePolicy({
+        effect: "permit",
+        principal: { op: "in", entity: { type: "Group", id: "Admins" } },
+        action: { op: "All" },
+        resource: { op: "All" },
+        // @ts-expect-error - conditions require a body expression
+        conditions: [{ kind: "when" }],
+      })
+    );
   });
 });
