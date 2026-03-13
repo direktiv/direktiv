@@ -4,17 +4,65 @@ import { describe, expect, test } from "vitest";
 
 describe("Cedar policy schema", () => {
   test("accepts a full policy without annotations", () => {
+    /*
+      Cedar:
+      forbid(
+        principal is User in Group::"Admins",
+        action in [Action::"readFile", Action::"deleteFile"],
+        resource is Folder in Folder::"quarantine"
+      )
+      when { principal has email && principal.email like "*@example.com" }
+      unless { resource getTag "classification" == "public" };
+    */
     expectValidPolicy(
       createBasePolicy({
         effect: "forbid",
-        principal: { op: "==", entity: { type: "User", id: "alice" } },
-        action: { op: "==", entity: { type: "Action", id: "readFile" } },
-        resource: { op: "in", entity: { type: "Folder", id: "quarantine" } },
+        principal: {
+          op: "is",
+          entity_type: "User",
+          in: { entity: { type: "Group", id: "Admins" } },
+        },
+        action: {
+          op: "in",
+          entities: [
+            { type: "Action", id: "readFile" },
+            { type: "Action", id: "deleteFile" },
+          ],
+        },
+        resource: {
+          op: "is",
+          entity_type: "Folder",
+          in: { entity: { type: "Folder", id: "quarantine" } },
+        },
         conditions: [
           {
             kind: "when",
             body: {
-              Value: true,
+              "&&": {
+                left: { has: { left: { Var: "principal" }, attr: "email" } },
+                right: {
+                  like: {
+                    left: {
+                      ".": { left: { Var: "principal" }, attr: "email" },
+                    },
+                    pattern: ["Wildcard", { Literal: "@example.com" }],
+                  },
+                },
+              },
+            },
+          },
+          {
+            kind: "unless",
+            body: {
+              "==": {
+                left: {
+                  getTag: {
+                    left: { Var: "resource" },
+                    right: { Value: "classification" },
+                  },
+                },
+                right: { Value: "public" },
+              },
             },
           },
         ],
@@ -23,6 +71,10 @@ describe("Cedar policy schema", () => {
   });
 
   test("rejects policies without conditions", () => {
+    /*
+      Cedar (invalid for this schema):
+      permit(principal in Group::"Admins", action, resource);
+    */
     const invalidPolicy: CedarPolicySchemaType = {
       effect: "permit",
       principal: { op: "in", entity: { type: "Group", id: "Admins" } },
