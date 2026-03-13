@@ -15,10 +15,6 @@ type ActionType =
   | { op: "in"; entity: EntityInput }
   | { op: "in"; entities: EntityInput[] };
 
-// Zod's union input type is too permissive here and can allow object literals
-// to mix keys from different action variants. We tighten the input side with a
-// strict union so TypeScript rejects extra variant-specific keys, matching the
-// runtime `.strict()` schemas.
 type ActionInputType = StrictUnion<ActionType>;
 
 // action
