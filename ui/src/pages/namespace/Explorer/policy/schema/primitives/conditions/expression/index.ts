@@ -15,9 +15,9 @@ import { VarExpressionSchema } from "./var";
 import { z } from "zod";
 
 // z.lazy is what makes the recursive schema possible at runtime.
-// Without it, ExpressionSchema would try to reference itself before the value
-// exists. ExpressionSchemaType defines the contract for this recursive schema:
-// it must accept ExpressionInputType and parse it into ExpressionType.
+// Without it, ExpressionSchema would try to reference itself before
+// the value exists. ExpressionSchemaType defines the contract for
+// this recursive schema
 export const ExpressionSchema: ExpressionSchemaType = z.lazy(() =>
   z.union([
     ValueExpressionSchema,
