@@ -12,8 +12,4 @@ const ConditionSchema = z
   })
   .strict();
 
-/*
-  ... when { principal has "email" }
-      unless { context.riskScore > 90 }
-*/
 export const ConditionsSchema = z.array(ConditionSchema);
