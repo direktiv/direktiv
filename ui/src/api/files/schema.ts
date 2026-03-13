@@ -60,6 +60,7 @@ const fileTypes = [
   "workflow",
   "page",
   "gateway",
+  "policy",
 ] as const;
 
 const FileTypeSchema = z.enum(fileTypes);
