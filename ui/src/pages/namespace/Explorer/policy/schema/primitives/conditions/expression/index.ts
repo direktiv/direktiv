@@ -1,10 +1,6 @@
-import {
-  type ExpressionInputType,
-  type ExpressionSchemaType,
-  type ExpressionType,
-} from "./types";
 import { AttributeExpressionSchema } from "./attribute";
 import { BinaryExpressionSchema } from "./binary";
+import { type ExpressionSchemaType } from "./types";
 import { ExtensionExpressionSchema } from "./extension";
 import { IfThenElseExpressionSchema } from "./ifThenElse";
 import { IsExpressionSchema } from "./is";
@@ -17,8 +13,6 @@ import { UnknownExpressionSchema } from "./unknown";
 import { ValueExpressionSchema } from "./value";
 import { VarExpressionSchema } from "./var";
 import { z } from "zod";
-
-export type { ExpressionInputType, ExpressionSchemaType, ExpressionType };
 
 // z.lazy is what makes the recursive schema possible at runtime.
 // Without it, ExpressionSchema would try to reference itself before the value

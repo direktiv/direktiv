@@ -2,7 +2,7 @@ import type { ExpressionSchemaType } from "../types";
 import { strictSingleKeyObject } from "../utils";
 import { z } from "zod";
 
-export const PatternElementSchema = z.union([
+const PatternElementSchema = z.union([
   z.literal("Wildcard"),
   z.object({ Literal: z.string() }).strict(),
 ]);
