@@ -15,6 +15,8 @@ type ReservedExtensionIdentifier =
   | "like"
   | "if-then-else";
 
+export type { ReservedExtensionIdentifier };
+
 // Extension functions must start with a lowercase letter and must not collide
 // with built-in Cedar expression keys/operators.
 export type ExtensionIdentifier = Exclude<

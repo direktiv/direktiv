@@ -53,6 +53,7 @@ describe("Extension Expression schema", () => {
   test("rejects extension expression that uses a reserved key", () => {
     expectInvalidPolicy(
       createBasePolicy({
+        // @ts-expect-error - reserved expression keys cannot be extensions
         conditions: [{ kind: "when", body: { is: [{ Value: "10.0" }] } }],
       })
     );

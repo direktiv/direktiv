@@ -1,10 +1,14 @@
 import type { AttributeOperator, BinaryOperator, UnaryOperator } from "./utils";
+import type {
+  ExtensionIdentifier,
+  ReservedExtensionIdentifier,
+} from "./extension";
 import type { SlotExpression, SlotExpressionInput } from "./slot";
 import type { UnknownExpression, UnknownExpressionInput } from "./unknown";
 import type { ValueExpression, ValueExpressionInput } from "./value";
 import type { VarExpression, VarExpressionInput } from "./var";
-import type { ExtensionIdentifier } from "./extension";
 import type { PatternElement } from "./like";
+import type { StrictUnion } from "../../../utils/strictUnion";
 import { z } from "zod";
 
 // Turns a union of operator names like "==" | ">" into a union of
@@ -129,9 +133,11 @@ type RecordExpressionInputType = {
 
 type ExtensionExpressionInputType = {
   [Key in ExtensionIdentifier]?: ExpressionInputType[];
+} & {
+  [Key in ReservedExtensionIdentifier]?: never;
 };
 
-type ExpressionInputType =
+type KnownExpressionInputType = StrictUnion<
   | NonRecursiveExpressionInput
   | UnaryExpressionInputType
   | BinaryExpressionInputType
@@ -141,6 +147,10 @@ type ExpressionInputType =
   | IfThenElseExpressionInputType
   | SetExpressionInputType
   | RecordExpressionInputType
+>;
+
+type ExpressionInputType =
+  | KnownExpressionInputType
   | ExtensionExpressionInputType;
 
 export type ExpressionSchemaType = z.ZodType<
