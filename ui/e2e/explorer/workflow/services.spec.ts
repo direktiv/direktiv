@@ -224,4 +224,19 @@ test("Workflow service details page provides information about the service", asy
   ).toBeVisible();
 
   await expect(page.getByText("cmd-"), "it renders the cmd").toBeVisible();
+
+  await expect(
+    page.getByText("Logs for"),
+    "it renders the headline for the pods logs"
+  ).toBeVisible();
+
+  await expect(
+    page.getByText("Starting server."),
+    "it renders the log entries"
+  ).toBeVisible();
+
+  await expect(
+    page.getByText(/received [0-9]+ log (entry|entries)/),
+    "it renders the log summary"
+  ).toBeVisible();
 });
