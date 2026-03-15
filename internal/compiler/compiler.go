@@ -95,9 +95,7 @@ func (c *Compiler) genFlow(ctx context.Context, namespace, path string) (core.Ty
 			Errors: make([]*core.ValidationError, 0),
 		}
 
-		errList := make([]string, len(ci.ValidationErrors))
 		for i := range ci.ValidationErrors {
-			errList[i] = ci.ValidationErrors[i].Error()
 			cve.Errors = append(cve.Errors, ci.ValidationErrors[i])
 		}
 
