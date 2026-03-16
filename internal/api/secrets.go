@@ -94,9 +94,11 @@ func (e *secretsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Build response before clearing Data so convert() sees len(Data) > 0 and sets initialized: true
+	apiResp := convert(secret)
 	secret.Data = []byte{}
 
-	writeJSON(w, convert(secret))
+	writeJSON(w, apiResp)
 }
 
 func (e *secretsController) list(w http.ResponseWriter, r *http.Request) {
