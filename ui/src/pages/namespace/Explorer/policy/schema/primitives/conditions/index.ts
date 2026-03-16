@@ -13,3 +13,7 @@ const ConditionSchema = z
   .strict();
 
 export const ConditionsSchema = z.array(ConditionSchema);
+
+export type ConditionType = z.input<typeof ConditionSchema>;
+
+export type ConditionsType = z.input<typeof ConditionsSchema>;
