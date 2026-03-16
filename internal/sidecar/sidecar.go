@@ -12,8 +12,15 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/datastore"
+	"github.com/direktiv/direktiv/internal/datastore/datasql"
 	"github.com/direktiv/direktiv/internal/server"
 	"github.com/direktiv/direktiv/internal/telemetry"
+	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore/filesql"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func RunApplication(ctx context.Context) {
@@ -31,7 +38,27 @@ func RunApplication(ctx context.Context) {
 	}
 	slog.Info("opentelemetry configured", slog.String("addr", os.Getenv("DIREKTIV_OTEL_BACKEND")))
 
-	sidecar := newSidecar()
+	var variables datastore.RuntimeVariablesStore
+	var files filestore.FileStore
+	if dsn := os.Getenv("DB"); dsn != "" {
+		db, err := gorm.Open(postgres.New(postgres.Config{
+			DSN:                  dsn,
+			PreferSimpleProtocol: false,
+		}), &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Silent),
+		})
+		if err != nil {
+			slog.Error("could not connect to database", slog.Any("error", err))
+		} else {
+			slog.Info("sidecar database connection established")
+			variables = datasql.NewStore(db).RuntimeVariables()
+			files = filesql.NewStore(db)
+		}
+	} else {
+		slog.Warn("DB env not set, file variable support disabled")
+	}
+
+	sidecar := newSidecar(variables, files)
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)

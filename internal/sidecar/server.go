@@ -5,6 +5,9 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+
+	"github.com/direktiv/direktiv/internal/datastore"
+	"github.com/direktiv/direktiv/pkg/filestore"
 )
 
 type sidecar struct {
@@ -12,11 +15,11 @@ type sidecar struct {
 	internal *internalServer
 }
 
-func newSidecar() *sidecar {
+func newSidecar(variables datastore.RuntimeVariablesStore, files filestore.FileStore) *sidecar {
 	rm := &requestMap{}
 	return &sidecar{
 		internal: newInternalServer(rm),
-		external: newExternalServer(rm),
+		external: newExternalServer(rm, variables, files),
 	}
 }
 
