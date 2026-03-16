@@ -1,20 +1,18 @@
-import Alert from "../Alert";
+import { InstanceFlowSchemaType } from "~/api/instances/schema";
 import { Orientation } from "./types";
 import { ReactFlowProvider } from "reactflow";
-import { Workflow } from "~/api/instances/schema";
 import { ZoomPanDiagram } from "./ZoomPanDiagram";
 import { createElements } from "./utils";
-import { useState } from "react";
 
 /**
  * Renders a diagram of a workflow and optionally its current state position during a instance.
  * * Props
- *   * workflow: JSON of workflow.
+ *   * data: JSON describing the states of the workflow, and listing visited states.
  *   * instanceStatus: Status of current instance. This is used to display if flow is complete with animated connections.
  *   * disabled: Disables diagram zoom-in
  */
 type WorkflowDiagramProps = {
-  workflow: Workflow;
+  data: InstanceFlowSchemaType;
   orientation?: Orientation;
   instanceStatus?: "pending" | "complete" | "failed";
   disabled?: boolean;
@@ -22,22 +20,13 @@ type WorkflowDiagramProps = {
 
 export default function WorkflowDiagram(props: WorkflowDiagramProps) {
   const {
-    workflow,
+    data,
     instanceStatus = "pending",
     disabled = false,
     orientation = "horizontal",
   } = props;
 
-  const [invalidWorkflow] = useState<string | null>(null);
-
-  if (invalidWorkflow)
-    return (
-      <Alert className="flex" variant="error">
-        {invalidWorkflow}
-      </Alert>
-    );
-
-  const flowElements = createElements(workflow, instanceStatus, orientation);
+  const flowElements = createElements(data, instanceStatus, orientation);
 
   return (
     <ReactFlowProvider>

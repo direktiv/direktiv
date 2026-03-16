@@ -5,7 +5,7 @@ import WorkflowDiagram from "~/design/WorkflowDiagram";
 type DiagramStatus = ComponentProps<typeof WorkflowDiagram>["instanceStatus"];
 
 export const instanceStatusToDiagramStatus = (
-  status: InstanceSchemaType["status"]
+  status?: InstanceSchemaType["status"]
 ): DiagramStatus => {
   switch (status) {
     case "failed":

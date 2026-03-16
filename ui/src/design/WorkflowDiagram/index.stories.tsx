@@ -1,262 +1,242 @@
 import Button from "../Button";
 import { ButtonBar } from "../ButtonBar";
 import { Card } from "../Card";
+import { InstanceFlowSchemaType } from "~/api/instances/schema";
 import { Orientation } from "./types";
 import WorkflowDiagram from "./index";
+
 import { useState } from "react";
-import { Workflow as workflowtype } from "~/api/instances/schema";
 
 const exampleWorkflowInitial = {
-  data: {
-    flow: [],
-    states: [
-      {
-        name: "hello-world",
-        start: true,
-        finish: false,
-        visited: false,
-        failed: false,
-        transitions: ["exit"],
-
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-
-      {
-        name: "exit",
-        start: false,
-        finish: true,
-        visited: false,
-        failed: false,
-        transitions: [],
-
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-    ],
-  },
-};
+  flow: [],
+  states: [
+    {
+      name: "hello-world",
+      start: true,
+      finish: false,
+      visited: false,
+      failed: false,
+      transitions: ["exit"],
+      events: [],
+      conditions: [],
+      catch: [],
+      transition: "",
+      defaultTransition: "",
+    },
+    {
+      name: "exit",
+      start: false,
+      finish: true,
+      visited: false,
+      failed: false,
+      transitions: [],
+      events: [],
+      conditions: [],
+      catch: [],
+      transition: "",
+      defaultTransition: "",
+    },
+  ],
+} satisfies InstanceFlowSchemaType;
 
 const exampleWorkflowStepOne = {
-  data: {
-    flow: ["hello-world"],
-    states: [
-      {
-        name: "hello-world",
-        start: true,
-        finish: false,
-        visited: true,
-        failed: false,
-        transitions: ["exit"],
-
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-
-      {
-        name: "exit",
-        start: false,
-        finish: true,
-        visited: false,
-        failed: false,
-        transitions: [],
-
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-    ],
-  },
-};
+  flow: ["hello-world"],
+  states: [
+    {
+      name: "hello-world",
+      start: true,
+      finish: false,
+      visited: true,
+      failed: false,
+      transitions: ["exit"],
+      events: [],
+      conditions: [],
+      catch: [],
+      transition: "",
+      defaultTransition: "",
+    },
+    {
+      name: "exit",
+      start: false,
+      finish: true,
+      visited: false,
+      failed: false,
+      transitions: [],
+      events: [],
+      conditions: [],
+      catch: [],
+      transition: "",
+      defaultTransition: "",
+    },
+  ],
+} satisfies InstanceFlowSchemaType;
 
 const exampleWorkflowStepTwo = {
-  data: {
-    flow: ["hello-world", "exit"],
-    states: [
-      {
-        name: "hello-world",
-        start: true,
-        finish: false,
-        visited: true,
-        failed: false,
-        transitions: ["exit"],
-
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-      {
-        name: "exit",
-        start: false,
-        finish: true,
-        visited: true,
-        failed: false,
-        transitions: [],
-
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-    ],
-  },
-};
+  flow: ["hello-world", "exit"],
+  states: [
+    {
+      name: "hello-world",
+      start: true,
+      finish: false,
+      visited: true,
+      failed: false,
+      transitions: ["exit"],
+      events: [],
+      conditions: [],
+      catch: [],
+      transition: "",
+      defaultTransition: "",
+    },
+    {
+      name: "exit",
+      start: false,
+      finish: true,
+      visited: true,
+      failed: false,
+      transitions: [],
+      events: [],
+      conditions: [],
+      catch: [],
+      transition: "",
+      defaultTransition: "",
+    },
+  ],
+} satisfies InstanceFlowSchemaType;
 
 const exampleWorkflowFailed = {
-  data: {
-    flow: ["stateFirst", "stateSecond"],
-    states: [
-      {
-        name: "stateFirst",
-        start: true,
-        finish: false,
-        visited: true,
-        failed: false,
-        transitions: ["stateSecond"],
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-      {
-        name: "stateSecond",
-        start: false,
-        finish: false,
-        visited: true,
-        failed: true,
-        transitions: ["stateThird"],
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-      {
-        name: "stateThird",
-        start: false,
-        finish: true,
-        visited: false,
-        failed: false,
-        transitions: [],
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-    ],
-  },
-};
+  flow: ["stateFirst", "stateSecond"],
+  states: [
+    {
+      name: "stateFirst",
+      start: true,
+      finish: false,
+      visited: true,
+      failed: false,
+      transitions: ["stateSecond"],
+      events: [],
+      conditions: [],
+      catch: [],
+      transition: "",
+      defaultTransition: "",
+    },
+    {
+      name: "stateSecond",
+      start: false,
+      finish: false,
+      visited: true,
+      failed: true,
+      transitions: ["stateThird"],
+      events: [],
+      conditions: [],
+      catch: [],
+      transition: "",
+      defaultTransition: "",
+    },
+    {
+      name: "stateThird",
+      start: false,
+      finish: true,
+      visited: false,
+      failed: false,
+      transitions: [],
+      events: [],
+      conditions: [],
+      catch: [],
+      transition: "",
+      defaultTransition: "",
+    },
+  ],
+} satisfies InstanceFlowSchemaType;
 
 const exampleWorkflowComplete = {
-  data: {
-    flow: ["hello-world", "exit"],
-    states: [
-      {
-        name: "hello-world",
-        start: true,
-        finish: false,
-        visited: true,
-        failed: false,
-        transitions: ["exit"],
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-
-      {
-        name: "exit",
-        start: false,
-        finish: true,
-        visited: true,
-        failed: false,
-        transitions: [],
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-    ],
-  },
-};
+  flow: ["hello-world", "exit"],
+  states: [
+    {
+      name: "hello-world",
+      start: true,
+      finish: false,
+      visited: true,
+      failed: false,
+      transitions: ["exit"],
+      events: [],
+      conditions: [],
+      catch: [],
+      transition: "",
+      defaultTransition: "",
+    },
+    {
+      name: "exit",
+      start: false,
+      finish: true,
+      visited: true,
+      failed: false,
+      transitions: [],
+      events: [],
+      conditions: [],
+      catch: [],
+      transition: "",
+      defaultTransition: "",
+    },
+  ],
+} satisfies InstanceFlowSchemaType;
 
 const exampleWorkflowComplex = {
-  data: {
-    flow: ["hello-world", "actionOne", "actionTwo", "exit"],
-    states: [
-      {
-        name: "hello-world",
-        start: true,
-        finish: false,
-        visited: true,
-        failed: false,
-        transitions: ["actionOne", "actionTwo"],
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-      {
-        name: "actionOne",
-        start: false,
-        finish: false,
-        visited: false,
-        failed: false,
-        transitions: ["exit"],
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-      {
-        name: "actionTwo",
-        start: false,
-        finish: false,
-        visited: true,
-        failed: false,
-        transitions: ["exit"],
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-      {
-        name: "exit",
-        start: false,
-        finish: true,
-        visited: true,
-        failed: false,
-        transitions: [],
-        events: [],
-        conditions: [],
-        catch: [],
-        transition: "",
-        defaultTransition: "",
-      },
-    ],
-  },
-};
+  flow: ["hello-world", "actionTwo", "exit"],
+  states: [
+    {
+      name: "hello-world",
+      start: true,
+      finish: false,
+      visited: true,
+      failed: false,
+      transitions: ["actionOne", "actionTwo"],
+      events: [],
+      conditions: [],
+      catch: [],
+      transition: "",
+      defaultTransition: "",
+    },
+    {
+      name: "actionOne",
+      start: false,
+      finish: false,
+      visited: false,
+      failed: false,
+      transitions: ["exit"],
+      events: [],
+      conditions: [],
+      catch: [],
+      transition: "",
+      defaultTransition: "",
+    },
+    {
+      name: "actionTwo",
+      start: false,
+      finish: false,
+      visited: true,
+      failed: false,
+      transitions: ["exit"],
+      events: [],
+      conditions: [],
+      catch: [],
+      transition: "",
+      defaultTransition: "",
+    },
+    {
+      name: "exit",
+      start: false,
+      finish: true,
+      visited: true,
+      failed: false,
+      transitions: [],
+      events: [],
+      conditions: [],
+      catch: [],
+      transition: "",
+      defaultTransition: "",
+    },
+  ],
+} satisfies InstanceFlowSchemaType;
 
 export default {
   title: "Components/WorkflowDiagram",
@@ -289,36 +269,30 @@ export default {
 
 export const Workflow = () => (
   <div className="h-96">
-    <WorkflowDiagram workflow={exampleWorkflowInitial} />
+    <WorkflowDiagram data={exampleWorkflowInitial} />
   </div>
 );
 
 export const WorkflowInstancePending = () => (
   <div className="h-96">
-    <WorkflowDiagram
-      workflow={exampleWorkflowStepTwo}
-      instanceStatus="pending"
-    />
+    <WorkflowDiagram data={exampleWorkflowStepTwo} instanceStatus="pending" />
   </div>
 );
 
 export const WorkflowInstanceFailed = () => (
   <div className="h-96">
-    <WorkflowDiagram workflow={exampleWorkflowFailed} instanceStatus="failed" />
+    <WorkflowDiagram data={exampleWorkflowFailed} instanceStatus="failed" />
   </div>
 );
 
 export const WorkflowInstanceComplete = () => (
   <div className="h-96">
-    <WorkflowDiagram
-      workflow={exampleWorkflowComplete}
-      instanceStatus="complete"
-    />
+    <WorkflowDiagram data={exampleWorkflowComplete} instanceStatus="complete" />
   </div>
 );
 
 export const UpdateWorkflow = () => {
-  const [workflow, setWorkflow] = useState<workflowtype>(
+  const [workflow, setWorkflow] = useState<InstanceFlowSchemaType>(
     exampleWorkflowInitial
   );
   const [status, setStatus] = useState<"pending" | "complete">("pending");
@@ -372,7 +346,7 @@ export const UpdateWorkflow = () => {
         </Button>
       </ButtonBar>
       <WorkflowDiagram
-        workflow={workflow}
+        data={workflow}
         instanceStatus={status}
         orientation={orientation}
       />
@@ -386,9 +360,6 @@ export const UpdateWorkflow = () => {
 
 export const ComplexWorkflowDiagram = () => (
   <div className="h-[600px]">
-    <WorkflowDiagram
-      workflow={exampleWorkflowComplex}
-      instanceStatus="complete"
-    />
+    <WorkflowDiagram data={exampleWorkflowComplex} instanceStatus="complete" />
   </div>
 );
