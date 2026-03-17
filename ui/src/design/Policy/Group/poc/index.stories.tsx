@@ -6,8 +6,8 @@ import {
   toAndBranch,
 } from "./utils";
 import {
-  type ConditionsType,
   ConditionsSchema,
+  type ConditionsType,
 } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions";
 
 import { type Meta, type StoryObj } from "@storybook/react-vite";
@@ -22,14 +22,20 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-const ExpressionLeaf = ({ preview }: { preview: string }) => (
+const ExpressionLeaf = ({
+  preview,
+  title,
+}: {
+  preview: string;
+  title: string;
+}) => (
   <Card
     background="weight-2"
-    className="my-[16px] flex h-[64px] min-w-40 max-w-64 overflow-hidden px-3 py-2"
+    className="my-[16px] flex h-[64px] min-w-40 max-w-64 items-center overflow-hidden px-3 py-2"
   >
     <pre
-      title={preview}
-      className="m-0 block max-h-full w-full overflow-hidden whitespace-pre-wrap break-words text-xs leading-tight"
+      title={title}
+      className="m-0 block w-full truncate text-xs leading-tight"
     >
       {preview}
     </pre>
@@ -38,7 +44,7 @@ const ExpressionLeaf = ({ preview }: { preview: string }) => (
 
 const RenderNode = ({ node }: { node: NodeVM }) => {
   if (node.type === "leaf") {
-    return <ExpressionLeaf preview={node.preview} />;
+    return <ExpressionLeaf preview={node.preview} title={node.title} />;
   }
 
   if (node.type === "or") {

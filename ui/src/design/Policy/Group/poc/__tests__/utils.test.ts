@@ -1,16 +1,21 @@
 import { describe, expect, test } from "vitest";
 import {
   expressionToNode,
+  formatExpressionInline,
+  formatExpressionTitle,
   shouldRenderConnector,
-  stringifyExpression,
   toAndBranch,
 } from "../utils";
 
 import type { ConditionsType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions";
 
 describe("Policy Group POC utils", () => {
-  test("stringifyExpression formats objects for display", () => {
-    expect(stringifyExpression({ Value: true })).toContain('"Value": true');
+  test("formatExpressionTitle formats objects for hover text", () => {
+    expect(formatExpressionTitle({ Value: true })).toContain('"Value": true');
+  });
+
+  test("formatExpressionInline keeps expressions on one line", () => {
+    expect(formatExpressionInline({ Value: true })).toBe('{"Value":true}');
   });
 
   test("expressionToNode flattens chained and expressions", () => {

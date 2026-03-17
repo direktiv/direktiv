@@ -6,6 +6,7 @@ type ExpressionInput = ClauseInput["body"];
 type LeafVM = {
   type: "leaf";
   preview: string;
+  title: string;
   rows: 1;
 };
 
@@ -30,8 +31,11 @@ type BooleanExpressionPayload = {
   right: ExpressionInput;
 };
 
-export const stringifyExpression = (value: unknown): string =>
+export const formatExpressionTitle = (value: unknown): string =>
   JSON.stringify(value, null, 2) ?? "expression";
+
+export const formatExpressionInline = (value: unknown): string =>
+  JSON.stringify(value) ?? "expression";
 
 const getSingleEntry = (
   expression: ExpressionInput
@@ -80,7 +84,8 @@ const flattenOperator = (
 
 const createLeaf = (expression: ExpressionInput): LeafVM => ({
   type: "leaf",
-  preview: stringifyExpression(expression),
+  preview: formatExpressionInline(expression),
+  title: formatExpressionTitle(expression),
   rows: 1,
 });
 
