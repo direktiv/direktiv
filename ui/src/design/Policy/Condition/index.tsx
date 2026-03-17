@@ -1,14 +1,24 @@
-import type { PropsWithChildren } from "react";
+import type { HTMLAttributes, PropsWithChildren } from "react";
 
 import { Card } from "~/design/Card";
+import { twMergeClsx } from "~/util/helpers";
 
-type ConditionComponentProps = PropsWithChildren;
+type ConditionComponentProps = PropsWithChildren &
+  HTMLAttributes<HTMLDivElement>;
 
-const Condition = ({ children }: ConditionComponentProps) => (
+const Condition = ({
+  children,
+  className,
+  ...props
+}: ConditionComponentProps) => (
   <Card
     background="weight-2"
-    className="flex min-w-40 flex-col items-center justify-center py-2 text-center text-xs"
+    className={twMergeClsx(
+      "flex min-w-40 max-w-64 flex-col items-center justify-center overflow-hidden p-5 text-center text-xs",
+      className
+    )}
     aria-label="condition"
+    {...props}
   >
     {children}
   </Card>

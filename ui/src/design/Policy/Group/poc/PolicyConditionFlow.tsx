@@ -6,31 +6,15 @@ import {
   toAndBranch,
 } from "./utils";
 
-import { Card } from "~/design/Card";
-
-const ExpressionLeaf = ({
-  preview,
-  title,
-}: {
-  preview: string;
-  title: string;
-}) => (
-  <Card
-    background="weight-2"
-    className="my-[16px] flex h-[64px] min-w-40 max-w-64 items-center overflow-hidden px-3 py-2"
-  >
-    <pre
-      title={title}
-      className="m-0 block w-full truncate text-xs leading-tight"
-    >
-      {preview}
-    </pre>
-  </Card>
-);
+import { Condition } from "~/design/Policy/Condition";
 
 const RenderNode = ({ node }: { node: NodeVM }) => {
   if (node.type === "leaf") {
-    return <ExpressionLeaf preview={node.preview} title={node.title} />;
+    return (
+      <Condition className="font-mono" title={node.title}>
+        <span className="truncate">{node.preview}</span>
+      </Condition>
+    );
   }
 
   if (node.type === "or") {
