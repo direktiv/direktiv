@@ -12,7 +12,7 @@ const RenderNode = ({ node }: { node: NodeVM }) => {
   if (node.type === "leaf") {
     return (
       <Condition className="font-mono" title={node.title}>
-        <span className="truncate">{node.preview}</span>
+        <span className="block w-full truncate">{node.preview}</span>
       </Condition>
     );
   }
