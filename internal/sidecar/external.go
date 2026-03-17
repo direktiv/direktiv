@@ -92,10 +92,17 @@ func newExternalServer(rm *requestMap, variables datastore.RuntimeVariablesStore
 
 		telemetry.LogInstance(ctx, telemetry.LogLevelInfo, "action request received")
 
-		// create temp directory and handle input files
+		// create temp directory with output subdirectories and handle input files
 		tmpDir := filepath.Join(sharedDir, actionID)
-		if err := os.MkdirAll(tmpDir, 0o755); err != nil {
-			slog.Error("could not create temp directory", slog.Any("error", err))
+		for _, dir := range []string{
+			tmpDir,
+			filepath.Join(tmpDir, "out", "namespace"),
+			filepath.Join(tmpDir, "out", "workflow"),
+			filepath.Join(tmpDir, "out", "instance"),
+		} {
+			if err := os.MkdirAll(dir, 0o755); err != nil {
+				slog.Error("could not create directory", slog.String("path", dir), slog.Any("error", err))
+			}
 		}
 
 		namespace := req.Header.Get(core.EngineHeaderNamespace)
@@ -309,7 +316,7 @@ func (es *externalServer) handleOutFiles(ctx context.Context, tmpDir, namespace,
 	}
 
 	for _, s := range scopes {
-		scopeDir := filepath.Join(tmpDir, s.dir)
+		scopeDir := filepath.Join(tmpDir, "out", s.dir)
 		entries, err := os.ReadDir(scopeDir)
 		if err != nil {
 			if os.IsNotExist(err) {
