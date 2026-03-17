@@ -7,6 +7,7 @@ import {
 } from "./utils";
 
 import { Condition } from "~/design/Policy/Condition";
+import { Placeholder } from "~/design/Policy/Placeholder";
 
 const RenderNode = ({ node }: { node: NodeVM }) => {
   if (node.type === "leaf") {
@@ -19,10 +20,13 @@ const RenderNode = ({ node }: { node: NodeVM }) => {
 
   if (node.type === "or") {
     return (
-      <OrGroup childSizes={node.childSizes}>
+      <OrGroup childSizes={[...node.childSizes, 1]}>
         {node.branches.map((branch, index) => (
           <RenderNode key={index} node={branch} />
         ))}
+        <AndGroup>
+          <Placeholder />
+        </AndGroup>
       </OrGroup>
     );
   }
@@ -41,6 +45,10 @@ const RenderNode = ({ node }: { node: NodeVM }) => {
 
         return renderedItems;
       })}
+      {node.items.length > 0 && node.items.at(-1)?.type !== "or" && (
+        <Connector />
+      )}
+      <Placeholder />
     </AndGroup>
   );
 };
