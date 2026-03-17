@@ -14,7 +14,7 @@ const Condition = ({
   <Card
     background="weight-2"
     className={twMergeClsx(
-      "flex w-40 flex-col items-center justify-center overflow-hidden p-5 text-center text-xs",
+      "flex w-40 flex-col items-center justify-center overflow-hidden p-2 text-center text-xs",
       className
     )}
     aria-label="condition"
