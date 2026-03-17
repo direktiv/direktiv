@@ -39,7 +39,7 @@ type Manager struct {
 
 type FetchActiveServices func() ([]string, error)
 
-func NewManager(c *core.Config, fasFunc FetchActiveServices) (core.ServiceManager, error) {
+func NewManager(c *core.Config, fasFunc FetchActiveServices) (*Manager, error) {
 	return newKnativeManager(c, fasFunc)
 }
 
