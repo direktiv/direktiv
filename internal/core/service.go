@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/lifecycle"
 	"gopkg.in/yaml.v3"
 )
 
@@ -106,5 +105,4 @@ type ServiceManager interface {
 	Rebuild(namespace string, serviceID string) error
 	GetServiceURL(namespace string, typ string, file string, name string) string
 	IgniteService(serviceURL string) error
-	Start(lc *lifecycle.Manager) error
 }
