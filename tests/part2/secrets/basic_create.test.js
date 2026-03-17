@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import { basename } from 'path'
-import { fileURLToPath } from 'url'
 
+import { basename } from 'path'
 import config from '../../common/config'
+import { fileURLToPath } from 'url'
 import helpers from '../../common/helpers'
 import regex from '../../common/regex'
 import request from '../../common/request'
@@ -16,21 +16,21 @@ describe('Test secret create calls', () => {
 	const testCases = [
 		{
 			input: {
-				name: 'foo1',
+				name: 'foobar',
 				data: btoa('bar1'),
 			},
 			want: {
-				name: 'foo1',
+				name: 'foobar',
 				initialized: true,
 			},
 		},
 		{
 			input: {
-				name: 'foo2',
+				name: 'foo-bar',
 				data: btoa('bar2'),
 			},
 			want: {
-				name: 'foo2',
+				name: 'foo-bar',
 				initialized: true,
 			},
 		},
@@ -62,7 +62,7 @@ describe('Test invalid secret create calls', () => {
 		{
 			input: {
 				// invalid data
-				name: 'foo1',
+				name: 'foobar',
 				data: 'invalid-base-64',
 			},
 			wantError: {
@@ -70,6 +70,71 @@ describe('Test invalid secret create calls', () => {
 				error: {
 					code: 'request_body_not_json',
 					message: "couldn't parse request payload in json format",
+				},
+			},
+		},
+		{
+			input: {
+				name: 'secret1',
+				data: btoa('value'),
+			},
+			wantError: {
+				statusCode: 400,
+				error: {
+					code: 'request_data_invalid',
+					message: 'invalid secret name',
+				},
+			},
+		},
+		{
+			input: {
+				name: 'InvalidCase',
+				data: btoa('value'),
+			},
+			wantError: {
+				statusCode: 400,
+				error: {
+					code: 'request_data_invalid',
+					message: 'invalid secret name',
+				},
+			},
+		},
+		{
+			input: {
+				name: 'has_underscore',
+				data: btoa('value'),
+			},
+			wantError: {
+				statusCode: 400,
+				error: {
+					code: 'request_data_invalid',
+					message: 'invalid secret name',
+				},
+			},
+		},
+		{
+			input: {
+				name: '-initial-dash',
+				data: btoa('value'),
+			},
+			wantError: {
+				statusCode: 400,
+				error: {
+					code: 'request_data_invalid',
+					message: 'invalid secret name',
+				},
+			},
+		},
+		{
+			input: {
+				name: 'trailing-dash-',
+				data: btoa('value'),
+			},
+			wantError: {
+				statusCode: 400,
+				error: {
+					code: 'request_data_invalid',
+					message: 'invalid secret name',
 				},
 			},
 		},

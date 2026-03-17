@@ -16,7 +16,7 @@ describe('Test secret read operations', () => {
 		const res = await request(common.config.getDirektivBaseUrl())
 			.post(`/api/v2/namespaces/${testNamespace}/secrets`)
 			.send({
-				name: 'key1',
+				name: 'key-one',
 				data: btoa('value1'),
 			})
 		expect(res.statusCode).toEqual(200)
@@ -27,49 +27,31 @@ describe('Test secret read operations', () => {
 		expect,
 		testNamespace,
 		'',
-		`${testWorkflow}-parent.yaml`,
+		`${testWorkflow}.wf.ts`,
 		'workflow',
-		'text/plain',
+		'application/typescript',
 		btoa(`
-functions:
-- id: echo
-  workflow: ${testWorkflow}-child.yaml
-  type: subflow
-states:
-- id: echo
-  type: action
-  action:
-    function: echo
-    secrets: [key1]
-    input: 
-      secret: 'jq(.secrets.key1)'
-  transform: 
-    result: 'jq(.return.secret)'
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT5S",
+  state: "stateEchoSecret",
+};
+
+function stateEchoSecret() {
+  const secret = getSecret("key-one");
+
+  return finish(secret);
+}
 `),
 	)
 
-	helpers.itShouldCreateFile(
-		it,
-		expect,
-		testNamespace,
-		'',
-		`${testWorkflow}-child.yaml`,
-		'workflow',
-		'text/plain',
-		btoa(`
-states:
-- id: helloworld
-  type: noop
-`),
-	)
-
-	it(`should invoke the '/${testWorkflow}-parent.yaml' workflow`, async () => {
+	it(`should invoke the '/${testWorkflow}.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivBaseUrl()).post(
-			`/api/v2/namespaces/${testNamespace}/instances?path=${testWorkflow}-parent.yaml&wait=true`,
+			`/api/v2/namespaces/${testNamespace}/instances?path=${testWorkflow}.wf.ts&wait=true`,
 		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
-			result: 'value1',
+			data: 'value1',
 		})
 	})
 })
