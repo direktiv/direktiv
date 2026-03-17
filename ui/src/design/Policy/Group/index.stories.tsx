@@ -3,6 +3,14 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Condition } from "../Condition";
 import { Placeholder } from "../Placeholder";
 
+const ExampleCondition = () => (
+  <Condition>
+    <div>user.email</div>
+    <div>equal</div>
+    <div>@foobar.org</div>
+  </Condition>
+);
+
 const meta = {
   title: "Components/Policy/Group",
   component: AndGroup,
@@ -16,23 +24,23 @@ export const Default: Story = {
     <div className="flex p-10">
       <OrGroup childSizes={[1, 1, 1, 1]}>
         <AndGroup>
-          <Condition label="user.email" operator="equal" value="@foobar.org" />
+          <ExampleCondition />
           <Connector />
-          <Condition label="user.email" operator="equal" value="@foobar.org" />
+          <ExampleCondition />
           <Connector />
-          <Condition label="user.email" operator="equal" value="@foobar.org" />
-          <Connector />
-          <Placeholder />
-        </AndGroup>
-        <AndGroup>
-          <Condition label="user.email" operator="equal" value="@foobar.org" />
+          <ExampleCondition />
           <Connector />
           <Placeholder />
         </AndGroup>
         <AndGroup>
-          <Condition label="user.email" operator="equal" value="@foobar.org" />
+          <ExampleCondition />
           <Connector />
-          <Condition label="user.email" operator="equal" value="@foobar.org" />
+          <Placeholder />
+        </AndGroup>
+        <AndGroup>
+          <ExampleCondition />
+          <Connector />
+          <ExampleCondition />
           <Connector />
           <Placeholder />
         </AndGroup>
@@ -50,30 +58,26 @@ export const WithNestedORGroup: Story = {
     <div className="flex p-10">
       <OrGroup childSizes={[1, 1, 2]}>
         <AndGroup>
-          <Condition label="user.email" operator="equal" value="@foobar.org" />
+          <ExampleCondition />
           <Connector />
-          <Condition label="user.email" operator="equal" value="@foobar.org" />
+          <ExampleCondition />
           <Connector />
-          <Condition label="user.email" operator="equal" value="@foobar.org" />
-          <Connector />
-          <Placeholder />
-        </AndGroup>
-        <AndGroup>
-          <Condition label="user.email" operator="equal" value="@foobar.org" />
+          <ExampleCondition />
           <Connector />
           <Placeholder />
         </AndGroup>
         <AndGroup>
-          <Condition label="user.email" operator="equal" value="@foobar.org" />
+          <ExampleCondition />
+          <Connector />
+          <Placeholder />
+        </AndGroup>
+        <AndGroup>
+          <ExampleCondition />
           <Connector />
           <Placeholder />
           <OrGroup childSizes={[1, 1]}>
             <AndGroup>
-              <Condition
-                label="user.email"
-                operator="equal"
-                value="@foobar.org"
-              />
+              <ExampleCondition />
               <Connector />
               <Placeholder />
             </AndGroup>
@@ -92,7 +96,7 @@ export const AlmostBlankSlate: Story = {
   render: () => (
     <div className="flex p-10">
       <AndGroup>
-        <Condition label="user.email" operator="equal" value="@foobar.org" />
+        <ExampleCondition />
         <Connector />
         <Placeholder />
       </AndGroup>
@@ -105,7 +109,7 @@ export const AddAnOrGroup: Story = {
   render: () => (
     <div className="flex p-10">
       <AndGroup>
-        <Condition label="user.email" operator="equal" value="@foobar.org" />
+        <ExampleCondition />
         <OrGroup childSizes={[1, 1]}>
           <AndGroup>
             <Placeholder />
