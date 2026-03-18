@@ -62,14 +62,14 @@ const createLeaf = (expression: ExpressionType): PolicyLeafNode => ({
 });
 
 // Converts a policy expression into the render-oriented layout tree.
-export const expressionToNode = (
+export const expressionToLayoutNode = (
   expression: ExpressionType
 ): PolicyLayoutNode => {
   const entry = getSingleEntry(expression);
 
   if (entry?.[0] === "&&") {
     // Flatten chained AND expressions so the layout renders one horizontal group.
-    const items = flattenOperator(expression, "&&").map(expressionToNode);
+    const items = flattenOperator(expression, "&&").map(expressionToLayoutNode);
 
     return {
       type: "and",
@@ -99,7 +99,7 @@ export const expressionToNode = (
 
 // Ensures an expression can be rendered as an AND branch, wrapping non-AND nodes when needed.
 export const toAndBranch = (expression: ExpressionType): PolicyAndNode => {
-  const node = expressionToNode(expression);
+  const node = expressionToLayoutNode(expression);
 
   if (node.type === "and") return node;
 
