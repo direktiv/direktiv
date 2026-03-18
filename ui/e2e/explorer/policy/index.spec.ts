@@ -17,8 +17,6 @@ test("it is possible to create a policy and view the result in the policy editor
 }) => {
   /* prepare data */
   const filename = "mypolicy.yaml";
-  const headlinevalue = "my-headline";
-  const textvalue = "my-text";
 
   /* visit policy */
   await page.goto(`/n/${namespace}/explorer/tree`, {
