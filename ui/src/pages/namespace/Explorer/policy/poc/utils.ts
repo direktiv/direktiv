@@ -68,16 +68,19 @@ export const expressionToNode = (
   const entry = getSingleEntry(expression);
 
   if (entry?.[0] === "&&") {
+    // Flatten chained AND expressions so the layout renders one horizontal group.
     const items = flattenOperator(expression, "&&").map(expressionToNode);
 
     return {
       type: "and",
       items,
+      // Side-by-side items only need the tallest child height.
       rows: Math.max(1, ...items.map((item) => item.rows)),
     };
   }
 
   if (entry?.[0] === "||") {
+    // Flatten chained OR expressions into vertically stacked branches.
     const branches = flattenOperator(expression, "||").map(toAndBranch);
     const childSizes = branches.map((branch) => branch.rows);
 
@@ -85,10 +88,12 @@ export const expressionToNode = (
       type: "or",
       branches,
       childSizes,
+      // Add branch heights plus one placeholder row rendered after the branches.
       rows: childSizes.reduce((sum, size) => sum + size, 1),
     };
   }
 
+  // Everything else is a leaf condition in the layout tree.
   return createLeaf(expression);
 };
 
