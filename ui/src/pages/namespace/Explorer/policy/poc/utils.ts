@@ -45,13 +45,6 @@ export const flattenOperator = (
   ];
 };
 
-// Wraps a raw expression in a leaf layout node.
-const createLeaf = (expression: ExpressionType): PolicyLeafNode => ({
-  type: "leaf",
-  expression,
-  rows: 1,
-});
-
 // Converts a policy expression into the render-oriented layout tree.
 export const expressionToLayoutNode = (
   expression: ExpressionType
@@ -82,8 +75,12 @@ export const expressionToLayoutNode = (
     };
   }
 
-  // Everything else is a leaf condition in the layout tree.
-  return createLeaf(expression);
+  // Everything else is a leaf
+  return {
+    type: "leaf",
+    expression,
+    rows: 1,
+  } satisfies PolicyLeafNode;
 };
 
 // Ensures an expression can be rendered as an AND branch, wrapping non-AND nodes when needed.
