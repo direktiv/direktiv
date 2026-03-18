@@ -101,7 +101,7 @@ export const expressionToNode = (expression: ExpressionType): NodeVM => {
       type: "or",
       branches,
       childSizes,
-      rows: childSizes.reduce((sum, size) => sum + size, 0),
+      rows: childSizes.reduce((sum, size) => sum + size, 1),
     };
   }
 

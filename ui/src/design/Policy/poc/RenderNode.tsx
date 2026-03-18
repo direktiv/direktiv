@@ -1,4 +1,4 @@
-import { AndGroup, Connector, OrGroup } from "..";
+import { AndGroup, Connector, OrGroup } from "../Group";
 import { type NodeVM, shouldRenderConnector } from "./utils";
 import { Condition } from "~/design/Policy/Condition";
 import { Placeholder } from "~/design/Policy/Placeholder";

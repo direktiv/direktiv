@@ -46,7 +46,28 @@ describe("expressionToNode", () => {
 
     expect(node.branches).toHaveLength(2);
     expect(node.childSizes).toEqual([1, 1]);
-    expect(node.rows).toBe(2);
+    expect(node.rows).toBe(3);
+  });
+
+  test("expressionToNode includes placeholder row in nested or height", () => {
+    const expression: ExpressionType = {
+      "&&": {
+        left: {
+          "||": {
+            left: { Value: true },
+            right: { Value: false },
+          },
+        },
+        right: { Var: "resource" },
+      },
+    };
+
+    const node = expressionToNode(expression);
+
+    expect(node.type).toBe("and");
+    if (node.type !== "and") return;
+
+    expect(node.rows).toBe(3);
   });
 });
 
