@@ -67,7 +67,7 @@ export const expressionToLayoutNode = (
 ): PolicyLayoutNode => {
   const entry = getSingleEntry(expression);
 
-  if (entry?.[0] === "&&") {
+  if (entry?.[0] === "&&" && isBooleanExpressionPayload(entry[1])) {
     // Flatten chained AND expressions so the layout renders one horizontal group.
     const items = flattenOperator(expression, "&&").map(expressionToLayoutNode);
 
@@ -79,7 +79,7 @@ export const expressionToLayoutNode = (
     };
   }
 
-  if (entry?.[0] === "||") {
+  if (entry?.[0] === "||" && isBooleanExpressionPayload(entry[1])) {
     // Flatten chained OR expressions into vertically stacked branches.
     const branches = flattenOperator(expression, "||").map(toAndBranch);
     const childSizes = branches.map((branch) => branch.rows);
