@@ -6,3 +6,6 @@ export const SlotExpressionSchema = z
     Slot: z.enum(["?principal", "?resource"]),
   })
   .strict();
+
+export type SlotExpression = z.infer<typeof SlotExpressionSchema>;
+export type SlotExpressionInput = z.input<typeof SlotExpressionSchema>;

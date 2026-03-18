@@ -40,6 +40,7 @@ describe("Unary Expression schema", () => {
   test("rejects unary expression without arg", () => {
     expectInvalidPolicy(
       createBasePolicy({
+        // @ts-expect-error - unary expressions require arg
         conditions: [{ kind: "when", body: { "!": {} } }],
       })
     );
@@ -51,6 +52,7 @@ describe("Unary Expression schema", () => {
         conditions: [
           {
             kind: "when",
+            // @ts-expect-error - unary expressions are strict
             body: { "!": { arg: { Var: "context" }, other: true } },
           },
         ],

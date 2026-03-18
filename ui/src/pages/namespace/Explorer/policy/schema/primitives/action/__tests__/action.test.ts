@@ -60,6 +60,7 @@ describe("Cedar action schema", () => {
         action: {
           op: "in",
           entity: { type: "Action", id: "read" },
+          // @ts-expect-error - does not allow an additional key
           entities: [{ type: "Action", id: "write" }],
         },
       })

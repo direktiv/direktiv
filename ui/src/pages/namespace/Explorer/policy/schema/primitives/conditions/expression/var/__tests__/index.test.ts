@@ -67,6 +67,7 @@ describe("Var Expression schema", () => {
   test("rejects invalid Var value", () => {
     expectInvalidPolicy(
       createBasePolicy({
+        // @ts-expect-error - var only allows principal/action/resource/context
         conditions: [{ kind: "when", body: { Var: "actor" } }],
       })
     );

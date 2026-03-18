@@ -33,6 +33,7 @@ describe("Value Expression schema", () => {
             kind: "when",
             body: {
               Value: true,
+              // @ts-expect-error - value expressions are strict
               extra: true,
             },
           },

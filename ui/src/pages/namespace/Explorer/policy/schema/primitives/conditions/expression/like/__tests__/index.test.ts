@@ -31,6 +31,7 @@ describe("Like Expression schema", () => {
         conditions: [
           {
             kind: "when",
+            // @ts-expect-error - pattern elements must be wildcard or literal objects
             body: { like: { left: { Var: "resource" }, pattern: [123] } },
           },
         ],
@@ -47,7 +48,13 @@ describe("Like Expression schema", () => {
             body: {
               like: {
                 left: { Var: "resource" },
-                pattern: [{ Literal: "mail", extra: true }],
+                pattern: [
+                  {
+                    Literal: "mail",
+                    // @ts-expect-error - literal pattern objects are strict
+                    extra: true,
+                  },
+                ],
               },
             },
           },

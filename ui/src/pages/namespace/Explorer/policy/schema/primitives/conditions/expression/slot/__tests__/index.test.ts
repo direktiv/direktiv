@@ -41,6 +41,7 @@ describe("Slot Expression schema", () => {
   test("rejects invalid Slot value", () => {
     expectInvalidPolicy(
       createBasePolicy({
+        // @ts-expect-error - slot only allows ?principal and ?resource
         conditions: [{ kind: "when", body: { Slot: "?action" } }],
       })
     );

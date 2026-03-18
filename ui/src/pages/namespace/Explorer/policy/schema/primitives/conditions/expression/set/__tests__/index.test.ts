@@ -31,6 +31,7 @@ describe("Set Expression schema", () => {
     expectInvalidPolicy(
       createBasePolicy({
         conditions: [
+          // @ts-expect-error - set elements must contain valid expressions
           { kind: "when", body: { Set: [{ Value: 1 }, { nope: true }] } },
         ],
       })
@@ -45,6 +46,7 @@ describe("Set Expression schema", () => {
             kind: "when",
             body: {
               Set: [{ Value: 1 }],
+              // @ts-expect-error - expressions must have exactly one top-level key
               Record: {},
             },
           },

@@ -7,3 +7,6 @@ export const UnknownExpressionSchema = z
   })
   .strict()
   .refine((value) => Object.keys(value.Unknown).length === 1);
+
+export type UnknownExpression = z.infer<typeof UnknownExpressionSchema>;
+export type UnknownExpressionInput = z.input<typeof UnknownExpressionSchema>;

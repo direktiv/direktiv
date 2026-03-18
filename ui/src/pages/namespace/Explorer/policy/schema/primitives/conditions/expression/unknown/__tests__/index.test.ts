@@ -38,6 +38,7 @@ describe("Unknown Expression schema", () => {
   test("rejects Unknown with non-string values", () => {
     expectInvalidPolicy(
       createBasePolicy({
+        // @ts-expect-error - unknown record values must be strings
         conditions: [{ kind: "when", body: { Unknown: { a: 1 } } }],
       })
     );

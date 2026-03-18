@@ -53,6 +53,7 @@ describe("Cedar conditions schema", () => {
   test("rejects condition without body", () => {
     expectInvalidPolicy(
       createBasePolicy({
+        // @ts-expect-error - conditions require a body expression
         conditions: [{ kind: "when" }],
       })
     );
