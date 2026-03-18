@@ -107,9 +107,28 @@ describe("expressionToLayoutNode", () => {
     const node = expressionToLayoutNode(expression);
 
     expect(node.type).toBe("and");
-    if (node.type !== "and") return;
+    if (node.type !== "and") {
+      throw new Error("Expected an and node");
+    }
 
     expect(node.items).toHaveLength(3);
+    expect(node.items).toEqual([
+      {
+        type: "leaf",
+        expression: { Value: true },
+        rows: 1,
+      },
+      {
+        type: "leaf",
+        expression: { Var: "principal" },
+        rows: 1,
+      },
+      {
+        type: "leaf",
+        expression: { Value: false },
+        rows: 1,
+      },
+    ]);
     expect(node.rows).toBe(1);
   });
 
@@ -129,7 +148,9 @@ describe("expressionToLayoutNode", () => {
     const node = expressionToLayoutNode(expression);
 
     expect(node.type).toBe("or");
-    if (node.type !== "or") return;
+    if (node.type !== "or") {
+      throw new Error("Expected an or node");
+    }
 
     expect(node.branches).toHaveLength(2);
     expect(node.childSizes).toEqual([1, 1]);
@@ -152,9 +173,46 @@ describe("expressionToLayoutNode", () => {
     const node = expressionToLayoutNode(expression);
 
     expect(node.type).toBe("or");
-    if (node.type !== "or") return;
+    if (node.type !== "or") {
+      throw new Error("Expected an or node");
+    }
 
     expect(node.branches).toHaveLength(3);
+    expect(node.branches).toEqual([
+      {
+        type: "and",
+        items: [
+          {
+            type: "leaf",
+            expression: { Value: true },
+            rows: 1,
+          },
+        ],
+        rows: 1,
+      },
+      {
+        type: "and",
+        items: [
+          {
+            type: "leaf",
+            expression: { Value: false },
+            rows: 1,
+          },
+        ],
+        rows: 1,
+      },
+      {
+        type: "and",
+        items: [
+          {
+            type: "leaf",
+            expression: { Var: "resource" },
+            rows: 1,
+          },
+        ],
+        rows: 1,
+      },
+    ]);
     expect(node.childSizes).toEqual([1, 1, 1]);
     expect(node.rows).toBe(4);
   });
@@ -175,7 +233,9 @@ describe("expressionToLayoutNode", () => {
     const node = expressionToLayoutNode(expression);
 
     expect(node.type).toBe("and");
-    if (node.type !== "and") return;
+    if (node.type !== "and") {
+      throw new Error("Expected an and node");
+    }
 
     expect(node.rows).toBe(3);
   });
@@ -196,7 +256,9 @@ describe("expressionToLayoutNode", () => {
     const node = expressionToLayoutNode(expression);
 
     expect(node.type).toBe("and");
-    if (node.type !== "and") return;
+    if (node.type !== "and") {
+      throw new Error("Expected an and node");
+    }
 
     expect(node.items).toHaveLength(2);
     expect(node.items[0]?.type).toBe("leaf");
@@ -206,6 +268,18 @@ describe("expressionToLayoutNode", () => {
   test("expressionToLayoutNode falls back to a leaf for malformed boolean payloads", () => {
     const expression = {
       "&&": { left: { Value: true } },
+    } as ExpressionType;
+
+    expect(expressionToLayoutNode(expression)).toEqual({
+      type: "leaf",
+      expression,
+      rows: 1,
+    });
+  });
+
+  test("expressionToLayoutNode falls back to a leaf for malformed or payloads", () => {
+    const expression = {
+      "||": { right: { Value: false } },
     } as ExpressionType;
 
     expect(expressionToLayoutNode(expression)).toEqual({
@@ -249,8 +323,63 @@ describe("expressionToLayoutNode", () => {
     const node = expressionToLayoutNode(expression);
 
     expect(node.type).toBe("or");
-    if (node.type !== "or") return;
+    if (node.type !== "or") {
+      throw new Error("Expected an or node");
+    }
 
+    expect(node.branches).toEqual([
+      {
+        type: "and",
+        items: [
+          {
+            type: "or",
+            branches: [
+              {
+                type: "and",
+                items: [
+                  {
+                    type: "leaf",
+                    expression: { Value: true },
+                    rows: 1,
+                  },
+                ],
+                rows: 1,
+              },
+              {
+                type: "and",
+                items: [
+                  {
+                    type: "leaf",
+                    expression: { Value: false },
+                    rows: 1,
+                  },
+                ],
+                rows: 1,
+              },
+            ],
+            childSizes: [1, 1],
+            rows: 3,
+          },
+          {
+            type: "leaf",
+            expression: { Var: "principal" },
+            rows: 1,
+          },
+        ],
+        rows: 3,
+      },
+      {
+        type: "and",
+        items: [
+          {
+            type: "leaf",
+            expression: { Var: "resource" },
+            rows: 1,
+          },
+        ],
+        rows: 1,
+      },
+    ]);
     expect(node.childSizes).toEqual([3, 1]);
     expect(node.rows).toBe(5);
   });
@@ -268,7 +397,9 @@ describe("toAndBranch", () => {
     const node = expressionToLayoutNode(expression);
 
     expect(node.type).toBe("and");
-    if (node.type !== "and") return;
+    if (node.type !== "and") {
+      throw new Error("Expected an and node");
+    }
 
     expect(toAndBranch(expression)).toStrictEqual(node);
   });
@@ -311,7 +442,9 @@ describe("shouldRenderConnector", () => {
     });
 
     expect(leafNode).toBeDefined();
-    if (leafNode === undefined) return;
+    if (leafNode === undefined) {
+      throw new Error("Expected a leaf node");
+    }
 
     expect(shouldRenderConnector(leafNode, leafNode)).toBe(true);
     expect(shouldRenderConnector(orNode, leafNode)).toBe(false);
