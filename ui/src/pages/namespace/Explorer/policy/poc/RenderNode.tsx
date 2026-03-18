@@ -1,4 +1,4 @@
-import { AndGroup, Connector, OrGroup } from "../Group";
+import { AndGroup, Connector, OrGroup } from "~/design/Policy/Group";
 import { Condition } from "~/design/Policy/Condition";
 import { Placeholder } from "~/design/Policy/Placeholder";
 import type { PolicyLayoutNode } from "./types";
