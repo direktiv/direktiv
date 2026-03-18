@@ -48,19 +48,15 @@ const RenderNode = ({ node }: { node: NodeVM }) => {
   );
 };
 
-const ClauseBlock = ({ expression }: { expression: ExpressionType }) => (
-  <div className="overflow-x-auto rounded-lg border border-dashed border-gray-5 bg-gray-1/40 p-4 dark:border-gray-dark-5 dark:bg-gray-dark-2/40">
-    <RenderNode node={toAndBranch(expression)} />
-  </div>
-);
-
 const PolicyConditionFlow = ({
   expression,
 }: {
   expression: ExpressionType;
 }) => (
   <div className="flex max-w-full flex-col gap-8 p-8">
-    <ClauseBlock expression={expression} />
+    <div className="overflow-x-auto rounded-lg border border-dashed border-gray-5 bg-gray-1/40 p-4 dark:border-gray-dark-5 dark:bg-gray-dark-2/40">
+      <RenderNode node={toAndBranch(expression)} />
+    </div>
   </div>
 );
 
