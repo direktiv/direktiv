@@ -1,10 +1,6 @@
 import { AndGroup, Connector, OrGroup } from "..";
-import {
-  type ExpressionInput,
-  type NodeVM,
-  shouldRenderConnector,
-  toAndBranch,
-} from "./utils";
+import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
+import { type NodeVM, shouldRenderConnector, toAndBranch } from "./utils";
 
 import { Condition } from "~/design/Policy/Condition";
 import { Placeholder } from "~/design/Policy/Placeholder";
@@ -53,7 +49,7 @@ const RenderNode = ({ node }: { node: NodeVM }) => {
   );
 };
 
-const ClauseBlock = ({ expression }: { expression: ExpressionInput }) => (
+const ClauseBlock = ({ expression }: { expression: ExpressionType }) => (
   <div className="overflow-x-auto rounded-lg border border-dashed border-gray-5 bg-gray-1/40 p-4 dark:border-gray-dark-5 dark:bg-gray-dark-2/40">
     <RenderNode node={toAndBranch(expression)} />
   </div>
@@ -62,7 +58,7 @@ const ClauseBlock = ({ expression }: { expression: ExpressionInput }) => (
 const PolicyConditionFlow = ({
   expression,
 }: {
-  expression: ExpressionInput;
+  expression: ExpressionType;
 }) => (
   <div className="flex max-w-full flex-col gap-8 p-8">
     <ClauseBlock expression={expression} />

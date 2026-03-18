@@ -1,6 +1,4 @@
-import type { ExpressionInputType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
-
-export type ExpressionInput = ExpressionInputType;
+import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
 
 type LeafVM = {
   type: "leaf";
@@ -26,8 +24,8 @@ export type NodeVM = LeafVM | AndVM | OrVM;
 
 type BooleanOperator = "&&" | "||";
 type BooleanExpressionPayload = {
-  left: ExpressionInput;
-  right: ExpressionInput;
+  left: ExpressionType;
+  right: ExpressionType;
 };
 
 export const formatExpressionTitle = (value: unknown): string =>
@@ -37,7 +35,7 @@ export const formatExpressionInline = (value: unknown): string =>
   JSON.stringify(value) ?? "expression";
 
 const getSingleEntry = (
-  expression: ExpressionInput
+  expression: ExpressionType
 ): [string, unknown] | undefined => {
   const entries = Object.entries(expression);
 
@@ -50,7 +48,7 @@ const getSingleEntry = (
   return [key, value];
 };
 
-const isExpressionInput = (value: unknown): value is ExpressionInput =>
+const isExpressionInput = (value: unknown): value is ExpressionType =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 const isBooleanExpressionPayload = (
@@ -66,9 +64,9 @@ const isBooleanExpressionPayload = (
 };
 
 const flattenOperator = (
-  expression: ExpressionInput,
+  expression: ExpressionType,
   operator: BooleanOperator
-): ExpressionInput[] => {
+): ExpressionType[] => {
   const entry = getSingleEntry(expression);
 
   if (entry?.[0] !== operator || !isBooleanExpressionPayload(entry[1])) {
@@ -81,14 +79,14 @@ const flattenOperator = (
   ];
 };
 
-const createLeaf = (expression: ExpressionInput): LeafVM => ({
+const createLeaf = (expression: ExpressionType): LeafVM => ({
   type: "leaf",
   preview: formatExpressionInline(expression),
   title: formatExpressionTitle(expression),
   rows: 1,
 });
 
-export const expressionToNode = (expression: ExpressionInput): NodeVM => {
+export const expressionToNode = (expression: ExpressionType): NodeVM => {
   const entry = getSingleEntry(expression);
 
   if (entry?.[0] === "&&") {
@@ -116,7 +114,7 @@ export const expressionToNode = (expression: ExpressionInput): NodeVM => {
   return createLeaf(expression);
 };
 
-export const toAndBranch = (expression: ExpressionInput): AndVM => {
+export const toAndBranch = (expression: ExpressionType): AndVM => {
   const node = expressionToNode(expression);
 
   if (node.type === "and") return node;

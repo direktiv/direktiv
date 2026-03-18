@@ -1,4 +1,4 @@
-import type { ExpressionInput } from "../utils";
+import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
 
 /*
   principal has email && (
@@ -6,7 +6,7 @@ import type { ExpressionInput } from "../utils";
     (action == Action::"readFile" && context == {"region": "eu-west-1"})
   )
 */
-const nestedBooleanGroups: ExpressionInput = {
+const nestedBooleanGroups: ExpressionType = {
   "&&": {
     left: { has: { left: { Var: "principal" }, attr: "email" } },
     right: {

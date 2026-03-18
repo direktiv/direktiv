@@ -1,9 +1,9 @@
-import type { ExpressionInput } from "../utils";
+import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
 
 /*
   principal has email && principal.email like "*@example.com"
 */
-const simpleWhen: ExpressionInput = {
+const simpleWhen: ExpressionType = {
   "&&": {
     left: { has: { left: { Var: "principal" }, attr: "email" } },
     right: {

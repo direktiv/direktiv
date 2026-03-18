@@ -1,4 +1,4 @@
-import type { ExpressionInput } from "../utils";
+import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
 
 /*
 when {
@@ -11,7 +11,7 @@ when {
   principal.email like "*@example.com"
 }
 */
-const nestedBooleanGroupsWithTrailingAnd: ExpressionInput = {
+const nestedBooleanGroupsWithTrailingAnd: ExpressionType = {
   "&&": {
     left: {
       has: { left: { Var: "principal" }, attr: "email" },

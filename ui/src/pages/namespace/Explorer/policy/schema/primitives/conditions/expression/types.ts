@@ -88,7 +88,7 @@ type SetExpressionType = { Set: ExpressionType[] };
 
 type RecordExpressionType = { Record: Record<string, ExpressionType> };
 
-type ExpressionType =
+export type ExpressionType =
   | NonRecursiveExpression
   | UnaryExpressionType
   | BinaryExpressionType
