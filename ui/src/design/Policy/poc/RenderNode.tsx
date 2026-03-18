@@ -1,7 +1,8 @@
 import { AndGroup, Connector, OrGroup } from "../Group";
-import { type PolicyLayoutNode, shouldRenderConnector } from "./utils";
 import { Condition } from "~/design/Policy/Condition";
 import { Placeholder } from "~/design/Policy/Placeholder";
+import type { PolicyLayoutNode } from "./types";
+import { shouldRenderConnector } from "./utils";
 
 const RenderNode = ({ node }: { node: PolicyLayoutNode }) => {
   // Leaf nodes are the terminal expressions in the policy

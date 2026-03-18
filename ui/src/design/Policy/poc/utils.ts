@@ -2,30 +2,8 @@ import type {
   BooleanExpressionPayload,
   ExpressionType,
 } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
+import type { PolicyAndNode, PolicyLayoutNode, PolicyLeafNode } from "./types";
 import { BooleanOperator } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/utils";
-
-type PolicyLeafNode = {
-  type: "leaf";
-  rows: 1; // single-row leaf
-  expression: ExpressionType;
-};
-
-type PolicyAndNode = {
-  type: "and";
-  rows: number; // tallest child height
-  items: PolicyLayoutNode[];
-};
-
-type PolicyOrNode = {
-  type: "or";
-  rows: number; // total stacked branch height
-  branches: PolicyAndNode[];
-  // childSizes tracks the row height of each OR branch so the renderer can
-  // stack branches vertically with the correct amount of space.
-  childSizes: number[];
-};
-
-export type PolicyLayoutNode = PolicyLeafNode | PolicyAndNode | PolicyOrNode;
 
 // Returns the single key/value entry for an expression object when it has exactly one field.
 const getSingleEntry = (
@@ -83,7 +61,7 @@ const createLeaf = (expression: ExpressionType): PolicyLeafNode => ({
   rows: 1,
 });
 
-// Converts a policy expression AST into the render-oriented layout tree.
+// Converts a policy expression into the render-oriented layout tree.
 export const expressionToNode = (
   expression: ExpressionType
 ): PolicyLayoutNode => {
