@@ -51,8 +51,7 @@ function stateC(): StateFunction<unknown> {
 }
 `;
 
-export const delayWorkflow1s = `// This workflow waits for a number of seconds. You can specify the length 
-// in the workflow input. For example, { "time": 10 }.\
+export const delayWorkflow1s = `// This workflow waits for 1 second.
 
 const flow: FlowDefinition = {
   type: "default",
@@ -67,8 +66,7 @@ function stateDelay(): StateFunction<unknown> {
   })
 };`;
 
-export const delayWorkflow5s = `// This workflow waits for a number of seconds. You can specify the length 
-// in the workflow input. For example, { "time": 10 }.\
+export const delayWorkflow5s = `// This workflow waits for 5 seconds.
 
 const flow: FlowDefinition = {
   type: "default",

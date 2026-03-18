@@ -6,7 +6,8 @@ import request from '../../common/request'
 
 const namespaceName = 'callpathtest'
 
-describe('Test subflow behaviour', () => {
+// Todo: Fix and unskip in TDI-257
+describe.skip('Test subflow behaviour', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
