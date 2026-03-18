@@ -6,7 +6,7 @@ import {
   toAndBranch,
 } from "../utils";
 
-import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
+import type { ExpressionType } from "../../schema/primitives/conditions/expression/types";
 
 describe("flattenOperator", () => {
   test("flattenOperator flattens chained and expressions in order", () => {

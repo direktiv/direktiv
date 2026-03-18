@@ -1,4 +1,4 @@
-import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
+import type { ExpressionType } from "../schema/primitives/conditions/expression/types";
 
 export type PolicyLeafNode = {
   type: "leaf";
