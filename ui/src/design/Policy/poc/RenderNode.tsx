@@ -7,9 +7,12 @@ const RenderNode = ({ node }: { node: PolicyLayoutNode }) => {
   // Leaf nodes are the terminal expressions in the policy
   // tree, they render directly as a condition component
   if (node.type === "leaf") {
+    const preview = JSON.stringify(node.expression);
+    const title = JSON.stringify(node.expression, null, 2);
+
     return (
-      <Condition className="font-mono" title={node.title}>
-        <span className="block w-full truncate">{node.preview}</span>
+      <Condition className="font-mono" title={title}>
+        <span className="block w-full truncate">{preview}</span>
       </Condition>
     );
   }

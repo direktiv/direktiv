@@ -11,8 +11,7 @@ describe("expressionToNode", () => {
 
     expect(node).toEqual({
       type: "leaf",
-      preview: JSON.stringify(expression),
-      title: JSON.stringify(expression, null, 2),
+      expression,
       rows: 1,
     });
   });

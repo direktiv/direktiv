@@ -3,8 +3,7 @@ import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/pr
 
 type PolicyLeafNode = {
   type: "leaf";
-  preview: string;
-  title: string;
+  expression: ExpressionType;
   // rows is the vertical space this node occupies in the layout grid.
   // A leaf always renders as a single row.
   rows: 1;
@@ -77,8 +76,7 @@ const flattenOperator = (
 
 const createLeaf = (expression: ExpressionType): PolicyLeafNode => ({
   type: "leaf",
-  preview: JSON.stringify(expression),
-  title: JSON.stringify(expression, null, 2),
+  expression,
   rows: 1,
 });
 
