@@ -1,34 +1,33 @@
+import type {
+  BooleanExpressionPayload,
+  ExpressionType,
+} from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
 import { BooleanOperator } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/utils";
-import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
 
 type PolicyLeafNode = {
   type: "leaf";
+  rows: 1; // single-row leaf
   expression: ExpressionType;
-  // rows is the vertical space this node occupies in the layout grid.
-  // A leaf always renders as a single row.
-  rows: 1;
 };
 
 type PolicyAndNode = {
   type: "and";
+  rows: number; // tallest child height
   items: PolicyLayoutNode[];
-  rows: number;
 };
 
 type PolicyOrNode = {
   type: "or";
+  rows: number; // total stacked branch height
   branches: PolicyAndNode[];
+  // childSizes tracks the row height of each OR branch so the renderer can
+  // stack branches vertically with the correct amount of space.
   childSizes: number[];
-  rows: number;
 };
 
 export type PolicyLayoutNode = PolicyLeafNode | PolicyAndNode | PolicyOrNode;
 
-type BooleanExpressionPayload = {
-  left: ExpressionType;
-  right: ExpressionType;
-};
-
+// Returns the single key/value entry for an expression object when it has exactly one field.
 const getSingleEntry = (
   expression: ExpressionType
 ): [string, unknown] | undefined => {
@@ -43,12 +42,14 @@ const getSingleEntry = (
   return [key, value];
 };
 
+// Narrows unknown values to expression-shaped objects.
 const isExpressionInput = (value: unknown): value is ExpressionType =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
+// Checks whether a value looks like a boolean expression payload with left/right expressions.
 const isBooleanExpressionPayload = (
   value: unknown
-): value is BooleanExpressionPayload => {
+): value is BooleanExpressionPayload<ExpressionType> => {
   if (!isExpressionInput(value)) return false;
 
   const recordValue = value as Record<string, unknown>;
@@ -58,6 +59,7 @@ const isBooleanExpressionPayload = (
   );
 };
 
+// Recursively flattens chained uses of the same boolean operator into a linear list.
 const flattenOperator = (
   expression: ExpressionType,
   operator: BooleanOperator
@@ -74,12 +76,14 @@ const flattenOperator = (
   ];
 };
 
+// Wraps a raw expression in a leaf layout node.
 const createLeaf = (expression: ExpressionType): PolicyLeafNode => ({
   type: "leaf",
   expression,
   rows: 1,
 });
 
+// Converts a policy expression AST into the render-oriented layout tree.
 export const expressionToNode = (
   expression: ExpressionType
 ): PolicyLayoutNode => {
@@ -110,6 +114,7 @@ export const expressionToNode = (
   return createLeaf(expression);
 };
 
+// Ensures an expression can be rendered as an AND branch, wrapping non-AND nodes when needed.
 export const toAndBranch = (expression: ExpressionType): PolicyAndNode => {
   const node = expressionToNode(expression);
 
@@ -122,6 +127,7 @@ export const toAndBranch = (expression: ExpressionType): PolicyAndNode => {
   };
 };
 
+// AND connectors are skipped whenever either neighboring node is an OR group.
 export const shouldRenderConnector = (
   left: PolicyLayoutNode,
   right: PolicyLayoutNode
