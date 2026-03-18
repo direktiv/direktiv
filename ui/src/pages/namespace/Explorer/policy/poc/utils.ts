@@ -5,7 +5,9 @@ import type {
 import type { PolicyAndNode, PolicyLayoutNode, PolicyLeafNode } from "./types";
 import { BooleanOperator } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/utils";
 
-// Returns the single key/value entry for an expression object when it has exactly one field.
+// Returns the single key/value entry for an
+// expression object when it has exactly one
+// field, e.g. { Value: true } -> ["Value", true].
 const getSingleEntry = (
   expression: ExpressionType
 ): [string, unknown] | undefined => {
