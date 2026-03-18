@@ -4,6 +4,19 @@ import { expressionToNode, shouldRenderConnector, toAndBranch } from "../utils";
 import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
 
 describe("expressionToNode", () => {
+  test("expressionToNode creates leaf nodes for non-boolean expressions", () => {
+    const expression: ExpressionType = { Var: "principal" };
+
+    const node = expressionToNode(expression);
+
+    expect(node).toEqual({
+      type: "leaf",
+      preview: JSON.stringify(expression),
+      title: JSON.stringify(expression, null, 2),
+      rows: 1,
+    });
+  });
+
   test("expressionToNode flattens chained and expressions", () => {
     const expression: ExpressionType = {
       "&&": {
@@ -49,6 +62,29 @@ describe("expressionToNode", () => {
     expect(node.rows).toBe(3);
   });
 
+  test("expressionToNode flattens chained or expressions into branches", () => {
+    const expression: ExpressionType = {
+      "||": {
+        left: {
+          "||": {
+            left: { Value: true },
+            right: { Value: false },
+          },
+        },
+        right: { Var: "resource" },
+      },
+    };
+
+    const node = expressionToNode(expression);
+
+    expect(node.type).toBe("or");
+    if (node.type !== "or") return;
+
+    expect(node.branches).toHaveLength(3);
+    expect(node.childSizes).toEqual([1, 1, 1]);
+    expect(node.rows).toBe(4);
+  });
+
   test("expressionToNode includes placeholder row in nested or height", () => {
     const expression: ExpressionType = {
       "&&": {
@@ -72,6 +108,22 @@ describe("expressionToNode", () => {
 });
 
 describe("toAndBranch", () => {
+  test("toAndBranch returns existing and nodes unchanged", () => {
+    const expression: ExpressionType = {
+      "&&": {
+        left: { Value: true },
+        right: { Var: "principal" },
+      },
+    };
+
+    const node = expressionToNode(expression);
+
+    expect(node.type).toBe("and");
+    if (node.type !== "and") return;
+
+    expect(toAndBranch(expression)).toStrictEqual(node);
+  });
+
   test("toAndBranch wraps leaf expressions", () => {
     const expression: ExpressionType = { Value: true };
 
