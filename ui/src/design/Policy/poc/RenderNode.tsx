@@ -1,9 +1,9 @@
 import { AndGroup, Connector, OrGroup } from "../Group";
-import { type NodeVM, shouldRenderConnector } from "./utils";
+import { type PolicyLayoutNode, shouldRenderConnector } from "./utils";
 import { Condition } from "~/design/Policy/Condition";
 import { Placeholder } from "~/design/Policy/Placeholder";
 
-const RenderNode = ({ node }: { node: NodeVM }) => {
+const RenderNode = ({ node }: { node: PolicyLayoutNode }) => {
   if (node.type === "leaf") {
     return (
       <Condition className="font-mono" title={node.title}>

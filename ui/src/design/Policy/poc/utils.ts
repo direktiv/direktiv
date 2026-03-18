@@ -1,26 +1,26 @@
 import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
 
-type LeafVM = {
+type PolicyLeafNode = {
   type: "leaf";
   preview: string;
   title: string;
   rows: 1;
 };
 
-type AndVM = {
+type PolicyAndNode = {
   type: "and";
-  items: NodeVM[];
+  items: PolicyLayoutNode[];
   rows: number;
 };
 
-type OrVM = {
+type PolicyOrNode = {
   type: "or";
-  branches: AndVM[];
+  branches: PolicyAndNode[];
   childSizes: number[];
   rows: number;
 };
 
-export type NodeVM = LeafVM | AndVM | OrVM;
+export type PolicyLayoutNode = PolicyLeafNode | PolicyAndNode | PolicyOrNode;
 
 type BooleanOperator = "&&" | "||";
 type BooleanExpressionPayload = {
@@ -73,14 +73,16 @@ const flattenOperator = (
   ];
 };
 
-const createLeaf = (expression: ExpressionType): LeafVM => ({
+const createLeaf = (expression: ExpressionType): PolicyLeafNode => ({
   type: "leaf",
   preview: JSON.stringify(expression),
   title: JSON.stringify(expression, null, 2),
   rows: 1,
 });
 
-export const expressionToNode = (expression: ExpressionType): NodeVM => {
+export const expressionToNode = (
+  expression: ExpressionType
+): PolicyLayoutNode => {
   const entry = getSingleEntry(expression);
 
   if (entry?.[0] === "&&") {
@@ -108,7 +110,7 @@ export const expressionToNode = (expression: ExpressionType): NodeVM => {
   return createLeaf(expression);
 };
 
-export const toAndBranch = (expression: ExpressionType): AndVM => {
+export const toAndBranch = (expression: ExpressionType): PolicyAndNode => {
   const node = expressionToNode(expression);
 
   if (node.type === "and") return node;
@@ -120,5 +122,7 @@ export const toAndBranch = (expression: ExpressionType): AndVM => {
   };
 };
 
-export const shouldRenderConnector = (left: NodeVM, right: NodeVM) =>
-  left.type !== "or" && right.type !== "or";
+export const shouldRenderConnector = (
+  left: PolicyLayoutNode,
+  right: PolicyLayoutNode
+) => left.type !== "or" && right.type !== "or";
