@@ -1,58 +1,47 @@
 import type {
-  BooleanExpressionPayload,
+  AndExpression,
   ExpressionType,
+  OrExpression,
 } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
 import type { PolicyAndNode, PolicyLayoutNode, PolicyLeafNode } from "./types";
-import { BooleanOperator } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/utils";
+import { BinaryExpressionSchema } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/binary";
+import type { BooleanOperator } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/utils";
+import { ExpressionSchema } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression";
 
-// Returns the single key/value entry for an
-// expression object when it has exactly one
-// field, e.g. { Value: true } -> ["Value", true].
-const getSingleEntry = (
-  expression: ExpressionType
-): [string, unknown] | undefined => {
-  const entries = Object.entries(expression);
+const isAndExpression = (expression: unknown): expression is AndExpression => {
+  const parsed = BinaryExpressionSchema(ExpressionSchema).safeParse(expression);
 
-  if (entries.length !== 1) return undefined;
-
-  const [key, value] = entries[0] ?? [];
-
-  if (key === undefined) return undefined;
-
-  return [key, value];
+  return parsed.success && "&&" in parsed.data;
 };
 
-// Narrows unknown values to expression-shaped objects.
-const isExpressionInput = (value: unknown): value is ExpressionType =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
+const isOrExpression = (expression: unknown): expression is OrExpression => {
+  const parsed = BinaryExpressionSchema(ExpressionSchema).safeParse(expression);
 
-// Checks whether a value looks like a boolean expression payload with left/right expressions.
-const isBooleanExpressionPayload = (
-  value: unknown
-): value is BooleanExpressionPayload<ExpressionType> => {
-  if (!isExpressionInput(value)) return false;
-
-  const recordValue = value as Record<string, unknown>;
-
-  return (
-    isExpressionInput(recordValue.left) && isExpressionInput(recordValue.right)
-  );
+  return parsed.success && "||" in parsed.data;
 };
 
-// Recursively flattens chained uses of the same boolean operator into a linear list.
-const flattenOperator = (
+// Converts nested binary boolean trees like a && (b && c) or
+// (a || b) || c into a flat list the layout layer can render as a
+// single AND row or OR branch stack. It stops when the operator changes
+// so mixed expressions like a && (b || c) keep their nested structure.
+export const flattenOperator = (
   expression: ExpressionType,
   operator: BooleanOperator
 ): ExpressionType[] => {
-  const entry = getSingleEntry(expression);
+  if (operator === "&&") {
+    if (!isAndExpression(expression)) return [expression];
 
-  if (entry?.[0] !== operator || !isBooleanExpressionPayload(entry[1])) {
-    return [expression];
+    return [
+      ...flattenOperator(expression["&&"].left, operator),
+      ...flattenOperator(expression["&&"].right, operator),
+    ];
   }
 
+  if (!isOrExpression(expression)) return [expression];
+
   return [
-    ...flattenOperator(entry[1].left, operator),
-    ...flattenOperator(entry[1].right, operator),
+    ...flattenOperator(expression["||"].left, operator),
+    ...flattenOperator(expression["||"].right, operator),
   ];
 };
 
@@ -67,9 +56,7 @@ const createLeaf = (expression: ExpressionType): PolicyLeafNode => ({
 export const expressionToLayoutNode = (
   expression: ExpressionType
 ): PolicyLayoutNode => {
-  const entry = getSingleEntry(expression);
-
-  if (entry?.[0] === "&&" && isBooleanExpressionPayload(entry[1])) {
+  if (isAndExpression(expression)) {
     // Flatten chained AND expressions so the layout renders one horizontal group.
     const items = flattenOperator(expression, "&&").map(expressionToLayoutNode);
 
@@ -81,7 +68,7 @@ export const expressionToLayoutNode = (
     };
   }
 
-  if (entry?.[0] === "||" && isBooleanExpressionPayload(entry[1])) {
+  if (isOrExpression(expression)) {
     // Flatten chained OR expressions into vertically stacked branches.
     const branches = flattenOperator(expression, "||").map(toAndBranch);
     const childSizes = branches.map((branch) => branch.rows);

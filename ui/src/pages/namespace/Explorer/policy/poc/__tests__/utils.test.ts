@@ -1,11 +1,82 @@
 import { describe, expect, test } from "vitest";
 import {
   expressionToLayoutNode,
+  flattenOperator,
   shouldRenderConnector,
   toAndBranch,
 } from "../utils";
 
 import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
+
+describe("flattenOperator", () => {
+  test("flattenOperator flattens chained and expressions in order", () => {
+    const expression: ExpressionType = {
+      "&&": {
+        left: {
+          "&&": {
+            left: { Value: true },
+            right: { Var: "principal" },
+          },
+        },
+        right: { Value: false },
+      },
+    };
+
+    expect(flattenOperator(expression, "&&")).toEqual([
+      { Value: true },
+      { Var: "principal" },
+      { Value: false },
+    ]);
+  });
+
+  test("flattenOperator flattens chained or expressions in order", () => {
+    const expression: ExpressionType = {
+      "||": {
+        left: { Value: true },
+        right: {
+          "||": {
+            left: { Value: false },
+            right: { Var: "resource" },
+          },
+        },
+      },
+    };
+
+    expect(flattenOperator(expression, "||")).toEqual([
+      { Value: true },
+      { Value: false },
+      { Var: "resource" },
+    ]);
+  });
+
+  test("flattenOperator keeps mixed boolean operators nested", () => {
+    const nestedOr: ExpressionType = {
+      "||": {
+        left: { Value: false },
+        right: { Var: "resource" },
+      },
+    };
+    const expression: ExpressionType = {
+      "&&": {
+        left: { Value: true },
+        right: nestedOr,
+      },
+    };
+
+    expect(flattenOperator(expression, "&&")).toEqual([
+      { Value: true },
+      nestedOr,
+    ]);
+  });
+
+  test("flattenOperator returns malformed boolean payloads unchanged", () => {
+    const expression = {
+      "&&": { left: { Value: true } },
+    } as ExpressionType;
+
+    expect(flattenOperator(expression, "&&")).toEqual([expression]);
+  });
+});
 
 describe("expressionToLayoutNode", () => {
   test("expressionToLayoutNode creates leaf nodes for non-boolean expressions", () => {

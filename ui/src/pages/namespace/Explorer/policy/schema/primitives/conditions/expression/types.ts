@@ -163,3 +163,13 @@ export type ExpressionSchemaType = z.ZodType<
   z.ZodTypeDef,
   ExpressionInputType
 >;
+
+export type AndExpression = Extract<
+  ExpressionType,
+  { "&&": BooleanExpressionPayload<ExpressionType> }
+>;
+
+export type OrExpression = Extract<
+  ExpressionType,
+  { "||": BooleanExpressionPayload<ExpressionType> }
+>;
