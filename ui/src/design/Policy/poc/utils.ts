@@ -1,9 +1,12 @@
+import { BooleanOperator } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/utils";
 import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
 
 type PolicyLeafNode = {
   type: "leaf";
   preview: string;
   title: string;
+  // rows is the vertical space this node occupies in the layout grid.
+  // A leaf always renders as a single row.
   rows: 1;
 };
 
@@ -22,7 +25,6 @@ type PolicyOrNode = {
 
 export type PolicyLayoutNode = PolicyLeafNode | PolicyAndNode | PolicyOrNode;
 
-type BooleanOperator = "&&" | "||";
 type BooleanExpressionPayload = {
   left: ExpressionType;
   right: ExpressionType;
