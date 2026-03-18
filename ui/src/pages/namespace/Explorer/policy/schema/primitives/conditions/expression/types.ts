@@ -54,7 +54,7 @@ type IfThenElsePayload<TExpression> = {
   else: TExpression;
 };
 
-export interface BooleanExpressionPayload<TExpression> {
+interface BooleanExpressionPayload<TExpression> {
   left: TExpression;
   right: TExpression;
 }
