@@ -7,7 +7,7 @@ import {
   toAndBranch,
 } from "../utils";
 
-import type { ConditionsType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions";
+import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
 
 describe("Policy Group POC utils", () => {
   test("formatExpressionTitle formats objects for hover text", () => {
@@ -19,29 +19,19 @@ describe("Policy Group POC utils", () => {
   });
 
   test("expressionToNode flattens chained and expressions", () => {
-    const clauses = [
-      {
-        kind: "when",
-        body: {
+    const expression: ExpressionType = {
+      "&&": {
+        left: {
           "&&": {
-            left: {
-              "&&": {
-                left: { Value: true },
-                right: { Var: "principal" },
-              },
-            },
-            right: { Value: false },
+            left: { Value: true },
+            right: { Var: "principal" },
           },
         },
+        right: { Value: false },
       },
-    ] satisfies ConditionsType;
+    };
 
-    const clause = clauses[0];
-
-    expect(clause).toBeDefined();
-    if (clause === undefined) return;
-
-    const node = expressionToNode(clause.body);
+    const node = expressionToNode(expression);
 
     expect(node.type).toBe("and");
     if (node.type !== "and") return;
@@ -51,29 +41,19 @@ describe("Policy Group POC utils", () => {
   });
 
   test("expressionToNode creates or branches with child sizes", () => {
-    const clauses = [
-      {
-        kind: "when",
-        body: {
-          "||": {
-            left: { Value: true },
-            right: {
-              "&&": {
-                left: { Value: false },
-                right: { Var: "resource" },
-              },
-            },
+    const expression: ExpressionType = {
+      "||": {
+        left: { Value: true },
+        right: {
+          "&&": {
+            left: { Value: false },
+            right: { Var: "resource" },
           },
         },
       },
-    ] satisfies ConditionsType;
+    };
 
-    const clause = clauses[0];
-
-    expect(clause).toBeDefined();
-    if (clause === undefined) return;
-
-    const node = expressionToNode(clause.body);
+    const node = expressionToNode(expression);
 
     expect(node.type).toBe("or");
     if (node.type !== "or") return;
@@ -84,19 +64,9 @@ describe("Policy Group POC utils", () => {
   });
 
   test("toAndBranch wraps leaf expressions", () => {
-    const clauses = [
-      {
-        kind: "when",
-        body: { Value: true },
-      },
-    ] satisfies ConditionsType;
+    const expression: ExpressionType = { Value: true };
 
-    const clause = clauses[0];
-
-    expect(clause).toBeDefined();
-    if (clause === undefined) return;
-
-    const branch = toAndBranch(clause.body);
+    const branch = toAndBranch(expression);
 
     expect(branch.type).toBe("and");
     expect(branch.items).toHaveLength(1);
