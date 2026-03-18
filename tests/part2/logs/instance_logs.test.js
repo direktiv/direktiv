@@ -7,6 +7,47 @@ function sleep(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+async function pollUntil(label, fn, { timeoutMs = 3000, intervalMs = 200 } = {}) {
+	const deadline = Date.now() + timeoutMs
+	let lastError
+
+	while (true) {
+		try {
+			const result = await fn()
+			if (result !== undefined && result !== null) return result
+		} catch (err) {
+			lastError = err
+		}
+
+		if (Date.now() >= deadline) {
+			if (lastError) throw lastError
+			throw new Error(`Timed out waiting for ${label} after ${timeoutMs}ms`)
+		}
+
+		await sleep(intervalMs)
+	}
+}
+
+async function eventually(label, fn, { timeoutMs = 3000, intervalMs = 200 } = {}) {
+	const deadline = Date.now() + timeoutMs
+	let lastError
+
+	while (true) {
+		try {
+			return await fn()
+		} catch (err) {
+			lastError = err
+		}
+
+		if (Date.now() >= deadline) {
+			if (lastError) throw lastError
+			throw new Error(`Timed out waiting for ${label} after ${timeoutMs}ms`)
+		}
+
+		await sleep(intervalMs)
+	}
+}
+
 function uniqueNamespace(prefix) {
 	const rand = Math.random().toString(16).slice(2, 10)
 	return `${prefix}-${Date.now()}-${rand}`
@@ -53,14 +94,15 @@ async function invokeWorkflow({ namespace, path, expectStatus }) {
 	return res
 }
 
-async function getLatestInstanceId({ namespace, filterVal }) {
+async function tryGetLatestInstanceId({ namespace, filterVal }) {
 	const res = await request(common.config.getDirektivBaseUrl()).get(
 		`/api/v2/namespaces/${namespace}/instances?filter.field=AS&filter.type=CONTAINS&filter.val=${encodeURIComponent(filterVal)}`,
 	)
-	expect(res.statusCode).toBe(200)
-	expect(Array.isArray(res.body?.data)).toBe(true)
-	expect(res.body.data.length).toBeGreaterThan(0)
-	expect(typeof res.body.data[0]?.id).toBe('string')
+
+	if (res.statusCode !== 200) return null
+	if (!Array.isArray(res.body?.data) || res.body.data.length < 1) return null
+	if (typeof res.body.data[0]?.id !== 'string') return null
+
 	return res.body.data[0].id
 }
 
@@ -77,7 +119,7 @@ describe('instance logs (new)', () => {
 		await Promise.all(namespacesToCleanUp.map((ns) => deleteNamespace(ns)))
 	})
 
-	it('logs response for a successful workflow execution after 1 second', async () => {
+	it('logs response for a successful workflow execution', async () => {
 		const namespace = uniqueNamespace('instance-logs-success')
 		namespacesToCleanUp.push(namespace)
 
@@ -103,57 +145,66 @@ function stateFirst(): StateFunction<unknown> {
 		})
 
 		await invokeWorkflow({ namespace, path: workflowPath, expectStatus: 200 })
-		await sleep(1000)
 
-		const instanceId = await getLatestInstanceId({
-			namespace,
-			filterVal: 'successful',
-		})
-
-		const logRes = await fetchInstanceLogs({ namespace, instanceId })
-		expect(logRes.statusCode).toBe(200)
-		expect(Array.isArray(logRes.body?.data)).toBe(true)
-
-		const entries = logRes.body.data
-		expect(entries.length).toBeGreaterThan(0)
-
-		expect(entries).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					level: 'INFO',
-					msg: expect.stringContaining('flow starting'),
+		const instanceId = await pollUntil(
+			'instance to appear',
+			async () =>
+				await tryGetLatestInstanceId({
 					namespace,
-					workflow: expect.objectContaining({
-						workflow: expectedWorkflow,
-						instance: instanceId,
-					}),
+					filterVal: 'successful',
 				}),
-				expect.objectContaining({
-					level: 'INFO',
-					msg: `transitioning to 'stateFirst'`,
-					namespace,
-					workflow: expect.objectContaining({
-						state: 'stateFirst',
-						workflow: expectedWorkflow,
-						instance: instanceId,
-					}),
-				}),
-				expect.objectContaining({
-					level: 'INFO',
-					msg: 'instance terminated',
-					namespace,
-					workflow: expect.objectContaining({
-						status: 'completed',
-						state: 'stateFirst',
-						workflow: expectedWorkflow,
-						instance: instanceId,
-					}),
-				}),
-			]),
+			{ timeoutMs: 3000, intervalMs: 200 },
+		)
+
+		await eventually(
+			'logs to contain expected success entries',
+			async () => {
+				const res = await fetchInstanceLogs({ namespace, instanceId })
+				expect(res.statusCode).toBe(200)
+				expect(Array.isArray(res.body?.data)).toBe(true)
+
+				expect(res.body.data).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							level: 'INFO',
+							msg: expect.stringContaining('flow starting'),
+							namespace,
+							workflow: expect.objectContaining({
+								workflow: expectedWorkflow,
+								instance: instanceId,
+							}),
+						}),
+						expect.objectContaining({
+							level: 'INFO',
+							msg: `transitioning to 'stateFirst'`,
+							namespace,
+							workflow: expect.objectContaining({
+								state: 'stateFirst',
+								workflow: expectedWorkflow,
+								instance: instanceId,
+							}),
+						}),
+						expect.objectContaining({
+							level: 'INFO',
+							msg: 'instance terminated',
+							namespace,
+							workflow: expect.objectContaining({
+								status: 'completed',
+								state: 'stateFirst',
+								workflow: expectedWorkflow,
+								instance: instanceId,
+							}),
+						}),
+					]),
+				)
+
+				return res
+			},
+			{ timeoutMs: 3000, intervalMs: 200 },
 		)
 	})
 
-	it('logs response for a workflow that fails with error after 1 second', async () => {
+	it('logs response for a workflow that fails with error', async () => {
 		const namespace = uniqueNamespace('instance-logs-error')
 		namespacesToCleanUp.push(namespace)
 
@@ -181,66 +232,75 @@ function stateFirst(): StateFunction<unknown> {
 		})
 
 		await invokeWorkflow({ namespace, path: workflowPath, expectStatus: 500 })
-		await sleep(1000)
 
-		const instanceId = await getLatestInstanceId({
-			namespace,
-			filterVal: 'error',
-		})
+		const instanceId = await pollUntil(
+			'instance to appear',
+			async () =>
+				await tryGetLatestInstanceId({
+					namespace,
+					filterVal: 'error',
+				}),
+			{ timeoutMs: 3000, intervalMs: 200 },
+		)
 
-		const logRes = await fetchInstanceLogs({ namespace, instanceId })
-		expect(logRes.statusCode).toBe(200)
-		expect(Array.isArray(logRes.body?.data)).toBe(true)
+		await eventually(
+			'logs to contain expected error entries',
+			async () => {
+				const res = await fetchInstanceLogs({ namespace, instanceId })
+				expect(res.statusCode).toBe(200)
+				expect(Array.isArray(res.body?.data)).toBe(true)
 
-		const entries = logRes.body.data
-		expect(entries.length).toBeGreaterThan(0)
+				expect(res.body.data).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							level: 'INFO',
+							msg: expect.stringContaining('flow starting'),
+							namespace,
+							workflow: expect.objectContaining({
+								workflow: expectedWorkflow,
+								instance: instanceId,
+							}),
+						}),
+						expect.objectContaining({
+							level: 'INFO',
+							msg: `transitioning to 'stateFirst'`,
+							namespace,
+							workflow: expect.objectContaining({
+								state: 'stateFirst',
+								workflow: expectedWorkflow,
+								instance: instanceId,
+							}),
+						}),
+						expect.objectContaining({
+							level: 'ERROR',
+							msg: expect.stringContaining(
+								'error during flow: Error: This was set up to fail',
+							),
+							namespace,
+							workflow: expect.objectContaining({
+								status: 'error',
+								state: 'stateFirst',
+								workflow: expectedWorkflow,
+								instance: instanceId,
+							}),
+						}),
+						expect.objectContaining({
+							level: 'INFO',
+							msg: 'instance terminated',
+							namespace,
+							workflow: expect.objectContaining({
+								status: 'error',
+								state: 'stateFirst',
+								workflow: expectedWorkflow,
+								instance: instanceId,
+							}),
+						}),
+					]),
+				)
 
-		expect(entries).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					level: 'INFO',
-					msg: expect.stringContaining('flow starting'),
-					namespace,
-					workflow: expect.objectContaining({
-						workflow: expectedWorkflow,
-						instance: instanceId,
-					}),
-				}),
-				expect.objectContaining({
-					level: 'INFO',
-					msg: `transitioning to 'stateFirst'`,
-					namespace,
-					workflow: expect.objectContaining({
-						state: 'stateFirst',
-						workflow: expectedWorkflow,
-						instance: instanceId,
-					}),
-				}),
-				expect.objectContaining({
-					level: 'ERROR',
-					msg: expect.stringContaining(
-						'error during flow: Error: This was set up to fail',
-					),
-					namespace,
-					workflow: expect.objectContaining({
-						status: 'error',
-						state: 'stateFirst',
-						workflow: expectedWorkflow,
-						instance: instanceId,
-					}),
-				}),
-				expect.objectContaining({
-					level: 'INFO',
-					msg: 'instance terminated',
-					namespace,
-					workflow: expect.objectContaining({
-						status: 'error',
-						state: 'stateFirst',
-						workflow: expectedWorkflow,
-						instance: instanceId,
-					}),
-				}),
-			]),
+				return res
+			},
+			{ timeoutMs: 3000, intervalMs: 200 },
 		)
 	})
 })
