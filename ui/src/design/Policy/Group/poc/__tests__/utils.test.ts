@@ -1,25 +1,7 @@
 import { describe, expect, test } from "vitest";
-import {
-  expressionToNode,
-  formatExpressionInline,
-  formatExpressionTitle,
-  shouldRenderConnector,
-  toAndBranch,
-} from "../utils";
+import { expressionToNode, shouldRenderConnector, toAndBranch } from "../utils";
 
 import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
-
-describe("formatExpressionTitle", () => {
-  test("formatExpressionTitle formats objects for hover text", () => {
-    expect(formatExpressionTitle({ Value: true })).toContain('"Value": true');
-  });
-});
-
-describe("formatExpressionInline", () => {
-  test("formatExpressionInline keeps expressions on one line", () => {
-    expect(formatExpressionInline({ Value: true })).toBe('{"Value":true}');
-  });
-});
 
 describe("expressionToNode", () => {
   test("expressionToNode flattens chained and expressions", () => {

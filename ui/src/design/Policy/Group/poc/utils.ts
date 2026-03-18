@@ -28,12 +28,6 @@ type BooleanExpressionPayload = {
   right: ExpressionType;
 };
 
-export const formatExpressionTitle = (value: unknown): string =>
-  JSON.stringify(value, null, 2) ?? "expression";
-
-export const formatExpressionInline = (value: unknown): string =>
-  JSON.stringify(value) ?? "expression";
-
 const getSingleEntry = (
   expression: ExpressionType
 ): [string, unknown] | undefined => {
@@ -81,8 +75,8 @@ const flattenOperator = (
 
 const createLeaf = (expression: ExpressionType): LeafVM => ({
   type: "leaf",
-  preview: formatExpressionInline(expression),
-  title: formatExpressionTitle(expression),
+  preview: JSON.stringify(expression),
+  title: JSON.stringify(expression, null, 2),
   rows: 1,
 });
 
