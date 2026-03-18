@@ -1,7 +1,6 @@
-import type { ConditionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions";
+import type { ExpressionInputType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
 
-export type ClauseInput = ConditionType;
-type ExpressionInput = ClauseInput["body"];
+export type ExpressionInput = ExpressionInputType;
 
 type LeafVM = {
   type: "leaf";

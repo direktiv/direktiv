@@ -1,6 +1,6 @@
 import { AndGroup, Connector, OrGroup } from "..";
 import {
-  type ClauseInput,
+  type ExpressionInput,
   type NodeVM,
   shouldRenderConnector,
   toAndBranch,
@@ -53,24 +53,19 @@ const RenderNode = ({ node }: { node: NodeVM }) => {
   );
 };
 
-const ClauseBlock = ({ clause }: { clause: ClauseInput }) => (
-  <div className="flex flex-col gap-3">
-    <div className="flex items-center gap-3">
-      <span className="rounded-full bg-gray-4 px-3 py-1 text-xs font-medium uppercase tracking-[0.16em] text-gray-11 dark:bg-gray-dark-4 dark:text-gray-dark-11">
-        {clause.kind}
-      </span>
-    </div>
-    <div className="overflow-x-auto rounded-lg border border-dashed border-gray-5 bg-gray-1/40 p-4 dark:border-gray-dark-5 dark:bg-gray-dark-2/40">
-      <RenderNode node={toAndBranch(clause.body)} />
-    </div>
+const ClauseBlock = ({ expression }: { expression: ExpressionInput }) => (
+  <div className="overflow-x-auto rounded-lg border border-dashed border-gray-5 bg-gray-1/40 p-4 dark:border-gray-dark-5 dark:bg-gray-dark-2/40">
+    <RenderNode node={toAndBranch(expression)} />
   </div>
 );
 
-const PolicyConditionFlow = ({ clauses }: { clauses: ClauseInput[] }) => (
+const PolicyConditionFlow = ({
+  expression,
+}: {
+  expression: ExpressionInput;
+}) => (
   <div className="flex max-w-full flex-col gap-8 p-8">
-    {clauses.map((clause, index) => (
-      <ClauseBlock key={`${clause.kind}-${index}`} clause={clause} />
-    ))}
+    <ClauseBlock expression={expression} />
   </div>
 );
 

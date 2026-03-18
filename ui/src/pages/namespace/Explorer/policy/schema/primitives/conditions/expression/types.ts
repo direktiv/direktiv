@@ -149,7 +149,7 @@ type KnownExpressionInputType = StrictUnion<
   | RecordExpressionInputType
 >;
 
-type ExpressionInputType =
+export type ExpressionInputType =
   | KnownExpressionInputType
   | ExtensionExpressionInputType;
 
