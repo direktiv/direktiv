@@ -19,10 +19,8 @@ export const Default: Story = {
 
 export const NestedBooleanGroups: Story = {
   render: (args) => (
-    <div className="p-8">
-      <div className="overflow-x-auto">
-        <RenderNode {...args} />
-      </div>
+    <div className="overflow-x-auto">
+      <RenderNode {...args} />
     </div>
   ),
   args: { node: toAndBranch(nestedBooleanGroups) },
@@ -30,10 +28,8 @@ export const NestedBooleanGroups: Story = {
 
 export const NestedSecondBranchWithTrailingAnd: Story = {
   render: (args) => (
-    <div className="p-8">
-      <div className="overflow-x-auto">
-        <RenderNode {...args} />
-      </div>
+    <div className="overflow-x-auto">
+      <RenderNode {...args} />
     </div>
   ),
   args: { node: toAndBranch(nestedBooleanGroupsWithTrailingAnd) },
