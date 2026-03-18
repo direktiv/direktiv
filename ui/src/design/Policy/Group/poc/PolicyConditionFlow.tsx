@@ -1,8 +1,7 @@
 import { AndGroup, Connector, OrGroup } from "..";
-import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
 import { type NodeVM, shouldRenderConnector, toAndBranch } from "./utils";
-
 import { Condition } from "~/design/Policy/Condition";
+import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
 import { Placeholder } from "~/design/Policy/Placeholder";
 
 const RenderNode = ({ node }: { node: NodeVM }) => {
