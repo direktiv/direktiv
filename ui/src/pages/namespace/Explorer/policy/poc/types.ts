@@ -12,7 +12,7 @@ export type PolicyAndNode = {
   items: PolicyLayoutNode[];
 };
 
-export type PolicyOrNode = {
+type PolicyOrNode = {
   type: "or";
   rows: number; // total stacked branch height
   branches: PolicyAndNode[];
