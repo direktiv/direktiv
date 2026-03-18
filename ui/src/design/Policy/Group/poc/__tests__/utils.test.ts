@@ -9,15 +9,19 @@ import {
 
 import type { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
 
-describe("Policy Group POC utils", () => {
+describe("formatExpressionTitle", () => {
   test("formatExpressionTitle formats objects for hover text", () => {
     expect(formatExpressionTitle({ Value: true })).toContain('"Value": true');
   });
+});
 
+describe("formatExpressionInline", () => {
   test("formatExpressionInline keeps expressions on one line", () => {
     expect(formatExpressionInline({ Value: true })).toBe('{"Value":true}');
   });
+});
 
+describe("expressionToNode", () => {
   test("expressionToNode flattens chained and expressions", () => {
     const expression: ExpressionType = {
       "&&": {
@@ -62,7 +66,9 @@ describe("Policy Group POC utils", () => {
     expect(node.childSizes).toEqual([1, 1]);
     expect(node.rows).toBe(2);
   });
+});
 
+describe("toAndBranch", () => {
   test("toAndBranch wraps leaf expressions", () => {
     const expression: ExpressionType = { Value: true };
 
@@ -72,7 +78,9 @@ describe("Policy Group POC utils", () => {
     expect(branch.items).toHaveLength(1);
     expect(branch.rows).toBe(1);
   });
+});
 
+describe("shouldRenderConnector", () => {
   test("shouldRenderConnector skips connectors around or groups", () => {
     const leafBranch = toAndBranch({ Value: true });
     const leafNode = leafBranch.items[0];
