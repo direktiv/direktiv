@@ -26,11 +26,11 @@ async function deleteNamespace(ns) {
 			`/api/v2/namespaces/${ns}`,
 		)
 	} catch {
-		// best-effort cleanup
+		// best-effort cleanup, fail silently.
 	}
 }
 
-async function upsertTypescriptWorkflow({ namespace, name, source }) {
+async function createTypescriptWorkflow({ namespace, name, source }) {
 	const res = await request(common.config.getDirektivBaseUrl())
 		.post(`/api/v2/namespaces/${namespace}/files`)
 		.set('Content-Type', 'application/json')
@@ -96,7 +96,7 @@ function stateFirst(): StateFunction<unknown> {
 `
 
 		await createNamespace(namespace)
-		await upsertTypescriptWorkflow({
+		await createTypescriptWorkflow({
 			namespace,
 			name: workflowPath,
 			source: workflowSource,
@@ -174,7 +174,7 @@ function stateFirst(): StateFunction<unknown> {
 `
 
 		await createNamespace(namespace)
-		await upsertTypescriptWorkflow({
+		await createTypescriptWorkflow({
 			namespace,
 			name: workflowPath,
 			source: workflowSource,
