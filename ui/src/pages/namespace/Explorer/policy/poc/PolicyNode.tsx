@@ -4,7 +4,7 @@ import { Placeholder } from "~/design/Policy/Placeholder";
 import type { PolicyLayoutNode } from "./types";
 import { shouldRenderConnector } from "./utils";
 
-const RenderNode = ({ node }: { node: PolicyLayoutNode }) => {
+const PolicyNode = ({ node }: { node: PolicyLayoutNode }) => {
   // Leaf nodes are the terminal expressions in the policy
   // tree, they render directly as a condition component
   if (node.type === "leaf") {
@@ -24,7 +24,7 @@ const RenderNode = ({ node }: { node: PolicyLayoutNode }) => {
     return (
       <OrGroup childSizes={[...node.childSizes, 1]}>
         {node.branches.map((branch, index) => (
-          <RenderNode key={index} node={branch} />
+          <PolicyNode key={index} node={branch} />
         ))}
         <AndGroup>
           <Placeholder />
@@ -41,7 +41,7 @@ const RenderNode = ({ node }: { node: PolicyLayoutNode }) => {
     <AndGroup>
       {node.items.flatMap((item, index) => {
         const nextItem = node.items[index + 1];
-        const renderedItems = [<RenderNode key={index} node={item} />];
+        const renderedItems = [<PolicyNode key={index} node={item} />];
 
         // Connect neighboring AND siblings unless either side is an
         // OR group. OR groups render their own branching structure
@@ -61,4 +61,4 @@ const RenderNode = ({ node }: { node: PolicyLayoutNode }) => {
   );
 };
 
-export default RenderNode;
+export default PolicyNode;

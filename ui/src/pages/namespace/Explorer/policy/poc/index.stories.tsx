@@ -1,14 +1,14 @@
 import { type Meta, type StoryObj } from "@storybook/react-vite";
-import RenderNode from "./RenderNode";
+import PolicyNode from "./PolicyNode";
 import nestedBooleanGroups from "./policies/nestedBooleanGroups";
 import nestedBooleanGroupsWithTrailingAnd from "./policies/nestedBooleanGroupsWithTrailingAnd";
 import simpleWhen from "./policies/simpleWhen";
 import { toAndBranch } from "./utils";
 
 const meta = {
-  title: "Components/Policy/RenderNode",
-  component: RenderNode,
-} satisfies Meta<typeof RenderNode>;
+  title: "Components/Policy/PolicyNode",
+  component: PolicyNode,
+} satisfies Meta<typeof PolicyNode>;
 
 export default meta;
 
@@ -20,7 +20,7 @@ export const Default: Story = {
 export const NestedBooleanGroups: Story = {
   render: (args) => (
     <div className="overflow-x-auto">
-      <RenderNode {...args} />
+      <PolicyNode {...args} />
     </div>
   ),
   args: { node: toAndBranch(nestedBooleanGroups) },
@@ -29,7 +29,7 @@ export const NestedBooleanGroups: Story = {
 export const NestedSecondBranchWithTrailingAnd: Story = {
   render: (args) => (
     <div className="overflow-x-auto">
-      <RenderNode {...args} />
+      <PolicyNode {...args} />
     </div>
   ),
   args: { node: toAndBranch(nestedBooleanGroupsWithTrailingAnd) },
