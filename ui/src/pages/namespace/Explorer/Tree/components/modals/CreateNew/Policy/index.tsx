@@ -51,7 +51,7 @@ const NewPolicy = ({
           message: t("pages.explorer.tree.newPolicy.nameAlreadyExists"),
         }
       ),
-      fileContent: z.any(),
+      fileContent: z.unknown(),
     })
   );
 

@@ -13,16 +13,12 @@ type PolicyEditorProps = {
 export const PageLayout: FC<PolicyEditorProps> = ({ data }) => {
   const { t } = useTranslation();
 
-  const initialData: FileSchemaType = {
-    ...data,
-  };
-
   return (
     <div className="relative flex h-full min-h-0 flex-col space-y-4 p-5">
       <Card className="relative flex min-h-0 flex-1 flex-col">
         <div className="min-h-0 grow overflow-auto">
           <div className="h-full pt-5">
-            <PolicyEditor data={initialData} />
+            <PolicyEditor data={data} />
           </div>
         </div>
       </Card>
