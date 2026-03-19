@@ -2,11 +2,11 @@ import {
   AndExpression,
   ExpressionType,
   OrExpression,
-} from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
+} from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
 import type { PolicyAndNode, PolicyLayoutNode, PolicyLeafNode } from "./types";
-import { BinaryExpressionSchema } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/binary";
-import { BooleanOperator } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/utils";
-import { ExpressionSchema } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression";
+import { BinaryExpressionSchema } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/binary";
+import { BooleanOperator } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/utils";
+import { ExpressionSchema } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression";
 
 const isAndExpression = (expression: unknown): expression is AndExpression => {
   const parsed = BinaryExpressionSchema(ExpressionSchema).safeParse(expression);
