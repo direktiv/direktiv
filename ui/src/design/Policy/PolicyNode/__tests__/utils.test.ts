@@ -1,10 +1,10 @@
-import { describe, expect, test } from "vitest";
 import {
   containsOrGroup,
   expressionToLayoutNode,
   flattenOperator,
   toAndBranch,
 } from "../utils";
+import { describe, expect, test } from "vitest";
 import { ExpressionType } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
 
 describe("flattenOperator", () => {
