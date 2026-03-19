@@ -1,55 +1,17 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
+import {
+	delayErrorWorkflowSource,
+	delayWorkflowSource,
+	okWorkflowSource,
+} from './utils'
 
 import common from '../common'
-import helpers from '../common/helpers'
 import request from '../common/request'
+import { waitForInstanceStatus } from './utils'
 
 const namespaceName = 'executetest'
 
-const executeWorkflowSource = `
-const flow: FlowDefinition = {
-  type: "default",
-  timeout: "PT5S",
-  state: "stateFirst",
-};
-
-function stateFirst(): StateFunction<unknown> {
-  return finish({ result: "ok" });
-}
-`
-
-async function waitForInstanceCompletion(
-	baseUrl,
-	namespace,
-	id,
-	timeoutMs = 5000,
-) {
-	const deadline = Date.now() + timeoutMs
-
-	while (Date.now() < deadline) {
-		const res = await request(baseUrl).get(
-			`/api/v2/namespaces/${namespace}/instances/${id}`,
-		)
-		expect(res.statusCode).toEqual(200)
-
-		const status = res.body?.data?.status
-		if (
-			status === 'complete' ||
-			status === 'failed' ||
-			status === 'cancelled'
-		) {
-			return res
-		}
-
-		await helpers.sleep(200)
-	}
-
-	throw new Error(
-		`instance ${id} did not reach terminal state within ${timeoutMs}ms`,
-	)
-}
-
-describe('instance execute API', () => {
+describe('instance API - execute and report state', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	beforeAll(async () => {
@@ -67,7 +29,7 @@ describe('instance execute API', () => {
 				name: 'flow.wf.ts',
 				type: 'workflow',
 				mimeType: 'application/typescript',
-				data: btoa(executeWorkflowSource),
+				data: btoa(okWorkflowSource),
 			})
 		expect(fileRes.statusCode).toEqual(200)
 	})
@@ -91,7 +53,13 @@ describe('instance execute API', () => {
 
 		const { id } = createRes.body.data
 
-		const getRes = await waitForInstanceCompletion(base, namespaceName, id)
+		const getRes = await waitForInstanceStatus(
+			base,
+			namespaceName,
+			id,
+			'complete',
+		)
+
 		expect(getRes.body).toMatchObject({
 			data: {
 				id,
@@ -105,6 +73,140 @@ describe('instance execute API', () => {
 				definition: expect.stringMatching(common.regex.base64Regex),
 				errorCode: null,
 				errorMessage: null,
+			},
+		})
+	})
+
+	it('executes a workflow instance and reports pending and complete states', async () => {
+		const base = common.config.getDirektivBaseUrl()
+		const workflowPath = '/delay-success.wf.ts'
+
+		const fileRes = await request(base)
+			.post(`/api/v2/namespaces/${namespaceName}/files`)
+			.set('Content-Type', 'application/json')
+			.send({
+				name: workflowPath,
+				type: 'workflow',
+				mimeType: 'application/typescript',
+				data: btoa(delayWorkflowSource),
+			})
+		expect(fileRes.statusCode).toEqual(200)
+
+		const createRes = await request(base).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=${workflowPath}`,
+		)
+		expect(createRes.statusCode).toEqual(200)
+		expect(createRes.body).toMatchObject({
+			data: {
+				createdAt: expect.stringMatching(common.regex.timestampRegex),
+				definition: expect.stringMatching(common.regex.base64Regex),
+				id: expect.stringMatching(common.regex.uuidRegex),
+				invoker: 'api',
+				path: workflowPath,
+			},
+		})
+
+		const { id } = createRes.body.data
+
+		const runningRes = await waitForInstanceStatus(
+			base,
+			namespaceName,
+			id,
+			'running',
+		)
+
+		expect(runningRes.body).toMatchObject({
+			data: {
+				id,
+				status: 'running',
+				path: workflowPath,
+				invoker: 'api',
+				namespace: namespaceName,
+			},
+		})
+
+		const completeRes = await waitForInstanceStatus(
+			base,
+			namespaceName,
+			id,
+			'complete',
+			8000,
+		)
+
+		expect(completeRes.body).toMatchObject({
+			data: {
+				id,
+				status: 'complete',
+				path: workflowPath,
+				invoker: 'api',
+				namespace: namespaceName,
+			},
+		})
+	})
+
+	it('executes a workflow instance and reports pending and failed states', async () => {
+		const base = common.config.getDirektivBaseUrl()
+		const workflowPath = '/delay-fail.wf.ts'
+
+		const fileRes = await request(base)
+			.post(`/api/v2/namespaces/${namespaceName}/files`)
+			.set('Content-Type', 'application/json')
+			.send({
+				name: workflowPath,
+				type: 'workflow',
+				mimeType: 'application/typescript',
+				data: btoa(delayErrorWorkflowSource),
+			})
+		expect(fileRes.statusCode).toEqual(200)
+
+		const createRes = await request(base).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=${workflowPath}`,
+		)
+		expect(createRes.statusCode).toEqual(200)
+		expect(createRes.body).toMatchObject({
+			data: {
+				createdAt: expect.stringMatching(common.regex.timestampRegex),
+				definition: expect.stringMatching(common.regex.base64Regex),
+				id: expect.stringMatching(common.regex.uuidRegex),
+				invoker: 'api',
+				path: workflowPath,
+			},
+		})
+
+		const { id } = createRes.body.data
+
+		const runningRes = await waitForInstanceStatus(
+			base,
+			namespaceName,
+			id,
+			'running',
+		)
+
+		expect(runningRes.body).toMatchObject({
+			data: {
+				id,
+				status: 'running',
+				path: workflowPath,
+				invoker: 'api',
+				namespace: namespaceName,
+			},
+		})
+
+		const completeRes = await waitForInstanceStatus(
+			base,
+			namespaceName,
+			id,
+			'failed',
+			8000,
+		)
+
+		expect(completeRes.body).toMatchObject({
+			data: {
+				id,
+				status: 'failed',
+				path: workflowPath,
+				invoker: 'api',
+				namespace: namespaceName,
 			},
 		})
 	})

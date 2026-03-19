@@ -1,23 +1,11 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
+import { delayWorkflowSource } from './utils'
 import helpers from '../common/helpers'
 import request from '../common/request'
 
 const namespaceName = 'canceltest'
-
-const delayWorkflowSource = `
-const flow: FlowDefinition = {
-  type: "default",
-  timeout: "PT30S",
-  state: "stateFirst",
-};
-
-function stateFirst(): StateFunction<unknown> {
-	sleep(10)
-  return finish({ data: "finished after waiting for 10s" })  
-}
-`
 
 describe('instance cancel API', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
