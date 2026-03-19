@@ -6,6 +6,7 @@ import {
   PanelTop,
   Play,
   PlusCircle,
+  Shield,
   Users,
   Workflow,
 } from "lucide-react";
@@ -35,6 +36,7 @@ export type FileTypeSelection =
   | "new-service"
   | "new-route"
   | "new-page"
+  | "new-policy"
   | "new-consumer"
   | "new-openapiSpecification";
 
@@ -153,6 +155,17 @@ const NewFileButton: FC<NewFileButtonProps> = ({ setSelectedDialog }) => {
             <DropdownMenuItem>
               <PanelTop className="mr-2 size-4" />
               {t("pages.explorer.tree.newFileButton.items.page")}
+            </DropdownMenuItem>
+          </DialogTrigger>
+          <DialogTrigger
+            className="w-full"
+            onClick={() => {
+              setSelectedDialog("new-policy");
+            }}
+          >
+            <DropdownMenuItem>
+              <Shield className="mr-2 size-4" />
+              {t("pages.explorer.tree.newFileButton.items.policy")}
             </DropdownMenuItem>
           </DialogTrigger>
         </DropdownMenuGroup>
