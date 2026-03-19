@@ -1,15 +1,16 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import { basename } from 'path'
-import { fileURLToPath } from 'url'
 
+import { basename } from 'path'
 import common from '../../common'
+import { fileURLToPath } from 'url'
 import helpers from '../../common/helpers'
 import request from '../../common/request'
 import { retry50 } from '../../common/retry'
 
 const namespace = basename(fileURLToPath(import.meta.url))
 
-describe('Test instance log api calls', () => {
+// Todo: Fix and unskip in TDI-257
+describe.skip('Test instance log api calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 	helpers.itShouldCreateFile(

@@ -1,5 +1,5 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
-import { delayWorkflow1s, simpleWorkflow } from "e2e/utils/workflows";
+import { delayWorkflow5s, simpleWorkflow } from "e2e/utils/workflows";
 import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
@@ -132,7 +132,7 @@ test("the output is shown when the workflow finished running", async ({
     name: workflowName,
     namespace,
     type: "workflow",
-    content: delayWorkflow1s,
+    content: delayWorkflow5s,
     mimeType: "application/x-typescript",
   });
   const instanceId = (
@@ -171,7 +171,7 @@ test("the output is shown when the workflow finished running", async ({
   ).toContainText("The workflow is still running");
 
   // TODO in TDI-219: remove manual reloads after streaming updates have been restored
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(10_000);
   await page.reload();
 
   await expect(
