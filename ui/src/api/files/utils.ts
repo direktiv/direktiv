@@ -5,6 +5,7 @@ import {
   Layers,
   PanelTop,
   Play,
+  Shield,
   Users,
   Workflow,
 } from "lucide-react";
@@ -82,6 +83,8 @@ export const fileTypeToIcon = (type: BaseFileSchemaType["type"]) => {
       return Users;
     case "page":
       return PanelTop;
+    case "policy":
+      return Shield;
     case "gateway":
       return BookOpen;
     default:
@@ -107,6 +110,8 @@ export const fileTypeToExplorerRoute = (type: BaseFileSchemaType["type"]) => {
       return "/n/$namespace/explorer/openapiSpecification/$";
     case "page":
       return "/n/$namespace/explorer/page/$";
+    case "policy":
+      return "/n/$namespace/explorer/policy/$";
     default:
       return "/n/$namespace/explorer/tree/$";
   }
