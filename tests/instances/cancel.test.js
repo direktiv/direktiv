@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
 
 const namespaceName = 'canceltest'
@@ -17,10 +18,6 @@ function stateFirst(): StateFunction<unknown> {
   return finish({ data: "finished after waiting for 10s" })  
 }
 `
-
-function sleep(ms) {
-	return new Promise((resolve) => setTimeout(resolve, ms))
-}
 
 describe('instance cancel API', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -65,7 +62,7 @@ describe('instance cancel API', () => {
 
 		const { id } = createRes.body.data
 
-		await sleep(200)
+		await helpers.sleep(200)
 
 		const patchRes = await request(base)
 			.patch(`/api/v2/namespaces/${namespaceName}/instances/${id}`)
@@ -73,7 +70,7 @@ describe('instance cancel API', () => {
 			.send({ status: 'cancelled' })
 		expect(patchRes.statusCode).toEqual(200)
 
-		await sleep(500)
+		await helpers.sleep(500)
 
 		const getRes = await request(base).get(
 			`/api/v2/namespaces/${namespaceName}/instances/${id}`,

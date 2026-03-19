@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
 
 const namespaceName = 'executetest'
@@ -16,10 +17,6 @@ function stateFirst(): StateFunction<unknown> {
   return finish({ result: "ok" });
 }
 `
-
-async function sleep(ms) {
-	return new Promise((resolve) => setTimeout(resolve, ms))
-}
 
 async function waitForInstanceCompletion(
 	baseUrl,
@@ -44,7 +41,7 @@ async function waitForInstanceCompletion(
 			return res
 		}
 
-		await sleep(200)
+		await helpers.sleep(200)
 	}
 
 	throw new Error(
