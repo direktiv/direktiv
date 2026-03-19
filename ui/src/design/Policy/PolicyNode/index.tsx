@@ -2,7 +2,7 @@ import { AndGroup, Connector, OrGroup } from "~/design/Policy/Group";
 import { Condition } from "~/design/Policy/Condition";
 import { Placeholder } from "~/design/Policy/Placeholder";
 import type { PolicyLayoutNode } from "./types";
-import { shouldRenderConnector } from "./utils";
+import { containsOrGroup } from "./utils";
 
 const PolicyNode = ({ node }: { node: PolicyLayoutNode }) => {
   // Leaf nodes are the terminal expressions in the policy
@@ -44,8 +44,8 @@ const PolicyNode = ({ node }: { node: PolicyLayoutNode }) => {
         const renderedItems = [<PolicyNode key={index} node={item} />];
 
         // Connect neighboring AND siblings unless either side is an
-        // OR group. OR groups render their own branching structure
-        if (nextItem !== undefined && shouldRenderConnector(item, nextItem)) {
+        // OR group. OR groups render their own branching structure.
+        if (nextItem !== undefined && !containsOrGroup([item, nextItem])) {
           renderedItems.push(<Connector key={index} />);
         }
 

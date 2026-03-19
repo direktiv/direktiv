@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 import {
+  containsOrGroup,
   expressionToLayoutNode,
   flattenOperator,
-  shouldRenderConnector,
   toAndBranch,
 } from "../utils";
 import { ExpressionType } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
@@ -429,8 +429,8 @@ describe("toAndBranch", () => {
   });
 });
 
-describe("shouldRenderConnector", () => {
-  test("shouldRenderConnector skips connectors around or groups", () => {
+describe("containsOrGroup", () => {
+  test("containsOrGroup detects whether any item is an or group", () => {
     const leafBranch = toAndBranch({ Value: true });
     const leafNode = leafBranch.items[0];
     const orNode = expressionToLayoutNode({
@@ -445,9 +445,9 @@ describe("shouldRenderConnector", () => {
       throw new Error("Expected a leaf node");
     }
 
-    expect(shouldRenderConnector(leafNode, leafNode)).toBe(true);
-    expect(shouldRenderConnector(orNode, leafNode)).toBe(false);
-    expect(shouldRenderConnector(leafNode, orNode)).toBe(false);
-    expect(shouldRenderConnector(orNode, orNode)).toBe(false);
+    expect(containsOrGroup([leafNode, leafNode])).toBe(false);
+    expect(containsOrGroup([orNode, leafNode])).toBe(true);
+    expect(containsOrGroup([leafNode, orNode])).toBe(true);
+    expect(containsOrGroup([orNode, orNode])).toBe(true);
   });
 });

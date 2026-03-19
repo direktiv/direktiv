@@ -96,8 +96,6 @@ export const toAndBranch = (expression: ExpressionType): PolicyAndNode => {
   };
 };
 
-// AND connectors are skipped whenever either neighboring node is an OR group.
-export const shouldRenderConnector = (
-  left: PolicyLayoutNode,
-  right: PolicyLayoutNode
-) => left.type !== "or" && right.type !== "or";
+// Returns true when any item in the list is an OR group.
+export const containsOrGroup = (items: PolicyLayoutNode[]) =>
+  items.some((item) => item.type === "or");
