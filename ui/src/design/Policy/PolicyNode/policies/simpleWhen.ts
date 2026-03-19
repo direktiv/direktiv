@@ -1,4 +1,4 @@
-import { ExpressionType } from "~/pages/namespace/Explorer/policy/schema/primitives/conditions/expression/types";
+import { ExpressionType } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
 
 /*
   principal has email && principal.email like "*@example.com"
