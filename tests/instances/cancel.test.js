@@ -1,8 +1,7 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
+import { delayWorkflowSource, waitForInstanceStatus } from './utils'
 
 import common from '../common'
-import { delayWorkflowSource } from './utils'
-import helpers from '../common/helpers'
 import request from '../common/request'
 
 const namespaceName = 'canceltest'
@@ -50,7 +49,7 @@ describe('instance cancel API', () => {
 
 		const { id } = createRes.body.data
 
-		await helpers.sleep(200)
+		await waitForInstanceStatus(base, namespaceName, id, 'running')
 
 		const patchRes = await request(base)
 			.patch(`/api/v2/namespaces/${namespaceName}/instances/${id}`)
@@ -58,7 +57,7 @@ describe('instance cancel API', () => {
 			.send({ status: 'cancelled' })
 		expect(patchRes.statusCode).toEqual(200)
 
-		await helpers.sleep(500)
+		await waitForInstanceStatus(base, namespaceName, id, 'cancelled')
 
 		const getRes = await request(base).get(
 			`/api/v2/namespaces/${namespaceName}/instances/${id}`,
