@@ -7,7 +7,11 @@ import { Placeholder } from "~/design/Policy/Placeholder";
 export const PlaceholderPolicy: FC = () => (
   <OrGroup childSizes={[1]}>
     <AndGroup>
-      <Condition label="user.email" operator="equal" value="@example.org" />
+      <Condition>
+        <div>user.email</div>
+        <div>equal</div>
+        <div>@example.org</div>
+      </Condition>
       <Connector />
       <Placeholder />
     </AndGroup>
