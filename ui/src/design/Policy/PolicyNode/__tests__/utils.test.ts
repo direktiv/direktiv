@@ -5,8 +5,7 @@ import {
   shouldRenderConnector,
   toAndBranch,
 } from "../utils";
-
-import type { ExpressionType } from "../../schema/primitives/conditions/expression/types";
+import { ExpressionType } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
 
 describe("flattenOperator", () => {
   test("flattenOperator flattens chained and expressions in order", () => {

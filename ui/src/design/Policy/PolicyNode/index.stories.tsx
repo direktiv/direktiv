@@ -1,5 +1,5 @@
 import { type Meta, type StoryObj } from "@storybook/react-vite";
-import PolicyNode from "./PolicyNode";
+import PolicyNode from ".";
 import nestedBooleanGroups from "./policies/nestedBooleanGroups";
 import nestedBooleanGroupsWithTrailingAnd from "./policies/nestedBooleanGroupsWithTrailingAnd";
 import simpleWhen from "./policies/simpleWhen";
