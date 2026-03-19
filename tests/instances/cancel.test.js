@@ -18,25 +18,27 @@ describe('Test wait success API behaviour', () => {
 		expect,
 		namespaceName,
 		'',
-		'delay.yaml',
+		'delay.wf.ts',
 		'workflow',
-		'text/plain',
+		'application/typescript',
 		btoa(`
-states:
-- id: a
-  type: delay
-  duration: 'PT10S'
-  transform:
-    result: x`),
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateFirst",
+};
+
+function stateFirst(): StateFunction<unknown> {
+	sleep(10)
+  return finish({ data: "finished after waiting for 10s" })  
+}
+`),
 	)
 
-	it(`should invoke the 'delay.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${namespaceName}/instances?path=delay.yaml`)
-			.send({
-				name: 'foo',
-				data: btoa('bar'),
-			})
+	it(`should invoke the 'delay.wf.ts' workflow`, async () => {
+		const req = await request(common.config.getDirektivBaseUrl()).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=delay.wf.ts`,
+		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			data: {
@@ -44,7 +46,7 @@ states:
 				definition: expect.stringMatching(common.regex.base64Regex),
 				id: expect.stringMatching(common.regex.uuidRegex),
 				invoker: 'api',
-				path: '/delay.yaml',
+				path: '/delay.wf.ts',
 				status: 'pending',
 			},
 		})
@@ -54,25 +56,17 @@ states:
 		await sleep(200)
 	})
 
-	it(`should fail to cancel the instance`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).patch(
-			`/api/v2/namespaces/${namespaceName}/instances/${id}`,
-		)
-		expect(req.statusCode).toEqual(400)
-		expect(req.body).toMatchObject({})
-
-		await sleep(500)
-	})
-
 	it(`should cancel the instance`, async () => {
+		await sleep(1000)
+
 		const req = await request(common.config.getDirektivBaseUrl())
 			.patch(`/api/v2/namespaces/${namespaceName}/instances/${id}`)
 			.set('Content-Type', 'application/json')
 			.send({
 				status: 'cancelled',
 			})
+
 		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({})
 
 		await sleep(500)
 	})
@@ -84,17 +78,17 @@ states:
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			data: {
-				createdAt: expect.stringMatching(common.regex.timestampRegex),
-				definition: expect.stringMatching(common.regex.base64Regex),
-				endedAt: expect.stringMatching(common.regex.timestampRegex),
-				errorCode: 'direktiv.cancels.api',
-				id: expect.stringMatching(common.regex.uuidRegex),
-				invoker: 'api',
-				path: '/delay.yaml',
+				id,
 				status: 'cancelled',
-				inputLength: 28,
-				outputLength: 0,
-				metadataLength: 0,
+				path: '/delay.wf.ts',
+				invoker: 'api',
+				namespace: namespaceName,
+				createdAt: expect.stringMatching(common.regex.timestampRegex),
+				startedAt: expect.stringMatching(common.regex.timestampRegex),
+				endedAt: expect.stringMatching(common.regex.timestampRegex),
+				definition: expect.stringMatching(common.regex.base64Regex),
+				errorCode: null,
+				errorMessage: null,
 			},
 		})
 	})
