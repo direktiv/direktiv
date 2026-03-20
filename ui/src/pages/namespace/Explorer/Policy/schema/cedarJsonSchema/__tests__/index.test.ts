@@ -165,6 +165,10 @@ describe("Cedar JSON schema", () => {
     expect(CedarJsonSchema.safeParse(input).success).toBe(true);
   });
 
+  test("rejects an empty schema with no namespaces", () => {
+    expect(CedarJsonSchema.safeParse({}).success).toBe(false);
+  });
+
   test("rejects reserved namespace segments and invalid action group references", () => {
     expect(
       CedarJsonSchema.safeParse({
@@ -304,6 +308,175 @@ describe("Cedar JSON schema", () => {
             appliesTo: {
               principalTypes: ["User"],
               resourceTypes: ["User"],
+            },
+          },
+        },
+      })
+    );
+  });
+
+  test("rejects required on root schema types", () => {
+    expectInvalidCedarJsonSchema(
+      createBaseSchema({
+        entityTypes: {
+          User: {
+            shape: {
+              type: "String",
+              // @ts-expect-error - root schema types cannot set required
+              required: true,
+            },
+          },
+        },
+      })
+    );
+
+    expectInvalidCedarJsonSchema(
+      createBaseSchema({
+        actions: {
+          view: {
+            appliesTo: {
+              principalTypes: ["User"],
+              resourceTypes: ["User"],
+              context: {
+                type: "Record",
+                // @ts-expect-error - root schema types cannot set required
+                required: true,
+                attributes: {
+                  isAuthenticated: {
+                    type: "Boolean",
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
+    );
+
+    expectInvalidCedarJsonSchema(
+      createBaseSchema({
+        commonTypes: {
+          GeoContext: {
+            type: "Extension",
+            name: "ipaddr",
+            // @ts-expect-error - root schema types cannot set required
+            required: true,
+          },
+        },
+      })
+    );
+  });
+
+  test("rejects invalid record attribute names", () => {
+    expectInvalidCedarJsonSchema(
+      createBaseSchema({
+        entityTypes: {
+          User: {
+            shape: {
+              type: "Record",
+              attributes: {
+                "invalid-name": {
+                  type: "String",
+                },
+              },
+            },
+          },
+        },
+      })
+    );
+  });
+
+  test("rejects invalid entity type and common type keys", () => {
+    expectInvalidCedarJsonSchema(
+      createBaseSchema({
+        entityTypes: {
+          "invalid-name": {},
+        },
+      })
+    );
+
+    expectInvalidCedarJsonSchema(
+      createBaseSchema({
+        commonTypes: {
+          String: {
+            type: "Record",
+            attributes: {},
+          },
+        },
+      })
+    );
+  });
+
+  test("rejects empty enum declarations", () => {
+    expectInvalidCedarJsonSchema(
+      createBaseSchema({
+        entityTypes: {
+          User: {
+            enum: [],
+          },
+        },
+      })
+    );
+  });
+
+  test("rejects extra keys on nested schema type objects", () => {
+    expectInvalidCedarJsonSchema(
+      createBaseSchema({
+        entityTypes: {
+          User: {
+            shape: {
+              type: "Entity",
+              name: "User",
+              // @ts-expect-error - schema type objects are strict
+              extra: true,
+            },
+          },
+        },
+      })
+    );
+
+    expectInvalidCedarJsonSchema(
+      createBaseSchema({
+        entityTypes: {
+          User: {
+            shape: {
+              type: "Record",
+              attributes: {
+                manager: {
+                  type: "EntityOrCommon",
+                  name: "GeoContext",
+                  required: false,
+                  // @ts-expect-error - schema type objects are strict
+                  extra: true,
+                },
+              },
+            },
+          },
+        },
+      })
+    );
+  });
+
+  test("rejects invalid reserved identifier edge cases", () => {
+    expectInvalidCedarJsonSchema(
+      createBaseSchema({
+        entityTypes: {
+          User: {
+            shape: {
+              type: "__cedar::Record",
+            },
+          },
+        },
+      })
+    );
+
+    expectInvalidCedarJsonSchema(
+      createBaseSchema({
+        entityTypes: {
+          User: {
+            shape: {
+              type: "Extension",
+              name: "__cedar::invalid-name",
             },
           },
         },
