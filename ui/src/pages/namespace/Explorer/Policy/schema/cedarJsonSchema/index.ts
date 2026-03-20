@@ -76,8 +76,8 @@ const createSchemaTypeValidator = (options: { allowRequired: boolean }) => {
           type: z.literal("Record"),
           attributes: strictRecordWithKeyValidation(
             CedarSchemaAttributeTypeSchema,
-            () => true,
-            "Record attribute names must be strings"
+            (key) => isIdentifierPath(key),
+            "Record attribute names must be valid Cedar identifiers"
           ),
           ...metadata,
         })
