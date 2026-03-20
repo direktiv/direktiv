@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // Reserved Cedar type names cannot be reused as user-defined type identifiers.
 // Example: `type String = ...` is invalid because `String` is built in.
-const cedarReservedTypeNames = new Set([
+const reservedCedarTypeNames = new Set([
   "Bool",
   "Boolean",
   "Entity",
@@ -13,7 +13,7 @@ const cedarReservedTypeNames = new Set([
   "String",
 ]);
 
-const cedarIdentifierSegment = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
+const cedarIdentifierSegmentPattern = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 
 // Validates Cedar-style names like `User`, `MyNamespace::User`, or `__cedar::ipaddr`.
 // The options let each caller opt into the few exceptions allowed by the Cedar spec.
@@ -37,7 +37,9 @@ export const isIdentifierPath = (
 
   const segments = value.split("::");
 
-  if (segments.some((segment) => !cedarIdentifierSegment.test(segment))) {
+  if (
+    segments.some((segment) => !cedarIdentifierSegmentPattern.test(segment))
+  ) {
     return false;
   }
 
@@ -54,7 +56,7 @@ export const isIdentifierPath = (
     return false;
   }
 
-  return allowReservedFinalSegment || !cedarReservedTypeNames.has(finalSegment);
+  return allowReservedFinalSegment || !reservedCedarTypeNames.has(finalSegment);
 };
 
 export const NamespaceNameSchema = z
@@ -74,7 +76,7 @@ export const EntityTypeNameSchema = z
 
 // `EntityOrCommon` follows Cedar's name resolution rules:
 // common type > entity type > primitive/extension type.
-export const CommonTypeReferenceSchema = z.string().refine(
+export const EntityOrCommonNameSchema = z.string().refine(
   (value) =>
     isIdentifierPath(value, {
       allowReservedCedarNamespace: value.startsWith("__cedar::"),
@@ -98,7 +100,7 @@ export const ExtensionTypeNameSchema = z.string().refine(
 // Action groups are always action entities.
 // Cedar: `action View in [ReadOnly] ...`
 // JSON:  `{ "memberOf": [{ "id": "ReadOnly", "type": "MyNS::Action" }] }`
-export const ActionEntityTypeSchema = z
+export const ActionEntityTypeNameSchema = z
   .string()
   .refine(
     (value) => isIdentifierPath(value, { allowReservedFinalSegment: true }),
@@ -114,7 +116,7 @@ export const PrimitiveTypeNameSchema = z.enum(["Long", "String", "Boolean"]);
 
 // Common type references are encoded as `{ type: "MyCommonType" }`, so this excludes
 // the built-in discriminators like `Record`, `Set`, `Entity`, and primitive names.
-export const TypeReferenceSchema = z.string().refine(
+export const SchemaTypeReferenceNameSchema = z.string().refine(
   (value) =>
     ![
       "Long",

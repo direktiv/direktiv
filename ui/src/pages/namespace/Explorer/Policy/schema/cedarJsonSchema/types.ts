@@ -7,14 +7,14 @@ type CedarPrimitiveTypeName = "Long" | "String" | "Boolean";
 // - `String`
 // - `Set<User>`
 // - `{ owner: User, tags?: Set<String> }`
-export type CedarRootTypeInput =
+export type CedarSchemaTypeInput =
   | {
       type: CedarPrimitiveTypeName | string;
       annotations?: CedarAnnotations;
     }
   | {
       type: "Set";
-      element: CedarRootTypeInput;
+      element: CedarSchemaTypeInput;
       annotations?: CedarAnnotations;
     }
   | {
@@ -24,7 +24,7 @@ export type CedarRootTypeInput =
     }
   | {
       type: "Record";
-      attributes: Record<string, CedarRecordAttributeInput>;
+      attributes: Record<string, CedarSchemaAttributeTypeInput>;
       annotations?: CedarAnnotations;
     }
   | {
@@ -42,7 +42,7 @@ export type CedarRootTypeInput =
 // JSON-only `required` flag.
 // Cedar: `name?: String`
 // JSON:  `{ "type": "String", "required": false }`
-export type CedarRecordAttributeInput =
+export type CedarSchemaAttributeTypeInput =
   | {
       type: CedarPrimitiveTypeName | string;
       annotations?: CedarAnnotations;
@@ -50,7 +50,7 @@ export type CedarRecordAttributeInput =
     }
   | {
       type: "Set";
-      element: CedarRootTypeInput;
+      element: CedarSchemaTypeInput;
       annotations?: CedarAnnotations;
       required?: boolean;
     }
@@ -62,7 +62,7 @@ export type CedarRecordAttributeInput =
     }
   | {
       type: "Record";
-      attributes: Record<string, CedarRecordAttributeInput>;
+      attributes: Record<string, CedarSchemaAttributeTypeInput>;
       annotations?: CedarAnnotations;
       required?: boolean;
     }
@@ -82,11 +82,11 @@ export type CedarRecordAttributeInput =
 // Entity types come in two shapes:
 // - structural entities: `entity User in Group = { name: String };`
 // - enum entities: `entity Group enum ["admins", "reviewers"];`
-export type CedarEntityTypeDefinitionInput =
+export type CedarEntityDefinitionInput =
   | {
       memberOfTypes?: string[];
-      shape?: CedarRootTypeInput;
-      tags?: CedarRootTypeInput;
+      shape?: CedarSchemaTypeInput;
+      tags?: CedarSchemaTypeInput;
       annotations?: CedarAnnotations;
     }
   | {
@@ -94,7 +94,7 @@ export type CedarEntityTypeDefinitionInput =
       annotations?: CedarAnnotations;
     };
 
-export type CedarActionGroupMembershipInput = {
+export type CedarActionGroupReferenceInput = {
   id: string;
   type?: string;
 };
@@ -102,26 +102,26 @@ export type CedarActionGroupMembershipInput = {
 // Cedar action declarations are centered around `appliesTo`.
 // Cedar:
 // `action View appliesTo { principal: User, resource: Doc, context: { ip: ipaddr } };`
-export type CedarActionDefinitionInput = {
-  memberOf?: CedarActionGroupMembershipInput[];
+export type CedarActionDeclarationInput = {
+  memberOf?: CedarActionGroupReferenceInput[];
   appliesTo: {
     principalTypes: string[];
     resourceTypes: string[];
-    context?: CedarRootTypeInput;
+    context?: CedarSchemaTypeInput;
   };
   annotations?: CedarAnnotations;
 };
 
 export type CedarNamespaceDefinitionInput = {
-  entityTypes: Record<string, CedarEntityTypeDefinitionInput>;
-  actions: Record<string, CedarActionDefinitionInput>;
-  commonTypes?: Record<string, CedarRootTypeInput>;
+  entityTypes: Record<string, CedarEntityDefinitionInput>;
+  actions: Record<string, CedarActionDeclarationInput>;
+  commonTypes?: Record<string, CedarSchemaTypeInput>;
   annotations?: CedarAnnotations;
 };
 
 // The full JSON schema is a map of namespace name -> namespace definition.
 // The empty string represents Cedar's empty namespace.
-export type CedarJsonSchemaRecord = Record<
+export type CedarSchemaNamespacesInput = Record<
   string,
   CedarNamespaceDefinitionInput
 >;
