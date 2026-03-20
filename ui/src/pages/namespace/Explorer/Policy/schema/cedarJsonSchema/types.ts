@@ -1,6 +1,6 @@
 export type CedarAnnotations = Record<string, string>;
 
-export type CedarPrimitiveTypeName = "Long" | "String" | "Boolean";
+type CedarPrimitiveTypeName = "Long" | "String" | "Boolean";
 
 export type CedarRootTypeInput =
   | {
