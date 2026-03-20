@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+// Reserved Cedar type names cannot be reused as user-defined type identifiers.
+// Example: `type String = ...` is invalid because `String` is built in.
 const cedarReservedTypeNames = new Set([
   "Bool",
   "Boolean",
@@ -13,6 +15,8 @@ const cedarReservedTypeNames = new Set([
 
 const cedarIdentifierSegment = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 
+// Validates Cedar-style names like `User`, `MyNamespace::User`, or `__cedar::ipaddr`.
+// The options let each caller opt into the few exceptions allowed by the Cedar spec.
 export const isIdentifierPath = (
   value: string,
   options: {
@@ -59,12 +63,17 @@ export const NamespaceNameSchema = z
     message: "Namespace names must be empty or valid Cedar identifier paths",
   });
 
+// Entity type references appear in places like:
+// Cedar: `entity User in Group;`
+// JSON:  `{ "memberOfTypes": ["Group"] }`
 export const EntityTypeNameSchema = z
   .string()
   .refine((value) => isIdentifierPath(value), {
     message: "Entity type names must be valid Cedar identifier paths",
   });
 
+// `EntityOrCommon` follows Cedar's name resolution rules:
+// common type > entity type > primitive/extension type.
 export const CommonTypeReferenceSchema = z.string().refine(
   (value) =>
     isIdentifierPath(value, {
@@ -86,6 +95,9 @@ export const ExtensionTypeNameSchema = z.string().refine(
   }
 );
 
+// Action groups are always action entities.
+// Cedar: `action View in [ReadOnly] ...`
+// JSON:  `{ "memberOf": [{ "id": "ReadOnly", "type": "MyNS::Action" }] }`
 export const ActionEntityTypeSchema = z
   .string()
   .refine(
@@ -100,6 +112,8 @@ export const ActionEntityTypeSchema = z
 
 export const PrimitiveTypeNameSchema = z.enum(["Long", "String", "Boolean"]);
 
+// Common type references are encoded as `{ type: "MyCommonType" }`, so this excludes
+// the built-in discriminators like `Record`, `Set`, `Entity`, and primitive names.
 export const TypeReferenceSchema = z.string().refine(
   (value) =>
     ![
