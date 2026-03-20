@@ -1,6 +1,9 @@
 export type CedarAnnotations = Record<string, string>;
 
 type CedarPrimitiveTypeName = "Long" | "String" | "Boolean";
+type NonEmptyArray<T> = [T, ...T[]];
+
+export type CedarActionEntityTypeName = "Action" | `${string}::Action`;
 
 // A top-level Cedar type reference used by `shape`, `tags`, `context`, and `commonTypes`.
 // Example Cedar syntax:
@@ -90,13 +93,13 @@ export type CedarEntityDefinitionInput =
       annotations?: CedarAnnotations;
     }
   | {
-      enum: string[];
+      enum: NonEmptyArray<string>;
       annotations?: CedarAnnotations;
     };
 
 export type CedarActionGroupReferenceInput = {
   id: string;
-  type?: string;
+  type?: CedarActionEntityTypeName;
 };
 
 // Cedar action declarations are centered around `appliesTo`.

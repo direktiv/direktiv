@@ -188,29 +188,25 @@ describe("Cedar JSON schema", () => {
       }).success
     ).toBe(false);
 
-    expect(
-      CedarJsonSchema.safeParse({
-        Demo: {
-          entityTypes: {
-            User: {},
-          },
-          actions: {
-            view: {
-              memberOf: [
-                {
-                  id: "read",
-                  type: "Shared::NotAction",
-                },
-              ],
-              appliesTo: {
-                principalTypes: ["User"],
-                resourceTypes: ["User"],
+    expectInvalidCedarJsonSchema(
+      createBaseSchema({
+        actions: {
+          view: {
+            memberOf: [
+              {
+                id: "read",
+                // @ts-expect-error - action group references must point to an Action entity type
+                type: "Shared::NotAction",
               },
+            ],
+            appliesTo: {
+              principalTypes: ["User"],
+              resourceTypes: ["User"],
             },
           },
         },
-      }).success
-    ).toBe(false);
+      })
+    );
   });
 
   test("accepts valid nested input", () => {
@@ -430,6 +426,7 @@ describe("Cedar JSON schema", () => {
       createBaseSchema({
         entityTypes: {
           User: {
+            // @ts-expect-error - enum declarations must contain at least one value
             enum: [],
           },
         },

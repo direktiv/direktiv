@@ -1,3 +1,4 @@
+import type { CedarActionEntityTypeName } from "./types";
 import { z } from "zod";
 
 // Reserved Cedar type names cannot be reused as user-defined type identifiers.
@@ -111,7 +112,7 @@ export const ActionEntityTypeNameSchema = z
   )
   .refine((value) => value.split("::").at(-1) === "Action", {
     message: "Action entity types must end with 'Action'",
-  });
+  }) as z.ZodType<CedarActionEntityTypeName>;
 
 export const PrimitiveTypeNameSchema = z.enum(["Long", "String", "Boolean"]);
 
