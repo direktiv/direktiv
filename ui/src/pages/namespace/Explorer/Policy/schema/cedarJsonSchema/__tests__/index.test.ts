@@ -407,6 +407,24 @@ describe("Cedar JSON schema", () => {
     );
   });
 
+  test("rejects invalid action keys", () => {
+    expectInvalidCedarJsonSchema({
+      Demo: {
+        entityTypes: {
+          User: {},
+        },
+        actions: {
+          "invalid-action": {
+            appliesTo: {
+              principalTypes: ["User"],
+              resourceTypes: ["User"],
+            },
+          },
+        },
+      },
+    });
+  });
+
   test("rejects empty enum declarations", () => {
     expectInvalidCedarJsonSchema(
       createBaseSchema({

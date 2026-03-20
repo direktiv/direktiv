@@ -178,7 +178,11 @@ const CedarNamespaceDefinitionSchema: z.ZodType<CedarNamespaceDefinitionInput> =
         (key) => isIdentifierPath(key),
         "Entity type names must be valid Cedar identifiers"
       ),
-      actions: z.record(CedarActionDeclarationSchema),
+      actions: strictRecordWithKeyValidation(
+        CedarActionDeclarationSchema,
+        (key) => isIdentifierPath(key),
+        "Action names must be valid Cedar identifiers"
+      ),
       commonTypes: strictRecordWithKeyValidation(
         CedarCommonTypeSchema,
         (key) => isIdentifierPath(key),
