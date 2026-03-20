@@ -80,6 +80,7 @@ export const EntityOrCommonNameSchema = z.string().refine(
   (value) =>
     isIdentifierPath(value, {
       allowReservedCedarNamespace: value.startsWith("__cedar::"),
+      allowReservedFinalSegment: true,
     }),
   {
     message: "Common type references must be valid Cedar identifier paths",

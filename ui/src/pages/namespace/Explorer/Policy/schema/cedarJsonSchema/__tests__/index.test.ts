@@ -1,5 +1,9 @@
 import { CedarJsonSchema, type CedarJsonSchemaInputType } from "..";
 import { describe, expect, test } from "vitest";
+import { awsSchema } from "../examples/aws";
+import { healthCareAppSchema } from "../examples/healthCareApp";
+import { k8sSchema } from "../examples/k8s";
+import { photoAppSchema } from "../examples/photoApp";
 
 const expectValidCedarJsonSchema = (input: CedarJsonSchemaInputType) => {
   expect(CedarJsonSchema.safeParse(input).success).toBe(true);
@@ -30,6 +34,24 @@ const createBaseSchema = (
 });
 
 describe("Cedar JSON schema", () => {
+  test("accepts the official Cedar playground PhotoApp example", () => {
+    expect(CedarJsonSchema.parse(photoAppSchema)).toEqual(photoAppSchema);
+  });
+
+  test("accepts the official Cedar playground HealthCareApp example", () => {
+    expect(CedarJsonSchema.parse(healthCareAppSchema)).toEqual(
+      healthCareAppSchema
+    );
+  });
+
+  test("accepts the official Cedar playground k8s example", () => {
+    expect(CedarJsonSchema.parse(k8sSchema)).toEqual(k8sSchema);
+  });
+
+  test("accepts the official Cedar playground AWS example", () => {
+    expect(CedarJsonSchema.parse(awsSchema)).toEqual(awsSchema);
+  });
+
   test("accepts namespaces with entity types, actions, annotations, and common types", () => {
     const input: CedarJsonSchemaInputType = {
       PhotoFlash: {
