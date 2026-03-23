@@ -17,6 +17,7 @@ const cedarSchemaTypeKeywords = [
 // Example: `type String = ...` is invalid because `String` is built in.
 const reservedCedarTypeNames = new Set(["Bool", ...cedarSchemaTypeKeywords]);
 
+// starts with `_` or a letter, followed by letters, digits, or underscores.
 const cedarIdentifierSegmentPattern = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 
 const usesReservedCedarNamespace = (value: string) =>
