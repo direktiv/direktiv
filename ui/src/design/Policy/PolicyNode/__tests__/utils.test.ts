@@ -8,7 +8,7 @@ import { describe, expect, test } from "vitest";
 import { ExpressionType } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
 
 describe("flattenOperator", () => {
-  test("flattenOperator flattens chained and expressions in order", () => {
+  test("flattenOperator flattens chained AND expressions in order", () => {
     const expression: ExpressionType = {
       "&&": {
         left: {
@@ -28,7 +28,7 @@ describe("flattenOperator", () => {
     ]);
   });
 
-  test("flattenOperator flattens chained or expressions in order", () => {
+  test("flattenOperator flattens chained OR expressions in order", () => {
     const expression: ExpressionType = {
       "||": {
         left: { Value: true },
@@ -90,7 +90,7 @@ describe("expressionToLayoutNode", () => {
     });
   });
 
-  test("expressionToLayoutNode flattens chained and expressions", () => {
+  test("expressionToLayoutNode flattens chained AND expressions", () => {
     const expression: ExpressionType = {
       "&&": {
         left: {
@@ -156,7 +156,7 @@ describe("expressionToLayoutNode", () => {
     expect(node.rows).toBe(3);
   });
 
-  test("expressionToLayoutNode flattens chained or expressions into branches", () => {
+  test("expressionToLayoutNode flattens chained OR expressions into branches", () => {
     const expression: ExpressionType = {
       "||": {
         left: {
@@ -233,7 +233,7 @@ describe("expressionToLayoutNode", () => {
 
     expect(node.type).toBe("and");
     if (node.type !== "and") {
-      throw new Error("Expected an and node");
+      throw new Error("Expected an 'and' node");
     }
 
     expect(node.rows).toBe(3);
@@ -323,7 +323,7 @@ describe("expressionToLayoutNode", () => {
 
     expect(node.type).toBe("or");
     if (node.type !== "or") {
-      throw new Error("Expected an or node");
+      throw new Error("Expected an 'or' node");
     }
 
     expect(node.branches).toEqual([
@@ -430,7 +430,7 @@ describe("toAndBranch", () => {
 });
 
 describe("containsOrGroup", () => {
-  test("containsOrGroup detects whether any item is an or group", () => {
+  test("containsOrGroup detects whether any item is an OR group", () => {
     const leafBranch = toAndBranch({ Value: true });
     const leafNode = leafBranch.items[0];
     const orNode = expressionToLayoutNode({
