@@ -258,7 +258,7 @@ describe("schema type validation", () => {
 });
 
 describe("strict object shapes", () => {
-  test("rejects extra namespace keys at type level", () => {
+  test("rejects extra namespace keys", () => {
     expectInvalidCedarJsonSchema(
       createBaseSchema({
         // @ts-expect-error - namespace declarations are strict
@@ -267,7 +267,7 @@ describe("strict object shapes", () => {
     );
   });
 
-  test("rejects non-string annotation values at type level", () => {
+  test("rejects non-string annotation values", () => {
     expectInvalidCedarJsonSchema(
       createBaseSchema({
         entityTypes: {
@@ -282,7 +282,7 @@ describe("strict object shapes", () => {
     );
   });
 
-  test("rejects invalid action memberOf entry shapes at type level", () => {
+  test("rejects invalid action memberOf entry shapes", () => {
     expectInvalidCedarJsonSchema(
       createBaseSchema({
         actions: {
@@ -517,7 +517,7 @@ describe("value validation", () => {
     );
   });
 
-  test("rejects appliesTo values with wrong types at type level", () => {
+  test("rejects appliesTo values with wrong types", () => {
     expectInvalidCedarJsonSchema(
       createBaseSchema({
         actions: {
@@ -556,7 +556,7 @@ describe("value validation", () => {
     );
   });
 
-  test("rejects enum and entity references with wrong value types at type level", () => {
+  test("rejects enum and entity references with wrong value types", () => {
     expectInvalidCedarJsonSchema(
       createBaseSchema({
         entityTypes: {
