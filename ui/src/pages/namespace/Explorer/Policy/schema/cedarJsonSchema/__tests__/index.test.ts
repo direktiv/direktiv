@@ -35,7 +35,7 @@ const createBaseSchema = (
   },
 });
 
-describe("Cedar JSON schema", () => {
+describe("official examples", () => {
   test("accepts the official Cedar playground PhotoApp example", () => {
     expect(CedarJsonSchema.parse(photoAppSchema)).toEqual(photoAppSchema);
   });
@@ -57,7 +57,9 @@ describe("Cedar JSON schema", () => {
   test("accepts the minimal reference example", () => {
     expect(CedarJsonSchema.parse(minimalSchema)).toEqual(minimalSchema);
   });
+});
 
+describe("namespace definitions", () => {
   test("accepts namespaces with entity types, actions, annotations, and common types", () => {
     const input: CedarSchemaNamespaces = {
       PhotoFlash: {
@@ -214,7 +216,9 @@ describe("Cedar JSON schema", () => {
       })
     );
   });
+});
 
+describe("schema type validation", () => {
   test("accepts valid nested input", () => {
     const input: CedarSchemaNamespaces = createBaseSchema({
       commonTypes: {
@@ -251,7 +255,9 @@ describe("Cedar JSON schema", () => {
 
     expectValidCedarJsonSchema(input);
   });
+});
 
+describe("strict object shapes", () => {
   test("rejects extra namespace keys at type level", () => {
     expectInvalidCedarJsonSchema(
       createBaseSchema({
@@ -316,7 +322,9 @@ describe("Cedar JSON schema", () => {
       })
     );
   });
+});
 
+describe("schema type validation", () => {
   test("rejects required on root schema types", () => {
     expectInvalidCedarJsonSchema(
       createBaseSchema({
@@ -387,7 +395,9 @@ describe("Cedar JSON schema", () => {
       })
     );
   });
+});
 
+describe("name validation", () => {
   test("rejects invalid entity type and common type keys", () => {
     expectInvalidCedarJsonSchema(
       createBaseSchema({
@@ -426,7 +436,9 @@ describe("Cedar JSON schema", () => {
       },
     });
   });
+});
 
+describe("value validation", () => {
   test("rejects empty enum declarations", () => {
     expectInvalidCedarJsonSchema(
       createBaseSchema({
