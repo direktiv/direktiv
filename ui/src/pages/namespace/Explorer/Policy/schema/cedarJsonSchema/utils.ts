@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// Zod's `z.record()` validates values but not semantic constraints on the keys.
+// Zod's `z.record()` validates values of an object but not the keys.
 // Cedar needs both, for example ensuring `entityTypes` keys are valid identifiers.
 export const strictRecordWithKeyValidation = <Schema extends z.ZodTypeAny>(
   valueSchema: Schema,

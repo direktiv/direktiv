@@ -1,4 +1,4 @@
-import type { CedarJsonSchemaInputType } from "..";
+import { CedarSchemaNamespacesInput } from "../types";
 
 export const k8sSchema = {
   k8s: {
@@ -347,4 +347,4 @@ export const k8sSchema = {
       },
     },
   },
-} satisfies CedarJsonSchemaInputType;
+} satisfies CedarSchemaNamespacesInput;

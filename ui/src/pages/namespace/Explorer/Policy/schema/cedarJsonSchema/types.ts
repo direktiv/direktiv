@@ -1,86 +1,95 @@
 export type CedarAnnotations = Record<string, string>;
 
-type CedarPrimitiveTypeName = "Long" | "String" | "Boolean";
+export const cedarPrimitiveTypeNames = ["Long", "String", "Boolean"] as const;
+type CedarPrimitiveTypeName = (typeof cedarPrimitiveTypeNames)[number];
 type NonEmptyArray<T> = [T, ...T[]];
 
 export type CedarActionEntityTypeName = "Action" | `${string}::Action`;
 
-// A top-level Cedar type reference used by `shape`, `tags`, `context`, and `commonTypes`.
-// Example Cedar syntax:
-// - `String`
-// - `Set<User>`
-// - `{ owner: User, tags?: Set<String> }`
-export type CedarSchemaTypeInput =
-  | {
-      type: CedarPrimitiveTypeName | string;
-      annotations?: CedarAnnotations;
-    }
-  | {
-      type: "Set";
-      element: CedarSchemaTypeInput;
-      annotations?: CedarAnnotations;
-    }
-  | {
-      type: "Entity";
-      name: string;
-      annotations?: CedarAnnotations;
-    }
-  | {
-      type: "Record";
-      attributes: Record<string, CedarSchemaAttributeTypeInput>;
-      annotations?: CedarAnnotations;
-    }
-  | {
-      type: "Extension";
-      name: string;
-      annotations?: CedarAnnotations;
-    }
-  | {
-      type: "EntityOrCommon";
-      name: string;
-      annotations?: CedarAnnotations;
-    };
+type CedarSchemaTypeMetadata = {
+  annotations?: CedarAnnotations;
+};
 
-// Record attributes use the same type language as root types, but can also include the
-// JSON-only `required` flag.
-// Cedar: `name?: String`
-// JSON:  `{ "type": "String", "required": false }`
+type CedarSchemaAttributeMetadata = CedarSchemaTypeMetadata & {
+  required?: boolean;
+};
+
+type CedarPrimitiveOrCommonTypeInput = CedarSchemaTypeMetadata & {
+  type: CedarPrimitiveTypeName | string;
+};
+
+type CedarSetTypeInput = CedarSchemaTypeMetadata & {
+  type: "Set";
+  element: CedarSchemaTypeInput;
+};
+
+type CedarEntityReferenceTypeInput = CedarSchemaTypeMetadata & {
+  type: "Entity";
+  name: string;
+};
+
+type CedarRecordTypeInput = CedarSchemaTypeMetadata & {
+  type: "Record";
+  attributes: Record<string, CedarSchemaAttributeTypeInput>;
+};
+
+type CedarExtensionTypeInput = CedarSchemaTypeMetadata & {
+  type: "Extension";
+  name: string;
+};
+
+type CedarEntityOrCommonTypeInput = CedarSchemaTypeMetadata & {
+  type: "EntityOrCommon";
+  name: string;
+};
+
+type CedarAttributePrimitiveOrCommonTypeInput = CedarSchemaAttributeMetadata & {
+  type: CedarPrimitiveTypeName | string;
+};
+
+type CedarAttributeSetTypeInput = CedarSchemaAttributeMetadata & {
+  type: "Set";
+  element: CedarSchemaTypeInput;
+};
+
+type CedarAttributeEntityReferenceTypeInput = CedarSchemaAttributeMetadata & {
+  type: "Entity";
+  name: string;
+};
+
+type CedarAttributeRecordTypeInput = CedarSchemaAttributeMetadata & {
+  type: "Record";
+  attributes: Record<string, CedarSchemaAttributeTypeInput>;
+};
+
+type CedarAttributeExtensionTypeInput = CedarSchemaAttributeMetadata & {
+  type: "Extension";
+  name: string;
+};
+
+type CedarAttributeEntityOrCommonTypeInput = CedarSchemaAttributeMetadata & {
+  type: "EntityOrCommon";
+  name: string;
+};
+
+// `shape`, `tags`, `context`, and common types all use the same recursive Cedar
+// type grammar. Record attributes reuse that grammar and add the JSON-only
+// `required` flag.
+export type CedarSchemaTypeInput =
+  | CedarPrimitiveOrCommonTypeInput
+  | CedarSetTypeInput
+  | CedarEntityReferenceTypeInput
+  | CedarRecordTypeInput
+  | CedarExtensionTypeInput
+  | CedarEntityOrCommonTypeInput;
+
 export type CedarSchemaAttributeTypeInput =
-  | {
-      type: CedarPrimitiveTypeName | string;
-      annotations?: CedarAnnotations;
-      required?: boolean;
-    }
-  | {
-      type: "Set";
-      element: CedarSchemaTypeInput;
-      annotations?: CedarAnnotations;
-      required?: boolean;
-    }
-  | {
-      type: "Entity";
-      name: string;
-      annotations?: CedarAnnotations;
-      required?: boolean;
-    }
-  | {
-      type: "Record";
-      attributes: Record<string, CedarSchemaAttributeTypeInput>;
-      annotations?: CedarAnnotations;
-      required?: boolean;
-    }
-  | {
-      type: "Extension";
-      name: string;
-      annotations?: CedarAnnotations;
-      required?: boolean;
-    }
-  | {
-      type: "EntityOrCommon";
-      name: string;
-      annotations?: CedarAnnotations;
-      required?: boolean;
-    };
+  | CedarAttributePrimitiveOrCommonTypeInput
+  | CedarAttributeSetTypeInput
+  | CedarAttributeEntityReferenceTypeInput
+  | CedarAttributeRecordTypeInput
+  | CedarAttributeExtensionTypeInput
+  | CedarAttributeEntityOrCommonTypeInput;
 
 // Entity types come in two shapes:
 // - structural entities: `entity User in Group = { name: String };`
@@ -122,8 +131,6 @@ export type CedarNamespaceDefinitionInput = {
   annotations?: CedarAnnotations;
 };
 
-// The full JSON schema is a map of namespace name -> namespace definition.
-// The empty string represents Cedar's empty namespace.
 export type CedarSchemaNamespacesInput = Record<
   string,
   CedarNamespaceDefinitionInput

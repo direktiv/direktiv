@@ -1,4 +1,4 @@
-import type { CedarJsonSchemaInputType } from "..";
+import { CedarSchemaNamespacesInput } from "../types";
 
 export const photoAppSchema = {
   PhotoApp: {
@@ -110,4 +110,4 @@ export const photoAppSchema = {
       },
     },
   },
-} satisfies CedarJsonSchemaInputType;
+} satisfies CedarSchemaNamespacesInput;

@@ -1,4 +1,4 @@
-import type { CedarJsonSchemaInputType } from "..";
+import { CedarSchemaNamespacesInput } from "../types";
 
 export const healthCareAppSchema = {
   HealthCareApp: {
@@ -89,4 +89,4 @@ export const healthCareAppSchema = {
       },
     },
   },
-} satisfies CedarJsonSchemaInputType;
+} satisfies CedarSchemaNamespacesInput;

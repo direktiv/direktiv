@@ -1,22 +1,24 @@
-import { CedarJsonSchema, type CedarJsonSchemaInputType } from "..";
 import { describe, expect, test } from "vitest";
+import { CedarJsonSchema } from "..";
+import { CedarSchemaNamespacesInput } from "../types";
 import { awsSchema } from "../examples/aws";
 import { healthCareAppSchema } from "../examples/healthCareApp";
 import { k8sSchema } from "../examples/k8s";
+import { minimalSchema } from "../examples/minimal";
 import { photoAppSchema } from "../examples/photoApp";
 
-const expectValidCedarJsonSchema = (input: CedarJsonSchemaInputType) => {
+const expectValidCedarJsonSchema = (input: CedarSchemaNamespacesInput) => {
   expect(CedarJsonSchema.safeParse(input).success).toBe(true);
   expect(CedarJsonSchema.parse(input)).toEqual(input);
 };
 
-const expectInvalidCedarJsonSchema = (input: CedarJsonSchemaInputType) => {
+const expectInvalidCedarJsonSchema = (input: CedarSchemaNamespacesInput) => {
   expect(CedarJsonSchema.safeParse(input).success).toBe(false);
 };
 
 const createBaseSchema = (
-  overrides: Partial<CedarJsonSchemaInputType[string]> = {}
-): CedarJsonSchemaInputType => ({
+  overrides: Partial<CedarSchemaNamespacesInput[string]> = {}
+): CedarSchemaNamespacesInput => ({
   Demo: {
     entityTypes: {
       User: {},
@@ -52,8 +54,12 @@ describe("Cedar JSON schema", () => {
     expect(CedarJsonSchema.parse(awsSchema)).toEqual(awsSchema);
   });
 
+  test("accepts the minimal reference example", () => {
+    expect(CedarJsonSchema.parse(minimalSchema)).toEqual(minimalSchema);
+  });
+
   test("accepts namespaces with entity types, actions, annotations, and common types", () => {
-    const input: CedarJsonSchemaInputType = {
+    const input: CedarSchemaNamespacesInput = {
       PhotoFlash: {
         annotations: {
           doc: "Photo sharing app",
@@ -146,7 +152,7 @@ describe("Cedar JSON schema", () => {
   });
 
   test("accepts the empty namespace", () => {
-    const input: CedarJsonSchemaInputType = {
+    const input: CedarSchemaNamespacesInput = {
       "": {
         entityTypes: {
           User: {},
@@ -210,7 +216,7 @@ describe("Cedar JSON schema", () => {
   });
 
   test("accepts valid nested input", () => {
-    const input: CedarJsonSchemaInputType = createBaseSchema({
+    const input: CedarSchemaNamespacesInput = createBaseSchema({
       commonTypes: {
         GeoContext: {
           type: "Record",
