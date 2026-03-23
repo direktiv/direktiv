@@ -613,6 +613,186 @@ test(`it is possible to rename a directory`, async ({ page }) => {
   await expect(isRenamed).toBeTruthy();
 });
 
+test(`it is possible to rename a workflow with automatically added file extension`, async ({
+  page,
+}) => {
+  const oldName = "old-name.wf.ts";
+  const newName = "new-name";
+  const newNameWithFileExtension = "new-name.wf.ts";
+
+  await createWorkflow(namespace, oldName);
+
+  await page.goto(`/n/${namespace}/explorer/tree/`);
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "it renders the breadcrumb for a namespace"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${oldName}`),
+    "it renders the workflow"
+  ).toBeVisible();
+
+  await page
+    .getByTestId(`explorer-item-${oldName}`)
+    .getByTestId("dropdown-trg-node-actions")
+    .click();
+  await page.getByTestId("node-actions-rename").click();
+  await page.getByTestId("node-rename-input").fill(newName);
+  await page.getByTestId("node-rename-submit").click();
+
+  await expect(page.getByTestId("node-actions-rename")).not.toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${newNameWithFileExtension}`),
+    "it renders the new workflow name"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${oldName}`),
+    "it does not render the old workflow name"
+  ).toHaveCount(0);
+
+  const originalExists = await checkIfFileExists({
+    namespace,
+    path: `/${oldName}`,
+  });
+  await expect(originalExists).toBeFalsy();
+
+  const isRenamed = await checkIfFileExists({
+    namespace,
+    path: `/${newNameWithFileExtension}`,
+  });
+  await expect(isRenamed).toBeTruthy();
+});
+
+test(`it is possible to rename a service with automatically added file extension`, async ({
+  page,
+}) => {
+  const oldName = "old-name.svc.json";
+  const newName = "new-name";
+  const newNameWithFileExtension = "new-name.svc.json";
+
+  const service = {
+    name: oldName,
+    image: "bash",
+    scale: 2,
+    size: "medium",
+    cmd: "hello",
+  };
+
+  await createService(namespace, { ...service, name: oldName });
+
+  await page.goto(`/n/${namespace}/explorer/tree/`);
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "it renders the breadcrumb for a namespace"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${oldName}`),
+    "it renders the service"
+  ).toBeVisible();
+
+  await page
+    .getByTestId(`explorer-item-${oldName}`)
+    .getByTestId("dropdown-trg-node-actions")
+    .click();
+  await page.getByTestId("node-actions-rename").click();
+  await page.getByTestId("node-rename-input").fill(newName);
+  await page.getByTestId("node-rename-submit").click();
+
+  await expect(page.getByTestId("node-actions-rename")).not.toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${newNameWithFileExtension}`),
+    "it renders the new service name"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${oldName}`),
+    "it does not render the old service name"
+  ).toHaveCount(0);
+
+  const originalExists = await checkIfFileExists({
+    namespace,
+    path: `/${oldName}`,
+  });
+  await expect(originalExists).toBeFalsy();
+
+  const isRenamed = await checkIfFileExists({
+    namespace,
+    path: `/${newNameWithFileExtension}`,
+  });
+  await expect(isRenamed).toBeTruthy();
+});
+
+test(`it is possible to rename a route with automatically added file extension`, async ({
+  page,
+}) => {
+  const oldName = "old-name.yaml";
+  const newName = "new-name";
+  const newNameWithFileExtension = "new-name.yaml";
+
+  await page.goto(`/n/${namespace}/explorer/tree/`);
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "it renders the breadcrumb for a namespace"
+  ).toBeVisible();
+
+  /* create route manually */
+  await page.getByRole("button", { name: "New" }).first().click();
+  await page.getByRole("menuitem", { name: "Gateway" }).click();
+  await page.getByRole("button", { name: "Route" }).click();
+
+  await expect(page.getByRole("button", { name: "Create" })).toBeDisabled();
+  await page.getByPlaceholder("route-name.yaml").fill(oldName);
+  await page.getByRole("button", { name: "Create" }).click();
+
+  await page.goto(`/n/${namespace}/explorer/tree/`);
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "it renders the breadcrumb for a namespace"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${oldName}`),
+    "it renders the route"
+  ).toBeVisible();
+
+  await page
+    .getByTestId(`explorer-item-${oldName}`)
+    .getByTestId("dropdown-trg-node-actions")
+    .click();
+  await page.getByTestId("node-actions-rename").click();
+  await page.getByTestId("node-rename-input").fill(newName);
+  await page.getByTestId("node-rename-submit").click();
+
+  await expect(page.getByTestId("node-actions-rename")).not.toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${newNameWithFileExtension}`),
+    "it renders the new route name"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${oldName}`),
+    "it does not render the old route name"
+  ).toHaveCount(0);
+
+  const originalExists = await checkIfFileExists({
+    namespace,
+    path: `/${oldName}`,
+  });
+  await expect(originalExists).toBeFalsy();
+
+  const isRenamed = await checkIfFileExists({
+    namespace,
+    path: `/${newNameWithFileExtension}`,
+  });
+  await expect(isRenamed).toBeTruthy();
+});
+
 test(`it is possible to delete a file (and it will be removed from cache)`, async ({
   page,
 }) => {
