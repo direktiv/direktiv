@@ -1,7 +1,7 @@
 import type {
   CedarAnnotations,
-  CedarSchemaAttributeTypeInput,
-  CedarSchemaTypeInput,
+  CedarSchemaAttributeType,
+  CedarSchemaType,
 } from "./types";
 import {
   EntityOrCommonNameSchema,
@@ -85,12 +85,12 @@ const createEntityOrCommonTypeSchema = (metadataShape: z.ZodRawShape) =>
     .strict();
 
 // `shape`, `tags`, `context`, and common types all use this grammar.
-export const CedarSchemaTypeSchema: z.ZodType<CedarSchemaTypeInput> = z.lazy(
+export const CedarSchemaTypeSchema: z.ZodType<CedarSchemaType> = z.lazy(
   () => CedarSchemaTypeUnion
 );
 
 // Record attributes reuse the same grammar and add the JSON-only `required` flag.
-const CedarSchemaAttributeTypeSchema: z.ZodType<CedarSchemaAttributeTypeInput> =
+const CedarSchemaAttributeTypeSchema: z.ZodType<CedarSchemaAttributeType> =
   z.lazy(() => CedarSchemaAttributeTypeUnion);
 
 const CedarPrimitiveOrCommonTypeSchema = createPrimitiveOrCommonTypeSchema(

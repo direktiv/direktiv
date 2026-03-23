@@ -1,4 +1,4 @@
-import { CedarSchemaNamespacesInput } from "../types";
+import type { CedarSchemaNamespaces } from "../types";
 
 export const minimalSchema = {
   Demo: {
@@ -33,4 +33,4 @@ export const minimalSchema = {
       },
     },
   },
-} satisfies CedarSchemaNamespacesInput;
+} satisfies CedarSchemaNamespaces;

@@ -1,24 +1,24 @@
 import { describe, expect, test } from "vitest";
 import { CedarJsonSchema } from "..";
-import { CedarSchemaNamespacesInput } from "../types";
+import type { CedarSchemaNamespaces } from "../types";
 import { awsSchema } from "../examples/aws";
 import { healthCareAppSchema } from "../examples/healthCareApp";
 import { k8sSchema } from "../examples/k8s";
 import { minimalSchema } from "../examples/minimal";
 import { photoAppSchema } from "../examples/photoApp";
 
-const expectValidCedarJsonSchema = (input: CedarSchemaNamespacesInput) => {
+const expectValidCedarJsonSchema = (input: CedarSchemaNamespaces) => {
   expect(CedarJsonSchema.safeParse(input).success).toBe(true);
   expect(CedarJsonSchema.parse(input)).toEqual(input);
 };
 
-const expectInvalidCedarJsonSchema = (input: CedarSchemaNamespacesInput) => {
+const expectInvalidCedarJsonSchema = (input: CedarSchemaNamespaces) => {
   expect(CedarJsonSchema.safeParse(input).success).toBe(false);
 };
 
 const createBaseSchema = (
-  overrides: Partial<CedarSchemaNamespacesInput[string]> = {}
-): CedarSchemaNamespacesInput => ({
+  overrides: Partial<CedarSchemaNamespaces[string]> = {}
+): CedarSchemaNamespaces => ({
   Demo: {
     entityTypes: {
       User: {},
@@ -59,7 +59,7 @@ describe("Cedar JSON schema", () => {
   });
 
   test("accepts namespaces with entity types, actions, annotations, and common types", () => {
-    const input: CedarSchemaNamespacesInput = {
+    const input: CedarSchemaNamespaces = {
       PhotoFlash: {
         annotations: {
           doc: "Photo sharing app",
@@ -152,7 +152,7 @@ describe("Cedar JSON schema", () => {
   });
 
   test("accepts the empty namespace", () => {
-    const input: CedarSchemaNamespacesInput = {
+    const input: CedarSchemaNamespaces = {
       "": {
         entityTypes: {
           User: {},
@@ -216,7 +216,7 @@ describe("Cedar JSON schema", () => {
   });
 
   test("accepts valid nested input", () => {
-    const input: CedarSchemaNamespacesInput = createBaseSchema({
+    const input: CedarSchemaNamespaces = createBaseSchema({
       commonTypes: {
         GeoContext: {
           type: "Record",

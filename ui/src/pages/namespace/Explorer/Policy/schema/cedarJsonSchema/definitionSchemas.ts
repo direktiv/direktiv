@@ -5,11 +5,11 @@ import {
   isEntityTypeName,
 } from "./identifiers";
 import type {
-  CedarActionDeclarationInput,
-  CedarActionGroupReferenceInput,
-  CedarEntityDefinitionInput,
-  CedarNamespaceDefinitionInput,
-  CedarSchemaTypeInput,
+  CedarActionDeclaration,
+  CedarActionGroupReference,
+  CedarEntityDefinition,
+  CedarNamespaceDefinition,
+  CedarSchemaType,
 } from "./types";
 import { CedarAnnotationsSchema, CedarSchemaTypeSchema } from "./schemaTypes";
 import { strictRecordWithKeyValidation } from "./utils";
@@ -33,23 +33,21 @@ const CedarEnumEntityDefinitionSchema = z
 
 // Entity definitions are either structural declarations with optional shape/tags,
 // or enum-style entities whose valid EIDs are listed explicitly.
-const CedarEntityDefinitionSchema: z.ZodType<CedarEntityDefinitionInput> =
-  z.union([
-    CedarStructuralEntityDefinitionSchema,
-    CedarEnumEntityDefinitionSchema,
-  ]);
+const CedarEntityDefinitionSchema: z.ZodType<CedarEntityDefinition> = z.union([
+  CedarStructuralEntityDefinitionSchema,
+  CedarEnumEntityDefinitionSchema,
+]);
 
 // Action `memberOf` entries reference action groups, which are themselves action entities.
-const CedarActionGroupReferenceSchema: z.ZodType<CedarActionGroupReferenceInput> =
-  z
-    .object({
-      id: z.string(),
-      type: ActionEntityTypeNameSchema.optional(),
-    })
-    .strict();
+const CedarActionGroupReferenceSchema: z.ZodType<CedarActionGroupReference> = z
+  .object({
+    id: z.string(),
+    type: ActionEntityTypeNameSchema.optional(),
+  })
+  .strict();
 
 const CedarActionAppliesToSchema: z.ZodType<
-  CedarActionDeclarationInput["appliesTo"]
+  CedarActionDeclaration["appliesTo"]
 > = z
   .object({
     principalTypes: z.array(EntityTypeNameSchema),
@@ -59,7 +57,7 @@ const CedarActionAppliesToSchema: z.ZodType<
   .strict();
 
 // Cedar action declarations are centered around the `appliesTo` block.
-const CedarActionDeclarationSchema: z.ZodType<CedarActionDeclarationInput> = z
+const CedarActionDeclarationSchema: z.ZodType<CedarActionDeclaration> = z
   .object({
     memberOf: z.array(CedarActionGroupReferenceSchema).optional(),
     appliesTo: CedarActionAppliesToSchema,
@@ -67,11 +65,10 @@ const CedarActionDeclarationSchema: z.ZodType<CedarActionDeclarationInput> = z
   })
   .strict();
 
-const CedarCommonTypeSchema: z.ZodType<CedarSchemaTypeInput> =
-  CedarSchemaTypeSchema;
+const CedarCommonTypeSchema: z.ZodType<CedarSchemaType> = CedarSchemaTypeSchema;
 
 // A namespace always groups entity types, actions, and optional common types.
-export const CedarNamespaceDefinitionSchema: z.ZodType<CedarNamespaceDefinitionInput> =
+export const CedarNamespaceDefinitionSchema: z.ZodType<CedarNamespaceDefinition> =
   z
     .object({
       entityTypes: strictRecordWithKeyValidation(

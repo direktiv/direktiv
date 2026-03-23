@@ -1,4 +1,4 @@
-import { CedarSchemaNamespacesInput } from "../types";
+import type { CedarSchemaNamespaces } from "../types";
 
 export const awsSchema = {
   "AWS::IdentityStore": {
@@ -101,4 +101,4 @@ export const awsSchema = {
     },
     actions: {},
   },
-} satisfies CedarSchemaNamespacesInput;
+} satisfies CedarSchemaNamespaces;
