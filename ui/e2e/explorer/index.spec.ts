@@ -793,6 +793,66 @@ test(`it is possible to rename a route with automatically added file extension`,
   await expect(isRenamed).toBeTruthy();
 });
 
+test(`it is possible to rename a service with keeping the file extension`, async ({
+  page,
+}) => {
+  const oldName = "old-name.svc.json";
+  const newNameWithFileExtension = "new-name.svc.json";
+
+  const service = {
+    name: oldName,
+    image: "bash",
+    scale: 2,
+    size: "medium",
+    cmd: "hello",
+  };
+
+  await createService(namespace, { ...service, name: oldName });
+
+  await page.goto(`/n/${namespace}/explorer/tree/`);
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "it renders the breadcrumb for a namespace"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${oldName}`),
+    "it renders the service"
+  ).toBeVisible();
+
+  await page
+    .getByTestId(`explorer-item-${oldName}`)
+    .getByTestId("dropdown-trg-node-actions")
+    .click();
+  await page.getByTestId("node-actions-rename").click();
+  await page.getByTestId("node-rename-input").fill(newNameWithFileExtension);
+  await page.getByTestId("node-rename-submit").click();
+
+  await expect(page.getByTestId("node-actions-rename")).not.toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${newNameWithFileExtension}`),
+    "it renders the new service name"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${oldName}`),
+    "it does not render the old service name"
+  ).toHaveCount(0);
+
+  const originalExists = await checkIfFileExists({
+    namespace,
+    path: `/${oldName}`,
+  });
+  await expect(originalExists).toBeFalsy();
+
+  const isRenamed = await checkIfFileExists({
+    namespace,
+    path: `/${newNameWithFileExtension}`,
+  });
+  await expect(isRenamed).toBeTruthy();
+});
+
 test(`it is possible to delete a file (and it will be removed from cache)`, async ({
   page,
 }) => {
