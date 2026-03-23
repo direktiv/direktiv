@@ -20,6 +20,7 @@ describe("isIdentifierPath", () => {
   test("rejects invalid identifier paths by default", () => {
     expect(isIdentifierPath("")).toBe(false);
     expect(isIdentifierPath("1User")).toBe(false);
+    expect(isIdentifierPath("invalid-name")).toBe(false);
     expect(isIdentifierPath("User::invalid-name")).toBe(false);
     expect(isIdentifierPath("User::")).toBe(false);
     expect(isIdentifierPath("__cedar::ipaddr")).toBe(false);
