@@ -3,8 +3,6 @@ import type { CedarSchemaNamespaces } from "./types";
 import { isNamespaceName } from "./identifiers";
 import { strictRecordWithKeyValidation } from "./utils";
 import { z } from "zod";
-;
-
 const CedarNamespaceMapSchema = strictRecordWithKeyValidation(
   CedarNamespaceDefinitionSchema,
   isNamespaceName,
