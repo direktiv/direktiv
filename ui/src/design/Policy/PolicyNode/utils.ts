@@ -3,7 +3,11 @@ import {
   ExpressionType,
   OrExpression,
 } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
-import type { PolicyAndNode, PolicyLayoutNode, PolicyLeafNode } from "./types";
+import type {
+  PolicyAndNode,
+  PolicyConditionNode,
+  PolicyLayoutNode,
+} from "./types";
 import { BinaryExpressionSchema } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/binary";
 import { BooleanOperator } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/utils";
 import { ExpressionSchema } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression";
@@ -75,12 +79,12 @@ export const expressionToLayoutNode = (
     };
   }
 
-  // Everything else is a leaf
+  // Everything else is a terminal condition.
   return {
-    type: "leaf",
+    type: "condition",
     expression,
     rows: 1,
-  } satisfies PolicyLeafNode;
+  } satisfies PolicyConditionNode;
 };
 
 // Ensures an expression can be rendered as an AND branch, wrapping non-AND nodes when needed.

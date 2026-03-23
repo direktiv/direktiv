@@ -78,13 +78,13 @@ describe("flattenOperator", () => {
 });
 
 describe("expressionToLayoutNode", () => {
-  test("expressionToLayoutNode creates leaf nodes for non-boolean expressions", () => {
+  test("expressionToLayoutNode creates condition nodes for non-boolean expressions", () => {
     const expression: ExpressionType = { Var: "principal" };
 
     const node = expressionToLayoutNode(expression);
 
     expect(node).toEqual({
-      type: "leaf",
+      type: "condition",
       expression,
       rows: 1,
     });
@@ -113,17 +113,17 @@ describe("expressionToLayoutNode", () => {
     expect(node.items).toHaveLength(3);
     expect(node.items).toEqual([
       {
-        type: "leaf",
+        type: "condition",
         expression: { Value: true },
         rows: 1,
       },
       {
-        type: "leaf",
+        type: "condition",
         expression: { Var: "principal" },
         rows: 1,
       },
       {
-        type: "leaf",
+        type: "condition",
         expression: { Value: false },
         rows: 1,
       },
@@ -182,7 +182,7 @@ describe("expressionToLayoutNode", () => {
         type: "and",
         items: [
           {
-            type: "leaf",
+            type: "condition",
             expression: { Value: true },
             rows: 1,
           },
@@ -193,7 +193,7 @@ describe("expressionToLayoutNode", () => {
         type: "and",
         items: [
           {
-            type: "leaf",
+            type: "condition",
             expression: { Value: false },
             rows: 1,
           },
@@ -204,7 +204,7 @@ describe("expressionToLayoutNode", () => {
         type: "and",
         items: [
           {
-            type: "leaf",
+            type: "condition",
             expression: { Var: "resource" },
             rows: 1,
           },
@@ -260,42 +260,42 @@ describe("expressionToLayoutNode", () => {
     }
 
     expect(node.items).toHaveLength(2);
-    expect(node.items[0]?.type).toBe("leaf");
+    expect(node.items[0]?.type).toBe("condition");
     expect(node.items[1]?.type).toBe("or");
   });
 
-  test("expressionToLayoutNode falls back to a leaf for malformed boolean payloads", () => {
+  test("expressionToLayoutNode falls back to a condition for malformed boolean payloads", () => {
     const expression = {
       "&&": { left: { Value: true } },
     } as ExpressionType;
 
     expect(expressionToLayoutNode(expression)).toEqual({
-      type: "leaf",
+      type: "condition",
       expression,
       rows: 1,
     });
   });
 
-  test("expressionToLayoutNode falls back to a leaf for malformed or payloads", () => {
+  test("expressionToLayoutNode falls back to a condition for malformed or payloads", () => {
     const expression = {
       "||": { right: { Value: false } },
     } as ExpressionType;
 
     expect(expressionToLayoutNode(expression)).toEqual({
-      type: "leaf",
+      type: "condition",
       expression,
       rows: 1,
     });
   });
 
-  test("expressionToLayoutNode falls back to a leaf for multi-key objects", () => {
+  test("expressionToLayoutNode falls back to a condition for multi-key objects", () => {
     const expression = {
       Value: true,
       Var: "principal",
     } as ExpressionType;
 
     expect(expressionToLayoutNode(expression)).toEqual({
-      type: "leaf",
+      type: "condition",
       expression,
       rows: 1,
     });
@@ -337,7 +337,7 @@ describe("expressionToLayoutNode", () => {
                 type: "and",
                 items: [
                   {
-                    type: "leaf",
+                    type: "condition",
                     expression: { Value: true },
                     rows: 1,
                   },
@@ -348,7 +348,7 @@ describe("expressionToLayoutNode", () => {
                 type: "and",
                 items: [
                   {
-                    type: "leaf",
+                    type: "condition",
                     expression: { Value: false },
                     rows: 1,
                   },
@@ -360,7 +360,7 @@ describe("expressionToLayoutNode", () => {
             rows: 3,
           },
           {
-            type: "leaf",
+            type: "condition",
             expression: { Var: "principal" },
             rows: 1,
           },
@@ -371,7 +371,7 @@ describe("expressionToLayoutNode", () => {
         type: "and",
         items: [
           {
-            type: "leaf",
+            type: "condition",
             expression: { Var: "resource" },
             rows: 1,
           },
@@ -403,7 +403,7 @@ describe("toAndBranch", () => {
     expect(toAndBranch(expression)).toStrictEqual(node);
   });
 
-  test("toAndBranch wraps leaf expressions", () => {
+  test("toAndBranch wraps condition expressions", () => {
     const expression: ExpressionType = { Value: true };
 
     const branch = toAndBranch(expression);
@@ -431,8 +431,8 @@ describe("toAndBranch", () => {
 
 describe("containsOrGroup", () => {
   test("containsOrGroup detects whether any item is an OR group", () => {
-    const leafBranch = toAndBranch({ Value: true });
-    const leafNode = leafBranch.items[0];
+    const conditionBranch = toAndBranch({ Value: true });
+    const conditionNode = conditionBranch.items[0];
     const orNode = expressionToLayoutNode({
       "||": {
         left: { Value: true },
@@ -440,14 +440,14 @@ describe("containsOrGroup", () => {
       },
     });
 
-    expect(leafNode).toBeDefined();
-    if (leafNode === undefined) {
-      throw new Error("Expected a leaf node");
+    expect(conditionNode).toBeDefined();
+    if (conditionNode === undefined) {
+      throw new Error("Expected a condition node");
     }
 
-    expect(containsOrGroup([leafNode, leafNode])).toBe(false);
-    expect(containsOrGroup([orNode, leafNode])).toBe(true);
-    expect(containsOrGroup([leafNode, orNode])).toBe(true);
+    expect(containsOrGroup([conditionNode, conditionNode])).toBe(false);
+    expect(containsOrGroup([orNode, conditionNode])).toBe(true);
+    expect(containsOrGroup([conditionNode, orNode])).toBe(true);
     expect(containsOrGroup([orNode, orNode])).toBe(true);
   });
 });

@@ -1,8 +1,8 @@
 import { ExpressionType } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
 
-export type PolicyLeafNode = {
-  type: "leaf";
-  rows: 1; // single-row leaf
+export type PolicyConditionNode = {
+  type: "condition";
+  rows: 1; // single-row condition
   expression: ExpressionType;
 };
 
@@ -21,4 +21,7 @@ type PolicyOrNode = {
   childSizes: number[];
 };
 
-export type PolicyLayoutNode = PolicyLeafNode | PolicyAndNode | PolicyOrNode;
+export type PolicyLayoutNode =
+  | PolicyConditionNode
+  | PolicyAndNode
+  | PolicyOrNode;
