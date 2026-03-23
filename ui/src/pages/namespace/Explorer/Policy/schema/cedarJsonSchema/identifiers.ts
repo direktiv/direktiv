@@ -22,8 +22,11 @@ const cedarIdentifierSegmentPattern = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 const usesReservedCedarNamespace = (value: string) =>
   value.startsWith("__cedar::");
 
-// Validates Cedar-style names like `User`, `MyNamespace::User`, or `__cedar::ipaddr`.
-// The options let each caller opt into the few exceptions allowed by the Cedar spec.
+// Validates the shared Cedar identifier-path grammar used in namespaces, entity
+// types, action entity types, and type references. The optional flags let
+// each caller enable the few Cedar-specific exceptions that vary by context,
+// such as the empty namespace, reserved `__cedar` references, or reserved final
+// segments like `Action`.
 export const isIdentifierPath = (
   value: string,
   options: {

@@ -17,39 +17,24 @@ describe("isIdentifierPath", () => {
     expect(isIdentifierPath("_internal::User_1")).toBe(true);
   });
 
-  test("rejects empty values by default", () => {
+  test("rejects invalid identifier paths by default", () => {
     expect(isIdentifierPath("")).toBe(false);
-  });
-
-  test("accepts the empty value when allowEmpty is enabled", () => {
-    expect(isIdentifierPath("", { allowEmpty: true })).toBe(true);
-  });
-
-  test("rejects invalid identifier segments", () => {
     expect(isIdentifierPath("1User")).toBe(false);
     expect(isIdentifierPath("User::invalid-name")).toBe(false);
     expect(isIdentifierPath("User::")).toBe(false);
-  });
-
-  test("rejects reserved Cedar namespace segments by default", () => {
     expect(isIdentifierPath("__cedar::ipaddr")).toBe(false);
     expect(isIdentifierPath("App::__cedar::Type")).toBe(false);
-  });
-
-  test("accepts reserved Cedar namespace segments when enabled", () => {
-    expect(
-      isIdentifierPath("__cedar::ipaddr", {
-        allowReservedCedarNamespace: true,
-      })
-    ).toBe(true);
-  });
-
-  test("rejects reserved Cedar type names in the final segment by default", () => {
     expect(isIdentifierPath("String")).toBe(false);
     expect(isIdentifierPath("MyNamespace::Record")).toBe(false);
   });
 
-  test("accepts reserved final segments when enabled", () => {
+  test("accepts allowed special cases when options are enabled", () => {
+    expect(isIdentifierPath("", { allowEmpty: true })).toBe(true);
+
+    expect(
+      isIdentifierPath("__cedar::ipaddr", { allowReservedCedarNamespace: true })
+    ).toBe(true);
+
     expect(
       isIdentifierPath("__cedar::ipaddr", {
         allowReservedCedarNamespace: true,
@@ -58,50 +43,76 @@ describe("isIdentifierPath", () => {
     ).toBe(true);
 
     expect(
-      isIdentifierPath("Shared::Action", {
-        allowReservedFinalSegment: true,
-      })
+      isIdentifierPath("Shared::Action", { allowReservedFinalSegment: true })
     ).toBe(true);
   });
 });
 
-describe("identifier helpers", () => {
-  test("isNamespaceName accepts the empty namespace and qualified names", () => {
+describe("isNamespaceName", () => {
+  test("accepts valid namespace names", () => {
     expect(isNamespaceName("")).toBe(true);
     expect(isNamespaceName("Demo::Namespace")).toBe(true);
-    expect(isNamespaceName("__cedar")).toBe(false);
   });
 
-  test("isEntityTypeName rejects reserved and malformed names", () => {
+  test("rejects invalid namespace names", () => {
+    expect(isNamespaceName("__cedar")).toBe(false);
+  });
+});
+
+describe("isEntityTypeName", () => {
+  test("accepts valid entity type names", () => {
     expect(isEntityTypeName("User")).toBe(true);
+  });
+
+  test("rejects reserved and malformed entity type names", () => {
     expect(isEntityTypeName("String")).toBe(false);
     expect(isEntityTypeName("invalid-name")).toBe(false);
   });
+});
 
-  test("isEntityOrCommonName allows reserved final segments and Cedar namespace types", () => {
+describe("isEntityOrCommonName", () => {
+  test("accepts valid entity or common names", () => {
     expect(isEntityOrCommonName("User")).toBe(true);
     expect(isEntityOrCommonName("String")).toBe(true);
     expect(isEntityOrCommonName("__cedar::ipaddr")).toBe(true);
+  });
+
+  test("rejects invalid entity or common names", () => {
     expect(isEntityOrCommonName("invalid-name")).toBe(false);
   });
+});
 
-  test("isExtensionTypeName follows Cedar extension naming rules", () => {
+describe("isExtensionTypeName", () => {
+  test("accepts valid extension type names", () => {
     expect(isExtensionTypeName("ipaddr")).toBe(true);
     expect(isExtensionTypeName("__cedar::decimal")).toBe(true);
-    expect(isExtensionTypeName("__cedar::invalid-name")).toBe(false);
   });
 
-  test("isActionEntityTypeName only accepts Action entity types", () => {
+  test("rejects invalid extension type names", () => {
+    expect(isExtensionTypeName("__cedar::invalid-name")).toBe(false);
+  });
+});
+
+describe("isActionEntityTypeName", () => {
+  test("accepts valid action entity type names", () => {
     expect(isActionEntityTypeName("Action")).toBe(true);
     expect(isActionEntityTypeName("Shared::Action")).toBe(true);
+  });
+
+  test("rejects invalid action entity type names", () => {
     expect(isActionEntityTypeName("Shared::NotAction")).toBe(false);
     expect(isActionEntityTypeName("invalid-name")).toBe(false);
   });
+});
 
-  test("isSchemaTypeReferenceName excludes Cedar keywords", () => {
+describe("isSchemaTypeReferenceName", () => {
+  test("accepts valid schema type references", () => {
     expect(isSchemaTypeReferenceName("CustomType")).toBe(true);
+    expect(isSchemaTypeReferenceName("__cedar::ipaddr")).toBe(true);
+  });
+
+  test("rejects Cedar keywords as schema type references", () => {
     expect(isSchemaTypeReferenceName("Long")).toBe(false);
     expect(isSchemaTypeReferenceName("EntityOrCommon")).toBe(false);
-    expect(isSchemaTypeReferenceName("__cedar::ipaddr")).toBe(true);
   });
 });
