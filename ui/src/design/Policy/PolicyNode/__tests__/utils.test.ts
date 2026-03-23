@@ -216,7 +216,7 @@ describe("expressionToLayoutNode", () => {
     expect(node.rows).toBe(4);
   });
 
-  test("expressionToLayoutNode includes placeholder row in nested or height", () => {
+  test("expressionToLayoutNode includes the nested OR placeholder when calculating rows", () => {
     const expression: ExpressionType = {
       "&&": {
         left: {
