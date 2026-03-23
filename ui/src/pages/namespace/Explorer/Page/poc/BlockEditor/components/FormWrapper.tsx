@@ -56,7 +56,7 @@ export const FormWrapper = <T extends FieldValues>({
           {children}
         </div>
       </div>
-      <div className="shrink-0 px-4 py-3 sm:sticky sm:bottom-0 sm:bg-white">
+      <div className="shrink-0 px-4 py-3 sm:sticky sm:bottom-0 sm:bg-white dark:sm:bg-black">
         <Footer formId={formId} onCancel={onCancel} hasChanges={isDirty} />
       </div>
     </form>
