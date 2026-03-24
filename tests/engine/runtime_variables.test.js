@@ -23,21 +23,8 @@ describe('Runtime variables from workflow setVariable()', () => {
 
   // Workflow code: creates runtime variables in each scope via setVariable()
   const workflowSource = `
-    declare function setVariable(config: {
-      scope: 'namespace' | 'workflow' | 'instance';
-      name: string;
-      content: string;
-    }): void;
-
-    declare function getVariable(config: {
-      scope: 'namespace' | 'workflow' | 'instance';
-      name: string;
-    }): string | null;
-
     function stateOne(payload: any) {
-      const value = '${storedValue}';
 
-      // precomputed base64 so we don't need btoa() in Sobek
       const content = 'aGVsbG8gZnJvbSBydW50aW1lIHZhcmlhYmxl';
 
       // 1) namespace-scoped

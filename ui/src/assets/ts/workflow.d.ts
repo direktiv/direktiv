@@ -130,7 +130,7 @@ declare function getSecret(secret: string): string;
  * Config for getVariable and setVariable
  */
 declare type VariableConfig = {
-  scope: "workflow" | "namespace" | "filesystem";
+  scope: "workflow" | "namespace" | "instance";
   name: string;
   content?: string;
 };
