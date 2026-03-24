@@ -10,18 +10,13 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args) => (
+  render: () => (
     <div className="flex p-10">
-      <Condition {...args} />
+      <Condition>
+        <div>label</div>
+        <div>equal</div>
+        <div>value</div>
+      </Condition>
     </div>
   ),
-  args: {
-    label: "label",
-    value: "value",
-    operator: "equal",
-  },
-  argTypes: {
-    label: { control: "text", description: "label" },
-    value: { control: "text", description: "value" },
-  },
 };

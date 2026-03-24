@@ -53,7 +53,10 @@ export const ExpressionBinaryOperators = [
   "hasTag",
   "getTag",
 ] as const;
+
 export type BinaryOperator = (typeof ExpressionBinaryOperators)[number];
+
+export type BooleanOperator = Extract<BinaryOperator, "&&" | "||">;
 
 export const ExpressionReservedKeys = new Set([
   "Value",

@@ -54,6 +54,11 @@ type IfThenElsePayload<TExpression> = {
   else: TExpression;
 };
 
+interface BooleanExpressionPayload<TExpression> {
+  left: TExpression;
+  right: TExpression;
+}
+
 // These types describe the recursive expression nodes on the output side.
 // Each child points back to ExpressionType, which is what makes the tree
 // recursive at the type level.
@@ -67,7 +72,7 @@ type UnaryExpressionType = SingleKeyExpression<
 // binary expression like { "==": { left: ..., right: ... } }.
 type BinaryExpressionType = SingleKeyExpression<
   BinaryOperator,
-  { left: ExpressionType; right: ExpressionType }
+  BooleanExpressionPayload<ExpressionType>
 >;
 
 // attribute expression like { ".": ... }
@@ -88,7 +93,7 @@ type SetExpressionType = { Set: ExpressionType[] };
 
 type RecordExpressionType = { Record: Record<string, ExpressionType> };
 
-type ExpressionType =
+export type ExpressionType =
   | NonRecursiveExpression
   | UnaryExpressionType
   | BinaryExpressionType
@@ -109,7 +114,7 @@ type UnaryExpressionInputType = SingleKeyExpression<
 
 type BinaryExpressionInputType = SingleKeyExpression<
   BinaryOperator,
-  { left: ExpressionInputType; right: ExpressionInputType }
+  BooleanExpressionPayload<ExpressionInputType>
 >;
 
 type AttributeExpressionInputType = SingleKeyExpression<
@@ -157,4 +162,14 @@ export type ExpressionSchemaType = z.ZodType<
   ExpressionType,
   z.ZodTypeDef,
   ExpressionInputType
+>;
+
+export type AndExpression = Extract<
+  ExpressionType,
+  { "&&": BooleanExpressionPayload<ExpressionType> }
+>;
+
+export type OrExpression = Extract<
+  ExpressionType,
+  { "||": BooleanExpressionPayload<ExpressionType> }
 >;
