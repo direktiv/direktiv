@@ -1,6 +1,7 @@
-import { expect, request } from '@jest/globals'
-
+import config from '../common/config'
+import { expect } from '@jest/globals'
 import helpers from '../common/helpers'
+import request from '../common/request'
 
 export const bashServiceSrc = `{
   "image": "direktiv/bash:dev",
@@ -8,14 +9,20 @@ export const bashServiceSrc = `{
   "size": "small"
 }`
 
-export async function waitForServiceStatus(
-	baseUrl,
+function findPartialMatch(arr, match) {
+	return arr.find((item) =>
+		Object.entries(match).every(([key, value]) => item[key] === value),
+	)
+}
+
+export async function waitForServiceCondition(
 	namespace,
 	path,
-	status,
+	condition,
 	timeoutMs = 5000,
 ) {
 	const deadline = Date.now() + timeoutMs
+	const baseUrl = config.getDirektivBaseUrl()
 
 	while (Date.now() < deadline) {
 		const res = await request(baseUrl).get(
@@ -23,16 +30,22 @@ export async function waitForServiceStatus(
 		)
 		expect(res.statusCode).toEqual(200)
 
-		const instance = res.body?.data.find((item) => item.path === path)
+		const service = res.body?.data.find((item) => item.filePath === path)
 
-		if (instance.status === status) {
-			return instance
+		let match
+
+		if (service) {
+			match = findPartialMatch(service.conditions, condition)
+		}
+
+		if (match) {
+			return service
 		}
 
 		await helpers.sleep(200)
 	}
 
 	throw new Error(
-		`service ${path} did not reach status ${status} within ${timeoutMs}ms`,
+		`service ${path} did not reach expected condition within ${timeoutMs}ms`,
 	)
 }

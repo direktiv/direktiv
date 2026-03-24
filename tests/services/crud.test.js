@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from '@jest/globals'
+import { bashServiceSrc, waitForServiceCondition } from './utils'
 
-import { bashServiceSrc } from './utils'
 import config from '../common/config'
 import helpers from '../common/helpers'
 import regex from '../common/regex'
@@ -32,7 +32,7 @@ describe('Service API', () => {
 			.set('Content-Type', 'application/json')
 			.send({
 				name: fileName,
-				type: 'workflow',
+				type: 'service',
 				mimeType: 'application/json',
 				data: btoa(bashServiceSrc),
 			})
@@ -41,12 +41,26 @@ describe('Service API', () => {
 		expect(response.body).toMatchObject({
 			data: {
 				path: `/${fileName}`,
-				type: 'workflow',
+				type: 'service',
 				createdAt: expect.stringMatching(regex.timestampRegex),
 				updatedAt: expect.stringMatching(regex.timestampRegex),
 				data: btoa(bashServiceSrc),
 				errors: [],
 			},
 		})
+
+		const expectedCondition = {
+			type: 'Available',
+			status: 'True',
+			message: 'Deployment has minimum availability.',
+		}
+
+		const service = await waitForServiceCondition(
+			namespace,
+			`/${fileName}`,
+			expectedCondition,
+		)
+
+		expect(service).toBeDefined()
 	})
 })
