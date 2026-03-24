@@ -24,7 +24,7 @@ describe('Runtime variables from workflow setVariable()', () => {
   // Workflow code: creates runtime variables in each scope via setVariable()
   const workflowSource = `
     function stateOne(payload: any) {
-      const value = '${storedValue}';
+      const value = 'hello from runtime variable';
       const content = 'aGVsbG8gZnJvbSBydW50aW1lIHZhcmlhYmxl';
 
       // 1) namespace-scoped
