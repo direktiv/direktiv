@@ -681,7 +681,7 @@ test(`it is possible to rename a service with automatically added file extension
     cmd: "hello",
   };
 
-  await createService(namespace, { ...service, name: oldName });
+  await createService(namespace, service);
 
   await page.goto(`/n/${namespace}/explorer/tree/`);
   await expect(
@@ -807,7 +807,7 @@ test(`it is possible to rename a service with keeping the file extension`, async
     cmd: "hello",
   };
 
-  await createService(namespace, { ...service, name: oldName });
+  await createService(namespace, service);
 
   await page.goto(`/n/${namespace}/explorer/tree/`);
   await expect(
