@@ -6,14 +6,19 @@ type NonEmptyArray<T> = [T, ...T[]];
 
 export type CedarActionEntityTypeName = "Action" | `${string}::Action`;
 
+// Base metadata shared by every node in the schema tree
 type CedarSchemaTypeMetadata = {
   annotations?: CedarAnnotations;
 };
 
+// Record attributes use the same type grammar as top-level schema types, but add
+// the JSON schema `required` flag because required only applies to attributes.
 type CedarSchemaAttributeMetadata = CedarSchemaTypeMetadata & {
   required?: boolean;
 };
 
+// These variants describe the recursive Cedar type grammar used by `shape`,
+// `tags`, `context`, and namespace `commonTypes`.
 type CedarPrimitiveOrCommonType = CedarSchemaTypeMetadata & {
   type: CedarPrimitiveTypeName | string;
 };
@@ -43,6 +48,9 @@ type CedarEntityOrCommonType = CedarSchemaTypeMetadata & {
   name: string;
 };
 
+// Attribute variants intentionally mirror the schema variants above.
+// The only difference is that each node carries attribute metadata so nested
+// record fields can express `required`.
 type CedarAttributePrimitiveOrCommonType = CedarSchemaAttributeMetadata & {
   type: CedarPrimitiveTypeName | string;
 };
@@ -72,9 +80,7 @@ type CedarAttributeEntityOrCommonType = CedarSchemaAttributeMetadata & {
   name: string;
 };
 
-// `shape`, `tags`, `context`, and common types all use the same recursive Cedar
-// type grammar. Record attributes reuse that grammar and add the JSON-only
-// `required` flag.
+// `CedarSchemaType` is the core recursive union for any standalone Cedar type.
 export type CedarSchemaType =
   | CedarPrimitiveOrCommonType
   | CedarSetType
@@ -83,6 +89,9 @@ export type CedarSchemaType =
   | CedarExtensionType
   | CedarEntityOrCommonType;
 
+// Attribute counterpart to `CedarSchemaType`.
+// It exists so record attributes can reuse the same nested shapes while adding
+// the optional `required` flag at every attribute node.
 export type CedarSchemaAttributeType =
   | CedarAttributePrimitiveOrCommonType
   | CedarAttributeSetType
@@ -91,9 +100,25 @@ export type CedarSchemaAttributeType =
   | CedarAttributeExtensionType
   | CedarAttributeEntityOrCommonType;
 
-// Entity types come in two shapes:
-// - structural entities: `entity User in Group = { name: String };`
-// - enum entities: `entity Group enum ["admins", "reviewers"];`
+// Namespace `entityTypes` map to one of these two JSON shapes:
+// - structural:
+//   {
+//     "memberOfTypes": ["Group"],
+//     "shape": {
+//       "type": "Record",
+//       "attributes": {
+//         "name": {
+//           "type": "String",
+//           "required": true
+//         }
+//       }
+//     }
+//   }
+// - enum:
+//   {
+//     "enum": ["admins", "reviewers"]
+//   }
+// Structural entities plug back into `CedarSchemaType` for `shape` and `tags`.
 export type CedarEntityDefinition =
   | {
       memberOfTypes?: string[];
@@ -111,9 +136,6 @@ export type CedarActionGroupReference = {
   type?: CedarActionEntityTypeName;
 };
 
-// Cedar action declarations are centered around `appliesTo`.
-// Cedar:
-// `action View appliesTo { principal: User, resource: Doc, context: { ip: ipaddr } };`
 export type CedarActionDeclaration = {
   memberOf?: CedarActionGroupReference[];
   appliesTo: {

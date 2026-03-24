@@ -13,8 +13,9 @@ const cedarSchemaTypeKeywords = [
   "EntityOrCommon",
 ] as const;
 
-// Reserved Cedar type names cannot be reused as user-defined type identifiers.
-// Example: `type String = ...` is invalid because `String` is built in.
+// Reserved Cedar type names cannot be reused as user defined type identifiers.
+// You can e.g. use "type": "PersonType" to point to a common type but not
+// "type": "String"
 const reservedCedarTypeNames = new Set(["Bool", ...cedarSchemaTypeKeywords]);
 
 // starts with `_` or a letter, followed by letters, digits, or underscores.
@@ -23,9 +24,9 @@ const cedarIdentifierSegmentPattern = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 const usesReservedCedarNamespace = (value: string) =>
   value.startsWith("__cedar::");
 
-// Validates the shared Cedar identifier-path grammar used in namespaces, entity
+// Validates the shared Cedar identifier path grammar used in namespaces, entity
 // types, action entity types, and type references. The optional flags let
-// each caller enable the few Cedar-specific exceptions that vary by context,
+// each caller enable the few Cedar specific exceptions that vary by context,
 // such as the empty namespace, reserved `__cedar` references, or reserved final
 // segments like `Action`.
 export const isIdentifierPath = (
@@ -108,29 +109,34 @@ export const isSchemaTypeReferenceName = (value: string) =>
     allowReservedCedarNamespace: usesReservedCedarNamespace(value),
   });
 
-// Entity type references appear in places like:
-// Cedar: `entity User in Group;`
-// JSON:  `{ "memberOfTypes": ["Group"] }`
+// Entity type names identify Cedar entity types such as `User` or
+// `Namespace::Group`. They are used anywhere the schema names an entity type,
+// for example in `{ "memberOfTypes": ["Group"] }` or `"User": { "shape": ... }`.
 export const EntityTypeNameSchema = createIdentifierPathSchema(
   isEntityTypeName,
   "Entity type names must be valid Cedar identifier paths"
 );
 
-// `EntityOrCommon` follows Cedar's name resolution rules:
-// common type > entity type > primitive/extension type.
+// `EntityOrCommon` references use Cedar's lookup order for type names:
+// common type first, then entity type, then primitive or extension type.
+// For example, `{ "type": "Address" }` resolves to a common type if one is
+// defined, otherwise `{ "type": "User" }` can resolve to an entity type, and
+// `{ "type": "String" }` still remains valid as a primitive type reference.
 export const EntityOrCommonNameSchema = createIdentifierPathSchema(
   isEntityOrCommonName,
   "Entity or common type references must be valid Cedar identifier paths"
 );
 
+// Extension type names refer to Cedar extension types, including reserved
+// `__cedar` names when Cedar allows them, for example `ipaddr` or
+// `__cedar::Decimal`.
 export const ExtensionTypeNameSchema = createIdentifierPathSchema(
   isExtensionTypeName,
   "Extension type names must be valid Cedar identifier paths"
 );
 
-// Action groups are always action entities.
-// Cedar: `action View in [ReadOnly] ...`
-// JSON:  `{ "memberOf": [{ "id": "ReadOnly", "type": "MyNS::Action" }] }`
+// Action entity types are the entity types used for actions themselves. In
+// Cedar they must end with `Action`, for example `Action` or `Namespace::Action`.
 export const ActionEntityTypeNameSchema = z
   .string()
   .refine(isActionEntityTypePath, {
@@ -142,8 +148,10 @@ export const ActionEntityTypeNameSchema = z
 
 export const PrimitiveTypeNameSchema = z.enum(cedarPrimitiveTypeNames);
 
-// Common type references are encoded as `{ type: "MyCommonType" }`, so this excludes
-// the built-in discriminators like `Record`, `Set`, `Entity`, and primitive names.
+// Type references are the names used in `{ "type": "..." }`, such as
+// `{ "type": "MyCommonType" }` or `{ "type": "Namespace::Profile" }`.
+// Built-in Cedar keywords like `String`, `Set`, `Record`, and `Entity`
+// are not valid here.
 export const SchemaTypeReferenceNameSchema = createIdentifierPathSchema(
   isSchemaTypeReferenceName,
   "Type references must be valid Cedar type names"

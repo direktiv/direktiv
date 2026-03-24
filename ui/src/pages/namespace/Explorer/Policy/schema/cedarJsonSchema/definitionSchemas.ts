@@ -31,14 +31,16 @@ const CedarEnumEntityDefinitionSchema = z
   })
   .strict();
 
-// Entity definitions are either structural declarations with optional shape/tags,
-// or enum-style entities whose valid EIDs are listed explicitly.
+// An entity definition is either:
+// - a structural entity with optional membership, shape, tags, and annotations
+// - an enum entity whose allowed entity IDs are listed explicitly
 const CedarEntityDefinitionSchema: z.ZodType<CedarEntityDefinition> = z.union([
   CedarStructuralEntityDefinitionSchema,
   CedarEnumEntityDefinitionSchema,
 ]);
 
-// Action `memberOf` entries reference action groups, which are themselves action entities.
+// Each `memberOf` entry points to an action group. The optional `type` lets the
+// reference use a namespaced action entity type instead of the default `Action`.
 const CedarActionGroupReferenceSchema: z.ZodType<CedarActionGroupReference> = z
   .object({
     id: z.string(),
@@ -56,7 +58,6 @@ const CedarActionAppliesToSchema: z.ZodType<
   })
   .strict();
 
-// Cedar action declarations are centered around the `appliesTo` block.
 const CedarActionDeclarationSchema: z.ZodType<CedarActionDeclaration> = z
   .object({
     memberOf: z.array(CedarActionGroupReferenceSchema).optional(),
