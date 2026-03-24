@@ -3,7 +3,7 @@ import {
   EntityTypeNameSchema,
   isActionName,
   isEntityTypeName,
-} from "./identifiers";
+} from "./identifierSchemas";
 import type {
   CedarActionDeclaration,
   CedarActionGroupReference,
@@ -11,7 +11,7 @@ import type {
   CedarNamespaceDefinition,
   CedarSchemaType,
 } from "./types";
-import { CedarAnnotationsSchema, CedarSchemaTypeSchema } from "./schemaTypes";
+import { CedarAnnotationsSchema, CedarSchemaTypeSchema } from "./typeSchemas";
 import { strictRecordWithKeyValidation } from "./utils";
 import { z } from "zod";
 

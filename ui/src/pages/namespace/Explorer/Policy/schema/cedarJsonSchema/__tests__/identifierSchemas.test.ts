@@ -8,7 +8,7 @@ import {
   isIdentifierPath,
   isNamespaceName,
   isSchemaTypeReferenceName,
-} from "../identifiers";
+} from "../identifierSchemas";
 
 describe("isIdentifierPath", () => {
   test("accepts valid Cedar identifier paths", () => {

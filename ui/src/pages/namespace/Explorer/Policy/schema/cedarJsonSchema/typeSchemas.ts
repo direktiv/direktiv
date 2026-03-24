@@ -10,7 +10,7 @@ import {
   PrimitiveTypeNameSchema,
   SchemaTypeReferenceNameSchema,
   isIdentifierPath,
-} from "./identifiers";
+} from "./identifierSchemas";
 import { strictRecordWithKeyValidation } from "./utils";
 import { z } from "zod";
 

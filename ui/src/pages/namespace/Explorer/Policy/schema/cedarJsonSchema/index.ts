@@ -1,6 +1,6 @@
-import { CedarNamespaceDefinitionSchema } from "./definitionSchemas";
+import { CedarNamespaceDefinitionSchema } from "./namespaceSchemas";
 import type { CedarSchemaNamespaces } from "./types";
-import { isNamespaceName } from "./identifiers";
+import { isNamespaceName } from "./identifierSchemas";
 import { strictRecordWithKeyValidation } from "./utils";
 import { z } from "zod";
 const CedarNamespaceMapSchema = strictRecordWithKeyValidation(
