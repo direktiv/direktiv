@@ -9,9 +9,49 @@ export const bashServiceSrc = `{
   "size": "small"
 }`
 
+export const echoServiceSrc = `{
+  "image": "direktiv/echo",
+  "scale": 1,
+  "size": "small"
+}`
+
+function isPartialMatch(object, match) {
+	const result = Object.entries(match).every(
+		([key, value]) => object[key] === value,
+	)
+	return result
+}
+
 function findPartialMatch(arr, match) {
-	return arr.find((item) =>
-		Object.entries(match).every(([key, value]) => item[key] === value),
+	return arr.find((item) => isPartialMatch(item, match))
+}
+
+export async function waitForServiceProperty(
+	namespace,
+	path,
+	property,
+	timeoutMs = 5000,
+) {
+	const deadline = Date.now() + timeoutMs
+	const baseUrl = config.getDirektivBaseUrl()
+
+	while (Date.now() < deadline) {
+		const res = await request(baseUrl).get(
+			`/api/v2/namespaces/${namespace}/services`,
+		)
+		expect(res.statusCode).toEqual(200)
+
+		const service = res.body?.data.find((item) => item.filePath === path)
+
+		if (service && isPartialMatch(service, property)) {
+			return service
+		}
+
+		await helpers.sleep(200)
+	}
+
+	throw new Error(
+		`service ${path} did not have expected property within ${timeoutMs}ms`,
 	)
 }
 
