@@ -5,9 +5,9 @@ import type { PolicyLayoutNode } from "./types";
 import { containsOrGroup } from "./utils";
 
 const PolicyNode = ({ node }: { node: PolicyLayoutNode }) => {
-  // Leaf nodes are the terminal expressions in the policy
-  // tree, they render directly as a condition component
-  if (node.type === "leaf") {
+  // Condition nodes are the terminal expressions in the policy
+  // tree, they render directly as a condition component.
+  if (node.type === "condition") {
     const preview = JSON.stringify(node.expression);
     const title = JSON.stringify(node.expression, null, 2);
 
