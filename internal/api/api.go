@@ -29,6 +29,21 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 type Version struct {
 	UnixTime int64 `json:"unix_time"`
 }
@@ -127,6 +142,9 @@ func New(app InitializeArgs) (*Server, error) {
 	}
 
 	r := chi.NewRouter()
+
+	r.Use(corsMiddleware)
+
 	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
 		writeError(w, &Error{
 			Code:    "request_method_not_allowed",
