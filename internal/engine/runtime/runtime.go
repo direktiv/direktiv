@@ -170,7 +170,22 @@ func (rt *Runtime) secrets(secretNames []string) sobek.Value {
 	return rt.vm.ToValue(retSecrets)
 }
 
-func (rt *Runtime) setVariable(scope string, name string, content string) sobek.Value {
+func (rt *Runtime) setVariable(c map[string]any) sobek.Value {
+	scope, ok := c["scope"].(string)
+	if !ok {
+		panic(rt.vm.ToValue("scope must be a string"))
+	}
+
+	name, ok := c["name"].(string)
+	if !ok {
+		panic(rt.vm.ToValue("name must be a string"))
+	}
+
+	content, ok := c["content"].(string)
+	if !ok {
+		panic(rt.vm.ToValue("content must be a string"))
+	}
+
 	data, err := base64.StdEncoding.DecodeString(content)
 	if err != nil {
 		panic(rt.vm.ToValue("invalid base64 content"))
@@ -188,7 +203,17 @@ func (rt *Runtime) setVariable(scope string, name string, content string) sobek.
 	return sobek.Undefined()
 }
 
-func (rt *Runtime) getVariable(scope string, name string) sobek.Value {
+func (rt *Runtime) getVariable(c map[string]any) sobek.Value {
+	scope, ok := c["scope"].(string)
+	if !ok {
+		panic(rt.vm.ToValue("scope must be a string"))
+	}
+
+	name, ok := c["name"].(string)
+	if !ok {
+		panic(rt.vm.ToValue("name must be a string"))
+	}
+
 	if rt.onGetVariable == nil {
 		panic(rt.vm.ToValue("getVariable not supported"))
 	}
@@ -198,7 +223,6 @@ func (rt *Runtime) getVariable(scope string, name string) sobek.Value {
 		panic(rt.vm.ToValue(err.Error()))
 	}
 
-	// If hook returns nil data with no error, treat as not found -> null.
 	if data == nil {
 		return sobek.Null()
 	}
