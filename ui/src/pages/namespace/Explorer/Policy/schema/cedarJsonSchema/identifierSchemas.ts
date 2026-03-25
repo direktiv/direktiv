@@ -21,7 +21,7 @@ const reservedCedarTypeNames = new Set(["Bool", ...cedarSchemaTypeKeywords]);
 // starts with `_` or a letter, followed by letters, digits, or underscores.
 const cedarIdentifierSegmentPattern = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 
-const usesReservedCedarNamespace = (value: string) =>
+const containsReservedCedarNamespace = (value: string) =>
   value.startsWith("__cedar::");
 
 // Validates the shared Cedar identifier path grammar used in namespaces, entity
@@ -85,13 +85,13 @@ export const isActionName = (value: string) => isIdentifierPath(value);
 
 export const isEntityOrCommonName = (value: string) =>
   isIdentifierPath(value, {
-    allowReservedCedarNamespace: usesReservedCedarNamespace(value),
+    allowReservedCedarNamespace: containsReservedCedarNamespace(value),
     allowReservedFinalSegment: true,
   });
 
 export const isExtensionTypeName = (value: string) =>
   isIdentifierPath(value, {
-    allowReservedCedarNamespace: usesReservedCedarNamespace(value),
+    allowReservedCedarNamespace: containsReservedCedarNamespace(value),
     allowReservedFinalSegment: true,
   });
 
@@ -106,7 +106,7 @@ export const isSchemaTypeReferenceName = (value: string) =>
     value as (typeof cedarSchemaTypeKeywords)[number]
   ) &&
   isIdentifierPath(value, {
-    allowReservedCedarNamespace: usesReservedCedarNamespace(value),
+    allowReservedCedarNamespace: containsReservedCedarNamespace(value),
   });
 
 // Entity type names identify Cedar entity types such as `User` or
