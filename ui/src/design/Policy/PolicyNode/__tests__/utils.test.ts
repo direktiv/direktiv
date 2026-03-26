@@ -13,6 +13,8 @@ import {
 } from "../utils";
 import { describe, expect, test } from "vitest";
 import { ExpressionType } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
+import nestedBooleanGroups from "../policies/nestedBooleanGroups";
+import nestedBooleanGroupsWithTrailingAnd from "../policies/nestedBooleanGroupsWithTrailingAnd";
 
 describe("flattenOperator", () => {
   test("flattenOperator flattens chained AND expressions in order", () => {
@@ -620,6 +622,26 @@ describe("buildBooleanChain", () => {
       },
     });
   });
+
+  test("buildBooleanChain rebuilds an OR chain from flat items", () => {
+    expect(
+      buildBooleanChain("||", [
+        { Value: true },
+        { Var: "principal" },
+        { Value: false },
+      ])
+    ).toEqual({
+      "||": {
+        left: {
+          "||": {
+            left: { Value: true },
+            right: { Var: "principal" },
+          },
+        },
+        right: { Value: false },
+      },
+    });
+  });
 });
 
 describe("appendToBooleanGroup", () => {
@@ -838,5 +860,47 @@ describe("group demo helpers", () => {
         },
       },
     });
+  });
+});
+
+describe("realistic fixture interactions", () => {
+  test("nested boolean groups fixture stays renderable after OR branch growth", () => {
+    const nextExpression = addDemoConditionToGroup(
+      nestedBooleanGroups,
+      [{ operator: "&&", side: "right" }],
+      "||"
+    );
+
+    const nextNode = toAndBranch(nextExpression);
+
+    expect(nextNode.type).toBe("and");
+    expect(nextNode.rows).toBeGreaterThan(1);
+    expect(nextNode.items[1]?.type).toBe("or");
+
+    const orNode = nextNode.items[1];
+    expect(orNode?.type).toBe("or");
+    if (orNode?.type !== "or") {
+      throw new Error("Expected an OR node");
+    }
+
+    expect(orNode.branches).toHaveLength(3);
+  });
+
+  test("trailing-and fixture stays renderable after nested OR insertion", () => {
+    const nextExpression = addStarterOrGroupToOr(
+      nestedBooleanGroupsWithTrailingAnd,
+      [
+        { operator: "&&", side: "right" },
+        { operator: "&&", side: "left" },
+        { operator: "||", side: "right" },
+        { operator: "&&", side: "left" },
+      ]
+    );
+
+    const nextNode = toAndBranch(nextExpression);
+
+    expect(nextNode.type).toBe("and");
+    expect(nextNode.rows).toBeGreaterThan(3);
+    expect(nextNode.items).toHaveLength(3);
   });
 });
