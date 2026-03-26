@@ -31,7 +31,15 @@ export const Form = ({
   const { t } = useTranslation();
   const form = useForm<FormType>({
     resolver: zodResolver(FormSchema),
-    defaultValues: propBlock,
+    defaultValues: {
+      ...propBlock,
+      mutation: {
+        ...propBlock.mutation,
+        queryParams: propBlock.mutation.queryParams || [],
+        requestHeaders: propBlock.mutation.requestHeaders || [],
+        requestBody: propBlock.mutation.requestBody || [],
+      },
+    },
   });
 
   return (
