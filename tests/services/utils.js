@@ -3,18 +3,6 @@ import { expect } from '@jest/globals'
 import helpers from '../common/helpers'
 import request from '../common/request'
 
-export const bashServiceSrc = `{
-  "image": "direktiv/bash:dev",
-  "scale": 1,
-  "size": "small"
-}`
-
-export const echoServiceSrc = `{
-  "image": "direktiv/echo",
-  "scale": 1,
-  "size": "small"
-}`
-
 function isPartialMatch(object, match) {
 	const result = Object.entries(match).every(
 		([key, value]) => object[key] === value,
@@ -110,4 +98,27 @@ export async function waitForServiceRemoved(namespace, path, timeoutMs = 5000) {
 	}
 
 	throw new Error(`service ${path} still existed after ${timeoutMs}ms`)
+}
+
+export async function waitForServiceCount(namespace, expectedCount, timeoutMs = 5000) {
+	const baseUrl = config.getDirektivBaseUrl()
+	const deadline = Date.now() + timeoutMs
+
+	while (Date.now() < deadline) {
+		const res = await request(baseUrl).get(
+			`/api/v2/namespaces/${namespace}/services`,
+		)
+		expect(res.statusCode).toEqual(200)
+
+		const count = res.body?.data?.length
+		if (count === expectedCount) {
+			return res
+		}
+
+		await helpers.sleep(200)
+	}
+
+	throw new Error(
+		`services did not reach expected count ${expectedCount} within ${timeoutMs}ms`,
+	)
 }

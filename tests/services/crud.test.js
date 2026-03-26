@@ -1,8 +1,8 @@
-import { afterAll, beforeAll, describe, expect, it } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, it } from '@jest/globals'
+import { bashServiceSrc, echoServiceSrc } from './fixtures'
 import {
-	bashServiceSrc,
-	echoServiceSrc,
 	waitForServiceCondition,
+	waitForServiceCount,
 	waitForServiceProperty,
 	waitForServiceRemoved,
 } from './utils'
@@ -17,14 +17,14 @@ const namespace = helpers.randomNamespaceName()
 const baseUrl = config.getDirektivBaseUrl()
 
 describe('Service API', () => {
-	beforeAll(async () => {
+	beforeEach(async () => {
 		const nsRes = await request(baseUrl).post('/api/v2/namespaces').send({
 			name: namespace,
 		})
 		expect(nsRes.statusCode).toEqual(200)
 	})
 
-	afterAll(async () => {
+	afterEach(async () => {
 		return helpers.deleteNamespace(namespace)
 	})
 
@@ -163,5 +163,80 @@ describe('Service API', () => {
 		)
 		// confirm that only one service exists (old service terminated)
 		expect(serviceListResponse.body?.data.length).toEqual(1)
+	})
+
+	it('lists services', async () => {
+		const fileName1 = 'list-1.svc.ts'
+		const fileName2 = 'list-2.svc.ts'
+		const fileName3 = 'list-3.svc.ts'
+
+		// create 3 services (different filenames + different images)
+		const src1 = bashServiceSrc
+		const src2 = bashServiceSrc.replace(
+			'direktiv/bash:dev',
+			'direktiv/http-request:dev',
+		)
+		const src3 = bashServiceSrc.replace(
+			'direktiv/bash:dev',
+			'direktiv/echo:dev',
+		)
+
+		const createResponse1 = await request(baseUrl)
+			.post(`/api/v2/namespaces/${namespace}/files`)
+			.set('Content-Type', 'application/json')
+			.send({
+				name: fileName1,
+				type: 'service',
+				mimeType: 'application/json',
+				data: btoa(src1),
+			})
+		expect(createResponse1.statusCode).toEqual(200)
+
+		const createResponse2 = await request(baseUrl)
+			.post(`/api/v2/namespaces/${namespace}/files`)
+			.set('Content-Type', 'application/json')
+			.send({
+				name: fileName2,
+				type: 'service',
+				mimeType: 'application/json',
+				data: btoa(src2),
+			})
+		expect(createResponse2.statusCode).toEqual(200)
+
+		const createResponse3 = await request(baseUrl)
+			.post(`/api/v2/namespaces/${namespace}/files`)
+			.set('Content-Type', 'application/json')
+			.send({
+				name: fileName3,
+				type: 'service',
+				mimeType: 'application/json',
+				data: btoa(src3),
+			})
+		expect(createResponse3.statusCode).toEqual(200)
+
+		// list services + assert all 3 are present
+		await waitForServiceCount(namespace, 3)
+		
+		const serviceListResponse = await request(baseUrl).get(
+			`/api/v2/namespaces/${namespace}/services`,
+		)
+		expect(serviceListResponse.statusCode).toEqual(200)
+
+		expect(serviceListResponse.body).toMatchObject({
+			data: expect.arrayContaining([
+				expect.objectContaining({
+					filePath: `/${fileName1}`,
+					image: 'direktiv/bash:dev',
+				}),
+				expect.objectContaining({
+					filePath: `/${fileName2}`,
+					image: 'direktiv/http-request:dev',
+				}),
+				expect.objectContaining({
+					filePath: `/${fileName3}`,
+					image: 'direktiv/echo:dev',
+				}),
+			]),
+		})
 	})
 })
