@@ -31,6 +31,11 @@ const (
 
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !version.IsDev() {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept")
@@ -172,7 +177,7 @@ func New(app InitializeArgs) (*Server, error) {
 			IsEnterprise: extensions.IsEnterprise,
 			RequiresAuth: os.Getenv("DIREKTIV_UI_SET_API_KEY") == "true",
 		}
-		if version.Version != "" && version.GitSha != "" {
+		if !version.IsDev() {
 			data.Version = version.Version + " " + version.GitSha
 		} else {
 			data.Version = "dev2"
