@@ -6,8 +6,7 @@ import request from '../../common/request'
 
 const namespaceName = 'callpathtest'
 
-// Todo: Fix and unskip in TDI-257
-describe.skip('Test subflow behaviour', () => {
+describe('Test subflow behaviour', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
@@ -18,50 +17,61 @@ describe.skip('Test subflow behaviour', () => {
 		it,
 		expect,
 		namespaceName,
-		'/a',
-		`child.yaml`,
+		'',
+		`child.wf.ts`,
 		'workflow',
-		'text/plain',
+		'application/typescript',
 		btoa(`
-states:
-- id: a
-  type: noop
-  transform:
-    result: 'jq(.input + 1)'`),
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateFirst",
+};
+
+function stateFirst(data): StateFunction<string> {
+  return finish({
+    meta: "the workflow input is returned in the input field",
+    input: data,
+  });
+}
+`),
 	)
 
 	helpers.itShouldCreateFile(
 		it,
 		expect,
 		namespaceName,
-		'/a',
-		`parent1.yaml`,
+		'',
+		`parent.wf.ts`,
 		'workflow',
-		'text/plain',
+		'application/typescript',
 		btoa(`
-functions:
-- id: child
-  type: subflow
-  workflow: '/a/child.yaml'
-states:
-- id: a
-  type: action
-  action:
-    function: child
-    input: 
-      input: 1
-  transform:
-    result: 'jq(.return.result)'
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateFirst",
+};
+
+function stateFirst(): StateFunction<unknown> {
+  let resp = execSubflow(
+    "/child.wf.ts",
+    "This is the data passed to the subflow",
+  );
+  return finish(resp);
+}
 `),
 	)
 
-	it(`should invoke the '/a/parent1.yaml' workflow`, async () => {
+	it(`the parent workflow should invoke the child workflow and return its response`, async () => {
 		const req = await request(common.config.getDirektivBaseUrl()).post(
-			`/api/v2/namespaces/${namespaceName}/instances?path=a%2Fparent1.yaml&wait=true`,
+			`/api/v2/namespaces/${namespaceName}/instances?path=%2Fparent.wf.ts&wait=true`,
 		)
 		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
-			result: 2,
+		expect(req.body).toEqual({
+			data: {
+				input: 'This is the data passed to the subflow',
+				meta: 'the workflow input is returned in the input field',
+			},
 		})
 	})
 })
