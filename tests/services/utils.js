@@ -150,3 +150,32 @@ export async function waitForServiceCount(
 		`services did not reach expected count ${expectedCount} within ${timeoutMs}ms`,
 	)
 }
+
+export async function waitForServicePodsCount(
+	namespace,
+	serviceID,
+	expectedCount,
+	timeoutMs = 5000,
+	intervalMs = 200,
+) {
+	const baseUrl = config.getDirektivBaseUrl()
+	const deadline = Date.now() + timeoutMs
+
+	while (Date.now() < deadline) {
+		const res = await request(baseUrl).get(
+			`/api/v2/namespaces/${namespace}/services/${serviceID}/pods`,
+		)
+		expect(res.statusCode).toEqual(200)
+
+		const count = res.body?.data?.length
+		if (count === expectedCount) {
+			return res
+		}
+
+		await helpers.sleep(intervalMs)
+	}
+
+	throw new Error(
+		`service ${serviceID} pods did not reach expected count ${expectedCount} within ${timeoutMs}ms`,
+	)
+}
