@@ -2,6 +2,8 @@ import {
   containsOrGroup,
   expressionToLayoutNode,
   flattenOperator,
+  replaceExpressionAtPath,
+  toggleDemoConditionAtPath,
   toAndBranch,
 } from "../utils";
 import { describe, expect, test } from "vitest";
@@ -519,5 +521,76 @@ describe("containsOrGroup", () => {
     expect(containsOrGroup([orNode, conditionNode])).toBe(true);
     expect(containsOrGroup([conditionNode, orNode])).toBe(true);
     expect(containsOrGroup([orNode, orNode])).toBe(true);
+  });
+});
+
+describe("replaceExpressionAtPath", () => {
+  test("replaceExpressionAtPath replaces the root expression when path is empty", () => {
+    const expression: ExpressionType = { Value: true };
+
+    expect(replaceExpressionAtPath(expression, [], { Value: false })).toEqual({
+      Value: false,
+    });
+  });
+
+  test("replaceExpressionAtPath replaces a nested leaf expression", () => {
+    const expression: ExpressionType = {
+      "&&": {
+        left: {
+          "&&": {
+            left: { Value: true },
+            right: { Var: "principal" },
+          },
+        },
+        right: { Value: false },
+      },
+    };
+
+    expect(
+      replaceExpressionAtPath(
+        expression,
+        [
+          { operator: "&&", side: "left" },
+          { operator: "&&", side: "right" },
+        ],
+        { Value: false }
+      )
+    ).toEqual({
+      "&&": {
+        left: {
+          "&&": {
+            left: { Value: true },
+            right: { Value: false },
+          },
+        },
+        right: { Value: false },
+      },
+    });
+  });
+});
+
+describe("toggleDemoConditionAtPath", () => {
+  test("toggleDemoConditionAtPath toggles true leaves to false", () => {
+    const expression: ExpressionType = { Value: true };
+
+    expect(toggleDemoConditionAtPath(expression, [])).toEqual({ Value: false });
+  });
+
+  test("toggleDemoConditionAtPath replaces non-demo leaves with true", () => {
+    const expression: ExpressionType = {
+      "&&": {
+        left: { Value: true },
+        right: { Var: "principal" },
+      },
+    };
+
+    expect(
+      toggleDemoConditionAtPath(expression, [{ operator: "&&", side: "right" }])
+    ).toEqual({
+      "&&": {
+        left: { Value: true },
+        right: { Value: true },
+      },
+    });
   });
 });

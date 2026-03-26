@@ -13,6 +13,8 @@ import { BinaryExpressionSchema } from "~/pages/namespace/Explorer/Policy/schema
 import { BooleanOperator } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/utils";
 import { ExpressionSchema } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression";
 
+const demoConditionExpression: ExpressionType = { Value: true };
+
 const isAndExpression = (expression: unknown): expression is AndExpression => {
   const parsed = BinaryExpressionSchema(ExpressionSchema).safeParse(expression);
 
@@ -156,6 +158,78 @@ export const toAndBranch = (
     rows: node.rows,
     path,
   };
+};
+
+export const replaceExpressionAtPath = (
+  expression: ExpressionType,
+  path: ExpressionPath,
+  nextExpression: ExpressionType
+): ExpressionType => {
+  if (path.length === 0) {
+    return nextExpression;
+  }
+
+  const [segment, ...rest] = path;
+
+  if (segment === undefined) {
+    return expression;
+  }
+
+  if (segment.operator === "&&") {
+    if (!isAndExpression(expression)) {
+      return expression;
+    }
+
+    return {
+      "&&": {
+        ...expression["&&"],
+        [segment.side]: replaceExpressionAtPath(
+          expression["&&"][segment.side],
+          rest,
+          nextExpression
+        ),
+      },
+    };
+  }
+
+  if (!isOrExpression(expression)) {
+    return expression;
+  }
+
+  return {
+    "||": {
+      ...expression["||"],
+      [segment.side]: replaceExpressionAtPath(
+        expression["||"][segment.side],
+        rest,
+        nextExpression
+      ),
+    },
+  };
+};
+
+export const toggleDemoConditionAtPath = (
+  expression: ExpressionType,
+  path: ExpressionPath
+): ExpressionType => {
+  const current = path.reduce<ExpressionType>((currentExpression, segment) => {
+    if (segment.operator === "&&" && isAndExpression(currentExpression)) {
+      return currentExpression["&&"][segment.side];
+    }
+
+    if (segment.operator === "||" && isOrExpression(currentExpression)) {
+      return currentExpression["||"][segment.side];
+    }
+
+    return currentExpression;
+  }, expression);
+
+  const nextExpression =
+    "Value" in current && current.Value === true
+      ? ({ Value: false } satisfies ExpressionType)
+      : demoConditionExpression;
+
+  return replaceExpressionAtPath(expression, path, nextExpression);
 };
 
 // Returns true when any item in the list is an OR group.
