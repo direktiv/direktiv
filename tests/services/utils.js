@@ -14,12 +14,18 @@ function findPartialMatch(arr, match) {
 	return arr.find((item) => isPartialMatch(item, match))
 }
 
-export async function waitForServiceProperty(
-	namespace,
-	path,
-	property,
-	timeoutMs = 5000,
-) {
+async function waitForService(namespace, path, options) {
+	const {
+		timeoutMs = 5000,
+		intervalMs = 200,
+		matchFn,
+		onTimeout,
+	} = options ?? {}
+
+	if (typeof matchFn !== 'function') {
+		throw new Error('waitForService requires an matchFn predicate')
+	}
+
 	const deadline = Date.now() + timeoutMs
 	const baseUrl = config.getDirektivBaseUrl()
 
@@ -30,17 +36,45 @@ export async function waitForServiceProperty(
 		expect(res.statusCode).toEqual(200)
 
 		const service = res.body?.data.find((item) => item.filePath === path)
+		const result = matchFn(service, res)
 
-		if (service && isPartialMatch(service, property)) {
-			return service
+		if (result?.done) {
+			return result.value
 		}
 
-		await helpers.sleep(200)
+		await helpers.sleep(intervalMs)
+	}
+
+	if (typeof onTimeout === 'function') {
+		throw onTimeout()
 	}
 
 	throw new Error(
-		`service ${path} did not have expected property within ${timeoutMs}ms`,
+		`service ${path} did not satisfy predicate within ${timeoutMs}ms`,
 	)
+}
+
+export async function waitForServiceProperty(
+	namespace,
+	path,
+	property,
+	timeoutMs = 5000,
+	intervalMs = 200,
+) {
+	return waitForService(namespace, path, {
+		timeoutMs,
+		intervalMs,
+		matchFn: (service) => {
+			if (service && isPartialMatch(service, property)) {
+				return { done: true, value: service }
+			}
+			return { done: false }
+		},
+		onTimeout: () =>
+			new Error(
+				`service ${path} did not have expected property within ${timeoutMs}ms`,
+			),
+	})
 }
 
 export async function waitForServiceCondition(
@@ -48,59 +82,53 @@ export async function waitForServiceCondition(
 	path,
 	condition,
 	timeoutMs = 5000,
+	intervalMs = 200,
 ) {
-	const deadline = Date.now() + timeoutMs
-	const baseUrl = config.getDirektivBaseUrl()
+	return waitForService(namespace, path, {
+		timeoutMs,
+		intervalMs,
+		matchFn: (service) => {
+			const match = service
+				? findPartialMatch(service.conditions, condition)
+				: undefined
 
-	while (Date.now() < deadline) {
-		const res = await request(baseUrl).get(
-			`/api/v2/namespaces/${namespace}/services`,
-		)
-		expect(res.statusCode).toEqual(200)
-
-		const service = res.body?.data.find((item) => item.filePath === path)
-
-		let match
-
-		if (service) {
-			match = findPartialMatch(service.conditions, condition)
-		}
-
-		if (match) {
-			return service
-		}
-
-		await helpers.sleep(200)
-	}
-
-	throw new Error(
-		`service ${path} did not reach expected condition within ${timeoutMs}ms`,
-	)
+			if (match) {
+				return { done: true, value: service }
+			}
+			return { done: false }
+		},
+		onTimeout: () =>
+			new Error(
+				`service ${path} did not reach expected condition within ${timeoutMs}ms`,
+			),
+	})
 }
 
-export async function waitForServiceRemoved(namespace, path, timeoutMs = 5000) {
-	const deadline = Date.now() + timeoutMs
-	const baseUrl = config.getDirektivBaseUrl()
-
-	while (Date.now() < deadline) {
-		const res = await request(baseUrl).get(
-			`/api/v2/namespaces/${namespace}/services`,
-		)
-		expect(res.statusCode).toEqual(200)
-
-		const service = res.body?.data.find((item) => item.filePath === path)
-
-		if (!service) {
-			return true
-		}
-
-		await helpers.sleep(200)
-	}
-
-	throw new Error(`service ${path} still existed after ${timeoutMs}ms`)
+export async function waitForServiceRemoved(
+	namespace,
+	path,
+	timeoutMs = 5000,
+	intervalMs = 200,
+) {
+	return waitForService(namespace, path, {
+		timeoutMs,
+		intervalMs,
+		matchFn: (service) => {
+			if (!service) {
+				return { done: true, value: true }
+			}
+			return { done: false }
+		},
+		onTimeout: () =>
+			new Error(`service ${path} still existed after ${timeoutMs}ms`),
+	})
 }
 
-export async function waitForServiceCount(namespace, expectedCount, timeoutMs = 5000) {
+export async function waitForServiceCount(
+	namespace,
+	expectedCount,
+	timeoutMs = 5000,
+) {
 	const baseUrl = config.getDirektivBaseUrl()
 	const deadline = Date.now() + timeoutMs
 
