@@ -23,37 +23,24 @@ describe('Runtime variables from workflow setVariable()', () => {
 
   // Workflow code: creates runtime variables in each scope via setVariable()
   const workflowSource = `
-    declare function setVariable(
-      scope: 'namespace' | 'workflow' | 'instance',
-      name: string,
-      content: string,
-    ): void;
-
-    declare function getVariable(
-      scope: 'namespace' | 'workflow' | 'instance',
-      name: string,
-    ): string | null;
-
     function stateOne(payload: any) {
-      const value = '${storedValue}';
-
-      // precomputed base64 so we don't need btoa() in Sobek
+      const value = 'hello from runtime variable';
       const content = 'aGVsbG8gZnJvbSBydW50aW1lIHZhcmlhYmxl';
 
       // 1) namespace-scoped
-      setVariable("namespace", "nsVar", content);
-      const nsRead = getVariable("namespace", "nsVar");
+      setVariable({scope: "namespace", name: "nsVar", content});
+      const nsRead = getVariable({scope: "namespace", name: "nsVar"});
 
       // 2) workflow-scoped
-      setVariable("workflow", "wfVar", content);
-      const wfRead = getVariable("workflow", "wfVar");
+      setVariable({scope: "workflow", name: "wfVar", content});
+      const wfRead = getVariable({scope: "workflow", name: "wfVar"});
 
       // 3) instance-scoped
-      setVariable("instance", "instVar", content);
-      const instRead = getVariable("instance", "instVar");
+      setVariable({scope: "instance", name: "instVar", content});
+      const instRead = getVariable({scope: "instance", name: "instVar"});
 
       // 4) not-found case
-      const missing = getVariable("namespace", "does-not-exist");
+      const missing = getVariable({scope: "namespace", name: "does-not-exist"});
 
       return finish({
         ok: true,

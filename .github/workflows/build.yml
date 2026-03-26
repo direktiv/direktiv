@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     tags:
-      - '*'
+      - "*"
     branches:
       - main
       - main-ts
@@ -127,7 +127,6 @@ jobs:
             VERSION=${{ env.VERSION }}
             GIT_SHA=${{ env.GIT_SHA }}
 
-
   e2e:
     needs: [build, backend-license, backend-lint, backend-test]
     runs-on: ubuntu-latest
@@ -148,8 +147,8 @@ jobs:
             suit: gateway2
           - type: api
             suit: gateway3
-          #- type: api
-          #  suit: instances
+          - type: api
+            suit: instances
           #- type: api
           #  suit: kubernetes
           - type: api
@@ -220,7 +219,6 @@ jobs:
           PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} task test:playwright
         env:
           DIREKTIV_BASE_URL: ${{ env.DIREKTIV_BASE_URL }}
-
 
       - name: Upload Playwright Artifacts
         if: failure() && steps.playwrightRun.outcome == 'failure'
