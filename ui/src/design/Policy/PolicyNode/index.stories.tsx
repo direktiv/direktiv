@@ -1,17 +1,17 @@
 import { type Meta, type StoryObj } from "@storybook/react-vite";
-import { useState } from "react";
-import PolicyNode from ".";
-import nestedBooleanGroups from "./policies/nestedBooleanGroups";
-import nestedBooleanGroupsWithTrailingAnd from "./policies/nestedBooleanGroupsWithTrailingAnd";
-import simpleWhen from "./policies/simpleWhen";
 import {
   addDemoConditionToGroup,
   addStarterOrGroupToAnd,
   addStarterOrGroupToOr,
-  toggleDemoConditionAtPath,
   toAndBranch,
+  toggleDemoConditionAtPath,
 } from "./utils";
 import type { ExpressionType } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
+import PolicyNode from ".";
+import nestedBooleanGroups from "./policies/nestedBooleanGroups";
+import nestedBooleanGroupsWithTrailingAnd from "./policies/nestedBooleanGroupsWithTrailingAnd";
+import simpleWhen from "./policies/simpleWhen";
+import { useState } from "react";
 
 const meta = {
   title: "Components/Policy/PolicyNode",

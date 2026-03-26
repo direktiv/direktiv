@@ -8,8 +8,8 @@ import {
   expressionToLayoutNode,
   flattenOperator,
   replaceExpressionAtPath,
-  toggleDemoConditionAtPath,
   toAndBranch,
+  toggleDemoConditionAtPath,
 } from "../utils";
 import { describe, expect, test } from "vitest";
 import { ExpressionType } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";

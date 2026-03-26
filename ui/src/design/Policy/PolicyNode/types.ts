@@ -1,6 +1,6 @@
 import { ExpressionType } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
 
-export type ExpressionPathSegment = {
+type ExpressionPathSegment = {
   operator: "&&" | "||";
   side: "left" | "right";
 };
