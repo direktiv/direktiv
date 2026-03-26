@@ -14,6 +14,12 @@ import { BooleanOperator } from "~/pages/namespace/Explorer/Policy/schema/primit
 import { ExpressionSchema } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression";
 
 const demoConditionExpression: ExpressionType = { Value: true };
+const starterOrGroupExpression: ExpressionType = {
+  "||": {
+    left: { Value: true },
+    right: { Value: true },
+  },
+};
 
 const isAndExpression = (expression: unknown): expression is AndExpression => {
   const parsed = BinaryExpressionSchema(ExpressionSchema).safeParse(expression);
@@ -208,6 +214,64 @@ export const replaceExpressionAtPath = (
   };
 };
 
+export const buildBooleanChain = (
+  operator: BooleanOperator,
+  items: ExpressionType[]
+): ExpressionType => {
+  const [firstItem, ...restItems] = items;
+
+  if (firstItem === undefined) {
+    return demoConditionExpression;
+  }
+
+  return restItems.reduce<ExpressionType>((currentExpression, item) => {
+    if (operator === "&&") {
+      return {
+        "&&": {
+          left: currentExpression,
+          right: item,
+        },
+      };
+    }
+
+    return {
+      "||": {
+        left: currentExpression,
+        right: item,
+      },
+    };
+  }, firstItem);
+};
+
+export const appendToBooleanGroup = (
+  expression: ExpressionType,
+  path: ExpressionPath,
+  operator: BooleanOperator,
+  nextItem: ExpressionType
+): ExpressionType => {
+  const currentGroup = path.reduce<ExpressionType>(
+    (currentExpression, segment) => {
+      if (segment.operator === "&&" && isAndExpression(currentExpression)) {
+        return currentExpression["&&"][segment.side];
+      }
+
+      if (segment.operator === "||" && isOrExpression(currentExpression)) {
+        return currentExpression["||"][segment.side];
+      }
+
+      return currentExpression;
+    },
+    expression
+  );
+
+  const nextGroup = buildBooleanChain(operator, [
+    ...flattenOperator(currentGroup, operator),
+    nextItem,
+  ]);
+
+  return replaceExpressionAtPath(expression, path, nextGroup);
+};
+
 export const toggleDemoConditionAtPath = (
   expression: ExpressionType,
   path: ExpressionPath
@@ -231,6 +295,17 @@ export const toggleDemoConditionAtPath = (
 
   return replaceExpressionAtPath(expression, path, nextExpression);
 };
+
+export const addDemoConditionToGroup = (
+  expression: ExpressionType,
+  path: ExpressionPath,
+  operator: BooleanOperator
+) => appendToBooleanGroup(expression, path, operator, demoConditionExpression);
+
+export const addStarterOrGroupToAnd = (
+  expression: ExpressionType,
+  path: ExpressionPath
+) => appendToBooleanGroup(expression, path, "&&", starterOrGroupExpression);
 
 // Returns true when any item in the list is an OR group.
 export const containsOrGroup = (items: PolicyLayoutNode[]) =>

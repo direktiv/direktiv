@@ -4,7 +4,12 @@ import PolicyNode from ".";
 import nestedBooleanGroups from "./policies/nestedBooleanGroups";
 import nestedBooleanGroupsWithTrailingAnd from "./policies/nestedBooleanGroupsWithTrailingAnd";
 import simpleWhen from "./policies/simpleWhen";
-import { toggleDemoConditionAtPath, toAndBranch } from "./utils";
+import {
+  addDemoConditionToGroup,
+  addStarterOrGroupToAnd,
+  toggleDemoConditionAtPath,
+  toAndBranch,
+} from "./utils";
 import type { ExpressionType } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
 
 const meta = {
@@ -31,6 +36,23 @@ const InteractivePolicyNode = ({
           setCurrentExpression((previousExpression) =>
             toggleDemoConditionAtPath(previousExpression, path)
           );
+        }}
+        onPlaceholderAction={(path, operator, action) => {
+          if (operator !== "&&") {
+            return;
+          }
+
+          setCurrentExpression((previousExpression) => {
+            if (action === "add-condition") {
+              return addDemoConditionToGroup(
+                previousExpression,
+                path,
+                operator
+              );
+            }
+
+            return addStarterOrGroupToAnd(previousExpression, path);
+          });
         }}
       />
     </div>

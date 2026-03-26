@@ -1,4 +1,8 @@
 import {
+  addDemoConditionToGroup,
+  addStarterOrGroupToAnd,
+  appendToBooleanGroup,
+  buildBooleanChain,
   containsOrGroup,
   expressionToLayoutNode,
   flattenOperator,
@@ -590,6 +594,150 @@ describe("toggleDemoConditionAtPath", () => {
       "&&": {
         left: { Value: true },
         right: { Value: true },
+      },
+    });
+  });
+});
+
+describe("buildBooleanChain", () => {
+  test("buildBooleanChain rebuilds an AND chain from flat items", () => {
+    expect(
+      buildBooleanChain("&&", [
+        { Value: true },
+        { Var: "principal" },
+        { Value: false },
+      ])
+    ).toEqual({
+      "&&": {
+        left: {
+          "&&": {
+            left: { Value: true },
+            right: { Var: "principal" },
+          },
+        },
+        right: { Value: false },
+      },
+    });
+  });
+});
+
+describe("appendToBooleanGroup", () => {
+  test("appendToBooleanGroup appends a condition to the root AND group", () => {
+    const expression: ExpressionType = {
+      "&&": {
+        left: { Value: true },
+        right: { Var: "principal" },
+      },
+    };
+
+    expect(
+      appendToBooleanGroup(expression, [], "&&", { Value: false })
+    ).toEqual({
+      "&&": {
+        left: {
+          "&&": {
+            left: { Value: true },
+            right: { Var: "principal" },
+          },
+        },
+        right: { Value: false },
+      },
+    });
+  });
+
+  test("appendToBooleanGroup appends an OR group to a nested AND group", () => {
+    const expression: ExpressionType = {
+      "&&": {
+        left: {
+          "&&": {
+            left: { Value: true },
+            right: { Var: "principal" },
+          },
+        },
+        right: { Value: false },
+      },
+    };
+
+    expect(
+      appendToBooleanGroup(
+        expression,
+        [{ operator: "&&", side: "left" }],
+        "&&",
+        {
+          "||": {
+            left: { Value: true },
+            right: { Value: true },
+          },
+        }
+      )
+    ).toEqual({
+      "&&": {
+        left: {
+          "&&": {
+            left: {
+              "&&": {
+                left: { Value: true },
+                right: { Var: "principal" },
+              },
+            },
+            right: {
+              "||": {
+                left: { Value: true },
+                right: { Value: true },
+              },
+            },
+          },
+        },
+        right: { Value: false },
+      },
+    });
+  });
+});
+
+describe("group demo helpers", () => {
+  test("addDemoConditionToGroup appends the demo condition to an AND group", () => {
+    const expression: ExpressionType = {
+      "&&": {
+        left: { Value: true },
+        right: { Var: "principal" },
+      },
+    };
+
+    expect(addDemoConditionToGroup(expression, [], "&&")).toEqual({
+      "&&": {
+        left: {
+          "&&": {
+            left: { Value: true },
+            right: { Var: "principal" },
+          },
+        },
+        right: { Value: true },
+      },
+    });
+  });
+
+  test("addStarterOrGroupToAnd appends a starter OR group to an AND group", () => {
+    const expression: ExpressionType = {
+      "&&": {
+        left: { Value: true },
+        right: { Var: "principal" },
+      },
+    };
+
+    expect(addStarterOrGroupToAnd(expression, [])).toEqual({
+      "&&": {
+        left: {
+          "&&": {
+            left: { Value: true },
+            right: { Var: "principal" },
+          },
+        },
+        right: {
+          "||": {
+            left: { Value: true },
+            right: { Value: true },
+          },
+        },
       },
     });
   });
