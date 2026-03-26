@@ -1,6 +1,7 @@
 import {
   addDemoConditionToGroup,
   addStarterOrGroupToAnd,
+  addStarterOrGroupToOr,
   appendToBooleanGroup,
   buildBooleanChain,
   containsOrGroup,
@@ -692,6 +693,77 @@ describe("appendToBooleanGroup", () => {
       },
     });
   });
+
+  test("appendToBooleanGroup appends a condition branch to the root OR group", () => {
+    const expression: ExpressionType = {
+      "||": {
+        left: { Value: true },
+        right: { Var: "principal" },
+      },
+    };
+
+    expect(
+      appendToBooleanGroup(expression, [], "||", { Value: false })
+    ).toEqual({
+      "||": {
+        left: {
+          "||": {
+            left: { Value: true },
+            right: { Var: "principal" },
+          },
+        },
+        right: { Value: false },
+      },
+    });
+  });
+
+  test("appendToBooleanGroup appends a nested OR branch to a nested OR group", () => {
+    const expression: ExpressionType = {
+      "&&": {
+        left: {
+          "||": {
+            left: { Value: true },
+            right: { Var: "principal" },
+          },
+        },
+        right: { Value: false },
+      },
+    };
+
+    expect(
+      appendToBooleanGroup(
+        expression,
+        [{ operator: "&&", side: "left" }],
+        "||",
+        {
+          "||": {
+            left: { Value: true },
+            right: { Value: true },
+          },
+        }
+      )
+    ).toEqual({
+      "&&": {
+        left: {
+          "||": {
+            left: {
+              "||": {
+                left: { Value: true },
+                right: { Var: "principal" },
+              },
+            },
+            right: {
+              "||": {
+                left: { Value: true },
+                right: { Value: true },
+              },
+            },
+          },
+        },
+        right: { Value: false },
+      },
+    });
+  });
 });
 
 describe("group demo helpers", () => {
@@ -728,6 +800,32 @@ describe("group demo helpers", () => {
       "&&": {
         left: {
           "&&": {
+            left: { Value: true },
+            right: { Var: "principal" },
+          },
+        },
+        right: {
+          "||": {
+            left: { Value: true },
+            right: { Value: true },
+          },
+        },
+      },
+    });
+  });
+
+  test("addStarterOrGroupToOr appends a starter OR group to an OR group", () => {
+    const expression: ExpressionType = {
+      "||": {
+        left: { Value: true },
+        right: { Var: "principal" },
+      },
+    };
+
+    expect(addStarterOrGroupToOr(expression, [])).toEqual({
+      "||": {
+        left: {
+          "||": {
             left: { Value: true },
             right: { Var: "principal" },
           },

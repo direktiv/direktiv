@@ -7,6 +7,7 @@ import simpleWhen from "./policies/simpleWhen";
 import {
   addDemoConditionToGroup,
   addStarterOrGroupToAnd,
+  addStarterOrGroupToOr,
   toggleDemoConditionAtPath,
   toAndBranch,
 } from "./utils";
@@ -38,10 +39,6 @@ const InteractivePolicyNode = ({
           );
         }}
         onPlaceholderAction={(path, operator, action) => {
-          if (operator !== "&&") {
-            return;
-          }
-
           setCurrentExpression((previousExpression) => {
             if (action === "add-condition") {
               return addDemoConditionToGroup(
@@ -51,7 +48,11 @@ const InteractivePolicyNode = ({
               );
             }
 
-            return addStarterOrGroupToAnd(previousExpression, path);
+            if (operator === "&&") {
+              return addStarterOrGroupToAnd(previousExpression, path);
+            }
+
+            return addStarterOrGroupToOr(previousExpression, path);
           });
         }}
       />

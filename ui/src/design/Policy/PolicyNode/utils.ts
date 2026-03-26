@@ -307,6 +307,11 @@ export const addStarterOrGroupToAnd = (
   path: ExpressionPath
 ) => appendToBooleanGroup(expression, path, "&&", starterOrGroupExpression);
 
+export const addStarterOrGroupToOr = (
+  expression: ExpressionType,
+  path: ExpressionPath
+) => appendToBooleanGroup(expression, path, "||", starterOrGroupExpression);
+
 // Returns true when any item in the list is an OR group.
 export const containsOrGroup = (items: PolicyLayoutNode[]) =>
   items.some((item) => item.type === "or");
