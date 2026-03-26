@@ -87,6 +87,7 @@ describe("expressionToLayoutNode", () => {
       type: "condition",
       expression,
       rows: 1,
+      path: [],
     });
   });
 
@@ -116,19 +117,29 @@ describe("expressionToLayoutNode", () => {
         type: "condition",
         expression: { Value: true },
         rows: 1,
+        path: [
+          { operator: "&&", side: "left" },
+          { operator: "&&", side: "left" },
+        ],
       },
       {
         type: "condition",
         expression: { Var: "principal" },
         rows: 1,
+        path: [
+          { operator: "&&", side: "left" },
+          { operator: "&&", side: "right" },
+        ],
       },
       {
         type: "condition",
         expression: { Value: false },
         rows: 1,
+        path: [{ operator: "&&", side: "right" }],
       },
     ]);
     expect(node.rows).toBe(1);
+    expect(node.path).toEqual([]);
   });
 
   test("expressionToLayoutNode creates or branches with child sizes", () => {
@@ -154,6 +165,9 @@ describe("expressionToLayoutNode", () => {
     expect(node.branches).toHaveLength(2);
     expect(node.childSizes).toEqual([1, 1]);
     expect(node.rows).toBe(3);
+    expect(node.path).toEqual([]);
+    expect(node.branches[0]?.path).toEqual([{ operator: "||", side: "left" }]);
+    expect(node.branches[1]?.path).toEqual([{ operator: "||", side: "right" }]);
   });
 
   test("expressionToLayoutNode flattens chained OR expressions into branches", () => {
@@ -185,9 +199,17 @@ describe("expressionToLayoutNode", () => {
             type: "condition",
             expression: { Value: true },
             rows: 1,
+            path: [
+              { operator: "||", side: "left" },
+              { operator: "||", side: "left" },
+            ],
           },
         ],
         rows: 1,
+        path: [
+          { operator: "||", side: "left" },
+          { operator: "||", side: "left" },
+        ],
       },
       {
         type: "and",
@@ -196,9 +218,17 @@ describe("expressionToLayoutNode", () => {
             type: "condition",
             expression: { Value: false },
             rows: 1,
+            path: [
+              { operator: "||", side: "left" },
+              { operator: "||", side: "right" },
+            ],
           },
         ],
         rows: 1,
+        path: [
+          { operator: "||", side: "left" },
+          { operator: "||", side: "right" },
+        ],
       },
       {
         type: "and",
@@ -207,13 +237,16 @@ describe("expressionToLayoutNode", () => {
             type: "condition",
             expression: { Var: "resource" },
             rows: 1,
+            path: [{ operator: "||", side: "right" }],
           },
         ],
         rows: 1,
+        path: [{ operator: "||", side: "right" }],
       },
     ]);
     expect(node.childSizes).toEqual([1, 1, 1]);
     expect(node.rows).toBe(4);
+    expect(node.path).toEqual([]);
   });
 
   test("expressionToLayoutNode includes the nested OR placeholder when calculating rows", () => {
@@ -273,6 +306,7 @@ describe("expressionToLayoutNode", () => {
       type: "condition",
       expression,
       rows: 1,
+      path: [],
     });
   });
 
@@ -285,6 +319,7 @@ describe("expressionToLayoutNode", () => {
       type: "condition",
       expression,
       rows: 1,
+      path: [],
     });
   });
 
@@ -298,6 +333,7 @@ describe("expressionToLayoutNode", () => {
       type: "condition",
       expression,
       rows: 1,
+      path: [],
     });
   });
 
@@ -340,9 +376,19 @@ describe("expressionToLayoutNode", () => {
                     type: "condition",
                     expression: { Value: true },
                     rows: 1,
+                    path: [
+                      { operator: "||", side: "left" },
+                      { operator: "&&", side: "left" },
+                      { operator: "||", side: "left" },
+                    ],
                   },
                 ],
                 rows: 1,
+                path: [
+                  { operator: "||", side: "left" },
+                  { operator: "&&", side: "left" },
+                  { operator: "||", side: "left" },
+                ],
               },
               {
                 type: "and",
@@ -351,21 +397,40 @@ describe("expressionToLayoutNode", () => {
                     type: "condition",
                     expression: { Value: false },
                     rows: 1,
+                    path: [
+                      { operator: "||", side: "left" },
+                      { operator: "&&", side: "left" },
+                      { operator: "||", side: "right" },
+                    ],
                   },
                 ],
                 rows: 1,
+                path: [
+                  { operator: "||", side: "left" },
+                  { operator: "&&", side: "left" },
+                  { operator: "||", side: "right" },
+                ],
               },
             ],
             childSizes: [1, 1],
             rows: 3,
+            path: [
+              { operator: "||", side: "left" },
+              { operator: "&&", side: "left" },
+            ],
           },
           {
             type: "condition",
             expression: { Var: "principal" },
             rows: 1,
+            path: [
+              { operator: "||", side: "left" },
+              { operator: "&&", side: "right" },
+            ],
           },
         ],
         rows: 3,
+        path: [{ operator: "||", side: "left" }],
       },
       {
         type: "and",
@@ -374,13 +439,16 @@ describe("expressionToLayoutNode", () => {
             type: "condition",
             expression: { Var: "resource" },
             rows: 1,
+            path: [{ operator: "||", side: "right" }],
           },
         ],
         rows: 1,
+        path: [{ operator: "||", side: "right" }],
       },
     ]);
     expect(node.childSizes).toEqual([3, 1]);
     expect(node.rows).toBe(5);
+    expect(node.path).toEqual([]);
   });
 });
 
@@ -411,6 +479,7 @@ describe("toAndBranch", () => {
     expect(branch.type).toBe("and");
     expect(branch.items).toHaveLength(1);
     expect(branch.rows).toBe(1);
+    expect(branch.path).toEqual([]);
   });
 
   test("toAndBranch wraps or expressions as a single branch item", () => {
@@ -426,6 +495,7 @@ describe("toAndBranch", () => {
     expect(branch.items).toHaveLength(1);
     expect(branch.items[0]?.type).toBe("or");
     expect(branch.rows).toBe(3);
+    expect(branch.path).toEqual([]);
   });
 });
 

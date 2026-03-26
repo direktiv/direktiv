@@ -4,6 +4,7 @@ import {
   OrExpression,
 } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
 import type {
+  ExpressionPath,
   PolicyAndNode,
   PolicyConditionNode,
   PolicyLayoutNode,
@@ -49,25 +50,76 @@ export const flattenOperator = (
   ];
 };
 
+type FlattenedExpressionWithPath = {
+  expression: ExpressionType;
+  path: ExpressionPath;
+};
+
+const flattenOperatorWithPaths = (
+  expression: ExpressionType,
+  operator: BooleanOperator,
+  basePath: ExpressionPath = []
+): FlattenedExpressionWithPath[] => {
+  if (operator === "&&") {
+    if (!isAndExpression(expression)) {
+      return [{ expression, path: basePath }];
+    }
+
+    return [
+      ...flattenOperatorWithPaths(expression["&&"].left, operator, [
+        ...basePath,
+        { operator: "&&", side: "left" },
+      ]),
+      ...flattenOperatorWithPaths(expression["&&"].right, operator, [
+        ...basePath,
+        { operator: "&&", side: "right" },
+      ]),
+    ];
+  }
+
+  if (!isOrExpression(expression)) {
+    return [{ expression, path: basePath }];
+  }
+
+  return [
+    ...flattenOperatorWithPaths(expression["||"].left, operator, [
+      ...basePath,
+      { operator: "||", side: "left" },
+    ]),
+    ...flattenOperatorWithPaths(expression["||"].right, operator, [
+      ...basePath,
+      { operator: "||", side: "right" },
+    ]),
+  ];
+};
+
 // Converts a policy expression into the render-oriented layout tree.
 export const expressionToLayoutNode = (
-  expression: ExpressionType
+  expression: ExpressionType,
+  path: ExpressionPath = []
 ): PolicyLayoutNode => {
   if (isAndExpression(expression)) {
     // Flatten chained AND expressions so the layout renders one horizontal group.
-    const items = flattenOperator(expression, "&&").map(expressionToLayoutNode);
+    const items = flattenOperatorWithPaths(expression, "&&", path).map(
+      ({ expression: item, path: itemPath }) =>
+        expressionToLayoutNode(item, itemPath)
+    );
 
     return {
       type: "and",
       items,
       // Side-by-side items only need the tallest child height.
       rows: Math.max(1, ...items.map((item) => item.rows)),
+      path,
     };
   }
 
   if (isOrExpression(expression)) {
     // Flatten chained OR expressions into vertically stacked branches.
-    const branches = flattenOperator(expression, "||").map(toAndBranch);
+    const branches = flattenOperatorWithPaths(expression, "||", path).map(
+      ({ expression: branch, path: branchPath }) =>
+        toAndBranch(branch, branchPath)
+    );
     const childSizes = branches.map((branch) => branch.rows);
 
     return {
@@ -76,6 +128,7 @@ export const expressionToLayoutNode = (
       childSizes,
       // Add branch heights plus one placeholder row rendered after the branches.
       rows: childSizes.reduce((sum, size) => sum + size, 1),
+      path,
     };
   }
 
@@ -84,12 +137,16 @@ export const expressionToLayoutNode = (
     type: "condition",
     expression,
     rows: 1,
+    path,
   } satisfies PolicyConditionNode;
 };
 
 // Ensures an expression can be rendered as an AND branch, wrapping non-AND nodes when needed.
-export const toAndBranch = (expression: ExpressionType): PolicyAndNode => {
-  const node = expressionToLayoutNode(expression);
+export const toAndBranch = (
+  expression: ExpressionType,
+  path: ExpressionPath = []
+): PolicyAndNode => {
+  const node = expressionToLayoutNode(expression, path);
 
   if (node.type === "and") return node;
 
@@ -97,6 +154,7 @@ export const toAndBranch = (expression: ExpressionType): PolicyAndNode => {
     type: "and",
     items: [node],
     rows: node.rows,
+    path,
   };
 };
 
