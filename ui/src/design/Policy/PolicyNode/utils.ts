@@ -13,8 +13,8 @@ import { BinaryExpressionSchema } from "~/pages/namespace/Explorer/Policy/schema
 import { BooleanOperator } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/utils";
 import { ExpressionSchema } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression";
 
-const demoConditionExpression: ExpressionType = { Value: true };
-const starterOrGroupExpression: ExpressionType = {
+const defaultConditionExpression: ExpressionType = { Value: true };
+const defaultOrGroupExpression: ExpressionType = {
   "||": {
     left: { Value: true },
     right: { Value: true },
@@ -221,7 +221,7 @@ export const buildBooleanChain = (
   const [firstItem, ...restItems] = items;
 
   if (firstItem === undefined) {
-    return demoConditionExpression;
+    return defaultConditionExpression;
   }
 
   return restItems.reduce<ExpressionType>((currentExpression, item) => {
@@ -272,21 +272,22 @@ export const appendToBooleanGroup = (
   return replaceExpressionAtPath(expression, path, nextGroup);
 };
 
-export const addDemoConditionToGroup = (
+export const addDefaultConditionToGroup = (
   expression: ExpressionType,
   path: ExpressionPath,
   operator: BooleanOperator
-) => appendToBooleanGroup(expression, path, operator, demoConditionExpression);
+) =>
+  appendToBooleanGroup(expression, path, operator, defaultConditionExpression);
 
-export const addStarterOrGroupToAnd = (
+export const addDefaultOrGroupToAnd = (
   expression: ExpressionType,
   path: ExpressionPath
-) => appendToBooleanGroup(expression, path, "&&", starterOrGroupExpression);
+) => appendToBooleanGroup(expression, path, "&&", defaultOrGroupExpression);
 
-export const addStarterOrGroupToOr = (
+export const addDefaultOrGroupToOr = (
   expression: ExpressionType,
   path: ExpressionPath
-) => appendToBooleanGroup(expression, path, "||", starterOrGroupExpression);
+) => appendToBooleanGroup(expression, path, "||", defaultOrGroupExpression);
 
 // Returns true when any item in the list is an OR group.
 export const containsOrGroup = (items: PolicyLayoutNode[]) =>
