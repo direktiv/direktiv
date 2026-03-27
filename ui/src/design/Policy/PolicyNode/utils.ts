@@ -212,6 +212,8 @@ export const replaceExpressionAtPath = (
   };
 };
 
+// Builds a nested boolean expression from a flat list
+// for example [a, b, c] with && becomes ((a && b) && c).
 export const buildBooleanChain = (
   operator: BooleanOperator,
   items: ExpressionType[]
