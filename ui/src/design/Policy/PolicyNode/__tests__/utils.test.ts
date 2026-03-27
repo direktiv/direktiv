@@ -9,7 +9,6 @@ import {
   flattenOperator,
   replaceExpressionAtPath,
   toAndBranch,
-  toggleDemoConditionAtPath,
 } from "../utils";
 import { describe, expect, test } from "vitest";
 import { ExpressionType } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
@@ -571,32 +570,6 @@ describe("replaceExpressionAtPath", () => {
           },
         },
         right: { Value: false },
-      },
-    });
-  });
-});
-
-describe("toggleDemoConditionAtPath", () => {
-  test("toggleDemoConditionAtPath toggles true leaves to false", () => {
-    const expression: ExpressionType = { Value: true };
-
-    expect(toggleDemoConditionAtPath(expression, [])).toEqual({ Value: false });
-  });
-
-  test("toggleDemoConditionAtPath replaces non-demo leaves with true", () => {
-    const expression: ExpressionType = {
-      "&&": {
-        left: { Value: true },
-        right: { Var: "principal" },
-      },
-    };
-
-    expect(
-      toggleDemoConditionAtPath(expression, [{ operator: "&&", side: "right" }])
-    ).toEqual({
-      "&&": {
-        left: { Value: true },
-        right: { Value: true },
       },
     });
   });

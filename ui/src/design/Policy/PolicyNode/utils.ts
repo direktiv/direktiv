@@ -272,30 +272,6 @@ export const appendToBooleanGroup = (
   return replaceExpressionAtPath(expression, path, nextGroup);
 };
 
-export const toggleDemoConditionAtPath = (
-  expression: ExpressionType,
-  path: ExpressionPath
-): ExpressionType => {
-  const current = path.reduce<ExpressionType>((currentExpression, segment) => {
-    if (segment.operator === "&&" && isAndExpression(currentExpression)) {
-      return currentExpression["&&"][segment.side];
-    }
-
-    if (segment.operator === "||" && isOrExpression(currentExpression)) {
-      return currentExpression["||"][segment.side];
-    }
-
-    return currentExpression;
-  }, expression);
-
-  const nextExpression =
-    "Value" in current && current.Value === true
-      ? ({ Value: false } satisfies ExpressionType)
-      : demoConditionExpression;
-
-  return replaceExpressionAtPath(expression, path, nextExpression);
-};
-
 export const addDemoConditionToGroup = (
   expression: ExpressionType,
   path: ExpressionPath,
