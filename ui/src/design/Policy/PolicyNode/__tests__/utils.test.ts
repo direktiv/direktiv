@@ -1,7 +1,7 @@
 import {
-  addDemoConditionToGroup,
-  addStarterOrGroupToAnd,
-  addStarterOrGroupToOr,
+  addDefaultConditionToGroup,
+  addDefaultOrGroupToAnd,
+  addDefaultOrGroupToOr,
   appendToBooleanGroup,
   buildBooleanChain,
   containsOrGroup,
@@ -762,7 +762,7 @@ describe("appendToBooleanGroup", () => {
 });
 
 describe("group demo helpers", () => {
-  test("addDemoConditionToGroup appends the demo condition to an AND group", () => {
+  test("addDefaultConditionToGroup appends the default condition to an AND group", () => {
     const expression: ExpressionType = {
       "&&": {
         left: { Value: true },
@@ -770,7 +770,7 @@ describe("group demo helpers", () => {
       },
     };
 
-    expect(addDemoConditionToGroup(expression, [], "&&")).toEqual({
+    expect(addDefaultConditionToGroup(expression, [], "&&")).toEqual({
       "&&": {
         left: {
           "&&": {
@@ -783,7 +783,7 @@ describe("group demo helpers", () => {
     });
   });
 
-  test("addStarterOrGroupToAnd appends a starter OR group to an AND group", () => {
+  test("addDefaultOrGroupToAnd appends a default OR group to an AND group", () => {
     const expression: ExpressionType = {
       "&&": {
         left: { Value: true },
@@ -791,7 +791,7 @@ describe("group demo helpers", () => {
       },
     };
 
-    expect(addStarterOrGroupToAnd(expression, [])).toEqual({
+    expect(addDefaultOrGroupToAnd(expression, [])).toEqual({
       "&&": {
         left: {
           "&&": {
@@ -809,7 +809,7 @@ describe("group demo helpers", () => {
     });
   });
 
-  test("addStarterOrGroupToOr appends a starter OR group to an OR group", () => {
+  test("addDefaultOrGroupToOr appends a default OR group to an OR group", () => {
     const expression: ExpressionType = {
       "||": {
         left: { Value: true },
@@ -817,7 +817,7 @@ describe("group demo helpers", () => {
       },
     };
 
-    expect(addStarterOrGroupToOr(expression, [])).toEqual({
+    expect(addDefaultOrGroupToOr(expression, [])).toEqual({
       "||": {
         left: {
           "||": {
@@ -838,7 +838,7 @@ describe("group demo helpers", () => {
 
 describe("realistic fixture interactions", () => {
   test("nested boolean groups fixture stays renderable after OR branch growth", () => {
-    const nextExpression = addDemoConditionToGroup(
+    const nextExpression = addDefaultConditionToGroup(
       nestedBooleanGroups,
       [{ operator: "&&", side: "right" }],
       "||"
@@ -860,7 +860,7 @@ describe("realistic fixture interactions", () => {
   });
 
   test("trailing-and fixture stays renderable after nested OR insertion", () => {
-    const nextExpression = addStarterOrGroupToOr(
+    const nextExpression = addDefaultOrGroupToOr(
       nestedBooleanGroupsWithTrailingAnd,
       [
         { operator: "&&", side: "right" },

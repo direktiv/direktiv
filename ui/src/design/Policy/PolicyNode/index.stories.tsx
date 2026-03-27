@@ -1,8 +1,9 @@
 import { type Meta, type StoryObj } from "@storybook/react-vite";
 import {
-  addDemoConditionToGroup,
-  addStarterOrGroupToAnd,
-  addStarterOrGroupToOr,
+  addDefaultConditionToGroup,
+  addDefaultOrGroupToAnd,
+  addDefaultOrGroupToOr,
+  getExpressionAtPath,
   replaceExpressionAtPath,
   toAndBranch,
 } from "./utils";
@@ -27,20 +28,10 @@ const toggleDemoConditionAtPath = (
   expression: ExpressionType,
   path: ExpressionPath
 ) => {
-  const current = path.reduce<ExpressionType>((currentExpression, segment) => {
-    if (segment.operator === "&&" && "&&" in currentExpression) {
-      return currentExpression["&&"][segment.side];
-    }
-
-    if (segment.operator === "||" && "||" in currentExpression) {
-      return currentExpression["||"][segment.side];
-    }
-
-    return currentExpression;
-  }, expression);
+  const currentExpression = getExpressionAtPath(expression, path);
 
   const nextExpression: ExpressionType =
-    "Value" in current && current.Value === true
+    "Value" in currentExpression && currentExpression.Value === true
       ? { Value: false }
       : { Value: true };
 
@@ -66,7 +57,7 @@ const InteractivePolicyNode = ({
         onPlaceholderAction={(path, operator, action) => {
           setCurrentExpression((previousExpression) => {
             if (action === "add-condition") {
-              return addDemoConditionToGroup(
+              return addDefaultConditionToGroup(
                 previousExpression,
                 path,
                 operator
@@ -74,10 +65,10 @@ const InteractivePolicyNode = ({
             }
 
             if (operator === "&&") {
-              return addStarterOrGroupToAnd(previousExpression, path);
+              return addDefaultOrGroupToAnd(previousExpression, path);
             }
 
-            return addStarterOrGroupToOr(previousExpression, path);
+            return addDefaultOrGroupToOr(previousExpression, path);
           });
         }}
       />

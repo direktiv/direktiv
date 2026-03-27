@@ -41,20 +41,13 @@ export const flattenOperator = (
   expression: ExpressionType,
   operator: BooleanOperator
 ): ExpressionType[] => {
-  if (operator === "&&") {
-    if (!isAndExpression(expression)) return [expression];
+  const children = getBinaryChildren(expression, operator);
 
-    return [
-      ...flattenOperator(expression["&&"].left, operator),
-      ...flattenOperator(expression["&&"].right, operator),
-    ];
-  }
-
-  if (!isOrExpression(expression)) return [expression];
+  if (!children) return [expression];
 
   return [
-    ...flattenOperator(expression["||"].left, operator),
-    ...flattenOperator(expression["||"].right, operator),
+    ...flattenOperator(children.left, operator),
+    ...flattenOperator(children.right, operator),
   ];
 };
 
@@ -63,40 +56,54 @@ type FlattenedExpressionWithPath = {
   path: ExpressionPath;
 };
 
+const getBinaryChildren = (
+  expression: ExpressionType,
+  operator: BooleanOperator
+) => {
+  if (operator === "&&") {
+    if (!isAndExpression(expression)) return null;
+
+    return expression["&&"];
+  }
+
+  if (!isOrExpression(expression)) return null;
+
+  return expression["||"];
+};
+
+export const getExpressionAtPath = (
+  expression: ExpressionType,
+  path: ExpressionPath
+): ExpressionType =>
+  path.reduce<ExpressionType>((currentExpression, segment) => {
+    const children = getBinaryChildren(currentExpression, segment.operator);
+
+    if (!children) {
+      return currentExpression;
+    }
+
+    return children[segment.side];
+  }, expression);
+
 const flattenOperatorWithPaths = (
   expression: ExpressionType,
   operator: BooleanOperator,
   basePath: ExpressionPath = []
 ): FlattenedExpressionWithPath[] => {
-  if (operator === "&&") {
-    if (!isAndExpression(expression)) {
-      return [{ expression, path: basePath }];
-    }
+  const children = getBinaryChildren(expression, operator);
 
-    return [
-      ...flattenOperatorWithPaths(expression["&&"].left, operator, [
-        ...basePath,
-        { operator: "&&", side: "left" },
-      ]),
-      ...flattenOperatorWithPaths(expression["&&"].right, operator, [
-        ...basePath,
-        { operator: "&&", side: "right" },
-      ]),
-    ];
-  }
-
-  if (!isOrExpression(expression)) {
+  if (!children) {
     return [{ expression, path: basePath }];
   }
 
   return [
-    ...flattenOperatorWithPaths(expression["||"].left, operator, [
+    ...flattenOperatorWithPaths(children.left, operator, [
       ...basePath,
-      { operator: "||", side: "left" },
+      { operator, side: "left" },
     ]),
-    ...flattenOperatorWithPaths(expression["||"].right, operator, [
+    ...flattenOperatorWithPaths(children.right, operator, [
       ...basePath,
-      { operator: "||", side: "right" },
+      { operator, side: "right" },
     ]),
   ];
 };
@@ -181,32 +188,17 @@ export const replaceExpressionAtPath = (
     return expression;
   }
 
-  if (segment.operator === "&&") {
-    if (!isAndExpression(expression)) {
-      return expression;
-    }
+  const children = getBinaryChildren(expression, segment.operator);
 
-    return {
-      "&&": {
-        ...expression["&&"],
-        [segment.side]: replaceExpressionAtPath(
-          expression["&&"][segment.side],
-          rest,
-          nextExpression
-        ),
-      },
-    };
-  }
-
-  if (!isOrExpression(expression)) {
+  if (!children) {
     return expression;
   }
 
   return {
-    "||": {
-      ...expression["||"],
+    [segment.operator]: {
+      ...children,
       [segment.side]: replaceExpressionAtPath(
-        expression["||"][segment.side],
+        children[segment.side],
         rest,
         nextExpression
       ),
@@ -249,20 +241,7 @@ export const appendToBooleanGroup = (
   operator: BooleanOperator,
   nextItem: ExpressionType
 ): ExpressionType => {
-  const currentGroup = path.reduce<ExpressionType>(
-    (currentExpression, segment) => {
-      if (segment.operator === "&&" && isAndExpression(currentExpression)) {
-        return currentExpression["&&"][segment.side];
-      }
-
-      if (segment.operator === "||" && isOrExpression(currentExpression)) {
-        return currentExpression["||"][segment.side];
-      }
-
-      return currentExpression;
-    },
-    expression
-  );
+  const currentGroup = getExpressionAtPath(expression, path);
 
   const nextGroup = buildBooleanChain(operator, [
     ...flattenOperator(currentGroup, operator),
