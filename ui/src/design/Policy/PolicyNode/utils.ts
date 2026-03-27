@@ -56,6 +56,7 @@ type FlattenedExpressionWithPath = {
   path: ExpressionPath;
 };
 
+// Returns the child pair for the requested boolean operator, or null for leaf/malformed nodes.
 const getBinaryChildren = (
   expression: ExpressionType,
   operator: BooleanOperator
@@ -71,6 +72,7 @@ const getBinaryChildren = (
   return expression["||"];
 };
 
+// Walks the expression tree by layout path and returns the deepest matching node.
 export const getExpressionAtPath = (
   expression: ExpressionType,
   path: ExpressionPath
