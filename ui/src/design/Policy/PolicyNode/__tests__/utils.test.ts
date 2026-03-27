@@ -7,6 +7,7 @@ import {
   containsOrGroup,
   expressionToLayoutNode,
   flattenOperator,
+  flattenOperatorWithPaths,
   replaceExpressionAtPath,
   toAndBranch,
 } from "../utils";
@@ -82,6 +83,46 @@ describe("flattenOperator", () => {
     } as ExpressionType;
 
     expect(flattenOperator(expression, "&&")).toEqual([expression]);
+  });
+});
+
+describe("flattenOperatorWithPaths", () => {
+  test("flattenOperatorWithPaths flattens OR chains and preserves each leaf path", () => {
+    const a: ExpressionType = { Value: true };
+    const b: ExpressionType = { Var: "principal" };
+    const c: ExpressionType = { Value: false };
+    const expression: ExpressionType = {
+      "||": {
+        left: a,
+        right: {
+          "||": {
+            left: b,
+            right: c,
+          },
+        },
+      },
+    };
+
+    expect(flattenOperatorWithPaths(expression, "||")).toEqual([
+      {
+        expression: a,
+        path: [{ operator: "||", side: "left" }],
+      },
+      {
+        expression: b,
+        path: [
+          { operator: "||", side: "right" },
+          { operator: "||", side: "left" },
+        ],
+      },
+      {
+        expression: c,
+        path: [
+          { operator: "||", side: "right" },
+          { operator: "||", side: "right" },
+        ],
+      },
+    ]);
   });
 });
 

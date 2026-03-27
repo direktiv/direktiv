@@ -51,11 +51,6 @@ export const flattenOperator = (
   ];
 };
 
-type FlattenedExpressionWithPath = {
-  expression: ExpressionType;
-  path: ExpressionPath;
-};
-
 // Returns the child pair for the requested boolean operator, or null for leaf nodes.
 const getBinaryChildren = (
   expression: ExpressionType,
@@ -87,7 +82,14 @@ export const getExpressionAtPath = (
     return children[segment.side];
   }, expression);
 
-const flattenOperatorWithPaths = (
+type FlattenedExpressionWithPath = {
+  expression: ExpressionType;
+  path: ExpressionPath;
+};
+
+// Flattens a same-operator boolean chain and keeps the layout path for each leaf,
+// so the UI can render flattened items while still knowing where each one lives.
+export const flattenOperatorWithPaths = (
   expression: ExpressionType,
   operator: BooleanOperator,
   basePath: ExpressionPath = []
