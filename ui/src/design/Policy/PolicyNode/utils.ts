@@ -56,7 +56,7 @@ type FlattenedExpressionWithPath = {
   path: ExpressionPath;
 };
 
-// Returns the child pair for the requested boolean operator, or null for leaf/malformed nodes.
+// Returns the child pair for the requested boolean operator, or null for leaf nodes.
 const getBinaryChildren = (
   expression: ExpressionType,
   operator: BooleanOperator
@@ -181,22 +181,26 @@ export const replaceExpressionAtPath = (
   nextExpression: ExpressionType
 ): ExpressionType => {
   if (path.length === 0) {
+    // Replacing the root path swaps the whole expression tree.
     return nextExpression;
   }
 
   const [segment, ...rest] = path;
 
   if (segment === undefined) {
+    // A missing segment means there is nothing to replace.
     return expression;
   }
 
   const children = getBinaryChildren(expression, segment.operator);
 
   if (!children) {
+    // Don't replace in a leaf node.
     return expression;
   }
 
   return {
+    // Rebuild only the branch on the requested side and preserve the sibling subtree.
     [segment.operator]: {
       ...children,
       [segment.side]: replaceExpressionAtPath(
