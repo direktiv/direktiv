@@ -237,12 +237,17 @@ export const buildBooleanChain = (
   }, firstItem);
 };
 
+type AppendToBooleanGroupParams = {
+  expression: ExpressionType;
+  path: ExpressionPath;
+  operator: BooleanOperator;
+  nextItem: ExpressionType;
+};
+
 export const appendToBooleanGroup = (
-  expression: ExpressionType,
-  path: ExpressionPath,
-  operator: BooleanOperator,
-  nextItem: ExpressionType
+  params: AppendToBooleanGroupParams
 ): ExpressionType => {
+  const { expression, path, operator, nextItem } = params;
   const currentGroup = getExpressionAtPath(expression, path);
 
   const nextGroup = buildBooleanChain(operator, [
@@ -258,17 +263,34 @@ export const addDefaultConditionToGroup = (
   path: ExpressionPath,
   operator: BooleanOperator
 ) =>
-  appendToBooleanGroup(expression, path, operator, defaultConditionExpression);
+  appendToBooleanGroup({
+    expression,
+    path,
+    operator,
+    nextItem: defaultConditionExpression,
+  });
 
 export const addDefaultOrGroupToAnd = (
   expression: ExpressionType,
   path: ExpressionPath
-) => appendToBooleanGroup(expression, path, "&&", defaultOrGroupExpression);
+) =>
+  appendToBooleanGroup({
+    expression,
+    path,
+    operator: "&&",
+    nextItem: defaultOrGroupExpression,
+  });
 
 export const addDefaultOrGroupToOr = (
   expression: ExpressionType,
   path: ExpressionPath
-) => appendToBooleanGroup(expression, path, "||", defaultOrGroupExpression);
+) =>
+  appendToBooleanGroup({
+    expression,
+    path,
+    operator: "||",
+    nextItem: defaultOrGroupExpression,
+  });
 
 // Returns true when any item in the list is an OR group.
 export const containsOrGroup = (items: PolicyLayoutNode[]) =>

@@ -651,7 +651,12 @@ describe("appendToBooleanGroup", () => {
     };
 
     expect(
-      appendToBooleanGroup(expression, [], "&&", { Value: false })
+      appendToBooleanGroup({
+        expression,
+        path: [],
+        operator: "&&",
+        nextItem: { Value: false },
+      })
     ).toEqual({
       "&&": {
         left: {
@@ -679,17 +684,17 @@ describe("appendToBooleanGroup", () => {
     };
 
     expect(
-      appendToBooleanGroup(
+      appendToBooleanGroup({
         expression,
-        [{ operator: "&&", side: "left" }],
-        "&&",
-        {
+        path: [{ operator: "&&", side: "left" }],
+        operator: "&&",
+        nextItem: {
           "||": {
             left: { Value: true },
             right: { Value: true },
           },
-        }
-      )
+        },
+      })
     ).toEqual({
       "&&": {
         left: {
@@ -722,7 +727,12 @@ describe("appendToBooleanGroup", () => {
     };
 
     expect(
-      appendToBooleanGroup(expression, [], "||", { Value: false })
+      appendToBooleanGroup({
+        expression,
+        path: [],
+        operator: "||",
+        nextItem: { Value: false },
+      })
     ).toEqual({
       "||": {
         left: {
@@ -750,17 +760,17 @@ describe("appendToBooleanGroup", () => {
     };
 
     expect(
-      appendToBooleanGroup(
+      appendToBooleanGroup({
         expression,
-        [{ operator: "&&", side: "left" }],
-        "||",
-        {
+        path: [{ operator: "&&", side: "left" }],
+        operator: "||",
+        nextItem: {
           "||": {
             left: { Value: true },
             right: { Value: true },
           },
-        }
-      )
+        },
+      })
     ).toEqual({
       "&&": {
         left: {
@@ -793,15 +803,15 @@ describe("appendToBooleanGroup", () => {
     };
 
     expect(
-      appendToBooleanGroup(
+      appendToBooleanGroup({
         expression,
-        [
+        path: [
           { operator: "&&", side: "left" },
           { operator: "||", side: "right" },
         ],
-        "&&",
-        { Value: false }
-      )
+        operator: "&&",
+        nextItem: { Value: false },
+      })
     ).toEqual(expression);
   });
 });
