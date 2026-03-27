@@ -573,6 +573,26 @@ describe("replaceExpressionAtPath", () => {
       },
     });
   });
+
+  test("replaceExpressionAtPath returns the original expression for an invalid path", () => {
+    const expression: ExpressionType = {
+      "&&": {
+        left: { Value: true },
+        right: { Var: "principal" },
+      },
+    };
+
+    expect(
+      replaceExpressionAtPath(
+        expression,
+        [
+          { operator: "&&", side: "left" },
+          { operator: "||", side: "right" },
+        ],
+        { Value: false }
+      )
+    ).toEqual(expression);
+  });
 });
 
 describe("buildBooleanChain", () => {
@@ -614,6 +634,10 @@ describe("buildBooleanChain", () => {
         right: { Value: false },
       },
     });
+  });
+
+  test("buildBooleanChain falls back to the default condition for empty items", () => {
+    expect(buildBooleanChain("&&", [])).toEqual({ Value: true });
   });
 });
 
@@ -758,6 +782,27 @@ describe("appendToBooleanGroup", () => {
         right: { Value: false },
       },
     });
+  });
+
+  test("appendToBooleanGroup returns the original expression for an invalid path", () => {
+    const expression: ExpressionType = {
+      "&&": {
+        left: { Value: true },
+        right: { Var: "principal" },
+      },
+    };
+
+    expect(
+      appendToBooleanGroup(
+        expression,
+        [
+          { operator: "&&", side: "left" },
+          { operator: "||", side: "right" },
+        ],
+        "&&",
+        { Value: false }
+      )
+    ).toEqual(expression);
   });
 });
 
