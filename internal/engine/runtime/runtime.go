@@ -497,5 +497,6 @@ func (rt *Runtime) base64Decode(encoded string) sobek.Value {
 	if err != nil {
 		panic(rt.vm.ToValue(fmt.Sprintf("invalid base64: %s", err.Error())))
 	}
+
 	return rt.vm.ToValue(string(decoded))
 }
