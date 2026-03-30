@@ -21,3 +21,13 @@ export const echoServiceSrc = `{
   "scale": 1,
   "size": "small"
 }`
+
+export const bashServiceWithEnvsSrc = `{
+  "image": "direktiv/bash:dev",
+  "scale": 1,
+  "size": "small",
+  "envs": [
+    { "name": "FOO1", "value": "bar1" },
+    { "name": "FOO2", "value": "bar2" }
+  ]
+}`

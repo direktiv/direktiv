@@ -216,7 +216,7 @@ describe('Service API', () => {
 
 		// list services + assert all 3 are present
 		await waitForServiceCount(namespace, 3)
-		
+
 		const serviceListResponse = await request(baseUrl).get(
 			`/api/v2/namespaces/${namespace}/services`,
 		)
