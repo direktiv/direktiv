@@ -81,6 +81,7 @@ describe('Service API', () => {
 			namespace,
 			`/${fileName}`,
 			expectedCondition,
+			10_000,
 		)
 
 		expect(service).toBeDefined()
@@ -135,6 +136,7 @@ describe('Service API', () => {
 			namespace,
 			filePath,
 			expectedCondition,
+			10_000,
 		)
 
 		expect(serviceBeforePatch).toBeDefined()
@@ -192,6 +194,7 @@ describe('Service API', () => {
 			namespace,
 			`/${fileName}`,
 			expectedCondition,
+			10_000,
 		)
 		expect(serviceBeforeRename).toBeDefined()
 
@@ -234,6 +237,7 @@ describe('Service API', () => {
 			namespace,
 			`/${newFileName}`,
 			expectedCondition,
+			10_000,
 		)
 		expect(serviceAfterRename).toBeDefined()
 

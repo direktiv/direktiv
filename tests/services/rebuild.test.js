@@ -47,6 +47,7 @@ describe('Service rebuild', () => {
 			namespace,
 			filePath,
 			expectedCondition,
+			10_000,
 		)
 		expect(service).toBeDefined()
 
@@ -96,6 +97,7 @@ describe('Service rebuild', () => {
 					const allNew = newIDs.every((id) => !podIDsBefore.includes(id))
 					if (allNew) return res
 				},
+				timeoutMs: 10_000,
 				onTimeout: () =>
 					new Error(
 						`service ${service.id} did not respawn 3 pods with all-new IDs`,
