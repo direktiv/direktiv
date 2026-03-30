@@ -14,32 +14,43 @@ function findPartialMatch(arr, match) {
 	return arr.find((item) => isPartialMatch(item, match))
 }
 
-async function waitForService(namespace, path, options) {
+export async function waitForResponseToMatch(endpoint, options) {
 	const {
 		timeoutMs = 5000,
 		intervalMs = 200,
 		matchFn,
 		onTimeout,
+		method = 'get',
+		headers,
+		body,
 	} = options ?? {}
 
 	if (typeof matchFn !== 'function') {
-		throw new Error('waitForService requires an matchFn predicate')
+		throw new Error('waitForResponseToMatch requires an matchFn predicate')
 	}
 
-	const deadline = Date.now() + timeoutMs
 	const baseUrl = config.getDirektivBaseUrl()
 
+	const deadline = Date.now() + timeoutMs
+
 	while (Date.now() < deadline) {
-		const res = await request(baseUrl).get(
-			`/api/v2/namespaces/${namespace}/services`,
-		)
-		expect(res.statusCode).toEqual(200)
+		let req = request(baseUrl)[method](endpoint)
 
-		const service = res.body?.data.find((item) => item.filePath === path)
-		const result = matchFn(service, res)
+		if (headers) {
+			for (const [key, value] of Object.entries(headers)) {
+				req = req.set(key, value)
+			}
+		}
 
-		if (result?.done) {
-			return result.value
+		if (body !== undefined) {
+			req = req.send(body)
+		}
+
+		const res = await req
+		const result = matchFn(res)
+
+		if (result) {
+			return result
 		}
 
 		await helpers.sleep(intervalMs)
@@ -49,9 +60,7 @@ async function waitForService(namespace, path, options) {
 		throw onTimeout()
 	}
 
-	throw new Error(
-		`service ${path} did not satisfy predicate within ${timeoutMs}ms`,
-	)
+	throw new Error(`request ${endpoint} did not satisfy predicate within ${timeoutMs}ms`)
 }
 
 export async function waitForServiceProperty(
@@ -61,14 +70,13 @@ export async function waitForServiceProperty(
 	timeoutMs = 5000,
 	intervalMs = 200,
 ) {
-	return waitForService(namespace, path, {
+	return waitForResponseToMatch(`/api/v2/namespaces/${namespace}/services`, {
 		timeoutMs,
 		intervalMs,
-		matchFn: (service) => {
-			if (service && isPartialMatch(service, property)) {
-				return { done: true, value: service }
-			}
-			return { done: false }
+		matchFn: (res) => {
+			expect(res.statusCode).toEqual(200)
+			const service = res.body?.data?.find((item) => item.filePath === path)
+			if (service && isPartialMatch(service, property)) return service
 		},
 		onTimeout: () =>
 			new Error(
@@ -84,18 +92,17 @@ export async function waitForServiceCondition(
 	timeoutMs = 5000,
 	intervalMs = 200,
 ) {
-	return waitForService(namespace, path, {
+	return waitForResponseToMatch(`/api/v2/namespaces/${namespace}/services`, {
 		timeoutMs,
 		intervalMs,
-		matchFn: (service) => {
+		matchFn: (res) => {
+			expect(res.statusCode).toEqual(200)
+			const service = res.body?.data?.find((item) => item.filePath === path)
 			const match = service
-				? findPartialMatch(service.conditions, condition)
+				? findPartialMatch(service.conditions ?? [], condition)
 				: undefined
 
-			if (match) {
-				return { done: true, value: service }
-			}
-			return { done: false }
+			if (match) return service
 		},
 		onTimeout: () =>
 			new Error(
@@ -110,14 +117,13 @@ export async function waitForServiceRemoved(
 	timeoutMs = 5000,
 	intervalMs = 200,
 ) {
-	return waitForService(namespace, path, {
+	return waitForResponseToMatch(`/api/v2/namespaces/${namespace}/services`, {
 		timeoutMs,
 		intervalMs,
-		matchFn: (service) => {
-			if (!service) {
-				return { done: true, value: true }
-			}
-			return { done: false }
+		matchFn: (res) => {
+			expect(res.statusCode).toEqual(200)
+			const service = res.body?.data?.find((item) => item.filePath === path)
+			if (!service) return true
 		},
 		onTimeout: () =>
 			new Error(`service ${path} still existed after ${timeoutMs}ms`),
@@ -129,26 +135,19 @@ export async function waitForServiceCount(
 	expectedCount,
 	timeoutMs = 5000,
 ) {
-	const baseUrl = config.getDirektivBaseUrl()
-	const deadline = Date.now() + timeoutMs
-
-	while (Date.now() < deadline) {
-		const res = await request(baseUrl).get(
-			`/api/v2/namespaces/${namespace}/services`,
-		)
-		expect(res.statusCode).toEqual(200)
-
-		const count = res.body?.data?.length
-		if (count === expectedCount) {
-			return res
-		}
-
-		await helpers.sleep(200)
-	}
-
-	throw new Error(
-		`services did not reach expected count ${expectedCount} within ${timeoutMs}ms`,
-	)
+	return waitForResponseToMatch(`/api/v2/namespaces/${namespace}/services`, {
+		timeoutMs,
+		intervalMs: 200,
+		matchFn: (res) => {
+			expect(res.statusCode).toEqual(200)
+			const count = res.body?.data?.length
+			if (count === expectedCount) return res
+		},
+		onTimeout: () =>
+			new Error(
+				`services did not reach expected count ${expectedCount} within ${timeoutMs}ms`,
+			),
+	})
 }
 
 export async function waitForServicePodsCount(
@@ -158,24 +157,20 @@ export async function waitForServicePodsCount(
 	timeoutMs = 5000,
 	intervalMs = 200,
 ) {
-	const baseUrl = config.getDirektivBaseUrl()
-	const deadline = Date.now() + timeoutMs
-
-	while (Date.now() < deadline) {
-		const res = await request(baseUrl).get(
-			`/api/v2/namespaces/${namespace}/services/${serviceID}/pods`,
-		)
-		expect(res.statusCode).toEqual(200)
-
-		const count = res.body?.data?.length
-		if (count === expectedCount) {
-			return res
-		}
-
-		await helpers.sleep(intervalMs)
-	}
-
-	throw new Error(
-		`service ${serviceID} pods did not reach expected count ${expectedCount} within ${timeoutMs}ms`,
+	return waitForResponseToMatch(
+		`/api/v2/namespaces/${namespace}/services/${serviceID}/pods`,
+		{
+		timeoutMs,
+		intervalMs,
+		matchFn: (res) => {
+			expect(res.statusCode).toEqual(200)
+			const count = res.body?.data?.length
+			if (count === expectedCount) return res
+		},
+		onTimeout: () =>
+			new Error(
+				`service ${serviceID} pods did not reach expected count ${expectedCount} within ${timeoutMs}ms`,
+			),
+		},
 	)
 }

@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals'
+import { waitForResponseToMatch, waitForServiceCondition } from './utils'
 
 import { bashServiceWithEnvsSrc } from './fixtures'
 import config from '../common/config'
 import helpers from '../common/helpers'
 import request from '../common/request'
-import { waitForServiceCondition } from './utils'
 
 const namespace = helpers.randomNamespaceName()
 const baseUrl = config.getDirektivBaseUrl()
@@ -53,26 +53,27 @@ describe('Service environment variables', () => {
 			{ name: 'FOO2', value: 'bar2' },
 		]
 
-		const deadline = Date.now() + 5000
-		while (Date.now() < deadline) {
-			const listRes = await request(baseUrl).get(
-				`/api/v2/namespaces/${namespace}/services`,
-			)
-			expect(listRes.statusCode).toEqual(200)
+		await waitForResponseToMatch(`/api/v2/namespaces/${namespace}/services`, {
+			matchFn: (res) => {
+				expect(res.statusCode).toEqual(200)
 
-			const listed = listRes.body?.data?.find((item) => item.filePath === filePath)
-			if (listed) {
-				expect(listed).toMatchObject({
+				const match = res.body?.data?.find((item) => item.filePath === filePath)
+
+				console.log(match)
+
+				if (!match) {
+					return false
+				}
+
+				expect(match).toMatchObject({
 					filePath,
 					envs: expect.arrayContaining(expectedEnvs),
 				})
-				return
-			}
 
-			await helpers.sleep(200)
-		}
-
-		throw new Error(`service ${filePath} was not listed within 5000ms`)
+				return true
+			},
+			onTimeout: () =>
+				new Error(`service ${filePath} was not listed within 5000ms`),
+		})
 	})
 })
-
