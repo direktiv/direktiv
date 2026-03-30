@@ -1,19 +1,21 @@
 import { AndGroup, Connector, OrGroup } from "~/design/Policy/Group";
+
 import { Condition } from "~/design/Policy/Condition";
 import { Placeholder } from "~/design/Policy/Placeholder";
 import type { PolicyLayoutNode } from "./types";
 import { containsOrGroup } from "./utils";
+import { formatExpression } from "./formatExpression";
 
 const PolicyNode = ({ node }: { node: PolicyLayoutNode }) => {
   // Condition nodes are the terminal expressions in the policy
   // tree, they render directly as a condition component.
   if (node.type === "condition") {
-    const preview = JSON.stringify(node.expression);
+    const preview = formatExpression(node.expression);
     const title = JSON.stringify(node.expression, null, 2);
 
     return (
       <Condition className="font-mono" title={title}>
-        <span className="block w-full truncate">{preview}</span>
+        <span className="block w-full">{preview}</span>
       </Condition>
     );
   }
