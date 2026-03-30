@@ -165,6 +165,82 @@ describe('Service API', () => {
 		expect(serviceListResponse.body?.data.length).toEqual(1)
 	})
 
+	it('renames a service', async () => {
+		const fileName = 'asd.svc.json'
+		const newFileName = 'def.wf.ts'
+
+		// create service
+		const createResponse = await request(baseUrl)
+			.post(`/api/v2/namespaces/${namespace}/files`)
+			.set('Content-Type', 'application/json')
+			.send({
+				name: fileName,
+				type: 'service',
+				mimeType: 'application/json',
+				data: btoa(bashServiceSrc),
+			})
+		expect(createResponse.statusCode).toEqual(200)
+
+		// confirm service is running
+		const expectedCondition = {
+			type: 'Available',
+			status: 'True',
+			message: 'Deployment has minimum availability.',
+		}
+
+		const serviceBeforeRename = await waitForServiceCondition(
+			namespace,
+			`/${fileName}`,
+			expectedCondition,
+		)
+		expect(serviceBeforeRename).toBeDefined()
+
+		// rename service
+		const renameResponse = await request(baseUrl)
+			.patch(`/api/v2/namespaces/${namespace}/files/${fileName}`)
+			.set('Content-Type', 'application/json')
+			.send({ path: `/${newFileName}` })
+		expect(renameResponse.statusCode).toEqual(200)
+		expect(renameResponse.body?.data?.path).toEqual(`/${newFileName}`)
+
+		// confirm service file is updated
+		const getOldPathResponse = await request(baseUrl).get(
+			`/api/v2/namespaces/${namespace}/files/${fileName}`,
+		)
+		expect(getOldPathResponse.statusCode).toEqual(404)
+
+		const getNewPathResponse = await request(baseUrl).get(
+			`/api/v2/namespaces/${namespace}/files/${newFileName}`,
+		)
+		expect(getNewPathResponse.statusCode).toEqual(200)
+		expect(getNewPathResponse.body?.data?.path).toEqual(`/${newFileName}`)
+
+		// confirm /services lists the renamed filePath
+		await waitForServiceRemoved(namespace, `/${fileName}`)
+		await waitForServiceProperty(namespace, `/${newFileName}`, {})
+
+		const serviceListResponse = await request(baseUrl).get(
+			`/api/v2/namespaces/${namespace}/services`,
+		)
+		expect(serviceListResponse.statusCode).toEqual(200)
+		expect(serviceListResponse.body).toMatchObject({
+			data: expect.arrayContaining([
+				expect.objectContaining({ filePath: `/${newFileName}` }),
+			]),
+		})
+
+		// confirm service is running after rename
+		const serviceAfterRename = await waitForServiceCondition(
+			namespace,
+			`/${newFileName}`,
+			expectedCondition,
+		)
+		expect(serviceAfterRename).toBeDefined()
+
+		// confirm service is no longer running after old file is deleted
+		await waitForServiceRemoved(namespace, `/${fileName}`)
+	})
+
 	it('lists services', async () => {
 		const fileName1 = 'list-1.svc.json'
 		const fileName2 = 'list-2.svc.json'
