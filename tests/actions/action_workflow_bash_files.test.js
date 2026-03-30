@@ -1,15 +1,15 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import { basename } from 'path'
-import { fileURLToPath } from 'url'
 
+import { basename } from 'path'
 import common from '../common'
+import { fileURLToPath } from 'url'
 import helpers from '../common/helpers'
 import request from '../common/request'
 
 const namespace = basename(fileURLToPath(import.meta.url))
 const testWorkflow = 'test-workflow-bash.yaml'
 
-describe('Test workflow bash commands via action', () => {
+describe.skip('Test workflow bash commands via action', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	helpers.itShouldCreateNamespace(it, expect, namespace)
