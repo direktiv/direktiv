@@ -155,8 +155,8 @@ jobs:
             suit: part1
           - type: api
             suit: part2
-          #- type: api
-          #  suit: services
+          - type: api
+            suit: services
           #- type: api
           #  suit: actions
 
