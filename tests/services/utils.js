@@ -88,6 +88,7 @@ export async function waitForServiceCondition(
 		timeoutMs,
 		intervalMs,
 		matchFn: (service) => {
+			console.log(service)
 			const match = service
 				? findPartialMatch(service.conditions, condition)
 				: undefined

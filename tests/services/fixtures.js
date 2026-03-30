@@ -10,6 +10,12 @@ export const bashServiceScale3Src = `{
   "size": "small"
 }`
 
+export const bashServiceScale0Src = `{
+  "image": "direktiv/bash:dev",
+  "scale": 0,
+  "size": "small"
+}`
+
 export const echoServiceSrc = `{
   "image": "direktiv/echo",
   "scale": 1,
