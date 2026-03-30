@@ -80,7 +80,7 @@ describe('Service pods', () => {
 		)
 
 		expect(service).toBeDefined()
-		expect(service.scale).toEqual(2)
+		expect(service.scale).toEqual(3)
 
 		const podsRes = await waitForServicePodsCount(
 			namespace,

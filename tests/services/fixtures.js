@@ -6,7 +6,7 @@ export const bashServiceSrc = `{
 
 export const bashServiceScale3Src = `{
   "image": "direktiv/bash:dev",
-  "scale": 2,
+  "scale": 3,
   "size": "small"
 }`
 
