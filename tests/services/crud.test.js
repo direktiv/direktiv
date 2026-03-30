@@ -29,7 +29,7 @@ describe('Service API', () => {
 	})
 
 	it('creates and deletes a service', async () => {
-		const fileName = 'bash.svc.ts'
+		const fileName = 'bash.svc.json'
 
 		// create service
 		const createResponse = await request(baseUrl)
@@ -109,7 +109,7 @@ describe('Service API', () => {
 	})
 
 	it('updates a service', async () => {
-		const fileName = 'bash-update.svc.ts'
+		const fileName = 'bash-update.svc.json'
 		const filePath = `/${fileName}`
 
 		// create service
@@ -166,9 +166,9 @@ describe('Service API', () => {
 	})
 
 	it('lists services', async () => {
-		const fileName1 = 'list-1.svc.ts'
-		const fileName2 = 'list-2.svc.ts'
-		const fileName3 = 'list-3.svc.ts'
+		const fileName1 = 'list-1.svc.json'
+		const fileName2 = 'list-2.svc.json'
+		const fileName3 = 'list-3.svc.json'
 
 		// create 3 services (different filenames + different images)
 		const src1 = bashServiceSrc

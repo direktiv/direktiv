@@ -22,7 +22,7 @@ describe('Service environment variables', () => {
 	})
 
 	it('lists envs on services endpoint', async () => {
-		const fileName = 'bash-envs.svc.ts'
+		const fileName = 'bash-envs.svc.json'
 		const filePath = `/${fileName}`
 
 		const createResponse = await request(baseUrl)

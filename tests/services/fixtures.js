@@ -50,7 +50,7 @@ function stateFirst() {
 
   const serviceResponse = execService({
     scope: "namespace",
-    path: "/service.svc.ts",
+    path: "/service.svc.json",
     payload: payload,
     retries: 3,
   });
@@ -77,7 +77,7 @@ function stateFirst() {
 
   const serviceResponse = execService({
     scope: "system",
-    path: "/system-service.svc.ts",
+    path: "/system-service.svc.json",
     payload: payload,
     retries: 3,
   });

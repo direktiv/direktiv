@@ -22,7 +22,7 @@ describe('Service pods', () => {
 	})
 
 	it('does not spawn pods when scale is 0', async () => {
-		const fileName = 'bash-pods-scale-0.svc.ts'
+		const fileName = 'bash-pods-scale-0.svc.json'
 		const filePath = `/${fileName}`
 
 		const createResponse = await request(baseUrl)
@@ -53,7 +53,7 @@ describe('Service pods', () => {
 	})
 
 	it('spawns expected number of pods', async () => {
-		const fileName = 'bash-pods.svc.ts'
+		const fileName = 'bash-pods.svc.json'
 		const filePath = `/${fileName}`
 
 		const createResponse = await request(baseUrl)

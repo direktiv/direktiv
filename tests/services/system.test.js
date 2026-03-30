@@ -36,7 +36,7 @@ describe('System Service API', () => {
 	})
 
 	it('creates a system service, available to workflows in any namespace', async () => {
-		const fileName = `system-service.svc.ts`
+		const fileName = `system-service.svc.json`
 
 		// create service file in the "system" namespace
 		const createResponse = await request(baseUrl)
@@ -45,7 +45,7 @@ describe('System Service API', () => {
 			.send({
 				name: fileName,
 				type: 'service',
-				mimeType: 'application/typescript',
+				mimeType: 'application/json',
 				data: btoa(bashServiceSrc),
 			})
 		expect(createResponse.statusCode).toEqual(200)
@@ -71,7 +71,7 @@ describe('System Service API', () => {
 
 		const service = await waitForServiceCondition(
 			systemNamespace,
-			`/system-service.svc.ts`,
+			`/system-service.svc.json`,
 			expectedCondition,
 		)
 		expect(service).toBeDefined()

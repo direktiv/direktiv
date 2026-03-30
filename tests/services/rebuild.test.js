@@ -22,7 +22,7 @@ describe('Service rebuild', () => {
 	})
 
 	it('rebuild tears down pods and respawns them', async () => {
-		const fileName = 'bash-rebuild.svc.ts'
+		const fileName = 'bash-rebuild.svc.json'
 		const filePath = `/${fileName}`
 
 		// create service
