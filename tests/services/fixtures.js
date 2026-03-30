@@ -31,3 +31,57 @@ export const bashServiceWithEnvsSrc = `{
     { "name": "FOO2", "value": "bar2" }
   ]
 }`
+
+export const workflowUsingServiceSrc = `
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateFirst",
+};
+
+function stateFirst() {
+  var payload = {
+    commands: [
+      {
+        command: "ls -la",
+      },
+    ],
+  };
+
+  const serviceResponse = execService({
+    scope: "namespace",
+    path: "/service.svc.ts",
+    payload: payload,
+    retries: 3,
+  });
+
+  return finish(serviceResponse);
+}
+`
+
+export const workflowUsingSystemServiceSrc = `
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateFirst",
+};
+
+function stateFirst() {
+  var payload = {
+    commands: [
+      {
+        command: "ls -la",
+      },
+    ],
+  };
+
+  const serviceResponse = execService({
+    scope: "system",
+    path: "/system-service.svc.ts",
+    payload: payload,
+    retries: 3,
+  });
+
+  return finish(serviceResponse);
+}
+`

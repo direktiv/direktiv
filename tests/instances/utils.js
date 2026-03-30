@@ -57,6 +57,8 @@ export async function waitForInstanceStatus(
 		)
 		expect(res.statusCode).toEqual(200)
 
+		console.log(res.body?.data)
+
 		const instanceStatus = res.body?.data?.status
 		if (instanceStatus === status) {
 			return res
