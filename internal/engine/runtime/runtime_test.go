@@ -2,6 +2,7 @@ package runtime_test
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"testing"
 
@@ -127,7 +128,141 @@ func TestParseFuncName(t *testing.T) {
 	for _, tc := range tests {
 		got := runtime.ParseFuncNameFromText(tc.in)
 		if got != tc.want {
-			t.Fatalf("ParseFuncName(%q) = %q; want %q", tc.in, got, tc.want)
+			t.Fatalf("ParseFuncName(%q) = %q; want %q", tc.in, tc.want, tc.want)
 		}
+	}
+}
+
+func TestBase64Encode(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+	}{
+		{"simple string", "hello world"},
+		{"empty string", ""},
+		{"numbers", "12345"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			expected := fmt.Sprintf("%q", tt.input)
+			encoded := base64.StdEncoding.EncodeToString([]byte(tt.input))
+			expected = fmt.Sprintf("%q", encoded)
+
+			script := fmt.Sprintf(`
+				function start() {
+					return finish(base64Encode("%s"));
+				}
+			`, tt.input)
+
+			var gotOutput []byte
+			var onFinish runtime.OnFinishHook = func(output []byte) error {
+				gotOutput = output
+				return nil
+			}
+
+			err := runtime.ExecScript(context.Background(), &runtime.Script{
+				InstID:   uuid.New(),
+				Text:     script,
+				Mappings: "",
+				Fn:       "start",
+				Input:    "{}",
+			}, onFinish)
+			require.NoError(t, err)
+			require.Equal(t, expected, string(gotOutput))
+		})
+	}
+}
+
+func TestBase64Decode(t *testing.T) {
+	tests := []struct {
+		name    string
+		decoded string
+	}{
+		{"simple string", "hello world"},
+		{"empty string", ""},
+		{"numbers", "12345"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			encoded := base64.StdEncoding.EncodeToString([]byte(tt.decoded))
+			expected := fmt.Sprintf("%q", tt.decoded)
+
+			script := fmt.Sprintf(`
+				function start() {
+					return finish(base64Decode("%s"));
+				}
+			`, encoded)
+
+			var gotOutput []byte
+			var onFinish runtime.OnFinishHook = func(output []byte) error {
+				gotOutput = output
+				return nil
+			}
+
+			err := runtime.ExecScript(context.Background(), &runtime.Script{
+				InstID:   uuid.New(),
+				Text:     script,
+				Mappings: "",
+				Fn:       "start",
+				Input:    "{}",
+			}, onFinish)
+			require.NoError(t, err)
+			require.Equal(t, expected, string(gotOutput))
+		})
+	}
+}
+
+func TestBase64DecodeInvalid(t *testing.T) {
+	script := `
+		function start() {
+			return finish(base64Decode("not-valid!!!"));
+		}
+	`
+
+	err := runtime.ExecScript(context.Background(), &runtime.Script{
+		InstID:   uuid.New(),
+		Text:     script,
+		Mappings: "",
+		Fn:       "start",
+		Input:    "{}",
+	})
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid base64")
+}
+
+func TestBase64Roundtrip(t *testing.T) {
+	testInputs := []string{
+		"hello world",
+		"12345",
+	}
+
+	for _, input := range testInputs {
+		t.Run(input, func(t *testing.T) {
+			script := fmt.Sprintf(`
+				function start() {
+					let encoded = base64Encode("%s");
+					let decoded = base64Decode(encoded);
+					return finish(decoded);
+				}
+			`, input)
+
+			var gotOutput []byte
+			var onFinish runtime.OnFinishHook = func(output []byte) error {
+				gotOutput = output
+				return nil
+			}
+
+			err := runtime.ExecScript(context.Background(), &runtime.Script{
+				InstID:   uuid.New(),
+				Text:     script,
+				Mappings: "",
+				Fn:       "start",
+				Input:    "{}",
+			}, onFinish)
+			require.NoError(t, err)
+			require.Equal(t, fmt.Sprintf("%q", input), string(gotOutput))
+		})
 	}
 }
