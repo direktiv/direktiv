@@ -59,8 +59,6 @@ describe('Service environment variables', () => {
 
 				const match = res.body?.data?.find((item) => item.filePath === filePath)
 
-				console.log(match)
-
 				if (!match) {
 					return false
 				}
