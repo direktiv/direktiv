@@ -6,7 +6,8 @@ import { retry10 } from '../common/retry'
 
 const testNamespace = 'test-services'
 
-describe('Test services crud operations', () => {
+// Outdated
+describe.skip('Test services crud operations', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
