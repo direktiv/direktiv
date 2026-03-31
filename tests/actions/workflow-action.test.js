@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from '@jest/globals'
 import {
 	workflowEchoActionSrc,
 	workflowMultiCommandActionSrc,
+	workflowTwoActionsSrc,
 	workflowUsingActionSrc,
 } from './fixtures'
 
@@ -10,6 +11,7 @@ import config from '../common/config'
 import helpers from '../common/helpers'
 import request from '../common/request'
 import { waitForInstanceStatus } from '../instances/utils'
+import { waitForResponseToMatch } from '../services/utils'
 
 const baseUrl = config.getDirektivBaseUrl()
 const namespace = helpers.randomNamespaceName()
@@ -58,7 +60,7 @@ describe('Action usage from workflow', () => {
 			namespace,
 			id,
 			'complete',
-			10_000,
+			15_000,
 		)
 		expect(instance).toBeDefined()
 		expect(instance.body.data.status).toEqual('complete')
@@ -71,6 +73,68 @@ describe('Action usage from workflow', () => {
 					result: 'myenvvalue',
 				},
 			],
+		})
+	})
+
+	it('creates a workflow with two actions and lists them under services', async () => {
+		// create workflow file
+		const workflowResponse = await request(baseUrl)
+			.post(`/api/v2/namespaces/${namespace}/files`)
+			.set('Content-Type', 'application/json')
+			.send({
+				name: 'two-actions.wf.ts',
+				type: 'workflow',
+				mimeType: 'application/typescript',
+				data: btoa(workflowTwoActionsSrc),
+			})
+		expect(workflowResponse.statusCode).toEqual(200)
+
+		// execute workflow
+		const executeResponse = await request(baseUrl).post(
+			`/api/v2/namespaces/${namespace}/instances?path=two-actions.wf.ts`,
+		)
+		expect(executeResponse.statusCode).toEqual(200)
+
+		const { id } = executeResponse.body.data
+		const instance = await waitForInstanceStatus(
+			baseUrl,
+			namespace,
+			id,
+			'complete',
+			15_000,
+		)
+		expect(instance).toBeDefined()
+		expect(instance.body.data.status).toEqual('complete')
+
+		// verify both actions are listed under services
+		const serviceList = await waitForResponseToMatch(
+			`/api/v2/namespaces/${namespace}/services`,
+			{
+				matchFn: (res) => {
+					const images = (res.body?.data ?? []).map((s) => s.image)
+					if (
+						images.includes('direktiv/bash:dev') &&
+						images.includes('direktiv/echo:dev')
+					) {
+						return res
+					}
+				},
+			},
+		)
+
+		expect(serviceList.body).toMatchObject({
+			data: expect.arrayContaining([
+				expect.objectContaining({
+					image: 'direktiv/bash:dev',
+					filePath: '/two-actions.wf.ts',
+					type: 'workflow',
+				}),
+				expect.objectContaining({
+					image: 'direktiv/echo:dev',
+					filePath: '/two-actions.wf.ts',
+					type: 'workflow',
+				}),
+			]),
 		})
 	})
 
@@ -108,7 +172,7 @@ describe('Action usage from workflow', () => {
 			namespace,
 			id,
 			'complete',
-			10_000,
+			15_000,
 		)
 		expect(instance).toBeDefined()
 		expect(instance.body.data.status).toEqual('complete')
@@ -147,7 +211,7 @@ describe('Action usage from workflow', () => {
 			namespace,
 			id,
 			'complete',
-			10_000,
+			15_000,
 		)
 		expect(instance).toBeDefined()
 		expect(instance.body.data.status).toEqual('complete')

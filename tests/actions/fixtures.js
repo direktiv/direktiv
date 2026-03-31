@@ -80,3 +80,35 @@ function stateFirst(input: unknown) {
   return finish(result);
 }
 `
+
+export const workflowTwoActionsSrc = `
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateFirst",
+};
+
+const bash = generateAction({
+  image: "direktiv/bash:dev",
+  size: "small",
+});
+
+const echo = generateAction({
+  type: "workflow",
+  image: "direktiv/echo:dev",
+  size: "small",
+});
+
+function stateFirst() {
+  const bashResult = bash({
+    commands: [{ command: "echo hi" }],
+  });
+
+  const echoResult = echo({ hi: "there" });
+
+  return finish({
+    bash: bashResult,
+    echo: echoResult,
+  });
+}
+`
