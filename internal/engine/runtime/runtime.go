@@ -77,6 +77,8 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string, hooks ..
 		{"execService", rt.service},
 		{"setVariable", rt.setVariable},
 		{"getVariable", rt.getVariable},
+		{"base64Encode", rt.base64Encode},
+		{"base64Decode", rt.base64Decode},
 	}
 
 	for _, v := range setList {
@@ -170,7 +172,22 @@ func (rt *Runtime) secrets(secretNames []string) sobek.Value {
 	return rt.vm.ToValue(retSecrets)
 }
 
-func (rt *Runtime) setVariable(scope string, name string, content string) sobek.Value {
+func (rt *Runtime) setVariable(c map[string]any) sobek.Value {
+	scope, ok := c["scope"].(string)
+	if !ok {
+		panic(rt.vm.ToValue("scope must be a string"))
+	}
+
+	name, ok := c["name"].(string)
+	if !ok {
+		panic(rt.vm.ToValue("name must be a string"))
+	}
+
+	content, ok := c["content"].(string)
+	if !ok {
+		panic(rt.vm.ToValue("content must be a string"))
+	}
+
 	data, err := base64.StdEncoding.DecodeString(content)
 	if err != nil {
 		panic(rt.vm.ToValue("invalid base64 content"))
@@ -188,7 +205,17 @@ func (rt *Runtime) setVariable(scope string, name string, content string) sobek.
 	return sobek.Undefined()
 }
 
-func (rt *Runtime) getVariable(scope string, name string) sobek.Value {
+func (rt *Runtime) getVariable(c map[string]any) sobek.Value {
+	scope, ok := c["scope"].(string)
+	if !ok {
+		panic(rt.vm.ToValue("scope must be a string"))
+	}
+
+	name, ok := c["name"].(string)
+	if !ok {
+		panic(rt.vm.ToValue("name must be a string"))
+	}
+
 	if rt.onGetVariable == nil {
 		panic(rt.vm.ToValue("getVariable not supported"))
 	}
@@ -198,7 +225,6 @@ func (rt *Runtime) getVariable(scope string, name string) sobek.Value {
 		panic(rt.vm.ToValue(err.Error()))
 	}
 
-	// If hook returns nil data with no error, treat as not found -> null.
 	if data == nil {
 		return sobek.Null()
 	}
@@ -459,4 +485,18 @@ func ParseFuncNameFromText(s string) string {
 	}
 
 	return ""
+}
+
+func (rt *Runtime) base64Encode(input string) sobek.Value {
+	encoded := base64.StdEncoding.EncodeToString([]byte(input))
+	return rt.vm.ToValue(encoded)
+}
+
+func (rt *Runtime) base64Decode(encoded string) sobek.Value {
+	decoded, err := base64.StdEncoding.DecodeString(encoded)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("invalid base64: %s", err.Error())))
+	}
+
+	return rt.vm.ToValue(string(decoded))
 }
