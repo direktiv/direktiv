@@ -2,6 +2,7 @@ import { AndGroup, Connector, OrGroup } from "~/design/Policy/Group";
 
 import { Condition } from "~/design/Policy/Condition";
 import type { ExpressionType } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
+import type { PatternElement } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/like";
 import { Placeholder } from "~/design/Policy/Placeholder";
 import type { PolicyLayoutNode } from "./types";
 import { Separator } from "~/design/Separator";
@@ -19,6 +20,11 @@ type ConditionParts = {
   operator: string;
   value: string;
 };
+
+const formatLikeValue = (pattern: PatternElement[]) =>
+  pattern
+    .map((element) => (element === "Wildcard" ? "*" : element.Literal))
+    .join("");
 
 const splitConditionExpression = (
   expression: ExpressionType
@@ -55,12 +61,7 @@ const splitConditionExpression = (
     return {
       label: rootVar ?? formatExpression(expression.like.left),
       operator: "like",
-      value:
-        formatExpression({
-          Value: formatExpression({ like: expression.like }),
-        })
-          .split(" like ")
-          .at(-1) ?? "",
+      value: formatLikeValue(expression.like.pattern),
     };
   }
 

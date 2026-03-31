@@ -80,7 +80,7 @@ const formatUnknownValue = (value: unknown) => {
   ) {
     return String(value);
   }
-  return String(value);
+  return JSON.stringify(value) ?? String(value);
 };
 
 const formatLikePattern = (pattern: PatternElement[]) =>
