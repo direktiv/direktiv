@@ -71,7 +71,7 @@ describe('Service environment variables', () => {
 				return true
 			},
 			onTimeout: () =>
-				new Error(`service ${filePath} was not listed within 5000ms`),
+				new Error(`service ${filePath} was not listed within timeout`),
 		})
 	})
 })

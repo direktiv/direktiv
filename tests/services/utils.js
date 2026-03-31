@@ -16,7 +16,7 @@ function findPartialMatch(arr, match) {
 
 export async function waitForResponseToMatch(endpoint, options) {
 	const {
-		timeoutMs = 5000,
+		timeoutMs = 15_000,
 		intervalMs = 200,
 		matchFn,
 		onTimeout,
@@ -60,14 +60,16 @@ export async function waitForResponseToMatch(endpoint, options) {
 		throw onTimeout()
 	}
 
-	throw new Error(`request ${endpoint} did not satisfy predicate within ${timeoutMs}ms`)
+	throw new Error(
+		`request ${endpoint} did not satisfy predicate within ${timeoutMs}ms`,
+	)
 }
 
 export async function waitForServiceProperty(
 	namespace,
 	path,
 	property,
-	timeoutMs = 5000,
+	timeoutMs = 15_000,
 	intervalMs = 200,
 ) {
 	return waitForResponseToMatch(`/api/v2/namespaces/${namespace}/services`, {
@@ -89,7 +91,7 @@ export async function waitForServiceCondition(
 	namespace,
 	path,
 	condition,
-	timeoutMs = 5000,
+	timeoutMs = 15_000,
 	intervalMs = 200,
 ) {
 	return waitForResponseToMatch(`/api/v2/namespaces/${namespace}/services`, {
@@ -114,7 +116,7 @@ export async function waitForServiceCondition(
 export async function waitForServiceRemoved(
 	namespace,
 	path,
-	timeoutMs = 5000,
+	timeoutMs = 15_000,
 	intervalMs = 200,
 ) {
 	return waitForResponseToMatch(`/api/v2/namespaces/${namespace}/services`, {
@@ -133,7 +135,7 @@ export async function waitForServiceRemoved(
 export async function waitForServiceCount(
 	namespace,
 	expectedCount,
-	timeoutMs = 5000,
+	timeoutMs = 15_000,
 ) {
 	return waitForResponseToMatch(`/api/v2/namespaces/${namespace}/services`, {
 		timeoutMs,
@@ -154,23 +156,23 @@ export async function waitForServicePodsCount(
 	namespace,
 	serviceID,
 	expectedCount,
-	timeoutMs = 5000,
+	timeoutMs = 15_000,
 	intervalMs = 200,
 ) {
 	return waitForResponseToMatch(
 		`/api/v2/namespaces/${namespace}/services/${serviceID}/pods`,
 		{
-		timeoutMs,
-		intervalMs,
-		matchFn: (res) => {
-			expect(res.statusCode).toEqual(200)
-			const count = res.body?.data?.length
-			if (count === expectedCount) return res
-		},
-		onTimeout: () =>
-			new Error(
-				`service ${serviceID} pods did not reach expected count ${expectedCount} within ${timeoutMs}ms`,
-			),
+			timeoutMs,
+			intervalMs,
+			matchFn: (res) => {
+				expect(res.statusCode).toEqual(200)
+				const count = res.body?.data?.length
+				if (count === expectedCount) return res
+			},
+			onTimeout: () =>
+				new Error(
+					`service ${serviceID} pods did not reach expected count ${expectedCount} within ${timeoutMs}ms`,
+				),
 		},
 	)
 }

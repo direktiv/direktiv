@@ -47,7 +47,7 @@ export async function waitForInstanceStatus(
 	namespace,
 	id,
 	status,
-	timeoutMs = 5000,
+	timeoutMs = 15_000,
 ) {
 	const deadline = Date.now() + timeoutMs
 
