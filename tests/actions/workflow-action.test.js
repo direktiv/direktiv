@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals'
 import {
+	workflowEchoActionSrc,
 	workflowMultiCommandActionSrc,
 	workflowUsingActionSrc,
 } from './fixtures'
@@ -57,6 +58,7 @@ describe('Action usage from workflow', () => {
 			namespace,
 			id,
 			'complete',
+			10_000,
 		)
 		expect(instance).toBeDefined()
 		expect(instance.body.data.status).toEqual('complete')
@@ -70,6 +72,47 @@ describe('Action usage from workflow', () => {
 				},
 			],
 		})
+	})
+
+	it('executes the echo action and returns the input', async () => {
+		const workflowResponse = await request(baseUrl)
+			.post(`/api/v2/namespaces/${namespace}/files`)
+			.set('Content-Type', 'application/json')
+			.send({
+				name: 'workflow-echo.wf.ts',
+				type: 'workflow',
+				mimeType: 'application/typescript',
+				data: btoa(workflowEchoActionSrc),
+			})
+		expect(workflowResponse.statusCode).toEqual(200)
+
+		const input = { hello: 'world' }
+
+		const executeResponse = await request(baseUrl)
+			.post(`/api/v2/namespaces/${namespace}/instances?path=workflow-echo.wf.ts`)
+			.send(input)
+		expect(executeResponse.statusCode).toEqual(200)
+		expect(executeResponse.body).toMatchObject({
+			data: {
+				id: expect.stringMatching(common.regex.uuidRegex),
+				path: '/workflow-echo.wf.ts',
+			},
+		})
+
+		const { id } = executeResponse.body.data
+
+		const instance = await waitForInstanceStatus(
+			baseUrl,
+			namespace,
+			id,
+			'complete',
+			10_000,
+		)
+		expect(instance).toBeDefined()
+		expect(instance.body.data.status).toEqual('complete')
+
+		const output = JSON.parse(instance.body.data.output)
+		expect(output).toMatchObject(input)
 	})
 
 	it('executes multiple commands in order within one action run', async () => {
@@ -102,6 +145,7 @@ describe('Action usage from workflow', () => {
 			namespace,
 			id,
 			'complete',
+			10_000
 		)
 		expect(instance).toBeDefined()
 		expect(instance.body.data.status).toEqual('complete')

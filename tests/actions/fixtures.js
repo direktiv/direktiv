@@ -61,3 +61,22 @@ function stateFirst() {
   return finish(result);
 }
 `
+
+export const workflowEchoActionSrc = `
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT30S",
+  state: "stateFirst",
+};
+
+const echo = generateAction({
+  type: "workflow",
+  image: "direktiv/echo:dev",
+  size: "small",
+});
+
+function stateFirst(input: unknown) {
+  const result = echo(input);
+  return finish(result);
+}
+`
