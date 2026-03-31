@@ -1,10 +1,10 @@
 import { AndGroup, Connector, OrGroup } from "~/design/Policy/Group";
+import type { ExpressionPath, PolicyLayoutNode } from "./types";
 
 import { Condition } from "~/design/Policy/Condition";
 import type { ExpressionType } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
 import type { PatternElement } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/like";
 import { Placeholder } from "~/design/Policy/Placeholder";
-import type { PolicyLayoutNode } from "./types";
 import { Separator } from "~/design/Separator";
 import { containsOrGroup } from "./utils";
 import { formatExpression } from "./formatExpression";
@@ -84,7 +84,23 @@ const splitConditionExpression = (
   return undefined;
 };
 
-const PolicyNode = ({ node }: { node: PolicyLayoutNode }) => {
+type PlaceholderAction = "add-condition" | "add-or-group";
+
+type PolicyNodeProps = {
+  node: PolicyLayoutNode;
+  onConditionClick?: (path: ExpressionPath) => void;
+  onPlaceholderAction?: (
+    path: ExpressionPath,
+    operator: "&&" | "||",
+    action: PlaceholderAction
+  ) => void;
+};
+
+const PolicyNode = ({
+  node,
+  onConditionClick,
+  onPlaceholderAction,
+}: PolicyNodeProps) => {
   // Condition nodes are the terminal expressions in the policy
   // tree, they render directly as a condition component.
   if (node.type === "condition") {
@@ -93,7 +109,11 @@ const PolicyNode = ({ node }: { node: PolicyLayoutNode }) => {
     const parts = splitConditionExpression(node.expression);
 
     return (
-      <Condition className="font-mono" title={title}>
+      <Condition
+        className="font-mono"
+        title={title}
+        onClick={() => onConditionClick?.(node.path)}
+      >
         {parts ? (
           <div className="flex size-full flex-col overflow-hidden">
             {parts.label}
@@ -115,10 +135,22 @@ const PolicyNode = ({ node }: { node: PolicyLayoutNode }) => {
     return (
       <OrGroup childSizes={[...node.childSizes, 1]}>
         {node.branches.map((branch, index) => (
-          <PolicyNode key={index} node={branch} />
+          <PolicyNode
+            key={index}
+            node={branch}
+            onConditionClick={onConditionClick}
+            onPlaceholderAction={onPlaceholderAction}
+          />
         ))}
         <AndGroup>
-          <Placeholder />
+          <Placeholder
+            addCondition={() =>
+              onPlaceholderAction?.(node.path, "||", "add-condition")
+            }
+            addOrGroup={() =>
+              onPlaceholderAction?.(node.path, "||", "add-or-group")
+            }
+          />
         </AndGroup>
       </OrGroup>
     );
@@ -132,7 +164,14 @@ const PolicyNode = ({ node }: { node: PolicyLayoutNode }) => {
     <AndGroup>
       {node.items.flatMap((item, index) => {
         const nextItem = node.items[index + 1];
-        const renderedItems = [<PolicyNode key={index} node={item} />];
+        const renderedItems = [
+          <PolicyNode
+            key={index}
+            node={item}
+            onConditionClick={onConditionClick}
+            onPlaceholderAction={onPlaceholderAction}
+          />,
+        ];
 
         // Connect neighboring AND siblings unless either side is an
         // OR group. OR groups render their own branching structure.
@@ -147,7 +186,14 @@ const PolicyNode = ({ node }: { node: PolicyLayoutNode }) => {
         <Connector />
       )}
 
-      <Placeholder />
+      <Placeholder
+        addCondition={() =>
+          onPlaceholderAction?.(node.path, "&&", "add-condition")
+        }
+        addOrGroup={() =>
+          onPlaceholderAction?.(node.path, "&&", "add-or-group")
+        }
+      />
     </AndGroup>
   );
 };
