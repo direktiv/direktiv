@@ -1,10 +1,87 @@
 import { AndGroup, Connector, OrGroup } from "~/design/Policy/Group";
 
 import { Condition } from "~/design/Policy/Condition";
+import type { ExpressionType } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/types";
 import { Placeholder } from "~/design/Policy/Placeholder";
 import type { PolicyLayoutNode } from "./types";
+import { Separator } from "~/design/Separator";
 import { containsOrGroup } from "./utils";
 import { formatExpression } from "./formatExpression";
+
+const getRootVar = (expression: ExpressionType): string | undefined => {
+  if ("Var" in expression) return expression.Var;
+  if ("." in expression) return getRootVar(expression["."].left);
+  return undefined;
+};
+
+type ConditionParts = {
+  label: string;
+  operator: string;
+  value: string;
+};
+
+const splitConditionExpression = (
+  expression: ExpressionType
+): ConditionParts | undefined => {
+  if ("has" in expression) {
+    const rootVar = getRootVar(expression.has.left);
+    return {
+      label: rootVar ?? formatExpression(expression.has.left),
+      operator: "has",
+      value: expression.has.attr,
+    };
+  }
+
+  if ("in" in expression) {
+    const rootVar = getRootVar(expression.in.left);
+    return {
+      label: rootVar ?? formatExpression(expression.in.left),
+      operator: "in",
+      value: formatExpression(expression.in.right),
+    };
+  }
+
+  if ("==" in expression) {
+    const rootVar = getRootVar(expression["=="].left);
+    return {
+      label: rootVar ?? formatExpression(expression["=="].left),
+      operator: "==",
+      value: formatExpression(expression["=="].right),
+    };
+  }
+
+  if ("like" in expression) {
+    const rootVar = getRootVar(expression.like.left);
+    return {
+      label: rootVar ?? formatExpression(expression.like.left),
+      operator: "like",
+      value:
+        formatExpression({
+          Value: formatExpression({ like: expression.like }),
+        })
+          .split(" like ")
+          .at(-1) ?? "",
+    };
+  }
+
+  if ("getTag" in expression) {
+    const rootVar = getRootVar(expression.getTag.left);
+    const right = expression.getTag.right;
+
+    const value =
+      "Value" in right && typeof right.Value === "string"
+        ? right.Value
+        : formatExpression(right);
+
+    return {
+      label: rootVar ?? formatExpression(expression.getTag.left),
+      operator: "getTag",
+      value,
+    };
+  }
+
+  return undefined;
+};
 
 const PolicyNode = ({ node }: { node: PolicyLayoutNode }) => {
   // Condition nodes are the terminal expressions in the policy
@@ -12,10 +89,21 @@ const PolicyNode = ({ node }: { node: PolicyLayoutNode }) => {
   if (node.type === "condition") {
     const preview = formatExpression(node.expression);
     const title = JSON.stringify(node.expression, null, 2);
+    const parts = splitConditionExpression(node.expression);
 
     return (
       <Condition className="font-mono" title={title}>
-        <span className="block w-full">{preview}</span>
+        {parts ? (
+          <div className="flex size-full flex-col overflow-hidden">
+            {parts.label}
+            <Separator className="shrink-0" />
+            {parts.operator}
+            <Separator className="shrink-0" />
+            {parts.value}
+          </div>
+        ) : (
+          <span className="block w-full">{preview}</span>
+        )}
       </Condition>
     );
   }
