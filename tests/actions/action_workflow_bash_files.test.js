@@ -9,6 +9,8 @@ import request from '../common/request'
 const namespace = basename(fileURLToPath(import.meta.url))
 const testWorkflow = 'test-workflow-bash.yaml'
 
+// Test was relevant to old yaml workflow engine.
+// TDI-413 created to update or remove this if no longer relevant.
 describe.skip('Test workflow bash commands via action', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 

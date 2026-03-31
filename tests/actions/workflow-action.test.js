@@ -68,7 +68,7 @@ describe('Action usage from workflow', () => {
 			bash: [
 				{
 					success: true,
-					result: "myenvvalue",
+					result: 'myenvvalue',
 				},
 			],
 		})
@@ -89,7 +89,9 @@ describe('Action usage from workflow', () => {
 		const input = { hello: 'world' }
 
 		const executeResponse = await request(baseUrl)
-			.post(`/api/v2/namespaces/${namespace}/instances?path=workflow-echo.wf.ts`)
+			.post(
+				`/api/v2/namespaces/${namespace}/instances?path=workflow-echo.wf.ts`,
+			)
 			.send(input)
 		expect(executeResponse.statusCode).toEqual(200)
 		expect(executeResponse.body).toMatchObject({
@@ -145,7 +147,7 @@ describe('Action usage from workflow', () => {
 			namespace,
 			id,
 			'complete',
-			10_000
+			10_000,
 		)
 		expect(instance).toBeDefined()
 		expect(instance.body.data.status).toEqual('complete')
@@ -169,4 +171,3 @@ describe('Action usage from workflow', () => {
 		})
 	})
 })
-
