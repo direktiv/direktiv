@@ -157,8 +157,8 @@ jobs:
             suite: part2
           - type: api
             suite: services
-          #- type: api
-          #  suite: actions
+          - type: api
+            suite: actions
 
           - type: playwright
             suite: "1/4"
