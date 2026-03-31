@@ -2,10 +2,12 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/direktiv/direktiv/internal/core"
+	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -50,6 +52,9 @@ func (e *secretsController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//nolint:contextcheck
+	telemetry.LogNamespace(telemetry.LogLevelInfo, namespace, fmt.Sprintf("secret deleted: %s", secretName))
+
 	writeOk(w)
 }
 
@@ -71,6 +76,9 @@ func (e *secretsController) update(w http.ResponseWriter, r *http.Request) {
 		writeSecretsError(w, err)
 		return
 	}
+
+	//nolint:contextcheck
+	telemetry.LogNamespace(telemetry.LogLevelInfo, namespace, fmt.Sprintf("secret updated: %s", secretName))
 
 	writeJSON(w, convert(s))
 }
@@ -97,6 +105,9 @@ func (e *secretsController) create(w http.ResponseWriter, r *http.Request) {
 	// Build response before clearing Data so convert() sees len(Data) > 0 and sets initialized: true
 	apiResp := convert(secret)
 	secret.Data = []byte{}
+
+	//nolint:contextcheck
+	telemetry.LogNamespace(telemetry.LogLevelInfo, namespace, fmt.Sprintf("secret created: %s", req.Name))
 
 	writeJSON(w, apiResp)
 }
