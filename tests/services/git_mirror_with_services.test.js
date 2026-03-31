@@ -6,7 +6,7 @@ import { retry50 } from '../common/retry'
 
 const testNamespace = 'git-test-services'
 
-// Outdated
+// Rewrite in TDI-414 using a new examples repository with typescript workflows
 describe.skip('Test services crud operations', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
