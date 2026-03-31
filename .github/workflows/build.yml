@@ -149,8 +149,6 @@ jobs:
             suite: gateway3
           - type: api
             suite: instances
-          #- type: api
-          #  suite: kubernetes
           - type: api
             suite: part1
           - type: api
@@ -159,7 +157,6 @@ jobs:
             suite: services
           - type: api
             suite: actions
-
           - type: playwright
             suite: "1/4"
           - type: playwright
