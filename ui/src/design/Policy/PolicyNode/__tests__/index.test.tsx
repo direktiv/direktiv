@@ -10,6 +10,7 @@ const renderCondition = (expression: ExpressionType) => {
     type: "condition",
     rows: 1,
     expression,
+    path: [],
   };
 
   render(<PolicyNode node={node} />);
