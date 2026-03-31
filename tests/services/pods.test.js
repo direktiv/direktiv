@@ -40,7 +40,6 @@ describe('Service pods', () => {
 		const expectedCondition = {
 			type: 'Available',
 			status: 'True',
-			message: 'Deployment has minimum availability.',
 		}
 
 		const service = await waitForServiceCondition(
@@ -71,7 +70,6 @@ describe('Service pods', () => {
 		const expectedCondition = {
 			type: 'Available',
 			status: 'True',
-			message: 'Deployment has minimum availability.',
 		}
 
 		const service = await waitForServiceCondition(

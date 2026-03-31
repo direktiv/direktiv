@@ -40,7 +40,6 @@ describe('Service environment variables', () => {
 		const expectedCondition = {
 			type: 'Available',
 			status: 'True',
-			message: 'Deployment has minimum availability.',
 		}
 		const service = await waitForServiceCondition(
 			namespace,

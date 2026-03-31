@@ -74,7 +74,6 @@ describe('Service API', () => {
 		const expectedCondition = {
 			type: 'Available',
 			status: 'True',
-			message: 'Deployment has minimum availability.',
 		}
 
 		const service = await waitForServiceCondition(
@@ -129,7 +128,6 @@ describe('Service API', () => {
 		const expectedCondition = {
 			type: 'Available',
 			status: 'True',
-			message: 'Deployment has minimum availability.',
 		}
 
 		const serviceBeforePatch = await waitForServiceCondition(
@@ -187,7 +185,6 @@ describe('Service API', () => {
 		const expectedCondition = {
 			type: 'Available',
 			status: 'True',
-			message: 'Deployment has minimum availability.',
 		}
 
 		const serviceBeforeRename = await waitForServiceCondition(

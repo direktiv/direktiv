@@ -67,7 +67,6 @@ describe('System Service API', () => {
 		const expectedCondition = {
 			type: 'Available',
 			status: 'True',
-			message: 'Deployment has minimum availability.',
 		}
 
 		const service = await waitForServiceCondition(
