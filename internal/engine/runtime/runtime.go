@@ -77,6 +77,8 @@ func New(instID uuid.UUID, metadata map[string]string, mappings string, hooks ..
 		{"execService", rt.service},
 		{"setVariable", rt.setVariable},
 		{"getVariable", rt.getVariable},
+		{"base64Encode", rt.base64Encode},
+		{"base64Decode", rt.base64Decode},
 	}
 
 	for _, v := range setList {
@@ -483,4 +485,18 @@ func ParseFuncNameFromText(s string) string {
 	}
 
 	return ""
+}
+
+func (rt *Runtime) base64Encode(input string) sobek.Value {
+	encoded := base64.StdEncoding.EncodeToString([]byte(input))
+	return rt.vm.ToValue(encoded)
+}
+
+func (rt *Runtime) base64Decode(encoded string) sobek.Value {
+	decoded, err := base64.StdEncoding.DecodeString(encoded)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Sprintf("invalid base64: %s", err.Error())))
+	}
+
+	return rt.vm.ToValue(string(decoded))
 }
