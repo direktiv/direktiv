@@ -12,12 +12,12 @@ import helpers from '../common/helpers'
 import regex from '../common/regex'
 import request from '../common/request'
 
-const namespace = helpers.randomNamespaceName()
-
 const baseUrl = config.getDirektivBaseUrl()
+let namespace = ''
 
 describe('Service API', () => {
 	beforeEach(async () => {
+		namespace = helpers.randomNamespaceName()
 		const nsRes = await request(baseUrl).post('/api/v2/namespaces').send({
 			name: namespace,
 		})

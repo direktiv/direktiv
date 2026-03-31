@@ -6,11 +6,12 @@ import config from '../common/config'
 import helpers from '../common/helpers'
 import request from '../common/request'
 
-const namespace = helpers.randomNamespaceName()
 const baseUrl = config.getDirektivBaseUrl()
+let namespace = ''
 
 describe('Service rebuild', () => {
 	beforeEach(async () => {
+		namespace = helpers.randomNamespaceName()
 		const nsRes = await request(baseUrl).post('/api/v2/namespaces').send({
 			name: namespace,
 		})

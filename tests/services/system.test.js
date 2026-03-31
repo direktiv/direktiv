@@ -10,10 +10,11 @@ import { waitForServiceCondition } from './utils'
 
 const baseUrl = config.getDirektivBaseUrl()
 const systemNamespace = 'system'
-const normalNamespace = helpers.randomNamespaceName()
+let normalNamespace = ''
 
 describe('System Service API', () => {
 	beforeEach(async () => {
+		normalNamespace = helpers.randomNamespaceName()
 		const systemNsResponse = await request(baseUrl)
 			.post('/api/v2/namespaces')
 			.send({

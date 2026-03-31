@@ -9,10 +9,11 @@ import { waitForInstanceStatus } from '../instances/utils'
 import { waitForServiceCondition } from './utils'
 
 const baseUrl = config.getDirektivBaseUrl()
-const namespace = helpers.randomNamespaceName()
+let namespace = ''
 
 describe('Service usage from workflow', () => {
 	beforeEach(async () => {
+		namespace = helpers.randomNamespaceName()
 		const nsRes = await request(baseUrl).post('/api/v2/namespaces').send({
 			name: namespace,
 		})
