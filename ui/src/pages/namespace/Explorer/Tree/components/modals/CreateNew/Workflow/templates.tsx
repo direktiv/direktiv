@@ -158,11 +158,46 @@ const variables = {
   data: `const flow: FlowDefinition = {
   type: "default",
   timeout: "PT30S",
-  state: "stateFirst",
+  state: "stateFetchJoke",
 };
 
-function stateFirst(): StateFunction<unknown> {
-  return finish("TBD");
+function stateFetchJoke() {
+  const fetch = generateAction({
+    image: "direktiv/http-request:dev",
+  });
+
+  const response = fetch({
+    method: "GET",
+    url: "https://official-joke-api.appspot.com/random_joke",
+  });
+
+  return transition(stateStoreVariable, response[0].result);
+}
+
+function stateStoreVariable(joke: {
+  id: number;
+  type: string;
+  setup: string;
+  punchline: string;
+}) {
+  const encodedJoke = base64Encode(JSON.stringify(joke));
+
+  setVariable({
+    scope: "namespace",
+    name: "joke",
+    content: encodedJoke,
+  });
+
+  return transition(stateOutput, {});
+}
+
+function stateOutput() {
+  const joke = getVariable({
+    scope: "namespace",
+    name: "joke",
+  });
+  const decodedJoke = base64Decode(joke);
+  return finish(decodedJoke);
 }
 `,
 };
