@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/direktiv/direktiv/internal/datastore"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
+	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -18,6 +20,10 @@ import (
 
 type varController struct {
 	db *gorm.DB
+}
+
+func isNamespaceVariable(v *datastore.RuntimeVariable) bool {
+	return v.WorkflowPath == "" && v.InstanceID == uuid.Nil
 }
 
 func (e *varController) mountRouter(r chi.Router) {
@@ -108,6 +114,7 @@ func (e *varController) getRaw(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *varController) delete(w http.ResponseWriter, r *http.Request) {
+	namespace := chi.URLParam(r, "namespace")
 	id, err := uuid.Parse(chi.URLParam(r, "variableID"))
 	if err != nil {
 		writeError(w, &Error{
@@ -126,7 +133,15 @@ func (e *varController) delete(w http.ResponseWriter, r *http.Request) {
 	defer db.Rollback()
 	dStore := datasql.NewStore(db)
 
-	// Fetch one
+	variable, err := dStore.RuntimeVariables().GetByID(r.Context(), id)
+	if err != nil {
+		writeDataStoreError(w, err)
+		return
+	}
+
+	isNamespaceVariable := isNamespaceVariable(variable)
+
+	// Delete one
 	err = dStore.RuntimeVariables().Delete(r.Context(), id)
 	if err != nil {
 		writeDataStoreError(w, err)
@@ -139,10 +154,16 @@ func (e *varController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if isNamespaceVariable {
+		//nolint:contextcheck
+		telemetry.LogNamespace(telemetry.LogLevelInfo, namespace, fmt.Sprintf("variable deleted: %s", id))
+	}
+
 	writeOk(w)
 }
 
 func (e *varController) deleteMultiple(w http.ResponseWriter, r *http.Request) {
+	namespace := chi.URLParam(r, "namespace")
 	idsString := r.URL.Query().Get("ids")
 	if idsString == "" {
 		writeError(w, &Error{
@@ -177,7 +198,18 @@ func (e *varController) deleteMultiple(w http.ResponseWriter, r *http.Request) {
 	dStore := datasql.NewStore(db)
 	var err error
 
+	namespaceVariableCount := 0
 	for _, id := range uuids {
+		variable, err := dStore.RuntimeVariables().GetByID(r.Context(), id)
+		if err != nil {
+			writeDataStoreError(w, err)
+			return
+		}
+		isNamespaceVariable := isNamespaceVariable(variable)
+		if isNamespaceVariable {
+			namespaceVariableCount++
+		}
+
 		err = dStore.RuntimeVariables().Delete(r.Context(), id)
 		if err != nil {
 			writeDataStoreError(w, err)
@@ -189,6 +221,11 @@ func (e *varController) deleteMultiple(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeInternalError(w, err)
 		return
+	}
+
+	if namespaceVariableCount > 0 {
+		//nolint:contextcheck
+		telemetry.LogNamespace(telemetry.LogLevelInfo, namespace, fmt.Sprintf("variables deleted: %s", idsString))
 	}
 
 	writeOk(w)
@@ -273,6 +310,8 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	isNamespaceVariable := req.WorkflowPath == "" && instanceID == uuid.Nil
+
 	// Create variable.
 	newVar, err := dStore.RuntimeVariables().Create(r.Context(), &datastore.RuntimeVariable{
 		Namespace:    namespace,
@@ -296,6 +335,11 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeInternalError(w, err)
 		return
+	}
+
+	if isNamespaceVariable {
+		//nolint:contextcheck
+		telemetry.LogNamespace(telemetry.LogLevelInfo, namespace, fmt.Sprintf("variable created: %s", req.Name))
 	}
 
 	writeJSON(w, convertVariable(newVar))
@@ -462,7 +506,7 @@ func convertVariable(v *datastore.RuntimeVariable) any {
 
 	res.Typ = "namespace-variable"
 	res.Reference = v.Namespace
-	if v.InstanceID.String() != (uuid.UUID{}).String() {
+	if v.InstanceID != uuid.Nil {
 		res.Reference = v.InstanceID.String()
 		res.Typ = "instance-variable"
 	}
