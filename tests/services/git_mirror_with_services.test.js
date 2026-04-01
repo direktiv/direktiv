@@ -6,7 +6,8 @@ import { retry50 } from '../common/retry'
 
 const testNamespace = 'git-test-services'
 
-describe('Test services crud operations', () => {
+// Rewrite in TDI-414 using a new examples repository with typescript workflows
+describe.skip('Test services crud operations', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	it(`should create a new git mirrored namespace`, async () => {
