@@ -181,10 +181,11 @@ function stateStoreVariable(joke: {
   punchline: string;
 }) {
   const encodedJoke = base64Encode(JSON.stringify(joke));
+  const instanceId = id();
 
   setVariable({
     scope: "namespace",
-    name: "joke",
+    name: \`joke-\${instanceId}\`,
     content: encodedJoke,
   });
 
@@ -192,9 +193,11 @@ function stateStoreVariable(joke: {
 }
 
 function stateOutput() {
+  const instanceId = id();
+
   const joke = getVariable({
     scope: "namespace",
-    name: "joke",
+    name: \`joke-\${instanceId}\`,
   });
   const decodedJoke = base64Decode(joke);
   return finish(decodedJoke);
