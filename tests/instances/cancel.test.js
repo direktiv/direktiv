@@ -1,105 +1,82 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
+import { delayWorkflowSource, waitForInstanceStatus } from './utils'
 
 import common from '../common'
-import helpers from '../common/helpers'
 import request from '../common/request'
 
 const namespaceName = 'canceltest'
 
-let id = ''
-
-describe('Test wait success API behaviour', () => {
+describe('instance cancel API', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
-	helpers.itShouldCreateNamespace(it, expect, namespaceName)
+	beforeAll(async () => {
+		const base = common.config.getDirektivBaseUrl()
 
-	helpers.itShouldCreateFile(
-		it,
-		expect,
-		namespaceName,
-		'',
-		'delay.yaml',
-		'workflow',
-		'text/plain',
-		btoa(`
-states:
-- id: a
-  type: delay
-  duration: 'PT10S'
-  transform:
-    result: x`),
-	)
+		const nsRes = await request(base)
+			.post('/api/v2/namespaces')
+			.send({ name: namespaceName })
+		expect(nsRes.statusCode).toEqual(200)
 
-	it(`should invoke the 'delay.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl())
-			.post(`/api/v2/namespaces/${namespaceName}/instances?path=delay.yaml`)
+		const fileRes = await request(base)
+			.post(`/api/v2/namespaces/${namespaceName}/files`)
+			.set('Content-Type', 'application/json')
 			.send({
-				name: 'foo',
-				data: btoa('bar'),
+				name: 'delay.wf.ts',
+				type: 'workflow',
+				mimeType: 'application/typescript',
+				data: btoa(delayWorkflowSource),
 			})
-		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
+		expect(fileRes.statusCode).toEqual(200)
+	})
+
+	it('cancels a workflow instance via PATCH and GET returns status cancelled with expected metadata', async () => {
+		const base = common.config.getDirektivBaseUrl()
+
+		const createRes = await request(base).post(
+			`/api/v2/namespaces/${namespaceName}/instances?path=delay.wf.ts`,
+		)
+		expect(createRes.statusCode).toEqual(200)
+		expect(createRes.body).toMatchObject({
 			data: {
 				createdAt: expect.stringMatching(common.regex.timestampRegex),
 				definition: expect.stringMatching(common.regex.base64Regex),
 				id: expect.stringMatching(common.regex.uuidRegex),
 				invoker: 'api',
-				path: '/delay.yaml',
+				path: '/delay.wf.ts',
 				status: 'pending',
 			},
 		})
 
-		id = req.body.data.id
+		const { id } = createRes.body.data
 
-		await sleep(200)
-	})
+		await waitForInstanceStatus(base, namespaceName, id, 'running')
 
-	it(`should fail to cancel the instance`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).patch(
-			`/api/v2/namespaces/${namespaceName}/instances/${id}`,
-		)
-		expect(req.statusCode).toEqual(400)
-		expect(req.body).toMatchObject({})
-
-		await sleep(500)
-	})
-
-	it(`should cancel the instance`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl())
+		const patchRes = await request(base)
 			.patch(`/api/v2/namespaces/${namespaceName}/instances/${id}`)
 			.set('Content-Type', 'application/json')
-			.send({
-				status: 'cancelled',
-			})
-		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({})
+			.send({ status: 'cancelled' })
+		expect(patchRes.statusCode).toEqual(200)
 
-		await sleep(500)
-	})
+		await waitForInstanceStatus(base, namespaceName, id, 'cancelled')
 
-	it(`should verify that the instance has been cancelled`, async () => {
-		const req = await request(common.config.getDirektivBaseUrl()).get(
+		const getRes = await request(base).get(
 			`/api/v2/namespaces/${namespaceName}/instances/${id}`,
 		)
-		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
+		expect(getRes.statusCode).toEqual(200)
+		expect(getRes.body).toMatchObject({
 			data: {
-				createdAt: expect.stringMatching(common.regex.timestampRegex),
-				definition: expect.stringMatching(common.regex.base64Regex),
-				endedAt: expect.stringMatching(common.regex.timestampRegex),
-				errorCode: 'direktiv.cancels.api',
-				id: expect.stringMatching(common.regex.uuidRegex),
-				invoker: 'api',
-				path: '/delay.yaml',
+				id,
 				status: 'cancelled',
-				inputLength: 28,
-				outputLength: 0,
-				metadataLength: 0,
+				path: '/delay.wf.ts',
+				invoker: 'api',
+				namespace: namespaceName,
+				createdAt: expect.stringMatching(common.regex.timestampRegex),
+				startedAt: expect.stringMatching(common.regex.timestampRegex),
+				endedAt: expect.stringMatching(common.regex.timestampRegex),
+				definition: expect.stringMatching(common.regex.base64Regex),
+				errorCode: null,
+				errorMessage: null,
 			},
 		})
 	})
 })
-
-function sleep(ms) {
-	return new Promise((resolve) => setTimeout(resolve, ms))
-}

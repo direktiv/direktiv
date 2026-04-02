@@ -136,7 +136,6 @@ type instController struct {
 
 func (e *instController) mountRouter(r chi.Router) {
 	r.Get("/{instanceID}/subscribe", e.dummy)
-	r.Get("/{instanceID}/input", e.dummy)
 	r.Get("/{instanceID}/history", e.history)
 	r.Get("/{instanceID}/metadata", e.dummy)
 	r.Get("/{instanceID}/flow", e.flow)

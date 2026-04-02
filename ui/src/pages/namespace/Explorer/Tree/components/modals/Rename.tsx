@@ -6,13 +6,17 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import { SubmitHandler, useForm } from "react-hook-form";
+import {
+  addServiceFileExtension,
+  addWorkflowFileExtension,
+  addYamlFileExtension,
+} from "../../utils";
 import { getFilenameFromPath, getParentFromPath } from "~/api/files/utils";
 
 import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { TextCursorInput } from "lucide-react";
-import { addWorkflowFileExtension } from "../../utils";
 import { useRenameFile } from "~/api/files/mutate/renameFile";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -41,7 +45,14 @@ const Rename = ({
       z.object({
         name: FileNameSchema.transform((enteredName) => {
           if (file.type !== "directory" && file.type !== "file") {
-            return addWorkflowFileExtension(enteredName);
+            switch (file.type) {
+              case "workflow":
+                return addWorkflowFileExtension(enteredName);
+              case "service":
+                return addServiceFileExtension(enteredName);
+              default:
+                return addYamlFileExtension(enteredName);
+            }
           }
           return enteredName;
         }).refine(

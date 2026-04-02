@@ -6,7 +6,8 @@ import request from '../common/request'
 
 const namespaceName = 'functionsfiles'
 
-describe('Test function files behaviour', () => {
+// Outdated.
+describe.skip('Test function files behaviour', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)

@@ -125,3 +125,42 @@ declare function getSecrets(secrets: string[]): Record<string, string>;
  * @param secret the name of one secret
  */
 declare function getSecret(secret: string): string;
+
+/**
+ * Config for getVariable and setVariable
+ */
+declare type VariableConfig = {
+  scope: "workflow" | "namespace" | "instance";
+  name: string;
+  content?: string;
+};
+
+/**
+ * Sets a variable in the specified scope.
+ * @param config - configuration object containing scope, name, and content
+ * - scope: required, "workflow", "namespace", or "filesystem"
+ * - name: required, name of the variable
+ * - content: required, base64 encoded content to store
+ */
+declare function setVariable(config: VariableConfig): void;
+
+/**
+ * Gets a variable from the specified scope.
+ * @param config - configuration object containing scope and name
+ * - scope: required, "workflow", "namespace", or "filesystem"
+ * - name: required, name of the variable
+ * @returns base64 encoded variable content
+ */
+declare function getVariable(config: VariableConfig): string;
+
+/**
+ * Returns a base64 encoded string based on the input
+ * @param input unencoded data, any JS data type
+ */
+declare function base64Encode(inpout: unknown): string;
+
+/**
+ * Decodes a base64 encoded string
+ * @param input base64 encoded string
+ */
+declare function base64Decode(input: string): string;

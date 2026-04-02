@@ -15,6 +15,7 @@ import (
 	"github.com/direktiv/direktiv/internal/compiler"
 	"github.com/direktiv/direktiv/internal/core"
 	"github.com/direktiv/direktiv/internal/datastore/datasql"
+	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filesql"
 	"github.com/go-chi/chi/v5"
@@ -223,6 +224,9 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 		Action: cache.CacheUpdate,
 	})
 
+	//nolint:contextcheck
+	telemetry.LogNamespace(telemetry.LogLevelInfo, namespace, fmt.Sprintf("file deleted: %s", path))
+
 	writeOk(w)
 }
 
@@ -290,6 +294,9 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 				Error("publish filesystem event", "err", err)
 		}
 	}
+
+	//nolint:contextcheck
+	telemetry.LogNamespace(telemetry.LogLevelInfo, namespace, fmt.Sprintf("file created: %s", path))
 
 	res := struct {
 		*filestore.File
