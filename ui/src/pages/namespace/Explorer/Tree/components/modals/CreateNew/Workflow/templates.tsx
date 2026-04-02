@@ -347,10 +347,10 @@ const SYSTEM_SERVICE_PATH = "/bash.svc.json";
 const flow: FlowDefinition = {
   type: "default",
   timeout: "PT5M",
-  state: "stateQueryService",
+  state: "stateRunService",
 };
 
-function stateQueryService() {
+function stateRunService() {
   const result = execService({
     scope: "system",
     path: SYSTEM_SERVICE_PATH,
@@ -360,12 +360,18 @@ function stateQueryService() {
         {
           command: "ls -la",
         },
-      ],
-      files: [
-        { name: "foobar", scope: "namespace" },
-        { name: "/test.wf.ts", scope: "file" },
+        {
+          command: "cat foobar",
+        },
+        {
+          command: "cat test.wf.ts",
+        },
       ],
     },
+    files: [
+      { name: "foobar", scope: "namespace" },
+      { name: "/test.wf.ts", scope: "file" },
+    ],
   });
 
   return finish(result);
