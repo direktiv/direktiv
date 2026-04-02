@@ -66,9 +66,9 @@ declare type ActionConfig = {
 };
 
 /**
- * Describes a file passed into an action call.
+ * Describes a file passed into an action or service call.
  */
-declare type ActionFileObject = {
+declare type FileObject = {
   name: string;
   scope: "namespace" | "workflow" | "file";
   permission?: string;
@@ -79,7 +79,7 @@ declare type ActionFileObject = {
  */
 declare type ActionInvokeOptions = {
   timeout?: string;
-  files?: ActionFileObject[];
+  files?: FileObject[];
 };
 
 declare interface ActionInvoker {
@@ -107,14 +107,6 @@ declare interface ActionInvoker {
  * - envs: optional, { name: string, value: string }[].
  */
 declare function generateAction(config: ActionConfig): ActionInvoker;
-
-/**
- * Describes a file passed into a service
- */
-declare type FileObject = {
-  scope: "workflow" | "namespace" | "file";
-  name: string;
-};
 
 /**
  * Config for execService
