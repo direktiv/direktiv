@@ -56,10 +56,8 @@ declare function now(): DateObject;
  */
 declare type ActionConfig = {
   image: string;
-  type?: "workflow";
   size?: "small" | "medium" | "large";
   retries?: number;
-  body?: object;
   cmd?: string;
   envs?: {
     name: string;
@@ -68,12 +66,28 @@ declare type ActionConfig = {
 };
 
 /**
+ * Describes a file passed into an action call.
+ */
+declare type ActionFileObject = {
+  name: string;
+  scope: "namespace" | "workflow" | "file";
+  permission?: string;
+};
+
+/**
+ * Optional options for invoking a generated action.
+ */
+declare type ActionInvokeOptions = {
+  timeout?: string;
+  files?: ActionFileObject[];
+};
+
+/**
  * Creates a custom action that can then be called as a
  * typescript function.
  *
  * @param ActionConfig configuration object
  * - image: required, image to run as a container
- * - type: optional, defaults to "workflow"
  * - size: optional, defaults to "medium", or "small" | "large"
  * - retries: optional, number,
  * - cmd: optional, command to run in container
@@ -81,13 +95,13 @@ declare type ActionConfig = {
  */
 declare function generateAction(
   config: ActionConfig
-): (payload?: unknown) => void;
+): (payload?: unknown, options?: ActionInvokeOptions) => unknown;
 
 /**
  * Describes a file passed into a service
  */
 declare type FileObject = {
-  scope: "workflow" | "namespace" | "filesystem";
+  scope: "workflow" | "namespace" | "file";
   name: string;
 };
 
@@ -97,8 +111,9 @@ declare type FileObject = {
 declare type ServiceConfig = {
   scope: "namespace" | "system";
   path: string;
-  payload: object;
-  retries: number;
+  payload?: unknown;
+  retries?: number;
+  timeout?: string;
   files?: FileObject[];
 };
 
@@ -109,10 +124,11 @@ declare type ServiceConfig = {
  * - scope: required, "namespace" or "system"
  * - path: required, path to service definition file
  * - payload: required, input for the service
- * - files: optional, [{ scope: "workflow" | "namespace" | "filesystem", name: string }]
+ * - timeout: optional, ISO8601 duration string, e.g. "PT2M"
+ * - files: optional, [{ scope: "workflow" | "namespace" | "file", name: string }]
  * - retries: optional, number of retries
  */
-declare function execService(config: ServiceConfig): () => void;
+declare function execService(config: ServiceConfig): unknown;
 
 /**
  * Returns a map where the key is the secret name and the value is the value of the secret
@@ -157,7 +173,7 @@ declare function getVariable(config: VariableConfig): string;
  * Returns a base64 encoded string based on the input
  * @param input unencoded data, any JS data type
  */
-declare function base64Encode(inpout: unknown): string;
+declare function base64Encode(input: unknown): string;
 
 /**
  * Decodes a base64 encoded string
