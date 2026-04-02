@@ -289,15 +289,101 @@ states:
 `,
 };
 
+const filesInAction = {
+  name: "files-in-action",
+  data: `// This workflow demonstrates mounting and using files with a generated workflow action.
+// Prerequisites (must exist before the workflow runs):
+// - Variable wf-var-one set in workflow scope
+// - File test.wf.ts in the namespace's filesystem
+
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT5M",
+  state: "stateRunAction",
+};
+
+const action = generateAction({
+  image: "direktiv/bash:dev",
+});
+
+function stateRunAction() {
+  const result = action(
+    {
+      commands: [
+        {
+          command: "ls -la",
+        },
+        {
+          command: "cat wf-var-one",
+        },
+        {
+          command: "cat test.wf.ts",
+        },
+      ],
+    },
+    {
+      files: [
+        { name: "wf-var-one", scope: "workflow" },
+        { name: "/test.wf.ts", scope: "file", permission: "0644" },
+      ],
+    },
+  );
+
+  return finish(result);
+}
+`,
+};
+
+const filesInService = {
+  name: "files-in-service",
+  data: `// This workflow demonstrates mounting and using files in a pre-existing service.
+// Prerequisites (must exist before the workflow runs):
+// - Service definition in "system" namespace at SYSTEM_SERVICE_PATH.
+// - Variable "foobar" set in the namespace
+// - File test.wf.ts in the namespace's filesystem
+
+const SYSTEM_SERVICE_PATH = "/bash.svc.json";
+
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT5M",
+  state: "stateQueryService",
+};
+
+function stateQueryService() {
+  const result = execService({
+    scope: "system",
+    path: SYSTEM_SERVICE_PATH,
+    payload: {
+      input: "hello",
+      commands: [
+        {
+          command: "ls -la",
+        },
+      ],
+      files: [
+        { name: "foobar", scope: "namespace" },
+        { name: "/test.wf.ts", scope: "file" },
+      ],
+    },
+  });
+
+  return finish(result);
+}
+`,
+};
+
 const templates = [
   hello,
+  branches,
   input,
   actions,
   services,
-  secrets,
   variables,
+  secrets,
+  filesInAction,
+  filesInService,
   error,
-  branches,
 ] as const;
 
 export default templates;
