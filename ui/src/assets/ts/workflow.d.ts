@@ -82,6 +82,19 @@ declare type ActionInvokeOptions = {
   files?: ActionFileObject[];
 };
 
+declare interface ActionInvoker {
+  /**
+   * Invoke the generated action.
+   *
+   * @param payload optional JSON payload for the action
+   * @param options optional invoke options
+   * - timeout: optional, ISO8601 duration string, e.g. "PT2M"
+   * - files: optional, [{ name, scope: "namespace" | "workflow" | "file": octal file mode string }]
+   * @returns JSON-decoded action response
+   */
+  (payload?: unknown, options?: ActionInvokeOptions): unknown;
+}
+
 /**
  * Creates a custom action that can then be called as a
  * typescript function.
@@ -93,9 +106,7 @@ declare type ActionInvokeOptions = {
  * - cmd: optional, command to run in container
  * - envs: optional, { name: string, value: string }[].
  */
-declare function generateAction(
-  config: ActionConfig
-): (payload?: unknown, options?: ActionInvokeOptions) => unknown;
+declare function generateAction(config: ActionConfig): ActionInvoker;
 
 /**
  * Describes a file passed into a service
