@@ -355,7 +355,6 @@ function stateRunService() {
     scope: "system",
     path: SYSTEM_SERVICE_PATH,
     payload: {
-      input: "hello",
       commands: [
         {
           command: "ls -la",
