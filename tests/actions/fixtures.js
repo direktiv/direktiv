@@ -138,7 +138,7 @@ function stateRunAction() {
     },
     files: [
       { name: "wf-var-one", scope: "workflow" },
-      { name: "/test.wf.ts", scope: "file", permission: "0644" },
+      { name: "/test.wf.ts", scope: "file", permission: "0600" },
     ],
   });
 

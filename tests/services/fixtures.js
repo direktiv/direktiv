@@ -85,3 +85,38 @@ function stateFirst() {
   return finish(serviceResponse);
 }
 `
+
+export const workflowFilesInSystemServiceSrc = `const SYSTEM_SERVICE_PATH = "/bash.svc.json";
+
+const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT5M",
+  state: "stateRunService",
+};
+
+function stateRunService() {
+  const result = execService({
+    scope: "system",
+    path: SYSTEM_SERVICE_PATH,
+    payload: {
+      commands: [
+        {
+          command: "ls -la",
+        },
+        {
+          command: "cat foobar",
+        },
+        {
+          command: "cat test.wf.ts",
+        },
+      ],
+    },
+    files: [
+      { name: "foobar", scope: "namespace", permission: "0755" },
+      { name: "/test.wf.ts", scope: "file" },
+    ],
+  });
+
+  return finish(result);
+}
+`

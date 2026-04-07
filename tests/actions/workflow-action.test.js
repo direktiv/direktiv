@@ -293,18 +293,20 @@ describe('Action usage from workflow', () => {
 
 		const output = JSON.parse(instance.body.data.output)
 
-		// 1) files are listed with ls command (including permissions for 0644)
+		// files are listed with ls command (including permissions for 0600)
 		expect(output?.bash?.[0]?.success).toEqual(true)
 		expect(output?.bash?.[0]?.result).toEqual(expect.stringContaining('test.wf.ts'))
-		expect(output?.bash?.[0]?.result).toEqual(expect.stringMatching(/-rw-r--r--.*\stest\.wf\.ts$/m))
+		expect(output?.bash?.[0]?.result).toEqual(expect.stringMatching(/-rw-------.*\stest\.wf\.ts$/m))
+		expect(output?.bash?.[0]?.result).toEqual(expect.stringContaining('wf-var-one'))
+		expect(output?.bash?.[0]?.result).toEqual(expect.stringMatching(/-rw-r--r--.*\swf-var-one$/m))
 
-		// 2) mounted workflow variable content is readable
+		// mounted workflow variable content is readable
 		expect(output?.bash?.[1]).toMatchObject({
 			success: true,
 			result: 'ht5erf',
 		})
 
-		// 3) mounted file content is readable
+		// mounted file content is readable
 		expect(output?.bash?.[2]?.success).toEqual(true)
 		expect(output?.bash?.[2]?.result).toEqual(expect.stringContaining('const flow: FlowDefinition'))
 	})
