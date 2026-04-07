@@ -14,12 +14,7 @@ import { UnknownExpressionSchema } from "~/pages/namespace/Explorer/Policy/schem
 import { ValueExpressionSchema } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/value";
 import { VarExpressionSchema } from "~/pages/namespace/Explorer/Policy/schema/primitives/conditions/expression/var";
 
-type UnaryPayload = { arg: ExpressionType };
 type BinaryPayload = { left: ExpressionType; right: ExpressionType };
-
-const fallBackExpressionUnary: UnaryPayload = {
-  arg: { Value: "<missing-arg>" },
-};
 
 const isEntityValue = (
   value: unknown
@@ -50,9 +45,10 @@ const formatEntityValue = (value: {
   return `${formattedType}::${formattedId}`;
 };
 
-const formatUnknownValue = (value: unknown) => {
+const formatUnknownValue = (object: { value: unknown }) => {
+  const value = object.value;
+
   if (isEntityValue(value)) return formatEntityValue(value);
-  if (typeof value === "string") return JSON.stringify(value);
   if (
     typeof value === "number" ||
     typeof value === "boolean" ||
@@ -60,7 +56,14 @@ const formatUnknownValue = (value: unknown) => {
   ) {
     return String(value);
   }
+  if (typeof value === "string") return JSON.stringify(value);
   return JSON.stringify(value) ?? String(value);
+};
+
+const formatUnknownResult = (unknownExpression: { Unknown: unknown }) => {
+  const firstEntry = Object.entries({ Unknown: unknownExpression.Unknown })[0];
+  if (firstEntry === undefined) return "unknown()";
+  return `unknown(${JSON.stringify(firstEntry[1])})`;
 };
 
 const formatLikePattern = (pattern: PatternElement[]) =>
@@ -70,8 +73,8 @@ const formatLikePattern = (pattern: PatternElement[]) =>
     )
     .join("");
 
-const formatRecord = (record: Record<string, ExpressionType>) =>
-  `{${Object.entries(record)
+const formatRecord = (record: { Record: Record<string, ExpressionType> }) =>
+  `{${Object.entries(record.Record)
     .map(([key, value]) => `${JSON.stringify(key)}: ${formatExpression(value)}`)
     .join(", ")}}`;
 
@@ -106,9 +109,39 @@ const getSingleObjectKey = <T extends Record<string, unknown>>(
 
 const formatBinaryOperand = (operand: ExpressionType): string => {
   if ("Var" in operand) return operand.Var;
-  if ("Value" in operand) return formatUnknownValue(operand.Value);
+  if ("Value" in operand && typeof operand.Value !== "object") {
+    return formatUnknownValue({ value: operand.Value });
+  }
   if ("Slot" in operand) return operand.Slot;
   return formatExpression(operand);
+};
+
+const formatAttributeExpression = (
+  data:
+    | {
+        ".": { left: ExpressionType; attr: string };
+      }
+    | {
+        has: { left: ExpressionType; attr: string };
+      }
+) => {
+  if ("." in data) {
+    return `${formatExpression(data["."].left)}.${data["."].attr}`;
+  }
+  if ("has" in data) {
+    return `${formatExpression(data.has.left)} has ${data.has.attr}`;
+  }
+
+  return "unknown attribute";
+};
+
+const formatUnaryExpression = (expression: {
+  [key: string]: { arg: ExpressionType };
+}) => {
+  const keys = Object.keys(expression);
+  const unary = keys[0] ?? "isEmpty";
+  const operand = expression[unary]?.arg ?? { Value: "<missing-arg>" };
+  return `${unary}(${formatExpression(operand)})`;
 };
 
 const formatBinaryExpression = (expression: {
@@ -164,6 +197,21 @@ const formatIsExpression = (expression: {
   return `${leftText} is ${entity_type} in ${formatExpression(inExpression)}`;
 };
 
+const formatLikeExpression = (expression: {
+  like: { left: ExpressionType; pattern: PatternElement[] };
+}) => {
+  const {
+    like: { left, pattern },
+  } = expression;
+  return `${formatExpression(left)} like "${formatLikePattern(pattern)}"`;
+};
+
+const formatVarExpression = (varExpression: { Var: string }) =>
+  varExpression.Var;
+
+const formatSlotExpression = (slotExpression: { Slot: string }) =>
+  slotExpression.Slot;
+
 export const formatExpression = (expression: ExpressionType): string => {
   const binaryExpression =
     BinaryExpressionSchema(ExpressionSchema).safeParse(expression);
@@ -180,44 +228,41 @@ export const formatExpression = (expression: ExpressionType): string => {
   }
 
   const varResult = VarExpressionSchema.safeParse(expression);
+
   if (varResult.success) {
-    return varResult.data.Var;
+    return formatVarExpression(varResult.data);
   }
 
   const valueResult = ValueExpressionSchema.safeParse(expression);
+
   if (valueResult.success) {
-    return formatUnknownValue(valueResult.data.Value);
+    return formatUnknownValue({ value: valueResult.data.Value });
   }
 
   const slotResult = SlotExpressionSchema.safeParse(expression);
+
   if (slotResult.success) {
-    return slotResult.data.Slot;
+    return formatSlotExpression(slotResult.data);
   }
 
   const unknownResult = UnknownExpressionSchema.safeParse(expression);
+
   if (unknownResult.success) {
-    const firstEntry = Object.entries(unknownResult.data.Unknown)[0];
-    if (firstEntry === undefined) return "unknown()";
-    return `unknown(${JSON.stringify(firstEntry[1])})`;
+    return formatUnknownResult(unknownResult.data);
   }
 
   const attributeResult =
     AttributeExpressionSchema(ExpressionSchema).safeParse(expression);
+
   if (attributeResult.success) {
-    const data = attributeResult.data;
-    if ("." in data) {
-      return `${formatExpression(data["."].left)}.${data["."].attr}`;
-    }
-    if ("has" in data) {
-      return `${formatExpression(data.has.left)} has ${data.has.attr}`;
-    }
+    return formatAttributeExpression(attributeResult.data);
   }
 
   const likeResult =
     LikeExpressionSchema(ExpressionSchema).safeParse(expression);
+
   if (likeResult.success) {
-    const { left, pattern } = likeResult.data.like;
-    return `${formatExpression(left)} like "${formatLikePattern(pattern)}"`;
+    return formatLikeExpression(likeResult.data);
   }
 
   const ifThenElseResult =
@@ -234,19 +279,17 @@ export const formatExpression = (expression: ExpressionType): string => {
   const recordResult =
     RecordExpressionSchema(ExpressionSchema).safeParse(expression);
   if (recordResult.success) {
-    return formatRecord(recordResult.data.Record);
+    return formatRecord(recordResult.data);
   }
 
   const unaryResult =
     UnaryExpressionSchema(ExpressionSchema).safeParse(expression);
   if (unaryResult.success) {
-    const data = unaryResult.data;
-    const unaryOperator = Object.keys(data)[0] as keyof typeof data;
-    const payload =
-      (data[unaryOperator] as UnaryPayload) ?? fallBackExpressionUnary;
-    if (unaryOperator === "!") return `!${formatExpression(payload.arg)}`;
-    if (unaryOperator === "neg") return `-${formatExpression(payload.arg)}`;
-    return `${unaryOperator}(${formatExpression(payload.arg)})`;
+    return formatUnaryExpression(
+      unaryResult.data as {
+        [key: string]: { arg: ExpressionType };
+      }
+    );
   }
 
   return JSON.stringify(expression) ?? String(expression);
