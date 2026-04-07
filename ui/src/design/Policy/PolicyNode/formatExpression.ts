@@ -73,12 +73,14 @@ const formatLikePattern = (pattern: PatternElement[]) =>
     )
     .join("");
 
-const formatRecord = (record: { Record: Record<string, ExpressionType> }) =>
+const formatRecordExpression = (record: {
+  Record: Record<string, ExpressionType>;
+}) =>
   `{${Object.entries(record.Record)
     .map(([key, value]) => `${JSON.stringify(key)}: ${formatExpression(value)}`)
     .join(", ")}}`;
 
-const formatIfThenElse = (expression: {
+const formatIfThenElseExpression = (expression: {
   "if-then-else": {
     if: ExpressionType;
     then: ExpressionType;
@@ -93,7 +95,7 @@ const formatIfThenElse = (expression: {
   )} else ${formatExpression(elseExpr)}`;
 };
 
-const formatSet = (expression: { Set: ExpressionType[] }) =>
+const formatSetExpression = (expression: { Set: ExpressionType[] }) =>
   `[${expression.Set.map((item) => formatExpression(item)).join(", ")}]`;
 
 const getSingleObjectKey = <T extends Record<string, unknown>>(
@@ -268,18 +270,18 @@ export const formatExpression = (expression: ExpressionType): string => {
   const ifThenElseResult =
     IfThenElseExpressionSchema(ExpressionSchema).safeParse(expression);
   if (ifThenElseResult.success) {
-    return formatIfThenElse(ifThenElseResult.data);
+    return formatIfThenElseExpression(ifThenElseResult.data);
   }
 
   const setResult = SetExpressionSchema(ExpressionSchema).safeParse(expression);
   if (setResult.success) {
-    return formatSet(setResult.data);
+    return formatSetExpression(setResult.data);
   }
 
   const recordResult =
     RecordExpressionSchema(ExpressionSchema).safeParse(expression);
   if (recordResult.success) {
-    return formatRecord(recordResult.data);
+    return formatRecordExpression(recordResult.data);
   }
 
   const unaryResult =
