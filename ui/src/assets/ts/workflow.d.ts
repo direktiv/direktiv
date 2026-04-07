@@ -153,3 +153,15 @@ declare function setVariable(config: VariableConfig): void;
  * @returns base64 encoded variable content
  */
 declare function getVariable(config: VariableConfig): string;
+
+/**
+ * Returns a base64 encoded string based on the input
+ * @param input unencoded data, any JS data type
+ */
+declare function base64Encode(inpout: unknown): string;
+
+/**
+ * Decodes a base64 encoded string
+ * @param input base64 encoded string
+ */
+declare function base64Decode(input: string): string;

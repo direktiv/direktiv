@@ -2,6 +2,14 @@ import config from './config'
 import regex from './regex'
 import request from './request'
 
+async function deleteNamespace(name) {
+	const response = await request(config.getDirektivBaseUrl()).delete(
+		`/api/v2/namespaces/${name}`,
+	)
+	if (response.statusCode !== 200)
+		throw Error(`could not delete namespace (${name}), ${response.error}`)
+}
+
 async function deleteAllNamespaces() {
 	const listResponse = await request(config.getDirektivBaseUrl()).get(
 		`/api/v2/namespaces`,
@@ -190,11 +198,15 @@ function randomLowercaseString(length) {
 	return result
 }
 
+function randomNamespaceName() {
+	return `jest-${randomLowercaseString(8)}`
+}
+
 export default {
+	deleteNamespace,
 	deleteAllNamespaces,
 	itShouldCreateNamespace,
 	itShouldTSWorkflow,
-
 	itShouldUpdateYamlFile,
 	itShouldDeleteFile,
 	dummyWorkflow,
@@ -207,4 +219,5 @@ export default {
 	itShouldCreateVariable,
 	sleep,
 	randomLowercaseString,
+	randomNamespaceName,
 }

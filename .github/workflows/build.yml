@@ -138,36 +138,33 @@ jobs:
       matrix:
         sections:
           - type: api
-            suit: engine
+            suite: engine
           #- type: api
-          #  suit: events
+          #  suite: events
           - type: api
-            suit: gateway1
+            suite: gateway1
           - type: api
-            suit: gateway2
+            suite: gateway2
           - type: api
-            suit: gateway3
+            suite: gateway3
           - type: api
-            suit: instances
-          #- type: api
-          #  suit: kubernetes
+            suite: instances
           - type: api
-            suit: part1
+            suite: part1
           - type: api
-            suit: part2
-          #- type: api
-          #  suit: services
-          #- type: api
-          #  suit: actions
-
+            suite: part2
+          - type: api
+            suite: services
+          - type: api
+            suite: actions
           - type: playwright
-            suit: "1/4"
+            suite: "1/4"
           - type: playwright
-            suit: "2/4"
+            suite: "2/4"
           - type: playwright
-            suit: "3/4"
+            suite: "3/4"
           - type: playwright
-            suit: "4/4"
+            suite: "4/4"
 
     steps:
       - name: Checkout code
@@ -210,13 +207,13 @@ jobs:
         env:
           DIREKTIV_BASE_URL: ${{ env.DIREKTIV_BASE_URL }}
         run: |
-          npm -prefix tests run jest -- ${{ matrix.sections.suit }}/ --runInBand
+          npm -prefix tests run jest -- ${{ matrix.sections.suite }}/ --runInBand
 
       - name: Run Playwright E2E tests
         id: playwrightRun
         if: matrix.sections.type == 'playwright'
         run: |
-          PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} task test:playwright
+          PLAYWRIGHT_SHARD=${{ matrix.sections.suite }} task test:playwright
         env:
           DIREKTIV_BASE_URL: ${{ env.DIREKTIV_BASE_URL }}
 
