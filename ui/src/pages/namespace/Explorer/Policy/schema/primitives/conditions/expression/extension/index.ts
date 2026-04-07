@@ -48,6 +48,26 @@ const cedarIpLiteralSchema = z.union([
   z.string().cidr({ version: "v6" }),
 ]);
 
+const cedarDatetimeLiteralSchema = z
+  .union([z.string().date(), z.string().datetime({ offset: true })])
+  .refine(
+    (value) => {
+      if (!value.includes("T")) {
+        return true;
+      }
+
+      if (value.endsWith("Z")) {
+        return !value.includes(".") || /\.\d{3}Z$/.test(value);
+      }
+
+      return !value.includes(".") || /\.\d{3}[+-]\d{2}:\d{2}$/.test(value);
+    },
+    {
+      message:
+        "datetime() requires a valid Cedar datetime literal with optional millisecond precision",
+    }
+  );
+
 const decimalLowerBound = BigInt("-9223372036854775808");
 const decimalUpperBound = BigInt("9223372036854775807");
 const longLowerBound = BigInt("-9223372036854775808");
@@ -75,65 +95,6 @@ const isValidDecimalLiteral = (value: string) => {
 
   return scaledValue >= decimalLowerBound && scaledValue <= decimalUpperBound;
 };
-
-const isValidDateOnlyLiteral = (value: string) => {
-  const match = value.match(/^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})$/);
-
-  if (!match?.groups) {
-    return false;
-  }
-
-  const month = Number(match.groups.month);
-  const day = Number(match.groups.day);
-
-  return month >= 1 && month <= 12 && day >= 1 && day <= 31;
-};
-
-const isValidDateTimeLiteral = (value: string) => {
-  const match = value.match(
-    /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})T(?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2})(?:\.(?<millisecond>\d{3}))?(?<timezone>Z|[+-]\d{4})$/
-  );
-
-  if (!match?.groups) {
-    return false;
-  }
-
-  const month = Number(match.groups.month);
-  const day = Number(match.groups.day);
-  const hour = Number(match.groups.hour);
-  const minute = Number(match.groups.minute);
-  const second = Number(match.groups.second);
-
-  if (
-    month < 1 ||
-    month > 12 ||
-    day < 1 ||
-    day > 31 ||
-    hour > 23 ||
-    minute > 59 ||
-    second > 59
-  ) {
-    return false;
-  }
-
-  const timezone = match.groups.timezone;
-
-  if (timezone === undefined) {
-    return false;
-  }
-
-  if (timezone === "Z") {
-    return true;
-  }
-
-  const offsetHours = Number(timezone.slice(1, 3));
-  const offsetMinutes = Number(timezone.slice(3, 5));
-
-  return offsetHours <= 23 && offsetMinutes <= 59;
-};
-
-const isValidDatetimeLiteral = (value: string) =>
-  isValidDateOnlyLiteral(value) || isValidDateTimeLiteral(value);
 
 const durationUnitOrder = {
   d: 0,
@@ -212,7 +173,7 @@ const decimalLiteralArgumentSchema = literalStringValueSchema.refine(
 );
 
 const datetimeLiteralArgumentSchema = literalStringValueSchema.refine(
-  ({ Value }) => isValidDatetimeLiteral(Value),
+  ({ Value }) => cedarDatetimeLiteralSchema.safeParse(Value).success,
   "datetime() requires a valid Cedar datetime literal"
 );
 
