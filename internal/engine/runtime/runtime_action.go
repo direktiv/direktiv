@@ -30,6 +30,35 @@ type fileSpec struct {
 	Permission string
 }
 
+func (rt *Runtime) parseTimeout(raw any) time.Duration {
+	if raw == nil {
+		return defaultTimeout
+	}
+
+	timeout, ok := raw.(string)
+	if !ok {
+		panic(rt.vm.ToValue(fmt.Errorf("timeout must be a string")))
+	}
+	if timeout == "" {
+		return defaultTimeout
+	}
+
+	to, err := duration.Parse(timeout)
+	if err != nil {
+		panic(rt.vm.ToValue(fmt.Errorf("timeout not a valid ISO8601 string, e.g. PT1M")))
+	}
+
+	return to.ToTimeDuration()
+}
+
+func (rt *Runtime) parseFilesOptional(raw any) []fileSpec {
+	if raw == nil {
+		return nil
+	}
+
+	return rt.parseFiles(raw)
+}
+
 func (rt *Runtime) parseFiles(raw any) []fileSpec {
 	filesArr, ok := raw.([]any)
 	if !ok {
@@ -71,6 +100,15 @@ func (rt *Runtime) parseFiles(raw any) []fileSpec {
 	return specs
 }
 
+func (rt *Runtime) invoke(sd *core.ServiceFileData, payload any, retries int, timeout time.Duration, auth *core.BasicAuthConfig, files []fileSpec) sobek.Value {
+	data, err := rt.callAction(sd, payload, retries, timeout, auth, files)
+	if err != nil {
+		panic(rt.vm.ToValue(err))
+	}
+
+	return rt.vm.ToValue(data)
+}
+
 func (rt *Runtime) service(c map[string]any) sobek.Value {
 	// func (rt *Runtime) service(t, path string, payload any, retries int) sobek.Value {
 
@@ -99,22 +137,7 @@ func (rt *Runtime) service(c map[string]any) sobek.Value {
 		panic(rt.vm.ToValue(fmt.Errorf("retries must be an integer")))
 	}
 
-	endDuration := defaultTimeout
-
-	to, ok := c["timeout"]
-	if ok {
-		timeout, ok := to.(string)
-		if !ok {
-			panic(rt.vm.ToValue(fmt.Errorf("timeout must be a string")))
-		}
-
-		to, err := duration.Parse(timeout)
-		if err != nil {
-			panic(rt.vm.ToValue(fmt.Errorf("timeout not a valid ISO8601 string, e.g. PT1M")))
-		}
-
-		endDuration = to.ToTimeDuration()
-	}
+	endDuration := rt.parseTimeout(c["timeout"])
 
 	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
 		fmt.Sprintf("service call timeout in %s", endDuration.String()))
@@ -143,20 +166,12 @@ func (rt *Runtime) service(c map[string]any) sobek.Value {
 	}
 
 	// parse file specs to pass along as headers to the sidecar
-	var files []fileSpec
-	if rawFiles, ok := c["files"]; ok {
-		files = rt.parseFiles(rawFiles)
-	}
+	files := rt.parseFilesOptional(c["files"])
 
 	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
 		fmt.Sprintf("executing service %s in scope %s", path, t))
 
-	data, err := rt.callAction(sd, payload, int(retries), endDuration, nil, files)
-	if err != nil {
-		panic(rt.vm.ToValue(err))
-	}
-
-	return rt.vm.ToValue(data)
+	return rt.invoke(sd, payload, int(retries), endDuration, nil, files)
 }
 
 func (rt *Runtime) action(c map[string]any) sobek.Value {
@@ -213,26 +228,12 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 		telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
 			fmt.Sprintf("executing action with image %s", config.Image))
 
-		endDuration := defaultTimeout
-
-		if timeout != "" {
-			to, err := duration.Parse(timeout)
-			if err != nil {
-				panic(rt.vm.ToValue(fmt.Errorf("timeout not a valid ISO8601 string, e.g. PT1M")))
-			}
-
-			endDuration = to.ToTimeDuration()
-		}
+		endDuration := rt.parseTimeout(timeout)
 
 		telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
 			fmt.Sprintf("action timeout in %s", endDuration.String()))
 
-		data, err := rt.callAction(sd, payload, config.Retries, endDuration, config.Auth, files)
-		if err != nil {
-			panic(rt.vm.ToValue(err))
-		}
-
-		return rt.vm.ToValue(data)
+		return rt.invoke(sd, payload, config.Retries, endDuration, config.Auth, files)
 	}
 
 	return rt.vm.ToValue(actionFunc)
