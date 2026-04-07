@@ -21,11 +21,11 @@ describe("formatExpression", () => {
     };
 
     expect(formatExpression(expression)).toBe(
-      "principal.email like *@example.com"
+      'principal.email like "*@example.com"'
     );
   });
 
-  test("formats getTag expressions with unquoted string values", () => {
+  test("formats getTag expressions", () => {
     const expression: ExpressionType = {
       getTag: {
         left: { Var: "resource" },
@@ -33,7 +33,9 @@ describe("formatExpression", () => {
       },
     };
 
-    expect(formatExpression(expression)).toBe("resource getTag classification");
+    expect(formatExpression(expression)).toBe(
+      'resource.getTag("classification")'
+    );
   });
 
   test("formats binary expressions", () => {
@@ -55,7 +57,9 @@ describe("formatExpression", () => {
       },
     };
 
-    expect(formatExpression(expression)).toBe("context == region: eu-west-1");
+    expect(formatExpression(expression)).toBe(
+      'context == {"region":"eu-west-1"}'
+    );
   });
 
   test("formats entity values in binary in expressions", () => {
@@ -68,9 +72,7 @@ describe("formatExpression", () => {
       },
     };
 
-    expect(formatExpression(expression)).toBe(
-      "resource in type: folder id: public"
-    );
+    expect(formatExpression(expression)).toBe('resource in Folder::"Public"');
   });
 
   test("formats set and record expressions", () => {
@@ -87,7 +89,7 @@ describe("formatExpression", () => {
 
     expect(formatExpression(setExpression)).toBe('[1, "read"]');
     expect(formatExpression(recordExpression)).toBe(
-      '{"region": "eu-west-1", "secure": true, "folder": type: folder id: public}'
+      '{"region": "eu-west-1", "secure": true, "folder": Folder::"Public"}'
     );
   });
 
