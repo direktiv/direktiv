@@ -110,3 +110,38 @@ function stateFirst() {
   });
 }
 `
+
+export const workflowFilesInActionSrc = `const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT5M",
+  state: "stateRunAction",
+};
+
+const action = generateAction({
+  image: "direktiv/bash:dev",
+});
+
+function stateRunAction() {
+  const result = action({
+    payload: {
+      commands: [
+        {
+          command: "ls -la",
+        },
+        {
+          command: "cat wf-var-one",
+        },
+        {
+          command: "cat test.wf.ts",
+        },
+      ],
+    },
+    files: [
+      { name: "wf-var-one", scope: "workflow" },
+      { name: "/test.wf.ts", scope: "file", permission: "0644" },
+    ],
+  });
+
+  return finish(result);
+}
+`
