@@ -110,10 +110,10 @@ describe("Binary Expression schema", () => {
           {
             kind: "when",
             body: {
+              // @ts-expect-error - binary expressions are strict
               "==": {
                 left: { Var: "context" },
                 right: { Value: "1.3" },
-                // @ts-expect-error - binary expressions are strict
                 extra: { Value: true },
               },
             },

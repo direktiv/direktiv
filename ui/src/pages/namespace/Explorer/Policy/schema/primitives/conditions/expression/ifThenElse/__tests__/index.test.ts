@@ -52,11 +52,11 @@ describe("IfThenElse Expression schema", () => {
           {
             kind: "when",
             body: {
+              // @ts-expect-error - if-then-else can not have extra keys
               "if-then-else": {
                 if: { Var: "context" },
                 then: { Value: true },
                 else: { Value: false },
-                // @ts-expect-error - if-then-else can not have extra keys
                 extra: { Value: false },
               },
             },

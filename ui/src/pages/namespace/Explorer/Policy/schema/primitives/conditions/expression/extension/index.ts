@@ -1,28 +1,235 @@
-import {
-  type BinaryOperator,
-  ExpressionReservedKeys,
-  type LowercaseLetter,
-  type UnaryOperator,
-} from "../utils";
 import type { ExpressionSchemaType } from "../types";
+import { strictSingleKeyObject } from "../utils";
 import { z } from "zod";
 
-type ReservedExtensionIdentifier =
-  | UnaryOperator
-  | BinaryOperator
-  | "has"
-  | "is"
-  | "like"
-  | "if-then-else";
+const CedarExtensionConstructorNames = [
+  "datetime",
+  "decimal",
+  "duration",
+  "ip",
+] as const;
 
-export type { ReservedExtensionIdentifier };
+const CedarExtensionMethodNames = [
+  "isIpv4",
+  "isIpv6",
+  "isLoopback",
+  "isMulticast",
+  "isInRange",
+  "offset",
+  "durationSince",
+  "toDate",
+  "toTime",
+  "toMilliseconds",
+  "toSeconds",
+  "toMinutes",
+  "toHours",
+  "toDays",
+  "lessThan",
+  "lessThanOrEqual",
+  "greaterThan",
+  "greaterThanOrEqual",
+] as const;
 
-// Extension functions must start with a lowercase letter and must not collide
-// with built-in Cedar expression keys/operators.
-export type ExtensionIdentifier = Exclude<
-  `${LowercaseLetter}${string}`,
-  ReservedExtensionIdentifier
->;
+const _CedarExtensionNames = [
+  ...CedarExtensionConstructorNames,
+  ...CedarExtensionMethodNames,
+] as const;
+
+export type ExtensionIdentifier = (typeof _CedarExtensionNames)[number];
+
+// Cedar constructor validation only accepts string-literal Value expressions,
+// not arbitrary child expressions that happen to evaluate to strings.
+const literalStringValueSchema = z.object({ Value: z.string() }).strict();
+
+const cedarIpLiteralSchema = z.union([
+  z.string().ip({ version: "v4" }),
+  z.string().ip({ version: "v6" }),
+  z.string().cidr({ version: "v4" }),
+  z.string().cidr({ version: "v6" }),
+]);
+
+const decimalLowerBound = BigInt("-9223372036854775808");
+const decimalUpperBound = BigInt("9223372036854775807");
+const longLowerBound = BigInt("-9223372036854775808");
+const longUpperBound = BigInt("9223372036854775807");
+
+// Cedar decimals allow up to 4 fractional digits and use a fixed precision.
+// We normalize the fraction to 4 digits and compare the scaled integer value
+// against Cedar's documented decimal range.
+const isValidDecimalLiteral = (value: string) => {
+  const match = value.match(/^(?<sign>-?)(?<whole>\d+)\.(?<fraction>\d{1,4})$/);
+
+  if (!match?.groups) {
+    return false;
+  }
+
+  const sign = match.groups.sign;
+  const whole = match.groups.whole;
+  const fraction = match.groups.fraction;
+
+  if (sign === undefined || whole === undefined || fraction === undefined) {
+    return false;
+  }
+
+  const scaledValue = BigInt(`${sign}${whole}${fraction.padEnd(4, "0")}`);
+
+  return scaledValue >= decimalLowerBound && scaledValue <= decimalUpperBound;
+};
+
+const isValidDateOnlyLiteral = (value: string) => {
+  const match = value.match(/^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})$/);
+
+  if (!match?.groups) {
+    return false;
+  }
+
+  const month = Number(match.groups.month);
+  const day = Number(match.groups.day);
+
+  return month >= 1 && month <= 12 && day >= 1 && day <= 31;
+};
+
+const isValidDateTimeLiteral = (value: string) => {
+  const match = value.match(
+    /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})T(?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2})(?:\.(?<millisecond>\d{3}))?(?<timezone>Z|[+-]\d{4})$/
+  );
+
+  if (!match?.groups) {
+    return false;
+  }
+
+  const month = Number(match.groups.month);
+  const day = Number(match.groups.day);
+  const hour = Number(match.groups.hour);
+  const minute = Number(match.groups.minute);
+  const second = Number(match.groups.second);
+
+  if (
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31 ||
+    hour > 23 ||
+    minute > 59 ||
+    second > 59
+  ) {
+    return false;
+  }
+
+  const timezone = match.groups.timezone;
+
+  if (timezone === undefined) {
+    return false;
+  }
+
+  if (timezone === "Z") {
+    return true;
+  }
+
+  const offsetHours = Number(timezone.slice(1, 3));
+  const offsetMinutes = Number(timezone.slice(3, 5));
+
+  return offsetHours <= 23 && offsetMinutes <= 59;
+};
+
+const isValidDatetimeLiteral = (value: string) =>
+  isValidDateOnlyLiteral(value) || isValidDateTimeLiteral(value);
+
+const durationUnitOrder = {
+  d: 0,
+  h: 1,
+  m: 2,
+  s: 3,
+  ms: 4,
+} as const;
+
+const durationUnitMultiplier = {
+  d: 86400000n,
+  h: 3600000n,
+  m: 60000n,
+  s: 1000n,
+  ms: 1n,
+} as const;
+
+type DurationUnit = keyof typeof durationUnitOrder;
+
+const isValidDurationLiteral = (value: string) => {
+  const sign = value.startsWith("-") ? -1n : 1n;
+  const unsignedValue = value.startsWith("-") ? value.slice(1) : value;
+
+  if (unsignedValue.length === 0) {
+    return false;
+  }
+
+  const segmentPattern = /(\d+)(ms|d|h|m|s)/g;
+  const seenUnits = new Set<DurationUnit>();
+  let lastUnitOrder = -1;
+  let totalMilliseconds = 0n;
+  let consumedLength = 0;
+
+  for (const match of unsignedValue.matchAll(segmentPattern)) {
+    const [segment, amountValue, unitValue] = match;
+
+    if (amountValue === undefined || unitValue === undefined) {
+      return false;
+    }
+
+    const unit = unitValue as DurationUnit;
+    const unitOrder = durationUnitOrder[unit];
+
+    if (match.index !== consumedLength || seenUnits.has(unit)) {
+      return false;
+    }
+
+    if (unitOrder <= lastUnitOrder) {
+      return false;
+    }
+
+    seenUnits.add(unit);
+    lastUnitOrder = unitOrder;
+    consumedLength += segment.length;
+
+    const amount = BigInt(amountValue);
+    const multiplier = durationUnitMultiplier[unit];
+
+    totalMilliseconds += amount * multiplier;
+  }
+
+  if (consumedLength !== unsignedValue.length) {
+    return false;
+  }
+
+  const signedMilliseconds = totalMilliseconds * sign;
+
+  return (
+    signedMilliseconds >= longLowerBound && signedMilliseconds <= longUpperBound
+  );
+};
+
+const decimalLiteralArgumentSchema = literalStringValueSchema.refine(
+  ({ Value }) => isValidDecimalLiteral(Value),
+  "decimal() requires a valid Cedar decimal literal"
+);
+
+const datetimeLiteralArgumentSchema = literalStringValueSchema.refine(
+  ({ Value }) => isValidDatetimeLiteral(Value),
+  "datetime() requires a valid Cedar datetime literal"
+);
+
+const durationLiteralArgumentSchema = literalStringValueSchema.refine(
+  ({ Value }) => isValidDurationLiteral(Value),
+  "duration() requires a valid Cedar duration literal"
+);
+
+const ipLiteralArgumentSchema = literalStringValueSchema.refine(
+  ({ Value }) => cedarIpLiteralSchema.safeParse(Value).success,
+  "ip() requires a valid Cedar IP literal"
+);
+
+const createExtensionCallSchema = <Name extends ExtensionIdentifier>(
+  name: Name,
+  argsSchema: z.ZodTypeAny
+) => strictSingleKeyObject(name, argsSchema);
 
 /*
   when { decimal("100.00") <= context.invoiceAmount }
@@ -30,14 +237,71 @@ export type ExtensionIdentifier = Exclude<
 */
 export const ExtensionExpressionSchema = (
   expressionSchema: ExpressionSchemaType
-) =>
-  z
-    .record(z.array(expressionSchema))
-    .refine((value) => {
-      const keys = Object.keys(value);
-      return keys.length === 1;
-    })
-    .refine((value) => {
-      const [key] = Object.keys(value);
-      return key !== undefined && !ExpressionReservedKeys.has(key);
-    });
+) => {
+  const constructorSchemas = [
+    createExtensionCallSchema(
+      "decimal",
+      z.tuple([decimalLiteralArgumentSchema])
+    ),
+    createExtensionCallSchema(
+      "datetime",
+      z.tuple([datetimeLiteralArgumentSchema])
+    ),
+    createExtensionCallSchema(
+      "duration",
+      z.tuple([durationLiteralArgumentSchema])
+    ),
+    createExtensionCallSchema("ip", z.tuple([ipLiteralArgumentSchema])),
+  ] as const;
+
+  const receiverOnlyMethodSchema = [
+    createExtensionCallSchema("isIpv4", z.tuple([expressionSchema])),
+    createExtensionCallSchema("isIpv6", z.tuple([expressionSchema])),
+    createExtensionCallSchema("isLoopback", z.tuple([expressionSchema])),
+    createExtensionCallSchema("isMulticast", z.tuple([expressionSchema])),
+    createExtensionCallSchema("toDate", z.tuple([expressionSchema])),
+    createExtensionCallSchema("toTime", z.tuple([expressionSchema])),
+    createExtensionCallSchema("toMilliseconds", z.tuple([expressionSchema])),
+    createExtensionCallSchema("toSeconds", z.tuple([expressionSchema])),
+    createExtensionCallSchema("toMinutes", z.tuple([expressionSchema])),
+    createExtensionCallSchema("toHours", z.tuple([expressionSchema])),
+    createExtensionCallSchema("toDays", z.tuple([expressionSchema])),
+  ] as const;
+
+  const receiverAndArgumentMethodSchema = [
+    createExtensionCallSchema(
+      "isInRange",
+      z.tuple([expressionSchema, expressionSchema])
+    ),
+    createExtensionCallSchema(
+      "offset",
+      z.tuple([expressionSchema, expressionSchema])
+    ),
+    createExtensionCallSchema(
+      "durationSince",
+      z.tuple([expressionSchema, expressionSchema])
+    ),
+    createExtensionCallSchema(
+      "lessThan",
+      z.tuple([expressionSchema, expressionSchema])
+    ),
+    createExtensionCallSchema(
+      "lessThanOrEqual",
+      z.tuple([expressionSchema, expressionSchema])
+    ),
+    createExtensionCallSchema(
+      "greaterThan",
+      z.tuple([expressionSchema, expressionSchema])
+    ),
+    createExtensionCallSchema(
+      "greaterThanOrEqual",
+      z.tuple([expressionSchema, expressionSchema])
+    ),
+  ] as const;
+
+  return z.union([
+    ...constructorSchemas,
+    ...receiverOnlyMethodSchema,
+    ...receiverAndArgumentMethodSchema,
+  ]);
+};
