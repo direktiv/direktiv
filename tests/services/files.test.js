@@ -1,183 +1,142 @@
-import { beforeAll, describe, expect, it } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, it } from '@jest/globals'
+import { bashServiceSrc, workflowFilesInSystemServiceSrc } from './fixtures'
 
 import config from '../common/config'
 import helpers from '../common/helpers'
 import request from '../common/request'
+import { waitForInstanceStatus } from '../instances/utils'
+import { waitForServiceCondition } from './utils'
 
-const namespaceName = 'functionsfiles'
+const baseUrl = config.getDirektivBaseUrl()
+const systemNamespace = 'system'
+let namespace = ''
 
-// Outdated.
-describe.skip('Test function files behaviour', () => {
-	beforeAll(helpers.deleteAllNamespaces)
+describe('Files mounted into execService', () => {
+	beforeEach(async () => {
+		namespace = helpers.randomNamespaceName()
 
-	helpers.itShouldCreateNamespace(it, expect, namespaceName)
+		const systemNsResponse = await request(baseUrl)
+			.post('/api/v2/namespaces')
+			.send({ name: systemNamespace })
+		expect(systemNsResponse.statusCode).toEqual(200)
 
-	helpers.itShouldCreateYamlFile(
-		it,
-		expect,
-		namespaceName,
-		'/',
-		'bash.yaml',
-		'service',
-		`
-direktiv_api: service/v1
-name: bash
-image: direktiv/bash:dev
-cmd: ""
-scale: 1
-`,
-	)
-
-	helpers.itShouldCreateFile(
-		it,
-		expect,
-		namespaceName,
-		'',
-		`a.yaml`,
-		'workflow',
-		'text/plain',
-		btoa(`
-functions:
-- id: bash
-  type: knative-namespace
-  service: /bash.yaml
-
-states:
-- id: set-c
-  type: setter
-  variables:
-  - key: c
-    scope: instance
-    value: 11
-  transition: set-value-fn
-
-- id: set-value-fn
-  type: action
-  action:
-    function: bash
-    input: 
-      commands:
-      - command: bash -c 'cat a'
-      - command: bash -c 'echo -n 5 > out/namespace/a'
-      - command: bash -c 'cat b'
-      - command: bash -c 'echo -n 7 > out/workflow/b'
-      - command: bash -c 'cat c'
-      - command: bash -c 'echo -n 11 > out/instance/c'
-      - command: bash -c 'cat d'
-      - command: bash -c 'echo -n 13 > out/instance/d'
-      - command: bash -c 'cat e'
-    files:
-    - key: a
-      scope: namespace
-    - key: b
-      scope: workflow
-    - key: c
-      scope: instance
-    - key: d
-      scope: instance
-    - key: '/e.yaml'
-      as: e
-      scope: file
-  transition: get-values
-
-- id: get-values
-  type: getter
-  variables:
-  - key: a
-    scope: namespace
-  - key: b
-    scope: workflow
-  - key: c
-    scope: instance
-  - key: d
-    scope: instance
-  - key: '/e.yaml'
-    as: e
-    scope: file
-`),
-	)
-
-	it(`should invoke the '/a.yaml' workflow on a fresh namespace`, async () => {
-		helpers.sleep(10)
-		const req = await request(config.getDirektivBaseUrl()).post(
-			`/api/v2/namespaces/${namespaceName}/instances?path=a.yaml&wait=true`,
-		)
-		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
-			var: {
-				a: 5,
-				b: 7,
-				c: 11,
-				d: 13,
-				e: null,
-			},
-		})
-
-		expect(req.body.return.bash[0]).toMatchObject({
-			result: '',
-			success: true,
-		})
-		expect(req.body.return.bash[2]).toMatchObject({
-			result: '',
-			success: true,
-		})
-		expect(req.body.return.bash[4]).toMatchObject({
-			result: 11,
-			success: true,
-		})
-		expect(req.body.return.bash[6]).toMatchObject({
-			result: '',
-			success: true,
-		})
-		expect(req.body.return.bash[8].result).toBe('')
+		const nsResponse = await request(baseUrl)
+			.post('/api/v2/namespaces')
+			.send({ name: namespace })
+		expect(nsResponse.statusCode).toEqual(200)
 	})
 
-	helpers.itShouldCreateFile(
-		it,
-		expect,
-		namespaceName,
-		'',
-		`e.yaml`,
-		'workflow',
-		'text/plain',
-		btoa(`
-states:
-- id: a
-  type: noop
-  transform:
-    result: x`),
-	)
+	afterEach(async () => {
+		return Promise.all([
+			helpers.deleteNamespace(systemNamespace),
+			helpers.deleteNamespace(namespace),
+		])
+	})
 
-	it(`should invoke the '/a.yaml' workflow on a non-fresh namespace`, async () => {
-		const req = await request(config.getDirektivBaseUrl()).post(
-			`/api/v2/namespaces/${namespaceName}/instances?path=a.yaml&wait=true`,
+	it('mounts namespace variables and namespace files into an execService run', async () => {
+		// create system service
+		const systemServiceFileName = 'bash.svc.json'
+		const systemServiceResponse = await request(baseUrl)
+			.post(`/api/v2/namespaces/${systemNamespace}/files`)
+			.set('Content-Type', 'application/json')
+			.send({
+				name: systemServiceFileName,
+				type: 'service',
+				mimeType: 'application/json',
+				data: btoa(bashServiceSrc),
+			})
+		expect(systemServiceResponse.statusCode).toEqual(200)
+
+		// confirm system service is running
+		const expectedCondition = {
+			type: 'Available',
+			status: 'True',
+		}
+		const service = await waitForServiceCondition(
+			systemNamespace,
+			`/${systemServiceFileName}`,
+			expectedCondition,
 		)
-		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
-			var: {
-				a: 5,
-				b: 7,
-				c: 11,
-				d: 13,
-				e: 'CnN0YXRlczoKLSBpZDogYQogIHR5cGU6IG5vb3AKICB0cmFuc2Zvcm06CiAgICByZXN1bHQ6IHg=',
-			},
-		})
-		expect(req.body.return.bash[0]).toMatchObject({
-			result: 5,
+		expect(service).toBeDefined()
+
+		// create workflow
+		const workflowResponse = await request(baseUrl)
+			.post(`/api/v2/namespaces/${namespace}/files`)
+			.set('Content-Type', 'application/json')
+			.send({
+				name: 'files-in-service.wf.ts',
+				type: 'workflow',
+				mimeType: 'application/typescript',
+				data: btoa(workflowFilesInSystemServiceSrc),
+			})
+		expect(workflowResponse.statusCode).toEqual(200)
+
+		// set up namespace file to be mounted via scope "file"
+		const fileResponse = await request(baseUrl)
+			.post(`/api/v2/namespaces/${namespace}/files`)
+			.set('Content-Type', 'application/json')
+			.send({
+				name: 'test.wf.ts',
+				type: 'file',
+				mimeType: 'application/typescript',
+				data: btoa(`const flow: FlowDefinition = { type: "default" };`),
+			})
+		expect(fileResponse.statusCode).toEqual(200)
+
+		// set up namespace variable to be mounted via scope "namespace"
+		const varResponse = await request(baseUrl)
+			.post(`/api/v2/namespaces/${namespace}/variables`)
+			.send({
+				name: 'foobar',
+				data: btoa('proof-foobar'),
+				mimeType: 'text/plain',
+			})
+		expect(varResponse.statusCode).toEqual(200)
+
+		// execute workflow
+		const executeResponse = await request(baseUrl).post(
+			`/api/v2/namespaces/${namespace}/instances?path=files-in-service.wf.ts`,
+		)
+		expect(executeResponse.statusCode).toEqual(200)
+
+		const { id } = executeResponse.body.data
+		const instance = await waitForInstanceStatus(
+			baseUrl,
+			namespace,
+			id,
+			'complete',
+		)
+		expect(instance).toBeDefined()
+		expect(instance.body.data.status).toEqual('complete')
+
+		const output = JSON.parse(instance.body.data.output)
+
+		// files are listed with ls command (including permissions for 0755);
+		// namespace variables are mounted as files too (e.g. foobar)
+		expect(output?.bash?.[0]?.success).toEqual(true)
+		expect(output?.bash?.[0]?.result).toEqual(
+			expect.stringContaining('test.wf.ts'),
+		)
+		expect(output?.bash?.[0]?.result).toEqual(
+			expect.stringContaining('foobar'),
+		)
+		expect(output?.bash?.[0]?.result).toEqual(
+			expect.stringMatching(/-rw-r--r--.*\stest\.wf\.ts$/m),
+		)
+		expect(output?.bash?.[0]?.result).toEqual(
+			expect.stringMatching(/-rwxr-xr-x.*\sfoobar$/m),
+		)
+
+		// mounted namespace variable content is readable
+		expect(output?.bash?.[1]).toMatchObject({
 			success: true,
+			result: 'proof-foobar',
 		})
-		expect(req.body.return.bash[2]).toMatchObject({
-			result: 7,
-			success: true,
-		})
-		expect(req.body.return.bash[4]).toMatchObject({
-			result: 11,
-			success: true,
-		})
-		expect(req.body.return.bash[6]).toMatchObject({
-			result: '',
-			success: true,
-		})
-		expect(req.body.return.bash[8].result).not.toBe('')
+
+		// mounted file content is readable
+		expect(output?.bash?.[2]?.success).toEqual(true)
+		expect(output?.bash?.[2]?.result).toEqual(
+			expect.stringContaining('const flow: FlowDefinition'),
+		)
 	})
 })

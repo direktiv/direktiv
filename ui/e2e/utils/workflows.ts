@@ -106,7 +106,7 @@ function stateFirst(): StateFunction<unknown> {
       },
     ],
   };
-  let result = d(payload);
+  let result = d({ payload });
   return finish(result);
 }
 `;

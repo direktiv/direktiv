@@ -30,7 +30,7 @@ describe('Test js engine', () => {
 			image: "mendhak/http-https-echo:latest"
 		});
 		function stateOne(payload) {
-			let result = echo({foo: "bar", input: payload});
+			let result = echo({ payload: {foo: "bar", input: payload} });
 			return finish(result.json);
 		}
 `,

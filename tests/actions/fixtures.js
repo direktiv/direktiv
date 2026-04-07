@@ -25,7 +25,7 @@ function stateFirst() {
     ],
   };
 
-  const result = bash(payload);
+  const result = bash({ payload });
   return finish(result);
 }
 `
@@ -57,7 +57,7 @@ function stateFirst() {
     ],
   };
 
-  const result = bash(payload);
+  const result = bash({ payload });
   return finish(result);
 }
 `
@@ -76,7 +76,7 @@ const echo = generateAction({
 });
 
 function stateFirst(input: unknown) {
-  const result = echo(input);
+  const result = echo({ payload: input });
   return finish(result);
 }
 `
@@ -100,15 +100,48 @@ const echo = generateAction({
 });
 
 function stateFirst() {
-  const bashResult = bash({
-    commands: [{ command: "echo hi" }],
-  });
+  const bashResult = bash({ payload: { commands: [{ command: "echo hi" }] } });
 
-  const echoResult = echo({ hi: "there" });
+  const echoResult = echo({ payload: { hi: "there" } });
 
   return finish({
     bash: bashResult,
     echo: echoResult,
   });
+}
+`
+
+export const workflowFilesInActionSrc = `const flow: FlowDefinition = {
+  type: "default",
+  timeout: "PT5M",
+  state: "stateRunAction",
+};
+
+const action = generateAction({
+  image: "direktiv/bash:dev",
+});
+
+function stateRunAction() {
+  const result = action({
+    payload: {
+      commands: [
+        {
+          command: "ls -la",
+        },
+        {
+          command: "cat wf-var-one",
+        },
+        {
+          command: "cat test.wf.ts",
+        },
+      ],
+    },
+    files: [
+      { name: "wf-var-one", scope: "workflow" },
+      { name: "/test.wf.ts", scope: "file", permission: "0600" },
+    ],
+  });
+
+  return finish(result);
 }
 `

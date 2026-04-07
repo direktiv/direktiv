@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals'
 import {
 	workflowEchoActionSrc,
+	workflowFilesInActionSrc,
 	workflowMultiCommandActionSrc,
 	workflowTwoActionsSrc,
 	workflowUsingActionSrc,
@@ -236,5 +237,77 @@ describe('Action usage from workflow', () => {
 				},
 			],
 		})
+	})
+
+	it('mounts workflow variables and namespace files into an action run', async () => {
+		// create workflow
+		const workflowResponse = await request(baseUrl)
+			.post(`/api/v2/namespaces/${namespace}/files`)
+			.set('Content-Type', 'application/json')
+			.send({
+				name: 'files-in-action.wf.ts',
+				type: 'workflow',
+				mimeType: 'application/typescript',
+				data: btoa(workflowFilesInActionSrc),
+			})
+		expect(workflowResponse.statusCode).toEqual(200)
+
+		// set up namespace file mounted via scope "file"
+		const fileResponse = await request(baseUrl)
+			.post(`/api/v2/namespaces/${namespace}/files`)
+			.set('Content-Type', 'application/json')
+			.send({
+				name: 'test.wf.ts',
+				type: 'file',
+				mimeType: 'application/typescript',
+				data: btoa(workflowEchoActionSrc),
+			})
+		expect(fileResponse.statusCode).toEqual(200)
+
+		// set up workflow-scoped variable mounted via scope "workflow"
+		const varResponse = await request(baseUrl)
+			.post(`/api/v2/namespaces/${namespace}/variables`)
+			.send({
+				name: 'wf-var-one',
+				workflowPath: '/files-in-action.wf.ts',
+				data: btoa('ht5erf'),
+				mimeType: 'text/plain',
+			})
+		expect(varResponse.statusCode).toEqual(200)
+
+		// execute workflow
+		const executeResponse = await request(baseUrl).post(
+			`/api/v2/namespaces/${namespace}/instances?path=files-in-action.wf.ts`,
+		)
+		expect(executeResponse.statusCode).toEqual(200)
+
+		const { id } = executeResponse.body.data
+		const instance = await waitForInstanceStatus(
+			baseUrl,
+			namespace,
+			id,
+			'complete',
+		)
+		expect(instance).toBeDefined()
+		expect(instance.body.data.status).toEqual('complete')
+
+		const output = JSON.parse(instance.body.data.output)
+
+		// files are listed with ls command (including permissions for 0600)
+		expect(output?.bash?.[0]?.success).toEqual(true)
+		expect(output?.bash?.[0]?.result).toEqual(expect.stringContaining('test.wf.ts'))
+		expect(output?.bash?.[0]?.result).toEqual(expect.stringMatching(/-rw-------.*\stest\.wf\.ts$/m))
+		expect(output?.bash?.[0]?.result).toEqual(expect.stringContaining('wf-var-one'))
+		expect(output?.bash?.[0]?.result).toEqual(expect.stringMatching(/-rw-r--r--.*\swf-var-one$/m))
+
+		// mounted workflow variable content is readable
+		expect(output?.bash?.[1]).toMatchObject({
+			success: true,
+			result: 'ht5erf',
+		})
+
+		// mounted file content is readable
+		expect(output?.bash?.[2]?.success).toEqual(true)
+		expect(output?.bash?.[2]?.result).toEqual(expect.stringContaining('const flow: FlowDefinition'))
 	})
 })
