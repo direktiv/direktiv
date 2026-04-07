@@ -61,6 +61,7 @@ declare type ActionConfig = {
   retries?: number;
   body?: object;
   cmd?: string;
+  timeout?: string;
   envs?: {
     name: string;
     value: string;
