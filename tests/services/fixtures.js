@@ -43,7 +43,7 @@ function stateFirst() {
   var payload = {
     commands: [
       {
-        command: "ls -la",
+        command: "echo direktiv-bash-service-ok",
       },
     ],
   };
@@ -70,7 +70,7 @@ function stateFirst() {
   var payload = {
     commands: [
       {
-        command: "ls -la",
+        command: "echo direktiv-bash-service-ok",
       },
     ],
   };

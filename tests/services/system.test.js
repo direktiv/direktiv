@@ -107,12 +107,8 @@ describe('System Service API', () => {
 				},
 			],
 		})
-		expect(output.bash[0].result).toMatch(/^total 8\n/m)
 		expect(output.bash[0].result).toMatch(
-			/^drwxrwxrwt\s+2\s+root\s+root\s+4096\s+.*\s\.$/m,
-		)
-		expect(output.bash[0].result).toMatch(
-			/^drwxr-xr-x\s+1\s+root\s+root\s+4096\s+.*\s\.\.$/m,
+			"direktiv-bash-service-ok",
 		)
 	})
 })
