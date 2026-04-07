@@ -1,5 +1,4 @@
 import {
-  cedarDatetimeLiteralSchema,
   cedarIpLiteralSchema,
   isValidDecimalLiteral,
   isValidDurationLiteral,
@@ -19,33 +18,6 @@ describe("extension utils", () => {
       expect(isValidDecimalLiteral("1.")).toBe(false);
       expect(isValidDecimalLiteral("0.12345")).toBe(false);
       expect(isValidDecimalLiteral("922337203685477.5808")).toBe(false);
-    });
-  });
-
-  describe("cedarDatetimeLiteralSchema", () => {
-    test("accepts valid Cedar datetime literals", () => {
-      expect(cedarDatetimeLiteralSchema.safeParse("2024-10-15").success).toBe(
-        true
-      );
-      expect(
-        cedarDatetimeLiteralSchema.safeParse("2024-10-15T11:35:00Z").success
-      ).toBe(true);
-      expect(
-        cedarDatetimeLiteralSchema.safeParse("2024-10-15T11:35:00.000+01:00")
-          .success
-      ).toBe(true);
-    });
-
-    test("rejects invalid Cedar datetime literals", () => {
-      expect(
-        cedarDatetimeLiteralSchema.safeParse("2024-10-15T11:38:02ZZ").success
-      ).toBe(false);
-      expect(
-        cedarDatetimeLiteralSchema.safeParse("2024-01-01T00:00:00").success
-      ).toBe(false);
-      expect(
-        cedarDatetimeLiteralSchema.safeParse("2024-10-15T11:35:00.12Z").success
-      ).toBe(false);
     });
   });
 

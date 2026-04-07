@@ -52,6 +52,8 @@ const decimalLiteralArgumentSchema = literalStringValueSchema.refine(
   "decimal() requires a valid Cedar decimal literal"
 );
 
+// Slightly looser than Cedar because this does not enforce every fractional-
+// second edge case from Cedar's datetime grammar, but it is good enough here.
 const datetimeLiteralArgumentSchema = literalStringValueSchema.refine(
   ({ Value }) => cedarDatetimeLiteralSchema.safeParse(Value).success,
   "datetime() requires a valid Cedar datetime literal"

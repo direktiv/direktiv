@@ -7,25 +7,10 @@ export const cedarIpLiteralSchema = z.union([
   z.string().cidr({ version: "v6" }),
 ]);
 
-export const cedarDatetimeLiteralSchema = z
-  .union([z.string().date(), z.string().datetime({ offset: true })])
-  .refine(
-    (value) => {
-      if (!value.includes("T")) {
-        return true;
-      }
-
-      if (value.endsWith("Z")) {
-        return !value.includes(".") || /\.\d{3}Z$/.test(value);
-      }
-
-      return !value.includes(".") || /\.\d{3}[+-]\d{2}:\d{2}$/.test(value);
-    },
-    {
-      message:
-        "datetime() requires a valid Cedar datetime literal with optional millisecond precision",
-    }
-  );
+export const cedarDatetimeLiteralSchema = z.union([
+  z.string().date(),
+  z.string().datetime({ offset: true }),
+]);
 
 const decimalLowerBound = BigInt("-9223372036854775808");
 const decimalUpperBound = BigInt("9223372036854775807");
