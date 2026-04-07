@@ -75,9 +75,13 @@ declare type FileObject = {
 };
 
 /**
- * Optional options for invoking a generated action.
+ * Optional config for invoking a generated action.
  */
-declare type ActionInvokeOptions = {
+declare type ActionInvokeConfig = {
+  /**
+   * Optional JSON payload for the action.
+   */
+  payload?: unknown;
   timeout?: string;
   files?: FileObject[];
 };
@@ -86,13 +90,13 @@ declare interface ActionInvoker {
   /**
    * Invoke the generated action.
    *
-   * @param payload optional JSON payload for the action
-   * @param options optional invoke options
+   * @param config optional configuration object
+   * - payload: optional, JSON payload for the action
    * - timeout: optional, ISO8601 duration string, e.g. "PT2M"
-   * - files: optional, [{ name, scope: "namespace" | "workflow" | "file": octal file mode string }]
+   * - files: optional, [{ name, scope: "namespace" | "workflow" | "file", permission?: octal file mode string }]
    * @returns JSON-decoded action response
    */
-  (payload?: unknown, options?: ActionInvokeOptions): unknown;
+  (config?: ActionInvokeConfig): unknown;
 }
 
 /**
@@ -126,7 +130,7 @@ declare type ServiceConfig = {
  * @param ServiceConfig configuration object
  * - scope: required, "namespace" or "system"
  * - path: required, path to service definition file
- * - payload: required, input for the service
+ * - payload: optional, input for the service
  * - timeout: optional, ISO8601 duration string, e.g. "PT2M"
  * - files: optional, [{ scope: "workflow" | "namespace" | "file", name: string }]
  * - retries: optional, number of retries

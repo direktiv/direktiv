@@ -307,8 +307,8 @@ const action = generateAction({
 });
 
 function stateRunAction() {
-  const result = action(
-    {
+  const result = action({
+    payload: {
       commands: [
         {
           command: "ls -la",
@@ -321,13 +321,11 @@ function stateRunAction() {
         },
       ],
     },
-    {
-      files: [
-        { name: "wf-var-one", scope: "workflow" },
-        { name: "/test.wf.ts", scope: "file", permission: "0644" },
-      ],
-    },
-  );
+    files: [
+      { name: "wf-var-one", scope: "workflow" },
+      { name: "/test.wf.ts", scope: "file", permission: "0644" },
+    ],
+  });
 
   return finish(result);
 }

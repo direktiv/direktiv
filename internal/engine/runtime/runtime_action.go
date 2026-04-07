@@ -198,32 +198,20 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 	sd.Name = sd.GetValueHash()
 
 	actionFunc := func(call sobek.FunctionCall) sobek.Value {
-		var payload any
-		if len(call.Arguments) > 0 {
-			if err := rt.vm.ExportTo(call.Arguments[0], &payload); err != nil {
-				panic(rt.vm.ToValue(fmt.Sprintf("error exporting action payload: %s", err.Error())))
+		var cfg map[string]any
+		if len(call.Arguments) > 0 && call.Arguments[0] != nil {
+			if err := rt.vm.ExportTo(call.Arguments[0], &cfg); err != nil {
+				panic(rt.vm.ToValue(fmt.Sprintf("error exporting action config: %s", err.Error())))
 			}
 		}
-
-		var (
-			timeout string
-			files   []fileSpec
-		)
-
-		// second argument is an optional options object: { timeout: "PT15M", files: [...] }
-		if len(call.Arguments) > 1 {
-			var opts map[string]any
-			if err := rt.vm.ExportTo(call.Arguments[1], &opts); err != nil {
-				panic(rt.vm.ToValue(fmt.Sprintf("error exporting action options: %s", err.Error())))
-			}
-
-			if t, ok := opts["timeout"].(string); ok {
-				timeout = t
-			}
-			if rawFiles, ok := opts["files"]; ok && rawFiles != nil {
-				files = rt.parseFiles(rawFiles)
-			}
+		if cfg == nil {
+			cfg = map[string]any{}
 		}
+
+		payload := cfg["payload"]
+
+		timeout, _ := cfg["timeout"].(string)
+		files := rt.parseFilesOptional(cfg["files"])
 
 		telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
 			fmt.Sprintf("executing action with image %s", config.Image))
