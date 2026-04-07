@@ -25,7 +25,7 @@ function stateFirst() {
     ],
   };
 
-  const result = bash(payload);
+  const result = bash({ payload });
   return finish(result);
 }
 `
@@ -57,7 +57,7 @@ function stateFirst() {
     ],
   };
 
-  const result = bash(payload);
+  const result = bash({ payload });
   return finish(result);
 }
 `
@@ -76,7 +76,7 @@ const echo = generateAction({
 });
 
 function stateFirst(input: unknown) {
-  const result = echo(input);
+  const result = echo({ payload: input });
   return finish(result);
 }
 `
@@ -100,11 +100,9 @@ const echo = generateAction({
 });
 
 function stateFirst() {
-  const bashResult = bash({
-    commands: [{ command: "echo hi" }],
-  });
+  const bashResult = bash({ payload: { commands: [{ command: "echo hi" }] } });
 
-  const echoResult = echo({ hi: "there" });
+  const echoResult = echo({ payload: { hi: "there" } });
 
   return finish({
     bash: bashResult,

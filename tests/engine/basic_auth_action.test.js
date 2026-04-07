@@ -27,7 +27,7 @@ describe('Test js engine', () => {
                 auth: { username: "user", password: "pass" },
             });
             function stateOne(payload) {
-                let result = echo({ foo: "bar", input: payload });
+                let result = echo({ payload: { foo: "bar", input: payload } });
                 return finish(result);
             }
             `,
@@ -44,7 +44,7 @@ describe('Test js engine', () => {
                 image: "ramiferdocker/auth-echo:1.5",
             });
             function stateOne(payload) {
-                let result = echo({ foo: "bar", input: payload });
+                let result = echo({ payload: { foo: "bar", input: payload } });
                 return finish(result);
             }
             `,
@@ -62,7 +62,7 @@ describe('Test js engine', () => {
                 auth: { username: "wrong", password: "creds" },
             });
             function stateOne(payload) {
-                let result = echo({ foo: "bar", input: payload });
+                let result = echo({ payload: { foo: "bar", input: payload } });
                 return finish(result);
             }
             `,

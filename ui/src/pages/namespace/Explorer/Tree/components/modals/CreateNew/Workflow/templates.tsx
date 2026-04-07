@@ -65,7 +65,7 @@ const actions = {
   state: "stateFirst",
 };
 
-const d = generateAction({
+const action = generateAction({
   image: "ubuntu:24.04",
   cmd: "/usr/share/direktiv/direktiv-cmd",
   size: "small",
@@ -85,7 +85,7 @@ function stateFirst(): StateFunction<unknown> {
       },
     ],
   };
-  let result = d(payload);
+  let result = action({ payload });
   return finish(result);
 }
 `,
@@ -166,9 +166,10 @@ function stateFetchJoke() {
     image: "direktiv/http-request:dev",
   });
 
-  const response = fetch({
-    method: "GET",
-    url: "https://official-joke-api.appspot.com/random_joke",
+  const response = fetch({ payload: {
+      method: "GET",
+      url: "https://official-joke-api.appspot.com/random_joke",
+    },
   });
 
   return transition(stateStoreVariable, response[0].result);
