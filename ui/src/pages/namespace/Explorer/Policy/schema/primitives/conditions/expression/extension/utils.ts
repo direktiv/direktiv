@@ -1,17 +1,3 @@
-import { z } from "zod";
-
-export const cedarIpLiteralSchema = z.union([
-  z.string().ip({ version: "v4" }),
-  z.string().ip({ version: "v6" }),
-  z.string().cidr({ version: "v4" }),
-  z.string().cidr({ version: "v6" }),
-]);
-
-export const cedarDatetimeLiteralSchema = z.union([
-  z.string().date(),
-  z.string().datetime({ offset: true }),
-]);
-
 // Good-enough decimal validation for this schema layer: require a Cedar-like
 // decimal string shape, but leave overflow and exact bound checks out.
 export const isValidDecimalLiteral = (value: string) =>

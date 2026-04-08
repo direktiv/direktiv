@@ -1,9 +1,4 @@
-import {
-  cedarDatetimeLiteralSchema,
-  cedarIpLiteralSchema,
-  isValidDecimalLiteral,
-  isValidDurationLiteral,
-} from "./utils";
+import { isValidDecimalLiteral, isValidDurationLiteral } from "./utils";
 import type { ExpressionSchemaType } from "../types";
 import { strictSingleKeyObject } from "../utils";
 import { z } from "zod";
@@ -46,6 +41,18 @@ export type ExtensionIdentifier = (typeof _CedarExtensionNames)[number];
 // Cedar constructor validation only accepts string-literal Value expressions,
 // not arbitrary child expressions that happen to evaluate to strings.
 const literalStringValueSchema = z.object({ Value: z.string() }).strict();
+
+const cedarDatetimeLiteralSchema = z.union([
+  z.string().date(),
+  z.string().datetime({ offset: true }),
+]);
+
+const cedarIpLiteralSchema = z.union([
+  z.string().ip({ version: "v4" }),
+  z.string().ip({ version: "v6" }),
+  z.string().cidr({ version: "v4" }),
+  z.string().cidr({ version: "v6" }),
+]);
 
 const decimalLiteralArgumentSchema = literalStringValueSchema.refine(
   ({ Value }) => isValidDecimalLiteral(Value),
