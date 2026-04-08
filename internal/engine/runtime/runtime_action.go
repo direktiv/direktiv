@@ -182,6 +182,8 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 	}
 	sd.Name = sd.GetValueHash()
 
+	actionTimeout := config.Timeout
+
 	actionFunc := func(call sobek.FunctionCall) sobek.Value {
 		var payload any
 		if len(call.Arguments) > 0 {
@@ -191,8 +193,8 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 		}
 
 		var (
-			timeout string
-			files   []fileSpec
+			callTimeout string
+			files       []fileSpec
 		)
 
 		// second argument is an optional options object: { timeout: "PT15M", files: [...] }
@@ -203,7 +205,7 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 			}
 
 			if t, ok := opts["timeout"].(string); ok {
-				timeout = t
+				callTimeout = t
 			}
 			if rawFiles, ok := opts["files"]; ok && rawFiles != nil {
 				files = rt.parseFiles(rawFiles)
@@ -215,8 +217,13 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 
 		endDuration := defaultTimeout
 
-		if timeout != "" {
-			to, err := duration.Parse(timeout)
+		effectiveTimeout := actionTimeout
+		if callTimeout != "" {
+			effectiveTimeout = callTimeout
+		}
+
+		if effectiveTimeout != "" {
+			to, err := duration.Parse(effectiveTimeout)
 			if err != nil {
 				panic(rt.vm.ToValue(fmt.Errorf("timeout not a valid ISO8601 string, e.g. PT1M")))
 			}
