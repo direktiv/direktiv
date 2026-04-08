@@ -70,7 +70,7 @@ func (e *Engine) Start(lc *lifecycle.Manager) error {
 func (e *Engine) StartWorkflow(ctx context.Context, instID uuid.UUID, namespace string, workflowPath string, input string, metadata map[string]string) (*InstanceEvent, <-chan *InstanceEvent, error) {
 	flowDetails, err := e.compiler.FetchScript(ctx, namespace, workflowPath, true)
 	if err != nil {
-		return nil, nil, fmt.Errorf("fetch script: %w", err)
+		return nil, nil, err
 	}
 
 	to, err := duration.Parse(flowDetails.Config.Timeout)

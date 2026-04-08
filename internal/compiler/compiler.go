@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"strings"
 
 	"github.com/direktiv/direktiv/internal/cluster/cache"
 	"github.com/direktiv/direktiv/internal/core"
@@ -22,7 +21,7 @@ type Compiler struct {
 type CompileItem struct {
 	tsScript         []byte
 	path             string
-	ValidationErrors []error
+	ValidationErrors []*core.ValidationError
 
 	script, mapping string
 	config          core.FlowConfig
@@ -92,12 +91,13 @@ func (c *Compiler) genFlow(ctx context.Context, namespace, path string) (core.Ty
 	}
 
 	if len(ci.ValidationErrors) > 0 {
-		errList := make([]string, len(ci.ValidationErrors))
-		for i := range ci.ValidationErrors {
-			errList[i] = ci.ValidationErrors[i].Error()
+		cve := core.CompilerValidationError{
+			Errors: make([]*core.ValidationError, 0),
 		}
 
-		return core.TypescriptFlow{}, fmt.Errorf("%s", strings.Join(errList, ", "))
+		cve.Errors = append(cve.Errors, ci.ValidationErrors...)
+
+		return core.TypescriptFlow{}, cve
 	}
 
 	return ci.Config(), nil
@@ -107,7 +107,7 @@ func NewCompileItem(script []byte, path string) *CompileItem {
 	return &CompileItem{
 		tsScript:         script,
 		path:             path,
-		ValidationErrors: make([]error, 0),
+		ValidationErrors: make([]*core.ValidationError, 0),
 	}
 }
 
@@ -149,14 +149,12 @@ func (ci *CompileItem) validate() error {
 	ci.config.Secrets = pr.allSecretNames
 	ci.config.StateViews = pr.stateviews
 
-	for i := range pr.Errors {
-		ci.ValidationErrors = append(ci.ValidationErrors, pr.Errors[i])
-	}
+	ci.ValidationErrors = append(ci.ValidationErrors, pr.Errors...)
 
 	if pr.FirstStateFunc == "" {
-		ci.ValidationErrors = append(ci.ValidationErrors, &ValidationError{
+		ci.ValidationErrors = append(ci.ValidationErrors, &core.ValidationError{
 			Message:  "no state functions defined",
-			Severity: SeverityError,
+			Severity: core.SeverityError,
 		})
 	}
 

@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/internal/telemetry"
 	"github.com/grafana/sobek"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -208,6 +209,9 @@ func (rt *Runtime) fetchSync(addr string, config any) *sobek.Object {
 		Value: attribute.StringValue(addr),
 	})
 	defer span.End()
+
+	telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
+		fmt.Sprintf("executing http request to %s", addr))
 
 	response, err := doHttpRequest(addr, config)
 	if err != nil {

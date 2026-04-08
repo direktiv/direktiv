@@ -415,7 +415,6 @@ func (rt *Runtime) finish(data sobek.Value) sobek.Value {
 }
 
 func (rt *Runtime) print(args ...any) {
-	fmt.Print(args[0])
 	if len(args) > 1 {
 		for _, arg := range args[1:] {
 			fmt.Print(" ")
