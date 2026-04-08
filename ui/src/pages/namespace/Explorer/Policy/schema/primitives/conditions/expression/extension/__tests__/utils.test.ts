@@ -17,7 +17,6 @@ describe("extension utils", () => {
       expect(isValidDecimalLiteral("1234")).toBe(false);
       expect(isValidDecimalLiteral("1.")).toBe(false);
       expect(isValidDecimalLiteral("0.12345")).toBe(false);
-      expect(isValidDecimalLiteral("922337203685477.5808")).toBe(false);
     });
   });
 

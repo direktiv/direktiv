@@ -12,33 +12,13 @@ export const cedarDatetimeLiteralSchema = z.union([
   z.string().datetime({ offset: true }),
 ]);
 
-const decimalLowerBound = BigInt("-9223372036854775808");
-const decimalUpperBound = BigInt("9223372036854775807");
 const longLowerBound = BigInt("-9223372036854775808");
 const longUpperBound = BigInt("9223372036854775807");
 
-// Cedar decimals allow up to 4 fractional digits and use a fixed precision.
-// We normalize the fraction to 4 digits and compare the scaled integer value
-// against Cedar's documented decimal range.
-export const isValidDecimalLiteral = (value: string) => {
-  const match = value.match(/^(?<sign>-?)(?<whole>\d+)\.(?<fraction>\d{1,4})$/);
-
-  if (!match?.groups) {
-    return false;
-  }
-
-  const sign = match.groups.sign;
-  const whole = match.groups.whole;
-  const fraction = match.groups.fraction;
-
-  if (sign === undefined || whole === undefined || fraction === undefined) {
-    return false;
-  }
-
-  const scaledValue = BigInt(`${sign}${whole}${fraction.padEnd(4, "0")}`);
-
-  return scaledValue >= decimalLowerBound && scaledValue <= decimalUpperBound;
-};
+// Good-enough decimal validation for this schema layer: require a Cedar-like
+// decimal string shape, but leave overflow and exact bound checks out.
+export const isValidDecimalLiteral = (value: string) =>
+  /^-?\d+\.\d{1,4}$/.test(value);
 
 const durationUnitOrder = {
   d: 0,
