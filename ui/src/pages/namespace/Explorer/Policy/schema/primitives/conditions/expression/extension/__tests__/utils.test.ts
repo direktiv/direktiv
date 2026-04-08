@@ -14,6 +14,10 @@ describe("extension utils", () => {
       expect(isValidDecimalLiteral("1.")).toBe(false);
       expect(isValidDecimalLiteral("0.12345")).toBe(false);
     });
+
+    test("decimal bound checks are intentionally loose", () => {
+      expect(isValidDecimalLiteral("922337203685477.5808")).toBe(true);
+    });
   });
 
   describe("isValidDurationLiteral", () => {
@@ -27,6 +31,10 @@ describe("extension utils", () => {
       expect(isValidDurationLiteral("1s1d")).toBe(false);
       expect(isValidDurationLiteral("1s1s")).toBe(false);
       expect(isValidDurationLiteral("1d2h3m4s5ms6")).toBe(false);
+    });
+
+    test("duration overflow checks are intentionally loose", () => {
+      expect(isValidDurationLiteral("1d9223372036854775807ms")).toBe(true);
     });
   });
 });
