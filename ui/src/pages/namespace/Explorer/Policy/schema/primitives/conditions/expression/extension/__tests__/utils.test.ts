@@ -1,5 +1,5 @@
-import { isValidDecimalLiteral, isValidDurationLiteral } from "../utils";
 import { describe, expect, test } from "vitest";
+import { isValidDecimalLiteral, isValidDurationLiteral } from "../utils";
 
 describe("extension utils", () => {
   describe("isValidDecimalLiteral", () => {
