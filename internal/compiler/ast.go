@@ -1050,13 +1050,13 @@ func (ap *ASTParser) parseAction(expr ast.Expression) (core.ActionConfig, error)
 					start := ap.file.Position(int(keyed.Idx0()))
 					end := ap.file.Position(int(keyed.Idx1()))
 
-					return action, &ValidationError{
+					return action, &core.ValidationError{
 						Message:     fmt.Sprintf("invalid timeout pattern '%s', must be ISO8601", timeout),
 						StartLine:   start.Line,
 						StartColumn: start.Column,
 						EndLine:     end.Line,
 						EndColumn:   end.Column,
-						Severity:    SeverityError,
+						Severity:    core.SeverityError,
 					}
 				}
 				action.Timeout = timeout

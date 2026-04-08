@@ -95,9 +95,7 @@ func (c *Compiler) genFlow(ctx context.Context, namespace, path string) (core.Ty
 			Errors: make([]*core.ValidationError, 0),
 		}
 
-		for i := range ci.ValidationErrors {
-			cve.Errors = append(cve.Errors, ci.ValidationErrors[i])
-		}
+		cve.Errors = append(cve.Errors, ci.ValidationErrors...)
 
 		return core.TypescriptFlow{}, cve
 	}
@@ -151,9 +149,7 @@ func (ci *CompileItem) validate() error {
 	ci.config.Secrets = pr.allSecretNames
 	ci.config.StateViews = pr.stateviews
 
-	for i := range pr.Errors {
-		ci.ValidationErrors = append(ci.ValidationErrors, pr.Errors[i])
-	}
+	ci.ValidationErrors = append(ci.ValidationErrors, pr.Errors...)
 
 	if pr.FirstStateFunc == "" {
 		ci.ValidationErrors = append(ci.ValidationErrors, &core.ValidationError{

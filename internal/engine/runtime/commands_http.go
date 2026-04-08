@@ -52,7 +52,6 @@ type httpResponseObject struct {
 }
 
 func doHttpRequest(addr string, config any) (*httpResponseObject, error) {
-
 	// url requires value
 	u, err := url.Parse(addr)
 	if err != nil {
