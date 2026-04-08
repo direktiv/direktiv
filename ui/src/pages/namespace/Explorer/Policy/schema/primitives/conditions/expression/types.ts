@@ -7,6 +7,7 @@ import type { SlotExpression, SlotExpressionInput } from "./slot";
 import type { UnknownExpression, UnknownExpressionInput } from "./unknown";
 import type { ValueExpression, ValueExpressionInput } from "./value";
 import type { VarExpression, VarExpressionInput } from "./var";
+
 import type { PatternElement } from "./like";
 import type { StrictUnion } from "../../../utils/strictUnion";
 import { z } from "zod";

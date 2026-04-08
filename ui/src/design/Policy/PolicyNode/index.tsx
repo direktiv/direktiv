@@ -1,8 +1,10 @@
 import { AndGroup, Connector, OrGroup } from "~/design/Policy/Group";
 import type { ExpressionPath, PolicyLayoutNode } from "./types";
+
 import { Condition } from "~/design/Policy/Condition";
 import { Placeholder } from "~/design/Policy/Placeholder";
 import { containsOrGroup } from "./utils";
+import { formatExpression } from "./formatExpression";
 
 type PlaceholderAction = "add-condition" | "add-or-group";
 
@@ -24,7 +26,7 @@ const PolicyNode = ({
   // Condition nodes are the terminal expressions in the policy
   // tree, they render directly as a condition component.
   if (node.type === "condition") {
-    const preview = JSON.stringify(node.expression);
+    const preview = formatExpression(node.expression);
     const title = JSON.stringify(node.expression, null, 2);
 
     return (
@@ -33,7 +35,7 @@ const PolicyNode = ({
         title={title}
         onClick={() => onConditionClick?.(node.path)}
       >
-        <span className="block w-full truncate">{preview}</span>
+        <span className="block w-full">{preview}</span>
       </Condition>
     );
   }
