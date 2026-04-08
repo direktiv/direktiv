@@ -129,14 +129,20 @@ func (rt *Runtime) action(c map[string]any) sobek.Value {
 	}
 	sd.Name = sd.GetValueHash()
 
+	actionTimeout := config.Timeout
 	actionFunc := func(payload any, timeout string) sobek.Value {
 		telemetry.LogInstance(rt.tracingPack.ctx, telemetry.LogLevelInfo,
 			fmt.Sprintf("executing action with image %s", config.Image))
 
 		endDuration := defaultTimeout
 
+		effectiveTimeout := actionTimeout
 		if timeout != "" {
-			to, err := duration.Parse(timeout)
+			effectiveTimeout = timeout
+		}
+
+		if effectiveTimeout != "" {
+			to, err := duration.Parse(effectiveTimeout)
 			if err != nil {
 				panic(rt.vm.ToValue(fmt.Errorf("timeout not a valid ISO8601 string, e.g. PT1M")))
 			}

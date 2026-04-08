@@ -1041,6 +1041,27 @@ func (ap *ASTParser) parseAction(expr ast.Expression) (core.ActionConfig, error)
 			if strLit, ok := keyed.Value.(*ast.StringLiteral); ok {
 				action.Size = strLit.Value.String()
 			}
+
+		case "timeout":
+			if strLit, ok := keyed.Value.(*ast.StringLiteral); ok {
+				timeout := strLit.Value.String()
+				_, err := duration.Parse(timeout)
+				if err != nil {
+					start := ap.file.Position(int(keyed.Idx0()))
+					end := ap.file.Position(int(keyed.Idx1()))
+
+					return action, &ValidationError{
+						Message:     fmt.Sprintf("invalid timeout pattern '%s', must be ISO8601", timeout),
+						StartLine:   start.Line,
+						StartColumn: start.Column,
+						EndLine:     end.Line,
+						EndColumn:   end.Column,
+						Severity:    SeverityError,
+					}
+				}
+				action.Timeout = timeout
+			}
+
 		case "auth":
 			if authObj, ok := keyed.Value.(*ast.ObjectLiteral); ok {
 				auth := &core.BasicAuthConfig{}
