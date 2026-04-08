@@ -29,7 +29,7 @@ jobs:
           go-version-file: go.mod
 
       - name: Install Task
-        uses: go-task/setup-task@v1
+        uses: go-task/setup-task@v2
 
       - name: Run check
         run: task test:licenses
@@ -187,7 +187,7 @@ jobs:
           version: v3.17.3
 
       - name: Install Task
-        uses: go-task/setup-task@v1
+        uses: go-task/setup-task@v2
 
       - name: Set Environment Variables
         run: echo "DIREKTIV_BASE_URL=http://127.0.0.1:9090" >> $GITHUB_ENV
