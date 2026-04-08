@@ -60,6 +60,7 @@ const fileTypes = [
   "workflow",
   "page",
   "gateway",
+  "policy",
 ] as const;
 
 const FileTypeSchema = z.enum(fileTypes);
@@ -127,6 +128,11 @@ const CreateGatewaySchema = CreateFileBaseSchema.extend({
   mimeType: z.literal("application/yaml"),
 });
 
+const CreatePolicySchema = CreateFileBaseSchema.extend({
+  type: z.literal("policy"),
+  mimeType: z.literal("application/yaml"),
+});
+
 export const CreateFileSchema = z.discriminatedUnion("type", [
   CreateDirectorySchema,
   CreateConsumerSchema,
@@ -135,6 +141,7 @@ export const CreateFileSchema = z.discriminatedUnion("type", [
   CreateWorkflowSchema,
   CreatePageSchema,
   CreateGatewaySchema,
+  CreatePolicySchema,
 ]);
 
 const _RenameFileSchema = z.object({
