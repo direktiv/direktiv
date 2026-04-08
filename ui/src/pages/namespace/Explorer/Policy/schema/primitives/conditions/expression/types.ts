@@ -1,12 +1,9 @@
 import type { AttributeOperator, BinaryOperator, UnaryOperator } from "./utils";
-import type {
-  ExtensionIdentifier,
-  ReservedExtensionIdentifier,
-} from "./extension";
 import type { SlotExpression, SlotExpressionInput } from "./slot";
 import type { UnknownExpression, UnknownExpressionInput } from "./unknown";
 import type { ValueExpression, ValueExpressionInput } from "./value";
 import type { VarExpression, VarExpressionInput } from "./var";
+import type { ExtensionIdentifier } from "./extension";
 import type { PatternElement } from "./like";
 import type { StrictUnion } from "../../../utils/strictUnion";
 import { z } from "zod";
@@ -93,6 +90,42 @@ type SetExpressionType = { Set: ExpressionType[] };
 
 type RecordExpressionType = { Record: Record<string, ExpressionType> };
 
+type StringValueExpression = { Value: string };
+
+type ExtensionCall<Key extends ExtensionIdentifier, Args> = {
+  [K in Key]: { [P in K]: Args };
+}[Key];
+
+type ExtensionExpressionType =
+  | ExtensionCall<"decimal", [StringValueExpression]>
+  | ExtensionCall<"datetime", [StringValueExpression]>
+  | ExtensionCall<"duration", [StringValueExpression]>
+  | ExtensionCall<"ip", [StringValueExpression]>
+  | ExtensionCall<
+      | "isIpv4"
+      | "isIpv6"
+      | "isLoopback"
+      | "isMulticast"
+      | "toDate"
+      | "toTime"
+      | "toMilliseconds"
+      | "toSeconds"
+      | "toMinutes"
+      | "toHours"
+      | "toDays",
+      [ExpressionType]
+    >
+  | ExtensionCall<
+      | "isInRange"
+      | "offset"
+      | "durationSince"
+      | "lessThan"
+      | "lessThanOrEqual"
+      | "greaterThan"
+      | "greaterThanOrEqual",
+      [ExpressionType, ExpressionType]
+    >;
+
 export type ExpressionType =
   | NonRecursiveExpression
   | UnaryExpressionType
@@ -102,7 +135,8 @@ export type ExpressionType =
   | LikeExpressionType
   | IfThenElseExpressionType
   | SetExpressionType
-  | RecordExpressionType;
+  | RecordExpressionType
+  | ExtensionExpressionType;
 
 // These types describe the recursive expression
 // nodes on the input side of the zod schema
@@ -136,11 +170,37 @@ type RecordExpressionInputType = {
   Record: Record<string, ExpressionInputType>;
 };
 
-type ExtensionExpressionInputType = {
-  [Key in ExtensionIdentifier]?: ExpressionInputType[];
-} & {
-  [Key in ReservedExtensionIdentifier]?: never;
-};
+type StringValueExpressionInput = { Value: string };
+
+type ExtensionExpressionInputType =
+  | ExtensionCall<"decimal", [StringValueExpressionInput]>
+  | ExtensionCall<"datetime", [StringValueExpressionInput]>
+  | ExtensionCall<"duration", [StringValueExpressionInput]>
+  | ExtensionCall<"ip", [StringValueExpressionInput]>
+  | ExtensionCall<
+      | "isIpv4"
+      | "isIpv6"
+      | "isLoopback"
+      | "isMulticast"
+      | "toDate"
+      | "toTime"
+      | "toMilliseconds"
+      | "toSeconds"
+      | "toMinutes"
+      | "toHours"
+      | "toDays",
+      [ExpressionInputType]
+    >
+  | ExtensionCall<
+      | "isInRange"
+      | "offset"
+      | "durationSince"
+      | "lessThan"
+      | "lessThanOrEqual"
+      | "greaterThan"
+      | "greaterThanOrEqual",
+      [ExpressionInputType, ExpressionInputType]
+    >;
 
 type KnownExpressionInputType = StrictUnion<
   | NonRecursiveExpressionInput

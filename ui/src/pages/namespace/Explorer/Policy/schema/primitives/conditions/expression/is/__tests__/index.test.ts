@@ -71,9 +71,9 @@ describe("Is Expression schema", () => {
           {
             kind: "when",
             body: {
+              // @ts-expect-error - entity_type must be a string
               is: {
                 left: { Var: "principal" },
-                // @ts-expect-error - entity_type must be a string
                 entity_type: 1,
               },
             },
