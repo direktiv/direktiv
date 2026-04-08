@@ -38,8 +38,6 @@ const _CedarExtensionNames = [
 
 export type ExtensionIdentifier = (typeof _CedarExtensionNames)[number];
 
-// Cedar constructor validation only accepts string-literal Value expressions,
-// not arbitrary child expressions that happen to evaluate to strings.
 const literalStringValueSchema = z.object({ Value: z.string() }).strict();
 
 const cedarDatetimeLiteralSchema = z.union([
