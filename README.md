@@ -24,6 +24,24 @@ Run Workflows and Create Services in Seconds
 </div>
 </br>
 
+# ⚠️ Project Archived — No Longer Maintained
+
+**Status: End of Support**
+
+This project has officially reached End of Life (EOL) and is no longer actively maintained or supported.
+
+Effective **Oct-2025**:
+
+- No further updates, bug fixes, or security patches will be provided.
+- Issues and pull requests will no longer be reviewed or accepted.
+- No technical support or maintenance commitments are provided.
+- The repository remains publicly available for historical and reference purposes only.
+
+**Security Notice:** This software should not be considered suitable for production deployment without an independent assessment of its security, compatibility, and ongoing maintenance requirements.
+
+The source code remains available under its existing open-source licence.
+
+We thank everyone who has contributed to or supported this project.
 
 ## Build a local development cluster
 
